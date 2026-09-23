@@ -11,7 +11,16 @@ export type FilterGroup = (typeof FILTER_GROUPS)[number];
 export type Filters = Readonly<Record<FilterGroup, readonly string[]>>;
 
 /** The All packages table's columns, in display order. Sorting is not part of the fragment. */
-export const SORT_KEYS = ["package", "version", "libyears", "verdict", "priority", "reached", "signals", "data"] as const;
+export const SORT_KEYS = [
+  "package",
+  "version",
+  "libyears",
+  "verdict",
+  "priority",
+  "reached",
+  "signals",
+  "data",
+] as const;
 export type SortKey = (typeof SORT_KEYS)[number];
 
 export interface State {

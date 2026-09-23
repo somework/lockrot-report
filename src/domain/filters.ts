@@ -1,0 +1,326 @@
+/**
+ * Which findings each tab lists, the filters that narrow that list, and the left-hand rail's
+ * groups — ported from legacy's `population()`, `matches()`'s rail-selection steps, `SORTS` and
+ * `renderRail()` (`report.js:312-394,548-593`; js-2.md §2-3,10-11).
+ *
+ * The query-string half of filtering (free text, `verdict:`, `signal:`, …) lives in `query.ts`;
+ * this module owns the other half — the rail's own button state (`State.filters`) — and the
+ * per-view population and ordering rules that decide what a tab shows at all.
+ */
+
+import type { Finding, Model, Priority, View } from "../model/types";
+import { PRIORITIES } from "../model/types";
+import type { Filters, FilterGroup, SortKey, State } from "../state/types";
+import { matchesFinding, parseQuery } from "./query";
+import { fixShapeOf, type FixShape } from "./advisories";
+// `vocab.ts` is another agent's file (DESIGN.md §3); these three names are its documented exports.
+import { isFlagged, SIGNAL_NAMES, VERDICT_ORDER } from "./vocab";
+
+// -------------------------------------------------------------------------------------------
+// Population
+// -------------------------------------------------------------------------------------------
+
+function flaggedFindings(model: Model): readonly Finding[] {
+  return model.report.findings.filter((f) => isFlagged(f.verdict, model.report.run.flaggedVerdicts));
+}
+
+/**
+ * The findings a tab draws from, before any filter narrows it (`population()`, `report.js:312-317`).
+ * The Run tab describes the run, not its packages, so it (and any view this renderer does not
+ * know) has nothing to filter — an empty population, which is also what tells the rail and the
+ * search box to hide themselves for that tab.
+ */
+export function population(model: Model, view: View): readonly Finding[] {
+  switch (view) {
+    case "findings":
+    case "radius":
+      return flaggedFindings(model);
+    case "advisories":
+      return model.report.findings.filter((f) => f.advisories.length > 0);
+    case "packages":
+      return model.report.findings;
+    case "run":
+      return [];
+  }
+}
+
+// -------------------------------------------------------------------------------------------
+// The rail's own selections (legacy `matches()` steps 8-14, report.js:223-238)
+// -------------------------------------------------------------------------------------------
+
+/**
+ * A finding's baseline bucket for the "Since" rail group, or `null` when it has none. Fixes
+ * critic.md M19: legacy bucketed a finding with **no** baseline entry at all — every ok/finished/
+ * unknown package, since `BaselineComparison` only ever records a status for a flagged finding —
+ * under "known" (`baselineState(f) !== "new" && !== "worsened"` is true for `null` too), so
+ * "Already accepted" silently counted every healthy package. Here "known" means the baseline
+ * itself said so, nothing else does.
+ */
+function sinceBucket(f: Finding): "new" | "worsened" | "known" | null {
+  if (f.baseline === null) return null;
+  const status = f.baseline.status;
+  if (status === "new") return "new";
+  if (status === "worsened") return "worsened";
+  if (status === "known") return "known";
+  return null;
+}
+
+function passesRail(filters: Filters, f: Finding): boolean {
+  if (filters.sev.length > 0 && !f.advisories.some((advisory) => filters.sev.includes(advisory.severity))) {
+    return false;
+  }
+  if (
+    filters.fix.length > 0 &&
+    !f.advisories.some((advisory) => filters.fix.includes(fixShapeOf(advisory)))
+  ) {
+    return false;
+  }
+  if (filters.prio.length > 0 && !filters.prio.includes(f.priority)) return false;
+  if (filters.verdict.length > 0 && !filters.verdict.includes(f.verdict)) return false;
+  if (filters.signal.length > 0) {
+    const ids = f.signals.map((signal) => signal.id);
+    if (!filters.signal.some((id) => ids.includes(id))) return false;
+  }
+  const since = sinceBucket(f);
+  if (filters.since.length > 0 && (since === null || !filters.since.includes(since))) return false;
+  // Each scope button is independent and ANDed, so selecting both halves of a pair (direct +
+  // transitive, or require + require-dev) together yields nothing — kept as-is (DESIGN.md §5).
+  if (filters.scope.includes("direct") && !f.direct) return false;
+  if (filters.scope.includes("transitive") && f.direct) return false;
+  if (filters.scope.includes("prod") && f.dev) return false;
+  if (filters.scope.includes("dev") && !f.dev) return false;
+  return true;
+}
+
+// -------------------------------------------------------------------------------------------
+// Ordering (legacy `viewFindings`'s priority grouping and `SORTS`, report.js:448-478,548-593)
+// -------------------------------------------------------------------------------------------
+
+/**
+ * The Findings tab groups by priority in the fixed `PRIORITIES` order; the rendered order is
+ * simply that grouping, each bucket keeping the relative order its findings arrived in.
+ *
+ * Legacy iterated only the five known priorities and silently skipped any finding whose priority
+ * wasn't one of them (`report.js:466-471`) — which would drop it from the page entirely. DESIGN.md
+ * §2's rule that an unknown enum value is "kept and rendered neutrally, never dropped" overrides
+ * that for this port: a finding with an unrecognised priority is appended after the five known
+ * groups instead of vanishing.
+ */
+function orderByPriorityGroup(findings: readonly Finding[]): readonly Finding[] {
+  const buckets = new Map<Priority, Finding[]>();
+  for (const f of findings) {
+    const bucket = buckets.get(f.priority);
+    if (bucket) bucket.push(f);
+    else buckets.set(f.priority, [f]);
+  }
+  const known = PRIORITIES.flatMap((p) => buckets.get(p) ?? []);
+  const knownSet: readonly string[] = PRIORITIES;
+  const unknown = [...buckets.keys()]
+    .filter((p) => !knownSet.includes(p))
+    .flatMap((p) => buckets.get(p) ?? []);
+  return [...known, ...unknown];
+}
+
+function sortKeyValue(f: Finding, key: SortKey): string | number {
+  switch (key) {
+    case "package":
+      return f.package;
+    case "version":
+      return f.version;
+    case "libyears":
+      return f.libyears === null ? -1 : f.libyears;
+    case "verdict": {
+      const index = VERDICT_ORDER.indexOf(f.verdict);
+      return index === -1 ? 99 : index;
+    }
+    case "priority":
+      return (PRIORITIES as readonly string[]).indexOf(f.priority);
+    case "reached":
+      return (f.direct ? "0" : "1") + (f.dev ? "1" : "0");
+    case "signals":
+      return -f.signals.length;
+    case "data":
+      return f.dataDate ?? "";
+  }
+}
+
+/**
+ * The Packages tab's column comparator (`SORTS`, `report.js:548-557`). One deliberate deviation
+ * (per this task's brief, not a DESIGN.md-numbered fix): `package` and `version` compare with
+ * `localeCompare(..., {numeric:true})` instead of legacy's plain `<`/`>`, so `"2.0.0"` sorts before
+ * `"10.0.0"` rather than after it.
+ */
+function comparePackages(a: Finding, b: Finding, key: SortKey): number {
+  if (key === "package") return a.package.localeCompare(b.package, undefined, { numeric: true });
+  if (key === "version") return a.version.localeCompare(b.version, undefined, { numeric: true });
+  const x = sortKeyValue(a, key);
+  const y = sortKeyValue(b, key);
+  if (x < y) return -1;
+  if (x > y) return 1;
+  return 0;
+}
+
+function sortPackages(findings: readonly Finding[], sort: SortKey, desc: boolean): readonly Finding[] {
+  const sign = desc ? -1 : 1;
+  return [...findings].sort((a, b) => sign * comparePackages(a, b, sort));
+}
+
+/**
+ * The findings a tab actually shows, filtered by the query box and the rail, in the order they are
+ * rendered: priority-grouped for Findings, sorted for Packages, population order (query-filtered,
+ * rail-filtered) for everything else — Radius and Advisories re-derive their own row order from
+ * this set (`radius.ts`, and the advisory-row sort in `advisories.ts`), and Run has no population
+ * to filter at all.
+ */
+export function applyFilters(model: Model, state: State, view: View): readonly Finding[] {
+  const terms = parseQuery(state.q);
+  const filtered = population(model, view).filter(
+    (f) => matchesFinding(f, terms) && passesRail(state.filters, f),
+  );
+  if (view === "findings") return orderByPriorityGroup(filtered);
+  if (view === "packages") return sortPackages(filtered, state.sort, state.sortDesc);
+  return filtered;
+}
+
+// -------------------------------------------------------------------------------------------
+// The rail itself (legacy `renderRail()`, report.js:319-394)
+// -------------------------------------------------------------------------------------------
+
+export interface RailRow {
+  readonly key: string;
+  readonly label: string;
+  readonly count: number;
+  readonly on: boolean;
+}
+
+export interface RailGroup {
+  readonly group: FilterGroup;
+  readonly title: string;
+  readonly rows: readonly RailRow[];
+}
+
+/** Counts are per the tab's whole population, not faceted against the filters already active on
+ *  the other groups — kept exactly as legacy computed them (DESIGN.md §5, "deliberately kept"). */
+function hasBaseline(model: Model): boolean {
+  return model.report.baseline !== null && model.report.findings.some((f) => f.baseline !== null);
+}
+
+function buildSinceGroup(model: Model, state: State, here: readonly Finding[]): RailGroup | null {
+  if (model.report.baseline === null || !hasBaseline(model)) return null;
+  const rows: readonly (readonly [string, string])[] = [
+    ["new", "New"],
+    ["worsened", "Worsened"],
+    ["known", "Already accepted"],
+  ];
+  return {
+    group: "since",
+    title: `Since ${model.report.baseline.path}`,
+    rows: rows.map(([key, label]) => ({
+      key,
+      label,
+      count: here.filter((f) => sinceBucket(f) === key).length,
+      on: state.filters.since.includes(key),
+    })),
+  };
+}
+
+function buildScopeGroup(state: State, here: readonly Finding[]): RailGroup {
+  const rows: readonly (readonly [string, string, (f: Finding) => boolean])[] = [
+    ["direct", "Direct", (f) => f.direct],
+    ["transitive", "Transitive", (f) => !f.direct],
+    ["prod", "require", (f) => !f.dev],
+    ["dev", "require-dev", (f) => f.dev],
+  ];
+  return {
+    group: "scope",
+    title: "Scope",
+    rows: rows.map(([key, label, predicate]) => ({
+      key,
+      label,
+      count: here.filter(predicate).length,
+      on: state.filters.scope.includes(key),
+    })),
+  };
+}
+
+/** `S<n>` sorts by `n` (the M2 fix: numeric id order, so S10 lands after S9 instead of between S1
+ *  and S2); any id that isn't `S<digits>` sorts after all of those, alphabetically among itself. */
+function signalSortKey(id: string): readonly [number, string] {
+  const match = /^S(\d+)$/.exec(id);
+  const digits = match?.[1];
+  return digits !== undefined ? [Number(digits), ""] : [Number.MAX_SAFE_INTEGER, id];
+}
+
+function buildSignalGroup(state: State, here: readonly Finding[]): RailGroup | null {
+  const counts = new Map<string, number>();
+  for (const f of here) {
+    for (const signal of f.signals) counts.set(signal.id, (counts.get(signal.id) ?? 0) + 1);
+  }
+  if (counts.size === 0) return null;
+
+  const ids = [...counts.keys()].sort((a, b) => {
+    const [an, as] = signalSortKey(a);
+    const [bn, bs] = signalSortKey(b);
+    return an !== bn ? an - bn : as.localeCompare(bs);
+  });
+  return {
+    group: "signal",
+    title: "Signal",
+    rows: ids.map((id) => ({
+      key: id,
+      label: SIGNAL_NAMES[id] ?? "",
+      count: counts.get(id) ?? 0,
+      on: state.filters.signal.includes(id),
+    })),
+  };
+}
+
+const FIX_GROUP_TEXT: readonly (readonly [FixShape, string])[] = [
+  ["branch", "A release on this branch"],
+  ["move", "Moving to another branch"],
+  ["none", "No fix listed"],
+];
+
+function buildFixGroup(state: State, here: readonly Finding[]): RailGroup | null {
+  const counts: Record<FixShape, number> = { branch: 0, move: 0, none: 0 };
+  let total = 0;
+  for (const f of here) {
+    for (const advisory of f.advisories) {
+      counts[fixShapeOf(advisory)] += 1;
+      total += 1;
+    }
+  }
+  if (total === 0) return null;
+
+  const rows = FIX_GROUP_TEXT.filter(([shape]) => counts[shape] > 0).map(([shape, label]) => ({
+    key: shape,
+    label,
+    count: counts[shape],
+    on: state.filters.fix.includes(shape),
+  }));
+  return { group: "fix", title: "What the fix costs", rows };
+}
+
+/**
+ * The rail's groups, in legacy's fixed emission order: Since (only with a baseline), Scope
+ * (always), Signal (only if any signal fired), What the fix costs (only with ≥1 advisory). The
+ * ledger's own priority/verdict/severity legends are a different UI surface (`renderLedger()`,
+ * not `renderRail()`) and are not part of this list.
+ */
+export function railGroups(model: Model, state: State): readonly RailGroup[] {
+  const here = population(model, state.view);
+  const groups: RailGroup[] = [];
+
+  const since = buildSinceGroup(model, state, here);
+  if (since) groups.push(since);
+
+  groups.push(buildScopeGroup(state, here));
+
+  const signal = buildSignalGroup(state, here);
+  if (signal) groups.push(signal);
+
+  const fix = buildFixGroup(state, here);
+  if (fix) groups.push(fix);
+
+  return groups;
+}

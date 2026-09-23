@@ -1,0 +1,119 @@
+import { describe, expect, test } from "vitest";
+import {
+  DEFAULT_FLAGGED,
+  DOCS_URL,
+  SIGNAL_DEFS,
+  SIGNAL_DOC,
+  SIGNAL_NAMES,
+  TONE,
+  VERDICT_DEFS,
+  VERDICT_ORDER,
+  isFlagged,
+} from "../../../src/domain/vocab";
+
+describe("DEFAULT_FLAGGED", () => {
+  test("is the six rot verdicts, excluding unknown", () => {
+    expect(DEFAULT_FLAGGED).toEqual(["abandoned", "silent", "pinned", "left-behind", "old-promise", "stale"]);
+    expect(DEFAULT_FLAGGED).not.toContain("unknown");
+    expect(DEFAULT_FLAGGED).not.toContain("finished");
+    expect(DEFAULT_FLAGGED).not.toContain("ok");
+  });
+});
+
+describe("VERDICT_ORDER", () => {
+  test("is the legacy SEVERITY_ORDER: the six flagged verdicts plus unknown, excluding finished/ok", () => {
+    expect(VERDICT_ORDER).toEqual([
+      "abandoned",
+      "silent",
+      "pinned",
+      "left-behind",
+      "old-promise",
+      "stale",
+      "unknown",
+    ]);
+  });
+});
+
+describe("TONE", () => {
+  test("maps every priority key", () => {
+    expect(TONE("critical")).toBe("crit");
+    expect(TONE("high")).toBe("high");
+    expect(TONE("medium")).toBe("med");
+    expect(TONE("low")).toBe("low");
+    expect(TONE("none")).toBe("none");
+  });
+
+  test("maps every verdict key", () => {
+    expect(TONE("abandoned")).toBe("crit");
+    expect(TONE("silent")).toBe("crit");
+    expect(TONE("pinned")).toBe("high");
+    expect(TONE("left-behind")).toBe("high");
+    expect(TONE("old-promise")).toBe("med");
+    expect(TONE("stale")).toBe("med");
+    expect(TONE("unknown")).toBe("low");
+    expect(TONE("finished")).toBe("none");
+    expect(TONE("ok")).toBe("none");
+  });
+
+  test("falls back to 'low' for a key it does not know, rather than throwing", () => {
+    expect(TONE("moderate")).toBe("low");
+    expect(TONE("")).toBe("low");
+  });
+});
+
+describe("SIGNAL_NAMES / SIGNAL_DEFS", () => {
+  test("cover S1 through S10", () => {
+    for (const id of ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"]) {
+      expect(SIGNAL_NAMES[id]).toBeTruthy();
+      expect(SIGNAL_DEFS[id]).toBeTruthy();
+    }
+  });
+
+  test("S10 is named, fixing DESIGN.md M2 (the legacy page shipped it with no name at all)", () => {
+    expect(SIGNAL_NAMES.S10).toBe("a check could not run");
+    expect(SIGNAL_DEFS.S10).toBe(
+      "A check lockrot relies on could not run for this package, so a verdict may be missing a signal; the data says which and why.",
+    );
+  });
+});
+
+describe("VERDICT_DEFS", () => {
+  test("has one entry per verdict, all nine", () => {
+    for (const v of [
+      "abandoned",
+      "silent",
+      "pinned",
+      "left-behind",
+      "old-promise",
+      "stale",
+      "unknown",
+      "finished",
+      "ok",
+    ]) {
+      expect(VERDICT_DEFS[v]).toBeTruthy();
+    }
+  });
+});
+
+describe("SIGNAL_DOC", () => {
+  test("has dedicated anchors only for S7, S8 and S9", () => {
+    expect(SIGNAL_DOC.S7).toBe(`${DOCS_URL}#transitive-exposure`);
+    expect(SIGNAL_DOC.S8).toBe(`${DOCS_URL}#left-behind`);
+    expect(SIGNAL_DOC.S9).toBe(`${DOCS_URL}#security-advisories`);
+    expect(SIGNAL_DOC.S1).toBeUndefined();
+    expect(SIGNAL_DOC.S10).toBeUndefined();
+  });
+});
+
+describe("isFlagged", () => {
+  test("is true for a verdict in the given list, false otherwise", () => {
+    expect(isFlagged("abandoned", DEFAULT_FLAGGED)).toBe(true);
+    expect(isFlagged("ok", DEFAULT_FLAGGED)).toBe(false);
+    expect(isFlagged("unknown", DEFAULT_FLAGGED)).toBe(false);
+  });
+
+  test("respects a run's own flaggedVerdicts list rather than the default", () => {
+    expect(isFlagged("unknown", ["unknown"])).toBe(true);
+    expect(isFlagged("abandoned", ["unknown"])).toBe(false);
+  });
+});

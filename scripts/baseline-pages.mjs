@@ -12,7 +12,12 @@ const OUT = join(ROOT, "build/legacy-pages");
 
 const read = (name) => readFileSync(join(LEGACY, name), "utf8");
 const text = (s) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 // HtmlFormatter::payload(): JSON with unescaped slashes and unicode, then `</` and `<!--` escaped.
 const payload = (bundle) => JSON.stringify(bundle).replace(/<\//g, "<\\/").replace(/<!--/g, "<\\u0021--");
 
@@ -23,7 +28,14 @@ function title(report) {
     : `lockrot: ${flagged} of ${report.packages_checked} packages flagged`;
 }
 function flaggedOf(report) {
-  const verdicts = report.run?.flagged_verdicts ?? ["abandoned", "silent", "pinned", "left-behind", "old-promise", "stale"];
+  const verdicts = report.run?.flagged_verdicts ?? [
+    "abandoned",
+    "silent",
+    "pinned",
+    "left-behind",
+    "old-promise",
+    "stale",
+  ];
   return report.findings.filter((f) => verdicts.includes(f.verdict));
 }
 
