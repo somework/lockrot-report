@@ -112,6 +112,25 @@ export function fixShapeOf(advisory: Advisory): FixShape {
   return advisory.fixedOnBranch ? "branch" : "move";
 }
 
+/**
+ * Whether one advisory clears the rail's own `sev`/`fix` selections. `domain/filters.ts`'s
+ * `passesRail` only ever answers this at *finding* granularity (does the finding have at least one
+ * matching advisory) — correct for narrowing which packages are eligible, but not enough to count or
+ * order individual Advisories-tab rows, where a finding can pass the rail on one advisory while
+ * carrying several that individually do not. Legacy's `advisoryMatches` made the same two checks at
+ * the row level (`report.js:507,509`); this is that half of it, kept here as the one definition
+ * `SearchBar`'s count line and `ui/views/order.ts`'s row order both call, so the two can never
+ * disagree (quality finding: this check used to be hand-duplicated in both places).
+ */
+export function passesAdvisoryRail(
+  filters: { readonly sev: readonly string[]; readonly fix: readonly string[] },
+  advisory: Advisory,
+): boolean {
+  if (filters.sev.length > 0 && !filters.sev.includes(advisory.severity)) return false;
+  if (filters.fix.length > 0 && !filters.fix.includes(fixShapeOf(advisory))) return false;
+  return true;
+}
+
 export interface AdvisoryGroup {
   readonly shape: FixShape;
   readonly heading: string;

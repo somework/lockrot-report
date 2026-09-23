@@ -35,12 +35,14 @@ export function KeyValue({ rows }: { rows: readonly KeyValueRow[] }) {
 }
 
 /**
- * Drops a row whose value is `null` — ported from legacy `kvRows` (`lib.js:189-192`), which also
- * dropped `undefined` and `""`; a typed caller only ever produces `null` for "nothing to show", so
- * that is the one case this checks. Used by the sections whose rows are each individually optional
- * (the lock entry, provenance); a signal's data dump does not filter at all — every key it has is
- * shown, `null` included, spelled out as the text `"null"`.
+ * Drops a row whose value is `null`, `undefined` or the empty string — ported from legacy `kvRows`
+ * (`lib.js:189-192`), which dropped all three. `asNullableString` (`model/normalize.ts`) passes an
+ * empty string from the wire document through unchanged, so a typed caller does produce `""` for
+ * "nothing to show", not only `null` — this used to keep such a row with a blank `dd` instead of
+ * dropping it, unlike legacy (parity finding). Used by the sections whose rows are each individually
+ * optional (the lock entry, provenance); a signal's data dump does not filter at all — every key it
+ * has is shown, `null` included, spelled out as the text `"null"`.
  */
 export function presentRows(rows: readonly KeyValueRow[]): readonly KeyValueRow[] {
-  return rows.filter((row) => row.value !== null && row.value !== undefined);
+  return rows.filter((row) => row.value !== null && row.value !== undefined && row.value !== "");
 }

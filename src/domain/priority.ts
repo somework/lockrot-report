@@ -6,20 +6,23 @@
 
 import type { Finding, KnownPriority, Priority } from "../model/types";
 import { hasNoFixExpected } from "./sniff";
+import { vocabTable } from "./vocab";
 
 /**
  * `Priority::BASE` (contract.md §2.4 step 2): the priority a verdict starts at before the
  * direct/dev/advisory steps below adjust it. A verdict with no entry here (`unknown`, `finished`,
- * `ok`) never enters the ladder — its priority is always `"none"`.
+ * `ok`) never enters the ladder — its priority is always `"none"`. Built with `vocabTable` (no
+ * prototype), so a document-supplied verdict of `"constructor"` or `"__proto__"` reads as absent
+ * rather than as an inherited `Object.prototype` member (security finding, `domain/vocab.ts`).
  */
-export const PRIORITY_BASE: Readonly<Record<string, KnownPriority>> = {
+export const PRIORITY_BASE: Readonly<Record<string, KnownPriority>> = vocabTable({
   abandoned: "critical",
   silent: "critical",
   pinned: "high",
   "left-behind": "high",
   "old-promise": "high",
   stale: "medium",
-};
+});
 
 export interface PriorityStep {
   readonly text: string;

@@ -89,4 +89,11 @@ describe("installCommand", () => {
   test("rejects the line when both the name and the constraint are invalid", () => {
     expect(installCommand("not-a-vendor-name", "^7.0; rm -rf /")).toBeNull();
   });
+
+  test("rejects a constraint that opens with a dash, which Composer would parse as an option", () => {
+    // The allow-list regex matches these once quoted, but the shell strips the quotes and Composer
+    // reads the token as `--working-dir=…`/`-d…`, not as a version constraint.
+    expect(installCommand("vendor/pkg", "--working-dir=../x")).toBeNull();
+    expect(installCommand("vendor/pkg", "-d/tmp")).toBeNull();
+  });
 });

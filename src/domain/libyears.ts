@@ -48,7 +48,11 @@ export function libyearsReason(finding: Pick<Finding, "libyears" | "version" | "
   if (finding.note === "not from a Composer repository, not checked") return "not from a Composer repository";
   if (finding.note) return "metadata unavailable";
 
-  const version = finding.version.replace(/#.*$/, "");
+  // A linear cut, not a backtracking regex: `/#.*$/` retries from every "#" a hostile version
+  // string carries ahead of a trailing newline (no `m`/`s` flag stops `.`/`$` at it), which is
+  // quadratic in the number of "#" characters — a crafted document could freeze this render.
+  const hashIndex = finding.version.indexOf("#");
+  const version = hashIndex < 0 ? finding.version : finding.version.slice(0, hashIndex);
 
   return /^dev-/.test(version) || /-dev$/.test(version)
     ? "branch snapshot"

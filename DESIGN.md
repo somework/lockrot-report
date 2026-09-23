@@ -173,6 +173,13 @@ Fixed on purpose (the e2e suite marks each as a known legacy difference):
 | C2       | first year tick on the timeline is always dropped                                          | kept                                                                                        |
 | WIDE     | measured once at boot                                                                      | follows `matchMedia` changes                                                                |
 
+Changed on purpose, and not a legacy bug:
+
+- An advisory whose severity the page cannot bucket sorts with the unrated ones, last. The legacy
+  page sorted it first, by accident of `indexOf` returning -1 (critic C1).
+- The page's own pick on a wide screen is the first row the reader sees, after any filters the
+  address restored; the legacy page picked the first flagged package even when a filter hid it.
+
 Deliberately kept although odd: rail counts are per-tab totals, not faceted; the detail survives a
 filter that hides its package; `data-goto` keeps the detail open.
 

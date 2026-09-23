@@ -14,7 +14,12 @@
 import type { Model, View } from "../../model/types";
 import type { State } from "../../state/types";
 import { applyFilters } from "../../domain/filters";
-import { allAdvisories, fixShapeOf, groupAdvisories, type AdvisoryGroup } from "../../domain/advisories";
+import {
+  allAdvisories,
+  groupAdvisories,
+  passesAdvisoryRail,
+  type AdvisoryGroup,
+} from "../../domain/advisories";
 import { matchesAdvisory, parseQuery } from "../../domain/query";
 import { radiusCards } from "../../domain/radius";
 
@@ -33,9 +38,7 @@ export function advisoryGroupsFor(model: Model, state: State): readonly Advisory
   const rows = allAdvisories(model).filter((pair) => {
     if (!keep.has(pair.finding.package)) return false;
     if (!matchesAdvisory(pair.advisory, pair.finding, terms)) return false;
-    if (state.filters.sev.length > 0 && !state.filters.sev.includes(pair.advisory.severity)) return false;
-    if (state.filters.fix.length > 0 && !state.filters.fix.includes(fixShapeOf(pair.advisory))) return false;
-    return true;
+    return passesAdvisoryRail(state.filters, pair.advisory);
   });
   return groupAdvisories(rows);
 }

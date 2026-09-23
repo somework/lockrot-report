@@ -11,6 +11,10 @@ import {
   isFlagged,
 } from "../../../src/domain/vocab";
 
+/** Ids a plain `{}` literal would resolve as inherited `Object.prototype` members instead of
+ *  `undefined` — the vocabTable() prototype-pollution regression this file guards against. */
+const POLLUTION_IDS: readonly string[] = ["constructor", "__proto__", "toString", "hasOwnProperty"];
+
 describe("DEFAULT_FLAGGED", () => {
   test("is the six rot verdicts, excluding unknown", () => {
     expect(DEFAULT_FLAGGED).toEqual(["abandoned", "silent", "pinned", "left-behind", "old-promise", "stale"]);
@@ -59,6 +63,16 @@ describe("TONE", () => {
     expect(TONE("moderate")).toBe("low");
     expect(TONE("")).toBe("low");
   });
+
+  test("never returns an inherited Object.prototype member for a prototype-pollution id", () => {
+    // A plain `{}` literal inherits from Object.prototype, so `TABLE["constructor"]` would
+    // otherwise resolve to the Object function instead of falling back — a value that is never
+    // `undefined`/`null`, so `?? "low"` would never catch it either.
+    expect(TONE("constructor")).toBe("low");
+    expect(TONE("__proto__")).toBe("low");
+    expect(TONE("toString")).toBe("low");
+    expect(TONE("hasOwnProperty")).toBe("low");
+  });
 });
 
 describe("SIGNAL_NAMES / SIGNAL_DEFS", () => {
@@ -74,6 +88,16 @@ describe("SIGNAL_NAMES / SIGNAL_DEFS", () => {
     expect(SIGNAL_DEFS.S10).toBe(
       "A check lockrot relies on could not run for this package, so a verdict may be missing a signal; the data says which and why.",
     );
+  });
+
+  test("give no inherited Object.prototype member for a prototype-pollution id", () => {
+    // A non-literal key forces TS through the `Record<string, string>` index signature instead of a
+    // named `Object.prototype` method's own type, so `.toString` reads as a plain lookup here, the
+    // same as it does at runtime through a document-supplied id.
+    for (const id of POLLUTION_IDS) {
+      expect(SIGNAL_NAMES[id]).toBeUndefined();
+      expect(SIGNAL_DEFS[id]).toBeUndefined();
+    }
   });
 });
 
@@ -93,6 +117,12 @@ describe("VERDICT_DEFS", () => {
       expect(VERDICT_DEFS[v]).toBeTruthy();
     }
   });
+
+  test("gives no inherited Object.prototype member for a prototype-pollution id", () => {
+    for (const id of POLLUTION_IDS) {
+      expect(VERDICT_DEFS[id]).toBeUndefined();
+    }
+  });
 });
 
 describe("SIGNAL_DOC", () => {
@@ -102,6 +132,13 @@ describe("SIGNAL_DOC", () => {
     expect(SIGNAL_DOC.S9).toBe(`${DOCS_URL}#security-advisories`);
     expect(SIGNAL_DOC.S1).toBeUndefined();
     expect(SIGNAL_DOC.S10).toBeUndefined();
+  });
+
+  test("gives no inherited Object.prototype member for a prototype-pollution id", () => {
+    // SignalId admits any string at the type level, so a document-supplied id can reach this
+    // lookup; cast is only to exercise that at the type level too.
+    expect(SIGNAL_DOC["constructor" as never]).toBeUndefined();
+    expect(SIGNAL_DOC["toString" as never]).toBeUndefined();
   });
 });
 

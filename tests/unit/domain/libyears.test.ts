@@ -83,6 +83,21 @@ describe("libyearsReason", () => {
   test("a -dev suffix combined with a #ref suffix still reads as a branch snapshot", () => {
     expect(libyearsReason({ libyears: null, version: "1.0-dev#abc123", note: null })).toBe("branch snapshot");
   });
+
+  test("cuts the #-fragment in linear time even for a hostile, hand-crafted version string", () => {
+    // A version of N "#" characters followed by a newline makes a backtracking `/#.*$/` (no
+    // `m`/`s` flag, so `.` stops at the newline and `$` fails there) retry from every "#" —
+    // quadratic in N. 100k characters takes seconds under that regex; a linear cut is instant.
+    const hostile = "#".repeat(100_000) + "\n";
+    const start = performance.now();
+    const reason = libyearsReason({ libyears: null, version: hostile, note: null });
+    const elapsed = performance.now() - start;
+
+    expect(elapsed).toBeLessThan(1000);
+    // Everything from the first "#" onward is cut, same as the regex's intent: an empty version
+    // string is neither a dev branch nor a stable one, so it falls to the "no release date" reason.
+    expect(reason).toBe("no release date lockrot trusts");
+  }, 10_000);
 });
 
 describe("libyearsAtZero", () => {

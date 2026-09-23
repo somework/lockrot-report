@@ -262,6 +262,84 @@ describe("AdvisoriesView", () => {
     // Assert
     expect(screen.getByText(/nothing was flagged/i)).toBeTruthy();
   });
+
+  it("keeps a package's detail open across two rows for the same package, unlike FindingRow's toggle", () => {
+    // Arrange: a finding with two advisories gets one AdvisoryRow per advisory, both `data-pkg`ed
+    // to the same package — clicking the second one must not close what the first one opened
+    // (legacy's own affordance, report.js:969-970, which never clears `open`; unlike FindingRow's
+    // toggle, which closes the same package on a second click).
+    const finding = makeFinding({
+      package: "acme/multi",
+      verdict: "abandoned",
+      priority: "critical",
+      advisories: [
+        {
+          id: "GHSA-1",
+          cve: null,
+          title: "First",
+          link: null,
+          severityRaw: "high",
+          severity: "high",
+          reportedAt: null,
+          affectedVersions: null,
+          fixedBy: null,
+          fixedOnBranch: false,
+        },
+        {
+          id: "GHSA-2",
+          cve: null,
+          title: "Second",
+          link: null,
+          severityRaw: "high",
+          severity: "high",
+          reportedAt: null,
+          affectedVersions: null,
+          fixedBy: null,
+          fixedOnBranch: false,
+        },
+      ],
+    });
+    const model = flaggedModel([finding]);
+    const { dispatch } = renderIn(model, stateWith({ pkg: "acme/multi" }), <AdvisoriesView />);
+    const rows = screen.getAllByRole("listitem");
+    expect(rows).toHaveLength(2);
+
+    // Act: click the second row while the package (via the first row) is already the open one.
+    fireEvent.click(rows[1] as HTMLElement);
+
+    // Assert: still opens the same package, never closes it (`pkg: null`).
+    expect(dispatch).toHaveBeenCalledWith({ type: "select", pkg: "acme/multi" });
+    expect(dispatch).not.toHaveBeenCalledWith({ type: "select", pkg: null });
+  });
+
+  it("shows the feed's raw severity text in the row chip, not the normalised bucket (DESIGN.md §5 M1)", () => {
+    // Arrange
+    const finding = makeFinding({
+      package: "acme/raw-sev",
+      advisories: [
+        {
+          id: "GHSA-1",
+          cve: null,
+          title: "Raw severity text",
+          link: null,
+          severityRaw: "Moderate",
+          severity: "medium",
+          reportedAt: null,
+          affectedVersions: null,
+          fixedBy: null,
+          fixedOnBranch: false,
+        },
+      ],
+    });
+    const model = flaggedModel([finding]);
+
+    // Act
+    renderIn(model, stateWith({ view: "advisories" }), <AdvisoriesView />);
+
+    // Assert
+    expect(screen.getByText("Moderate")).toBeTruthy();
+    expect(screen.queryByText("medium")).toBeNull();
+  });
 });
 
 describe("RadiusView", () => {
@@ -275,6 +353,84 @@ describe("RadiusView", () => {
     // Assert
     expect(screen.getByText("vendor/direct")).toBeTruthy();
     expect(screen.getByRole("listitem", { name: "vendor/transitive" })).toBeTruthy();
+  });
+
+  it("shows 'flagged itself' as the whole card when a flagged parent pulls nothing in (M25)", () => {
+    // Arrange
+    const parent = makeFinding({ package: "acme/lonely", chain: [] });
+    const model = flaggedModel([parent]);
+    const withExposure: Model = {
+      ...model,
+      report: { ...model.report, exposure: [{ package: "acme/lonely", flagged: 1 }] },
+    };
+
+    // Act
+    renderIn(withExposure, stateWith({ view: "radius" }), <RadiusView />);
+
+    // Assert: no eyebrow count (nothing to count) and no pulled-package list.
+    expect(screen.getByText("flagged itself")).toBeTruthy();
+    expect(screen.queryByText(/underneath/)).toBeNull();
+    expect(screen.queryByRole("list", { name: /Pulled in by/ })).toBeNull();
+  });
+
+  it("still marks a flagged parent 'flagged itself' even when it also pulls packages in (M24/M25)", () => {
+    // Arrange: acme/parent is itself flagged AND pulls in one child — before the fix, that own
+    // flagged status was dropped entirely once there were rows to show.
+    const parent = makeFinding({ package: "acme/parent", chain: [] });
+    const child = makeFinding({ package: "acme/child", chain: ["acme/parent"] });
+    const model = flaggedModel([parent, child]);
+    const withExposure: Model = {
+      ...model,
+      report: { ...model.report, exposure: [{ package: "acme/parent", flagged: 99 }] },
+    };
+
+    // Act
+    renderIn(withExposure, stateWith({ view: "radius" }), <RadiusView />);
+
+    // Assert: the eyebrow count matches the one row listed, and "flagged itself" still shows.
+    expect(screen.getByText(/1 flagged package underneath/)).toBeTruthy();
+    expect(screen.getByRole("listitem", { name: "acme/child" })).toBeTruthy();
+    expect(screen.getByText("flagged itself")).toBeTruthy();
+  });
+
+  it("shows no 'flagged itself' marker for a parent that is not itself flagged", () => {
+    // Arrange: acme/parent never appears as a finding at all — only its pulled child does — so it
+    // is not one of the run's flagged packages.
+    const child = makeFinding({ package: "acme/child", chain: ["acme/parent"] });
+    const model = flaggedModel([child]);
+    const withExposure: Model = {
+      ...model,
+      report: { ...model.report, exposure: [{ package: "acme/parent", flagged: 1 }] },
+    };
+
+    // Act
+    renderIn(withExposure, stateWith({ view: "radius" }), <RadiusView />);
+
+    // Assert
+    expect(screen.queryByText("flagged itself")).toBeNull();
+  });
+
+  it("never closes an already-open pulled package on a second click, unlike FindingRow's toggle", () => {
+    // Arrange: acme/child is already open (state.pkg), and its own PulledRow is clicked again.
+    const child = makeFinding({ package: "acme/child", chain: ["acme/parent"] });
+    const model = flaggedModel([child]);
+    const withExposure: Model = {
+      ...model,
+      report: { ...model.report, exposure: [{ package: "acme/parent", flagged: 1 }] },
+    };
+    const { dispatch } = renderIn(
+      withExposure,
+      stateWith({ view: "radius", pkg: "acme/child" }),
+      <RadiusView />,
+    );
+    const row = screen.getByRole("listitem", { name: "acme/child" });
+
+    // Act
+    fireEvent.click(row);
+
+    // Assert
+    expect(dispatch).toHaveBeenCalledWith({ type: "select", pkg: "acme/child" });
+    expect(dispatch).not.toHaveBeenCalledWith({ type: "select", pkg: null });
   });
 });
 

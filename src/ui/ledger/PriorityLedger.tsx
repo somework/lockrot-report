@@ -10,7 +10,7 @@ const SHOWN_PRIORITIES = ["critical", "high", "medium", "low"] as const;
 
 /**
  * The report's priority distribution, over the packages the run actually flagged. Ported from
- * legacy `renderLedger()`'s priority block (`report.js:249-258`), with two deliberate differences:
+ * legacy `renderLedger()`'s priority block (`report.js:249-258`), with three deliberate differences:
  *
  * - every one of the four priorities gets a legend button even at a count of zero, unlike the
  *   verdict and advisory ledgers beside it (this task's brief; the asymmetry is intentional, not
@@ -18,13 +18,20 @@ const SHOWN_PRIORITIES = ["critical", "high", "medium", "low"] as const;
  * - the eyebrow's tooltip is corrected for critic.md M29: legacy's static
  *   `title="Every verdict except ok and finished"` sits on a count (`FLAGGED.length`) that also
  *   excludes `unknown` — a package lockrot could not check is not a finding either. The text here
- *   names all three exclusions, so it matches the number it labels.
+ *   names all three exclusions, so it matches the number it labels;
+ * - a priority this renderer does not know (a future lockrot) still gets a bar segment and legend
+ *   button, appended after the four known ones at a neutral tone — DESIGN.md §2's forward-
+ *   compatibility contract, same reasoning as `VerdictLedger`. `"none"` is never included: it is a
+ *   package with no rot verdict at all, not an unknown priority.
  */
 export function PriorityLedger() {
   const { model, state, dispatch } = useReport();
   const counts = model.report.priorities;
   const flaggedCount = population(model, "findings").length;
-  const bars = SHOWN_PRIORITIES.filter((p) => (counts[p] ?? 0) > 0);
+  const known = new Set<string>(SHOWN_PRIORITIES);
+  const unknown = Object.keys(counts).filter((p) => !known.has(p) && p !== "none" && (counts[p] ?? 0) > 0);
+  const shown: readonly string[] = [...SHOWN_PRIORITIES, ...unknown];
+  const bars = shown.filter((p) => (counts[p] ?? 0) > 0);
 
   return (
     <div className="ledger-block">
@@ -46,7 +53,7 @@ export function PriorityLedger() {
         )}
       </div>
       <div className="legend">
-        {SHOWN_PRIORITIES.map((p) => {
+        {shown.map((p) => {
           const n = counts[p] ?? 0;
           const on = state.filters.prio.includes(p);
           return (

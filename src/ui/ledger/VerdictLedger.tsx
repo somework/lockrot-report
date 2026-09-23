@@ -13,11 +13,17 @@ import "./ledger.css";
  *
  * `ok` renders dimmed (`opacity:.35` in legacy, `report.js:264,267`) because it is the "nothing to
  * see" bucket, not a rot signal — every other verdict stays at full opacity.
+ *
+ * A verdict this renderer does not know (a document from a future lockrot) still gets a segment and
+ * a button, appended after the known ones at a neutral tone (`TONE()`'s own fallback) — DESIGN.md §2
+ * requires unknown enum values to render neutrally, never to be dropped.
  */
 export function VerdictLedger() {
   const { model, state, dispatch } = useReport();
   const counts = model.report.counts;
-  const shown = VERDICTS.filter((v) => (counts[v] ?? 0) > 0);
+  const known = new Set<string>(VERDICTS);
+  const unknown = Object.keys(counts).filter((v) => !known.has(v) && (counts[v] ?? 0) > 0);
+  const shown: readonly string[] = [...VERDICTS.filter((v) => (counts[v] ?? 0) > 0), ...unknown];
 
   return (
     <div className="ledger-block">

@@ -12,6 +12,18 @@ import type { SignalId, Verdict } from "../model/types";
 export type Tone = "crit" | "high" | "med" | "low" | "none";
 
 /**
+ * Builds a lookup table with no prototype, so a document-supplied key such as `"constructor"`,
+ * `"__proto__"` or `"toString"` can never resolve to an inherited `Object.prototype` member instead
+ * of `undefined` — every vocabulary table below is indexed by a string a report chose (a verdict, a
+ * signal id), so a plain `{}` literal would silently hand that value back as if it were real data
+ * (security finding: prototype lookups on the vocabulary tables). One helper, used by every table
+ * here and by `PRIORITY_BASE` in `./priority`, rather than a guard at each call site.
+ */
+export function vocabTable<T extends object>(entries: T): Readonly<T> {
+  return Object.assign(Object.create(null) as T, entries);
+}
+
+/**
  * The verdicts that count as findings when a document carries no `run.flaggedVerdicts` of its own
  * (legacy `FLAGGED_VERDICTS`, `report.js:116-117`). Mirrors `Verdict::flagged()` server-side, so
  * this page and lockrot's own table always agree on the count. Deliberately excludes `unknown`: a
@@ -49,7 +61,7 @@ export const VERDICT_ORDER: readonly Verdict[] = [
   "unknown",
 ];
 
-const TONE_TABLE: Readonly<Record<string, Tone>> = {
+const TONE_TABLE: Readonly<Record<string, Tone>> = vocabTable({
   critical: "crit",
   high: "high",
   medium: "med",
@@ -64,7 +76,7 @@ const TONE_TABLE: Readonly<Record<string, Tone>> = {
   unknown: "low",
   finished: "none",
   ok: "none",
-};
+});
 
 /**
  * A priority or verdict key's tone, `"low"` for anything not in the table. Ported from legacy
@@ -76,7 +88,7 @@ export function TONE(key: string): Tone {
 }
 
 /** Short labels for S1-S10, verbatim from legacy `SIGNAL_NAMES` (`report.js:28-33`) plus S10. */
-export const SIGNAL_NAMES: Readonly<Record<string, string>> = {
+export const SIGNAL_NAMES: Readonly<Record<string, string>> = vocabTable({
   S1: "marked abandoned",
   S2: "no stable release",
   S3: "repository archived",
@@ -90,10 +102,10 @@ export const SIGNAL_NAMES: Readonly<Record<string, string>> = {
   // glossary entry for it, and a plain string .sort() puts it between S1 and S2. Fixed on purpose:
   // named here, and a caller sorts signal ids in SIGNAL_IDS' numeric order instead of lexicographic.
   S10: "a check could not run",
-};
+});
 
 /** Tooltip/glossary text for S1-S10, verbatim from legacy `SIGNAL_DEFS` (`report.js:49-59`) plus S10. */
-export const SIGNAL_DEFS: Readonly<Record<string, string>> = {
+export const SIGNAL_DEFS: Readonly<Record<string, string>> = vocabTable({
   S1: "The Composer repository marks the package abandoned, sometimes naming a replacement.",
   S2: "Time since the last stable release, against release-warn-years / release-high-years.",
   S3: "The repository is archived — on GitHub, or on GitLab when the run has credentials there.",
@@ -104,10 +116,10 @@ export const SIGNAL_DEFS: Readonly<Record<string, string>> = {
   S8: "Time since the last stable release on the installed branch, counted only when a higher branch has released since.",
   S9: "Security advisories affecting the installed version. Never a verdict; raises the priority where no fix is coming.",
   S10: "A check lockrot relies on could not run for this package, so a verdict may be missing a signal; the data says which and why.",
-};
+});
 
 /** Tooltip/glossary text per verdict, verbatim from legacy `VERDICT_DEFS` (`report.js:38-48`). */
-export const VERDICT_DEFS: Record<string, string> = {
+export const VERDICT_DEFS: Record<string, string> = vocabTable({
   abandoned:
     "The package's Composer repository marks it abandoned, or its repository is archived on GitHub or GitLab.",
   silent:
@@ -123,7 +135,7 @@ export const VERDICT_DEFS: Record<string, string> = {
     "No data could be obtained — not found in any configured Composer repository, or every lookup failed.",
   finished: "Matched the built-in or project allowlist. The package is complete by design, not neglected.",
   ok: "None of the above.",
-};
+});
 
 /** The base of the glossary's verdict-family docs (legacy `DOCS`, `report.js:34`). */
 export const DOCS_URL = "https://lockrot.dev/verdicts/";
@@ -133,11 +145,11 @@ export const DOCS_URL = "https://lockrot.dev/verdicts/";
  * (legacy `SIGNAL_DOC`, `report.js:37`). Every other signal id — including S10 — has no entry here;
  * a caller falls back to `` `${DOCS_URL}#the-signals` `` (`report.js:399`, `report.js:720`).
  */
-export const SIGNAL_DOC: Readonly<Partial<Record<SignalId, string>>> = {
+export const SIGNAL_DOC: Readonly<Partial<Record<SignalId, string>>> = vocabTable({
   S7: `${DOCS_URL}#transitive-exposure`,
   S8: `${DOCS_URL}#left-behind`,
   S9: `${DOCS_URL}#security-advisories`,
-};
+});
 
 /**
  * Whether `verdict` is one of the run's flagged verdicts. Ported from legacy `FLAGGED`'s filter

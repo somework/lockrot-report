@@ -28,27 +28,12 @@ import type {
 } from "./types";
 import { PRIORITIES, VERDICTS } from "./types";
 import { normalizeSeverity } from "../domain/severity";
+import { DEFAULT_FLAGGED } from "../domain/vocab";
 
 export type NormalizeResult = { ok: true; model: Model } | { ok: false; error: NormalizeError };
 
 /** The published report-1 schema URL, used when a document carries no `$schema` of its own. */
 const DEFAULT_SCHEMA_URL = "https://lockrot.dev/schema/report-1.json";
-
-/**
- * `Verdict::all()` filtered to `Verdict::flagged()`, in severity order (contract.md §2.1). Used
- * whenever `run.flagged_verdicts` is missing or not an array — the legacy page's own fallback
- * (`RUN.flagged_verdicts || FLAGGED_VERDICTS`, critic.md K5) and kept as an explicit list rather
- * than derived from VERDICTS so a future reordering of that array can never change this constant
- * by accident.
- */
-const FLAGGED_VERDICTS_FALLBACK: readonly Verdict[] = [
-  "abandoned",
-  "silent",
-  "pinned",
-  "left-behind",
-  "old-promise",
-  "stale",
-];
 
 /** Every libyears "why not measured" reason lockrot currently knows, in document order (contract.md §2.2). */
 const LIBYEARS_UNMEASURED_REASONS = [
@@ -197,11 +182,13 @@ function buildThresholds(raw: unknown): readonly (readonly [string, number])[] {
 /**
  * Mirrors the legacy `RUN.flagged_verdicts || FLAGGED_VERDICTS` (critic.md K5): only a missing,
  * null or non-array value falls back — an explicit empty array is a document's own answer and is
- * kept as given, exactly like the page it replaces.
+ * kept as given, exactly like the page it replaces. The fallback is `domain/vocab`'s
+ * `DEFAULT_FLAGGED` itself, not a second list hand-copied here that could drift from it (quality
+ * finding: this module used to keep its own `FLAGGED_VERDICTS_FALLBACK` literal).
  */
 function buildFlaggedVerdicts(raw: unknown): readonly Verdict[] {
   if (!isArray(raw)) {
-    return FLAGGED_VERDICTS_FALLBACK;
+    return DEFAULT_FLAGGED;
   }
   return raw.map((value) => asCoercedString(value));
 }
@@ -415,7 +402,11 @@ function buildLock(raw: unknown): ExplainLock | null {
     php: asNullableString(raw.php),
     released: asNullableString(raw.released),
     repository: asNullableString(raw.repository),
-    fromComposerRepository: asBoolean(raw.from_composer_repository, false),
+    // Mirrors legacy's `lock.from_composer_repository !== false` (`links.ts`'s own doc comment,
+    // and `packagistUrl`): only an *explicit* `false` suppresses the Packagist link, so a lock
+    // object missing the key entirely — every real document has carried it since be6d91f, but a
+    // hand-built or edited one might not — still gets a link, not none.
+    fromComposerRepository: asBoolean(raw.from_composer_repository, true),
     dev: asBoolean(raw.dev, false),
     branchSnapshot: asBoolean(raw.branch_snapshot, false),
     type: asNullableString(raw.type),

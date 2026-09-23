@@ -154,6 +154,39 @@ describe("PriorityLedger", () => {
     expect(screen.getByRole("button", { name: /^high/ }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByRole("button", { name: /^medium/ }).getAttribute("aria-pressed")).toBe("false");
   });
+
+  it("keeps an unknown priority's bar segment and legend button rather than dropping it (DESIGN.md §2)", () => {
+    // Arrange: a document from a future lockrot that adds a priority this renderer does not know.
+    const model = loadMini();
+    const withUrgent: Model = {
+      ...model,
+      report: { ...model.report, priorities: { ...model.report.priorities, urgent: 1 } },
+    };
+
+    // Act
+    renderIn(<PriorityLedger />, withUrgent, INITIAL_STATE);
+
+    // Assert: shown after the four known priorities, at a neutral ("low") tone.
+    const button = screen.getByRole("button", { name: /^urgent/ });
+    expect(button.textContent).toContain("1");
+    expect(button.className).toContain("tone-low");
+  });
+
+  it("never shows a bar segment or legend button for the 'none' bucket", () => {
+    // Arrange: `none` is a package with no rot verdict at all — never a bar segment, per the four
+    // named priorities' own doc comment.
+    const model = loadMini();
+    const withNone: Model = {
+      ...model,
+      report: { ...model.report, priorities: { ...model.report.priorities, none: 7 } },
+    };
+
+    // Act
+    renderIn(<PriorityLedger />, withNone, INITIAL_STATE);
+
+    // Assert
+    expect(screen.queryByRole("button", { name: /^none/ })).toBeNull();
+  });
 });
 
 describe("VerdictLedger", () => {
@@ -184,6 +217,24 @@ describe("VerdictLedger", () => {
 
     // Assert
     expect(dispatch).toHaveBeenCalledWith({ type: "toggle", group: "verdict", key: "abandoned" });
+  });
+
+  it("keeps an unknown verdict's bar segment and legend button rather than dropping it (DESIGN.md §2)", () => {
+    // Arrange: a document from a future lockrot that adds a verdict this renderer does not know.
+    const model = loadMini();
+    const withRotten: Model = {
+      ...model,
+      report: { ...model.report, counts: { ...model.report.counts, rotten: 2 } },
+    };
+
+    // Act
+    renderIn(<VerdictLedger />, withRotten, INITIAL_STATE);
+
+    // Assert: shown after the known verdicts, at a neutral ("low") tone, not silently dropped.
+    const button = screen.getByRole("button", { name: /^rotten/ });
+    expect(button.textContent).toContain("2");
+    expect(button.className).toContain("tone-low");
+    fireEvent.click(button);
   });
 });
 

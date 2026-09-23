@@ -102,23 +102,27 @@ function lockRows(finding: Finding, details: PackageDetails | null, now: Date): 
   // doc comment: "the page re-checks it before linking"); otherwise the plain repository string
   // the lock or the metadata carries, exactly as legacy fell back (report.js:766-768) — never the
   // unsafe link's text.
+  // `||`, not `??`, on every lock/metadata fallback below: legacy compared these by truthiness
+  // (`report.js:763, 766, 768-769`), so an empty-string lock value — not just a missing one — falls
+  // back to metadata the same way a `null`/`undefined` one does (parity fix, alongside
+  // `presentRows` dropping "" outright).
   const repository: ComponentChildren =
     safeRepository !== null ? (
       <OutLink href={safeRepository}>{safeRepository}</OutLink>
     ) : (
-      (lock?.repository ?? metadata?.repository ?? null)
+      lock?.repository || metadata?.repository || null
     );
 
   return presentRows([
     { label: "installed", value: finding.version },
-    { label: "php constraint", value: lock?.php ?? null },
+    { label: "php constraint", value: lock?.php || null },
     {
       label: "released",
       value: lock?.released ? `${day(lock.released)} · ${ageText(lock.released, now)}` : null,
     },
     { label: "libyears behind", value: <LibyearsRow finding={finding} metadata={metadata} /> },
     { label: "repository", value: repository },
-    { label: "type", value: lock?.type ?? metadata?.type ?? null },
+    { label: "type", value: lock?.type || metadata?.type || null },
   ]);
 }
 

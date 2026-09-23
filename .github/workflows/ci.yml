@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: lint, types, unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # The dist checks read dist/, so they run after the build that made it. Run before it, they
+      # skip and prove nothing: that is how a formatter once broke the template unnoticed.
+      - run: npx vitest run tests/build
+      # What lockrot vendors has to be the same bytes whoever builds it.
+      - name: the build is reproducible
+        run: |
+          cp -r dist /tmp/first
+          npm run build
+          diff -r /tmp/first dist
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  e2e:
+    name: e2e (${{ matrix.renderer }}, ${{ matrix.browser }})
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        renderer: [new, legacy]
+        browser: [chromium, firefox, webkit]
+        exclude:
+          # The legacy page is the reference the suite was proven against; one engine is enough.
+          - renderer: legacy
+            browser: firefox
+          - renderer: legacy
+            browser: webkit
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: node scripts/pages.mjs
+      - run: node scripts/baseline-pages.mjs
+      - run: npx playwright test --project=${{ matrix.browser }}
+        env:
+          RENDERER: ${{ matrix.renderer }}
+          CI: "true"
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-${{ matrix.renderer }}-${{ matrix.browser }}
+          path: test-results/

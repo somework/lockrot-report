@@ -10,12 +10,12 @@ import { severityRank } from "../../domain/severity";
 import "./views.css";
 
 /**
- * The click contract every row in this slice shares: a click anywhere on the row toggles the detail
- * pane, closing it again on a second click of the same package — unless the click landed on a real
- * `<a>`, which is left to navigate. Keyboard activation (Enter/Space, and DESIGN.md M5's fix so a
- * focused link's own Enter is left alone) is `ui/keyboard.ts`'s job: it reads the same `data-pkg`
- * every row here carries through one document-level listener, so a row needs no `onKeyDown` of its
- * own — adding one would just race the global handler over who dispatches first.
+ * The click contract FindingRow and PackagesView's rows share: a click anywhere on the row toggles
+ * the detail pane, closing it again on a second click of the same package — unless the click landed
+ * on a real `<a>`, which is left to navigate. Keyboard activation (Enter/Space, and DESIGN.md M5's
+ * fix so a focused link's own Enter is left alone) is `ui/keyboard.ts`'s job: it reads the same
+ * `data-pkg` every row here carries through one document-level listener, so a row needs no
+ * `onKeyDown` of its own — adding one would just race the global handler over who dispatches first.
  */
 export function rowInteractions(
   pkg: string,
@@ -28,6 +28,29 @@ export function rowInteractions(
     onClick: (event) => {
       if ((event.target as HTMLElement).closest("a")) return;
       dispatch({ type: "select", pkg: isOpen ? null : pkg });
+    },
+  };
+}
+
+/**
+ * The click contract AdvisoryRow and PulledRow share instead: a click always opens `pkg`, and never
+ * closes it again — legacy's own affordance for these two lists (`<button data-open>`, always
+ * `select(open.dataset.open)`, `report.js:969-970`, which never clears `open`). Both lists can show
+ * the same package under more than one row (several advisories, or several direct requirements
+ * pulling the same transitive package in); with the toggle above, clicking a second row for an
+ * already-open package would close it instead of doing nothing (quality/parity fix — this was
+ * `rowInteractions` for both, unlike legacy).
+ */
+export function openInteractions(
+  pkg: string,
+  dispatch: (action: Action) => void,
+): {
+  onClick: (event: TargetedMouseEvent<HTMLElement>) => void;
+} {
+  return {
+    onClick: (event) => {
+      if ((event.target as HTMLElement).closest("a")) return;
+      dispatch({ type: "select", pkg });
     },
   };
 }

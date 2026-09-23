@@ -5,6 +5,7 @@ import { describe, expect, test } from "vitest";
 
 import { normalize, parseBundle } from "../../../src/model/normalize";
 import { PRIORITIES, VERDICTS, type Severity } from "../../../src/model/types";
+import { DEFAULT_FLAGGED } from "../../../src/domain/vocab";
 
 // Resolved from the repo root (vitest's working directory), not from this file's own URL: under
 // Vite's transform the module URL is not always a plain `file:` URL, which breaks `new URL(...)`.
@@ -172,6 +173,85 @@ describe("details shapes (critic.md K1)", () => {
         activity: null,
         repositoryLink: null,
       });
+    }
+  });
+});
+
+describe("buildLock: from_composer_repository default (parity with legacy's `!== false`)", () => {
+  test("a lock object missing the key keeps the Packagist link, matching legacy", () => {
+    const result = normalize(
+      bundle(minimalReport(), {
+        "vendor/pkg": {
+          metadata: null,
+          lock: {
+            php: null,
+            released: null,
+            repository: null,
+            dev: false,
+            branch_snapshot: false,
+            type: null,
+          },
+          activity: null,
+          repository_link: null,
+        },
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.model.details.get("vendor/pkg")?.lock?.fromComposerRepository).toBe(true);
+    }
+  });
+
+  test("an explicit false still suppresses it", () => {
+    const result = normalize(
+      bundle(minimalReport(), {
+        "vendor/pkg": {
+          metadata: null,
+          lock: {
+            php: null,
+            released: null,
+            repository: null,
+            from_composer_repository: false,
+            dev: false,
+            branch_snapshot: false,
+            type: null,
+          },
+          activity: null,
+          repository_link: null,
+        },
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.model.details.get("vendor/pkg")?.lock?.fromComposerRepository).toBe(false);
+    }
+  });
+
+  test("an explicit true is kept", () => {
+    const result = normalize(
+      bundle(minimalReport(), {
+        "vendor/pkg": {
+          metadata: null,
+          lock: {
+            php: null,
+            released: null,
+            repository: null,
+            from_composer_repository: true,
+            dev: false,
+            branch_snapshot: false,
+            type: null,
+          },
+          activity: null,
+          repository_link: null,
+        },
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.model.details.get("vendor/pkg")?.lock?.fromComposerRepository).toBe(true);
     }
   });
 });
@@ -363,7 +443,10 @@ describe("non-string package/version are coerced, never dropped", () => {
 });
 
 describe("run (contract.md §2.1 / critic.md K5)", () => {
-  test("a missing run becomes nulls, with the six flagged verdicts as the fallback", () => {
+  test("a missing run becomes nulls, with domain/vocab's DEFAULT_FLAGGED as the fallback", () => {
+    // The fallback is `DEFAULT_FLAGGED` itself, not a second list hand-copied here that could drift
+    // from it (quality finding: normalize.ts's own `FLAGGED_VERDICTS_FALLBACK` used to duplicate
+    // it). `toBe` on the array checks that identity, not just that the values still happen to match.
     const result = normalize(bundle(minimalReport({ run: null })));
 
     expect(result.ok).toBe(true);
@@ -374,8 +457,9 @@ describe("run (contract.md §2.1 / critic.md K5)", () => {
         lockFile: null,
         failOn: null,
         thresholds: [],
-        flaggedVerdicts: ["abandoned", "silent", "pinned", "left-behind", "old-promise", "stale"],
+        flaggedVerdicts: DEFAULT_FLAGGED,
       });
+      expect(result.model.report.run.flaggedVerdicts).toBe(DEFAULT_FLAGGED);
     }
   });
 

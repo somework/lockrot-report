@@ -19,7 +19,10 @@
  * - `constraint` must match Composer's real constraint grammar, which legitimately contains shell
  *   metacharacters (`<`, `>`, `|`, `*`, spaces — e.g. `>=10.0 <12.0`, `~2.0|^3.0`) but explicitly
  *   excludes the characters that would let it smuggle a *second* shell command: backtick, `$`,
- *   `;`/`&&`, `#`, and any newline.
+ *   `;`/`&&`, `#`, and any newline. It must also not *open* with `-`: quoted, the character class
+ *   below would still let one through, but the shell strips the quotes before Composer ever sees
+ *   the token, so a leading `-` reads as an option (`--working-dir=…`, `-d…`) instead of a
+ *   constraint — not a second command, but not the constraint the button claims to offer either.
  * - the constraint is then wrapped in single quotes — safe specifically because the allowed
  *   character set contains no `'`, so nothing in a valid constraint can close the quote early.
  */
@@ -28,7 +31,9 @@ export function installCommand(name: unknown, constraint: unknown): string | nul
   if (!/^[A-Za-z0-9]([A-Za-z0-9._-]*)\/[A-Za-z0-9]([A-Za-z0-9._-]*)$/.test(vendorName)) return null;
 
   const value = String(constraint);
-  if (value.length > 100 || !/^[A-Za-z0-9.,^~><=!|*/ @_-]+$/.test(value)) return null;
+  if (value.length > 100 || value.startsWith("-") || !/^[A-Za-z0-9.,^~><=!|*/ @_-]+$/.test(value)) {
+    return null;
+  }
 
   return `composer require ${vendorName} '${value}'`;
 }

@@ -1,0 +1,45 @@
+name: Release
+
+# A tag vX.Y.Z builds dist/, attests every file, and attaches them to a GitHub release. lockrot
+# vendors report.html and manifest.json from that release after `gh attestation verify`.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release
+      id-token: write # build provenance attestation
+      attestations: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: the tag names the version package.json builds
+        run: |
+          test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
+      - run: npm run build
+      - run: npx vitest run tests/build
+      - uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: |
+            dist/report.html
+            dist/lockrot-report.js
+            dist/lockrot-report.css
+            dist/manifest.json
+      - name: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            dist/report.html dist/lockrot-report.js dist/lockrot-report.css dist/manifest.json \
+            --title "$GITHUB_REF_NAME" --notes-file <(node scripts/release-notes.mjs "$GITHUB_REF_NAME")

@@ -133,10 +133,62 @@ const EXTRA = normalize({
         chain: [],
         evidence: "",
       },
+      {
+        package: "vendor/empty-lock-strings",
+        version: "1.0.0",
+        verdict: "stale",
+        priority: "medium",
+        direct: true,
+        dev: false,
+        signals: [],
+        chain: [],
+        evidence: "",
+      },
+      {
+        package: "vendor/raw-severity",
+        version: "1.0.0",
+        verdict: "stale",
+        priority: "medium",
+        direct: true,
+        dev: false,
+        signals: [
+          {
+            id: "S9",
+            level: "warn",
+            summary: "1 advisory",
+            data: {
+              advisories: [
+                {
+                  id: "GHSA-raw",
+                  cve: null,
+                  title: "Raw severity text",
+                  link: null,
+                  // DESIGN.md §5 M1: normalizeSeverity buckets this as "medium" for tone/sort, but
+                  // the chip must show the feed's own text, not the bucket.
+                  severity: "Moderate",
+                  reported_at: null,
+                  fixed_by: null,
+                  fixed_on_branch: false,
+                },
+              ],
+            },
+          },
+        ],
+        chain: [],
+        evidence: "",
+      },
     ],
   },
   details: {
     "vendor/freetext-replacement": { metadata: { replacement: "some/other-package" } },
+    "vendor/empty-lock-strings": {
+      // KeyValue.tsx's `presentRows` used to keep an empty-string value, and Detail.tsx's own
+      // `lock?.type ?? metadata?.type ?? null` used `??`, which "" satisfies (it is not
+      // null/undefined) — so an empty lock string used to render as a blank row instead of falling
+      // back to metadata, unlike legacy's truthiness checks (report.js:766, 768-769).
+      lock: { php: "", type: "" },
+      metadata: { type: "library" },
+    },
   },
 });
 if (!EXTRA.ok) throw new Error("EXTRA fixture failed to normalize");
@@ -212,6 +264,16 @@ describe("Detail", () => {
 
       expect(provenance?.querySelectorAll("dt").length).toBe(1); // metadata only
       expect(provenance?.textContent).toContain("—");
+    });
+
+    it("drops an empty-string lock value and falls back to metadata, like legacy's truthiness checks", () => {
+      const { container } = renderDetail(EXTRA_MODEL, "vendor/empty-lock-strings");
+
+      const lockEntry = sectionKeyValue(container, "The lock entry");
+      // "php constraint" (empty string) is dropped entirely, not shown as a blank row.
+      expect(lockEntry?.textContent).not.toContain("php constraint");
+      // "type" (empty string in the lock) falls back to metadata's "library", not a blank dd.
+      expect(lockEntry?.textContent).toContain("library");
     });
 
     it("links the repository when the producer's own link is safe, from a real details entry", () => {
@@ -335,6 +397,15 @@ describe("Detail", () => {
       expect(cveLink.getAttribute("href")).toBe("https://nvd.nist.gov/vuln/detail/CVE-2024-0001");
       expect(screen.getByText("no fix listed")).toBeTruthy();
       expect(screen.getByText("fixed by 1.2.0")).toBeTruthy();
+    });
+
+    it("shows the feed's raw severity text in the chip, not the normalised bucket (DESIGN.md §5 M1)", () => {
+      const { container } = renderDetail(EXTRA_MODEL, "vendor/raw-severity");
+      fireEvent.click(screen.getByText("Every advisory"));
+
+      const chip = container.querySelector(".detail-advisory-sev");
+      expect(chip?.textContent).toBe("Moderate");
+      expect(chip?.textContent).not.toBe("medium");
     });
   });
 

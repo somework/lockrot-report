@@ -143,4 +143,18 @@ describe("priorityWhy", () => {
       ["abandoned", "left-behind", "old-promise", "pinned", "silent", "stale"].sort(),
     );
   });
+
+  it("gives no inherited Object.prototype member for a prototype-pollution verdict", () => {
+    // A plain `{}` literal inherits from Object.prototype, so a verdict of "constructor" or
+    // "__proto__" would otherwise resolve to a real (non-nullish) value and enter the ladder. A
+    // non-literal key forces TS through the `Record<string, KnownPriority>` index signature instead
+    // of a named `Object.prototype` method's own type (`.toString` otherwise reads as a method).
+    const pollutionIds: readonly string[] = ["constructor", "__proto__", "toString", "hasOwnProperty"];
+    for (const id of pollutionIds) {
+      expect(PRIORITY_BASE[id]).toBeUndefined();
+    }
+
+    const finding = makeFinding({ verdict: "constructor", priority: "high" });
+    expect(priorityWhy(finding)).toEqual([]);
+  });
 });

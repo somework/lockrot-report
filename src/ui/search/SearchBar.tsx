@@ -1,30 +1,16 @@
 import type { Ref } from "preact";
 import { useReport } from "../context";
 import { applyFilters, population } from "../../domain/filters";
-import { allAdvisories, fixShapeOf } from "../../domain/advisories";
+import { allAdvisories, passesAdvisoryRail } from "../../domain/advisories";
 import { matchesAdvisory, parseQuery } from "../../domain/query";
 import { radiusCards } from "../../domain/radius";
 import { countPhrase, plural } from "../../domain/format";
-import type { Advisory, Model } from "../../model/types";
-import type { Filters, State } from "../../state/types";
+import type { Model } from "../../model/types";
+import type { State } from "../../state/types";
 import "./search.css";
 
 /** Verbatim from legacy's search box (`report.html:79`). */
 const PLACEHOLDER = "Filter: guzzle, verdict:left-behind, severity:critical, cve:CVE-2022-31090";
-
-/**
- * Whether an advisory clears the rail's own `sev`/`fix` selections. `filters.ts`'s `passesRail`
- * only ever answers this at *finding* granularity (does the finding have at least one matching
- * advisory) — correct for narrowing the finding lists, but not enough to count Advisories-tab rows,
- * where a finding can pass the rail on one advisory while carrying several that individually do
- * not. Legacy's `advisoryMatches` makes the same two checks at the row level (`report.js:507,509`);
- * this is that half of it, kept local since no other component needs a per-advisory rail check.
- */
-function passesAdvisoryRail(filters: Filters, advisory: Advisory): boolean {
-  if (filters.sev.length > 0 && !filters.sev.includes(advisory.severity)) return false;
-  if (filters.fix.length > 0 && !filters.fix.includes(fixShapeOf(advisory))) return false;
-  return true;
-}
 
 /**
  * "N of M …", read off the same domain functions the four filterable views use to decide what they

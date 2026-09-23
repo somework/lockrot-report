@@ -51,7 +51,7 @@ export function AdvisoryList({ finding }: { finding: Finding }) {
             return (
               <div key={advisory.id} className="detail-advisory">
                 <span className={`detail-advisory-sev ${toneClass(sevTone(advisory.severity))}`}>
-                  {advisory.severity}
+                  {advisory.severityRaw ?? "unrated"}
                 </span>
                 <span className="detail-advisory-title">{advisory.title ?? advisory.id}</span>
                 <span className="detail-advisory-meta">

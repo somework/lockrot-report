@@ -6,7 +6,7 @@ import { sevTone } from "../../domain/advisories";
 import { cveUrl } from "../../domain/links";
 import { day, ageText } from "../../domain/format";
 import { Tag, OutLink, NoWrap } from "../common/common";
-import { rowInteractions } from "./FindingRow";
+import { openInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
 import { advisoryGroupsFor } from "./order";
 import "./views.css";
@@ -32,9 +32,9 @@ function AdvisoryRow({ finding, advisory }: { finding: Finding; advisory: Adviso
       aria-label={finding.package}
       data-pkg={finding.package}
       className="adv"
-      {...rowInteractions(finding.package, isOpen, dispatch)}
+      {...openInteractions(finding.package, dispatch)}
     >
-      <Tag tone={sevTone(advisory.severity)}>{advisory.severity}</Tag>
+      <Tag tone={sevTone(advisory.severity)}>{advisory.severityRaw ?? "unrated"}</Tag>
       <span className="t">{advisory.title ?? advisory.id}</span>
       <span className="m">
         <span className="mono">
