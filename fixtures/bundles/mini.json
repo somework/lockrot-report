@@ -1,0 +1,256 @@
+{
+ "report": {
+  "$schema": "https://lockrot.dev/schema/report-1.json",
+  "lockrot": {
+   "version": "0.11.0",
+   "schema": 1
+  },
+  "generated_at": "2026-09-24T00:00:00+00:00",
+  "run": {
+   "project": "acme/app",
+   "target_php": "8.4",
+   "lock_file": "composer.lock",
+   "fail_on": "silent",
+   "thresholds": {
+    "release-warn-years": 3,
+    "release-high-years": 5,
+    "push-warn-years": 3,
+    "push-high-years": 5
+   },
+   "flagged_verdicts": [
+    "abandoned",
+    "silent",
+    "pinned",
+    "left-behind",
+    "old-promise",
+    "stale"
+   ]
+  },
+  "activity_cache_oldest_at": null,
+  "packages_checked": 4,
+  "include_dev": false,
+  "not_from_composer_repository": 1,
+  "network_failures": false,
+  "counts": {
+   "abandoned": 1,
+   "silent": 0,
+   "pinned": 1,
+   "left-behind": 0,
+   "old-promise": 0,
+   "stale": 0,
+   "unknown": 1,
+   "finished": 1,
+   "ok": 0
+  },
+  "abandoned": {
+   "total": 1,
+   "with_replacement": 0
+  },
+  "priorities": {
+   "critical": 0,
+   "high": 1,
+   "medium": 1,
+   "low": 0,
+   "none": 2
+  },
+  "exposure": [
+   {
+    "package": "vendor/direct",
+    "flagged": 1
+   }
+  ],
+  "libyears": {
+   "total": null,
+   "direct_requirements": null,
+   "measured": 0,
+   "unmeasured": {
+    "branch_snapshot": 0,
+    "no_stable_release_date": 0,
+    "not_from_composer_repository": 1,
+    "metadata_unavailable": 3
+   },
+   "furthest_behind": null
+  },
+  "baseline": null,
+  "notes": [
+   "GitHub did not answer for 3 repositories (private, renamed or removed); repository activity missing",
+   "1 package is not from a Composer repository and was not checked"
+  ],
+  "findings": [
+   {
+    "package": "vendor/transitive",
+    "version": "2.0.0",
+    "verdict": "abandoned",
+    "priority": "high",
+    "direct": false,
+    "dev": false,
+    "replacement": null,
+    "signals": [
+     {
+      "id": "S1",
+      "level": "high",
+      "summary": "marked abandoned in composer.lock",
+      "data": {
+       "replacement": null
+      }
+     },
+     {
+      "id": "S5",
+      "level": "warn",
+      "summary": "released 2015-11-16 for PHP 5 (php \">=5.3.0\"), before PHP 8 existed (8.0 GA 2020-11-26); admits 8.4 untested",
+      "data": {
+       "target_php": "8.4",
+       "target_major": "8.0",
+       "ga_date": "2020-11-26",
+       "php_constraint": ">=5.3.0",
+       "written_for_php": 5,
+       "released": "2015-11-16T16:30:51+00:00"
+      }
+     }
+    ],
+    "chain": [
+     "vendor/direct",
+     "vendor/transitive"
+    ],
+    "direct_dependents": [
+     "vendor/direct"
+    ],
+    "evidence": "marked abandoned in composer.lock; released 2015-11-16 for PHP 5 (php \">=5.3.0\"), before PHP 8 existed (8.0 GA 2020-11-26); admits 8.4 untested",
+    "allowlist_reason": null,
+    "note": "not found in the repository",
+    "data_date": null,
+    "libyears": null,
+    "baseline": null
+   },
+   {
+    "package": "vendor/snapshot",
+    "version": "dev-master",
+    "verdict": "pinned",
+    "priority": "medium",
+    "direct": false,
+    "dev": false,
+    "replacement": null,
+    "signals": [
+     {
+      "id": "S5",
+      "level": "warn",
+      "summary": "released 2015-08-31 for PHP 5 (php \">=5.2.0\"), before PHP 8 existed (8.0 GA 2020-11-26); admits 8.4 untested",
+      "data": {
+       "target_php": "8.4",
+       "target_major": "8.0",
+       "ga_date": "2020-11-26",
+       "php_constraint": ">=5.2.0",
+       "written_for_php": 5,
+       "released": "2015-08-31T22:07:48+00:00"
+      }
+     },
+     {
+      "id": "S6",
+      "level": "warn",
+      "summary": "pinned to branch snapshot dev-master",
+      "data": {
+       "version": "dev-master"
+      }
+     }
+    ],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "pinned to branch snapshot dev-master; released 2015-08-31 for PHP 5 (php \">=5.2.0\"), before PHP 8 existed (8.0 GA 2020-11-26); admits 8.4 untested",
+    "allowlist_reason": null,
+    "note": "not found in the repository",
+    "data_date": null,
+    "libyears": null,
+    "baseline": null
+   },
+   {
+    "package": "vendor/direct",
+    "version": "1.2.3",
+    "verdict": "unknown",
+    "priority": "none",
+    "direct": true,
+    "dev": false,
+    "replacement": null,
+    "signals": [
+     {
+      "id": "S7",
+      "level": "info",
+      "summary": "pulls in 1 flagged package: vendor/transitive (abandoned)",
+      "data": {
+       "flagged": 1,
+       "packages": [
+        {
+         "package": "vendor/transitive",
+         "verdict": "abandoned",
+         "chain": [
+          "vendor/direct",
+          "vendor/transitive"
+         ]
+        }
+       ]
+      }
+     }
+    ],
+    "chain": [
+     "vendor/direct"
+    ],
+    "direct_dependents": [
+     "vendor/direct"
+    ],
+    "evidence": "not found in the repository; pulls in 1 flagged package: vendor/transitive (abandoned)",
+    "allowlist_reason": null,
+    "note": "not found in the repository",
+    "data_date": null,
+    "libyears": null,
+    "baseline": null
+   },
+   {
+    "package": "private/thing",
+    "version": "3.0.0",
+    "verdict": "finished",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "not from a Composer repository, not checked",
+    "allowlist_reason": "in-house",
+    "note": "not from a Composer repository, not checked",
+    "data_date": null,
+    "libyears": null,
+    "baseline": null
+   }
+  ]
+ },
+ "details": {
+  "vendor/transitive": {
+   "metadata": null,
+   "lock": {
+    "php": ">=5.3.0",
+    "released": "2015-11-16T16:30:51+00:00",
+    "repository": "https://github.com/vendor/transitive.git",
+    "from_composer_repository": true,
+    "dev": false,
+    "branch_snapshot": false,
+    "type": "library"
+   },
+   "activity": null,
+   "repository_link": "https://github.com/vendor/transitive"
+  },
+  "vendor/snapshot": {
+   "metadata": null,
+   "lock": {
+    "php": ">=5.2.0",
+    "released": "2015-08-31T22:07:48+00:00",
+    "repository": "https://github.com/vendor/snapshot.git",
+    "from_composer_repository": true,
+    "dev": false,
+    "branch_snapshot": true,
+    "type": "library"
+   },
+   "activity": null,
+   "repository_link": "https://github.com/vendor/snapshot"
+  }
+ }
+}

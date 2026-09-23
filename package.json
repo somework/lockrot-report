@@ -1,0 +1,40 @@
+{
+  "name": "@somework/lockrot-report",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The renderer behind lockrot --format=html: one self-contained page per report.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build && node scripts/finish-build.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "baseline": "node scripts/baseline-pages.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.63.0",
+    "@preact/preset-vite": "2.10.6",
+    "@testing-library/preact": "3.2.4",
+    "@types/node": "24.13.6",
+    "eslint": "10.11.0",
+    "happy-dom": "20.14.5",
+    "prettier": "3.9.9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.1",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
+  },
+  "dependencies": {
+    "preact": "10.29.8"
+  }
+}

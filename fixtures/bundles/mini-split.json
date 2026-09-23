@@ -1,0 +1,101 @@
+{
+ "report": {
+  "$schema": "https://lockrot.dev/schema/report-1.json",
+  "lockrot": {
+   "version": "0.11.0",
+   "schema": 1
+  },
+  "generated_at": "2026-09-24T00:00:00+00:00",
+  "run": {
+   "project": "acme/split",
+   "target_php": "8.4",
+   "lock_file": "composer.lock",
+   "fail_on": "none",
+   "thresholds": {
+    "release-warn-years": 3,
+    "release-high-years": 5,
+    "push-warn-years": 3,
+    "push-high-years": 5
+   },
+   "flagged_verdicts": [
+    "abandoned",
+    "silent",
+    "pinned",
+    "left-behind",
+    "old-promise",
+    "stale"
+   ]
+  },
+  "activity_cache_oldest_at": "2026-09-24T00:00:00+00:00",
+  "packages_checked": 1,
+  "include_dev": false,
+  "not_from_composer_repository": 0,
+  "network_failures": false,
+  "counts": {
+   "abandoned": 0,
+   "silent": 0,
+   "pinned": 0,
+   "left-behind": 0,
+   "old-promise": 0,
+   "stale": 0,
+   "unknown": 0,
+   "finished": 0,
+   "ok": 1
+  },
+  "abandoned": {
+   "total": 0,
+   "with_replacement": 0
+  },
+  "priorities": {
+   "critical": 0,
+   "high": 0,
+   "medium": 0,
+   "low": 0,
+   "none": 1
+  },
+  "exposure": [],
+  "libyears": {
+   "total": 3.77,
+   "direct_requirements": 3.77,
+   "measured": 1,
+   "unmeasured": {
+    "branch_snapshot": 0,
+    "no_stable_release_date": 0,
+    "not_from_composer_repository": 0,
+    "metadata_unavailable": 0
+   },
+   "furthest_behind": {
+    "package": "illuminate/contracts",
+    "version": "v8.83.27",
+    "libyears": 3.77
+   }
+  },
+  "baseline": null,
+  "notes": [],
+  "findings": [
+   {
+    "package": "illuminate/contracts",
+    "version": "v8.83.27",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": true,
+    "dev": false,
+    "replacement": null,
+    "signals": [],
+    "chain": [
+     "illuminate/contracts"
+    ],
+    "direct_dependents": [
+     "illuminate/contracts"
+    ],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-24T00:00:00+00:00",
+    "libyears": 3.77,
+    "baseline": null
+   }
+  ]
+ },
+ "details": []
+}
