@@ -34,7 +34,7 @@ documents a `sed` recipe). They are part of the renderer's public interface:
 - no network reference of any kind: no `fetch(`, `XMLHttpRequest`, `@import`, `import(`, no external
   font, script, stylesheet or image. Links (`<a href>`) are fine; they are navigations, not loads.
 
-The payload escaping is the producer's job and does not change: `</` → `<\/`, `<!--` → `<!--`.
+The payload escaping is the producer's job and does not change: `</` → `<\/`, `<!--` → `<\u0021--`.
 
 ### 1.2 Booting
 
