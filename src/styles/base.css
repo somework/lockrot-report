@@ -1,0 +1,237 @@
+/*
+ * Reset, typography and the small shared pieces every surface uses (the classes common.tsx emits).
+ * Component stylesheets sit next to their components; only what more than one surface needs lives
+ * here.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Every display rule below is a class selector, which ties with [hidden] on specificity and wins on
+   order. Without this, hiding an element leaves it holding its grid column (legacy report.css:85-87). */
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+dl,
+dd {
+  margin: 0;
+}
+a {
+  color: var(--accent-ink);
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+}
+code {
+  font-family: var(--mono);
+}
+::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+/* One focus ring for the whole page: visible on keyboard focus only, never on a mouse click. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- typography helpers ---------- */
+.mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.muted {
+  color: var(--muted);
+}
+.nowrap {
+  white-space: nowrap;
+}
+.eyebrow {
+  font-family: var(--cond);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Text for assistive technology only: kept in the accessibility tree, taken out of the layout. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- tones ----------
+   A tone is a pair of custom properties, set by one class and read by whatever draws it: a pill's
+   text and border, a bar segment's fill, a stripe. Colour never travels as an inline style, which
+   the page's CSP would refuse (DESIGN.md §1.3). The root default matches TONE()'s own fallback,
+   "low", so an element that reads --tone outside any tone class still gets a real colour. */
+:root {
+  --tone: var(--low);
+  --tone-soft: var(--low-soft);
+}
+.tone-crit {
+  --tone: var(--crit);
+  --tone-soft: var(--crit-soft);
+}
+.tone-high {
+  --tone: var(--high);
+  --tone-soft: var(--high-soft);
+}
+.tone-med {
+  --tone: var(--med);
+  --tone-soft: var(--med-soft);
+}
+.tone-low {
+  --tone: var(--low);
+  --tone-soft: var(--low-soft);
+}
+.tone-none {
+  --tone: var(--none);
+  --tone-soft: var(--none-soft);
+}
+
+/* ---------- pills and tags ---------- */
+.pill {
+  display: inline-block;
+  font-family: var(--cond);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--tone);
+  color: var(--tone);
+  background: var(--tone-soft);
+  white-space: nowrap;
+  text-decoration: none;
+}
+a.pill:hover {
+  box-shadow: 0 0 0 2px var(--tone-soft);
+}
+
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-family: var(--mono);
+  line-height: 1.5;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-s);
+  padding: 1px 6px;
+  background: var(--surface-2);
+  white-space: nowrap;
+}
+.tag:where(.tone-crit, .tone-high, .tone-med, .tone-low, .tone-none) {
+  color: var(--tone);
+  border-color: var(--tone);
+  background: var(--tone-soft);
+}
+
+/* ---------- links ---------- */
+.lnk {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-strong);
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease;
+}
+.lnk:hover {
+  border-bottom-color: currentColor;
+  color: var(--accent-ink);
+}
+
+.out {
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--border-strong);
+  white-space: nowrap;
+  transition: color 0.12s ease;
+}
+a.out:hover {
+  color: var(--accent-ink);
+  border-bottom-style: solid;
+}
+
+/* ---------- buttons ---------- */
+.icon-btn {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition:
+    border-color 0.12s ease,
+    background-color 0.12s ease;
+}
+.icon-btn:hover {
+  border-color: var(--border-strong);
+}
+.icon-btn:active {
+  background: var(--surface-3);
+}
+.icon-btn:disabled {
+  opacity: 0.5;
+}
+.icon-btn:disabled:hover {
+  border-color: var(--border);
+}
+
+/* Motion is decoration here, never information: with reduced motion asked for, all of it goes. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

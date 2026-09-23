@@ -1,0 +1,481 @@
+/*
+ * The package detail panel. Class names are prefixed `detail-` throughout, even where legacy used a
+ * short generic name (`.sect`, `.kv`, `.action`) that another surface of this rewrite (the Run view,
+ * the Advisories tab) also has reason to want for its own, differently-tuned rule — this file only
+ * ever selects its own component's markup.
+ */
+
+.detail {
+  position: sticky;
+  top: 196px;
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 1180px) {
+  .detail {
+    position: fixed;
+    inset: 0;
+    max-height: none;
+    border-radius: 0;
+    border-width: 0;
+    z-index: 40;
+    overflow-y: auto;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+.detail-missing {
+  margin: 20px 16px 0;
+  color: var(--muted);
+}
+
+/* ---------- header ---------- */
+.detail-head {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px 12px;
+  z-index: 2;
+}
+.detail-head-top {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.detail-head-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.detail-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  word-break: break-word;
+}
+.detail-pills {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+.detail-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.detail-replacement-text {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.detail-close {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.detail-close:hover {
+  border-color: var(--border-strong);
+}
+
+/* ---------- body / sections ---------- */
+.detail-body {
+  padding: 4px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.detail-section > h3 {
+  margin: 0;
+  font-family: var(--cond);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.detail-baseline {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.detail-chain {
+  margin: 0;
+  font-size: 12.5px;
+  word-break: break-word;
+}
+.detail-signal-empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.detail-kv {
+  display: grid;
+  grid-template-columns: minmax(84px, auto) minmax(0, 1fr);
+  gap: 4px 12px;
+  font-size: 13px;
+}
+.detail-kv dt {
+  color: var(--muted);
+}
+.detail-kv dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  word-break: break-word;
+}
+
+/* ---------- why this priority ---------- */
+.detail-why {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.detail-why-result {
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.detail-why-step {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.detail-why-arrow {
+  margin: 0 6px;
+  color: var(--muted);
+}
+
+/* ---------- signals ---------- */
+.detail-signal {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 9px;
+  align-items: baseline;
+  padding-left: 11px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.detail-signal + .detail-signal {
+  margin-top: 6px;
+}
+/* "Every advisory" under the fix ladder: the same disclosure line as a signal, with no id beside it
+   and no panel behind it. */
+.detail-disclosure {
+  padding-left: 11px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+}
+.detail-disclosure > .detail-advisory-list {
+  padding: 0 11px 11px 0;
+}
+.detail-signal-summary {
+  cursor: pointer;
+  padding: 8px 11px 8px 0;
+  display: flex;
+  gap: 9px;
+  align-items: baseline;
+  list-style: none;
+}
+.detail-signal-summary::-webkit-details-marker {
+  display: none;
+}
+/* The disclosure chevron closes the line, since the signal's id link now opens it. */
+.detail-signal-summary::after {
+  content: "▸";
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 10px;
+  transition: transform 0.15s ease;
+}
+.detail-signal-more[open] > .detail-signal-summary::after {
+  transform: rotate(90deg);
+}
+.detail-signal-id {
+  padding: 8px 0;
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 12px;
+  text-decoration: none;
+  color: var(--tone);
+}
+.detail-signal-id:hover {
+  text-decoration: underline;
+}
+.detail-signal-summary-text {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.detail-signal-data {
+  padding: 0 11px 11px 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .detail-signal-summary::after {
+    transition: none;
+  }
+}
+
+/* ---------- release timeline ---------- */
+.detail-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.detail-timeline-axis {
+  position: relative;
+  height: 16px;
+  margin-left: 66px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-timeline-tick {
+  position: absolute;
+  bottom: 2px;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.detail-timeline-lane {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 4px;
+  align-items: center;
+  height: 22px;
+}
+.detail-timeline-branch {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detail-timeline-lane-installed .detail-timeline-branch {
+  color: var(--ink);
+  font-weight: 600;
+}
+.detail-timeline-track {
+  position: relative;
+  height: 100%;
+  border-bottom: 1px dotted var(--border);
+}
+.detail-timeline-dot {
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin: -5px 0 0 -4.5px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+.detail-timeline-lane-installed .detail-timeline-dot {
+  background: var(--crit);
+  box-shadow: 0 0 0 3px var(--crit-soft);
+}
+.detail-timeline-lane-newest .detail-timeline-dot {
+  background: var(--none);
+  box-shadow: 0 0 0 3px var(--none-soft);
+}
+/* Bounded on both sides by the track, so a label never runs over the branch names or out of the
+   panel on a narrow sheet: it ends in an ellipsis instead (the full text stays in the DOM). */
+.detail-timeline-label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detail-timeline-label.is-flipped {
+  text-align: right;
+}
+.detail-timeline-legend {
+  font-size: 11.5px;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+.detail-timeline-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.detail-timeline-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.detail-timeline-swatch-installed {
+  background: var(--crit);
+}
+.detail-timeline-swatch-newest {
+  background: var(--none);
+}
+
+/* ---------- follow the upstream ---------- */
+.detail-action {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 11px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.detail-action-eyebrow {
+  font-family: var(--cond);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+.detail-cmd {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 9px;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+/* The command wraps rather than scrolls: in a narrow sheet a scrolling box carried the Copy button
+   out of view with it. The button is what copies, so a wrapped line costs nothing. */
+.detail-cmd-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.detail-copy {
+  flex: none;
+  margin-left: auto;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 9px;
+  cursor: pointer;
+  font-size: 11px;
+  font-family: var(--sans);
+  white-space: nowrap;
+}
+.detail-copy:hover {
+  border-color: var(--border-strong);
+}
+
+/* ---------- advisories ---------- */
+.detail-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.detail-rung {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-2);
+  font-size: 12.5px;
+}
+.detail-rung-here {
+  border-color: var(--none);
+  background: var(--none-soft);
+}
+.detail-rung-version {
+  font-family: var(--mono);
+  font-weight: 600;
+}
+.detail-rung-bar {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+.detail-rung-bar i {
+  display: block;
+  height: 100%;
+  background: var(--crit);
+}
+.detail-rung-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.detail-advisory-list {
+  padding-left: 11px;
+}
+.detail-advisory {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 2px 12px;
+  padding: 8px 0;
+  align-items: start;
+}
+.detail-advisory + .detail-advisory {
+  border-top: 1px solid var(--border);
+}
+.detail-advisory-sev {
+  font-family: var(--cond);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 0;
+  text-align: center;
+  border-radius: 3px;
+  border: 1px solid var(--tone);
+  color: var(--tone);
+  background: var(--tone-soft);
+}
+.detail-advisory-title {
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.detail-advisory-meta {
+  grid-column: 2;
+  font-size: 11.5px;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+}
+.detail-advisory-meta .mono {
+  color: var(--ink-2);
+}

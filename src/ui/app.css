@@ -1,0 +1,450 @@
+/*
+ * The page shell: header band, tabs, the ledger slot, the three-column layout, the detail sheet,
+ * the glossary dialog and the colophon. Visual language ported from legacy/report.css; layout
+ * decisions in DESIGN.md §8. Breakpoints: 1181px and up is three columns (rail, list, detail);
+ * 760-1180px is rail and list with the detail as a sheet; under 760px is one column, list first.
+ */
+
+/* ---------- header ---------- */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+@media (min-width: 760px) {
+  .topbar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 20;
+  }
+}
+.topbar-in {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 14px var(--gutter) 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  align-items: flex-start;
+}
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  min-width: 0;
+}
+.brand h1 {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+.brand h1 a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.12s ease;
+}
+.brand h1 a:hover {
+  color: var(--accent-ink);
+}
+.brand .dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--crit);
+  align-self: center;
+  box-shadow: 0 0 0 3px var(--crit-soft);
+}
+.brand .project {
+  overflow-wrap: anywhere;
+}
+.run-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: auto;
+  justify-content: flex-end;
+}
+.run-meta b {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.run-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+@media (max-width: 759px) {
+  .run-meta {
+    margin-left: 0;
+    justify-content: flex-start;
+    gap: 4px 14px;
+  }
+  .run-actions {
+    width: 100%;
+    padding-top: 4px;
+  }
+}
+
+/* ---------- tabs ----------
+   The tab row scrolls sideways when it does not fit. The two "local" gradients are painted with
+   the content and cover the two "scroll" shadows at each end until there is something to scroll
+   to on that side: a cue drawn by CSS alone, which the legacy row lacked (css-html.md §10.3). */
+.tabs {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 10px var(--gutter) 0;
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+  background:
+    linear-gradient(to right, var(--surface) 40%, transparent) left center / 36px 100% no-repeat local,
+    linear-gradient(to left, var(--surface) 40%, transparent) right center / 36px 100% no-repeat local,
+    linear-gradient(to right, var(--border-strong), transparent) left center / 8px 100% no-repeat scroll,
+    linear-gradient(to left, var(--border-strong), transparent) right center / 8px 100% no-repeat scroll;
+}
+.tab {
+  flex: none;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 8px 12px 10px;
+  color: var(--muted);
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease;
+}
+.tab:hover {
+  color: var(--ink-2);
+  border-bottom-color: var(--border-strong);
+}
+.tab[aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+.tab:focus-visible {
+  outline-offset: -2px;
+}
+.tab .n {
+  font-family: var(--mono);
+  font-size: 11px;
+  margin-left: 6px;
+  color: var(--muted);
+}
+.tab .n:empty {
+  display: none;
+}
+
+/* ---------- ledger band ----------
+   The summary sits on the header's surface, as on the legacy page, so the page reads as a band of
+   totals above the list; only the header part above it sticks. */
+.ledger-band {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---------- ledger fold (phone widths) ----------
+   The ledger keeps its own padding on wider screens; folded, the fold carries the page gutter and
+   the ledger inside it drops its own. */
+.ledger-fold {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 12px var(--gutter) 0;
+}
+.ledger-fold > .ledger {
+  padding: 0 0 4px;
+}
+.ledger-fold > summary,
+.rail-fold > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  cursor: pointer;
+  list-style: none;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.ledger-fold > summary::-webkit-details-marker,
+.rail-fold > summary::-webkit-details-marker {
+  display: none;
+}
+.ledger-fold > summary::after,
+.rail-fold > summary::after {
+  content: "▸";
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 11px;
+  transition: transform 0.15s ease;
+}
+.ledger-fold[open] > summary::after,
+.rail-fold[open] > summary::after {
+  transform: rotate(90deg);
+}
+.ledger-fold[open] > summary {
+  margin-bottom: 14px;
+}
+
+/* ---------- layout ---------- */
+.shell {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--gutter);
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr) minmax(0, 420px);
+  gap: 20px;
+  align-items: start;
+}
+/* Run data has nothing to filter, so the rail goes, and its column with it, or the list would
+   inherit the rail's 210px and every value would wrap one character at a time. */
+.shell.no-rail {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+}
+@media (max-width: 1180px) {
+  .shell {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+  .shell.no-rail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 759px) {
+  .shell,
+  .shell.no-rail {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+.shell-main {
+  min-width: 0;
+}
+
+.shell-rail {
+  position: sticky;
+  top: calc(var(--topbar-h) + 16px);
+  max-height: calc(100vh - var(--topbar-h) - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+/* The column scrolls and sticks; the rail inside it must not stick a second time against a guessed
+   offset of its own. */
+.shell-rail > .rail {
+  position: static;
+}
+.rail-fold[open] > summary {
+  margin-bottom: 12px;
+}
+
+/* ---------- detail: a column beside the list, or a sheet over the page ---------- */
+.shell-detail:empty {
+  display: none;
+}
+.shell-detail.is-side {
+  position: sticky;
+  top: calc(var(--topbar-h) + 16px);
+  max-height: calc(100vh - var(--topbar-h) - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow);
+}
+.shell-detail.is-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface);
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  animation: sheet-in 0.18s ease-out;
+}
+@keyframes sheet-in {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+/* Only while a sheet with something in it covers the page (DESIGN.md §5 M13). */
+body.detail-open:has(.shell-detail.is-sheet > *) {
+  overflow: hidden;
+}
+
+/* ---------- newer schema ---------- */
+.schema-banner {
+  background: var(--high-soft);
+  border-bottom: 1px solid var(--high);
+  color: var(--ink);
+  font-size: 13px;
+}
+.schema-banner p {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 10px var(--gutter);
+}
+
+/* ---------- glossary ----------
+   Fixed in both modes: the UA already fixes a modal dialog, and the fallback for a frame that
+   forbids modals (DESIGN.md §5 M28) is pinned the same way, with a spread shadow for a backdrop. */
+.glossary {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  height: fit-content;
+  width: min(760px, calc(100% - 32px));
+  max-width: none;
+  max-height: 84vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+.glossary::backdrop {
+  background: var(--backdrop);
+}
+.glossary.is-fallback {
+  z-index: 60;
+  box-shadow:
+    var(--shadow),
+    0 0 0 100vmax var(--backdrop);
+}
+@media (max-width: 759px) {
+  .glossary {
+    width: calc(100% - 24px);
+    max-height: calc(100vh - 24px);
+  }
+}
+.glossary-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: baseline;
+}
+.glossary-head h2 {
+  font-size: 16px;
+  margin-right: auto;
+}
+.glossary-body {
+  padding: 16px 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.glossary-sect {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.glossary-sect > h3 {
+  font-family: var(--cond);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.glossary .deflist {
+  display: grid;
+  grid-template-columns: minmax(96px, auto) minmax(0, 1fr);
+  gap: 7px 14px;
+  font-size: 13px;
+}
+.glossary .deflist dt {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.glossary .deflist dt .out,
+.glossary .deflist dt .term-name {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--muted);
+}
+.glossary .deflist dd {
+  color: var(--ink-2);
+}
+.glossary .term-toned {
+  color: var(--tone);
+}
+.glossary .small-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+.glossary .prose {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+@media (max-width: 480px) {
+  .glossary .deflist {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+  .glossary .deflist dd {
+    margin-bottom: 8px;
+  }
+}
+
+/* ---------- colophon ----------
+   Who made the instrument, not who was audited. Below everything, never sticky. */
+.colophon {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 26px var(--gutter) calc(26px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+/* The one line in the colophon a reader is meant to act on, so it carries ink rather than the
+   muted grey the rest of the footer is set in. */
+.colophon .cta {
+  margin-top: 4px;
+  padding: 9px 12px;
+  border-left: 2px solid var(--accent);
+  background: var(--surface-2);
+  border-radius: 0 6px 6px 0;
+  color: var(--ink-2);
+  line-height: 1.7;
+}
+.colophon .cta code {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: var(--radius-s);
+  font-size: 11px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+@media (max-width: 480px) {
+  .colophon .cta code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}

@@ -1,0 +1,125 @@
+/*
+ * The report's design tokens, ported verbatim from legacy/report.css:1-82. Names and values are a
+ * contract with every component stylesheet and with the report's look across releases, so a change
+ * here is a visual change to every published report. Two light-theme values are a shade darker
+ * than legacy's: --muted (#5f726f) and --high (#a95a07) fell just short of 4.5:1 on the tinted
+ * surfaces they sit on (--surface-2, --high-soft), which axe reports as a contrast failure.
+ *
+ * Theming, as the legacy page does it: light lives on bare :root; the OS dark preference applies
+ * unless the reader pinned light (data-theme="light"); an explicit data-theme="dark" applies
+ * whatever the OS says. The dark block is written twice because CSS has no way to share one
+ * declaration block between a media-query branch and an attribute branch without a preprocessor or
+ * light-dark(), and this file is shipped as written (DESIGN.md §1: nothing is minified or compiled).
+ */
+:root {
+  --bg: #f2f5f4;
+  --surface: #ffffff;
+  --surface-2: #e9eeec;
+  --surface-3: #dfe7e4;
+  --border: #d3ddda;
+  --border-strong: #b4c3bf;
+  --ink: #0f1a19;
+  --ink-2: #3a4b49;
+  --muted: #536562;
+  --accent: #0f766e;
+  --accent-soft: #d7ece8;
+  --accent-ink: #0a574f;
+  --crit: #a92b1f;
+  --crit-soft: #f6dfdc;
+  --high: #955005;
+  --high-soft: #f7e7d3;
+  --med: #7c6300;
+  --med-soft: #f4edd2;
+  --low: #456472;
+  --low-soft: #dfe9ee;
+  --none: #366b4b;
+  --none-soft: #dcebe1;
+  --shadow: 0 1px 2px rgba(15, 26, 25, 0.06), 0 8px 24px -12px rgba(15, 26, 25, 0.18);
+  --backdrop: rgba(4, 12, 11, 0.55);
+  /* Nothing is fetched: a report about dependency risk does not phone home, and it has to
+     render from file:// and under a strict CSP. These are the stacks every target already has. */
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --cond: var(--sans);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* The spacing and radius steps the legacy stylesheet used as scattered literals (css-html.md
+     §10.2), named so new rules pick from a scale instead of inventing a thirteenth padding. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 28px;
+  --radius-s: 4px;
+  --radius-m: 7px;
+  --radius-l: 10px;
+  --gutter: 20px;
+  --page-max: 1500px;
+
+  /* Height of the sticky header, measured by Header at runtime; this is only the first-paint
+     guess, close to the brand row plus the tab row. */
+  --topbar-h: 104px;
+
+  color-scheme: light;
+}
+
+@media (max-width: 759px) {
+  :root {
+    --gutter: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c1413;
+    --surface: #121c1b;
+    --surface-2: #182422;
+    --surface-3: #1e2c2a;
+    --border: #253331;
+    --border-strong: #374846;
+    --ink: #e4edea;
+    --ink-2: #c3d2ce;
+    --muted: #8fa39f;
+    --accent: #35b7a7;
+    --accent-soft: #10312e;
+    --accent-ink: #6fd8ca;
+    --crit: #ef8074;
+    --crit-soft: #351916;
+    --high: #e0a055;
+    --high-soft: #332412;
+    --med: #cdb250;
+    --med-soft: #2e2814;
+    --low: #93aebb;
+    --low-soft: #1b2830;
+    --none: #71b98a;
+    --none-soft: #16291d;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.8);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c1413;
+  --surface: #121c1b;
+  --surface-2: #182422;
+  --surface-3: #1e2c2a;
+  --border: #253331;
+  --border-strong: #374846;
+  --ink: #e4edea;
+  --ink-2: #c3d2ce;
+  --muted: #8fa39f;
+  --accent: #35b7a7;
+  --accent-soft: #10312e;
+  --accent-ink: #6fd8ca;
+  --crit: #ef8074;
+  --crit-soft: #351916;
+  --high: #e0a055;
+  --high-soft: #332412;
+  --med: #cdb250;
+  --med-soft: #2e2814;
+  --low: #93aebb;
+  --low-soft: #1b2830;
+  --none: #71b98a;
+  --none-soft: #16291d;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.8);
+  color-scheme: dark;
+}

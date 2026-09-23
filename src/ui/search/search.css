@@ -1,0 +1,61 @@
+/* Ported from legacy report.css's `.searchbar`/`.hint`/`.count-line` rules. */
+.searchbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 9px 12px;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.search-input::placeholder {
+  color: var(--muted);
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin: -4px 0 14px;
+}
+
+/* <kbd> for the keyboard shortcuts ("a key you press") and <code> for the search keys (text you
+   type), one look for both, as legacy's <code> had. */
+.hint kbd,
+.hint code {
+  font-family: var(--mono);
+  background: var(--surface-2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+/* A phone has no keyboard to press them on: under 760px the shortcut half of the hint goes, which
+   also brings the list up (DESIGN.md §8). */
+@media (max-width: 759px) {
+  .hint-keys {
+    display: none;
+  }
+}
+
+.count-line {
+  font-size: 12px;
+  color: var(--muted);
+  margin: -4px 0 12px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.active-filters {
+  color: var(--accent-ink);
+}

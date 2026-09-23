@@ -203,3 +203,58 @@ filter that hides its package; `data-goto` keeps the detail open.
   reports from a renderer release instead of from a lockrot tag.
 - Order of changes across repositories: data first in lockrot (schema minor, renderer ignores
   unknown fields), rendering second here, the pin bump in lockrot's release PR.
+
+## 8. Layout and interaction
+
+The shell (`src/ui/App.tsx` and its neighbours) keeps the legacy page's visual language (tokens,
+type, tones, vocabulary) and changes layout only where the legacy page failed a reader.
+
+**Breakpoints.** Three, all driven by `matchMedia` in `ui/useWide.ts` and mirrored in
+`ui/app.css`:
+
+| width        | layout                                                                                     |
+| ------------ | ------------------------------------------------------------------------------------------ |
+| ≥ 1181px     | rail · list · detail column (the legacy WIDE layout); the boot-time pick fills the detail  |
+| 760 – 1180px | rail · list; the detail opens as a full-screen sheet                                       |
+| < 760px      | one column, **list first**: a folded ledger summary, a "Filters" disclosure, then the list |
+
+The legacy page pushed the findings below the whole ledger and the whole rail at 320px, so a phone
+reader scrolled past two screens of bars and buttons before the first package. Under 760px the
+ledger collapses into one line ("N flagged of M packages") that unfolds into the full ledger, and
+the rail becomes a closed `<details>` whose summary counts the rail filters that are on.
+
+**Sticky offsets are measured, not guessed.** Only the header band (brand, run facts, tabs) is
+sticky, and only from 760px up. `Header` publishes its real height as `--topbar-h` through the
+CSSOM (a ResizeObserver); the rail and the detail column stick under it and scroll on their own
+when taller than the viewport. The legacy page hard-coded 196px and overlapped a wrapped header.
+
+**Tabs** follow the ARIA tabs pattern: one tab in the Tab order, arrows/Home/End move and select,
+the current view's column is the `tabpanel`. When the tab row overflows it scrolls sideways, with
+edge shadows drawn by CSS alone (`background-attachment: local` over `scroll`) as the cue.
+
+**The detail sheet** locks page scroll only while it is shown with content in it (M13). The
+glossary is a native `<dialog>`; where `showModal()` throws it opens non-modal but pinned
+`position: fixed` over the page with a spread-shadow backdrop, and focus is moved in and returned
+by hand (M28).
+
+**Keyboard** decisions are one pure function, `ui/keyboard.ts#decideKey`:
+
+- `j`/`k` move from the open package through the rows the current view draws
+  (`views/order.ts#renderedPackages`), clamped at both ends; with nothing open, or the open package
+  not on screen, both start at the first row. There is no separate cursor, so a row clicked, a
+  package opened from an advisory, or the boot pick is where `j` continues from (fixes M7–M9; the
+  legacy first `j` after the boot pick re-selected the same package).
+- Nothing but Escape acts while the glossary is open (M10). Printable shortcuts are ignored while
+  focus is in any text field, and every shortcut is ignored with Ctrl, Meta or Alt held.
+- Enter/Space toggle a row only when the key lands on the row itself, not on a link or control
+  inside it (M5).
+- Escape closes one thing per press: glossary, then detail (focus returns to the row whose
+  `data-pkg` equals the closed package, found by attribute comparison), then the search box's focus.
+
+**Theme.** The button names the action relative to the _effective_ theme, the pinned one or the
+OS preference (M11). The choice persists under `lockrot-theme`; an unrecognised stored value is
+ignored rather than written onto the page.
+
+**Address bar.** `ui/useHashState.ts` reads the fragment once at boot, then the layout, then makes
+the boot pick (never written), writes after every state change, and applies `hashchange` by
+replacing the state from the new fragment while keeping the table's sort order.

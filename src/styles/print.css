@@ -1,0 +1,59 @@
+/*
+ * Print is pure CSS, as it was in the legacy page (legacy/report.css:629-636, 813, 816): there is no
+ * print button and no beforeprint handler. A printed report keeps what it says and drops what only
+ * works on a screen: the tabs, the filters, the search box, the two header buttons, and the detail
+ * pane (a sheet or a side column that would print as a clipped box).
+ *
+ * `.searchbar` and `.hint` are SearchBar's own classes (search/SearchBar.tsx); the count line it
+ * renders beneath them stays, as it did on the legacy page.
+ *
+ * The rules that keep a row or a card from splitting across pages select by role, the same roles
+ * the accessibility contract (e2e/support/new.ts) asks every list entry to carry, so they hold
+ * whatever class names the list components use.
+ */
+@media print {
+  :root {
+    color-scheme: light;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .topbar {
+    position: static;
+    box-shadow: none;
+  }
+  .tabs,
+  .shell-rail,
+  .rail-fold,
+  .searchbar,
+  .hint,
+  .shell-detail,
+  .glossary-open,
+  .theme-toggle {
+    display: none !important;
+  }
+
+  .shell {
+    display: block;
+    max-width: none;
+    padding: 0;
+  }
+
+  [role="option"],
+  [role="row"],
+  [role="listitem"],
+  article {
+    break-inside: avoid;
+    border-color: #999;
+  }
+
+  .colophon {
+    border-top-color: #999;
+  }
+  .colophon .cta {
+    background: none;
+    border-left-color: #999;
+  }
+}

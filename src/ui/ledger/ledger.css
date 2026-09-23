@@ -1,0 +1,119 @@
+/* The ledger strip: four equal-width blocks on a wide screen, collapsing to two and then one
+   column as the report narrows. Ported from legacy report.css's `.ledger`/`.ledger-block` rules. */
+.ledger {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 18px 20px 14px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px 28px;
+}
+
+@media (max-width: 1400px) {
+  .ledger {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 759px) {
+  .ledger {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ledger-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ledger-figure {
+  color: var(--ink);
+}
+
+/* The one ledger block whose weight is a number rather than a bar (libyears). */
+.figure {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 22px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.bar {
+  display: flex;
+  height: 10px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+/* Tone-* classes (toneClass()) define --tone/--tone-soft on the element itself (styles/base.css);
+   the dynamic width is the one part CSP forces through the CSSOM instead (style={{flexGrow}}). */
+.bar-seg {
+  display: block;
+  background: var(--tone);
+}
+
+.bar-seg-dim {
+  opacity: 0.35;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 12px;
+}
+
+.legend-empty {
+  color: var(--muted);
+}
+
+.legend-btn {
+  background: none;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  padding: 2px 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  font: inherit;
+}
+
+.legend-btn:hover {
+  color: var(--ink);
+}
+
+.legend-btn[aria-pressed="true"] {
+  border-bottom-color: currentColor;
+}
+
+/* A bucket with nothing flagged in it reads quieter, but its text keeps full contrast: the legacy
+   page faded the whole button to 35% opacity, which left the label unreadable. Only the swatch fades. */
+.legend-btn-dim {
+  color: var(--muted);
+}
+.legend-btn-dim .swatch {
+  opacity: 0.35;
+}
+
+.legend-btn .swatch {
+  background: var(--tone);
+}
+
+.swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.legend-btn .count,
+.legend > .count {
+  font-family: var(--mono);
+  color: var(--muted);
+}

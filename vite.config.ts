@@ -35,6 +35,10 @@ export default defineConfig({
     // suite on the lockrot side forbids appearing anywhere in the page; an IIFE needs no module
     // preloading in the first place, so this is off rather than merely unused.
     modulePreload: false,
+    // Readable is the formatting and the names, not the prose: the comments stay in the source
+    // repository, which is what a release attests, and would otherwise more than double the page
+    // every report carries.
+    rolldownOptions: { output: { comments: false } },
     lib: {
       entry: fileURLToPath(new URL("./src/main.ts", import.meta.url)),
       name: "LockrotReport",

@@ -136,9 +136,11 @@ export class NewReportPage implements ReportPage {
     return this.searchLocator().evaluate((el) => el === document.activeElement);
   }
 
-  /** A named action, not an icon: `getByRole('button', { name: /clear/i })`. */
+  /** A named action, not an icon: the search bar's own "Clear" button. Matched exactly, because the
+   *  empty state offers a second action with the same effect ("Clear filters", as the legacy page
+   *  does), and a substring match would find both whenever a filter empties the list. */
   async clear(): Promise<void> {
-    await this.page.getByRole("button", { name: /clear/i }).click();
+    await this.page.getByRole("button", { name: "Clear", exact: true }).click();
   }
 
   /** The status line is a live region (`role=status`, matching legacy's `role="status"`); its
@@ -262,8 +264,13 @@ export class NewReportPage implements ReportPage {
     await this.pkgLocator(name).getByRole("link").first().focus();
   }
 
+  /** The name starts with the key (a count may follow it, see LEDGER_LABEL). Anchored rather than a
+   *  substring, because rail buttons carry the same vocabulary inside longer names: the S1 signal
+   *  filter reads "S1 marked abandoned", which a bare "abandoned" would also match. */
   private ledgerLocator(_group: LedgerGroup, key: string): Locator {
-    return this.page.getByRole("button", { name: LEDGER_LABEL(key) });
+    return this.page.getByRole("button", {
+      name: new RegExp(`^${escapeRegExp(LEDGER_LABEL(key))}(\\s|$)`, "i"),
+    });
   }
 
   async ledgerButton(group: LedgerGroup, key: string): Promise<void> {
@@ -342,7 +349,10 @@ export class NewReportPage implements ReportPage {
       const text = card.textContent;
       const match = /(\d+)\s+flagged/.exec(text);
       const statedCount = match ? Number(match[1]) : null;
-      const listedCount = card.querySelectorAll('[role="button"], a, button').length;
+      // The openable entries are the rows `rows()` reads (list items or options, one per package);
+      // a card drawn with bare buttons or links instead is counted by those.
+      const rows = card.querySelectorAll('li, [role="listitem"], [role="option"]').length;
+      const listedCount = rows > 0 ? rows : card.querySelectorAll('[role="button"], a, button').length;
 
       return { statedCount, listedCount };
     }, parent);
@@ -447,6 +457,10 @@ export class NewReportPage implements ReportPage {
   async pressK(): Promise<void> {
     await this.page.keyboard.press("k");
   }
+}
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function collapse(text: string): string {
