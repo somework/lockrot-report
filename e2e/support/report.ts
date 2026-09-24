@@ -125,6 +125,12 @@ export interface ReportPage {
    *  from the page background — the forced-colors a11y fix (PD-ROWS-2, DESIGN.md §5): before it,
    *  all three computed to the same Canvas colour as the page and the scale effectively vanished. */
   ageScaleForcedColorsVisible(name: string): Promise<{ track: boolean; tick: boolean; dot: boolean }>;
+  /** Whether the age scale's warn threshold tick is still the topmost element at its own centre
+   *  point in forced-colors mode — the second a11y review on PD-ROWS-2 (DESIGN.md §5): the dot's
+   *  opaque `background: Canvas` used to paint over a tick sitting at nearly the same position,
+   *  which `ageScaleForcedColorsVisible`'s own colour check couldn't catch, since the tick's colour
+   *  was never wrong, only its paint order under the dot was. */
+  ageScaleWarnTickSurvivesDot(name: string): Promise<boolean>;
 
   ledgerButton(group: LedgerGroup, key: string): Promise<void>;
   /** null when the button carries no pressed-state at all for assistive tech (M17, legacy). */

@@ -93,6 +93,9 @@ tag or the address format, says so under **Breaking** in its entry.
 - The Findings row's age scale and a ledger legend chip's pressed state stay legible in
   forced-colours mode; the scale's track, ticks and dot, and the chip's pressed look and swatch,
   used to disappear into the page background the same way the ledger bars once did.
+- The age scale's warn..high dot no longer breaks into unreadable fragments in forced-colours mode
+  at normal display density, and no longer paints over a threshold tick that sits at nearly the
+  same position on the track — a value close to a threshold used to erase that tick outright.
 - The detail's "Clear filters" control moves keyboard focus to the panel's own Close button instead
   of dropping it to the page as a whole, which it used to do by unmounting itself on the same click.
 - The search status line also names the open package once a search term or a rail filter hides it,

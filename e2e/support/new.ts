@@ -332,6 +332,26 @@ export class NewReportPage implements ReportPage {
       });
   }
 
+  /** `document.elementFromPoint` at the warn tick's own centre: `true` when the tick itself is the
+   *  topmost element painted there. A colour check alone (`ageScaleForcedColorsVisible`) can't tell
+   *  a tick that renders fine but sits under an opaquely-filled dot from one that's genuinely
+   *  missing — this reads paint order instead. */
+  async ageScaleWarnTickSurvivesDot(name: string): Promise<boolean> {
+    const scaleLocator = this.pkgLocator(name).getByRole("img").first();
+    // `elementFromPoint` only ever sees the viewport, not the scrollable page — the row this scale
+    // sits in is usually well below the fold in a 200+ package report.
+    await scaleLocator.scrollIntoViewIfNeeded();
+    return scaleLocator.evaluate((scale) => {
+      const track = scale.children[0];
+      const tick = track?.children[0];
+      if (!(tick instanceof HTMLElement)) throw new Error("age scale is missing its warn tick");
+      const rect = tick.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      return document.elementFromPoint(cx, cy) === tick;
+    });
+  }
+
   /** The name starts with the key (a count may follow it, see LEDGER_LABEL). Anchored rather than a
    *  substring, because rail buttons carry the same vocabulary inside longer names: the S1 signal
    *  filter reads "S1 marked abandoned", which a bare "abandoned" would also match. Scoped to the

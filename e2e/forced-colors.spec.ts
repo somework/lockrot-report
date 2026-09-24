@@ -33,12 +33,33 @@ test.describe("PD-ROWS-2: the age scale stays visible in forced-colors mode", ()
   });
 
   test("sensio/framework-extra-bundle (wallabag, warn..high zone), light forced colors", async ({ page }) => {
-    // 3.6 years against warn=3/high=5: the dashed-ring middle zone, not the filled or hollow ends.
+    // 3.6 years against warn=3/high=5: the diamond middle zone, not the filled or hollow ends.
     await report.goto(FIXTURES.wallabag);
     await page.emulateMedia({ colorScheme: "light", forcedColors: "active" });
 
     const parts = await report.ageScaleForcedColorsVisible("sensio/framework-extra-bundle");
     expect(parts).toEqual({ track: true, tick: true, dot: true });
+  });
+
+  // Second a11y review: a colour check alone can't tell a tick painted over by the dot from one
+  // that's genuinely missing. jwilsson/spotify-web-api-php sits at 3.1y against koel_koel's own
+  // warn=3 threshold — close enough that the dot used to erase the warn tick outright.
+  test("jwilsson/spotify-web-api-php (koel_koel, 3.1y against warn=3): the warn tick survives under the dot", async ({
+    page,
+  }) => {
+    await report.goto(FIXTURES.koel);
+    await page.emulateMedia({ colorScheme: "light", forcedColors: "active" });
+
+    expect(await report.ageScaleWarnTickSurvivesDot("jwilsson/spotify-web-api-php")).toBe(true);
+  });
+
+  test("jwilsson/spotify-web-api-php (koel_koel, 3.1y against warn=3): the warn tick survives under the dot, dark forced colors", async ({
+    page,
+  }) => {
+    await report.goto(FIXTURES.koel);
+    await page.emulateMedia({ colorScheme: "dark", forcedColors: "active" });
+
+    expect(await report.ageScaleWarnTickSurvivesDot("jwilsson/spotify-web-api-php")).toBe(true);
   });
 });
 
