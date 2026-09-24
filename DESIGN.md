@@ -178,6 +178,24 @@ e2e test still covers):
 | SEARCH-FALLBACK | `writeHash()` falls back to `location.pathname` when the computed state is empty, dropping any `?query` | `location.search` survives a reset to the bare path                                         |
 | hashchange      | no `hashchange` listener at all                                                                         | a link pasted into an open page applies live                                                |
 
+Changed on purpose after the extraction, so a reader meets the answer before the reference (the
+"before" column is the legacy page and 0.12.0 alike):
+
+| id                         | before                                                                                                                                                                                          | new                                                                                                                                                                                                                                                                                                                                                           |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PD-SUMMARY-1               | nothing above the ledger said how many packages carried each priority; the phone fold's summary said only "N flagged of M packages"                                                             | one line, "N critical · N high · N medium · N low of M packages" (a zero bucket and `none` skipped; `M` is `packagesChecked`, falling back to `findings.length`), above the ledger from 760px up and as the phone fold's own `<summary>` below it, so a phone reader sees it without unfolding anything; a clean report reads "Nothing flagged in M packages" |
+| PD-SUMMARY-2               | the header said nothing about the run's gate                                                                                                                                                    | a quiet button beside the lockrot version, "no gate" when `run.fail_on` is `"none"`, "gate: `<value>`" otherwise, opening a native popover that says what `--fail-on` does and does not mean; absent for a document written before `run.fail_on` existed                                                                                                      |
+| PD-SUMMARY-3               | the Run tab's fail-on row printed "none" both for `--fail-on=none` and for a document without the field                                                                                         | an em dash for the missing field; "none" only when the run said so                                                                                                                                                                                                                                                                                            |
+| PD-GLOSSARY-1              | the hint under a filterable tab's search box spelled out the shortcut keys, the seven search keys and the address-bar note, on every tab                                                        | one short line, "Press ? for keys and search syntax"; the rest is the glossary's "Keys and search" section                                                                                                                                                                                                                                                    |
+| PD-GLOSSARY-2              | the glossary opened as one long scroll: verdicts, signals, libyears and priority all in view                                                                                                    | only "The nine verdicts" is in view; signals, libyears, priority and "Keys and search" each fold behind their own `<summary>`, disclosed like the ledger and rail folds (§8)                                                                                                                                                                                  |
+| PD-GLOSSARY-3              | the glossary's header link read "full reference" and pointed at the bare `DOCS_URL`                                                                                                             | it names its destination, "How lockrot decides (lockrot.dev)", and points at `${DOCS_URL}#verdicts-and-priority`                                                                                                                                                                                                                                              |
+| PD-GLOSSARY-4              | a verdict pill carrying `docs` was an `<a>` out to lockrot.dev, unreachable from a report opened offline (a PHAR, a `file://` path)                                                             | a `<button>` opening a native `popover="auto"` with the definition, an "In the glossary" button and the lockrot.dev link                                                                                                                                                                                                                                      |
+| PD-GLOSSARY-5              | a Findings row's own verdict pill carried no `docs`                                                                                                                                             | it does, so its popover gives the definition without leaving the row; a click on it does not toggle the row                                                                                                                                                                                                                                                   |
+| PD-GLOSSARY-6/PD-SUMMARY-4 | Escape's chain was glossary, then detail, then search focus                                                                                                                                     | an open popover (a verdict pill's, the gate fact's) closes first, ahead of the glossary and the detail, by the browser's own dismissal: `decideEscape` returns `ignore`, so `prevents()` never cancels the keydown and one press never closes two things                                                                                                      |
+| PD-DETAIL-1                | "Follow the upstream" came fourth, after the baseline, the priority and every advisory (`report.js:737-845`)                                                                                    | it comes right after the header, before "Against the baseline": the action a reader can take is the first thing they see                                                                                                                                                                                                                                      |
+| PD-DETAIL-2                | "How it is reached", "The lock entry" and "Provenance" always rendered open                                                                                                                     | each is a `<details>`, closed by default, its `<summary>` the section's own heading                                                                                                                                                                                                                                                                           |
+| PD-DETAIL-3                | `.detail` carried its own guessed sticky offset (196px) and scroll box inside `.shell-detail`'s, two nested scroll regions; a switch to another package kept the previous one's scroll position | `.shell-detail` alone owns the geometry and the scrolling; opening a different package starts at the top                                                                                                                                                                                                                                                      |
+
 Changed on purpose, and not a legacy bug:
 
 - An advisory whose severity the page cannot bucket sorts with the unrated ones, last. The legacy
@@ -238,13 +256,23 @@ type, tones, vocabulary) and changes layout only where the legacy page failed a 
 
 The legacy page pushed the findings below the whole ledger and the whole rail at 320px, so a phone
 reader scrolled past two screens of bars and buttons before the first package. Under 760px the
-ledger collapses into one line ("N flagged of M packages") that unfolds into the full ledger, and
+ledger collapses into one line (the priority counts `SummaryBand` shows above the ledger on a wider
+screen, PD-SUMMARY-1) that unfolds into the full ledger, and
 the rail becomes a closed `<details>` whose summary counts the rail filters that are on.
 
 **Sticky offsets are measured, not guessed.** Only the header band (brand, run facts, tabs) is
 sticky, and only from 760px up. `Header` publishes its real height as `--topbar-h` through the
 CSSOM (a ResizeObserver); the rail and the detail column stick under it and scroll on their own
 when taller than the viewport. The legacy page hard-coded 196px and overlapped a wrapped header.
+`.shell-detail` (`is-side`/`is-sheet`) is the only element that owns the detail's geometry and
+scrolling, at every breakpoint; `Detail`'s own root only lays out its children. An earlier version
+kept the legacy 196px sticky offset and a scroll box on `.detail` as well, two nested scroll
+regions (PD-DETAIL-3). Opening a different package resets that scroll to the top.
+
+**The detail panel** leads with what a reader can act on: the header, "Follow the upstream" when
+there is one, then the baseline, the priority, every advisory, the release branches and the
+signals. The three reference sections ("How it is reached", "The lock entry", "Provenance") come
+last, each a `<details>` closed by default (PD-DETAIL-1, PD-DETAIL-2).
 
 **Tabs** follow the ARIA tabs pattern: one tab in the Tab order, arrows/Home/End move and select,
 the current view's column is the `tabpanel`. When the tab row overflows it scrolls sideways, with
@@ -253,7 +281,8 @@ edge shadows drawn by CSS alone (`background-attachment: local` over `scroll`) a
 **The detail sheet** locks page scroll only while it is shown with content in it (M13). The
 glossary is a native `<dialog>`; where `showModal()` throws it opens non-modal but pinned
 `position: fixed` over the page with a spread-shadow backdrop, and focus is moved in and returned
-by hand (M28).
+by hand (M28). It opens with only "The nine verdicts" in view; the signals, libyears, priority and
+"Keys and search" sections fold behind their own `<summary>` (PD-GLOSSARY-2).
 
 **Keyboard** decisions are one pure function, `ui/keyboard.ts#decideKey`:
 
@@ -266,12 +295,21 @@ by hand (M28).
   focus is in any text field, and every shortcut is ignored with Ctrl, Meta or Alt held.
 - Enter/Space toggle a row only when the key lands on the row itself, not on a link or control
   inside it (M5).
-- Escape closes one thing per press: glossary, then detail (focus returns to the row whose
+- A verdict pill's `docs` popover (`ui/common/common.tsx`, PD-GLOSSARY-4) and the gate fact's are
+  native `popover="auto"` elements opened by a `<button popovertarget>`. They take priority over the
+  glossary and the detail for Escape (below), but not for `j`/`k`/`?`, since they never trap focus.
+- Escape closes one thing per press: an open popover first (left to the browser's own dismissal,
+  PD-GLOSSARY-6/PD-SUMMARY-4), then the glossary, then detail (focus returns to the row whose
   `data-pkg` equals the closed package, found by attribute comparison), then the search box's focus.
 
 **Theme.** The button names the action relative to the _effective_ theme, the pinned one or the
 OS preference (M11). The choice persists under `lockrot-theme`; an unrecognised stored value is
 ignored rather than written onto the page.
+
+**The gate fact.** Beside "lockrot `<version>`" in the run-meta row, a quiet button names the run's
+gate, "no gate" or "gate: `<value>`", and opens a native popover (`popover="auto"`, no script)
+saying what that does and does not mean. A document from before `run.fail_on` existed shows
+neither (PD-SUMMARY-2).
 
 **Address bar.** `ui/useHashState.ts` reads the fragment once at boot, then the layout, then makes
 the boot pick (never written), writes after every state change, and applies `hashchange` by

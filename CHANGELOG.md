@@ -8,6 +8,35 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ## [Unreleased]
 
+### Added
+
+- A one-line priority count above the ledger, "N critical · N high · N medium · N low of N
+  packages". On a phone it is the folded summary's own line, readable without unfolding anything.
+- A quiet gate fact beside the lockrot version in the header, "no gate" or "gate: <value>", with a
+  popover saying what the run's `--fail-on` does and does not mean.
+- A verdict pill's definition opens in a popover in place, a Findings row's pill included, instead
+  of linking to lockrot.dev, which a report opened offline could never reach. The popover also
+  opens the full glossary.
+
+### Changed
+
+- The package detail leads with the follow-the-upstream action, when there is one. "How it is
+  reached", "The lock entry" and "Provenance" are folded by default, each opened from its heading.
+- The search hint under the box is one line, "Press ? for keys and search syntax"; the shortcut
+  keys, search keys and address-bar note it used to spell out are in the glossary's new "Keys and
+  search" section.
+- The glossary opens with only "The nine verdicts" in view; the signals, libyears, priority and keys
+  sections fold behind their own heading.
+- The glossary's "full reference" link names its destination: "How lockrot decides (lockrot.dev)".
+- Escape closes an open popover first, and only the popover, before the glossary or the detail.
+
+### Fixed
+
+- The package detail no longer has two nested scrolling regions, and opening a different package
+  starts it at the top instead of where the previous package was scrolled to.
+- The Run tab's fail-on row reads an em dash for a document written before `run.fail_on` existed,
+  instead of the word "none".
+
 ## [0.12.0]
 
 The page lockrot 0.12.0 writes with `--format=html`.
