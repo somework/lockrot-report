@@ -1,8 +1,10 @@
 /*
  * Print is pure CSS, as it was in the legacy page (legacy/report.css:629-636, 813, 816): there is no
  * print button and no beforeprint handler. A printed report keeps what it says and drops what only
- * works on a screen: the tabs, the filters, the search box, the two header buttons, and the detail
- * pane (a sheet or a side column that would print as a clipped box).
+ * works on a screen: the tabs, the filters, the search box, the header's buttons (glossary, theme,
+ * the gate fact — a popover has nothing to do on paper), and the detail pane (a sheet or a side
+ * column that would print as a clipped box). The gate fact's own words stay elsewhere on the page
+ * (the Run tab, DESIGN.md §8), so dropping the button loses no information, only the popover.
  *
  * `.searchbar` and `.hint` are SearchBar's own classes (search/SearchBar.tsx); the count line it
  * renders beneath them stays, as it did on the legacy page.
@@ -31,7 +33,9 @@
   .hint,
   .shell-detail,
   .glossary-open,
-  .theme-toggle {
+  .theme-toggle,
+  .fact-btn,
+  .fact-pop {
     display: none !important;
   }
 

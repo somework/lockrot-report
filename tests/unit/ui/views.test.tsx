@@ -447,6 +447,31 @@ describe("RunView", () => {
     expect(screen.getAllByText("—").length).toBeGreaterThan(0);
   });
 
+  it("fail-on: an em dash for a document that predates the field, the word 'none' only when the run said so (PD-SUMMARY-3)", () => {
+    // Arrange: makeModel([]) leaves run.failOn null, same as a document written before the field.
+    const predatesField = makeModel([]);
+    const explicitNone: Model = {
+      ...predatesField,
+      report: { ...predatesField.report, run: { ...predatesField.report.run, failOn: "none" } },
+    };
+    const gated: Model = {
+      ...predatesField,
+      report: { ...predatesField.report, run: { ...predatesField.report.run, failOn: "critical" } },
+    };
+
+    // Act + Assert
+    const { unmount: unmountPredates } = renderIn(predatesField, stateWith({ view: "run" }), <RunView />);
+    expect(screen.getByText("fail-on").nextElementSibling?.textContent).toBe("—");
+    unmountPredates();
+
+    const { unmount: unmountNone } = renderIn(explicitNone, stateWith({ view: "run" }), <RunView />);
+    expect(screen.getByText("fail-on").nextElementSibling?.textContent).toBe("none");
+    unmountNone();
+
+    renderIn(gated, stateWith({ view: "run" }), <RunView />);
+    expect(screen.getByText("fail-on").nextElementSibling?.textContent).toBe("critical");
+  });
+
   it("reads the baseline as a short sentence, never a raw JSON dump", () => {
     // Arrange
     const model = makeModel([]);

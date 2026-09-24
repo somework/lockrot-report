@@ -285,6 +285,42 @@ export class NewReportPage implements ReportPage {
       .getAttribute("title");
   }
 
+  async hasSummaryLine(text: string): Promise<boolean> {
+    // Visible, not just present: the phone fold's <summary> is shown closed by default, and this
+    // is the assertion that a reader sees the line without opening it — a collapsed <details>'s
+    // non-summary content would fail the same check.
+    const line = this.page.getByText(text);
+    return (await line.count()) > 0 && (await line.first().isVisible());
+  }
+
+  /** The accessible name the gate fact's button always starts with (Header.tsx#gateFact) —
+   *  fixed vocabulary, same convention as VIEW_LABEL/RAIL_LABEL above. */
+  private gateFactButton(): Locator {
+    return this.page.getByRole("button", { name: /^(no gate|gate:)/i });
+  }
+
+  /** The two sentences the popover's own text always starts with (Header.tsx#gateFact); found by
+   *  that text, not by the popover's plumbing (`popover="auto"`, an id relationship) which is
+   *  Header.tsx's implementation detail, not this contract's. */
+  private gateFactPopover(): Locator {
+    return this.page.getByText(/^(No gate on this run\.|This run was told to fail on)/);
+  }
+
+  async gateFactLabel(): Promise<string | null> {
+    const button = this.gateFactButton();
+    if ((await button.count()) === 0) return null;
+
+    return collapse((await button.textContent()) ?? "");
+  }
+
+  async openGateFact(): Promise<void> {
+    await this.gateFactButton().click();
+  }
+
+  async isGateFactOpen(): Promise<boolean> {
+    return this.gateFactPopover().isVisible();
+  }
+
   private railLocator(group: RailGroup, key: string): Locator {
     return this.page.getByRole("button", { name: railLabel(group, key) });
   }

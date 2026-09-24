@@ -23,6 +23,10 @@ export interface KeyInput {
   /** Focus is in the page's search box, the one field Escape blurs. */
   searchFocused: boolean;
   dialogOpen: boolean;
+  /** A native popover (Header's gate fact, `popover="auto"`) is open. The browser's own Escape
+   *  handling already closes it as that keypress's default action; decideEscape must not also
+   *  close the detail underneath in the same press (DESIGN.md §8). */
+  popoverOpen: boolean;
   /** `data-pkg` of the row the key was pressed in, or null outside any row. */
   rowPkg: string | null;
   /** The key landed on a link, button or field inside that row, which has its own Enter/Space. */
@@ -62,9 +66,14 @@ export function decideKey(input: KeyInput): KeyDecision {
   return IGNORE;
 }
 
-/** Escape closes one thing per press, the topmost first: glossary, then detail, then search focus. */
+/**
+ * Escape closes one thing per press, the topmost first: glossary, then a native popover (left to
+ * the browser itself, so `event.preventDefault()` — see `prevents()` — never suppresses the
+ * default action that closes it), then detail, then search focus.
+ */
 function decideEscape(input: KeyInput): KeyDecision {
   if (input.dialogOpen) return { type: "closeGlossary" };
+  if (input.popoverOpen) return IGNORE;
   if (input.selected !== null) return { type: "closeDetail", restore: input.selected };
   if (input.searchFocused) return { type: "blurSearch" };
 
@@ -106,6 +115,19 @@ export interface KeyContext {
   rendered: () => readonly string[];
 }
 
+/** Whether any native popover (Header's gate fact) is currently open. Read from the DOM, not
+ *  application state: `popover="auto"` opens and closes without either (DESIGN.md §8). Guarded
+ *  the same way `useHeaderHeight` guards `ResizeObserver` — an engine that does not know the
+ *  `:popover-open` pseudo-class must read as "no popover open", never throw out of a keydown
+ *  handler. */
+function hasOpenPopover(): boolean {
+  try {
+    return document.querySelector(":popover-open") !== null;
+  } catch {
+    return false;
+  }
+}
+
 /** Reads a KeyboardEvent and the page around it into a `KeyInput`. */
 export function keyInputFrom(event: KeyboardEvent, context: KeyContext): KeyInput {
   const target = event.target instanceof Element ? event.target : null;
@@ -119,6 +141,7 @@ export function keyInputFrom(event: KeyboardEvent, context: KeyContext): KeyInpu
     typing: target?.closest(TEXT_FIELDS) != null,
     searchFocused: context.search !== null && active === context.search,
     dialogOpen: context.dialogOpen,
+    popoverOpen: event.key === "Escape" && hasOpenPopover(),
     rowPkg: row?.getAttribute("data-pkg") ?? null,
     // A control that contains the row is not "inside" it; a row that is itself a control is, since
     // its native activation already fires its click.
