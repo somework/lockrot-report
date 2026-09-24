@@ -42,7 +42,10 @@ export function SummaryCounts() {
     <>
       {shown.map((p, index) => (
         <span key={p} className={`summary-count ${toneClass(TONE(p))}`}>
-          {index > 0 && <span className="summary-dot"> · </span>}
+          {/* A non-breaking space after the dot (ledger.css's `.summary-dot`): the leading space
+              is the only place this line may wrap, so the dot must not have a second break point
+              of its own right after it, or a tight fit could strand it at the end of a line. */}
+          {index > 0 && <span className="summary-dot"> ·{" "}</span>}
           <b>{counts[p]}</b> {p}
         </span>
       ))}

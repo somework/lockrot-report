@@ -226,6 +226,12 @@
   color: var(--muted);
   font-size: 11px;
   transition: transform 0.15s ease;
+  /* The summary row's own align-items is baseline; the wrapped counts span (App.tsx's LedgerSlot
+     comment) can grow to two lines at 320px, and a baseline-aligned marker would sit next to
+     whichever pair ends the first line instead of the row as a whole. Pin it to the row's top
+     instead, so it reads as one corner marker for the whole block regardless of how many lines
+     the counts wrap to. */
+  align-self: flex-start;
 }
 .ledger-fold[open] > summary::after,
 .rail-fold[open] > summary::after {

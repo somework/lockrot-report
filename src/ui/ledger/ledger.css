@@ -154,8 +154,20 @@
 }
 .summary-count {
   color: var(--ink);
+  /* Keeps "N label" from breaking between the count and its word (the one thing this line, the
+     reader's first read, must not do). `white-space` inherits, so this also reaches `.summary-dot`
+     nested inside a count — undone below, or every pair would glue into one unbreakable run with
+     nowhere left to wrap at all. */
+  white-space: nowrap;
 }
-.summary-dot,
+.summary-dot {
+  color: var(--muted);
+  /* Restores the one break point a wrap needs: the space *before* the dot, so a wrapped line
+     starts "· N label" with its dot, never orphaning the dot on the line above (SummaryBand.tsx
+     renders it as this pair's own leading child, not a separator between pairs). The space after
+     the dot is a non-breaking one in the markup, so the dot can't be split from its own pair either. */
+  white-space: normal;
+}
 .summary-of {
   color: var(--muted);
 }

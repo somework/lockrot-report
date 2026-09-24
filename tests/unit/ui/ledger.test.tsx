@@ -343,11 +343,13 @@ describe("SummaryBand", () => {
     const { container } = renderIn(<SummaryBand />, model, INITIAL_STATE);
 
     // Assert: critical and low are zero and dropped; none is never shown at all.
-    expect(container.textContent).toBe("1 high · 1 medium of 4 packages");
+    // The space after the dot is a non-breaking one (ledger.css's `.summary-dot`): the leading
+    // space is the line's only wrap point, so the dot can't be stranded apart from its own pair.
+    expect(container.textContent).toBe("1 high · 1 medium of 4 packages");
     expect(container.querySelector(".summary-count.tone-high")?.textContent).toBe("1 high");
     // The dot before "medium" is that span's own child (the separator sits with the item it
     // introduces), so its textContent carries it too.
-    expect(container.querySelector(".summary-count.tone-med")?.textContent).toBe(" · 1 medium");
+    expect(container.querySelector(".summary-count.tone-med")?.textContent).toBe(" · 1 medium");
   });
 
   it("says nothing was flagged, in the none tone, when every shown priority is zero", () => {
@@ -416,6 +418,6 @@ describe("SummaryBand", () => {
 
     // Assert
     expect(wrapped).toBeTruthy();
-    expect(bare.container.textContent).toBe("1 high · 1 medium of 4 packages");
+    expect(bare.container.textContent).toBe("1 high · 1 medium of 4 packages");
   });
 });

@@ -50,6 +50,11 @@ tag or the address format, says so under **Breaking** in its entry.
 - Printing a Findings, Packages or Blast page keeps the gate fact's label (just not its ⓘ icon or
   popover), instead of losing "no gate"/"gate: `<value>`" entirely — the Run tab that also carries it
   is a different view, not printed alongside whichever one was open.
+- The phone fold's priority-counts line no longer splits a count from its label, or the label from
+  its own leading dot, when it wraps at 320px; the fold's disclosure marker stays pinned to the
+  row's top corner instead of drifting to whichever line the wrap happens to end on.
+- A release branch's timeline label no longer starts under the dot's glow ring on a narrow track;
+  the gap now has a fixed floor sized to the dot's own footprint, not just a share of the track.
 
 ## [0.12.0]
 

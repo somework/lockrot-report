@@ -56,9 +56,13 @@ export function Timeline({
           // It is in the flow of the track, so a label too long for its side wraps — the php
           // constraint moves to a second line — and the lane grows to hold it: nothing is cut.
           const labelPastMidpoint = labelGrowsLeft(lane.x);
+          // The 2% gap is a track-relative offset; the dot it must clear is a fixed 9px circle plus,
+          // on the installed lane, a 3px glow ring (detail.css) — a fixed footprint a percentage of a
+          // narrow track can shrink below. The +8px floor clears that footprint (radius ~7.5px) at
+          // every track width instead of only on a wide one.
           const labelStyle = labelPastMidpoint
-            ? { marginRight: `${100 - lane.x + 2}%` }
-            : { marginLeft: `${lane.x + 2}%` };
+            ? { marginRight: `calc(${100 - lane.x + 2}% + 8px)` }
+            : { marginLeft: `calc(${lane.x + 2}% + 8px)` };
 
           return (
             <div key={lane.branch} className={laneClassName(lane)}>
