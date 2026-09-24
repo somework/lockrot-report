@@ -126,6 +126,26 @@ describe.skipIf(!distBuilt)(
       expect(manifest.version.length).toBeGreaterThan(0);
     });
 
+    // Comments are prose for whoever reads the source repository; in the page they are weight, and
+    // text a consumer's string matching can trip over. Two did: one spelled out the body tag and
+    // put a second <body> in the page, another quoted JSX braces a placeholder check read as {{…}}.
+    it("ships no comments: the stylesheet and the bundle carry code only", () => {
+      expect(cssFile).not.toContain("/*");
+      expect(inlineBlocks(html).styleText).not.toContain("/*");
+      // The one kind of line comment kept: rolldown's //#region src/… markers, which say which
+      // source file each stretch of the bundle came from — a map for a reviewer, not prose.
+      const REGION = /^\s*\/\/#(region |endregion$)/;
+      const comments = jsFile.split("\n").filter((line) => /^\s*\/\//.test(line) && !REGION.test(line));
+      expect(comments).toEqual([]);
+      expect(jsFile).not.toContain("/**");
+    });
+
+    it("carries no {{…}} beyond its three placeholders", () => {
+      const braces = html.match(/\{\{[^}]*\}\}/g) ?? [];
+      expect([...new Set(braces)].sort()).toEqual(["{{DATA}}", "{{DESCRIPTION}}", "{{TITLE}}"]);
+      expect(html.split("{{").length - 1).toBe(braces.length);
+    });
+
     it("the shipped bundle and stylesheet contain no network reference either", () => {
       for (const forbidden of ["fetch(", "XMLHttpRequest", "@import", "import("]) {
         expect(jsFile).not.toContain(forbidden);

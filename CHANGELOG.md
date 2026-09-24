@@ -8,6 +8,13 @@ changes the placeholders, the payload tag or the address format, raises it.
 
 ## [Unreleased]
 
+### Changed
+
+- The page ships its stylesheet without comments, 10 KB lighter; the comments stay in the source.
+  Two bugs came from them reaching the page: one spelled out the body tag, so the page carried a
+  second `<body>`, and one quoted JSX braces that read like a placeholder. The build now fails on
+  any comment that reaches `dist/`, and on any `{{…}}` other than the three placeholders.
+
 ## [0.11.0]
 
 The page lockrot 0.11.0 writes with `--format=html`, rewritten out of lockrot's repository: same

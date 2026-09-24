@@ -9,11 +9,46 @@ import { fileURLToPath } from "node:url";
 import preact from "@preact/preset-vite";
 import { defineConfig } from "vite";
 
+/**
+ * Drops every comment from the stylesheet as it is bundled, and nothing else: the rules keep their
+ * formatting, so what ships reads like the source minus the prose. The prose stays in the
+ * repository, which is what a release attests. In the page it was a tenth of the stylesheet, and
+ * text a consumer's matching tripped over twice (a second <body>, a {{…}} that was not a
+ * placeholder); tests/build/dist.test.ts now fails on any comment that reaches dist/.
+ */
+const stripCssComments = {
+  postcssPlugin: "lockrot-strip-comments",
+  Comment(comment: { remove(): void }) {
+    comment.remove();
+  },
+};
+
+/**
+ * Vite appends a bookkeeping comment, `$vite$:1`, to a library build's stylesheet. It is the one
+ * comment postcss never sees, so it goes here, after bundling and before finish-build.mjs hashes
+ * the file.
+ */
+const dropViteCssMarker = {
+  name: "lockrot-drop-vite-css-marker",
+  enforce: "post" as const,
+  generateBundle(
+    _options: unknown,
+    bundle: Record<string, { type: string; fileName: string; source?: unknown }>,
+  ) {
+    for (const file of Object.values(bundle)) {
+      if (file.type === "asset" && file.fileName.endsWith(".css") && typeof file.source === "string") {
+        file.source = file.source.replace(/\/\*\$vite\$:\d+\*\/\n?/g, "");
+      }
+    }
+  },
+};
+
 const packageJsonUrl = new URL("./package.json", import.meta.url);
 const packageJson = JSON.parse(readFileSync(fileURLToPath(packageJsonUrl), "utf8")) as { version: string };
 
 export default defineConfig({
-  plugins: [preact()],
+  plugins: [preact(), dropViteCssMarker],
+  css: { postcss: { plugins: [stripCssComments] } },
   define: {
     // Preact reads this to drop its own dev-only warnings; a leftover "development" build would
     // both bloat the file and print console noise into a page that ships inside a signed PHAR.
