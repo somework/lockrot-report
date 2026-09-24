@@ -19,6 +19,16 @@ function laneClassName(lane: TimelineLane): string {
  * this only lays out the numbers it returns. Renders nothing when fewer than two branches carry a
  * date — the same threshold legacy used to skip the whole section.
  */
+/**
+ * Whether a lane's label grows leftward from its dot rather than rightward: whichever side of the
+ * track has more room. Legacy flipped only past 62%, and let a long label spill over the track's
+ * edge; the rewrite clipped it at the edge instead, so a dot at 53% with its label on the right
+ * lost the end of it ("… · p…"). Where neither side is wide enough, the label wraps.
+ */
+export function labelGrowsLeft(x: number): boolean {
+  return x > 50;
+}
+
 export function Timeline({
   metadata,
   installedVersion,
@@ -42,13 +52,13 @@ export function Timeline({
           ))}
         </div>
         {layout.lanes.map((lane) => {
-          // A label past the axis's midpoint would run off the right edge; legacy flips it to grow
-          // leftward from the same point instead (report.js:688-689). The other end is pinned to
-          // the track's edge, so a long label is cut short rather than drawn over its neighbours.
-          const labelPastMidpoint = lane.x > 62;
+          // The label grows toward whichever edge is further away, starting just past the dot.
+          // It is in the flow of the track, so a label too long for its side wraps — the php
+          // constraint moves to a second line — and the lane grows to hold it: nothing is cut.
+          const labelPastMidpoint = labelGrowsLeft(lane.x);
           const labelStyle = labelPastMidpoint
-            ? { left: "0%", right: `${100 - lane.x + 2}%` }
-            : { left: `${lane.x + 2}%`, right: "0%" };
+            ? { marginRight: `${100 - lane.x + 2}%` }
+            : { marginLeft: `${lane.x + 2}%` };
 
           return (
             <div key={lane.branch} className={laneClassName(lane)}>
@@ -60,7 +70,8 @@ export function Timeline({
                   style={labelStyle}
                 >
                   {lane.label} · {day(lane.date)}
-                  {lane.php !== null && ` · php ${lane.php}`}
+                  {/* A no-break space: a wrapped label keeps "php" next to its constraint. */}
+                  {lane.php !== null && ` · php\u00a0${lane.php}`}
                 </span>
               </span>
             </div>
