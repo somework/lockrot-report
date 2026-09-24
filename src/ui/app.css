@@ -88,6 +88,43 @@
   }
 }
 
+/* ---------- the gate fact (Header.tsx) ----------
+   A quiet fact beside "lockrot <version>", not a band: most runs carry no --fail-on, and a run
+   that does still exits 0 on the page's own reading of it (the page never re-derives whether the
+   gate fired, DESIGN.md §8). The popover is native (`popover="auto"` + `popovertarget`) — Escape
+   closes it as the browser's own default action, before keyboard.ts's chain ever sees the key
+   (DESIGN.md §8, keyboard.ts#decideEscape). */
+.fact-btn {
+  background: none;
+  border: 0;
+  border-bottom: 1px dotted var(--border-strong);
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.fact-btn:hover,
+.fact-btn:focus-visible {
+  color: var(--ink);
+  border-bottom-color: currentColor;
+}
+.fact-pop {
+  position: fixed;
+  inset: auto;
+  top: calc(var(--topbar-h, 110px) - 40px);
+  right: var(--gutter);
+  margin: 0;
+  max-width: 340px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  color: var(--ink-2);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 /* ---------- tabs ----------
    The tab row scrolls sideways when it does not fit. The two "local" gradients are painted with
    the content and cover the two "scroll" shadows at each end until there is something to scroll

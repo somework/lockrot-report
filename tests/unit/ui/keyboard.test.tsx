@@ -10,6 +10,7 @@ function input(overrides: Partial<KeyInput>): KeyInput {
     typing: false,
     searchFocused: false,
     dialogOpen: false,
+    popoverOpen: false,
     rowPkg: null,
     onControl: false,
     selected: null,
@@ -88,6 +89,21 @@ describe("Escape closes the topmost thing, one per press", () => {
   test("and nothing when nothing is open", () => {
     expect(decideKey(input({ key: "Escape" }))).toEqual({ type: "ignore" });
   });
+
+  test("a native popover, over an open detail: the browser's own Escape handling closes the popover, not the detail", () => {
+    // The popover closes as event's default action, which only fires when nothing here calls
+    // event.preventDefault() — decideKey has to return "ignore" (prevents() === false), not
+    // "closeDetail", or the same Escape press would close both at once.
+    const decision = decideKey(input({ key: "Escape", popoverOpen: true, selected: "a/two" }));
+    expect(decision).toEqual({ type: "ignore" });
+    expect(prevents(decision)).toBe(false);
+  });
+
+  test("the glossary still wins over a popover, same as over the detail", () => {
+    expect(decideKey(input({ key: "Escape", dialogOpen: true, popoverOpen: true }))).toEqual({
+      type: "closeGlossary",
+    });
+  });
 });
 
 describe("Enter and Space on a row", () => {
@@ -151,6 +167,21 @@ describe("keyInputFrom reads the page around a key", () => {
       rendered: ROWS,
     });
     expect(computed).toBe(1);
+  });
+
+  test("popoverOpen is read from the DOM only for Escape, and never throws without Popover API support", () => {
+    // happy-dom (this suite's DOM, vitest.config.ts) does not implement the Popover API at all, so
+    // this also stands in for the "engine does not know :popover-open" guard — the real assertion
+    // is that neither call throws and both read as false.
+    document.body.replaceChildren();
+    const row = document.createElement("div");
+    row.setAttribute("data-pkg", "a/one");
+    document.body.append(row);
+    const context = { search: null, dialogOpen: false, selected: null, rendered: () => ROWS };
+
+    expect(keyInputFrom(press(row, "Escape"), context)).toMatchObject({ popoverOpen: false });
+    // Not Escape: never even checked, so a key that is not Escape carries popoverOpen: false too.
+    expect(keyInputFrom(press(row, "j"), context)).toMatchObject({ popoverOpen: false });
   });
 
   test("the search box counts as typing and as the search", () => {

@@ -49,7 +49,9 @@ export function RunView() {
     ["generated", report.generatedAt],
     ["packages checked", orDash(report.packagesChecked === null ? null : String(report.packagesChecked))],
     ["include dev", orDash(report.includeDev === null ? null : String(report.includeDev))],
-    ["fail-on", report.run.failOn ?? "none"],
+    // orDash, not `?? "none"`: a document that predates run.fail_on left it null, and that is not
+    // the same fact as a run explicitly told --fail-on=none (PD-SUMMARY-3, DESIGN.md §5).
+    ["fail-on", orDash(report.run.failOn)],
     ["oldest activity cache", orDash(report.activityCacheOldestAt)],
     ["network failures", orDash(report.networkFailures === null ? null : String(report.networkFailures))],
     [

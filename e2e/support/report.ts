@@ -106,6 +106,20 @@ export interface ReportPage {
   ledgerButtonPressed(group: LedgerGroup, key: string): Promise<boolean | null>;
   /** The tooltip on "Priority of the N flagged packages" (M29). */
   priorityLedgerTooltip(): Promise<string | null>;
+  /** Whether the priority-counts line — the wide band above the ledger, or the phone fold's
+   *  `<summary>` at a narrow width, whichever the viewport currently renders (App.tsx#LedgerSlot,
+   *  SummaryBand.tsx) — contains this exact wording. The line spans several sibling elements (one
+   *  per priority), so no single element carries the whole sentence as its own text; the caller
+   *  passes the wording it expects rather than this reading it back. */
+  hasSummaryLine(text: string): Promise<boolean>;
+
+  /** The header's gate-fact button (Header.tsx): "no gate" or "gate: <value>", or null when the
+   *  document predates `run.fail_on` and the header shows neither. */
+  gateFactLabel(): Promise<string | null>;
+  /** Opens the gate fact's native popover by clicking its button. */
+  openGateFact(): Promise<void>;
+  /** Whether the gate fact's popover is currently shown. */
+  isGateFactOpen(): Promise<boolean>;
 
   railOption(group: RailGroup, key: string): Promise<void>;
   railOptionPressed(group: RailGroup, key: string): Promise<boolean | null>;

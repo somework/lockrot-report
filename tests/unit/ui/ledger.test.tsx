@@ -13,20 +13,23 @@ import { PriorityLedger } from "../../../src/ui/ledger/PriorityLedger";
 import { VerdictLedger } from "../../../src/ui/ledger/VerdictLedger";
 import { AdvisoryLedger } from "../../../src/ui/ledger/AdvisoryLedger";
 import { LibyearsLedger } from "../../../src/ui/ledger/LibyearsLedger";
+import { SummaryBand, SummaryCounts } from "../../../src/ui/ledger/SummaryBand";
 
 afterEach(cleanup);
 
-// mini.json (fixtures/bundles/): 4 findings, 2 flagged (1 abandoned, 1 pinned), no advisories, no
-// baseline, priorities {critical:0, high:1, medium:1, low:0, none:2}. Loaded through normalize()
-// exactly as the model/normalize.test.ts suite does, since this component tree is written against
-// `Model`, never against the wire document.
-function loadMini(): Model {
-  const raw = JSON.parse(
-    readFileSync(join(process.cwd(), "fixtures", "bundles", "mini.json"), "utf8"),
-  ) as unknown;
+/** Loaded through normalize() exactly as the model/normalize.test.ts suite does, since this
+ *  component tree is written against `Model`, never against the wire document. */
+function loadFixture(name: string): Model {
+  const raw = JSON.parse(readFileSync(join(process.cwd(), "fixtures", "bundles", name), "utf8")) as unknown;
   const result = normalize(raw);
-  if (!result.ok) throw new Error("mini.json fixture failed to normalize");
+  if (!result.ok) throw new Error(`${name} fixture failed to normalize`);
   return result.model;
+}
+
+// mini.json: 4 findings, 2 flagged (1 abandoned, 1 pinned), no advisories, no baseline, priorities
+// {critical:0, high:1, medium:1, low:0, none:2}, packagesChecked 4.
+function loadMini(): Model {
+  return loadFixture("mini.json");
 }
 
 /** A hand-built bundle normalize() can turn into a model with advisories — none of the three
@@ -320,5 +323,91 @@ describe("Ledger", () => {
     expect(screen.getByText(/verdicts across/i)).toBeTruthy();
     expect(screen.getAllByText(/no advisory affects this lock/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Libyears behind")).toBeTruthy();
+  });
+});
+
+describe("SummaryBand", () => {
+  it("lists each non-zero, non-none priority in document order, then the package total", () => {
+    // Arrange: mini.json's priorities {critical:0, high:1, medium:1, low:0, none:2}, packagesChecked 4.
+    const model = loadMini();
+
+    // Act
+    const { container } = renderIn(<SummaryBand />, model, INITIAL_STATE);
+
+    // Assert: critical and low are zero and dropped; none is never shown at all.
+    expect(container.textContent).toBe("1 high · 1 medium of 4 packages");
+    expect(container.querySelector(".summary-count.tone-high")?.textContent).toBe("1 high");
+    // The dot before "medium" is that span's own child (the separator sits with the item it
+    // introduces), so its textContent carries it too.
+    expect(container.querySelector(".summary-count.tone-med")?.textContent).toBe(" · 1 medium");
+  });
+
+  it("says nothing was flagged, in the none tone, when every shown priority is zero", () => {
+    // Arrange: mini-split.json — one `ok` finding, priorities all 0 except none, packagesChecked 1.
+    const model = loadFixture("mini-split.json");
+
+    // Act
+    const { container, getByText } = renderIn(<SummaryBand />, model, INITIAL_STATE);
+
+    // Assert: singular "package", and no per-priority counts at all.
+    expect(getByText("Nothing flagged in 1 package").className).toContain("tone-none");
+    expect(container.querySelector(".summary-count")).toBeNull();
+  });
+
+  it("keeps the plural even at a total of zero packages", () => {
+    // Arrange: empty-lockrot-self.json — 0 packages, every priority 0.
+    const model = loadFixture("empty-lockrot-self.json");
+
+    // Act
+    renderIn(<SummaryBand />, model, INITIAL_STATE);
+
+    // Assert
+    expect(screen.getByText("Nothing flagged in 0 packages")).toBeTruthy();
+  });
+
+  it("falls back to findings.length when packagesChecked is null (an older document)", () => {
+    // Arrange
+    const model = loadMini();
+    const withoutPackagesChecked: Model = {
+      ...model,
+      report: { ...model.report, packagesChecked: null },
+    };
+
+    // Act
+    const { container } = renderIn(<SummaryBand />, withoutPackagesChecked, INITIAL_STATE);
+
+    // Assert: mini.json carries 4 findings, same number packagesChecked happened to be.
+    expect(container.textContent).toContain(`of ${model.report.findings.length} packages`);
+  });
+
+  it("never renders a count for the none bucket, however large", () => {
+    // Arrange: `none` is a package with no rot verdict at all, not a priority a reader filters on.
+    const model = loadMini();
+    const withNone: Model = {
+      ...model,
+      report: { ...model.report, priorities: { ...model.report.priorities, none: 999 } },
+    };
+
+    // Act
+    const { container } = renderIn(<SummaryBand />, withNone, INITIAL_STATE);
+
+    // Assert
+    expect(container.textContent).not.toContain("999");
+    expect(container.textContent).not.toContain("none");
+  });
+
+  it("wraps the same content SummaryCounts renders, for the phone fold's <summary> to reuse bare", () => {
+    // Arrange
+    const model = loadMini();
+
+    // Act
+    const band = renderIn(<SummaryBand />, model, INITIAL_STATE);
+    const wrapped = band.container.querySelector("div.summary p.summary-counts");
+    band.unmount();
+    const bare = renderIn(<SummaryCounts />, model, INITIAL_STATE);
+
+    // Assert
+    expect(wrapped).toBeTruthy();
+    expect(bare.container.textContent).toBe("1 high · 1 medium of 4 packages");
   });
 });

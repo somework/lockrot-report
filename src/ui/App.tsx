@@ -3,7 +3,6 @@ import "../styles/base.css";
 import type { RefObject } from "preact";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { population } from "../domain/filters";
-import { plural } from "../domain/format";
 import type { Model } from "../model/types";
 import type { Action, State } from "../state/types";
 import { ReportContext, useReport } from "./context";
@@ -13,6 +12,7 @@ import { Glossary } from "./Glossary";
 import { Header } from "./Header";
 import { decideKey, findRow, keyInputFrom, prevents, type KeyDecision } from "./keyboard";
 import { Ledger } from "./ledger/Ledger";
+import { SummaryBand, SummaryCounts } from "./ledger/SummaryBand";
 import { NewerSchemaBanner } from "./NewerSchemaBanner";
 import { Rail } from "./rail/Rail";
 import { SearchBar } from "./search/SearchBar";
@@ -98,23 +98,33 @@ function useShortcuts(deps: ShortcutDeps) {
   }, []);
 }
 
-/** Phone widths get the ledger as a one-line summary that unfolds (DESIGN.md §8). */
+/**
+ * Phone widths get the ledger as a one-line summary that unfolds (DESIGN.md §8). Both the wide
+ * band and the folded `<summary>` show the same priority-counts line (`SummaryCounts`), so a
+ * phone reader sees it without unfolding anything; the fold keeps the "Summary" eyebrow the
+ * "Filters" disclosure beside it also carries.
+ */
 function LedgerSlot({ narrow }: { narrow: boolean }) {
-  const { model } = useReport();
   if (!narrow) {
     return (
       <div className="ledger-band">
+        <SummaryBand />
         <Ledger />
       </div>
     );
   }
-  const flagged = population(model, "findings").length;
 
   return (
     <details className="ledger-fold">
+      {/* One extra span around SummaryCounts: `.ledger-fold > summary` is a flex row with no
+          wrap (app.css), and SummaryCounts renders several sibling spans (one per priority) —
+          left bare, each would be its own flex item and the row could not wrap at all at 320px.
+          Wrapped, it is one flex item whose own inline content wraps normally. */}
       <summary>
-        <span className="eyebrow">Summary</span> {flagged} flagged of{" "}
-        {plural(model.report.findings.length, "package", "packages")}
+        <span className="eyebrow">Summary</span>{" "}
+        <span>
+          <SummaryCounts />
+        </span>
       </summary>
       <Ledger />
     </details>
