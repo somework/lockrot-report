@@ -228,3 +228,12 @@
   color: var(--tone);
   font-weight: 600;
 }
+/* PD-SUMMARY-5 (DESIGN.md §5): the same `.bar`/`.bar-seg` markup `PriorityLedger` draws, echoed
+   under the phone fold's counts line so a phone reader sees a shape, not just words, before
+   unfolding the ledger itself — smaller than the ledger's own bar, since the counts line beside it
+   already carries the numbers and this is a glance, not the reading. `.ledger-fold-summary`'s own
+   `flex-direction: column` (app.css) is what stretches it to the fold's full width, the same way
+   `.ledger-block` already stretches the ledger's own bar. */
+.summary-bar {
+  height: 6px;
+}

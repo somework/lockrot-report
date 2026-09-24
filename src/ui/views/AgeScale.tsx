@@ -1,5 +1,6 @@
-import type { AgeScale as AgeScaleData, AgeKind } from "../../domain/age";
+import type { AgeLegend as AgeLegendData, AgeScale as AgeScaleData, AgeKind } from "../../domain/age";
 import type { Tone } from "../../domain/vocab";
+import type { Verdict } from "../../model/types";
 import { toneClass } from "../common/common";
 import "./views.css";
 
@@ -11,6 +12,16 @@ const LEAD: Readonly<Record<AgeKind, string>> = {
   push: "last push",
 };
 
+/** The reason named after "age shown for context" (PD-ROWS-3, DESIGN.md §5), for the two verdicts
+ *  `AgeScale.contextOnly` can be true for — kept here, not in `domain/age.ts`, since it is prose for
+ *  this one label rather than a fact the domain layer computes. A verdict this renderer does not
+ *  expect `contextOnly` for (it is only ever true for the two below) still gets a true sentence
+ *  instead of a blank. */
+const CONTEXT_REASON: Readonly<Record<string, string>> = {
+  abandoned: "flagged for being marked abandoned",
+  pinned: "flagged for being pinned to a branch snapshot",
+};
+
 /** 0-100, clamped: `scale.max` already keeps `years` on the track (`domain/age.ts`'s own
  *  `max(10, ceil(years))`), but a threshold the run set above `max` — an unusual config, not a
  *  document this renderer can rule out — would otherwise draw a tick past the track's right edge. */
@@ -20,7 +31,8 @@ function pct(value: number, max: number): number {
 
 /** Below `warn` reads as fine, `warn`..`high` as a caution, at or above `high` as the same tone a
  *  critical verdict pill carries — the dot's own colour is the scale's whole point (PD-ROWS-2: a
- *  reader who skips the label still sees the zone at a glance). */
+ *  reader who skips the label still sees the zone at a glance). Never consulted for a `contextOnly`
+ *  scale (below), whose dot reads as neutral regardless of which zone the years fall in. */
 function zoneTone(scale: AgeScaleData): Tone {
   if (scale.years >= scale.high) return "crit";
   if (scale.years >= scale.warn) return "med";
@@ -28,32 +40,74 @@ function zoneTone(scale: AgeScaleData): Tone {
 }
 
 /**
- * The Findings row's age scale (PD-ROWS-2, DESIGN.md §5): a thin track from 0 to `scale.max` years,
- * a tick at the run's warn and high thresholds, and a dot at the finding's own age, in the zone's
- * tone. One `role="img"` element carries the whole fact as its accessible name — "last release 8.7
- * years ago; warn at 3 years, high at 5" — so the track, ticks and dot underneath it are decorative
- * and the short "8.7 y" label is not read twice.
+ * The Findings row's age scale (PD-ROWS-2/3, DESIGN.md §5): a thin track from 0 to `scale.max`
+ * years, a tick at the run's warn and high thresholds, and a dot at the finding's own age, in the
+ * zone's tone — or, for a `contextOnly` scale, a fixed neutral tone instead, so it never reads as
+ * agreeing with a priority it did not set (`AgeScale.contextOnly`'s own comment in `domain/age.ts`).
+ * One `role="img"` element carries the whole fact as its accessible name — "last release 8.7 years
+ * ago; warn at 3 years, high at 5" — so the track, ticks and dot underneath it are decorative and
+ * the short "8.7 y" label is not read twice; the same text sits in a `title` too, since the ticks
+ * that name the run's own thresholds otherwise show a reader nothing to hover (PD-ROWS-3).
  *
  * Position is the `style` object prop, never a `style="…"` attribute the page's CSP would refuse
  * (DESIGN.md §1.3) — the same discipline `ui/detail/Timeline.tsx` keeps for its own dots and ticks.
  */
-export function AgeScale({ scale }: { scale: AgeScaleData }) {
+export function AgeScale({ scale, verdict }: { scale: AgeScaleData; verdict: Verdict }) {
   const years = scale.years.toFixed(1);
-  const label = `${LEAD[scale.kind]} ${years} years ago; warn at ${scale.warn} years, high at ${scale.high}`;
+  const label = scale.contextOnly
+    ? `${LEAD[scale.kind]} ${years} years ago; age shown for context, not for priority — ${
+        CONTEXT_REASON[verdict] ?? "flagged for a reason other than age"
+      }`
+    : `${LEAD[scale.kind]} ${years} years ago; warn at ${scale.warn} years, high at ${scale.high}`;
+  const dotClass = scale.contextOnly
+    ? "age-scale-dot age-scale-dot-context"
+    : `age-scale-dot ${toneClass(zoneTone(scale))}`;
 
   return (
-    <span className="age-scale" role="img" aria-label={label}>
+    <span className="age-scale" role="img" aria-label={label} title={label}>
       <span className="age-scale-track" aria-hidden="true">
         <span className="age-scale-tick" style={{ left: `${pct(scale.warn, scale.max)}%` }} />
         <span className="age-scale-tick" style={{ left: `${pct(scale.high, scale.max)}%` }} />
-        <span
-          className={`age-scale-dot ${toneClass(zoneTone(scale))}`}
-          style={{ left: `${pct(scale.years, scale.max)}%` }}
-        />
+        <span className={dotClass} style={{ left: `${pct(scale.years, scale.max)}%` }} />
       </span>
       <span className="age-scale-label mono" aria-hidden="true">
         {years} y
       </span>
     </span>
+  );
+}
+
+/**
+ * The same footprint as `AgeScale`, with nothing in it: a Findings row whose finding carries a
+ * key-fact line but no age scale (no S8/S2/S4, or a threshold the run never recorded) would
+ * otherwise hand its `.sig-lines` the full width of the key-fact line while a neighbouring row's
+ * only has what a 64px track and its label leave over — the two wrap their signal text at
+ * different widths for a reason nothing on screen explains, so the list reads as uneven from row to
+ * row (PD-ROWS-3, DESIGN.md §5's "reserve the space" note). `aria-hidden`, since it carries no fact;
+ * `views.css` hides it under 760px, where the key-fact line already stacks instead of sharing a row.
+ */
+export function AgeScalePlaceholder() {
+  return (
+    <span className="age-scale age-scale-placeholder" aria-hidden="true">
+      <span className="age-scale-track" />
+      <span className="age-scale-label mono">0.0 y</span>
+    </span>
+  );
+}
+
+/**
+ * The tick marks named, once, for the whole list (PD-ROWS-3, DESIGN.md §5): before this, a row's
+ * two ticks carried the run's own thresholds only in an aria-label and, now, a hover `title` —
+ * nothing a reader scanning the list without hovering every dot ever saw. `FindingsView` renders
+ * this once, above the first priority group, from `domain/age.ts#ageLegend`; a row's own scale is
+ * unchanged and still carries the exact numbers in its own label. The tick glyph (`▏`) is decorative
+ * repetition of the word beside it, not a fact of its own, so the whole line is one text node for a
+ * screen reader rather than the glyph and the word being announced as if they disagreed.
+ */
+export function AgeScaleLegend({ legend }: { legend: AgeLegendData }) {
+  return (
+    <p className="age-scale-legend muted">
+      age scale: ▏warn {legend.warn} y ▏high {legend.high} y
+    </p>
   );
 }

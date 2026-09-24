@@ -29,6 +29,11 @@ tag or the address format, says so under **Breaking** in its entry.
 - The glossary's `finished` entry names how a reader accepts a package they consider complete
   themselves, `extra.lockrot.ignore` in `composer.json` with a reason, linked to lockrot.dev's
   configuration docs — the same mechanism the built-in allowlist already uses.
+- A small caption above the Findings list, "age scale: ▏warn 3 y ▏high 5 y", naming the run's own
+  age thresholds once for the whole list instead of only in each row's own hover title.
+- The phone fold's own priority-counts `<summary>` carries a small, non-interactive echo of the
+  ledger's own priority bar, so a phone reader sees a shape before unfolding anything, not only
+  words.
 
 ### Changed
 
@@ -51,6 +56,12 @@ tag or the address format, says so under **Breaking** in its entry.
 - Escape closes an open popover first, and only the popover, before the glossary or the detail.
 - A ledger legend entry reads as a control — a chip with its own hover, focus and pressed look —
   instead of plain distribution text, and its title names what clicking it does.
+- Every Findings row's age scale now shares one maximum with the whole list, computed from the
+  oldest row shown, instead of each row rescaling its own track — a dot's position along the track
+  now means the same thing on every row.
+- Every `<details>`/`<summary>` on the page — the ledger and rail phone folds, the glossary's own
+  sections, the detail panel's reference and signal disclosures — now draws the same disclosure
+  marker (a CSS triangle, not a text glyph), with its own hover and focus state.
 
 ### Fixed
 
@@ -115,6 +126,17 @@ tag or the address format, says so under **Breaking** in its entry.
   the bottom of the viewport with no way to reach it: wheeling over the panel no longer stops dead
   once it can scroll no further internally, but chains into the page, which carries the panel into
   its sticky position where it fits.
+- A Findings row's age scale no longer contradicts the verdict beside it: a finding whose priority
+  does not come from age (`abandoned`, `pinned`) still draws its scale for context, but the dot is
+  now a fixed neutral tone instead of the zone's own colour, and its label says so — before this, an
+  abandoned package (CRITICAL from its own repository flag) whose age happened to sit in the warn
+  zone drew the same olive dot as a package actually flagged for its age.
+- `<details>`/`<summary>` disclosure markers no longer depend on a font glyph for "▸", which one
+  review environment rendered as a near-invisible 3-4px dot instead of a triangle; the marker is now
+  drawn from a CSS border, and stays a clean triangle (rather than a filled square) in forced-colours
+  mode too.
+- The age scale's two threshold ticks now carry a `title`, matching their accessible name, so
+  hovering them shows a reader what they mean instead of nothing at all.
 
 ## [0.12.0]
 

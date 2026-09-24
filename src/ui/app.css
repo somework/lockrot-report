@@ -210,35 +210,35 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-m);
-  cursor: pointer;
-  list-style: none;
   font-size: 13px;
   color: var(--ink-2);
 }
-.ledger-fold > summary::-webkit-details-marker,
-.rail-fold > summary::-webkit-details-marker {
-  display: none;
-}
+/* The disclosure marker itself (shape, rotation, hover/focus) is the one shared rule in
+   `styles/base.css`; the wrapped counts span (`.ledger-fold-summary-head`, App.tsx's LedgerSlot)
+   can grow to two lines at 320px, and a baseline-aligned marker would sit next to whichever pair
+   ends the first line instead of the row as a whole, so this row's own marker keeps a position
+   override the shared rule does not assume for every surface. */
 .ledger-fold > summary::after,
 .rail-fold > summary::after {
-  content: "▸";
-  margin-left: auto;
-  color: var(--muted);
-  font-size: 11px;
-  transition: transform 0.15s ease;
-  /* The summary row's own align-items is baseline; the wrapped counts span (App.tsx's LedgerSlot
-     comment) can grow to two lines at 320px, and a baseline-aligned marker would sit next to
-     whichever pair ends the first line instead of the row as a whole. Pin it to the row's top
-     instead, so it reads as one corner marker for the whole block regardless of how many lines
-     the counts wrap to. */
   align-self: flex-start;
-}
-.ledger-fold[open] > summary::after,
-.rail-fold[open] > summary::after {
-  transform: rotate(90deg);
 }
 .ledger-fold[open] > summary {
   margin-bottom: 14px;
+}
+/* PD-SUMMARY-5 (DESIGN.md §5): the fold's own content column, so the priority bar sits on its own
+   line under the counts row instead of squeezing into it — `.ledger-fold > summary` above stays a
+   plain flex row of [this column, the marker], the same shape every other fold's summary keeps. */
+.ledger-fold-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.ledger-fold-summary-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
 /* ---------- layout ---------- */
@@ -440,19 +440,14 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   font-weight: 600;
 }
 /* PD-GLOSSARY-2: the signals, priority, libyears and keys sections fold behind a <summary> instead
-   of an <h3>, styled the same way and disclosed with the same triangle as .ledger-fold/.rail-fold
-   (DESIGN.md §8) so a reader who already knows that affordance recognises it here too. Flex + the
+   of an <h3>, disclosed with the same marker as every other fold on the page (`styles/base.css`,
+   DESIGN.md §8) so a reader who already knows that affordance recognises it here too. Flex + the
    section's own `gap` (above) spaces the summary from its content with the details open; nothing
    extra to do for it closed, since a hidden child takes no gap. */
 .glossary-sect > summary {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  cursor: pointer;
-  list-style: none;
-}
-.glossary-sect > summary::-webkit-details-marker {
-  display: none;
 }
 /* a11y review: the heading text moved from the <summary> itself into an <h3> inside it (Glossary.tsx),
    so a heading-navigating screen reader stops here again; these rules keep the same look, just
@@ -465,16 +460,6 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 600;
-}
-.glossary-sect > summary::after {
-  content: "▸";
-  margin-left: auto;
-  color: var(--muted);
-  font-size: 11px;
-  transition: transform 0.15s ease;
-}
-.glossary-sect[open] > summary::after {
-  transform: rotate(90deg);
 }
 .glossary .deflist {
   display: grid;

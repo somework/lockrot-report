@@ -53,6 +53,29 @@ test.describe("PD-SUMMARY-1: the phone fold shows the same line, closed", () => 
   });
 });
 
+test.describe("PD-SUMMARY-5: the phone fold's own priority bar (DESIGN.md §5)", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("koel_koel at 390px: a non-interactive priority bar sits inside the closed fold, beside the counts", async () => {
+    // Before this, the fold's closed <summary> gave a phone reader words only — no chart at all
+    // until they tapped it open.
+    await report.goto(FIXTURES.koel);
+    expect(await report.hasSummaryPriorityBar()).toBe(true);
+  });
+
+  test("mini-split.json's clean state draws no bar at all — nothing fired, so no segment beats none", async () => {
+    await report.goto(FIXTURES.miniSplit);
+    expect(await report.hasSummaryPriorityBar()).toBe(false);
+  });
+});
+
+test.describe("PD-SUMMARY-5: no fold, no bar, on a wide screen", () => {
+  test("koel_koel at 1440px: the wide ledger band renders no duplicate priority bar", async () => {
+    await report.goto(FIXTURES.koel);
+    expect(await report.hasSummaryPriorityBar()).toBe(false);
+  });
+});
+
 test.describe("PD-SUMMARY-2: the header's gate fact", () => {
   test("wallabag's fail-on is 'none': reads 'no gate'", async () => {
     // The fixture that actually reads run.fail_on === 'none' is wallabag_wallabag.json.

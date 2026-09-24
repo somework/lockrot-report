@@ -213,6 +213,15 @@
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
+/* PD-ROWS-3 (DESIGN.md §5): a finding whose verdict does not come from age (`abandoned`, `pinned`)
+   still draws the scale — the age fact is real — but never in the zone's own tone, or it would read
+   as agreeing with a priority it did not set (an abandoned, CRITICAL-from-S1 package whose S2 years
+   sit in the warn zone drew the same olive dot as a package actually flagged for its age). A fixed
+   muted grey, never `--tone`'s own `none` (the "below warn" zone's colour, and a positive green in
+   both themes — the wrong read for "not applicable"). */
+.age-scale-dot-context {
+  background: var(--muted);
+}
 .age-scale-label {
   font-size: 11px;
   color: var(--muted);
@@ -258,6 +267,33 @@
     background: CanvasText;
     border-style: solid;
     border-color: Canvas;
+  }
+  /* No rule needed for `.age-scale-dot-context`: it carries neither `.tone-med` nor `.tone-crit`,
+     so it keeps the base rule above — the hollow ring, the same shape "below warn" already draws in
+     this mode. Both read as "nothing to act on from age alone" here; only the label (and, outside
+     forced-colors, the grey-vs-green fill) tells a context-only row apart from a genuinely young
+     one, same as every other tone this scale draws. */
+}
+
+/* PD-ROWS-3 (DESIGN.md §5): named once, above the first group, rather than repeating the run's
+   thresholds on every row's tick — a reader who wants the exact numbers without hovering a dot
+   reads them here instead. Muted and small: a caption for the list, not a heading of its own. */
+.age-scale-legend {
+  margin: 0 0 var(--space-2);
+  font-size: 12px;
+}
+
+/* A row with a key fact but no age scale of its own still reserves the scale's width at wide
+   widths, so its signal text wraps at the same available width as a neighbouring row that does draw
+   one (PD-ROWS-3: without this, the list's line breaks looked uneven for a reason nothing on screen
+   explained). Below 760px the key-fact line already stacks (`.key-fact`'s own media query above),
+   so there is no shared row width left to protect and the placeholder would only add empty space. */
+.age-scale-placeholder {
+  visibility: hidden;
+}
+@media (max-width: 759px) {
+  .age-scale-placeholder {
+    display: none;
   }
 }
 

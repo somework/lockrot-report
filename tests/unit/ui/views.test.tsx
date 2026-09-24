@@ -348,9 +348,11 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
   });
 
   it("draws the age scale, with an aria-label naming the fact and both thresholds, when the key-fact signal carries a numeric years", () => {
-    // Arrange
+    // Arrange: "stale" is a verdict whose own priority does come from age (S2/S4 together), unlike
+    // makeFinding's own default ("abandoned") — see the contextOnly describe block below for that.
     const finding = makeFinding({
       package: "scaled/pkg",
+      verdict: "stale",
       signals: [
         makeSignal({ id: "S2", level: "high", summary: "last release 8.7 years ago", data: { years: 8.7 } }),
       ],
@@ -362,9 +364,171 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
     const row = screen.getByRole("listitem", { name: "scaled/pkg" });
 
     // Assert
-    expect(
-      within(row).getByRole("img", { name: "last release 8.7 years ago; warn at 3 years, high at 5" }),
-    ).toBeTruthy();
+    const scale = within(row).getByRole("img", {
+      name: "last release 8.7 years ago; warn at 3 years, high at 5",
+    });
+    expect(scale).toBeTruthy();
+    // PD-ROWS-3: the same text sits in a `title`, so hovering the ticks (otherwise decorative)
+    // shows a reader what they mean, not just a screen reader.
+    expect(scale.getAttribute("title")).toBe(scale.getAttribute("aria-label"));
+  });
+
+  it("reserves the age scale's own width on a row with a key fact but no scale, so its signal text does not wrap wider than a scaled neighbour (PD-ROWS-3)", () => {
+    // Arrange: unscaled/pkg carries only S3 (no years at all); scaled/pkg carries S2 and does draw
+    // a scale — both in the same list, so a shared row width is actually at stake.
+    const unscaled = makeFinding({
+      package: "unscaled/pkg",
+      verdict: "stale",
+      signals: [makeSignal({ id: "S3", level: "high", summary: "repository archived" })],
+    });
+    const scaled = makeFinding({
+      package: "scaled/pkg",
+      verdict: "stale",
+      signals: [makeSignal({ id: "S2", level: "high", data: { years: 4 } })],
+    });
+    const model = modelWith([unscaled, scaled]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+    const row = screen.getByRole("listitem", { name: "unscaled/pkg" });
+
+    // Assert: no accessible scale (nothing to plot), but the placeholder still reserves the track's
+    // own footprint, aria-hidden so it names no fact of its own.
+    expect(within(row).queryByRole("img")).toBeNull();
+    const placeholder = row.querySelector(".age-scale-placeholder");
+    expect(placeholder).not.toBeNull();
+    expect(placeholder?.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("shares one maximum across every row in the list, so the same years plots at the same position regardless of which row is oldest (PD-ROWS-3)", () => {
+    // Arrange: a 4-year row alone would floor its own track at 10; a 12-year row in the same list
+    // pushes the shared maximum to 12, moving the 4-year row's own dot left of where it would sit on
+    // its own 10-year track (40% instead of the un-shared 50%).
+    const young = makeFinding({
+      package: "young/pkg",
+      verdict: "stale",
+      signals: [makeSignal({ id: "S2", level: "warn", data: { years: 4 } })],
+    });
+    const old = makeFinding({
+      package: "old/pkg",
+      verdict: "stale",
+      signals: [makeSignal({ id: "S2", level: "high", data: { years: 12 } })],
+    });
+    const model = modelWith([old, young]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+    const youngRow = screen.getByRole("listitem", { name: "young/pkg" });
+    const dot = youngRow.querySelector(".age-scale-dot") as HTMLElement;
+
+    // Assert: 4 / 12 === 33.33%, not the 40% a lone 4-year row's own max(10, ceil(4)) would give it.
+    expect(dot.style.left).toBe(`${(4 / 12) * 100}%`);
+  });
+
+  it("shows the run's own thresholds once, above the list, rather than repeating them per row (PD-ROWS-3)", () => {
+    // Arrange
+    const finding = makeFinding({
+      package: "scaled/pkg",
+      verdict: "stale",
+      signals: [makeSignal({ id: "S2", level: "high", data: { years: 8.7 } })],
+    });
+    const model = modelWith([finding]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+
+    // Assert: the run's own release-warn-years/release-high-years, named once.
+    expect(screen.getByText("age scale: ▏warn 3 y ▏high 5 y")).toBeTruthy();
+  });
+
+  it("shows no legend at all when nothing in the list would draw a scale (PD-ROWS-3)", () => {
+    // Arrange: only S3, which never carries years — the same shape as the "draws no scale" test
+    // below, but asserted against the list-level legend rather than one row's own scale.
+    const finding = makeFinding({
+      package: "unscaled/pkg",
+      signals: [makeSignal({ id: "S3", level: "high", summary: "repository archived" })],
+    });
+    const model = modelWith([finding]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+
+    // Assert
+    expect(screen.queryByText(/age scale:/)).toBeNull();
+  });
+
+  describe("contextOnly: a scale drawn for context, not for the verdict's own priority (PD-ROWS-3)", () => {
+    // sensio/framework-extra-bundle's own shape: CRITICAL from S1 (abandoned), but its S2 sits in
+    // the warn zone — the scale must not read as agreeing with a priority S1 alone decided.
+    it("draws a neutral dot, not the zone's tone, for an abandoned finding", () => {
+      // Arrange
+      const finding = makeFinding({
+        package: "sensio/framework-extra-bundle",
+        verdict: "abandoned",
+        signals: [
+          makeSignal({ id: "S1", level: "warn", summary: "marked abandoned" }),
+          makeSignal({
+            id: "S2",
+            level: "warn",
+            summary: "last release 3.6 years ago",
+            data: { years: 3.6 },
+          }),
+        ],
+      });
+      const model = modelWith([finding]);
+
+      // Act
+      renderIn(model, stateWith(), <FindingsView />);
+      const row = screen.getByRole("listitem", { name: "sensio/framework-extra-bundle" });
+      const dot = row.querySelector(".age-scale-dot");
+      const scale = within(row).getByRole("img");
+
+      // Assert: neutral class, not the medium (warn-zone) tone this age would otherwise carry.
+      expect(dot?.className).toContain("age-scale-dot-context");
+      expect(dot?.className).not.toContain("tone-med");
+      expect(scale.getAttribute("aria-label")).toContain("age shown for context");
+      expect(scale.getAttribute("aria-label")).toContain("flagged for being marked abandoned");
+    });
+
+    it("draws a neutral dot for a pinned finding too", () => {
+      // Arrange
+      const finding = makeFinding({
+        package: "acme/pinned-old",
+        verdict: "pinned",
+        signals: [makeSignal({ id: "S2", level: "high", data: { years: 9 } })],
+      });
+      const model = modelWith([finding]);
+
+      // Act
+      renderIn(model, stateWith(), <FindingsView />);
+      const row = screen.getByRole("listitem", { name: "acme/pinned-old" });
+      const dot = row.querySelector(".age-scale-dot");
+      const scale = within(row).getByRole("img");
+
+      // Assert
+      expect(dot?.className).toContain("age-scale-dot-context");
+      expect(dot?.className).not.toContain("tone-crit");
+      expect(scale.getAttribute("aria-label")).toContain("flagged for being pinned to a branch snapshot");
+    });
+
+    it("keeps the zone's own tone for a verdict whose priority does come from age", () => {
+      // Arrange: "stale" starts its priority at S2/S4's own age facts.
+      const finding = makeFinding({
+        package: "acme/stale-old",
+        verdict: "stale",
+        signals: [makeSignal({ id: "S2", level: "high", data: { years: 8 } })],
+      });
+      const model = modelWith([finding]);
+
+      // Act
+      renderIn(model, stateWith(), <FindingsView />);
+      const row = screen.getByRole("listitem", { name: "acme/stale-old" });
+      const dot = row.querySelector(".age-scale-dot");
+
+      // Assert
+      expect(dot?.className).toContain("tone-crit");
+      expect(dot?.className).not.toContain("age-scale-dot-context");
+    });
   });
 
   it("draws no scale when the key-fact signal is not S8/S2/S4, even though other signals are", () => {

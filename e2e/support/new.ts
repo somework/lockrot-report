@@ -297,6 +297,19 @@ export class NewReportPage implements ReportPage {
     return (await scale.count()) > 0 ? scale.first().getAttribute("aria-label") : null;
   }
 
+  async rowAgeScaleTitle(name: string): Promise<string | null> {
+    const scale = this.pkgLocator(name).getByRole("img");
+    return (await scale.count()) > 0 ? scale.first().getAttribute("title") : null;
+  }
+
+  /** `.age-scale-legend` (`views/AgeScale.tsx#AgeScaleLegend`, PD-ROWS-3, DESIGN.md §5): the one
+   *  caption above the whole Findings list, not any one row, so it is found by its own fixed
+   *  leading word rather than through `pkgLocator`. */
+  async ageScaleLegendText(): Promise<string | null> {
+    const legend = this.page.getByText(/^age scale:/);
+    return (await legend.count()) > 0 ? collapse((await legend.first().textContent()) ?? "") : null;
+  }
+
   /** The age scale's decorative parts (`AgeScale.tsx`) carry no accessible role of their own — the
    *  whole thing is one `role=img` — so they're read by position from that element (`children[0]`
    *  the track, its own two ticks and dot inside that), the same structural approach
@@ -452,6 +465,16 @@ export class NewReportPage implements ReportPage {
     // non-summary content would fail the same check.
     const line = this.page.getByText(text);
     return (await line.count()) > 0 && (await line.first().isVisible());
+  }
+
+  /** `.summary-bar` (`ledger/SummaryBand.tsx#SummaryPriorityBar`, PD-SUMMARY-5, DESIGN.md §5):
+   *  found by class, not an accessible query, since the bar is deliberately `aria-hidden` — nothing
+   *  here asserts what a screen reader hears, only that a sighted phone reader sees a shape, and
+   *  that it carries at least one segment (a clean report renders none at all). */
+  async hasSummaryPriorityBar(): Promise<boolean> {
+    const bar = this.page.locator(".summary-bar");
+    if ((await bar.count()) === 0 || !(await bar.first().isVisible())) return false;
+    return (await bar.first().locator(".bar-seg").count()) > 0;
   }
 
   /** The accessible name the gate fact's button always starts with (Header.tsx#gateFact) —

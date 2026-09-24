@@ -118,6 +118,14 @@ export interface ReportPage {
   /** The row's age scale (`role="img"`) accessible name, or null when the row draws no scale at
    *  all (PD-ROWS-2, DESIGN.md §5). */
   rowAgeScaleLabel(name: string): Promise<string | null>;
+  /** The row's age scale's own `title` — the same text as `rowAgeScaleLabel`, on hover rather than
+   *  only for assistive tech (PD-ROWS-3, DESIGN.md §5: the scale's two threshold ticks otherwise
+   *  show a reader nothing to hover). Null on the same terms as `rowAgeScaleLabel`. */
+  rowAgeScaleTitle(name: string): Promise<string | null>;
+  /** The once-per-list caption naming the run's own age thresholds (PD-ROWS-3, DESIGN.md §5),
+   *  e.g. "age scale: ▏warn 3 y ▏high 5 y" — or null when the current tab draws no age scale at
+   *  all, and the caption is not rendered. */
+  ageScaleLegendText(): Promise<string | null>;
   /** Whether the row's "+N more…" note is currently on screen (PD-ROWS-1, DESIGN.md §5: print
    *  hides it once every signal already prints). */
   rowMoreSignalsVisible(name: string): Promise<boolean>;
@@ -160,6 +168,10 @@ export interface ReportPage {
    *  per priority), so no single element carries the whole sentence as its own text; the caller
    *  passes the wording it expects rather than this reading it back. */
   hasSummaryLine(text: string): Promise<boolean>;
+  /** Whether the phone fold's own `<summary>` (App.tsx#LedgerSlot) carries a visible, non-empty
+   *  priority bar of its own (PD-SUMMARY-5, DESIGN.md §5) — `false` on a wide screen, where the
+   *  fold does not render at all, the same as `false` for a clean report with nothing to bar. */
+  hasSummaryPriorityBar(): Promise<boolean>;
 
   /** The header's gate-fact button (Header.tsx): "no gate" or "gate: <value>", or null when the
    *  document predates `run.fail_on` and the header shows neither. */

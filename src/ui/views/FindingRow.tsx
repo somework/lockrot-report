@@ -9,7 +9,7 @@ import { sevTone } from "../../domain/advisories";
 import { severityRank } from "../../domain/severity";
 import { signalSortKey } from "../../domain/filters";
 import { ageScale } from "../../domain/age";
-import { AgeScale } from "./AgeScale";
+import { AgeScale, AgeScalePlaceholder } from "./AgeScale";
 import "./views.css";
 
 /**
@@ -159,15 +159,21 @@ function RowTags({ finding }: { finding: Finding }) {
  *  `hidden` attribute (`.sig-rest`) rather than a class: `hidden` reads as inaccessible independent
  *  of any stylesheet (`dom-accessibility-api#isSubtreeInaccessible`), and `print.css` gives that
  *  same selector its display back under `@media print`, so a printed row carries every signal line
- *  the finding has. */
-export function FindingRow({ finding }: { finding: Finding }) {
+ *  the finding has.
+ *
+ *  `ageMax` is the list's own shared scale ceiling (PD-ROWS-3, `domain/age.ts#sharedAgeMax`),
+ *  computed once by `FindingsView` over every row it draws and passed down here — a prop, not a
+ *  per-row computation, so every row's dot compares against the same track. A row with a key fact
+ *  but no scale of its own still reserves the scale's width (`AgeScalePlaceholder`), so its signal
+ *  text does not wrap wider than a neighbouring row's just because that row has nothing to draw. */
+export function FindingRow({ finding, ageMax }: { finding: Finding; ageMax: number }) {
   const { model, state, dispatch } = useReport();
   const isOpen = state.pkg === finding.package;
   const stripeTone = TONE(finding.priority === "none" ? finding.verdict : finding.priority);
   const sorted = sortedSignals(finding.signals);
   const keyFact = sorted[0];
   const rest = sorted.slice(1);
-  const scale = keyFact ? ageScale(finding, model.report.run.thresholds) : null;
+  const scale = keyFact ? ageScale(finding, model.report.run.thresholds, ageMax) : null;
 
   return (
     <li
@@ -209,7 +215,7 @@ export function FindingRow({ finding }: { finding: Finding }) {
                 </>
               )}
             </span>
-            {scale && <AgeScale scale={scale} />}
+            {scale ? <AgeScale scale={scale} verdict={finding.verdict} /> : <AgeScalePlaceholder />}
           </span>
         ) : (
           <span className="ev">{finding.evidence}</span>

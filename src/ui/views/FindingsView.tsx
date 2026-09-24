@@ -4,6 +4,8 @@ import { applyFilters, population } from "../../domain/filters";
 import { plural } from "../../domain/format";
 import { toneClass } from "../common/common";
 import { TONE } from "../../domain/vocab";
+import { ageLegend, anyAgeScale, sharedAgeMax } from "../../domain/age";
+import { AgeScaleLegend } from "./AgeScale";
 import { FindingRow } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
 import "./views.css";
@@ -70,6 +72,12 @@ export function FindingsView() {
       finding.advisories.length > 0 && (finding.verdict === "ok" || finding.verdict === "finished"),
   );
   const visible = applyFilters(model, state, "findings");
+  const thresholds = model.report.run.thresholds;
+  // PD-ROWS-3 (DESIGN.md §5): one maximum for every row this tab draws, so a dot's position along
+  // the track compares across rows instead of each rescaling its own; the legend beside it is the
+  // one place the run's own thresholds are named on screen, rather than only in a row's hover title.
+  const ageMax = sharedAgeMax(visible, thresholds);
+  const legend = anyAgeScale(visible, thresholds) ? ageLegend(thresholds) : null;
 
   return (
     <div>
@@ -77,21 +85,24 @@ export function FindingsView() {
       {visible.length === 0 ? (
         <EmptyState reason={population(model, "findings").length === 0 ? "clean" : "filtered"} />
       ) : (
-        groupByPriority(visible).map((group) => (
-          <section className="group" key={group.priority}>
-            <div className="group-head">
-              <h2 className={toneClass(TONE(group.priority))}>{group.priority}</h2>
-              <span className="mono muted group-count">
-                {plural(group.findings.length, "package", "packages")}
-              </span>
-            </div>
-            <ul className="rows" aria-label={`${group.priority} priority`}>
-              {group.findings.map((finding) => (
-                <FindingRow key={finding.package} finding={finding} />
-              ))}
-            </ul>
-          </section>
-        ))
+        <>
+          {legend && <AgeScaleLegend legend={legend} />}
+          {groupByPriority(visible).map((group) => (
+            <section className="group" key={group.priority}>
+              <div className="group-head">
+                <h2 className={toneClass(TONE(group.priority))}>{group.priority}</h2>
+                <span className="mono muted group-count">
+                  {plural(group.findings.length, "package", "packages")}
+                </span>
+              </div>
+              <ul className="rows" aria-label={`${group.priority} priority`}>
+                {group.findings.map((finding) => (
+                  <FindingRow key={finding.package} finding={finding} ageMax={ageMax} />
+                ))}
+              </ul>
+            </section>
+          ))}
+        </>
       )}
     </div>
   );

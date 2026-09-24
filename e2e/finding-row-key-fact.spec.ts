@@ -37,4 +37,45 @@ test.describe("PD-ROWS-1/PD-ROWS-2: the Findings row's key fact and age scale", 
       "last release 8.7 years ago; warn at 3 years, high at 5",
     );
   });
+
+  test("wallabag_wallabag: the scale's title matches its aria-label, so hovering a tick shows a reader what it means", async () => {
+    // PD-ROWS-3 (DESIGN.md §5): before this, the run's own thresholds sat only in the accessible
+    // name — nothing a sighted reader hovering the ticks themselves ever saw.
+    await report.goto(FIXTURES.wallabag);
+
+    const label = await report.rowAgeScaleLabel("javibravo/simpleue");
+    expect(label).not.toBeNull();
+    expect(await report.rowAgeScaleTitle("javibravo/simpleue")).toBe(label);
+  });
+
+  test("wallabag_wallabag: the Findings tab names the run's own age thresholds once, above the list", async () => {
+    // PD-ROWS-3: the run's release-warn-years/release-high-years (3/5), named once for the whole
+    // list rather than repeated on every row.
+    await report.goto(FIXTURES.wallabag);
+
+    expect(await report.ageScaleLegendText()).toBe("age scale: ▏warn 3 y ▏high 5 y");
+  });
+
+  test("wallabag_wallabag: names no legend on a tab that draws no age scale at all", async () => {
+    await report.goto(FIXTURES.wallabag);
+    await report.tab("run");
+
+    expect(await report.ageScaleLegendText()).toBeNull();
+  });
+});
+
+test.describe("PD-ROWS-3: a scale drawn for context, not for the verdict's own priority", () => {
+  test("wallabag_wallabag: sensio/framework-extra-bundle reads its own S1/S3 as CRITICAL, but its S2 age is only warn — the scale must say so, not agree with a zone it did not cause", async () => {
+    // The exact shape DESIGN.md §5 (PD-ROWS-3) records: abandoned (S1, marked abandoned; S3,
+    // archived) starts this finding at critical — its S2 (3.6y, against a 3/5 warn/high pair)
+    // would, on its own, only ever reach the warn zone. The scale still draws (the age fact is
+    // real) but must name itself as context, not as the reason for the row's own priority.
+    await report.goto(FIXTURES.wallabag);
+
+    const label = await report.rowAgeScaleLabel("sensio/framework-extra-bundle");
+    expect(label).toContain("age shown for context");
+    expect(label).toContain("flagged for being marked abandoned");
+    expect(label).not.toContain("warn at");
+    expect(await report.rowAgeScaleTitle("sensio/framework-extra-bundle")).toBe(label);
+  });
 });

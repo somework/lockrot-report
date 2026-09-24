@@ -124,8 +124,8 @@
 /* ---------- reference sections: how it is reached, the lock entry, provenance ----------
  * Closed by default (PD-DETAIL-1): the reader who opened the panel meets the answer first, these
  * three afterward. `<summary>` keeps the section's own heading text so a reader who knew the old
- * layout still recognises it; the chevron is the same disclosure cue as `.detail-signal-summary`
- * and the ledger/rail folds in `ui/app.css`. */
+ * layout still recognises it; the marker itself is the one shared rule in `styles/base.css`, the
+ * same disclosure cue as `.detail-signal-summary` and the ledger/rail/glossary folds. */
 .detail-reference {
   gap: 0;
 }
@@ -134,14 +134,9 @@
 }
 .detail-reference-summary {
   margin: 0;
-  cursor: pointer;
-  list-style: none;
   display: flex;
   align-items: baseline;
   gap: 8px;
-}
-.detail-reference-summary::-webkit-details-marker {
-  display: none;
 }
 /* a11y review: the heading text moved from the <summary> itself into an <h3> inside it (Detail.tsx),
    so a heading-navigating screen reader stops here again; these rules keep the same look, just
@@ -154,21 +149,6 @@
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 600;
-}
-.detail-reference-summary::after {
-  content: "▸";
-  margin-left: auto;
-  color: var(--muted);
-  font-size: 10px;
-  transition: transform 0.15s ease;
-}
-.detail-reference[open] > .detail-reference-summary::after {
-  transform: rotate(90deg);
-}
-@media (prefers-reduced-motion: reduce) {
-  .detail-reference-summary::after {
-    transition: none;
-  }
 }
 
 .detail-kv {
@@ -238,27 +218,13 @@
 .detail-disclosure > .detail-advisory-list {
   padding: 0 11px 11px 0;
 }
+/* The disclosure marker (`styles/base.css`) closes the line, since the signal's id link now opens
+   it. */
 .detail-signal-summary {
-  cursor: pointer;
   padding: 8px 11px 8px 0;
   display: flex;
   gap: 9px;
   align-items: baseline;
-  list-style: none;
-}
-.detail-signal-summary::-webkit-details-marker {
-  display: none;
-}
-/* The disclosure chevron closes the line, since the signal's id link now opens it. */
-.detail-signal-summary::after {
-  content: "▸";
-  margin-left: auto;
-  color: var(--muted);
-  font-size: 10px;
-  transition: transform 0.15s ease;
-}
-.detail-signal-more[open] > .detail-signal-summary::after {
-  transform: rotate(90deg);
 }
 .detail-signal-id {
   padding: 8px 0;
@@ -277,11 +243,6 @@
 }
 .detail-signal-data {
   padding: 0 11px 11px 0;
-}
-@media (prefers-reduced-motion: reduce) {
-  .detail-signal-summary::after {
-    transition: none;
-  }
 }
 
 /* ---------- release timeline ---------- */

@@ -32,12 +32,16 @@ test.describe("PD-ROWS-2: the age scale stays visible in forced-colors mode", ()
     expect(parts).toEqual({ track: true, tick: true, dot: true });
   });
 
-  test("sensio/framework-extra-bundle (wallabag, warn..high zone), light forced colors", async ({ page }) => {
-    // 3.6 years against warn=3/high=5: the diamond middle zone, not the filled or hollow ends.
+  test("defuse/php-encryption (wallabag, warn..high zone), light forced colors", async ({ page }) => {
+    // "stale" (S2 3.3 years, against warn=3/high=5): the diamond middle zone, not the filled or
+    // hollow ends. Not sensio/framework-extra-bundle (also in this range, at 3.6y) — its own verdict
+    // is "abandoned", so PD-ROWS-3 (DESIGN.md §5) now draws its scale in the neutral `contextOnly`
+    // tone regardless of zone; this test wants the zone shapes themselves, so it picks a verdict
+    // ("stale") whose priority actually comes from age.
     await report.goto(FIXTURES.wallabag);
     await page.emulateMedia({ colorScheme: "light", forcedColors: "active" });
 
-    const parts = await report.ageScaleForcedColorsVisible("sensio/framework-extra-bundle");
+    const parts = await report.ageScaleForcedColorsVisible("defuse/php-encryption");
     expect(parts).toEqual({ track: true, tick: true, dot: true });
   });
 
@@ -60,6 +64,20 @@ test.describe("PD-ROWS-2: the age scale stays visible in forced-colors mode", ()
     await page.emulateMedia({ colorScheme: "dark", forcedColors: "active" });
 
     expect(await report.ageScaleWarnTickSurvivesDot("jwilsson/spotify-web-api-php")).toBe(true);
+  });
+
+  // PD-ROWS-3 (DESIGN.md §5): sensio/framework-extra-bundle's own scale draws in the neutral
+  // `contextOnly` tone (abandoned, from S1/S3, not from its own S2 age) — it carries neither
+  // `.tone-med` nor `.tone-crit`, so forced-colors mode gives it the same base rule as a "below warn"
+  // scale (a hollow ring), not the diamond or filled dot. Still a real mark, not an invisible one.
+  test("sensio/framework-extra-bundle's own contextOnly dot is still visible in forced colors", async ({
+    page,
+  }) => {
+    await report.goto(FIXTURES.wallabag);
+    await page.emulateMedia({ colorScheme: "dark", forcedColors: "active" });
+
+    const parts = await report.ageScaleForcedColorsVisible("sensio/framework-extra-bundle");
+    expect(parts).toEqual({ track: true, tick: true, dot: true });
   });
 });
 

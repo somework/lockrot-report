@@ -72,3 +72,26 @@ export function SummaryBand() {
     </div>
   );
 }
+
+/**
+ * The ledger's own priority bar (`ledger.css`'s `.bar`/`.bar-seg`, `ui/ledger/PriorityLedger.tsx`),
+ * echoed under the phone fold's counts line (`App.tsx#LedgerSlot`) so a phone reader sees a chart at
+ * all before unfolding the ledger — PD-SUMMARY-1 gave that reader the counts in words; nothing
+ * showed them the same distribution as a shape. `aria-hidden`: the counts line right beside it
+ * already gives the same numbers, and this bar is not itself a control (no legend, no click) —
+ * the real, interactive one is one tap away, inside the fold. `null` for a clean report, same as
+ * `PriorityLedger`'s own empty read: no segment is more informative than none at all when nothing
+ * fired. */
+export function SummaryPriorityBar() {
+  const { model } = useReport();
+  const { shown, counts } = countsOf(model);
+  if (shown.length === 0) return null;
+
+  return (
+    <div className="bar summary-bar" aria-hidden="true">
+      {shown.map((p) => (
+        <span key={p} className={`bar-seg ${toneClass(TONE(p))}`} style={{ flexGrow: counts[p] ?? 0 }} />
+      ))}
+    </div>
+  );
+}

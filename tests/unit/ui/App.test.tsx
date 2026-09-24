@@ -314,6 +314,28 @@ describe("layout", () => {
     expect(summary?.textContent).not.toMatch(/flagged of/);
   });
 
+  // PD-SUMMARY-5 (DESIGN.md §5): before this, the fold's own <summary> carried the counts as text
+  // only — a phone reader saw no chart at all until they tapped it open. A small, non-interactive
+  // echo of the ledger's own priority bar now sits inside that same <summary>.
+  test("a narrow screen's folded summary carries a non-interactive priority bar of its own", () => {
+    media({ wide: false, narrow: true });
+    render(<App model={MINI} />);
+    const summary = screen.getByText("Summary").closest("summary") as HTMLElement;
+    const bar = summary.querySelector(".summary-bar");
+    expect(bar).not.toBeNull();
+    expect(bar?.getAttribute("aria-hidden")).toBe("true");
+    // Non-interactive: no role, no button, nothing a keyboard or a screen reader stops on — the
+    // counts line right beside it already gives the same numbers in words.
+    expect(bar?.getAttribute("role")).toBeNull();
+    expect(bar?.querySelectorAll("button, a, [role]")).toHaveLength(0);
+    expect(bar?.querySelectorAll(".bar-seg").length).toBeGreaterThan(0);
+  });
+
+  test("the wide ledger band carries no priority bar duplicate — only the folded phone summary does", () => {
+    render(<App model={MINI} />);
+    expect(document.querySelector(".summary-bar")).toBeNull();
+  });
+
   test("the header carries the run's gate as a quiet fact, mini.json's fail-on being 'silent'", () => {
     render(<App model={MINI} />);
     const button = screen.getByRole("button", { name: /^gate: silent/ });
