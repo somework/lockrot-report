@@ -369,6 +369,37 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   color: var(--muted);
   font-weight: 600;
 }
+/* PD-GLOSSARY-2: the signals, priority, libyears and keys sections fold behind a <summary> instead
+   of an <h3>, styled the same way and disclosed with the same triangle as .ledger-fold/.rail-fold
+   (DESIGN.md §8) so a reader who already knows that affordance recognises it here too. Flex + the
+   section's own `gap` (above) spaces the summary from its content with the details open; nothing
+   extra to do for it closed, since a hidden child takes no gap. */
+.glossary-sect > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--cond);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.glossary-sect > summary::-webkit-details-marker {
+  display: none;
+}
+.glossary-sect > summary::after {
+  content: "▸";
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 11px;
+  transition: transform 0.15s ease;
+}
+.glossary-sect[open] > summary::after {
+  transform: rotate(90deg);
+}
 .glossary .deflist {
   display: grid;
   grid-template-columns: minmax(96px, auto) minmax(0, 1fr);

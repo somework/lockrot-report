@@ -27,23 +27,14 @@
   margin: -4px 0 14px;
 }
 
-/* <kbd> for the keyboard shortcuts ("a key you press") and <code> for the search keys (text you
-   type), one look for both, as legacy's <code> had. */
-.hint kbd,
-.hint code {
+/* <kbd> for the one keyboard shortcut the hint names (PD-GLOSSARY-1: the rest moved into the
+   glossary's "Keys and search" section). */
+.hint kbd {
   font-family: var(--mono);
   background: var(--surface-2);
   padding: 1px 5px;
   border-radius: 4px;
   font-size: 11px;
-}
-
-/* A phone has no keyboard to press them on: under 760px the shortcut half of the hint goes, which
-   also brings the list up (DESIGN.md §8). */
-@media (max-width: 759px) {
-  .hint-keys {
-    display: none;
-  }
 }
 
 .count-line {

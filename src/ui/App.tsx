@@ -180,20 +180,20 @@ export function App({ model }: { model: Model }) {
   }, [state.pkg, dispatch]);
 
   const now = useMemo(() => new Date(model.report.generatedAt), [model]);
-  const value = useMemo(() => ({ model, state, dispatch, now, wide }), [model, state, dispatch, now, wide]);
+  const openGlossary = useCallback(() => {
+    setGlossaryOpen(true);
+  }, []);
+  const value = useMemo(
+    () => ({ model, state, dispatch, now, wide, openGlossary }),
+    [model, state, dispatch, now, wide, openGlossary],
+  );
   const filterable = population(model, state.view).length > 0;
   const panelId = `${idBase}-panel`;
 
   return (
     <ReportContext.Provider value={value}>
       <NewerSchemaBanner />
-      <Header
-        theme={theme.effective}
-        onToggleTheme={theme.toggle}
-        onOpenGlossary={() => {
-          setGlossaryOpen(true);
-        }}
-      >
+      <Header theme={theme.effective} onToggleTheme={theme.toggle} onOpenGlossary={openGlossary}>
         <Tabs idBase={idBase} panelId={panelId} />
       </Header>
       {state.view !== "run" && <LedgerSlot narrow={narrow} />}

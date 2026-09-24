@@ -12,10 +12,13 @@ import "./views.css";
 /**
  * The click contract FindingRow and PackagesView's rows share: a click anywhere on the row toggles
  * the detail pane, closing it again on a second click of the same package — unless the click landed
- * on a real `<a>`, which is left to navigate. Keyboard activation (Enter/Space, and DESIGN.md M5's
- * fix so a focused link's own Enter is left alone) is `ui/keyboard.ts`'s job: it reads the same
- * `data-pkg` every row here carries through one document-level listener, so a row needs no
- * `onKeyDown` of its own — adding one would just race the global handler over who dispatches first.
+ * on a real `<a>`, a `<button>` (PD-GLOSSARY-4: the verdict pill's popover trigger and its own "In
+ * the glossary" button), or inside an open popover (its content is a descendant of the row in the
+ * DOM even though the top layer draws it elsewhere), each of which is left to do its own thing.
+ * Keyboard activation (Enter/Space, and DESIGN.md M5's fix so a focused control's own Enter is left
+ * alone) is `ui/keyboard.ts`'s job: it reads the same `data-pkg` every row here carries through one
+ * document-level listener, so a row needs no `onKeyDown` of its own — adding one would just race the
+ * global handler over who dispatches first.
  */
 export function rowInteractions(
   pkg: string,
@@ -26,7 +29,7 @@ export function rowInteractions(
 } {
   return {
     onClick: (event) => {
-      if ((event.target as HTMLElement).closest("a")) return;
+      if ((event.target as HTMLElement).closest("a, button, [popover]")) return;
       dispatch({ type: "select", pkg: isOpen ? null : pkg });
     },
   };
@@ -49,7 +52,7 @@ export function openInteractions(
 } {
   return {
     onClick: (event) => {
-      if ((event.target as HTMLElement).closest("a")) return;
+      if ((event.target as HTMLElement).closest("a, button, [popover]")) return;
       dispatch({ type: "select", pkg });
     },
   };
@@ -119,7 +122,9 @@ function RowTags({ finding }: { finding: Finding }) {
  *  tech. The open row is marked with `aria-current`, the list-item equivalent of a selection.
  *  Verdict, replacement, name, version, tags, then up to three signal lines (or
  *  the evidence sentence when the finding carries none) — ported from legacy `rowHtml`
- *  (report.js:406-446). */
+ *  (report.js:406-446). The verdict pill carries `docs` (PD-GLOSSARY-5) so a reader gets the
+ *  definition without opening the package at all; `rowInteractions`'s guard above is what keeps
+ *  that click from also toggling the row. */
 export function FindingRow({ finding }: { finding: Finding }) {
   const { state, dispatch } = useReport();
   const isOpen = state.pkg === finding.package;
@@ -139,7 +144,7 @@ export function FindingRow({ finding }: { finding: Finding }) {
       <span className="stripe" />
       <span className="body">
         <span className="line1">
-          <Pill word={finding.verdict} />
+          <Pill word={finding.verdict} docs />
           {finding.replacement && (
             <Tag title="the repository names this package as the replacement">→ {finding.replacement}</Tag>
           )}

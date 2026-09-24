@@ -24,7 +24,11 @@ export function Ledger() {
   if (state.view === "run") return null;
 
   return (
-    <div className="ledger">
+    // PD-GLOSSARY-4/5 made a verdict pill's own word ("abandoned") an accessible button name too,
+    // both in a Findings row and in the open detail — the same word this strip's own legend
+    // buttons already carry. `aria-label` here is what tells them apart by role scope rather than
+    // by hoping no other button on the page ever shares a legend's name.
+    <div className="ledger" role="group" aria-label="Ledger">
       <PriorityLedger />
       <VerdictLedger />
       <AdvisoryLedger />

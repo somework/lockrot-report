@@ -259,9 +259,12 @@ export class NewReportPage implements ReportPage {
 
   /** The name starts with the key (a count may follow it, see LEDGER_LABEL). Anchored rather than a
    *  substring, because rail buttons carry the same vocabulary inside longer names: the S1 signal
-   *  filter reads "S1 marked abandoned", which a bare "abandoned" would also match. */
+   *  filter reads "S1 marked abandoned", which a bare "abandoned" would also match. Scoped to the
+   *  `role=group, name="Ledger"` strip (Ledger.tsx) since PD-GLOSSARY-4/5 gave a verdict pill the
+   *  bare word itself as its own accessible name, both in a row and in the open detail — without
+   *  this scope, filtering by "abandoned" would resolve to all three at once. */
   private ledgerLocator(_group: LedgerGroup, key: string): Locator {
-    return this.page.getByRole("button", {
+    return this.page.getByRole("group", { name: "Ledger" }).getByRole("button", {
       name: new RegExp(`^${escapeRegExp(LEDGER_LABEL(key))}(\\s|$)`, "i"),
     });
   }
@@ -375,6 +378,30 @@ export class NewReportPage implements ReportPage {
 
   async glossaryPosition(): Promise<string> {
     return this.glossaryLocator().evaluate((el) => getComputedStyle(el).position);
+  }
+
+  /** PD-GLOSSARY-4/5: the verdict word inside a row (`pkgLocator`) is a `<button>`, its accessible
+   *  name the verdict itself, same case-insensitive matching every role lookup here uses. */
+  async clickVerdictPill(pkg: string, verdict: string): Promise<void> {
+    await this.pkgLocator(pkg).getByRole("button", { name: verdict }).click();
+  }
+
+  /** There is no accessible role for "the currently open popover" to query by name — `:popover-open`
+   *  is the platform's own answer to "which one, if any", the same way `glossaryPosition()` above
+   *  reads a computed style rather than a role. At most one `popover="auto"` element is showing at
+   *  once, so this never has to pick among several. */
+  async isPillPopoverOpen(): Promise<boolean> {
+    return this.page.evaluate(() => document.querySelector(":popover-open") !== null);
+  }
+
+  async pillPopoverText(): Promise<string> {
+    return collapse(
+      await this.page.evaluate(() => document.querySelector(":popover-open")?.textContent ?? ""),
+    );
+  }
+
+  async openGlossaryFromPillPopover(): Promise<void> {
+    await this.page.getByRole("button", { name: /in the glossary/i }).click();
   }
 
   async theme(): Promise<"dark" | "light"> {

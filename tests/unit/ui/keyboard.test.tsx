@@ -10,6 +10,7 @@ function input(overrides: Partial<KeyInput>): KeyInput {
     typing: false,
     searchFocused: false,
     dialogOpen: false,
+    popoverOpen: false,
     rowPkg: null,
     onControl: false,
     selected: null,
@@ -87,6 +88,16 @@ describe("Escape closes the topmost thing, one per press", () => {
 
   test("and nothing when nothing is open", () => {
     expect(decideKey(input({ key: "Escape" }))).toEqual({ type: "ignore" });
+  });
+
+  test("a pill's popover first, even over the glossary and an open detail (PD-GLOSSARY-6)", () => {
+    // The browser closes the popover itself; the page's own decision is to do nothing so it
+    // does not also close the glossary or the detail underneath it on the same press.
+    const decision = decideKey(
+      input({ key: "Escape", popoverOpen: true, dialogOpen: true, selected: "a/two" }),
+    );
+    expect(decision).toEqual({ type: "ignore" });
+    expect(prevents(decision)).toBe(false);
   });
 });
 

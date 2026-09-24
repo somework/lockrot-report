@@ -9,6 +9,8 @@
  *   differ from the rows drawn, and could open a package that had no row at all.
  * - M10: nothing but Escape acts while the glossary is open; the legacy page kept moving the
  *   selection behind it.
+ * - PD-GLOSSARY-6: a verdict pill's open popover eats Escape before the detail does, so closing the
+ *   popover never also closes the row it sits in.
  *
  * `decideKey` reads no DOM and changes nothing, so every rule is a unit test. `keyInputFrom` is the
  * thin adapter from a real KeyboardEvent, and `findRow` the one DOM lookup the shell needs.
@@ -23,6 +25,11 @@ export interface KeyInput {
   /** Focus is in the page's search box, the one field Escape blurs. */
   searchFocused: boolean;
   dialogOpen: boolean;
+  /** A verdict pill's popover is open (PD-GLOSSARY-4/6). Escape leaves it to the browser's own
+   *  light-dismiss instead of also closing the detail underneath it — `decideEscape` returning
+   *  `ignore` here matters as much as what it returns: `prevents()` then stays false, so the
+   *  keydown's default action is never cancelled and the native dismissal still runs. */
+  popoverOpen: boolean;
   /** `data-pkg` of the row the key was pressed in, or null outside any row. */
   rowPkg: string | null;
   /** The key landed on a link, button or field inside that row, which has its own Enter/Space. */
@@ -62,8 +69,11 @@ export function decideKey(input: KeyInput): KeyDecision {
   return IGNORE;
 }
 
-/** Escape closes one thing per press, the topmost first: glossary, then detail, then search focus. */
+/** Escape closes one thing per press, the topmost first: a pill's popover, then the glossary, then
+ *  the detail, then search focus. The popover is topmost of all — it can be open over the detail,
+ *  over the glossary, or over neither — and closes by the browser's own doing, not a dispatch. */
 function decideEscape(input: KeyInput): KeyDecision {
+  if (input.popoverOpen) return IGNORE;
   if (input.dialogOpen) return { type: "closeGlossary" };
   if (input.selected !== null) return { type: "closeDetail", restore: input.selected };
   if (input.searchFocused) return { type: "blurSearch" };
@@ -119,6 +129,10 @@ export function keyInputFrom(event: KeyboardEvent, context: KeyContext): KeyInpu
     typing: target?.closest(TEXT_FIELDS) != null,
     searchFocused: context.search !== null && active === context.search,
     dialogOpen: context.dialogOpen,
+    // `:popover-open` matches any element (there is at most one `popover="auto"` shown at a time)
+    // currently in the top layer as a popover — read fresh each keydown rather than tracked in
+    // Preact state, since the browser opens and closes it natively without a dispatch either way.
+    popoverOpen: document.querySelector(":popover-open") !== null,
     rowPkg: row?.getAttribute("data-pkg") ?? null,
     // A control that contains the row is not "inside" it; a row that is itself a control is, since
     // its native activation already fires its click.

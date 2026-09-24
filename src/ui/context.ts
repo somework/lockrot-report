@@ -17,6 +17,10 @@ export interface ReportContextValue {
   now: Date;
   /** The two-column layout (≥ 1181px): the detail sits beside the list instead of over it. */
   wide: boolean;
+  /** Opens the glossary dialog. A verdict pill's popover offers this as "In the glossary" so a
+   *  reader who wants the full entry never has to close the popover and go hunting for the
+   *  glossary button themselves (PD-GLOSSARY-4, DESIGN.md §5). */
+  openGlossary: () => void;
 }
 
 export const ReportContext = createContext<ReportContextValue | null>(null);
