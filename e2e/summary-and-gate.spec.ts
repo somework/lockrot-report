@@ -70,7 +70,9 @@ test.describe("PD-SUMMARY-2: the header's gate fact", () => {
     expect(await report.isGateFactOpen()).toBe(false);
     await report.openGateFact();
     expect(await report.isGateFactOpen()).toBe(true);
-    expect(await report.gateFactPopoverText()).toBe("This run was given --fail-on=none.");
+    expect(await report.gateFactPopoverText()).toBe(
+      "No gate on this run: it exits 0 whatever it finds, and this page lists what it saw. Pass --fail-on=<verdict or priority> in CI to make the run fail on findings at or above that level.",
+    );
   });
 
   test("Escape closes the popover, and — over an open detail — only the popover, not the detail underneath it", async () => {

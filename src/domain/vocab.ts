@@ -146,26 +146,35 @@ export type Thresholds = readonly (readonly [name: string, years: number])[];
  * A glossary definition names lockrot's own config keys (`release-warn-years`,
  * `push-high-years`, …) rather than a number, since that is what a reader would actually set
  * (`SIGNAL_DEFS.S2`, `VERDICT_DEFS.silent`, …) — but a key name alone gives no sense of where this
- * run's own gate sits. Where the run recorded a value for a name this text mentions, this appends
- * it in place, `"release-high-years (5 years in this run)"`; the key name itself is left exactly as
- * written either way, and a name the run never recorded is left unannotated (PD-GLOSSARY-8,
- * DESIGN.md §5). Every occurrence of every recorded name is annotated, not just the first, since S2
- * and S4's own definitions each name their pair of thresholds once apiece in the same sentence.
+ * run's own gate sits. Where the run recorded a value for a name this text mentions, this replaces
+ * the bare name with the fact first and the key beside it, `"5 years (release-high-years)"` — a
+ * reader wants the number a sentence like "no stable release for at least …" is building toward
+ * before the name of the setting that produced it, which also reads as the definition's own prose
+ * continuing rather than an aside interrupting it (earlier: `"release-high-years (5 years in this
+ * run)"`, the key first). The key name itself is unchanged either way, and a name the run never
+ * recorded is left unannotated (PD-GLOSSARY-8, DESIGN.md §5). Every occurrence of every recorded
+ * name is annotated, not just the first, since S2 and S4's own definitions each name their pair of
+ * thresholds once apiece in the same sentence.
  */
 export function annotateThresholds(text: string, thresholds: Thresholds): string {
   let annotated = text;
   for (const [name, years] of thresholds) {
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    annotated = annotated.replace(
-      new RegExp(`\\b${escaped}\\b`, "g"),
-      `${name} (${years} years in this run)`,
-    );
+    annotated = annotated.replace(new RegExp(`\\b${escaped}\\b`, "g"), `${years} years (${name})`);
   }
   return annotated;
 }
 
 /** The base of the glossary's verdict-family docs (legacy `DOCS`, `report.js:34`). */
 export const DOCS_URL = "https://lockrot.dev/verdicts/";
+
+/** The base of lockrot's configuration docs — a different page from `DOCS_URL`'s verdict family,
+ *  used by the glossary's `finished` note (PD-GLOSSARY-9, DESIGN.md §5) to point at how a package a
+ *  reader considers complete gets accepted the same way the built-in allowlist does. Matches the
+ *  literal `domain/sniff.ts#noteDocLink` already falls back to; kept as its own constant here rather
+ *  than imported from there, since that module is deliberately the one place reading PHP-rendered
+ *  prose, not a shared URL table. */
+export const CONFIG_DOCS_URL = "https://lockrot.dev/configuration/";
 
 /**
  * Dedicated glossary anchors for the three signals that link out instead of just naming themselves

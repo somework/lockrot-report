@@ -296,12 +296,21 @@
 .shell-detail:empty {
   display: none;
 }
+/* PD-DETAIL-5 (DESIGN.md §5/§8): `max-height` is measured against the stuck position
+   (`--topbar-h` + 16px), but a sticky element sits at its normal in-flow position — lower down the
+   page, below the ledger — until scrolling brings that position to the sticky offset. At scroll 0
+   the box was still taller than the room actually left under it, so its own bottom (the last
+   section, Provenance) rendered off the bottom of the viewport; `overscroll-behavior: contain` then
+   stopped a wheel over the box from ever chaining into the page to bring it into its stuck
+   position, where it does fit. Dropping `contain` here (kept on `.is-sheet` below, a full-screen
+   overlay that must not scroll the body behind it) lets that chaining happen: the wheel scrolls the
+   box's own content first, and once that reaches its end, the same wheel scrolls the page, which is
+   exactly what carries the box up into its sticky slot. */
 .shell-detail.is-side {
   position: sticky;
   top: calc(var(--topbar-h) + 16px);
   max-height: calc(100vh - var(--topbar-h) - 32px);
   overflow-y: auto;
-  overscroll-behavior: contain;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-l);
@@ -485,6 +494,13 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
 }
 .glossary .deflist dd {
   color: var(--ink-2);
+}
+/* PD-GLOSSARY-9 (DESIGN.md §5): the `finished` entry's second paragraph, its own allowlist note —
+   spaced off from the definition above it, in the muted tone a secondary fact gets elsewhere on the
+   page (`.muted`, styles/base.css), rather than reading as more of the same sentence. */
+.glossary .deflist .glossary-note {
+  margin: 6px 0 0;
+  color: var(--muted);
 }
 .glossary .term-toned {
   color: var(--tone);

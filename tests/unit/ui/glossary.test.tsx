@@ -88,3 +88,33 @@ describe("Glossary / highlightTerm (PD-GLOSSARY-7, DESIGN.md §5)", () => {
     expect(document.activeElement?.textContent).toBe("Close");
   });
 });
+
+describe("PD-GLOSSARY-9 (DESIGN.md §5): the finished entry's allowlist note", () => {
+  it("lives inside finished's own <dd>, not a sibling <dd> of its own", () => {
+    // Act
+    const { container } = renderGlossary({ open: true });
+
+    // Assert: exactly one <dd> per <dt> in the verdicts deflist — a second top-level <dd> here
+    // shifts every dt/dd pair after it by one column in the deflist's CSS grid (app.css), which
+    // broke the whole grid's track sizing, not only this row's (caught by visual review).
+    const verdictDl = container.querySelectorAll(".glossary-sect")[0]?.querySelector(".deflist");
+    const dts = verdictDl?.querySelectorAll(":scope > dt") ?? [];
+    const dds = verdictDl?.querySelectorAll(":scope > dd") ?? [];
+    expect(dds.length).toBe(dts.length);
+
+    const finishedDt = container.querySelector('dt[data-term="finished"]');
+    const finishedDd = finishedDt?.nextElementSibling ?? null;
+    expect(finishedDd?.tagName).toBe("DD");
+    expect(finishedDd?.querySelector(".glossary-note")?.textContent).toContain("extra.lockrot.ignore");
+  });
+
+  it("links to lockrot.dev's configuration docs, the allowlist section", () => {
+    // Act
+    const { container } = renderGlossary({ open: true });
+
+    // Assert
+    const note = container.querySelector('dt[data-term="finished"]')?.nextElementSibling;
+    const link = note?.querySelector("a.out");
+    expect(link?.getAttribute("href")).toBe("https://lockrot.dev/configuration/#the-allowlist");
+  });
+});

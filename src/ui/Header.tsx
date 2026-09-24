@@ -9,21 +9,27 @@ import { themeButtonLabel, type Theme } from "./useTheme";
  *  header"). `run.failOn === null` (a document older than the field) renders neither: the page
  *  must not claim a run said "no gate" when it never said anything about one at all.
  *
- *  regression review: the earlier text stated what `--fail-on` does at the CLI (exit codes) and
- *  recommended setting it in CI — both beyond what this page can derive from the document in front
- *  of it (the hard rule: observations with evidence, no advice). It now says only what the run was
- *  given, plus that the page does not know whether the gate fired. */
+ *  regression review: an earlier draft restated the value the run was given ("This run was given
+ *  --fail-on=none.") without saying what that means — circular, and useless to a reader who does
+ *  not already know `--fail-on`. `--fail-on`'s actual effect (the exit code, what it compares
+ *  against the baseline) is lockrot's own documented CLI contract, not something this page reads
+ *  off the document in front of it, so stating it here is naming a known fact about the tool, not
+ *  guessing at this run's own data — unlike the page's findings, which stay observations with
+ *  evidence, no advice. The "none" case also names the flag a reader would pass in CI, since that
+ *  is the one piece of missing information a reader with no gate would otherwise have no way to
+ *  find from this page alone. Either way, the popover still says only what the run was given and
+ *  what the page cannot know — never whether the gate actually fired. */
 function gateFact(failOn: string): { label: string; text: string } {
   if (failOn === "none") {
     return {
       label: "no gate",
-      text: "This run was given --fail-on=none.",
+      text: "No gate on this run: it exits 0 whatever it finds, and this page lists what it saw. Pass --fail-on=<verdict or priority> in CI to make the run fail on findings at or above that level.",
     };
   }
 
   return {
     label: `gate: ${failOn}`,
-    text: `This run was given --fail-on=${failOn}. The page does not record whether the gate fired.`,
+    text: `This run was told to fail on ${failOn}: it exits 1 when a finding the baseline does not already accept reaches ${failOn}. The page does not record whether it did.`,
   };
 }
 

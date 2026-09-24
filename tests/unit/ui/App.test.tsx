@@ -317,7 +317,8 @@ describe("layout", () => {
   test("the header carries the run's gate as a quiet fact, mini.json's fail-on being 'silent'", () => {
     render(<App model={MINI} />);
     const button = screen.getByRole("button", { name: /^gate: silent/ });
-    expect(button.getAttribute("title")).toContain("--fail-on=silent");
+    expect(button.getAttribute("title")).toContain("told to fail on silent");
+    expect(button.getAttribute("title")).toContain("does not record whether it did");
   });
 
   // regression review: neither an e2e nor a unit test asserted this branch (Header.tsx: `run.failOn

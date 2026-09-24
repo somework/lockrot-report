@@ -2,6 +2,7 @@ import type { RefObject } from "preact";
 import { useId, useLayoutEffect, useRef, useState } from "preact/hooks";
 import {
   annotateThresholds,
+  CONFIG_DOCS_URL,
   DOCS_URL,
   SIGNAL_DEFS,
   SIGNAL_DOC,
@@ -43,7 +44,25 @@ function VerdictDefs() {
           // PD-GLOSSARY-8 (DESIGN.md §5): a definition that names one of the run's own config keys
           // (`silent`, `left-behind`) shows what this run set it to, beside the name it would take
           // to change it.
-          <dd key={`d-${verdict}`}>{annotateThresholds(VERDICT_DEFS[verdict] ?? "", thresholds)}</dd>,
+          <dd key={`d-${verdict}`}>
+            {annotateThresholds(VERDICT_DEFS[verdict] ?? "", thresholds)}
+            {/* PD-GLOSSARY-9 (DESIGN.md §5): "some 'rotten' libraries are finished and work fine"
+                has an answer this page can state as a fact without making the call itself — a
+                package a reader considers complete can be accepted the same way the built-in
+                allowlist is, through the run's own config, not by the page deciding anything about
+                this package. A second paragraph *inside* this `<dd>`, not a sibling `<dd>`: the
+                `.deflist` grid (app.css) auto-places one dt/dd pair per row from a flat child list,
+                and an extra top-level `<dd>` here shifts every dt/dd pair after it by one column,
+                which broke the whole grid's track sizing, not only this entry's own row. */}
+            {verdict === "finished" && (
+              <p className="glossary-note">
+                A package you consider finished can be accepted the same way:{" "}
+                <span className="mono">extra.lockrot.ignore</span> in{" "}
+                <span className="mono">composer.json</span>, with a reason.{" "}
+                <OutLink href={`${CONFIG_DOCS_URL}#the-allowlist`}>How to configure it (lockrot.dev)</OutLink>
+              </p>
+            )}
+          </dd>,
         ];
       })}
     </dl>

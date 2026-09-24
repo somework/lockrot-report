@@ -8,6 +8,7 @@
 import type { Locator, Page } from "@playwright/test";
 import type { DetailSnapshot, LedgerGroup, RailGroup, ReportPage, SortState, ViewName } from "./report";
 import { pageUrl, type FixtureName } from "./pages";
+import { decodePng, distinctPixelRatio } from "./png";
 
 /** The tab's accessible name (`role=tab`). A badge count appended after the label is fine — every
  *  match below is substring, not exact — but the label text itself has to be this. */
@@ -400,6 +401,44 @@ export class NewReportPage implements ReportPage {
     });
   }
 
+  /** Second a11y review (PD-LEDGER-2, DESIGN.md §5): `legendButtonForcedColorsStyle` only reads
+   *  `getComputedStyle`, which a native `<button>`'s forced-colors paint can diverge from — this
+   *  screenshots the chip's own label text node (a bare text node between the swatch and the count,
+   *  found by `Range`, not by an element it has none of its own) and reads the actual pixels.
+   *
+   *  The `Range`'s own bounding box runs right up to the chip's rounded border on this fixture,
+   *  which bleeds a sliver of the chip's own border colour into an uninset crop regardless of
+   *  whether the label itself painted at all — measured against the actual bug (a broken build with
+   *  `forced-color-adjust: none` removed): an uninset crop still read as ~7% distinct, above a
+   *  careless threshold, while the same crop inset by 2px on every side read as exactly 0% distinct,
+   *  against ~30-40% once the label legitimately paints. The inset is what makes this check mean
+   *  anything. */
+  async legendButtonPressedLabelDistinctPixelRatio(group: LedgerGroup, key: string): Promise<number> {
+    const chip = this.ledgerLocator(group, key);
+    const rect = await chip.evaluate((el) => {
+      for (const node of Array.from(el.childNodes)) {
+        if (node.nodeType === Node.TEXT_NODE && (node.textContent ?? "").trim().length > 0) {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          const r = range.getBoundingClientRect();
+          return { x: r.x, y: r.y, width: r.width, height: r.height };
+        }
+      }
+      throw new Error("legend chip has no bare label text node to screenshot");
+    });
+
+    const inset = 2;
+    const buf = await this.page.screenshot({
+      clip: {
+        x: rect.x + inset,
+        y: rect.y + inset,
+        width: Math.max(1, rect.width - inset * 2),
+        height: Math.max(1, rect.height - inset * 2),
+      },
+    });
+    return distinctPixelRatio(decodePng(buf));
+  }
+
   async priorityLedgerTooltip(): Promise<string | null> {
     return this.page
       .getByText(/priority of the .* flagged packages/i)
@@ -421,11 +460,12 @@ export class NewReportPage implements ReportPage {
     return this.page.getByRole("button", { name: /^(no gate|gate:)/i });
   }
 
-  /** The sentence the popover's own text always starts with (Header.tsx#gateFact); found by that
-   *  text, not by the popover's plumbing (`popover="auto"`, an id relationship) which is
-   *  Header.tsx's implementation detail, not this contract's. */
+  /** The sentence the popover's own text always starts with (Header.tsx#gateFact) — one of the two
+   *  fixed openings the run's `fail_on` can produce; found by that text, not by the popover's
+   *  plumbing (`popover="auto"`, an id relationship) which is Header.tsx's implementation detail,
+   *  not this contract's. */
   private gateFactPopover(): Locator {
-    return this.page.getByText(/^This run was given --fail-on=/);
+    return this.page.getByText(/^(No gate on this run|This run was told to fail on)/);
   }
 
   async gateFactLabel(): Promise<string | null> {

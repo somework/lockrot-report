@@ -103,4 +103,37 @@ test.describe("PD-LEDGER-2: a ledger legend chip stays legible in forced-colors 
 
     expect(after.borderColor).not.toBe(before.borderColor);
   });
+
+  // Second a11y review: `legendButtonForcedColorsStyle` above only proves `getComputedStyle`
+  // changed on press — it stayed green before this fix too, because a native `<button>`'s
+  // forced-colors paint can diverge from its own computed style: `getComputedStyle` kept reporting
+  // `.legend-btn[aria-pressed="true"]`'s own `background: Highlight`, but the button's real content
+  // face painted as a light, near-white system colour regardless, with the label's `color:
+  // HighlightText` (also light) on top of it — a light-on-light label no colour-only check could
+  // tell from a working one (confirmed by screenshot: reverting the fix reproduces exactly this,
+  // the word rendered but not one pixel of it distinguishable from its own backplate). This
+  // screenshots the label's own text and reads its pixels instead. Measured against that broken
+  // build: this ratio reads exactly 0 there, and ~30-40% once the label actually paints — 0.15 is a
+  // wide margin between the two, not a tuned edge.
+  test("the pressed chip's label actually paints pixels distinct from its own backplate, light forced colors", async ({
+    page,
+  }) => {
+    await report.goto(FIXTURES.mini);
+    await page.emulateMedia({ colorScheme: "light", forcedColors: "active", reducedMotion: "reduce" });
+    await report.ledgerButton("verdict", "abandoned");
+
+    const ratio = await report.legendButtonPressedLabelDistinctPixelRatio("verdict", "abandoned");
+    expect(ratio).toBeGreaterThan(0.15);
+  });
+
+  test("the pressed chip's label actually paints pixels distinct from its own backplate, dark forced colors", async ({
+    page,
+  }) => {
+    await report.goto(FIXTURES.mini);
+    await page.emulateMedia({ colorScheme: "dark", forcedColors: "active", reducedMotion: "reduce" });
+    await report.ledgerButton("verdict", "abandoned");
+
+    const ratio = await report.legendButtonPressedLabelDistinctPixelRatio("verdict", "abandoned");
+    expect(ratio).toBeGreaterThan(0.15);
+  });
 });

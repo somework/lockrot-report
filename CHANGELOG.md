@@ -22,10 +22,13 @@ tag or the address format, says so under **Breaking** in its entry.
   carries an S8, S2 or S4 signal and the run recorded both matching thresholds.
 - A verdict or signal definition that names one of the run's own config keys
   (`release-warn-years`, `push-high-years`, …) now shows what this run set it to beside the name,
-  "release-high-years (5 years in this run)". The key name itself is unchanged.
+  "5 years (release-high-years)". The key name itself is unchanged, only led by the value.
 - The package detail's header names it when the current search term or a rail filter is hiding the
   open package from its own tab's list, with a control to clear them. The package still stays open;
   only the reader is told why the list underneath it looks empty.
+- The glossary's `finished` entry names how a reader accepts a package they consider complete
+  themselves, `extra.lockrot.ignore` in `composer.json` with a reason, linked to lockrot.dev's
+  configuration docs — the same mechanism the built-in allowlist already uses.
 
 ### Changed
 
@@ -60,9 +63,10 @@ tag or the address format, says so under **Breaking** in its entry.
 - The signals, libyears, priority and keys sections of the glossary, and the package detail's three
   reference sections, keep their own heading (inside the `<summary>` that folds them) instead of a
   bare, headingless disclosure line.
-- The gate fact's popover no longer states `--fail-on`'s exit-code semantics or recommends setting
-  it in CI — both beyond what the page can derive from the document — and instead states only what
-  the run was given.
+- The gate fact's popover explains what the run's gate actually does instead of only restating the
+  value it was given: "no gate" says the run exits 0 regardless of findings and names the flag to
+  pass in CI to change that; a named gate says the run exits 1 once an unaccepted finding reaches
+  it, and that the page does not record whether that happened.
 - The gate fact's popover, at 320px, no longer runs its left edge to the screen edge.
 - The priority, verdict and advisory bars stay legible in forced-colours mode; the segments used to
   disappear into the page background.
@@ -96,6 +100,9 @@ tag or the address format, says so under **Breaking** in its entry.
 - The age scale's warn..high dot no longer breaks into unreadable fragments in forced-colours mode
   at normal display density, and no longer paints over a threshold tick that sits at nearly the
   same position on the track — a value close to a threshold used to erase that tick outright.
+- A pressed ledger legend chip's own label stays visible in forced-colours mode; the native button
+  could paint a light system colour behind it even while its text stayed a light system colour too,
+  a light-on-light label the chip's own computed style never showed as wrong.
 - The detail's "Clear filters" control moves keyboard focus to the panel's own Close button instead
   of dropping it to the page as a whole, which it used to do by unmounting itself on the same click.
 - The search status line also names the open package once a search term or a rail filter hides it,
@@ -104,6 +111,10 @@ tag or the address format, says so under **Breaking** in its entry.
   has no detail pane to open, so the "+N more signals, open the package" note is dropped there too.
 - A verdict pill's popover dims the page behind it and sits nearer the top of the viewport, instead
   of a fixed, undimmed card that could land squarely on the row it was opened from on a short page.
+- At 1440px, the side-column detail panel's own bottom (the Provenance section) could render off
+  the bottom of the viewport with no way to reach it: wheeling over the panel no longer stops dead
+  once it can scroll no further internally, but chains into the page, which carries the panel into
+  its sticky position where it fits.
 
 ## [0.12.0]
 

@@ -145,6 +145,13 @@ export interface ReportPage {
     group: LedgerGroup,
     key: string,
   ): Promise<{ backgroundColor: string; borderColor: string; swatchBackgroundColor: string }>;
+  /** The fraction of pixels *actually painted* across the chip's own label text — not the DOM's
+   *  computed style — that differ from the label's own backplate colour (second a11y review,
+   *  PD-LEDGER-2, DESIGN.md §5): a native `<button>`'s forced-colors paint can diverge from
+   *  `getComputedStyle`, which `legendButtonForcedColorsStyle` alone could not have caught. Near
+   *  zero means the label painted the same colour as what is behind it — invisible whatever its
+   *  computed `color` says. */
+  legendButtonPressedLabelDistinctPixelRatio(group: LedgerGroup, key: string): Promise<number>;
   /** The tooltip on "Priority of the N flagged packages" (M29). */
   priorityLedgerTooltip(): Promise<string | null>;
   /** Whether the priority-counts line — the wide band above the ledger, or the phone fold's

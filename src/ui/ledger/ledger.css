@@ -138,7 +138,19 @@
    (`background: var(--tone)`) disappears the same way `ledger.css`'s own bar segments used to
    (PD-LEDGER-2, DESIGN.md §5). System colours read a pressed chip apart from an unpressed one the
    same way `Highlight`/`HighlightText` mark any other pressed control, and give the swatch back a
-   fill neither mode can erase. */
+   fill neither mode can erase.
+
+   Second a11y review: `.legend-btn` is a native `<button>`, which forced-colors mode normalises to
+   its own system button appearance at paint time — a real `background: Highlight` on a `<button>`
+   can lose to that normalisation even though `getComputedStyle` still reports it, which is exactly
+   what happened here: `getComputedStyle` kept reporting `background: Highlight`, but the button's
+   real content face painted a light system colour regardless, with the label's own `color:
+   HighlightText` (also light) sitting on top of it — confirmed by screenshot, not only by computed
+   style: a light-on-light label, invisible, that a colour-only check could not tell from a working
+   one. `forced-color-adjust: none` turns that normalisation off for this rule, so the
+   `Highlight`/`HighlightText` pair it already declares is what actually paints.
+   `e2e/forced-colors.spec.ts` now screenshots the label's own text node and reads its pixels to
+   prove that, instead of reading `getComputedStyle` alone. */
 @media (forced-colors: active) {
   .legend-btn .swatch {
     background: CanvasText;
@@ -148,6 +160,7 @@
     opacity: 1;
   }
   .legend-btn[aria-pressed="true"] {
+    forced-color-adjust: none;
     background: Highlight;
     border-color: Highlight;
     color: HighlightText;

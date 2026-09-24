@@ -144,14 +144,14 @@ describe("SIGNAL_DOC", () => {
 });
 
 describe("annotateThresholds (PD-GLOSSARY-8, DESIGN.md §5)", () => {
-  test("appends the run's own value beside a config key the text names", () => {
+  test("leads with the run's own value, the config key name kept beside it", () => {
     const text = SIGNAL_DEFS.S2 ?? "";
     const annotated = annotateThresholds(text, [
       ["release-warn-years", 3],
       ["release-high-years", 5],
     ]);
     expect(annotated).toBe(
-      "Time since the last stable release, against release-warn-years (3 years in this run) / release-high-years (5 years in this run).",
+      "Time since the last stable release, against 3 years (release-warn-years) / 5 years (release-high-years).",
     );
   });
 
@@ -162,7 +162,7 @@ describe("annotateThresholds (PD-GLOSSARY-8, DESIGN.md §5)", () => {
       ["push-high-years", 5],
     ]);
     expect(annotated).toBe(
-      "No stable release for at least release-high-years (5 years in this run) and no repository push for at least push-high-years (5 years in this run).",
+      "No stable release for at least 5 years (release-high-years) and no repository push for at least 5 years (push-high-years).",
     );
   });
 

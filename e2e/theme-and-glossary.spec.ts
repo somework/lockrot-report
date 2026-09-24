@@ -96,18 +96,41 @@ test.describe("M2: S10 belongs in the glossary like every other signal", () => {
 });
 
 test.describe("PD-GLOSSARY-8: threshold values in definitions", () => {
-  test("shows what this run set a config key to, beside the key name itself", async () => {
+  test("leads with what this run set a config key to, the key name kept beside it", async () => {
     // mini.json records all four thresholds: release-warn-years 3, release-high-years 5,
     // push-warn-years 3, push-high-years 5.
     await report.goto(FIXTURES.mini);
     await report.openGlossary();
     const text = await report.glossaryText();
 
-    expect(text).toContain("release-warn-years (3 years in this run)");
-    expect(text).toContain("release-high-years (5 years in this run)");
-    expect(text).toContain("push-high-years (5 years in this run)");
+    expect(text).toContain("3 years (release-warn-years)");
+    expect(text).toContain("5 years (release-high-years)");
+    expect(text).toContain("5 years (push-high-years)");
     // The key name itself is kept — it is what a reader would set — not replaced by the value.
     expect(text).toContain("release-warn-years");
+  });
+});
+
+test.describe("PD-GLOSSARY-9: the finished entry names how to accept a package yourself", () => {
+  test("names extra.lockrot.ignore and links to the configuration docs' allowlist section", async ({
+    page,
+  }) => {
+    await report.goto(FIXTURES.mini);
+    await report.openGlossary();
+    const dialog = page.getByRole("dialog", { name: /what these words mean/i });
+
+    const finishedTerm = dialog.locator('dt[data-term="finished"]');
+    await expect(finishedTerm).toBeVisible();
+    // The note is a second paragraph *inside* "finished"'s own <dd> (Glossary.tsx#VerdictDefs),
+    // not a sibling <dd> of its own — a second top-level <dd> per entry shifts every dt/dd pair
+    // after it by one column in the deflist's grid (app.css), breaking the whole grid's track
+    // sizing, not only this row's.
+    const note = finishedTerm.locator("xpath=following-sibling::dd[1]").locator(".glossary-note");
+    await expect(note).toContainText("extra.lockrot.ignore");
+    await expect(note).toContainText("composer.json");
+
+    const link = note.getByRole("link", { name: /lockrot\.dev/i });
+    await expect(link).toHaveAttribute("href", "https://lockrot.dev/configuration/#the-allowlist");
   });
 });
 

@@ -15,8 +15,21 @@ const LONG_PACKAGE = "spomky-labs/otphp";
  *  on a wide screen, so it is always present to switch to without depending on scroll position. */
 const OTHER_PACKAGE = "sensio/framework-extra-bundle";
 
+/** fixtures/bundles/koel_koel.json's own tallest detail (PD-DETAIL-5): 21 release branches, one
+ *  timeline lane apiece — far more than `spomky-labs/otphp`'s own two advisories give the panel. */
+const KOEL_LONG_PACKAGE = "meilisearch/meilisearch-php";
+
 const BREAKPOINTS = [
   { label: "1440×900 (side)", width: 1440, height: 900 },
+  { label: "1024×900 (sheet)", width: 1024, height: 900 },
+  { label: "390×844 (sheet)", width: 390, height: 844 },
+] as const;
+
+/** `is-side` (≥1181px) chains a wheel that has exhausted the panel's own scroll into the page
+ *  (PD-DETAIL-5); `is-sheet` (below that) keeps `overscroll-behavior: contain`, since it is a
+ *  full-screen overlay with the page's own scroll locked behind it (M13) and nothing to chain
+ *  into — a wheel over it must never move a page a reader cannot see anyway. */
+const SHEET_BREAKPOINTS = [
   { label: "1024×900 (sheet)", width: 1024, height: 900 },
   { label: "390×844 (sheet)", width: 390, height: 844 },
 ] as const;
@@ -28,9 +41,13 @@ function scrollContainer(page: Page) {
   return page.locator(".shell-detail");
 }
 
-async function openLongDetail(page: Page, pkg: string = LONG_PACKAGE): Promise<ReportPage> {
+async function openLongDetail(
+  page: Page,
+  fixture: (typeof FIXTURES)[keyof typeof FIXTURES] = FIXTURES.wallabag,
+  pkg: string = LONG_PACKAGE,
+): Promise<ReportPage> {
   const report = await createReportPage(page);
-  await report.goto(FIXTURES.wallabag);
+  await report.goto(fixture);
   await report.openPackage(pkg);
 
   return report;
@@ -57,6 +74,23 @@ for (const { label, width, height } of BREAKPOINTS) {
   test.describe(label, () => {
     test.use({ viewport: { width, height } });
 
+    test("wheel over the list scrolls the page normally, with no detail open", async ({ page }) => {
+      const report = await createReportPage(page);
+      await report.goto(FIXTURES.wallabag);
+      await ensureDetailClosed(report);
+
+      const row = page.getByRole("listitem", { name: LONG_PACKAGE, exact: true });
+      const before = await scrollYAfterHover(page, row);
+      await page.mouse.wheel(0, 600);
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
+    });
+  });
+}
+
+for (const { label, width, height } of SHEET_BREAKPOINTS) {
+  test.describe(label, () => {
+    test.use({ viewport: { width, height } });
+
     test("wheel over the detail scrolls it alone, never the page", async ({ page }) => {
       await openLongDetail(page);
       const container = scrollContainer(page);
@@ -77,26 +111,75 @@ for (const { label, width, height } of BREAKPOINTS) {
       await expect.poll(() => container.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
       expect(await page.evaluate(() => window.scrollY)).toBe(before);
 
-      // Scroll well past the end: `overscroll-behavior: contain` (`ui/app.css`, pre-existing on
-      // both `.shell-detail` variants) keeps the wheel from chaining into the page once the detail
-      // can scroll no further.
+      // Scroll well past the end: `overscroll-behavior: contain` (`ui/app.css`, still on `is-sheet`)
+      // keeps the wheel from chaining into the page (which is locked behind it, M13) once the
+      // detail can scroll no further.
       await page.mouse.wheel(0, 5000);
       await expect.poll(() => container.evaluate((el) => el.scrollTop)).toBe(scrollable);
       expect(await page.evaluate(() => window.scrollY)).toBe(before);
     });
-
-    test("wheel over the list scrolls the page normally, with no detail open", async ({ page }) => {
-      const report = await createReportPage(page);
-      await report.goto(FIXTURES.wallabag);
-      await ensureDetailClosed(report);
-
-      const row = page.getByRole("listitem", { name: LONG_PACKAGE, exact: true });
-      const before = await scrollYAfterHover(page, row);
-      await page.mouse.wheel(0, 600);
-      await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
-    });
   });
 }
+
+test.describe("1440×900 (side): every part of the detail is reachable by wheel (PD-DETAIL-5)", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  for (const { name, fixture, pkg } of [
+    { name: "wallabag_wallabag", fixture: FIXTURES.wallabag, pkg: LONG_PACKAGE },
+    { name: "koel_koel", fixture: FIXTURES.koel, pkg: KOEL_LONG_PACKAGE },
+  ] as const) {
+    test(`${name}: wheeling over the detail from scroll 0 reaches its last section (Provenance)`, async ({
+      page,
+    }) => {
+      await openLongDetail(page, fixture, pkg);
+      const container = scrollContainer(page);
+      await expect(container).toBeVisible();
+
+      // Starts at the top of the page, not wherever opening the package happened to leave it —
+      // the panel's own bottom rendering below the fold at scroll 0 is exactly the bug (DESIGN.md
+      // §5/§8): `max-height` is measured against the panel's stuck position, but at scroll 0 it is
+      // still at its normal in-flow one, further down the page, under the ledger.
+      await page.evaluate(() => {
+        window.scrollTo(0, 0);
+      });
+      expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+      const provenance = page.getByRole("heading", { name: "Provenance", level: 3 });
+      await expect(provenance).toBeAttached();
+      await expect(provenance).not.toBeInViewport();
+
+      // A point inside the panel, close to its own top: internal scrolling never moves the panel's
+      // own box, and paging the *document* only ever moves the box's top toward this point (never
+      // past it — the sticky offset it settles into is well below the viewport's own top edge), so
+      // one fixed mouse position stays over the panel for the whole gesture below, the same way a
+      // reader's own mouse would sit still while their wheel does the work.
+      const box = await container.boundingBox();
+      if (box === null) throw new Error("detail panel has no box to hover");
+      await page.mouse.move(box.x + box.width / 2, box.y + 24);
+
+      // First exhausts the panel's own internal scroll (`overflow-y: auto`), then — with
+      // `overscroll-behavior: contain` dropped from `is-side` — chains into the page, which is
+      // what carries a sticky element from its in-flow position into its stuck one. A hard cap
+      // instead of an unbounded loop: this is a wheel gesture, not a retry loop, so if it has not
+      // reached the target by a generous multiple of the tallest measured panel's own overflow, the
+      // fix is not working, not merely slow.
+      //
+      // `isVisible()` is not what this loop needs to poll: it is true for an element that is
+      // rendered but scrolled out of view (exactly the starting state here), so the exit condition
+      // has to read the viewport intersection `toBeInViewport()` checks, not plain visibility.
+      const inViewport = () =>
+        provenance.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return r.top < window.innerHeight && r.bottom > 0 && r.left < window.innerWidth && r.right > 0;
+        });
+      for (let i = 0; i < 25 && !(await inViewport()); i++) {
+        await page.mouse.wheel(0, 400);
+      }
+
+      await expect(provenance).toBeInViewport();
+    });
+  }
+});
 
 test.describe("switching the open package resets the detail's scroll", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
