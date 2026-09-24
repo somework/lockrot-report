@@ -92,8 +92,8 @@ test.describe("j / k walk the visible list and open each package", () => {
 
 test.describe("Enter on a focused row toggles its detail", () => {
   test("opens, then closes on a second Enter", async () => {
-    // Findings' .row carries tabindex="0" in legacy (M6 is specifically that Packages' <tr> does
-    // not), so this is the tab where focusing a row is meaningful on both renderers today.
+    // Findings' rows have always been focusable (unlike Packages' before M6's fix), so this test
+    // drives Enter from a Findings row.
     await report.closeDetail(); // clear the boot auto-open first
     await report.focusRow("vendor/snapshot");
     await report.pressEnter();

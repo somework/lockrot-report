@@ -201,9 +201,10 @@ filter that hides its package; `data-goto` keeps the detail open.
   0.12.0 stopped shipping the legacy one; the new page is the only page it runs against since. §5's
   table stays the record of the differences that comparison found and fixed on purpose. Every row
   an e2e test covers carries the row's id in a comment on that test, and later deliberate changes to
-  the new page are recorded there the same way; M1, M19, M24/M25, M26 and C2 are covered by a unit
-  test instead (its `describe`/`it` name carries the id), and M8/M9 and WIDE have no test naming
-  their id at all yet. Page-quality checks that apply regardless of any legacy comparison: axe (no
+  the new page are recorded there the same way; M1, M19, M24, M26 and C2 are covered by a unit test
+  instead (its `describe`/`it` name carries the id); M25 is e2e-covered too
+  (`e2e/detail-and-copy.spec.ts`), alongside its own unit test (`tests/unit/domain/radius.test.ts`,
+  `tests/unit/ui/views.test.tsx`); M8/M9 and WIDE have no test naming their id at all yet. Page-quality checks that apply regardless of any legacy comparison: axe (no
   serious or critical violations), zero CSP violations, both colour schemes, 320/768/1024/1440.
 - **Build checks**: the built `report.html` contains each coupling in §1.1 exactly once, none of the
   forbidden strings, and building twice gives identical bytes.

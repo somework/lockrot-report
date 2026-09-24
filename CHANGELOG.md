@@ -6,6 +6,8 @@ release that first ships it, so the page lockrot 0.12.0 writes is renderer 0.12.
 stops rendering a document an older release rendered, or that changes the placeholders, the payload
 tag or the address format, says so under **Breaking** in its entry.
 
+## [Unreleased]
+
 ## [0.12.0]
 
 The page lockrot 0.12.0 writes with `--format=html`.
