@@ -90,6 +90,17 @@ tag or the address format, says so under **Breaking** in its entry.
   actually carries that state, instead of unconditionally.
 - The timeline's dots for a branch that is neither installed nor the newest keep enough contrast
   against the panel in dark mode; they used to nearly vanish.
+- The Findings row's age scale and a ledger legend chip's pressed state stay legible in
+  forced-colours mode; the scale's track, ticks and dot, and the chip's pressed look and swatch,
+  used to disappear into the page background the same way the ledger bars once did.
+- The detail's "Clear filters" control moves keyboard focus to the panel's own Close button instead
+  of dropping it to the page as a whole, which it used to do by unmounting itself on the same click.
+- The search status line also names the open package once a search term or a rail filter hides it,
+  so a reader typing in the search box hears it, not only sees it in the detail's own note.
+- Printing a Findings row now keeps every signal it carries, not just the one key-fact line — print
+  has no detail pane to open, so the "+N more signals, open the package" note is dropped there too.
+- A verdict pill's popover dims the page behind it and sits nearer the top of the viewport, instead
+  of a fixed, undimmed card that could land squarely on the row it was opened from on a short page.
 
 ## [0.12.0]
 

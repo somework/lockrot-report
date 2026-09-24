@@ -50,3 +50,10 @@
 .active-filters {
   color: var(--accent-ink);
 }
+
+/* a11y review: the fact that the open package left the current tab's list belongs in this line's
+   own live region (`role="status"`), not only in `DetailHeader`'s silent-to-a-live-region note, so
+   a reader typing a search term hears it too. */
+.hidden-pkg-note {
+  color: var(--accent-ink);
+}

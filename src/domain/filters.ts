@@ -182,6 +182,19 @@ export function applyFilters(model: Model, state: State, view: View): readonly F
   return filtered;
 }
 
+/**
+ * Whether `pkg` belongs to `state.view`'s own population but the search box or a rail filter keeps
+ * it off the list there (PD-DETAIL-4, DESIGN.md §5) — the one fact `DetailHeader`'s "Hidden by the
+ * current filters." note and the search status line (`ui/search/SearchBar.tsx`) both read, so
+ * neither can say something the other doesn't. False for a package the tab never lists at all (an
+ * `ok` package on the Findings tab, say), which is a different fact this does not claim.
+ */
+export function hiddenByFilters(model: Model, state: State, pkg: string): boolean {
+  const inTab = population(model, state.view).some((f) => f.package === pkg);
+  if (!inTab) return false;
+  return !applyFilters(model, state, state.view).some((f) => f.package === pkg);
+}
+
 // -------------------------------------------------------------------------------------------
 // The rail itself (legacy `renderRail()`, report.js:319-394)
 // -------------------------------------------------------------------------------------------

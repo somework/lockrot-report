@@ -190,6 +190,49 @@ describe("SearchBar", () => {
     expect(screen.getByRole("status").textContent).toContain("0 of 0 flagged packages");
   });
 
+  // a11y review: `DetailHeader`'s own "Hidden by the current filters." note has no live region of
+  // its own, so a reader typing a search term never heard the open package had left the list. This
+  // line already is one (`role="status" aria-live="polite"`); it now names the fact too.
+  it("says nothing extra while the open package still matches the current filters", () => {
+    // Arrange
+    const model = loadMini();
+    const ref = createRef<HTMLInputElement>();
+
+    // Act
+    renderIn(<SearchBar inputRef={ref} />, model, { ...INITIAL_STATE, pkg: "vendor/transitive" });
+
+    // Assert
+    expect(screen.getByRole("status").textContent).not.toContain("hidden by the current filters");
+  });
+
+  it("names the open package once a search term hides it from the tab it still belongs to", () => {
+    // Arrange
+    const model = loadMini();
+    const ref = createRef<HTMLInputElement>();
+    const state = { ...INITIAL_STATE, pkg: "vendor/transitive", q: "no-such-package" };
+
+    // Act
+    renderIn(<SearchBar inputRef={ref} />, model, state);
+
+    // Assert
+    const line = screen.getByRole("status").textContent;
+    expect(line).toContain("0 of 2 flagged packages");
+    expect(line).toContain("vendor/transitive is hidden by the current filters");
+  });
+
+  it("says nothing extra for an open package the tab never lists at all (a different fact)", () => {
+    // Arrange: private/thing is "finished", never in the Findings population, filters or not.
+    const model = loadMini();
+    const ref = createRef<HTMLInputElement>();
+    const state = { ...INITIAL_STATE, pkg: "private/thing", q: "no-such-package" };
+
+    // Act
+    renderIn(<SearchBar inputRef={ref} />, model, state);
+
+    // Assert
+    expect(screen.getByRole("status").textContent).not.toContain("hidden by the current filters");
+  });
+
   it("shows nothing at all on the Run tab, which has no count to give", () => {
     // Arrange
     const model = loadMini();

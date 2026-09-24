@@ -132,6 +132,34 @@
   background: var(--tone);
 }
 
+/* a11y review: forced-colors mode flattens `--tone`/`--tone-soft`/`--border`/`--muted` to Canvas —
+   the pressed chip (background `--tone-soft`, border `--tone`) and the unpressed one (background
+   `--surface-2`, border `--border`) both compute to a 1px Canvas-on-Canvas border, and the swatch
+   (`background: var(--tone)`) disappears the same way `ledger.css`'s own bar segments used to
+   (PD-LEDGER-2, DESIGN.md §5). System colours read a pressed chip apart from an unpressed one the
+   same way `Highlight`/`HighlightText` mark any other pressed control, and give the swatch back a
+   fill neither mode can erase. */
+@media (forced-colors: active) {
+  .legend-btn .swatch {
+    background: CanvasText;
+  }
+  .legend-btn-dim .swatch {
+    background: ButtonText;
+    opacity: 1;
+  }
+  .legend-btn[aria-pressed="true"] {
+    background: Highlight;
+    border-color: Highlight;
+    color: HighlightText;
+  }
+  .legend-btn[aria-pressed="true"] .swatch {
+    background: HighlightText;
+  }
+  .legend-btn[aria-pressed="true"] .count {
+    color: HighlightText;
+  }
+}
+
 .swatch {
   width: 9px;
   height: 9px;

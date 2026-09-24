@@ -67,20 +67,20 @@ export function openInteractions(
 const LEVEL_RANK: Readonly<Record<string, number>> = { high: 2, warn: 1 };
 
 /**
- * The one signal a Findings row leads with (PD-ROWS-1, DESIGN.md §5): the highest-level signal,
- * ties broken in `SIGNAL_IDS` numeric order (`domain/filters.ts#signalSortKey`, the same order the
- * rail's own signal group and the glossary sort by, M2's fix) — never the document's own order,
- * which is lockrot's internal rule evaluation order and carries no such guarantee. `undefined` for
- * a finding with no signal at all; the caller falls back to the evidence sentence.
+ * Every signal a finding carries, highest level first, ties broken in `SIGNAL_IDS` numeric order
+ * (`domain/filters.ts#signalSortKey`, the same order the rail's own signal group and the glossary
+ * sort by, M2's fix) — never the document's own order, which is lockrot's internal rule evaluation
+ * order and carries no such guarantee. Its first element is the row's key fact (PD-ROWS-1); the
+ * rest are what print restores (below).
  */
-function keyFactSignal(signals: readonly Signal[]): Signal | undefined {
+function sortedSignals(signals: readonly Signal[]): Signal[] {
   return [...signals].sort((a, b) => {
     const rank = (LEVEL_RANK[b.level] ?? 0) - (LEVEL_RANK[a.level] ?? 0);
     if (rank !== 0) return rank;
     const [an, as] = signalSortKey(a.id);
     const [bn, bs] = signalSortKey(b.id);
     return an !== bn ? an - bn : as.localeCompare(bs);
-  })[0];
+  });
 }
 
 /** One S1-S10 line inside a row (legacy `signalLine`, report.js:397-404). */
@@ -151,13 +151,22 @@ function RowTags({ finding }: { finding: Finding }) {
  *  per PD-ROWS-1/PD-ROWS-2 (DESIGN.md §5): a reviewer's own reading of the up-to-three lines was
  *  "text, text, text, no scales". The verdict pill carries `docs` (PD-GLOSSARY-5) so a reader gets
  *  the definition without opening the package at all; `rowInteractions`'s guard above is what keeps
- *  that click from also toggling the row. */
+ *  that click from also toggling the row.
+ *
+ *  regression review: on screen, only the key fact stands in for the rest ("+N more signals, open
+ *  the package") — but print drops `.shell-detail` entirely (`styles/print.css`), so a reader on
+ *  paper has no "open the package" to follow. The other signals stay mounted, under a native
+ *  `hidden` attribute (`.sig-rest`) rather than a class: `hidden` reads as inaccessible independent
+ *  of any stylesheet (`dom-accessibility-api#isSubtreeInaccessible`), and `print.css` gives that
+ *  same selector its display back under `@media print`, so a printed row carries every signal line
+ *  the finding has. */
 export function FindingRow({ finding }: { finding: Finding }) {
   const { model, state, dispatch } = useReport();
   const isOpen = state.pkg === finding.package;
   const stripeTone = TONE(finding.priority === "none" ? finding.verdict : finding.priority);
-  const keyFact = keyFactSignal(finding.signals);
-  const rest = keyFact ? finding.signals.length - 1 : 0;
+  const sorted = sortedSignals(finding.signals);
+  const keyFact = sorted[0];
+  const rest = sorted.slice(1);
   const scale = keyFact ? ageScale(finding, model.report.run.thresholds) : null;
 
   return (
@@ -184,10 +193,20 @@ export function FindingRow({ finding }: { finding: Finding }) {
           <span className="key-fact">
             <span className="sig-lines">
               <SignalLine signal={keyFact} />
-              {rest > 0 && (
-                <span className="more-sig">
-                  + {plural(rest, "more signal", "more signals")}, open the package
-                </span>
+              {rest.length > 0 && (
+                <>
+                  <span className="more-sig">
+                    + {plural(rest.length, "more signal", "more signals")}, open the package
+                  </span>
+                  {/* PD-ROWS-1 (DESIGN.md §5): screen-hidden by the native `hidden` attribute, not a
+                      class — print.css un-hides this exact selector under `@media print`, where the
+                      note above has nothing to open. */}
+                  <span className="sig-rest" hidden>
+                    {rest.map((signal) => (
+                      <SignalLine key={signal.id} signal={signal} />
+                    ))}
+                  </span>
+                </>
               )}
             </span>
             {scale && <AgeScale scale={scale} />}

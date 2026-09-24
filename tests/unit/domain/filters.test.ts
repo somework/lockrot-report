@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyFilters, population, railGroups } from "../../../src/domain/filters";
+import { applyFilters, hiddenByFilters, population, railGroups } from "../../../src/domain/filters";
 import { EMPTY_FILTERS, INITIAL_STATE } from "../../../src/state/types";
 import type { Filters, State } from "../../../src/state/types";
 import type { Finding, Model } from "../../../src/model/types";
@@ -384,5 +384,47 @@ describe("railGroups / fix", () => {
 
     // Assert: "move" never occurred, so it is dropped entirely, not shown at zero.
     expect(fix?.rows.map((r) => r.key)).toEqual(["branch", "none"]);
+  });
+});
+
+describe("hiddenByFilters (PD-DETAIL-4, DESIGN.md §5)", () => {
+  it("is false while the package matches the current tab's own filters", () => {
+    // Arrange
+    const finding = makeFinding({ package: "open/pkg", verdict: "abandoned" });
+    const model = modelWith([finding]);
+
+    // Act + Assert
+    expect(hiddenByFilters(model, stateWith({ view: "findings" }), "open/pkg")).toBe(false);
+  });
+
+  it("is true once a search term excludes it from the tab it still belongs to", () => {
+    // Arrange
+    const finding = makeFinding({ package: "open/pkg", verdict: "abandoned" });
+    const model = modelWith([finding]);
+
+    // Act + Assert
+    expect(hiddenByFilters(model, stateWith({ view: "findings", q: "no-such-package" }), "open/pkg")).toBe(
+      true,
+    );
+  });
+
+  it("is true once a rail filter excludes it", () => {
+    // Arrange
+    const finding = makeFinding({ package: "open/pkg", verdict: "abandoned", direct: true });
+    const model = modelWith([finding]);
+    const state = stateWith({ view: "findings", filters: withFilters({ scope: ["transitive"] }) });
+
+    // Act + Assert
+    expect(hiddenByFilters(model, state, "open/pkg")).toBe(true);
+  });
+
+  it("is false for a package the tab never lists at all, filters or not — a different fact", () => {
+    // Arrange: an `ok` verdict never enters the Findings population regardless of any filter.
+    const finding = makeFinding({ package: "healthy/pkg", verdict: "ok" });
+    const model = modelWith([finding]);
+    const state = stateWith({ view: "findings", q: "no-such-package" });
+
+    // Act + Assert
+    expect(hiddenByFilters(model, state, "healthy/pkg")).toBe(false);
   });
 });

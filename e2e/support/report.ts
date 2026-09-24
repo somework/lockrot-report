@@ -91,6 +91,10 @@ export interface ReportPage {
    *  while the open package is hidden from its own tab by the search box or a rail filter, and
    *  distinct from the search bar's "Clear". */
   clearFiltersFromDetail(): Promise<void>;
+  /** Whether the detail panel's own Close button currently holds keyboard focus — where "Clear
+   *  filters" (PD-DETAIL-4, DESIGN.md §5) moves focus to, since it unmounts itself on the same
+   *  click. */
+  isFocusOnDetailClose(): Promise<boolean>;
   /** Whether the row for this package can receive keyboard focus at all (M6). */
   rowFocusable(name: string): Promise<boolean>;
   /** Whether the row is marked as the current selection for assistive tech (M6). */
@@ -114,6 +118,13 @@ export interface ReportPage {
   /** The row's age scale (`role="img"`) accessible name, or null when the row draws no scale at
    *  all (PD-ROWS-2, DESIGN.md §5). */
   rowAgeScaleLabel(name: string): Promise<string | null>;
+  /** Whether the row's "+N more…" note is currently on screen (PD-ROWS-1, DESIGN.md §5: print
+   *  hides it once every signal already prints). */
+  rowMoreSignalsVisible(name: string): Promise<boolean>;
+  /** Whether the row's age scale's track, threshold ticks and dot each paint a colour distinct
+   *  from the page background — the forced-colors a11y fix (PD-ROWS-2, DESIGN.md §5): before it,
+   *  all three computed to the same Canvas colour as the page and the scale effectively vanished. */
+  ageScaleForcedColorsVisible(name: string): Promise<{ track: boolean; tick: boolean; dot: boolean }>;
 
   ledgerButton(group: LedgerGroup, key: string): Promise<void>;
   /** null when the button carries no pressed-state at all for assistive tech (M17, legacy). */
@@ -121,6 +132,13 @@ export interface ReportPage {
   /** The button's `title` — "Show only …" unpressed, "Showing only … — click to clear this
    *  filter" pressed (PD-LEDGER-2, DESIGN.md §5). Null if the button carries no title at all. */
   ledgerButtonTitle(group: LedgerGroup, key: string): Promise<string | null>;
+  /** The legend chip's own background/border, plus its swatch's background — the forced-colors
+   *  a11y fix (PD-LEDGER-2, DESIGN.md §5): before it, a pressed chip and an unpressed one, and the
+   *  swatch itself, all painted the same Canvas colour as the page. */
+  legendButtonForcedColorsStyle(
+    group: LedgerGroup,
+    key: string,
+  ): Promise<{ backgroundColor: string; borderColor: string; swatchBackgroundColor: string }>;
   /** The tooltip on "Priority of the N flagged packages" (M29). */
   priorityLedgerTooltip(): Promise<string | null>;
   /** Whether the priority-counts line — the wide band above the ledger, or the phone fold's
@@ -169,6 +187,10 @@ export interface ReportPage {
   isPillPopoverOpen(): Promise<boolean>;
   /** Every visible word in the open pill popover, whitespace-collapsed. */
   pillPopoverText(): Promise<string>;
+  /** Whether the open pill popover's own `::backdrop` paints anything (PD-GLOSSARY-4, DESIGN.md
+   *  §5, visual review) — before this fix it dimmed nothing, so a fixed, centred popover on a short
+   *  page could sit on the very row it opened from with no cue it was an overlay. */
+  pillPopoverBackdropVisible(): Promise<boolean>;
   /** Clicks "In the glossary" inside an open pill popover. */
   openGlossaryFromPillPopover(): Promise<void>;
   /** Whichever element inside the open glossary dialog currently holds focus — its text, and

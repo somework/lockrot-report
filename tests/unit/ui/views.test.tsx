@@ -248,6 +248,47 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
     expect(within(row).getByText(/2 more signals, open the package/)).toBeTruthy();
   });
 
+  // regression review: on screen, only the key fact stands in for the other signals — but print
+  // drops the detail pane entirely (styles/print.css), so a printed row has to carry every one of
+  // them itself (PD-ROWS-1). They stay mounted, under a native `hidden` attribute rather than a
+  // class, so they read as inaccessible here (`queryByRole` above) without print.css ever running —
+  // `hidden` is checked directly, not through a stylesheet vitest's `css: false` never loads.
+  it("keeps every other signal mounted, but inaccessible, behind a native hidden attribute (for print)", () => {
+    // Arrange: same S1/S9/S4 shape as the test above — S4 leads, S1 and S9 are "the rest".
+    const finding = makeFinding({
+      package: "rank/pkg",
+      signals: [
+        makeSignal({ id: "S1", level: "warn", summary: "warn signal" }),
+        makeSignal({ id: "S9", level: "info", summary: "info signal" }),
+        makeSignal({ id: "S4", level: "high", summary: "high signal", data: { years: 8.2 } }),
+      ],
+    });
+    const model = modelWith([finding]);
+
+    // Act
+    const { container } = renderIn(model, stateWith(), <FindingsView />);
+    const rest = container.querySelector(".sig-rest");
+
+    // Assert
+    expect(rest).not.toBeNull();
+    expect((rest as HTMLElement).hidden).toBe(true);
+    expect(rest?.textContent).toContain("warn signal");
+    expect(rest?.textContent).toContain("info signal");
+    expect(rest?.textContent).not.toContain("high signal");
+  });
+
+  it("mounts no .sig-rest at all when the finding carries only its one key-fact signal", () => {
+    // Arrange
+    const finding = makeFinding({ package: "one-sig/pkg", signals: [makeSignal({ id: "S1" })] });
+    const model = modelWith([finding]);
+
+    // Act
+    const { container } = renderIn(model, stateWith(), <FindingsView />);
+
+    // Assert
+    expect(container.querySelector(".sig-rest")).toBeNull();
+  });
+
   it("breaks a level tie in SIGNAL_IDS numeric order (koel_koel's daverandom/resume shape)", () => {
     // Arrange: S2 and S4 both `high` — S2 must win, same as the real fixture's own tie.
     const finding = makeFinding({

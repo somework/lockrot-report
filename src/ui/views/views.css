@@ -219,6 +219,36 @@
   white-space: nowrap;
 }
 
+/* a11y review: forced-colors mode replaces `--border-strong`/`--muted`/`--tone` with Canvas, the
+   page's own background — the same failure `ledger.css`'s own forced-colors block already fixes for
+   its bar segments, but here it took the track, both threshold ticks and the dot with it: measured
+   in both colour schemes, all three compute to the page's Canvas colour, so only the "N.N y" label
+   PD-ROWS-2 promises a reader who skips it survives. The track and ticks get an explicit CanvasText
+   fill. The dot can't lean on colour to say which zone it's in either, so its shape carries that
+   instead: a hollow ring below warn, a dashed ring at warn..high, a filled dot at or above high —
+   each with a Canvas border so it reads as its own mark next to the tick beside it, not a fourth
+   one. */
+@media (forced-colors: active) {
+  .age-scale-track::before {
+    background: CanvasText;
+  }
+  .age-scale-tick {
+    background: CanvasText;
+  }
+  .age-scale-dot {
+    background: Canvas;
+    border: 2px solid CanvasText;
+  }
+  .age-scale-dot.tone-med {
+    border-style: dashed;
+  }
+  .age-scale-dot.tone-crit {
+    background: CanvasText;
+    border-style: solid;
+    border-color: Canvas;
+  }
+}
+
 /* A small inline "open this package" action used by the quiet-advisory note, an Advisories row's
    package mention and a Radius card's pulled list — a link-styled button, never a real `<a>`, since
    it only ever opens the detail pane and never navigates. */

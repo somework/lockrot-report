@@ -61,3 +61,19 @@ test("print keeps a Findings row's verdict pill in its own tone", async ({ page 
   expect(after.borderColor).not.toBe("");
   expect(after.printColorAdjust).toBe("exact");
 });
+
+// PD-ROWS-1 (DESIGN.md §5, regression review): a Findings row shows one key-fact signal line on
+// screen, with a note pointing at the detail pane — but print drops `.shell-detail` entirely (the
+// rule above), so a reader on paper had no "open the package" to follow and lost the other signals
+// outright. koel_koel's daverandom/resume carries three (S2, S4, S5; finding-row-key-fact.spec.ts
+// already covers its screen-only reading).
+test("print shows every signal line of a Findings row, not just its key fact", async ({ page }) => {
+  await report.goto(FIXTURES.koel);
+  expect(await report.rowSignalIds("daverandom/resume")).toEqual(["S2"]);
+  expect(await report.rowMoreSignalsVisible("daverandom/resume")).toBe(true);
+
+  await page.emulateMedia({ media: "print" });
+
+  expect(await report.rowSignalIds("daverandom/resume")).toEqual(["S2", "S4", "S5"]);
+  expect(await report.rowMoreSignalsVisible("daverandom/resume")).toBe(false);
+});

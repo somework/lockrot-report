@@ -1,6 +1,6 @@
 import type { Ref } from "preact";
 import { useReport } from "../context";
-import { applyFilters, population } from "../../domain/filters";
+import { applyFilters, hiddenByFilters, population } from "../../domain/filters";
 import { allAdvisories, passesAdvisoryRail } from "../../domain/advisories";
 import { matchesAdvisory, parseQuery } from "../../domain/query";
 import { radiusCards } from "../../domain/radius";
@@ -89,6 +89,12 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
   const filterable = population(model, state.view).length > 0;
   const line = countLine(model, state);
   const active = activeFilterCount(state);
+  // a11y review: `DetailHeader`'s own "Hidden by the current filters." note has no live region of
+  // its own, so a reader typing a search term never heard that the package they had open just left
+  // the list — only this line's own count is announced. It shares `domain/filters.ts#hiddenByFilters`
+  // with that note rather than duplicating the check, so the two can never disagree about when it
+  // applies.
+  const openPkgHidden = state.pkg !== null && hiddenByFilters(model, state, state.pkg);
 
   return (
     <>
@@ -132,6 +138,9 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
         <p className="count-line" role="status" aria-live="polite">
           {line}
           {active > 0 && <span className="active-filters"> {plural(active, "filter", "filters")} on</span>}
+          {openPkgHidden && (
+            <span className="hidden-pkg-note"> · {state.pkg} is hidden by the current filters</span>
+          )}
         </p>
       )}
     </>

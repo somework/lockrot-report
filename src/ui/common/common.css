@@ -16,8 +16,14 @@ button.pill {
 
 [popover].pill-pop {
   position: fixed;
-  inset: 0;
-  margin: auto;
+  /* visual review: viewport-centred (`inset: 0; margin: auto`) with nothing behind it, this could
+     land squarely on the very row it was opened from on a short page (a small fixture, a narrow
+     viewport) — no dimming and no offset to read as "on top of", not "instead of". Biased toward the
+     top instead of the dead centre, the same way a native `<dialog>`'s browser-default placement
+     rarely fights the content that opened it; `left`/`right: 0` plus `margin: 0 auto` keeps the
+     horizontal centring `inset: 0` used to also give it. */
+  inset: 12% 0 auto 0;
+  margin: 0 auto;
   height: fit-content;
   width: min(300px, calc(100% - 32px));
   max-width: none;
@@ -28,6 +34,11 @@ button.pill {
   background: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow);
+}
+/* The other half of the same fix: dimming the page behind it, like `.glossary::backdrop` (app.css),
+   so an overlap with the row underneath reads as an intentional overlay instead of broken layout. */
+[popover].pill-pop::backdrop {
+  background: var(--backdrop);
 }
 /* `display` is deliberately left out of the rule above: the UA stylesheet's own `[popover]:not(
    :popover-open) { display: none }` is what keeps a closed popover out of layout and the

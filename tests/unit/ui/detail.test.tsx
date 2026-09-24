@@ -700,6 +700,20 @@ describe("Detail", () => {
       expect(dispatch).toHaveBeenCalledWith({ type: "clear" });
     });
 
+    // a11y/regression review: "Clear filters" used to leave focus nowhere once clicked — `hidden`
+    // turns false in the same dispatch and unmounts the very button the click landed on, dropping
+    // keyboard focus to `<body>` (WCAG 2.4.3). It now moves focus to the panel's own Close button,
+    // which is mounted whether or not the note is shown.
+    it("moves focus to the panel's own Close button once clicked", () => {
+      const { container } = renderDetail(MINI, "vendor/transitive", vi.fn(), { q: "no-such-package" });
+
+      fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
+
+      const close = container.querySelector(".detail-close");
+      expect(close).not.toBeNull();
+      expect(document.activeElement).toBe(close);
+    });
+
     it("shows the line when a rail filter, not the search box, is what hides it", () => {
       const { container } = renderDetail(MINI, "vendor/transitive", vi.fn(), {
         filters: { ...EMPTY_FILTERS, verdict: ["pinned"] },

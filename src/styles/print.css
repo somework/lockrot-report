@@ -68,6 +68,23 @@
     border-left-color: #999;
   }
 
+  /* PD-ROWS-1 (DESIGN.md §5, regression review): a Findings row's key fact stands in for its other
+   * signals on screen, with a note pointing at the detail pane this file already hides above — paper
+   * has nothing for that note to open. `.sig-rest` (views.css#FindingRow) carries the rest under a
+   * native `hidden` attribute, which this file's own base.css rule makes `!important` on purpose (so
+   * a class-based display rule elsewhere can never leave a hidden element holding its grid column by
+   * winning a specificity tie); un-hiding it for print has to match that `!important`, or lose to it.
+   * The note itself has nothing left to say once every signal already prints.
+   */
+  .more-sig {
+    display: none;
+  }
+  .sig-rest[hidden] {
+    display: flex !important;
+    flex-direction: column;
+    gap: 3px;
+  }
+
   /* Colour that carries meaning must survive an actual print, not a screen render's approximation
    * of one: a verdict or priority bucket's bar segment (ledger.css `.bar-seg`), a legend's swatch
    * (`.swatch`), a Findings/Packages/Radius row's own verdict/priority pill (styles/base.css

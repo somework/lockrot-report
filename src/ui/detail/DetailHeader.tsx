@@ -1,28 +1,14 @@
+import { useRef } from "preact/hooks";
 import type { Finding } from "../../model/types";
-import { applyFilters, population } from "../../domain/filters";
+import { hiddenByFilters } from "../../domain/filters";
 import { packagistUrl, repoHost, safeHref } from "../../domain/links";
 import { OutLink, Pill, Tag } from "../common/common";
-import { useReport, type ReportContextValue } from "../context";
+import { useReport } from "../context";
 import "./detail.css";
 
 export interface DetailHeaderProps {
   readonly finding: Finding;
   readonly onClose: () => void;
-}
-
-/**
- * PD-DETAIL-4 (DESIGN.md §5): "the detail survives a filter that hides its package" is kept on
- * purpose (§5's own "deliberately kept" list), but a reader who switched tabs or typed a search
- * term and then found the open package silent about that had no way to tell the two apart from "no
- * findings match". True only when the package belongs to the current tab's own population but the
- * query box or the rail filters it out there — never for a package the tab never lists at all (an
- * `ok` package while on the Findings tab, say), which is a different fact this line does not claim.
- */
-function hiddenByFilters(finding: Finding, deps: ReportContextValue): boolean {
-  const { model, state } = deps;
-  const inTab = population(model, state.view).some((f) => f.package === finding.package);
-  if (!inTab) return false;
-  return !applyFilters(model, state, state.view).some((f) => f.package === finding.package);
 }
 
 /**
@@ -35,13 +21,20 @@ function hiddenByFilters(finding: Finding, deps: ReportContextValue): boolean {
  * `safeHref`-checked by `OutLink`, that check just never runs on the free-text value).
  */
 export function DetailHeader({ finding, onClose }: DetailHeaderProps) {
-  const report = useReport();
-  const { model, dispatch } = report;
+  const { model, state, dispatch } = useReport();
   const details = model.details.get(finding.package) ?? null;
   const packagist = packagistUrl(finding, model.details);
   const repositoryLink = safeHref(details?.repositoryLink ?? null);
   const replacement = finding.replacement ?? details?.metadata?.replacement ?? null;
-  const hidden = hiddenByFilters(finding, report);
+  const hidden = hiddenByFilters(model, state, finding.package);
+  // a11y/regression review: "Clear filters" used to leave keyboard focus nowhere. `dispatch` makes
+  // `hidden` false in the same tick, which unmounts this very button — by the time the click handler
+  // would try to move focus onward, the element it ran on is already gone, and the browser drops
+  // focus to <body> (WCAG 2.4.3). `closeRef` names the one control in this header that survives every
+  // state this component renders — the panel's own Close button — so focus always lands somewhere,
+  // read fresh rather than through a state that would need a render to catch up (App.tsx's own
+  // `rowRequest` pattern is for a row that has yet to exist; this one already does).
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   return (
     <div className="detail-head">
@@ -74,6 +67,7 @@ export function DetailHeader({ finding, onClose }: DetailHeaderProps) {
                 className="icon-btn"
                 onClick={() => {
                   dispatch({ type: "clear" });
+                  closeRef.current?.focus();
                 }}
               >
                 Clear filters
@@ -81,7 +75,7 @@ export function DetailHeader({ finding, onClose }: DetailHeaderProps) {
             </p>
           )}
         </div>
-        <button type="button" className="detail-close" onClick={onClose}>
+        <button type="button" ref={closeRef} className="detail-close" onClick={onClose}>
           Close
         </button>
       </div>

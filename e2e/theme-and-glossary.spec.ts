@@ -142,6 +142,18 @@ test.describe("PD-GLOSSARY-4/5: a verdict pill's popover", () => {
     expect(await report.detail()).toEqual(before);
   });
 
+  // visual review: fixed and viewport-centred with no dimming, the popover could land squarely on
+  // the very row it opened from on a short page, with no cue it was an overlay rather than broken
+  // layout (`mini`'s own list is short enough at 1024/1440px for the centred card to overlap it).
+  test("dims the page behind it, like the glossary's own backdrop", async () => {
+    await report.goto(FIXTURES.mini);
+    expect(await report.pillPopoverBackdropVisible()).toBe(false);
+
+    await report.clickVerdictPill("vendor/transitive", "abandoned");
+
+    expect(await report.pillPopoverBackdropVisible()).toBe(true);
+  });
+
   test('"In the glossary" opens the glossary', async () => {
     await report.goto(FIXTURES.mini);
     await report.clickVerdictPill("vendor/transitive", "abandoned");

@@ -227,6 +227,17 @@ export class NewReportPage implements ReportPage {
     await this.detailRegion().getByRole("button", { name: "Clear filters" }).click();
   }
 
+  /** a11y/regression review: "Clear filters" used to unmount itself on click (`hidden` flips false
+   *  in the same dispatch), dropping keyboard focus to `<body>`. It now moves focus to the panel's
+   *  own Close button, which never unmounts — checked by name rather than by counting `document
+   *  .activeElement === document.body`, since a body-focused page and a page focused on some other,
+   *  unrelated control would both fail that weaker check the same way. */
+  async isFocusOnDetailClose(): Promise<boolean> {
+    return this.detailRegion()
+      .getByRole("button", { name: "Close" })
+      .evaluate((el) => el === document.activeElement);
+  }
+
   async rowFocusable(name: string): Promise<boolean> {
     return this.pkgLocator(name).evaluate((el) => (el as HTMLElement).tabIndex >= 0);
   }
@@ -271,9 +282,54 @@ export class NewReportPage implements ReportPage {
     return (await note.count()) > 0 ? (await note.first().innerText()).trim() : null;
   }
 
+  /** Whether the row's "+N more…" note is currently on screen — `Locator#isVisible()`, not
+   *  `innerText()` (`rowMoreSignalsText`'s own check): a hidden element's `innerText` getter falls
+   *  back to its descendant text per the HTML spec, so it would keep reading the note's words even
+   *  once print.css (PD-ROWS-1, DESIGN.md §5) hides it. */
+  async rowMoreSignalsVisible(name: string): Promise<boolean> {
+    const note = this.pkgLocator(name).getByText(/more signals?, open the package/);
+    return (await note.count()) > 0 && (await note.first().isVisible());
+  }
+
   async rowAgeScaleLabel(name: string): Promise<string | null> {
     const scale = this.pkgLocator(name).getByRole("img");
     return (await scale.count()) > 0 ? scale.first().getAttribute("aria-label") : null;
+  }
+
+  /** The age scale's decorative parts (`AgeScale.tsx`) carry no accessible role of their own — the
+   *  whole thing is one `role=img` — so they're read by position from that element (`children[0]`
+   *  the track, its own two ticks and dot inside that), the same structural approach
+   *  `ledgerSegmentPrintStyle` below already uses for the ledger's first bar segment, rather than by
+   *  class. a11y review (PD-ROWS-2, DESIGN.md §5): forced-colors mode used to paint the track, both
+   *  ticks and the dot the same Canvas colour as the page itself; each boolean here is whether that
+   *  part's own computed colour still differs from it. */
+  async ageScaleForcedColorsVisible(name: string): Promise<{ track: boolean; tick: boolean; dot: boolean }> {
+    return this.pkgLocator(name)
+      .getByRole("img")
+      .first()
+      .evaluate((scale) => {
+        const track = scale.children[0];
+        const tick = track?.children[0];
+        const dot = track?.children[2];
+        if (
+          !(track instanceof HTMLElement) ||
+          !(tick instanceof HTMLElement) ||
+          !(dot instanceof HTMLElement)
+        ) {
+          throw new Error("age scale is missing a track, tick or dot");
+        }
+        const pageBg = getComputedStyle(document.body).backgroundColor;
+        const trackColor = getComputedStyle(track, "::before").backgroundColor;
+        const tickColor = getComputedStyle(tick).backgroundColor;
+        const dotStyle = getComputedStyle(dot);
+        const distinct = (c: string) => c !== pageBg && c !== "rgba(0, 0, 0, 0)" && c !== "";
+        // The dot's shape carries the zone (views.css): a hollow/dashed ring paints its border, a
+        // filled dot (at or above `high`) its background, with the border deliberately left the same
+        // colour as the page there to separate it from the tick beside it — either one, on its own,
+        // says the dot is drawn at all.
+        const dotVisible = distinct(dotStyle.borderTopColor) || distinct(dotStyle.backgroundColor);
+        return { track: distinct(trackColor), tick: distinct(tickColor), dot: dotVisible };
+      });
   }
 
   /** The name starts with the key (a count may follow it, see LEDGER_LABEL). Anchored rather than a
@@ -302,6 +358,26 @@ export class NewReportPage implements ReportPage {
 
   async ledgerButtonTitle(group: LedgerGroup, key: string): Promise<string | null> {
     return this.ledgerLocator(group, key).getAttribute("title");
+  }
+
+  /** The legend chip's own colours, read the same structural way `ageScaleForcedColorsVisible`
+   *  reads the age scale's: by position (`children[0]`, the swatch), not by class. a11y review
+   *  (PD-LEDGER-2, DESIGN.md §5): forced-colors mode used to flatten a pressed chip and an unpressed
+   *  one to the same Canvas-on-Canvas look, and erase the swatch the same way. */
+  async legendButtonForcedColorsStyle(
+    group: LedgerGroup,
+    key: string,
+  ): Promise<{ backgroundColor: string; borderColor: string; swatchBackgroundColor: string }> {
+    return this.ledgerLocator(group, key).evaluate((el) => {
+      const swatch = el.children[0];
+      if (!(swatch instanceof HTMLElement)) throw new Error("legend chip has no swatch");
+      const style = getComputedStyle(el);
+      return {
+        backgroundColor: style.backgroundColor,
+        borderColor: style.borderColor,
+        swatchBackgroundColor: getComputedStyle(swatch).backgroundColor,
+      };
+    });
   }
 
   async priorityLedgerTooltip(): Promise<string | null> {
@@ -461,6 +537,20 @@ export class NewReportPage implements ReportPage {
     return collapse(
       await this.page.evaluate(() => document.querySelector(":popover-open")?.textContent ?? ""),
     );
+  }
+
+  /** visual review (DESIGN.md §5, PD-GLOSSARY-4): the popover used to dim nothing behind it, so a
+   *  fixed, viewport-centred card could land on the very row that opened it with no cue it was an
+   *  overlay. `::backdrop` is a pseudo-element, unreachable by role or by `textContent`, so this
+   *  reads its computed style the same way `:popover-open` above is read — off the platform, not a
+   *  class. */
+  async pillPopoverBackdropVisible(): Promise<boolean> {
+    return this.page.evaluate(() => {
+      const popover = document.querySelector(":popover-open");
+      if (popover === null) return false;
+      const backdrop = getComputedStyle(popover, "::backdrop").backgroundColor;
+      return backdrop !== "rgba(0, 0, 0, 0)" && backdrop !== "";
+    });
   }
 
   async openGlossaryFromPillPopover(): Promise<void> {

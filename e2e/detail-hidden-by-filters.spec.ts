@@ -40,6 +40,35 @@ test("shows a factual line, with a control that clears the filters, once a searc
   expect((await report.detail()).text).not.toContain("Hidden by the current filters");
 });
 
+// a11y/regression review: "Clear filters" used to unmount itself in the same click that ran it
+// (`hidden` flips false once the dispatch clears the filters), dropping keyboard focus to `<body>`
+// with nothing read out to say the filters had cleared (WCAG 2.4.3).
+test("moves focus to the detail's own Close button instead of dropping it, once clicked", async () => {
+  await report.goto(FIXTURES.mini);
+  await report.openPackage("vendor/transitive");
+  await report.search("no-such-package");
+
+  await report.clearFiltersFromDetail();
+
+  expect(await report.isFocusOnDetailClose()).toBe(true);
+});
+
+// a11y review: the note above sits inside `DetailHeader`, with no role or live region of its own
+// (`role` null, `aria-live` null, no `[aria-live]` ancestor) — a reader typing a search term never
+// heard that the package they had open just left the list. `SearchBar`'s own count line already is
+// a live region (`role="status" aria-live="polite"`); it now names the fact too, off the same
+// `domain/filters.ts#hiddenByFilters` check, so it can never disagree with the note above about
+// when it applies.
+test("the search status line also names the open package once it's hidden", async () => {
+  await report.goto(FIXTURES.mini);
+  await report.openPackage("vendor/transitive");
+  expect(await report.countLine()).not.toContain("vendor/transitive");
+
+  await report.search("no-such-package");
+
+  expect(await report.countLine()).toContain("vendor/transitive is hidden by the current filters");
+});
+
 test("shows the line when a ledger filter, not the search box, is what hides it", async () => {
   await report.goto(FIXTURES.mini);
   await report.openPackage("vendor/transitive"); // abandoned
