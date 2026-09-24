@@ -49,6 +49,7 @@ function renderIn(model: Model, state: State, ui: ComponentChild) {
     dispatch,
     now: new Date(model.report.generatedAt),
     wide: true,
+    openGlossary: vi.fn(),
   };
   const result = render(<ReportContext.Provider value={value}>{ui}</ReportContext.Provider>);
   return { ...result, dispatch };

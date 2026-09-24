@@ -117,15 +117,15 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
           </button>
         </div>
       )}
+      {/* PD-GLOSSARY-1: the full keys-and-syntax paragraph moved into the glossary's "Keys and
+          search" section, which opens where the reader already is instead of every findings list
+          carrying its own copy. What stays here is the one thing a reader would otherwise have no
+          way to discover: that pressing ? gets them the rest. One line reads the same at 320px,
+          where the old paragraph pushed the list down a full screen (DESIGN.md §8), and at 1440px,
+          where it no longer competes with the search box for attention. */}
       {filterable && (
         <p className="hint">
-          <span className="hint-keys">
-            <kbd>/</kbd> to search · <kbd>j</kbd> <kbd>k</kbd> to move · <kbd>Enter</kbd> to open ·{" "}
-            <kbd>Esc</kbd> to close · <kbd>?</kbd> for the glossary.{" "}
-          </span>
-          The tab, the filters and the open package are in the address, so the address bar is a link to what
-          you are looking at. Keys: <code>verdict:</code> <code>priority:</code> <code>signal:</code>{" "}
-          <code>severity:</code> <code>cve:</code> <code>direct:</code> <code>dev:</code>
+          Press <kbd>?</kbd> for keys and search syntax.
         </p>
       )}
       {line !== null && (

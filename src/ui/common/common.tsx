@@ -1,6 +1,9 @@
 import type { ComponentChildren } from "preact";
+import { useId } from "preact/hooks";
 import { safeHref } from "../../domain/links";
 import { DOCS_URL, TONE, VERDICT_DEFS, type Tone } from "../../domain/vocab";
+import { useReport } from "../context";
+import "./common.css";
 
 /**
  * The small pieces every surface uses. Tone is a class, never an inline style: the page runs under
@@ -12,7 +15,7 @@ export function toneClass(tone: Tone): string {
   return `tone-${tone}`;
 }
 
-/** A verdict or priority word in its tone. `docs` links it to the glossary on lockrot.dev. */
+/** A verdict or priority word in its tone. `docs` gives it a popover holding the definition. */
 export function Pill({ word, docs = false }: { word: string; docs?: boolean }) {
   const className = `pill ${toneClass(TONE(word))}`;
   const title = VERDICT_DEFS[word];
@@ -24,16 +27,61 @@ export function Pill({ word, docs = false }: { word: string; docs?: boolean }) {
     );
   }
 
+  return <DocsPill word={word} className={className} title={title} />;
+}
+
+/**
+ * PD-GLOSSARY-4: this used to be an `<a>` out to lockrot.dev — useless offline, and a report opened
+ * from a PHAR or a file:// path has no network at all (DESIGN.md §1.1). A native popover holds the
+ * same definition the glossary would give it, in place, plus a way into the full glossary and the
+ * lockrot.dev link for whoever does have it open. `useId` keeps every instance's popover unique, so
+ * two pills for the same verdict on screen at once (a Findings row and its open detail) don't fight
+ * over which is `popovertarget`'s match.
+ *
+ * A `<button popovertarget>` is a control (`ui/keyboard.ts`'s `CONTROLS` already matches `button`),
+ * so Enter on the pill activates it instead of toggling whatever row it sits in (M5), and the row's
+ * own click guard is widened to ignore it and its popover in `views/FindingRow.tsx`.
+ */
+function DocsPill({
+  word,
+  className,
+  title,
+}: {
+  word: string;
+  className: string;
+  title: string | undefined;
+}) {
+  const id = useId();
+  const { openGlossary } = useReport();
+
   return (
-    <a
-      className={className}
-      title={title}
-      href={`${DOCS_URL}#the-nine-verdicts`}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      {word}
-    </a>
+    <>
+      <button
+        type="button"
+        className={className}
+        title={title}
+        popovertarget={id}
+        popovertargetaction="toggle"
+      >
+        {word}
+      </button>
+      <div id={id} popover="auto" className={`pill-pop ${toneClass(TONE(word))}`}>
+        <p className="pill-pop-word">{word}</p>
+        <p className="pill-pop-def">{title}</p>
+        <div className="pill-pop-actions">
+          <button
+            type="button"
+            className="pill-pop-action"
+            popovertarget={id}
+            popovertargetaction="hide"
+            onClick={openGlossary}
+          >
+            In the glossary
+          </button>
+          <OutLink href={`${DOCS_URL}#the-nine-verdicts`}>lockrot.dev</OutLink>
+        </div>
+      </div>
+    </>
   );
 }
 

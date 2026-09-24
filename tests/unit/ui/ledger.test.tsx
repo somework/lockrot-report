@@ -97,7 +97,14 @@ function renderIn(
 ) {
   return render(
     <ReportContext.Provider
-      value={{ model, state, dispatch, now: new Date(model.report.generatedAt), wide: true }}
+      value={{
+        model,
+        state,
+        dispatch,
+        now: new Date(model.report.generatedAt),
+        wide: true,
+        openGlossary: vi.fn(),
+      }}
     >
       {ui}
     </ReportContext.Provider>,

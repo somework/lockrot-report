@@ -9,6 +9,9 @@
  *   differ from the rows drawn, and could open a package that had no row at all.
  * - M10: nothing but Escape acts while the glossary is open; the legacy page kept moving the
  *   selection behind it.
+ * - PD-GLOSSARY-6, PD-SUMMARY-4: an open popover (a verdict pill's, the header's gate fact) eats
+ *   Escape before the glossary and the detail do, so closing the popover never also closes what
+ *   sits underneath it.
  *
  * `decideKey` reads no DOM and changes nothing, so every rule is a unit test. `keyInputFrom` is the
  * thin adapter from a real KeyboardEvent, and `findRow` the one DOM lookup the shell needs.
@@ -23,9 +26,11 @@ export interface KeyInput {
   /** Focus is in the page's search box, the one field Escape blurs. */
   searchFocused: boolean;
   dialogOpen: boolean;
-  /** A native popover (Header's gate fact, `popover="auto"`) is open. The browser's own Escape
-   *  handling already closes it as that keypress's default action; decideEscape must not also
-   *  close the detail underneath in the same press (DESIGN.md §8). */
+  /** A native popover (`popover="auto"`: a verdict pill's definition, PD-GLOSSARY-4, or the
+   *  header's gate fact, PD-SUMMARY-2) is open. Escape leaves it to the browser's own light-dismiss
+   *  instead of also closing what sits underneath — `decideEscape` returning `ignore` here matters
+   *  as much as what it returns: `prevents()` then stays false, so the keydown's default action is
+   *  never cancelled and the native dismissal still runs. */
   popoverOpen: boolean;
   /** `data-pkg` of the row the key was pressed in, or null outside any row. */
   rowPkg: string | null;
@@ -66,14 +71,13 @@ export function decideKey(input: KeyInput): KeyDecision {
   return IGNORE;
 }
 
-/**
- * Escape closes one thing per press, the topmost first: glossary, then a native popover (left to
- * the browser itself, so `event.preventDefault()` — see `prevents()` — never suppresses the
- * default action that closes it), then detail, then search focus.
- */
+/** Escape closes one thing per press, the topmost first: an open popover, then the glossary, then
+ *  the detail, then search focus. The popover is topmost of all — a pill's can be open over the
+ *  detail, over the glossary, or over neither — and closes by the browser's own doing, not a
+ *  dispatch (PD-GLOSSARY-6, PD-SUMMARY-4). */
 function decideEscape(input: KeyInput): KeyDecision {
-  if (input.dialogOpen) return { type: "closeGlossary" };
   if (input.popoverOpen) return IGNORE;
+  if (input.dialogOpen) return { type: "closeGlossary" };
   if (input.selected !== null) return { type: "closeDetail", restore: input.selected };
   if (input.searchFocused) return { type: "blurSearch" };
 
@@ -115,7 +119,7 @@ export interface KeyContext {
   rendered: () => readonly string[];
 }
 
-/** Whether any native popover (Header's gate fact) is currently open. Read from the DOM, not
+/** Whether any native popover (a verdict pill's, Header's gate fact) is currently open. Read from the DOM, not
  *  application state: `popover="auto"` opens and closes without either (DESIGN.md §8). Guarded
  *  the same way `useHeaderHeight` guards `ResizeObserver` — an engine that does not know the
  *  `:popover-open` pseudo-class must read as "no popover open", never throw out of a keydown
@@ -141,6 +145,8 @@ export function keyInputFrom(event: KeyboardEvent, context: KeyContext): KeyInpu
     typing: target?.closest(TEXT_FIELDS) != null,
     searchFocused: context.search !== null && active === context.search,
     dialogOpen: context.dialogOpen,
+    // Read fresh on each Escape rather than tracked in Preact state: the browser opens and closes a
+    // `popover="auto"` natively, without a dispatch either way. Only Escape reads it.
     popoverOpen: event.key === "Escape" && hasOpenPopover(),
     rowPkg: row?.getAttribute("data-pkg") ?? null,
     // A control that contains the row is not "inside" it; a row that is itself a control is, since

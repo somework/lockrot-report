@@ -90,7 +90,7 @@ describe("Escape closes the topmost thing, one per press", () => {
     expect(decideKey(input({ key: "Escape" }))).toEqual({ type: "ignore" });
   });
 
-  test("a native popover, over an open detail: the browser's own Escape handling closes the popover, not the detail", () => {
+  test("a native popover (the gate fact, PD-SUMMARY-4), over an open detail: the browser's own Escape handling closes the popover, not the detail", () => {
     // The popover closes as event's default action, which only fires when nothing here calls
     // event.preventDefault() — decideKey has to return "ignore" (prevents() === false), not
     // "closeDetail", or the same Escape press would close both at once.
@@ -99,10 +99,14 @@ describe("Escape closes the topmost thing, one per press", () => {
     expect(prevents(decision)).toBe(false);
   });
 
-  test("the glossary still wins over a popover, same as over the detail", () => {
-    expect(decideKey(input({ key: "Escape", dialogOpen: true, popoverOpen: true }))).toEqual({
-      type: "closeGlossary",
-    });
+  test("a pill's popover first, even over the glossary and an open detail (PD-GLOSSARY-6)", () => {
+    // The browser closes the popover itself; the page's own decision is to do nothing so it
+    // does not also close the glossary or the detail underneath it on the same press.
+    const decision = decideKey(
+      input({ key: "Escape", popoverOpen: true, dialogOpen: true, selected: "a/two" }),
+    );
+    expect(decision).toEqual({ type: "ignore" });
+    expect(prevents(decision)).toBe(false);
   });
 });
 

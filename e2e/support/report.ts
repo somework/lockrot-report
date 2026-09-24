@@ -143,6 +143,16 @@ export interface ReportPage {
    *  the browser's UA stylesheet gives a non-modal `<dialog>` otherwise (M28). */
   glossaryPosition(): Promise<string>;
 
+  /** Clicks a verdict pill (the word, in its row) — PD-GLOSSARY-4/5. On a Findings row this must
+   *  open the pill's popover without also opening or closing the row's own detail. */
+  clickVerdictPill(pkg: string, verdict: string): Promise<void>;
+  /** Whether some pill's popover is currently showing (`:popover-open`), wherever it was opened. */
+  isPillPopoverOpen(): Promise<boolean>;
+  /** Every visible word in the open pill popover, whitespace-collapsed. */
+  pillPopoverText(): Promise<string>;
+  /** Clicks "In the glossary" inside an open pill popover. */
+  openGlossaryFromPillPopover(): Promise<void>;
+
   /** `"dark"` or `"light"` as the effective theme, read off computed styles, not an attribute that
    *  might be absent (M11: the attribute can be absent while the page is visibly dark). */
   theme(): Promise<"dark" | "light">;
