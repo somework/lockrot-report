@@ -301,6 +301,10 @@
 }
 .pulled-row {
   display: flex;
+  /* A long package name next to its verdict pill must wrap, not push the card past a phone's
+     edge: at 320px on Linux fonts the pill used to end 2px outside the viewport. */
+  flex-wrap: wrap;
+  min-width: 0;
   gap: 7px;
   align-items: baseline;
   background: none;
@@ -310,6 +314,10 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
+}
+.pulled-row .pkg-link-btn {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .pulled-row .arrow {
   font-family: var(--mono);
