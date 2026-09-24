@@ -15,6 +15,12 @@ changes the placeholders, the payload tag or the address format, raises it.
   second `<body>`, and one quoted JSX braces that read like a placeholder. The build now fails on
   any comment that reaches `dist/`, and on any `{{…}}` other than the three placeholders.
 
+### Fixed
+
+- A release-branch label in the timeline is no longer cut short. It grows toward the side with
+  more room, and one too long for either side wraps, keeping `php` next to its constraint; the
+  lane grows to hold it. A branch plotted mid-axis used to end in "… · p…".
+
 ## [0.11.0]
 
 The page lockrot 0.11.0 writes with `--format=html`, rewritten out of lockrot's repository: same

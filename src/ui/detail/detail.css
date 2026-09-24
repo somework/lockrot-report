@@ -265,7 +265,7 @@
   grid-template-columns: 62px minmax(0, 1fr);
   gap: 4px;
   align-items: center;
-  height: 22px;
+  min-height: 22px;
 }
 .detail-timeline-branch {
   font-family: var(--mono);
@@ -281,7 +281,11 @@
 }
 .detail-timeline-track {
   position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 22px;
   height: 100%;
+  padding: 3px 0;
   border-bottom: 1px dotted var(--border);
 }
 .detail-timeline-dot {
@@ -301,18 +305,16 @@
   background: var(--none);
   box-shadow: 0 0 0 3px var(--none-soft);
 }
-/* Bounded on both sides by the track, so a label never runs over the branch names or out of the
-   panel on a narrow sheet: it ends in an ellipsis instead (the full text stays in the DOM). */
+/* In the track's flow and bounded by it, so a label never runs over the branch names or out of the
+   panel on a narrow sheet: one too long for its side wraps at its spaces, and the lane grows. */
 .detail-timeline-label {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  flex: 1 1 auto;
+  min-width: 0;
   font-family: var(--mono);
   font-size: 10px;
+  line-height: 1.35;
   color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 .detail-timeline-label.is-flipped {
   text-align: right;
