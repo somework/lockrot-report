@@ -45,5 +45,9 @@ export const FIXTURES = {
   wallabag: "wallabag_wallabag",
   /** Carries one finding with a Packagist-validated `replacement` (most fixtures have none). */
   mautic: "mautic_mautic",
+  /** `network_failures: true` and a note naming the advisory check, zero advisories in the
+   *  document — the AdvisoryLedger's "check may be incomplete" case (PD-LEDGER-1, DESIGN.md §5),
+   *  which none of the other fixtures carry. */
+  advisoryIncomplete: "mini-advisory-incomplete",
 } as const;
 export type FixtureName = (typeof FIXTURES)[keyof typeof FIXTURES];

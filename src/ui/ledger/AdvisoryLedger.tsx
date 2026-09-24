@@ -2,7 +2,7 @@ import { useReport } from "../context";
 import { toneClass } from "../common/common";
 import { plural } from "../../domain/format";
 import { population } from "../../domain/filters";
-import { allAdvisories, sevTone } from "../../domain/advisories";
+import { advisoryCheckIncomplete, allAdvisories, sevTone } from "../../domain/advisories";
 import { SEVERITIES } from "../../model/types";
 import "./ledger.css";
 
@@ -10,7 +10,8 @@ import "./ledger.css";
  * Every advisory's severity, across every package the run checked — ported from legacy
  * `renderLedger()`'s advisory block (`report.js:273-291`). Like `VerdictLedger`, a severity bucket
  * with a zero count is skipped rather than shown at zero; a report with no advisories at all shows
- * the muted fallback line legacy did (`report.js:291`), instead of an empty bar and legend.
+ * the muted fallback line legacy did (`report.js:291`), instead of an empty bar and legend —
+ * PD-LEDGER-1 (DESIGN.md §5) splits that fallback in two, below.
  *
  * `packagesWithAdvisories` reuses `population(model, "advisories")` — the same population the
  * Advisories tab and the search bar's count line read (`domain/filters.ts`) — rather than
@@ -28,9 +29,19 @@ export function AdvisoryLedger() {
   }
   const shown = SEVERITIES.filter((sev) => (counts[sev] ?? 0) > 0);
 
+  // PD-LEDGER-1 (DESIGN.md §5): "no advisory" was a finding whenever `advisories.length` was 0,
+  // whether or not the check that would have found one ever ran. `advisoryCheckIncomplete` reads
+  // the same run-wide facts (`network_failures`, `notes`) the Run tab's own notes list already
+  // shows, so this line and that list can never disagree about whether the run says so.
+  const incomplete = advisories.length === 0 && advisoryCheckIncomplete(model);
+  const totalChecked = model.report.packagesChecked ?? model.report.findings.length;
+  const checkedPhrase = plural(totalChecked, "package", "packages");
+
   const label =
     advisories.length === 0
-      ? "No advisory affects this lock"
+      ? incomplete
+        ? `No advisory found; ${checkedPhrase} could not be confirmed clear`
+        : "No advisory affects this lock"
       : `${plural(advisories.length, "advisory", "advisories")} on ${plural(packagesWithAdvisories, "package", "packages")}`;
 
   return (
@@ -38,7 +49,10 @@ export function AdvisoryLedger() {
       <span className="eyebrow">{label}</span>
       <div className="bar" role="img" aria-label="Advisory severity distribution">
         {shown.length === 0 ? (
-          <span className={`bar-seg ${toneClass("none")}`} style={{ flexGrow: 1 }} />
+          // A green bar claims a clean check; a check that may not have run gets the same neutral
+          // "low" tone an unknown verdict or priority already renders at (PriorityLedger,
+          // VerdictLedger), never the affirmative "none" tone (PD-LEDGER-1).
+          <span className={`bar-seg ${toneClass(incomplete ? "low" : "none")}`} style={{ flexGrow: 1 }} />
         ) : (
           shown.map((sev) => (
             <span
@@ -52,7 +66,11 @@ export function AdvisoryLedger() {
       </div>
       <div className="legend">
         {shown.length === 0 ? (
-          <span className="legend-empty">no advisory affects this lock</span>
+          <span className="legend-empty">
+            {incomplete
+              ? `advisory check incomplete; ${checkedPhrase} not confirmed clear`
+              : "no advisory affects this lock"}
+          </span>
         ) : (
           shown.map((sev) => {
             const on = state.filters.sev.includes(sev);

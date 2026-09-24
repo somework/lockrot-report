@@ -250,8 +250,9 @@ describe("VerdictLedger", () => {
 });
 
 describe("AdvisoryLedger", () => {
-  it("shows the muted fallback when the document carries no advisories", () => {
-    // Arrange
+  it("shows the muted fallback, in the green all-clear tone, when the check ran and found nothing", () => {
+    // Arrange: mini.json's network_failures is false and its notes name neither the advisory nor
+    // the audit check (PD-LEDGER-1, DESIGN.md §5) — the clean case.
     const model = loadMini();
 
     // Act
@@ -261,6 +262,31 @@ describe("AdvisoryLedger", () => {
     // fallback (lower case, `report.js:278-291`) — so both are expected here.
     expect(screen.getAllByText(/no advisory affects this lock/i)).toHaveLength(2);
     expect(screen.queryByRole("button", { name: /^critical/ })).toBeNull();
+    expect(
+      screen.getByRole("img", { name: "Advisory severity distribution" }).querySelector(".bar-seg")
+        ?.className,
+    ).toContain("tone-none");
+  });
+
+  it("says the check may be incomplete, in a neutral tone, when the run's own data says so (PD-LEDGER-1)", () => {
+    // Arrange: mini-advisory-incomplete.json — network_failures true, a note naming the advisory
+    // check, zero advisories in the document.
+    const model = loadFixture("mini-advisory-incomplete.json");
+
+    // Act
+    renderIn(<AdvisoryLedger />, model, INITIAL_STATE);
+
+    // Assert: neither says the lock is clean nor stays silent about why there is nothing to show.
+    expect(screen.queryByText(/no advisory affects this lock/i)).toBeNull();
+    expect(screen.getAllByText(/no advisory found; 2 packages could not be confirmed clear/i)).toHaveLength(
+      1,
+    );
+    expect(screen.getByText(/advisory check incomplete; 2 packages not confirmed clear/i)).toBeTruthy();
+    const segment = screen
+      .getByRole("img", { name: "Advisory severity distribution" })
+      .querySelector(".bar-seg");
+    expect(segment?.className).toContain("tone-low");
+    expect(segment?.className).not.toContain("tone-none");
   });
 
   it("buckets advisories by severity, skipping a bucket with no advisory in it", () => {

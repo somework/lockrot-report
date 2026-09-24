@@ -519,6 +519,40 @@ export class NewReportPage implements ReportPage {
     return this.tabLocator("findings").isVisible();
   }
 
+  async ledgerSegmentPrintStyle(): Promise<{ backgroundColor: string; printColorAdjust: string }> {
+    const bar = this.page
+      .getByRole("group", { name: "Ledger" })
+      .getByRole("img", { name: "Verdict distribution" });
+    return bar.evaluate((el) => {
+      const segment = el.firstElementChild;
+      if (!(segment instanceof HTMLElement)) throw new Error("Verdict distribution bar has no segment");
+      const style = getComputedStyle(segment);
+      return {
+        backgroundColor: style.backgroundColor,
+        printColorAdjust:
+          style.getPropertyValue("-webkit-print-color-adjust") ||
+          style.getPropertyValue("print-color-adjust"),
+      };
+    });
+  }
+
+  async pillPrintStyle(
+    pkg: string,
+    verdict: string,
+  ): Promise<{ borderColor: string; printColorAdjust: string }> {
+    return this.pkgLocator(pkg)
+      .getByRole("button", { name: verdict })
+      .evaluate((el) => {
+        const style = getComputedStyle(el);
+        return {
+          borderColor: style.borderColor,
+          printColorAdjust:
+            style.getPropertyValue("-webkit-print-color-adjust") ||
+            style.getPropertyValue("print-color-adjust"),
+        };
+      });
+  }
+
   async pressSlash(): Promise<void> {
     await this.page.keyboard.press("/");
   }

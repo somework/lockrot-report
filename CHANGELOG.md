@@ -23,6 +23,11 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Changed
 
+- The advisory ledger no longer reads "No advisory affects this lock" when the report's own data
+  says the check may not have covered every package (a network failure, or a note naming the
+  advisory or audit check): it says "No advisory found; N packages could not be confirmed clear"
+  in a neutral tone instead of the green all-clear. Unchanged when the check ran cleanly.
+
 - A Findings row leads with one key-fact line — its highest-level signal — instead of up to three,
   plus a muted "+N more signals, open the package" when there are more.
 
@@ -61,6 +66,10 @@ tag or the address format, says so under **Breaking** in its entry.
   row's top corner instead of drifting to whichever line the wrap happens to end on.
 - A release branch's timeline label no longer starts under the dot's glow ring on a narrow track;
   the gap now has a fixed floor sized to the dot's own footprint, not just a share of the track.
+- A ledger bar segment, a legend swatch, a verdict or priority pill, a row's own priority stripe and
+  the tone-coloured text beside them (a priority-group heading, the summary band's counts) now opt
+  out of Chromium's ink-saving print default (`print-color-adjust: exact`), the same way the age
+  scale's tick and dot already did, instead of printing as whatever colour that default leaves them.
 
 ## [0.12.0]
 

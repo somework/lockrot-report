@@ -189,6 +189,16 @@ export interface ReportPage {
    *  visible under the current media — used to check that print styling hides interactive chrome. */
   isNavigationVisible(): Promise<boolean>;
 
+  /** The verdict-distribution bar's first segment (Ledger.tsx's `role=img, name="Verdict
+   *  distribution"`): its computed background colour, and the computed `print-color-adjust` (or
+   *  its `-webkit-` form) that keeps that colour once an actual print applies Chromium's
+   *  ink-saving default — a plain screenshot never exercises that default, so the property itself
+   *  is what a print test can assert on (print.css). */
+  ledgerSegmentPrintStyle(): Promise<{ backgroundColor: string; printColorAdjust: string }>;
+  /** The same pair, read off one Findings row's own verdict pill (its border colour carries the
+   *  pill's tone, styles/base.css `.pill`). */
+  pillPrintStyle(pkg: string, verdict: string): Promise<{ borderColor: string; printColorAdjust: string }>;
+
   pressSlash(): Promise<void>;
   pressQuestion(): Promise<void>;
   pressEscape(): Promise<void>;

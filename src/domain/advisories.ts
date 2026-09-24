@@ -90,6 +90,27 @@ export interface AdvisoryWithFinding {
   readonly finding: Finding;
 }
 
+/**
+ * Whether the report's own data says the advisory check (S9) may not have run for every package —
+ * PD-LEDGER-1 (DESIGN.md §5). Unlike S2/S3/S4/S8, which S10 names per finding when their own check
+ * did not run, nothing in the schema flags S9 that way: advisories come from "one request to
+ * Packagist for the whole lock" (lockrot docs/verdicts.md#security-advisories), so a failure there
+ * is a run-wide fact, not a per-package one, and the document carries it as `network_failures` and
+ * free-text `notes`, never as a signal. `network_failures` is lockrot's blanket flag for any
+ * unreachable repository or forge, including an `--offline` run with nothing cached
+ * (lockrot docs/ci.md); a note naming "advisor(y/ies)" or "audit" is the only place a Composer-
+ * version or install-time-budget skip of this specific check would show up, since neither is a
+ * network failure at all. Neither test is exact — a network failure that happened to spare the
+ * advisory request still reads as incomplete here, and a note phrased some other way would be
+ * missed — but the cost is asymmetric: overclaiming "incomplete" costs a reader one glance at the
+ * Run tab's notes, overclaiming "clean" costs them a vulnerability nobody looked for. See
+ * AdvisoryLedger.tsx, the only caller.
+ */
+export function advisoryCheckIncomplete(model: Model): boolean {
+  if (model.report.networkFailures) return true;
+  return model.report.notes.some((note) => /advisor|audit/i.test(note));
+}
+
 /** Every advisory of every finding in the report, paired with its finding and sorted for the
  *  Advisories tab (legacy's `ALL_ADVISORIES`, report.js:147-157, plus its sort at report.js:525-529). */
 export function allAdvisories(model: Model): readonly AdvisoryWithFinding[] {

@@ -67,4 +67,28 @@
     background: none;
     border-left-color: #999;
   }
+
+  /* Colour that carries meaning must survive an actual print, not a screen render's approximation
+   * of one: a verdict or priority bucket's bar segment (ledger.css `.bar-seg`), a legend's swatch
+   * (`.swatch`), a Findings/Packages/Radius row's own verdict/priority pill (styles/base.css
+   * `.pill`) and its priority-tone stripe (views.css `.row .stripe`), and the tone-coloured text a
+   * Findings priority-group heading and the summary band's counts paint with the same `--tone`
+   * custom property (`.group-head h2`, `.summary-count b`, `.summary-clean`) all read `--tone` as a
+   * background or text colour. Chromium's print default drops background colour — and, per the same
+   * "Background graphics" setting, any colour it treats as decorative — unless the rule opts out;
+   * `views.css`'s `.age-scale-tick`/`.age-scale-dot` already carry this for PD-ROWS-2's scale, and
+   * this gathers the rest of the page's tone-bearing elements here, in the one file print decisions
+   * live in, rather than scattering the same two declarations across every component's own
+   * stylesheet. Elements this omits (a pill inside `.shell-detail`, a signal id in the glossary) are
+   * never on screen when a reader prints, since the rule above already hides their containers. */
+  .bar-seg,
+  .swatch,
+  .pill,
+  .stripe,
+  .group-head h2,
+  .summary-count b,
+  .summary-clean {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
 }
