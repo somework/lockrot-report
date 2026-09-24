@@ -7,6 +7,9 @@ import { DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC, TONE } from "../../domain/vocab";
 import { plural } from "../../domain/format";
 import { sevTone } from "../../domain/advisories";
 import { severityRank } from "../../domain/severity";
+import { signalSortKey } from "../../domain/filters";
+import { ageScale } from "../../domain/age";
+import { AgeScale } from "./AgeScale";
 import "./views.css";
 
 /**
@@ -56,6 +59,28 @@ export function openInteractions(
       dispatch({ type: "select", pkg });
     },
   };
+}
+
+/** `high` outranks `warn` outranks everything else (including the open-ended `"info"` and a signal
+ *  id this renderer does not yet know a level for) — the same three-tier reading `SignalList.tsx`'s
+ *  `signalTone` gives a signal's own colour, used here to rank instead of to paint. */
+const LEVEL_RANK: Readonly<Record<string, number>> = { high: 2, warn: 1 };
+
+/**
+ * The one signal a Findings row leads with (PD-ROWS-1, DESIGN.md §5): the highest-level signal,
+ * ties broken in `SIGNAL_IDS` numeric order (`domain/filters.ts#signalSortKey`, the same order the
+ * rail's own signal group and the glossary sort by, M2's fix) — never the document's own order,
+ * which is lockrot's internal rule evaluation order and carries no such guarantee. `undefined` for
+ * a finding with no signal at all; the caller falls back to the evidence sentence.
+ */
+function keyFactSignal(signals: readonly Signal[]): Signal | undefined {
+  return [...signals].sort((a, b) => {
+    const rank = (LEVEL_RANK[b.level] ?? 0) - (LEVEL_RANK[a.level] ?? 0);
+    if (rank !== 0) return rank;
+    const [an, as] = signalSortKey(a.id);
+    const [bn, bs] = signalSortKey(b.id);
+    return an !== bn ? an - bn : as.localeCompare(bs);
+  })[0];
 }
 
 /** One S1-S10 line inside a row (legacy `signalLine`, report.js:397-404). */
@@ -118,19 +143,22 @@ function RowTags({ finding }: { finding: Finding }) {
 }
 
 /** A Findings-tab row: a list item rather than a listbox option, because it holds links (the signal
- *  ids) and an option's children are presentational, which would hide those links from assistive
- *  tech. The open row is marked with `aria-current`, the list-item equivalent of a selection.
- *  Verdict, replacement, name, version, tags, then up to three signal lines (or
- *  the evidence sentence when the finding carries none) — ported from legacy `rowHtml`
- *  (report.js:406-446). The verdict pill carries `docs` (PD-GLOSSARY-5) so a reader gets the
- *  definition without opening the package at all; `rowInteractions`'s guard above is what keeps
+ *  id, the age scale is an image, not a link) and an option's children are presentational, which
+ *  would hide those from assistive tech. The open row is marked with `aria-current`, the list-item
+ *  equivalent of a selection. Verdict, replacement, name, version, tags, then one key-fact line and
+ *  its age scale (or the evidence sentence when the finding carries no signal at all) — ported from
+ *  legacy `rowHtml` (report.js:406-446), collapsed from up to three signal lines to one plus a scale
+ *  per PD-ROWS-1/PD-ROWS-2 (DESIGN.md §5): a reviewer's own reading of the up-to-three lines was
+ *  "text, text, text, no scales". The verdict pill carries `docs` (PD-GLOSSARY-5) so a reader gets
+ *  the definition without opening the package at all; `rowInteractions`'s guard above is what keeps
  *  that click from also toggling the row. */
 export function FindingRow({ finding }: { finding: Finding }) {
-  const { state, dispatch } = useReport();
+  const { model, state, dispatch } = useReport();
   const isOpen = state.pkg === finding.package;
   const stripeTone = TONE(finding.priority === "none" ? finding.verdict : finding.priority);
-  const shown = finding.signals.slice(0, 3);
-  const rest = finding.signals.length - shown.length;
+  const keyFact = keyFactSignal(finding.signals);
+  const rest = keyFact ? finding.signals.length - 1 : 0;
+  const scale = keyFact ? ageScale(finding, model.report.run.thresholds) : null;
 
   return (
     <li
@@ -152,16 +180,17 @@ export function FindingRow({ finding }: { finding: Finding }) {
           <span className="ver mono">{finding.version}</span>
           <RowTags finding={finding} />
         </span>
-        {shown.length > 0 ? (
-          <span className="sig-lines">
-            {shown.map((signal) => (
-              <SignalLine key={signal.id} signal={signal} />
-            ))}
-            {rest > 0 && (
-              <span className="more-sig">
-                + {plural(rest, "more signal", "more signals")}, open the package
-              </span>
-            )}
+        {keyFact ? (
+          <span className="key-fact">
+            <span className="sig-lines">
+              <SignalLine signal={keyFact} />
+              {rest > 0 && (
+                <span className="more-sig">
+                  + {plural(rest, "more signal", "more signals")}, open the package
+                </span>
+              )}
+            </span>
+            {scale && <AgeScale scale={scale} />}
           </span>
         ) : (
           <span className="ev">{finding.evidence}</span>

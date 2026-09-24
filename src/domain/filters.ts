@@ -244,8 +244,10 @@ function buildScopeGroup(state: State, here: readonly Finding[]): RailGroup {
 }
 
 /** `S<n>` sorts by `n` (the M2 fix: numeric id order, so S10 lands after S9 instead of between S1
- *  and S2); any id that isn't `S<digits>` sorts after all of those, alphabetically among itself. */
-function signalSortKey(id: string): readonly [number, string] {
+ *  and S2); any id that isn't `S<digits>` sorts after all of those, alphabetically among itself.
+ *  Exported for `views/FindingRow.tsx`'s key-fact pick (PD-ROWS-1), which ties on this same order
+ *  instead of restating it. */
+export function signalSortKey(id: string): readonly [number, string] {
   const match = /^S(\d+)$/.exec(id);
   const digits = match?.[1];
   return digits !== undefined ? [Number(digits), ""] : [Number.MAX_SAFE_INTEGER, id];

@@ -15,7 +15,7 @@ import { PackagesView } from "../../../src/ui/views/PackagesView";
 import { AdvisoriesView } from "../../../src/ui/views/AdvisoriesView";
 import { RadiusView } from "../../../src/ui/views/RadiusView";
 import { RunView } from "../../../src/ui/views/RunView";
-import { makeFinding, makeModel } from "../domain/fixtures";
+import { makeFinding, makeModel, makeSignal } from "../domain/fixtures";
 
 afterEach(cleanup);
 
@@ -208,6 +208,155 @@ describe("FindingsView", () => {
     // Assert
     expect(dispatch).not.toHaveBeenCalled();
     expect(row.getAttribute("data-pkg")).toBe("any/pkg");
+  });
+});
+
+describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.md §5)", () => {
+  const RELEASE_THRESHOLDS = [
+    ["release-warn-years", 3],
+    ["release-high-years", 5],
+  ] as const;
+
+  function modelWith(findings: readonly ReturnType<typeof makeFinding>[]): Model {
+    const model = flaggedModel(findings);
+    return {
+      ...model,
+      report: { ...model.report, run: { ...model.report.run, thresholds: RELEASE_THRESHOLDS } },
+    };
+  }
+
+  it("leads with the highest-level signal, not the document's own signal order", () => {
+    // Arrange: S1 (warn) comes first in the document, S9 carries no level this renderer ranks at
+    // all, S4 (high) comes last — the row must still lead with S4.
+    const finding = makeFinding({
+      package: "rank/pkg",
+      signals: [
+        makeSignal({ id: "S1", level: "warn", summary: "warn signal" }),
+        makeSignal({ id: "S9", level: "info", summary: "info signal" }),
+        makeSignal({ id: "S4", level: "high", summary: "high signal", data: { years: 8.2 } }),
+      ],
+    });
+    const model = modelWith([finding]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+    const row = screen.getByRole("listitem", { name: "rank/pkg" });
+
+    // Assert
+    expect(within(row).getByRole("link", { name: "S4" })).toBeTruthy();
+    expect(within(row).queryByRole("link", { name: "S1" })).toBeNull();
+    expect(within(row).getByText(/2 more signals, open the package/)).toBeTruthy();
+  });
+
+  it("breaks a level tie in SIGNAL_IDS numeric order (koel_koel's daverandom/resume shape)", () => {
+    // Arrange: S2 and S4 both `high` — S2 must win, same as the real fixture's own tie.
+    const finding = makeFinding({
+      package: "tie/pkg",
+      signals: [
+        makeSignal({ id: "S4", level: "high", summary: "last push", data: { years: 8.2 } }),
+        makeSignal({ id: "S2", level: "high", summary: "last release", data: { years: 8.7 } }),
+      ],
+    });
+    const model = modelWith([finding]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+    const row = screen.getByRole("listitem", { name: "tie/pkg" });
+
+    // Assert
+    expect(within(row).getByRole("link", { name: "S2" })).toBeTruthy();
+    expect(within(row).queryByRole("link", { name: "S4" })).toBeNull();
+  });
+
+  it('singularises "+N more" and omits it entirely for a finding with only one signal', () => {
+    // Arrange
+    const one = makeFinding({ package: "one-sig/pkg", signals: [makeSignal({ id: "S1" })] });
+    const two = makeFinding({
+      package: "two-sig/pkg",
+      signals: [makeSignal({ id: "S1" }), makeSignal({ id: "S3" })],
+    });
+    const model = modelWith([one, two]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+
+    // Assert
+    const oneRow = screen.getByRole("listitem", { name: "one-sig/pkg" });
+    expect(within(oneRow).queryByText(/more signal/)).toBeNull();
+    const twoRow = screen.getByRole("listitem", { name: "two-sig/pkg" });
+    expect(within(twoRow).getByText(/1 more signal, open the package/)).toBeTruthy();
+    expect(within(twoRow).queryByText(/1 more signals/)).toBeNull();
+  });
+
+  it("falls back to the evidence sentence for a finding with no signal at all", () => {
+    // Arrange
+    const finding = makeFinding({
+      package: "no-sig/pkg",
+      signals: [],
+      evidence: "the repository is archived",
+    });
+    const model = modelWith([finding]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+    const row = screen.getByRole("listitem", { name: "no-sig/pkg" });
+
+    // Assert
+    expect(within(row).getByText("the repository is archived")).toBeTruthy();
+    expect(within(row).queryByRole("img")).toBeNull();
+  });
+
+  it("draws the age scale, with an aria-label naming the fact and both thresholds, when the key-fact signal carries a numeric years", () => {
+    // Arrange
+    const finding = makeFinding({
+      package: "scaled/pkg",
+      signals: [
+        makeSignal({ id: "S2", level: "high", summary: "last release 8.7 years ago", data: { years: 8.7 } }),
+      ],
+    });
+    const model = modelWith([finding]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+    const row = screen.getByRole("listitem", { name: "scaled/pkg" });
+
+    // Assert
+    expect(
+      within(row).getByRole("img", { name: "last release 8.7 years ago; warn at 3 years, high at 5" }),
+    ).toBeTruthy();
+  });
+
+  it("draws no scale when the key-fact signal is not S8/S2/S4, even though other signals are", () => {
+    // Arrange: S3 (archived) outranks nothing here but is the only signal, and carries no years at
+    // all — there is nothing an age scale could plot.
+    const finding = makeFinding({
+      package: "unscaled/pkg",
+      signals: [makeSignal({ id: "S3", level: "high", summary: "repository archived" })],
+    });
+    const model = modelWith([finding]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+    const row = screen.getByRole("listitem", { name: "unscaled/pkg" });
+
+    // Assert
+    expect(within(row).queryByRole("img")).toBeNull();
+  });
+
+  it("draws no scale when the run recorded no matching threshold, even though the key fact has a numeric years", () => {
+    // Arrange: no thresholds at all this time, unlike modelWith()'s own fixtures.
+    const finding = makeFinding({
+      package: "no-threshold/pkg",
+      signals: [makeSignal({ id: "S2", level: "high", data: { years: 8.7 } })],
+    });
+    const model = flaggedModel([finding]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+    const row = screen.getByRole("listitem", { name: "no-threshold/pkg" });
+
+    // Assert
+    expect(within(row).queryByRole("img")).toBeNull();
   });
 });
 

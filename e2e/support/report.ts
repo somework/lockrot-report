@@ -100,6 +100,16 @@ export interface ReportPage {
   /** Moves keyboard focus onto the first outbound link inside a package's row (e.g. a signal-id
    *  link or the Packagist link) without clicking it, so a spec can then press Enter on it (M5). */
   focusLinkInRow(name: string): Promise<void>;
+  /** The accessible name (e.g. "S2") of every signal-id link inside a Findings row, in document
+   *  order — a Findings row carries no other link, so this doubles as "how many signal lines this
+   *  row draws" (PD-ROWS-1, DESIGN.md §5: exactly one, the row's own key fact). */
+  rowSignalIds(name: string): Promise<string[]>;
+  /** The row's "+N more signal(s), open the package" note, or null when the row shows none — one
+   *  signal, or none at all (PD-ROWS-1). */
+  rowMoreSignalsText(name: string): Promise<string | null>;
+  /** The row's age scale (`role="img"`) accessible name, or null when the row draws no scale at
+   *  all (PD-ROWS-2, DESIGN.md §5). */
+  rowAgeScaleLabel(name: string): Promise<string | null>;
 
   ledgerButton(group: LedgerGroup, key: string): Promise<void>;
   /** null when the button carries no pressed-state at all for assistive tech (M17, legacy). */

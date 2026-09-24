@@ -148,6 +148,77 @@
   padding-left: 34px;
 }
 
+/* ---------- key-fact line + age scale inside a Findings row (PD-ROWS-1/2, DESIGN.md §5) ----------
+   Wide: the scale sits at the end of the key-fact line's row. Narrow (<760px, DESIGN.md §8's own
+   breakpoint): they stack, so the scale never competes with the package name on `.line1` above for
+   width at 320px. */
+.key-fact {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+@media (max-width: 759px) {
+  .key-fact {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+.age-scale {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+.age-scale-track {
+  position: relative;
+  width: 64px;
+  height: 10px;
+  flex: 0 0 auto;
+}
+.age-scale-track::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  transform: translateY(-50%);
+  background: var(--border-strong);
+  border-radius: 1px;
+}
+.age-scale-tick {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 10px;
+  background: var(--muted);
+  transform: translateX(-1px);
+  /* Chromium's print default drops background colour unless the reader enabled "Background
+     graphics"; these two marks are the scale's whole point on paper, so they opt out of that
+     default rather than rely on a setting DESIGN.md's "print readable" promise can't assume. */
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.age-scale-dot {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone);
+  transform: translate(-50%, -50%);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.age-scale-label {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 /* A small inline "open this package" action used by the quiet-advisory note, an Advisories row's
    package mention and a Radius card's pulled list — a link-styled button, never a real `<a>`, since
    it only ever opens the detail pane and never navigates. */

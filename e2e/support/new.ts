@@ -257,6 +257,21 @@ export class NewReportPage implements ReportPage {
     await this.pkgLocator(name).getByRole("link").first().focus();
   }
 
+  async rowSignalIds(name: string): Promise<string[]> {
+    const links = await this.pkgLocator(name).getByRole("link").all();
+    return Promise.all(links.map((link) => link.innerText()));
+  }
+
+  async rowMoreSignalsText(name: string): Promise<string | null> {
+    const note = this.pkgLocator(name).getByText(/more signals?, open the package/);
+    return (await note.count()) > 0 ? (await note.first().innerText()).trim() : null;
+  }
+
+  async rowAgeScaleLabel(name: string): Promise<string | null> {
+    const scale = this.pkgLocator(name).getByRole("img");
+    return (await scale.count()) > 0 ? scale.first().getAttribute("aria-label") : null;
+  }
+
   /** The name starts with the key (a count may follow it, see LEDGER_LABEL). Anchored rather than a
    *  substring, because rail buttons carry the same vocabulary inside longer names: the S1 signal
    *  filter reads "S1 marked abandoned", which a bare "abandoned" would also match. Scoped to the

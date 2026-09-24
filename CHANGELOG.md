@@ -17,8 +17,14 @@ tag or the address format, says so under **Breaking** in its entry.
 - A verdict pill's definition opens in a popover in place, a Findings row's pill included, instead
   of linking to lockrot.dev, which a report opened offline could never reach. The popover also
   opens the full glossary.
+- A small age scale beside a Findings row's key fact: a track, a tick at the run's warn and high
+  thresholds, and a dot at the finding's own age, coloured by zone. Shown whenever the finding
+  carries an S8, S2 or S4 signal and the run recorded both matching thresholds.
 
 ### Changed
+
+- A Findings row leads with one key-fact line — its highest-level signal — instead of up to three,
+  plus a muted "+N more signals, open the package" when there are more.
 
 - The package detail leads with the follow-the-upstream action, when there is one. "How it is
   reached", "The lock entry" and "Provenance" are folded by default, each opened from its heading.
