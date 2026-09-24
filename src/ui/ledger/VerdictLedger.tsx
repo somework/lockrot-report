@@ -1,5 +1,5 @@
 import { useReport } from "../context";
-import { toneClass } from "../common/common";
+import { LegendButton, toneClass } from "../common/common";
 import { TONE } from "../../domain/vocab";
 import { VERDICTS } from "../../model/types";
 import "./ledger.css";
@@ -41,23 +41,19 @@ export function VerdictLedger() {
         ))}
       </div>
       <div className="legend">
-        {shown.map((v) => {
-          const on = state.filters.verdict.includes(v);
-          return (
-            <button
-              key={v}
-              type="button"
-              className={`legend-btn ${toneClass(TONE(v))}${v === "ok" ? " legend-btn-dim" : ""}`}
-              aria-pressed={on}
-              onClick={() => {
-                dispatch({ type: "toggle", group: "verdict", key: v });
-              }}
-            >
-              <i className="swatch" aria-hidden="true" />
-              {v} <i className="count">{counts[v] ?? 0}</i>
-            </button>
-          );
-        })}
+        {shown.map((v) => (
+          <LegendButton
+            key={v}
+            tone={TONE(v)}
+            dim={v === "ok"}
+            pressed={state.filters.verdict.includes(v)}
+            label={v}
+            count={counts[v] ?? 0}
+            onToggle={() => {
+              dispatch({ type: "toggle", group: "verdict", key: v });
+            }}
+          />
+        ))}
       </div>
     </div>
   );

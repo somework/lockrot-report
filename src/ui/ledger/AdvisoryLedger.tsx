@@ -1,5 +1,5 @@
 import { useReport } from "../context";
-import { toneClass } from "../common/common";
+import { LegendButton, toneClass } from "../common/common";
 import { plural } from "../../domain/format";
 import { population } from "../../domain/filters";
 import { advisoryCheckIncomplete, allAdvisories, sevTone } from "../../domain/advisories";
@@ -72,23 +72,18 @@ export function AdvisoryLedger() {
               : "no advisory affects this lock"}
           </span>
         ) : (
-          shown.map((sev) => {
-            const on = state.filters.sev.includes(sev);
-            return (
-              <button
-                key={sev}
-                type="button"
-                className={`legend-btn ${toneClass(sevTone(sev))}`}
-                aria-pressed={on}
-                onClick={() => {
-                  dispatch({ type: "toggle", group: "sev", key: sev });
-                }}
-              >
-                <i className="swatch" aria-hidden="true" />
-                {sev} <i className="count">{counts[sev] ?? 0}</i>
-              </button>
-            );
-          })
+          shown.map((sev) => (
+            <LegendButton
+              key={sev}
+              tone={sevTone(sev)}
+              pressed={state.filters.sev.includes(sev)}
+              label={sev}
+              count={counts[sev] ?? 0}
+              onToggle={() => {
+                dispatch({ type: "toggle", group: "sev", key: sev });
+              }}
+            />
+          ))
         )}
       </div>
     </div>

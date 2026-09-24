@@ -34,13 +34,17 @@ interface ShortcutDeps {
   dispatch: (action: Action) => void;
   search: RefObject<HTMLInputElement>;
   glossaryOpen: boolean;
+  /** Opens with no term to highlight — the "?" shortcut, unlike a verdict pill's "In the glossary",
+   *  never names one (PD-GLOSSARY-7, DESIGN.md §5). Also clears whatever term a previous open left
+   *  behind, the same reset `Header`'s own glossary button already gets through this callback. */
+  openGlossary: () => void;
   setGlossaryOpen: (open: boolean) => void;
   rowRequest: { current: RowRequest };
 }
 
 /** Carries out what keyboard.ts decided. */
 function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
-  const { dispatch, search, setGlossaryOpen, rowRequest } = deps;
+  const { dispatch, search, openGlossary, setGlossaryOpen, rowRequest } = deps;
   switch (decision.type) {
     case "toggleRow":
       dispatch({ type: "select", pkg: decision.pkg });
@@ -60,7 +64,7 @@ function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
       search.current?.blur();
       break;
     case "openGlossary":
-      setGlossaryOpen(true);
+      openGlossary();
       break;
     case "closeGlossary":
       setGlossaryOpen(false);
@@ -159,10 +163,29 @@ export function App({ model }: { model: Model }) {
   const [state, dispatch] = useHashState(model, wide);
   const theme = useTheme();
   const [glossaryOpen, setGlossaryOpen] = useState(false);
+  // The verdict word "In the glossary" opens to, or null for the "?" shortcut and Header's own
+  // button, which never name one (PD-GLOSSARY-7, DESIGN.md §5) — state, not a ref, since `Glossary`
+  // reads it as a prop and needs the render it changes to see the new value.
+  const [glossaryTerm, setGlossaryTerm] = useState<string | null>(null);
+  // The element to return focus to once the glossary closes, read by `Glossary`'s own `useDialog`
+  // in place of a freshly-read `document.activeElement` (a11y review: focus lost opening the
+  // glossary from a pill popover). A ref, not state: setting it never needs its own render, only
+  // to be in place before `glossaryOpen` flips true.
+  const glossaryOpener = useRef<HTMLElement | null>(null);
+  const openGlossary = useCallback(() => {
+    glossaryOpener.current = null;
+    setGlossaryTerm(null);
+    setGlossaryOpen(true);
+  }, []);
+  const openGlossaryFrom = useCallback((returnTo: HTMLElement | null, term?: string) => {
+    glossaryOpener.current = returnTo;
+    setGlossaryTerm(term ?? null);
+    setGlossaryOpen(true);
+  }, []);
   const search = useRef<HTMLInputElement>(null);
   const rowRequest = useRef<RowRequest>(null);
   const idBase = useId();
-  useShortcuts({ model, state, dispatch, search, glossaryOpen, setGlossaryOpen, rowRequest });
+  useShortcuts({ model, state, dispatch, search, glossaryOpen, openGlossary, setGlossaryOpen, rowRequest });
 
   // A layout effect, so the row is focused in the same task as the render that follows the key or
   // click. A plain effect waits for the next frame, and a reader (or a test) who moves focus in
@@ -198,19 +221,6 @@ export function App({ model }: { model: Model }) {
   }, [state.pkg]);
 
   const now = useMemo(() => new Date(model.report.generatedAt), [model]);
-  // The element to return focus to once the glossary closes, read by `Glossary`'s own `useDialog`
-  // in place of a freshly-read `document.activeElement` (a11y review: focus lost opening the
-  // glossary from a pill popover). A ref, not state: setting it never needs its own render, only
-  // to be in place before `glossaryOpen` flips true.
-  const glossaryOpener = useRef<HTMLElement | null>(null);
-  const openGlossary = useCallback(() => {
-    glossaryOpener.current = null;
-    setGlossaryOpen(true);
-  }, []);
-  const openGlossaryFrom = useCallback((returnTo: HTMLElement | null) => {
-    glossaryOpener.current = returnTo;
-    setGlossaryOpen(true);
-  }, []);
   const value = useMemo(
     () => ({ model, state, dispatch, now, wide, openGlossary, openGlossaryFrom }),
     [model, state, dispatch, now, wide, openGlossary, openGlossaryFrom],
@@ -243,6 +253,7 @@ export function App({ model }: { model: Model }) {
       <Glossary
         open={glossaryOpen}
         opener={glossaryOpener}
+        highlightTerm={glossaryTerm}
         onClose={() => {
           setGlossaryOpen(false);
         }}

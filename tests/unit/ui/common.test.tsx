@@ -7,7 +7,7 @@ import { INITIAL_STATE } from "../../../src/state/types";
 import type { Model } from "../../../src/model/types";
 import { normalize } from "../../../src/model/normalize";
 import { ReportContext, type ReportContextValue } from "../../../src/ui/context";
-import { Pill } from "../../../src/ui/common/common";
+import { LegendButton, Pill } from "../../../src/ui/common/common";
 
 afterEach(cleanup);
 
@@ -90,9 +90,10 @@ describe("Pill", () => {
       fireEvent.click(screen.getByRole("button", { name: /in the glossary/i }));
 
       // Assert: the pill itself, not the "In the glossary" button that hides its own popover in
-      // the same click and so cannot be a useful place to return focus to.
+      // the same click and so cannot be a useful place to return focus to. The word travels too
+      // (PD-GLOSSARY-7), so the glossary knows which entry to scroll to and mark.
       expect(openGlossaryFrom).toHaveBeenCalledTimes(1);
-      expect(openGlossaryFrom).toHaveBeenCalledWith(pillButton);
+      expect(openGlossaryFrom).toHaveBeenCalledWith(pillButton, "pinned");
     });
 
     it("links out to lockrot.dev's verdicts section for whoever does have a network", () => {
@@ -103,5 +104,39 @@ describe("Pill", () => {
       const out = screen.getByRole("link", { name: "lockrot.dev" });
       expect(out.getAttribute("href")).toBe("https://lockrot.dev/verdicts/#the-nine-verdicts");
     });
+  });
+});
+
+describe("LegendButton (PD-LEDGER-2, DESIGN.md §5)", () => {
+  it("names the click's effect in its title, unpressed", () => {
+    // Arrange / Act
+    renderIn(<LegendButton tone="high" pressed={false} label="left-behind" count={3} onToggle={vi.fn()} />);
+
+    // Assert
+    const button = screen.getByRole("button", { name: "left-behind 3" });
+    expect(button.getAttribute("title")).toBe("Show only left-behind");
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("names clearing the filter in its title once pressed", () => {
+    // Arrange / Act
+    renderIn(<LegendButton tone="high" pressed label="left-behind" count={3} onToggle={vi.fn()} />);
+
+    // Assert
+    const button = screen.getByRole("button", { name: "left-behind 3" });
+    expect(button.getAttribute("title")).toBe("Showing only left-behind — click to clear this filter");
+    expect(button.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("calls onToggle when clicked", () => {
+    // Arrange
+    const onToggle = vi.fn();
+    renderIn(<LegendButton tone="none" pressed={false} label="ok" count={2} onToggle={onToggle} />);
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "ok 2" }));
+
+    // Assert
+    expect(onToggle).toHaveBeenCalledOnce();
   });
 });

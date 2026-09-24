@@ -86,25 +86,37 @@
   color: var(--muted);
 }
 
+/* PD-LEDGER-2 (DESIGN.md §5): a legend entry is a filter toggle, not static text ("Anatoly:
+   'the ledger legend looks like plain text, I didn't know I could click it'"). A pill-shaped chip
+   with its own hover/focus/pressed states reads as a control at a glance, without the row itself
+   growing any louder than the swatch-plus-count it already was. */
 .legend-btn {
-  background: none;
-  border: 0;
-  border-bottom: 1px solid transparent;
-  padding: 2px 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px 3px 8px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   color: inherit;
   font: inherit;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
 }
 
 .legend-btn:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
   color: var(--ink);
 }
 
 .legend-btn[aria-pressed="true"] {
-  border-bottom-color: currentColor;
+  background: var(--tone-soft);
+  border-color: var(--tone);
+  color: var(--tone);
 }
 
 /* A bucket with nothing flagged in it reads quieter, but its text keeps full contrast: the legacy

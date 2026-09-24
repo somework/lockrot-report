@@ -60,6 +60,18 @@
   color: var(--muted);
   white-space: nowrap;
 }
+/* PD-DETAIL-4 (DESIGN.md §5): the factual line for a package the current search or rail filters
+   hide from its own tab's list, with a control to clear them — the deliberate "detail survives a
+   filter" behaviour (§5) stays, this only tells a reader it is happening. */
+.detail-hidden-note {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+}
 .detail-close {
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -292,6 +304,12 @@
   font-size: 10px;
   color: var(--muted);
 }
+/* PD-TIMELINE-1 (Timeline.tsx's own comment): the first tick can legitimately plot at or left of
+   0% (the C2 fix keeps it even then) — centered like every other tick, half its own width ran past
+   the axis's left edge. Left-aligned instead, it grows rightward from wherever `left` clamps it. */
+.detail-timeline-tick-first {
+  transform: none;
+}
 .detail-timeline-lane {
   display: grid;
   grid-template-columns: 62px minmax(0, 1fr);
@@ -320,14 +338,20 @@
   padding: 3px 0;
   border-bottom: 1px dotted var(--border);
 }
+/* PD-TIMELINE-2 (DESIGN.md §5): pinned to where a single-line label's vertical center sits (half
+   of the track's 22px min-height, minus half the dot's own 9px) instead of `top: 50%` of the whole
+   track — a wrapped two-line label (a long branch name, or one with its php constraint on its own
+   line) grew the track taller and dragged a center-anchored dot down between both lines, away from
+   the text it marks. `--border-strong` read as barely more than the dark-theme `--surface` behind
+   it (item e); `--muted` is already tuned for contrast against every surface (styles/tokens.css). */
 .detail-timeline-dot {
   position: absolute;
-  top: 50%;
+  top: 6.5px;
   width: 9px;
   height: 9px;
-  margin: -5px 0 0 -4.5px;
+  margin: 0 0 0 -4.5px;
   border-radius: 50%;
-  background: var(--border-strong);
+  background: var(--muted);
 }
 .detail-timeline-lane-installed .detail-timeline-dot {
   background: var(--crit);

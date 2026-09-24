@@ -123,6 +123,17 @@ const EXTRA = normalize({
         evidence: "",
       },
       {
+        package: "vendor/edge-timeline",
+        version: "1.x-dev",
+        verdict: "left-behind",
+        priority: "high",
+        direct: true,
+        dev: false,
+        signals: [],
+        chain: [],
+        evidence: "",
+      },
+      {
         package: "vendor/no-suggestion",
         version: "1.0.0",
         verdict: "left-behind",
@@ -180,6 +191,37 @@ const EXTRA = normalize({
     ],
   },
   details: {
+    // PD-TIMELINE-1: `min` (the oldest dated branch) sits on the last day of 2020, so the year
+    // axis's first tick (2020's own Jan 1) plots well left of it — a large, unambiguous negative
+    // `x`, not a borderline one, so the clamp this fixture exercises can't pass by accident.
+    "vendor/edge-timeline": {
+      metadata: {
+        branches: [
+          {
+            branch: "1.x",
+            installed: true,
+            highest: "v1.0.0",
+            highest_released: "2020-12-31T00:00:00.000Z",
+            highest_commit_date: null,
+            newest_dated: null,
+            newest_dated_released: null,
+            dated_by: null,
+            php: null,
+          },
+          {
+            branch: "2.x",
+            installed: false,
+            highest: "v2.0.0",
+            highest_released: "2021-12-31T00:00:00.000Z",
+            highest_commit_date: null,
+            newest_dated: null,
+            newest_dated_released: null,
+            dated_by: null,
+            php: null,
+          },
+        ],
+      },
+    },
     "vendor/freetext-replacement": { metadata: { replacement: "some/other-package" } },
     "vendor/empty-lock-strings": {
       // KeyValue.tsx's `presentRows` used to keep an empty-string value, and Detail.tsx's own
@@ -219,7 +261,15 @@ function sectionKeyValue(container: ParentNode, heading: string): Element | null
   return openReference(container, heading)?.querySelector("dl.detail-kv") ?? null;
 }
 
-function renderDetail(model: Model, pkg: string | null, onClose: () => void = vi.fn()) {
+/** `stateOverrides` lets a caller open the panel under a search term or a rail filter already in
+ *  force — PD-DETAIL-4's own tests need that — without every other test naming every field. The
+ *  render's own `dispatch` mock comes back too, so a test can assert what a click sent it. */
+function renderDetail(
+  model: Model,
+  pkg: string | null,
+  onClose: () => void = vi.fn(),
+  stateOverrides: Partial<State> = {},
+) {
   const state: State = {
     view: "findings",
     q: "",
@@ -228,17 +278,19 @@ function renderDetail(model: Model, pkg: string | null, onClose: () => void = vi
     sort: "verdict",
     sortDesc: false,
     filters: EMPTY_FILTERS,
+    ...stateOverrides,
   };
   const dispatch: (action: Action) => void = vi.fn();
   const now = new Date(model.report.generatedAt);
 
-  return render(
+  const result = render(
     <ReportContext.Provider
       value={{ model, state, dispatch, now, wide: true, openGlossary: vi.fn(), openGlossaryFrom: vi.fn() }}
     >
       <Detail onClose={onClose} />
     </ReportContext.Provider>,
   );
+  return { ...result, dispatch };
 }
 
 describe("Detail", () => {
@@ -485,6 +537,48 @@ describe("Detail", () => {
       expect(container.querySelector(".detail-timeline-lane-installed")).toBeTruthy();
       expect(container.querySelector(".detail-timeline-lane-newest")).toBeTruthy();
       expect(screen.getByText(/you are on v1\.1\.10/)).toBeTruthy();
+      // Both legend facts apply here — an installed branch that is not the newest one — so both show.
+      const legend = container.querySelector(".detail-timeline-legend");
+      expect(legend?.textContent).toContain("branch still releasing");
+    });
+
+    it("clamps a first tick that plots left of the axis and drops its centering transform (PD-TIMELINE-1, DESIGN.md §5)", () => {
+      const { container } = renderDetail(EXTRA_MODEL, "vendor/edge-timeline");
+      const ticks = Array.from(container.querySelectorAll<HTMLElement>(".detail-timeline-tick"));
+      expect(ticks.length).toBeGreaterThan(1);
+
+      const first = ticks[0];
+      expect(first?.classList.contains("detail-timeline-tick-first")).toBe(true);
+      // The un-clamped `x` is well negative (this fixture's own doc comment); clamped to the axis's
+      // own left edge instead of running off it.
+      expect(parseFloat(first?.style.left ?? "-1")).toBe(0);
+
+      for (const tick of ticks.slice(1)) {
+        expect(tick.classList.contains("detail-timeline-tick-first")).toBe(false);
+      }
+    });
+
+    it("shows a branch's own version once, not repeated with a bare 'v' prefix (PD-TIMELINE-3, DESIGN.md §5)", () => {
+      // daverandom/resume (koel_koel.json): no maintained branches, so each release is its own
+      // "branch" named "0.0.3"/"0.0.2" — the tag label datedTag reads off the same release repeats
+      // it back as "v0.0.3"/"v0.0.2".
+      const { container } = renderDetail(KOEL, "daverandom/resume");
+      const timeline = container.querySelector(".detail-timeline");
+      expect(timeline?.textContent).not.toContain("v0.0.3");
+      expect(timeline?.textContent).not.toContain("v0.0.2");
+      expect(timeline?.textContent).toContain("0.0.3");
+      expect(timeline?.textContent).toContain("2018-01-28");
+      expect(timeline?.textContent).toContain("0.0.2");
+      expect(timeline?.textContent).toContain("2017-09-26");
+    });
+
+    it("shows only the legend entries a state this branch set actually has (PD-TIMELINE-4, DESIGN.md §5)", () => {
+      // Both of daverandom/resume's dated branches are its own past releases: the newest one is also
+      // the installed one, so nothing here is "still releasing" on a branch the reader has moved off.
+      const { container } = renderDetail(KOEL, "daverandom/resume");
+      const legend = container.querySelector(".detail-timeline-legend");
+      expect(legend?.textContent).toContain("you are on v0.0.3");
+      expect(legend?.textContent).not.toContain("branch still releasing");
     });
   });
 
@@ -585,6 +679,39 @@ describe("Detail", () => {
       const lockEntry = openReference(container, "The lock entry");
       expect(lockEntry?.open).toBe(true);
       expect(lockEntry?.querySelector("dl.detail-kv")?.textContent).toContain("installed");
+    });
+  });
+
+  describe("PD-DETAIL-4 (DESIGN.md §5): hidden by the current filters", () => {
+    it("says nothing when the open package matches the current filters", () => {
+      const { container } = renderDetail(MINI, "vendor/transitive");
+      expect(container.querySelector(".detail-hidden-note")).toBeNull();
+    });
+
+    it("shows a factual line, with a control that clears the filters, when a search term hides it from its own tab", () => {
+      const { container, dispatch } = renderDetail(MINI, "vendor/transitive", vi.fn(), {
+        q: "no-such-package",
+      });
+
+      const note = container.querySelector(".detail-hidden-note");
+      expect(note?.textContent).toContain("Hidden by the current filters.");
+
+      fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
+      expect(dispatch).toHaveBeenCalledWith({ type: "clear" });
+    });
+
+    it("shows the line when a rail filter, not the search box, is what hides it", () => {
+      const { container } = renderDetail(MINI, "vendor/transitive", vi.fn(), {
+        filters: { ...EMPTY_FILTERS, verdict: ["pinned"] },
+      });
+      expect(container.querySelector(".detail-hidden-note")).toBeTruthy();
+    });
+
+    it("says nothing for a package the current tab never lists at all, not simply filtered out of it", () => {
+      // private/thing is "finished" — never part of the Findings tab's flagged population
+      // regardless of any filter, a different fact than PD-DETAIL-4's own.
+      const { container } = renderDetail(MINI, "private/thing");
+      expect(container.querySelector(".detail-hidden-note")).toBeNull();
     });
   });
 });

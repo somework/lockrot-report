@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { timelineLayout } from "../../../src/domain/timeline";
+import { sameVersion, timelineLayout } from "../../../src/domain/timeline";
 import type { BranchRow } from "../../../src/model/types";
 
 function makeBranch(overrides: Partial<BranchRow> = {}): BranchRow {
@@ -190,6 +190,21 @@ describe("timelineLayout / label and date pairing (critic.md M26 fix)", () => {
 
     // Assert
     expect(layout.lanes.map((lane) => lane.branch)).toEqual(["2.x", "1.x"]);
+  });
+});
+
+describe("sameVersion (PD-TIMELINE-3, DESIGN.md §5)", () => {
+  it("matches a branch name against its tag's bare 'v' prefix", () => {
+    expect(sameVersion("0.0.3", "v0.0.3")).toBe(true);
+    expect(sameVersion("v0.0.3", "0.0.3")).toBe(true);
+  });
+
+  it("matches identical strings with no prefix to strip", () => {
+    expect(sameVersion("1.x", "1.x")).toBe(true);
+  });
+
+  it("does not match a real branch name against a different tag's version", () => {
+    expect(sameVersion("5.x", "v5.7.1")).toBe(false);
   });
 });
 

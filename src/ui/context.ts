@@ -27,8 +27,12 @@ export interface ReportContextValue {
    *  glossary button themselves (PD-GLOSSARY-4, DESIGN.md §5) — its own "In the glossary" button
    *  hides itself in the same click (`popovertargetaction="hide"`), so by the time the glossary's
    *  dialog opens, that button is gone and `document.activeElement` has already fallen back to
-   *  `<body>`. Passing the pill's own button here is what focus returns to instead. */
-  openGlossaryFrom: (returnTo: HTMLElement | null) => void;
+   *  `<body>`. Passing the pill's own button here is what focus returns to instead.
+   *
+   *  `term`, when given, is the verdict word to scroll to, mark and focus once the dialog opens
+   *  (PD-GLOSSARY-7, DESIGN.md §5, `Glossary.tsx#useHighlightTerm`) — so "In the glossary" lands a
+   *  reader on the entry they asked for rather than the top of the list. */
+  openGlossaryFrom: (returnTo: HTMLElement | null, term?: string) => void;
 }
 
 export const ReportContext = createContext<ReportContextValue | null>(null);

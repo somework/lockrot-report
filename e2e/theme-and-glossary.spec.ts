@@ -95,6 +95,22 @@ test.describe("M2: S10 belongs in the glossary like every other signal", () => {
   });
 });
 
+test.describe("PD-GLOSSARY-8: threshold values in definitions", () => {
+  test("shows what this run set a config key to, beside the key name itself", async () => {
+    // mini.json records all four thresholds: release-warn-years 3, release-high-years 5,
+    // push-warn-years 3, push-high-years 5.
+    await report.goto(FIXTURES.mini);
+    await report.openGlossary();
+    const text = await report.glossaryText();
+
+    expect(text).toContain("release-warn-years (3 years in this run)");
+    expect(text).toContain("release-high-years (5 years in this run)");
+    expect(text).toContain("push-high-years (5 years in this run)");
+    // The key name itself is kept — it is what a reader would set — not replaced by the value.
+    expect(text).toContain("release-warn-years");
+  });
+});
+
 test.describe("PD-GLOSSARY-1: the search hint", () => {
   test("is one short line pointing at the glossary, not the old keys/search-syntax paragraph", async ({
     page,
@@ -134,6 +150,20 @@ test.describe("PD-GLOSSARY-4/5: a verdict pill's popover", () => {
     await report.openGlossaryFromPillPopover();
 
     expect(await report.isGlossaryOpen()).toBe(true);
+  });
+
+  test('"In the glossary" scrolls to and focuses that verdict\'s own entry (PD-GLOSSARY-7, DESIGN.md §5)', async () => {
+    // Before this fix, "In the glossary" opened the dialog scrolled to the top, same as the "?"
+    // shortcut — a reader who wanted "abandoned"'s own entry still had to find it among the other
+    // eight, and the dialog's default focus landed on Close, not on any entry.
+    await report.goto(FIXTURES.mini);
+    await report.clickVerdictPill("vendor/transitive", "abandoned");
+    await report.openGlossaryFromPillPopover();
+    expect(await report.isGlossaryOpen()).toBe(true);
+
+    const focused = await report.glossaryFocusedEntry();
+    expect(focused?.text).toMatch(/^abandoned/);
+    expect(focused?.inView).toBe(true);
   });
 
   test('"In the glossary" returns focus to the pill once the glossary closes (a11y review)', async () => {

@@ -87,6 +87,10 @@ export interface ReportPage {
   openPackage(name: string): Promise<void>;
   closeDetail(): Promise<void>;
   detail(): Promise<DetailSnapshot>;
+  /** The detail header's own "Clear filters" control (PD-DETAIL-4, DESIGN.md §5) — shown only
+   *  while the open package is hidden from its own tab by the search box or a rail filter, and
+   *  distinct from the search bar's "Clear". */
+  clearFiltersFromDetail(): Promise<void>;
   /** Whether the row for this package can receive keyboard focus at all (M6). */
   rowFocusable(name: string): Promise<boolean>;
   /** Whether the row is marked as the current selection for assistive tech (M6). */
@@ -114,6 +118,9 @@ export interface ReportPage {
   ledgerButton(group: LedgerGroup, key: string): Promise<void>;
   /** null when the button carries no pressed-state at all for assistive tech (M17, legacy). */
   ledgerButtonPressed(group: LedgerGroup, key: string): Promise<boolean | null>;
+  /** The button's `title` — "Show only …" unpressed, "Showing only … — click to clear this
+   *  filter" pressed (PD-LEDGER-2, DESIGN.md §5). Null if the button carries no title at all. */
+  ledgerButtonTitle(group: LedgerGroup, key: string): Promise<string | null>;
   /** The tooltip on "Priority of the N flagged packages" (M29). */
   priorityLedgerTooltip(): Promise<string | null>;
   /** Whether the priority-counts line — the wide band above the ledger, or the phone fold's
@@ -164,6 +171,11 @@ export interface ReportPage {
   pillPopoverText(): Promise<string>;
   /** Clicks "In the glossary" inside an open pill popover. */
   openGlossaryFromPillPopover(): Promise<void>;
+  /** Whichever element inside the open glossary dialog currently holds focus — its text, and
+   *  whether it sits within the dialog's own visible (scrolled-into-view) area — the two facts
+   *  "In the glossary" promises for the entry it names (PD-GLOSSARY-7, DESIGN.md §5). Null when the
+   *  glossary is not open, or focus is not inside it. */
+  glossaryFocusedEntry(): Promise<{ text: string | null; inView: boolean } | null>;
   /** Whether the verdict pill itself (not "In the glossary", which hides its own popover in the
    *  same click) is the currently focused element — the a11y review's regression: focus used to be
    *  left on the glossary's Close button, or `<body>`, once the glossary closed this way. */

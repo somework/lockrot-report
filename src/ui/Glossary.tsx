@@ -1,24 +1,49 @@
 import type { RefObject } from "preact";
 import { useId, useLayoutEffect, useRef, useState } from "preact/hooks";
-import { DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC, SIGNAL_NAMES, TONE, VERDICT_DEFS } from "../domain/vocab";
+import {
+  annotateThresholds,
+  DOCS_URL,
+  SIGNAL_DEFS,
+  SIGNAL_DOC,
+  SIGNAL_NAMES,
+  TONE,
+  VERDICT_DEFS,
+} from "../domain/vocab";
 import { SIGNAL_IDS, VERDICTS } from "../model/types";
 import { OutLink, toneClass } from "./common/common";
 import { useReport } from "./context";
 
-/** The nine verdicts, each in its tone, with this report's count beside it when there is one. */
+/**
+ * The nine verdicts, each in its tone, with this report's count beside it when there is one.
+ *
+ * `data-term` and `tabIndex={-1}` are only ever read by `useHighlightTerm` below: not part of the
+ * Tab order (the definition itself carries no interaction), but a place keyboard focus can be
+ * *given* — landing a reader here from a verdict pill's "In the glossary" (PD-GLOSSARY-4) exactly
+ * where the term it named now sits (PD-GLOSSARY-7, DESIGN.md §5), instead of on the dialog's Close
+ * button, several entries away from the one they asked for.
+ */
 function VerdictDefs() {
   const { model } = useReport();
+  const thresholds = model.report.run.thresholds;
 
   return (
     <dl className="deflist">
       {VERDICTS.map((verdict) => {
         const count = model.report.counts[verdict] ?? 0;
         return [
-          <dt key={`t-${verdict}`} className={`term-toned ${toneClass(TONE(verdict))}`}>
+          <dt
+            key={`t-${verdict}`}
+            data-term={verdict}
+            tabIndex={-1}
+            className={`term-toned ${toneClass(TONE(verdict))}`}
+          >
             {verdict}
             {count > 0 && <span className="muted"> {count}</span>}
           </dt>,
-          <dd key={`d-${verdict}`}>{VERDICT_DEFS[verdict]}</dd>,
+          // PD-GLOSSARY-8 (DESIGN.md §5): a definition that names one of the run's own config keys
+          // (`silent`, `left-behind`) shows what this run set it to, beside the name it would take
+          // to change it.
+          <dd key={`d-${verdict}`}>{annotateThresholds(VERDICT_DEFS[verdict] ?? "", thresholds)}</dd>,
         ];
       })}
     </dl>
@@ -27,6 +52,9 @@ function VerdictDefs() {
 
 /** S1 to S10 in numeric order (DESIGN.md §5 M2: the legacy glossary left S10 out). */
 function SignalDefs() {
+  const { model } = useReport();
+  const thresholds = model.report.run.thresholds;
+
   return (
     <dl className="deflist">
       {SIGNAL_IDS.map((id) => {
@@ -41,7 +69,8 @@ function SignalDefs() {
               <OutLink href={doc}>{name}</OutLink>
             )}
           </dt>,
-          <dd key={`d-${id}`}>{SIGNAL_DEFS[id]}</dd>,
+          // PD-GLOSSARY-8: S2 and S4 each name their own warn/high pair the same way.
+          <dd key={`d-${id}`}>{annotateThresholds(SIGNAL_DEFS[id] ?? "", thresholds)}</dd>,
         ];
       })}
     </dl>
@@ -160,20 +189,84 @@ function useDialog(open: boolean, opener?: RefObject<HTMLElement | null>) {
   return { ref, closeRef, fallback };
 }
 
+/** How long the highlight stays before `useHighlightTerm` clears it itself — matched by the fade
+ *  animation's own duration in app.css's `glossary-highlight-fade`, so the two never disagree about
+ *  when the mark is gone. */
+const HIGHLIGHT_MS = 1600;
+
+/** The `dt[data-term]` element naming `term`, compared attribute by attribute rather than through a
+ *  built selector — the same discipline `ui/keyboard.ts#findRow` keeps for a document-supplied
+ *  string that might carry a character `querySelector` would choke on. */
+function findTerm(dialog: HTMLDialogElement, term: string): HTMLElement | null {
+  for (const dt of dialog.querySelectorAll<HTMLElement>("dt[data-term]")) {
+    if (dt.getAttribute("data-term") === term) return dt;
+  }
+  return null;
+}
+
+/**
+ * PD-GLOSSARY-7 (DESIGN.md §5): "In the glossary", from a verdict pill's popover, used to open the
+ * dialog scrolled to the top — a reader who wanted `abandoned`'s own entry still had to find it
+ * among the other eight. This scrolls that entry into view, marks its `dt`/`dd` pair with a fading
+ * highlight, and focuses the term itself.
+ *
+ * Runs after `useDialog`'s own layout effect (hooks' effects fire in call order), so its
+ * `dt.focus()` — landing a keyboard user exactly on the entry they asked for — overrides that
+ * effect's default focus on the Close button, rather than the other way around. `.glossary` itself
+ * carries `scroll-behavior: smooth` (app.css), which the page-wide `prefers-reduced-motion` rule
+ * (styles/base.css) already turns back to instant — this asks `scrollIntoView` for no behavior of
+ * its own, so it inherits whichever the reader's own preference resolves to. The fade is CSS alone,
+ * for the same reason: reduced motion drops the animation but not the highlight itself (app.css).
+ */
+function useHighlightTerm(
+  dialogRef: RefObject<HTMLDialogElement | null>,
+  open: boolean,
+  term: string | null | undefined,
+) {
+  useLayoutEffect(() => {
+    if (!open || !term) return undefined;
+    const dialog = dialogRef.current;
+    const dt = dialog ? findTerm(dialog, term) : null;
+    if (dt === null) return undefined;
+    const dd = dt.nextElementSibling instanceof HTMLElement ? dt.nextElementSibling : null;
+
+    dt.classList.add("glossary-highlight");
+    dd?.classList.add("glossary-highlight");
+    dt.scrollIntoView({ block: "center" });
+    dt.focus({ preventScroll: true });
+
+    const timer = window.setTimeout(() => {
+      dt.classList.remove("glossary-highlight");
+      dd?.classList.remove("glossary-highlight");
+    }, HIGHLIGHT_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+      dt.classList.remove("glossary-highlight");
+      dd?.classList.remove("glossary-highlight");
+    };
+  }, [dialogRef, open, term]);
+}
+
 /** The glossary: what every verdict and signal means (legacy `fillLegend` plus report.html's prose). */
 export function Glossary({
   open,
   onClose,
   opener,
+  highlightTerm,
 }: {
   open: boolean;
   onClose: () => void;
   /** Who to return focus to on close, overriding a freshly-read `document.activeElement`
    *  (`context.ts#openGlossaryFrom`). */
   opener?: RefObject<HTMLElement | null>;
+  /** A verdict word to scroll to, mark and focus once the dialog opens — set only when a verdict
+   *  pill's "In the glossary" opened it (PD-GLOSSARY-7, `context.ts#openGlossaryFrom`). */
+  highlightTerm?: string | null;
 }) {
   const titleId = useId();
   const { ref, closeRef, fallback } = useDialog(open, opener);
+  useHighlightTerm(ref, open, highlightTerm);
 
   return (
     <dialog

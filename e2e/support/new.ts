@@ -223,6 +223,10 @@ export class NewReportPage implements ReportPage {
     return { open: true, name, text };
   }
 
+  async clearFiltersFromDetail(): Promise<void> {
+    await this.detailRegion().getByRole("button", { name: "Clear filters" }).click();
+  }
+
   async rowFocusable(name: string): Promise<boolean> {
     return this.pkgLocator(name).evaluate((el) => (el as HTMLElement).tabIndex >= 0);
   }
@@ -294,6 +298,10 @@ export class NewReportPage implements ReportPage {
     const has = await el.evaluate((node) => node.hasAttribute("aria-pressed"));
 
     return has ? (await el.getAttribute("aria-pressed")) === "true" : null;
+  }
+
+  async ledgerButtonTitle(group: LedgerGroup, key: string): Promise<string | null> {
+    return this.ledgerLocator(group, key).getAttribute("title");
   }
 
   async priorityLedgerTooltip(): Promise<string | null> {
@@ -457,6 +465,22 @@ export class NewReportPage implements ReportPage {
 
   async openGlossaryFromPillPopover(): Promise<void> {
     await this.page.getByRole("button", { name: /in the glossary/i }).click();
+  }
+
+  async glossaryFocusedEntry(): Promise<{ text: string | null; inView: boolean } | null> {
+    const dialog = this.glossaryLocator();
+    if ((await dialog.count()) === 0) return null;
+
+    return dialog.evaluate((dialogEl) => {
+      const active = document.activeElement;
+      if (!active || !dialogEl.contains(active)) return null;
+      const rect = active.getBoundingClientRect();
+      const box = dialogEl.getBoundingClientRect();
+      const inView = rect.top >= box.top && rect.bottom <= box.bottom;
+      const text = active.textContent;
+
+      return { text: typeof text === "string" ? text.trim() : null, inView };
+    });
   }
 
   async isPillFocused(pkg: string, verdict: string): Promise<boolean> {

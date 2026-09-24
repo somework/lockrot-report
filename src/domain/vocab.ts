@@ -137,6 +137,33 @@ export const VERDICT_DEFS: Record<string, string> = vocabTable({
   ok: "None of the above.",
 });
 
+/** A run's own threshold values, in document key order — `Model.report.run.thresholds`'s own shape
+ *  (`model/types.ts#RunSettings`), restated here so `annotateThresholds` does not have to import a
+ *  model type into a module that otherwise only ever imports from `model/types` for the enum ids. */
+export type Thresholds = readonly (readonly [name: string, years: number])[];
+
+/**
+ * A glossary definition names lockrot's own config keys (`release-warn-years`,
+ * `push-high-years`, …) rather than a number, since that is what a reader would actually set
+ * (`SIGNAL_DEFS.S2`, `VERDICT_DEFS.silent`, …) — but a key name alone gives no sense of where this
+ * run's own gate sits. Where the run recorded a value for a name this text mentions, this appends
+ * it in place, `"release-high-years (5 years in this run)"`; the key name itself is left exactly as
+ * written either way, and a name the run never recorded is left unannotated (PD-GLOSSARY-8,
+ * DESIGN.md §5). Every occurrence of every recorded name is annotated, not just the first, since S2
+ * and S4's own definitions each name their pair of thresholds once apiece in the same sentence.
+ */
+export function annotateThresholds(text: string, thresholds: Thresholds): string {
+  let annotated = text;
+  for (const [name, years] of thresholds) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    annotated = annotated.replace(
+      new RegExp(`\\b${escaped}\\b`, "g"),
+      `${name} (${years} years in this run)`,
+    );
+  }
+  return annotated;
+}
+
 /** The base of the glossary's verdict-family docs (legacy `DOCS`, `report.js:34`). */
 export const DOCS_URL = "https://lockrot.dev/verdicts/";
 

@@ -5,7 +5,7 @@
  */
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { FIXTURES, type FixtureName } from "./support/pages";
+import { FIXTURES } from "./support/pages";
 
 let report: ReportPage;
 
@@ -30,7 +30,7 @@ test.describe("PD-ROWS-1/PD-ROWS-2: the Findings row's key fact and age scale", 
   test("koel_koel: daverandom/resume shows its highest-level signal, S2 over the tied S4", async () => {
     // daverandom/resume carries S2 (high, 8.7y), S4 (high, 8.2y) and S5 (warn) — the same S2/S4 tie
     // as wallabag's javibravo/simpleue, on a different fixture and a different package.
-    await report.goto("koel_koel" as FixtureName);
+    await report.goto(FIXTURES.koel);
 
     expect(await report.rowSignalIds("daverandom/resume")).toEqual(["S2"]);
     expect(await report.rowAgeScaleLabel("daverandom/resume")).toBe(

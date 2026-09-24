@@ -20,6 +20,12 @@ tag or the address format, says so under **Breaking** in its entry.
 - A small age scale beside a Findings row's key fact: a track, a tick at the run's warn and high
   thresholds, and a dot at the finding's own age, coloured by zone. Shown whenever the finding
   carries an S8, S2 or S4 signal and the run recorded both matching thresholds.
+- A verdict or signal definition that names one of the run's own config keys
+  (`release-warn-years`, `push-high-years`, …) now shows what this run set it to beside the name,
+  "release-high-years (5 years in this run)". The key name itself is unchanged.
+- The package detail's header names it when the current search term or a rail filter is hiding the
+  open package from its own tab's list, with a control to clear them. The package still stays open;
+  only the reader is told why the list underneath it looks empty.
 
 ### Changed
 
@@ -40,6 +46,8 @@ tag or the address format, says so under **Breaking** in its entry.
   sections fold behind their own heading.
 - The glossary's "full reference" link names its destination: "How lockrot decides (lockrot.dev)".
 - Escape closes an open popover first, and only the popover, before the glossary or the detail.
+- A ledger legend entry reads as a control — a chip with its own hover, focus and pressed look —
+  instead of plain distribution text, and its title names what clicking it does.
 
 ### Fixed
 
@@ -70,6 +78,18 @@ tag or the address format, says so under **Breaking** in its entry.
   the tone-coloured text beside them (a priority-group heading, the summary band's counts) now opt
   out of Chromium's ink-saving print default (`print-color-adjust: exact`), the same way the age
   scale's tick and dot already did, instead of printing as whatever colour that default leaves them.
+- "In the glossary", from a verdict pill's popover, now opens the glossary scrolled to and focused
+  on that verdict's own entry — marked with a brief highlight — instead of at the top of the list.
+- The release-branch timeline's first year tick no longer loses part of itself off the axis's left
+  edge (as little as "24" for "2024" at 1440px, gone entirely at 390px).
+- A branch label that wraps to a second line no longer pulls its dot down between both lines; the
+  dot stays pinned to the line it marks.
+- A package with no maintained branches — every release its own "branch", named after that same
+  tag — no longer shows its version twice, once bare and once with a "v" prefix.
+- The timeline's legend shows "branch still releasing" and "you are on <version>" only when a lane
+  actually carries that state, instead of unconditionally.
+- The timeline's dots for a branch that is neither installed nor the newest keep enough contrast
+  against the panel in dark mode; they used to nearly vanish.
 
 ## [0.12.0]
 

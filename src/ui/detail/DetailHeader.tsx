@@ -1,12 +1,28 @@
 import type { Finding } from "../../model/types";
+import { applyFilters, population } from "../../domain/filters";
 import { packagistUrl, repoHost, safeHref } from "../../domain/links";
 import { OutLink, Pill, Tag } from "../common/common";
-import { useReport } from "../context";
+import { useReport, type ReportContextValue } from "../context";
 import "./detail.css";
 
 export interface DetailHeaderProps {
   readonly finding: Finding;
   readonly onClose: () => void;
+}
+
+/**
+ * PD-DETAIL-4 (DESIGN.md §5): "the detail survives a filter that hides its package" is kept on
+ * purpose (§5's own "deliberately kept" list), but a reader who switched tabs or typed a search
+ * term and then found the open package silent about that had no way to tell the two apart from "no
+ * findings match". True only when the package belongs to the current tab's own population but the
+ * query box or the rail filters it out there — never for a package the tab never lists at all (an
+ * `ok` package while on the Findings tab, say), which is a different fact this line does not claim.
+ */
+function hiddenByFilters(finding: Finding, deps: ReportContextValue): boolean {
+  const { model, state } = deps;
+  const inTab = population(model, state.view).some((f) => f.package === finding.package);
+  if (!inTab) return false;
+  return !applyFilters(model, state, state.view).some((f) => f.package === finding.package);
 }
 
 /**
@@ -19,11 +35,13 @@ export interface DetailHeaderProps {
  * `safeHref`-checked by `OutLink`, that check just never runs on the free-text value).
  */
 export function DetailHeader({ finding, onClose }: DetailHeaderProps) {
-  const { model } = useReport();
+  const report = useReport();
+  const { model, dispatch } = report;
   const details = model.details.get(finding.package) ?? null;
   const packagist = packagistUrl(finding, model.details);
   const repositoryLink = safeHref(details?.repositoryLink ?? null);
   const replacement = finding.replacement ?? details?.metadata?.replacement ?? null;
+  const hidden = hiddenByFilters(finding, report);
 
   return (
     <div className="detail-head">
@@ -48,6 +66,20 @@ export function DetailHeader({ finding, onClose }: DetailHeaderProps) {
                 <span className="detail-replacement-text">{`replacement: ${replacement}`}</span>
               ))}
           </div>
+          {hidden && (
+            <p className="detail-hidden-note">
+              Hidden by the current filters.
+              <button
+                type="button"
+                className="icon-btn"
+                onClick={() => {
+                  dispatch({ type: "clear" });
+                }}
+              >
+                Clear filters
+              </button>
+            </p>
+          )}
         </div>
         <button type="button" className="detail-close" onClick={onClose}>
           Close

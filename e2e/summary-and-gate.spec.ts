@@ -24,7 +24,7 @@ test.describe("PD-SUMMARY-1: the priority-counts line above the ledger", () => {
 
   test("koel_koel: a smaller fixture, same rule", async () => {
     // koel_koel.json: priorities {critical:1, high:3, medium:1, low:2}, packagesChecked 202.
-    await report.goto("koel_koel" as FixtureName);
+    await report.goto(FIXTURES.koel);
     expect(await report.hasSummaryLine("1 critical · 3 high · 1 medium · 2 low of 202 packages")).toBe(true);
   });
 
@@ -40,7 +40,7 @@ test.describe("PD-SUMMARY-1: the phone fold shows the same line, closed", () => 
   test.use({ viewport: { width: 390, height: 844 } });
 
   test("koel_koel at 390px: the counts are visible without opening the ledger fold", async ({ page }) => {
-    await report.goto("koel_koel" as FixtureName);
+    await report.goto(FIXTURES.koel);
     // The fold starts closed: its own content (a legend button, say) is not visible yet, proving
     // this checks the closed <summary>, not the unfolded ledger underneath it.
     await expect(page.getByRole("button", { name: /^critical/ })).toBeHidden();

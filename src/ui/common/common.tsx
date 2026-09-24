@@ -84,7 +84,9 @@ function DocsPill({
             popovertarget={id}
             popovertargetaction="hide"
             onClick={() => {
-              openGlossaryFrom(pillRef.current);
+              // PD-GLOSSARY-7 (DESIGN.md §5): `word` is what the glossary scrolls to and marks, so
+              // "In the glossary" lands the reader on this pill's own entry, not the top of the list.
+              openGlossaryFrom(pillRef.current, word);
             }}
           >
             In the glossary
@@ -93,6 +95,44 @@ function DocsPill({
         </div>
       </div>
     </>
+  );
+}
+
+/**
+ * A ledger legend entry: the tally beside its swatch, and a filter toggle for that bucket at once
+ * (verdict, priority or advisory severity) — shared by `VerdictLedger`, `PriorityLedger` and
+ * `AdvisoryLedger` so the three chips look, hover and focus alike (PD-LEDGER-2, DESIGN.md §5: a
+ * plain-text look gave no hint that clicking one did anything). `title` names the click's effect
+ * rather than repeating the visible label, since the label is already on the button.
+ */
+export function LegendButton({
+  tone,
+  dim = false,
+  pressed,
+  label,
+  count,
+  onToggle,
+}: {
+  tone: Tone;
+  /** The verdict ledger's own `ok` bucket: full-contrast text, a faded swatch (`legend-btn-dim` in
+   *  ledger.css). */
+  dim?: boolean;
+  pressed: boolean;
+  label: string;
+  count: number;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`legend-btn ${toneClass(tone)}${dim ? " legend-btn-dim" : ""}`}
+      aria-pressed={pressed}
+      title={pressed ? `Showing only ${label} — click to clear this filter` : `Show only ${label}`}
+      onClick={onToggle}
+    >
+      <i className="swatch" aria-hidden="true" />
+      {label} <i className="count">{count}</i>
+    </button>
   );
 }
 

@@ -31,6 +31,16 @@ test.describe("ledger filter groups (prio/verdict) — mini.json", () => {
     expect(await report.ledgerButtonPressed("prio", "medium")).toBe(true);
   });
 
+  test("PD-LEDGER-2: a legend chip's title names the click's effect, and changes once pressed", async () => {
+    // PD-LEDGER-2 (DESIGN.md §5): a legend entry used to carry no title at all, so hovering or
+    // focusing it gave no hint it was a control rather than plain distribution text.
+    expect(await report.ledgerButtonTitle("verdict", "abandoned")).toBe("Show only abandoned");
+    await report.ledgerButton("verdict", "abandoned");
+    expect(await report.ledgerButtonTitle("verdict", "abandoned")).toBe(
+      "Showing only abandoned — click to clear this filter",
+    );
+  });
+
   test("M29: the priority ledger's tooltip matches what it actually counts", async () => {
     // M29 (DESIGN.md §5), fixed on purpose: legacy's static tooltip said "except ok and finished"
     // but the count it described also excluded unknown.

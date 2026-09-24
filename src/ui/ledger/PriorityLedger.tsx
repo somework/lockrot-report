@@ -1,5 +1,5 @@
 import { useReport } from "../context";
-import { toneClass } from "../common/common";
+import { LegendButton, toneClass } from "../common/common";
 import { TONE } from "../../domain/vocab";
 import { population } from "../../domain/filters";
 import "./ledger.css";
@@ -53,24 +53,18 @@ export function PriorityLedger() {
         )}
       </div>
       <div className="legend">
-        {shown.map((p) => {
-          const n = counts[p] ?? 0;
-          const on = state.filters.prio.includes(p);
-          return (
-            <button
-              key={p}
-              type="button"
-              className={`legend-btn ${toneClass(TONE(p))}`}
-              aria-pressed={on}
-              onClick={() => {
-                dispatch({ type: "toggle", group: "prio", key: p });
-              }}
-            >
-              <i className="swatch" aria-hidden="true" />
-              {p} <i className="count">{n}</i>
-            </button>
-          );
-        })}
+        {shown.map((p) => (
+          <LegendButton
+            key={p}
+            tone={TONE(p)}
+            pressed={state.filters.prio.includes(p)}
+            label={p}
+            count={counts[p] ?? 0}
+            onToggle={() => {
+              dispatch({ type: "toggle", group: "prio", key: p });
+            }}
+          />
+        ))}
       </div>
     </div>
   );

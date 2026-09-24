@@ -8,6 +8,7 @@ import {
   TONE,
   VERDICT_DEFS,
   VERDICT_ORDER,
+  annotateThresholds,
   isFlagged,
 } from "../../../src/domain/vocab";
 
@@ -139,6 +140,42 @@ describe("SIGNAL_DOC", () => {
     // lookup; cast is only to exercise that at the type level too.
     expect(SIGNAL_DOC["constructor" as never]).toBeUndefined();
     expect(SIGNAL_DOC["toString" as never]).toBeUndefined();
+  });
+});
+
+describe("annotateThresholds (PD-GLOSSARY-8, DESIGN.md §5)", () => {
+  test("appends the run's own value beside a config key the text names", () => {
+    const text = SIGNAL_DEFS.S2 ?? "";
+    const annotated = annotateThresholds(text, [
+      ["release-warn-years", 3],
+      ["release-high-years", 5],
+    ]);
+    expect(annotated).toBe(
+      "Time since the last stable release, against release-warn-years (3 years in this run) / release-high-years (5 years in this run).",
+    );
+  });
+
+  test("annotates every occurrence in the same sentence, not just the first", () => {
+    const text = VERDICT_DEFS.silent ?? "";
+    const annotated = annotateThresholds(text, [
+      ["release-high-years", 5],
+      ["push-high-years", 5],
+    ]);
+    expect(annotated).toBe(
+      "No stable release for at least release-high-years (5 years in this run) and no repository push for at least push-high-years (5 years in this run).",
+    );
+  });
+
+  test("leaves a name the run never recorded exactly as written", () => {
+    const text = VERDICT_DEFS["left-behind"] ?? "";
+    expect(annotateThresholds(text, [])).toBe(text);
+    expect(annotateThresholds(text, [["push-high-years", 5]])).toBe(text);
+  });
+
+  test("leaves text with no config key name at all untouched", () => {
+    expect(annotateThresholds("The verdict sets a base.", [["release-warn-years", 3]])).toBe(
+      "The verdict sets a base.",
+    );
   });
 });
 

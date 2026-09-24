@@ -1,6 +1,6 @@
 import type { ExplainMetadata } from "../../model/types";
 import { day } from "../../domain/format";
-import { timelineLayout, type TimelineLane } from "../../domain/timeline";
+import { sameVersion, timelineLayout, type TimelineLane } from "../../domain/timeline";
 import { useReport } from "../context";
 import "./detail.css";
 
@@ -40,13 +40,30 @@ export function Timeline({
   const layout = timelineLayout(metadata?.branches ?? [], now);
   if (layout.lanes.length === 0) return null;
 
+  // PD-TIMELINE-4 (DESIGN.md §5): a legend entry is drawn only for a state a lane actually carries —
+  // the same asymmetry `laneClassName` already reads off `installed`/`newest`, so a report with no
+  // branch still releasing past the installed one never claims one in the legend either.
+  const hasInstalled = layout.lanes.some((lane) => lane.installed);
+  const hasNewestOther = layout.lanes.some((lane) => lane.newest && !lane.installed);
+
   return (
     <section className="detail-section">
       <h3>Release branches</h3>
       <div className="detail-timeline">
         <div className="detail-timeline-axis">
-          {layout.ticks.map((tick) => (
-            <span key={tick.year} className="detail-timeline-tick" style={{ left: `${tick.x}%` }}>
+          {/* PD-TIMELINE-1: the C2 fix (domain/timeline.ts) deliberately keeps a first tick that
+              plots left of the earliest dated release, sometimes at or below 0% — centered like
+              every other tick (`translateX(-50%)`), half its own width fell outside the axis
+              (DESIGN.md §5: "24" for "2024" at 1440, gone entirely at 390). Clamped at 0% and left-
+              aligned instead of centered, it now grows rightward from the axis's own edge. */}
+          {layout.ticks.map((tick, index) => (
+            <span
+              key={tick.year}
+              className={
+                index === 0 ? "detail-timeline-tick detail-timeline-tick-first" : "detail-timeline-tick"
+              }
+              style={{ left: `${Math.max(tick.x, 0)}%` }}
+            >
               {tick.year}
             </span>
           ))}
@@ -64,6 +81,12 @@ export function Timeline({
             ? { marginRight: `calc(${100 - lane.x + 2}% + 8px)` }
             : { marginLeft: `calc(${lane.x + 2}% + 8px)` };
 
+          // PD-TIMELINE-3 (DESIGN.md §5): a package with no maintained branches gives every release
+          // its own "branch", named after that same tag — `datedTag`'s label repeats the branch
+          // name back with a leading "v" ("0.0.3" branch, "v0.0.3" label). Printed only when it adds
+          // information the branch name does not already carry.
+          const showLabel = !sameVersion(lane.branch, lane.label);
+
           return (
             <div key={lane.branch} className={laneClassName(lane)}>
               <span className="detail-timeline-branch">{lane.branch}</span>
@@ -73,7 +96,7 @@ export function Timeline({
                   className={labelPastMidpoint ? "detail-timeline-label is-flipped" : "detail-timeline-label"}
                   style={labelStyle}
                 >
-                  {lane.label} · {day(lane.date)}
+                  {showLabel ? `${lane.label} · ${day(lane.date)}` : day(lane.date)}
                   {/* A no-break space: a wrapped label keeps "php" next to its constraint. */}
                   {lane.php !== null && ` · php\u00a0${lane.php}`}
                 </span>
@@ -83,14 +106,21 @@ export function Timeline({
         })}
       </div>
       <div className="detail-timeline-legend">
-        <span className="detail-timeline-legend-item">
-          <span className="detail-timeline-swatch detail-timeline-swatch-installed" />
-          you are on {installedVersion}
-        </span>
-        <span className="detail-timeline-legend-item">
-          <span className="detail-timeline-swatch detail-timeline-swatch-newest" />
-          branch still releasing
-        </span>
+        {/* PD-TIMELINE-4 (DESIGN.md §5): a legend entry only for a state a lane actually carries —
+            the same asymmetry `laneClassName` already reads off `installed`/`newest`, so a report
+            with no branch still releasing past the installed one never claims one in the legend. */}
+        {hasInstalled && (
+          <span className="detail-timeline-legend-item">
+            <span className="detail-timeline-swatch detail-timeline-swatch-installed" />
+            you are on {installedVersion}
+          </span>
+        )}
+        {hasNewestOther && (
+          <span className="detail-timeline-legend-item">
+            <span className="detail-timeline-swatch detail-timeline-swatch-newest" />
+            branch still releasing
+          </span>
+        )}
         <span className="detail-timeline-legend-item">one dot = that branch's newest dated release</span>
       </div>
     </section>

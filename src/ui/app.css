@@ -359,6 +359,12 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   max-height: 84vh;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* PD-GLOSSARY-7 (DESIGN.md §5): lets `Glossary.tsx#useHighlightTerm`'s unqualified
+     `scrollIntoView({ block: "center" })` read as smooth scrolling without asking for it explicitly
+     — the page-wide `prefers-reduced-motion` rule (styles/base.css) already forces this property
+     back to `auto` for a reader who asked for less motion, which an explicit "smooth" argument to
+     `scrollIntoView` would not have honoured. */
+  scroll-behavior: smooth;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 11px;
@@ -482,6 +488,30 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
 }
 .glossary .term-toned {
   color: var(--tone);
+}
+/* PD-GLOSSARY-7 (DESIGN.md §5): the mark "In the glossary" leaves on the entry it scrolled to.
+   `styles/base.css`'s page-wide `prefers-reduced-motion` rule already zeroes every `animation`
+   (`!important`), so a reduced-motion reader would otherwise lose the mark the instant it applied;
+   the block below restores it as a plain, un-animated highlight instead of dropping it. Both are
+   removed by `useHighlightTerm`'s own timer after the same `HIGHLIGHT_MS`, so neither lingers. */
+@keyframes glossary-highlight-fade {
+  from {
+    background-color: var(--accent-soft);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+.glossary .deflist dt.glossary-highlight,
+.glossary .deflist dd.glossary-highlight {
+  animation: glossary-highlight-fade 1.6s ease-out;
+  border-radius: var(--radius-s);
+}
+@media (prefers-reduced-motion: reduce) {
+  .glossary .deflist dt.glossary-highlight,
+  .glossary .deflist dd.glossary-highlight {
+    background-color: var(--accent-soft);
+  }
 }
 .glossary .small-note {
   font-size: 12px;

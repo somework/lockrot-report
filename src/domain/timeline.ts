@@ -56,6 +56,17 @@ interface DatedBranch {
  * same tag); only when neither exists at all does the lane fall back to the newest *dated* tag,
  * labelled with that tag's own version rather than `highest`'s.
  */
+/**
+ * Whether `branch` and `label` name the same release, modulo an optional leading `v`/`V` — the
+ * `Timeline` component uses this to avoid printing "0.0.3 · v0.0.3" for a package with no
+ * maintained branches, where each release is its own "branch" and `datedTag`'s label is just that
+ * branch's own tag spelled with a `v` (PD-TIMELINE-3, DESIGN.md §5).
+ */
+export function sameVersion(branch: string, label: string): boolean {
+  const stripV = (s: string): string => (s.startsWith("v") || s.startsWith("V") ? s.slice(1) : s);
+  return stripV(branch) === stripV(label);
+}
+
 function datedTag(branch: BranchRow): { readonly iso: string; readonly label: string } | null {
   if (branch.highestReleased !== null) return { iso: branch.highestReleased, label: branch.highest };
   if (branch.highestCommitDate !== null) return { iso: branch.highestCommitDate, label: branch.highest };
