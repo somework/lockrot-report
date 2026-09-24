@@ -196,9 +196,16 @@
   height: 10px;
   background: var(--muted);
   transform: translateX(-1px);
-  /* Chromium's print default drops background colour unless the reader enabled "Background
-     graphics"; these two marks are the scale's whole point on paper, so they opt out of that
-     default rather than rely on a setting DESIGN.md's "print readable" promise can't assume. */
+  /* a11y/visual review, PD-ROWS-3's own shared maximum (DESIGN.md §5): every row in a list now
+     shares one track, so the warn and high ticks sit at a fixed spot regardless of the row's own
+     years, and any row whose dot lands between them (or on top of one) used to erase it outright —
+     the dot renders after both ticks in the DOM, so with no stacking order of its own it painted
+     over whichever tick shared its position (measured: 38 of 63 wallabag_wallabag rows, 4 of 7
+     koel_koel). Raised above the dot, with a halo the row's own background colour standing in for
+     the "Canvas gap" the forced-colors rule below already draws around it, so the tick still reads
+     as its own mark cut out of the dot rather than disappearing under its fill. */
+  z-index: 1;
+  box-shadow: 0 0 0 1px var(--surface);
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
@@ -281,6 +288,19 @@
 .age-scale-legend {
   margin: 0 0 var(--space-2);
   font-size: 12px;
+}
+/* a11y/visual review (`views/AgeScale.tsx#AgeScaleLegend`): a CSS-drawn bar in place of the line's
+   own `▏` text glyph — the glyph's ink sat at the left edge of its character box, so even the space
+   already before it in the string read as flush against the previous word. A real element with its
+   own `margin` gets controllable clearance on both sides instead, the same reasoning `.age-scale-tick`
+   above already keeps for the row's own ticks. Inline, not absolutely positioned: this bar marks a
+   word in a line of text, not a point on a track. */
+.age-scale-legend-tick {
+  display: inline-block;
+  width: 2px;
+  height: 0.8em;
+  margin: 0 4px -0.05em 5px;
+  background: var(--muted);
 }
 
 /* A row with a key fact but no age scale of its own still reserves the scale's width at wide

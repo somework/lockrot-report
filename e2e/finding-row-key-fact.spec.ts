@@ -53,7 +53,16 @@ test.describe("PD-ROWS-1/PD-ROWS-2: the Findings row's key fact and age scale", 
     // list rather than repeated on every row.
     await report.goto(FIXTURES.wallabag);
 
-    expect(await report.ageScaleLegendText()).toBe("age scale: ▏warn 3 y ▏high 5 y");
+    expect(await report.ageScaleLegendText()).toBe("age scale: warn 3 y high 5 y");
+  });
+
+  test("wallabag_wallabag: the legend's accessible name spells out the unit, ahead of a raw tick glyph a screen reader would otherwise read aloud", async () => {
+    // a11y review: `▏` (U+258F) used to sit in the line's own accessible text — VoiceOver reads it
+    // as "left one-eighth block" — and the short "y" read oddly outside the visual, skimmable line
+    // it sits in.
+    await report.goto(FIXTURES.wallabag);
+
+    expect(await report.ageScaleLegendAccessibleName()).toBe("age scale: warn at 3 years, high at 5 years");
   });
 
   test("wallabag_wallabag: names no legend on a tab that draws no age scale at all", async () => {
@@ -61,6 +70,19 @@ test.describe("PD-ROWS-1/PD-ROWS-2: the Findings row's key fact and age scale", 
     await report.tab("run");
 
     expect(await report.ageScaleLegendText()).toBeNull();
+  });
+
+  test("wallabag_wallabag: sensio/framework-extra-bundle's dot sits on the warn tick without erasing it, in the default colour scheme too", async () => {
+    // Regression review: PD-ROWS-3's own shared maximum bunches every row's warn/high ticks at a
+    // fixed spot, and this finding's own S2 (3.6y against a 3/5 warn/high pair, the same shape
+    // DESIGN.md §5 records for it) puts its dot right on the warn tick — before this, the dot's
+    // opaque fill painted over it, in the page's ordinary colours, not only in forced-colors mode
+    // (`ageScaleWarnTickSurvivesDot`'s own comment; DESIGN.md §5 PD-ROWS-2 first proved this same
+    // paint-order technique against a forced-colors screenshot of a different package).
+    await report.goto(FIXTURES.wallabag);
+
+    expect(await report.ageScaleWarnTickSurvivesDot("sensio/framework-extra-bundle")).toBe(true);
+    expect(await report.ageScaleHighTickSurvivesDot("sensio/framework-extra-bundle")).toBe(true);
   });
 });
 

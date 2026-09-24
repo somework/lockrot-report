@@ -81,17 +81,22 @@ export function SummaryBand() {
  * already gives the same numbers, and this bar is not itself a control (no legend, no click) —
  * the real, interactive one is one tap away, inside the fold. `null` for a clean report, same as
  * `PriorityLedger`'s own empty read: no segment is more informative than none at all when nothing
- * fired. */
+ * fired.
+ *
+ * a11y review: `App.tsx#LedgerSlot` renders this straight inside a `<summary>`, which only allows
+ * phrasing content (or a heading) — a `<div>` here made that markup invalid (harmless today, since
+ * it is `aria-hidden`, but not if this component is ever reused inside another `<summary>`). A
+ * `<span>` carries the same `.bar`/`display: flex` styling with no visual change. */
 export function SummaryPriorityBar() {
   const { model } = useReport();
   const { shown, counts } = countsOf(model);
   if (shown.length === 0) return null;
 
   return (
-    <div className="bar summary-bar" aria-hidden="true">
+    <span className="bar summary-bar" aria-hidden="true">
       {shown.map((p) => (
         <span key={p} className={`bar-seg ${toneClass(TONE(p))}`} style={{ flexGrow: counts[p] ?? 0 }} />
       ))}
-    </div>
+    </span>
   );
 }

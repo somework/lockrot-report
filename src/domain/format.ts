@@ -47,9 +47,18 @@ export function ageText(iso: string | null | undefined, now: Date): string {
   return `${y.toFixed(1)} y ago`;
 }
 
+/** `one` when `n` is exactly `1`, `many` otherwise — the word `plural()` prefixes with the count.
+ *  Its own export: a caller that draws the count separately from the noun (`PriorityLedger`'s own
+ *  `<span className="ledger-figure">`, styled apart from the eyebrow text around it) still needs the
+ *  same singular/plural choice `plural()` makes, without also getting the count folded into the same
+ *  string. */
+export function pluralNoun(n: number, one: string, many: string): string {
+  return n === 1 ? one : many;
+}
+
 /** `"N {one}"` when `n` is exactly `1`, `"N {many}"` otherwise. Ported from legacy `plural()` (`lib.js:84-86`). */
 export function plural(n: number, one: string, many: string): string {
-  return `${n} ${n === 1 ? one : many}`;
+  return `${n} ${pluralNoun(n, one, many)}`;
 }
 
 /**

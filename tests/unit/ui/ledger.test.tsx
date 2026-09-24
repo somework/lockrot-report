@@ -89,6 +89,34 @@ function loadWithAdvisories(): Model {
   return result.model;
 }
 
+/** A single flagged finding — none of this task's three fixtures (mini/koel_koel/mautic_mautic) has
+ *  exactly one, and the eyebrow's own singular/plural choice (regression review) needs exactly that. */
+function loadWithOneFlagged(): Model {
+  const raw = {
+    report: {
+      generated_at: "2026-01-01T00:00:00Z",
+      counts: {},
+      priorities: {},
+      exposure: [],
+      findings: [
+        {
+          package: "acme/solo",
+          version: "1.0.0",
+          verdict: "abandoned",
+          priority: "high",
+          direct: true,
+          dev: false,
+          signals: [],
+        },
+      ],
+    },
+    details: {},
+  };
+  const result = normalize(raw);
+  if (!result.ok) throw new Error("synthetic single-finding fixture failed to normalize");
+  return result.model;
+}
+
 function renderIn(
   ui: ComponentChild,
   model: Model,
@@ -181,6 +209,18 @@ describe("PriorityLedger", () => {
     const button = screen.getByRole("button", { name: /^urgent/ });
     expect(button.textContent).toContain("1");
     expect(button.className).toContain("tone-low");
+  });
+
+  it("singularises 'package' for exactly one flagged package (regression review)", () => {
+    // Arrange: the eyebrow used to read "Priority of the 1 flagged packages" regardless of count.
+    const model = loadWithOneFlagged();
+
+    // Act
+    renderIn(<PriorityLedger />, model, INITIAL_STATE);
+
+    // Assert
+    const eyebrow = screen.getByText(/priority of the/i);
+    expect(eyebrow.textContent).toBe("Priority of the 1 flagged package");
   });
 
   it("never shows a bar segment or legend button for the 'none' bucket", () => {

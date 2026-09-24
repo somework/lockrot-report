@@ -29,8 +29,10 @@ tag or the address format, says so under **Breaking** in its entry.
 - The glossary's `finished` entry names how a reader accepts a package they consider complete
   themselves, `extra.lockrot.ignore` in `composer.json` with a reason, linked to lockrot.dev's
   configuration docs — the same mechanism the built-in allowlist already uses.
-- A small caption above the Findings list, "age scale: ▏warn 3 y ▏high 5 y", naming the run's own
-  age thresholds once for the whole list instead of only in each row's own hover title.
+- A small caption above the Findings list, "age scale: warn 3 y high 5 y" (a CSS-drawn tick between
+  each pair, not a text glyph), naming the run's own age thresholds once for the whole list instead
+  of only in each row's own hover title; its accessible name spells the unit out in full, "age
+  scale: warn at 3 years, high at 5 years".
 - The phone fold's own priority-counts `<summary>` carries a small, non-interactive echo of the
   ledger's own priority bar, so a phone reader sees a shape before unfolding anything, not only
   words.
@@ -137,6 +139,30 @@ tag or the address format, says so under **Breaking** in its entry.
   mode too.
 - The age scale's two threshold ticks now carry a `title`, matching their accessible name, so
   hovering them shows a reader what they mean instead of nothing at all.
+- The age scale's own accessible name no longer includes the once-per-list legend's tick glyph
+  (`▏`, which a screen reader read aloud as "left one-eighth block") or the short "y" unit; the
+  legend's accessible name now reads "age scale: warn at N years, high at N years" in full, and the
+  tick itself is a CSS-drawn bar with real spacing on both sides instead of a character that sat
+  flush against the word beside it.
+- A Findings row's age scale ticks stay visible when a dot lands on or near one — PD-ROWS-3's shared
+  maximum bunches every row's ticks at a fixed spot, and a dot painted over whichever tick shared its
+  position; the ticks now paint above the dot, with a small gap in the row's own background colour,
+  in the default colour scheme as well as forced-colours.
+- The phone fold's own priority-bar echo (`SummaryPriorityBar`) is a `<span>`, not a `<div>`: the
+  fold renders it directly inside a `<summary>`, which only allows phrasing content.
+- A package detail signal's summary keeps a visible keyboard-focus ring on every side; the panel's
+  own `overflow: hidden` (kept for its rounded corners) used to clip three of the ring's four sides,
+  leaving only a thin bar on the left.
+- The package detail's "The lock entry" no longer runs its repository link past the panel's own edge
+  at 320-390px; the link now wraps like the rest of that row's value instead of forcing the whole
+  panel to scroll sideways.
+- The priority ledger's eyebrow reads "Priority of the 1 flagged package" for exactly one flagged
+  package, instead of always the plural "packages".
+- At 1440px, the side-column detail panel's own sticky header no longer renders partially behind the
+  page's fixed header once a wheel gesture has carried the panel into its stuck position on a report
+  short enough that the row around it ends before the panel's own travel does; the row now reserves
+  enough space for the panel's whole stuck range whenever the panel is actually tall enough to need
+  it.
 
 ## [0.12.0]
 

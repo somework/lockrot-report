@@ -239,6 +239,29 @@ export class NewReportPage implements ReportPage {
       .evaluate((el) => el === document.activeElement);
   }
 
+  /** PD-DETAIL-5's own follow-up (DESIGN.md §5): `.shell-detail.is-side`'s sticky containing block
+   *  (`.shell`'s own grid row, `ui/app.css`) can end before the panel's full travel does, dragging
+   *  its sticky `.detail-head` up above its intended `top` and behind the page's fixed `.topbar` —
+   *  raw class selectors, not a role/name query, since the question here is exactly this
+   *  implementation's own geometry (which element sits where on screen), the same reasoning
+   *  `detail-scroll.spec.ts`'s own `scrollContainer` already gives for reaching into `.shell-detail`
+   *  directly. Null wherever the question does not apply: no detail open, or it is a full-screen
+   *  sheet (`.is-sheet`) rather than a column beside the list. */
+  async detailHeaderClearsTopbar(): Promise<boolean | null> {
+    const detail = this.page.locator(".shell-detail.is-side");
+    if ((await detail.count()) === 0) return null;
+    const head = detail.locator(".detail-head").first();
+    if ((await head.count()) === 0) return null;
+
+    const [headBox, topbarBox] = await Promise.all([
+      head.boundingBox(),
+      this.page.locator(".topbar").boundingBox(),
+    ]);
+    if (headBox === null || topbarBox === null) return null;
+
+    return headBox.y >= topbarBox.y + topbarBox.height;
+  }
+
   async rowFocusable(name: string): Promise<boolean> {
     return this.pkgLocator(name).evaluate((el) => (el as HTMLElement).tabIndex >= 0);
   }
@@ -310,6 +333,11 @@ export class NewReportPage implements ReportPage {
     return (await legend.count()) > 0 ? collapse((await legend.first().textContent()) ?? "") : null;
   }
 
+  async ageScaleLegendAccessibleName(): Promise<string | null> {
+    const legend = this.page.getByRole("img", { name: /^age scale:/ });
+    return (await legend.count()) > 0 ? legend.first().getAttribute("aria-label") : null;
+  }
+
   /** The age scale's decorative parts (`AgeScale.tsx`) carry no accessible role of their own — the
    *  whole thing is one `role=img` — so they're read by position from that element (`children[0]`
    *  the track, its own two ticks and dot inside that), the same structural approach
@@ -351,19 +379,29 @@ export class NewReportPage implements ReportPage {
    *  a tick that renders fine but sits under an opaquely-filled dot from one that's genuinely
    *  missing — this reads paint order instead. */
   async ageScaleWarnTickSurvivesDot(name: string): Promise<boolean> {
+    return this.ageScaleTickSurvivesDot(name, 0);
+  }
+
+  async ageScaleHighTickSurvivesDot(name: string): Promise<boolean> {
+    return this.ageScaleTickSurvivesDot(name, 1);
+  }
+
+  /** `tickIndex` 0 is the warn tick, 1 the high tick — the track's own child order
+   *  (`views/AgeScale.tsx`: warn tick, high tick, dot). */
+  private async ageScaleTickSurvivesDot(name: string, tickIndex: 0 | 1): Promise<boolean> {
     const scaleLocator = this.pkgLocator(name).getByRole("img").first();
     // `elementFromPoint` only ever sees the viewport, not the scrollable page — the row this scale
     // sits in is usually well below the fold in a 200+ package report.
     await scaleLocator.scrollIntoViewIfNeeded();
-    return scaleLocator.evaluate((scale) => {
+    return scaleLocator.evaluate((scale, index) => {
       const track = scale.children[0];
-      const tick = track?.children[0];
-      if (!(tick instanceof HTMLElement)) throw new Error("age scale is missing its warn tick");
+      const tick = track?.children[index];
+      if (!(tick instanceof HTMLElement)) throw new Error("age scale is missing a threshold tick");
       const rect = tick.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
       return document.elementFromPoint(cx, cy) === tick;
-    });
+    }, tickIndex);
   }
 
   /** The name starts with the key (a count may follow it, see LEDGER_LABEL). Anchored rather than a

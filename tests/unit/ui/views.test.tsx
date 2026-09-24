@@ -437,8 +437,15 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
     // Act
     renderIn(model, stateWith(), <FindingsView />);
 
-    // Assert: the run's own release-warn-years/release-high-years, named once.
-    expect(screen.getByText("age scale: ▏warn 3 y ▏high 5 y")).toBeTruthy();
+    // Assert: the run's own release-warn-years/release-high-years, named once. a11y review: the
+    // visible line is a short, `aria-hidden` "y" form (the tick glyph replaced by a CSS-drawn bar,
+    // `.age-scale-legend-tick`, not a text character a screen reader would read aloud); the line's
+    // own accessible name — `role="img"`, the same pairing a row's own `AgeScale` already uses —
+    // spells the unit out in full instead, found here by that role and name rather than by
+    // `getByText` (which, by default, matches the visible `aria-hidden` span underneath, not the
+    // named element itself).
+    const legend = screen.getByRole("img", { name: "age scale: warn at 3 years, high at 5 years" });
+    expect(legend.textContent).toBe("age scale: warn 3 y high 5 y");
   });
 
   it("shows no legend at all when nothing in the list would draw a scale (PD-ROWS-3)", () => {

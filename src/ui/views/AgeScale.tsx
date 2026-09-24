@@ -1,6 +1,7 @@
 import type { AgeLegend as AgeLegendData, AgeScale as AgeScaleData, AgeKind } from "../../domain/age";
 import type { Tone } from "../../domain/vocab";
 import type { Verdict } from "../../model/types";
+import { plural } from "../../domain/format";
 import { toneClass } from "../common/common";
 import "./views.css";
 
@@ -100,14 +101,30 @@ export function AgeScalePlaceholder() {
  * two ticks carried the run's own thresholds only in an aria-label and, now, a hover `title` —
  * nothing a reader scanning the list without hovering every dot ever saw. `FindingsView` renders
  * this once, above the first priority group, from `domain/age.ts#ageLegend`; a row's own scale is
- * unchanged and still carries the exact numbers in its own label. The tick glyph (`▏`) is decorative
- * repetition of the word beside it, not a fact of its own, so the whole line is one text node for a
- * screen reader rather than the glyph and the word being announced as if they disagreed.
+ * unchanged and still carries the exact numbers in its own label.
+ *
+ * a11y review: the tick was a `▏` glyph sitting in the line's own accessible text, so a screen
+ * reader read it aloud (VoiceOver: "left one-eighth block") ahead of "warn 3 y" — decorative
+ * repetition of the word beside it, not a fact of its own, never meant to be heard at all, and the
+ * short "y" read oddly outside a visual, skimmable context. The same `role="img"`/`aria-label`
+ * pairing `AgeScale` above already uses for exactly this reason (one accessible name replacing a
+ * row of decorative parts) carries the full "warn at N years, high at N years" wording instead; the
+ * visible line, glyphs included, is one `aria-hidden` child. The glyph itself moves from text into
+ * `.age-scale-legend-tick` (a CSS-drawn bar, `views.css`), which also fixes a visual-review finding
+ * on the same line: a `▏` character's own ink sits at the left edge of its box, so even the space
+ * already before it in the old string read as flush against the previous word ("scale:▏", "y▏") —
+ * the bar's own `margin` gives it real, controllable clearance on both sides instead.
  */
 export function AgeScaleLegend({ legend }: { legend: AgeLegendData }) {
+  const label = `age scale: warn at ${plural(legend.warn, "year", "years")}, high at ${plural(legend.high, "year", "years")}`;
+
   return (
-    <p className="age-scale-legend muted">
-      age scale: ▏warn {legend.warn} y ▏high {legend.high} y
+    <p className="age-scale-legend muted" role="img" aria-label={label} title={label}>
+      <span aria-hidden="true">
+        age scale: <span className="age-scale-legend-tick" />
+        warn {legend.warn} y <span className="age-scale-legend-tick" />
+        high {legend.high} y
+      </span>
     </p>
   );
 }

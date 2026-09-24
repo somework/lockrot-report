@@ -2,6 +2,7 @@ import { useReport } from "../context";
 import { LegendButton, toneClass } from "../common/common";
 import { TONE } from "../../domain/vocab";
 import { population } from "../../domain/filters";
+import { pluralNoun } from "../../domain/format";
 import "./ledger.css";
 
 /** The four priorities a finding can actually carry (`none` is a package with no rot verdict at
@@ -36,7 +37,8 @@ export function PriorityLedger() {
   return (
     <div className="ledger-block">
       <span className="eyebrow" title="Every verdict except ok, finished and unknown">
-        Priority of the <span className="ledger-figure">{flaggedCount}</span> flagged packages
+        Priority of the <span className="ledger-figure">{flaggedCount}</span> flagged{" "}
+        {pluralNoun(flaggedCount, "package", "packages")}
       </span>
       <div className="bar" role="img" aria-label="Priority distribution">
         {bars.length === 0 ? (

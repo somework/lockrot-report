@@ -129,6 +129,33 @@ test.describe("no horizontal overflow at 320px", () => {
   }
 });
 
+test.describe("no horizontal overflow inside the open detail sheet at 320px (regression review)", () => {
+  // The page itself stays at scrollWidth 320 here (the check above), but `.shell-detail` is its own
+  // scrollable region (`overflow-y: auto`, PD-DETAIL-3) and can widen sideways on its own: "The lock
+  // entry" can show a package's repository URL as its own link text (`Detail.tsx#lockRows`), and
+  // `.out`'s `white-space: nowrap` (meant for the short labels its other callers pass) used to stop
+  // it from ever wrapping, running the sheet past the viewport it is meant to fill.
+  test.use({ viewport: { width: 320, height: 720 } });
+
+  test("wallabag_wallabag: sensio/framework-extra-bundle's repository link wraps instead of widening the sheet", async ({
+    page,
+  }) => {
+    await load(page, "wallabag_wallabag");
+    const report = await createReportPage(page);
+    await report.openPackage("sensio/framework-extra-bundle");
+
+    const detail = page.getByRole("complementary", { name: "sensio/framework-extra-bundle" });
+    for (const title of ["How it is reached", "The lock entry", "Provenance"]) {
+      await detail.locator("summary", { hasText: title }).click();
+    }
+
+    const { scrollWidth, clientWidth } = await page
+      .locator(".shell-detail")
+      .evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }));
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+  });
+});
+
 /**
  * A publisher's provenance line (README, "Publishing a report"): markup another site puts after
  * <body> in a copy of the page. The page's policy refuses style attributes, so the line is styled

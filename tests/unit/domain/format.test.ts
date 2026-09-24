@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { ageText, countPhrase, day, fixed, plural } from "../../../src/domain/format";
+import { ageText, countPhrase, day, fixed, plural, pluralNoun } from "../../../src/domain/format";
 
 // Every case here that has a line number in its title is ported verbatim (values unchanged, only
 // the assertion syntax adapted) from tests/js/lib.test.js; the ones without are new, covering what
@@ -75,6 +75,19 @@ describe("plural", () => {
     // Simulates an untyped caller reaching past the exported number type at runtime.
     const n = "1" as unknown as number;
     expect(plural(n, "advisory", "advisories")).toBe("1 advisories");
+  });
+});
+
+describe("pluralNoun", () => {
+  test("the noun alone, same singular/plural choice as plural() (regression: PriorityLedger's own count stays in its own span)", () => {
+    expect(pluralNoun(1, "package", "packages")).toBe("package");
+    expect(pluralNoun(2, "package", "packages")).toBe("packages");
+    expect(pluralNoun(0, "package", "packages")).toBe("packages");
+  });
+
+  test("plural() is pluralNoun() with the count prefixed", () => {
+    expect(plural(1, "advisory", "advisories")).toBe(`1 ${pluralNoun(1, "advisory", "advisories")}`);
+    expect(plural(4, "advisory", "advisories")).toBe(`4 ${pluralNoun(4, "advisory", "advisories")}`);
   });
 });
 

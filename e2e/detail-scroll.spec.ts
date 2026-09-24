@@ -131,7 +131,7 @@ test.describe("1440×900 (side): every part of the detail is reachable by wheel 
     test(`${name}: wheeling over the detail from scroll 0 reaches its last section (Provenance)`, async ({
       page,
     }) => {
-      await openLongDetail(page, fixture, pkg);
+      const report = await openLongDetail(page, fixture, pkg);
       const container = scrollContainer(page);
       await expect(container).toBeVisible();
 
@@ -176,7 +176,22 @@ test.describe("1440×900 (side): every part of the detail is reachable by wheel 
         await page.mouse.wheel(0, 400);
       }
 
+      // A single `wheel(0, 400)` tick, once `.shell-detail`'s own scroll is exhausted and the rest
+      // chains into the page (PD-DETAIL-5), does not move the page by exactly 400px: Chromium turns
+      // the leftover delta into a brief momentum scroll of its own that keeps going for a beat after
+      // this call returns (measured, over many repeats: up to ~800px total from one 400px tick). This
+      // waits for that to finish, the same way `disclosure-marker.spec.ts`'s own `settledRotation()`
+      // waits out a CSS transition, before either assertion below reads a final position rather than
+      // a still-moving one.
+      await page.waitForTimeout(250);
+
       await expect(provenance).toBeInViewport();
+
+      // Visual review (PD-DETAIL-5's own follow-up, DESIGN.md §5): once the page settles from this
+      // gesture, the panel's own sticky header must have resumed below the fixed one, not slid in
+      // behind it — `.shell`'s grid row can otherwise end before the panel's full travel does,
+      // dragging the header up past its intended `top`.
+      expect(await report.detailHeaderClearsTopbar()).toBe(true);
     });
   }
 });

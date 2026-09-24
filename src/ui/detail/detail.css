@@ -166,6 +166,19 @@
   font-size: 12px;
   word-break: break-word;
 }
+/* regression review: "The lock entry" repository row (`Detail.tsx#lockRows`) can show the repository
+   URL itself as an `OutLink`'s own text (`safeRepository`), and `.out` (`styles/base.css`) sets
+   `white-space: nowrap` — meant for the short labels ("packagist", "advisory") its other callers
+   pass, but here it stops even this cell's own `word-break: break-word` from ever taking effect, so
+   a long URL runs past the sheet's own width instead of wrapping (measured: `.shell-detail`'s
+   `scrollWidth` past its `clientWidth` at 320/390px with the panel's own overflow-y turning that into
+   sideways scroll). Scoped to this `dl` alone, not `.out` itself: every other caller (`RunView.tsx`,
+   `AdvisoriesView.tsx`, `Glossary.tsx`, `DetailHeader.tsx`) passes short, single-word link text that
+   is meant to stay on one line. */
+.detail-kv .out {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 
 /* ---------- why this priority ---------- */
 .detail-why {
@@ -225,6 +238,17 @@
   display: flex;
   gap: 9px;
   align-items: baseline;
+}
+/* a11y review: the page's one shared `:focus-visible` rule (`styles/base.css`) draws its ring with a
+   positive `outline-offset`, growing it outward from the element's own border box — `.detail-signal`'s
+   `overflow: hidden` (kept for its rounded corners) then clips whichever sides of that ring land
+   outside it, which for this summary (flush against `.detail-signal`'s own top, right and bottom
+   edges) was three of the four; only the left side, with the grid's own column-gap to spare, stayed
+   visible, as a thin bar rather than a ring. Negative here draws the ring inward instead, so it
+   always stays inside the box `overflow: hidden` clips to, whichever `<details>` this summary sits
+   in (`.detail-signal-more`'s or `.detail-disclosure`'s, `AdvisoryList.tsx`'s "Every advisory"). */
+.detail-signal-summary:focus-visible {
+  outline-offset: -2px;
 }
 .detail-signal-id {
   padding: 8px 0;

@@ -95,6 +95,14 @@ export interface ReportPage {
    *  filters" (PD-DETAIL-4, DESIGN.md §5) moves focus to, since it unmounts itself on the same
    *  click. */
   isFocusOnDetailClose(): Promise<boolean>;
+  /** Whether the open detail's own sticky header (the package name, its pills, the Close button) is
+   *  fully clear of the page's fixed header band — `false` when any part of it renders behind the
+   *  header instead of below it (PD-DETAIL-5, DESIGN.md §5: `.shell-detail.is-side`'s own sticky
+   *  offset can be squeezed short of its intended `top` by a row that ends before the panel's full
+   *  travel does, dragging its header up behind the fixed one). Null when no detail is open, or it
+   *  is a full-screen sheet rather than a side column — the fixed header sits above the sheet's own
+   *  `z-index` there, so this question does not apply. */
+  detailHeaderClearsTopbar(): Promise<boolean | null>;
   /** Whether the row for this package can receive keyboard focus at all (M6). */
   rowFocusable(name: string): Promise<boolean>;
   /** Whether the row is marked as the current selection for assistive tech (M6). */
@@ -123,9 +131,16 @@ export interface ReportPage {
    *  show a reader nothing to hover). Null on the same terms as `rowAgeScaleLabel`. */
   rowAgeScaleTitle(name: string): Promise<string | null>;
   /** The once-per-list caption naming the run's own age thresholds (PD-ROWS-3, DESIGN.md §5),
-   *  e.g. "age scale: ▏warn 3 y ▏high 5 y" — or null when the current tab draws no age scale at
-   *  all, and the caption is not rendered. */
+   *  e.g. "age scale: warn 3 y high 5 y" (a11y review: the tick between each pair is a CSS-drawn
+   *  bar, not a text glyph, so it contributes nothing to this string) — or null when the current tab
+   *  draws no age scale at all, and the caption is not rendered. */
   ageScaleLegendText(): Promise<string | null>;
+  /** The same caption's own accessible name (a11y review, PD-ROWS-3): the `role="img"`/`aria-label`
+   *  pairing a row's own age scale already uses, spelling the unit out in full ("age scale: warn at
+   *  N years, high at N years") rather than the short "y" form `ageScaleLegendText` reads, and with
+   *  no tick glyph in it at all for the same reason `rowAgeScaleLabel` carries none either. Null on
+   *  the same terms as `ageScaleLegendText`. */
+  ageScaleLegendAccessibleName(): Promise<string | null>;
   /** Whether the row's "+N more…" note is currently on screen (PD-ROWS-1, DESIGN.md §5: print
    *  hides it once every signal already prints). */
   rowMoreSignalsVisible(name: string): Promise<boolean>;
@@ -139,6 +154,12 @@ export interface ReportPage {
    *  which `ageScaleForcedColorsVisible`'s own colour check couldn't catch, since the tick's colour
    *  was never wrong, only its paint order under the dot was. */
   ageScaleWarnTickSurvivesDot(name: string): Promise<boolean>;
+  /** The same check for the scale's other tick (`ageScaleWarnTickSurvivesDot`'s own comment): a dot
+   *  sitting between the two ticks (rather than on either one) can paint over both at once, not just
+   *  the nearer one — a regression review found PD-ROWS-3's own shared maximum bunching the two
+   *  ticks close enough together, in the default colour scheme, that a mid-zone dot's opaque fill
+   *  covered them both, not only in forced-colors mode. */
+  ageScaleHighTickSurvivesDot(name: string): Promise<boolean>;
 
   ledgerButton(group: LedgerGroup, key: string): Promise<void>;
   /** null when the button carries no pressed-state at all for assistive tech (M17, legacy). */
