@@ -21,8 +21,11 @@ export interface DetailProps {
 
 /**
  * The package detail panel — ported section by section from legacy `renderDetail`
- * (`report.js:737-845`), in its own order: against the baseline, why this priority, every advisory,
- * follow the upstream, release branches, signals, how it is reached, the lock entry, provenance.
+ * (`report.js:737-845`), reordered so the reader meets the answer before the reference (PD-DETAIL-1,
+ * DESIGN.md §8): follow the upstream (the action, when there is one), against the baseline, why this
+ * priority, every advisory, release branches, signals, then three reference sections — how it is
+ * reached, the lock entry, provenance — each a `<details>` closed by default, since a reader who
+ * opened the panel to act on it rarely needs the lock's raw fields first.
  *
  * Renders nothing while no package is open (`state.pkg === null`). When `state.pkg` names no
  * finding in this report — an unknown `pkg=` in a pasted link — critic.md's M13 fix applies: a small
@@ -58,6 +61,7 @@ export function Detail({ onClose }: DetailProps) {
     <aside className="detail" role="complementary" aria-label={finding.package}>
       <DetailHeader finding={finding} onClose={onClose} />
       <div className="detail-body">
+        <FollowUpstream finding={finding} />
         {baselineText !== null && (
           <section className="detail-section">
             <h3>Against the baseline</h3>
@@ -66,11 +70,10 @@ export function Detail({ onClose }: DetailProps) {
         )}
         <PriorityWhy finding={finding} />
         <AdvisoryList finding={finding} />
-        <FollowUpstream finding={finding} />
         <Timeline metadata={details?.metadata ?? null} installedVersion={finding.version} />
         <SignalList finding={finding} />
-        <section className="detail-section">
-          <h3>How it is reached</h3>
+        <details className="detail-section detail-reference">
+          <summary className="detail-reference-summary">How it is reached</summary>
           <p className="detail-chain">
             {chain.map((pkg, index) => (
               <Fragment key={pkg}>
@@ -79,15 +82,15 @@ export function Detail({ onClose }: DetailProps) {
               </Fragment>
             ))}
           </p>
-        </section>
-        <section className="detail-section">
-          <h3>The lock entry</h3>
+        </details>
+        <details className="detail-section detail-reference">
+          <summary className="detail-reference-summary">The lock entry</summary>
           <KeyValue rows={lockRows(finding, details, now)} />
-        </section>
-        <section className="detail-section">
-          <h3>Provenance</h3>
+        </details>
+        <details className="detail-section detail-reference">
+          <summary className="detail-reference-summary">Provenance</summary>
           <KeyValue rows={provenanceRows(finding, details?.metadata ?? null)} />
-        </section>
+        </details>
       </div>
     </aside>
   );

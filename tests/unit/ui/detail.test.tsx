@@ -195,13 +195,28 @@ if (!EXTRA.ok) throw new Error("EXTRA fixture failed to normalize");
 const EXTRA_MODEL = EXTRA.model;
 
 /**
- * The `<dl class="detail-kv">` under the section titled `heading` — found by heading text rather
- * than position, since a finding with a signal has an *earlier* `dl.detail-kv` of its own (the
- * signal's own data dump), which a plain `querySelectorAll(...)[n]` would pick up instead.
+ * Opens the reference `<details>` (PD-DETAIL-1: how it is reached, the lock entry and provenance
+ * are closed by default) titled `heading` — found by its `<summary>` text rather than position,
+ * since more than one reference section exists per finding — and returns the element itself so a
+ * caller can read whatever it protects.
+ */
+function openReference(container: ParentNode, heading: string): HTMLDetailsElement | null {
+  const summary = Array.from(container.querySelectorAll(".detail-reference-summary")).find(
+    (el) => el.textContent === heading,
+  );
+  const section = (summary?.closest("details.detail-reference") as HTMLDetailsElement | null) ?? null;
+  if (section) section.open = true;
+
+  return section;
+}
+
+/**
+ * The `<dl class="detail-kv">` under the reference section titled `heading`, opened first — a
+ * finding with a signal has an *earlier* `dl.detail-kv` of its own (the signal's own data dump),
+ * which a plain `querySelectorAll(...)[n]` would pick up instead of this one.
  */
 function sectionKeyValue(container: ParentNode, heading: string): Element | null {
-  const match = Array.from(container.querySelectorAll("h3")).find((h) => h.textContent === heading);
-  return match?.closest(".detail-section")?.querySelector("dl.detail-kv") ?? null;
+  return openReference(container, heading)?.querySelector("dl.detail-kv") ?? null;
 }
 
 function renderDetail(model: Model, pkg: string | null, onClose: () => void = vi.fn()) {
@@ -324,11 +339,13 @@ describe("Detail", () => {
   describe("how it is reached", () => {
     it("shows composer.json for a direct finding, ignoring any chain field", () => {
       const { container } = renderDetail(MINI, "vendor/direct");
+      openReference(container, "How it is reached");
       expect(container.querySelector(".detail-chain")?.textContent).toBe("composer.json → vendor/direct");
     });
 
     it("shows the full chain for a transitive finding", () => {
       const { container } = renderDetail(MINI, "vendor/transitive");
+      openReference(container, "How it is reached");
       expect(container.querySelector(".detail-chain")?.textContent).toBe("vendor/direct → vendor/transitive");
     });
   });
@@ -503,6 +520,69 @@ describe("Detail", () => {
       expect(provenance?.textContent).toContain("58");
       expect(provenance?.textContent).toContain("last stable");
       expect(provenance?.textContent).toContain("v3.6.1");
+    });
+  });
+
+  describe("section order (PD-DETAIL-1, DESIGN.md §8)", () => {
+    /** Where each marker's text first appears in the rendered panel, in the order given — a
+     *  closed reference section's text is still in `textContent` (CSS `display: none` on a
+     *  closed `<details>`'s children does not remove them from the DOM), so this needs no click. */
+    function markerOrder(container: ParentNode, markers: readonly string[]): number[] {
+      const text = container.textContent ?? "";
+      return markers.map((marker) => text.indexOf(marker));
+    }
+
+    it("puts follow-the-upstream right after the header, then priority, release branches, signals, and the three reference sections last", () => {
+      const { container } = renderDetail(KOEL, "predis/predis");
+      const order = markerOrder(container, [
+        "Follow the upstream",
+        "Why this is high",
+        "Release branches",
+        "Signals — what was observed",
+        "How it is reached",
+        "The lock entry",
+        "Provenance",
+      ]);
+      expect(order).not.toContain(-1);
+      expect(order).toEqual([...order].sort((a, b) => a - b));
+    });
+
+    it("puts against the baseline ahead of why this priority and the reference sections", () => {
+      const { container } = renderDetail(EXTRA_MODEL, "vendor/worsened");
+      const order = markerOrder(container, [
+        "The baseline recorded",
+        "Why this is medium",
+        "How it is reached",
+      ]);
+      expect(order).not.toContain(-1);
+      expect(order).toEqual([...order].sort((a, b) => a - b));
+    });
+
+    it("puts every advisory ahead of signals and the reference sections", () => {
+      const { container } = renderDetail(EXTRA_MODEL, "vendor/vulnerable");
+      const order = markerOrder(container, [
+        "2 security advisories",
+        "Signals — what was observed",
+        "How it is reached",
+      ]);
+      expect(order).not.toContain(-1);
+      expect(order).toEqual([...order].sort((a, b) => a - b));
+    });
+
+    it("closes the three reference sections by default", () => {
+      const { container } = renderDetail(KOEL, "predis/predis");
+      const references = container.querySelectorAll<HTMLDetailsElement>("details.detail-reference");
+      expect(references.length).toBe(3);
+      for (const reference of references) {
+        expect(reference.open).toBe(false);
+      }
+    });
+
+    it("opens a reference section on its summary and reveals what it protects", () => {
+      const { container } = renderDetail(KOEL, "predis/predis");
+      const lockEntry = openReference(container, "The lock entry");
+      expect(lockEntry?.open).toBe(true);
+      expect(lockEntry?.querySelector("dl.detail-kv")?.textContent).toContain("installed");
     });
   });
 });
