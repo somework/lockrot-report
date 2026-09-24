@@ -57,21 +57,51 @@ test.describe("M25: a radius card must not claim more packages than it draws", (
   });
 });
 
-test.describe("copy button feedback", () => {
-  test.beforeEach(async ({ context }) => {
-    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+/**
+ * The clipboard itself is the browser's: permissions for it exist only in Chromium, and a headless
+ * WebKit refuses the write outright. What the page owns is the feedback, so the API is replaced
+ * before the page loads — once resolving, once rejecting — and both branches are checked the same
+ * way on every engine.
+ */
+function stubClipboard(mode: string): void {
+  const writes: string[] = [];
+  (window as unknown as { __copied: string[] }).__copied = writes;
+  Object.defineProperty(navigator, "clipboard", {
+    configurable: true,
+    value: {
+      writeText: (text: string) => {
+        writes.push(text);
+        return mode === "resolve" ? Promise.resolve() : Promise.reject(new Error("denied"));
+      },
+    },
   });
+}
 
-  test("copies the composer require command and reverts the label after a moment", async () => {
-    // fixtures/bundles/wallabag_wallabag.json: craue/config-bundle (left-behind, direct) carries an
-    // S8 suggested_constraint ("^3.0"), which is what makes the "Copy" action appear at all.
+test.describe("copy button feedback", () => {
+  // fixtures/bundles/wallabag_wallabag.json: craue/config-bundle (left-behind, direct) carries an
+  // S8 suggested_constraint ("^3.0"), which is what makes the "Copy" action appear at all.
+  test("copies the composer require command and reverts the label after a moment", async ({ page }) => {
+    await page.addInitScript(stubClipboard, "resolve");
     await report.goto(FIXTURES.wallabag);
     await report.openPackage("craue/config-bundle");
     expect(await report.copyButtonLabel()).toBe("Copy");
 
     await report.clickCopyButton();
-    expect(await report.copyButtonLabel()).toBe("Copied");
+    await expect.poll(async () => report.copyButtonLabel()).toBe("Copied");
+    expect(await page.evaluate(() => (window as unknown as { __copied: string[] }).__copied)).toEqual([
+      "composer require craue/config-bundle '^3.0'",
+    ]);
 
     await expect.poll(async () => report.copyButtonLabel(), { timeout: 3000 }).toBe("Copy");
+  });
+
+  test("says to copy by hand when the browser refuses, and still reverts", async ({ page }) => {
+    await page.addInitScript(stubClipboard, "reject");
+    await report.goto(FIXTURES.wallabag);
+    await report.openPackage("craue/config-bundle");
+
+    await report.clickCopyButton();
+    await expect.poll(async () => report.copyButtonLabel()).toBe("Select it and copy");
+    await expect.poll(async () => report.copyButtonLabel(), { timeout: 4000 }).toBe("Copy");
   });
 });
