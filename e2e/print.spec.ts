@@ -4,9 +4,8 @@ import { FIXTURES } from "./support/pages";
 
 /**
  * Print has no JS of its own (history.md §10: no `window.print()`, no `beforeprint` listener — it
- * is pure `@media print` CSS, `legacy/report.css:629-636`). A faithful rewrite needs an equivalent
- * stylesheet, so this is a plain parity check, not a "fixed legacy bug" — both renderers are
- * expected to pass it unconditionally.
+ * is pure `@media print` CSS; `legacy/report.css:629-636` is the provenance for the rule). This
+ * asserts that the print stylesheet hides the app chrome, unconditionally.
  */
 let report: ReportPage;
 

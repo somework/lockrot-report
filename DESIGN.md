@@ -149,29 +149,34 @@ Parity is the default: vocabulary, texts, sort orders, the three-step Escape, `/
 `Enter`, the theme key `lockrot-theme`, boot-only ledger and glossary, auto-open of the first
 flagged package on wide screens, "detail stays open while filters hide it".
 
-Fixed on purpose (the e2e suite marks each as a known legacy difference):
+Fixed on purpose during the extraction, proved against the legacy page (§6 says which of these an
+e2e test still covers):
 
-| id       | legacy                                                                                     | new                                                                                         |
-| -------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| M1       | severity is compared raw; `moderate`/`High` get no ledger bucket and sort first            | case-insensitive; `moderate` → medium; anything else → unrated bucket, raw text still shown |
-| M2       | S10 has no name, sorts between S1 and S2, absent from the glossary                         | S10 named "a check could not run", numeric id order                                         |
-| M5       | Enter on a link inside a row toggles the detail                                            | the link is followed                                                                        |
-| M6       | package-table rows are not focusable and show no selection                                 | focusable, `aria-selected`                                                                  |
-| M7/M8/M9 | `j`/`k` walk the document order, not the rows on screen, and can open packages with no row | walk the rendered rows of the current view                                                  |
-| M10      | `j`/`k` act behind the open glossary                                                       | ignored while a dialog is open                                                              |
-| M11      | first click on the theme button does nothing under an OS dark preference                   | the button always reflects the effective theme                                              |
-| M12      | a bad `%` escape in the fragment blanks the page                                           | the piece is skipped                                                                        |
-| M13      | an unknown `pkg=` on a narrow screen locks scrolling                                       | the detail says the package is not in this report                                           |
-| M17      | ledger filter buttons carry no pressed state for assistive tech                            | `aria-pressed`                                                                              |
-| M19      | every healthy package counts as "Already accepted"                                         | only flagged findings the baseline knows                                                    |
-| M20      | a clean report says "Nothing matches this filter"                                          | it says nothing was flagged                                                                 |
-| M21      | "1 of 1 flagged packages"                                                                  | singular forms                                                                              |
-| M24/M25  | radius card count disagrees with the rows it lists                                         | the count is the rows listed; a flagged parent says so                                      |
-| M26      | timeline label pairs the highest version with another tag's date                           | label and date come from the same tag                                                       |
-| M28      | glossary fallback renders below the footer                                                 | fixed-position overlay                                                                      |
-| M29      | ledger tooltip says "except ok and finished" but also excludes unknown                     | text matches the count                                                                      |
-| C2       | first year tick on the timeline is always dropped                                          | kept                                                                                        |
-| WIDE     | measured once at boot                                                                      | follows `matchMedia` changes                                                                |
+| id              | legacy                                                                                                  | new                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| M1              | severity is compared raw; `moderate`/`High` get no ledger bucket and sort first                         | case-insensitive; `moderate` → medium; anything else → unrated bucket, raw text still shown |
+| M2              | S10 has no name, sorts between S1 and S2, absent from the glossary                                      | S10 named "a check could not run", numeric id order                                         |
+| M5              | Enter on a link inside a row toggles the detail                                                         | the link is followed                                                                        |
+| M6              | package-table rows are not focusable and show no selection                                              | focusable, `aria-selected`                                                                  |
+| M7/M8/M9        | `j`/`k` walk the document order, not the rows on screen, and can open packages with no row              | walk the rendered rows of the current view                                                  |
+| M10             | `j`/`k` act behind the open glossary                                                                    | ignored while a dialog is open                                                              |
+| M11             | first click on the theme button does nothing under an OS dark preference                                | the button always reflects the effective theme                                              |
+| M12             | a bad `%` escape in the fragment blanks the page                                                        | the piece is skipped                                                                        |
+| M13             | an unknown `pkg=` on a narrow screen locks scrolling                                                    | the detail says the package is not in this report                                           |
+| M14             | an unrecognised `view=` leaves no tab selected and shows Run content with the ledger still up           | falls back to Findings, with the Findings tab marked selected                               |
+| M17             | ledger filter buttons carry no pressed state for assistive tech                                         | `aria-pressed`                                                                              |
+| M19             | every healthy package counts as "Already accepted"                                                      | only flagged findings the baseline knows                                                    |
+| M20             | a clean report says "Nothing matches this filter"                                                       | it says nothing was flagged                                                                 |
+| M21             | "1 of 1 flagged packages"                                                                               | singular forms                                                                              |
+| M24/M25         | radius card count disagrees with the rows it lists                                                      | the count is the rows listed; a flagged parent says so                                      |
+| M26             | timeline label pairs the highest version with another tag's date                                        | label and date come from the same tag                                                       |
+| M28             | glossary fallback renders below the footer                                                              | fixed-position overlay                                                                      |
+| M29             | ledger tooltip says "except ok and finished" but also excludes unknown                                  | text matches the count                                                                      |
+| C2              | first year tick on the timeline is always dropped                                                       | kept                                                                                        |
+| WIDE            | measured once at boot                                                                                   | follows `matchMedia` changes                                                                |
+| WS-Q            | a whitespace-only query counts as one active filter (raw, untrimmed `state.q`)                          | trimmed first: not an active filter, and not written to the address bar                     |
+| SEARCH-FALLBACK | `writeHash()` falls back to `location.pathname` when the computed state is empty, dropping any `?query` | `location.search` survives a reset to the bare path                                         |
+| hashchange      | no `hashchange` listener at all                                                                         | a link pasted into an open page applies live                                                |
 
 Changed on purpose, and not a legacy bug:
 
@@ -194,10 +199,12 @@ filter that hides its package; `data-goto` keeps the detail open.
   `build/pages/`. It was written and made green against the legacy page first, during the
   extraction, which proved the tests tested something, and ran against both pages until lockrot
   0.12.0 stopped shipping the legacy one; the new page is the only page it runs against since. §5's
-  table stays the record of the differences that comparison found and fixed on purpose — each row's
-  test carries the row's id in a comment — and later deliberate changes to the new page are recorded
-  there the same way. New-only checks: axe (no serious or critical violations), zero CSP violations,
-  both colour schemes, 320/768/1024/1440.
+  table stays the record of the differences that comparison found and fixed on purpose. Every row
+  an e2e test covers carries the row's id in a comment on that test, and later deliberate changes to
+  the new page are recorded there the same way; M1, M19, M24/M25, M26 and C2 are covered by a unit
+  test instead (its `describe`/`it` name carries the id), and M8/M9 and WIDE have no test naming
+  their id at all yet. Page-quality checks that apply regardless of any legacy comparison: axe (no
+  serious or critical violations), zero CSP violations, both colour schemes, 320/768/1024/1440.
 - **Build checks**: the built `report.html` contains each coupling in §1.1 exactly once, none of the
   forbidden strings, and building twice gives identical bytes.
 

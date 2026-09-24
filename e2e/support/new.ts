@@ -351,8 +351,8 @@ export class NewReportPage implements ReportPage {
     }, parent);
   }
 
-  /** `getByRole('button', { name: /what these words mean/i })` — the legend opener keeps the
-   *  legacy copy as its accessible name, so the same text works as the locator across renderers. */
+  /** `getByRole('button', { name: /what these words mean/i })` — the locator uses the page's
+   *  accessible name, which keeps the legacy copy on purpose. */
   async openGlossary(): Promise<void> {
     await this.page.getByRole("button", { name: /what these words mean/i }).click();
   }
@@ -460,8 +460,8 @@ function collapse(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
-/** See the identical helper in `legacy.ts`: same-document hash-only navigations never re-run a
- *  page's boot script, so every fresh load bounces through `about:blank` first. */
+/** Same-document hash-only navigations never re-run a page's boot script, so every fresh load
+ *  bounces through `about:blank` first. */
 async function freshNavigate(page: Page, url: string): Promise<void> {
   await page.goto("about:blank");
   await page.goto(url);

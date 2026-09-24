@@ -35,7 +35,8 @@ test.describe("ledger filter groups (prio/verdict) — mini.json", () => {
     // M29 (DESIGN.md §5), fixed on purpose: legacy's static tooltip said "except ok and finished"
     // but the count it described also excluded unknown.
     const tooltip = await report.priorityLedgerTooltip();
-    expect(tooltip).not.toBe("Every verdict except ok and finished");
+    expect(tooltip).not.toBeNull();
+    expect(tooltip).toBe("Every verdict except ok, finished and unknown");
   });
 });
 

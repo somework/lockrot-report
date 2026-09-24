@@ -1,6 +1,6 @@
 /**
- * Checks that only the new renderer has to pass (DESIGN.md §6 "New-only checks"): the legacy page
- * this suite was proven against never had to meet them.
+ * Page-quality checks (DESIGN.md §6): properties the built page has to hold on their own, not
+ * differences against the legacy page this renderer was proven against during the extraction.
  *
  * - axe: no serious or critical violation, in both colour schemes, with a package detail open;
  * - CSP: no `securitypolicyviolation` on any fixture page, through boot and the common

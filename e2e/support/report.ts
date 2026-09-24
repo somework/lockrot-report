@@ -9,6 +9,7 @@
  */
 import type { Page } from "@playwright/test";
 import type { FixtureName } from "./pages";
+import { NewReportPage } from "./new";
 
 export const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;
 export type ViewName = (typeof VIEWS)[number];
@@ -28,9 +29,9 @@ export interface DetailSnapshot {
   name: string | null;
   /**
    * Every visible word in the open detail pane, whitespace-collapsed. Specs assert on substrings
-   * of this rather than on a locator per section, because the two renderers group the same facts
-   * (why this priority, the baseline note, the signal list, the lock entry, ...) under headings
-   * that are free to read differently as long as the words are the same.
+   * of this rather than on a locator per section, because the facts it groups (why this priority,
+   * the baseline note, the signal list, the lock entry, ...) sit under headings that are free to
+   * change as long as the words stay.
    */
   text: string;
 }
@@ -41,8 +42,9 @@ export interface SortState {
 }
 
 /**
- * The whole surface a spec can act on or read. Every method is renderer-agnostic in its inputs and
- * outputs: a `ViewName`, a filter group's key, a package name, never a CSS class or an id.
+ * The whole surface a spec can act on or read. Every method's inputs and outputs describe the page
+ * only in accessible terms: a `ViewName`, a filter group's key, a package name, never a CSS class
+ * or an id.
  */
 export interface ReportPage {
   /** Loads one fixture bundle's built page, hash-less. */
@@ -77,8 +79,9 @@ export interface ReportPage {
   /** Package names for the current view's rendered rows/cards, in document order. Duplicates are
    *  possible (e.g. one Advisories row per advisory, several under the same package). */
   rows(): Promise<string[]>;
-  /** A single click on the row/card/button that represents this package, whatever that renderer's
-   *  native toggle semantics are (a Findings/Packages row toggles; a `data-open` button always opens). */
+  /** A single click on the row/card/button that represents this package, whatever the page's
+   *  native toggle semantics are for it (a Findings/Packages row toggles; a `data-open` button
+   *  always opens). */
   clickPackage(name: string): Promise<void>;
   /** Ensures the detail pane ends up open on this package, regardless of toggle semantics. */
   openPackage(name: string): Promise<void>;
@@ -126,8 +129,8 @@ export interface ReportPage {
    *  the browser's UA stylesheet gives a non-modal `<dialog>` otherwise (M28). */
   glossaryPosition(): Promise<string>;
 
-  /** `"dark"` or `"light"` as the effective theme, read off computed styles, not an attribute a
-   *  renderer might not set (M11: the attribute can be absent while the page is visibly dark). */
+  /** `"dark"` or `"light"` as the effective theme, read off computed styles, not an attribute that
+   *  might be absent (M11: the attribute can be absent while the page is visibly dark). */
   theme(): Promise<"dark" | "light">;
   toggleTheme(): Promise<void>;
   /** The raw `localStorage["lockrot-theme"]` value, or null (storage key is part of the contract,
@@ -153,8 +156,6 @@ export interface ReportPage {
   pressK(): Promise<void>;
 }
 
-export async function createReportPage(page: Page): Promise<ReportPage> {
-  const { NewReportPage } = await import("./new");
-
-  return new NewReportPage(page);
+export function createReportPage(page: Page): Promise<ReportPage> {
+  return Promise.resolve(new NewReportPage(page));
 }

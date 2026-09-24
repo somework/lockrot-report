@@ -59,6 +59,14 @@ test.describe("M12: a malformed %-escape must not blank the whole page", () => {
 test.describe("M13: an unknown pkg= on a narrow screen must not strand a scroll lock", () => {
   test.use({ viewport: { width: 375, height: 800 } });
 
+  test("positive control: opening a real package on this viewport does lock scroll", async () => {
+    // Proves isScrollLocked() actually detects the lock the M13 test below relies on being absent.
+    await report.goto(FIXTURES.mini);
+    await report.openPackage("vendor/snapshot");
+    expect((await report.detail()).open).toBe(true);
+    expect(await report.isScrollLocked()).toBe(true);
+  });
+
   test("no scroll lock without a visible reason for it", async () => {
     // M13 (DESIGN.md §5), fixed on purpose: legacy hid the detail box for an unknown package but
     // still set body.detail-open off the bare presence of state.pkg, locking scroll under 1180px
