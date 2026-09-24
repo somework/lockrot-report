@@ -5,30 +5,12 @@
  * ever selects its own component's markup.
  */
 
+/* Geometry and scrolling belong to `.shell-detail` (`ui/app.css`, is-side/is-sheet): it is the one
+ * element that scrolls at every breakpoint (PD-DETAIL-3; DESIGN.md §8 named the 196px guess here as
+ * the bug). `.detail` only lays out its own children. */
 .detail {
-  position: sticky;
-  top: 196px;
-  max-height: calc(100vh - 220px);
-  overflow-y: auto;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-}
-@media (max-width: 1180px) {
-  .detail {
-    position: fixed;
-    inset: 0;
-    max-height: none;
-    border-radius: 0;
-    border-width: 0;
-    z-index: 40;
-    overflow-y: auto;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
 }
 
 .detail-missing {
@@ -125,6 +107,50 @@
 .detail-signal-empty {
   margin: 0;
   color: var(--muted);
+}
+
+/* ---------- reference sections: how it is reached, the lock entry, provenance ----------
+ * Closed by default (PD-DETAIL-1): the reader who opened the panel meets the answer first, these
+ * three afterward. `<summary>` keeps the section's own heading text so a reader who knew the old
+ * layout still recognises it; the chevron is the same disclosure cue as `.detail-signal-summary`
+ * and the ledger/rail folds in `ui/app.css`. */
+.detail-reference {
+  gap: 0;
+}
+.detail-reference[open] {
+  gap: 9px;
+}
+.detail-reference-summary {
+  margin: 0;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--cond);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+.detail-reference-summary::-webkit-details-marker {
+  display: none;
+}
+.detail-reference-summary::after {
+  content: "▸";
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 10px;
+  transition: transform 0.15s ease;
+}
+.detail-reference[open] > .detail-reference-summary::after {
+  transform: rotate(90deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .detail-reference-summary::after {
+    transition: none;
+  }
 }
 
 .detail-kv {

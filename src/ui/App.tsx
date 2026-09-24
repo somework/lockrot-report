@@ -179,6 +179,14 @@ export function App({ model }: { model: Model }) {
     dispatch({ type: "select", pkg: null });
   }, [state.pkg, dispatch]);
 
+  // `.shell-detail` is the one element that scrolls (DESIGN.md §8); it stays mounted across a
+  // package switch, so without this its scroll position would carry over from the package the
+  // reader just left instead of starting the new one at the top (PD-DETAIL-3).
+  const detailScrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    detailScrollRef.current?.scrollTo(0, 0);
+  }, [state.pkg]);
+
   const now = useMemo(() => new Date(model.report.generatedAt), [model]);
   const value = useMemo(() => ({ model, state, dispatch, now, wide }), [model, state, dispatch, now, wide]);
   const filterable = population(model, state.view).length > 0;
@@ -206,7 +214,7 @@ export function App({ model }: { model: Model }) {
           <CurrentView />
         </div>
         {state.pkg !== null && (
-          <div className={wide ? "shell-detail is-side" : "shell-detail is-sheet"}>
+          <div ref={detailScrollRef} className={wide ? "shell-detail is-side" : "shell-detail is-sheet"}>
             <Detail onClose={closeDetail} />
           </div>
         )}
