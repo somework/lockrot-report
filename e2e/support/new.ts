@@ -404,6 +404,23 @@ export class NewReportPage implements ReportPage {
     }, tickIndex);
   }
 
+  /** The legend's own tick (`AgeScaleLegend`'s two `.age-scale-legend-tick` spans), read the same
+   *  distinct-from-page-background way `ageScaleForcedColorsVisible` reads a row's ticks. `null`
+   *  when the current tab draws no legend at all, the same case `ageScaleLegendText` returns null
+   *  for. */
+  async ageScaleLegendTickForcedColorsVisible(): Promise<boolean | null> {
+    const legend = this.page.getByText(/^age scale:/);
+    if ((await legend.count()) === 0) return null;
+
+    return legend.first().evaluate((el) => {
+      const tick = el.querySelector(".age-scale-legend-tick");
+      if (!(tick instanceof HTMLElement)) throw new Error("age scale legend is missing its tick");
+      const pageBg = getComputedStyle(document.body).backgroundColor;
+      const tickColor = getComputedStyle(tick).backgroundColor;
+      return tickColor !== pageBg && tickColor !== "rgba(0, 0, 0, 0)" && tickColor !== "";
+    });
+  }
+
   /** The name starts with the key (a count may follow it, see LEDGER_LABEL). Anchored rather than a
    *  substring, because rail buttons carry the same vocabulary inside longer names: the S1 signal
    *  filter reads "S1 marked abandoned", which a bare "abandoned" would also match. Scoped to the

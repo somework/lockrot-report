@@ -79,6 +79,24 @@ test.describe("PD-ROWS-2: the age scale stays visible in forced-colors mode", ()
     const parts = await report.ageScaleForcedColorsVisible("sensio/framework-extra-bundle");
     expect(parts).toEqual({ track: true, tick: true, dot: true });
   });
+
+  // a11y review: the once-per-list legend (`AgeScaleLegend`) shared the same Canvas-flattening
+  // failure as a row's own ticks above, but drew its tick from a rule (`.age-scale-legend-tick`,
+  // `views.css`) that carried no forced-colors override — the caption itself survives ("warn 3 y
+  // high 5 y" is text), but the tick marking each word pair went blank.
+  test("the legend's own tick stays visible in forced colors, light", async ({ page }) => {
+    await report.goto(FIXTURES.wallabag);
+    await page.emulateMedia({ colorScheme: "light", forcedColors: "active" });
+
+    expect(await report.ageScaleLegendTickForcedColorsVisible()).toBe(true);
+  });
+
+  test("the legend's own tick stays visible in forced colors, dark", async ({ page }) => {
+    await report.goto(FIXTURES.wallabag);
+    await page.emulateMedia({ colorScheme: "dark", forcedColors: "active" });
+
+    expect(await report.ageScaleLegendTickForcedColorsVisible()).toBe(true);
+  });
 });
 
 test.describe("PD-LEDGER-2: a ledger legend chip stays legible in forced-colors mode", () => {

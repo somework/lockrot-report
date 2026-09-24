@@ -232,43 +232,6 @@ export function App({ model }: { model: Model }) {
     detailScrollRef.current?.scrollTo(0, 0);
   }, [state.pkg]);
 
-  // PD-DETAIL-5's own follow-up (DESIGN.md §5): `.shell`'s grid row (`ui/app.css`) only needs extra
-  // height reserved under `.shell-detail.is-side` while this package's own panel is actually taller
-  // than its `max-height` and truly scrolls — a short panel already fits inside the room
-  // `.shell-main`/`.shell-rail` give the row on their own, and reserving space it never fills would
-  // pad a short report with dead space above the footer instead (visual review: a report with only a
-  // couple of findings and a short detail showed exactly that gap before this). This measures the
-  // rendered box itself, through the CSSOM the page's CSP allows (DESIGN.md §1.3) — the same
-  // discipline `Header.tsx#useHeaderHeight` keeps for `--topbar-h`.
-  const shellRef = useRef<HTMLElement>(null);
-  useLayoutEffect(() => {
-    const node = detailScrollRef.current;
-    const shell = shellRef.current;
-    if (node === null || shell === null || typeof ResizeObserver === "undefined") return undefined;
-
-    // The class toggles on `.shell` itself, not on this ref with a `:has(.shell-detail.is-side
-    // .is-tall)` rule reading it off a descendant: a plain class selector is the most direct route
-    // from this measurement to the one rule it feeds (`ui/app.css`).
-    const sync = () => {
-      const tall = node.scrollHeight > node.clientHeight + 1;
-      shell.classList.toggle("shell-has-tall-detail", tall);
-    };
-    sync();
-
-    // Both the outer scroll box and its own first child are observed: the outer box's own size is
-    // clamped by `max-height` and does not change when only its content does, so opening one of the
-    // panel's reference/signal `<details>` — taller or shorter, with no package switch — has to be
-    // read from the content underneath it instead.
-    const observer = new ResizeObserver(sync);
-    observer.observe(node);
-    if (node.firstElementChild !== null) observer.observe(node.firstElementChild);
-
-    return () => {
-      observer.disconnect();
-      shell.classList.remove("shell-has-tall-detail");
-    };
-  }, [state.pkg]);
-
   const now = useMemo(() => new Date(model.report.generatedAt), [model]);
   const value = useMemo(
     () => ({ model, state, dispatch, now, wide, openGlossary, openGlossaryFrom }),
@@ -284,7 +247,7 @@ export function App({ model }: { model: Model }) {
         <Tabs idBase={idBase} panelId={panelId} />
       </Header>
       {state.view !== "run" && <LedgerSlot narrow={narrow} />}
-      <main ref={shellRef} className={filterable ? "shell" : "shell no-rail"}>
+      <main className={filterable ? "shell" : "shell no-rail"}>
         {filterable && <RailSlot narrow={narrow} />}
         <div className="shell-main" id={panelId} role="tabpanel" aria-labelledby={tabId(idBase, state.view)}>
           {/* SearchBar hides its own box and hint when the tab has nothing to filter, and keeps the

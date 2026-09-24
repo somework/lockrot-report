@@ -192,6 +192,17 @@ test.describe("1440×900 (side): every part of the detail is reachable by wheel 
       // behind it — `.shell`'s grid row can otherwise end before the panel's full travel does,
       // dragging the header up past its intended `top`.
       expect(await report.detailHeaderClearsTopbar()).toBe(true);
+
+      // Second regression review: the check above stopped as soon as Provenance first came into
+      // view, which reaches the page's true maximum scroll on a short report (koel_koel) but not
+      // necessarily on a longer one — `.shell`'s own row height cancels out of where the panel's
+      // stuck header actually ends up (`ui/app.css`'s own comment on `.shell`), so only the page's
+      // real end proves the header clears the fixed one, not merely "far enough to see Provenance".
+      await page.evaluate(() => {
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+      await page.waitForTimeout(250);
+      expect(await report.detailHeaderClearsTopbar()).toBe(true);
     });
   }
 });

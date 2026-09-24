@@ -250,43 +250,22 @@
   grid-template-columns: 210px minmax(0, 1fr) minmax(0, 420px);
   gap: 20px;
   align-items: start;
-}
-/* `.shell-detail.is-side`'s sticky containing block is this row: a sticky item can only stay pinned
-   at its own `top` for as long as the row's own bottom edge, on screen, still has room below that
-   point for the item's full height — once continued scrolling brings the row's bottom above that
-   point, the item is dragged up past `top` along with it (ordinary sticky-in-a-short-container
-   behaviour). `Footer` renders straight after `.shell` with nothing sized to hold it away, so a
-   report short enough that `.shell`'s own row (sized, per `align-items: start`, to its tallest
-   column) ends only a little past the detail's own travel — `top` (`--topbar-h` + 16px) plus its own
-   `max-height` (`100vh` − `--topbar-h` − 32px), together `100vh` − 16px, already almost the full
-   viewport — reaches that point after only a little further scrolling into the footer, dragging the
-   stuck panel's own header up behind the fixed one (DESIGN.md §5 PD-DETAIL-5's own visual review;
-   measured on koel_koel and wallabag_wallabag at 1440px).
-   The extra 900px on top of the `100vh` − 16px floor is sized against `e2e/detail-scroll.spec.ts`'s
-   own wheel gesture, not just the colophon's static height (168-188px): once `.shell-detail`'s own
-   scroll is exhausted and a wheel chains into the page (PD-DETAIL-5), Chromium turns the *rest* of
-   that single wheel tick into a brief momentum scroll of its own — measured, over many repeats, at
-   up to ~800px of page scroll from one `wheel(0, 400)` call once nothing is left to absorb it
-   internally, well past the 400px the tick itself asked for. A too-small floor let that momentum
-   carry the page past this row's own end, exactly the "row ends before the panel's travel does"
-   failure above, from a single ordinary wheel tick rather than an unusual gesture. This keeps the
-   row's own end comfortably beyond that measured travel.
-   `grid-auto-rows`, not a height on the detail itself: a min-height there would fight its own
-   `max-height` (`overflow-y: auto` needs the smaller of the two to win) — this instead reserves the
-   row space the box needs, leaving `.shell-main` and `.shell-rail` exactly as tall as their own
-   content. Scoped to the width the row can carry a `.shell-detail.is-side` at all
-   (`ui/useWide.ts#WIDE_QUERY`): at 760-1180px the detail is a fixed-position sheet, out of this
-   grid's flow, and reserving the same height here would only pad a short report with empty rail/list
-   space beneath it for nothing that ever sits in it. `.shell-has-tall-detail`, a class `App.tsx` sets
-   directly on this element from a real measurement (the same discipline `--topbar-h` already keeps):
-   a panel short enough to already fit within `max-height` never engages PD-DETAIL-5's wheel-chaining
-   handoff at all and does not need this floor either — reserving it regardless would pad a short
-   report's short detail with the same dead space above the footer this rule exists to remove for a
-   short *list* instead. */
-@media (min-width: 1181px) {
-  .shell.shell-has-tall-detail {
-    grid-auto-rows: minmax(calc(100vh - 16px + 900px), auto);
-  }
+  /* `.shell-rail` and `.shell-detail.is-side`'s sticky containing block is this row, and the row's
+     own height cancels out of where their stuck range actually ends: `Footer` renders straight after
+     `.shell` with nothing sized to hold it away, so at the page's true maximum scroll — whatever
+     `.shell`'s own row height is — the row's bottom edge, on screen, always sits at exactly
+     `100vh` minus the footer's own rendered height (`--footer-h`, `Footer.tsx#useFooterHeight`),
+     never further down, because a taller row only pushes the document (and so the maximum scroll)
+     down by the same amount it grows by. An earlier fix reserved extra row height instead
+     (`grid-auto-rows`, gated on a measured `.shell-has-tall-detail`) and could not have worked for
+     that reason: it moved *when*, during a scroll gesture, the panel's stuck header met the fixed
+     one, never *whether* it did once the reader reached the bottom of the page — confirmed on
+     koel_koel and wallabag_wallabag at 1440px, wheeling all the way to the end (DESIGN.md §5
+     PD-DETAIL-5, §8; `e2e/detail-scroll.spec.ts`). `--sticky-room` bounds `max-height` below instead,
+     the one variable that actually decides whether the stuck panel's own bottom can reach the row's
+     true final edge: `100vh` minus the topbar (`--topbar-h`) and the footer (`--footer-h`), minus a
+     16px gap kept on each side, the same margins `top`/`max-height` already kept. */
+  --sticky-room: calc(100vh - var(--topbar-h) - var(--footer-h) - 32px);
 }
 /* Run data has nothing to filter, so the rail goes, and its column with it, or the list would
    inherit the rail's 210px and every value would wrap one character at a time. */
@@ -315,7 +294,7 @@
 .shell-rail {
   position: sticky;
   top: calc(var(--topbar-h) + 16px);
-  max-height: calc(100vh - var(--topbar-h) - 32px);
+  max-height: var(--sticky-room);
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -342,11 +321,17 @@
    position, where it does fit. Dropping `contain` here (kept on `.is-sheet` below, a full-screen
    overlay that must not scroll the body behind it) lets that chaining happen: the wheel scrolls the
    box's own content first, and once that reaches its end, the same wheel scrolls the page, which is
-   exactly what carries the box up into its sticky slot. */
+   exactly what carries the box up into its sticky slot.
+   `max-height` itself is `--sticky-room` (`.shell`, above), not a fixed share of the viewport: the
+   panel's own height is what decides whether its stuck bottom can still fit above the row's true
+   final edge (`100vh` − `--footer-h`) once the reader reaches the true bottom of the page — the row's
+   own height cancels out of that comparison, so no floor on the row could ever have fixed it (a11y
+   /regression review, DESIGN.md §5 PD-DETAIL-5's second entry: koel_koel and wallabag_wallabag at
+   1440px, wheeled to the page's actual end rather than only until Provenance first came into view). */
 .shell-detail.is-side {
   position: sticky;
   top: calc(var(--topbar-h) + 16px);
-  max-height: calc(100vh - var(--topbar-h) - 32px);
+  max-height: var(--sticky-room);
   overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--border);

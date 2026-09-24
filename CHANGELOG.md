@@ -159,10 +159,15 @@ tag or the address format, says so under **Breaking** in its entry.
 - The priority ledger's eyebrow reads "Priority of the 1 flagged package" for exactly one flagged
   package, instead of always the plural "packages".
 - At 1440px, the side-column detail panel's own sticky header no longer renders partially behind the
-  page's fixed header once a wheel gesture has carried the panel into its stuck position on a report
-  short enough that the row around it ends before the panel's own travel does; the row now reserves
-  enough space for the panel's whole stuck range whenever the panel is actually tall enough to need
-  it.
+  page's fixed header once a wheel gesture has carried the panel into its stuck position and the
+  reader keeps scrolling to the true bottom of the page: an earlier fix reserved extra row height for
+  a short report and did not hold once scrolled all the way, since the row's own height cancels out
+  of where the panel's stuck bottom actually lands. The panel's `max-height` is now bounded by the
+  footer's own measured height as well as the topbar's, so its stuck bottom can never reach past the
+  room the page's true end actually leaves for it.
+- The age scale's once-per-list legend caption keeps its own CSS-drawn tick mark visible in
+  forced-colours mode ("age scale:▕ warn 3 y▕ high 5 y"); it used to go blank the same way a row's
+  own ticks once did, since it drew from a rule with no forced-colours override of its own.
 
 ## [0.12.0]
 

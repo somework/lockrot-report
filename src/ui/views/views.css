@@ -302,6 +302,18 @@
   margin: 0 4px -0.05em 5px;
   background: var(--muted);
 }
+/* a11y review: this shares the row ticks' own pre-fix failure above (`--muted` flattens to Canvas on
+   Canvas), so the legend's "warn 3 y high 5 y" line rendered with a blank gap where its own tick
+   should be — but its base rule sits below that `@media` block in this file, so a second one here,
+   after it, is what actually wins the cascade tie between two same-specificity class selectors;
+   adding to the earlier block instead left this rule's own later, unconditional declaration in
+   charge regardless of forced-colors (caught by `e2e/forced-colors.spec.ts` actually emulating the
+   mode, not just reading the source). */
+@media (forced-colors: active) {
+  .age-scale-legend-tick {
+    background: CanvasText;
+  }
+}
 
 /* A row with a key fact but no age scale of its own still reserves the scale's width at wide
    widths, so its signal text wraps at the same available width as a neighbouring row that does draw

@@ -160,6 +160,13 @@ export interface ReportPage {
    *  ticks close enough together, in the default colour scheme, that a mid-zone dot's opaque fill
    *  covered them both, not only in forced-colors mode. */
   ageScaleHighTickSurvivesDot(name: string): Promise<boolean>;
+  /** Whether the once-per-list legend's own tick (`.age-scale-legend-tick`, `AgeScaleLegend`) paints
+   *  a colour distinct from the page background in forced-colors mode — the same failure
+   *  `ageScaleForcedColorsVisible` already proves fixed for a row's own ticks, missed here because
+   *  the legend draws its tick from a different rule (`views.css`) that carried no forced-colors
+   *  override of its own. Null when the current tab draws no legend at all (`ageScaleLegendText`'s
+   *  own null case). */
+  ageScaleLegendTickForcedColorsVisible(): Promise<boolean | null>;
 
   ledgerButton(group: LedgerGroup, key: string): Promise<void>;
   /** null when the button carries no pressed-state at all for assistive tech (M17, legacy). */
