@@ -2,12 +2,13 @@
 
 Every release lists what a reader of the page will notice. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
-[Semantic Versioning](https://semver.org/): a major release is one that stops rendering a document
-an older release rendered, or that changes the placeholders, the payload tag or the address format.
+[Semantic Versioning](https://semver.org/). While the version starts with 0, the minor number is the
+one that breaks: a release that stops rendering a document an older release rendered, or that
+changes the placeholders, the payload tag or the address format, raises it.
 
 ## [Unreleased]
 
-## [1.0.0]
+## [0.11.0]
 
 The page lockrot 0.11.0 writes with `--format=html`, rewritten out of lockrot's repository: same
 document, same address format, same keys.
