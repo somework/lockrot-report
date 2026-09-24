@@ -60,6 +60,21 @@
   opacity: 0.35;
 }
 
+/* a11y review: forced-colors mode replaces `--tone` with Canvas (the page background), so every
+   segment painted with nothing but the empty outline `.bar` itself draws — the widths a bar exists
+   to show disappear, though the legend below still carries the same counts in text. An explicit
+   CanvasText fill, with a divider between adjacent segments, keeps the bar's shape legible without
+   depending on any tone colour surviving the override. */
+@media (forced-colors: active) {
+  .bar-seg {
+    background: CanvasText;
+    border-inline-end: 1px solid Canvas;
+  }
+  .bar-seg:last-child {
+    border-inline-end: none;
+  }
+}
+
 .legend {
   display: flex;
   flex-wrap: wrap;

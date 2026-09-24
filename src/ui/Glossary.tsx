@@ -1,3 +1,4 @@
+import type { RefObject } from "preact";
 import { useId, useLayoutEffect, useRef, useState } from "preact/hooks";
 import { DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC, SIGNAL_NAMES, TONE, VERDICT_DEFS } from "../domain/vocab";
 import { SIGNAL_IDS, VERDICTS } from "../model/types";
@@ -118,11 +119,20 @@ function KeysSection() {
  * `allow-modals`, history.md §5), as a plain open dialog that the stylesheet pins over the page
  * (DESIGN.md §5 M28: the legacy fallback rendered below the footer). The fallback gets no native
  * focus handling, so focus is moved in and given back by hand.
+ *
+ * `opener` overrides what focus returns to, when the caller passed one (`context.ts#openGlossaryFrom`).
+ * Reading `document.activeElement` fresh, here, is a step too late for a DocsPill's "In the glossary"
+ * button: it hides its own popover (`popovertargetaction="hide"`) as part of the same click, which
+ * moves focus to `<body>` before this effect ever runs, so the browser's own focus-on-close (and, for
+ * the fallback path, the explicit `.focus()` below) would land on `<body>` instead of the pill (a11y
+ * review). `opener.current` is read explicitly on close, in both the modal and the fallback path,
+ * rather than left to `dialog.close()`'s own restore: that native behaviour uses whatever it captured
+ * when `showModal()` ran, which is exactly the stale value this override exists to correct.
  */
-function useDialog(open: boolean) {
+function useDialog(open: boolean, opener?: RefObject<HTMLElement | null>) {
   const ref = useRef<HTMLDialogElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const opener = useRef<Element | null>(null);
+  const restoreTo = useRef<Element | null>(null);
   const [fallback, setFallback] = useState(false);
 
   useLayoutEffect(() => {
@@ -130,11 +140,13 @@ function useDialog(open: boolean) {
     if (dialog === null || open === dialog.open) return;
     if (!open) {
       dialog.close();
-      if (fallback && opener.current instanceof HTMLElement && opener.current.isConnected)
-        opener.current.focus();
+      if (restoreTo.current instanceof HTMLElement && restoreTo.current.isConnected)
+        restoreTo.current.focus();
       return;
     }
-    opener.current = document.activeElement;
+    const override = opener?.current ?? null;
+    if (opener) opener.current = null; // consumed: never leaks into a later, differently-triggered open
+    restoreTo.current = override ?? document.activeElement;
     try {
       dialog.showModal();
       setFallback(false);
@@ -143,15 +155,25 @@ function useDialog(open: boolean) {
       setFallback(true);
     }
     closeRef.current?.focus();
-  }, [open, fallback]);
+  }, [open, fallback, opener]);
 
   return { ref, closeRef, fallback };
 }
 
 /** The glossary: what every verdict and signal means (legacy `fillLegend` plus report.html's prose). */
-export function Glossary({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function Glossary({
+  open,
+  onClose,
+  opener,
+}: {
+  open: boolean;
+  onClose: () => void;
+  /** Who to return focus to on close, overriding a freshly-read `document.activeElement`
+   *  (`context.ts#openGlossaryFrom`). */
+  opener?: RefObject<HTMLElement | null>;
+}) {
   const titleId = useId();
-  const { ref, closeRef, fallback } = useDialog(open);
+  const { ref, closeRef, fallback } = useDialog(open, opener);
 
   return (
     <dialog
@@ -182,20 +204,33 @@ export function Glossary({ open, onClose }: { open: boolean; onClose: () => void
           <VerdictDefs />
           <OrderNote />
         </section>
+        {/* a11y review: a bare <summary> dropped the section's own heading, so a screen-reader
+            reader moving by heading found only one (the section headings elsewhere are <h3>). A
+            <summary> accepts one heading as content, so the text moves into an <h3> — the layout
+            (the flex row, the chevron) stays on the <summary> itself, restyled to the same look in
+            app.css's `.glossary-sect > summary h3`. */}
         <details className="glossary-sect">
-          <summary>The signals</summary>
+          <summary>
+            <h3>The signals</h3>
+          </summary>
           <SignalDefs />
         </details>
         <details className="glossary-sect">
-          <summary>One number for the lock: libyears</summary>
+          <summary>
+            <h3>One number for the lock: libyears</h3>
+          </summary>
           <LibyearsSection />
         </details>
         <details className="glossary-sect">
-          <summary>How a priority is reached</summary>
+          <summary>
+            <h3>How a priority is reached</h3>
+          </summary>
           <PrioritySection />
         </details>
         <details className="glossary-sect">
-          <summary>Keys and search</summary>
+          <summary>
+            <h3>Keys and search</h3>
+          </summary>
           <KeysSection />
         </details>
       </div>

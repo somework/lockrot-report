@@ -87,6 +87,7 @@ function renderIn(
         now: new Date(model.report.generatedAt),
         wide: true,
         openGlossary: vi.fn(),
+        openGlossaryFrom: vi.fn(),
       }}
     >
       {ui}

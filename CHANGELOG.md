@@ -36,6 +36,20 @@ tag or the address format, says so under **Breaking** in its entry.
   starts it at the top instead of where the previous package was scrolled to.
 - The Run tab's fail-on row reads an em dash for a document written before `run.fail_on` existed,
   instead of the word "none".
+- Closing the glossary after opening it from a verdict pill's "In the glossary" button returns focus
+  to the pill, instead of leaving it on the glossary's own (now closed) Close button.
+- The signals, libyears, priority and keys sections of the glossary, and the package detail's three
+  reference sections, keep their own heading (inside the `<summary>` that folds them) instead of a
+  bare, headingless disclosure line.
+- The gate fact's popover no longer states `--fail-on`'s exit-code semantics or recommends setting
+  it in CI — both beyond what the page can derive from the document — and instead states only what
+  the run was given.
+- The gate fact's popover, at 320px, no longer runs its left edge to the screen edge.
+- The priority, verdict and advisory bars stay legible in forced-colours mode; the segments used to
+  disappear into the page background.
+- Printing a Findings, Packages or Blast page keeps the gate fact's label (just not its ⓘ icon or
+  popover), instead of losing "no gate"/"gate: `<value>`" entirely — the Run tab that also carries it
+  is a different view, not printed alongside whichever one was open.
 
 ## [0.12.0]
 

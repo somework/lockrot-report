@@ -317,7 +317,14 @@ describe("layout", () => {
   test("the header carries the run's gate as a quiet fact, mini.json's fail-on being 'silent'", () => {
     render(<App model={MINI} />);
     const button = screen.getByRole("button", { name: /^gate: silent/ });
-    expect(button.getAttribute("title")).toContain("fail on silent");
+    expect(button.getAttribute("title")).toContain("--fail-on=silent");
+  });
+
+  // regression review: neither an e2e nor a unit test asserted this branch (Header.tsx: `run.failOn
+  // === null` renders neither label) — only that a *present* fail-on renders correctly.
+  test("a document that predates run.fail_on shows no gate fact at all (PD-SUMMARY-2)", () => {
+    render(<App model={loadModel("mini-no-fail-on")} />);
+    expect(screen.queryByRole("button", { name: /gate/i })).toBeNull();
   });
 
   test("a document with a newer schema says so", () => {

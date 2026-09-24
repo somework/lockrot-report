@@ -136,6 +136,23 @@ test.describe("PD-GLOSSARY-4/5: a verdict pill's popover", () => {
     expect(await report.isGlossaryOpen()).toBe(true);
   });
 
+  test('"In the glossary" returns focus to the pill once the glossary closes (a11y review)', async () => {
+    // The old behaviour: "In the glossary" carries `popovertargetaction="hide"`, which hides the
+    // popover — its own ancestor — in the same click, so by the time the glossary's dialog reads
+    // `document.activeElement` to remember who opened it, that button is already gone and focus has
+    // already fallen to `<body>`. Closing the glossary then left focus on its own (also now closed)
+    // Close button, with the next Tab landing back at the top of the page, instead of on the pill.
+    await report.goto(FIXTURES.mini);
+    await report.clickVerdictPill("vendor/transitive", "abandoned");
+    await report.openGlossaryFromPillPopover();
+    expect(await report.isGlossaryOpen()).toBe(true);
+
+    await report.closeGlossaryButton();
+
+    expect(await report.isGlossaryOpen()).toBe(false);
+    expect(await report.isPillFocused("vendor/transitive", "abandoned")).toBe(true);
+  });
+
   test("Escape closes the popover without closing an already-open detail (PD-GLOSSARY-6)", async () => {
     await report.goto(FIXTURES.mini);
     await report.openPackage("vendor/transitive");

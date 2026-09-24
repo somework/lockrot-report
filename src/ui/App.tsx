@@ -198,12 +198,22 @@ export function App({ model }: { model: Model }) {
   }, [state.pkg]);
 
   const now = useMemo(() => new Date(model.report.generatedAt), [model]);
+  // The element to return focus to once the glossary closes, read by `Glossary`'s own `useDialog`
+  // in place of a freshly-read `document.activeElement` (a11y review: focus lost opening the
+  // glossary from a pill popover). A ref, not state: setting it never needs its own render, only
+  // to be in place before `glossaryOpen` flips true.
+  const glossaryOpener = useRef<HTMLElement | null>(null);
   const openGlossary = useCallback(() => {
+    glossaryOpener.current = null;
+    setGlossaryOpen(true);
+  }, []);
+  const openGlossaryFrom = useCallback((returnTo: HTMLElement | null) => {
+    glossaryOpener.current = returnTo;
     setGlossaryOpen(true);
   }, []);
   const value = useMemo(
-    () => ({ model, state, dispatch, now, wide, openGlossary }),
-    [model, state, dispatch, now, wide, openGlossary],
+    () => ({ model, state, dispatch, now, wide, openGlossary, openGlossaryFrom }),
+    [model, state, dispatch, now, wide, openGlossary, openGlossaryFrom],
   );
   const filterable = population(model, state.view).length > 0;
   const panelId = `${idBase}-panel`;
@@ -232,6 +242,7 @@ export function App({ model }: { model: Model }) {
       <Footer />
       <Glossary
         open={glossaryOpen}
+        opener={glossaryOpener}
         onClose={() => {
           setGlossaryOpen(false);
         }}

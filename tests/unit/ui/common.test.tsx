@@ -20,7 +20,7 @@ function loadMini(): Model {
   return result.model;
 }
 
-function renderIn(ui: ComponentChild, openGlossary: () => void = vi.fn()) {
+function renderIn(ui: ComponentChild, openGlossaryFrom: (returnTo: HTMLElement | null) => void = vi.fn()) {
   const model = loadMini();
   const value: ReportContextValue = {
     model,
@@ -28,7 +28,8 @@ function renderIn(ui: ComponentChild, openGlossary: () => void = vi.fn()) {
     dispatch: vi.fn(),
     now: new Date(model.report.generatedAt),
     wide: true,
-    openGlossary,
+    openGlossary: vi.fn(),
+    openGlossaryFrom,
   };
   return render(<ReportContext.Provider value={value}>{ui}</ReportContext.Provider>);
 }
@@ -79,16 +80,19 @@ describe("Pill", () => {
       }
     });
 
-    it('"In the glossary" opens the glossary through the report context', () => {
+    it('"In the glossary" opens the glossary through the report context, passing the pill itself back for focus (a11y review)', () => {
       // Arrange
-      const openGlossary = vi.fn();
-      renderIn(<Pill word="pinned" docs />, openGlossary);
+      const openGlossaryFrom = vi.fn();
+      renderIn(<Pill word="pinned" docs />, openGlossaryFrom);
+      const pillButton = screen.getByRole("button", { name: "pinned" });
 
       // Act
       fireEvent.click(screen.getByRole("button", { name: /in the glossary/i }));
 
-      // Assert
-      expect(openGlossary).toHaveBeenCalledTimes(1);
+      // Assert: the pill itself, not the "In the glossary" button that hides its own popover in
+      // the same click and so cannot be a useful place to return focus to.
+      expect(openGlossaryFrom).toHaveBeenCalledTimes(1);
+      expect(openGlossaryFrom).toHaveBeenCalledWith(pillButton);
     });
 
     it("links out to lockrot.dev's verdicts section for whoever does have a network", () => {

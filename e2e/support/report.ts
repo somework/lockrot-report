@@ -120,6 +120,8 @@ export interface ReportPage {
   openGateFact(): Promise<void>;
   /** Whether the gate fact's popover is currently shown. */
   isGateFactOpen(): Promise<boolean>;
+  /** The gate fact's popover text, read the same way `pillPopoverText()` reads a verdict pill's. */
+  gateFactPopoverText(): Promise<string>;
 
   railOption(group: RailGroup, key: string): Promise<void>;
   railOptionPressed(group: RailGroup, key: string): Promise<boolean | null>;
@@ -152,6 +154,10 @@ export interface ReportPage {
   pillPopoverText(): Promise<string>;
   /** Clicks "In the glossary" inside an open pill popover. */
   openGlossaryFromPillPopover(): Promise<void>;
+  /** Whether the verdict pill itself (not "In the glossary", which hides its own popover in the
+   *  same click) is the currently focused element — the a11y review's regression: focus used to be
+   *  left on the glossary's Close button, or `<body>`, once the glossary closed this way. */
+  isPillFocused(pkg: string, verdict: string): Promise<boolean>;
 
   /** `"dark"` or `"light"` as the effective theme, read off computed styles, not an attribute that
    *  might be absent (M11: the attribute can be absent while the page is visibly dark). */

@@ -233,7 +233,9 @@ function renderDetail(model: Model, pkg: string | null, onClose: () => void = vi
   const now = new Date(model.report.generatedAt);
 
   return render(
-    <ReportContext.Provider value={{ model, state, dispatch, now, wide: true, openGlossary: vi.fn() }}>
+    <ReportContext.Provider
+      value={{ model, state, dispatch, now, wide: true, openGlossary: vi.fn(), openGlossaryFrom: vi.fn() }}
+    >
       <Detail onClose={onClose} />
     </ReportContext.Provider>,
   );

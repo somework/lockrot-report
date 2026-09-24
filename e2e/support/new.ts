@@ -302,11 +302,11 @@ export class NewReportPage implements ReportPage {
     return this.page.getByRole("button", { name: /^(no gate|gate:)/i });
   }
 
-  /** The two sentences the popover's own text always starts with (Header.tsx#gateFact); found by
-   *  that text, not by the popover's plumbing (`popover="auto"`, an id relationship) which is
+  /** The sentence the popover's own text always starts with (Header.tsx#gateFact); found by that
+   *  text, not by the popover's plumbing (`popover="auto"`, an id relationship) which is
    *  Header.tsx's implementation detail, not this contract's. */
   private gateFactPopover(): Locator {
-    return this.page.getByText(/^(No gate on this run\.|This run was told to fail on)/);
+    return this.page.getByText(/^This run was given --fail-on=/);
   }
 
   async gateFactLabel(): Promise<string | null> {
@@ -322,6 +322,10 @@ export class NewReportPage implements ReportPage {
 
   async isGateFactOpen(): Promise<boolean> {
     return this.gateFactPopover().isVisible();
+  }
+
+  async gateFactPopoverText(): Promise<string> {
+    return collapse((await this.gateFactPopover().textContent()) ?? "");
   }
 
   private railLocator(group: RailGroup, key: string): Locator {
@@ -438,6 +442,12 @@ export class NewReportPage implements ReportPage {
 
   async openGlossaryFromPillPopover(): Promise<void> {
     await this.page.getByRole("button", { name: /in the glossary/i }).click();
+  }
+
+  async isPillFocused(pkg: string, verdict: string): Promise<boolean> {
+    return this.pkgLocator(pkg)
+      .getByRole("button", { name: verdict })
+      .evaluate((el) => el === document.activeElement);
   }
 
   async theme(): Promise<"dark" | "light"> {

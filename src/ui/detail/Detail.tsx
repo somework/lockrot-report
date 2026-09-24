@@ -72,8 +72,15 @@ export function Detail({ onClose }: DetailProps) {
         <AdvisoryList finding={finding} />
         <Timeline metadata={details?.metadata ?? null} installedVersion={finding.version} />
         <SignalList finding={finding} />
+        {/* a11y review: a bare <summary> dropped the section's own heading, so a screen-reader
+            reader moving by heading found none of these three. A <summary> accepts one heading as
+            content, so the text moves into an <h3> — the layout (the flex row, the chevron) stays
+            on the <summary> itself, restyled to the same look in detail.css's
+            `.detail-reference-summary h3`. */}
         <details className="detail-section detail-reference">
-          <summary className="detail-reference-summary">How it is reached</summary>
+          <summary className="detail-reference-summary">
+            <h3>How it is reached</h3>
+          </summary>
           <p className="detail-chain">
             {chain.map((pkg, index) => (
               <Fragment key={pkg}>
@@ -84,11 +91,15 @@ export function Detail({ onClose }: DetailProps) {
           </p>
         </details>
         <details className="detail-section detail-reference">
-          <summary className="detail-reference-summary">The lock entry</summary>
+          <summary className="detail-reference-summary">
+            <h3>The lock entry</h3>
+          </summary>
           <KeyValue rows={lockRows(finding, details, now)} />
         </details>
         <details className="detail-section detail-reference">
-          <summary className="detail-reference-summary">Provenance</summary>
+          <summary className="detail-reference-summary">
+            <h3>Provenance</h3>
+          </summary>
           <KeyValue rows={provenanceRows(finding, details?.metadata ?? null)} />
         </details>
       </div>

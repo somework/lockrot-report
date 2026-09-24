@@ -114,7 +114,11 @@
   top: calc(var(--topbar-h, 110px) - 40px);
   right: var(--gutter);
   margin: 0;
-  max-width: 340px;
+  /* a11y/regression review: a right-hand inset alone left the shrink-to-fit width filling the rest
+     of the viewport at 320px, so the left edge (and its border and rounded corner) sat flush on the
+     screen, with no gutter on that side. Bounded against both gutters, the same way `.pill-pop`
+     bounds its own width against `100%` (common.css). */
+  max-width: min(340px, calc(100vw - 2 * var(--gutter)));
   padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius-l);
@@ -352,7 +356,15 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 11px;
-  background: var(--surface);
+  /* visual review: `background`/`color` longhand, not the shorthand — a report of the dialog
+     painting stale (a white panel with dark-theme text, while `getComputedStyle` already read the
+     right dark `--surface`) pointed at this top-layer element specifically, never the pill or gate
+     popovers (`popover="auto"`, not `<dialog>`). Not reproduced here across several repro attempts
+     (a fresh `lockrot-theme` at boot, the live toggle, an explicit reload, `colorScheme: "dark"`,
+     headed and software-rendered Chromium, several fixtures and widths, the exact Chromium build
+     this repo's own e2e suite pins) — the longhand costs nothing regardless, in case the underlying
+     bug is a `<dialog>`-in-top-layer repaint quirk somewhere the shorthand form triggers. */
+  background-color: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow);
 }
@@ -417,15 +429,21 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   gap: 8px;
   cursor: pointer;
   list-style: none;
+}
+.glossary-sect > summary::-webkit-details-marker {
+  display: none;
+}
+/* a11y review: the heading text moved from the <summary> itself into an <h3> inside it (Glossary.tsx),
+   so a heading-navigating screen reader stops here again; these rules keep the same look, just
+   retargeted at the <h3> instead of the <summary>. */
+.glossary-sect > summary h3 {
+  margin: 0;
   font-family: var(--cond);
   font-size: 11px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 600;
-}
-.glossary-sect > summary::-webkit-details-marker {
-  display: none;
 }
 .glossary-sect > summary::after {
   content: "▸";

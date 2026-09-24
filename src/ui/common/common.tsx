@@ -1,5 +1,5 @@
 import type { ComponentChildren } from "preact";
-import { useId } from "preact/hooks";
+import { useId, useRef } from "preact/hooks";
 import { safeHref } from "../../domain/links";
 import { DOCS_URL, TONE, VERDICT_DEFS, type Tone } from "../../domain/vocab";
 import { useReport } from "../context";
@@ -41,6 +41,13 @@ export function Pill({ word, docs = false }: { word: string; docs?: boolean }) {
  * A `<button popovertarget>` is a control (`ui/keyboard.ts`'s `CONTROLS` already matches `button`),
  * so Enter on the pill activates it instead of toggling whatever row it sits in (M5), and the row's
  * own click guard is widened to ignore it and its popover in `views/FindingRow.tsx`.
+ *
+ * a11y review: "In the glossary" carries `popovertargetaction="hide"`, which hides this popover — the
+ * button's own ancestor — in the same click, before Preact's `onClick` handler runs; by the time the
+ * glossary's dialog would read `document.activeElement` to remember who to give focus back to, this
+ * button is already display:none and focus has already fallen to `<body>`. `pillRef` holds the pill
+ * itself (still visible, still in the row) instead, and `openGlossaryFrom` passes it through so the
+ * glossary returns focus there on close, not to `<body>` (`Glossary.tsx#useDialog`).
  */
 function DocsPill({
   word,
@@ -52,11 +59,13 @@ function DocsPill({
   title: string | undefined;
 }) {
   const id = useId();
-  const { openGlossary } = useReport();
+  const pillRef = useRef<HTMLButtonElement>(null);
+  const { openGlossaryFrom } = useReport();
 
   return (
     <>
       <button
+        ref={pillRef}
         type="button"
         className={className}
         title={title}
@@ -74,7 +83,9 @@ function DocsPill({
             className="pill-pop-action"
             popovertarget={id}
             popovertargetaction="hide"
-            onClick={openGlossary}
+            onClick={() => {
+              openGlossaryFrom(pillRef.current);
+            }}
           >
             In the glossary
           </button>

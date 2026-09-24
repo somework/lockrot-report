@@ -54,7 +54,7 @@ test.describe("PD-SUMMARY-1: the phone fold shows the same line, closed", () => 
 });
 
 test.describe("PD-SUMMARY-2: the header's gate fact", () => {
-  test("no gate: mini.json's fail-on is 'silent', so this reads 'gate: silent', not 'no gate'", async () => {
+  test("wallabag's fail-on is 'none': reads 'no gate'", async () => {
     // The fixture that actually reads run.fail_on === 'none' is wallabag_wallabag.json.
     await report.goto(FIXTURES.wallabag);
     expect(await report.gateFactLabel()).toMatch(/^no gate/i);
@@ -70,6 +70,7 @@ test.describe("PD-SUMMARY-2: the header's gate fact", () => {
     expect(await report.isGateFactOpen()).toBe(false);
     await report.openGateFact();
     expect(await report.isGateFactOpen()).toBe(true);
+    expect(await report.gateFactPopoverText()).toBe("This run was given --fail-on=none.");
   });
 
   test("Escape closes the popover, and — over an open detail — only the popover, not the detail underneath it", async () => {
@@ -91,14 +92,28 @@ test.describe("PD-SUMMARY-2: the header's gate fact", () => {
 });
 
 test.describe("PD-SUMMARY-3: the Run tab's fail-on em dash", () => {
-  // Every fixture bundle currently checked in (fixtures/bundles/*.json) carries run.fail_on,
-  // capsule-0.10-drupal.json included ("none", not absent) — so there is no built page today that
-  // exercises the null branch end to end. tests/unit/ui/views.test.tsx#RunView covers it directly
-  // against a synthetic model instead; this is left here, skipped, as the place to unskip it if a
-  // fixture without the field is ever added.
-  test.skip("a document without run.fail_on prints an em dash, not the word 'none'", async () => {
-    await report.goto("capsule-0.10-drupal" as FixtureName);
+  // mini-no-fail-on.json (fixtures/bundles/): mini.json with `run.fail_on` deleted outright, not
+  // set to "none" — the one built page that exercises the null branch end to end. (This test used
+  // to be skipped with no fixture and no assertion; tests/unit/ui/views.test.tsx#RunView already
+  // covered the branch directly against a synthetic model, but nothing here proved the page wired
+  // it up — a regression review caught the gap.)
+  test("a document without run.fail_on prints an em dash, not the word 'none'", async ({ page }) => {
+    await report.goto("mini-no-fail-on" as FixtureName);
     await report.tab("run");
+    const panel = page.getByRole("tabpanel");
+    // Scoped to the "fail-on" row itself: the same panel's "baseline" row reads "none" for a
+    // document with no baseline at all (RunView.tsx#baselineText), which a panel-wide text search
+    // would also match.
+    const failOn = panel.locator("dt", { hasText: /^fail-on$/ }).locator("xpath=following-sibling::dd[1]");
+    await expect(failOn).toHaveText("—");
+  });
+
+  // PD-SUMMARY-2 (Header.tsx): the same document renders no gate fact at all — a run.fail_on the
+  // page never saw is not "no gate" (that is the word for --fail-on=none, a distinct, actually-said
+  // value). tests/unit/ui/App.test.tsx covers the same rule directly against a synthetic model.
+  test("the same document's header shows no gate fact, since the run never said one", async () => {
+    await report.goto("mini-no-fail-on" as FixtureName);
+    expect(await report.gateFactLabel()).toBeNull();
   });
 
   test("a document with an explicit fail-on prints the word, not an em dash (mini.json: 'silent')", async ({

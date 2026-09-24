@@ -7,22 +7,23 @@ import { themeButtonLabel, type Theme } from "./useTheme";
 /** The gate fact's two states the run can actually be in, plus its text — kept together so the
  *  button and its popover can never drift out of sync (DESIGN.md §8, "a quiet fact in the
  *  header"). `run.failOn === null` (a document older than the field) renders neither: the page
- *  must not claim a run said "no gate" when it never said anything about one at all. */
+ *  must not claim a run said "no gate" when it never said anything about one at all.
+ *
+ *  regression review: the earlier text stated what `--fail-on` does at the CLI (exit codes) and
+ *  recommended setting it in CI — both beyond what this page can derive from the document in front
+ *  of it (the hard rule: observations with evidence, no advice). It now says only what the run was
+ *  given, plus that the page does not know whether the gate fired. */
 function gateFact(failOn: string): { label: string; text: string } {
   if (failOn === "none") {
     return {
       label: "no gate",
-      text:
-        "No gate on this run. It exits 0 whatever it finds; the page lists what it saw. " +
-        "Add --fail-on=<verdict|priority> in CI to make it a check.",
+      text: "This run was given --fail-on=none.",
     };
   }
 
   return {
     label: `gate: ${failOn}`,
-    text:
-      `This run was told to fail on ${failOn}: it exits 1 when a finding the baseline does not ` +
-      `already accept reaches ${failOn}. The page does not record whether it did.`,
+    text: `This run was given --fail-on=${failOn}. The page does not record whether the gate fired.`,
   };
 }
 
@@ -104,7 +105,10 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children }: Heade
           {gate !== null && (
             <span>
               <button type="button" className="fact-btn" popovertarget={popoverId} title={gate.text}>
-                {gate.label} <span aria-hidden="true">ⓘ</span>
+                {gate.label}{" "}
+                <span className="fact-btn-icon" aria-hidden="true">
+                  ⓘ
+                </span>
               </button>
               <div id={popoverId} popover="auto" className="fact-pop">
                 {gate.text}

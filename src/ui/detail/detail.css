@@ -127,15 +127,21 @@
   display: flex;
   align-items: baseline;
   gap: 8px;
+}
+.detail-reference-summary::-webkit-details-marker {
+  display: none;
+}
+/* a11y review: the heading text moved from the <summary> itself into an <h3> inside it (Detail.tsx),
+   so a heading-navigating screen reader stops here again; these rules keep the same look, just
+   retargeted at the <h3> instead of the <summary>. */
+.detail-reference-summary h3 {
+  margin: 0;
   font-family: var(--cond);
   font-size: 11px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 600;
-}
-.detail-reference-summary::-webkit-details-marker {
-  display: none;
 }
 .detail-reference-summary::after {
   content: "▸";
