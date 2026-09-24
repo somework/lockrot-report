@@ -1,7 +1,6 @@
 /**
- * Checks only the new renderer has to pass (DESIGN.md §6 "New-only checks"): the legacy page was
- * never written against them, so they are skipped under RENDERER=legacy rather than marked as
- * known failures.
+ * Checks that only the new renderer has to pass (DESIGN.md §6 "New-only checks"): the legacy page
+ * this suite was proven against never had to meet them.
  *
  * - axe: no serious or critical violation, in both colour schemes, with a package detail open;
  * - CSP: no `securitypolicyviolation` on any fixture page, through boot and the common
@@ -14,15 +13,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createReportPage } from "./support/report";
-import { currentRenderer, pageUrl, REPO_ROOT, type FixtureName } from "./support/pages";
+import { pageUrl, REPO_ROOT, type FixtureName } from "./support/pages";
 
-test.skip(currentRenderer() !== "new", "new-renderer-only checks (DESIGN.md §6)");
-
-/** Every page `scripts/pages.mjs` built, one per fixture bundle. Empty under RENDERER=legacy, whose
- *  run skips this file and must not need `build/pages/` to exist. */
+/** Every page `scripts/pages.mjs` built, one per fixture bundle. */
 function builtFixtures(): FixtureName[] {
-  if (currentRenderer() !== "new") return [];
-
   return readdirSync(join(REPO_ROOT, "build/pages"))
     .filter((file) => file.endsWith(".html"))
     .map((file) => file.replace(/\.html$/, "") as FixtureName);
@@ -34,7 +28,7 @@ const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;
 
 async function load(page: Page, fixture: FixtureName, hash = ""): Promise<void> {
   await page.goto("about:blank");
-  await page.goto(pageUrl("new", fixture) + (hash ? "#" + hash : ""));
+  await page.goto(pageUrl(fixture) + (hash ? "#" + hash : ""));
   await expect(page.getByRole("tab").first()).toBeVisible();
 }
 

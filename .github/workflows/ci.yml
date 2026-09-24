@@ -54,20 +54,13 @@ jobs:
           path: dist/
 
   e2e:
-    name: e2e (${{ matrix.renderer }}, ${{ matrix.browser }})
+    name: e2e (${{ matrix.browser }})
     needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        renderer: [new, legacy]
         browser: [chromium, firefox, webkit]
-        exclude:
-          # The legacy page is the reference the suite was proven against; one engine is enough.
-          - renderer: legacy
-            browser: firefox
-          - renderer: legacy
-            browser: webkit
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -81,13 +74,11 @@ jobs:
           path: dist/
       - run: npx playwright install --with-deps ${{ matrix.browser }}
       - run: node scripts/pages.mjs
-      - run: node scripts/baseline-pages.mjs
       - run: npx playwright test --project=${{ matrix.browser }}
         env:
-          RENDERER: ${{ matrix.renderer }}
           CI: "true"
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: playwright-${{ matrix.renderer }}-${{ matrix.browser }}
+          name: playwright-${{ matrix.browser }}
           path: test-results/

@@ -1,8 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { currentRenderer, FIXTURES } from "./support/pages";
-
-const renderer = currentRenderer();
+import { FIXTURES } from "./support/pages";
 
 /**
  * `fixtures/bundles/mini.json`: 4 findings, 2 of them flagged (vendor/transitive: abandoned/high,
@@ -75,11 +73,9 @@ test.describe("Blast radius view", () => {
 });
 
 test.describe("M14: an unrecognised view= falls back", () => {
-  test("legacy shows Run content with no tab marked selected; the ledger stays visible (M14)", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M14: an unknown view leaves no tab aria-selected and the ledger visible",
-    );
+  test("an unrecognised view falls back to Findings, tab marked selected (M14)", async () => {
+    // M14 (DESIGN.md §5), fixed on purpose: legacy left no tab aria-selected and showed Run
+    // content with the ledger still visible for an unknown view.
     await report.gotoWithHash(FIXTURES.mini, "view=not-a-real-view");
     expect(await report.activeTab()).toBe("findings");
     expect(await report.rows()).toEqual(["vendor/transitive", "vendor/snapshot"]);

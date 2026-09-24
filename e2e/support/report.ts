@@ -1,16 +1,14 @@
 /**
- * The page-object contract the e2e specs are written against. One spec file runs unchanged against
- * both renderers (`RENDERER=legacy|new`, see pages.ts): `legacy.ts` implements this interface over
- * the hand-written DOM in `legacy/report.js`/`report.html`; `new.ts` implements it over the rewrite,
- * using accessible locators only (role, label, text) — that file is the accessibility contract the
- * new UI has to meet, not a convenience wrapper.
+ * The page-object contract the e2e specs are written against. `new.ts` implements this interface
+ * over the Preact rewrite, using accessible locators only (role, label, text) — that file is the
+ * accessibility contract the UI has to meet, not a convenience wrapper.
  *
- * A spec imports only from here (types) and from `pages.ts` (fixtures, `currentRenderer()`); it
- * never reaches into `legacy.ts`/`new.ts` directly and never queries the page with a raw selector.
- * Anything a spec needs to know about the rendered page goes through a method on this interface.
+ * A spec imports only from here (types) and from `pages.ts` (fixtures); it never reaches into
+ * `new.ts` directly and never queries the page with a raw selector. Anything a spec needs to know
+ * about the rendered page goes through a method on this interface.
  */
 import type { Page } from "@playwright/test";
-import { currentRenderer, type FixtureName, type Renderer } from "./pages";
+import type { FixtureName } from "./pages";
 
 export const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;
 export type ViewName = (typeof VIEWS)[number];
@@ -47,9 +45,7 @@ export interface SortState {
  * outputs: a `ViewName`, a filter group's key, a package name, never a CSS class or an id.
  */
 export interface ReportPage {
-  readonly renderer: Renderer;
-
-  /** Loads one fixture bundle's built page for this renderer, hash-less. */
+  /** Loads one fixture bundle's built page, hash-less. */
   goto(fixture: FixtureName): Promise<void>;
   /** Loads the page with a given `#...` fragment already in the URL, exactly as a shared link would. */
   gotoWithHash(fixture: FixtureName, hash: string): Promise<void>;
@@ -157,19 +153,7 @@ export interface ReportPage {
   pressK(): Promise<void>;
 }
 
-/**
- * Built lazily and only for the renderer under test, so a `RENDERER=legacy` run never has to
- * resolve `new.ts` against a UI that does not exist yet.
- */
-export async function createReportPage(
-  page: Page,
-  renderer: Renderer = currentRenderer(),
-): Promise<ReportPage> {
-  if (renderer === "legacy") {
-    const { LegacyReportPage } = await import("./legacy");
-
-    return new LegacyReportPage(page);
-  }
+export async function createReportPage(page: Page): Promise<ReportPage> {
   const { NewReportPage } = await import("./new");
 
   return new NewReportPage(page);

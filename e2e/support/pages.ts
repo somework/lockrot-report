@@ -1,8 +1,13 @@
 /**
- * Where the two renderers' built pages live, and which fixture bundle each test file was written
- * against. `RENDERER=legacy|new` selects the directory; there is no baseURL (DESIGN.md §6: the
- * suite runs against `file://` pages), so every URL here is an absolute file path turned into a
- * `file://` URL.
+ * Where the renderer's built pages live, and which fixture bundle each test file was written
+ * against. There is no baseURL (DESIGN.md §6: the suite runs against `file://` pages), so every
+ * URL here is an absolute file path turned into a `file://` URL.
+ *
+ * Through lockrot 0.11.0 this suite also ran against `build/legacy-pages/` (lockrot's hand-written
+ * page, selected by `RENDERER=legacy`) as the parity reference it was proven against while the
+ * renderer was extracted. lockrot 0.12.0 stopped shipping that page, so the comparison target is
+ * gone; the suite now runs against `build/pages/` only. DESIGN.md §5 keeps the record of the
+ * differences that comparison found and fixed on purpose.
  */
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -11,35 +16,17 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 /** e2e/support -> e2e -> repo root. */
 export const REPO_ROOT = join(HERE, "..", "..");
 
-export type Renderer = "legacy" | "new";
+const PAGES_DIR = join(REPO_ROOT, "build/pages");
 
-const RENDERER_DIRS: Readonly<Record<Renderer, string>> = {
-  legacy: join(REPO_ROOT, "build/legacy-pages"),
-  new: join(REPO_ROOT, "build/pages"),
-};
-
-/**
- * `RENDERER` is read once per process. Anything else is a typo in the invocation, not a renderer
- * this suite knows how to run against, so it fails loudly instead of silently defaulting.
- */
-export function currentRenderer(): Renderer {
-  const value = process.env["RENDERER"] ?? "legacy";
-  if (value !== "legacy" && value !== "new") {
-    throw new Error(`RENDERER must be "legacy" or "new", got ${JSON.stringify(value)}`);
-  }
-
-  return value;
-}
-
-/** The `file://` URL for one fixture's built page, for the given renderer. */
-export function pageUrl(renderer: Renderer, fixture: FixtureName): string {
-  return "file://" + join(RENDERER_DIRS[renderer], fixture + ".html");
+/** The `file://` URL for one fixture's built page. */
+export function pageUrl(fixture: FixtureName): string {
+  return "file://" + join(PAGES_DIR, fixture + ".html");
 }
 
 /**
- * The fixture bundles this suite draws on, named as `scripts/baseline-pages.mjs` writes them
- * (the bundle's filename, minus `.json`). Picked for what each one actually contains, not for
- * being the "main" fixture — see the comment on each.
+ * The fixture bundles this suite draws on, named as `scripts/pages.mjs` writes them (the bundle's
+ * filename, minus `.json`). Picked for what each one actually contains, not for being the "main"
+ * fixture — see the comment on each.
  */
 export const FIXTURES = {
   /** Small, hand-built: two flagged findings, one unknown, one finished, one direct requirement

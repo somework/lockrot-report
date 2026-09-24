@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { currentRenderer, FIXTURES } from "./support/pages";
+import { FIXTURES } from "./support/pages";
 
-const renderer = currentRenderer();
 let report: ReportPage;
 
 test.beforeEach(async ({ page }) => {
@@ -32,13 +31,9 @@ test.describe("M11: the theme button must reflect the effective theme, not just 
   test.use({ colorScheme: "dark" });
 
   test("the first click under an OS dark preference actually switches to light", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M11: the template ships no data-theme (report.html has none) and CSS follows " +
-        "prefers-color-scheme when it is absent; the first click computes next='dark' from the " +
-        "(absent) attribute and sets it explicitly — visually a no-op — only the second click " +
-        "reaches light (report.js:1006-1012)",
-    );
+    // M11 (DESIGN.md §5), fixed on purpose: legacy's template shipped no data-theme attribute, so
+    // the first click computed "next" off that absent attribute and set it explicitly — visually
+    // a no-op — and only a second click reached light.
     await report.goto(FIXTURES.mini);
     expect(await report.theme()).toBe("dark"); // OS preference, no stored/explicit theme yet
     await report.toggleTheme();
@@ -62,12 +57,8 @@ test.describe("glossary", () => {
 
 test.describe("M2: S10 belongs in the glossary like every other signal", () => {
   test("the glossary lists S10 (the vocabulary is a fixed constant, independent of the fixture)", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M2: fillLegend() iterates Object.keys(SIGNAL_DEFS), which only has S1..S9 — S10 " +
-        "(NotCheckedRule) is emitted by the analyzer but was never given a name or a definition " +
-        "(report.js:28-33,49-59,1092-1096)",
-    );
+    // M2 (DESIGN.md §5), fixed on purpose: legacy's glossary only had definitions for S1..S9 — S10
+    // (NotCheckedRule) is emitted by the analyzer but was never given a name or a definition.
     await report.goto(FIXTURES.mini);
     await report.openGlossary();
     expect(await report.glossaryText()).toContain("S10");
@@ -90,12 +81,8 @@ test.describe("M28: the glossary must stay reachable when showModal() is not all
   });
 
   test("the fallback glossary is still reachable and stays in view", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M28: the fallback sets a plain open attribute with no positioning of its own " +
-        "(report.css:589-600), so the UA default renders it in normal flow after the footer " +
-        "(report.js:1098-1107)",
-    );
+    // M28 (DESIGN.md §5), fixed on purpose: legacy's fallback set a plain open attribute with no
+    // positioning of its own, so the UA default rendered it in normal flow after the footer.
     await report.goto(FIXTURES.mini);
     await report.openGlossary();
     expect(await report.isGlossaryOpen()).toBe(true);

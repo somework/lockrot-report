@@ -8,6 +8,13 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ## [Unreleased]
 
+### Changed
+
+- The e2e suite runs against the new page only. It was proven against lockrot's hand-written page
+  during the extraction and ran against both until lockrot 0.12.0 stopped shipping that page; every
+  behaviour the comparison found and fixed on purpose is still asserted, and still recorded in
+  DESIGN.md §5.
+
 ## [0.12.0]
 
 The page lockrot 0.12.0 writes with `--format=html`.

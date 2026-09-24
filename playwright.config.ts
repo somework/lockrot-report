@@ -1,14 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * The e2e suite runs against a built page on disk (`build/legacy-pages/` or, once the UI wave
- * produces it, `build/pages/`), reached as `file://...` — there is no server and so no `baseURL`
- * (DESIGN.md §6). `RENDERER` picks which set of pages `e2e/support/pages.ts` resolves to; it
- * defaults to `legacy` so a bare `npx playwright test` still runs against something real.
+ * The e2e suite runs against the built pages in `build/pages/`, reached as `file://...` — there is
+ * no server and so no `baseURL` (DESIGN.md §6). `e2e/support/pages.ts` resolves each fixture to its
+ * page there.
  *
  * Chromium is the one browser this suite always runs on. Firefox and WebKit are added only in CI:
- * they are slower to provision locally and the suite's job locally is fast iteration while making
- * the legacy baseline green (DESIGN.md §6 — "made green against the legacy page first").
+ * they are slower to provision locally and the suite's job locally is fast iteration.
  */
 const projects = [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }];
 if (process.env["CI"]) {

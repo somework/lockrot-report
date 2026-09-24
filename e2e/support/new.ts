@@ -1,18 +1,13 @@
 /**
  * The `ReportPage` contract implemented over the Preact rewrite, using only accessible locators
- * (`getByRole`/`getByLabel`/`getByText`) — no class names, no ids, no `data-*` attributes. This file
- * is written ahead of the UI it targets (`build/pages/` does not exist until the UI wave), so it is
- * read as the accessibility contract that UI has to meet: every locator choice below is a decision
- * about what role and accessible name a piece of the new page must expose, documented at the point
- * it is made. A locator this file cannot find once the UI exists is a bug in the UI, not a licence
- * to fall back to a CSS selector here — fix the markup, not this file.
- *
- * `RENDERER=new` is not part of this task's own required run (DESIGN.md's UI wave produces
- * `build/pages/`); this module only has to typecheck and describe the contract now.
+ * (`getByRole`/`getByLabel`/`getByText`) — no class names, no ids, no `data-*` attributes. Every
+ * locator choice below is a decision about what role and accessible name a piece of the page must
+ * expose, documented at the point it is made. A locator this file cannot find is a bug in the UI,
+ * not a licence to fall back to a CSS selector here — fix the markup, not this file.
  */
 import type { Locator, Page } from "@playwright/test";
 import type { DetailSnapshot, LedgerGroup, RailGroup, ReportPage, SortState, ViewName } from "./report";
-import { pageUrl, type FixtureName, type Renderer } from "./pages";
+import { pageUrl, type FixtureName } from "./pages";
 
 /** The tab's accessible name (`role=tab`). A badge count appended after the label is fine — every
  *  match below is substring, not exact — but the label text itself has to be this. */
@@ -56,16 +51,14 @@ function railLabel(group: RailGroup, key: string): string {
 }
 
 export class NewReportPage implements ReportPage {
-  readonly renderer: Renderer = "new";
-
   constructor(private readonly page: Page) {}
 
   async goto(fixture: FixtureName): Promise<void> {
-    await freshNavigate(this.page, pageUrl(this.renderer, fixture));
+    await freshNavigate(this.page, pageUrl(fixture));
   }
 
   async gotoWithHash(fixture: FixtureName, hash: string): Promise<void> {
-    const base = pageUrl(this.renderer, fixture);
+    const base = pageUrl(fixture);
     const fragment = hash.startsWith("#") ? hash : "#" + hash;
     await freshNavigate(this.page, base + fragment);
   }

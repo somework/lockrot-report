@@ -112,7 +112,7 @@ src/
   ui/                     Preact components, one folder per surface, CSS next to the component
   styles/                 tokens.css, base.css, print.css
 tests/unit/               vitest, mirrors src/
-e2e/                      Playwright; runs against the legacy page AND the new one (§6)
+e2e/                      Playwright; runs against the built page in build/pages/ (§6)
 legacy/                   lockrot's resources/report/ at the commit in legacy/SOURCE_COMMIT
 fixtures/bundles/         real payloads
 scripts/                  build and page assembly
@@ -190,11 +190,14 @@ filter that hides its package; `data-goto` keeps the detail open.
   `query` and `libyears`.
 - **Components** (vitest + happy-dom + @testing-library/preact): the parts with logic in them —
   detail panel sections, timeline, ledger.
-- **E2E** (Playwright, Chromium; Firefox and WebKit in CI): one behavioural suite, parameterised by
-  `RENDERER=legacy|new`. It is written and made green against the legacy page first, which proves
-  the tests test something; the new page must then pass the same suite. Legacy bugs fixed on purpose
-  are `test.fail(renderer === 'legacy')`. New-only checks: axe (no serious or critical violations),
-  zero CSP violations, both colour schemes, 320/768/1024/1440.
+- **E2E** (Playwright, Chromium; Firefox and WebKit in CI): one behavioural suite, run against
+  `build/pages/`. It was written and made green against the legacy page first, during the
+  extraction, which proved the tests tested something, and ran against both pages until lockrot
+  0.12.0 stopped shipping the legacy one; the new page is the only page it runs against since. §5's
+  table stays the record of the differences that comparison found and fixed on purpose — each row's
+  test carries the row's id in a comment — and later deliberate changes to the new page are recorded
+  there the same way. New-only checks: axe (no serious or critical violations), zero CSP violations,
+  both colour schemes, 320/768/1024/1440.
 - **Build checks**: the built `report.html` contains each coupling in §1.1 exactly once, none of the
   forbidden strings, and building twice gives identical bytes.
 

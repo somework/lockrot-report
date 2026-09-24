@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { currentRenderer, FIXTURES, pageUrl } from "./support/pages";
+import { FIXTURES, pageUrl } from "./support/pages";
 
-const renderer = currentRenderer();
 let report: ReportPage;
 
 test.beforeEach(async ({ page }) => {
@@ -50,11 +49,8 @@ test.describe("pkg omission: the page's own auto-pick never reaches the address 
 
 test.describe("M12: a malformed %-escape must not blank the whole page", () => {
   test("the rest of the page still renders when one hash piece cannot be decoded", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M12: decodeURIComponent throws unguarded in readHash(), which runs before fillLegend/" +
-        "renderLedger/render, so an uncaught URIError leaves tabs, ledger and rows all empty",
-    );
+    // M12 (DESIGN.md §5), fixed on purpose: legacy's readHash() let decodeURIComponent throw
+    // unguarded, before anything else rendered, leaving tabs, ledger and rows all empty.
     await report.gotoWithHash(FIXTURES.mini, "q=%E0%A4%A");
     expect(await report.rows()).toEqual(["vendor/transitive", "vendor/snapshot"]);
   });
@@ -64,11 +60,9 @@ test.describe("M13: an unknown pkg= on a narrow screen must not strand a scroll 
   test.use({ viewport: { width: 375, height: 800 } });
 
   test("no scroll lock without a visible reason for it", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M13: renderDetail() hides the box when the package is not found, but render() still sets " +
-        "body.detail-open off !!state.pkg alone, and CSS locks scroll under 1180px (report.css:364)",
-    );
+    // M13 (DESIGN.md §5), fixed on purpose: legacy hid the detail box for an unknown package but
+    // still set body.detail-open off the bare presence of state.pkg, locking scroll under 1180px
+    // with nothing visible to explain it.
     await report.gotoWithHash(FIXTURES.mini, "pkg=does-not-exist-in-this-report");
     const stuck = (await report.isScrollLocked()) && !(await report.detail()).open;
     expect(stuck).toBe(false);
@@ -81,11 +75,8 @@ test.describe("M13: an unknown pkg= on a narrow screen must not strand a scroll 
 });
 
 test.describe("hashchange: a link pasted into an open page", () => {
-  test("legacy has no hashchange listener at all; the fix applies it live", async () => {
-    test.fail(
-      renderer === "legacy",
-      "hashchange: report.js never registers a hashchange listener (grep confirmed in js-4.md §3)",
-    );
+  test("a pasted link applies live", async () => {
+    // Fixed on purpose (DESIGN.md §5): legacy never registered a hashchange listener at all.
     await report.goto(FIXTURES.mini);
     expect(await report.rows()).toEqual(["vendor/transitive", "vendor/snapshot"]);
     await report.setLocationHash("q=snapshot");
@@ -95,12 +86,9 @@ test.describe("hashchange: a link pasted into an open page", () => {
 
 test.describe("SEARCH-FALLBACK: emptying the state must not erase location.search", () => {
   test("a query string survives a writeHash() that resets to the bare path", async ({ page }) => {
-    test.fail(
-      renderer === "legacy",
-      "SEARCH-FALLBACK: writeHash() falls back to location.pathname when the computed state is " +
-        "empty, dropping any ?query the URL carried (report.js:927)",
-    );
-    await page.goto(pageUrl(renderer, FIXTURES.mini) + "?debug=1#q=x");
+    // SEARCH-FALLBACK (DESIGN.md §5), fixed on purpose: legacy's writeHash() fell back to
+    // location.pathname when the computed state was empty, dropping any ?query the URL carried.
+    await page.goto(pageUrl(FIXTURES.mini) + "?debug=1#q=x");
     expect(report.url()).toContain("?debug=1");
     await report.search(""); // empties state.q -> with the boot auto-pick excluded, state is now empty
     expect(report.url()).toContain("?debug=1");

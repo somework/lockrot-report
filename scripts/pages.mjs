@@ -1,8 +1,7 @@
 // Fills the built `dist/report.html` (produced by `npm run build`) with every bundle under
 // `fixtures/bundles`, using the same title/description approximation and the same payload
-// escaping as `HtmlFormatter::payload()` (`</` -> `<\/`, `<!--` -> `<!--`) that
-// `scripts/baseline-pages.mjs` uses for the legacy page — this is that script's counterpart for the
-// new renderer, so the two page sets can be diffed against each other by the e2e suite.
+// escaping as `HtmlFormatter::payload()` (`</` -> `<\/`, `<!--` -> `<!--`) that lockrot's own
+// formatter uses. Writes `build/pages/`, which is what the e2e suite runs against.
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 

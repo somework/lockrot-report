@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { currentRenderer, FIXTURES } from "./support/pages";
+import { FIXTURES } from "./support/pages";
 
-const renderer = currentRenderer();
 let report: ReportPage;
 
 test.beforeEach(async ({ page }) => {
@@ -109,12 +108,9 @@ test.describe("Enter on a focused row toggles its detail", () => {
 
 test.describe("M5: Enter on a link inside a row must not hijack the link", () => {
   test("the link is followed, the row's detail does not toggle", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M5: the keydown handler checks .closest('.row, tbody tr') before anything about an anchor " +
-        "(unlike the click handler), so Enter on a focused in-row link toggles the detail instead " +
-        "of following it (report.js:1022-1030)",
-    );
+    // M5 (DESIGN.md §5), fixed on purpose: legacy's keydown handler checked the row before
+    // anything about an anchor, so Enter on a focused in-row link toggled the detail instead of
+    // following the link.
     await report.tab("packages");
     expect((await report.detail()).open).toBe(false);
     // vendor/transitive's lock came from a Composer repository, so its Packages-tab row links out
@@ -127,11 +123,8 @@ test.describe("M5: Enter on a link inside a row must not hijack the link", () =>
 
 test.describe("M6: Packages-table rows are focusable and show a selected state", () => {
   test("a row can receive keyboard focus and is marked selected once open", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M6: legacy <tr> rows carry no tabindex/role/aria-current, only Findings' .row does " +
-        "(report.js:569 vs :436); lastRow()'s node.focus() is then a no-op on Packages",
-    );
+    // M6 (DESIGN.md §5), fixed on purpose: legacy's Packages-table rows carried no
+    // tabindex/role/aria-current at all, unlike Findings' rows.
     await report.tab("packages");
     expect(await report.rowFocusable("vendor/snapshot")).toBe(true);
     await report.openPackage("vendor/snapshot");
@@ -141,12 +134,9 @@ test.describe("M6: Packages-table rows are focusable and show a selected state",
 
 test.describe("M7: j/k must not open a package that has no row on screen", () => {
   test("Blast radius only ever selects a package it actually lists", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M7: on Radius, j/k walk FLAGGED (every flagged finding) while the view only lists each " +
-        "direct requirement's *pulled* children — an unreachable flagged finding (mini.json's " +
-        "vendor/snapshot: direct:false, chain:[]) opens with no card and no row (report.js:599)",
-    );
+    // M7 (DESIGN.md §5), fixed on purpose: legacy's j/k walked every flagged finding while Radius
+    // only lists each direct requirement's pulled children, so j/k could open a package with no
+    // card and no row on screen (mini.json's vendor/snapshot: direct:false, chain:[]).
     await report.tab("radius");
     expect(await report.rows()).toEqual(["vendor/transitive"]);
     await report.pressJ();
@@ -158,12 +148,9 @@ test.describe("M7: j/k must not open a package that has no row on screen", () =>
 
 test.describe("M10: j/k must not act while the glossary is open", () => {
   test("selection is untouched behind an open dialog", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M10: the j/k guard only checks document.activeElement !== #q; a native <dialog> traps Tab " +
-        "focus but keydown still bubbles to document, so j/k keep moving the selection underneath " +
-        "an open glossary (report.js:1039-1048)",
-    );
+    // M10 (DESIGN.md §5), fixed on purpose: legacy's j/k guard only checked focus against the
+    // search box, so keydown still bubbled to the document and moved the selection underneath an
+    // open glossary dialog.
     await report.openGlossary(); // boot already auto-opened vendor/transitive on this wide viewport
     await report.pressJ();
     expect(await report.hash()).not.toContain("pkg="); // select() was never reached -> pkgAuto still true

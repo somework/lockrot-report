@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { currentRenderer, FIXTURES } from "./support/pages";
+import { FIXTURES } from "./support/pages";
 
-const renderer = currentRenderer();
 let report: ReportPage;
 
 test.beforeEach(async ({ page }) => {
@@ -25,20 +24,16 @@ test.describe("ledger filter groups (prio/verdict) — mini.json", () => {
   });
 
   test("M17: ledger buttons expose a pressed state to assistive tech", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M17: legacy ledger legend buttons carry data-on, never aria-pressed (report.js:869)",
-    );
+    // M17 (DESIGN.md §5), fixed on purpose: legacy's ledger legend buttons carried a plain
+    // data-on attribute, never aria-pressed.
     expect(await report.ledgerButtonPressed("prio", "medium")).toBe(false);
     await report.ledgerButton("prio", "medium");
     expect(await report.ledgerButtonPressed("prio", "medium")).toBe(true);
   });
 
   test("M29: the priority ledger's tooltip matches what it actually counts", async () => {
-    test.fail(
-      renderer === "legacy",
-      'M29: legacy\'s static tooltip says "except ok and finished" but the count also excludes unknown (report.html:52, report.js:246)',
-    );
+    // M29 (DESIGN.md §5), fixed on purpose: legacy's static tooltip said "except ok and finished"
+    // but the count it described also excluded unknown.
     const tooltip = await report.priorityLedgerTooltip();
     expect(tooltip).not.toBe("Every verdict except ok and finished");
   });
@@ -64,7 +59,7 @@ test.describe("rail filter groups (scope/signal) — mini.json Findings tab", ()
     expect(await report.rows()).toEqual(["vendor/snapshot"]);
   });
 
-  test("rail options already expose aria-pressed in legacy too (not an M17 gap)", async () => {
+  test("rail options expose aria-pressed (not an M17 gap — that one was ledger-only)", async () => {
     expect(await report.railOptionPressed("scope", "direct")).toBe(false);
     await report.railOption("scope", "direct");
     expect(await report.railOptionPressed("scope", "direct")).toBe(true);
