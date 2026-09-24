@@ -1,12 +1,16 @@
 # Changelog
 
 Every release lists what a reader of the page will notice. The format follows
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
-[Semantic Versioning](https://semver.org/). While the version starts with 0, the minor number is the
-one that breaks: a release that stops rendering a document an older release rendered, or that
-changes the placeholders, the payload tag or the address format, raises it.
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/). A release is numbered after the lockrot
+release that first ships it, so the page lockrot 0.12.0 writes is renderer 0.12.0. A release that
+stops rendering a document an older release rendered, or that changes the placeholders, the payload
+tag or the address format, says so under **Breaking** in its entry.
 
 ## [Unreleased]
+
+## [0.12.0]
+
+The page lockrot 0.12.0 writes with `--format=html`.
 
 ### Changed
 

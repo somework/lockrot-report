@@ -58,7 +58,9 @@ Content-Security-Policy; `manifest.json` carries the hashes it pins.
 The renderer reads report schema 1 and every document lockrot has written with it, back to 0.10.0.
 A field it does not know is ignored; a verdict, signal or severity it does not know is shown as
 written. The placeholders, the payload tag and the address format (`#view=…&q=…&pkg=…`) are part of
-the public interface and change only in a major release.
+the public interface; a release that changes them says so under **Breaking** in the changelog.
+
+A release is numbered after the lockrot release that first ships it.
 
 ## Development
 
