@@ -11,7 +11,7 @@
  */
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createReportPage } from "./support/report";
 import { currentRenderer, pageUrl, REPO_ROOT, type FixtureName } from "./support/pages";
@@ -133,4 +133,40 @@ test.describe("no horizontal overflow at 320px", () => {
       expect(overflowing).toEqual([]);
     });
   }
+});
+
+/**
+ * A publisher's provenance line (README, "Publishing a report"): markup another site puts after
+ * <body> in a copy of the page. The page's policy refuses style attributes, so the line is styled
+ * by the renderer's `.lockrot-provenance` class — and adding it must not trip the policy.
+ */
+test.describe("a publisher's provenance line", () => {
+  test("is styled by the page and trips no policy", async ({ page }) => {
+    const source = readFileSync(join(REPO_ROOT, "build/pages/mini.html"), "utf8");
+    const banded = source.replace(
+      "<body>",
+      '<body>\n<div class="lockrot-provenance">Published by <a href="https://example.test/">a site</a>.</div>',
+    );
+    const file = join(REPO_ROOT, "build/pages/mini-banded.tmp.html");
+    writeFileSync(file, banded);
+    const violations: string[] = [];
+    await page.exposeFunction("reportViolation", (directive: string) => violations.push(directive));
+    await page.addInitScript(() => {
+      document.addEventListener("securitypolicyviolation", (event) => {
+        (window as unknown as { reportViolation: (d: string) => void }).reportViolation(
+          event.violatedDirective,
+        );
+      });
+    });
+    try {
+      await page.goto("file://" + file);
+      const band = page.locator(".lockrot-provenance");
+      await expect(band).toBeVisible();
+      expect(await band.evaluate((node) => getComputedStyle(node).paddingTop)).toBe("8px");
+      await expect(page.getByRole("tab").first()).toBeVisible();
+      expect(violations).toEqual([]);
+    } finally {
+      rmSync(file, { force: true });
+    }
+  });
 });

@@ -222,3 +222,28 @@ a.out:hover {
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * A publisher's line above the report: a site that republishes someone else's run says where the
+ * document came from (lockrot.dev's published reports do). The page's Content-Security-Policy
+ * refuses style attributes, so a publisher cannot style its own markup inline; it puts a
+ * <div class="lockrot-provenance"> right after <body> and the page styles it, in both themes.
+ * This class is part of the renderer's public interface (README, "Publishing a report").
+ */
+.lockrot-provenance {
+  font: 13px/1.5 var(--sans);
+  background: var(--surface);
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 16px;
+}
+
+.lockrot-provenance a {
+  color: var(--accent);
+}
+
+@media print {
+  .lockrot-provenance {
+    background: none;
+  }
+}

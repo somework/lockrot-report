@@ -12,6 +12,11 @@ an older release rendered, or that changes the placeholders, the payload tag or 
 The page lockrot 0.11.0 writes with `--format=html`, rewritten out of lockrot's repository: same
 document, same address format, same keys.
 
+### Added
+
+- A `lockrot-provenance` class the page styles, for a publisher's line above a republished report;
+  the page's policy refuses inline styles, so this is how such a line gets its look.
+
 ### Changed
 
 - The page runs under a Content-Security-Policy that pins its one script and one stylesheet by

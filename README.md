@@ -38,6 +38,21 @@ gh attestation verify report.html --repo somework/lockrot-report
 document. A page that carries `<script id="lockrot-data" type="application/json">` with a payload
 and a `<div id="lockrot-app">` renders itself when the script loads.
 
+## Publishing a report
+
+A site that republishes a report someone else ran should say so above it. The page's policy
+refuses inline styles, so put the line in a `lockrot-provenance` element right after `<body>`; the
+page styles it in both themes:
+
+```html
+<body>
+  <div class="lockrot-provenance">This report was produced by … on …, reading …</div>
+</body>
+```
+
+A publisher that adds a script or a stylesheet of its own has to replace the page's
+Content-Security-Policy; `manifest.json` carries the hashes it pins.
+
 ## Compatibility
 
 The renderer reads report schema 1 and every document lockrot has written with it, back to 0.10.0.
