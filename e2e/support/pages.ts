@@ -61,5 +61,11 @@ export const FIXTURES = {
    *  maintained branch at all, only versions named after themselves) — the timeline fixture
    *  PD-TIMELINE-3/4 (DESIGN.md §5) need, which `wallabag` and `mautic` don't carry. */
   koel: "koel_koel",
+  /** Synthetic: `wallabag` with a baseline laid over it (no real run produced it) — `run.fail_on:
+   *  high`, `lockrot-baseline.json` accepting 63 flagged findings, 4 new (sensio/framework-extra-
+   *  bundle, lcobucci/jwt, smalot/pdfparser, sebastian/type), 2 worsened (javibravo/simpleue from
+   *  stale, symfony/web-server-bundle from left-behind), 3 stale entries no longer in the lock.
+   *  The baseline surfaces' fixture (PD-BASELINE-1..4, DESIGN.md §5); no real fixture carries one. */
+  wallabagBaseline: "wallabag_baseline",
 } as const;
 export type FixtureName = (typeof FIXTURES)[keyof typeof FIXTURES];
