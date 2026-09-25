@@ -24,8 +24,9 @@ export interface DetailProps {
  * The package detail panel — ported section by section from legacy `renderDetail`
  * (`report.js:737-845`), reordered so the reader meets the answer before the reference (PD-DETAIL-1,
  * DESIGN.md §8; PD-DETAIL-6): the answer sentence with its key facts and how the package gets in,
- * why this priority, follow the upstream (the action, when there is one), against the baseline,
- * every advisory, release branches, signals, then two reference sections — the lock entry and
+ * why this priority, then the checks behind the verdict (PD-DETAIL-12: the two "why" blocks side by
+ * side), follow the upstream (the action, when there is one), against the baseline, every advisory,
+ * release branches, then two reference sections — the lock entry and
  * provenance — each a `<details>` closed by default, since a reader who opened the panel to act on
  * it rarely needs the lock's raw fields first.
  *
@@ -59,6 +60,7 @@ export function Detail({ onClose }: DetailProps) {
       <DetailLead finding={finding} details={details} />
       <div className="detail-body">
         <PriorityWhy finding={finding} />
+        <SignalList finding={finding} />
         <FollowUpstream finding={finding} />
         {baselineText !== null && (
           <section className="detail-section">
@@ -75,7 +77,6 @@ export function Detail({ onClose }: DetailProps) {
           installedVersion={finding.version}
           ageToned={!isContextOnly(finding)}
         />
-        <SignalList finding={finding} />
         {/* a11y review: a bare <summary> dropped the section's own heading, so a screen-reader
             reader moving by heading found none of these. A <summary> accepts one heading as
             content, so the text moves into an <h3> — the layout (the flex row, the chevron) stays

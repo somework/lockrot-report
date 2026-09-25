@@ -191,23 +191,10 @@
   overflow-wrap: anywhere;
 }
 
-/* ---------- signals ---------- */
-.detail-signal {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  column-gap: 9px;
-  align-items: baseline;
-  padding-left: 11px;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  overflow: hidden;
-  background: var(--surface-2);
-}
-.detail-signal + .detail-signal {
-  margin-top: 6px;
-}
-/* "Every advisory" under the fix ladder: the same disclosure line as a signal, with no id beside it
-   and no panel behind it. */
+/* ---------- disclosure rows shared with "Every advisory" ---------- */
+/* "Every advisory" under the fix ladder: a disclosure line with no id beside it and no panel behind
+   it. `.detail-signal-summary`/`-summary-text` are its summary's own classes (AdvisoryList.tsx),
+   named after the signal rows they were first drawn for. */
 .detail-disclosure {
   padding-left: 11px;
   border: 1px solid var(--border);
@@ -216,8 +203,6 @@
 .detail-disclosure > .detail-advisory-list {
   padding: 0 11px 11px 0;
 }
-/* The disclosure marker (`styles/base.css`) closes the line, since the signal's id link now opens
-   it. */
 .detail-signal-summary {
   padding: 8px 11px 8px 0;
   display: flex;
@@ -225,33 +210,214 @@
   align-items: baseline;
 }
 /* a11y review: the page's one shared `:focus-visible` rule (`styles/base.css`) draws its ring with a
-   positive `outline-offset`, growing it outward from the element's own border box — `.detail-signal`'s
-   `overflow: hidden` (kept for its rounded corners) then clips whichever sides of that ring land
-   outside it, which for this summary (flush against `.detail-signal`'s own top, right and bottom
-   edges) was three of the four; only the left side, with the grid's own column-gap to spare, stayed
-   visible, as a thin bar rather than a ring. Negative here draws the ring inward instead, so it
-   always stays inside the box `overflow: hidden` clips to, whichever `<details>` this summary sits
-   in (`.detail-signal-more`'s or `.detail-disclosure`'s, `AdvisoryList.tsx`'s "Every advisory"). */
+   positive `outline-offset`; inside a bordered, rounded box that ring can be clipped on three sides.
+   Negative here draws it inward, so it always stays inside the box. */
 .detail-signal-summary:focus-visible {
   outline-offset: -2px;
-}
-.detail-signal-id {
-  padding: 8px 0;
-  font-family: var(--mono);
-  font-weight: 600;
-  font-size: 12px;
-  text-decoration: none;
-  color: var(--tone);
-}
-.detail-signal-id:hover {
-  text-decoration: underline;
 }
 .detail-signal-summary-text {
   font-size: 12.5px;
   color: var(--ink-2);
 }
-.detail-signal-data {
-  padding: 0 11px 11px 0;
+
+/* ---------- checks (PD-DETAIL-12) ----------
+   All ten checks as one strip, the same idiom as the summary band's waffle: a fired check filled in
+   its level's tone, a quiet one outlined, one that could not run hatched, one the document does not
+   settle dotted. Then the tally and the named quiet/could-not-run lines, then the fired rows. */
+/* One column, capped like the priority ladder above it, so in a wide drawer the level word stays
+   beside the summary it qualifies and the strip keeps the rows' right edge. */
+.detail-checks {
+  gap: 7px;
+}
+.detail-checks > * {
+  max-width: 560px;
+}
+.detail-checks > h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+.detail-checks-aside {
+  font-family: var(--sans);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.detail-strip {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 2px;
+}
+.detail-check {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1;
+  text-align: center;
+  color: var(--muted);
+}
+.detail-check i {
+  display: block;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--border-strong);
+}
+.detail-check.is-fired {
+  color: var(--ink);
+  font-weight: 700;
+}
+.detail-check.is-fired i {
+  background: var(--tone);
+  border-color: var(--tone);
+}
+.detail-check.is-blocked {
+  font-style: italic;
+  color: var(--ink-2);
+}
+.detail-check.is-blocked i {
+  border-style: dashed;
+  border-color: var(--muted);
+  background: repeating-linear-gradient(135deg, transparent 0 3px, var(--muted) 3px 4px);
+}
+.detail-check.is-unreported i {
+  border-style: dotted;
+}
+.detail-checks-tally {
+  margin: 1px 0 0;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.detail-checks-tally b {
+  font-weight: 650;
+  color: var(--ink);
+}
+.detail-checks-line {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.detail-checks-id {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-2);
+}
+.detail-fired-list {
+  margin-top: 5px;
+}
+.detail-fired {
+  border-top: 1px solid var(--border);
+}
+.detail-fired:last-child {
+  border-bottom: 1px solid var(--border);
+}
+.detail-fired-summary {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto auto;
+  column-gap: 8px;
+  align-items: baseline;
+  padding: 8px 4px 8px 2px;
+  transition: background-color 0.15s ease;
+}
+.detail-fired-summary:hover {
+  background: var(--surface-2);
+}
+.detail-fired-summary:focus-visible {
+  outline-offset: -2px;
+}
+.detail-fired-id {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--tone);
+}
+.detail-fired-text {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.detail-fired-level {
+  font-size: 11px;
+  color: var(--muted);
+}
+.detail-fired-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 4px 12px 40px;
+}
+.detail-fired-def {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.detail-fired-body .detail-kv {
+  font-size: 12px;
+}
+.detail-fired-body .detail-kv dd {
+  font-size: 11.5px;
+  overflow-wrap: anywhere;
+}
+/* A list of objects in a signal's data (S7's packages, S9's advisories): one line each. */
+.detail-data-item {
+  display: block;
+}
+.detail-data-item + .detail-data-item {
+  margin-top: 3px;
+}
+.detail-data-key {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--muted);
+}
+/* The data's labels go over their values when the list itself is narrow (the side column at 1440,
+   a phone's sheet): a value such as S9's advisories then gets the row's whole width instead of what
+   is left beside an 84px label. Under 340px the body also gives its indent back. */
+.detail-fired-list {
+  container: fired / inline-size;
+}
+@container fired (max-width: 459.98px) {
+  .detail-fired-body .detail-kv {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 1px;
+  }
+  .detail-fired-body .detail-kv dd + dt {
+    margin-top: 6px;
+  }
+}
+@container fired (max-width: 339.98px) {
+  .detail-fired-body {
+    padding-left: 10px;
+  }
+}
+
+/* Forced colours: system colours replace every tone, so a cell keeps its state by shape alone —
+   filled for fired, outlined for quiet, dashed and hatched for could not run, dotted for not
+   reported — drawn in CanvasText (GrayText reads maroon in Chromium's light palette; ledger.css
+   makes the same choice for its waffle). The tally and the lines under the strip say it all in
+   words either way. */
+@media (forced-colors: active) {
+  .detail-check i {
+    forced-color-adjust: none;
+    border-color: CanvasText;
+    background: Canvas;
+  }
+  .detail-check.is-fired i {
+    background: CanvasText;
+    border-color: CanvasText;
+  }
+  .detail-check.is-blocked i {
+    border-color: CanvasText;
+    background: repeating-linear-gradient(135deg, Canvas 0 3px, CanvasText 3px 4px);
+  }
 }
 
 /* ---------- follow the upstream ---------- */

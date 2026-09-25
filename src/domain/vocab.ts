@@ -104,6 +104,26 @@ export const SIGNAL_NAMES: Readonly<Record<string, string>> = vocabTable({
   S10: "a check could not run",
 });
 
+/**
+ * One or two words per check, for the detail's "Checks" lines that list the ones that stayed quiet
+ * or could not run (PD-DETAIL-12, DESIGN.md §5): "Quiet: S5 predates PHP · S6 snapshot". A check's
+ * subject, not a verdict on it, so it reads the same after "Quiet:" and after "Could not run:".
+ * S10 is the exception: it is only ever listed as quiet, and a quiet S10 means every check ran, so
+ * that is what it says — "S10 check could not run" under "every check ran" read as a contradiction.
+ */
+export const CHECK_NAMES: Readonly<Record<string, string>> = vocabTable({
+  S1: "abandoned flag",
+  S2: "release age",
+  S3: "archived",
+  S4: "push age",
+  S5: "predates PHP",
+  S6: "snapshot",
+  S7: "pulls in flagged",
+  S8: "branch stopped",
+  S9: "advisories",
+  S10: "every check ran",
+});
+
 /** Tooltip/glossary text for S1-S10, verbatim from legacy `SIGNAL_DEFS` (`report.js:49-59`) plus S10. */
 export const SIGNAL_DEFS: Readonly<Record<string, string>> = vocabTable({
   S1: "The Composer repository marks the package abandoned, sometimes naming a replacement.",

@@ -17,7 +17,7 @@ import { plural } from "./format";
 import { SIGNAL_NAMES, VERDICT_ORDER } from "./vocab";
 
 /** `high` outranks `warn` outranks everything else (including the open-ended `"info"` and a level
- *  this renderer does not know) — the three-tier reading `SignalList.tsx` gives a signal's colour. */
+ *  this renderer does not know) — the three-tier reading `checks.ts#levelTone` gives a signal's colour. */
 const LEVEL_RANK: Readonly<Record<string, number>> = { high: 2, warn: 1 };
 
 /**

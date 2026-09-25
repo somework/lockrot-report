@@ -64,6 +64,14 @@ tag or the address format, says so under **Breaking** in its entry.
   of yours it comes in through ("It comes through wallabag/rulerz and wallabag/rulerz-bundle."), the
   same ways in the answer sentence and the chain name. Its heading note uses priority words: "one
   rule moved it down from critical", "no rule moved it off high".
+- An open package's signals become "Checks", right under the priority ladder: a strip of all ten
+  checks, S1 to S10, each filled in its level's colour when it fired, outlined when it stayed quiet
+  and hatched when lockrot says it could not run; then "5 fired · 5 quiet · every check ran", the
+  quiet ones and the ones that could not run named in a line each ("Quiet: S5 predates PHP · S6
+  snapshot"), and only the fired checks, high level first. Each opens onto what the check looks for,
+  its entry in lockrot's docs and its data, a list written one line per item instead of as JSON.
+  When S10 says a check could not run without saying which, the others read "not reported", never
+  quiet.
 - A definition that names a threshold setting shows what this run set it to, "5 years
   (release-high-years)".
 - The package detail says when the search or a filter hides its package from the list, with a

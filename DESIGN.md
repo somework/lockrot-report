@@ -210,6 +210,7 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 | PD-DETAIL-9                 | a missing fact vanished; 0.0 read as healthy; "S7 below names each one"     | four facts always, a gap says "not recorded"; 0.0 says "nothing newer"; "Name all N" lists them by verdict                                    |
 | PD-DETAIL-10                | an abandoned age: ink above, amber in the release-branches answer           | a verdict that does not rest on age keeps it in ink there too; forced-colours rungs are dotted                                                |
 | PD-DETAIL-11                | the age fact took four labels, and a wrapped label dropped its value a line | one "Last release" label, whose release in the note; values share one subgrid row; 2×2 by panel width                                         |
+| PD-DETAIL-12                | "Signals": equal boxes of the fired ones; quiet checks never named          | "Checks" after the ladder: S1–S10 strip (S10 `blocks` = could not run), tally, quiet line, fired rows by level                                |
 | PD-ROWS-1                   | a row showed up to three signal lines                                       | the highest-level signal and "+N more signals"; print shows them all                                                                          |
 | PD-ROWS-2                   | nothing showed an age against the run's thresholds                          | an age scale: warn and high ticks, a dot at the S8 (branch stopped) / S2 (no stable release) / S4 (no push) age                               |
 | PD-ROWS-3                   | each row scaled its own track, with no legend                               | one legend and one maximum per list; `abandoned`/`pinned` rows get a neutral dot                                                              |
@@ -328,8 +329,8 @@ from its in-flow position into its stuck one (PD-DETAIL-5). `is-sheet` keeps
 **The detail panel** leads with the answer: the header (name, version, pills, links; the only part
 that sticks), then a serif sentence composed from the finding's own fields, its key facts, how it
 gets in and what flagged packages it pulls in (PD-DETAIL-6), then the priority ladder
-(PD-DETAIL-7), "Follow the upstream" when there is one, the baseline, every advisory, the release
-branches and the signals. "The lock entry" and "Provenance" come last, each a `<details>` closed by
+(PD-DETAIL-7) and the checks behind the verdict (PD-DETAIL-12), then "Follow the upstream" when
+there is one, the baseline, every advisory and the release branches. "The lock entry" and "Provenance" come last, each a `<details>` closed by
 default (PD-DETAIL-1/PD-DETAIL-2).
 
 **Tabs** follow the ARIA tabs pattern: one tab in the Tab order, arrows/Home/End move and select,

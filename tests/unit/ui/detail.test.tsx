@@ -416,6 +416,90 @@ describe("Detail", () => {
     });
   });
 
+  describe("checks (PD-DETAIL-12)", () => {
+    function text(el: Element | null): string {
+      return (el?.textContent ?? "").replace(/\s+/g, " ").trim();
+    }
+
+    it("draws all ten checks as a strip hidden from assistive tech, the tally saying it in words", () => {
+      const { container } = renderDetail(WALLABAG, "sensio/framework-extra-bundle");
+      expect(text(container.querySelector(".detail-checks-aside"))).toBe("5 of 10 fired");
+      const strip = container.querySelector(".detail-strip");
+      expect(strip?.getAttribute("aria-hidden")).toBe("true");
+      expect(strip?.querySelectorAll("[tabindex], a, button").length).toBe(0);
+      const cells = Array.from(container.querySelectorAll(".detail-check")).map(
+        (el) =>
+          `${el.textContent}:${["is-fired", "is-quiet", "is-blocked", "is-unreported"].find((c) => el.classList.contains(c))}`,
+      );
+      expect(cells).toEqual([
+        "S1:is-fired",
+        "S2:is-fired",
+        "S3:is-fired",
+        "S4:is-fired",
+        "S5:is-quiet",
+        "S6:is-quiet",
+        "S7:is-fired",
+        "S8:is-quiet",
+        "S9:is-quiet",
+        "S10:is-quiet",
+      ]);
+      expect(text(container.querySelector(".detail-checks-tally"))).toBe(
+        "5 fired · 5 quiet · every check ran.",
+      );
+      // A quiet S10 says what its silence means, never "check could not run" under "every check ran".
+      expect(text(container.querySelector(".detail-checks-line"))).toBe(
+        "Quiet: S5 predates PHP · S6 snapshot · S8 branch stopped · S9 advisories · S10 every check ran",
+      );
+    });
+
+    it("lists only the fired checks, high level first, each closed and opening onto its data", () => {
+      const { container } = renderDetail(WALLABAG, "sensio/framework-extra-bundle");
+      const rows = Array.from(container.querySelectorAll<HTMLDetailsElement>("details.detail-fired"));
+      expect(rows.map((row) => row.querySelector(".detail-fired-id")?.textContent)).toEqual([
+        "S1",
+        "S3",
+        "S2",
+        "S4",
+        "S7",
+      ]);
+      expect(rows.map((row) => row.querySelector(".detail-fired-level")?.textContent)).toEqual([
+        "high",
+        "high",
+        "warn",
+        "warn",
+        "info",
+      ]);
+      expect(rows.every((row) => !row.open)).toBe(true);
+      expect(rows[0]?.classList.contains("tone-crit")).toBe(true);
+      expect(rows[2]?.classList.contains("tone-med")).toBe(true);
+      // The docs link lives in the body, never inside the <summary> control.
+      expect(rows[0]?.querySelector("summary a")).toBeNull();
+      expect(rows[0]?.querySelector(".detail-fired-body a")?.textContent).toBe("S1 in lockrot’s docs");
+    });
+
+    it("names a check S10 stopped as could-not-run, with S10's reason, and never says every check ran", () => {
+      const { container } = renderDetail(WALLABAG, "scheb/2fa-google-authenticator");
+      expect(text(container.querySelector(".detail-checks-tally"))).toBe(
+        "3 fired · 6 quiet · 1 could not run.",
+      );
+      const lines = Array.from(container.querySelectorAll(".detail-checks-line")).map(text);
+      expect(lines).toEqual([
+        "Could not run: S2 release age (undated releases, see S10)",
+        "Quiet: S1 abandoned flag · S3 archived · S4 push age · S5 predates PHP · S6 snapshot · S9 advisories",
+      ]);
+      expect(container.querySelector(".detail-check.is-blocked")?.textContent).toBe("S2");
+    });
+
+    it("writes a list of objects in a signal's data one line per object, and a list of ids joined", () => {
+      const { container } = renderDetail(WALLABAG, "scheb/2fa-google-authenticator");
+      const s10 = Array.from(container.querySelectorAll("details.detail-fired")).find(
+        (row) => row.querySelector(".detail-fired-id")?.textContent === "S10",
+      );
+      const values = Array.from(s10?.querySelectorAll(".detail-kv dd") ?? []).map(text);
+      expect(values).toEqual(["check release_dates · reason undated_releases · blocks S2, S8", "S2, S8"]);
+    });
+  });
+
   describe("how it gets in (PD-DETAIL-6: the chain opens the panel, no longer a closed reference)", () => {
     it("shows composer.json for a direct finding", () => {
       const { container } = renderDetail(MINI, "vendor/direct");
@@ -864,15 +948,15 @@ describe("Detail", () => {
       return markers.map((marker) => text.indexOf(marker));
     }
 
-    it("puts the answer and how it gets in first, then priority, follow-the-upstream, release branches, signals, and the two reference sections last", () => {
+    it("puts the answer and how it gets in first, then priority and the checks behind it, follow-the-upstream, release branches, and the two reference sections last", () => {
       const { container } = renderDetail(KOEL, "predis/predis");
       const order = markerOrder(container, [
         "Left behind on",
         "How it gets in",
         "Why this is high",
+        "of 10 fired",
         "Follow the upstream",
         "Release branches",
-        "Signals — what was observed",
         "The lock entry",
         "Provenance",
       ]);
@@ -887,13 +971,9 @@ describe("Detail", () => {
       expect(order).toEqual([...order].sort((a, b) => a - b));
     });
 
-    it("puts every advisory ahead of signals and the reference sections", () => {
+    it("puts the checks ahead of every advisory, and both ahead of the reference sections (PD-DETAIL-12)", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/vulnerable");
-      const order = markerOrder(container, [
-        "Every advisory",
-        "Signals — what was observed",
-        "The lock entry",
-      ]);
+      const order = markerOrder(container, ["of 10 fired", "Every advisory", "The lock entry"]);
       expect(order).not.toContain(-1);
       expect(order).toEqual([...order].sort((a, b) => a - b));
     });
