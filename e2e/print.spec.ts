@@ -241,3 +241,82 @@ test("printed All packages heads are words, so the repeated head on a continuati
   await expect(page.locator(".pd-packages thead button")).toHaveCount(0);
   await expect(page.getByText("Every package's data is as of 2026-09-24.", { exact: false })).toBeVisible();
 });
+
+// PD-PRINT-5: Blast radius's ranked rows are a table on paper as well, its head — the key and the
+// column head with the age axis — repeated on every page the rows run onto; each row one unbreakable
+// table row; and what follows the ranking keeps to its last row, never opening a page on its own.
+test("the printed Blast radius repeats its key and age axis over every page its ranked rows run onto", async ({
+  page,
+}) => {
+  await report.goto(FIXTURES.koel);
+  await page.emulateMedia({ media: "print" });
+  await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
+
+  const layout = await page.locator(".pd-radius .rl-ptable").evaluate((table) => {
+    const top = table.querySelector(".rl-ptop");
+    const rows = [...table.querySelectorAll(".rl-list > .rrow")];
+    const style = (el: Element | null) => (el ? getComputedStyle(el) : null);
+    return {
+      table: style(table)?.display,
+      head: style(top)?.display,
+      headBreak: style(top)?.breakInside,
+      key: top?.querySelector(".rl-key") !== null,
+      axis: top?.querySelector(".fhead-axis")?.textContent,
+      rows: rows.map((row) => [style(row)?.display, style(row)?.breakInside]),
+      after: [...(table.parentElement?.querySelectorAll(":scope > .rl-fold, :scope > .rl-foot") ?? [])].map(
+        (el) => style(el)?.breakBefore,
+      ),
+    };
+  });
+  expect(layout).toEqual({
+    table: "table",
+    head: "table-header-group",
+    headBreak: "avoid",
+    key: true,
+    axis: "Their years since release03y5y10y+",
+    rows: [
+      ["table-row", "avoid"],
+      ["table-row", "avoid"],
+    ],
+    after: ["avoid", "avoid"],
+  });
+});
+
+test("the Blast radius tab on screen keeps its plain list: the print table is paper's only", async ({
+  page,
+}) => {
+  await report.gotoWithHash(FIXTURES.koel, "view=radius");
+  await expect(page.locator("main .rl-ptable")).toHaveCount(0);
+  await expect(page.locator("main .rl > .rl-head")).toHaveCount(1);
+});
+
+// PD-PRINT-5: the axis that repeats on every printed page reads as a scale — "Reached" clear of its
+// "0", the 3y and 5y captions clear of each other, the grey-bar key inside the age column between its
+// caption and its ticks, not stacked on "Reached".
+test("the printed Findings axis keeps its captions apart", async ({ page }) => {
+  // A4's printable width at 96 dpi (210mm less 2 × 13mm margins): the list's two-line layout.
+  await page.setViewportSize({ width: 696, height: 1000 });
+  await report.goto(FIXTURES.wallabag);
+  await page.emulateMedia({ media: "print" });
+  await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
+
+  const head = page.locator(".pd-findings .fhead").first();
+  const box = async (selector: string) => {
+    const b = await head.locator(selector).boundingBox();
+    if (b === null) throw new Error(`${selector} has no box`);
+    return b;
+  };
+  const reach = await box(".fhead-reach");
+  const zero = await box(".fhead-tick.is-start");
+  const warn = await box(".fhead-tick.is-warn");
+  const high = await box(".fhead-tick.is-high");
+  const key = await box(".fhead-key");
+  const caption = await box(".fhead-axis-label");
+  const age = await box(".fhead-age");
+
+  expect(zero.x - (reach.x + reach.width)).toBeGreaterThanOrEqual(16);
+  expect(high.x - (warn.x + warn.width)).toBeGreaterThanOrEqual(8);
+  expect(key.x).toBeGreaterThanOrEqual(age.x - 1);
+  expect(key.y).toBeGreaterThanOrEqual(caption.y + caption.height - 1);
+  expect(key.y + key.height).toBeLessThanOrEqual(zero.y + 1);
+});

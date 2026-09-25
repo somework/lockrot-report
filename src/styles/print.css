@@ -135,15 +135,27 @@
   /* The colophon closes the last page in one piece, at paper's size: a page of its own for its last
    * two lines was the worst of the old breaks. */
   .colophon {
+    display: block;
     border-top-color: #999;
-    padding: 12px 0 0;
-    gap: 3px;
+    padding: 8px 0 0;
     font-size: 10.5px;
+    line-height: 1.5;
     break-inside: avoid;
   }
+  .colophon > p {
+    margin: 0 0 4px;
+  }
+  /* The links' words and the author's line share one line on paper, where no link opens. */
+  .colophon > p:nth-last-of-type(2),
+  .colophon > p:last-of-type {
+    display: inline;
+  }
+  .colophon > p:last-of-type::before {
+    content: " · ";
+  }
   .colophon .cta {
-    padding: 4px 10px;
-    line-height: 1.6;
+    padding: 3px 10px;
+    line-height: 1.55;
   }
   .colophon .cta {
     background: none;
@@ -287,6 +299,10 @@
   .pd-lede.is-lead {
     break-after: avoid;
   }
+  /* A lede is one sentence or three: it is never split, its last line alone atop the next page. */
+  .pd-lede {
+    break-inside: avoid;
+  }
   /* An empty Findings or Advisories section: its lede already says so, in the report's words. */
   .pd-findings .empty,
   .pd-advisories .empty {
@@ -377,11 +393,92 @@
     -webkit-print-color-adjust: exact;
   }
 
+  /* PD-PRINT-5: the age axis on paper, where its head repeats on every page. The Findings age
+   * column widens from the screen's 132px to 184px (and the gap before it from 10px to 18px), so the
+   * 3y and 5y captions each clear the next guide and "Years since release" no longer overhangs into
+   * the grey-bar key; the rows take the same widths, so their bars and guides stay under the head.
+   * "0" gets a solid tick of its own, like the thresholds' dashed and dotted ones, so it reads as the
+   * scale's start rather than the end of the "Reached" caption beside it. */
+  .pd .fledger > * {
+    --fl-age: 184px;
+    --fl-gap: 18px;
+  }
+  .pd .fhead-tick.is-start {
+    display: flex;
+    align-items: flex-end;
+    height: 17px;
+    padding-left: 3px;
+    border-left: 1px solid var(--border-strong);
+  }
+  /* The grey-bar key moves into the age column itself, between its caption and its ticks — over the
+   * bars it keys, and no longer stacked on "Reached" in the corner beside them. */
+  .pd .fhead:has(.fhead-key) {
+    height: 56px;
+  }
+  .pd .fhead-key {
+    grid-area: age;
+    justify-self: start;
+    align-self: start;
+    margin: 21px 0 0;
+  }
+  /* Blast radius's axis on paper: its column widens from 210px to 230px and the gap before it from
+   * 14px to 18px, so its 3y and 5y captions clear each other's guides as the Findings ones do. */
+  .pd .rl > * {
+    --rl-age-w: 230px;
+    --rl-gap: 18px;
+  }
+
+  /* PD-PRINT-5: Blast radius's ranked rows are a table on paper too (RadiusView's `.rl-ptable`), its
+   * head — the key and the column head with the age axis — a table-header-group repeated on every
+   * page the rows run onto, and each row one unbreakable table row. A table row draws no border of
+   * its own here (separate borders), so the row's rule moves onto its line. */
+  .pd .rl-ptable {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .pd .rl-ptop {
+    display: table-header-group;
+    break-inside: avoid;
+    break-after: avoid;
+  }
+  /* The key at paper's size keeps to one line, so it costs a continuation page one line, not two. */
+  .pd .rl-key {
+    column-gap: 14px;
+    font-size: 10.5px;
+  }
+  .pd .rl-ptop > .rl-key {
+    padding-top: 2px;
+    margin-bottom: 6px;
+  }
+  .pd .rl-ptable > .rl-list {
+    display: table-row-group;
+  }
+  .pd .rl-ptable > .rl-list > .rrow {
+    display: table-row;
+    break-inside: avoid;
+  }
+  .pd .rl-ptable > .rl-list > .rrow > .rr-line {
+    border-bottom: 1px solid var(--border);
+  }
+  /* What follows the ranking — the one-each count, the two tails, the unlisted requirements — keeps
+   * to the last ranked row, so it never opens a page of its own looking like the start of Run data:
+   * a page that carries it over starts with the repeated head and a ranked row. */
+  .pd .rl-ptable ~ .rl-fold,
+  .pd .rl-ptable ~ .rl-foot {
+    break-before: avoid;
+  }
+
   /* The All packages table on paper: every column on the page, not a scroller clipped at the
    * margin — the cells wrap and the type steps down, and the header repeats on every page. */
+  /* No box: a page break leaves a boxed table's side rules running on past its last row on every
+   * page but the last. The rules between rows and under the head carry the table, as the ledgers'. */
   .pd .tablewrap {
     overflow: visible;
     background: none;
+    border: 0;
     border-radius: 0;
   }
   .pd .tablewrap table {
@@ -410,6 +507,7 @@
   .pd .tablewrap th {
     position: static;
     font-size: 8.5px;
+    border-bottom-color: var(--border-strong);
   }
   .pd .tablewrap .sort-btn {
     padding: 0;
@@ -434,8 +532,15 @@
   .pd .rl-fold-head {
     border: 0;
     background: none;
-    padding-left: 0;
-    padding-right: 0;
+    padding: 9px 0 6px;
+  }
+  /* Paper's spacing for the tails: a rule and a line of air between them, not the screen's tap
+   * targets' padding. */
+  .pd .rl-fold.is-tail {
+    margin-top: 8px;
+  }
+  .pd .rl-foot {
+    margin-top: 12px;
   }
   /* The column head's words wrap on paper instead of ending in an ellipsis at the margin. */
   .pd .rl-head {
@@ -470,8 +575,13 @@
   /* Run data, compact: the facts in two columns of label/value pairs, except that a long value (the
    * libyears not measured, a baseline) takes the whole line rather than wrapping in a narrow cell
    * (RunView's `kv-long`); each block kept to one page with its heading. */
+  .pd-run .run-sections {
+    gap: 8px;
+    padding-top: 6px;
+  }
   .pd-run .sect {
-    margin-top: 10px;
+    margin-top: 0;
+    gap: 5px;
     break-inside: avoid;
   }
   .pd-run .note {
@@ -492,7 +602,7 @@
   }
   .pd-run .kv {
     grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr);
-    gap: 3px 12px;
+    gap: 2px 12px;
     font-size: 10.5px;
   }
   .pd-run .kv {

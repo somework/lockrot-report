@@ -491,6 +491,7 @@ function SelfTitle({
 export function RadiusView() {
   const { model, state, dispatch } = useReport();
   const narrow = useNarrow();
+  const printed = usePrinted();
   const layout = radiusLayout(model, applyFilters(model, state, "radius"), population(model, "radius"));
   const input: OpenInput = { disclosure: state.disclosure, pkg: state.pkg, narrow };
   const { flash, jump } = useJump(layout);
@@ -552,6 +553,16 @@ export function RadiusView() {
       />
     ));
 
+  const key = (more || selfOpen) && (
+    <Key squares={more} hollow={more && shown.some((r) => r.elsewhere.length > 0)} />
+  );
+  const head = more && <Head axis={axis} />;
+  const list = layout.lead.length > 0 && (
+    <ul className="rl-list" aria-label="Direct requirements, most flagged packages listed under them first">
+      {ranked(layout.lead, 1)}
+    </ul>
+  );
+
   return (
     <div className={axis ? "rl" : "rl no-axis"} style={{ "--rl-sq": squaresWidth(shown) }}>
       {answer ? (
@@ -564,17 +575,22 @@ export function RadiusView() {
       )}
       <ScopeNote layout={layout} />
       {more && <TailLinks layout={layout} go={go} />}
-      {(more || selfOpen) && (
-        <Key squares={more} hollow={more && shown.some((r) => r.elsewhere.length > 0)} />
-      )}
-      {more && <Head axis={axis} />}
-      {layout.lead.length > 0 && (
-        <ul
-          className="rl-list"
-          aria-label="Direct requirements, most flagged packages listed under them first"
-        >
-          {ranked(layout.lead, 1)}
-        </ul>
+      {printed && list ? (
+        // PD-PRINT-5: on paper the key and the column head are a table's head, which the print
+        // engine repeats over every page the ranked rows run onto (print.css `.rl-ptable`).
+        <div className="rl-ptable">
+          <div className="rl-ptop">
+            {key}
+            {head}
+          </div>
+          {list}
+        </div>
+      ) : (
+        <>
+          {key}
+          {head}
+          {list}
+        </>
       )}
       {layout.singles.length > 0 && (
         <div className="rl-fold is-singles">

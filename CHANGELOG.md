@@ -23,6 +23,11 @@ tag or the address format, says so under **Breaking** in its entry.
   packages table repeats its column names on every page, gives a data date every package shares
   once instead of in a column, and marks a zero libyears "newest". Package names print as names,
   without the screen's "opens its detail".
+- The printed Blast radius repeats its key and its years-since-release scale at the top of every
+  page its ranked rows run onto, never splits a row, and keeps what follows the ranking with its
+  last row instead of leaving it alone above Run data. On paper the Findings scale gives its 0, 3y
+  and 5y room of their own and keys a grey bar inside the scale, not beside "Reached"; the All
+  packages table prints without a box, and a section's opening sentence is never split.
 - "Copy summary" puts three plain lines on the clipboard: the run, the flagged count by priority,
   and where the flagged packages sit with the advisories and libyears. Where the clipboard is not
   available the same text opens selected, to copy by hand.
