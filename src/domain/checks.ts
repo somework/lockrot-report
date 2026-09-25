@@ -128,6 +128,27 @@ export function checkTally(strip: CheckStrip): readonly string[] {
 }
 
 /**
+ * A key in a signal's `data` as a label: "branch_last_release" reads "branch last release". Only the
+ * underscores change, so the label still names the document's own key.
+ */
+export function dataLabel(key: string): string {
+  return key.replace(/_/g, " ");
+}
+
+const ISO_TIMESTAMP = /^(\d{4}-\d{2}-\d{2})(T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)$/;
+
+/**
+ * An ISO timestamp split into its date and the rest ("2022-03-17" and "T08:00:35+00:00"), so the
+ * date can lead and the time sit quieter beside it; `null` for any other value. Nothing is dropped
+ * or converted: the two parts joined are the value as the document wrote it.
+ */
+export function timestampParts(value: string): { readonly date: string; readonly time: string } | null {
+  const match = ISO_TIMESTAMP.exec(value);
+  if (match === null || match[1] === undefined || match[2] === undefined) return null;
+  return { date: match[1], time: match[2] };
+}
+
+/**
  * A signal level's tone, shared by the strip's cell and the fired row's id: `high` is drawn as a
  * critical verdict is, `warn` in the medium tone the Findings list's age bars use past the warn
  * threshold, anything else (the open-ended `"info"`, a level this page does not know) as low.

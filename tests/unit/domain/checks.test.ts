@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { blockedByS10, checkStrip, checkTally, levelTone } from "../../../src/domain/checks";
+import {
+  blockedByS10,
+  checkStrip,
+  checkTally,
+  dataLabel,
+  levelTone,
+  timestampParts,
+} from "../../../src/domain/checks";
+import { CHECK_NAMES } from "../../../src/domain/vocab";
+import { SIGNAL_IDS } from "../../../src/model/types";
 import type { Finding } from "../../../src/model/types";
 import { makeFinding, makeSignal } from "./fixtures";
 
@@ -165,5 +174,46 @@ describe("levelTone", () => {
     expect(levelTone("warn")).toBe("med");
     expect(levelTone("info")).toBe("low");
     expect(levelTone("urgent")).toBe("low");
+  });
+});
+
+describe("dataLabel", () => {
+  it("swaps underscores for spaces and changes nothing else", () => {
+    expect(dataLabel("branch_last_release")).toBe("branch last release");
+    expect(dataLabel("newest_php")).toBe("newest php");
+    expect(dataLabel("blocks")).toBe("blocks");
+    expect(dataLabel("")).toBe("");
+  });
+});
+
+describe("timestampParts", () => {
+  it("splits an ISO timestamp into its date and the rest, losing nothing", () => {
+    expect(timestampParts("2022-03-17T08:00:35+00:00")).toEqual({
+      date: "2022-03-17",
+      time: "T08:00:35+00:00",
+    });
+    expect(timestampParts("2026-09-01T10:00:00Z")).toEqual({ date: "2026-09-01", time: "T10:00:00Z" });
+    expect(timestampParts("2026-09-01T10:00:00.123+0530")).toEqual({
+      date: "2026-09-01",
+      time: "T10:00:00.123+0530",
+    });
+  });
+
+  it("leaves a bare date, a version and free text alone", () => {
+    expect(timestampParts("2022-03-17")).toBeNull();
+    expect(timestampParts("11.5.0")).toBeNull();
+    expect(timestampParts("released 2022-03-17T08:00:35+00:00")).toBeNull();
+    expect(timestampParts("2022-03-17T08:00:35+00:00 later")).toBeNull();
+  });
+});
+
+describe("CHECK_NAMES", () => {
+  it("names every one of the ten checks in at most two words, S10 by its subject, not a verdict", () => {
+    for (const id of SIGNAL_IDS) {
+      const name = CHECK_NAMES[id];
+      expect(name, id).toBeTruthy();
+      expect(name?.split(" ").length, id).toBeLessThanOrEqual(2);
+    }
+    expect(CHECK_NAMES.S10).toBe("check gaps");
   });
 });

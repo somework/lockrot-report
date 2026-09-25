@@ -64,14 +64,16 @@ tag or the address format, says so under **Breaking** in its entry.
   of yours it comes in through ("It comes through wallabag/rulerz and wallabag/rulerz-bundle."), the
   same ways in the answer sentence and the chain name. Its heading note uses priority words: "one
   rule moved it down from critical", "no rule moved it off high".
-- An open package's signals become "Checks", right under the priority ladder: a strip of all ten
-  checks, S1 to S10, each filled in its level's colour when it fired, outlined when it stayed quiet
-  and hatched when lockrot says it could not run; then "5 fired · 5 quiet · every check ran", the
-  quiet ones and the ones that could not run named in a line each ("Quiet: S5 predates PHP · S6
-  snapshot"), and only the fired checks, high level first. Each opens onto what the check looks for,
-  its entry in lockrot's docs and its data, a list written one line per item instead of as JSON.
-  When S10 says a check could not run without saying which, the others read "not reported", never
-  quiet.
+- An open package's signals become "Checks", right under the priority ladder: all ten checks in
+  two rows of five, each cell its id and a one- or two-word name ("S5 predates PHP"), filled in its
+  level's colour when it fired (info in a blue of its own), outlined when it stayed quiet and hatched
+  when lockrot says it could not run; then "5 fired · 5 quiet · every check ran", the quiet ones and
+  the ones that could not run named in a line each ("Quiet: S5 predates PHP · S6 snapshot"), a line
+  breaking only between items, and only the fired checks, high level first. Each opens onto what the
+  check looks for, its entry in lockrot's docs and its data: one row per key with the label beside
+  its value, keys without underscores, `null` as a dash, a timestamp's date ahead of its quieter
+  time, and a list of items one bordered line each instead of JSON. When S10 says a check could not
+  run without saying which, the others read "not reported", never quiet.
 - A definition that names a threshold setting shows what this run set it to, "5 years
   (release-high-years)".
 - The package detail says when the search or a filter hides its package from the list, with a

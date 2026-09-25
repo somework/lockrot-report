@@ -1,14 +1,22 @@
 import { Fragment, type ComponentChildren } from "preact";
 import type { Finding, Signal } from "../../model/types";
-import { checkStrip, checkTally, levelTone, type CheckCell, type CheckState } from "../../domain/checks";
+import {
+  checkStrip,
+  checkTally,
+  dataLabel,
+  levelTone,
+  timestampParts,
+  type CheckCell,
+  type CheckState,
+} from "../../domain/checks";
 import { annotateThresholds, CHECK_NAMES, DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC } from "../../domain/vocab";
 import { OutLink, toneClass } from "../common/common";
 import { useReport } from "../context";
-import { KeyValue, type KeyValueRow } from "./KeyValue";
 import "./detail.css";
 
 /** A scalar the way legacy's dump wrote it (`report.js:716`): `null` spelled out, a string as
- *  itself, a number or boolean as its JSON digits. */
+ *  itself, a number or boolean as its JSON digits. The text a list of scalars joins; `DataScalar`
+ *  draws a single `null` or timestamp its own way. */
 function scalar(value: unknown): string | null {
   if (value === null) return "null";
   if (typeof value === "string") return value;
@@ -28,30 +36,64 @@ function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
 }
 
 /** One flat object as "check release_dates · reason undated_releases · blocks S2, S8", each key in
- *  the muted label colour; a value nested deeper than a list of scalars stays JSON. */
+ *  the muted label colour and each scalar drawn as a top-level one is; a value nested deeper than a
+ *  list of scalars stays JSON. */
 function DataRecord({ record }: { record: Readonly<Record<string, unknown>> }) {
   return (
     <span className="detail-data-item">
       {Object.entries(record).map(([key, value], index) => (
         <Fragment key={key}>
           {index > 0 && " · "}
-          <span className="detail-data-key">{key}</span>{" "}
-          {scalar(value) ?? scalarList(value) ?? JSON.stringify(value)}
+          <span className="detail-data-key">{dataLabel(key)}</span>{" "}
+          {isScalar(value) ? <DataScalar value={value} /> : (scalarList(value) ?? JSON.stringify(value))}
         </Fragment>
       ))}
     </span>
   );
 }
 
+/** A top-level value: `null` as a muted dash (the word kept for a screen reader), an ISO timestamp
+ *  with its date leading and its time quieter, anything else as `scalar` writes it. */
+function DataScalar({ value }: { value: string | number | boolean | null }) {
+  if (value === null) {
+    return (
+      <span className="detail-data-null">
+        <span aria-hidden="true">—</span>
+        <span className="detail-sr">null</span>
+      </span>
+    );
+  }
+  const parts = typeof value === "string" ? timestampParts(value) : null;
+  if (parts === null) return <>{scalar(value)}</>;
+  return (
+    <>
+      <span className="detail-data-date">{parts.date}</span>
+      <wbr />
+      <span className="detail-data-time">{parts.time}</span>
+    </>
+  );
+}
+
+function isScalar(value: unknown): value is string | number | boolean | null {
+  return value === null || ["string", "number", "boolean"].includes(typeof value);
+}
+
+/** Whether a value needs the row's whole width: a list of objects (S7's packages, S9's advisories,
+ *  S10's unchecked checks) or anything shown as JSON. */
+function isWide(value: unknown): boolean {
+  return !isScalar(value) && scalarList(value) === null;
+}
+
 /**
- * A signal's `data` value, readable rather than raw: a scalar as legacy wrote it, a list of scalars
- * joined ("S2, S8" rather than `["S2","S8"]`), a list of objects one line per object (S7's
- * packages, S9's advisories, S10's unchecked checks), anything deeper as JSON. Every key and value
- * the document carries is still shown; only the punctuation changes.
+ * A signal's `data` value, readable rather than raw: a scalar as `DataScalar` draws it, a list of
+ * scalars joined ("S2, S8" rather than `["S2","S8"]`), a list of objects one line per object,
+ * anything deeper as JSON. Every key and value the document carries is still shown; only the
+ * punctuation changes.
  */
 function formatDataValue(value: unknown): ComponentChildren {
-  const flat = scalar(value) ?? scalarList(value);
-  if (flat !== null) return flat;
+  if (isScalar(value)) return <DataScalar value={value} />;
+  const list = scalarList(value);
+  if (list !== null) return list;
   if (isRecord(value)) return <DataRecord record={value} />;
   if (Array.isArray(value) && value.every(isRecord)) {
     return value.map((record, index) => <DataRecord key={index} record={record} />);
@@ -59,23 +101,43 @@ function formatDataValue(value: unknown): ComponentChildren {
   return JSON.stringify(value);
 }
 
-function signalRows(data: Readonly<Record<string, unknown>>): readonly KeyValueRow[] {
+/**
+ * A fired signal's data as label/value pairs, each label beside its value (a 40/60 grid) so one
+ * check's data costs one line per key, not two; a list of objects takes the full width under its
+ * label, at every width (`detail.css`).
+ */
+function SignalData({ data }: { data: Readonly<Record<string, unknown>> }) {
   const entries = Object.entries(data);
-  if (entries.length === 0) return [{ label: "—", value: "no data" }];
-
-  return entries.map(([key, value]) => ({ label: key, value: formatDataValue(value) }));
+  if (entries.length === 0) {
+    return <p className="detail-data-empty">This check carries no data.</p>;
+  }
+  return (
+    <dl className="detail-kv detail-data">
+      {entries.map(([key, value]) => {
+        const wide = isWide(value) ? "is-wide" : undefined;
+        return (
+          <Fragment key={key}>
+            <dt className={wide}>{dataLabel(key)}</dt>
+            <dd className={wide}>{formatDataValue(value)}</dd>
+          </Fragment>
+        );
+      })}
+    </dl>
+  );
 }
 
 /** One cell of the strip: a bar filled in its level's tone when the check fired, outlined when it
  *  stayed quiet, hatched when it could not run, dotted when the document does not say, with the id
- *  under it. The whole strip is `aria-hidden`: the tally and the lines under it say every state in
- *  words, so the cells do nothing a keyboard or a screen reader would need. */
+ *  and the check's one- or two-word name under it. The whole strip is `aria-hidden`: the tally and
+ *  the lines under it say every state in words, and the cells do nothing a keyboard or a screen
+ *  reader would need. */
 function Cell({ cell }: { cell: CheckCell }) {
   const tone = cell.signal === null ? "" : ` ${toneClass(levelTone(cell.signal.level))}`;
   return (
     <span className={`detail-check is-${cell.state}${tone}`}>
       <i />
-      {cell.id}
+      <span className="detail-check-id">{cell.id}</span>
+      <span className="detail-check-name">{CHECK_NAMES[cell.id] ?? ""}</span>
     </span>
   );
 }
@@ -97,7 +159,9 @@ function StateLine({
       {cells.map((cell, index) => (
         <Fragment key={cell.id}>
           {index > 0 && " · "}
-          <span className="detail-checks-id">{cell.id}</span> {CHECK_NAMES[cell.id] ?? ""}
+          <span className="detail-checks-item">
+            <span className="detail-checks-id">{cell.id}</span> {CHECK_NAMES[cell.id] ?? ""}
+          </span>
         </Fragment>
       ))}
       {suffix}
@@ -129,7 +193,7 @@ function FiredRow({ signal }: { signal: Signal }) {
           {def !== undefined && <>{annotateThresholds(def, model.report.run.thresholds)} </>}
           <OutLink href={doc}>{signal.id} in lockrot’s docs</OutLink>
         </p>
-        <KeyValue rows={signalRows(signal.data)} />
+        <SignalData data={signal.data} />
       </div>
     </details>
   );
@@ -153,10 +217,7 @@ export function SignalList({ finding }: { finding: Finding }) {
 
   return (
     <section className="detail-section detail-checks">
-      <h3>
-        Checks
-        <span className="detail-checks-aside">{strip.counts.fired} of 10 fired</span>
-      </h3>
+      <h3>Checks</h3>
       <div className="detail-strip" aria-hidden="true">
         {strip.cells.map((cell) => (
           <Cell key={cell.id} cell={cell} />

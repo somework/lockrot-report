@@ -399,13 +399,15 @@ describe("Detail", () => {
   });
 
   describe("signals", () => {
-    it("dumps a signal's data as key/value pairs, a null value spelled out", () => {
+    it("dumps a signal's data as key/value pairs, a null value a muted dash that still says null", () => {
       renderDetail(MINI, "vendor/transitive");
       const summary = screen.getByText("marked abandoned in composer.lock");
       const details = summary.closest("details");
       expect(details).toBeTruthy();
-      expect(details?.querySelector("dt")?.textContent).toBe("replacement");
-      expect(details?.querySelector("dd")?.textContent).toBe("null");
+      expect(details?.querySelector("dl.detail-data dt")?.textContent).toBe("replacement");
+      const dd = details?.querySelector("dl.detail-data dd");
+      expect(dd?.querySelector('.detail-data-null [aria-hidden="true"]')?.textContent).toBe("—");
+      expect(dd?.querySelector(".detail-data-null .detail-sr")?.textContent).toBe("null");
     });
 
     it("shows the no-signal-fired line for a finding with none", () => {
@@ -423,13 +425,14 @@ describe("Detail", () => {
 
     it("draws all ten checks as a strip hidden from assistive tech, the tally saying it in words", () => {
       const { container } = renderDetail(WALLABAG, "sensio/framework-extra-bundle");
-      expect(text(container.querySelector(".detail-checks-aside"))).toBe("5 of 10 fired");
+      // The count is said once, by the tally, not again beside the heading.
+      expect(text(container.querySelector(".detail-checks > h3"))).toBe("Checks");
       const strip = container.querySelector(".detail-strip");
       expect(strip?.getAttribute("aria-hidden")).toBe("true");
       expect(strip?.querySelectorAll("[tabindex], a, button").length).toBe(0);
       const cells = Array.from(container.querySelectorAll(".detail-check")).map(
         (el) =>
-          `${el.textContent}:${["is-fired", "is-quiet", "is-blocked", "is-unreported"].find((c) => el.classList.contains(c))}`,
+          `${el.querySelector(".detail-check-id")?.textContent}:${["is-fired", "is-quiet", "is-blocked", "is-unreported"].find((c) => el.classList.contains(c))}`,
       );
       expect(cells).toEqual([
         "S1:is-fired",
@@ -448,7 +451,14 @@ describe("Detail", () => {
       );
       // A quiet S10 says what its silence means, never "check could not run" under "every check ran".
       expect(text(container.querySelector(".detail-checks-line"))).toBe(
-        "Quiet: S5 predates PHP · S6 snapshot · S8 branch stopped · S9 advisories · S10 every check ran",
+        "Quiet: S5 predates PHP · S6 snapshot · S8 branch stopped · S9 advisories · S10 check gaps",
+      );
+      // Each cell names its check under its id; each quiet item is one unbreakable span.
+      expect(
+        Array.from(container.querySelectorAll(".detail-check-name"), (el) => el.textContent).slice(0, 3),
+      ).toEqual(["abandoned flag", "release age", "archived"]);
+      expect(Array.from(container.querySelectorAll(".detail-checks-line .detail-checks-item"), text)).toEqual(
+        ["S5 predates PHP", "S6 snapshot", "S8 branch stopped", "S9 advisories", "S10 check gaps"],
       );
     });
 
@@ -487,7 +497,7 @@ describe("Detail", () => {
         "Could not run: S2 release age (undated releases, see S10)",
         "Quiet: S1 abandoned flag · S3 archived · S4 push age · S5 predates PHP · S6 snapshot · S9 advisories",
       ]);
-      expect(container.querySelector(".detail-check.is-blocked")?.textContent).toBe("S2");
+      expect(container.querySelector(".detail-check.is-blocked .detail-check-id")?.textContent).toBe("S2");
     });
 
     it("writes a list of objects in a signal's data one line per object, and a list of ids joined", () => {
@@ -497,6 +507,32 @@ describe("Detail", () => {
       );
       const values = Array.from(s10?.querySelectorAll(".detail-kv dd") ?? []).map(text);
       expect(values).toEqual(["check release_dates · reason undated_releases · blocks S2, S8", "S2, S8"]);
+      // The list of objects takes the row's full width; the list of ids sits beside its label.
+      const wide = Array.from(s10?.querySelectorAll(".detail-data .is-wide") ?? []).map((el) => el.tagName);
+      expect(wide).toEqual(["DT", "DD"]);
+    });
+
+    it("labels data keys without underscores and splits a timestamp into date and quieter time", () => {
+      const { container } = renderDetail(WALLABAG, "spomky-labs/otphp");
+      const s8 = Array.from(container.querySelectorAll("details.detail-fired")).find(
+        (row) => row.querySelector(".detail-fired-id")?.textContent === "S8",
+      );
+      const labels = Array.from(s8?.querySelectorAll(".detail-data dt") ?? [], (el) => el.textContent);
+      expect(labels).toContain("branch last release");
+      expect(labels.some((label) => label.includes("_"))).toBe(false);
+      const row = Array.from(s8?.querySelectorAll(".detail-data dt") ?? []).find(
+        (dt) => dt.textContent === "branch last release",
+      );
+      const dd = row?.nextElementSibling;
+      expect(dd?.querySelector(".detail-data-date")?.textContent).toBe("2022-03-17");
+      expect(dd?.querySelector(".detail-data-time")?.textContent).toBe("T08:00:35+00:00");
+      expect(dd?.textContent).toBe("2022-03-17T08:00:35+00:00");
+    });
+
+    it("keeps a fired info-level cell in the low tone, which the checks block draws in its own blue", () => {
+      const { container } = renderDetail(WALLABAG, "sensio/framework-extra-bundle");
+      const s7 = container.querySelector(".detail-check.is-fired.tone-low .detail-check-id");
+      expect(s7?.textContent).toBe("S7");
     });
   });
 
@@ -954,7 +990,7 @@ describe("Detail", () => {
         "Left behind on",
         "How it gets in",
         "Why this is high",
-        "of 10 fired",
+        "fired · ",
         "Follow the upstream",
         "Release branches",
         "The lock entry",
@@ -973,7 +1009,7 @@ describe("Detail", () => {
 
     it("puts the checks ahead of every advisory, and both ahead of the reference sections (PD-DETAIL-12)", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/vulnerable");
-      const order = markerOrder(container, ["of 10 fired", "Every advisory", "The lock entry"]);
+      const order = markerOrder(container, ["fired · ", "Every advisory", "The lock entry"]);
       expect(order).not.toContain(-1);
       expect(order).toEqual([...order].sort((a, b) => a - b));
     });

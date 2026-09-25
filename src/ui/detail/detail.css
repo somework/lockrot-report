@@ -223,62 +223,84 @@
 /* ---------- checks (PD-DETAIL-12) ----------
    All ten checks as one strip, the same idiom as the summary band's waffle: a fired check filled in
    its level's tone, a quiet one outlined, one that could not run hatched, one the document does not
-   settle dotted. Then the tally and the named quiet/could-not-run lines, then the fired rows. */
+   settle dotted, each cell naming its check in a word or two. Then the tally and the named
+   quiet/could-not-run lines, then the fired rows. */
 /* One column, capped like the priority ladder above it, so in a wide drawer the level word stays
    beside the summary it qualifies and the strip keeps the rows' right edge. */
 .detail-checks {
   gap: 7px;
+  /* An info-level check in a blue of its own: the shared --low slate sits too close to body text in
+     the dark theme for a fired id or cell to read as coloured at all. */
+  --info: #2c5d8a;
+  --info-soft: #dde8f3;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .detail-checks {
+    --info: #82b4e4;
+    --info-soft: #172433;
+  }
+}
+:root[data-theme="dark"] .detail-checks {
+  --info: #82b4e4;
+  --info-soft: #172433;
+}
+.detail-checks .tone-low {
+  --tone: var(--info);
+  --tone-soft: var(--info-soft);
 }
 .detail-checks > * {
   max-width: 560px;
 }
-.detail-checks > h3 {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 10px;
-}
-.detail-checks-aside {
-  font-family: var(--sans);
-  text-transform: none;
-  letter-spacing: 0;
-  font-weight: 400;
-  font-size: 12px;
-  color: var(--ink-2);
-}
+/* Five by two: at the panel's usual 390-420px each cell is about 72px, room for its id and a
+   two-word name on at most two short lines, which a single row of ten (36px a cell) never had. */
 .detail-strip {
   display: grid;
-  grid-template-columns: repeat(10, minmax(0, 1fr));
-  gap: 4px;
-  margin-top: 2px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px 6px;
+  margin: 5px 0 3px;
 }
 .detail-check {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  line-height: 1;
-  text-align: center;
+  gap: 3px;
+  min-width: 0;
   color: var(--muted);
 }
 .detail-check i {
   display: block;
-  height: 10px;
+  height: 9px;
+  margin-bottom: 2px;
   border-radius: 2px;
   border: 1px solid var(--border-strong);
 }
+.detail-check-id {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1;
+}
+.detail-check-name {
+  font-size: 11px;
+  line-height: 1.15;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.03em;
+  overflow-wrap: anywhere;
+}
 .detail-check.is-fired {
   color: var(--ink);
+}
+.detail-check.is-fired .detail-check-id {
   font-weight: 700;
+  color: var(--tone);
 }
 .detail-check.is-fired i {
   background: var(--tone);
   border-color: var(--tone);
 }
 .detail-check.is-blocked {
-  font-style: italic;
   color: var(--ink-2);
+}
+.detail-check.is-blocked .detail-check-id {
+  font-style: italic;
 }
 .detail-check.is-blocked i {
   border-style: dashed;
@@ -289,7 +311,7 @@
   border-style: dotted;
 }
 .detail-checks-tally {
-  margin: 1px 0 0;
+  margin: 0;
   font-size: 12.5px;
   color: var(--ink-2);
 }
@@ -302,6 +324,10 @@
   font-size: 12px;
   line-height: 1.5;
   color: var(--muted);
+}
+/* "S5 predates PHP" is one item: a line breaks only at the " · " between items. */
+.detail-checks-item {
+  white-space: nowrap;
 }
 .detail-checks-id {
   font-family: var(--mono);
@@ -350,7 +376,7 @@
 .detail-fired-body {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
   padding: 0 4px 12px 40px;
 }
 .detail-fired-def {
@@ -359,43 +385,100 @@
   line-height: 1.45;
   color: var(--ink-2);
 }
-.detail-fired-body .detail-kv {
-  font-size: 12px;
+/* A check's data: each label beside its value on one line, labels 40% of the row, values in mono.
+   A thin rule under each pair keeps a long value's second line with its own label. */
+.detail-data {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 0 10px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  border-top: 1px solid var(--border);
 }
-.detail-fired-body .detail-kv dd {
+.detail-data dt,
+.detail-data dd {
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+}
+.detail-data dt {
+  overflow-wrap: anywhere;
+}
+.detail-fired-body .detail-data dd {
   font-size: 11.5px;
   overflow-wrap: anywhere;
+}
+/* A list of objects takes the row's full width under its label. */
+.detail-data dt.is-wide {
+  grid-column: 1 / -1;
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.detail-data dd.is-wide {
+  grid-column: 1 / -1;
+}
+.detail-data-null {
+  color: var(--muted);
+}
+/* A timestamp breaks, when it has to, only between its date and its time. */
+.detail-data-date,
+.detail-data-time {
+  white-space: nowrap;
+}
+.detail-data-time {
+  color: var(--muted);
+}
+.detail-data-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
 }
 /* A list of objects in a signal's data (S7's packages, S9's advisories): one line each. */
 .detail-data-item {
   display: block;
+  padding-left: 8px;
+  border-left: 2px solid var(--border-strong);
 }
 .detail-data-item + .detail-data-item {
-  margin-top: 3px;
+  margin-top: 6px;
 }
 .detail-data-key {
   font-family: var(--sans);
   font-size: 11px;
   color: var(--muted);
 }
-/* The data's labels go over their values when the list itself is narrow (the side column at 1440,
-   a phone's sheet): a value such as S9's advisories then gets the row's whole width instead of what
-   is left beside an 84px label. Under 340px the body also gives its indent back. */
+/* Text for a screen reader alone, kept in the accessibility tree (a null value's word under its
+   dash). */
+.detail-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+/* A 320px phone's sheet: the body gives its indent back to the data, and the strip's names drop
+   their tracking and a size step so "advisories" still fits a 52px cell whole. Labels stay beside
+   their values at every width; a long label wraps inside its own 40%. */
 .detail-fired-list {
   container: fired / inline-size;
 }
-@container fired (max-width: 459.98px) {
-  .detail-fired-body .detail-kv {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 1px;
-  }
-  .detail-fired-body .detail-kv dd + dt {
-    margin-top: 6px;
-  }
-}
-@container fired (max-width: 339.98px) {
+@container fired (max-width: 299.98px) {
   .detail-fired-body {
     padding-left: 10px;
+  }
+}
+.detail-checks {
+  container: checks / inline-size;
+}
+@container checks (max-width: 329.98px) {
+  .detail-strip {
+    column-gap: 4px;
+  }
+  .detail-check-name {
+    font-size: 10px;
+    letter-spacing: 0;
   }
 }
 
@@ -403,7 +486,8 @@
    filled for fired, outlined for quiet, dashed and hatched for could not run, dotted for not
    reported — drawn in CanvasText (GrayText reads maroon in Chromium's light palette; ledger.css
    makes the same choice for its waffle). The tally and the lines under the strip say it all in
-   words either way. */
+   words either way. A fired row's summary is a control, which Chromium paints wholesale in its
+   link colour; the text goes back to CanvasText and only the id keeps a system accent. */
 @media (forced-colors: active) {
   .detail-check i {
     forced-color-adjust: none;
@@ -417,6 +501,14 @@
   .detail-check.is-blocked i {
     border-color: CanvasText;
     background: repeating-linear-gradient(135deg, Canvas 0 3px, CanvasText 3px 4px);
+  }
+  .detail-fired-summary,
+  .detail-fired-text,
+  .detail-fired-level {
+    color: CanvasText;
+  }
+  .detail-fired-id {
+    color: Highlight;
   }
 }
 
