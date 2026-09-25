@@ -161,7 +161,10 @@ export class NewReportPage implements ReportPage {
    * Rows/cards are expected to carry `role=row` (the Packages table), `role=option` (a selectable
    * Findings/Radius entry) or `role=listitem`, each with an accessible name that IS the package
    * name (version/tags are presentation, not folded into the name) — this is the concrete
-   * assistive-tech contract `rows()` is written against, not a guess at what exists today.
+   * assistive-tech contract `rows()` is written against, not a guess at what exists today. An
+   * Advisories row is one advisory, not one package, so its name adds the severity and the CVE or
+   * id after the package ("acme/http-client, critical, CVE-2026-31337"); its `data-pkg` still
+   * carries the package alone, and is what this reads first.
    */
   async rows(): Promise<string[]> {
     const candidates = this.page
@@ -174,7 +177,10 @@ export class NewReportPage implements ReportPage {
       const el = candidates.nth(i);
       // Table header rows are `role=row` too; skip anything acting as a column header.
       if ((await el.getByRole("columnheader").count()) > 0) continue;
-      const name = (await el.getAttribute("aria-label")) ?? (await el.textContent());
+      const name =
+        (await el.getAttribute("data-pkg")) ??
+        (await el.getAttribute("aria-label")) ??
+        (await el.textContent());
       if (name) names.push(name.trim());
     }
 
@@ -186,6 +192,7 @@ export class NewReportPage implements ReportPage {
       .getByRole("row", { name, exact: true })
       .or(this.page.getByRole("option", { name, exact: true }))
       .or(this.page.getByRole("listitem", { name, exact: true }))
+      .or(this.page.locator(`li.adv[data-pkg="${name.replace(/["\\]/g, "\\$&")}"]`))
       .first();
   }
 
@@ -695,7 +702,7 @@ export class NewReportPage implements ReportPage {
         const role = el.getAttribute("role") ?? implicit[el.tagName] ?? "";
         if (!["row", "option", "listitem"].includes(role)) continue;
         if (el.querySelector('[role="columnheader"], th')) continue;
-        const name = el.getAttribute("aria-label") ?? el.textContent;
+        const name = el.getAttribute("data-pkg") ?? el.getAttribute("aria-label") ?? el.textContent;
         if (name) names.add(name.trim());
       }
       return names.size;

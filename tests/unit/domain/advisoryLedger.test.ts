@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   advisoryChipTitle,
+  advisoryRowName,
   fixesOfShape,
   reportedAxis,
+  reportedShort,
+  reportedSpan,
   reportedYears,
   tallyAdvisories,
   tickLabel,
@@ -170,5 +173,43 @@ describe("worstAdvisory and advisoryChipTitle", () => {
       ],
     });
     expect(advisoryChipTitle(mixed)).toBe("2 high · fixed by 1.0.1 on your branch · 1 with no fix listed");
+  });
+});
+
+describe("reportedSpan and reportedShort", () => {
+  const DAY = 1 / 365.25;
+  it("reads under 14 days in days, and today as less than a day", () => {
+    expect(reportedSpan(0)).toBe("less than a day");
+    expect(reportedShort(0)).toBe("<1 d");
+    expect(reportedSpan(DAY)).toBe("1 day");
+    expect(reportedSpan(9 * DAY)).toBe("9 days");
+    expect(reportedShort(9 * DAY)).toBe("9 d");
+  });
+
+  it("reads 14 to 44 days in weeks, where the page's month unit would say '1 month'", () => {
+    expect(reportedSpan(14 * DAY)).toBe("2 weeks");
+    expect(reportedShort(14 * DAY)).toBe("2 wk");
+    expect(reportedSpan(43 * DAY)).toBe("6 weeks");
+  });
+
+  it("reads 45 days on in the page's own unit: months, then tenths of a year", () => {
+    expect(reportedSpan(85 * DAY)).toBe("3 months");
+    expect(reportedShort(85 * DAY)).toBe("3 mo");
+    expect(reportedSpan(2.6)).toBe("2.6 years");
+    expect(reportedShort(2.6)).toBe("2.6 y");
+  });
+});
+
+describe("advisoryRowName", () => {
+  it("names the package, then the row's severity word and CVE", () => {
+    const finding = makeFinding({ package: "acme/http-client" });
+    const advisory = makeAdvisory({ id: "GHSA-1", cve: "CVE-2026-1", severityRaw: "critical" });
+    expect(advisoryRowName(finding, advisory)).toBe("acme/http-client, critical, CVE-2026-1");
+  });
+
+  it("falls back to the advisory's own id and to 'unrated'", () => {
+    const finding = makeFinding({ package: "acme/yaml" });
+    const advisory = makeAdvisory({ id: "GHSA-2", cve: null, severityRaw: null });
+    expect(advisoryRowName(finding, advisory)).toBe("acme/yaml, unrated, GHSA-2");
   });
 });

@@ -8,7 +8,8 @@
  *
  * The layout follows the list's own width (a container query): one line from 900px (the list with no
  * package open at 1280 and up), a right-hand fix column from 480px (beside an open package, a
- * tablet, paper), the fix beside the severity above everything else under that (a phone). No value
+ * tablet, paper — with the age bar and a slim axis head over that column, PD-ADV-6), the severity
+ * beside the package and the range with its fix at the foot (a phone). No value
  * is ever cut: every cell wraps.
  */
 
@@ -59,6 +60,30 @@
   color: var(--ink);
   font-weight: 600;
 }
+/* The run says its advisory check may not have covered every package: said right under the
+   answer, in the high tone's rule, so the count above never reads as the whole story. */
+.al-partial {
+  margin: 8px 0 0;
+  max-width: 50em;
+  padding: 6px 12px 7px;
+  border-left: 3px solid var(--high);
+  background: var(--surface);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-2);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.al-partial-tag {
+  font-family: var(--cond);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
 /* No advisory at all: the tab's empty box, holding PD-LEDGER-1's sentence — with the band's
    all-clear mark only when the check ran for every package. */
 .al-empty {
@@ -86,7 +111,7 @@
   /* Wide enough for the longest severity word a feed writes, MODERATE, on one line. */
   --al-sev: 78px;
   --al-fix: 150px;
-  --al-age: 150px;
+  --al-age: 168px;
   --al-num: 34px;
 }
 
@@ -103,17 +128,17 @@
 .al-head + .advgroup {
   margin-top: 6px;
 }
+/* A run-in head: the name and count lead the line and the sentence runs on after them, so a
+   sentence that wraps returns to the left edge like any paragraph instead of hanging under the
+   count. */
 .al-group-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  column-gap: 12px;
-  row-gap: 3px;
   padding: 0 var(--al-pad-r) 8px var(--al-pad-l);
   border-bottom: 1px solid var(--border-strong);
+  line-height: 1.35;
 }
 .al-group-head h2 {
-  margin: 0;
+  display: inline;
+  margin: 0 12px 0 0;
   font-family: var(--cond);
   font-size: 12.5px;
   font-weight: 700;
@@ -122,14 +147,14 @@
   color: var(--ink);
 }
 .al-group-count {
+  margin-right: 12px;
   font-family: var(--mono);
   font-size: 12px;
   color: var(--muted);
   white-space: nowrap;
 }
 .al-group-sentence {
-  flex: 1 1 22em;
-  min-width: 0;
+  display: inline;
   margin: 0;
   font-family: var(--serif);
   font-size: 15.5px;
@@ -153,14 +178,15 @@
   --row-bg: var(--bg);
   position: relative;
   display: grid;
-  /* Phone: the severity and the fix on one line, then the advisory, the package and the range. */
+  /* Phone: the severity and the package on one line, then the advisory and its ids, then the range
+     it affects with the release that fixes it right under it. */
   grid-template-columns: var(--al-sev) minmax(0, 1fr);
   grid-template-areas:
-    "sev fix"
+    "sev pkg"
     "title title"
-    "pkg pkg"
     "ids ids"
-    "aff aff";
+    "aff aff"
+    "fix fix";
   column-gap: var(--al-gap);
   row-gap: 2px;
   align-items: baseline;
@@ -268,6 +294,20 @@
 .ac-name.is-ditto b {
   font-weight: 500;
 }
+.ac-ditto {
+  margin-right: 5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+/* Read by a screen reader and a search, not drawn. */
+.ac-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 .ac-reach {
   font-size: 12px;
   color: var(--ink-2);
@@ -344,42 +384,40 @@
   grid-column: 1 / -1;
 }
 
-/* ---------- two columns (beside an open package, a tablet, paper) ---------- */
+/* ---------- two columns (beside an open package, a laptop with the rail, paper) ---------- */
+/* The right-hand column stacks what fixing it takes: the release and where it is, the range it
+   affects, then years since it was reported on the list's one axis, captioned by a slim column head
+   over that column only. */
 @container aledger (min-width: 480px) {
+  .al-head,
+  .adv {
+    /* Wide enough that "fixed by 2.3.4 on your branch" stays one line and the axis has room. */
+    --al-fix: 200px;
+  }
   .adv {
     grid-template-columns: var(--al-sev) minmax(0, 1fr) var(--al-fix);
     grid-template-areas:
       "sev title fix"
-      "sev pkg fix"
-      "sev ids aff";
+      "sev pkg aff"
+      "sev ids age";
     row-gap: 1px;
   }
   .ac-fix,
   .ac-aff {
     text-align: right;
   }
-  .ac-fix .ac-where {
-    display: block;
-  }
   .adv > .match-note {
     grid-column: 2 / -1;
   }
-}
-
-/* ---------- one line (the list with no package open) ---------- */
-@container aledger (min-width: 900px) {
-  .al-head,
-  .adv {
-    grid-template-columns:
-      var(--al-sev) minmax(0, 1.9fr) minmax(0, 1.2fr) minmax(0, 0.62fr) minmax(0, 0.7fr)
-      var(--al-age);
-    grid-template-areas:
-      "sev title pkg aff fix age"
-      "sev ids pkg aff fix age";
-    column-gap: 14px;
-  }
   .al-head {
-    grid-template-areas: "sev adv pkg aff fix age";
+    grid-template-columns: var(--al-sev) minmax(0, 1fr) var(--al-fix);
+    grid-template-areas: "sev adv age";
+    column-gap: var(--al-gap);
+  }
+  .al-col-pkg,
+  .al-col-aff,
+  .al-col-fix {
+    display: none;
   }
   .al-head {
     position: sticky;
@@ -412,16 +450,7 @@
   .al-col-adv {
     grid-area: adv;
   }
-  .al-col-pkg {
-    grid-area: pkg;
-  }
-  .al-col-aff {
-    grid-area: aff;
-  }
-  .al-col-fix {
-    grid-area: fix;
-  }
-  /* The axis' captions over the track part of the column; the figure column beside it has none. */
+  /* The axis' captions over the track part of the column; the figure beside it has none. */
   .al-col-age {
     grid-area: age;
     position: relative;
@@ -431,7 +460,7 @@
   }
   .al-age-label {
     position: absolute;
-    top: 5px;
+    top: 6px;
     left: 0;
   }
   .al-tick {
@@ -439,7 +468,7 @@
     bottom: 7px;
     transform: translateX(-50%);
     font-family: var(--mono);
-    font-size: 10px;
+    font-size: 10.5px;
     font-weight: 500;
     letter-spacing: 0;
     text-transform: none;
@@ -451,39 +480,18 @@
   .al-tick.is-end {
     transform: translateX(-100%);
   }
-  .adv {
-    align-items: center;
-    row-gap: 0;
-    padding-block: 6px;
-  }
-  .ac-fix,
-  .ac-aff {
-    text-align: left;
-  }
-  .ac-lbl,
-  .ac-ago {
-    /* The column head names these; the words stay for a screen reader. */
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-  .ac-pkg {
-    flex-direction: column;
-  }
-  .ac-reach {
-    display: block;
+  /* The figure beside the bar says how long ago; the words would say it twice. */
+  .aledger:not(.no-axis) .ac-ago {
+    display: none;
   }
   .ac-age {
     grid-area: age;
-    align-self: stretch;
+    align-self: center;
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--al-num);
     column-gap: 6px;
     align-items: center;
-    margin-block: -6px -7px;
+    min-height: 17px;
   }
   .ac-track {
     position: relative;
@@ -509,7 +517,7 @@
     position: absolute;
     left: 0;
     top: 50%;
-    min-width: 2px;
+    min-width: 3px;
     height: 6px;
     transform: translateY(-50%);
     border-radius: 0 3px 3px 0;
@@ -527,8 +535,75 @@
   }
   .ac-age-none {
     grid-column: 1 / -1;
+    text-align: right;
     font-size: 11.5px;
     color: var(--muted);
+  }
+}
+
+/* ---------- one line (the list with no package open) ---------- */
+@container aledger (min-width: 900px) {
+  .al-head,
+  .adv {
+    grid-template-columns:
+      var(--al-sev) minmax(0, 1.9fr) minmax(0, 1.2fr) minmax(0, 0.62fr) minmax(0, 0.7fr)
+      var(--al-age);
+    grid-template-areas:
+      "sev title pkg aff fix age"
+      "sev ids pkg aff fix age";
+    column-gap: 14px;
+  }
+  .al-head {
+    grid-template-areas: "sev adv pkg aff fix age";
+    height: 44px;
+  }
+  .al-col-pkg,
+  .al-col-aff,
+  .al-col-fix {
+    display: block;
+  }
+  .al-col-pkg {
+    grid-area: pkg;
+  }
+  .al-col-aff {
+    grid-area: aff;
+  }
+  .al-col-fix {
+    grid-area: fix;
+  }
+  .adv {
+    align-items: center;
+    row-gap: 0;
+    padding-block: 6px;
+  }
+  .ac-fix,
+  .ac-aff {
+    text-align: left;
+  }
+  .ac-fix .ac-where {
+    display: block;
+  }
+  .ac-lbl {
+    /* The column head names these; the words stay for a screen reader. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .ac-pkg {
+    flex-direction: column;
+  }
+  .ac-reach {
+    display: block;
+  }
+  .ac-age {
+    align-self: stretch;
+    margin-block: -6px -7px;
+  }
+  .ac-age-none {
+    text-align: left;
   }
   .adv > .match-note {
     grid-column: title-start / fix-end;

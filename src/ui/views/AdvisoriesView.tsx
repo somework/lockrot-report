@@ -10,8 +10,11 @@ import {
   type FixShape,
 } from "../../domain/advisories";
 import {
+  advisoryRowName,
   fixesOfShape,
   reportedAxis,
+  reportedShort,
+  reportedSpan,
   reportedYears,
   tallyAdvisories,
   tickLabel,
@@ -21,7 +24,7 @@ import {
 import { useReport } from "../context";
 import { population } from "../../domain/filters";
 import { cveUrl, safeHref } from "../../domain/links";
-import { day, plural, yearsAgo, yearsPhrase } from "../../domain/format";
+import { day, plural } from "../../domain/format";
 import { vendorOf } from "../../domain/rows";
 import { toneClass } from "../common/common";
 import { CleanMark } from "../ledger/CleanMark";
@@ -181,8 +184,8 @@ function SeverityCounts({ tally }: { tally: AdvisoryTally }) {
 function AgeSentence({ tally }: { tally: AdvisoryTally }) {
   const { oldestYears, newestYears, total } = tally;
   if (oldestYears === null || newestYears === null) return null;
-  const oldest = yearsPhrase(oldestYears);
-  const newest = yearsPhrase(newestYears);
+  const oldest = reportedSpan(oldestYears);
+  const newest = reportedSpan(newestYears);
   if (oldest === newest) {
     const who = total === 1 ? "It was" : `${capital(allOf(total) ?? "")} were`;
     return (
@@ -200,6 +203,40 @@ function AgeSentence({ tally }: { tally: AdvisoryTally }) {
   );
 }
 
+/** A button to the Run data tab, where the run's own notes are. */
+function RunDataLink() {
+  const { dispatch } = useReport();
+  return (
+    <button
+      type="button"
+      className="pkg-link-btn"
+      onClick={() => {
+        dispatch({ type: "view", view: "run", keepDetail: true });
+      }}
+    >
+      Run data
+    </button>
+  );
+}
+
+/**
+ * Under the answer when the run says its advisory check may not have covered every package
+ * (`advisoryCheckIncomplete`: network failures, or a note naming the advisory check): the list
+ * above may be partial, in PD-LEDGER-1's own words — a package with no row could not be
+ * confirmed clear.
+ */
+function PartialCheck() {
+  return (
+    <p className="al-partial">
+      <span className="al-partial-tag">Check incomplete</span>{" "}
+      <span>
+        The advisory check may not have run for every package, so this list may be partial: a package with no
+        row here could not be confirmed clear. The run's own notes say why, under <RunDataLink />.
+      </span>
+    </p>
+  );
+}
+
 /**
  * The tab's answer, first (PD-ADV-1, DESIGN.md §5): how many advisories on which packages, how many
  * of them in production, how each is fixed and how long ago they were reported — "2 advisories on
@@ -214,8 +251,9 @@ function AdvisoryAnswer({
   pairs: readonly AdvisoryWithFinding[];
   unfiltered: number;
 }) {
-  const { now } = useReport();
+  const { now, model } = useReport();
   const tally = tallyAdvisories(pairs, now);
+  const partial = advisoryCheckIncomplete(model);
   const narrowed = pairs.length < unfiltered;
   const noun = tally.total === 1 ? "advisory" : "advisories";
   return (
@@ -224,14 +262,14 @@ function AdvisoryAnswer({
         {tally.total === 1 ? (
           <>
             <Num n={1} /> {narrowed ? "matching " : ""}
-            <SeverityWord severity={tally.severities[0]?.severity ?? "unrated"} /> advisory on{" "}
+            <SeverityWord severity={tally.severities[0]?.severity ?? "unrated"} />
+            {tally.severities[0]?.severity === "unrated" ? "" : "-severity"} advisory on{" "}
             <Packages names={tally.packages} />, {scopePart(tally)}.
           </>
         ) : (
           <>
             <Num n={tally.total} /> {narrowed ? `matching ${noun}` : noun} on{" "}
-            <Packages names={tally.packages} />
-            : <SeverityCounts tally={tally} />
+            <Packages names={tally.packages} />, by severity <SeverityCounts tally={tally} />
             {tally.dev > 0 && tally.production > 0 ? "; " : ", "}
             {scopePart(tally)}.
           </>
@@ -239,6 +277,7 @@ function AdvisoryAnswer({
         <FixSentence tally={tally} pairs={pairs} />
         <AgeSentence tally={tally} />
       </p>
+      {partial && <PartialCheck />}
       {narrowed && (
         <p className="al-scope">
           Only advisories that match the filter are counted; without it there{" "}
@@ -304,19 +343,27 @@ function ColumnHead({ axis }: { axis: ReportedAxis | null }) {
 
 const FIX_WHERE: Readonly<Record<FixShape, string>> = {
   branch: "on your branch",
-  move: "another branch",
+  move: "on another branch",
   none: "no fix listed",
 };
 
-/** A package name with its vendor quieter and a wrap point after the slash, as Findings rows draw it. */
+/** A package name with its vendor quieter and a wrap point after the slash, as Findings rows draw
+ *  it. Under a row that already named the same package (PD-ROWS-5), a ditto mark stands in for the
+ *  vendor on screen and the whole name goes quiet; the vendor stays in the text a screen reader and
+ *  a search read. */
 function PackageName({ finding, ditto }: { finding: Finding; ditto: boolean }) {
   const vendor = vendorOf(finding.package);
   const name = vendor === null ? finding.package : finding.package.slice(vendor.length + 1);
   return (
     <span className={`ac-name${ditto ? " is-ditto" : ""}`} title={`${finding.package} ${finding.version}`}>
+      {ditto && (
+        <span className="ac-ditto" aria-hidden="true">
+          〃
+        </span>
+      )}
       {vendor !== null && (
         <>
-          <span className="ac-vendor">{vendor}/</span>
+          <span className={ditto ? "ac-vendor ac-sr" : "ac-vendor"}>{vendor}/</span>
           <wbr />
         </>
       )}
@@ -415,7 +462,7 @@ function AgeCell({ years, axis }: { years: number | null; axis: ReportedAxis | n
         ))}
         <span className="ac-bar" style={{ width: `${Math.min(100, (100 * years) / axis.max)}%` }} />
       </span>
-      <span className="ac-num">{yearsAgo(years).replace(" ago", "")}</span>
+      <span className="ac-num">{reportedShort(years)}</span>
     </span>
   );
 }
@@ -435,8 +482,10 @@ interface AdvisoryRowProps {
  * CVE assigned", its id, the day it was reported) · the package, how it gets in, prod or dev ·
  * the versions it affects · the release that fixes it and whether that is on your branch · years
  * since it was reported on the list's one axis. Wide, one line under the column head; beside an
- * open package, the fix and range move to a right-hand column; on a phone, the fix sits beside the
- * severity, the rest under them.
+ * open package, at a laptop's width and on paper, the fix, the range and the age bar stack in a
+ * right-hand column under a slim axis head (PD-ADV-6); on a phone, the severity beside the package,
+ * then the advisory, and the range with its fix together at the foot. Named by package, severity
+ * and CVE or id (PD-ADV-5): one package can carry several rows.
  */
 function AdvisoryRow({ finding, advisory, first, ditto, axis }: AdvisoryRowProps) {
   const { state, dispatch, now, cursor } = useReport();
@@ -450,14 +499,14 @@ function AdvisoryRow({ finding, advisory, first, ditto, axis }: AdvisoryRowProps
     <li
       tabIndex={rowTabIndex(finding.package, cursor, first)}
       aria-current={isOpen ? "true" : undefined}
-      aria-label={finding.package}
+      aria-label={advisoryRowName(finding, advisory)}
       data-pkg={finding.package}
       className={`adv ${toneClass(sevTone(advisory.severity))}`}
       {...openInteractions(finding.package, dispatch)}
     >
       <span className="ac-sev">{advisory.severityRaw ?? "unrated"}</span>
       <span className="ac-title">{advisory.title ?? advisory.id}</span>
-      <Ids advisory={advisory} tabIndex={inner} ago={years === null ? null : yearsAgo(years)} />
+      <Ids advisory={advisory} tabIndex={inner} ago={years === null ? null : `${reportedSpan(years)} ago`} />
       <span className="ac-pkg">
         <PackageName finding={finding} ditto={ditto} />
         <Reach finding={finding} />
@@ -493,7 +542,7 @@ function advisoryKey(pair: AdvisoryWithFinding): string {
  * every package never reads as clean (`advisoryCheckIncomplete`).
  */
 function NoAdvisories() {
-  const { model, dispatch } = useReport();
+  const { model } = useReport();
   if (advisoryCheckIncomplete(model)) {
     const checked = model.report.packagesChecked ?? model.report.findings.length;
     return (
@@ -502,17 +551,7 @@ function NoAdvisories() {
           No advisory found; {plural(checked, "package", "packages")} could not be confirmed clear.
         </p>
         <p className="al-scope">
-          The run's own notes say why, under{" "}
-          <button
-            type="button"
-            className="pkg-link-btn"
-            onClick={() => {
-              dispatch({ type: "view", view: "run", keepDetail: true });
-            }}
-          >
-            Run data
-          </button>
-          .
+          The run's own notes say why, under <RunDataLink />.
         </p>
       </div>
     );

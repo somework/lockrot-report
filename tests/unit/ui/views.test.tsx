@@ -1078,8 +1078,12 @@ describe("AdvisoriesView", () => {
     renderIn(model, stateWith({ view: "advisories" }), <AdvisoriesView />);
 
     // Assert: the row shows the feed's word; only the answer above counts by the bucket.
-    const row = screen.getByRole("listitem", { name: "acme/raw-sev" });
+    const row = screen.getByRole("listitem", { name: "acme/raw-sev, Moderate, GHSA-1" });
     expect(within(row).getByText("Moderate")).toBeTruthy();
+    // One advisory: its severity is named as a severity, apart from the band's priority words.
+    expect(document.querySelector(".al-answer")?.textContent).toMatch(
+      /^1 medium-severity advisory on acme\/raw-sev, /,
+    );
     expect(within(row).queryByText("medium")).toBeNull();
   });
 });
@@ -1094,7 +1098,7 @@ describe("AdvisoriesView as a ledger (PD-ADV-1..3)", () => {
 
     const answer = container.querySelector(".al-answer")?.textContent.replace(/\s+/g, " ");
     expect(answer).toBe(
-      "2 advisories on spomky-labs/otphp: 1 high and 1 medium, both in production. Neither is fixed on " +
+      "2 advisories on spomky-labs/otphp, by severity 1 high and 1 medium, both in production. Neither is fixed on " +
         "the branch you are on; both are fixed only by 11.5.0, on another branch. Both were reported 4 months ago.",
     );
     // One group: the answer already says what its sentence would, so the head is name and count.
@@ -1111,9 +1115,9 @@ describe("AdvisoriesView as a ledger (PD-ADV-1..3)", () => {
 
     const answer = container.querySelector(".al-answer")?.textContent.replace(/\s+/g, " ");
     expect(answer).toBe(
-      "6 advisories on 5 packages: 1 critical, 2 high, 1 medium, 1 low and 1 unrated; 4 in production, " +
-        "2 dev-only. Of them, 3 are fixed on the branch you are on, 2 only on another branch and 1 with no " +
-        "fix listed. Reported between 1 month and 2.6 years ago.",
+      "6 advisories on 5 packages, by severity 1 critical, 2 high, 1 medium, 1 low and 1 unrated; 4 in " +
+        "production, 2 dev-only. Of them, 3 are fixed on the branch you are on, 2 only on another branch " +
+        "and 1 with no fix listed. Reported between 2 weeks and 2.6 years ago.",
     );
     const heads = [...container.querySelectorAll(".al-group-head h2")].map((h) => h.textContent);
     expect(heads).toEqual([
@@ -1135,7 +1139,16 @@ describe("AdvisoriesView as a ledger (PD-ADV-1..3)", () => {
     renderIn(loadModel("mini-advisories.json"), stateWith({ view: "advisories" }), <AdvisoriesView />);
 
     const rows = screen.getAllByRole("listitem");
+    // One package can carry several advisories: each row's name adds its severity and CVE or id.
     expect(rows.map((row) => row.getAttribute("aria-label"))).toEqual([
+      "acme/http-client, critical, CVE-2026-31337",
+      "acme/http-client, medium, CVE-2026-29904",
+      "acme/yaml, low, GHSA-p9xw-66fq-2mhv",
+      "acme/templating, high, PKSA-9z1c-b2tt-x0lq",
+      "acme/markdown, unrated, CVE-2025-40412",
+      "acme/debug-toolbar, high, CVE-2024-33391",
+    ]);
+    expect(rows.map((row) => row.dataset.pkg)).toEqual([
       "acme/http-client",
       "acme/http-client",
       "acme/yaml",
@@ -1156,15 +1169,45 @@ describe("AdvisoriesView as a ledger (PD-ADV-1..3)", () => {
     expect(critical.querySelector(".ac-fix")?.textContent).toBe("fixed by 2.3.4 on your branch");
     expect(critical.querySelector(".ac-aff")?.textContent).toBe("affects >=2.0.0,<2.3.4");
     expect(critical.querySelector(".ac-scope")?.textContent).toBe("prod");
-    expect(critical.querySelector(".ac-num")?.textContent).toBe("1 mo");
+    // 43 days: weeks, not the page's rounded month.
+    expect(critical.querySelector(".ac-num")?.textContent).toBe("6 wk");
+    expect(critical.querySelector(".ac-reported")?.textContent).toBe("reported 2026-08-12, 6 weeks ago");
     // The row under it names the same package: quieter, never removed (PD-ROWS-5).
     expect(critical.querySelector(".ac-name.is-ditto")).toBeNull();
     expect(medium.querySelector(".ac-name.is-ditto")).not.toBeNull();
+    expect(medium.querySelector(".ac-ditto")?.getAttribute("aria-hidden")).toBe("true");
+    expect(medium.querySelector(".ac-name")?.textContent).toContain("acme/http-client");
     expect(within(low).getByText("no CVE assigned")).toBeTruthy();
     expect(unrated.querySelector(".ac-sev")?.textContent).toBe("unrated");
     expect(unrated.querySelector(".ac-scope")?.textContent).toBe("dev");
     expect(unfixed.querySelector(".ac-fix")?.textContent).toBe("no fix listed");
     expect(unfixed.querySelector(".ac-num")?.textContent).toBe("2.6 y");
+  });
+
+  it("says under the answer when the advisory check may not have covered every package", () => {
+    const { container } = renderIn(
+      loadModel("mini-advisories-partial.json"),
+      stateWith({ view: "advisories" }),
+      <AdvisoriesView />,
+    );
+
+    expect(container.querySelector(".al-answer")?.textContent).toMatch(/^6 advisories on 5 packages/);
+    const partial = container.querySelector(".al-partial")?.textContent.replace(/\s+/g, " ");
+    expect(partial).toBe(
+      "Check incomplete The advisory check may not have run for every package, so this list may be " +
+        "partial: a package with no row here could not be confirmed clear. The run's own notes say why, " +
+        "under Run data.",
+    );
+    expect(screen.getByRole("button", { name: "Run data" })).toBeTruthy();
+  });
+
+  it("says nothing of an incomplete check when the run reports none", () => {
+    const { container } = renderIn(
+      loadModel("mini-advisories.json"),
+      stateWith({ view: "advisories" }),
+      <AdvisoriesView />,
+    );
+    expect(container.querySelector(".al-partial")).toBeNull();
   });
 
   it("says 'matching' under a filter, and what the unfiltered count is", () => {

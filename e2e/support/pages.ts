@@ -54,6 +54,9 @@ export const FIXTURES = {
    *  The Advisories ledger's fixture (PD-ADV-1..4, DESIGN.md §5); wallabag carries only one package
    *  and one fix shape. */
   miniAdvisories: "mini-advisories",
+  /** `mini-advisories` with `network_failures: true` and a note naming the advisory check: advisories
+   *  found by a check that may not have run for every package (PD-ADV-5, DESIGN.md §5). */
+  miniAdvisoriesPartial: "mini-advisories-partial",
   /** A real corpus with release branches that are just past tags (daverandom/resume has no
    *  maintained branch at all, only versions named after themselves) — the timeline fixture
    *  PD-TIMELINE-3/4 (DESIGN.md §5) need, which `wallabag` and `mautic` don't carry. */

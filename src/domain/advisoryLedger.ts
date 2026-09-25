@@ -10,6 +10,7 @@ import type { Advisory, Finding, Severity } from "../model/types";
 import { SEVERITIES } from "../model/types";
 import { fixShapeOf, type AdvisoryWithFinding, type FixShape } from "./advisories";
 import { severityRank } from "./severity";
+import { yearsAgo, yearsPhrase } from "./format";
 
 const MS_PER_JULIAN_YEAR = 365.25 * 24 * 3600 * 1000;
 
@@ -115,6 +116,14 @@ export function advisoryChipTitle(finding: Finding): string {
   return [severities, ...parts].join(" · ");
 }
 
+/** An advisory row's accessible name: the package first (what every other list's row is named
+ *  by), then the severity the row shows and the CVE, or the advisory's own id when it has none —
+ *  "acme/http-client, critical, CVE-2026-31337". One package can carry several advisories; the
+ *  package alone would name them all the same. */
+export function advisoryRowName(finding: Finding, advisory: Advisory): string {
+  return `${finding.package}, ${advisory.severityRaw ?? "unrated"}, ${advisory.cve ?? advisory.id}`;
+}
+
 /** The distinct `fixed_by` values of the pairs of one fix shape, verbatim, in list order. */
 export function fixesOfShape(pairs: readonly AdvisoryWithFinding[], shape: FixShape): readonly string[] {
   const out: string[] = [];
@@ -142,6 +151,40 @@ export function reportedAxis(oldestYears: number | null): ReportedAxis | null {
   if (max <= 5) return { max, ticks: Array.from({ length: max + 1 }, (_, i) => i) };
   const mid = Math.round(max / 2);
   return { max, ticks: [0, mid, max] };
+}
+
+const DAYS_PER_JULIAN_YEAR = 365.25;
+/** Under this many days an advisory's age reads in days or weeks: the page's one age unit (whole
+ *  months, `yearsAgo`) calls 14 days "1 mo", and to a security reader two weeks and a month are
+ *  different answers. */
+const SHORT_AGE_DAYS = 45;
+/** From this many days, weeks; under it, days. */
+const WEEKS_FROM_DAYS = 14;
+
+type ShortAge = { unit: "day" | "week"; n: number } | null;
+
+function shortAge(years: number): ShortAge {
+  const days = Math.max(0, Math.round(years * DAYS_PER_JULIAN_YEAR));
+  if (days >= SHORT_AGE_DAYS) return null;
+  if (days >= WEEKS_FROM_DAYS) return { unit: "week", n: Math.round(days / 7) };
+  return { unit: "day", n: days };
+}
+
+/** How long ago an advisory was reported, for a sentence: "less than a day", "9 days", "2 weeks",
+ *  then the page's own unit — "7 months", "2.6 years" (`yearsPhrase`). */
+export function reportedSpan(years: number): string {
+  const short = shortAge(years);
+  if (short === null) return yearsPhrase(years);
+  if (short.n === 0) return "less than a day";
+  return `${String(short.n)} ${short.unit}${short.n === 1 ? "" : "s"}`;
+}
+
+/** The same age, terse, for a row's figure: "<1 d", "9 d", "2 wk", "7 mo", "2.6 y". */
+export function reportedShort(years: number): string {
+  const short = shortAge(years);
+  if (short === null) return yearsAgo(years).replace(" ago", "");
+  if (short.n === 0) return "<1 d";
+  return `${String(short.n)} ${short.unit === "week" ? "wk" : "d"}`;
 }
 
 /** A tick's caption: "0", "6 mo", "1y", "3y". */

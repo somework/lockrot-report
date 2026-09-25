@@ -191,6 +191,18 @@ describe("SearchBar", () => {
     expect(screen.getByRole("status").textContent).toContain("0 of 0 flagged packages");
   });
 
+  it("draws no count line on Advisories when the document holds no advisory at all (PD-LEDGER-1)", () => {
+    // Arrange: the empty state's own sentence answers; "0 of 0 advisories" above it only undercut it.
+    const model = loadEmpty();
+    const ref = createRef<HTMLInputElement>();
+
+    // Act
+    renderIn(<SearchBar inputRef={ref} />, model, { ...INITIAL_STATE, view: "advisories" });
+
+    // Assert
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
   // a11y review: `DetailHeader`'s own "Hidden by the current filters." note has no live region of
   // its own, so a reader typing a search term never heard the open package had left the list. This
   // line already is one (`role="status" aria-live="polite"`); it now names the fact too.

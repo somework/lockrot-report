@@ -53,7 +53,11 @@ function countLine(model: Model, state: State): string | null {
         passesAdvisoryRail(state.filters, advisory) &&
         matchesAdvisory(advisory, finding, terms),
     );
-    return countPhrase(rows.length, allAdvisories(model).length, "advisory", "advisories");
+    // No advisory in the document at all: the tab's own sentence says so (PD-LEDGER-1), and a
+    // "0 of 0 advisories" above it would only undercut it.
+    const total = allAdvisories(model).length;
+    if (total === 0) return null;
+    return countPhrase(rows.length, total, "advisory", "advisories");
   }
 
   if (state.view === "radius") {
