@@ -1,6 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { useId, useLayoutEffect, useRef } from "preact/hooks";
-import { gateTally, type GateTally } from "../domain/baseline";
+import { gateFocus, gateTally, type GateTally } from "../domain/baseline";
 import { day, plural } from "../domain/format";
 import { useReport } from "./context";
 import { CopySummary } from "./CopySummary";
@@ -30,11 +30,12 @@ function gateFact(failOn: string, tally: string | null): { label: string; text: 
   }
 
   // The count (PD-BASELINE-5) sits between the rule and the caveat, so the last word is still what
-  // the page cannot know.
+  // the page cannot know — named outright ("the run's exit code") rather than as "whether it did",
+  // whose "it" pointed at the rule only while nothing came between them.
   const counted = tally === null ? "" : ` ${tally}`;
   return {
     label: `gate: ${failOn}`,
-    text: `This run was told to fail on ${failOn}: it exits 1 when a finding the baseline does not already accept reaches ${failOn}.${counted} The page does not record whether it did.`,
+    text: `This run was told to fail on ${failOn}: it exits 1 when a finding the baseline does not already accept reaches ${failOn}.${counted} The page does not record the run's exit code.`,
   };
 }
 
@@ -54,18 +55,46 @@ function tallySentence(tally: GateTally, path: string): string {
 
 /**
  * PD-BASELINE-5 (DESIGN.md §5): beside the gate fact, how many findings are at or above it — and,
- * with a baseline, how many of those the baseline does not already accept, the set lockrot measures
- * the gate against. A count over the findings in the document, by lockrot's own `--fail-on` order
- * (`domain/baseline.ts`); never whether the run passed or failed, which the document does not say.
+ * with a baseline, how many *of them* the baseline does not already accept, the set lockrot measures
+ * the gate against. "of them" is the point: the second number is a subset of the first, never the
+ * Findings answer's "new" count, which it would otherwise be read as. A count over the findings in
+ * the document, by lockrot's own `--fail-on` order (`domain/baseline.ts`); never whether the run
+ * passed or failed, which the document does not say.
+ *
+ * PD-BASELINE-6: when the rail's own filters can list exactly that subset (`gateFocus`), the second
+ * count is a button that does — Findings, those filters, the list brought into view — so "which
+ * ones?" is one press from the header on every tab.
  */
 function GateTallyText({ tally }: { tally: GateTally }) {
+  const { model, dispatch } = useReport();
+  const focus = tally.notAccepted === null || tally.notAccepted === 0 ? null : gateFocus(model);
+  const path = model.report.baseline?.path || "the baseline";
+  const outside =
+    tally.notAccepted === null ? null : (
+      <>
+        <b className="mono">{tally.notAccepted}</b> of them not accepted
+      </>
+    );
   return (
     <span className="gate-tally">
       <b className="mono">{tally.reached}</b> {reachWords(tally.failOn, true)}
-      {tally.notAccepted !== null && (
+      {outside !== null && (
         <>
           {" · "}
-          <b className="mono">{tally.notAccepted}</b> outside the baseline
+          {focus === null ? (
+            outside
+          ) : (
+            <button
+              type="button"
+              className="gate-focus"
+              title={`List the ${plural(tally.notAccepted ?? 0, "finding", "findings")} ${reachWords(tally.failOn)} that ${path} does not already accept`}
+              onClick={() => {
+                dispatch({ type: "focus", filters: focus });
+              }}
+            >
+              {outside}
+            </button>
+          )}
         </>
       )}
     </span>

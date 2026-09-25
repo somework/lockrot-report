@@ -13,9 +13,12 @@ test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);
 });
 
-test.describe("PD-BASELINE-1: the Findings tab's delta line", () => {
-  test("says what is new, worsened, accepted and gone, above the list", async ({ page }) => {
+test.describe("PD-BASELINE-1/7: the delta line, in the summary band", () => {
+  test("says what is new, worsened, accepted and gone, straight under the lead", async ({ page }) => {
     await report.goto(FIXTURES.wallabagBaseline);
+    // PD-BASELINE-7: in the band, under the lead, ahead of the tier — not over the list.
+    await expect(page.locator(".ledger > .ledger-lead + .bl-top")).toHaveCount(1);
+    await expect(page.locator(".shell-main .bl-top")).toHaveCount(0);
     await expect(page.locator(".bl-answer")).toHaveText(
       "Against lockrot-baseline.json: 4 new and 2 worsened since it was written, 63 already accepted.",
     );
@@ -84,7 +87,15 @@ test.describe("PD-BASELINE-3: the detail's baseline section comes first", () => 
     expect(headings[0]).toBe("Against the baseline");
     await expect(detail.locator(".bl-step .pill")).toHaveText(["stale", "silent"]);
     await expect(detail.locator(".detail-baseline")).toHaveText(
-      "lockrot-baseline.json recorded stale; it is silent now. It has got worse since.",
+      "lockrot-baseline.json accepted it as stale; it is silent now.",
+    );
+  });
+
+  test("an accepted package names --fail-on's rule, never a build outcome", async ({ page }) => {
+    await report.gotoWithHash(FIXTURES.wallabagBaseline, "pkg=behat%2Ftransliterator");
+    const detail = page.getByRole("complementary", { name: "behat/transliterator" });
+    await expect(detail.locator(".detail-baseline")).toHaveText(
+      "Already accepted in lockrot-baseline.json as abandoned. lockrot's --fail-on does not count it.",
     );
   });
 });
@@ -98,6 +109,11 @@ test.describe("PD-BASELINE-4: Run data's baseline stat row", () => {
       "swiftmailer/swiftmailer",
       "symfony/swiftmailer-bundle",
     ]);
+    // PD-BASELINE-6: each count lists its findings.
+    await page.locator(".bl-stat-btn", { hasText: /^2$/ }).click();
+    await expect(page.getByRole("tab", { name: /Findings/ })).toHaveAttribute("aria-selected", "true");
+    expect(await report.rows()).toEqual(["javibravo/simpleue", "symfony/web-server-bundle"]);
+    expect(await report.hash()).toContain("since=worsened");
   });
 });
 
@@ -106,10 +122,33 @@ test.describe("PD-BASELINE-5: the gate's tally", () => {
     page,
   }) => {
     await report.goto(FIXTURES.wallabagBaseline);
-    await expect(page.locator(".gate-tally")).toHaveText("41 at or above · 4 outside the baseline");
+    await expect(page.locator(".gate-tally")).toHaveText("41 at or above · 4 of them not accepted");
     await page.getByRole("button", { name: /^gate: high/ }).click();
-    await expect(page.locator(".fact-pop:not(.copy-pop)")).toContainText(
-      "41 findings in this report are at or above high",
-    );
+    const pop = page.locator(".fact-pop:not(.copy-pop)");
+    await expect(pop).toContainText("41 findings in this report are at or above high");
+    await expect(pop).toContainText("The page does not record the run's exit code.");
+  });
+
+  test("PD-BASELINE-6: 'of them not accepted' lists exactly those findings, from any tab", async ({
+    page,
+  }) => {
+    await report.gotoWithHash(FIXTURES.wallabagBaseline, "view=advisories");
+    await page.getByRole("button", { name: "4 of them not accepted" }).click();
+    await expect(page.getByRole("tab", { name: /Findings/ })).toHaveAttribute("aria-selected", "true");
+    expect((await report.rows()).sort()).toEqual([
+      "javibravo/simpleue",
+      "lcobucci/jwt",
+      "sensio/framework-extra-bundle",
+      "symfony/web-server-bundle",
+    ]);
+    expect(await report.hash()).toContain("since=new%2Cworsened");
+  });
+
+  test("the rail's Since title keeps the file name whole, in its own case", async ({ page }) => {
+    await report.goto(FIXTURES.wallabagBaseline);
+    await expect(page.locator(".rail-path")).toHaveText("lockrot-baseline.json");
+    const box = await page.locator(".rail-path").boundingBox();
+    // One line of 11.5px mono: well under two lines' height.
+    expect(box?.height ?? 99).toBeLessThan(22);
   });
 });

@@ -49,6 +49,8 @@ export type Action =
   | { type: "query"; q: string }
   | { type: "toggle"; group: FilterGroup; key: string }
   | { type: "clear" }
+  /** Findings, listed through exactly these rail filters: the query box emptied, no detail open. */
+  | { type: "focus"; filters: Filters }
   | { type: "sort"; key: SortKey }
   | { type: "select"; pkg: string | null }
   | { type: "disclose"; key: string; open: boolean }

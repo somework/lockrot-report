@@ -4,6 +4,22 @@ import { SIGNAL_DEFS } from "../../domain/vocab";
 import "./rail.css";
 
 /**
+ * A group's title. The Since group's names the baseline file ("Since lockrot-baseline.json"): set in
+ * the eyebrow's capitals, a hyphenated file name broke across two lines at its hyphen. The file name
+ * keeps its own case, in the mono every other file name on the page takes, on a line of its own that
+ * breaks only if the name is wider than the rail.
+ */
+function RailTitle({ title, path }: { title: string; path: string | undefined }) {
+  if (path === undefined || path === "" || !title.endsWith(path)) return <>{title}</>;
+  return (
+    <>
+      {title.slice(0, title.length - path.length)}
+      <span className="rail-path">{path}</span>
+    </>
+  );
+}
+
+/**
  * The left-hand filter rail: the since/scope/signal/fix groups `railGroups()` (domain/filters.ts)
  * hands back for the current tab, each row a toggle button. Ported from legacy `renderRail()`
  * (`report.js:319-394`).
@@ -26,7 +42,12 @@ export function Rail() {
     <div className="rail" role="group" aria-label="Filters">
       {railGroups(model, state).map((group) => (
         <div className="rail-group" key={group.group}>
-          <span className="eyebrow">{group.title}</span>
+          <span className="eyebrow">
+            <RailTitle
+              title={group.title}
+              path={group.group === "since" ? model.report.baseline?.path : undefined}
+            />
+          </span>
           <div className="opts">
             {group.rows.map((row) => (
               <button

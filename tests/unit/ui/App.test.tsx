@@ -648,7 +648,7 @@ describe("layout", () => {
     render(<App model={MINI} />);
     const button = screen.getByRole("button", { name: /^gate: silent/ });
     expect(button.getAttribute("title")).toContain("told to fail on silent");
-    expect(button.getAttribute("title")).toContain("does not record whether it did");
+    expect(button.getAttribute("title")).toContain("does not record the run's exit code");
   });
 
   test("beside the gate, a count of the findings at or above it (PD-BASELINE-5)", () => {
@@ -661,15 +661,35 @@ describe("layout", () => {
 
   test("with a baseline, the gate count also says how many the baseline does not accept (PD-BASELINE-5)", () => {
     render(<App model={loadModel("wallabag_baseline")} />);
+    // "of them": the 4 is a subset of the 41 (2 new + 2 worsened at or above high), never the
+    // delta line's "4 new", which the evaluator found it read as.
     expect(document.querySelector(".gate-tally")?.textContent).toBe(
-      "41 at or above · 4 outside the baseline",
+      "41 at or above · 4 of them not accepted",
     );
     const title = screen.getByRole("button", { name: /^gate: high/ }).getAttribute("title") ?? "";
     expect(title).toContain(
       "41 findings in this report are at or above high; 4 of them are not already accepted in lockrot-baseline.json.",
     );
-    // The caveat stays last: the count never reads as the run's result.
-    expect(title.endsWith("The page does not record whether it did.")).toBe(true);
+    // The caveat stays last, and names what it cannot know outright: "whether it did" lost its
+    // antecedent once the count sentence came between it and the rule.
+    expect(title.endsWith("The page does not record the run's exit code.")).toBe(true);
+  });
+
+  // PD-BASELINE-6: the subset is one press from the header.
+  test("the tally's 'of them not accepted' lists exactly those findings on Findings", () => {
+    render(<App model={loadModel("wallabag_baseline")} />);
+    fireEvent.click(screen.getByRole("tab", { name: /Run data/ }));
+    fireEvent.click(screen.getByRole("button", { name: "4 of them not accepted" }));
+    expect(screen.getByRole("tab", { name: /Findings/ }).getAttribute("aria-selected")).toBe("true");
+    expect(window.location.hash).toBe("#prio=critical%2Chigh&since=new%2Cworsened");
+    // The views are mocked here; e2e/baseline.spec.ts checks the four rows themselves.
+    const rail = screen.getByRole("group", { name: "Filters" });
+    expect(within(rail).getByRole("button", { name: /^New/ }).getAttribute("aria-pressed")).toBe("true");
+    expect(
+      within(rail)
+        .getByRole("button", { name: /^Worsened/ })
+        .getAttribute("aria-pressed"),
+    ).toBe("true");
   });
 
   test("no gate, no count", () => {

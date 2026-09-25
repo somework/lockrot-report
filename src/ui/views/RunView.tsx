@@ -1,6 +1,8 @@
 import { Fragment } from "preact";
 import type { BaselineSummary, LibyearsBlock } from "../../model/types";
 import { useReport } from "../context";
+import { baselineDelta } from "../../domain/baseline";
+import { EMPTY_FILTERS } from "../../state/types";
 import { fixed } from "../../domain/format";
 import { noteDocLink } from "../../domain/sniff";
 import { OutLink, NoWrap } from "../common/common";
@@ -14,18 +16,55 @@ function orDash(value: string | null): string {
   return value ?? "—";
 }
 
+type StatBucket = "new" | "worsened" | "known";
+
+/**
+ * One of the three counts, as a figure. PD-BASELINE-6: when the findings carry their own baseline
+ * state and the Findings tab counts the same number (`baselineDelta`), the figure is a button that
+ * lists those findings there — the Since filter alone, nothing else — so a reader on Run data is one
+ * press from the rows behind a number. Otherwise (a zero, or a summary block the findings cannot be
+ * filtered to) it stays a plain figure.
+ */
+function Stat({ bucket, label, count }: { bucket: StatBucket; label: string; count: number }) {
+  const { model, dispatch } = useReport();
+  const delta = baselineDelta(model);
+  const listable = delta !== null && delta.filterable && count > 0 && delta[bucket] === count;
+  const className = bucket === "known" ? "bl-stat" : "bl-stat bl-change";
+  return (
+    <div className={className}>
+      <dt>{label}</dt>
+      <dd>
+        {listable ? (
+          <button
+            type="button"
+            className="bl-stat-btn"
+            title={`List the ${count} ${label} ${count === 1 ? "finding" : "findings"} on Findings`}
+            onClick={() => {
+              dispatch({ type: "focus", filters: { ...EMPTY_FILTERS, since: [bucket] } });
+            }}
+          >
+            {count}
+          </button>
+        ) : (
+          count
+        )}
+      </dd>
+    </div>
+  );
+}
+
 /**
  * PD-BASELINE-4 (DESIGN.md §5): the baseline as a stat row — the four numbers lockrot recorded in
- * its summary block, new and worsened in the tones the rows' own tags wear, then the stale entries
- * by name. lockrot calls those `stale`; the label says "gone from the lock" first, so it never
- * reads as the verdict of the same name. Replaces legacy's raw `JSON.stringify` dump
- * (report.js:651), and the one-line sentence that followed it.
+ * its summary block, new and worsened in the baseline's accent as the rows' own tags are
+ * (PD-BASELINE-7), then the stale entries by name. lockrot calls those `stale`; the label says
+ * "gone from the lock" first, so it never reads as the verdict of the same name. Replaces legacy's
+ * raw `JSON.stringify` dump (report.js:651), and the one-line sentence that followed it.
  */
 function BaselineStats({ baseline }: { baseline: BaselineSummary }) {
-  const stats: readonly (readonly [label: string, count: number, tone: string])[] = [
-    ["new", baseline.new, "tone-crit"],
-    ["worsened", baseline.worsened, "tone-high"],
-    ["already accepted", baseline.known, ""],
+  const stats: readonly (readonly [bucket: StatBucket, label: string, count: number])[] = [
+    ["new", "new", baseline.new],
+    ["worsened", "worsened", baseline.worsened],
+    ["known", "already accepted", baseline.known],
   ];
   return (
     <section className="sect">
@@ -34,11 +73,8 @@ function BaselineStats({ baseline }: { baseline: BaselineSummary }) {
         Compared with <span className="mono">{baseline.path || "—"}</span>
       </p>
       <dl className="bl-stats">
-        {stats.map(([label, count, tone]) => (
-          <div key={label} className={tone ? `bl-stat ${tone}` : "bl-stat"}>
-            <dt>{label}</dt>
-            <dd>{count}</dd>
-          </div>
+        {stats.map(([bucket, label, count]) => (
+          <Stat key={bucket} bucket={bucket} label={label} count={count} />
         ))}
         <div className="bl-stat bl-stat-gone">
           <dt>gone from the lock (stale)</dt>

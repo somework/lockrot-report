@@ -202,3 +202,27 @@ describe("reducer / restore", () => {
     expect(next).toBe(restored);
   });
 });
+
+// PD-BASELINE-6: one press that lists a set counted elsewhere on the page.
+describe("reducer / focus", () => {
+  it("opens Findings with exactly the given filters, the query emptied and no detail open", () => {
+    // Arrange
+    const state: State = {
+      ...INITIAL_STATE,
+      view: "run",
+      q: "guzzle",
+      pkg: "acme/widget",
+      filters: { ...EMPTY_FILTERS, scope: ["dev"] },
+      sort: "package",
+      sortDesc: true,
+    };
+    const filters = { ...EMPTY_FILTERS, prio: ["critical", "high"], since: ["new", "worsened"] };
+
+    // Act
+    const next = reducer(state, { type: "focus", filters });
+
+    // Assert
+    expect(next).toEqual({ ...state, view: "findings", q: "", pkg: null, filters });
+    expect(state.view).toBe("run");
+  });
+});

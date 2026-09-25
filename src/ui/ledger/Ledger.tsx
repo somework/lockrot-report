@@ -2,6 +2,7 @@ import { Fragment } from "preact";
 import { useReport } from "../context";
 import { advisoryCheckIncomplete, allAdvisories } from "../../domain/advisories";
 import { foldPeek, rankVerdicts } from "../../domain/summary";
+import { BaselineDelta } from "./BaselineDelta";
 import { PriorityLedger } from "./PriorityLedger";
 import { VerdictLedger } from "./VerdictLedger";
 import { AdvisoryLedger } from "./AdvisoryLedger";
@@ -86,6 +87,9 @@ export function Ledger({ narrow = false }: { narrow?: boolean }) {
     // button on the page ever shares a chip's name.
     <div className="ledger" role="group" aria-label="Ledger">
       <PriorityLedger />
+      {/* PD-BASELINE-7: a run with a baseline answers against it straight under the lead, in view
+          on a phone too (it is not part of the fold). */}
+      <BaselineDelta />
       {narrow ? (
         <details className="ledger-fold">
           <FoldSummary />

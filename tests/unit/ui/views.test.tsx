@@ -15,6 +15,8 @@ import { PackagesView } from "../../../src/ui/views/PackagesView";
 import { AdvisoriesView } from "../../../src/ui/views/AdvisoriesView";
 import { RadiusView } from "../../../src/ui/views/RadiusView";
 import { RunView } from "../../../src/ui/views/RunView";
+import { BaselineDelta } from "../../../src/ui/ledger/BaselineDelta";
+import { Ledger } from "../../../src/ui/ledger/Ledger";
 import { renderedPackages } from "../../../src/ui/views/order";
 import { pickCursor } from "../../../src/ui/rowCursor";
 import { makeFinding, makeMetadata, makeModel, makeSignal } from "../domain/fixtures";
@@ -1549,6 +1551,24 @@ describe("RunView", () => {
     ]);
     // The stat row replaces the Run list's own baseline row.
     expect(screen.queryByText("baseline", { selector: "dt" })).toBeNull();
+    // No per-finding state in this model: nothing to list, so the figures stay plain.
+    expect(document.querySelector(".bl-stat-btn")).toBeNull();
+  });
+
+  // PD-BASELINE-6: a figure the Findings tab counts the same is one press from its rows.
+  it("makes each non-zero count a press that lists its findings on Findings", () => {
+    const { dispatch } = renderIn(
+      loadModel("wallabag_baseline.json"),
+      stateWith({ view: "run" }),
+      <RunView />,
+    );
+    const buttons = [...document.querySelectorAll<HTMLButtonElement>(".bl-stat-btn")];
+    expect(buttons.map((b) => b.textContent)).toEqual(["4", "2", "63"]);
+    fireEvent.click(buttons[1] as HTMLButtonElement);
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "focus",
+      filters: { ...INITIAL_STATE.filters, since: ["worsened"] },
+    });
   });
 
   it("says 'none' for the baseline in the Run list when the run had none", () => {
@@ -1683,16 +1703,19 @@ describe("the list's one Tab stop (PD-ROWS-11)", () => {
   });
 });
 
-// PD-BASELINE-1/2 (DESIGN.md §5): the Findings tab's delta line and the rows' baseline tags.
-describe("the baseline on the Findings tab", () => {
+// PD-BASELINE-1/2/7 (DESIGN.md §5): the delta line — in the summary band since PD-BASELINE-7 —
+// and the Findings rows' baseline tags.
+describe("the baseline delta line and row tags", () => {
   const BASELINE = loadModel("wallabag_baseline.json");
 
   function deltaText(): string {
     return document.querySelector(".bl-answer")?.textContent ?? "";
   }
 
-  it("says how the list stands against the baseline, above the list", () => {
-    renderIn(BASELINE, stateWith(), <FindingsView />);
+  it("says how the list stands against the baseline, in the summary band under the lead", () => {
+    renderIn(BASELINE, stateWith(), <Ledger />);
+    const lead = document.querySelector(".ledger-lead");
+    expect(lead?.nextElementSibling?.classList.contains("bl-top")).toBe(true);
     expect(deltaText()).toBe(
       "Against lockrot-baseline.json: 4 new and 2 worsened since it was written, 63 already accepted.",
     );
@@ -1702,7 +1725,7 @@ describe("the baseline on the Findings tab", () => {
   });
 
   it("makes each count the Since filter it names", () => {
-    const { dispatch } = renderIn(BASELINE, stateWith(), <FindingsView />);
+    const { dispatch } = renderIn(BASELINE, stateWith(), <BaselineDelta />);
     const toggle = screen.getByRole("button", { name: "4 new" });
     expect(toggle.getAttribute("aria-pressed")).toBe("false");
     fireEvent.click(toggle);
@@ -1715,7 +1738,7 @@ describe("the baseline on the Findings tab", () => {
     renderIn(
       BASELINE,
       stateWith({ filters: { ...INITIAL_STATE.filters, since: ["worsened"] } }),
-      <FindingsView />,
+      <BaselineDelta />,
     );
     expect(screen.getByRole("button", { name: "2 worsened" }).getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByRole("button", { name: "4 new" }).getAttribute("aria-pressed")).toBe("false");
@@ -1729,7 +1752,7 @@ describe("the baseline on the Findings tab", () => {
       ...model,
       report: { ...model.report, baseline: { path: "b.json", known: 1, new: 0, worsened: 0, stale: [] } },
     };
-    renderIn(withBaseline, stateWith(), <FindingsView />);
+    renderIn(withBaseline, stateWith(), <BaselineDelta />);
     expect(deltaText()).toBe(
       "Against b.json: nothing new or worsened since it was written, 1 already accepted.",
     );
@@ -1744,7 +1767,7 @@ describe("the baseline on the Findings tab", () => {
         baseline: { path: "b.json", known: 63, new: 4, worsened: 2, stale: ["a/a", "b/b", "c/c", "d/d"] },
       },
     };
-    const { dispatch } = renderIn(withMany, stateWith(), <FindingsView />);
+    const { dispatch } = renderIn(withMany, stateWith(), <BaselineDelta />);
     expect(document.querySelector(".bl-gone-note")?.textContent).toBe(
       "4 entries in it are gone from the lock — listed on Run data.",
     );
@@ -1753,8 +1776,26 @@ describe("the baseline on the Findings tab", () => {
   });
 
   it("draws nothing when the run had no baseline", () => {
-    renderIn(loadModel("wallabag_wallabag.json"), stateWith(), <FindingsView />);
+    renderIn(loadModel("wallabag_wallabag.json"), stateWith(), <Ledger />);
     expect(document.querySelector(".bl-top")).toBeNull();
+  });
+
+  it("is no longer drawn over the Findings list itself (PD-BASELINE-7)", () => {
+    renderIn(BASELINE, stateWith(), <FindingsView />);
+    expect(document.querySelector(".bl-top")).toBeNull();
+  });
+
+  it("stays in view on a phone: the fold holds the tier, never the delta line", () => {
+    renderIn(BASELINE, stateWith(), <Ledger narrow />);
+    expect(document.querySelector(".bl-top")?.closest("details")).toBeNull();
+  });
+
+  // PD-BASELINE-7: the baseline's own colour, never a priority's tone.
+  it("sets new and worsened in the baseline's accent, not critical or high", () => {
+    renderIn(BASELINE, stateWith(), <BaselineDelta />);
+    const counts = [...document.querySelectorAll(".bl-answer .bl-count")];
+    expect(counts.map((c) => c.classList.contains("bl-change"))).toEqual([true, true, false]);
+    expect(counts.some((c) => /tone-(crit|high)/.test(c.className))).toBe(false);
   });
 
   it("names the verdict a worsened row was accepted at", () => {
@@ -1764,5 +1805,8 @@ describe("the baseline on the Findings tab", () => {
     expect(tag.getAttribute("title")).toBe("lockrot-baseline.json accepted it as stale; it is silent now");
     const fresh = screen.getByRole("listitem", { name: "lcobucci/jwt" });
     expect(within(fresh).getByText("new").getAttribute("title")).toBe("not in lockrot-baseline.json");
+    // PD-BASELINE-7: the baseline's accent tag, not the critical/high tones the verdict wears.
+    expect(tag.className).toBe("tag bl-tag");
+    expect(within(fresh).getByText("new").className).toBe("tag bl-tag");
   });
 });

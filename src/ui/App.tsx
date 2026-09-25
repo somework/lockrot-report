@@ -347,13 +347,25 @@ export function App({ model }: { model: Model }) {
   // hashchange restore — scrolled to 0 regardless of who caused it (regression review).
   const currentView = useRef(state.view);
   currentView.current = state.view;
+  const listFocused = useRef(false);
   const dispatchTracked = useCallback(
     (action: Action) => {
       if (action.type === "view" && action.view !== currentView.current) tabChangedByReader.current = true;
+      if (action.type === "focus") listFocused.current = true;
       dispatch(action);
     },
     [dispatch],
   );
+
+  // A "focus" action (the header's gate tally, a Run data count) lists a set it counted somewhere
+  // else on the page, often a screen away from the list: the list's own top — the search box and
+  // its "N of M" line — is brought under the sticky header so the reader sees what the press did.
+  useEffect(() => {
+    if (!listFocused.current) return;
+    listFocused.current = false;
+    const panel = document.getElementById(`${idBase}-panel`);
+    if (typeof panel?.scrollIntoView === "function") panel.scrollIntoView({ block: "start" });
+  }, [state]);
 
   useEffect(() => {
     if (!tabChangedByReader.current) return;

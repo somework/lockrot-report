@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { baselineDelta, baselineStep, findingsCarryBaseline, gateTally } from "../../../src/domain/baseline";
+import {
+  baselineDelta,
+  baselineStep,
+  findingsCarryBaseline,
+  gateFocus,
+  gateTally,
+} from "../../../src/domain/baseline";
+import { applyFilters } from "../../../src/domain/filters";
+import { EMPTY_FILTERS, INITIAL_STATE } from "../../../src/state/types";
 import type { BaselineSummary, Finding, Model } from "../../../src/model/types";
 import { makeFinding, makeModel, makeSignal } from "./fixtures";
 
@@ -172,5 +180,69 @@ describe("gateTally", () => {
 
   it("leaves the not-accepted count out when the findings carry no state to count it from", () => {
     expect(gateTally(modelWith(findings, { failOn: "high", baseline: SUMMARY }))?.notAccepted).toBeNull();
+  });
+});
+
+// PD-BASELINE-6: the rail filters behind the header's "N of them not accepted".
+describe("gateFocus", () => {
+  const worsened = { status: "worsened", previousVerdict: "stale" } as const;
+  const fresh = { status: "new", previousVerdict: null } as const;
+  const findings = [
+    known("a/crit", { verdict: "abandoned", priority: "critical" }),
+    makeFinding({ package: "s/high", verdict: "silent", priority: "high", baseline: worsened }),
+    makeFinding({ package: "n/crit", verdict: "abandoned", priority: "critical", baseline: fresh }),
+    makeFinding({ package: "n/low", verdict: "stale", priority: "low", baseline: fresh }),
+  ];
+
+  it("lists the not-accepted findings at or above a priority threshold, and only them", () => {
+    // Act
+    const model = modelWith(findings, { failOn: "high", baseline: SUMMARY });
+    const filters = gateFocus(model);
+
+    // Assert: the new low one and the accepted critical one are both left out.
+    expect(filters).toEqual({ ...EMPTY_FILTERS, prio: ["critical", "high"], since: ["new", "worsened"] });
+    const listed = applyFilters(model, { ...INITIAL_STATE, filters: filters ?? EMPTY_FILTERS }, "findings");
+    expect(listed.map((f) => f.package).sort()).toEqual(["n/crit", "s/high"]);
+    expect(listed).toHaveLength(gateTally(model)?.notAccepted ?? -1);
+  });
+
+  it("uses the verdict group for a verdict threshold, in lockrot's severity order", () => {
+    const filters = gateFocus(modelWith(findings, { failOn: "silent", baseline: SUMMARY }));
+    expect(filters?.verdict).toEqual(["abandoned", "silent"]);
+    expect(filters?.prio).toEqual([]);
+  });
+
+  it("uses the S10 signal for unchecked", () => {
+    const s10 = makeFinding({
+      package: "u/s10",
+      verdict: "stale",
+      priority: "low",
+      signals: [makeSignal({ id: "S10" })],
+      baseline: fresh,
+    });
+    expect(gateFocus(modelWith([...findings, s10], { failOn: "unchecked", baseline: SUMMARY }))).toEqual({
+      ...EMPTY_FILTERS,
+      signal: ["S10"],
+      since: ["new"],
+    });
+  });
+
+  it("is null with no baseline, no gate, or nothing outside the baseline to list", () => {
+    expect(gateFocus(modelWith(findings, { failOn: "high" }))).toBeNull();
+    expect(gateFocus(modelWith(findings, { baseline: SUMMARY }))).toBeNull();
+    expect(gateFocus(modelWith(findings, { failOn: "none", baseline: SUMMARY }))).toBeNull();
+    expect(gateFocus(modelWith([findings[0] as Finding], { failOn: "high", baseline: SUMMARY }))).toBeNull();
+  });
+
+  it("is null when a finding in the set has no baseline state the Since filter could match", () => {
+    // s/nostate reaches high and is not accepted, but the rail cannot select a finding with no state.
+    const nostate = makeFinding({ package: "s/nostate", verdict: "silent", priority: "high" });
+    expect(gateFocus(modelWith([...findings, nostate], { failOn: "high", baseline: SUMMARY }))).toBeNull();
+  });
+
+  it("is null when a finding in the set is not on the Findings list at all", () => {
+    // An unflagged verdict carrying a high priority would be counted but never listed.
+    const unlisted = makeFinding({ package: "ok/high", verdict: "ok", priority: "high", baseline: fresh });
+    expect(gateFocus(modelWith([...findings, unlisted], { failOn: "high", baseline: SUMMARY }))).toBeNull();
   });
 });

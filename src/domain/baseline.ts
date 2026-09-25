@@ -9,7 +9,8 @@
 
 import type { Finding, Model, Verdict } from "../model/types";
 import { PRIORITIES } from "../model/types";
-import { population, sinceBucket } from "./filters";
+import { EMPTY_FILTERS, INITIAL_STATE, type Filters } from "../state/types";
+import { applyFilters, population, sinceBucket } from "./filters";
 import { VERDICT_ORDER } from "./vocab";
 
 /** The Findings tab's delta line: how the flagged list stands against the baseline file. */
@@ -133,4 +134,55 @@ export function gateTally(model: Model): GateTally | null {
     reached: reached.length,
     notAccepted: counted ? reached.filter((f) => f.baseline?.status !== "known").length : null,
   };
+}
+
+/** `keys` in `order`, each once, keeping only the ones present. */
+function inOrder(order: readonly string[], keys: readonly string[]): readonly string[] {
+  return order.filter((key) => keys.includes(key));
+}
+
+/**
+ * The rail filters that list exactly the tally's `notAccepted` findings on the Findings tab — the
+ * Since buckets they sit in, ANDed with the priorities (or verdicts, or S10) that reach `failOn` —
+ * or `null` when no combination of the rail's own groups lists that set and nothing else. Checked,
+ * not assumed: the filters are run over the Findings population and must return the same findings,
+ * so the header never offers a link whose list disagrees with the count it is drawn on. Filters
+ * only; nothing here ranks, advises or says what the run's exit code was.
+ */
+export function gateFocus(model: Model): Filters | null {
+  const failOn = model.report.run.failOn;
+  const reaches = failOn === null ? null : reachesFn(failOn);
+  if (failOn === null || reaches === null || model.report.baseline === null) return null;
+  // The same set `gateTally` counts as `notAccepted` — a finding with no state included — so a
+  // finding the Since filter cannot select makes this null below rather than silently dropping out.
+  const set = model.report.findings.filter((f) => reaches(f) && f.baseline?.status !== "known");
+  if (set.length === 0) return null;
+
+  const buckets = set.map(sinceBucket);
+  if (buckets.some((bucket) => bucket === null)) return null;
+  const since = inOrder(
+    ["new", "worsened"],
+    buckets.filter((b): b is "new" | "worsened" => b !== null),
+  );
+  const level: Partial<Filters> =
+    failOn === UNCHECKED
+      ? { signal: ["S10"] }
+      : (PRIORITIES as readonly string[]).includes(failOn)
+        ? {
+            prio: inOrder(
+              PRIORITIES,
+              set.map((f) => f.priority),
+            ),
+          }
+        : {
+            verdict: inOrder(
+              VERDICT_ORDER,
+              set.map((f) => f.verdict),
+            ),
+          };
+  const filters: Filters = { ...EMPTY_FILTERS, ...level, since };
+
+  const listed = applyFilters(model, { ...INITIAL_STATE, filters }, "findings");
+  const same = listed.length === set.length && listed.every((f) => set.includes(f));
+  return same ? filters : null;
 }

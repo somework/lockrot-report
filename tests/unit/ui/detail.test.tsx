@@ -769,15 +769,14 @@ describe("Detail", () => {
 
     it("says a finding is new since the baseline was written", () => {
       renderDetail(EXTRA_MODEL, "vendor/newpkg");
-      expect(screen.getByText("Not in baseline.json. This one is new since it was written.")).toBeTruthy();
+      expect(screen.getByText("Not in baseline.json: new since it was written.")).toBeTruthy();
     });
 
     it("names the previous verdict and the current one for a worsened finding (PD-BASELINE-3)", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/worsened");
       const paragraph = container.querySelector(".detail-baseline");
-      expect(paragraph?.textContent).toBe(
-        "baseline.json recorded stale; it is left-behind now. It has got worse since.",
-      );
+      // The pills and the status word already say it got worse; the sentence says what moved.
+      expect(paragraph?.textContent).toBe("baseline.json accepted it as stale; it is left-behind now.");
       const words = [...(paragraph?.querySelectorAll(".mono") ?? [])].map((node) => node.textContent);
       expect(words).toEqual(["stale", "left-behind"]);
     });
@@ -800,10 +799,10 @@ describe("Detail", () => {
       ]);
     });
 
-    it("says what an accepted finding was accepted as", () => {
+    it("says what an accepted finding was accepted as, and no build outcome the report does not record", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/known");
       expect(container.querySelector(".detail-baseline")?.textContent).toBe(
-        "Already accepted in baseline.json as left-behind. It does not fail the build.",
+        "Already accepted in baseline.json as left-behind.",
       );
       // Accepted as left-behind, stale now: it moved, so the step is drawn.
       expect(container.querySelector(".bl-step")?.textContent).toContain("accepted");
@@ -830,8 +829,36 @@ describe("Detail", () => {
       const { container } = renderDetail(model.model, "vendor/same");
       expect(container.querySelector(".bl-step")).toBeNull();
       expect(container.querySelector(".detail-baseline")?.textContent).toBe(
-        "Already accepted in baseline.json as stale. It does not fail the build.",
+        "Already accepted in baseline.json as stale.",
       );
+    });
+
+    // Evaluator: "It does not fail the build." stated an outcome the report does not record (no exit
+    // code, and --strict-network can still fail a run). With a gate on the run the sentence names
+    // lockrot's own counting rule instead; with none, it adds nothing.
+    it("with a gate on the run, names --fail-on's counting rule rather than a build outcome", () => {
+      const model = normalize({
+        report: {
+          lockrot: { version: "0.11.0", schema: 1 },
+          generated_at: "2026-01-01T00:00:00Z",
+          run: { fail_on: "high" },
+          baseline: { path: "baseline.json", known: 1, new: 0, worsened: 0, stale: [] },
+          findings: [
+            {
+              package: "vendor/same",
+              version: "1.0.0",
+              verdict: "stale",
+              priority: "low",
+              baseline: { status: "known", previous_verdict: "stale" },
+            },
+          ],
+        },
+      });
+      if (!model.ok) throw new Error(model.error.message);
+      const { container } = renderDetail(model.model, "vendor/same");
+      const text = container.querySelector(".detail-baseline")?.textContent ?? "";
+      expect(text).toBe("Already accepted in baseline.json as stale. lockrot's --fail-on does not count it.");
+      expect(text).not.toMatch(/build|pass|fail the/);
     });
   });
 

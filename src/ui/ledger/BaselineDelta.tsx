@@ -1,9 +1,8 @@
 import type { ComponentChildren } from "preact";
 import { baselineDelta, type BaselineDelta as Delta } from "../../domain/baseline";
-import type { Tone } from "../../domain/vocab";
-import { filterTitle, toneClass } from "../common/common";
+import { filterTitle } from "../common/common";
 import { useReport } from "../context";
-import "./baseline.css";
+import "../views/baseline.css";
 
 /** How many names the sentence spells out before it says "N of its packages" and points at Run
  *  data, where every one is listed. Three is what a sentence carries without becoming a list. */
@@ -21,18 +20,18 @@ type Bucket = "new" | "worsened" | "known";
 function Count({
   bucket,
   count,
-  tone,
   filterable,
   children,
 }: {
   bucket: Bucket;
   count: number;
-  tone: Tone | null;
   filterable: boolean;
   children: ComponentChildren;
 }) {
   const { state, dispatch } = useReport();
-  const toned = tone === null ? "bl-count" : `bl-count ${toneClass(tone)}`;
+  // New and worsened wear the baseline's own accent (PD-BASELINE-7), never a priority's tone: red
+  // and orange already mean critical and high on every row this sentence sits above.
+  const toned = bucket === "known" ? "bl-count" : "bl-count bl-change";
   if (count === 0 || !filterable) {
     return (
       <span className={toned}>
@@ -105,11 +104,13 @@ function Gone({ delta }: { delta: Delta }) {
 }
 
 /**
- * The Findings tab's delta line (PD-BASELINE-1, DESIGN.md §5): the answer a reviewer with a
- * baseline opens the page for — what is new, what got worse, what the file already accepts, what it
- * lists that has left the lock — in the serif the tab's other answers use, above the list it
- * describes. Every number is a count lockrot recorded (`domain/baseline.ts`); nothing here says
- * what the run's exit code was.
+ * The baseline's delta line (PD-BASELINE-1, DESIGN.md §5): the answer a reviewer with a baseline
+ * opens the page for — what is new, what got worse, what the file already accepts, what it lists
+ * that has left the lock — in the serif the band's other answers use. PD-BASELINE-7 moved it from
+ * the top of the Findings list into the summary band, straight under the lead: it sat under the
+ * figure, the waffle and three panels, fourth in line for the one question a baseline run is opened
+ * to answer. Every number is a count lockrot recorded (`domain/baseline.ts`); nothing here says what
+ * the run's exit code was.
  */
 export function BaselineDelta() {
   const { model } = useReport();
@@ -126,18 +127,18 @@ export function BaselineDelta() {
           <>nothing new or worsened since it was written</>
         ) : (
           <>
-            <Count bucket="new" count={delta.new} tone="crit" filterable={filterable}>
+            <Count bucket="new" count={delta.new} filterable={filterable}>
               new
             </Count>{" "}
             and{" "}
-            <Count bucket="worsened" count={delta.worsened} tone="high" filterable={filterable}>
+            <Count bucket="worsened" count={delta.worsened} filterable={filterable}>
               worsened
             </Count>{" "}
             since it was written
           </>
         )}
         ,{" "}
-        <Count bucket="known" count={delta.known} tone={null} filterable={filterable}>
+        <Count bucket="known" count={delta.known} filterable={filterable}>
           already accepted
         </Count>
         .

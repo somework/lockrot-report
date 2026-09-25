@@ -2,7 +2,7 @@ import type { TargetedMouseEvent } from "preact";
 import type { Action } from "../../state/types";
 import type { Finding, Signal } from "../../model/types";
 import { useReport } from "../context";
-import { Tag, toneClass } from "../common/common";
+import { toneClass } from "../common/common";
 import { AdvisoryChip } from "../common/AdvisoryChip";
 import { DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC, TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { ageNotRead, ageScale, type AgeAxis } from "../../domain/age";
@@ -13,6 +13,7 @@ import { MatchNote, useSearchHit } from "../search/MatchNote";
 import { usePrinted } from "../print/printContext";
 import "./views.css";
 import "./ledger-rows.css";
+import "./baseline.css";
 
 /**
  * The click contract every list row shares — Findings, Packages, Advisories and Blast radius: a
@@ -89,7 +90,8 @@ function SignalLine({ signal, tabIndex }: { signal: Signal; tabIndex: -1 | undef
 
 /** The baseline state first (if new/worsened), as legacy ordered the row's tags. A worsened row
  *  names the verdict the baseline accepted (PD-BASELINE-2, DESIGN.md §5), so the step it took is
- *  read on the row rather than only in its detail. */
+ *  read on the row rather than only in its detail. Both wear the baseline's accent (PD-BASELINE-7,
+ *  views/baseline.css), not the critical and high tones the row's own verdict and priority use. */
 function BaselineTag({ finding }: { finding: Finding }) {
   const { model } = useReport();
   const baseline = finding.baseline;
@@ -98,15 +100,15 @@ function BaselineTag({ finding }: { finding: Finding }) {
   const path = model.report.baseline?.path || "the baseline file";
   if (status === "new") {
     return (
-      <Tag tone="crit" title={`not in ${path}`}>
+      <span className="tag bl-tag" title={`not in ${path}`}>
         new
-      </Tag>
+      </span>
     );
   }
   const previous = baseline.previousVerdict;
   return (
-    <Tag
-      tone="high"
+    <span
+      className="tag bl-tag"
       title={
         previous === null
           ? `${path} recorded a milder verdict`
@@ -114,7 +116,7 @@ function BaselineTag({ finding }: { finding: Finding }) {
       }
     >
       {previous === null ? "worsened" : `worsened from ${previous}`}
-    </Tag>
+    </span>
   );
 }
 

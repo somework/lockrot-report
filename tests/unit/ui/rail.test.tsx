@@ -172,7 +172,10 @@ describe("Rail", () => {
     renderIn(<Rail />, model, INITIAL_STATE);
 
     // Assert
-    expect(screen.getByText("Since baseline.json")).toBeTruthy();
+    const title = screen.getByText("baseline.json", { selector: ".rail-path" });
+    // The file name keeps its own case on a line of its own, out of the eyebrow's capitals, so a
+    // hyphenated name never breaks at its hyphen (evaluator: "SINCE LOCKROT-" / "BASELINE.JSON").
+    expect(title.parentElement?.textContent).toBe("Since baseline.json");
     expect(screen.getByRole("button", { name: /^New /i }).textContent).toContain("1");
     expect(screen.getByRole("button", { name: /^Already accepted /i }).textContent).toContain("1");
   });

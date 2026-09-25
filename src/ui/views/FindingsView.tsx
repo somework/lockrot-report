@@ -10,7 +10,6 @@ import { AgeAxis as AgeAxisHead } from "./AgeScale";
 import { FindingRow, NO_DITTO, type Ditto } from "./FindingRow";
 import { GroupSentence, RunNote } from "./LedgerNotes";
 import { EmptyState } from "./EmptyState";
-import { BaselineDelta } from "./BaselineDelta";
 import { usePrinted } from "../print/printContext";
 import "./views.css";
 import "./ledger-rows.css";
@@ -265,7 +264,6 @@ export function FindingsView() {
 
   return (
     <div>
-      <BaselineDelta />
       {quiet.length > 0 && <QuietNote quiet={quiet} />}
       {visible.length === 0 ? (
         <EmptyState reason={population(model, "findings").length === 0 ? "clean" : "filtered"} />
