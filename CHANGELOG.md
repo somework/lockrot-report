@@ -25,8 +25,8 @@ tag or the address format, says so under **Breaking** in its entry.
   button to clear them; the search status says so too.
 - The glossary's `finished` entry says how to accept a package you consider complete yourself, with
   `extra.lockrot.ignore`.
-- The All packages table says, next to a libyears value of exactly `0.0`, when that is because the
-  installed release is the newest one lockrot knows of.
+- The All packages table says, next to a libyears value of exactly `0.0`, why: the installed release
+  is the newest lockrot knows of, or it is not behind the newest stable release.
 
 ### Changed
 
