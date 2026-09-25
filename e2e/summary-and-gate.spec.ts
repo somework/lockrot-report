@@ -126,10 +126,11 @@ test.describe("PD-SUMMARY-2: the header's gate fact", () => {
   });
 
   test("Escape closes the popover, and — over an open detail — only the popover, not the detail underneath it", async () => {
-    // mini.json auto-opens vendor/transitive's detail on a wide screen (boot pick); its fail-on is
-    // 'silent', so the gate fact renders too. One Escape must close only the popover; a second one
+    // mini.json's fail-on is 'silent', so the gate fact renders; vendor/transitive is opened first
+    // (nothing opens by itself, PD-ROWS-9). One Escape must close only the popover; a second one
     // then reaches the detail, same chain as when there is no popover at all (keyboard.ts#decideEscape).
     await report.goto(FIXTURES.mini);
+    await report.openPackage("vendor/transitive");
     expect((await report.detail()).open).toBe(true);
     await report.openGateFact();
     expect(await report.isGateFactOpen()).toBe(true);

@@ -105,10 +105,48 @@ afterEach(() => {
   cleanup();
 });
 
+function shellClasses(): string[] {
+  return Array.from(document.querySelector("main.shell")?.classList ?? []);
+}
+
 describe("boot", () => {
-  test("opens the first flagged package on a wide screen, and keeps it out of the address", async () => {
+  // PD-ROWS-9: the legacy page (and this one until the ledger rows) opened the first flagged
+  // package by itself on a wide screen. Now the list takes the full width until the reader opens a
+  // row, so the dense one-line rows are what a wide screen shows first.
+  test("opens no package on a wide screen: the list keeps the full width and the address stays bare", async () => {
+    render(<App model={MINI} />);
+    expect(detailName()).toBeNull();
+    expect(shellClasses()).toContain("no-detail");
+    expect(document.querySelector(".shell-detail")).toBeNull();
+    await waitFor(() => {
+      expect(location.hash).toBe("");
+    });
+  });
+
+  test("a deep link still opens its package on load, beside the list on a wide screen", async () => {
+    history.replaceState(null, "", "/report.html#pkg=vendor%2Ftransitive");
     render(<App model={MINI} />);
     expect(detailName()).toBe("vendor/transitive");
+    expect(shellClasses()).not.toContain("no-detail");
+    expect(document.querySelector(".shell-detail")?.classList.contains("is-side")).toBe(true);
+    await waitFor(() => {
+      expect(location.hash).toBe("#pkg=vendor%2Ftransitive");
+    });
+  });
+
+  test("a row opened on a wide screen reaches the address, and closing it gives the list its width back", async () => {
+    render(<App model={MINI} />);
+    fireEvent.click(screen.getByRole("option", { name: "vendor/snapshot" }));
+    expect(detailName()).toBe("vendor/snapshot");
+    expect(shellClasses()).not.toContain("no-detail");
+    await waitFor(() => {
+      expect(location.hash).toBe("#pkg=vendor%2Fsnapshot");
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    expect(detailName()).toBeNull();
+    expect(shellClasses()).toContain("no-detail");
     await waitFor(() => {
       expect(location.hash).toBe("");
     });
@@ -128,10 +166,10 @@ describe("boot", () => {
     expect(detailName()).toBe("vendor/snapshot");
   });
 
-  test("bootState leaves a named package alone and never auto-picks on a narrow screen", () => {
-    expect(bootState(MINI, "#pkg=x", true)).toMatchObject({ pkg: "x", pkgAuto: false });
-    expect(bootState(MINI, "", false)).toMatchObject({ pkg: null });
-    expect(bootState(MINI, "", true)).toMatchObject({ pkg: "vendor/transitive", pkgAuto: true });
+  test("bootState is the address alone: a named package opens, an unnamed one never does", () => {
+    expect(bootState("#pkg=x")).toMatchObject({ pkg: "x" });
+    expect(bootState("")).toEqual(INITIAL_STATE);
+    expect(bootState("#view=packages")).toMatchObject({ view: "packages", pkg: null });
   });
 
   test("a pasted link replaces the state but keeps the table's sort", () => {
@@ -261,7 +299,7 @@ describe("keyboard", () => {
     const search = screen.getByRole("searchbox");
     expect(document.activeElement).toBe(search);
     key("j", search);
-    expect(detailName()).toBe("vendor/transitive"); // the boot pick, untouched
+    expect(detailName()).toBeNull(); // j typed as text never opened the first row
   });
 });
 
@@ -273,12 +311,12 @@ describe("glossary", () => {
     expect(dialog.textContent).toContain("S10");
     expect(dialog.textContent).toContain("a check could not run");
     key("j");
-    expect(detailName()).toBe("vendor/transitive");
+    expect(detailName()).toBeNull(); // j behind the dialog did not open the first row
     key("Escape");
     await waitFor(() => {
       expect((dialog as HTMLDialogElement).open).toBe(false);
     });
-    expect(detailName()).toBe("vendor/transitive");
+    expect(detailName()).toBeNull();
   });
 
   test("falls back to a pinned open dialog when showModal() throws (M28)", async () => {

@@ -139,7 +139,7 @@ function RailSlot({ narrow }: { narrow: boolean }) {
 export function App({ model }: { model: Model }) {
   const wide = useWide();
   const narrow = useNarrow();
-  const [state, dispatch] = useHashState(model, wide);
+  const [state, dispatch] = useHashState();
   const theme = useTheme();
   const [glossaryOpen, setGlossaryOpen] = useState(false);
   // The verdict word "In the glossary" opens to, or null for the "?" shortcut and Header's own
@@ -170,7 +170,7 @@ export function App({ model }: { model: Model }) {
   // page's scroll wherever it was on the tab just left — a Findings list scrolled down to
   // "hoa/compiler" handed the next tab's much shorter content the same scroll offset, landing mid
   // list with no sign why. `dispatchTracked` marks every `"view"` action this ref sees; the effect
-  // below fires only for those, never for the boot pick or a `hashchange` restore (`useHashState`
+  // below fires only for those, never for the boot state or a `hashchange` restore (`useHashState`
   // reaches the reducer directly for both, through `restore`/the lazy initial state, and never
   // dispatches `"view"` at all), so a pasted link that restores a tab does not fight a reader's own
   // scroll position.

@@ -275,7 +275,6 @@ function renderDetail(
     view: "findings",
     q: "",
     pkg,
-    pkgAuto: false,
     sort: "verdict",
     sortDesc: false,
     filters: EMPTY_FILTERS,

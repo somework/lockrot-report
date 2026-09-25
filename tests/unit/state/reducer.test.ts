@@ -6,7 +6,7 @@ import type { State } from "../../../src/state/types";
 describe("reducer / view", () => {
   it("switches the active tab and closes an open detail pane", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, view: "findings", pkg: "acme/widget", pkgAuto: false };
+    const state: State = { ...INITIAL_STATE, view: "findings", pkg: "acme/widget" };
 
     // Act
     const next = reducer(state, { type: "view", view: "packages" });
@@ -14,12 +14,11 @@ describe("reducer / view", () => {
     // Assert
     expect(next.view).toBe("packages");
     expect(next.pkg).toBeNull();
-    expect(next.pkgAuto).toBe(false);
   });
 
   it("keeps the open detail pane when keepDetail is set, as data-goto does", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, view: "findings", pkg: "acme/widget", pkgAuto: true };
+    const state: State = { ...INITIAL_STATE, view: "findings", pkg: "acme/widget" };
 
     // Act
     const next = reducer(state, { type: "view", view: "advisories", keepDetail: true });
@@ -27,7 +26,6 @@ describe("reducer / view", () => {
     // Assert
     expect(next.view).toBe("advisories");
     expect(next.pkg).toBe("acme/widget");
-    expect(next.pkgAuto).toBe(true);
   });
 
   it("does not mutate the original state object", () => {
@@ -107,7 +105,6 @@ describe("reducer / clear", () => {
       q: "left-pad",
       view: "packages",
       pkg: "acme/widget",
-      pkgAuto: false,
       sort: "libyears",
       sortDesc: true,
       filters: { ...EMPTY_FILTERS, prio: ["high"], verdict: ["stale"] },
@@ -163,40 +160,27 @@ describe("reducer / sort", () => {
   });
 });
 
-describe("reducer / select and autoSelect", () => {
-  it("select sets the package and clears the automatic-pick flag", () => {
+describe("reducer / select", () => {
+  it("select opens the package and changes nothing else", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, pkg: null, pkgAuto: true };
+    const state = INITIAL_STATE;
 
     // Act
     const next = reducer(state, { type: "select", pkg: "acme/widget" });
 
     // Assert
-    expect(next.pkg).toBe("acme/widget");
-    expect(next.pkgAuto).toBe(false);
+    expect(next).toEqual({ ...INITIAL_STATE, pkg: "acme/widget" });
   });
 
   it("select with null closes the detail pane", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, pkg: "acme/widget", pkgAuto: false };
+    const state: State = { ...INITIAL_STATE, pkg: "acme/widget" };
 
     // Act
     const next = reducer(state, { type: "select", pkg: null });
 
     // Assert
     expect(next.pkg).toBeNull();
-  });
-
-  it("autoSelect sets the package and marks it as the automatic pick", () => {
-    // Arrange
-    const state = INITIAL_STATE;
-
-    // Act
-    const next = reducer(state, { type: "autoSelect", pkg: "acme/widget" });
-
-    // Assert
-    expect(next.pkg).toBe("acme/widget");
-    expect(next.pkgAuto).toBe(true);
   });
 });
 

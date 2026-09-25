@@ -55,7 +55,7 @@ test.describe("Escape priority chain", () => {
   });
 
   test("blurs the search box when nothing else is open", async () => {
-    await report.closeDetail(); // clear the boot auto-open first
+    expect((await report.detail()).open).toBe(false); // nothing opens by itself (PD-ROWS-9)
     await report.focusSearch();
     expect(await report.isSearchFocused()).toBe(true);
     await report.pressEscape();
@@ -65,7 +65,7 @@ test.describe("Escape priority chain", () => {
 
 test.describe("j / k walk the visible list and open each package", () => {
   test("j moves forward, k moves back, both open the detail", async () => {
-    await report.tab("packages"); // no boot auto-open here, a clean cursor at -1
+    await report.tab("packages"); // nothing open, so j starts at the first row
     await report.pressJ();
     expect((await report.detail()).name).toBe("vendor/transitive");
     await report.pressJ();
@@ -94,7 +94,7 @@ test.describe("Enter on a focused row opens its detail, and never closes it (PD-
   test("opens, then a second Enter keeps it open; Escape closes it", async () => {
     // Findings' rows have always been focusable (unlike Packages' before M6's fix), so this test
     // drives Enter from a Findings row.
-    await report.closeDetail(); // clear the boot auto-open first
+    expect((await report.detail()).open).toBe(false); // nothing opens by itself (PD-ROWS-9)
     await report.focusRow("vendor/snapshot");
     await report.pressEnter();
     expect((await report.detail()).name).toBe("vendor/snapshot");
@@ -153,8 +153,11 @@ test.describe("M10: j/k must not act while the glossary is open", () => {
     // M10 (DESIGN.md §5), fixed on purpose: legacy's j/k guard only checked focus against the
     // search box, so keydown still bubbled to the document and moved the selection underneath an
     // open glossary dialog.
-    await report.openGlossary(); // boot already auto-opened vendor/transitive on this wide viewport
+    // With vendor/transitive open, a j that got through would move to vendor/snapshot.
+    await report.openPackage("vendor/transitive");
+    await report.openGlossary();
     await report.pressJ();
-    expect(await report.hash()).not.toContain("pkg="); // select() was never reached -> pkgAuto still true
+    expect((await report.detail()).name).toBe("vendor/transitive");
+    expect(await report.hash()).toBe("#pkg=vendor%2Ftransitive");
   });
 });

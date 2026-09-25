@@ -89,6 +89,10 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Changed
 
+- A wide screen no longer opens the first flagged package by itself on load: the Findings list takes
+  the full width, one line a row from 1440px up, until you open a package with a click, Enter or
+  `j`. A link with `#pkg=` still opens its package on load, and closing a package gives the list
+  its full width back. An open package now always shows in the address bar.
 - Clicking a row, or pressing Enter on it, opens its package and never closes it again: a second
   click on the open row used to close the very detail being read. Close and Escape close it.
 - A verdict pill opens its definition in place instead of linking to lockrot.dev, which a report

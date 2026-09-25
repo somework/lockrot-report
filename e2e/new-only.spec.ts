@@ -50,12 +50,14 @@ test.describe("axe: no serious or critical violations", () => {
         await page.emulateMedia({ colorScheme });
         await load(page, fixture);
         const report = await createReportPage(page);
-        if (!(await report.detail()).open) {
-          // Nothing flagged to auto-open: open the first package of the full list instead.
+        // Nothing opens by itself (PD-ROWS-9): open the first Findings row, as the legacy boot
+        // pick did, or the first package of the full list when nothing is flagged.
+        let first = (await report.rows())[0];
+        if (first === undefined) {
           await report.tab("packages");
-          const first = (await report.rows())[0];
-          if (first !== undefined) await report.openPackage(first);
+          first = (await report.rows())[0];
         }
+        if (first !== undefined) await report.openPackage(first);
         expect((await report.detail()).open).toBe(true);
         expect(await seriousViolations(page)).toEqual([]);
       });

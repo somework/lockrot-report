@@ -19,7 +19,7 @@ test.describe("the empty lock (fixtures/bundles/empty-lockrot-self.json — 0 pa
     expect(await report.rows()).toEqual([]);
   });
 
-  test("the boot auto-open never fires when there is nothing flagged", async () => {
+  test("no detail is open when there is nothing flagged", async () => {
     expect((await report.detail()).open).toBe(false);
   });
 

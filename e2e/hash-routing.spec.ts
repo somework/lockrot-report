@@ -32,18 +32,27 @@ test.describe("round-trip: every key, in the documented order", () => {
   });
 });
 
-test.describe("pkg omission: the page's own auto-pick never reaches the address bar", () => {
-  test("the boot auto-open does not appear in the hash", async () => {
-    // Default Chromium viewport (1280x720) is wide enough (>=1181px) for the boot auto-open.
+test.describe("PD-ROWS-9: only the reader or the address opens a package", () => {
+  // Default Chromium viewport (1280x720) is wide (>=1181px): the legacy page (and this one before
+  // PD-ROWS-9) opened the first flagged package there by itself, keeping it out of the address.
+  test("a wide screen opens nothing on load, and the address stays bare", async () => {
     await report.goto(FIXTURES.mini);
-    expect((await report.detail()).name).toBe("vendor/transitive"); // FLAGGED[0]
-    expect(await report.hash()).not.toContain("pkg=");
+    expect((await report.detail()).open).toBe(false);
+    expect(await report.hash()).toBe("");
   });
 
-  test("touching selection at all clears pkgAuto and the package starts appearing", async () => {
+  test("a deep link still opens its package on load, and keeps it in the address", async () => {
+    await report.gotoWithHash(FIXTURES.mini, "pkg=vendor%2Fsnapshot");
+    expect((await report.detail()).name).toBe("vendor/snapshot");
+    expect(await report.hash()).toBe("#pkg=vendor%2Fsnapshot");
+  });
+
+  test("opening a package writes it to the address, and closing it takes it out again", async () => {
     await report.goto(FIXTURES.mini);
     await report.openPackage("vendor/snapshot");
     expect(await report.hash()).toContain("pkg=vendor%2Fsnapshot");
+    await report.closeDetail();
+    expect(await report.hash()).toBe("");
   });
 });
 
@@ -76,7 +85,7 @@ test.describe("M13: an unknown pkg= on a narrow screen must not strand a scroll 
     expect(stuck).toBe(false);
   });
 
-  test("the boot auto-open never fires on a narrow screen regardless", async () => {
+  test("nothing opens on load on a narrow screen either", async () => {
     await report.goto(FIXTURES.mini);
     expect((await report.detail()).open).toBe(false);
   });
@@ -98,7 +107,7 @@ test.describe("SEARCH-FALLBACK: emptying the state must not erase location.searc
     // location.pathname when the computed state was empty, dropping any ?query the URL carried.
     await page.goto(pageUrl(FIXTURES.mini) + "?debug=1#q=x");
     expect(report.url()).toContain("?debug=1");
-    await report.search(""); // empties state.q -> with the boot auto-pick excluded, state is now empty
+    await report.search(""); // empties state.q -> nothing is open either, so the state is now empty
     expect(report.url()).toContain("?debug=1");
   });
 });

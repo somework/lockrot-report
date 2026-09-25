@@ -11,8 +11,8 @@ import { FIXTURES } from "./support/pages";
  *  scroll container at every breakpoint this spec checks (measured: ~380px of overflow at 1440,
  *  ~110px at 1024, ~340px at 390 — 1024's sheet has the least headroom, being the full viewport). */
 const LONG_PACKAGE = "spomky-labs/otphp";
-/** The first (alphabetically earliest, critical) flagged package — DESIGN.md §8's boot-time pick
- *  on a wide screen, so it is always present to switch to without depending on scroll position. */
+/** The first (alphabetically earliest, critical) flagged package — the Findings list's first row,
+ *  so it is always present to switch to without depending on scroll position. */
 const OTHER_PACKAGE = "sensio/framework-extra-bundle";
 
 /** fixtures/bundles/koel_koel.json's own tallest detail (PD-DETAIL-5): 21 release branches, one
@@ -53,12 +53,6 @@ async function openLongDetail(
   return report;
 }
 
-/** DESIGN.md §5 auto-opens the first flagged package on a wide screen; a "no detail open" case has
- *  to close it first there, and is a no-op everywhere narrower (nothing is auto-opened). */
-async function ensureDetailClosed(report: ReportPage): Promise<void> {
-  if ((await report.detail()).open) await report.closeDetail();
-}
-
 /**
  * `window.scrollY` right after hovering the target, not before: `Locator.hover()` scrolls the page
  * to bring an out-of-view element into view first (both `.shell-detail` and a list row far down a
@@ -77,7 +71,8 @@ for (const { label, width, height } of BREAKPOINTS) {
     test("wheel over the list scrolls the page normally, with no detail open", async ({ page }) => {
       const report = await createReportPage(page);
       await report.goto(FIXTURES.wallabag);
-      await ensureDetailClosed(report);
+      // Nothing opens by itself at any width (PD-ROWS-9), so the list is all there is on load.
+      expect((await report.detail()).open).toBe(false);
 
       const row = page.getByRole("listitem", { name: LONG_PACKAGE, exact: true });
       const before = await scrollYAfterHover(page, row);

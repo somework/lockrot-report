@@ -128,14 +128,15 @@ Rules the lint config enforces: no `innerHTML`/`outerHTML`/`insertAdjacentHTML`,
 State is one object owned by a reducer in `App`:
 
 ```ts
-{ view, q, pkg, pkgAuto, sort, sortDesc, filters: { prio, verdict, scope, signal, sev, fix, since } }
+{ view, q, pkg, sort, sortDesc, filters: { prio, verdict, scope, signal, sev, fix, since } }
 ```
 
 The fragment format is a documented user feature (`docs/ci.md`) and **does not change**:
 `view=<v>&q=<enc>&prio=<enc a,b>&verdict=…&scope=…&signal=…&sev=…&fix=…&since=…&pkg=<enc>`,
-groups in that order, `view` omitted when `findings`, `pkg` omitted while the open package is the
-page's own automatic pick, empty state → no fragment. Always `history.replaceState`, never
-`pushState`; a `SecurityError` (an opaque-origin frame) switches writing off for the page's life.
+groups in that order, `view` omitted when `findings`, `pkg` omitted while no package is open (the
+legacy page also left out the package it opened by itself; this page opens none, PD-ROWS-9), empty
+state → no fragment. Always `history.replaceState`, never `pushState`; a `SecurityError` (an
+opaque-origin frame) switches writing off for the page's life.
 
 Changes from the legacy page, each a fix:
 
@@ -148,8 +149,9 @@ Changes from the legacy page, each a fix:
 ## 5. Behaviour: parity, and the deliberate differences
 
 Parity is the default: vocabulary, texts, sort orders, the three-step Escape, `/` `j` `k` `?`
-`Enter`, the theme key `lockrot-theme`, boot-only ledger and glossary, auto-open of the first
-flagged package on wide screens, "detail stays open while filters hide it".
+`Enter`, the theme key `lockrot-theme`, boot-only ledger and glossary, "detail stays open while
+filters hide it". The legacy auto-open of the first flagged package on wide screens is gone
+(PD-ROWS-9).
 
 Fixed on purpose during the extraction, proved against the legacy page (§6 says which of these an
 e2e test still covers):
@@ -219,6 +221,7 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 | PD-ROWS-6                   | nothing summed a group up; 14 alike hoa/* cards in a row                    | a serif sentence per priority, counted by verdict and reach; one above 3+ consecutive rows sharing verdict and way in                         |
 | PD-ROWS-7                   | a second click or Enter on the open row closed its detail                   | a row opens its package and never closes it (Findings, Packages, Advisories, Blast radius); Close and Escape close                            |
 | PD-ROWS-8                   | a tinted band above a run; forced colours drew a solid track past each bar  | the run note is unfilled, only its tone rule; forced colours draw no track under a bar                                                        |
+| PD-ROWS-9                   | ≥1181px opened the first flagged package on load, the list squeezed beside  | nothing opens by itself: the list takes the full width; a click, Enter, `j`/`k` or `#pkg=` opens one; Close gives the width back              |
 | PD-TIMELINE-1               | the first year label lost half its width off the axis                       | the axis runs from 1 January of the oldest year, labelled at the left edge, to a "today" rule labelled under it                               |
 | PD-TIMELINE-2               | labels floated beside each dot and wrapped around it                        | a table: branch, a line from last release to today, latest version, raw php constraint; one line a row                                        |
 | PD-TIMELINE-3               | a package without maintained branches showed each version twice             | the version once; its third column is the release date, so every table keeps the same four columns                                            |
@@ -239,8 +242,6 @@ Changed on purpose, and not a legacy bug:
 
 - An advisory whose severity the page cannot bucket sorts with the unrated ones, last. The legacy
   page sorted it first, by accident of `indexOf` returning -1 (critic C1).
-- The page's own pick on a wide screen is the first row the reader sees, after any filters the
-  address restored; the legacy page picked the first flagged package even when a filter hid it.
 
 Deliberately kept although odd: rail counts are per-tab totals, not faceted; the detail survives a
 filter that hides its package; `data-goto` keeps the detail open.
@@ -287,11 +288,11 @@ type, tones, vocabulary) and changes layout only where the legacy page failed a 
 **Breakpoints.** Three, all driven by `matchMedia` in `ui/useWide.ts` and mirrored in
 `ui/app.css`:
 
-| width        | layout                                                                                    |
-| ------------ | ----------------------------------------------------------------------------------------- |
-| ≥ 1181px     | rail · list · detail column (the legacy WIDE layout); the boot-time pick fills the detail |
-| 760 – 1180px | rail · list; the detail opens as a full-screen sheet                                      |
-| < 760px      | one column: the summary's lead, its folded tier, a "Filters" disclosure, then the list    |
+| width        | layout                                                                                 |
+| ------------ | -------------------------------------------------------------------------------------- |
+| ≥ 1181px     | rail · list, plus a detail column once a package is open (the legacy WIDE layout)      |
+| 760 – 1180px | rail · list; the detail opens as a full-screen sheet                                   |
+| < 760px      | one column: the summary's lead, its folded tier, a "Filters" disclosure, then the list |
 
 The legacy page pushed the findings below the whole ledger and the whole rail at 320px, so a phone
 reader scrolled past two screens of bars and buttons before the first package. Under 760px the
@@ -300,8 +301,10 @@ its three supporting columns into one line that counts them (PD-SUMMARY-6), and 
 closed `<details>` whose summary counts the rail filters that are on. The Findings rows follow the
 list's own width, not the viewport's (a container query, PD-ROWS-4): one line from 990px of list
 (the width the three text columns need at their 90th percentile across the fixtures), two from
-480px (the list beside an open package, 570-790px at 1280-1920, since the first package opens on
-load), three below that. At every width a cell too narrow for its value wraps it, never an ellipsis.
+480px (the list beside an open package, 570-790px at 1280-1920), three below that. With nothing
+open, which is how every page without `#pkg=` loads (PD-ROWS-9), the list is 910-1230px at
+1181-1920, so a wide screen's first sight is one line a row from 1440px up. At every width a cell
+too narrow for its value wraps it, never an ellipsis.
 
 **The summary band's lead** is the first five seconds: how many packages are flagged, out of how
 many were checked, with the priority chips that filter by it and a waffle of every package
@@ -357,9 +360,10 @@ shape. `e2e/forced-colors.spec.ts` emulates the mode.
 
 - `j`/`k` move from the open package through the rows the current view draws
   (`views/order.ts#renderedPackages`), clamped at both ends; with nothing open, or the open package
-  not on screen, both start at the first row. There is no separate cursor, so a row clicked, a
-  package opened from an advisory, or the boot pick is where `j` continues from (fixes M7–M9; the
-  legacy first `j` after the boot pick re-selected the same package).
+  not on screen, both start at the first row. There is no separate cursor, so a row clicked or a
+  package opened from an advisory is where `j` continues from (fixes M7–M9; the legacy first `j`
+  after its boot pick re-selected the same package). On load nothing is open, so `j` opens the
+  first row.
 - Nothing but Escape acts while the glossary is open (M10). Printable shortcuts are ignored while
   focus is in any text field, and every shortcut is ignored with Ctrl, Meta or Alt held.
 - Enter/Space toggle a row only when the key lands on the row itself, not on a link or control
@@ -380,6 +384,7 @@ ignored rather than written onto the page.
 "gate: `<value>`", opening a popover that says what the run's `--fail-on` means for its exit code.
 A document from before `run.fail_on` existed shows neither (PD-SUMMARY-2).
 
-**Address bar.** `ui/useHashState.ts` reads the fragment once at boot, then the layout, then makes
-the boot pick (never written), writes after every state change, and applies `hashchange` by
-replacing the state from the new fragment while keeping the table's sort order.
+**Address bar.** `ui/useHashState.ts` reads the fragment once at boot and nothing else: a `pkg=` in
+it opens that package at any width, and without one no package is open (PD-ROWS-9). It writes
+after every state change, and applies `hashchange` by replacing the state from the new fragment
+while keeping the table's sort order.

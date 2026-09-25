@@ -27,10 +27,11 @@ export interface State {
   view: View;
   /** The search box as typed. `query.ts` trims and parses it; an all-whitespace query is no filter. */
   q: string;
-  /** The package whose detail is open, or null. */
+  /**
+   * The package whose detail is open, or null. Only the reader opens one (a click, Enter, `j`/`k`)
+   * or the address names one; the page never picks a package by itself (PD-ROWS-9, DESIGN.md §5).
+   */
   pkg: string | null;
-  /** True while `pkg` is the page's own boot-time pick; such a pick never reaches the address bar. */
-  pkgAuto: boolean;
   sort: SortKey;
   sortDesc: boolean;
   filters: Filters;
@@ -43,7 +44,6 @@ export type Action =
   | { type: "clear" }
   | { type: "sort"; key: SortKey }
   | { type: "select"; pkg: string | null }
-  | { type: "autoSelect"; pkg: string }
   | { type: "restore"; state: State };
 
 export const EMPTY_FILTERS: Filters = {
@@ -60,7 +60,6 @@ export const INITIAL_STATE: State = {
   view: "findings",
   q: "",
   pkg: null,
-  pkgAuto: false,
   sort: "verdict",
   sortDesc: false,
   filters: EMPTY_FILTERS,
