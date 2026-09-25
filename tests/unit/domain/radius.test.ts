@@ -14,6 +14,7 @@ import {
   radiusListed,
   radiusRowOrder,
   radiusRows,
+  radiusShownCount,
   rowKey,
   vendorPhrase,
   verdictMix,
@@ -178,12 +179,13 @@ describe("radiusLayout", () => {
     ]);
     expect(layout.unlisted.map((f) => f.package)).toEqual(["acme/alone"]);
     expect(layout.exposureCount).toBe(5);
-    expect([...radiusListed(layout)].sort()).toEqual(["acme/deep", "acme/lonely"]);
+    // The footnote names acme/alone with a link to its detail, so the tab lists it too.
+    expect([...radiusListed(layout)].sort()).toEqual(["acme/alone", "acme/deep", "acme/lonely"]);
   });
 });
 
 describe("placedOnRadius (PD-RAIL-1)", () => {
-  it("is exactly what the layout lists: listed packages and flagged requirements with a row", () => {
+  it("is exactly what the layout names: listed packages, flagged requirements with a row, the footnote", () => {
     const parent = makeFinding({ package: "acme/parent", chain: ["acme/parent"] });
     const child = pulled("acme/child", ["acme/parent"]);
     const alone = makeFinding({ package: "acme/alone", chain: ["acme/alone"] });
@@ -193,10 +195,53 @@ describe("placedOnRadius (PD-RAIL-1)", () => {
 
     const placed = placedOnRadius(model, [parent, child, alone]);
 
-    expect(placed.map((f) => f.package)).toEqual(["acme/parent", "acme/child"]);
+    expect(placed.map((f) => f.package)).toEqual(["acme/parent", "acme/child", "acme/alone"]);
     expect(new Set(placed.map((f) => f.package))).toEqual(
       radiusListed(radiusLayout(model, [parent, child, alone])),
     );
+  });
+});
+
+describe("under a filter (PD-RADIUS-6)", () => {
+  const parent = makeFinding({ package: "acme/parent", direct: true, chain: ["acme/parent"] });
+  const a = pulled("acme/a", ["acme/parent"], { verdict: "abandoned" });
+  const b = pulled("acme/b", ["acme/parent"], { verdict: "stale" });
+  const other = pulled("zeta/x", ["zeta/root"]);
+  const model = modelWithExposure(makeModel([parent, a, b, other]), [
+    { package: "acme/parent", flagged: 2 },
+    { package: "zeta/root", flagged: 1 },
+  ]);
+  const all = [parent, a, b, other];
+
+  it("keeps each row's unfiltered count beside the filtered one, and says it is narrowed", () => {
+    const layout = radiusLayout(model, [parent, a], all);
+
+    expect(layout.narrowed).toBe(true);
+    expect(layout.ranked.map((r) => [r.package, r.count, r.unfiltered])).toEqual([["acme/parent", 1, 2]]);
+    expect([layout.unfilteredTotal, layout.unfilteredRows]).toEqual([3, 2]);
+  });
+
+  it("sorts a flagged row whose packages the filter hides into the self tail, still counting them", () => {
+    const layout = radiusLayout(model, [parent], all);
+
+    expect(layout.ranked).toEqual([]);
+    expect(layout.selfOnly.map((r) => [r.package, r.count, r.unfiltered])).toEqual([["acme/parent", 0, 2]]);
+    // Nothing ranks above it, so the tail is the list: open by default.
+    expect(isFoldOpen(layout, FOLD_SELF, CLOSED)).toBe(true);
+  });
+
+  it("is not narrowed when the filter keeps every flagged package", () => {
+    const layout = radiusLayout(model, all, all);
+
+    expect(layout.narrowed).toBe(false);
+    expect(layout.ranked.every((r) => r.count === r.unfiltered)).toBe(true);
+  });
+
+  it("counts every requirement the tab names, the 'through rows above' tail included", () => {
+    const wallabag = load("wallabag_wallabag");
+    const layout = radiusLayout(wallabag, population(wallabag, "radius"));
+
+    expect(radiusShownCount(layout)).toBe(29);
   });
 });
 

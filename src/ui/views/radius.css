@@ -54,6 +54,18 @@
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
+.rl-scope {
+  margin: 0 0 8px;
+  max-width: 60em;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.rl-scope b {
+  font-weight: 600;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
 .rl-tails {
   margin: 0 0 8px;
   font-size: 12px;
@@ -286,8 +298,9 @@
 .rl-u.is-tally {
   margin-left: 3px;
 }
-/* Reached too, listed under another row: one hollow square and a count, quieter than any solid
-   one, so a row's length is only ever what it lists. */
+/* Reached too, listed under another row: one hollow ring and a count, quieter than any solid
+   square and another shape from all of them (a low-priority square is hollow in forced colours),
+   so a row's length is only ever what it lists. */
 .rl-else {
   display: inline-flex;
   align-items: center;
@@ -300,8 +313,9 @@
   white-space: nowrap;
 }
 .rl-u.is-else {
+  border-radius: 50%;
   background: transparent;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--muted) 70%, transparent);
+  box-shadow: inset 0 0 0 1.25px color-mix(in srgb, var(--muted) 75%, transparent);
 }
 
 /* What it pulls in: a serif sentence, names in the sans the rows use. */
@@ -642,16 +656,19 @@
   .rl-head .fhead-age {
     grid-column: 3;
   }
+  /* The squares stay in the requirement's column, under its name: the column to the right is the
+     age axis alone, top to bottom, so nothing but ages sits under "years since release". */
   .rr-line {
     grid-template-columns: var(--rl-rank) minmax(0, 1fr) var(--rl-age-w) var(--rl-tog);
     grid-template-areas:
-      "rank pkg sq tog"
+      "rank pkg age tog"
+      ". sq age tog"
       ". say age tog";
     row-gap: 4px;
   }
   .rr-line > .fc-age {
     align-self: stretch;
-    margin-bottom: calc(-1 * var(--rl-pad-y) - 1px);
+    margin-block: calc(-1 * var(--rl-pad-y)) calc(-1 * var(--rl-pad-y) - 1px);
   }
   .rl-fold-head {
     grid-template-columns: var(--rl-rank) minmax(0, 1fr) var(--rl-tog);
@@ -797,7 +814,7 @@
 
 /* ---------- forced colours ----------
    Each mark keeps a shape of its own when system colours replace the tones: a critical or high
-   square solid, a medium one hatched, a low one hollow; a counted-elsewhere square dotted; a tick
+   square solid, a medium one hatched, a low one hollow; a counted-elsewhere ring dotted; a tick
    solid, a context one stippled; the tree's lines in the system ink. */
 @media (forced-colors: active) {
   .rl-u,
@@ -826,8 +843,8 @@
   .rl-u.is-else {
     background: Canvas;
     box-shadow: none;
-    outline: 1px dotted CanvasText;
-    outline-offset: -1px;
+    outline: 1.5px dotted CanvasText;
+    outline-offset: -1.5px;
   }
   .rl-tick {
     background: CanvasText;

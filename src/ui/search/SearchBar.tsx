@@ -3,7 +3,7 @@ import { useReport } from "../context";
 import { applyFilters, hiddenByFilters, population } from "../../domain/filters";
 import { allAdvisories, passesAdvisoryRail } from "../../domain/advisories";
 import { matchesAdvisory, parseQuery } from "../../domain/query";
-import { radiusLayout } from "../../domain/radius";
+import { radiusLayout, radiusShownCount } from "../../domain/radius";
 import { countPhrase, plural } from "../../domain/format";
 import { searchSplit, searchSplitPhrase } from "../../domain/searchHits";
 import { NoWrap } from "../common/common";
@@ -57,12 +57,11 @@ function countLine(model: Model, state: State): string | null {
   }
 
   if (state.view === "radius") {
-    // The requirements with a row of their own: those that list packages, and those flagged
-    // themselves. The ones that only reach packages listed under those rows are named in the tab's
-    // own tail, not counted here.
+    // Every requirement the tab names: a ranked row, a row in the "flagged themselves" tail, or a
+    // name in the "only through rows above" tail — against the tab's own count, `exposure`'s.
     const layout = radiusLayout(model, applyFilters(model, state, "radius"));
     return countPhrase(
-      layout.ranked.length + layout.selfOnly.length,
+      radiusShownCount(layout),
       model.report.exposure.length,
       "direct requirement",
       "direct requirements",

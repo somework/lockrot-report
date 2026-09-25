@@ -41,6 +41,9 @@ export interface RadiusRow {
   readonly elsewhere: readonly RadiusElsewhere[];
   /** `exposure[].flagged`, as the document states it. */
   readonly exposure: number;
+  /** Flagged packages listed under it with no filter applied: `count` again when nothing is
+   *  filtered, more when the query box or the rail keeps some of them off the list. */
+  readonly unfiltered: number;
 }
 
 /** A flagged package on the "only through rows above" receipt, and every tail row behind it. */
@@ -68,6 +71,12 @@ export interface RadiusLayout {
   readonly unlisted: readonly Finding[];
   /** How many direct requirements `exposure` names. */
   readonly exposureCount: number;
+  /** Whether the query box or the rail keeps any flagged package off the tab: every count above is
+   *  then of the packages that match, and the view says so. */
+  readonly narrowed: boolean;
+  /** With no filter: the distinct flagged packages listed under any row, and the rows listing any. */
+  readonly unfilteredTotal: number;
+  readonly unfilteredRows: number;
 }
 
 /** Fewer one-each rows than this stay in the ranking as they are; this many or more fold. */
@@ -79,20 +88,28 @@ function hopsOf(finding: Finding): readonly string[] {
   return last === finding.package ? finding.chain.slice(0, -1) : finding.chain;
 }
 
+/** The flagged packages `parent`'s row lists: those whose recorded chain runs through it. */
+function listedUnder(parent: string, flagged: readonly Finding[]): readonly Finding[] {
+  return flagged.filter((f) => f.package !== parent && hopsOf(f).includes(parent));
+}
+
 /**
  * One row per `exposure` entry, in document order, from `visibleFlagged` — the view's
- * already-filtered flagged findings (the query box and the rail apply before this runs).
+ * already-filtered flagged findings (the query box and the rail apply before this runs) — and
+ * `allFlagged`, the same list before any filter, which only `unfiltered` reads.
  */
-export function radiusRows(model: Model, visibleFlagged: readonly Finding[]): readonly RadiusRow[] {
+export function radiusRows(
+  model: Model,
+  visibleFlagged: readonly Finding[],
+  allFlagged: readonly Finding[] = visibleFlagged,
+): readonly RadiusRow[] {
   const parents = model.report.exposure.map((e) => e.package);
   const parentSet = new Set(parents);
   const byName = new Map(model.report.findings.map((f) => [f.package, f]));
   const kept = new Map(visibleFlagged.map((f) => [f.package, f]));
 
   return model.report.exposure.map((exposure) => {
-    const pulled = visibleFlagged.filter(
-      (f) => f.package !== exposure.package && hopsOf(f).includes(exposure.package),
-    );
+    const pulled = listedUnder(exposure.package, visibleFlagged);
     const listed = new Set(pulled.map((f) => f.package));
     const elsewhere = visibleFlagged
       .filter(
@@ -114,13 +131,26 @@ export function radiusRows(model: Model, visibleFlagged: readonly Finding[]): re
       count: pulled.length,
       elsewhere,
       exposure: exposure.flagged,
+      unfiltered:
+        allFlagged === visibleFlagged ? pulled.length : listedUnder(exposure.package, allFlagged).length,
     };
   });
 }
 
-/** Sorts the rows into the ranking, its fold and the two tails; drops rows with nothing to say. */
-export function radiusLayout(model: Model, visibleFlagged: readonly Finding[]): RadiusLayout {
-  const rows = radiusRows(model, visibleFlagged);
+/** Sorts the rows into the ranking, its fold and the two tails; drops rows with nothing to say.
+ *  `allFlagged` is the tab's flagged findings before any filter (`population`); left out, the
+ *  visible ones are all there is. */
+export function radiusLayout(
+  model: Model,
+  visibleFlagged: readonly Finding[],
+  allFlagged: readonly Finding[] = visibleFlagged,
+): RadiusLayout {
+  const rows = radiusRows(model, visibleFlagged, allFlagged);
+  const visible = new Set(visibleFlagged.map((f) => f.package));
+  const narrowed = allFlagged.some((f) => !visible.has(f.package));
+  const unfilteredListed = new Set(
+    model.report.exposure.flatMap((e) => listedUnder(e.package, allFlagged).map((f) => f.package)),
+  );
   const ranked = [...rows.filter((r) => r.count > 0)].sort((a, b) => b.count - a.count);
   const multi = ranked.filter((r) => r.count > 1);
   const ones = ranked.filter((r) => r.count === 1);
@@ -137,6 +167,9 @@ export function radiusLayout(model: Model, visibleFlagged: readonly Finding[]): 
     receipt: receiptOf(throughOther),
     unlisted: visibleFlagged.filter((f) => f.direct && !parents.has(f.package)),
     exposureCount: rows.length,
+    narrowed,
+    unfilteredTotal: unfilteredListed.size,
+    unfilteredRows: rows.filter((r) => r.unfiltered > 0).length,
   };
 }
 
@@ -153,27 +186,34 @@ function receiptOf(rows: readonly RadiusRow[]): readonly RadiusReceipt[] {
   );
 }
 
-/** The flagged packages the tab lists anywhere: every row's pulled packages and every flagged
- *  requirement that heads a row. */
+/** The flagged packages the tab names anywhere: every row's pulled packages, every flagged
+ *  requirement that heads a row, and every one the footnote names (PD-RADIUS-5). */
 export function radiusListed(layout: RadiusLayout): ReadonlySet<string> {
   const rows = [...layout.ranked, ...layout.selfOnly];
-  return new Set(
-    rows.flatMap((r) => [...(r.self ? [r.self.package] : []), ...r.pulled.map((f) => f.package)]),
-  );
+  return new Set([
+    ...rows.flatMap((r) => [...(r.self ? [r.self.package] : []), ...r.pulled.map((f) => f.package)]),
+    ...layout.unlisted.map((f) => f.package),
+  ]);
+}
+
+/** The direct requirements the tab names by row or in a tail — what its count line counts. */
+export function radiusShownCount(layout: RadiusLayout): number {
+  return layout.ranked.length + layout.selfOnly.length + layout.throughOther.length;
 }
 
 /**
  * The findings among `flagged` that have a place on the Blast radius tab at all: listed under some
- * direct requirement's row, or heading a row as a flagged direct requirement. A flagged direct
- * requirement that pulls nothing in and is not in `exposure` (wallabag's lcobucci/jwt, say) has no
- * row — the tab names it in a footnote instead. Membership is per finding, so a filter applied
- * before or after this gives the same set; the rail counts over this set on that tab (PD-RAIL-1,
- * `domain/filters.ts#railGroups`).
+ * direct requirement's row, heading a row as a flagged direct requirement, or — a flagged direct
+ * requirement `exposure` does not name (wallabag's lcobucci/jwt, say) — named, with a link, in the
+ * footnote. Only a transitive package whose recorded chain reaches no row is left out. Membership
+ * is per finding, so a filter applied before or after this gives the same set; the rail counts over
+ * this set on that tab (PD-RAIL-1, `domain/filters.ts#railGroups`), so Direct plus Transitive is
+ * the summary band's flagged count whenever every chain reaches a row.
  */
 export function placedOnRadius(model: Model, flagged: readonly Finding[]): readonly Finding[] {
   const parents = new Set(model.report.exposure.map((exposure) => exposure.package));
   return flagged.filter(
-    (f) => parents.has(f.package) || f.chain.some((hop) => hop !== f.package && parents.has(hop)),
+    (f) => f.direct || parents.has(f.package) || f.chain.some((hop) => hop !== f.package && parents.has(hop)),
   );
 }
 
@@ -366,7 +406,8 @@ export function isFoldOpen(layout: RadiusLayout, key: string, input: OpenInput):
   const set = input.disclosure[key];
   if (set !== undefined) return set;
   if (key === FOLD_SINGLES) return !input.narrow || holds(layout.singles, input.pkg);
-  if (key === FOLD_SELF) return holds(layout.selfOnly, input.pkg);
+  // With nothing ranked above it (a filter left no row listing anything), this tail is the list.
+  if (key === FOLD_SELF) return layout.ranked.length === 0 || holds(layout.selfOnly, input.pkg);
   return layout.receipt.some((r) => r.finding.package === input.pkg);
 }
 

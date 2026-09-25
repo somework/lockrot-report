@@ -24,7 +24,8 @@ test("answers first: the fewest rows that hold half of what is listed", async ({
   await expect(page.locator(".rl-answer")).toHaveText(
     "wallabag/rulerz (14) and phpunit/phpunit (13) pull in 27 of the 49 flagged packages that sit under 17 of your 29 direct requirements.",
   );
-  expect(await report.countLine()).toBe("22 of 29 direct requirements");
+  // Every requirement the tab names: 17 ranked, 5 flagged themselves, 7 through rows above.
+  expect(await report.countLine()).toBe("29 of 29 direct requirements");
 });
 
 test("a row's toggle shows its packages as a tree; the requirement opens the full Findings detail", async ({
@@ -104,6 +105,68 @@ test("the tails name every requirement left out of the ranking, and open on dema
   await expect(receipt).toContainText("listed under doctrine/doctrine-bundle");
   await expect(receipt).toContainText("also behind these 6");
   await expect(page.locator(".rl-foot")).toContainText("lcobucci/jwt");
+});
+
+test("under the rail's Direct filter every sentence says it counts matching packages only", async ({
+  page,
+}) => {
+  await open(page, "view=radius&scope=direct");
+
+  await expect(page.locator(".rl-answer")).toHaveText(
+    "None of your 29 direct requirements lists a flagged package that matches the filter.",
+  );
+  await expect(page.locator(".rl-scope")).toHaveText(
+    "Only flagged packages that match the filter are counted. Without it, 49 sit under 17 of your 29 direct requirements.",
+  );
+  // Nothing ranks, so the "flagged themselves" tail is the list, open, and says no "more".
+  const self = page.getByRole("button", { name: /^12 direct requirements are flagged themselves/ });
+  await expect(self).toHaveAttribute("aria-expanded", "true");
+  await expect(self).toContainText("with nothing that matches the filter listed under them");
+  await expect(row(page, "wallabag/rulerz")).toContainText(
+    "None of the 14 flagged packages listed under it match the filter.",
+  );
+  // 12 rows and the footnote's 8: the rail's Direct count, and with Transitive the band's 69.
+  await expect(page.locator(".rl-foot")).toContainText("8 flagged direct requirements have");
+  expect(await report.countLine()).toMatch(/^12 of 29 direct requirements/);
+});
+
+test("a search narrows the answer to what matches it", async ({ page }) => {
+  await open(page, "view=radius&q=hoa");
+
+  await expect(page.locator(".rl-answer")).toHaveText(
+    "wallabag/rulerz is the only one of your 29 direct requirements with matching flagged packages under it: 14.",
+  );
+  await page.getByRole("button", { name: /1 more is flagged itself/ }).click();
+  await expect(row(page, "wallabag/rulerz-bundle")).toContainText(
+    "The one flagged package listed under it does not match the filter.",
+  );
+});
+
+test("the footnote's names open the same detail as Findings", async ({ page }) => {
+  await open(page, "view=radius");
+
+  await page.locator(".rl-foot").getByRole("button", { name: "lcobucci/jwt" }).click();
+
+  expect((await report.detail()).name).toBe("lcobucci/jwt");
+  expect(await page.evaluate(() => location.hash)).toBe("#view=radius&pkg=lcobucci%2Fjwt");
+});
+
+test("beside an open package the squares stay in the requirement's column, off the age axis", async ({
+  page,
+}) => {
+  for (const [hash, width] of [
+    ["view=radius&pkg=phpunit%2Fphpunit", 1440],
+    ["view=radius", 1024],
+  ] as const) {
+    await open(page, hash, width);
+    const line = row(page, "phpunit/phpunit").locator(".rr-line").first();
+    const squares = await line.locator(".rl-sq").boundingBox();
+    const age = await line.locator(".fc-age").boundingBox();
+    const axis = await page.locator(".rl-head .fhead-age").boundingBox();
+    if (!squares || !age || !axis) throw new Error("no box");
+    expect(squares.x + squares.width).toBeLessThanOrEqual(axis.x);
+    expect(age.x).toBeGreaterThanOrEqual(axis.x - 1);
+  }
 });
 
 test("on a phone the one-each rows start folded: no wall of rows", async ({ page }) => {

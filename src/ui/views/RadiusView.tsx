@@ -1,7 +1,7 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import type { Finding } from "../../model/types";
-import { applyFilters } from "../../domain/filters";
+import { applyFilters, population } from "../../domain/filters";
 import { ageAxis } from "../../domain/age";
 import { plural } from "../../domain/format";
 import {
@@ -42,24 +42,26 @@ function Pk({ name }: { name: string }) {
  * The tab's answer, first (PD-RADIUS-1): the fewest rows that hold half of what is listed, by name
  * and count, against every flagged package listed and every direct requirement — "wallabag/rulerz
  * (14) and phpunit/phpunit (13) pull in 27 of the 49 flagged packages that sit under 17 of your 29
- * direct requirements." Counts only.
+ * direct requirements." Counts only. Under a filter every count is of the packages that match it,
+ * and the sentence says "matching" (PD-RADIUS-6).
  */
-function AnswerSentence({ answer, id }: { answer: Answer; id: string }) {
+function AnswerSentence({ answer, id, narrowed }: { answer: Answer; id: string; narrowed: boolean }) {
   const { top, held, total, rows, exposureCount } = answer;
   const lead = top[0];
   if (lead === undefined) return null;
+  const flagged = narrowed ? "matching flagged" : "flagged";
   if (rows === 1) {
     return (
       <p className="rl-answer" id={id}>
         {exposureCount === 1 ? (
           <>
-            <Pk name={lead.package} />, your one direct requirement, pulls in{" "}
-            <b>{plural(lead.count, "flagged package", "flagged packages")}</b>.
+            <Pk name={lead.package} />, your one direct requirement, pulls in <b>{lead.count}</b> {flagged}{" "}
+            {lead.count === 1 ? "package" : "packages"}.
           </>
         ) : (
           <>
-            <Pk name={lead.package} /> is the only one of your <b>{exposureCount}</b> direct requirements with
-            flagged packages under it: <b>{lead.count}</b>.
+            <Pk name={lead.package} /> is the only one of your <b>{exposureCount}</b> direct requirements with{" "}
+            {flagged} packages under it: <b>{lead.count}</b>.
           </>
         )}
       </p>
@@ -78,14 +80,32 @@ function AnswerSentence({ answer, id }: { answer: Answer; id: string }) {
       {top.length === 1 ? <Pk name={lead.package} /> : names} {verb}{" "}
       {held === total ? (
         <>
-          all <b>{total}</b> flagged packages
+          all <b>{total}</b> {flagged} packages
         </>
       ) : (
         <>
-          <b>{held}</b> of the <b>{total}</b> flagged packages
+          <b>{held}</b> of the <b>{total}</b> {flagged} packages
         </>
       )}{" "}
       that sit under <b>{rows}</b> of your <b>{exposureCount}</b> direct requirements.
+    </p>
+  );
+}
+
+/** Under a filter, what the counts cover and what they are without it: "Only flagged packages that
+ *  match the filter are counted. Without it, 49 sit under 17 of your 29 direct requirements." */
+function ScopeNote({ layout }: { layout: RadiusLayout }) {
+  if (!layout.narrowed) return null;
+  return (
+    <p className="rl-scope">
+      Only flagged packages that match the filter are counted.
+      {layout.unfilteredTotal > 0 && (
+        <>
+          {" "}
+          Without it, <b>{layout.unfilteredTotal}</b> sit under <b>{layout.unfilteredRows}</b> of your{" "}
+          <b>{layout.exposureCount}</b> direct requirements.
+        </>
+      )}
     </p>
   );
 }
@@ -119,7 +139,7 @@ function Head({ axis }: { axis: ReturnType<typeof ageAxis> }) {
       </span>
       <span className="rl-h rl-h-pkg" aria-hidden="true">
         Direct requirement
-        <span className="rl-h-narrow"> · what it pulls in</span>
+        <span className="rl-h-narrow"> · flagged under it · what it pulls in</span>
       </span>
       <span className="rl-h rl-h-sq" aria-hidden="true">
         Flagged underneath
@@ -309,19 +329,31 @@ function TailLinks({ layout, go }: { layout: RadiusLayout; go: (key: string, id:
 }
 
 /** Flagged direct requirements `exposure[]` does not name: said once, at the end, so the tab's
- *  count never silently leaves them out. */
+ *  count never silently leaves them out. Each name opens that package's full detail, the one a
+ *  Findings row opens, so the rail can count them as on this tab (PD-RAIL-1). */
 function Unlisted({ findings }: { findings: readonly Finding[] }) {
+  const { dispatch } = useReport();
   if (findings.length === 0) return null;
   const many = findings.length > 1;
   return (
     <p className="rl-foot">
       <b>{plural(findings.length, "flagged direct requirement has", "flagged direct requirements have")}</b>{" "}
-      no row: lockrot's exposure list does not name {many ? "them" : "it"}. {many ? "They are" : "It is"} on
-      the Findings tab:{" "}
+      no row: lockrot's exposure list does not name {many ? "them" : "it"}.{" "}
+      {many ? "Each opens its detail, as on Findings" : "It opens its detail, as on Findings"}:{" "}
       {joined(
         findings.map((f) => (
           <span key={f.package} className="fl-unit">
-            <span className="rl-pk">{f.package}</span> (<VerdictWord verdict={f.verdict} />)
+            <button
+              type="button"
+              className="rl-jump rl-pk"
+              title={`Open ${f.package}`}
+              onClick={() => {
+                dispatch({ type: "select", pkg: f.package });
+              }}
+            >
+              {f.package}
+            </button>{" "}
+            (<VerdictWord verdict={f.verdict} />)
           </span>
         )),
       )}
@@ -340,7 +372,7 @@ function Unlisted({ findings }: { findings: readonly Finding[] }) {
 export function RadiusView() {
   const { model, state, dispatch } = useReport();
   const narrow = useNarrow();
-  const layout = radiusLayout(model, applyFilters(model, state, "radius"));
+  const layout = radiusLayout(model, applyFilters(model, state, "radius"), population(model, "radius"));
   const input: OpenInput = { disclosure: state.disclosure, pkg: state.pkg, narrow };
   const { flash, jump } = useJump(layout);
   const go = useFoldLink();
@@ -349,8 +381,13 @@ export function RadiusView() {
 
   if (shown.length === 0 && layout.throughOther.length === 0) {
     return (
-      <div>
-        <p className="empty">No direct requirement drags a flagged package in.</p>
+      <div className="rl">
+        <p className="empty">
+          {layout.narrowed
+            ? "No direct requirement is, or lists, a flagged package that matches the filter."
+            : "No direct requirement drags a flagged package in."}
+        </p>
+        <ScopeNote layout={layout} />
         <Unlisted findings={layout.unlisted} />
       </div>
     );
@@ -374,6 +411,16 @@ export function RadiusView() {
   const selfOpen = isFoldOpen(layout, FOLD_SELF, input);
   const otherOpen = isFoldOpen(layout, FOLD_OTHER, input);
   const selfMix = verdictMix(layout.selfOnly.flatMap((r) => (r.self ? [r.self] : [])));
+  // "12 more are…" after ranked rows; with none above, "12 direct requirements are…".
+  const more = layout.ranked.length > 0;
+  const selfN = layout.selfOnly.length;
+  const selfLead = more
+    ? plural(selfN, "more is", "more are")
+    : plural(selfN, "direct requirement is", "direct requirements are");
+  // A row here may list packages the filter keeps off: then it is not "nothing flagged".
+  const selfNothing = layout.selfOnly.some((r) => r.unfiltered > 0)
+    ? "nothing that matches the filter"
+    : "nothing flagged";
   const onlyVerdict = selfMix.length === 1 ? selfMix[0]?.verdict : undefined;
   const ranked = (rows: readonly RadiusRow[], from: number) =>
     rows.map((row, i) => (
@@ -390,15 +437,17 @@ export function RadiusView() {
   return (
     <div className={axis ? "rl" : "rl no-axis"} style={{ "--rl-sq": squaresWidth(shown) }}>
       {answer ? (
-        <AnswerSentence answer={answer} id="rl-answer" />
+        <AnswerSentence answer={answer} id="rl-answer" narrowed={layout.narrowed} />
       ) : (
         <p className="rl-answer" id="rl-answer">
-          None of your <b>{layout.exposureCount}</b> direct requirements lists a flagged package here.
+          None of your <b>{layout.exposureCount}</b> direct requirements lists a flagged package
+          {layout.narrowed ? " that matches the filter" : ""}.
         </p>
       )}
-      <TailLinks layout={layout} go={go} />
-      {layout.ranked.length > 0 && <Key hollow={shown.some((r) => r.elsewhere.length > 0)} />}
-      {layout.ranked.length > 0 && <Head axis={axis} />}
+      <ScopeNote layout={layout} />
+      {more && <TailLinks layout={layout} go={go} />}
+      {more && <Key hollow={shown.some((r) => r.elsewhere.length > 0)} />}
+      {(more || (layout.selfOnly.length > 0 && selfOpen)) && <Head axis={axis} />}
       {layout.lead.length > 0 && (
         <ul
           className="rl-list"
@@ -439,7 +488,7 @@ export function RadiusView() {
             onToggle={toggle(FOLD_SELF, selfOpen)}
             sub={vendorWords(layout.selfOnly.flatMap((r) => (r.self ? [r.self] : [])))}
           >
-            <b>{plural(layout.selfOnly.length, "more is", "more are")}</b> flagged themselves
+            <b>{selfLead}</b> flagged {selfN > 1 ? "themselves" : "itself"}
             {onlyVerdict ? (
               <>
                 , {layout.selfOnly.length > 1 ? "all " : ""}
@@ -451,7 +500,7 @@ export function RadiusView() {
                 (<MixWords mix={selfMix} />)
               </>
             )}
-            , with nothing flagged listed under {layout.selfOnly.length > 1 ? "them" : "it"}.
+            , with {selfNothing} listed under {selfN > 1 ? "them" : "it"}.
           </FoldHead>
           <ul
             className="rl-list rl-fold-body"
@@ -480,9 +529,12 @@ export function RadiusView() {
               </>
             }
           >
-            <b>{layout.throughOther.length} more</b> direct{" "}
-            {layout.throughOther.length > 1 ? "requirements reach" : "requirement reaches"} flagged packages
-            only through rows above.
+            <b>
+              {layout.throughOther.length}
+              {more ? " more" : ""}
+            </b>{" "}
+            direct {layout.throughOther.length > 1 ? "requirements reach" : "requirement reaches"}{" "}
+            {layout.narrowed ? "matching " : ""}flagged packages only through rows above.
           </FoldHead>
           <ul
             className="rl-receipt rl-fold-body"

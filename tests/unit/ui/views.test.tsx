@@ -1133,7 +1133,12 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
 
   it("says a flagged requirement is flagged itself beside the packages it pulls in (M24/M25)", () => {
     // Arrange
-    const parent = makeFinding({ package: "acme/parent", chain: ["acme/parent"], verdict: "pinned" });
+    const parent = makeFinding({
+      package: "acme/parent",
+      direct: true,
+      chain: ["acme/parent"],
+      verdict: "pinned",
+    });
     const model = withExposure(flaggedModel([parent, child("acme/child", "acme/parent")]), [
       { package: "acme/parent", flagged: 99 },
     ]);
@@ -1146,7 +1151,7 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
     expect(screen.getByText("pinned itself")).toBeTruthy();
   });
 
-  it("folds a flagged requirement that lists nothing into its own tail", () => {
+  it("folds a flagged requirement that lists nothing into its own tail, open when nothing ranks", () => {
     // Arrange
     const parent = makeFinding({ package: "acme/lonely", chain: ["acme/lonely"], verdict: "stale" });
     const model = withExposure(flaggedModel([parent]), [{ package: "acme/lonely", flagged: 0 }]);
@@ -1154,10 +1159,40 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
     // Act
     renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
 
+    // Assert: no ranked row above it, so no "more", and the tail is the list — open, under the head.
+    const head = screen.getByRole("button", { name: /^1 direct requirement is flagged itself/ });
+    expect(head.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("listitem", { name: "acme/lonely" })).toBeTruthy();
+    expect(screen.queryByText(/Below the ranking/)).toBeNull();
+  });
+
+  it("scopes every sentence to the filter and keeps what the filter hides countable (PD-RADIUS-6)", () => {
+    // Arrange: acme/parent is flagged and lists two packages; the rail keeps only direct ones.
+    const parent = makeFinding({
+      package: "acme/parent",
+      direct: true,
+      chain: ["acme/parent"],
+      verdict: "pinned",
+    });
+    const model = withExposure(
+      flaggedModel([parent, child("acme/a", "acme/parent"), child("acme/b", "acme/parent")]),
+      [{ package: "acme/parent", flagged: 2 }],
+    );
+    const filters = { ...stateWith({ view: "radius" }).filters, scope: ["direct"] };
+
+    // Act
+    renderIn(model, stateWith({ view: "radius", filters }), <RadiusView />);
+
     // Assert
-    const head = screen.getByRole("button", { name: /1 more is flagged themselves/ });
-    expect(head.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.queryByText(/underneath/)).toBeNull();
+    expect(screen.getByText(/lists a flagged package/).textContent).toContain("that matches the filter");
+    expect(screen.getByText(/Only flagged packages that match the filter are counted/).textContent).toBe(
+      "Only flagged packages that match the filter are counted. Without it, 2 sit under 1 of your 1 direct requirements.",
+    );
+    expect(screen.getByText("None of the 2 flagged packages listed under it match the filter.")).toBeTruthy();
+    expect(screen.queryByText("Nothing flagged is listed under it.")).toBeNull();
+    expect(
+      screen.getByRole("button", { name: /with nothing that matches the filter listed under it/ }),
+    ).toBeTruthy();
   });
 
   it("names no tag for a requirement that is not flagged", () => {

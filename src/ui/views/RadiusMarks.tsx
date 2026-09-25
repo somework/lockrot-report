@@ -2,7 +2,7 @@ import { Fragment, type ComponentChildren } from "preact";
 import type { Finding } from "../../model/types";
 import type { RadiusElsewhere, RadiusRow, VerdictCount } from "../../domain/radius";
 import { byUrgency, vendorPhrase, verdictMix } from "../../domain/radius";
-import { ageScale, ageZone, type AgeAxis, type Thresholds } from "../../domain/age";
+import { ageNotRead, ageScale, ageZone, type AgeAxis, type Thresholds } from "../../domain/age";
 import { plural } from "../../domain/format";
 import { TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { toneClass } from "../common/common";
@@ -24,6 +24,8 @@ const TALLY_GAP_PX = 3;
 /** The count before the squares, and the "▢ +N" glyph after them. */
 const COUNT_PX = 30;
 const ELSEWHERE_PX = 44;
+/** Never narrower than its column head, "Flagged underneath", in the head's condensed capitals. */
+const HEAD_PX = 164;
 
 /** The squares column's width for the whole tab: room for the longest row's squares (up to
  *  `SQUARES_PER_LINE`), so every row's squares share one scale and one left edge. */
@@ -31,7 +33,7 @@ export function squaresWidth(rows: readonly RadiusRow[]): string {
   const most = Math.min(SQUARES_PER_LINE, Math.max(5, ...rows.map((r) => r.count)));
   const tallies = Math.ceil(most / TALLY) - 1;
   const glyph = rows.some((r) => r.elsewhere.length > 0) ? ELSEWHERE_PX : 0;
-  return `${String(COUNT_PX + most * UNIT_PX + tallies * TALLY_GAP_PX + glyph)}px`;
+  return `${String(Math.max(HEAD_PX, COUNT_PX + most * UNIT_PX + tallies * TALLY_GAP_PX + glyph))}px`;
 }
 
 /** "and"-joined parts: "a", "a and b", "a, b and c". */
@@ -84,7 +86,7 @@ export function PkgName({ name }: { name: string }) {
 /**
  * A row's squares: its count, a square per package it lists (most urgent first, in its priority's
  * tone, a gap every five), then — when it also reaches packages listed under another row — one
- * hollow square and "+N". The hollow ones are counted, not drawn one by one: the length of a row is
+ * hollow ring and "+N". The hollow ones are counted, not drawn one by one: the length of a row is
  * only ever what it lists, so wallabag/rulerz-bundle's one package never draws as long as rulerz's
  * fourteen.
  */
@@ -159,10 +161,16 @@ export function AgeSpread({
 }) {
   const scales = axis ? findings.map((f) => ageScale(f, thresholds, axis.max)).filter((s) => s !== null) : [];
   if (axis === null || scales.length === 0) {
+    // The Findings age cell's own words (`AgeCellEmpty`), so a package reads the same on a row here
+    // and under one: "age not read" when an S10 blocked every one's age check, else "not flagged
+    // for age".
+    const notRead = findings.length > 0 && findings.every(ageNotRead);
     const title =
       findings.length === 0
         ? "nothing listed under this row"
-        : "none of S2 (no stable release), S4 (no push) or S8 (the installed branch stopped) fired for the packages under this row";
+        : notRead
+          ? "lockrot could not read the age of these packages (see their S10 signal)"
+          : "none of S2 (no stable release), S4 (no push) or S8 (the installed branch stopped) fired";
     return (
       <span className="fcell fc-age rl-age is-empty">
         <span className="age-track" aria-hidden="true">
@@ -175,7 +183,7 @@ export function AgeSpread({
         </span>
         {findings.length > 0 && (
           <span className="age-none" title={title}>
-            no age recorded
+            {notRead ? "age not read" : "not flagged for age"}
           </span>
         )}
       </span>

@@ -97,14 +97,21 @@ tag or the address format, says so under **Breaking** in its entry.
   itself" when it is flagged too, a square per flagged package listed under it (the same square size
   on every row, coloured by priority as in the summary band), a sentence on what it pulls in ("14
   abandoned — all hoa/*"), and those packages' years since release on the Findings axis. A hollow
-  square with "+N" counts what the row also reaches that is listed under another row, and "listed
+  ring with "+N" counts what the row also reaches that is listed under another row, and "listed
   under X" jumps to that row, opens it and marks those packages. A row's toggle shows its packages
   as a chain tree with their verdict, reason and age; a click on the row opens the requirement's
   full detail, the same one Findings opens. Rows that pull in one package each fold under one line
   (open on a wide screen, closed on a phone). After the ranking come the requirements that are
   flagged themselves with nothing listed under them, and those that reach flagged packages only
   through rows above, listed by the package they reach. A footnote names flagged direct
-  requirements that lockrot's exposure list leaves out. Print opens every row and fold.
+  requirements that lockrot's exposure list leaves out, each name opening its detail. Print opens
+  every row and fold.
+- Under a search or a rail filter, Blast radius says its counts are of the flagged packages that
+  match ("…with matching flagged packages under it: 14"), gives the counts without the filter on
+  the line below, and a row whose packages the filter hides says how many ("None of the 14 flagged
+  packages listed under it match the filter.") instead of "Nothing flagged is listed under it". With
+  no row left to rank, the "flagged themselves" tail opens as the list. The count line counts every
+  direct requirement the tab names, the "only through rows above" tail too.
 
 ### Changed
 
@@ -211,8 +218,8 @@ tag or the address format, says so under **Breaking** in its entry.
 - Every count in the filter rail is now the number of packages its button lists. "What the fix
   costs" counted advisories, so a package with two advisories fixed only on another branch read
   "Moving to another branch 2" over a list of one; a signal that fired twice on one package counted
-  it twice; and on Blast radius the counts included flagged direct requirements that tab has no row
-  for.
+  it twice; and on Blast radius Direct plus Transitive now adds up to the flagged count, the
+  footnote's direct requirements included.
 
 ## [0.12.0]
 

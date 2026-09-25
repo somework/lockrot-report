@@ -2,14 +2,12 @@ import type { Finding } from "../../model/types";
 import type { RadiusReceipt, RadiusRow, TreeNode } from "../../domain/radius";
 import { pulledTree } from "../../domain/radius";
 import type { AgeAxis } from "../../domain/age";
-import { ageNotRead, ageScale } from "../../domain/age";
 import { plural } from "../../domain/format";
 import { rowSignals, shortFact } from "../../domain/rows";
 import { SIGNAL_DEFS, TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { Tag, toneClass } from "../common/common";
 import { useReport } from "../context";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
-import { AgeCell, AgeCellEmpty } from "./AgeScale";
 import { openInteractions } from "./FindingRow";
 import {
   AgeSpread,
@@ -82,6 +80,13 @@ function AlsoLine({ row, tabIndex, env }: { row: RadiusRow; tabIndex: -1 | undef
   );
 }
 
+/** "+9 more listed under it do not match the filter." */
+function filteredOut(n: number): string {
+  return n === 1
+    ? "+1 more listed under it does not match the filter."
+    : `+${String(n)} more listed under it do not match the filter.`;
+}
+
 interface ParentProps {
   readonly row: RadiusRow;
   /** 1-based place in the ranking, or null for a tail row. */
@@ -148,9 +153,18 @@ export function ParentRow({ row, rank, expandable, open, env }: ParentProps) {
         <span className="rr-say">
           {row.count > 0 ? (
             <PullsSentence row={row} />
+          ) : row.unfiltered > 0 ? (
+            <span className="rl-quiet">
+              {row.unfiltered === 1
+                ? "The one flagged package listed under it does not match the filter."
+                : `None of the ${String(row.unfiltered)} flagged packages listed under it match the filter.`}
+            </span>
           ) : row.elsewhere.length === 0 ? (
             <span className="rl-quiet">Nothing flagged is listed under it.</span>
           ) : null}
+          {row.count > 0 && row.unfiltered > row.count && (
+            <span className="rl-also">{filteredOut(row.unfiltered - row.count)}</span>
+          )}
           <AlsoLine row={row} tabIndex={inner} env={env} />
         </span>
         <AgeSpread
@@ -223,7 +237,9 @@ function TreeLines({ node }: { node: TreeNode }) {
 }
 
 /** A package a requirement lists, in its place on the chain tree: package · verdict · why · age, the
- *  Findings row's own facts on the tab's axis. */
+ *  Findings row's own facts. Its age is a tick on the tab's axis — the mark its parent row's range
+ *  is drawn with, so the column keeps one encoding (a Findings bar from 0 under a whisker read as
+ *  two scales), in the Findings age cell's words when there is none. */
 function ChildRow({
   parent,
   node,
@@ -239,7 +255,6 @@ function ChildRow({
   const { finding } = node;
   const key = childKey(parent, finding.package);
   const first = env.first.has(key);
-  const scale = env.axis ? ageScale(finding, model.report.run.thresholds, env.axis.max) : null;
 
   return (
     <li
@@ -268,11 +283,7 @@ function ChildRow({
         {finding.verdict}
       </span>
       <Why finding={finding} />
-      {scale ? (
-        <AgeCell scale={scale} verdict={finding.verdict} />
-      ) : (
-        <AgeCellEmpty axis={env.axis} notRead={ageNotRead(finding)} />
-      )}
+      <AgeSpread findings={[finding]} axis={env.axis} thresholds={model.report.run.thresholds} />
     </li>
   );
 }

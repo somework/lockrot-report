@@ -440,9 +440,10 @@ describe("railGroups counts packages, the unit the rail filters in (PD-RAIL-1)",
     expect(signal?.rows.map((r) => [r.key, r.count])).toEqual([["S5", 1]]);
   });
 
-  it("on Blast radius, leaves out a flagged direct requirement no card lists", () => {
+  it("on Blast radius, counts a flagged direct requirement the footnote names, and no stray one", () => {
     // Arrange: acme/parent heads a card and pulls acme/child; acme/alone is flagged and direct but
-    // not in `exposure`, so the tab has no place for it.
+    // not in `exposure`, so the tab names it in its footnote, with a link to its detail. acme/stray
+    // is transitive and its chain reaches no row, so the tab has no place for it.
     const parent = makeFinding({
       package: "acme/parent",
       verdict: "abandoned",
@@ -461,18 +462,26 @@ describe("railGroups counts packages, the unit the rail filters in (PD-RAIL-1)",
       direct: true,
       chain: ["acme/alone"],
     });
-    const model = modelWith([parent, child, alone], { exposure: [{ package: "acme/parent", flagged: 1 }] });
+    const stray = makeFinding({
+      package: "acme/stray",
+      verdict: "abandoned",
+      direct: false,
+      chain: ["acme/elsewhere", "acme/stray"],
+    });
+    const model = modelWith([parent, child, alone, stray], {
+      exposure: [{ package: "acme/parent", flagged: 1 }],
+    });
 
     // Act
-    const scope = (view: "findings" | "radius") =>
+    const scope = (view: "findings" | "radius", key: string) =>
       railGroups(model, stateWith({ view }))
         .find((g) => g.group === "scope")
-        ?.rows.find((r) => r.key === "direct")?.count;
+        ?.rows.find((r) => r.key === key)?.count;
 
-    // Assert: Findings lists all three, so its "Direct" counts both direct ones; Blast radius only
-    // ever shows acme/parent of those two.
-    expect(scope("findings")).toBe(2);
-    expect(scope("radius")).toBe(1);
+    // Assert: both tabs name both direct ones, so Direct plus Transitive is the flagged count
+    // whenever every chain reaches a row; acme/stray is on Findings only.
+    expect([scope("findings", "direct"), scope("findings", "transitive")]).toEqual([2, 2]);
+    expect([scope("radius", "direct"), scope("radius", "transitive")]).toEqual([2, 1]);
   });
 });
 
