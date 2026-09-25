@@ -44,7 +44,7 @@ export function Detail({ onClose }: DetailProps) {
     return (
       <aside className="detail" role="complementary" aria-label={state.pkg}>
         <p className="detail-missing">{state.pkg} is not in this report.</p>
-        <button type="button" className="detail-close" onClick={onClose}>
+        <button type="button" className="detail-close" onClick={onClose} data-detail-focus="">
           Close
         </button>
       </aside>

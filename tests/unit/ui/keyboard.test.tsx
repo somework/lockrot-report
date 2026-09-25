@@ -1,5 +1,13 @@
 import { describe, expect, test } from "vitest";
-import { decideKey, findRow, keyInputFrom, prevents, type KeyInput } from "../../../src/ui/keyboard";
+import {
+  decideKey,
+  findRow,
+  keyInputFrom,
+  prevents,
+  rowAt,
+  rowPosition,
+  type KeyInput,
+} from "../../../src/ui/keyboard";
 
 const ROWS = ["a/one", "a/two", "a/three"];
 
@@ -12,43 +20,71 @@ function input(overrides: Partial<KeyInput>): KeyInput {
     dialogOpen: false,
     popoverOpen: false,
     rowPkg: null,
+    rowIndex: null,
     onControl: false,
     selected: null,
     rendered: ROWS,
+    sheetOpen: false,
+    searchAvailable: true,
     ...overrides,
   };
 }
 
 describe("j / k walk the rendered rows", () => {
   test("from nothing open, both j and k land on the first row", () => {
-    expect(decideKey(input({ key: "j" }))).toEqual({ type: "move", pkg: "a/one" });
-    expect(decideKey(input({ key: "k" }))).toEqual({ type: "move", pkg: "a/one" });
+    expect(decideKey(input({ key: "j" }))).toEqual({ type: "move", pkg: "a/one", index: 0 });
+    expect(decideKey(input({ key: "k" }))).toEqual({ type: "move", pkg: "a/one", index: 0 });
   });
 
   test("move one row from the open package", () => {
-    expect(decideKey(input({ key: "j", selected: "a/two" }))).toEqual({ type: "move", pkg: "a/three" });
-    expect(decideKey(input({ key: "k", selected: "a/two" }))).toEqual({ type: "move", pkg: "a/one" });
+    expect(decideKey(input({ key: "j", selected: "a/two" }))).toEqual({
+      type: "move",
+      pkg: "a/three",
+      index: 2,
+    });
+    expect(decideKey(input({ key: "k", selected: "a/two" }))).toEqual({
+      type: "move",
+      pkg: "a/one",
+      index: 0,
+    });
   });
 
   test("clamp at both ends instead of wrapping", () => {
-    expect(decideKey(input({ key: "j", selected: "a/three" }))).toEqual({ type: "move", pkg: "a/three" });
-    expect(decideKey(input({ key: "k", selected: "a/one" }))).toEqual({ type: "move", pkg: "a/one" });
+    expect(decideKey(input({ key: "j", selected: "a/three" }))).toEqual({
+      type: "move",
+      pkg: "a/three",
+      index: 2,
+    });
+    expect(decideKey(input({ key: "k", selected: "a/one" }))).toEqual({
+      type: "move",
+      pkg: "a/one",
+      index: 0,
+    });
   });
 
   test("an open package with no row on screen restarts from the first row (M7)", () => {
-    expect(decideKey(input({ key: "j", selected: "elsewhere/pkg" }))).toEqual({ type: "move", pkg: "a/one" });
+    expect(decideKey(input({ key: "j", selected: "elsewhere/pkg" }))).toEqual({
+      type: "move",
+      pkg: "a/one",
+      index: 0,
+    });
   });
 
   // PD-ROWS-11: after Escape handed focus back to a row, `j` restarted at the top of the list.
   test("move from the focused row when nothing is open", () => {
-    expect(decideKey(input({ key: "j", rowPkg: "a/two" }))).toEqual({ type: "move", pkg: "a/three" });
-    expect(decideKey(input({ key: "k", rowPkg: "a/two" }))).toEqual({ type: "move", pkg: "a/one" });
+    expect(decideKey(input({ key: "j", rowPkg: "a/two" }))).toEqual({
+      type: "move",
+      pkg: "a/three",
+      index: 2,
+    });
+    expect(decideKey(input({ key: "k", rowPkg: "a/two" }))).toEqual({ type: "move", pkg: "a/one", index: 0 });
   });
 
   test("move from the focused row, not the open package, when the two differ", () => {
     expect(decideKey(input({ key: "j", rowPkg: "a/one", selected: "a/three" }))).toEqual({
       type: "move",
       pkg: "a/two",
+      index: 1,
     });
   });
 
@@ -56,6 +92,29 @@ describe("j / k walk the rendered rows", () => {
     expect(decideKey(input({ key: "j", rowPkg: "elsewhere/pkg", selected: "a/one" }))).toEqual({
       type: "move",
       pkg: "a/two",
+      index: 1,
+    });
+  });
+
+  // PD-ROWS-12: Advisories lists a package once per advisory. `j` from its second row used to find
+  // the package's first row by name and step from there, so it could never walk past the second.
+  test("a package listed twice is walked row by row, by position", () => {
+    const rendered = ["a/one", "a/two", "a/three", "a/two", "a/four"];
+    expect(decideKey(input({ key: "j", rendered, rowPkg: "a/two", rowIndex: 3, selected: "a/two" }))).toEqual(
+      {
+        type: "move",
+        pkg: "a/four",
+        index: 4,
+      },
+    );
+    expect(
+      decideKey(input({ key: "j", rendered, rowPkg: "a/three", rowIndex: 2, selected: "a/three" })),
+    ).toEqual({ type: "move", pkg: "a/two", index: 3 });
+    // A position that no longer shows the focused package falls back to its first row.
+    expect(decideKey(input({ key: "j", rendered, rowPkg: "a/two", rowIndex: 0 }))).toEqual({
+      type: "move",
+      pkg: "a/three",
+      index: 2,
     });
   });
 
@@ -72,13 +131,30 @@ describe("j / k walk the rendered rows", () => {
 
 describe("/ and ?", () => {
   test("/ focuses the search box, ? opens the glossary", () => {
-    expect(decideKey(input({ key: "/" }))).toEqual({ type: "focusSearch" });
+    expect(decideKey(input({ key: "/" }))).toEqual({ type: "focusSearch", closeDetail: false });
     expect(decideKey(input({ key: "?" }))).toEqual({ type: "openGlossary" });
   });
 
   test("are text while typing", () => {
     expect(decideKey(input({ key: "/", typing: true, searchFocused: true }))).toEqual({ type: "ignore" });
     expect(decideKey(input({ key: "?", typing: true, searchFocused: true }))).toEqual({ type: "ignore" });
+  });
+
+  // PD-ROWS-12: the search box sits under a detail sheet, so focus would land on a field nobody sees.
+  test("/ closes a sheet over the page on its way to the search box", () => {
+    expect(decideKey(input({ key: "/", sheetOpen: true, selected: "a/one" }))).toEqual({
+      type: "focusSearch",
+      closeDetail: true,
+    });
+    // A detail beside the list leaves the box in sight: it stays open.
+    expect(decideKey(input({ key: "/", selected: "a/one" }))).toEqual({
+      type: "focusSearch",
+      closeDetail: false,
+    });
+    // A tab without a search box: nothing to go to, so the sheet stays.
+    expect(decideKey(input({ key: "/", sheetOpen: true, searchAvailable: false }))).toEqual({
+      type: "ignore",
+    });
   });
 
   test("? does not reopen an open glossary", () => {
@@ -189,6 +265,7 @@ describe("keyInputFrom reads the page around a key", () => {
       search: null,
       dialogOpen: false,
       selected: null,
+      sheetOpen: false,
       rendered: () => {
         computed += 1;
         return ROWS;
@@ -203,8 +280,38 @@ describe("keyInputFrom reads the page around a key", () => {
     expect(keyInputFrom(press(row, "j", { ctrlKey: true }), context)).toMatchObject({
       modified: true,
       rendered: ROWS,
+      rowIndex: 0,
     });
     expect(computed).toBe(1);
+  });
+
+  test("the row's position, the sheet and the search box's presence", () => {
+    document.body.replaceChildren();
+    const rows = ["a/one", "a/two", "a/one"].map((name) => {
+      const node = document.createElement("div");
+      node.setAttribute("data-pkg", name);
+      node.tabIndex = -1;
+      document.body.append(node);
+      return node;
+    });
+    const second = rows[2];
+    if (second === undefined) throw new Error("three rows");
+    const context = {
+      search: null,
+      dialogOpen: false,
+      selected: "a/one",
+      sheetOpen: true,
+      rendered: () => ROWS,
+    };
+
+    expect(keyInputFrom(press(second, "j"), context)).toMatchObject({
+      rowPkg: "a/one",
+      rowIndex: 2,
+      sheetOpen: true,
+      searchAvailable: false,
+    });
+    // Read for j/k only.
+    expect(keyInputFrom(press(second, "Enter"), context)).toMatchObject({ rowIndex: null });
   });
 
   test("popoverOpen is read from the DOM only for Escape, and never throws without Popover API support", () => {
@@ -215,7 +322,13 @@ describe("keyInputFrom reads the page around a key", () => {
     const row = document.createElement("div");
     row.setAttribute("data-pkg", "a/one");
     document.body.append(row);
-    const context = { search: null, dialogOpen: false, selected: null, rendered: () => ROWS };
+    const context = {
+      search: null,
+      dialogOpen: false,
+      selected: null,
+      sheetOpen: false,
+      rendered: () => ROWS,
+    };
 
     expect(keyInputFrom(press(row, "Escape"), context)).toMatchObject({ popoverOpen: false });
     // Not Escape: never even checked, so a key that is not Escape carries popoverOpen: false too.
@@ -232,6 +345,7 @@ describe("keyInputFrom reads the page around a key", () => {
       search,
       dialogOpen: false,
       selected: null,
+      sheetOpen: false,
       rendered: () => ROWS,
     });
     expect(read).toMatchObject({ typing: true, searchFocused: true });
@@ -250,5 +364,24 @@ describe("findRow compares names, never builds a selector", () => {
     expect(findRow(document, 'we"ird\\name[0]')?.getAttribute("data-pkg")).toBe('we"ird\\name[0]');
     expect(findRow(document, "a/one")).toBe(document.body.children[1]);
     expect(findRow(document, "missing")).toBeNull();
+  });
+});
+
+describe("rowAt and rowPosition tell a package's rows apart (PD-ROWS-12)", () => {
+  test("the row at a position when it still shows the package, else the package's first row", () => {
+    document.body.replaceChildren();
+    for (const name of ["a/one", "a/two", "a/one"]) {
+      const node = document.createElement("div");
+      node.setAttribute("data-pkg", name);
+      document.body.append(node);
+    }
+    const [first, , second] = Array.from(document.body.children);
+    expect(rowAt(document, "a/one", 2)).toBe(second);
+    expect(rowAt(document, "a/one", 1)).toBe(first);
+    expect(rowAt(document, "a/one", null)).toBe(first);
+    expect(rowAt(document, "a/one", 9)).toBe(first);
+    expect(rowAt(document, "missing", 0)).toBeNull();
+    expect(second === undefined ? null : rowPosition(document, second)).toBe(2);
+    expect(rowPosition(document, document.body)).toBeNull();
   });
 });

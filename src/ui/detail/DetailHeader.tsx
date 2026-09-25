@@ -41,7 +41,11 @@ export function DetailHeader({ finding, onClose }: DetailHeaderProps) {
     <div className="detail-head">
       <div className="detail-head-top">
         <div className="detail-head-name">
-          <h2 className="detail-title">{finding.package}</h2>
+          {/* Where focus goes when the detail opens as a sheet over the page (PD-ROWS-12): the row
+              that opened it is covered, so its ring would be out of sight. */}
+          <h2 className="detail-title" tabIndex={-1} data-detail-focus="">
+            {finding.package}
+          </h2>
           <span className="detail-version">{finding.version}</span>
         </div>
         <button type="button" ref={closeRef} className="detail-close" onClick={onClose}>

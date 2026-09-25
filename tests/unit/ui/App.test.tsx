@@ -54,6 +54,9 @@ vi.mock("../../../src/ui/detail/Detail", async () => {
       const { state } = useReport();
       return (
         <section aria-label={state.pkg ?? ""}>
+          <h2 tabIndex={-1} data-detail-focus="">
+            {state.pkg}
+          </h2>
           <button type="button" onClick={onClose}>
             Close
           </button>
@@ -108,7 +111,7 @@ afterEach(() => {
 });
 
 function shellClasses(): string[] {
-  return Array.from(document.querySelector("main.shell")?.classList ?? []);
+  return Array.from(document.querySelector(".shell")?.classList ?? []);
 }
 
 describe("boot", () => {
@@ -376,6 +379,21 @@ describe("keyboard", () => {
     vi.restoreAllMocks();
   });
 
+  // PD-ROWS-12: a second Escape used to blur the box to the page, so Tab started again at the top.
+  test("Escape from the search box with nothing open hands focus to the list's Tab stop", () => {
+    render(<App model={MINI} />);
+    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    key("j");
+    key("j");
+    key("Escape");
+    const search = screen.getByRole("searchbox");
+    search.focus();
+
+    key("Escape", search);
+    expect(detailName()).toBeNull();
+    expect(document.activeElement?.getAttribute("data-pkg")).toBe("vendor/snapshot");
+  });
+
   test("/ focuses the search box; j typed there is text", () => {
     render(<App model={MINI} />);
     key("/");
@@ -383,6 +401,77 @@ describe("keyboard", () => {
     expect(document.activeElement).toBe(search);
     key("j", search);
     expect(detailName()).toBeNull(); // j typed as text never opened the first row
+  });
+});
+
+// PD-ROWS-12: below the wide layout the detail is a sheet over the whole page, so the row that holds
+// focus is under it and its ring out of sight (WCAG 2.4.11). Focus goes into the sheet instead, and
+// everything the sheet covers is inert until it closes.
+describe("a sheet over the page takes focus (PD-ROWS-12)", () => {
+  function sheetHeading(): Element | null {
+    return document.querySelector(".shell-detail [data-detail-focus]");
+  }
+
+  test("a clicked row opens the sheet with focus on its heading, and the page under it inert", () => {
+    media({ wide: false });
+    render(<App model={MINI} />);
+    const row = screen.getByRole("option", { name: "vendor/snapshot" });
+    row.focus();
+    fireEvent.click(row);
+
+    expect(detailName()).toBe("vendor/snapshot");
+    expect(document.activeElement).toBe(sheetHeading());
+    expect(document.querySelector(".shell-main")?.hasAttribute("inert")).toBe(true);
+    expect(screen.getByRole("banner").hasAttribute("inert")).toBe(true);
+    expect(screen.getByRole("contentinfo").hasAttribute("inert")).toBe(true);
+    expect(document.querySelector(".ledger-band")?.hasAttribute("inert")).toBe(true);
+    expect(document.querySelector(".shell-detail")?.closest("[inert]")).toBeNull();
+  });
+
+  test("j and k keep focus in the sheet, and Escape hands it to the row they reached", () => {
+    media({ wide: false });
+    render(<App model={MINI} />);
+    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    key("j");
+    expect(detailName()).toBe("vendor/transitive");
+    expect(document.activeElement).toBe(sheetHeading());
+    key("j", document.activeElement ?? document.body);
+    expect(detailName()).toBe("vendor/snapshot");
+    expect(document.activeElement).toBe(sheetHeading());
+    expect(sheetHeading()?.textContent).toBe("vendor/snapshot");
+
+    key("Escape", document.activeElement ?? document.body);
+    expect(detailName()).toBeNull();
+    expect(document.activeElement?.getAttribute("data-pkg")).toBe("vendor/snapshot");
+    expect(document.querySelector("[inert]")).toBeNull();
+  });
+
+  test("/ closes the sheet and focuses the search box it covered", () => {
+    media({ wide: false });
+    render(<App model={MINI} />);
+    key("j");
+    expect(detailName()).not.toBeNull();
+
+    key("/", document.activeElement ?? document.body);
+    expect(detailName()).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole("searchbox"));
+  });
+
+  test("a sheet the address opened on load leaves focus alone", () => {
+    media({ wide: false });
+    history.replaceState(null, "", "/report.html#pkg=vendor%2Fsnapshot");
+    render(<App model={MINI} />);
+    expect(detailName()).toBe("vendor/snapshot");
+    expect(document.activeElement).toBe(document.body);
+  });
+
+  test("a detail beside the list takes nothing inert and leaves focus on the row", () => {
+    render(<App model={MINI} />);
+    const row = screen.getByRole("option", { name: "vendor/snapshot" });
+    row.focus();
+    fireEvent.click(row);
+    expect(document.activeElement).toBe(row);
+    expect(document.querySelector("[inert]")).toBeNull();
   });
 });
 

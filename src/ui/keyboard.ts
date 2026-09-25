@@ -11,7 +11,11 @@
  *   row at all.
  * - PD-ROWS-11: focus follows the selection. `j`/`k` move from the focused row, so after Escape
  *   hands focus back to a row, `j` continues below it instead of restarting at the top; and Escape
- *   pressed in a text field closes the detail without pulling focus out of the field.
+ *   pressed in a text field closes the detail without pulling focus out of the field. A package
+ *   listed on two rows (Advisories, Blast radius) is walked row by row, by position, not by name.
+ * - PD-ROWS-12: while the detail is a sheet over the whole page, the list under it is out of reach,
+ *   so `/` closes the sheet on its way to the search box, and a second Escape from the search box
+ *   hands focus to the list's row instead of dropping it on the page.
  * - M10: nothing but Escape acts while the glossary is open; the legacy page kept moving the
  *   selection behind it.
  * - PD-GLOSSARY-6, PD-SUMMARY-4: an open popover (a verdict pill's, the header's gate fact) eats
@@ -39,19 +43,29 @@ export interface KeyInput {
   popoverOpen: boolean;
   /** `data-pkg` of the row the key was pressed in, or null outside any row. */
   rowPkg: string | null;
+  /** That row's position among the view's rows (`listRows`), or null outside any row. Only read for
+   *  `j`/`k`: it tells two rows of the same package apart. */
+  rowIndex: number | null;
   /** The key landed on a link, button or field inside that row, which has its own Enter/Space. */
   onControl: boolean;
   /** The open package, or null. */
   selected: string | null;
   /** The rows of the current view, in screen order. Only read for `j`/`k`. */
   rendered: readonly string[];
+  /** The detail is a sheet over the whole page (below the wide layout), so nothing under it can
+   *  take focus (PD-ROWS-12). */
+  sheetOpen: boolean;
+  /** The current tab draws the search box. */
+  searchAvailable: boolean;
 }
 
 export type KeyDecision =
   | { type: "ignore" }
   | { type: "openRow"; pkg: string }
-  | { type: "move"; pkg: string }
-  | { type: "focusSearch" }
+  /** `index` is the position of the row to move to among the view's rows. */
+  | { type: "move"; pkg: string; index: number }
+  /** `closeDetail`: the sheet covering the search box closes first (PD-ROWS-12). */
+  | { type: "focusSearch"; closeDetail: boolean }
   | { type: "openGlossary" }
   | { type: "closeGlossary" }
   /** `restore` is the row to hand focus back to, or null to leave focus where it is (a text field). */
@@ -71,14 +85,14 @@ export function decideKey(input: KeyInput): KeyDecision {
   }
   if (input.typing) return IGNORE;
   if (input.key === "?") return { type: "openGlossary" };
-  if (input.key === "/") return { type: "focusSearch" };
+  if (input.key === "/") return decideSlash(input);
   if (input.key === "j" || input.key === "k") return decideMove(input, input.key === "j" ? 1 : -1);
 
   return IGNORE;
 }
 
 /** Escape closes one thing per press, the topmost first: an open popover, then the glossary, then
- *  the detail, then search focus. The popover is topmost of all — a pill's can be open over the
+ *  the detail, then search focus — which the shell hands to the list's row (PD-ROWS-12). The popover is topmost of all — a pill's can be open over the
  *  detail, over the glossary, or over neither — and closes by the browser's own doing, not a
  *  dispatch (PD-GLOSSARY-6, PD-SUMMARY-4). */
 function decideEscape(input: KeyInput): KeyDecision {
@@ -92,6 +106,15 @@ function decideEscape(input: KeyInput): KeyDecision {
   return IGNORE;
 }
 
+/** `/` goes to the search box. With a sheet over the page the box is under it, so the sheet closes
+ *  first rather than focus landing on a field nobody can see (PD-ROWS-12). */
+function decideSlash(input: KeyInput): KeyDecision {
+  if (!input.sheetOpen) return { type: "focusSearch", closeDetail: false };
+  if (!input.searchAvailable) return IGNORE;
+
+  return { type: "focusSearch", closeDetail: true };
+}
+
 /**
  * The next row from where the reader is, clamped at both ends: the row that holds focus (the key
  * landed in it) when it is one of the view's rows, else the open package. Focus and the open package
@@ -99,17 +122,28 @@ function decideEscape(input: KeyInput): KeyDecision {
  * focus back to its row, and `j` then continues from that row rather than from the top (PD-ROWS-11).
  * With neither on screen (filtered out, or on another tab's list), both keys start at the first
  * row, as the legacy cursor did from -1.
+ *
+ * The focused row is placed by its position, not its name: a package Advisories lists under two
+ * advisories used to send `j` from its second row back to its first (the first match by name), so
+ * `j` could never walk past it.
  */
 function decideMove(input: KeyInput, step: 1 | -1): KeyDecision {
   const count = input.rendered.length;
   if (count === 0) return IGNORE;
-  const focused = input.rowPkg !== null && input.rendered.includes(input.rowPkg) ? input.rowPkg : null;
-  const from = focused ?? input.selected;
-  const at = from === null ? -1 : input.rendered.indexOf(from);
+  const at = focusedAt(input) ?? (input.selected === null ? -1 : input.rendered.indexOf(input.selected));
   const next = at < 0 ? 0 : Math.min(count - 1, Math.max(0, at + step));
   const pkg = input.rendered[next];
 
-  return pkg === undefined ? IGNORE : { type: "move", pkg };
+  return pkg === undefined ? IGNORE : { type: "move", pkg, index: next };
+}
+
+/** The focused row's position, when the key landed on one of the view's rows; else null. */
+function focusedAt(input: KeyInput): number | null {
+  if (input.rowPkg === null) return null;
+  if (input.rowIndex !== null && input.rendered[input.rowIndex] === input.rowPkg) return input.rowIndex;
+  const at = input.rendered.indexOf(input.rowPkg);
+
+  return at < 0 ? null : at;
 }
 
 /**
@@ -130,6 +164,7 @@ export interface KeyContext {
   selected: string | null;
   /** Called only for `j`/`k`, so the rendered order is not recomputed on every keystroke typed. */
   rendered: () => readonly string[];
+  sheetOpen: boolean;
 }
 
 /** Whether any native popover (a verdict pill's, Header's gate fact) is currently open. Read from the DOM, not
@@ -162,11 +197,14 @@ export function keyInputFrom(event: KeyboardEvent, context: KeyContext): KeyInpu
     // `popover="auto"` natively, without a dispatch either way. Only Escape reads it.
     popoverOpen: event.key === "Escape" && hasOpenPopover(),
     rowPkg: row?.getAttribute("data-pkg") ?? null,
+    rowIndex: row !== null && (event.key === "j" || event.key === "k") ? rowPosition(document, row) : null,
     // A control that contains the row is not "inside" it; a row that is itself a control is, since
     // its native activation already fires its click.
     onControl: control !== null && (row === null || row.contains(control)),
     selected: context.selected,
     rendered: event.key === "j" || event.key === "k" ? context.rendered() : [],
+    sheetOpen: context.sheetOpen,
+    searchAvailable: context.search !== null,
   };
 }
 
@@ -176,9 +214,30 @@ export function keyInputFrom(event: KeyboardEvent, context: KeyContext): KeyInpu
  * `[` in one would make `querySelector` throw (history.md §4).
  */
 export function findRow(root: ParentNode, pkg: string): HTMLElement | null {
-  for (const node of root.querySelectorAll<HTMLElement>("[data-pkg]")) {
+  for (const node of listRows(root)) {
     if (node.getAttribute("data-pkg") === pkg) return node;
   }
 
   return null;
+}
+
+/** The current view's rows, in document order — the order `renderedPackages` lists them in. */
+export function listRows(root: ParentNode): HTMLElement[] {
+  return Array.from(root.querySelectorAll<HTMLElement>("[data-pkg]"));
+}
+
+/** A row's position among the view's rows, or null when it is not one. */
+export function rowPosition(root: ParentNode, row: Element): number | null {
+  const at = listRows(root).indexOf(row as HTMLElement);
+
+  return at < 0 ? null : at;
+}
+
+/** The row at `index` when it still shows `pkg`, else `pkg`'s first row: the row a `j` walked to,
+ *  even when the same package has an earlier row too (PD-ROWS-11). */
+export function rowAt(root: ParentNode, pkg: string, index: number | null): HTMLElement | null {
+  const row = index === null ? undefined : listRows(root)[index];
+  if (row?.getAttribute("data-pkg") === pkg) return row;
+
+  return findRow(root, pkg);
 }

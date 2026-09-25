@@ -97,10 +97,10 @@
   background: var(--surface-2);
 }
 /* The open package's row (M6): the accent rule on its first cell mirrors a Findings row's border. */
-.tablewrap tbody tr[aria-selected="true"] td {
+.tablewrap tbody tr[aria-current="true"] td {
   background: var(--surface-2);
 }
-.tablewrap tbody tr[aria-selected="true"] td:first-child {
+.tablewrap tbody tr[aria-current="true"] td:first-child {
   box-shadow: inset 3px 0 0 var(--accent);
 }
 .tablewrap tbody tr:focus-visible {

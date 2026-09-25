@@ -9,7 +9,8 @@
  * Tab order only on that one row, so Tab from it goes to its own links and then leaves the list.
  *
  * A package listed twice (an Advisories package under two advisories, a Blast radius package under
- * two direct requirements) is the Tab stop on each of its rows; the rows name the same package.
+ * two direct requirements) is the Tab stop on its first row only, so each list keeps one Tab stop.
+ * Every row of the open package still reads as current: they all name it.
  */
 
 /** The package whose row is the list's Tab stop, or null when the view draws no rows. */
@@ -24,13 +25,35 @@ export function pickCursor(
   return rendered[0] ?? null;
 }
 
-/** A row's own `tabIndex`: 0 for the Tab stop, -1 (focusable, never tabbed to) for the rest. */
-export function rowTabIndex(pkg: string, cursor: string | null): 0 | -1 {
-  return pkg === cursor ? 0 : -1;
+/** A row's own `tabIndex`: 0 for the Tab stop, -1 (focusable, never tabbed to) for the rest.
+ *  `first` is false on a package's second and later rows. */
+export function rowTabIndex(pkg: string, cursor: string | null, first = true): 0 | -1 {
+  return first && pkg === cursor ? 0 : -1;
 }
 
 /** The `tabIndex` of a link or control inside a row: left alone on the Tab stop's row, -1 on every
  *  other row, so Tab never walks a link per row. A click still reaches it. */
-export function innerTabIndex(pkg: string, cursor: string | null): -1 | undefined {
-  return pkg === cursor ? undefined : -1;
+export function innerTabIndex(pkg: string, cursor: string | null, first = true): -1 | undefined {
+  return first && pkg === cursor ? undefined : -1;
+}
+
+/**
+ * The keys of the rows that are their package's first row, for a list that can show a package more
+ * than once. `rows` is in screen order; `key` tells rows apart, `pkg` names the row's package.
+ */
+export function firstRows<T>(
+  rows: readonly T[],
+  pkg: (row: T) => string,
+  key: (row: T) => string,
+): ReadonlySet<string> {
+  const seen = new Set<string>();
+  const first = new Set<string>();
+  for (const row of rows) {
+    const name = pkg(row);
+    if (seen.has(name)) continue;
+    seen.add(name);
+    first.add(key(row));
+  }
+
+  return first;
 }

@@ -18,7 +18,7 @@ const WIDE_BREAKPOINTS = [
 ] as const;
 
 function shellLocator(page: Page) {
-  return page.locator("main.shell");
+  return page.locator(".shell");
 }
 
 function tableWrapLocator(page: Page) {

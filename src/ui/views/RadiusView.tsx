@@ -4,20 +4,20 @@ import { applyFilters } from "../../domain/filters";
 import { radiusCards } from "../../domain/radius";
 import { plural } from "../../domain/format";
 import { Pill, Tag } from "../common/common";
-import { rowTabIndex } from "../rowCursor";
+import { firstRows, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
 import "./views.css";
 
 /** One package a card's direct requirement drags in — a small list item that opens that package's
  *  detail, never a bare navigation link. A list item like the Findings rows, so every view's rows
  *  share one role and one way of marking the open one (`aria-current`). */
-function PulledRow({ pulled }: { pulled: RadiusPulled }) {
+function PulledRow({ pulled, first }: { pulled: RadiusPulled; first: boolean }) {
   const { state, dispatch, cursor } = useReport();
   const isOpen = state.pkg === pulled.package;
 
   return (
     <li
-      tabIndex={rowTabIndex(pulled.package, cursor)}
+      tabIndex={rowTabIndex(pulled.package, cursor, first)}
       aria-current={isOpen ? "true" : undefined}
       aria-label={pulled.package}
       data-pkg={pulled.package}
@@ -36,7 +36,18 @@ function PulledRow({ pulled }: { pulled: RadiusPulled }) {
  *  exceed its own rows, or fold "is the parent itself flagged" into a number the rows don't back
  *  up; the fix keeps the two facts separate instead of dropping the second one silently whenever
  *  there were rows to show). `count` and the rows below it always agree. */
-function RadiusCardView({ card }: { card: RadiusCardModel }) {
+/** A pulled row's key across every card: the same package can sit under two direct requirements. */
+function pulledKey(card: RadiusCardModel, pulled: RadiusPulled): string {
+  return `${card.package}:${pulled.package}`;
+}
+
+interface RadiusCardProps {
+  card: RadiusCardModel;
+  /** `pulledKey`s of the rows that are their package's first on the tab (`rowCursor.ts`). */
+  first: ReadonlySet<string>;
+}
+
+function RadiusCardView({ card, first }: RadiusCardProps) {
   return (
     <article className="card">
       <h3>{card.package}</h3>
@@ -56,7 +67,7 @@ function RadiusCardView({ card }: { card: RadiusCardModel }) {
           </span>
           <ul className="pulled-list" aria-label={`Pulled in by ${card.package}`}>
             {card.pulled.map((pulled) => (
-              <PulledRow key={pulled.package} pulled={pulled} />
+              <PulledRow key={pulled.package} pulled={pulled} first={first.has(pulledKey(card, pulled))} />
             ))}
           </ul>
         </>
@@ -76,6 +87,11 @@ export function RadiusView() {
   const { model, state } = useReport();
   const flagged = applyFilters(model, state, "radius");
   const cards = radiusCards(model, flagged);
+  const first = firstRows(
+    cards.flatMap((card) => card.pulled.map((pulled) => ({ card, pulled }))),
+    ({ pulled }) => pulled.package,
+    ({ card, pulled }) => pulledKey(card, pulled),
+  );
 
   if (cards.length === 0) {
     return <p className="empty">No direct requirement drags a flagged package in.</p>;
@@ -89,7 +105,7 @@ export function RadiusView() {
       </p>
       <div className="cards">
         {cards.map((card) => (
-          <RadiusCardView key={card.package} card={card} />
+          <RadiusCardView key={card.package} card={card} first={first} />
         ))}
       </div>
     </div>

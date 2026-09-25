@@ -66,6 +66,8 @@ export interface HeaderProps {
   onOpenGlossary: () => void;
   /** The tab list, which sits in the header's sticky band. */
   children?: ComponentChildren;
+  /** A detail sheet covers the page, header and all, so nothing here can take focus (PD-ROWS-12). */
+  inert?: boolean;
 }
 
 /**
@@ -73,7 +75,7 @@ export interface HeaderProps {
  * page-wide controls (legacy report.html:26-42). Every value falls back to an em dash rather than a
  * guess: the page must not name a PHP target the run may not have had.
  */
-export function Header({ theme, onToggleTheme, onOpenGlossary, children }: HeaderProps) {
+export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert = false }: HeaderProps) {
   const { model } = useReport();
   const { run, tool, generatedAt } = model.report;
   const ref = useHeaderHeight();
@@ -84,7 +86,7 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children }: Heade
   const popoverId = `${useId()}-gate`;
 
   return (
-    <header className="topbar" ref={ref}>
+    <header className="topbar" ref={ref} inert={inert}>
       <div className="topbar-in">
         <div className="brand">
           <span className="dot" aria-hidden="true" />

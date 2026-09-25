@@ -79,7 +79,7 @@ function PackageRow({ finding }: { finding: Finding }) {
   return (
     <tr
       tabIndex={rowTabIndex(finding.package, cursor)}
-      aria-selected={isOpen}
+      aria-current={isOpen ? "true" : undefined}
       aria-label={finding.package}
       data-pkg={finding.package}
       {...openInteractions(finding.package, dispatch)}
@@ -107,7 +107,8 @@ function PackageRow({ finding }: { finding: Finding }) {
 
 /** The All-packages tab: every package in the document, sortable by column — ported from legacy
  *  `viewPackages` (report.js:558-593), fixed per DESIGN.md §5 M6: rows are focusable and mark the
- *  open package selected, which legacy's plain `<tr>` never did. */
+ *  open package, which legacy's plain `<tr>` never did — with `aria-current`, as every other tab's
+ *  rows do (PD-ROWS-12): `aria-selected` means nothing on a plain table's row. */
 export function PackagesView() {
   const { model, state, dispatch } = useReport();
   const visible = applyFilters(model, state, "packages");

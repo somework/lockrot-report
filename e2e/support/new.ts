@@ -296,13 +296,40 @@ export class NewReportPage implements ReportPage {
     return region.first().evaluate((el) => el.contains(document.activeElement));
   }
 
-  /** `aria-selected` (M6: the new packages table marks the open row selected, unlike legacy). */
+  /** `aria-current`, as on every tab's rows (M6: the packages table marks the open row, unlike legacy; PD-ROWS-12). */
   async rowSelected(name: string): Promise<boolean> {
-    return (await this.pkgLocator(name).getAttribute("aria-selected")) === "true";
+    return (await this.pkgLocator(name).getAttribute("aria-current")) === "true";
   }
 
   async focusRow(name: string): Promise<void> {
     await this.pkgLocator(name).focus();
+  }
+
+  async focusedRowIndex(): Promise<number | null> {
+    return this.page.getByRole("tabpanel").evaluate((panel) => {
+      const at = [...panel.querySelectorAll("[data-pkg]")].indexOf(document.activeElement as Element);
+      return at < 0 ? null : at;
+    });
+  }
+
+  async tabStopRowIndexes(): Promise<number[]> {
+    return this.page
+      .getByRole("tabpanel")
+      .evaluate((panel) =>
+        [...panel.querySelectorAll<HTMLElement>("[data-pkg]")].flatMap((row, at) =>
+          row.tabIndex >= 0 ? [at] : [],
+        ),
+      );
+  }
+
+  async isFocusObscured(): Promise<boolean | null> {
+    return this.page.evaluate(() => {
+      const active = document.activeElement;
+      if (active === null || active === document.body) return null;
+      const box = active.getBoundingClientRect();
+      const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+      return hit === null || !(hit === active || active.contains(hit));
+    });
   }
 
   async focusedRowName(): Promise<string | null> {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { innerTabIndex, pickCursor, rowTabIndex } from "../../../src/ui/rowCursor";
+import { firstRows, innerTabIndex, pickCursor, rowTabIndex } from "../../../src/ui/rowCursor";
 
 const ROWS = ["a/one", "a/two", "a/three"];
 
@@ -30,5 +30,29 @@ describe("row and inner tab indexes", () => {
     expect(innerTabIndex("a/two", "a/two")).toBeUndefined();
     expect(innerTabIndex("a/one", "a/two")).toBe(-1);
     expect(rowTabIndex("a/one", null)).toBe(-1);
+  });
+});
+
+// PD-ROWS-12: a package listed on two rows (Advisories, Blast radius) is the Tab stop on its first.
+describe("a package listed twice", () => {
+  test("is the Tab stop on its first row only", () => {
+    expect(rowTabIndex("a/two", "a/two", false)).toBe(-1);
+    expect(innerTabIndex("a/two", "a/two", false)).toBe(-1);
+    expect(rowTabIndex("a/two", "a/two", true)).toBe(0);
+  });
+
+  test("firstRows keeps each package's first row, in screen order", () => {
+    const rows = [
+      { pkg: "a/one", key: "x" },
+      { pkg: "a/two", key: "y" },
+      { pkg: "a/one", key: "z" },
+    ];
+    const first = firstRows(
+      rows,
+      (row) => row.pkg,
+      (row) => row.key,
+    );
+    expect([...first]).toEqual(["x", "y"]);
+    expect(firstRows([], String, String).size).toBe(0);
   });
 });

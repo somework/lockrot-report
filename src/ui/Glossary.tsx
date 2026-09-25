@@ -151,6 +151,10 @@ function KeysSection() {
         to close · <kbd>?</kbd> for this glossary.
       </p>
       <p className="prose">
+        On a narrower screen a package opens over the page: <kbd>j</kbd> <kbd>k</kbd> still move,{" "}
+        <kbd>Esc</kbd> goes back to its row, and <kbd>/</kbd> closes it for the search box.
+      </p>
+      <p className="prose">
         Search keys: <code>verdict:</code> <code>priority:</code> <code>signal:</code> <code>severity:</code>{" "}
         <code>cve:</code> <code>direct:</code> <code>dev:</code>
       </p>

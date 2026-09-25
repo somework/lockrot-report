@@ -118,6 +118,15 @@ export interface ReportPage {
   focusRow(name: string): Promise<void>;
   /** The package name of whichever row/card currently holds keyboard focus, or null. */
   focusedRowName(): Promise<string | null>;
+  /** The position of the focused row among the current view's rows, or null when no row holds
+   *  focus — tells two rows of the same package apart (PD-ROWS-12). */
+  focusedRowIndex(): Promise<number | null>;
+  /** The positions, among the current view's rows, of the rows Tab can reach (PD-ROWS-11/12). */
+  tabStopRowIndexes(): Promise<number[]>;
+  /** Whether whatever holds keyboard focus is hidden under something drawn over it (WCAG 2.4.11):
+   *  the element at its centre is neither it nor inside it. Null when nothing on the page holds
+   *  focus (PD-ROWS-12). */
+  isFocusObscured(): Promise<boolean | null>;
   /** Presses Enter on whatever currently holds focus. */
   pressEnter(): Promise<void>;
   /** Presses Tab, or Shift+Tab with `back`. */

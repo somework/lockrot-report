@@ -890,7 +890,18 @@ describe("PackagesView", () => {
     const row = screen.getByRole("row", { name: "private/thing" });
     expect(row.hasAttribute("tabindex")).toBe(true);
     expect(row.tabIndex).toBe(-1);
-    expect(row.getAttribute("aria-selected")).toBe("false");
+    // PD-ROWS-12: `aria-current`, as on every other tab's rows; `aria-selected` used to mark the open
+    // row here, which a plain table's row gives no meaning to.
+    expect(row.hasAttribute("aria-selected")).toBe(false);
+    expect(row.hasAttribute("aria-current")).toBe(false);
+  });
+
+  it("marks the open package's row with aria-current, as every other tab's rows do (PD-ROWS-12)", () => {
+    const model = loadModel("mini.json");
+    renderIn(model, stateWith({ view: "packages", pkg: "vendor/snapshot" }), <PackagesView />);
+
+    expect(screen.getByRole("row", { name: "vendor/snapshot" }).getAttribute("aria-current")).toBe("true");
+    expect(screen.getByRole("row", { name: "private/thing" }).hasAttribute("aria-current")).toBe(false);
   });
 
   it("dispatches a sort action naming the clicked column", () => {
@@ -1292,5 +1303,44 @@ describe("the list's one Tab stop (PD-ROWS-11)", () => {
       const link = row.querySelector<HTMLAnchorElement>("a[href]");
       expect(link?.tabIndex).toBe(own ? 0 : -1);
     }
+  });
+
+  // PD-ROWS-12: a package under two advisories was the Tab stop on both of its rows.
+  it("is a package's first row only, when Advisories lists it twice", () => {
+    const advisory = (id: string) => ({
+      id,
+      cve: null,
+      title: id,
+      link: `https://example.com/${id}`,
+      severityRaw: "high",
+      severity: "high" as const,
+      reportedAt: null,
+      affectedVersions: null,
+      fixedBy: null,
+      fixedOnBranch: false,
+    });
+    const model = flaggedModel([
+      makeFinding({
+        package: "acme/twice",
+        verdict: "abandoned",
+        priority: "critical",
+        advisories: [advisory("GHSA-one"), advisory("GHSA-two")],
+      }),
+    ]);
+    const { container } = renderIn(
+      model,
+      stateWith({ view: "advisories", pkg: "acme/twice" }),
+      <AdvisoriesView />,
+    );
+
+    const rows = Array.from(container.querySelectorAll<HTMLElement>("[data-pkg]"));
+    expect(rows).toHaveLength(2);
+    expect(rows.map((row) => row.tabIndex)).toEqual([0, -1]);
+    expect(rows.map((row) => row.querySelector("a[href]")?.getAttribute("tabindex") ?? null)).toEqual([
+      null,
+      "-1",
+    ]);
+    // Both rows name the open package, so both read as current.
+    expect(rows.every((row) => row.getAttribute("aria-current") === "true")).toBe(true);
   });
 });

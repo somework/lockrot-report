@@ -6,7 +6,7 @@ import { sevTone } from "../../domain/advisories";
 import { cveUrl } from "../../domain/links";
 import { day, ageText } from "../../domain/format";
 import { Tag, OutLink, NoWrap } from "../common/common";
-import { innerTabIndex, rowTabIndex } from "../rowCursor";
+import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
 import { advisoryGroupsFor } from "./order";
@@ -20,16 +20,23 @@ function fixText(advisory: Advisory): string {
     : `fixed only by ${advisory.fixedBy}`;
 }
 
-function AdvisoryRow({ finding, advisory }: { finding: Finding; advisory: Advisory }) {
+interface AdvisoryRowProps {
+  finding: Finding;
+  advisory: Advisory;
+  /** This is the package's first row on the tab: the only one that can be the list's Tab stop. */
+  first: boolean;
+}
+
+function AdvisoryRow({ finding, advisory, first }: AdvisoryRowProps) {
   const { state, dispatch, now, cursor } = useReport();
   const isOpen = state.pkg === finding.package;
-  const inner = innerTabIndex(finding.package, cursor);
+  const inner = innerTabIndex(finding.package, cursor, first);
   const cve = cveUrl(advisory);
   const openedAgo = advisory.reportedAt ? ageText(advisory.reportedAt, now).replace(" ago", "") : null;
 
   return (
     <li
-      tabIndex={rowTabIndex(finding.package, cursor)}
+      tabIndex={rowTabIndex(finding.package, cursor, first)}
       aria-current={isOpen ? "true" : undefined}
       aria-label={finding.package}
       data-pkg={finding.package}
@@ -74,6 +81,11 @@ function advisoryKey(pair: AdvisoryWithFinding): string {
 export function AdvisoriesView() {
   const { model, state } = useReport();
   const groups = advisoryGroupsFor(model, state);
+  const first = firstRows(
+    groups.flatMap((group) => group.advisories),
+    (pair) => pair.finding.package,
+    advisoryKey,
+  );
 
   if (groups.length === 0) {
     return <EmptyState reason={population(model, "advisories").length === 0 ? "clean" : "filtered"} />;
@@ -90,7 +102,12 @@ export function AdvisoriesView() {
           </header>
           <ul className="adv-list" aria-label={group.heading}>
             {group.advisories.map((pair) => (
-              <AdvisoryRow key={advisoryKey(pair)} finding={pair.finding} advisory={pair.advisory} />
+              <AdvisoryRow
+                key={advisoryKey(pair)}
+                finding={pair.finding}
+                advisory={pair.advisory}
+                first={first.has(advisoryKey(pair))}
+              />
             ))}
           </ul>
         </section>

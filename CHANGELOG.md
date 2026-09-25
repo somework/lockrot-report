@@ -96,6 +96,15 @@ tag or the address format, says so under **Breaking** in its entry.
   of the screen glides into view, or jumps there if your system asks for less motion. Tab reaches
   one row of the list, the open package's (else the last one opened, else the first), then that
   row's own links, then the package detail, instead of every row and every signal link in turn.
+- Below 1181px, where a package opens as a sheet over the whole page, keyboard focus goes to the
+  sheet's heading instead of staying on a row the sheet hides, and nothing under the sheet can be
+  tabbed to. `j` and `k` still move from package to package, Escape closes the sheet and returns to
+  the row you reached, and `/` closes it and puts you in the search box.
+- A package listed twice, as under two advisories, is one Tab stop, and `j` walks past its second
+  row instead of going back to the first. Escape from the search box, with no package open, moves
+  focus to the list rather than to the top of the page. The All packages table marks the open row
+  the same way the other tabs do (`aria-current`), and the summary band is part of the page's main
+  landmark.
 - A wide screen no longer opens the first flagged package by itself on load: the Findings list takes
   the full width, one line a row from 1440px up, until you open a package with a click, Enter or
   `j`. A link with `#pkg=` still opens its package on load, and closing a package gives the list

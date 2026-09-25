@@ -54,12 +54,14 @@ test.describe("Escape priority chain", () => {
     expect((await report.detail()).open).toBe(false);
   });
 
-  test("blurs the search box when nothing else is open", async () => {
+  test("leaves the search box for the list's Tab stop when nothing else is open", async () => {
     expect((await report.detail()).open).toBe(false); // nothing opens by itself (PD-ROWS-9)
     await report.focusSearch();
     expect(await report.isSearchFocused()).toBe(true);
     await report.pressEscape();
     expect(await report.isSearchFocused()).toBe(false);
+    // PD-ROWS-12: focus used to drop to the page itself, so Tab started again at the top.
+    expect(await report.focusedRowName()).toBe((await report.rows())[0]);
   });
 });
 
@@ -207,6 +209,77 @@ test.describe("PD-ROWS-11: keyboard focus follows the selection", () => {
     }
     expect(await report.isFocusInDetail()).toBe(true);
     expect(tabs).toBeLessThanOrEqual(stops.length);
+  });
+});
+
+// PD-ROWS-12: below the wide layout the detail is a sheet over the whole page. Focus used to stay on
+// the row under it, ring and all out of sight (WCAG 2.4.11), with Tab going next to that row's own
+// covered links. 1024 is the sheet at its widest, 390 a phone.
+for (const [width, height] of [
+  [390, 844],
+  [1024, 768],
+] as const) {
+  test.describe(`PD-ROWS-12 at ${width}×${height}: a sheet over the page holds focus`, () => {
+    test.use({ viewport: { width, height } });
+
+    test("after a click and j, focus is in the sheet and in sight; Escape hands it to the row j reached", async () => {
+      await report.clickPackage("vendor/transitive");
+      expect(await report.isFocusInDetail()).toBe(true);
+      await report.pressJ();
+      const reached = (await report.detail()).name;
+      expect(reached).not.toBe("vendor/transitive");
+      expect(await report.isFocusInDetail()).toBe(true);
+      expect(await report.isFocusObscured()).toBe(false);
+
+      // Tab stays in the sheet: the list under it is out of reach.
+      await report.pressTab();
+      expect(await report.isFocusInDetail()).toBe(true);
+      expect(await report.isFocusObscured()).toBe(false);
+
+      await report.pressEscape();
+      expect((await report.detail()).open).toBe(false);
+      expect(await report.focusedRowName()).toBe(reached);
+      // The row glides into view (smooth unless prefers-reduced-motion): wait for it to arrive.
+      await expect.poll(() => report.isFocusObscured()).toBe(false);
+    });
+
+    test("/ closes the sheet and focuses the search box it covered", async () => {
+      await report.pressJ();
+      expect((await report.detail()).open).toBe(true);
+      await report.pressSlash();
+      expect((await report.detail()).open).toBe(false);
+      expect(await report.isSearchFocused()).toBe(true);
+    });
+  });
+}
+
+test.describe("PD-ROWS-12: one Tab stop per list, and j walks a package listed twice", () => {
+  test("Advisories lists spomky-labs/otphp under two advisories: one Tab stop, and j reaches its second row", async () => {
+    await report.goto(FIXTURES.wallabag);
+    await report.tab("advisories");
+    const rows = await report.rows();
+    expect(rows).toEqual(["spomky-labs/otphp", "spomky-labs/otphp"]);
+    // Each row used to be a Tab stop of its own, links and all.
+    expect(await report.tabStopRowIndexes()).toEqual([0]);
+    expect(new Set(await report.listTabStops())).toEqual(new Set(["spomky-labs/otphp"]));
+
+    await report.pressJ();
+    expect(await report.focusedRowIndex()).toBe(0);
+    await report.pressJ();
+    expect(await report.focusedRowIndex()).toBe(1);
+    await report.pressEscape();
+    expect(await report.focusedRowIndex()).toBe(1);
+  });
+
+  test("a second Escape from the search box hands focus to the list, not to the page", async () => {
+    await report.tab("packages");
+    await report.pressJ();
+    await report.pressJ();
+    await report.focusSearch();
+    await report.pressEscape(); // closes the package, focus stays in the box
+    expect(await report.isSearchFocused()).toBe(true);
+    await report.pressEscape();
+    expect(await report.focusedRowName()).toBe("vendor/snapshot");
   });
 });
 
