@@ -222,6 +222,7 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 | PD-ROWS-7                   | a second click or Enter on the open row closed its detail                   | a row opens its package and never closes it (Findings, Packages, Advisories, Blast radius); Close and Escape close                            |
 | PD-ROWS-8                   | a tinted band above a run; forced colours drew a solid track past each bar  | the run note is unfilled, only its tone rule; forced colours draw no track under a bar                                                        |
 | PD-ROWS-9                   | ≥1181px opened the first flagged package on load, the list squeezed beside  | nothing opens by itself: the list takes the full width; a click, Enter, `j`/`k` or `#pkg=` opens one; Close gives the width back              |
+| PD-ROWS-10                  | opening a row reflowed the list and slid a row 30 down off the screen       | the row acted on keeps its place on screen through open and close; a `#pkg=` row scrolls into view; `j`/`k` focus it                          |
 | PD-TIMELINE-1               | the first year label lost half its width off the axis                       | the axis runs from 1 January of the oldest year, labelled at the left edge, to a "today" rule labelled under it                               |
 | PD-TIMELINE-2               | labels floated beside each dot and wrapped around it                        | a table: branch, a line from last release to today, latest version, raw php constraint; one line a row                                        |
 | PD-TIMELINE-3               | a package without maintained branches showed each version twice             | the version once; its third column is the release date, so every table keeps the same four columns                                            |
@@ -305,6 +306,11 @@ list's own width, not the viewport's (a container query, PD-ROWS-4): one line fr
 open, which is how every page without `#pkg=` loads (PD-ROWS-9), the list is 910-1230px at
 1181-1920, so a wide screen's first sight is one line a row from 1440px up. At every width a cell
 too narrow for its value wraps it, never an ellipsis.
+Opening a package there switches the list to two lines a row, and closing it back, so every row
+above the one acted on changes height. `ui/rowAnchor.ts` measures that row before a `select` is
+dispatched (a click, Enter, `j`/`k`, Close, Escape) and `App` scrolls the page by however far it
+moved before the browser paints, so it stays where the reader saw it (PD-ROWS-10). `html`'s
+`scroll-padding-top` keeps a row brought into view clear of the sticky header and column head.
 
 **The summary band's lead** is the first five seconds: how many packages are flagged, out of how
 many were checked, with the priority chips that filter by it and a waffle of every package
@@ -363,7 +369,7 @@ shape. `e2e/forced-colors.spec.ts` emulates the mode.
   not on screen, both start at the first row. There is no separate cursor, so a row clicked or a
   package opened from an advisory is where `j` continues from (fixes M7–M9; the legacy first `j`
   after its boot pick re-selected the same package). On load nothing is open, so `j` opens the
-  first row.
+  first row. Focus moves to the row `j`/`k` open, as it stays on a row clicked (PD-ROWS-10).
 - Nothing but Escape acts while the glossary is open (M10). Printable shortcuts are ignored while
   focus is in any text field, and every shortcut is ignored with Ctrl, Meta or Alt held.
 - Enter/Space toggle a row only when the key lands on the row itself, not on a link or control
@@ -385,6 +391,6 @@ ignored rather than written onto the page.
 A document from before `run.fail_on` existed shows neither (PD-SUMMARY-2).
 
 **Address bar.** `ui/useHashState.ts` reads the fragment once at boot and nothing else: a `pkg=` in
-it opens that package at any width, and without one no package is open (PD-ROWS-9). It writes
-after every state change, and applies `hashchange` by replacing the state from the new fragment
-while keeping the table's sort order.
+it opens that package at any width and scrolls its row into view, and without one no package is
+open (PD-ROWS-9, PD-ROWS-10). It writes after every state change, and applies `hashchange` by
+replacing the state from the new fragment while keeping the table's sort order.

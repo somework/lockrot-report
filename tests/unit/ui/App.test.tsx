@@ -266,6 +266,19 @@ describe("keyboard", () => {
     expect(detailName()).toBe("vendor/transitive");
   });
 
+  // PD-ROWS-10: focus used to stay wherever it was while `j` opened a row, and reached the row only
+  // once Escape closed it again, so a keyboard reader saw no ring on the package `j` had opened.
+  test("j and k put focus on the row they open", () => {
+    render(<App model={MINI} />);
+    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    key("j");
+    expect(document.activeElement?.getAttribute("data-pkg")).toBe("vendor/transitive");
+    key("j");
+    expect(document.activeElement?.getAttribute("data-pkg")).toBe("vendor/snapshot");
+    key("k");
+    expect(document.activeElement?.getAttribute("data-pkg")).toBe("vendor/transitive");
+  });
+
   test("Escape closes the detail and gives focus back to its row", async () => {
     render(<App model={MINI} />);
     fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
@@ -300,6 +313,75 @@ describe("keyboard", () => {
     expect(document.activeElement).toBe(search);
     key("j", search);
     expect(detailName()).toBeNull(); // j typed as text never opened the first row
+  });
+});
+
+// PD-ROWS-10: from 1181px up, opening a package narrows the list and closing it widens it again, and
+// the Findings rows change height with the list's width, so the clicked row slid off the screen.
+// happy-dom lays nothing out, so the stand-in rows report the top a real row would: one place with
+// the list at full width, another with the detail beside it.
+describe("the row a reader acts on keeps its place (PD-ROWS-10)", () => {
+  function rowsSitAt(closed: number, open: number) {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(() => {
+      const top = document.querySelector(".shell-detail") === null ? closed : open;
+      return { top, bottom: top + 36 } as DOMRect;
+    });
+    return vi.spyOn(window, "scrollBy").mockImplementation(() => undefined);
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  test("opening a row scrolls the page by however far the row moved, and closing it scrolls back", () => {
+    const scrollBy = rowsSitAt(480, 869);
+    render(<App model={MINI} />);
+
+    fireEvent.click(screen.getByRole("option", { name: "vendor/snapshot" }));
+    expect(scrollBy).toHaveBeenCalledTimes(1);
+    expect(scrollBy).toHaveBeenLastCalledWith(0, 389);
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    expect(scrollBy).toHaveBeenCalledTimes(2);
+    expect(scrollBy).toHaveBeenLastCalledWith(0, -389);
+  });
+
+  test("Escape and j keep their row in place the same way", () => {
+    const scrollBy = rowsSitAt(300, 420);
+    render(<App model={MINI} />);
+    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+
+    key("j");
+    expect(scrollBy).toHaveBeenLastCalledWith(0, 120);
+    key("Escape");
+    expect(scrollBy).toHaveBeenLastCalledWith(0, -120);
+  });
+
+  test("a row that did not move scrolls nothing: a sheet over the page, or a detail already open", () => {
+    const scrollBy = rowsSitAt(480, 480);
+    render(<App model={MINI} />);
+    fireEvent.click(screen.getByRole("option", { name: "vendor/snapshot" }));
+    fireEvent.click(screen.getByRole("option", { name: "vendor/transitive" }));
+    expect(scrollBy).not.toHaveBeenCalled();
+  });
+
+  test("a #pkg= link brings its row into view on load; a bare address scrolls nothing", () => {
+    const scrolled: (string | null)[] = [];
+    vi.spyOn(HTMLElement.prototype, "scrollIntoView").mockImplementation(function (
+      this: HTMLElement,
+      options?: boolean | ScrollIntoViewOptions,
+    ) {
+      if (typeof options === "object" && options.block === "center")
+        scrolled.push(this.getAttribute("data-pkg"));
+    });
+
+    render(<App model={MINI} />);
+    expect(scrolled).toEqual([]);
+    cleanup();
+
+    history.replaceState(null, "", "/report.html#pkg=vendor%2Fsnapshot");
+    render(<App model={MINI} />);
+    expect(scrolled).toEqual(["vendor/snapshot"]);
   });
 });
 

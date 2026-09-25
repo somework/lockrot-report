@@ -14,6 +14,7 @@ import { decideKey, findRow, keyInputFrom, prevents, type KeyDecision } from "./
 import { Ledger } from "./ledger/Ledger";
 import { NewerSchemaBanner } from "./NewerSchemaBanner";
 import { Rail } from "./rail/Rail";
+import { anchorShift, measureRow, type RowAnchor } from "./rowAnchor";
 import { SearchBar } from "./search/SearchBar";
 import { tabId, Tabs } from "./Tabs";
 import { useHashState } from "./useHashState";
@@ -24,8 +25,9 @@ import { renderedPackages } from "./views/order";
 import "./app.css";
 import "../styles/print.css";
 
-/** A row to focus (after closing its detail) or scroll to (after `j`/`k`) once the list re-renders. */
-type RowRequest = { pkg: string; focus: boolean } | null;
+/** The package whose row to focus and bring into view once the list re-renders: the one `j`/`k`
+ *  just opened, or the one Close or Escape just closed. */
+type RowRequest = string | null;
 
 interface ShortcutDeps {
   model: Model;
@@ -49,11 +51,13 @@ function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
       dispatch({ type: "select", pkg: decision.pkg });
       break;
     case "move":
-      rowRequest.current = { pkg: decision.pkg, focus: false };
+      // Focus follows the package `j`/`k` open, as it stays on a row that was clicked: a keyboard
+      // reader sees the ring on the row whose package is now open, not only once Escape closes it.
+      rowRequest.current = decision.pkg;
       dispatch({ type: "select", pkg: decision.pkg });
       break;
     case "closeDetail":
-      rowRequest.current = { pkg: decision.restore, focus: true };
+      rowRequest.current = decision.restore;
       dispatch({ type: "select", pkg: null });
       break;
     case "focusSearch":
@@ -71,6 +75,35 @@ function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
     case "ignore":
       break;
   }
+}
+
+/**
+ * Wraps `dispatch` so every `select` measures the row it is about first — the row it opens, or the
+ * open one it closes — and returns, with it, the call that scrolls the page by however far that
+ * row moved once the new layout is in (PD-ROWS-10, `rowAnchor.ts`). A click, Enter, `j`/`k`, Close
+ * and Escape all go through here; the boot state and a `hashchange` restore never do.
+ */
+function useRowAnchor(
+  dispatch: (action: Action) => void,
+  openPkg: string | null,
+): [(action: Action) => void, () => void] {
+  const anchor = useRef<RowAnchor | null>(null);
+  const open = useRef(openPkg);
+  open.current = openPkg;
+  const anchored = useCallback(
+    (action: Action) => {
+      if (action.type === "select") anchor.current = measureRow(document, action.pkg ?? open.current);
+      dispatch(action);
+    },
+    [dispatch],
+  );
+  const keepInPlace = useCallback(() => {
+    const shift = anchorShift(document, anchor.current);
+    anchor.current = null;
+    if (shift !== 0) window.scrollBy(0, shift);
+  }, []);
+
+  return [anchored, keepInPlace];
 }
 
 /** One document keydown listener that reads the latest page state through a ref. */
@@ -139,7 +172,8 @@ function RailSlot({ narrow }: { narrow: boolean }) {
 export function App({ model }: { model: Model }) {
   const wide = useWide();
   const narrow = useNarrow();
-  const [state, dispatch] = useHashState();
+  const [state, rawDispatch] = useHashState();
+  const [dispatch, keepRowInPlace] = useRowAnchor(rawDispatch, state.pkg);
   const theme = useTheme();
   const [glossaryOpen, setGlossaryOpen] = useState(false);
   // The verdict word "In the glossary" opens to, or null for the "?" shortcut and Header's own
@@ -204,14 +238,27 @@ export function App({ model }: { model: Model }) {
 
   // A layout effect, so the row is focused in the same task as the render that follows the key or
   // click. A plain effect waits for the next frame, and a reader (or a test) who moves focus in
-  // between would have it pulled back to the closed package's row.
+  // between would have it pulled back to the closed package's row. The row the action was about is
+  // put back where it was first (PD-ROWS-10), so the focus below never has to scroll to find it.
   useLayoutEffect(() => {
+    keepRowInPlace();
     const request = rowRequest.current;
     rowRequest.current = null;
-    const row = request === null ? null : findRow(document, request.pkg);
-    if (request?.focus) row?.focus();
-    else if (typeof row?.scrollIntoView === "function") row.scrollIntoView({ block: "nearest" });
+    const row = request === null ? null : findRow(document, request);
+    row?.focus({ preventScroll: true });
+    // `nearest`: a `j` that walks past the screen's edge moves the page by a row, not a screen.
+    // `html`'s `scroll-padding-top` (ui/app.css) keeps it clear of the sticky header and head.
+    if (typeof row?.scrollIntoView === "function") row.scrollIntoView({ block: "nearest" });
   }, [state]);
+
+  // A `#pkg=` link opens its package on load (PD-ROWS-9) — and now also brings its row into view:
+  // the page used to open at the top with the open package's row thousands of pixels down, so Close
+  // sent focus to a row off screen (PD-ROWS-10). Boot only: a link pasted into an open page leaves
+  // the reader's scroll alone, as a restored tab does.
+  useLayoutEffect(() => {
+    const row = state.pkg === null ? null : findRow(document, state.pkg);
+    if (typeof row?.scrollIntoView === "function") row.scrollIntoView({ block: "center" });
+  }, []); // once, for the address the page booted with
 
   // Scroll is locked only while a sheet actually covers the page (DESIGN.md §5 M13).
   const sheet = state.pkg !== null && !wide;
@@ -223,7 +270,7 @@ export function App({ model }: { model: Model }) {
   }, [sheet]);
 
   const closeDetail = useCallback(() => {
-    if (state.pkg !== null) rowRequest.current = { pkg: state.pkg, focus: true };
+    if (state.pkg !== null) rowRequest.current = state.pkg;
     dispatch({ type: "select", pkg: null });
   }, [state.pkg, dispatch]);
 

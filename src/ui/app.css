@@ -216,6 +216,17 @@
 }
 
 /* ---------- layout ---------- */
+/* What a row brought into view — by `j`/`k`, a `#pkg=` link on load, or a focus — must clear: the
+   Findings list's sticky 40px column head, and from 760px up the sticky header above it
+   (PD-ROWS-10). Without it a `j` past the top edge left its row under the head. */
+html {
+  scroll-padding-top: 48px;
+}
+@media (min-width: 760px) {
+  html {
+    scroll-padding-top: calc(var(--topbar-h) + 48px);
+  }
+}
 .shell {
   max-width: var(--page-max);
   margin: 0 auto;

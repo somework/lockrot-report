@@ -93,6 +93,11 @@ tag or the address format, says so under **Breaking** in its entry.
   the full width, one line a row from 1440px up, until you open a package with a click, Enter or
   `j`. A link with `#pkg=` still opens its package on load, and closing a package gives the list
   its full width back. An open package now always shows in the address bar.
+- The row you open or close stays where it was on screen, although the list beside an open package
+  takes two lines a row and every row above it grows: a row thirty down used to slide off the
+  bottom of the screen on the click that opened it. A `#pkg=` link scrolls its row into view on
+  load, `j` and `k` put focus on the row they open, and a row they bring into view is no longer
+  hidden under the sticky header.
 - Clicking a row, or pressing Enter on it, opens its package and never closes it again: a second
   click on the open row used to close the very detail being read. Close and Escape close it.
 - A verdict pill opens its definition in place instead of linking to lockrot.dev, which a report
