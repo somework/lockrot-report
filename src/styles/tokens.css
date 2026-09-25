@@ -40,6 +40,9 @@
      render from file:// and under a strict CSP. These are the stacks every target already has. */
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --cond: var(--sans);
+  /* The one accent face: an answer sentence set apart from the UI text around it. A system stack
+     like the two above, for the same reason; the same in both themes. */
+  --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 
   /* The spacing and radius steps the legacy stylesheet used as scattered literals (css-html.md

@@ -50,6 +50,13 @@ tag or the address format, says so under **Breaking** in its entry.
 - Every fold on the page has the same disclosure marker, with a hover and focus state.
 - The advisory ledger no longer says no advisory affects the lock when the report shows the check
   may not have covered every package; it says how many could not be confirmed clear.
+- "Release branches" in the package detail answers first: which branch you are on and how long ago
+  it last released, in the run's age colours, then how many branches are newer and the newest one's
+  version, date and php constraint. Below it, one row per branch, newest version first: a line from
+  its last release to a "today" rule on one shared axis, its latest version and its php constraint
+  as written. Branches older than yours fold into one row, and so do more than four between the
+  newest and yours. A dev-branch checkout gets its own row. Dashed lines mark the run's release
+  warn and high years.
 
 ### Fixed
 
@@ -58,11 +65,9 @@ tag or the address format, says so under **Breaking** in its entry.
 - The Run tab shows a dash, not "none", for a document that does not record `--fail-on`.
 - The priority, verdict and advisory bars stay visible in forced-colours mode.
 - Printing keeps the colours of the ledger bars, the pills and a row's priority stripe.
-- A release-branch label no longer starts under its dot on a narrow timeline, and one that wraps no
-  longer pulls the dot down between its lines.
 - The timeline's first year is no longer cut off at the left edge.
 - A package with no maintained branches no longer shows each version twice on its timeline.
-- The timeline's legend lists only the states a branch is in.
+- The timeline's key lists only the markers it draws.
 - In dark mode, the timeline's dot for a branch that is neither installed nor the newest no longer
   nearly vanishes.
 - A signal's disclosure in the package detail shows its whole focus ring.

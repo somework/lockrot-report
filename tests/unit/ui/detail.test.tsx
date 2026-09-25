@@ -191,9 +191,8 @@ const EXTRA = normalize({
     ],
   },
   details: {
-    // PD-TIMELINE-1: `min` (the oldest dated branch) sits on the last day of 2020, so the year
-    // axis's first tick (2020's own Jan 1) plots well left of it — a large, unambiguous negative
-    // `x`, not a borderline one, so the clamp this fixture exercises can't pass by accident.
+    // PD-TIMELINE-5 (DESIGN.md §5): one branch name that is not a version ("master") sends the whole
+    // list to date order; the EXTRA run records no thresholds, so no age takes a zone's tone.
     "vendor/edge-timeline": {
       metadata: {
         branches: [
@@ -209,7 +208,7 @@ const EXTRA = normalize({
             php: null,
           },
           {
-            branch: "2.x",
+            branch: "master",
             installed: false,
             highest: "v2.0.0",
             highest_released: "2021-12-31T00:00:00.000Z",
@@ -530,57 +529,104 @@ describe("Detail", () => {
   });
 
   describe("release branches", () => {
-    it("draws a lane per dated branch with the installed one marked", () => {
-      const { container } = renderDetail(KOEL, "predis/predis");
+    /** The rendered timeline's own rows (header and axis excluded), as their row-header text. */
+    function rowHeaders(container: ParentNode): string[] {
+      return Array.from(container.querySelectorAll(".detail-timeline [role='rowheader']")).map(
+        (cell) => cell.textContent,
+      );
+    }
+
+    it("answers first: your branch and its age, then how many are newer and the newest's facts", () => {
+      const { container } = renderDetail(KOEL, "meilisearch/meilisearch-php");
       screen.getByText("Release branches");
-      for (const branch of ["3.x", "2.x", "1.x", "0.8.x", "0.7.x"]) {
-        expect(screen.getAllByText(branch).length).toBeGreaterThan(0);
-      }
-      expect(container.querySelector(".detail-timeline-lane-installed")).toBeTruthy();
-      expect(container.querySelector(".detail-timeline-lane-newest")).toBeTruthy();
-      expect(screen.getByText(/you are on v1\.1\.10/)).toBeTruthy();
-      // Both legend facts apply here — an installed branch that is not the newest one — so both show.
-      const legend = container.querySelector(".detail-timeline-legend");
-      expect(legend?.textContent).toContain("branch still releasing");
+      const answer = container.querySelector(".detail-timeline-answer")?.textContent;
+      const sub = container.querySelector(".detail-timeline-sub")?.textContent;
+      expect(answer).toBe("You’re on 0.24.x. Its last release was 4.1 years ago.");
+      expect(sub).toBe(
+        "There are 4 newer branches. The newest is 1.x, released v1.17.0 on 2026-08-04 (7 weeks ago) and requires php ^7.4 || ^8.0.",
+      );
+      // The age takes the run's own warn..high tone (3 and 5 years): 4.1 is past warn, short of high.
+      expect(container.querySelector(".detail-timeline-age")?.classList.contains("tone-med")).toBe(true);
     });
 
-    it("clamps a first tick that plots left of the axis and drops its centering transform (PD-TIMELINE-1, DESIGN.md §5)", () => {
-      const { container } = renderDetail(EXTRA_MODEL, "vendor/edge-timeline");
-      const ticks = Array.from(container.querySelectorAll<HTMLElement>(".detail-timeline-tick"));
-      expect(ticks.length).toBeGreaterThan(1);
+    it("draws newest version first, yours marked, the older ones in one fold that opens in place", () => {
+      const { container } = renderDetail(KOEL, "meilisearch/meilisearch-php");
+      expect(rowHeaders(container)).toEqual([
+        "1.x, the newest",
+        "0.27.x",
+        "0.26.x",
+        "0.25.x",
+        "0.24.x, yours",
+        "16 older branches",
+      ]);
+      expect(container.querySelector(".detail-timeline-row.is-mine")?.textContent).toContain("v0.24.2");
 
-      const first = ticks[0];
-      expect(first?.classList.contains("detail-timeline-tick-first")).toBe(true);
-      // The un-clamped `x` is well negative (this fixture's own doc comment); clamped to the axis's
-      // own left edge instead of running off it.
-      expect(parseFloat(first?.style.left ?? "-1")).toBe(0);
-
-      for (const tick of ticks.slice(1)) {
-        expect(tick.classList.contains("detail-timeline-tick-first")).toBe(false);
-      }
+      const fold = screen.getByRole("button", { name: "16 older branches" });
+      expect(fold.getAttribute("aria-expanded")).toBe("false");
+      fireEvent.click(fold);
+      expect(fold.getAttribute("aria-expanded")).toBe("true");
+      expect(rowHeaders(container)).toHaveLength(6 + 16);
+      expect(rowHeaders(container).at(-1)).toBe("0.8.x");
     });
 
-    it("shows a branch's own version once, not repeated with a bare 'v' prefix (PD-TIMELINE-3, DESIGN.md §5)", () => {
-      // daverandom/resume (koel_koel.json): no maintained branches, so each release is its own
-      // "branch" named "0.0.3"/"0.0.2" — the tag label datedTag reads off the same release repeats
-      // it back as "v0.0.3"/"v0.0.2".
+    it("shows the raw php constraint as written, and no verdict about it", () => {
+      const { container } = renderDetail(KOEL, "meilisearch/meilisearch-php");
+      const php = Array.from(container.querySelectorAll(".detail-timeline-php")).map(
+        (cell) => cell.textContent,
+      );
+      expect(php.slice(0, 5)).toEqual(Array(5).fill("^7.4 || ^8.0"));
+      expect(container.querySelector(".detail-timeline")?.textContent).not.toMatch(/[✓✗]|allows/);
+    });
+
+    it("keeps the axis the same when a fold opens: the dots do not move", () => {
+      const { container } = renderDetail(KOEL, "meilisearch/meilisearch-php");
+      const mineX = (): string =>
+        container
+          .querySelector<HTMLElement>(".detail-timeline-row.is-mine .detail-timeline-strip")
+          ?.style.getPropertyValue("--x") ?? "";
+      const before = mineX();
+      fireEvent.click(screen.getByRole("button", { name: "16 older branches" }));
+      expect(before).not.toBe("");
+      expect(mineX()).toBe(before);
+    });
+
+    it("a package without maintained branches: its version once, and no latest column (PD-TIMELINE-3)", () => {
+      // daverandom/resume (koel_koel.json): each release is its own "branch" ("0.0.3"/"0.0.2"),
+      // whose tag label only repeats it with a "v".
       const { container } = renderDetail(KOEL, "daverandom/resume");
       const timeline = container.querySelector(".detail-timeline");
+      screen.getByText("Release history");
       expect(timeline?.textContent).not.toContain("v0.0.3");
       expect(timeline?.textContent).not.toContain("v0.0.2");
-      expect(timeline?.textContent).toContain("0.0.3");
       expect(timeline?.textContent).toContain("2018-01-28");
-      expect(timeline?.textContent).toContain("0.0.2");
       expect(timeline?.textContent).toContain("2017-09-26");
+      expect(screen.queryByRole("columnheader", { name: "latest" })).toBeNull();
+      expect(container.querySelector(".detail-timeline-answer")?.textContent).toBe(
+        "You’re on the newest release, 0.0.3. It came out 8.7 years ago.",
+      );
+      expect(container.querySelector(".detail-timeline-sub")?.textContent).toBe(
+        "Nothing newer has been released; the only other release, 0.0.2, is older.",
+      );
     });
 
-    it("shows only the legend entries a state this branch set actually has (PD-TIMELINE-4, DESIGN.md §5)", () => {
-      // Both of daverandom/resume's dated branches are its own past releases: the newest one is also
-      // the installed one, so nothing here is "still releasing" on a branch the reader has moved off.
+    it("keys only what this timeline draws: no newest marker when the reader is on it (PD-TIMELINE-4)", () => {
       const { container } = renderDetail(KOEL, "daverandom/resume");
-      const legend = container.querySelector(".detail-timeline-legend");
-      expect(legend?.textContent).toContain("you are on v0.0.3");
-      expect(legend?.textContent).not.toContain("branch still releasing");
+      const key = container.querySelector(".detail-timeline-key")?.textContent ?? "";
+      expect(key).toContain("you");
+      expect(key).not.toContain("newest");
+      expect(key).toContain("3");
+      expect(key).toContain("5 years ago");
+    });
+
+    it("falls back to date order, and to no tone or guides, when the names or the thresholds are missing", () => {
+      // vendor/edge-timeline: a "master" branch next to "1.x", and a run with no thresholds.
+      const { container } = renderDetail(EXTRA_MODEL, "vendor/edge-timeline");
+      expect(rowHeaders(container)).toEqual(["master, the newest", "1.x, yours"]);
+      expect(screen.getByRole("table", { name: "Release branches, most recent release first" })).toBeTruthy();
+      expect(container.querySelector(".detail-timeline-age")?.classList.contains("is-toned")).toBe(false);
+      expect(container.querySelector(".detail-timeline-guide")).toBeNull();
+      // No php constraint recorded: a dash on screen, words for a screen reader.
+      expect(container.querySelector(".detail-timeline-php")?.textContent).toBe("—none recorded");
     });
   });
 

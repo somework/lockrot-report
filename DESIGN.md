@@ -103,7 +103,7 @@ src/
     filters.ts            filter groups, population per view, matches(), rail facet counts
     priority.ts           priorityWhy — the page's explanation of a finding's priority
     libyears.ts           ledger items, sort key, reason, row phrases
-    timeline.ts           branch timeline scale and ticks
+    timeline.ts           release branches: order, folds, one shared axis
     age.ts                a Findings row's age scale: signal, thresholds, shared maximum
     radius.ts             blast-radius cards
     sniff.ts              the two places the page reads PHP-rendered text (isolated, tested)
@@ -202,10 +202,14 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 | PD-ROWS-1                   | a row showed up to three signal lines                                  | the highest-level signal and "+N more signals"; print shows them all                                                |
 | PD-ROWS-2                   | nothing showed an age against the run's thresholds                     | an age scale: warn and high ticks, a dot at the S8 (branch stopped) / S2 (no stable release) / S4 (no push) age     |
 | PD-ROWS-3                   | each row scaled its own track, with no legend                          | one legend and one maximum per list; `abandoned`/`pinned` rows get a neutral dot                                    |
-| PD-TIMELINE-1               | the first year label lost half its width off the axis                  | clamped to the axis and left-aligned                                                                                |
-| PD-TIMELINE-2               | a wrapped branch label pulled its dot between its lines                | the dot stays level with the first line                                                                             |
-| PD-TIMELINE-3               | a package without maintained branches showed each version twice        | the version once, then the date                                                                                     |
-| PD-TIMELINE-4               | the legend always listed every lane state                              | an entry only for a state some lane is in                                                                           |
+| PD-TIMELINE-1               | the first year label lost half its width off the axis                  | the axis runs from 1 January of the oldest year, labelled at the left edge, to a "today" rule labelled under it     |
+| PD-TIMELINE-2               | labels floated beside each dot and wrapped around it                   | a table: branch, a line from last release to today, latest version, raw php constraint; one line a row              |
+| PD-TIMELINE-3               | a package without maintained branches showed each version twice        | the version once; no "latest" column when it would repeat every name                                                |
+| PD-TIMELINE-4               | a jargon legend; the installed lane red at any age                     | one-line key; you a ring, newest a disc; your line in its age tone, the 3/5-year thresholds as dashed guides        |
+| PD-TIMELINE-5               | lanes sorted by date, so 3.x could sit above 4.x                       | newest version first; date order when any branch name is not a version                                              |
+| PD-TIMELINE-6               | every branch drawn; old ones buried the two that matter                | older than yours fold into one "N older" row, a tick per branch; over four between newest and yours fold too        |
+| PD-TIMELINE-7               | nothing said how far behind the reader is                              | two sentences first: your branch and its age; how many are newer, the newest's version, date and php                |
+| PD-TIMELINE-8               | a dev-branch checkout had no row                                       | a snapshot row from the lock's own date and constraint, marked as a diamond                                         |
 | PD-LEDGER-1                 | "No advisory affects this lock" even when the check may not have run   | "No advisory found; N packages could not be confirmed clear", in a neutral tone                                     |
 | PD-LEDGER-2                 | a legend entry, a filter toggle, looked like plain text                | a chip with hover, focus and pressed states, and a title naming the click                                           |
 | PD-DISCLOSURE-1             | each `<summary>` drew its own text-glyph marker                        | one CSS-drawn triangle for every `<summary>`, with hover and focus states                                           |

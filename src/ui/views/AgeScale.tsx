@@ -1,4 +1,5 @@
 import type { AgeLegend as AgeLegendData, AgeScale as AgeScaleData, AgeKind } from "../../domain/age";
+import { ageZone } from "../../domain/age";
 import type { Tone } from "../../domain/vocab";
 import type { Verdict } from "../../model/types";
 import { plural } from "../../domain/format";
@@ -35,9 +36,7 @@ function pct(value: number, max: number): number {
  *  reader who skips the label still sees the zone at a glance). Never consulted for a `contextOnly`
  *  scale (below), whose dot reads as neutral regardless of which zone the years fall in. */
 function zoneTone(scale: AgeScaleData): Tone {
-  if (scale.years >= scale.high) return "crit";
-  if (scale.years >= scale.warn) return "med";
-  return "none";
+  return ageZone(scale.years, scale.warn, scale.high);
 }
 
 /**

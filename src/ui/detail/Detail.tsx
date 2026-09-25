@@ -70,7 +70,13 @@ export function Detail({ onClose }: DetailProps) {
         )}
         <PriorityWhy finding={finding} />
         <AdvisoryList finding={finding} />
-        <Timeline metadata={details?.metadata ?? null} installedVersion={finding.version} />
+        {/* Keyed by package: a fold opened on one package's timeline must not stay open on the next. */}
+        <Timeline
+          key={finding.package}
+          metadata={details?.metadata ?? null}
+          lock={details?.lock ?? null}
+          installedVersion={finding.version}
+        />
         <SignalList finding={finding} />
         {/* a11y review: a bare <summary> dropped the section's own heading, so a screen-reader
             reader moving by heading found none of these three. A <summary> accepts one heading as

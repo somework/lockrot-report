@@ -13,6 +13,7 @@
  */
 
 import type { Finding } from "../model/types";
+import type { Tone } from "./vocab";
 
 export type AgeKind = "branch" | "release" | "push";
 
@@ -156,9 +157,8 @@ export interface AgeLegend {
  * own scale already keeps.
  */
 export function ageLegend(thresholds: Thresholds): AgeLegend | null {
-  const releaseWarn = thresholdYears(thresholds, "release-warn-years");
-  const releaseHigh = thresholdYears(thresholds, "release-high-years");
-  if (releaseWarn !== null && releaseHigh !== null) return { warn: releaseWarn, high: releaseHigh };
+  const release = releaseThresholds(thresholds);
+  if (release !== null) return release;
 
   const pushWarn = thresholdYears(thresholds, "push-warn-years");
   const pushHigh = thresholdYears(thresholds, "push-high-years");
@@ -186,4 +186,25 @@ export function ageScale(finding: Finding, thresholds: Thresholds, max: number):
     max,
     contextOnly: isContextOnly(finding),
   };
+}
+
+/**
+ * The zone an age falls in against a warn/high pair, as the tone that zone is drawn in: below
+ * `warn` reads as fine, `warn`..`high` as a caution, at or above `high` as the same tone a critical
+ * verdict pill carries. One vocabulary for every age the page colours — a Findings row's scale dot
+ * (`views/AgeScale.tsx`) and the release-branches answer (`detail/Timeline.tsx`) — so the same
+ * years never read as two different verdicts in two places.
+ */
+export function ageZone(years: number, warn: number, high: number): Tone {
+  if (years >= high) return "crit";
+  if (years >= warn) return "med";
+  return "none";
+}
+
+/** The run's release warn/high pair, the one a release's own age is measured against; `null` when
+ *  the run did not record both — the caller then draws the age in no zone's tone, never a guess. */
+export function releaseThresholds(thresholds: Thresholds): AgeLegend | null {
+  const warn = thresholdYears(thresholds, "release-warn-years");
+  const high = thresholdYears(thresholds, "release-high-years");
+  return warn !== null && high !== null ? { warn, high } : null;
 }
