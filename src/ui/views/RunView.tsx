@@ -5,6 +5,7 @@ import { fixed } from "../../domain/format";
 import { noteDocLink } from "../../domain/sniff";
 import { OutLink, NoWrap } from "../common/common";
 import "./views.css";
+import "./baseline.css";
 
 /** `null`/missing as an em dash, never `String(undefined)` — DESIGN.md §5 K6: legacy's Run tab
  *  printed the literal word "undefined" for `network_failures`, `not_from_composer_repository` and
@@ -13,15 +14,48 @@ function orDash(value: string | null): string {
   return value ?? "—";
 }
 
-/** The baseline row as a short, readable sentence instead of legacy's raw `JSON.stringify` dump
- *  (report.js:651) — the counts the totals block already gives, plus the stale package names when
- *  there are any. */
-function baselineText(baseline: BaselineSummary | null): string {
-  if (!baseline) return "none";
-  const counts = `${baseline.known} known, ${baseline.new} new, ${baseline.worsened} worsened, ${baseline.stale.length} stale`;
-  const summary = `${baseline.path} — ${counts}`;
-
-  return baseline.stale.length > 0 ? `${summary} (${baseline.stale.join(", ")})` : summary;
+/**
+ * PD-BASELINE-4 (DESIGN.md §5): the baseline as a stat row — the four numbers lockrot recorded in
+ * its summary block, new and worsened in the tones the rows' own tags wear, then the stale entries
+ * by name. lockrot calls those `stale`; the label says "gone from the lock" first, so it never
+ * reads as the verdict of the same name. Replaces legacy's raw `JSON.stringify` dump
+ * (report.js:651), and the one-line sentence that followed it.
+ */
+function BaselineStats({ baseline }: { baseline: BaselineSummary }) {
+  const stats: readonly (readonly [label: string, count: number, tone: string])[] = [
+    ["new", baseline.new, "tone-crit"],
+    ["worsened", baseline.worsened, "tone-high"],
+    ["already accepted", baseline.known, ""],
+  ];
+  return (
+    <section className="sect">
+      <h3>Against the baseline</h3>
+      <p className="bl-run-path">
+        Compared with <span className="mono">{baseline.path || "—"}</span>
+      </p>
+      <dl className="bl-stats">
+        {stats.map(([label, count, tone]) => (
+          <div key={label} className={tone ? `bl-stat ${tone}` : "bl-stat"}>
+            <dt>{label}</dt>
+            <dd>{count}</dd>
+          </div>
+        ))}
+        <div className="bl-stat bl-stat-gone">
+          <dt>gone from the lock (stale)</dt>
+          <dd>{baseline.stale.length}</dd>
+          {baseline.stale.length > 0 && (
+            <dd className="bl-gone">
+              <ul className="bl-gone-list" aria-label="Baseline entries no longer in the lock">
+                {baseline.stale.map((name) => (
+                  <li key={name}>{name}</li>
+                ))}
+              </ul>
+            </dd>
+          )}
+        </div>
+      </dl>
+    </section>
+  );
 }
 
 /** The "libyears not measured" row: every reason with at least one package under it, as a readable
@@ -70,7 +104,9 @@ export function RunView() {
     ["libyears, direct requirements", orDash(ly && ly.measured ? fixed(ly.directRequirements, 2) : null)],
     ["libyears measured", ly ? String(ly.measured) : "—"],
     ["libyears not measured", unmeasuredText(ly)],
-    ["baseline", baselineText(report.baseline)],
+    // With a baseline its own section above says everything this row used to; without one the row
+    // still says so, rather than leaving a reader to wonder whether the page just forgot it.
+    ...(report.baseline === null ? ([["baseline", "none"]] as const) : []),
   ];
 
   return (
@@ -88,6 +124,8 @@ export function RunView() {
           ))}
         </section>
       )}
+
+      {report.baseline !== null && <BaselineStats baseline={report.baseline} />}
 
       <section className="sect">
         <h3>Thresholds in force</h3>

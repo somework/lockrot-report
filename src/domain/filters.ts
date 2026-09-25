@@ -55,9 +55,10 @@ export function population(model: Model, view: View): readonly Finding[] {
  * unknown package, since `BaselineComparison` only ever records a status for a flagged finding —
  * under "known" (`baselineState(f) !== "new" && !== "worsened"` is true for `null` too), so
  * "Already accepted" silently counted every healthy package. Here "known" means the baseline
- * itself said so, nothing else does.
+ * itself said so, nothing else does. Exported for `domain/baseline.ts`'s delta line, which counts
+ * the same buckets the rail does.
  */
-function sinceBucket(f: Finding): "new" | "worsened" | "known" | null {
+export function sinceBucket(f: Finding): "new" | "worsened" | "known" | null {
   if (f.baseline === null) return null;
   const status = f.baseline.status;
   if (status === "new") return "new";

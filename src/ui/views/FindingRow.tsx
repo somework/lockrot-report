@@ -87,16 +87,33 @@ function SignalLine({ signal, tabIndex }: { signal: Signal; tabIndex: -1 | undef
   );
 }
 
-/** The baseline state first (if new/worsened), as legacy ordered the row's tags. */
+/** The baseline state first (if new/worsened), as legacy ordered the row's tags. A worsened row
+ *  names the verdict the baseline accepted (PD-BASELINE-2, DESIGN.md §5), so the step it took is
+ *  read on the row rather than only in its detail. */
 function BaselineTag({ finding }: { finding: Finding }) {
-  const status = finding.baseline?.status;
-  if (status !== "new" && status !== "worsened") return null;
+  const { model } = useReport();
+  const baseline = finding.baseline;
+  const status = baseline?.status;
+  if (baseline === null || (status !== "new" && status !== "worsened")) return null;
+  const path = model.report.baseline?.path || "the baseline file";
+  if (status === "new") {
+    return (
+      <Tag tone="crit" title={`not in ${path}`}>
+        new
+      </Tag>
+    );
+  }
+  const previous = baseline.previousVerdict;
   return (
     <Tag
-      tone={status === "new" ? "crit" : "high"}
-      title={status === "new" ? "not in the baseline file" : "the baseline recorded a milder verdict"}
+      tone="high"
+      title={
+        previous === null
+          ? `${path} recorded a milder verdict`
+          : `${path} accepted it as ${previous}; it is ${finding.verdict} now`
+      }
     >
-      {status}
+      {previous === null ? "worsened" : `worsened from ${previous}`}
     </Tag>
   );
 }

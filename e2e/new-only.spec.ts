@@ -22,7 +22,7 @@ function builtFixtures(): FixtureName[] {
     .map((file) => file.replace(/\.html$/, "") as FixtureName);
 }
 
-const AXE_FIXTURES = ["mini", "koel_koel", "wallabag_wallabag"] as FixtureName[];
+const AXE_FIXTURES = ["mini", "koel_koel", "wallabag_wallabag", "wallabag_baseline"] as FixtureName[];
 const SCHEMES = ["light", "dark"] as const;
 const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;
 
@@ -72,6 +72,17 @@ test.describe("axe: no serious or critical violations", () => {
       for (const colorScheme of SCHEMES) {
         await page.emulateMedia({ colorScheme });
         await load(page, "wallabag_wallabag", view === "findings" ? "" : `view=${view}`);
+        expect(await seriousViolations(page)).toEqual([]);
+      }
+    });
+  }
+
+  // PD-BASELINE-1/4: the delta line's toned counts (one of them pressed) and Run data's stat row.
+  for (const hash of ["since=new", "view=run"]) {
+    test(`wallabag_baseline, ${hash}, both schemes`, async ({ page }) => {
+      for (const colorScheme of SCHEMES) {
+        await page.emulateMedia({ colorScheme });
+        await load(page, "wallabag_baseline", hash);
         expect(await seriousViolations(page)).toEqual([]);
       }
     });

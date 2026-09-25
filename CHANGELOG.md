@@ -40,6 +40,16 @@ tag or the address format, says so under **Breaking** in its entry.
   12 mo), a repeated package on the next row keeps its full name, only quieter, and a package
   named in an answer or group sentence wraps only at its slash, never at a hyphen.
 
+- A run compared against a baseline says so above the Findings list: how many findings are new,
+  how many got worse and how many the baseline already accepts, each count a filter of the list
+  (the rail's "Since" filter), and which baseline entries are for packages no longer in the lock.
+  A worsened row reads "worsened from stale" (the verdict the baseline accepted), and a package's
+  detail opens with its standing against the baseline, drawn as the accepted verdict → the verdict
+  now. Run data shows the baseline as four numbers, with the entries gone from the lock by name.
+- Beside the header's gate fact, a count of the findings at or above the run's `--fail-on` level
+  and, with a baseline, how many of them it does not already accept. The page still does not say
+  whether the run passed.
+
 - "Print / PDF" in the header prints the whole report as one document, whatever tab is open: the
   summary band, Findings with every signal, Advisories in full, the ranked rows of Blast radius and
   the run's facts, in numbered sections; All packages is added when you print from that tab, and the

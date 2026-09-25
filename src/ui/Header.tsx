@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact";
 import { useId, useLayoutEffect, useRef } from "preact/hooks";
-import { day } from "../domain/format";
+import { gateTally, type GateTally } from "../domain/baseline";
+import { day, plural } from "../domain/format";
 import { useReport } from "./context";
 import { CopySummary } from "./CopySummary";
 import { themeButtonLabel, type Theme } from "./useTheme";
@@ -20,7 +21,7 @@ import { themeButtonLabel, type Theme } from "./useTheme";
  *  is the one piece of missing information a reader with no gate would otherwise have no way to
  *  find from this page alone. Either way, the popover still says only what the run was given and
  *  what the page cannot know — never whether the gate actually fired. */
-function gateFact(failOn: string): { label: string; text: string } {
+function gateFact(failOn: string, tally: string | null): { label: string; text: string } {
   if (failOn === "none") {
     return {
       label: "no gate",
@@ -28,10 +29,47 @@ function gateFact(failOn: string): { label: string; text: string } {
     };
   }
 
+  // The count (PD-BASELINE-5) sits between the rule and the caveat, so the last word is still what
+  // the page cannot know.
+  const counted = tally === null ? "" : ` ${tally}`;
   return {
     label: `gate: ${failOn}`,
-    text: `This run was told to fail on ${failOn}: it exits 1 when a finding the baseline does not already accept reaches ${failOn}. The page does not record whether it did.`,
+    text: `This run was told to fail on ${failOn}: it exits 1 when a finding the baseline does not already accept reaches ${failOn}.${counted} The page does not record whether it did.`,
   };
+}
+
+/** What the tally counts, in the gate's own terms: `unchecked` is not a level anything is "above".
+ *  `short` is the header's form, beside a label that already names the level. */
+function reachWords(failOn: string, short = false): string {
+  if (failOn === "unchecked") return short ? "with S10" : "with a check that did not run (S10)";
+  return short ? "at or above" : `at or above ${failOn}`;
+}
+
+/** The popover's count sentence: the same numbers as the tally beside the button, in words. */
+function tallySentence(tally: GateTally, path: string): string {
+  const reached = `${plural(tally.reached, "finding", "findings")} in this report ${tally.reached === 1 ? "is" : "are"} ${reachWords(tally.failOn)}`;
+  if (tally.notAccepted === null) return `${reached}.`;
+  return `${reached}; ${tally.notAccepted} of them ${tally.notAccepted === 1 ? "is" : "are"} not already accepted in ${path}.`;
+}
+
+/**
+ * PD-BASELINE-5 (DESIGN.md §5): beside the gate fact, how many findings are at or above it — and,
+ * with a baseline, how many of those the baseline does not already accept, the set lockrot measures
+ * the gate against. A count over the findings in the document, by lockrot's own `--fail-on` order
+ * (`domain/baseline.ts`); never whether the run passed or failed, which the document does not say.
+ */
+function GateTallyText({ tally }: { tally: GateTally }) {
+  return (
+    <span className="gate-tally">
+      <b className="mono">{tally.reached}</b> {reachWords(tally.failOn, true)}
+      {tally.notAccepted !== null && (
+        <>
+          {" · "}
+          <b className="mono">{tally.notAccepted}</b> outside the baseline
+        </>
+      )}
+    </span>
+  );
 }
 
 /**
@@ -83,7 +121,9 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
   // The project names itself; the lock is called composer.lock everywhere, so it is the fallback.
   const project = run.project ?? run.lockFile ?? "composer.lock";
   const label = themeButtonLabel(theme);
-  const gate = run.failOn === null ? null : gateFact(run.failOn);
+  const tally = gateTally(model);
+  const counted = tally === null ? null : tallySentence(tally, model.report.baseline?.path || "the baseline");
+  const gate = run.failOn === null ? null : gateFact(run.failOn, counted);
   const popoverId = `${useId()}-gate`;
 
   return (
@@ -122,6 +162,12 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
               <div id={popoverId} popover="auto" className="fact-pop">
                 {gate.text}
               </div>
+              {tally !== null && (
+                <>
+                  {" "}
+                  <GateTallyText tally={tally} />
+                </>
+              )}
             </span>
           )}
           <span className="run-actions">

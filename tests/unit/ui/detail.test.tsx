@@ -90,9 +90,21 @@ const EXTRA = normalize({
         baseline: { status: "new" },
       },
       {
-        package: "vendor/worsened",
+        package: "vendor/known",
         version: "1.0.0",
         verdict: "stale",
+        priority: "low",
+        direct: false,
+        dev: false,
+        signals: [],
+        chain: ["vendor/root"],
+        evidence: "",
+        baseline: { status: "known", previous_verdict: "left-behind" },
+      },
+      {
+        package: "vendor/worsened",
+        version: "1.0.0",
+        verdict: "left-behind",
         priority: "medium",
         direct: true,
         dev: false,
@@ -760,11 +772,66 @@ describe("Detail", () => {
       expect(screen.getByText("Not in baseline.json. This one is new since it was written.")).toBeTruthy();
     });
 
-    it("names the previous verdict for a worsened finding", () => {
+    it("names the previous verdict and the current one for a worsened finding (PD-BASELINE-3)", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/worsened");
       const paragraph = container.querySelector(".detail-baseline");
-      expect(paragraph?.textContent).toBe("The baseline recorded stale. It has got worse since.");
-      expect(paragraph?.querySelector(".mono")?.textContent).toBe("stale");
+      expect(paragraph?.textContent).toBe(
+        "baseline.json recorded stale; it is left-behind now. It has got worse since.",
+      );
+      const words = [...(paragraph?.querySelectorAll(".mono") ?? [])].map((node) => node.textContent);
+      expect(words).toEqual(["stale", "left-behind"]);
+    });
+
+    it("draws the step as previous → current, hidden from assistive tech the sentence already serves", () => {
+      const { container } = renderDetail(EXTRA_MODEL, "vendor/worsened");
+      const step = container.querySelector(".bl-step");
+      expect(step?.getAttribute("aria-hidden")).toBe("true");
+      const pills = [...(step?.querySelectorAll(".pill") ?? [])].map((node) => node.textContent);
+      expect(pills).toEqual(["stale", "left-behind"]);
+      expect(step?.textContent).toContain("worsened");
+    });
+
+    it("draws 'no entry' where a new finding had nothing in the baseline", () => {
+      const { container } = renderDetail(EXTRA_MODEL, "vendor/newpkg");
+      const step = container.querySelector(".bl-step");
+      expect(step?.querySelector(".bl-none")?.textContent).toBe("no entry");
+      expect([...(step?.querySelectorAll(".pill") ?? [])].map((node) => node.textContent)).toEqual([
+        "abandoned",
+      ]);
+    });
+
+    it("says what an accepted finding was accepted as", () => {
+      const { container } = renderDetail(EXTRA_MODEL, "vendor/known");
+      expect(container.querySelector(".detail-baseline")?.textContent).toBe(
+        "Already accepted in baseline.json as left-behind. It does not fail the build.",
+      );
+      // Accepted as left-behind, stale now: it moved, so the step is drawn.
+      expect(container.querySelector(".bl-step")?.textContent).toContain("accepted");
+    });
+
+    it("draws no step for an accepted package still at the verdict it was accepted at", () => {
+      const model = normalize({
+        report: {
+          lockrot: { version: "0.11.0", schema: 1 },
+          generated_at: "2026-01-01T00:00:00Z",
+          baseline: { path: "baseline.json", known: 1, new: 0, worsened: 0, stale: [] },
+          findings: [
+            {
+              package: "vendor/same",
+              version: "1.0.0",
+              verdict: "stale",
+              priority: "low",
+              baseline: { status: "known", previous_verdict: "stale" },
+            },
+          ],
+        },
+      });
+      if (!model.ok) throw new Error(model.error.message);
+      const { container } = renderDetail(model.model, "vendor/same");
+      expect(container.querySelector(".bl-step")).toBeNull();
+      expect(container.querySelector(".detail-baseline")?.textContent).toBe(
+        "Already accepted in baseline.json as stale. It does not fail the build.",
+      );
     });
   });
 
@@ -1098,9 +1165,14 @@ describe("Detail", () => {
       expect(order).toEqual([...order].sort((a, b) => a - b));
     });
 
-    it("puts why this priority ahead of against the baseline, and both ahead of the reference sections", () => {
+    it("puts against the baseline first under the answer, ahead of why this priority and the reference sections (PD-BASELINE-3)", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/worsened");
-      const order = markerOrder(container, ["Why this is medium", "The baseline recorded", "The lock entry"]);
+      const order = markerOrder(container, [
+        "How it gets in",
+        "Against the baseline",
+        "Why this is medium",
+        "The lock entry",
+      ]);
       expect(order).not.toContain(-1);
       expect(order).toEqual([...order].sort((a, b) => a - b));
     });

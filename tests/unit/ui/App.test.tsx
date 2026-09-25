@@ -651,6 +651,32 @@ describe("layout", () => {
     expect(button.getAttribute("title")).toContain("does not record whether it did");
   });
 
+  test("beside the gate, a count of the findings at or above it (PD-BASELINE-5)", () => {
+    render(<App model={MINI} />);
+    // mini.json: one abandoned finding reaches silent; the pinned one does not.
+    expect(document.querySelector(".gate-tally")?.textContent).toBe("1 at or above");
+    const button = screen.getByRole("button", { name: /^gate: silent/ });
+    expect(button.getAttribute("title")).toContain("1 finding in this report is at or above silent.");
+  });
+
+  test("with a baseline, the gate count also says how many the baseline does not accept (PD-BASELINE-5)", () => {
+    render(<App model={loadModel("wallabag_baseline")} />);
+    expect(document.querySelector(".gate-tally")?.textContent).toBe(
+      "41 at or above · 4 outside the baseline",
+    );
+    const title = screen.getByRole("button", { name: /^gate: high/ }).getAttribute("title") ?? "";
+    expect(title).toContain(
+      "41 findings in this report are at or above high; 4 of them are not already accepted in lockrot-baseline.json.",
+    );
+    // The caveat stays last: the count never reads as the run's result.
+    expect(title.endsWith("The page does not record whether it did.")).toBe(true);
+  });
+
+  test("no gate, no count", () => {
+    render(<App model={loadModel("wallabag_wallabag")} />);
+    expect(document.querySelector(".gate-tally")).toBeNull();
+  });
+
   // regression review: neither an e2e nor a unit test asserted this branch (Header.tsx: `run.failOn
   // === null` renders neither label) — only that a *present* fail-on renders correctly.
   test("a document that predates run.fail_on shows no gate fact at all (PD-SUMMARY-2)", () => {

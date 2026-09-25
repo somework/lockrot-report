@@ -6,6 +6,7 @@ import { safeHref } from "../../domain/links";
 import { OutLink } from "../common/common";
 import { useReport } from "../context";
 import { AdvisoryList } from "./AdvisoryList";
+import { BaselineStanding } from "./BaselineStanding";
 import { DetailHeader } from "./DetailHeader";
 import { DetailLead } from "./DetailLead";
 import { FollowUpstream } from "./FollowUpstream";
@@ -24,8 +25,9 @@ export interface DetailProps {
  * The package detail panel — ported section by section from legacy `renderDetail`
  * (`report.js:737-845`), reordered so the reader meets the answer before the reference (PD-DETAIL-1,
  * DESIGN.md §8; PD-DETAIL-6): the answer sentence with its key facts and how the package gets in,
- * why this priority, then the checks behind the verdict (PD-DETAIL-12: the two "why" blocks side by
- * side), follow the upstream (the action, when there is one), against the baseline, every advisory,
+ * against the baseline (PD-BASELINE-3: first, when the run had one), why this priority, then the
+ * checks behind the verdict (PD-DETAIL-12: the two "why" blocks side by side), follow the upstream
+ * (the action, when there is one), every advisory,
  * release branches, then two reference sections — the lock entry and
  * provenance — each a `<details>` closed by default, since a reader who opened the panel to act on
  * it rarely needs the lock's raw fields first.
@@ -52,22 +54,16 @@ export function Detail({ onClose }: DetailProps) {
   }
 
   const details = model.details.get(finding.package) ?? null;
-  const baselineText = baselineParagraph(finding, model.report.baseline?.path ?? "the baseline");
 
   return (
     <aside className="detail" role="complementary" aria-label={finding.package}>
       <DetailHeader finding={finding} onClose={onClose} />
       <DetailLead finding={finding} details={details} />
       <div className="detail-body">
+        <BaselineStanding finding={finding} />
         <PriorityWhy finding={finding} />
         <SignalList finding={finding} />
         <FollowUpstream finding={finding} />
-        {baselineText !== null && (
-          <section className="detail-section">
-            <h3>Against the baseline</h3>
-            <p className="detail-baseline">{baselineText}</p>
-          </section>
-        )}
         <AdvisoryList finding={finding} />
         {/* Keyed by package: a fold opened on one package's timeline must not stay open on the next. */}
         <Timeline
@@ -149,25 +145,4 @@ function provenanceRows(finding: Finding, metadata: ExplainMetadata | null): rea
         : null,
     },
   ]);
-}
-
-/** "Against the baseline": omitted entirely for a finding the baseline says nothing about — ported
- *  from legacy's `bstate` branch (`report.js:798-803`). */
-function baselineParagraph(finding: Finding, baselinePath: string): ComponentChildren | null {
-  const baseline = finding.baseline;
-  if (baseline === null) return null;
-
-  if (baseline.status === "new") {
-    return `Not in ${baselinePath}. This one is new since it was written.`;
-  }
-  if (baseline.status === "worsened") {
-    return (
-      <>
-        The baseline recorded <span className="mono">{baseline.previousVerdict ?? "a milder verdict"}</span>.
-        It has got worse since.
-      </>
-    );
-  }
-
-  return `Already accepted in ${baselinePath}. It does not fail the build.`;
 }

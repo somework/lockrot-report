@@ -1519,7 +1519,7 @@ describe("RunView", () => {
     expect(screen.getByText("fail-on").nextElementSibling?.textContent).toBe("critical");
   });
 
-  it("reads the baseline as a short sentence, never a raw JSON dump", () => {
+  it("reads the baseline as a stat row, never a raw JSON dump (PD-BASELINE-4)", () => {
     // Arrange
     const model = makeModel([]);
     const withBaseline: Model = {
@@ -1537,6 +1537,24 @@ describe("RunView", () => {
     expect(screen.queryByText(/{"path"/)).toBeNull();
     expect(screen.getByText(/baseline\.json/)).toBeTruthy();
     expect(screen.getByText(/old\/pkg/)).toBeTruthy();
+    const stats = [...document.querySelectorAll(".bl-stat")].map((stat) => [
+      stat.querySelector("dt")?.textContent,
+      stat.querySelector("dd")?.textContent,
+    ]);
+    expect(stats).toEqual([
+      ["new", "1"],
+      ["worsened", "0"],
+      ["already accepted", "3"],
+      ["gone from the lock (stale)", "1"],
+    ]);
+    // The stat row replaces the Run list's own baseline row.
+    expect(screen.queryByText("baseline", { selector: "dt" })).toBeNull();
+  });
+
+  it("says 'none' for the baseline in the Run list when the run had none", () => {
+    renderIn(makeModel([]), stateWith({ view: "run" }), <RunView />);
+    expect(screen.getByText("baseline", { selector: "dt" }).nextElementSibling?.textContent).toBe("none");
+    expect(document.querySelector(".bl-stats")).toBeNull();
   });
 });
 
@@ -1662,5 +1680,89 @@ describe("the list's one Tab stop (PD-ROWS-11)", () => {
     ]);
     // Both rows name the open package, so both read as current.
     expect(rows.every((row) => row.getAttribute("aria-current") === "true")).toBe(true);
+  });
+});
+
+// PD-BASELINE-1/2 (DESIGN.md §5): the Findings tab's delta line and the rows' baseline tags.
+describe("the baseline on the Findings tab", () => {
+  const BASELINE = loadModel("wallabag_baseline.json");
+
+  function deltaText(): string {
+    return document.querySelector(".bl-answer")?.textContent ?? "";
+  }
+
+  it("says how the list stands against the baseline, above the list", () => {
+    renderIn(BASELINE, stateWith(), <FindingsView />);
+    expect(deltaText()).toBe(
+      "Against lockrot-baseline.json: 4 new and 2 worsened since it was written, 63 already accepted.",
+    );
+    expect(document.querySelector(".bl-gone-note")?.textContent).toBe(
+      "3 entries in it are gone from the lock: doctrine/reflection, swiftmailer/swiftmailer and symfony/swiftmailer-bundle.",
+    );
+  });
+
+  it("makes each count the Since filter it names", () => {
+    const { dispatch } = renderIn(BASELINE, stateWith(), <FindingsView />);
+    const toggle = screen.getByRole("button", { name: "4 new" });
+    expect(toggle.getAttribute("aria-pressed")).toBe("false");
+    fireEvent.click(toggle);
+    expect(dispatch).toHaveBeenCalledWith({ type: "toggle", group: "since", key: "new" });
+    fireEvent.click(screen.getByRole("button", { name: "63 already accepted" }));
+    expect(dispatch).toHaveBeenCalledWith({ type: "toggle", group: "since", key: "known" });
+  });
+
+  it("marks the count whose filter is on", () => {
+    renderIn(
+      BASELINE,
+      stateWith({ filters: { ...INITIAL_STATE.filters, since: ["worsened"] } }),
+      <FindingsView />,
+    );
+    expect(screen.getByRole("button", { name: "2 worsened" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "4 new" }).getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("says nothing new or worsened, with no toggle to an empty list, when that is so", () => {
+    const model = flaggedModel([
+      makeFinding({ package: "k/a", baseline: { status: "known", previousVerdict: "abandoned" } }),
+    ]);
+    const withBaseline: Model = {
+      ...model,
+      report: { ...model.report, baseline: { path: "b.json", known: 1, new: 0, worsened: 0, stale: [] } },
+    };
+    renderIn(withBaseline, stateWith(), <FindingsView />);
+    expect(deltaText()).toBe(
+      "Against b.json: nothing new or worsened since it was written, 1 already accepted.",
+    );
+    expect(document.querySelector(".bl-gone-note")).toBeNull();
+  });
+
+  it("points at Run data instead of spelling out more than three gone entries", () => {
+    const withMany: Model = {
+      ...BASELINE,
+      report: {
+        ...BASELINE.report,
+        baseline: { path: "b.json", known: 63, new: 4, worsened: 2, stale: ["a/a", "b/b", "c/c", "d/d"] },
+      },
+    };
+    const { dispatch } = renderIn(withMany, stateWith(), <FindingsView />);
+    expect(document.querySelector(".bl-gone-note")?.textContent).toBe(
+      "4 entries in it are gone from the lock — listed on Run data.",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "listed on Run data" }));
+    expect(dispatch).toHaveBeenCalledWith({ type: "view", view: "run" });
+  });
+
+  it("draws nothing when the run had no baseline", () => {
+    renderIn(loadModel("wallabag_wallabag.json"), stateWith(), <FindingsView />);
+    expect(document.querySelector(".bl-top")).toBeNull();
+  });
+
+  it("names the verdict a worsened row was accepted at", () => {
+    renderIn(BASELINE, stateWith(), <FindingsView />);
+    const row = screen.getByRole("listitem", { name: "javibravo/simpleue" });
+    const tag = within(row).getByText("worsened from stale");
+    expect(tag.getAttribute("title")).toBe("lockrot-baseline.json accepted it as stale; it is silent now");
+    const fresh = screen.getByRole("listitem", { name: "lcobucci/jwt" });
+    expect(within(fresh).getByText("new").getAttribute("title")).toBe("not in lockrot-baseline.json");
   });
 });

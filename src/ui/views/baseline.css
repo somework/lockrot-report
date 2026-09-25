@@ -1,0 +1,245 @@
+/*
+ * The baseline surfaces (PD-BASELINE-1..4, DESIGN.md §5). The Findings tab's delta line takes the
+ * Advisories answer's type (advisories.css `.al-answer`): the serif at 18px, counts in the ink, a
+ * count's word in its tone — new in the critical tone and worsened in the high one, as the rows'
+ * own baseline tags are. A count that filters is a button that reads as the sentence it sits in: a
+ * dotted rule under it, the tone's soft fill on hover and while it is pressed.
+ */
+
+.bl-top {
+  margin: 2px 0 14px;
+}
+.bl-answer {
+  margin: 0;
+  max-width: 52em;
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.bl-answer b {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.bl-path {
+  font-family: var(--mono);
+  font-size: 0.78em;
+  font-weight: 600;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+/* The line under the answer (the entries gone from the lock): the Advisories answer's scope line,
+   quieter than the sentence it follows, the names in the mono the rows' versions use. */
+.bl-gone-note {
+  margin: 5px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.bl-pk {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+
+.bl-count {
+  white-space: nowrap;
+}
+.bl-count:where(.tone-crit, .tone-high) {
+  color: var(--tone);
+  font-weight: 600;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.bl-toggle {
+  margin: 0 -3px;
+  padding: 0 3px;
+  border: 0;
+  border-bottom: 1px dotted currentColor;
+  border-radius: var(--radius-s) var(--radius-s) 0 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.bl-toggle.bl-count:where(.tone-crit, .tone-high) {
+  color: var(--tone);
+}
+.bl-toggle:hover {
+  background: var(--tone-soft, var(--surface-2));
+  border-bottom-style: solid;
+}
+.bl-toggle:not(:where(.tone-crit, .tone-high)):hover,
+.bl-toggle:not(:where(.tone-crit, .tone-high))[aria-pressed="true"] {
+  background: var(--surface-3);
+}
+.bl-toggle[aria-pressed="true"] {
+  background: var(--tone-soft);
+  border-bottom: 2px solid currentColor;
+}
+.bl-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.bl-more {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-strong);
+  background: none;
+  font: inherit;
+  color: var(--accent-ink);
+  cursor: pointer;
+}
+.bl-more:hover,
+.bl-more:focus-visible {
+  border-bottom-color: currentColor;
+}
+
+@media (max-width: 759px) {
+  .bl-answer {
+    font-size: 16.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bl-toggle {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .bl-toggle {
+    border-bottom-color: ButtonText;
+  }
+  .bl-toggle[aria-pressed="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+  .bl-toggle[aria-pressed="true"] b {
+    color: HighlightText;
+  }
+}
+
+@media print {
+  .bl-toggle {
+    border-bottom: 0;
+    background: none;
+  }
+  .bl-more {
+    border-bottom: 0;
+    color: inherit;
+  }
+}
+
+/* ---------- the detail's "Against the baseline" (PD-BASELINE-3) ---------- */
+
+/* previous → current: the verdict the baseline accepted, an arrow, the verdict now, each in the
+   pill every other verdict on the page wears; "no entry" in a dashed, toneless box for a finding the
+   baseline never listed. The sentence under it says the same in words, for every reader. */
+.bl-step {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 2px 0 8px;
+}
+.bl-arrow {
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1;
+}
+.bl-none {
+  display: inline-block;
+  padding: 1px 7px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-s);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.bl-state {
+  margin-left: 4px;
+  font-family: var(--cond);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tone);
+}
+.bl-state.bl-state-quiet {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ---------- Run data's stat row (PD-BASELINE-4) ---------- */
+
+.bl-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 36px;
+  margin: 0;
+  padding: 14px 16px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+}
+.bl-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  min-width: 0;
+}
+.bl-stat dd {
+  margin: 0;
+  font: 600 30px/1 var(--sans);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.bl-stat:where(.tone-crit, .tone-high) dd {
+  color: var(--tone);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.bl-stat dt {
+  font-family: var(--cond);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.bl-stat dd.bl-gone {
+  font: inherit;
+  letter-spacing: normal;
+}
+.bl-stat-gone {
+  flex: 1 1 16em;
+}
+.bl-gone-list {
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.bl-run-path {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.bl-run-path .mono {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
