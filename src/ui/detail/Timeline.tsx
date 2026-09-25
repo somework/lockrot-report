@@ -54,8 +54,8 @@ export function Timeline({
           {/* PD-TIMELINE-1: the C2 fix (domain/timeline.ts) deliberately keeps a first tick that
               plots left of the earliest dated release, sometimes at or below 0% — centered like
               every other tick (`translateX(-50%)`), half its own width fell outside the axis
-              (DESIGN.md §5: "24" for "2024" at 1440, gone entirely at 390). Clamped at 0% and left-
-              aligned instead of centered, it now grows rightward from the axis's own edge. */}
+              ("24" for "2024" at 1440, gone entirely at 390). Clamped at 0% and left-aligned instead of
+              centered, it now grows rightward from the axis's own edge. */}
           {layout.ticks.map((tick, index) => (
             <span
               key={tick.year}

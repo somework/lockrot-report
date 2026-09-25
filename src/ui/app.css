@@ -323,7 +323,7 @@
    panel's own height is what decides whether its stuck bottom can still fit above the row's true
    final edge (`100vh` − `--footer-h`) once the reader reaches the true bottom of the page — the row's
    own height cancels out of that comparison, so no floor on the row could ever have fixed it (a11y
-   /regression review, DESIGN.md §5 PD-DETAIL-5's second entry: koel_koel and wallabag_wallabag at
+   /regression review, DESIGN.md §5 PD-DETAIL-5: koel_koel and wallabag_wallabag at
    1440px, wheeled to the page's actual end rather than only until Provenance first came into view). */
 .shell-detail.is-side {
   position: sticky;
