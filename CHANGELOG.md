@@ -78,6 +78,8 @@ tag or the address format, says so under **Breaking** in its entry.
   again in its legend.
 - The tab row's own edge shadow, the cue that it scrolls sideways, is visible at a phone width in
   both themes; it used to fade into the background instead of standing out from it.
+- The All packages table draws the same edge-shadow cue as the tab row when it scrolls sideways; it
+  used to clip a column with nothing on screen saying more of it exists.
 
 ## [0.12.0]
 

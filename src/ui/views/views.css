@@ -367,11 +367,22 @@
 }
 
 /* ---------- Packages table ---------- */
+/* The table scrolls sideways when it does not fit; without a cue a clipped last column (visual
+   review: "DA" of a date column, cut mid-word, at 1440px) gives no sign more of it exists, and an
+   overlay scrollbar at rest shows nothing either. Same treatment app.css's `.tabs` already has for
+   the same problem (DESIGN.md §8): local gradients painted in the wrap's own `--surface` cover the
+   `--muted` edge shadows until there is something to scroll to on that side. */
 .tablewrap {
   overflow-x: auto;
-  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-m);
+  scrollbar-width: thin;
+  background:
+    linear-gradient(to right, var(--surface) 40%, transparent) left center / 36px 100% no-repeat local,
+    linear-gradient(to left, var(--surface) 40%, transparent) right center / 36px 100% no-repeat local,
+    linear-gradient(to right, var(--muted), transparent) left center / 14px 100% no-repeat scroll,
+    linear-gradient(to left, var(--muted), transparent) right center / 14px 100% no-repeat scroll,
+    var(--surface);
 }
 .tablewrap table {
   border-collapse: collapse;
