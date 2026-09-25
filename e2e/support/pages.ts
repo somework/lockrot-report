@@ -49,6 +49,11 @@ export const FIXTURES = {
    *  document — the AdvisoryLedger's "check may be incomplete" case (PD-LEDGER-1, DESIGN.md §5),
    *  which none of the other fixtures carry. */
   advisoryIncomplete: "mini-advisory-incomplete",
+  /** Hand-built: six advisories on five packages — each fix shape, a CVE and none, prod and dev,
+   *  an unrated severity, one on an `ok` package — dated from a month to 2.6 years before the run.
+   *  The Advisories ledger's fixture (PD-ADV-1..4, DESIGN.md §5); wallabag carries only one package
+   *  and one fix shape. */
+  miniAdvisories: "mini-advisories",
   /** A real corpus with release branches that are just past tags (daverandom/resume has no
    *  maintained branch at all, only versions named after themselves) — the timeline fixture
    *  PD-TIMELINE-3/4 (DESIGN.md §5) need, which `wallabag` and `mautic` don't carry. */

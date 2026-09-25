@@ -10,6 +10,17 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Added
 
+- The Advisories tab answers first: how many advisories on which packages, by severity, how many
+  sit on packages installed for production, how many are fixed on the branch you are on, only on
+  another branch or not at all, and how long ago they were reported. Under a filter it says
+  "matching" and gives the unfiltered count.
+- Each advisory is one ledger row: severity, title, its CVE (or "no CVE assigned") and id, the
+  package with how it gets in and a prod or dev mark, the range it affects, the release that fixes
+  it and whether that release is on your branch, and a bar for how long ago it was reported on one
+  shared scale. Rows stay grouped by what the fix takes, most severe first.
+- Findings and All packages rows with advisories carry the same chip: a square per advisory in its
+  severity's colour and the count; hovering it counts them by severity and quotes each fix.
+
 - "Print / PDF" in the header prints the whole report as one document, whatever tab is open: the
   summary band, Findings with every signal, Advisories in full, the ranked rows of Blast radius and
   the run's facts, in numbered sections; All packages is added when you print from that tab, and the
@@ -144,6 +155,10 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Changed
 
+- With no advisory at all, the Advisories tab says "No advisory affects this lock", or, when the
+  run's notes say the check may not have run, "No advisory found; N packages could not be confirmed
+  clear" with a link to Run data, instead of "Nothing was flagged". The group hints that advised
+  ("The cheapest move…", "Replacement or mitigation") are gone; each group counts its advisories.
 - Keyboard focus follows the open package. `j` and `k` move focus with it, also after a click, so
   Enter opens the package you walked to, not the row you clicked before; after Escape closes a
   package, `j` continues below its row instead of starting again at the top; Escape typed in the

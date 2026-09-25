@@ -979,15 +979,29 @@ describe("AdvisoriesView", () => {
     expect(rows[0]?.getAttribute("aria-label")).toBeTruthy();
   });
 
-  it("shows the clean message when the document has no advisories at all", () => {
+  it("says no advisory affects the lock when the document has none and the check ran (PD-LEDGER-1)", () => {
     // Arrange
     const model = loadModel("mini.json");
 
     // Act
     renderIn(model, stateWith({ view: "advisories" }), <AdvisoriesView />);
 
+    // Assert: the summary band's own words, not Findings' "Nothing was flagged".
+    expect(screen.getByText("No advisory affects this lock.")).toBeTruthy();
+    expect(screen.queryByText(/nothing was flagged/i)).toBeNull();
+  });
+
+  it("never reads as clean when the run says the advisory check may not have run (PD-LEDGER-1)", () => {
+    // Arrange
+    const model = loadModel("mini-advisory-incomplete.json");
+
+    // Act
+    renderIn(model, stateWith({ view: "advisories" }), <AdvisoriesView />);
+
     // Assert
-    expect(screen.getByText(/nothing was flagged/i)).toBeTruthy();
+    expect(screen.getByText(/No advisory found; 2 packages could not be confirmed clear/)).toBeTruthy();
+    expect(screen.queryByText(/affects this lock/)).toBeNull();
+    expect(screen.getByRole("button", { name: "Run data" })).toBeTruthy();
   });
 
   it("keeps a package's detail open across two rows for the same package", () => {
@@ -1063,9 +1077,145 @@ describe("AdvisoriesView", () => {
     // Act
     renderIn(model, stateWith({ view: "advisories" }), <AdvisoriesView />);
 
-    // Assert
-    expect(screen.getByText("Moderate")).toBeTruthy();
-    expect(screen.queryByText("medium")).toBeNull();
+    // Assert: the row shows the feed's word; only the answer above counts by the bucket.
+    const row = screen.getByRole("listitem", { name: "acme/raw-sev" });
+    expect(within(row).getByText("Moderate")).toBeTruthy();
+    expect(within(row).queryByText("medium")).toBeNull();
+  });
+});
+
+describe("AdvisoriesView as a ledger (PD-ADV-1..3)", () => {
+  it("answers first: count, packages, severities, scope, fix and age, from wallabag's own data", () => {
+    const { container } = renderIn(
+      loadModel("wallabag_wallabag.json"),
+      stateWith({ view: "advisories" }),
+      <AdvisoriesView />,
+    );
+
+    const answer = container.querySelector(".al-answer")?.textContent.replace(/\s+/g, " ");
+    expect(answer).toBe(
+      "2 advisories on spomky-labs/otphp: 1 high and 1 medium, both in production. Neither is fixed on " +
+        "the branch you are on; both are fixed only by 11.5.0, on another branch. Both were reported 4 months ago.",
+    );
+    // One group: the answer already says what its sentence would, so the head is name and count.
+    expect(container.querySelectorAll(".al-group-sentence")).toHaveLength(0);
+    expect(container.querySelector(".al-group-head")?.textContent).toContain("2 advisories");
+  });
+
+  it("counts a mixed lock by fix shape and dates, and gives each group its own sentence", () => {
+    const { container } = renderIn(
+      loadModel("mini-advisories.json"),
+      stateWith({ view: "advisories" }),
+      <AdvisoriesView />,
+    );
+
+    const answer = container.querySelector(".al-answer")?.textContent.replace(/\s+/g, " ");
+    expect(answer).toBe(
+      "6 advisories on 5 packages: 1 critical, 2 high, 1 medium, 1 low and 1 unrated; 4 in production, " +
+        "2 dev-only. Of them, 3 are fixed on the branch you are on, 2 only on another branch and 1 with no " +
+        "fix listed. Reported between 1 month and 2.6 years ago.",
+    );
+    const heads = [...container.querySelectorAll(".al-group-head h2")].map((h) => h.textContent);
+    expect(heads).toEqual([
+      "A release on the branch you are on",
+      "Only a move to another branch",
+      "No fix listed",
+    ]);
+    const sentences = [...container.querySelectorAll(".al-group-sentence")].map((p) =>
+      p.textContent.replace(/\s+/g, " "),
+    );
+    expect(sentences).toEqual([
+      "1 critical, 1 medium and 1 low on acme/http-client and acme/yaml; fixed by 2.3.4 and 4.1.2.",
+      "1 high and 1 unrated on acme/templating and acme/markdown; fixed by 3.0.2 and 2.0.0.",
+      "1 high on acme/debug-toolbar.",
+    ]);
+  });
+
+  it("gives every row its severity, ids, package, scope, range, fix and age", () => {
+    renderIn(loadModel("mini-advisories.json"), stateWith({ view: "advisories" }), <AdvisoriesView />);
+
+    const rows = screen.getAllByRole("listitem");
+    expect(rows.map((row) => row.getAttribute("aria-label"))).toEqual([
+      "acme/http-client",
+      "acme/http-client",
+      "acme/yaml",
+      "acme/templating",
+      "acme/markdown",
+      "acme/debug-toolbar",
+    ]);
+    const at = (i: number): HTMLElement => {
+      const row = rows[i];
+      if (row === undefined) throw new Error(`no row ${String(i)}`);
+      return row;
+    };
+    const [critical, medium, low, unrated, unfixed] = [at(0), at(1), at(2), at(4), at(5)];
+    expect(critical.querySelector(".ac-sev")?.textContent).toBe("critical");
+    expect(within(critical).getByRole("link", { name: "CVE-2026-31337" }).getAttribute("href")).toBe(
+      "https://nvd.nist.gov/vuln/detail/CVE-2026-31337",
+    );
+    expect(critical.querySelector(".ac-fix")?.textContent).toBe("fixed by 2.3.4 on your branch");
+    expect(critical.querySelector(".ac-aff")?.textContent).toBe("affects >=2.0.0,<2.3.4");
+    expect(critical.querySelector(".ac-scope")?.textContent).toBe("prod");
+    expect(critical.querySelector(".ac-num")?.textContent).toBe("1 mo");
+    // The row under it names the same package: quieter, never removed (PD-ROWS-5).
+    expect(critical.querySelector(".ac-name.is-ditto")).toBeNull();
+    expect(medium.querySelector(".ac-name.is-ditto")).not.toBeNull();
+    expect(within(low).getByText("no CVE assigned")).toBeTruthy();
+    expect(unrated.querySelector(".ac-sev")?.textContent).toBe("unrated");
+    expect(unrated.querySelector(".ac-scope")?.textContent).toBe("dev");
+    expect(unfixed.querySelector(".ac-fix")?.textContent).toBe("no fix listed");
+    expect(unfixed.querySelector(".ac-num")?.textContent).toBe("2.6 y");
+  });
+
+  it("says 'matching' under a filter, and what the unfiltered count is", () => {
+    const { container } = renderIn(
+      loadModel("mini-advisories.json"),
+      stateWith({ view: "advisories", q: "severity:high" }),
+      <AdvisoriesView />,
+    );
+
+    expect(container.querySelector(".al-answer")?.textContent).toMatch(/^2 matching advisories on /);
+    expect(container.querySelector(".al-scope")?.textContent).toBe(
+      "Only advisories that match the filter are counted; without it there are 6.",
+    );
+  });
+
+  it("offers Clear filters when a filter hides every advisory", () => {
+    renderIn(
+      loadModel("mini-advisories.json"),
+      stateWith({ view: "advisories", q: "nothing-matches-this" }),
+      <AdvisoriesView />,
+    );
+    expect(screen.getByRole("button", { name: "Clear filters" })).toBeTruthy();
+  });
+});
+
+describe("AdvisoryChip on Findings and All packages rows (PD-ADV-4)", () => {
+  it("draws a square per advisory in its severity, the count, and a title quoting the fix", () => {
+    const { container } = renderIn(
+      loadModel("mini-advisories.json"),
+      stateWith({ view: "packages" }),
+      <PackagesView />,
+    );
+
+    const row = screen.getByRole("row", { name: "acme/http-client" });
+    const chip = row.querySelector(".adv-chip");
+    expect(chip?.textContent).toBe("2 advisories");
+    expect(chip?.classList.contains("tone-crit")).toBe(true);
+    expect([...(chip?.querySelectorAll(".adv-chip-marks i") ?? [])].map((i) => i.className)).toEqual([
+      "tone-crit",
+      "tone-med",
+    ]);
+    expect(chip?.getAttribute("title")).toBe("1 critical, 1 medium · fixed by 2.3.4 on your branch");
+    // A package with none carries no chip.
+    expect(screen.getByRole("row", { name: "acme/framework" }).querySelector(".adv-chip")).toBeNull();
+    expect(container.querySelectorAll(".adv-chip")).toHaveLength(5);
+  });
+
+  it("is the same chip on a Findings row", () => {
+    renderIn(loadModel("mini-advisories.json"), stateWith(), <FindingsView />);
+    const row = screen.getByRole("listitem", { name: "acme/templating" });
+    expect(row.querySelector(".fc-why .adv-chip")?.textContent).toBe("1 advisory");
   });
 });
 

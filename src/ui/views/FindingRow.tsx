@@ -3,10 +3,8 @@ import type { Action } from "../../state/types";
 import type { Finding, Signal } from "../../model/types";
 import { useReport } from "../context";
 import { Tag, toneClass } from "../common/common";
+import { AdvisoryChip } from "../common/AdvisoryChip";
 import { DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC, TONE, VERDICT_DEFS } from "../../domain/vocab";
-import { plural } from "../../domain/format";
-import { sevTone } from "../../domain/advisories";
-import { severityRank } from "../../domain/severity";
 import { ageNotRead, ageScale, type AgeAxis } from "../../domain/age";
 import { reachText, rowSignals, shortFact, vendorOf } from "../../domain/rows";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
@@ -100,18 +98,6 @@ function BaselineTag({ finding }: { finding: Finding }) {
     >
       {status}
     </Tag>
-  );
-}
-
-/** "2 advisories", in the tone of the worst severity among them, ahead of the row's reason. */
-function AdvisoryTag({ finding }: { finding: Finding }) {
-  if (finding.advisories.length === 0) return null;
-  const worst = [...finding.advisories].sort(
-    (a, b) => severityRank(a.severity) - severityRank(b.severity),
-  )[0];
-  if (!worst) return null;
-  return (
-    <Tag tone={sevTone(worst.severity)}>{plural(finding.advisories.length, "advisory", "advisories")}</Tag>
   );
 }
 
@@ -220,7 +206,7 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
         </span>
       </span>
       <span className={`fcell fc-why${dim(ditto.why)}`} title={key?.summary ?? finding.evidence}>
-        <AdvisoryTag finding={finding} />
+        <AdvisoryChip finding={finding} />
         {key && <SignalId signal={key} tabIndex={inner} />}
         <span className="fc-why-text">{why}</span>
         <MatchNote hit={hit} shown={why} />

@@ -1,0 +1,379 @@
+{
+  "report": {
+    "$schema": "https://lockrot.dev/schema/report-1.json",
+    "lockrot": {
+      "version": "0.11.0",
+      "schema": 1
+    },
+    "generated_at": "2026-09-24T00:00:00+00:00",
+    "run": {
+      "project": "acme/advisories",
+      "target_php": "8.4",
+      "lock_file": "composer.lock",
+      "fail_on": "silent",
+      "thresholds": {
+        "release-warn-years": 3,
+        "release-high-years": 5,
+        "push-warn-years": 3,
+        "push-high-years": 5
+      },
+      "flagged_verdicts": [
+        "abandoned",
+        "silent",
+        "pinned",
+        "left-behind",
+        "old-promise",
+        "stale"
+      ]
+    },
+    "activity_cache_oldest_at": null,
+    "packages_checked": 6,
+    "include_dev": false,
+    "not_from_composer_repository": 0,
+    "network_failures": false,
+    "counts": {
+      "abandoned": 1,
+      "silent": 1,
+      "pinned": 1,
+      "left-behind": 1,
+      "old-promise": 0,
+      "stale": 0,
+      "unknown": 0,
+      "finished": 0,
+      "ok": 2
+    },
+    "abandoned": {
+      "total": 1,
+      "with_replacement": 0
+    },
+    "priorities": {
+      "critical": 1,
+      "high": 1,
+      "medium": 2,
+      "low": 0,
+      "none": 2
+    },
+    "exposure": [
+      {
+        "package": "acme/framework",
+        "flagged": 1
+      },
+      {
+        "package": "acme/debug-toolbar",
+        "flagged": 1
+      }
+    ],
+    "libyears": {
+      "total": 2.8,
+      "direct_requirements": 0.6,
+      "measured": 4,
+      "unmeasured": {
+        "branch_snapshot": 1,
+        "no_stable_release_date": 0,
+        "not_from_composer_repository": 0,
+        "metadata_unavailable": 1
+      },
+      "furthest_behind": {
+        "package": "acme/templating",
+        "version": "1.9.0",
+        "libyears": 2.1
+      }
+    },
+    "baseline": null,
+    "notes": [],
+    "findings": [
+      {
+        "replacement": null,
+        "chain": [
+          "acme/http-client"
+        ],
+        "direct_dependents": [],
+        "allowlist_reason": null,
+        "note": null,
+        "data_date": "2026-09-24T00:00:00+00:00",
+        "libyears": 0.4,
+        "baseline": null,
+        "package": "acme/http-client",
+        "version": "2.3.1",
+        "verdict": "silent",
+        "priority": "critical",
+        "direct": true,
+        "dev": false,
+        "signals": [
+          {
+            "id": "S4",
+            "level": "high",
+            "summary": "no push to the repository since 2021-02-10 (5.6 years)",
+            "data": {
+              "pushed_at": "2021-02-10T00:00:00+00:00",
+              "years": 5.6
+            }
+          },
+          {
+            "id": "S9",
+            "level": "warn",
+            "summary": "2 security advisories affect 2.3.1 (GHSA-7q2h-4c9m-pp3x, GHSA-2m8f-hx4w-r6c2); fixed by 2.3.4",
+            "data": {
+              "advisories": [
+                {
+                  "id": "GHSA-7q2h-4c9m-pp3x",
+                  "cve": "CVE-2026-31337",
+                  "title": "Header injection through a CRLF sequence in a redirect Location",
+                  "link": "https://github.com/advisories/GHSA-7q2h-4c9m-pp3x",
+                  "severity": "critical",
+                  "reported_at": "2026-08-12T10:00:00+00:00",
+                  "affected_versions": ">=2.0.0,<2.3.4",
+                  "fixed_by": "2.3.4",
+                  "fixed_on_branch": true
+                },
+                {
+                  "id": "GHSA-2m8f-hx4w-r6c2",
+                  "cve": "CVE-2026-29904",
+                  "title": "Proxy credentials sent to the target host after a cross-origin redirect",
+                  "link": "https://github.com/advisories/GHSA-2m8f-hx4w-r6c2",
+                  "severity": "medium",
+                  "reported_at": "2026-07-01T10:00:00+00:00",
+                  "affected_versions": ">=2.0.0,<2.3.4",
+                  "fixed_by": "2.3.4",
+                  "fixed_on_branch": true
+                }
+              ]
+            }
+          }
+        ],
+        "evidence": "no push to the repository since 2021-02-10 (5.6 years); 2 security advisories affect 2.3.1 (GHSA-7q2h-4c9m-pp3x, GHSA-2m8f-hx4w-r6c2); fixed by 2.3.4"
+      },
+      {
+        "replacement": null,
+        "chain": [
+          "acme/framework",
+          "acme/templating"
+        ],
+        "direct_dependents": [
+          "acme/framework"
+        ],
+        "allowlist_reason": null,
+        "note": null,
+        "data_date": "2026-09-24T00:00:00+00:00",
+        "libyears": 2.1,
+        "baseline": null,
+        "package": "acme/templating",
+        "version": "1.9.0",
+        "verdict": "left-behind",
+        "priority": "high",
+        "direct": false,
+        "dev": false,
+        "signals": [
+          {
+            "id": "S8",
+            "level": "warn",
+            "summary": "branch 1.x last released 2023-01-20 (3.7 years ago); 3.x released 3.0.2",
+            "data": {
+              "branch": "1.x",
+              "branch_last_release": "2023-01-20T00:00:00+00:00",
+              "branch_last_version": "",
+              "years": 3.7,
+              "newest_branch": "3.x",
+              "newest_version": "3.0.2",
+              "newest_release": "2026-04-02T00:00:00+00:00",
+              "newest_php": ">=8.2",
+              "newest_within_reach": true,
+              "floor_php": null,
+              "floor_source": null,
+              "reachable_branch": "3.x",
+              "reachable_version": "3.0.2",
+              "reachable_release": "2026-04-02T00:00:00+00:00",
+              "suggested_constraint": "^3.0.2",
+              "dated_by": null
+            }
+          },
+          {
+            "id": "S9",
+            "level": "warn",
+            "summary": "1 security advisory affects 1.9.0 (PKSA-9z1c-b2tt-x0lq); fixed by 3.0.2",
+            "data": {
+              "advisories": [
+                {
+                  "id": "PKSA-9z1c-b2tt-x0lq",
+                  "cve": null,
+                  "title": "Sandbox escape through a crafted filter chain in an untrusted template",
+                  "link": "https://github.com/advisories/PKSA-9z1c-b2tt-x0lq",
+                  "severity": "high",
+                  "reported_at": "2025-11-03T10:00:00+00:00",
+                  "affected_versions": "<3.0.2",
+                  "fixed_by": "3.0.2",
+                  "fixed_on_branch": false
+                }
+              ]
+            }
+          }
+        ],
+        "evidence": "branch 1.x last released 2023-01-20 (3.7 years ago); 3.x released 3.0.2; 1 security advisory affects 1.9.0 (PKSA-9z1c-b2tt-x0lq); fixed by 3.0.2"
+      },
+      {
+        "replacement": null,
+        "chain": [
+          "acme/debug-toolbar"
+        ],
+        "direct_dependents": [],
+        "allowlist_reason": null,
+        "note": null,
+        "data_date": "2026-09-24T00:00:00+00:00",
+        "libyears": null,
+        "baseline": null,
+        "package": "acme/debug-toolbar",
+        "version": "0.8.2",
+        "verdict": "abandoned",
+        "priority": "medium",
+        "direct": true,
+        "dev": true,
+        "signals": [
+          {
+            "id": "S1",
+            "level": "high",
+            "summary": "marked abandoned in composer.lock",
+            "data": {
+              "replacement": null
+            }
+          },
+          {
+            "id": "S9",
+            "level": "warn",
+            "summary": "1 security advisory affects 0.8.2 (GHSA-f4vv-3q8j-9w2k); no fix listed",
+            "data": {
+              "advisories": [
+                {
+                  "id": "GHSA-f4vv-3q8j-9w2k",
+                  "cve": "CVE-2024-33391",
+                  "title": "Profiler route exposes environment variables when the toolbar is reachable",
+                  "link": "https://github.com/advisories/GHSA-f4vv-3q8j-9w2k",
+                  "severity": "high",
+                  "reported_at": "2024-02-19T10:00:00+00:00",
+                  "affected_versions": "*",
+                  "fixed_by": null,
+                  "fixed_on_branch": false
+                }
+              ]
+            }
+          }
+        ],
+        "evidence": "marked abandoned in composer.lock; 1 security advisory affects 0.8.2 (GHSA-f4vv-3q8j-9w2k); no fix listed"
+      },
+      {
+        "replacement": null,
+        "chain": [
+          "acme/debug-toolbar",
+          "acme/markdown"
+        ],
+        "direct_dependents": [
+          "acme/debug-toolbar"
+        ],
+        "allowlist_reason": null,
+        "note": null,
+        "data_date": "2026-09-24T00:00:00+00:00",
+        "libyears": null,
+        "baseline": null,
+        "package": "acme/markdown",
+        "version": "dev-main",
+        "verdict": "pinned",
+        "priority": "medium",
+        "direct": false,
+        "dev": true,
+        "signals": [
+          {
+            "id": "S6",
+            "level": "warn",
+            "summary": "installed from a branch snapshot (dev-main), not a release",
+            "data": {}
+          },
+          {
+            "id": "S9",
+            "level": "warn",
+            "summary": "1 security advisory affects dev-main (GHSA-c3pp-m7rt-44hd); fixed by 2.0.0",
+            "data": {
+              "advisories": [
+                {
+                  "id": "GHSA-c3pp-m7rt-44hd",
+                  "cve": "CVE-2025-40412",
+                  "title": "Stored XSS through an unescaped link title",
+                  "link": "https://github.com/advisories/GHSA-c3pp-m7rt-44hd",
+                  "severity": null,
+                  "reported_at": "2025-06-18T10:00:00+00:00",
+                  "affected_versions": "<2.0.0",
+                  "fixed_by": "2.0.0",
+                  "fixed_on_branch": false
+                }
+              ]
+            }
+          }
+        ],
+        "evidence": "installed from a branch snapshot (dev-main), not a release; 1 security advisory affects dev-main (GHSA-c3pp-m7rt-44hd); fixed by 2.0.0"
+      },
+      {
+        "replacement": null,
+        "chain": [
+          "acme/framework",
+          "acme/yaml"
+        ],
+        "direct_dependents": [
+          "acme/framework"
+        ],
+        "allowlist_reason": null,
+        "note": null,
+        "data_date": "2026-09-24T00:00:00+00:00",
+        "libyears": 0.1,
+        "baseline": null,
+        "package": "acme/yaml",
+        "version": "4.1.0",
+        "verdict": "ok",
+        "priority": "none",
+        "direct": false,
+        "dev": false,
+        "signals": [
+          {
+            "id": "S9",
+            "level": "warn",
+            "summary": "1 security advisory affects 4.1.0 (GHSA-p9xw-66fq-2mhv); fixed by 4.1.2",
+            "data": {
+              "advisories": [
+                {
+                  "id": "GHSA-p9xw-66fq-2mhv",
+                  "cve": null,
+                  "title": "Deeply nested aliases exhaust memory while parsing",
+                  "link": "https://github.com/advisories/GHSA-p9xw-66fq-2mhv",
+                  "severity": "low",
+                  "reported_at": "2026-09-10T10:00:00+00:00",
+                  "affected_versions": ">=4.0.0,<4.1.2",
+                  "fixed_by": "4.1.2",
+                  "fixed_on_branch": true
+                }
+              ]
+            }
+          }
+        ],
+        "evidence": "1 security advisory affects 4.1.0 (GHSA-p9xw-66fq-2mhv); fixed by 4.1.2"
+      },
+      {
+        "replacement": null,
+        "chain": [
+          "acme/framework"
+        ],
+        "direct_dependents": [],
+        "allowlist_reason": null,
+        "note": null,
+        "data_date": "2026-09-24T00:00:00+00:00",
+        "libyears": 0.2,
+        "baseline": null,
+        "package": "acme/framework",
+        "version": "5.4.0",
+        "verdict": "ok",
+        "priority": "none",
+        "direct": true,
+        "dev": false,
+        "signals": [],
+        "evidence": ""
+      }
+    ]
+  },
+  "details": {}
+}

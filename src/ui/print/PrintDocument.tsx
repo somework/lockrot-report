@@ -131,14 +131,8 @@ function lede(section: PrintSection, base: ReportContextValue): ComponentChildre
       );
     }
     case "advisories": {
-      const n = allAdvisories(model).length;
-      if (n > 0) {
-        return (
-          <>
-            All <b>{n}</b> {n === 1 ? "advisory" : "advisories"}, grouped by what the fix takes.
-          </>
-        );
-      }
+      // With advisories to print, the tab's own answer sentence leads the section (PD-ADV-1).
+      if (allAdvisories(model).length > 0) return null;
       return advisoryCheckIncomplete(model) ? (
         <>No advisory found, but the advisory check was incomplete; the run's notes under Run data say why.</>
       ) : (

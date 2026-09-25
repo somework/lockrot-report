@@ -7,6 +7,7 @@ import { day, fixed } from "../../domain/format";
 import { libyearsAtZero, libyearsAtZeroMark, libyearsReason } from "../../domain/libyears";
 import { sharedDataDay } from "../../domain/share";
 import { Pill, Muted } from "../common/common";
+import { AdvisoryChip } from "../common/AdvisoryChip";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
@@ -92,6 +93,12 @@ function PackageRow({ finding, dated }: { finding: Finding; dated: boolean }) {
     >
       <td>
         <PackageCell finding={finding} />
+        {finding.advisories.length > 0 && (
+          <>
+            {" "}
+            <AdvisoryChip finding={finding} />
+          </>
+        )}
         <MatchNote hit={hit} />
       </td>
       <td className="num">{finding.version}</td>

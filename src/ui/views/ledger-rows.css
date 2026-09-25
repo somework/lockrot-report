@@ -388,7 +388,8 @@
   padding: 0 5px;
   vertical-align: 1px;
 }
-.fc-why .tag {
+.fc-why .tag,
+.fc-why .adv-chip {
   margin-right: 6px;
 }
 .fc-why .sid {

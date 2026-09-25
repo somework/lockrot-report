@@ -1,0 +1,45 @@
+/* PD-ADV-4: a row's advisory chip — the summary band's squares, one per advisory in its severity's
+   tone, then the count; the border in the worst severity's tone. The same on Findings and All
+   packages rows. */
+.adv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 5px 0 4px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 15px;
+  white-space: nowrap;
+  color: var(--ink-2);
+  border: 1px solid var(--tone);
+  border-radius: var(--radius-s);
+  background: var(--tone-soft);
+  vertical-align: 1px;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.adv-chip-marks {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.adv-chip-marks i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 1.5px;
+  background: var(--tone);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.adv-chip-more {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+@media (forced-colors: active) {
+  .adv-chip-marks i {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+}
