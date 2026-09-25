@@ -24,11 +24,20 @@ tag or the address format, says so under **Breaking** in its entry.
   three fold behind one line that counts them, and the lead stays in view.
 - The header names the run's gate, "no gate" or "gate: <value>", with a popover saying what that
   means for the run's exit code.
-- A Findings row whose package has an age the run measures (how long its branch has been stopped,
-  or how long it has gone without a stable release or a push) carries an age scale, when the run
-  recorded that age's warn and high thresholds: the two thresholds, and a dot at the package's age.
-  One caption above the list names the thresholds, and every row shares one scale.
-  An age that did not set the priority (an abandoned or pinned package) draws a neutral dot.
+- The Findings list is a ledger: one dense row per package — verdict, package, why it is flagged,
+  years since release, how it gets in — under a column head, about a third of a card's height. Beside
+  an open package a row takes two lines, on a phone three. Each priority group opens with a sentence
+  counting it ("2 silent and 1 abandoned; you require all three directly."), and three or more
+  consecutive rows that share a verdict and a way in get one above them ("These 14 hoa/* packages are
+  all marked abandoned by their repository, last released 9.1–9.7 years ago, and all come in through
+  wallabag/rulerz."). Nothing is folded away or reordered; a word the row above already said is
+  drawn quieter, the verdict keeping its colour.
+- A row's age is a bar on one axis for the whole list, 0 to 10 years (twice the run's high
+  threshold, at least 10), with the warn and high thresholds as guides running down every row and
+  captioned once in the column head; an older age runs to the edge with a cut mark and its exact
+  years beside it. An age that did not set the priority (an abandoned or pinned package) draws a
+  grey bar. A row with no age says why: "no age signal", or "age not read" when a check could not run.
+- Filtering by exactly one signal makes every row quote that signal instead of its own top one.
 - A definition that names a threshold setting shows what this run set it to, "5 years
   (release-high-years)".
 - The package detail says when the search or a filter hides its package from the list, with a
@@ -46,8 +55,8 @@ tag or the address format, says so under **Breaking** in its entry.
   opens the package, the same as clicking anywhere else in the row.
 - "Why this is `<priority>`" explains each step of the ladder in a plain sentence instead of a
   code-style chip chain.
-- A Findings row shows one signal, its most serious, and how many more there are; a printed row
-  shows them all.
+- A Findings row shows one signal, its most serious, said short; the package's detail lists the
+  rest (the row no longer counts them), and a printed row shows them all.
 - The package detail leads with "Follow the upstream"; "How it is reached", "The lock entry" and
   "Provenance" start folded.
 - The search hint is one line, "Press ? for keys and search syntax"; the keys and the search syntax

@@ -2,23 +2,24 @@ import type { TargetedMouseEvent } from "preact";
 import type { Action } from "../../state/types";
 import type { Finding, Signal } from "../../model/types";
 import { useReport } from "../context";
-import { Pill, Tag, toneClass } from "../common/common";
-import { DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC, TONE } from "../../domain/vocab";
+import { Tag, toneClass } from "../common/common";
+import { DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC, TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { plural } from "../../domain/format";
 import { sevTone } from "../../domain/advisories";
 import { severityRank } from "../../domain/severity";
-import { signalSortKey } from "../../domain/filters";
-import { ageScale } from "../../domain/age";
-import { AgeScale, AgeScalePlaceholder } from "./AgeScale";
+import { ageNotRead, ageScale, type AgeAxis } from "../../domain/age";
+import { reachText, rowSignals, shortFact, vendorOf } from "../../domain/rows";
+import { AgeCell, AgeCellEmpty } from "./AgeScale";
 import "./views.css";
+import "./ledger-rows.css";
 
 /**
  * The click contract FindingRow and PackagesView's rows share: a click anywhere on the row toggles
  * the detail pane, closing it again on a second click of the same package — unless the click landed
  * on a real `<a>` (a signal id's own link), a `<button>`, or inside an open popover (its content is
  * a descendant of the row in the DOM even though the top layer draws it elsewhere), each of which is
- * left to do its own thing. Both rows' own verdict pill is plain text, not one of those (PD-GLOSSARY-
- * 4/5, DESIGN.md §5: a pill in the row is the row's own target, not a popover's), so a click on it
+ * left to do its own thing. Both rows' own verdict word is plain text, not one of those (PD-GLOSSARY-
+ * 4/5, DESIGN.md §5: a verdict in the row is the row's own target, not a popover's), so a click on it
  * falls through to the row like any other word in it. Keyboard activation (Enter/Space, and
  * DESIGN.md M5's fix so a focused control's own Enter is left alone) is `ui/keyboard.ts`'s job: it
  * reads the same `data-pkg` every row here carries through one document-level listener, so a row
@@ -63,122 +64,121 @@ export function openInteractions(
   };
 }
 
-/** `high` outranks `warn` outranks everything else (including the open-ended `"info"` and a signal
- *  id this renderer does not yet know a level for) — the same three-tier reading `SignalList.tsx`'s
- *  `signalTone` gives a signal's own colour, used here to rank instead of to paint. */
-const LEVEL_RANK: Readonly<Record<string, number>> = { high: 2, warn: 1 };
-
-/**
- * Every signal a finding carries, highest level first, ties broken in `SIGNAL_IDS` numeric order
- * (`domain/filters.ts#signalSortKey`, the same order the rail's own signal group and the glossary
- * sort by, M2's fix) — never the document's own order, which is lockrot's internal rule evaluation
- * order and carries no such guarantee. Its first element is the row's key fact (PD-ROWS-1); the
- * rest are what print restores (below).
- */
-function sortedSignals(signals: readonly Signal[]): Signal[] {
-  return [...signals].sort((a, b) => {
-    const rank = (LEVEL_RANK[b.level] ?? 0) - (LEVEL_RANK[a.level] ?? 0);
-    if (rank !== 0) return rank;
-    const [an, as] = signalSortKey(a.id);
-    const [bn, bs] = signalSortKey(b.id);
-    return an !== bn ? an - bn : as.localeCompare(bs);
-  });
+/** Which of a row's values repeat the row above it in the same stretch of the list (PD-ROWS-5):
+ *  those are drawn quieter, never removed — they are still what a search hit or a screen reader
+ *  reads. The verdict keeps its tone when it repeats; only its weight drops. */
+export interface Ditto {
+  readonly verdict: boolean;
+  readonly vendor: boolean;
+  readonly why: boolean;
+  readonly reach: boolean;
 }
 
-/** One S1-S10 line inside a row (legacy `signalLine`, report.js:397-404). */
-function SignalLine({ signal }: { signal: Signal }) {
-  const levelClass = signal.level === "high" ? " is-high" : signal.level === "warn" ? " is-warn" : "";
+export const NO_DITTO: Ditto = { verdict: false, vendor: false, why: false, reach: false };
+
+/** A signal id, linked to its own entry in lockrot's docs, with the signal's definition on hover. */
+function SignalId({ signal }: { signal: Signal }) {
   const doc = SIGNAL_DOC[signal.id] ?? `${DOCS_URL}#the-signals`;
   return (
-    <span className={`sig-line${levelClass}`}>
-      <a
-        className="sid"
-        href={doc}
-        target="_blank"
-        rel="noopener noreferrer"
-        title={SIGNAL_DEFS[signal.id] ?? ""}
-      >
-        {signal.id}
-      </a>
+    <a
+      className="sid"
+      href={doc}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={SIGNAL_DEFS[signal.id] ?? ""}
+    >
+      {signal.id}
+    </a>
+  );
+}
+
+/** One of the other signals, as print shows it under the quoted one (legacy `signalLine`). */
+function SignalLine({ signal }: { signal: Signal }) {
+  return (
+    <span className="sig-line">
+      <SignalId signal={signal} />
       <span>{signal.summary}</span>
     </span>
   );
 }
 
-/** The tags on a Findings row, in legacy's fixed `unshift`/`push` order (js-2.md §"tag order"):
- *  baseline state first (if new/worsened), then the advisory count, then direct/transitive, then
- *  require-dev last. */
-function RowTags({ finding }: { finding: Finding }) {
-  const bstate = finding.baseline?.status;
-  const worst =
-    finding.advisories.length > 0
-      ? [...finding.advisories].sort((a, b) => severityRank(a.severity) - severityRank(b.severity))[0]
-      : undefined;
-
+/** The baseline state first (if new/worsened), as legacy ordered the row's tags. */
+function BaselineTag({ finding }: { finding: Finding }) {
+  const status = finding.baseline?.status;
+  if (status !== "new" && status !== "worsened") return null;
   return (
-    <span className="tags">
-      {(bstate === "new" || bstate === "worsened") && (
-        <Tag
-          tone={bstate === "new" ? "crit" : "high"}
-          title={bstate === "new" ? "not in the baseline file" : "the baseline recorded a milder verdict"}
-        >
-          {bstate}
-        </Tag>
-      )}
-      {worst && (
-        <Tag tone={sevTone(worst.severity)}>
-          {plural(finding.advisories.length, "advisory", "advisories")}
-        </Tag>
-      )}
-      <Tag
-        title={
-          finding.direct
-            ? "required by this project's composer.json"
-            : "installed because something else requires it"
-        }
-      >
-        {finding.direct ? "direct" : "transitive"}
-      </Tag>
-      {finding.dev && <Tag title="installed only for development">require-dev</Tag>}
-    </span>
+    <Tag
+      tone={status === "new" ? "crit" : "high"}
+      title={status === "new" ? "not in the baseline file" : "the baseline recorded a milder verdict"}
+    >
+      {status}
+    </Tag>
   );
 }
 
-/** A Findings-tab row: a list item rather than a listbox option, because it holds links (the signal
- *  id, the age scale is an image, not a link) and an option's children are presentational, which
- *  would hide those from assistive tech. The open row is marked with `aria-current`, the list-item
- *  equivalent of a selection. Verdict, replacement, name, version, tags, then one key-fact line and
- *  its age scale (or the evidence sentence when the finding carries no signal at all) — ported from
- *  legacy `rowHtml` (report.js:406-446), collapsed from up to three signal lines to one plus a scale
- *  per PD-ROWS-1/PD-ROWS-2 (DESIGN.md §5): a reviewer's own reading of the up-to-three lines was
- *  "text, text, text, no scales". The verdict pill is plain here, not `docs` (PD-GLOSSARY-4/5,
- *  DESIGN.md §5) — a first-time-reader walk took the pill for the row's own target and clicked it
- *  to open the package, landing on a definition popover instead; its `title` still carries the
- *  definition, on hover, and the click now falls through to `rowInteractions` below, same as
- *  clicking the package name or the version beside it. The detail header's own pill
- *  (`DetailHeader.tsx`) keeps the popover, where a definition is the click a reader wants.
+/** "2 advisories", in the tone of the worst severity among them, ahead of the row's reason. */
+function AdvisoryTag({ finding }: { finding: Finding }) {
+  if (finding.advisories.length === 0) return null;
+  const worst = [...finding.advisories].sort(
+    (a, b) => severityRank(a.severity) - severityRank(b.severity),
+  )[0];
+  if (!worst) return null;
+  return (
+    <Tag tone={sevTone(worst.severity)}>{plural(finding.advisories.length, "advisory", "advisories")}</Tag>
+  );
+}
+
+function Reach({ finding }: { finding: Finding }) {
+  const root = finding.chain[0];
+  return (
+    <>
+      {finding.direct || !root ? (
+        reachText(finding)
+      ) : (
+        <>
+          <span className="fc-via">via</span> {root}
+        </>
+      )}
+      {finding.dev && (
+        <span className="fc-dev" title="installed only for development">
+          dev
+        </span>
+      )}
+    </>
+  );
+}
+
+export interface FindingRowProps {
+  readonly finding: Finding;
+  /** The list's one shared age axis (`domain/age.ts#ageAxis`), or null when the run recorded no
+   *  thresholds to draw one against. */
+  readonly axis: AgeAxis | null;
+  /** The signal the rail filters by, when it filters by exactly one (PD-ROWS-5). */
+  readonly quoted: string | null;
+  readonly ditto: Ditto;
+}
+
+/**
+ * A Findings-tab row, one line of a ledger (PD-ROWS-4, DESIGN.md §5): verdict · package · why it is
+ * flagged · years since release on the list's shared axis · how it gets in. Wide, a single line
+ * under the column head; narrower (the list beside an open package, a phone), two lines — the
+ * package over its reason and reach, the age beside both. A list item rather than a listbox option,
+ * because it holds a link (the signal id) and an option's children are presentational. The open row
+ * is marked with `aria-current`; its accessible name is the package alone.
  *
- *  regression review: on screen, only the key fact stands in for the rest ("+N more signals, open
- *  the package") — but print drops `.shell-detail` entirely (`styles/print.css`), so a reader on
- *  paper has no "open the package" to follow. The other signals stay mounted, under a native
- *  `hidden` attribute (`.sig-rest`) rather than a class: `hidden` reads as inaccessible independent
- *  of any stylesheet (`dom-accessibility-api#isSubtreeInaccessible`), and `print.css` gives that
- *  same selector its display back under `@media print`, so a printed row carries every signal line
- *  the finding has.
- *
- *  `ageMax` is the list's own shared scale ceiling (PD-ROWS-3, `domain/age.ts#sharedAgeMax`),
- *  computed once by `FindingsView` over every row it draws and passed down here — a prop, not a
- *  per-row computation, so every row's dot compares against the same track. A row with a key fact
- *  but no scale of its own still reserves the scale's width (`AgeScalePlaceholder`), so its signal
- *  text does not wrap wider than a neighbouring row's just because that row has nothing to draw. */
-export function FindingRow({ finding, ageMax }: { finding: Finding; ageMax: number }) {
+ * The verdict word is plain text with its definition as a `title` (PD-GLOSSARY-4/5): a click on it
+ * opens the package, like a click anywhere else in the row. The quoted signal's id links to its
+ * docs; the others stay mounted under a native `hidden` attribute, so they read as inaccessible on
+ * screen while `print.css` un-hides that exact selector — paper has no package to open (PD-ROWS-1).
+ */
+export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
   const { model, state, dispatch } = useReport();
   const isOpen = state.pkg === finding.package;
-  const stripeTone = TONE(finding.priority === "none" ? finding.verdict : finding.priority);
-  const sorted = sortedSignals(finding.signals);
-  const keyFact = sorted[0];
-  const rest = sorted.slice(1);
-  const scale = keyFact ? ageScale(finding, model.report.run.thresholds, ageMax) : null;
+  const { key, rest } = rowSignals(finding, quoted);
+  const scale = axis ? ageScale(finding, model.report.run.thresholds, axis.max) : null;
+  const vendor = vendorOf(finding.package);
+  const name = vendor === null ? finding.package : finding.package.slice(vendor.length + 1);
+  const dim = (on: boolean) => (on ? " is-ditto" : "");
 
   return (
     <li
@@ -186,46 +186,46 @@ export function FindingRow({ finding, ageMax }: { finding: Finding; ageMax: numb
       aria-current={isOpen ? "true" : undefined}
       aria-label={finding.package}
       data-pkg={finding.package}
-      className={`row ${toneClass(stripeTone)}`}
+      className={`frow ${toneClass(TONE(finding.verdict))}`}
       {...rowInteractions(finding.package, isOpen, dispatch)}
     >
-      <span className="stripe" />
-      <span className="body">
-        <span className="line1">
-          <Pill word={finding.verdict} />
-          {finding.replacement && (
-            <Tag title="the repository names this package as the replacement">→ {finding.replacement}</Tag>
-          )}
-          <span className="pkg">{finding.package}</span>
-          <span className="ver mono">{finding.version}</span>
-          <RowTags finding={finding} />
-        </span>
-        {keyFact ? (
-          <span className="key-fact">
-            <span className="sig-lines">
-              <SignalLine signal={keyFact} />
-              {rest.length > 0 && (
-                <>
-                  <span className="more-sig">
-                    + {plural(rest.length, "more signal", "more signals")}, open the package
-                  </span>
-                  {/* PD-ROWS-1 (DESIGN.md §5): screen-hidden by the native `hidden` attribute, not a
-                      class — print.css un-hides this exact selector under `@media print`, where the
-                      note above has nothing to open. */}
-                  <span className="sig-rest" hidden>
-                    {rest.map((signal) => (
-                      <SignalLine key={signal.id} signal={signal} />
-                    ))}
-                  </span>
-                </>
-              )}
-            </span>
-            {scale ? <AgeScale scale={scale} verdict={finding.verdict} /> : <AgeScalePlaceholder />}
-          </span>
-        ) : (
-          <span className="ev">{finding.evidence}</span>
-        )}
+      <span className={`fcell fc-verdict${dim(ditto.verdict)}`} title={VERDICT_DEFS[finding.verdict] ?? ""}>
+        {finding.verdict}
       </span>
+      <span className="fcell fc-pkg" title={`${finding.package} ${finding.version}`}>
+        {vendor !== null && <span className={`fc-vendor${dim(ditto.vendor)}`}>{vendor}/</span>}
+        <span className="fc-name">{name}</span> <span className="fc-ver">{finding.version}</span>
+        <BaselineTag finding={finding} />
+      </span>
+      <span className="fc-tail">
+        <span className={`fcell fc-why${dim(ditto.why)}`} title={key?.summary ?? finding.evidence}>
+          <AdvisoryTag finding={finding} />
+          {key && <SignalId signal={key} />}
+          <span className="fc-why-text">{key ? shortFact(key, finding) : finding.evidence}</span>
+          {rest.length > 0 && (
+            <span className="sig-rest" hidden>
+              {rest.map((signal) => (
+                <SignalLine key={signal.id} signal={signal} />
+              ))}
+            </span>
+          )}
+        </span>
+        <span
+          className={`fcell fc-reach${dim(ditto.reach)}`}
+          title={
+            finding.direct
+              ? "required by this project's composer.json"
+              : finding.chain.join(" › ") || undefined
+          }
+        >
+          <Reach finding={finding} />
+        </span>
+      </span>
+      {scale ? (
+        <AgeCell scale={scale} verdict={finding.verdict} />
+      ) : (
+        <AgeCellEmpty axis={axis} notRead={ageNotRead(finding)} />
+      )}
     </li>
   );
 }

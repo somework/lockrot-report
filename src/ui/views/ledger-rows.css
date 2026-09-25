@@ -1,0 +1,707 @@
+/*
+ * The Findings list as a ledger (PD-ROWS-4/5/6, DESIGN.md §5): a column head, then per priority a
+ * serif sentence counting the group, then one dense row per package — verdict · package · why it is
+ * flagged · years since release on one shared axis · how it gets in — with a serif note above each
+ * run of alike rows. Split out of views.css, whose other tabs it shares nothing with but `.note` and
+ * `.empty`.
+ *
+ * The layout follows the list's own width, not the viewport's (a container query): the list is
+ * ~1170px wide at 1440 with no package open, ~730px beside an open one, ~760px at 1024 and ~360px on
+ * a phone. From 900px a row is one 36px line under five column heads; from 560px it is two lines,
+ * the package over its reason and reach, the verdict and the age beside both; under that the verdict
+ * moves down beside the reason. Every row and the head share each mode's grid, so the age bars and
+ * their guides line up down the whole list.
+ */
+
+.fledger {
+  container: fledger / inline-size;
+  --fl-pad-l: 14px;
+  --fl-pad-r: 10px;
+  --fl-gap: 10px;
+  --fl-verdict: 88px;
+  --fl-age: 150px;
+  --fl-num: 28px;
+  --fl-pad-y: 7px;
+}
+
+/* ---------- the column head ---------- */
+.fhead {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: grid;
+  /* Phone: the head captions the third line of every row — the age bar and the reach. */
+  grid-template-columns: var(--fl-verdict) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "age age reach";
+  column-gap: var(--fl-gap);
+  align-items: end;
+  height: 40px;
+  padding: 0 var(--fl-pad-r) 0 var(--fl-pad-l);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-strong);
+  /* Covers the pixel or two a rounded, measured --topbar-h can leave between the header and this. */
+  box-shadow: 0 -3px 0 var(--bg);
+  font-family: var(--cond);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+@media (min-width: 760px) {
+  .fhead {
+    top: var(--topbar-h);
+  }
+}
+.fhead-col {
+  min-width: 0;
+  padding-bottom: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fhead-verdict,
+.fhead-why,
+.fhead-pkg {
+  display: none;
+}
+.fhead-pkg {
+  grid-area: pkg;
+}
+.fhead-reach {
+  grid-area: reach;
+  text-align: right;
+}
+.fhead-age {
+  grid-area: age;
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--fl-num);
+  column-gap: 6px;
+}
+/* The axis' captions sit over the track part of the age column only — the number column beside it
+   has no scale to caption. */
+.fhead-axis {
+  position: relative;
+  height: 100%;
+}
+.fhead-axis-label {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  white-space: nowrap;
+}
+.fhead-tick {
+  position: absolute;
+  bottom: 0;
+  padding-bottom: 7px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: none;
+  white-space: nowrap;
+}
+.fhead-tick.is-start {
+  left: 0;
+}
+.fhead-tick.is-end {
+  right: 0;
+}
+/* Each threshold's caption carries its own guide line down to the head's rule, where the rows' own
+   guides continue it — the release-branches table's captions, in the same dash (warn) and dots
+   (high) and the same faded tone (PD-TIMELINE-4/10). */
+.fhead-tick.is-warn,
+.fhead-tick.is-high {
+  color: var(--tone);
+  padding-left: 3px;
+  padding-top: 0;
+  border-left: 1px dashed color-mix(in srgb, var(--tone) 55%, transparent);
+  height: 17px;
+  display: flex;
+  align-items: flex-end;
+}
+.fhead-tick.is-high {
+  border-left-style: dotted;
+}
+
+/* ---------- a priority group ---------- */
+.fgroup {
+  margin-top: 26px;
+}
+.fhead + .fgroup {
+  margin-top: 14px;
+}
+.fgroup-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 12px;
+  row-gap: 3px;
+  padding: 0 var(--fl-pad-r) 9px var(--fl-pad-l);
+  border-bottom: 1px solid var(--border-strong);
+}
+.fgroup-head h2 {
+  margin: 0;
+  font-family: var(--cond);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tone);
+  white-space: nowrap;
+}
+.fgroup-count {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.fgroup-sentence {
+  flex: 1 1 22em;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 15.5px;
+  line-height: 1.35;
+  color: var(--ink-2);
+}
+.fgroup-sentence b {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.frows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- a run: the sentence above alike rows, and the rule beside them ----------
+   Every row stays; the note says out loud what the quieter, repeated words below it share. The rule
+   down the run's left edge is in the run's verdict tone, so the verdict never loses its colour while
+   the rows under it repeat it (a judge's must-fix: a greyed verdict read as "less urgent"). */
+.frun {
+  position: relative;
+}
+.frun::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-left: 2px solid var(--tone);
+  z-index: 1;
+  pointer-events: none;
+}
+.frun-note {
+  margin: 0;
+  padding: 10px var(--fl-pad-r) 8px var(--fl-pad-l);
+  font-family: var(--serif);
+  font-size: 14.5px;
+  line-height: 1.35;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(90deg, var(--tone-soft), transparent 75%);
+}
+.frun-note b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.frun-note .mono {
+  font-size: 0.86em;
+}
+
+/* ---------- a row ---------- */
+.frow {
+  --row-bg: var(--bg);
+  position: relative;
+  display: grid;
+  /* Phone: three lines — the package; its verdict and reason; its age and how it gets in. The age
+     takes a fixed share of the row, so the bars still line up from row to row. */
+  grid-template-columns: var(--fl-verdict) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "pkg pkg pkg"
+    "verdict why why"
+    "age age reach";
+  column-gap: var(--fl-gap);
+  align-items: baseline;
+  padding: var(--fl-pad-y) var(--fl-pad-r) var(--fl-pad-y) var(--fl-pad-l);
+  border-bottom: 1px solid var(--border);
+  background: var(--row-bg);
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.frow:hover {
+  --row-bg: var(--surface);
+}
+.frow[aria-current="true"] {
+  --row-bg: var(--accent-soft);
+}
+.frow[aria-current="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  z-index: 2;
+}
+.frow:focus-visible {
+  outline-offset: -2px;
+}
+
+.fcell {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fc-verdict {
+  grid-area: verdict;
+  font-family: var(--cond);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tone);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+/* A repeat keeps its tone and loses its weight: quieter, never greyed. */
+.fc-verdict.is-ditto {
+  font-weight: 500;
+  color: color-mix(in srgb, var(--tone) 60%, var(--muted));
+}
+
+.fc-pkg {
+  grid-area: pkg;
+  font-weight: 600;
+  color: var(--ink);
+}
+.fc-vendor {
+  font-weight: 400;
+  color: var(--ink-2);
+}
+.fc-name {
+  color: var(--ink);
+}
+.fc-ver {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.fc-pkg .tag {
+  margin-left: 6px;
+}
+
+/* The reason and the reach share one line in the two-line modes; wide, `display: contents` hands
+   both to the row's own grid as two columns. */
+.fc-tail {
+  display: contents;
+}
+/* On a phone the reason may take a second line rather than lose its end to an ellipsis. */
+.fc-why {
+  grid-area: why;
+  color: var(--ink);
+  font-size: 12.5px;
+  white-space: normal;
+}
+.fc-reach {
+  grid-area: reach;
+  text-align: right;
+  color: var(--ink);
+  font-size: 12px;
+}
+.fc-via {
+  color: var(--muted);
+}
+.fc-dev {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 4px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 14px;
+  color: var(--muted);
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+}
+.frow .tag {
+  font-size: 10.5px;
+  line-height: 15px;
+  padding: 0 5px;
+  vertical-align: 1px;
+}
+.fc-why .tag {
+  margin-right: 6px;
+}
+.fc-why .sid {
+  margin-right: 6px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+}
+.fc-why .sid:hover {
+  color: var(--accent-ink);
+  text-decoration: underline;
+}
+
+/* Ditto (PD-ROWS-5): a value the row above already showed in the same stretch of the list. Still
+   real text — what a search hit and a screen reader read — only quiet, in `--muted`, which keeps
+   4.5:1 on every row background in both themes (an opacity would not). */
+.fc-vendor.is-ditto,
+.fc-why.is-ditto,
+.fc-reach.is-ditto {
+  color: var(--muted);
+}
+
+/* ---------- the age cell: a bar on the list's one axis ---------- */
+.fc-age {
+  grid-area: age;
+  align-self: stretch;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--fl-num);
+  column-gap: 6px;
+  align-items: center;
+  min-height: 18px;
+  overflow: hidden;
+}
+.age-track {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: stretch;
+}
+/* A hairline from 0 to the axis' edge: how much of the scale a bar takes, read at a glance. */
+.age-track::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--border);
+}
+.age-guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px dashed color-mix(in srgb, var(--tone) 55%, transparent);
+  z-index: 1;
+  --tone: var(--med);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.age-guide.is-high {
+  --tone: var(--crit);
+  border-left-style: dotted;
+}
+.age-bar {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 6px;
+  transform: translateY(-50%);
+  border-radius: 0 3px 3px 0;
+  background: var(--tone);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+/* An age past the axis' edge: drawn to it, with a cut near its end in the row's own background. */
+.age-bar.is-over {
+  border-radius: 0;
+}
+.age-bar.is-over::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  top: -3px;
+  bottom: -3px;
+  width: 3px;
+  background: var(--row-bg);
+  transform: skewX(-24deg);
+}
+/* PD-ROWS-3: an age that did not set the priority (abandoned, pinned) — neutral, with an end cap so
+   its length still reads. */
+.age-bar-context {
+  background: var(--border-strong);
+}
+.age-bar-context::before {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: -2px;
+  width: 2px;
+  height: 10px;
+  border-radius: 1px;
+  background: var(--muted);
+}
+.age-num {
+  grid-column: 2;
+  grid-row: 1;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--ink-2);
+}
+.age-num.is-toned {
+  color: var(--tone);
+}
+.age-none {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  justify-self: start;
+  z-index: 2;
+  padding-right: 6px;
+  background: var(--row-bg);
+  font-size: 11.5px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  transition: background-color 0.12s ease;
+}
+
+.fledger-foot {
+  margin: 12px 0 0;
+  padding-left: var(--fl-pad-l);
+  font-size: 12px;
+  color: var(--muted);
+}
+.fledger-key {
+  display: inline-block;
+  width: 18px;
+  height: 6px;
+  margin-right: 7px;
+  vertical-align: 1px;
+  border-radius: 0 3px 3px 0;
+  background: var(--border-strong);
+}
+
+/* ---------- two lines (the list beside an open package, a tablet) ---------- */
+@container fledger (min-width: 560px) {
+  /* A container query styles the container's descendants, never the container itself: the widths
+     are set on its children, which every row and head inherits them from. */
+  .fledger > * {
+    --fl-age: 150px;
+    --fl-pad-y: 6px;
+  }
+  .fhead {
+    grid-template-columns: var(--fl-verdict) minmax(0, 1fr) var(--fl-age);
+    grid-template-areas: "verdict pkg age";
+  }
+  .fhead-verdict,
+  .fhead-pkg {
+    display: block;
+  }
+  .fhead-verdict {
+    grid-area: verdict;
+  }
+  .fhead-reach {
+    display: none;
+  }
+  .fhead-axis-label {
+    left: auto;
+    right: 0;
+  }
+  .frow {
+    grid-template-columns: var(--fl-verdict) minmax(0, 1fr) var(--fl-age);
+    grid-template-areas:
+      "verdict pkg age"
+      "verdict tail age";
+  }
+  .fc-verdict {
+    align-self: start;
+    line-height: 19px;
+  }
+  .fc-why {
+    white-space: nowrap;
+  }
+  .fc-tail {
+    grid-area: tail;
+    display: flex;
+    align-items: baseline;
+    column-gap: 12px;
+    min-width: 0;
+  }
+  /* The reason gives way first: the reach is usually shorter, and ellipsised it loses the one
+     name that says which requirement to look at. */
+  .fc-why {
+    flex: 1 2 auto;
+  }
+  .fc-reach {
+    flex: 0 1 auto;
+    margin-left: auto;
+    max-width: 55%;
+  }
+  /* Edge to edge of the row, so the guides run on unbroken from one row into the next. */
+  .fc-age {
+    margin-block: calc(-1 * var(--fl-pad-y)) calc(-1 * var(--fl-pad-y) - 1px);
+  }
+}
+
+/* ---------- one line (the list with no package open) ---------- */
+@container fledger (min-width: 900px) {
+  .fledger > * {
+    --fl-age: 172px;
+    --fl-verdict: 92px;
+    --fl-gap: 14px;
+    --fl-pad-y: 0px;
+  }
+  .fhead {
+    grid-template-columns:
+      var(--fl-verdict) minmax(0, 1.15fr) minmax(0, 1.3fr) var(--fl-age)
+      minmax(0, 0.95fr);
+    grid-template-areas: "verdict pkg why age reach";
+  }
+  .fhead-why,
+  .fhead-reach {
+    display: block;
+  }
+  .fhead-why {
+    grid-area: why;
+  }
+  .fhead-reach {
+    grid-area: reach;
+  }
+  .fhead-narrow {
+    display: none;
+  }
+  .fhead-reach {
+    display: block;
+    text-align: left;
+  }
+  .fhead-axis-label {
+    left: 0;
+    right: auto;
+  }
+  .frow {
+    grid-template-columns:
+      var(--fl-verdict) minmax(0, 1.15fr) minmax(0, 1.3fr) var(--fl-age)
+      minmax(0, 0.95fr);
+    grid-template-areas: "verdict pkg why age reach";
+    align-items: center;
+    height: 36px;
+  }
+  .fc-verdict {
+    align-self: center;
+  }
+  .fc-tail {
+    display: contents;
+  }
+  .fc-why {
+    grid-area: why;
+  }
+  .fc-reach {
+    grid-area: reach;
+    margin-left: 0;
+    max-width: none;
+    text-align: left;
+  }
+  .fc-age {
+    margin-block: 0 -1px;
+  }
+}
+
+/* ---------- forced colours ----------
+   System colours replace every tone, so each mark keeps a shape of its own: the guides their dash
+   and dots, a bar past `high` solid, one between the thresholds hatched, a younger one hollow, a
+   context-only one grey; the run's rule and the open row's bar in the system's own ink. */
+@media (forced-colors: active) {
+  .age-track::before,
+  .age-guide,
+  .age-bar,
+  .age-bar-context::before,
+  .fhead-tick,
+  .frun::before,
+  .frow[aria-current="true"]::before,
+  .fledger-key {
+    forced-color-adjust: none;
+  }
+  .age-track::before {
+    background: GrayText;
+  }
+  .age-guide,
+  .fhead-tick.is-warn,
+  .fhead-tick.is-high {
+    border-left-color: CanvasText;
+  }
+  .fhead-tick {
+    color: CanvasText;
+  }
+  .age-bar {
+    background: CanvasText;
+  }
+  .age-bar.tone-med {
+    background: repeating-linear-gradient(135deg, CanvasText 0 2px, Canvas 2px 4px);
+    box-shadow: inset 0 0 0 1px CanvasText;
+  }
+  .age-bar.tone-none {
+    background: Canvas;
+    box-shadow: inset 0 0 0 1px CanvasText;
+  }
+  .age-bar-context,
+  .fledger-key {
+    background: GrayText;
+  }
+  .age-bar-context::before {
+    background: CanvasText;
+  }
+  .age-bar.is-over::after {
+    background: Canvas;
+  }
+  .frun::before {
+    border-left-color: CanvasText;
+  }
+  .frow[aria-current="true"]::before {
+    background: Highlight;
+  }
+  .frow[aria-current="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}
+
+/* ---------- print ----------
+   Paper has no package to open, so every signal a row carries prints under its reason
+   (`.sig-rest`, un-hidden in styles/print.css) and nothing is cut to one line. */
+@media print {
+  .fhead {
+    position: static;
+    background: none;
+    box-shadow: none;
+  }
+  .frow,
+  .frow:hover,
+  .frow[aria-current="true"] {
+    --row-bg: transparent;
+    height: auto;
+  }
+  .frow[aria-current="true"]::before {
+    display: none;
+  }
+  .frow .fcell:not(.fc-age) {
+    white-space: normal;
+    overflow: visible;
+  }
+  .fc-tail {
+    flex-wrap: wrap;
+  }
+  .frun::before {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

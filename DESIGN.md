@@ -182,45 +182,48 @@ e2e test still covers):
 Changed on purpose after the extraction, so a reader meets the answer before the reference
 ("before" is the legacy page and 0.12.0 alike):
 
-| id                          | before                                                                 | new                                                                                                                 |
-| --------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| PD-SUMMARY-1/PD-SUMMARY-5   | nothing said how many packages carried each priority                   | a counts line and a phone-fold bar, both since replaced by PD-SUMMARY-6: they said it twice                         |
-| PD-SUMMARY-2                | the header said nothing about the run's gate                           | "no gate" or "gate: `<value>`" beside the version, with a popover saying what it means                              |
-| PD-SUMMARY-3                | the Run tab's fail-on read "none" for a document without `run.fail_on` | an em dash; "none" only when the run said so                                                                        |
-| PD-SUMMARY-6                | four equal ledger columns, no single "how bad" read                    | a lead: "69 of 271 packages flagged", chips, a waffle beside them (a square a package); columns below, phone-folded |
-| PD-SUMMARY-7                | one verdict bar, 70% `ok` green                                        | a bar per flagged verdict, most common first, split into the priority tones the chips use; the rest one quiet line  |
-| PD-SUMMARY-8                | a full-width advisory bar: 2 advisories drawn as big as 69 findings    | a square per advisory, severity chips, each package with its advisories' `fixed_by`, verbatim                       |
-| PD-SUMMARY-9                | libyears was a number and three lines of text                          | the number over one bar split into direct requirements and what they pull in, in neutral ink                        |
-| PD-GLOSSARY-1               | the search hint spelled out every key and search term, on every tab    | "Press ? for keys and search syntax"; the rest is the glossary's "Keys and search"                                  |
-| PD-GLOSSARY-2               | the glossary opened as one long scroll                                 | only the verdicts are in view; the other sections fold                                                              |
-| PD-GLOSSARY-3               | the glossary's link read "full reference"                              | "How lockrot decides (lockrot.dev)", to `#verdicts-and-priority`                                                    |
-| PD-GLOSSARY-4/PD-GLOSSARY-5 | a verdict pill linked out, unreachable offline                         | the detail header's pill opens a definition popover; a row's pill stays plain, titled, so a click opens the package |
-| PD-GLOSSARY-6/PD-SUMMARY-4  | Escape knew nothing of popovers                                        | an open popover closes first, and alone                                                                             |
-| PD-GLOSSARY-7               | "In the glossary" opened the glossary at the top                       | it scrolls to that verdict's entry, marks it briefly and focuses it                                                 |
-| PD-GLOSSARY-8               | a definition named a config key, not the run's value                   | the value leads, the key beside it: "5 years (release-high-years)"                                                  |
-| PD-GLOSSARY-9               | "finished" covered only the built-in allowlist                         | it says how a reader accepts a package themselves, `extra.lockrot.ignore`                                           |
-| PD-DETAIL-1/PD-DETAIL-2     | the detail led with the baseline and showed every reference section    | "Follow the upstream" first; reached-by, lock entry and provenance fold, closed                                     |
-| PD-DETAIL-3                 | two nested scroll regions; a new package kept the last one's scroll    | `.shell-detail` alone scrolls; a new package starts at the top                                                      |
-| PD-DETAIL-4                 | the detail never said a filter hid its package from the list           | it says so, with "Clear filters"; the search status says so too                                                     |
-| PD-DETAIL-5                 | at 1440px the side detail's end could not be reached                   | the wheel chains into the page; the column makes room for the footer (§8)                                           |
-| PD-ROWS-1                   | a row showed up to three signal lines                                  | the highest-level signal and "+N more signals"; print shows them all                                                |
-| PD-ROWS-2                   | nothing showed an age against the run's thresholds                     | an age scale: warn and high ticks, a dot at the S8 (branch stopped) / S2 (no stable release) / S4 (no push) age     |
-| PD-ROWS-3                   | each row scaled its own track, with no legend                          | one legend and one maximum per list; `abandoned`/`pinned` rows get a neutral dot                                    |
-| PD-TIMELINE-1               | the first year label lost half its width off the axis                  | the axis runs from 1 January of the oldest year, labelled at the left edge, to a "today" rule labelled under it     |
-| PD-TIMELINE-2               | labels floated beside each dot and wrapped around it                   | a table: branch, a line from last release to today, latest version, raw php constraint; one line a row              |
-| PD-TIMELINE-3               | a package without maintained branches showed each version twice        | the version once; its third column is the release date, so every table keeps the same four columns                  |
-| PD-TIMELINE-4               | a jargon legend; the installed lane red at any age                     | one-line key; you a ring, newest a disc; your line in its age tone; the 3y/5y guides captioned in place             |
-| PD-TIMELINE-5               | lanes sorted by date, so 3.x could sit above 4.x                       | newest version first; date order when any branch name is not a version                                              |
-| PD-TIMELINE-6               | every branch drawn; old ones buried the two that matter                | three or more older than yours fold into one "N older" row, a tick each; over four between newest and yours too     |
-| PD-TIMELINE-7               | nothing said how far behind the reader is                              | two sentences first: your branch and its age; how many are newer, the newest's version, date and php                |
-| PD-TIMELINE-8               | a dev-branch checkout had no row                                       | a snapshot row from the lock's own date and constraint, a diamond; its age never takes a release-age tone           |
-| PD-TIMELINE-9               | every fold a native `<details>` (PD-DISCLOSURE-1)                      | a fold is a button with `aria-expanded` in its row header: a `<details>` cannot be a table row                      |
-| PD-TIMELINE-10              | "newest" named the highest version, whatever its date                  | "highest" instead when a lower branch released after it; warn and high guides differ by dash, not colour alone      |
-| PD-TIMELINE-11              | a minimum stub pinned months of releases to one spot left of today     | every dot at its true date, a recent one on the rule; a year beside a guide moves aside; guides say "3y", key "ago" |
-| PD-TIMELINE-12              | the newest's line was accent at any age; your row tinted grey          | the newest keeps an accent dot and rule, its line neutral; your row washed in your age tone; markers haloed         |
-| PD-LEDGER-1                 | "No advisory affects this lock" even when the check may not have run   | "No advisory found; N packages could not be confirmed clear", in a neutral tone                                     |
-| PD-LEDGER-2                 | a legend entry, a filter toggle, looked like plain text                | a chip with hover, focus and pressed states, and a title naming the click                                           |
-| PD-DISCLOSURE-1             | each `<summary>` drew its own text-glyph marker                        | one CSS-drawn triangle for every `<summary>`, with hover and focus states                                           |
+| id                          | before                                                                   | new                                                                                                                                           |
+| --------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| PD-SUMMARY-1/PD-SUMMARY-5   | nothing said how many packages carried each priority                     | a counts line and a phone-fold bar, both since replaced by PD-SUMMARY-6: they said it twice                                                   |
+| PD-SUMMARY-2                | the header said nothing about the run's gate                             | "no gate" or "gate: `<value>`" beside the version, with a popover saying what it means                                                        |
+| PD-SUMMARY-3                | the Run tab's fail-on read "none" for a document without `run.fail_on`   | an em dash; "none" only when the run said so                                                                                                  |
+| PD-SUMMARY-6                | four equal ledger columns, no single "how bad" read                      | a lead: "69 of 271 packages flagged", chips, a waffle beside them (a square a package); columns below, phone-folded                           |
+| PD-SUMMARY-7                | one verdict bar, 70% `ok` green                                          | a bar per flagged verdict, most common first, split into the priority tones the chips use; the rest one quiet line                            |
+| PD-SUMMARY-8                | a full-width advisory bar: 2 advisories drawn as big as 69 findings      | a square per advisory, severity chips, each package with its advisories' `fixed_by`, verbatim                                                 |
+| PD-SUMMARY-9                | libyears was a number and three lines of text                            | the number over one bar split into direct requirements and what they pull in, in neutral ink                                                  |
+| PD-GLOSSARY-1               | the search hint spelled out every key and search term, on every tab      | "Press ? for keys and search syntax"; the rest is the glossary's "Keys and search"                                                            |
+| PD-GLOSSARY-2               | the glossary opened as one long scroll                                   | only the verdicts are in view; the other sections fold                                                                                        |
+| PD-GLOSSARY-3               | the glossary's link read "full reference"                                | "How lockrot decides (lockrot.dev)", to `#verdicts-and-priority`                                                                              |
+| PD-GLOSSARY-4/PD-GLOSSARY-5 | a verdict pill linked out, unreachable offline                           | the detail header's pill opens a definition popover; a row's pill stays plain, titled, so a click opens the package                           |
+| PD-GLOSSARY-6/PD-SUMMARY-4  | Escape knew nothing of popovers                                          | an open popover closes first, and alone                                                                                                       |
+| PD-GLOSSARY-7               | "In the glossary" opened the glossary at the top                         | it scrolls to that verdict's entry, marks it briefly and focuses it                                                                           |
+| PD-GLOSSARY-8               | a definition named a config key, not the run's value                     | the value leads, the key beside it: "5 years (release-high-years)"                                                                            |
+| PD-GLOSSARY-9               | "finished" covered only the built-in allowlist                           | it says how a reader accepts a package themselves, `extra.lockrot.ignore`                                                                     |
+| PD-DETAIL-1/PD-DETAIL-2     | the detail led with the baseline and showed every reference section      | "Follow the upstream" first; reached-by, lock entry and provenance fold, closed                                                               |
+| PD-DETAIL-3                 | two nested scroll regions; a new package kept the last one's scroll      | `.shell-detail` alone scrolls; a new package starts at the top                                                                                |
+| PD-DETAIL-4                 | the detail never said a filter hid its package from the list             | it says so, with "Clear filters"; the search status says so too                                                                               |
+| PD-DETAIL-5                 | at 1440px the side detail's end could not be reached                     | the wheel chains into the page; the column makes room for the footer (§8)                                                                     |
+| PD-ROWS-1                   | a row showed up to three signal lines                                    | the highest-level signal and "+N more signals"; print shows them all                                                                          |
+| PD-ROWS-2                   | nothing showed an age against the run's thresholds                       | an age scale: warn and high ticks, a dot at the S8 (branch stopped) / S2 (no stable release) / S4 (no push) age                               |
+| PD-ROWS-3                   | each row scaled its own track, with no legend                            | one legend and one maximum per list; `abandoned`/`pinned` rows get a neutral dot                                                              |
+| PD-ROWS-4                   | ~90px cards; "+N more signals"; a dot on a 64px track; a floating legend | one ledger row (36px wide, two lines beside the detail, three on a phone); a bar on one axis, `max(10, 2×high)`, captioned in the column head |
+| PD-ROWS-5                   | every row repeated its verdict, reason and parent in full                | a value the row above showed is `--muted` (the verdict keeps its tone); a one-signal filter makes every row quote it                          |
+| PD-ROWS-6                   | nothing summed a group up; 14 alike hoa/* cards in a row                 | a serif sentence per priority, counted by verdict and reach; one above 3+ consecutive rows sharing verdict and way in                         |
+| PD-TIMELINE-1               | the first year label lost half its width off the axis                    | the axis runs from 1 January of the oldest year, labelled at the left edge, to a "today" rule labelled under it                               |
+| PD-TIMELINE-2               | labels floated beside each dot and wrapped around it                     | a table: branch, a line from last release to today, latest version, raw php constraint; one line a row                                        |
+| PD-TIMELINE-3               | a package without maintained branches showed each version twice          | the version once; its third column is the release date, so every table keeps the same four columns                                            |
+| PD-TIMELINE-4               | a jargon legend; the installed lane red at any age                       | one-line key; you a ring, newest a disc; your line in its age tone; the 3y/5y guides captioned in place                                       |
+| PD-TIMELINE-5               | lanes sorted by date, so 3.x could sit above 4.x                         | newest version first; date order when any branch name is not a version                                                                        |
+| PD-TIMELINE-6               | every branch drawn; old ones buried the two that matter                  | three or more older than yours fold into one "N older" row, a tick each; over four between newest and yours too                               |
+| PD-TIMELINE-7               | nothing said how far behind the reader is                                | two sentences first: your branch and its age; how many are newer, the newest's version, date and php                                          |
+| PD-TIMELINE-8               | a dev-branch checkout had no row                                         | a snapshot row from the lock's own date and constraint, a diamond; its age never takes a release-age tone                                     |
+| PD-TIMELINE-9               | every fold a native `<details>` (PD-DISCLOSURE-1)                        | a fold is a button with `aria-expanded` in its row header: a `<details>` cannot be a table row                                                |
+| PD-TIMELINE-10              | "newest" named the highest version, whatever its date                    | "highest" instead when a lower branch released after it; warn and high guides differ by dash, not colour alone                                |
+| PD-TIMELINE-11              | a minimum stub pinned months of releases to one spot left of today       | every dot at its true date, a recent one on the rule; a year beside a guide moves aside; guides say "3y", key "ago"                           |
+| PD-TIMELINE-12              | the newest's line was accent at any age; your row tinted grey            | the newest keeps an accent dot and rule, its line neutral; your row washed in your age tone; markers haloed                                   |
+| PD-LEDGER-1                 | "No advisory affects this lock" even when the check may not have run     | "No advisory found; N packages could not be confirmed clear", in a neutral tone                                                               |
+| PD-LEDGER-2                 | a legend entry, a filter toggle, looked like plain text                  | a chip with hover, focus and pressed states, and a title naming the click                                                                     |
+| PD-DISCLOSURE-1             | each `<summary>` drew its own text-glyph marker                          | one CSS-drawn triangle for every `<summary>`, with hover and focus states                                                                     |
 
 Changed on purpose, and not a legacy bug:
 
@@ -284,8 +287,9 @@ The legacy page pushed the findings below the whole ledger and the whole rail at
 reader scrolled past two screens of bars and buttons before the first package. Under 760px the
 summary band keeps its lead (the flagged figure, the priority chips and the waffle) and folds
 its three supporting columns into one line that counts them (PD-SUMMARY-6), and the rail becomes a
-closed `<details>` whose summary counts the rail filters that are on. A Findings row's age scale
-stacks under its key fact there instead of taking width from the package name (PD-ROWS-2).
+closed `<details>` whose summary counts the rail filters that are on. The Findings rows follow the
+list's own width, not the viewport's (a container query, PD-ROWS-4): one line from 900px of list,
+two from 560px (the list beside an open package), three below that.
 
 **The summary band's lead** is the first five seconds: how many packages are flagged, out of how
 many were checked, with the priority chips that filter by it and a waffle of every package
@@ -294,7 +298,9 @@ many were checked, with the priority chips that filter by it and a waffle of eve
 **Sticky offsets are measured, not guessed.** Only the header band (brand, run facts, tabs) is
 sticky, and only from 760px up. `Header` publishes its real height as `--topbar-h` through the
 CSSOM (a ResizeObserver); the rail and the detail column stick under it and scroll on their own
-when taller than the viewport. The legacy page hard-coded 196px and overlapped a wrapped header.
+when taller than the viewport. The legacy page hard-coded 196px and overlapped a wrapped header. The
+Findings list's column head (PD-ROWS-4) sticks under it too, within the list, so the age axis'
+captions stay over the bars they measure.
 Both columns are at most `--sticky-room` tall (`ui/app.css`): the viewport less the topbar and a
 16px gap on each side. At the page's end the footer takes the bottom of the viewport, so while the
 footer is on screen `--sticky-room` also subtracts `--footer-h`, never below 50vh; `Footer.tsx`

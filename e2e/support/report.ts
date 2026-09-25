@@ -120,8 +120,8 @@ export interface ReportPage {
    *  order — a Findings row carries no other link, so this doubles as "how many signal lines this
    *  row draws" (PD-ROWS-1, DESIGN.md §5: exactly one, the row's own key fact). */
   rowSignalIds(name: string): Promise<string[]>;
-  /** The row's "+N more signal(s), open the package" note, or null when the row shows none — one
-   *  signal, or none at all (PD-ROWS-1). */
+  /** The row's old "+N more signal(s), open the package" note, or null when the row shows none —
+   *  which, since PD-ROWS-4 (DESIGN.md §5), is every row: the detail lists every signal. */
   rowMoreSignalsText(name: string): Promise<string | null>;
   /** The row's age scale (`role="img"`) accessible name, or null when the row draws no scale at
    *  all (PD-ROWS-2, DESIGN.md §5). */
@@ -130,20 +130,11 @@ export interface ReportPage {
    *  only for assistive tech (PD-ROWS-3, DESIGN.md §5: the scale's two threshold ticks otherwise
    *  show a reader nothing to hover). Null on the same terms as `rowAgeScaleLabel`. */
   rowAgeScaleTitle(name: string): Promise<string | null>;
-  /** The once-per-list caption naming the run's own age thresholds (PD-ROWS-3, DESIGN.md §5),
-   *  e.g. "age scale: warn 3 y high 5 y" (a11y review: the tick between each pair is a CSS-drawn
-   *  bar, not a text glyph, so it contributes nothing to this string) — or null when the current tab
-   *  draws no age scale at all, and the caption is not rendered. */
-  ageScaleLegendText(): Promise<string | null>;
-  /** The same caption's own accessible name (a11y review, PD-ROWS-3): the `role="img"`/`aria-label`
-   *  pairing a row's own age scale already uses, spelling the unit out in full ("age scale: warn at
-   *  N years, high at N years") rather than the short "y" form `ageScaleLegendText` reads, and with
-   *  no tick glyph in it at all for the same reason `rowAgeScaleLabel` carries none either. Null on
-   *  the same terms as `ageScaleLegendText`. */
-  ageScaleLegendAccessibleName(): Promise<string | null>;
-  /** Whether the row's "+N more…" note is currently on screen (PD-ROWS-1, DESIGN.md §5: print
-   *  hides it once every signal already prints). */
-  rowMoreSignalsVisible(name: string): Promise<boolean>;
+  /** The Findings list's age axis captions in its column head (PD-ROWS-4, DESIGN.md §5), e.g.
+   *  "Years since release 0 3y 5y 10y+", or null when the tab draws no axis. */
+  ageAxisText(): Promise<string | null>;
+  /** The same axis' accessible name, the thresholds spelled out in full. */
+  ageAxisAccessibleName(): Promise<string | null>;
   /** Whether the row's age scale's track, threshold ticks and dot each paint a colour distinct
    *  from the page background — the forced-colors a11y fix (PD-ROWS-2, DESIGN.md §5): before it,
    *  all three computed to the same Canvas colour as the page and the scale effectively vanished. */
@@ -160,13 +151,6 @@ export interface ReportPage {
    *  ticks close enough together, in the default colour scheme, that a mid-zone dot's opaque fill
    *  covered them both, not only in forced-colors mode. */
   ageScaleHighTickSurvivesDot(name: string): Promise<boolean>;
-  /** Whether the once-per-list legend's own tick (`.age-scale-legend-tick`, `AgeScaleLegend`) paints
-   *  a colour distinct from the page background in forced-colors mode — the same failure
-   *  `ageScaleForcedColorsVisible` already proves fixed for a row's own ticks, missed here because
-   *  the legend draws its tick from a different rule (`views.css`) that carried no forced-colors
-   *  override of its own. Null when the current tab draws no legend at all (`ageScaleLegendText`'s
-   *  own null case). */
-  ageScaleLegendTickForcedColorsVisible(): Promise<boolean | null>;
 
   ledgerButton(group: LedgerGroup, key: string): Promise<void>;
   /** null when the button carries no pressed-state at all for assistive tech (M17, legacy). */
@@ -300,9 +284,9 @@ export interface ReportPage {
    *  ink-saving default — a plain screenshot never exercises that default, so the property itself
    *  is what a print test can assert on (print.css). */
   ledgerSegmentPrintStyle(): Promise<{ backgroundColor: string; printColorAdjust: string }>;
-  /** The same pair, read off one Findings row's own verdict pill (its border colour carries the
-   *  pill's tone, styles/base.css `.pill`). */
-  pillPrintStyle(pkg: string, verdict: string): Promise<{ borderColor: string; printColorAdjust: string }>;
+  /** The same pair, read off one Findings row's own verdict word (its text colour carries the
+   *  verdict's tone, ledger-rows.css `.fc-verdict`). */
+  verdictPrintStyle(pkg: string, verdict: string): Promise<{ color: string; printColorAdjust: string }>;
 
   pressSlash(): Promise<void>;
   pressQuestion(): Promise<void>;

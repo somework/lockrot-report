@@ -3,12 +3,15 @@ import { useReport } from "../context";
 import { applyFilters, population } from "../../domain/filters";
 import { plural } from "../../domain/format";
 import { toneClass } from "../common/common";
-import { TONE } from "../../domain/vocab";
-import { ageLegend, anyAgeScale, sharedAgeMax } from "../../domain/age";
-import { AgeScaleLegend } from "./AgeScale";
-import { FindingRow } from "./FindingRow";
+import { SIGNAL_NAMES, TONE } from "../../domain/vocab";
+import { ageAxis, type AgeAxis } from "../../domain/age";
+import { groupCounts, reachText, runFacts, segmentRuns, vendorOf, whyText } from "../../domain/rows";
+import { AgeAxis as AgeAxisHead } from "./AgeScale";
+import { FindingRow, NO_DITTO, type Ditto } from "./FindingRow";
+import { GroupSentence, RunNote } from "./LedgerNotes";
 import { EmptyState } from "./EmptyState";
 import "./views.css";
+import "./ledger-rows.css";
 
 /**
  * The note above the list naming packages that carry a security advisory but landed on `ok` or
@@ -63,8 +66,116 @@ function groupByPriority(findings: readonly Finding[]): { priority: string; find
   return groups;
 }
 
-/** The Findings tab: the report's headline list, one priority-grouped section of rows at a time.
- *  Ported from legacy `viewFindings` (report.js:448-478). */
+/** What a row repeats of the row above it in the same segment (PD-ROWS-5): a segment's first row,
+ *  and every row right after a run note, repeats nothing — the note or the group head broke the line. */
+function dittoFor(finding: Finding, prev: Finding | undefined, quoted: string | null): Ditto {
+  if (!prev) return NO_DITTO;
+  const vendor = vendorOf(finding.package);
+  return {
+    verdict: prev.verdict === finding.verdict,
+    vendor: vendor !== null && vendorOf(prev.package) === vendor,
+    why: whyText(prev, quoted) === whyText(finding, quoted),
+    reach: reachText(prev) === reachText(finding) && prev.dev === finding.dev,
+  };
+}
+
+interface ListProps {
+  readonly axis: AgeAxis | null;
+  readonly quoted: string | null;
+}
+
+function Rows({
+  findings,
+  label,
+  axis,
+  quoted,
+}: ListProps & { findings: readonly Finding[]; label: string }) {
+  return (
+    <ul className="frows" aria-label={label}>
+      {findings.map((finding, i) => (
+        <FindingRow
+          key={finding.package}
+          finding={finding}
+          axis={axis}
+          quoted={quoted}
+          ditto={dittoFor(finding, findings[i - 1], quoted)}
+        />
+      ))}
+    </ul>
+  );
+}
+
+/** One priority group: its name, its count, the sentence counting its members, then its rows, a
+ *  run note above each run (PD-ROWS-6). */
+function Group({ priority, findings, axis, quoted }: ListProps & { priority: string; findings: Finding[] }) {
+  const { model } = useReport();
+  const tone = toneClass(TONE(priority));
+  return (
+    // No accessible name on purpose: a named <section> is a landmark region, and the page's one
+    // region is the open package's detail; the group's own <h2> already heads it.
+    <section className={`fgroup ${tone}`}>
+      <header className="fgroup-head">
+        <h2>{priority}</h2>
+        <span className="fgroup-count">{plural(findings.length, "package", "packages")}</span>
+        <GroupSentence counts={groupCounts(findings)} />
+      </header>
+      {segmentRuns(findings).map((segment) => {
+        const first = segment.findings[0]?.package ?? "";
+        if (!segment.run) {
+          return (
+            <Rows
+              key={first}
+              findings={segment.findings}
+              label={`${priority} priority`}
+              axis={axis}
+              quoted={quoted}
+            />
+          );
+        }
+        const facts = runFacts(segment.findings, model.report.run.thresholds);
+        return (
+          <div key={first} className={`frun ${toneClass(TONE(facts.verdict))}`}>
+            <RunNote facts={facts} />
+            <Rows
+              findings={segment.findings}
+              label={`${plural(facts.count, `${facts.verdict} package`, `${facts.verdict} packages`)} in a row`}
+              axis={axis}
+              quoted={quoted}
+            />
+          </div>
+        );
+      })}
+    </section>
+  );
+}
+
+/** The column head over every row (PD-ROWS-4): what each column is, and the age axis' captions. The
+ *  words are for the eye (`aria-hidden`); each row already names its own parts. */
+function ColumnHead({ axis, quoted }: ListProps) {
+  return (
+    <div className="fhead">
+      <span className="fhead-col fhead-verdict" aria-hidden="true">
+        Verdict
+      </span>
+      <span className="fhead-col fhead-pkg" aria-hidden="true">
+        Package
+        <span className="fhead-narrow">
+          {quoted ? ` · ${quoted} · how it gets in` : " · why it is flagged · how it gets in"}
+        </span>
+      </span>
+      <span className="fhead-col fhead-why" aria-hidden="true">
+        {quoted ? `${quoted} · ${SIGNAL_NAMES[quoted] ?? "signal"}` : "Why it is flagged"}
+      </span>
+      <span className="fhead-col fhead-reach" aria-hidden="true">
+        Reached
+      </span>
+      {axis ? <AgeAxisHead axis={axis} /> : <span className="fhead-age" />}
+    </div>
+  );
+}
+
+/** The Findings tab: the report's headline list, a ledger of one-line rows grouped by priority
+ *  (PD-ROWS-4/5/6, DESIGN.md §5). Ported from legacy `viewFindings` (report.js:448-478). */
 export function FindingsView() {
   const { model, state } = useReport();
   const quiet = model.report.findings.filter(
@@ -72,12 +183,10 @@ export function FindingsView() {
       finding.advisories.length > 0 && (finding.verdict === "ok" || finding.verdict === "finished"),
   );
   const visible = applyFilters(model, state, "findings");
-  const thresholds = model.report.run.thresholds;
-  // PD-ROWS-3 (DESIGN.md §5): one maximum for every row this tab draws, so a dot's position along
-  // the track compares across rows instead of each rescaling its own; the legend beside it is the
-  // one place the run's own thresholds are named on screen, rather than only in a row's hover title.
-  const ageMax = sharedAgeMax(visible, thresholds);
-  const legend = anyAgeScale(visible, thresholds) ? ageLegend(thresholds) : null;
+  const axis = ageAxis(model.report.run.thresholds);
+  const signals = state.filters.signal;
+  const quoted = signals.length === 1 ? (signals[0] ?? null) : null;
+  const context = axis !== null && visible.some((f) => f.verdict === "abandoned" || f.verdict === "pinned");
 
   return (
     <div>
@@ -85,24 +194,24 @@ export function FindingsView() {
       {visible.length === 0 ? (
         <EmptyState reason={population(model, "findings").length === 0 ? "clean" : "filtered"} />
       ) : (
-        <>
-          {legend && <AgeScaleLegend legend={legend} />}
+        <div className={axis ? "fledger" : "fledger no-axis"}>
+          <ColumnHead axis={axis} quoted={quoted} />
           {groupByPriority(visible).map((group) => (
-            <section className="group" key={group.priority}>
-              <div className="group-head">
-                <h2 className={toneClass(TONE(group.priority))}>{group.priority}</h2>
-                <span className="mono muted group-count">
-                  {plural(group.findings.length, "package", "packages")}
-                </span>
-              </div>
-              <ul className="rows" aria-label={`${group.priority} priority`}>
-                {group.findings.map((finding) => (
-                  <FindingRow key={finding.package} finding={finding} ageMax={ageMax} />
-                ))}
-              </ul>
-            </section>
+            <Group
+              key={group.priority}
+              priority={group.priority}
+              findings={group.findings}
+              axis={axis}
+              quoted={quoted}
+            />
           ))}
-        </>
+          {context && (
+            <p className="fledger-foot">
+              <span className="fledger-key" aria-hidden="true" />A grey bar is an age shown for context: an
+              abandoned or pinned package is not flagged for its age.
+            </p>
+          )}
+        </div>
       )}
     </div>
   );

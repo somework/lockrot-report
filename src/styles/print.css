@@ -68,32 +68,33 @@
     border-left-color: #999;
   }
 
-  /* PD-ROWS-1 (DESIGN.md §5, regression review): a Findings row's key fact stands in for its other
-   * signals on screen, with a note pointing at the detail pane this file already hides above — paper
-   * has nothing for that note to open. `.sig-rest` (views.css#FindingRow) carries the rest under a
-   * native `hidden` attribute, which this file's own base.css rule makes `!important` on purpose (so
-   * a class-based display rule elsewhere can never leave a hidden element holding its grid column by
-   * winning a specificity tie); un-hiding it for print has to match that `!important`, or lose to it.
-   * The note itself has nothing left to say once every signal already prints.
+  /* PD-ROWS-1 (DESIGN.md §5, regression review): a Findings row quotes one signal on screen, and
+   * the package's detail — which this file already hides above — lists the rest; paper has nothing
+   * to open. `.sig-rest` (views/FindingRow.tsx) carries the rest under a native `hidden` attribute,
+   * which base.css makes `!important` on purpose (so a class-based display rule elsewhere can never
+   * leave a hidden element holding its grid column by winning a specificity tie); un-hiding it for
+   * print has to match that `!important`, or lose to it. It takes a line of its own under the reason.
    */
-  .more-sig {
-    display: none;
-  }
   .sig-rest[hidden] {
     display: flex !important;
     flex-direction: column;
     gap: 3px;
+    flex-basis: 100%;
+    margin-top: 3px;
+  }
+  .sig-rest .sig-line {
+    display: flex;
+    gap: 6px;
   }
 
   /* Colour that carries meaning must survive an actual print, not a screen render's approximation
    * of one: the summary band's marks (ledger.css: a waffle square, a verdict bar's priority parts, an
-   * advisory square, the libyears bar, a chip's swatch), a Findings/Packages/Radius row's own
-   * verdict/priority pill (styles/base.css `.pill`) and its priority-tone stripe (views.css
-   * `.row .stripe`), and the tone-coloured text a Findings priority-group heading and the band's
-   * clean-report line paint with the same `--tone` custom property (`.group-head h2`,
-   * `.lead-clean`). Chromium's print default drops background colour — and, per the same
+   * advisory square, the libyears bar, a chip's swatch), a Packages/Radius row's own verdict or
+   * priority pill (styles/base.css `.pill`), and the tone-coloured text a Findings priority-group
+   * heading and the band's clean-report line paint with the same `--tone` custom property
+   * (`.fgroup-head h2`, `.lead-clean`). Chromium's print default drops background colour — and, per the same
    * "Background graphics" setting, any colour it treats as decorative — unless the rule opts out;
-   * `views.css`'s `.age-scale-tick`/`.age-scale-dot` already carry this for PD-ROWS-2's scale, and
+   * `ledger-rows.css`'s verdict word, age bars and guides already carry this for PD-ROWS-4, and
    * this gathers the rest of the page's tone-bearing elements here, in the one file print decisions
    * live in. Elements this omits (a pill inside `.shell-detail`, a signal id in the glossary) are
    * never on screen when a reader prints, since the rule above already hides their containers. */
@@ -103,8 +104,7 @@
   .libyears-bar > span,
   .swatch,
   .pill,
-  .stripe,
-  .group-head h2,
+  .fgroup-head h2,
   .lead-chips .count,
   .lead-clean {
     print-color-adjust: exact;

@@ -306,15 +306,6 @@ export class NewReportPage implements ReportPage {
     return (await note.count()) > 0 ? (await note.first().innerText()).trim() : null;
   }
 
-  /** Whether the row's "+N more…" note is currently on screen — `Locator#isVisible()`, not
-   *  `innerText()` (`rowMoreSignalsText`'s own check): a hidden element's `innerText` getter falls
-   *  back to its descendant text per the HTML spec, so it would keep reading the note's words even
-   *  once print.css (PD-ROWS-1, DESIGN.md §5) hides it. */
-  async rowMoreSignalsVisible(name: string): Promise<boolean> {
-    const note = this.pkgLocator(name).getByText(/more signals?, open the package/);
-    return (await note.count()) > 0 && (await note.first().isVisible());
-  }
-
   async rowAgeScaleLabel(name: string): Promise<string | null> {
     const scale = this.pkgLocator(name).getByRole("img");
     return (await scale.count()) > 0 ? scale.first().getAttribute("aria-label") : null;
@@ -325,52 +316,63 @@ export class NewReportPage implements ReportPage {
     return (await scale.count()) > 0 ? scale.first().getAttribute("title") : null;
   }
 
-  /** `.age-scale-legend` (`views/AgeScale.tsx#AgeScaleLegend`, PD-ROWS-3, DESIGN.md §5): the one
-   *  caption above the whole Findings list, not any one row, so it is found by its own fixed
-   *  leading word rather than through `pkgLocator`. */
-  async ageScaleLegendText(): Promise<string | null> {
-    const legend = this.page.getByText(/^age scale:/);
-    return (await legend.count()) > 0 ? collapse((await legend.first().textContent()) ?? "") : null;
+  /** The Findings list's age axis (`views/AgeScale.tsx#AgeAxis`, PD-ROWS-4, DESIGN.md §5): the one
+   *  `role=img` in the column head, found by its accessible name's fixed leading words. Its visible
+   *  captions, whitespace-collapsed, or null when the tab draws no axis. */
+  async ageAxisText(): Promise<string | null> {
+    const axis = this.page.getByRole("img", { name: /^age axis:/ });
+    if ((await axis.count()) === 0) return null;
+    return axis.first().evaluate((el) =>
+      Array.from(el.querySelectorAll(".fhead-axis > *"))
+        .map((part) => part.textContent.trim())
+        .join(" "),
+    );
   }
 
-  async ageScaleLegendAccessibleName(): Promise<string | null> {
-    const legend = this.page.getByRole("img", { name: /^age scale:/ });
-    return (await legend.count()) > 0 ? legend.first().getAttribute("aria-label") : null;
+  async ageAxisAccessibleName(): Promise<string | null> {
+    const axis = this.page.getByRole("img", { name: /^age axis:/ });
+    return (await axis.count()) > 0 ? axis.first().getAttribute("aria-label") : null;
   }
 
-  /** The age scale's decorative parts (`AgeScale.tsx`) carry no accessible role of their own — the
-   *  whole thing is one `role=img` — so they're read by position from that element (`children[0]`
-   *  the track, its own two ticks and dot inside that), the same structural approach
-   *  `ledgerSegmentPrintStyle` below already uses for the ledger's first bar segment, rather than by
-   *  class. a11y review (PD-ROWS-2, DESIGN.md §5): forced-colors mode used to paint the track, both
-   *  ticks and the dot the same Canvas colour as the page itself; each boolean here is whether that
-   *  part's own computed colour still differs from it. */
+  /** The age cell's decorative parts (`AgeScale.tsx#AgeCell`) carry no accessible role of their
+   *  own — the whole cell is one `role=img` — so they're read by position from that element
+   *  (`children[0]` the track; inside it the warn guide, the high guide and the bar), the same
+   *  structural approach `ledgerSegmentPrintStyle` below uses, rather than by class. a11y review
+   *  (PD-ROWS-2/4, DESIGN.md §5): forced-colors mode flattens every tone to the page's Canvas; each
+   *  boolean is whether that part still paints something distinct from it — the track's hairline,
+   *  the warn guide's line, the bar's fill, hatch or outline. The names keep the scale's first shape
+   *  (`tick` the guide, `dot` the bar). */
   async ageScaleForcedColorsVisible(name: string): Promise<{ track: boolean; tick: boolean; dot: boolean }> {
     return this.pkgLocator(name)
       .getByRole("img")
       .first()
       .evaluate((scale) => {
         const track = scale.children[0];
-        const tick = track?.children[0];
-        const dot = track?.children[2];
+        const guide = track?.children[0];
+        const bar = track?.children[2];
         if (
           !(track instanceof HTMLElement) ||
-          !(tick instanceof HTMLElement) ||
-          !(dot instanceof HTMLElement)
+          !(guide instanceof HTMLElement) ||
+          !(bar instanceof HTMLElement)
         ) {
-          throw new Error("age scale is missing a track, tick or dot");
+          throw new Error("age cell is missing a track, guide or bar");
         }
         const pageBg = getComputedStyle(document.body).backgroundColor;
         const trackColor = getComputedStyle(track, "::before").backgroundColor;
-        const tickColor = getComputedStyle(tick).backgroundColor;
-        const dotStyle = getComputedStyle(dot);
+        const guideStyle = getComputedStyle(guide);
+        const barStyle = getComputedStyle(bar);
         const distinct = (c: string) => c !== pageBg && c !== "rgba(0, 0, 0, 0)" && c !== "";
-        // The dot's shape carries the zone (views.css): a hollow/dashed ring paints its border, a
-        // filled dot (at or above `high`) its background, with the border deliberately left the same
-        // colour as the page there to separate it from the tick beside it — either one, on its own,
-        // says the dot is drawn at all.
-        const dotVisible = distinct(dotStyle.borderTopColor) || distinct(dotStyle.backgroundColor);
-        return { track: distinct(trackColor), tick: distinct(tickColor), dot: dotVisible };
+        // The bar's pattern carries the zone (ledger-rows.css): solid fill past `high`, a hatch
+        // between the thresholds, an inset outline below `warn` — any one says it is drawn at all.
+        const barVisible =
+          distinct(barStyle.backgroundColor) ||
+          barStyle.backgroundImage !== "none" ||
+          barStyle.boxShadow !== "none";
+        return {
+          track: distinct(trackColor),
+          tick: guideStyle.borderLeftStyle !== "none" && distinct(guideStyle.borderLeftColor),
+          dot: barVisible,
+        };
       });
   }
 
@@ -402,23 +404,6 @@ export class NewReportPage implements ReportPage {
       const cy = rect.top + rect.height / 2;
       return document.elementFromPoint(cx, cy) === tick;
     }, tickIndex);
-  }
-
-  /** The legend's own tick (`AgeScaleLegend`'s two `.age-scale-legend-tick` spans), read the same
-   *  distinct-from-page-background way `ageScaleForcedColorsVisible` reads a row's ticks. `null`
-   *  when the current tab draws no legend at all, the same case `ageScaleLegendText` returns null
-   *  for. */
-  async ageScaleLegendTickForcedColorsVisible(): Promise<boolean | null> {
-    const legend = this.page.getByText(/^age scale:/);
-    if ((await legend.count()) === 0) return null;
-
-    return legend.first().evaluate((el) => {
-      const tick = el.querySelector(".age-scale-legend-tick");
-      if (!(tick instanceof HTMLElement)) throw new Error("age scale legend is missing its tick");
-      const pageBg = getComputedStyle(document.body).backgroundColor;
-      const tickColor = getComputedStyle(tick).backgroundColor;
-      return tickColor !== pageBg && tickColor !== "rgba(0, 0, 0, 0)" && tickColor !== "";
-    });
   }
 
   /** The name starts with the key (a count may follow it, see LEDGER_LABEL). Anchored rather than a
@@ -708,7 +693,7 @@ export class NewReportPage implements ReportPage {
   }
 
   /** The row's own pill carries no button role at all now (`views/FindingRow.tsx`), so it is found
-   *  the same way `pillPrintStyle` finds it: by its own visible word, `exact` so a short verdict
+   *  the same way `verdictPrintStyle` finds it: by its own visible word, `exact` so a short verdict
    *  does not also match a longer phrase that contains it. */
   async clickPillInFindingsRow(pkg: string, verdict: string): Promise<void> {
     await this.pkgLocator(pkg).getByText(verdict, { exact: true }).click();
@@ -875,19 +860,19 @@ export class NewReportPage implements ReportPage {
     });
   }
 
-  async pillPrintStyle(
+  async verdictPrintStyle(
     pkg: string,
     verdict: string,
-  ): Promise<{ borderColor: string; printColorAdjust: string }> {
-    // Not `getByRole("button", ...)` any more: a row's own verdict pill is plain text now
-    // (PD-GLOSSARY-4/5), with no button role to query by — its visible word still is one, though,
-    // and `exact` keeps this from also matching a longer phrase that happens to contain it.
+  ): Promise<{ color: string; printColorAdjust: string }> {
+    // Not `getByRole("button", ...)`: a row's own verdict is plain text (PD-GLOSSARY-4/5), and since
+    // PD-ROWS-4 a coloured word rather than a bordered pill — its tone is its text colour. `exact`
+    // keeps this from also matching a longer phrase that happens to contain the word.
     return this.pkgLocator(pkg)
       .getByText(verdict, { exact: true })
       .evaluate((el) => {
         const style = getComputedStyle(el);
         return {
-          borderColor: style.borderColor,
+          color: style.color,
           printColorAdjust:
             style.getPropertyValue("-webkit-print-color-adjust") ||
             style.getPropertyValue("print-color-adjust"),

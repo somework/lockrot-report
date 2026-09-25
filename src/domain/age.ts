@@ -23,9 +23,9 @@ export interface AgeScale {
   readonly years: number;
   readonly warn: number;
   readonly high: number;
-  /** The track's right edge, shared by every row a list draws at once (`sharedAgeMax`) rather than
-   *  computed per row: dot positions only compare across rows when they share one scale (PD-ROWS-3,
-   *  DESIGN.md §5). */
+  /** The axis' right edge, shared by every row a list draws at once (`ageAxis`) rather than
+   *  computed per row: bar lengths only compare across rows when they share one scale (PD-ROWS-3/4,
+   *  DESIGN.md §5). `years` may exceed it; the row then draws its bar to the edge, cut. */
   readonly max: number;
   /**
    * True for a verdict whose own reason to flag is not age — `abandoned` (S1's own repository flag,
@@ -97,10 +97,8 @@ interface Resolved extends Source {
 }
 
 /** `pickSource` plus the two thresholds it needs, resolved against the run's own `thresholds`
- *  array — the one place both null-outs `ageScale` and `sharedAgeMax` care about are decided, so
- *  the two never drift on what counts as "a row that draws a scale". `null` for exactly the same
- *  reasons `ageScale` documents: no S8/S2/S4 with a numeric `years`, or a threshold the run never
- *  recorded. */
+ *  array. `null` for exactly the reasons `ageScale` documents: no S8/S2/S4 with a numeric `years`,
+ *  or a threshold the run never recorded. */
 function resolveSource(finding: Finding, thresholds: Thresholds): Resolved | null {
   const source = pickSource(finding);
   if (source === null) return null;
@@ -119,28 +117,40 @@ function isContextOnly(finding: Finding): boolean {
   return finding.verdict === "abandoned" || finding.verdict === "pinned";
 }
 
-/**
- * The one maximum every row in a list shares (PD-ROWS-3, DESIGN.md §5), so a dot's position along
- * the track means the same thing on every row instead of each row rescaling its own: `max(10,
- * ceil(largest years among the rows that would actually draw a scale))`. A finding with no S8/S2/S4,
- * or whose kind is missing a threshold, contributes nothing — the same rows `ageScale` itself would
- * return `null` for. Compute once per list (`FindingsView`) and pass the result to every row's own
- * `ageScale` call.
- */
-export function sharedAgeMax(findings: readonly Finding[], thresholds: Thresholds): number {
-  let max = 10;
-  for (const finding of findings) {
-    const resolved = resolveSource(finding, thresholds);
-    if (resolved !== null) max = Math.max(max, Math.ceil(resolved.years));
-  }
-  return max;
+/** The fewest years the shared axis ever spans, whatever the run's own `high` threshold says. */
+const AXIS_FLOOR_YEARS = 10;
+
+export interface AgeAxis {
+  readonly warn: number;
+  readonly high: number;
+  /** The axis' right edge: `max(10, 2 × high)`. An age past it runs to the edge and says so. */
+  readonly max: number;
 }
 
-/** Whether any finding in a list would draw a scale at all — what gates the once-per-list legend
- *  (PD-ROWS-3): a report with no S8/S2/S4 signal anywhere, or with neither threshold pair recorded,
- *  needs no legend for a scale no row ever draws. */
-export function anyAgeScale(findings: readonly Finding[], thresholds: Thresholds): boolean {
-  return findings.some((finding) => resolveSource(finding, thresholds) !== null);
+/**
+ * The one axis every Findings row's age bar is drawn against (PD-ROWS-4, DESIGN.md §5): the
+ * thresholds `ageLegend` names, and a right edge fixed by the run's own `high` threshold rather than
+ * by the oldest row on screen — so the column head can caption it once ("0 · 3y · 5y · 10y+") and a
+ * filter never rescales every bar under the reader. `max(10, 2 × high)`: twice the point where an
+ * age turns critical leaves room to see how far past it a package is, and 10 years is where
+ * "very old" stops needing more resolution. A bar past the edge is drawn to it, marked as cut, with
+ * its exact years beside it. `null` when the run recorded neither threshold pair.
+ */
+export function ageAxis(thresholds: Thresholds): AgeAxis | null {
+  const legend = ageLegend(thresholds);
+  if (legend === null) return null;
+  return { ...legend, max: Math.max(AXIS_FLOOR_YEARS, 2 * legend.high) };
+}
+
+/**
+ * Whether lockrot said it could not read this package's age: an S10 whose `data.blocks` names one of
+ * the three age signals (S2, S4, S8). A row with no age bar says "age not read" then, and "no age
+ * signal" otherwise — never a guess at why none of the three fired.
+ */
+export function ageNotRead(finding: Finding): boolean {
+  const s10 = finding.signals.find((s) => s.id === "S10");
+  const blocks = s10?.data.blocks;
+  return Array.isArray(blocks) && blocks.some((id) => id === "S2" || id === "S4" || id === "S8");
 }
 
 export interface AgeLegend {
@@ -149,7 +159,7 @@ export interface AgeLegend {
 }
 
 /**
- * The thresholds a list's once-per-list legend names (PD-ROWS-3): the release pair when the run
+ * The thresholds the Findings list's axis is captioned with (PD-ROWS-3/4): the release pair when the run
  * recorded both of it — the pair `branch` and `release` rows, the two most common kinds, are
  * measured against — falling back to the push pair when only that one is complete. A run that sets
  * the two pairs to different values still gets a legend that matches at least one kind of row
@@ -170,7 +180,7 @@ export function ageLegend(thresholds: Thresholds): AgeLegend | null {
 /**
  * The scale a Findings row draws beside its key-fact line, from `model.report.run.thresholds`
  * (the document's own key-order array; see `model/types.ts#RunSettings`) and `max`, the list's own
- * shared maximum (`sharedAgeMax`, computed once by the view and passed to every row). `null` when
+ * shared maximum (`ageAxis(…).max`, computed once by the view and passed to every row). `null` when
  * there is nothing safe to draw: no S8/S2/S4 signal with a numeric `years`, or the run never
  * recorded one of the two thresholds that signal's kind is measured against.
  */

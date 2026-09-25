@@ -50,30 +50,28 @@ test("print keeps the ledger bar segments' colour, unlike Chromium's ink-saving 
   expect(after.printColorAdjust).toBe("exact");
 });
 
-test("print keeps a Findings row's verdict pill in its own tone", async ({ page }) => {
-  // mini.json: vendor/transitive is the abandoned finding (fixtures/bundles/mini.json).
-  const before = await report.pillPrintStyle("vendor/transitive", "abandoned");
+test("print keeps a Findings row's verdict word in its own tone", async ({ page }) => {
+  // mini.json: vendor/transitive is the abandoned finding (fixtures/bundles/mini.json). Since
+  // PD-ROWS-4 the verdict is a coloured word, not a bordered pill: its tone is its text colour.
+  const before = await report.verdictPrintStyle("vendor/transitive", "abandoned");
 
   await page.emulateMedia({ media: "print" });
-  const after = await report.pillPrintStyle("vendor/transitive", "abandoned");
+  const after = await report.verdictPrintStyle("vendor/transitive", "abandoned");
 
-  expect(after.borderColor).toBe(before.borderColor);
-  expect(after.borderColor).not.toBe("");
+  expect(after.color).toBe(before.color);
+  expect(after.color).not.toBe("");
   expect(after.printColorAdjust).toBe("exact");
 });
 
-// PD-ROWS-1 (DESIGN.md §5, regression review): a Findings row shows one key-fact signal line on
-// screen, with a note pointing at the detail pane — but print drops `.shell-detail` entirely (the
-// rule above), so a reader on paper had no "open the package" to follow and lost the other signals
-// outright. koel_koel's daverandom/resume carries three (S2, S4, S5; finding-row-key-fact.spec.ts
+// PD-ROWS-1/PD-ROWS-4 (DESIGN.md §5, regression review): a Findings row quotes one signal on
+// screen, and the detail pane lists the rest — but print drops `.shell-detail` entirely (the rule
+// above), so a reader on paper would lose the other signals outright. koel_koel's daverandom/resume carries three (S2, S4, S5; finding-row-key-fact.spec.ts
 // already covers its screen-only reading).
 test("print shows every signal line of a Findings row, not just its key fact", async ({ page }) => {
   await report.goto(FIXTURES.koel);
   expect(await report.rowSignalIds("daverandom/resume")).toEqual(["S2"]);
-  expect(await report.rowMoreSignalsVisible("daverandom/resume")).toBe(true);
 
   await page.emulateMedia({ media: "print" });
 
   expect(await report.rowSignalIds("daverandom/resume")).toEqual(["S2", "S4", "S5"]);
-  expect(await report.rowMoreSignalsVisible("daverandom/resume")).toBe(false);
 });

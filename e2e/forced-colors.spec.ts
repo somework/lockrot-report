@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);
 });
 
-test.describe("PD-ROWS-2: the age scale stays visible in forced-colors mode", () => {
+test.describe("PD-ROWS-2/PD-ROWS-4: the age bar and its guides stay visible in forced-colors mode", () => {
   test("javibravo/simpleue (wallabag, at-or-above-high zone), light forced colors", async ({ page }) => {
     await report.goto(FIXTURES.wallabag);
     await page.emulateMedia({ colorScheme: "light", forcedColors: "active" });
@@ -33,8 +33,8 @@ test.describe("PD-ROWS-2: the age scale stays visible in forced-colors mode", ()
   });
 
   test("defuse/php-encryption (wallabag, warn..high zone), light forced colors", async ({ page }) => {
-    // "stale" (S2 3.3 years, against warn=3/high=5): the diamond middle zone, not the filled or
-    // hollow ends. Not sensio/framework-extra-bundle (also in this range, at 3.6y) — its own verdict
+    // "stale" (S2 3.3 years, against warn=3/high=5): the hatched middle zone (PD-ROWS-4), not the
+    // solid or hollow ends. Not sensio/framework-extra-bundle (also in this range, at 3.6y) — its own verdict
     // is "abandoned", so PD-ROWS-3 (DESIGN.md §5) now draws its scale in the neutral `contextOnly`
     // tone regardless of zone; this test wants the zone shapes themselves, so it picks a verdict
     // ("stale") whose priority actually comes from age.
@@ -45,9 +45,9 @@ test.describe("PD-ROWS-2: the age scale stays visible in forced-colors mode", ()
     expect(parts).toEqual({ track: true, tick: true, dot: true });
   });
 
-  // Second a11y review: a colour check alone can't tell a tick painted over by the dot from one
+  // Second a11y review: a colour check alone can't tell a guide painted over by the bar from one
   // that's genuinely missing. jwilsson/spotify-web-api-php sits at 3.1y against koel_koel's own
-  // warn=3 threshold — close enough that the dot used to erase the warn tick outright.
+  // warn=3 threshold — its bar ends right on the warn guide, which must stay on top.
   test("jwilsson/spotify-web-api-php (koel_koel, 3.1y against warn=3): the warn tick survives under the dot", async ({
     page,
   }) => {
@@ -66,11 +66,10 @@ test.describe("PD-ROWS-2: the age scale stays visible in forced-colors mode", ()
     expect(await report.ageScaleWarnTickSurvivesDot("jwilsson/spotify-web-api-php")).toBe(true);
   });
 
-  // PD-ROWS-3 (DESIGN.md §5): sensio/framework-extra-bundle's own scale draws in the neutral
-  // `contextOnly` tone (abandoned, from S1/S3, not from its own S2 age) — it carries neither
-  // `.tone-med` nor `.tone-crit`, so forced-colors mode gives it the same base rule as a "below warn"
-  // scale (a hollow ring), not the diamond or filled dot. Still a real mark, not an invisible one.
-  test("sensio/framework-extra-bundle's own contextOnly dot is still visible in forced colors", async ({
+  // PD-ROWS-3 (DESIGN.md §5): sensio/framework-extra-bundle's own bar draws in the neutral
+  // `contextOnly` tone (abandoned, from S1/S3, not from its own S2 age) — GrayText in forced-colors
+  // mode, distinct from both the page and the zone patterns. Still a real mark, not an invisible one.
+  test("sensio/framework-extra-bundle's own contextOnly bar is still visible in forced colors", async ({
     page,
   }) => {
     await report.goto(FIXTURES.wallabag);
@@ -78,24 +77,6 @@ test.describe("PD-ROWS-2: the age scale stays visible in forced-colors mode", ()
 
     const parts = await report.ageScaleForcedColorsVisible("sensio/framework-extra-bundle");
     expect(parts).toEqual({ track: true, tick: true, dot: true });
-  });
-
-  // a11y review: the once-per-list legend (`AgeScaleLegend`) shared the same Canvas-flattening
-  // failure as a row's own ticks above, but drew its tick from a rule (`.age-scale-legend-tick`,
-  // `views.css`) that carried no forced-colors override — the caption itself survives ("warn 3 y
-  // high 5 y" is text), but the tick marking each word pair went blank.
-  test("the legend's own tick stays visible in forced colors, light", async ({ page }) => {
-    await report.goto(FIXTURES.wallabag);
-    await page.emulateMedia({ colorScheme: "light", forcedColors: "active" });
-
-    expect(await report.ageScaleLegendTickForcedColorsVisible()).toBe(true);
-  });
-
-  test("the legend's own tick stays visible in forced colors, dark", async ({ page }) => {
-    await report.goto(FIXTURES.wallabag);
-    await page.emulateMedia({ colorScheme: "dark", forcedColors: "active" });
-
-    expect(await report.ageScaleLegendTickForcedColorsVisible()).toBe(true);
   });
 });
 

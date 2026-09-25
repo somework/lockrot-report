@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ageLegend, ageScale, anyAgeScale, sharedAgeMax } from "../../../src/domain/age";
+import { ageAxis, ageLegend, ageNotRead, ageScale } from "../../../src/domain/age";
 import { makeFinding, makeSignal } from "./fixtures";
 
 const RELEASE_THRESHOLDS = [
@@ -186,58 +186,49 @@ describe("ageScale / contextOnly (PD-ROWS-3)", () => {
   );
 });
 
-describe("sharedAgeMax (PD-ROWS-3)", () => {
-  it("floors at 10 years when nothing in the list is older", () => {
-    // Arrange
-    const findings = [
-      makeFinding({ verdict: AGE_VERDICT, signals: [makeSignal({ id: "S2", data: { years: 1.2 } })] }),
-      makeFinding({ verdict: AGE_VERDICT, signals: [makeSignal({ id: "S2", data: { years: 4 } })] }),
-    ];
-
-    // Act + Assert
-    expect(sharedAgeMax(findings, RELEASE_THRESHOLDS)).toBe(10);
+describe("ageAxis (PD-ROWS-4)", () => {
+  it("spans twice the high threshold, and never less than 10 years", () => {
+    // Arrange + Act + Assert: 2 × 5 = 10; a run with high at 8 gets a 16-year axis, one at 2 still 10.
+    expect(ageAxis(RELEASE_THRESHOLDS)).toEqual({ warn: 3, high: 5, max: 10 });
+    expect(
+      ageAxis([
+        ["release-warn-years", 4],
+        ["release-high-years", 8],
+      ]),
+    ).toEqual({ warn: 4, high: 8, max: 16 });
+    expect(
+      ageAxis([
+        ["release-warn-years", 1],
+        ["release-high-years", 2],
+      ]),
+    ).toEqual({ warn: 1, high: 2, max: 10 });
   });
 
-  it("takes the largest ceil(years) across every row that would draw a scale", () => {
-    // Arrange
-    const findings = [
-      makeFinding({ verdict: AGE_VERDICT, signals: [makeSignal({ id: "S2", data: { years: 4 } })] }),
-      makeFinding({ verdict: AGE_VERDICT, signals: [makeSignal({ id: "S2", data: { years: 12.3 } })] }),
-      makeFinding({ verdict: AGE_VERDICT, signals: [makeSignal({ id: "S2", data: { years: 8 } })] }),
-    ];
-
-    // Act + Assert
-    expect(sharedAgeMax(findings, RELEASE_THRESHOLDS)).toBe(13);
+  it("does not depend on the rows: the axis a filter leaves is the axis it started with", () => {
+    // The old shared maximum followed the oldest row on screen, so filtering rescaled every bar.
+    expect(ageAxis(ALL_THRESHOLDS)).toEqual(ageAxis(RELEASE_THRESHOLDS));
   });
 
-  it("ignores a row that would draw no scale of its own (no signal, or a missing threshold)", () => {
-    // Arrange
-    const findings = [
-      makeFinding({ verdict: AGE_VERDICT, signals: [makeSignal({ id: "S1" })] }),
-      makeFinding({ verdict: AGE_VERDICT, signals: [makeSignal({ id: "S4", data: { years: 40 } })] }),
-    ];
-
-    // Act: no push-* thresholds recorded, so the S4 row above draws nothing either.
-    expect(sharedAgeMax(findings, RELEASE_THRESHOLDS)).toBe(10);
-  });
-
-  it("returns 10 for an empty list", () => {
-    expect(sharedAgeMax([], RELEASE_THRESHOLDS)).toBe(10);
+  it("falls back to the push pair, and is null when neither pair is complete", () => {
+    expect(ageAxis(PUSH_THRESHOLDS)).toEqual({ warn: 3, high: 5, max: 10 });
+    expect(ageAxis([["release-warn-years", 3]])).toBeNull();
   });
 });
 
-describe("anyAgeScale (PD-ROWS-3)", () => {
-  it("is false when no row in the list would draw a scale", () => {
-    const findings = [makeFinding({ signals: [makeSignal({ id: "S1" })] })];
-    expect(anyAgeScale(findings, RELEASE_THRESHOLDS)).toBe(false);
+describe("ageNotRead", () => {
+  it("is true when an S10 says it blocked one of the age signals", () => {
+    const finding = makeFinding({
+      signals: [makeSignal({ id: "S10", level: "info", data: { blocks: ["S2", "S8"] } })],
+    });
+    expect(ageNotRead(finding)).toBe(true);
   });
 
-  it("is true when at least one row would draw a scale", () => {
-    const findings = [
-      makeFinding({ signals: [makeSignal({ id: "S1" })] }),
-      makeFinding({ signals: [makeSignal({ id: "S2", data: { years: 4 } })] }),
-    ];
-    expect(anyAgeScale(findings, RELEASE_THRESHOLDS)).toBe(true);
+  it("is false for an S10 that blocked something else, and for no S10 at all", () => {
+    const other = makeFinding({ signals: [makeSignal({ id: "S10", data: { blocks: ["S3"] } })] });
+    const malformed = makeFinding({ signals: [makeSignal({ id: "S10", data: { blocks: "S2" } })] });
+    expect(ageNotRead(other)).toBe(false);
+    expect(ageNotRead(malformed)).toBe(false);
+    expect(ageNotRead(makeFinding({ signals: [makeSignal({ id: "S1" })] }))).toBe(false);
   });
 });
 

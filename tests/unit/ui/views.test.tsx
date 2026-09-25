@@ -245,7 +245,8 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
     // Assert
     expect(within(row).getByRole("link", { name: "S4" })).toBeTruthy();
     expect(within(row).queryByRole("link", { name: "S1" })).toBeNull();
-    expect(within(row).getByText(/2 more signals, open the package/)).toBeTruthy();
+    // PD-ROWS-4: the "+N more signals, open the package" note is gone; the detail lists them all.
+    expect(within(row).queryByText(/more signal/)).toBeNull();
   });
 
   // regression review: on screen, only the key fact stands in for the other signals — but print
@@ -309,24 +310,50 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
     expect(within(row).queryByRole("link", { name: "S4" })).toBeNull();
   });
 
-  it('singularises "+N more" and omits it entirely for a finding with only one signal', () => {
+  it("says the quoted signal short, from its own data, with the document's summary as the title (PD-ROWS-4)", () => {
     // Arrange
-    const one = makeFinding({ package: "one-sig/pkg", signals: [makeSignal({ id: "S1" })] });
-    const two = makeFinding({
-      package: "two-sig/pkg",
-      signals: [makeSignal({ id: "S1" }), makeSignal({ id: "S3" })],
+    const finding = makeFinding({
+      package: "short/pkg",
+      verdict: "silent",
+      signals: [
+        makeSignal({
+          id: "S2",
+          level: "high",
+          summary: "last release 2017-11-15 (8.9 years ago)",
+          data: { years: 8.9, last_release: "2017-11-15T13:41:13+00:00" },
+        }),
+      ],
     });
-    const model = modelWith([one, two]);
+    const model = modelWith([finding]);
 
     // Act
     renderIn(model, stateWith(), <FindingsView />);
+    const row = screen.getByRole("listitem", { name: "short/pkg" });
 
     // Assert
-    const oneRow = screen.getByRole("listitem", { name: "one-sig/pkg" });
-    expect(within(oneRow).queryByText(/more signal/)).toBeNull();
-    const twoRow = screen.getByRole("listitem", { name: "two-sig/pkg" });
-    expect(within(twoRow).getByText(/1 more signal, open the package/)).toBeTruthy();
-    expect(within(twoRow).queryByText(/1 more signals/)).toBeNull();
+    const why = within(row).getByText("no stable release since Nov 2017");
+    expect(why.closest(".fc-why")?.getAttribute("title")).toBe("last release 2017-11-15 (8.9 years ago)");
+  });
+
+  it("quotes the signal the rail filters by, when it filters by exactly one (PD-ROWS-5)", () => {
+    // Arrange: S2 is the key fact on its own; filtered to S5, the row quotes S5 instead.
+    const finding = makeFinding({
+      package: "quoted/pkg",
+      verdict: "silent",
+      signals: [
+        makeSignal({ id: "S2", level: "high", data: { years: 8.9 } }),
+        makeSignal({ id: "S5", level: "warn", summary: "released before PHP 8" }),
+      ],
+    });
+    const model = modelWith([finding]);
+
+    // Act
+    renderIn(model, stateWith({ filters: { ...INITIAL_STATE.filters, signal: ["S5"] } }), <FindingsView />);
+    const row = screen.getByRole("listitem", { name: "quoted/pkg" });
+
+    // Assert
+    expect(within(row).getByRole("link", { name: "S5" })).toBeTruthy();
+    expect(within(row).queryByRole("link", { name: "S2" })).toBeNull();
   });
 
   it("falls back to the evidence sentence for a finding with no signal at all", () => {
@@ -373,37 +400,34 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
     expect(scale.getAttribute("title")).toBe(scale.getAttribute("aria-label"));
   });
 
-  it("reserves the age scale's own width on a row with a key fact but no scale, so its signal text does not wrap wider than a scaled neighbour (PD-ROWS-3)", () => {
-    // Arrange: unscaled/pkg carries only S3 (no years at all); scaled/pkg carries S2 and does draw
-    // a scale — both in the same list, so a shared row width is actually at stake.
+  it("says why a row has no age bar, in words, and keeps the guides running through it (PD-ROWS-4)", () => {
+    // Arrange: unscaled/pkg carries only S3 (no years at all); blocked/pkg's S10 says S2 could not run.
     const unscaled = makeFinding({
       package: "unscaled/pkg",
       verdict: "stale",
       signals: [makeSignal({ id: "S3", level: "high", summary: "repository archived" })],
     });
-    const scaled = makeFinding({
-      package: "scaled/pkg",
+    const blocked = makeFinding({
+      package: "blocked/pkg",
       verdict: "stale",
-      signals: [makeSignal({ id: "S2", level: "high", data: { years: 4 } })],
+      signals: [makeSignal({ id: "S10", level: "info", data: { blocks: ["S2", "S8"] } })],
     });
-    const model = modelWith([unscaled, scaled]);
+    const model = modelWith([unscaled, blocked]);
 
     // Act
     renderIn(model, stateWith(), <FindingsView />);
-    const row = screen.getByRole("listitem", { name: "unscaled/pkg" });
+    const unscaledRow = screen.getByRole("listitem", { name: "unscaled/pkg" });
+    const blockedRow = screen.getByRole("listitem", { name: "blocked/pkg" });
 
-    // Assert: no accessible scale (nothing to plot), but the placeholder still reserves the track's
-    // own footprint, aria-hidden so it names no fact of its own.
-    expect(within(row).queryByRole("img")).toBeNull();
-    const placeholder = row.querySelector(".age-scale-placeholder");
-    expect(placeholder).not.toBeNull();
-    expect(placeholder?.getAttribute("aria-hidden")).toBe("true");
+    // Assert: no accessible scale, a short reason instead of a bare dash, and both guides still drawn.
+    expect(within(unscaledRow).queryByRole("img")).toBeNull();
+    expect(within(unscaledRow).getByText("no age signal")).toBeTruthy();
+    expect(within(blockedRow).getByText("age not read")).toBeTruthy();
+    expect(unscaledRow.querySelectorAll(".age-guide")).toHaveLength(2);
   });
 
-  it("shares one maximum across every row in the list, so the same years plots at the same position regardless of which row is oldest (PD-ROWS-3)", () => {
-    // Arrange: a 4-year row alone would floor its own track at 10; a 12-year row in the same list
-    // pushes the shared maximum to 12, moving the 4-year row's own dot left of where it would sit on
-    // its own 10-year track (40% instead of the un-shared 50%).
+  it("draws every bar on one fixed axis, max(10, 2 × high), whatever the oldest row is (PD-ROWS-4)", () => {
+    // Arrange: a 12-year row no longer stretches the axis; it runs to the edge, marked as cut.
     const young = makeFinding({
       package: "young/pkg",
       verdict: "stale",
@@ -418,14 +442,20 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
 
     // Act
     renderIn(model, stateWith(), <FindingsView />);
-    const youngRow = screen.getByRole("listitem", { name: "young/pkg" });
-    const dot = youngRow.querySelector(".age-scale-dot") as HTMLElement;
+    const youngBar = screen
+      .getByRole("listitem", { name: "young/pkg" })
+      .querySelector(".age-bar") as HTMLElement;
+    const oldBar = screen.getByRole("listitem", { name: "old/pkg" }).querySelector(".age-bar") as HTMLElement;
 
-    // Assert: 4 / 12 === 33.33%, not the 40% a lone 4-year row's own max(10, ceil(4)) would give it.
-    expect(dot.style.left).toBe(`${(4 / 12) * 100}%`);
+    // Assert: 4 / 10 = 40%; 12 years is capped at 100% and says it was cut; its number stays exact.
+    expect(youngBar.style.width).toBe("40%");
+    expect(oldBar.style.width).toBe("100%");
+    expect(oldBar.className).toContain("is-over");
+    expect(youngBar.className).not.toContain("is-over");
+    expect(screen.getByRole("listitem", { name: "old/pkg" }).textContent).toContain("12.0");
   });
 
-  it("shows the run's own thresholds once, above the list, rather than repeating them per row (PD-ROWS-3)", () => {
+  it("captions the axis once, in the column head, with the run's own thresholds (PD-ROWS-4)", () => {
     // Arrange
     const finding = makeFinding({
       package: "scaled/pkg",
@@ -437,37 +467,19 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
     // Act
     renderIn(model, stateWith(), <FindingsView />);
 
-    // Assert: the run's own release-warn-years/release-high-years, named once. a11y review: the
-    // visible line is a short, `aria-hidden` "y" form (the tick glyph replaced by a CSS-drawn bar,
-    // `.age-scale-legend-tick`, not a text character a screen reader would read aloud); the line's
-    // own accessible name — `role="img"`, the same pairing a row's own `AgeScale` already uses —
-    // spells the unit out in full instead, found here by that role and name rather than by
-    // `getByText` (which, by default, matches the visible `aria-hidden` span underneath, not the
-    // named element itself).
-    const legend = screen.getByRole("img", { name: "age scale: warn at 3 years, high at 5 years" });
-    expect(legend.textContent).toBe("age scale: warn 3 y high 5 y");
-  });
-
-  it("shows no legend at all when nothing in the list would draw a scale (PD-ROWS-3)", () => {
-    // Arrange: only S3, which never carries years — the same shape as the "draws no scale" test
-    // below, but asserted against the list-level legend rather than one row's own scale.
-    const finding = makeFinding({
-      package: "unscaled/pkg",
-      signals: [makeSignal({ id: "S3", level: "high", summary: "repository archived" })],
-    });
-    const model = modelWith([finding]);
-
-    // Act
-    renderIn(model, stateWith(), <FindingsView />);
-
-    // Assert
-    expect(screen.queryByText(/age scale:/)).toBeNull();
+    // Assert: the old floating "age scale: warn 3 y high 5 y" line is gone; the head says it instead.
+    const axis = screen.getByRole("img", { name: /^age axis:/ });
+    expect(axis.getAttribute("aria-label")).toBe(
+      "age axis: years since the last release, 0 to 10 and more; warn at 3 years, high at 5 years",
+    );
+    expect(axis.textContent).toBe("Years since release03y5y10y+");
+    expect(screen.queryByText(/^age scale:/)).toBeNull();
   });
 
   describe("contextOnly: a scale drawn for context, not for the verdict's own priority (PD-ROWS-3)", () => {
     // sensio/framework-extra-bundle's own shape: CRITICAL from S1 (abandoned), but its S2 sits in
     // the warn zone — the scale must not read as agreeing with a priority S1 alone decided.
-    it("draws a neutral dot, not the zone's tone, for an abandoned finding", () => {
+    it("draws a neutral bar, not the zone's tone, for an abandoned finding", () => {
       // Arrange
       const finding = makeFinding({
         package: "sensio/framework-extra-bundle",
@@ -487,17 +499,17 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
       // Act
       renderIn(model, stateWith(), <FindingsView />);
       const row = screen.getByRole("listitem", { name: "sensio/framework-extra-bundle" });
-      const dot = row.querySelector(".age-scale-dot");
+      const dot = row.querySelector(".age-bar");
       const scale = within(row).getByRole("img");
 
       // Assert: neutral class, not the medium (warn-zone) tone this age would otherwise carry.
-      expect(dot?.className).toContain("age-scale-dot-context");
+      expect(dot?.className).toContain("age-bar-context");
       expect(dot?.className).not.toContain("tone-med");
       expect(scale.getAttribute("aria-label")).toContain("age shown for context");
       expect(scale.getAttribute("aria-label")).toContain("flagged for being marked abandoned");
     });
 
-    it("draws a neutral dot for a pinned finding too", () => {
+    it("draws a neutral bar for a pinned finding too", () => {
       // Arrange
       const finding = makeFinding({
         package: "acme/pinned-old",
@@ -509,11 +521,11 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
       // Act
       renderIn(model, stateWith(), <FindingsView />);
       const row = screen.getByRole("listitem", { name: "acme/pinned-old" });
-      const dot = row.querySelector(".age-scale-dot");
+      const dot = row.querySelector(".age-bar");
       const scale = within(row).getByRole("img");
 
       // Assert
-      expect(dot?.className).toContain("age-scale-dot-context");
+      expect(dot?.className).toContain("age-bar-context");
       expect(dot?.className).not.toContain("tone-crit");
       expect(scale.getAttribute("aria-label")).toContain("flagged for being pinned to a branch snapshot");
     });
@@ -530,11 +542,11 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
       // Act
       renderIn(model, stateWith(), <FindingsView />);
       const row = screen.getByRole("listitem", { name: "acme/stale-old" });
-      const dot = row.querySelector(".age-scale-dot");
+      const dot = row.querySelector(".age-bar");
 
       // Assert
       expect(dot?.className).toContain("tone-crit");
-      expect(dot?.className).not.toContain("age-scale-dot-context");
+      expect(dot?.className).not.toContain("age-bar-context");
     });
   });
 
@@ -569,6 +581,142 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
 
     // Assert
     expect(within(row).queryByRole("img")).toBeNull();
+  });
+});
+
+describe("FindingsView / the ledger's sentences and ditto (PD-ROWS-5/PD-ROWS-6, DESIGN.md §5)", () => {
+  const THRESHOLDS = [
+    ["release-warn-years", 3],
+    ["release-high-years", 5],
+  ] as const;
+
+  function modelWith(findings: readonly ReturnType<typeof makeFinding>[]): Model {
+    const model = flaggedModel(findings);
+    return { ...model, report: { ...model.report, run: { ...model.report.run, thresholds: THRESHOLDS } } };
+  }
+
+  function hoa(name: string, years: number) {
+    return makeFinding({
+      package: `hoa/${name}`,
+      verdict: "abandoned",
+      priority: "high",
+      direct: false,
+      chain: ["wallabag/rulerz", `hoa/${name}`],
+      signals: [
+        makeSignal({ id: "S1", level: "high", summary: "marked abandoned by its repository" }),
+        makeSignal({ id: "S2", level: "high", data: { years } }),
+      ],
+    });
+  }
+
+  it("opens each priority group with a sentence counting its members by verdict and by reach", () => {
+    // Arrange
+    const model = modelWith([
+      makeFinding({ package: "a/silent", verdict: "silent", priority: "critical" }),
+      makeFinding({ package: "b/silent", verdict: "silent", priority: "critical" }),
+      makeFinding({ package: "c/gone", verdict: "abandoned", priority: "critical" }),
+    ]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+
+    // Assert
+    const group = screen.getByRole("heading", { name: "critical" }).closest(".fgroup");
+    expect(group?.querySelector(".fgroup-sentence")?.textContent).toBe(
+      "2 silent and 1 abandoned; you require all three directly.",
+    );
+  });
+
+  it("writes one sentence above three or more consecutive alike rows, and none above two", () => {
+    // Arrange: three hoa/* rows through the same parent, then two through another.
+    const other = (name: string) =>
+      makeFinding({
+        package: `x/${name}`,
+        verdict: "abandoned",
+        priority: "high",
+        direct: false,
+        chain: ["acme/other", `x/${name}`],
+        signals: [makeSignal({ id: "S1", level: "high" })],
+      });
+    const model = modelWith([
+      hoa("compiler", 9.1),
+      hoa("event", 9.7),
+      hoa("math", 9.4),
+      other("a"),
+      other("b"),
+    ]);
+
+    // Act
+    const { container } = renderIn(model, stateWith(), <FindingsView />);
+
+    // Assert
+    const notes = container.querySelectorAll(".frun-note");
+    expect(notes).toHaveLength(1);
+    expect(notes[0]?.textContent).toBe(
+      "These 3 hoa/* packages are all marked abandoned by their repository, last released 9.1–9.7 years ago, and all come in through wallabag/rulerz.",
+    );
+    // Every row stays a row; the note folds nothing away.
+    expect(screen.getAllByRole("listitem")).toHaveLength(5);
+  });
+
+  it("quietens what repeats the row above, but never the verdict's tone, and starts fresh after a note", () => {
+    // Arrange
+    const model = modelWith([hoa("compiler", 9.1), hoa("event", 9.7), hoa("math", 9.4)]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+    const first = screen.getByRole("listitem", { name: "hoa/compiler" });
+    const second = screen.getByRole("listitem", { name: "hoa/event" });
+
+    // Assert
+    expect(first.querySelector(".fc-why")?.className).not.toContain("is-ditto");
+    expect(first.querySelector(".fc-reach")?.className).not.toContain("is-ditto");
+    expect(second.querySelector(".fc-why")?.className).toContain("is-ditto");
+    expect(second.querySelector(".fc-reach")?.className).toContain("is-ditto");
+    expect(second.querySelector(".fc-vendor")?.className).toContain("is-ditto");
+    // The verdict word is still there, in the row's own tone class, only lighter.
+    expect(second.querySelector(".fc-verdict")?.textContent).toBe("abandoned");
+    expect(second.className).toContain("tone-crit");
+  });
+
+  it("keeps the baseline badge, the dev marker and the open row's state", () => {
+    // Arrange
+    const model = modelWith([
+      makeFinding({
+        package: "new/pkg",
+        verdict: "stale",
+        priority: "low",
+        dev: true,
+        baseline: { status: "new", previousVerdict: null },
+      }),
+    ]);
+
+    // Act
+    renderIn(model, stateWith({ pkg: "new/pkg" }), <FindingsView />);
+    const row = screen.getByRole("listitem", { name: "new/pkg" });
+
+    // Assert
+    expect(within(row).getByText("new")).toBeTruthy();
+    expect(within(row).getByText("dev")).toBeTruthy();
+    expect(row.getAttribute("aria-current")).toBe("true");
+  });
+
+  it("draws no axis, and no guides, when the run recorded no thresholds", () => {
+    // Arrange
+    const model = flaggedModel([
+      makeFinding({
+        package: "a/b",
+        verdict: "stale",
+        signals: [makeSignal({ id: "S2", data: { years: 4 } })],
+      }),
+    ]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+
+    // Assert
+    expect(screen.queryByRole("img", { name: /^age axis:/ })).toBeNull();
+    expect(screen.getByRole("listitem", { name: "a/b" }).querySelectorAll(".age-guide")).toHaveLength(0);
   });
 });
 
