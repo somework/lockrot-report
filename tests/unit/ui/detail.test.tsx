@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/preact";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { normalize } from "../../../src/model/normalize";
-import type { Model } from "../../../src/model/types";
+import type { Model, PackageDetails } from "../../../src/model/types";
 import type { Action, State } from "../../../src/state/types";
 import { EMPTY_FILTERS } from "../../../src/state/types";
 import { Detail } from "../../../src/ui/detail/Detail";
@@ -590,7 +590,7 @@ describe("Detail", () => {
       expect(mineX()).toBe(before);
     });
 
-    it("a package without maintained branches: its version once, and no latest column (PD-TIMELINE-3)", () => {
+    it("a package without maintained branches: its version once, its release date in the third column (PD-TIMELINE-3)", () => {
       // daverandom/resume (koel_koel.json): each release is its own "branch" ("0.0.3"/"0.0.2"),
       // whose tag label only repeats it with a "v".
       const { container } = renderDetail(KOEL, "daverandom/resume");
@@ -601,6 +601,12 @@ describe("Detail", () => {
       expect(timeline?.textContent).toContain("2018-01-28");
       expect(timeline?.textContent).toContain("2017-09-26");
       expect(screen.queryByRole("columnheader", { name: "latest" })).toBeNull();
+      // The same four columns as any branch table: the third says when each release came out.
+      screen.getByRole("columnheader", { name: "released" });
+      const third = Array.from(container.querySelectorAll(".detail-timeline-latest")).map(
+        (cell) => cell.textContent,
+      );
+      expect(third).toEqual(["2018-01-28", "2017-09-26"]);
       expect(container.querySelector(".detail-timeline-answer")?.textContent).toBe(
         "You’re on the newest release, 0.0.3. It came out 8.7 years ago.",
       );
@@ -614,8 +620,46 @@ describe("Detail", () => {
       const key = container.querySelector(".detail-timeline-key")?.textContent ?? "";
       expect(key).toContain("you");
       expect(key).not.toContain("newest");
-      expect(key).toContain("3");
-      expect(key).toContain("5 years ago");
+    });
+
+    it("captions the threshold guides on the axis itself, warn and high apart by pattern (PD-TIMELINE-4)", () => {
+      const { container } = renderDetail(KOEL, "meilisearch/meilisearch-php");
+      const captions = Array.from(container.querySelectorAll(".detail-timeline-guide-cap"));
+      expect(captions.map((cap) => cap.textContent)).toEqual(["3y ago", "5y ago"]);
+      // The older guide's caption sits left of its line, the younger's right, so they never meet.
+      expect(captions.map((cap) => cap.classList.contains("is-left"))).toEqual([false, true]);
+      expect(container.querySelector(".detail-timeline-guide.is-warn")).not.toBeNull();
+      expect(container.querySelector(".detail-timeline-guide.is-high")).not.toBeNull();
+      // Out of the key: "┃3 ┃5 years ago" there read as a count.
+      expect(container.querySelector(".detail-timeline-key")?.textContent).not.toMatch(/\d/);
+    });
+
+    it("never tones a snapshot's age: a checkout date is not a release age", () => {
+      // rector/rector (mautic_mautic.json): a dev-main snapshot seven weeks old.
+      const { container } = renderDetail(loadModel("mautic_mautic.json"), "rector/rector");
+      expect(container.querySelector(".detail-timeline-answer")?.textContent).toContain("dated 7 weeks ago");
+      expect(container.querySelector(".detail-timeline-age")?.classList.contains("is-toned")).toBe(false);
+      expect(
+        container.querySelector(".detail-timeline-row.is-snapshot")?.classList.contains("is-toned"),
+      ).toBe(false);
+    });
+
+    it("calls the first row the highest, not the newest, when a lower branch released after it", () => {
+      // meilisearch-php with its 0.24.x (installed) moved to a release after 1.x's own.
+      const details = KOEL.details.get("meilisearch/meilisearch-php");
+      if (details?.metadata == null) throw new Error("meilisearch-php has no metadata");
+      const branches = details.metadata.branches.map((branch) =>
+        branch.branch === "0.24.x" ? { ...branch, highestReleased: "2026-09-01T00:00:00.000Z" } : branch,
+      );
+      const moved: PackageDetails = { ...details, metadata: { ...details.metadata, branches } };
+      const model: Model = {
+        ...KOEL,
+        details: new Map([...KOEL.details, ["meilisearch/meilisearch-php", moved] as const]),
+      };
+      const { container } = renderDetail(model, "meilisearch/meilisearch-php");
+      expect(container.querySelector(".detail-timeline-sub")?.textContent).toContain("The highest is 1.x");
+      expect(container.querySelector(".detail-timeline-key")?.textContent).toContain("highest");
+      expect(rowHeaders(container)[0]).toBe("1.x, the highest");
     });
 
     it("falls back to date order, and to no tone or guides, when the names or the thresholds are missing", () => {

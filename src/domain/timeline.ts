@@ -23,6 +23,10 @@ const MS_PER_JULIAN_YEAR = 365.25 * MS_PER_DAY;
  *  question (the newest, and yours) under the ones in between. */
 const BETWEEN_MAX = 4;
 
+/** The fewest branches a fold hides: a fold row costs a row itself, so folding two saves one line
+ *  and hides two answers — below three, each branch keeps its own row. */
+const FOLD_MIN = 3;
+
 /** The right-hand share of the axis a year label may not sit in: the "today" label owns it. */
 const TODAY_ZONE = 28;
 
@@ -64,6 +68,10 @@ export interface TimelineModel {
   readonly mine: TimelineLane | null;
   /** The first lane of the sort order (the newest branch), installed or not. */
   readonly top: TimelineLane;
+  /** Whether `top` also released last: false when a lower branch shipped after it (a maintenance
+   *  release), so the sentence calls `top` the highest rather than the newest — "the newest is 4.x,
+   *  released 2023" beside a 3.x release from 2025 would contradict itself. */
+  readonly topReleasedLast: boolean;
   /** How many lanes sort above the installed branch; 0 without one. */
   readonly newerCount: number;
   readonly sortedBy: "version" | "date";
@@ -185,8 +193,8 @@ export function yearsSince(iso: string, now: Date): number {
 }
 
 /** The rows drawn for a reader on the installed lane at `index`: every newer branch (the middle
- *  ones folded past BETWEEN_MAX), theirs, then the older ones folded into one row (a single older
- *  one gets its own row — a fold that hides one row saves nothing). */
+ *  ones folded past BETWEEN_MAX), theirs, then the older ones folded into one row (fewer than
+ *  FOLD_MIN older ones keep their own rows). */
 function rowsAround(lanes: readonly TimelineLane[], index: number): TimelineRow[] {
   const rows: TimelineRow[] = [];
   const newer = lanes.slice(0, index);
@@ -204,7 +212,7 @@ function rowsAround(lanes: readonly TimelineLane[], index: number): TimelineRow[
 }
 
 function foldOlder(older: readonly TimelineLane[]): TimelineRow[] {
-  if (older.length >= 2) return [{ kind: "fold", which: "older", lanes: older }];
+  if (older.length >= FOLD_MIN) return [{ kind: "fold", which: "older", lanes: older }];
   return older.map((lane) => ({ kind: "lane", lane }));
 }
 
@@ -294,6 +302,7 @@ export function timelineModel(
     rows,
     mine: installedIndex >= 0 ? (lanes[installedIndex] ?? null) : snapshot,
     top,
+    topReleasedLast: sorted.every((d) => d.time <= (sorted[0]?.time ?? d.time)),
     newerCount: Math.max(installedIndex, 0),
     sortedBy: by,
     releasesOnly: lanes.every((lane) => !lane.showLabel),

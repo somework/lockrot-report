@@ -15,12 +15,37 @@ async function openTimeline(page: Page, fixture: FixtureName, pkg: string): Prom
   await expect(page.locator(".detail-timeline")).toBeVisible();
 }
 
+/**
+ * Opens every fold and waits until the page is still: each button reports itself expanded, and no
+ * animation is left running. A phone-width detail slides in as a sheet (app.css `sheet-in`), and
+ * an axe colour-contrast pass taken mid-slide read half-faded text â€” one run in eighty failed so.
+ */
+async function openFolds(page: Page): Promise<void> {
+  const buttons = page.locator(".detail-timeline-fold-btn");
+  const count = await buttons.count();
+  for (let index = 0; index < count; index++) {
+    const button = buttons.nth(index);
+    await button.click();
+    await expect(button).toHaveAttribute("aria-expanded", "true");
+  }
+  await page.mouse.move(0, 0);
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+        .map((animation) => animation.finished),
+    ),
+  );
+}
+
 const MEILI = [FIXTURES.koel, "meilisearch/meilisearch-php"] as const;
 const RESUME = [FIXTURES.koel, "daverandom/resume"] as const;
 const PREDIS = [FIXTURES.koel, "predis/predis"] as const;
 const RECTOR = [FIXTURES.mautic, "rector/rector"] as const;
 const BRICK = [FIXTURES.mautic, "brick/math"] as const;
 const OTPHP = [FIXTURES.wallabag, "spomky-labs/otphp"] as const;
+const PDFPARSER = [FIXTURES.wallabag, "smalot/pdfparser"] as const;
 
 test.describe("PD-TIMELINE-7: the answer comes first", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
@@ -87,6 +112,43 @@ test.describe("PD-TIMELINE-1/2: the axis and the rows hold their geometry (1440Ã
     expect(after?.x).toBeCloseTo(before?.x ?? -1, 1);
   });
 
+  test("no year label sits on a threshold guide, and each hangs from its own tick", async ({ page }) => {
+    for (const [fixture, pkg] of [MEILI, RESUME, PDFPARSER]) {
+      await openTimeline(page, fixture, pkg);
+      const clashes = await page.locator(".detail-timeline").evaluate((section) => {
+        const guides = Array.from(
+          section.querySelectorAll(".detail-timeline-head ~ .detail-timeline-row .detail-timeline-guide"),
+        )
+          .slice(0, 2)
+          .map((guide) => guide.getBoundingClientRect().left);
+        const found: string[] = [];
+        for (const year of section.querySelectorAll<HTMLElement>(".detail-timeline-year")) {
+          const box = year.getBoundingClientRect();
+          for (const x of guides) if (x > box.left - 2 && x < box.right + 2) found.push(year.textContent);
+          if (getComputedStyle(year, "::before").content === "none")
+            found.push(`${year.textContent} has no tick`);
+        }
+        return found;
+      });
+      expect(clashes, pkg).toEqual([]);
+    }
+  });
+
+  test("the guides' captions sit above their own lines, clear of the LATEST header", async ({ page }) => {
+    await openTimeline(page, ...MEILI);
+    const latest = await page.getByRole("columnheader", { name: "latest" }).boundingBox();
+    for (const level of ["warn", "high"]) {
+      const caption = await page.locator(`.detail-timeline-guide-cap.is-${level}`).boundingBox();
+      const guide = await page
+        .locator(`.detail-timeline-row.is-mine .detail-timeline-guide.is-${level}`)
+        .boundingBox();
+      if (caption === null || guide === null || latest === null) throw new Error(`no ${level} box`);
+      const lineX = level === "high" ? caption.x + caption.width : caption.x;
+      expect(Math.abs(lineX - (level === "high" ? guide.x + guide.width : guide.x))).toBeLessThanOrEqual(1);
+      expect(caption.x + caption.width).toBeLessThan(latest.x);
+    }
+  });
+
   test("a release from last week still shows a stub of line before the rule", async ({ page }) => {
     // predis/predis 3.x: v3.6.1, six days before the report.
     await openTimeline(page, ...PREDIS);
@@ -103,7 +165,7 @@ test.describe("PD-TIMELINE-2: nothing clipped, wrapped mid-word or ellipsised on
       for (const [fixture, pkg] of [MEILI, RECTOR, BRICK, OTPHP]) {
         test(pkg, async ({ page }) => {
           await openTimeline(page, fixture, pkg);
-          for (const button of await page.locator(".detail-timeline-fold-btn").all()) await button.click();
+          await openFolds(page);
 
           const problems = await page.locator(".detail-timeline").evaluate((section) => {
             const found: string[] = [];
@@ -132,10 +194,10 @@ test.describe("PD-TIMELINE-6: the table stays a table for assistive tech", () =>
     for (const width of [320, 1440]) {
       test(`axe, ${colorScheme}, ${String(width)}px, folds open`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
-        await page.emulateMedia({ colorScheme });
+        await page.emulateMedia({ colorScheme, reducedMotion: "reduce" });
         for (const [fixture, pkg] of [MEILI, RECTOR, RESUME]) {
           await openTimeline(page, fixture, pkg);
-          for (const button of await page.locator(".detail-timeline-fold-btn").all()) await button.click();
+          await openFolds(page);
           const results = await new AxeBuilder({ page }).include(".detail-timeline").analyze();
           expect(results.violations.map((v) => `${pkg}: ${v.id}`)).toEqual([]);
         }
@@ -167,8 +229,12 @@ test.describe("PD-TIMELINE-4: forced colours keep every marker, by shape", () =>
           otherLine: style(
             ".detail-timeline-row:not(.is-mine):not(.is-newest):not(.detail-timeline-head) .detail-timeline-tail",
           ).backgroundColor,
+          warnGuide: style(".detail-timeline-guide.is-warn").borderLeftStyle,
+          highGuide: style(".detail-timeline-guide.is-high").borderLeftStyle,
         };
       });
+      // Both guides are GrayText here, so their patterns alone tell warn from high.
+      expect(colours.warnGuide).not.toBe(colours.highGuide);
       expect(colours.mineRing).not.toBe(colours.canvas);
       expect(colours.mineLine).not.toBe(colours.canvas);
       expect(colours.newestDisc).not.toBe(colours.canvas);

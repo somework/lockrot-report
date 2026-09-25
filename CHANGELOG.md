@@ -54,9 +54,12 @@ tag or the address format, says so under **Breaking** in its entry.
   it last released, in the run's age colours, then how many branches are newer and the newest one's
   version, date and php constraint. Below it, one row per branch, newest version first: a line from
   its last release to a "today" rule on one shared axis, its latest version and its php constraint
-  as written. Branches older than yours fold into one row, and so do more than four between the
-  newest and yours. A dev-branch checkout gets its own row. Dashed lines mark the run's release
-  warn and high years.
+  as written. Three or more branches older than yours fold into one row, and so do more than four
+  between the newest and yours. A dev-branch checkout gets its own row, its age in plain ink rather
+  than a release-age colour. Two lines, captioned "3y" and "5y" at the top, mark the run's release
+  warn and high years, one dashed and one dotted. A package whose branches are only its releases
+  shows each release's date where a branch shows its latest version. When a lower branch released
+  after the highest one, the sentence calls that one the highest rather than the newest.
 
 ### Fixed
 

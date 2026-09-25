@@ -169,19 +169,35 @@ describe("timelineModel / rows and folds", () => {
     expect(timeline.newerCount).toBe(10);
   });
 
-  it("a single older branch keeps its own row: a fold that hides one row saves nothing", () => {
+  it("fewer than three older branches keep their own rows: a fold would cost as much as it hides", () => {
     // Arrange
     const branches = [
       makeBranch({ branch: "2.x", highestReleased: "2026-01-01T00:00:00Z" }),
       makeBranch({ branch: "1.x", installed: true, highestReleased: "2022-01-01T00:00:00Z" }),
       makeBranch({ branch: "0.9.x", highestReleased: "2020-01-01T00:00:00Z" }),
+      makeBranch({ branch: "0.8.x", highestReleased: "2019-01-01T00:00:00Z" }),
     ];
 
     // Act
-    const timeline = timelineModel(branches, null, "v1.0.0", NOW);
+    const two = timelineModel(branches, null, "v1.0.0", NOW);
+    const three = timelineModel(
+      [...branches, makeBranch({ branch: "0.7.x", highestReleased: "2018-01-01T00:00:00Z" })],
+      null,
+      "v1.0.0",
+      NOW,
+    );
 
     // Assert
-    expect(timeline && rowShape(timeline)).toEqual(["2.x", "1.x", "0.9.x"]);
+    expect(two && rowShape(two)).toEqual(["2.x", "1.x", "0.9.x", "0.8.x"]);
+    expect(three && rowShape(three)).toEqual(["2.x", "1.x", "fold:older:3"]);
+  });
+
+  it("predis/predis (koel_koel): its two older branches stay two rows, not a '2 older' fold", () => {
+    // Act
+    const timeline = model("koel_koel", "predis/predis");
+
+    // Assert
+    expect(rowShape(timeline)).toEqual(["3.x", "2.x", "1.x", "0.8.x", "0.7.x"]);
   });
 
   it("daverandom/resume (koel_koel): two releases, the installed one on top, no newest marker", () => {
@@ -234,7 +250,7 @@ describe("timelineModel / rows and folds", () => {
 
   it("with no installed branch and no snapshot, shows the newest and folds the rest", () => {
     // Arrange
-    const branches = ["3.x", "2.x", "1.x"].map((branch, index) =>
+    const branches = ["4.x", "3.x", "2.x", "1.x"].map((branch, index) =>
       makeBranch({ branch, highestReleased: `${String(2024 - index)}-01-01T00:00:00Z` }),
     );
 
@@ -242,8 +258,44 @@ describe("timelineModel / rows and folds", () => {
     const timeline = timelineModel(branches, null, "v9.9.9", NOW);
 
     // Assert
-    expect(timeline && rowShape(timeline)).toEqual(["3.x", "fold:older:2"]);
+    expect(timeline && rowShape(timeline)).toEqual(["4.x", "fold:older:3"]);
     expect(timeline?.mine).toBeNull();
+  });
+});
+
+describe("timelineModel / topReleasedLast", () => {
+  it("is true when the highest version also released last", () => {
+    // Act
+    const timeline = model("koel_koel", "meilisearch/meilisearch-php");
+
+    // Assert
+    expect(timeline.topReleasedLast).toBe(true);
+  });
+
+  it("is false when a maintenance branch shipped after the highest one, so it is not called newest", () => {
+    // Arrange: 3.x's last release (2025) is later than 4.x's (2023); version order still puts 4.x first.
+    const branches = [
+      makeBranch({ branch: "3.x", installed: true, highestReleased: "2025-06-01T00:00:00Z" }),
+      makeBranch({ branch: "4.x", highestReleased: "2023-01-01T00:00:00Z" }),
+    ];
+
+    // Act
+    const timeline = timelineModel(branches, null, "v3.0.0", NOW);
+
+    // Assert
+    expect(timeline?.top.branch).toBe("4.x");
+    expect(timeline?.topReleasedLast).toBe(false);
+  });
+
+  it("is always true in date order, where the first row is the latest release by definition", () => {
+    // Arrange
+    const branches = [
+      makeBranch({ branch: "master", highestReleased: "2026-01-01T00:00:00Z" }),
+      makeBranch({ branch: "1.x", installed: true, highestReleased: "2020-01-01T00:00:00Z" }),
+    ];
+
+    // Act / Assert
+    expect(timelineModel(branches, null, "v1.0.0", NOW)?.topReleasedLast).toBe(true);
   });
 });
 
