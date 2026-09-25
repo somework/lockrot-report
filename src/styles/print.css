@@ -572,17 +572,25 @@
     text-decoration: none;
   }
 
-  /* Run data, compact: the facts in two columns of label/value pairs, except that a long value (the
-   * libyears not measured, a baseline) takes the whole line rather than wrapping in a narrow cell
-   * (RunView's `kv-long`); each block kept to one page with its heading. */
+  /* Run data, compact (PD-RUN-1..4): the answer a size down, the scales at their screen layout, the
+   * recorded fields in their three groups side by side; each block kept to one page with its
+   * heading. */
   .pd-run .run-sections {
     gap: 8px;
     padding-top: 6px;
   }
-  .pd-run .sect {
+  .pd-run .sect,
+  .pd-run .run-top {
     margin-top: 0;
     gap: 5px;
     break-inside: avoid;
+  }
+  .pd-run .run-answer {
+    font-size: 13.5px;
+  }
+  .pd-run .run-absent {
+    padding: 4px 8px;
+    font-size: 10.5px;
   }
   .pd-run .note {
     margin: 0;
@@ -595,28 +603,25 @@
     text-transform: uppercase;
     color: var(--muted);
   }
-  .pd-run .kv-wrap {
-    border: 0;
-    padding: 0;
-    overflow: visible;
+  .pd-run .run-thr-row {
+    grid-template-columns: 150px minmax(0, 260px) minmax(0, 1fr);
+    padding: 5px 0;
   }
-  .pd-run .kv {
-    grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr);
-    gap: 2px 12px;
-    font-size: 10.5px;
+  .pd-run .run-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px 16px;
   }
-  .pd-run .kv {
-    grid-auto-flow: row dense;
-  }
-  .pd-run .kv > dt.kv-long {
-    grid-column: 1;
-  }
-  .pd-run .kv > dd.kv-long {
-    grid-column: 2 / -1;
-  }
-  .pd-run .kv dd {
+  .pd-run .run-kv {
     font-size: 10px;
-    overflow-wrap: anywhere;
+  }
+  .pd-run .run-kv dt,
+  .pd-run .run-kv dd {
+    padding: 2px 0;
+  }
+  .pd-run .run-kv dd,
+  .pd-run .run-null {
+    font-size: 9.5px;
+    overflow-wrap: break-word;
   }
   .pd-run .run-footer {
     font-size: 10px;

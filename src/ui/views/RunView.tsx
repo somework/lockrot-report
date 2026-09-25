@@ -1,20 +1,25 @@
 import { Fragment } from "preact";
-import type { BaselineSummary, LibyearsBlock } from "../../model/types";
+import type { BaselineSummary, Model, ReportModel } from "../../model/types";
 import { useReport } from "../context";
 import { baselineDelta } from "../../domain/baseline";
 import { EMPTY_FILTERS } from "../../state/types";
 import { fixed } from "../../domain/format";
 import { noteDocLink } from "../../domain/sniff";
+import {
+  cacheAge,
+  cacheNullReason,
+  carries,
+  NOT_IN_DOCUMENT,
+  NOT_RECORDED,
+  nullReason,
+  utcMinute,
+} from "../../domain/run";
+import { RunAnswer } from "./RunAnswer";
+import { RunThresholds } from "./RunThresholds";
 import { OutLink, NoWrap } from "../common/common";
 import "./views.css";
 import "./baseline.css";
-
-/** `null`/missing as an em dash, never `String(undefined)` — DESIGN.md §5 K6: legacy's Run tab
- *  printed the literal word "undefined" for `network_failures`, `not_from_composer_repository` and
- *  `include_dev` when a document carried none of them, and an empty string for `packages_checked`. */
-function orDash(value: string | null): string {
-  return value ?? "—";
-}
+import "./run.css";
 
 type StatBucket = "new" | "worsened" | "known";
 
@@ -94,59 +99,186 @@ function BaselineStats({ baseline }: { baseline: BaselineSummary }) {
   );
 }
 
+/** A value the document does not give: why, in words, never a bare em dash (PD-RUN-4). */
+interface Missing {
+  readonly missing: string;
+}
+type FieldValue = string | Missing;
+
+function isMissing(value: FieldValue): value is Missing {
+  return typeof value !== "string";
+}
+
+/** `value` as text, or the reason the document gives none for `key`. */
+function orReason(report: ReportModel, key: string, value: string | null): FieldValue {
+  return value ?? { missing: nullReason(report, key) };
+}
+
 /** The "libyears not measured" row: every reason with at least one package under it, as a readable
  *  `reason count · reason count` list instead of a raw object dump (legacy `Object.keys`,
  *  report.js:648-650). */
-function unmeasuredText(block: LibyearsBlock | null): string {
-  if (!block) return "—";
+function unmeasuredText(report: ReportModel): FieldValue {
+  const block = report.libyears;
+  if (!block) return { missing: libyearsReason(report) };
   const parts = block.unmeasured
     .filter(([, count]) => count > 0)
     .map(([reason, count]) => `${reason.replace(/_/g, " ")} ${count}`);
 
-  return parts.length > 0 ? parts.join(" · ") : "—";
+  return parts.length > 0 ? parts.join(" · ") : "none";
 }
 
-/** A value longer than this takes a line of its own on paper (print.css `.kv-long`), where the facts
- *  sit two pairs to a line. */
-const LONG_VALUE = 32;
+/** Why there is no libyears figure: the key is absent, lockrot wrote it as null (the run did not
+ *  report libyears), or the block is there but measured nothing. */
+function libyearsReason(report: ReportModel): string {
+  if (!carries(report, "libyears")) return NOT_IN_DOCUMENT;
+  if (report.libyears === null) return "not reported by this run";
+  return report.libyears.measured === 0 ? "nothing measured" : NOT_RECORDED;
+}
 
-/** The Run tab: what the run was told to do, and what it saw — ported from legacy `viewRun`
- *  (report.js:627-662). */
+function libyearsFigure(report: ReportModel, value: number | null | undefined): FieldValue {
+  const ly = report.libyears;
+  const text = ly && ly.measured ? fixed(value, 2) : null;
+  return text ?? { missing: libyearsReason(report) };
+}
+
+interface Field {
+  readonly label: string;
+  readonly value: FieldValue;
+}
+
+interface FieldGroup {
+  readonly title: string;
+  readonly fields: readonly Field[];
+}
+
+/** The run's every recorded field, in three groups: what it was told, what it could reach, what it
+ *  measured. A field the document does not give says why instead of an em dash. */
+function fieldGroups(model: Model): readonly FieldGroup[] {
+  const { report } = model;
+  const { run } = report;
+  const ly = report.libyears;
+  const cache = cacheAge(report);
+  const failOn: FieldValue =
+    run.failOn === null ? { missing: nullReason(report, "run.fail_on") } : run.failOn;
+  return [
+    {
+      title: "What it was told",
+      fields: [
+        { label: "lockrot", value: orReason(report, "lockrot.version", report.tool.version) },
+        {
+          label: "report schema",
+          value: report.tool.schema === null ? { missing: NOT_IN_DOCUMENT } : String(report.tool.schema),
+        },
+        { label: "generated", value: utcMinute(report.generatedAt) },
+        { label: "project", value: orReason(report, "run.project", run.project) },
+        { label: "lock file", value: orReason(report, "run.lock_file", run.lockFile) },
+        { label: "target PHP", value: orReason(report, "run.target_php", run.targetPhp) },
+        {
+          label: "include dev",
+          value:
+            report.includeDev === null
+              ? { missing: nullReason(report, "include_dev") }
+              : report.includeDev
+                ? "yes"
+                : "no",
+        },
+        // PD-SUMMARY-3: "none" only when the run said --fail-on=none; a document without
+        // run.fail_on says so in words.
+        { label: "fail-on", value: failOn },
+      ],
+    },
+    {
+      title: "What it could reach",
+      fields: [
+        {
+          label: "packages checked",
+          value: orReason(
+            report,
+            "packages_checked",
+            report.packagesChecked === null ? null : String(report.packagesChecked),
+          ),
+        },
+        {
+          label: "network failures",
+          value:
+            report.networkFailures === null
+              ? { missing: nullReason(report, "network_failures") }
+              : report.networkFailures
+                ? "yes"
+                : "none",
+        },
+        {
+          label: "oldest activity cache",
+          value:
+            cache === null
+              ? { missing: cacheNullReason(model) }
+              : cache.before === null
+                ? utcMinute(cache.oldest)
+                : `${utcMinute(cache.oldest)} · ${cache.before} before the run`,
+        },
+        {
+          label: "not from a Composer repository",
+          value: orReason(
+            report,
+            "not_from_composer_repository",
+            report.notFromComposerRepository === null ? null : String(report.notFromComposerRepository),
+          ),
+        },
+      ],
+    },
+    {
+      title: "What it measured",
+      fields: [
+        {
+          label: "abandoned with a replacement",
+          value: report.abandoned
+            ? `${report.abandoned.withReplacement} of ${report.abandoned.total}`
+            : { missing: nullReason(report, "abandoned") },
+        },
+        { label: "libyears behind", value: libyearsFigure(report, ly?.total) },
+        { label: "libyears, direct requirements", value: libyearsFigure(report, ly?.directRequirements) },
+        {
+          label: "libyears measured",
+          value: ly
+            ? report.packagesChecked !== null
+              ? `${ly.measured} of ${report.packagesChecked}`
+              : String(ly.measured)
+            : { missing: libyearsReason(report) },
+        },
+        { label: "libyears not measured", value: unmeasuredText(report) },
+        // With a baseline its own section above says everything this row used to; without one the
+        // row still says so, rather than leaving a reader to wonder whether the page just forgot it.
+        ...(report.baseline === null
+          ? [
+              {
+                label: "baseline",
+                value: carries(report, "baseline") ? "none" : { missing: NOT_IN_DOCUMENT },
+              },
+            ]
+          : []),
+      ],
+    },
+  ];
+}
+
+function FieldValueText({ value }: { value: FieldValue }) {
+  if (isMissing(value)) return <span className="run-null">{value.missing}</span>;
+  return <>{value}</>;
+}
+
+/**
+ * The Run tab (PD-RUN-1..4, DESIGN.md §5): the run in a sentence, what the document leaves out, what
+ * the run could not see, the baseline, the thresholds on the Findings list's own scale, then every
+ * recorded field in three dense groups — ported from legacy `viewRun` (report.js:627-662).
+ */
 export function RunView() {
   const { model } = useReport();
   const { report } = model;
-  const ly = report.libyears;
-
-  const thresholds = report.run.thresholds;
-  const kv: readonly (readonly [string, string])[] = [
-    ["lockrot", `${report.tool.version ?? "?"} (report schema ${report.tool.schema ?? "?"})`],
-    ["generated", report.generatedAt],
-    ["packages checked", orDash(report.packagesChecked === null ? null : String(report.packagesChecked))],
-    ["include dev", orDash(report.includeDev === null ? null : String(report.includeDev))],
-    // orDash, not `?? "none"`: a document that predates run.fail_on left it null, and that is not
-    // the same fact as a run explicitly told --fail-on=none (PD-SUMMARY-3, DESIGN.md §5).
-    ["fail-on", orDash(report.run.failOn)],
-    ["oldest activity cache", orDash(report.activityCacheOldestAt)],
-    ["network failures", orDash(report.networkFailures === null ? null : String(report.networkFailures))],
-    [
-      "not from a Composer repository",
-      orDash(report.notFromComposerRepository === null ? null : String(report.notFromComposerRepository)),
-    ],
-    [
-      "abandoned with a replacement",
-      report.abandoned ? `${report.abandoned.withReplacement} of ${report.abandoned.total}` : "—",
-    ],
-    ["libyears behind", orDash(ly && ly.measured ? fixed(ly.total, 2) : null)],
-    ["libyears, direct requirements", orDash(ly && ly.measured ? fixed(ly.directRequirements, 2) : null)],
-    ["libyears measured", ly ? String(ly.measured) : "—"],
-    ["libyears not measured", unmeasuredText(ly)],
-    // With a baseline its own section above says everything this row used to; without one the row
-    // still says so, rather than leaving a reader to wonder whether the page just forgot it.
-    ...(report.baseline === null ? ([["baseline", "none"]] as const) : []),
-  ];
 
   return (
     <div className="run-sections">
+      <RunAnswer />
+
       {report.notes.length > 0 && (
         <section className="sect">
           <h3>What this run could not see</h3>
@@ -163,34 +295,26 @@ export function RunView() {
 
       {report.baseline !== null && <BaselineStats baseline={report.baseline} />}
 
-      <section className="sect">
-        <h3>Thresholds in force</h3>
-        <div className="tablewrap kv-wrap">
-          <dl className="kv">
-            {thresholds.map(([name, years]) => (
-              <Fragment key={name}>
-                <dt>{name}</dt>
-                <dd>{years} years</dd>
-              </Fragment>
-            ))}
-          </dl>
-        </div>
-      </section>
+      <RunThresholds />
 
       <section className="sect">
-        <h3>Run</h3>
-        <div className="tablewrap kv-wrap">
-          <dl className="kv">
-            {kv.map(([label, value]) => {
-              const long = value.length > LONG_VALUE ? "kv-long" : undefined;
-              return (
-                <Fragment key={label}>
-                  <dt className={long}>{label}</dt>
-                  <dd className={long}>{value}</dd>
-                </Fragment>
-              );
-            })}
-          </dl>
+        <h3>Every recorded field</h3>
+        <div className="run-fields">
+          {fieldGroups(model).map((group) => (
+            <div className="run-field-group" key={group.title}>
+              <h4 className="run-field-title">{group.title}</h4>
+              <dl className="kv run-kv">
+                {group.fields.map(({ label, value }) => (
+                  <Fragment key={label}>
+                    <dt>{label}</dt>
+                    <dd>
+                      <FieldValueText value={value} />
+                    </dd>
+                  </Fragment>
+                ))}
+              </dl>
+            </div>
+          ))}
         </div>
         <p className="run-footer">
           This document validates against <OutLink href={report.schemaUrl}>{report.schemaUrl}</OutLink>.{" "}

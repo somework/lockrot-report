@@ -795,7 +795,7 @@ export class NewReportPage implements ReportPage {
    *  case-insensitive matching every role lookup here uses. */
   async clickVerdictPill(pkg: string, verdict: string): Promise<void> {
     await this.openPackage(pkg);
-    await this.detailRegion().getByRole("button", { name: verdict }).click();
+    await this.detailRegion().getByRole("button", { name: verdict, exact: true }).click();
   }
 
   /** The row's own pill carries no button role at all now (`views/FindingRow.tsx`), so it is found
@@ -857,7 +857,7 @@ export class NewReportPage implements ReportPage {
     // `_pkg` documents intent only — the row itself carries no pill button to focus any more
     // (PD-GLOSSARY-4/5); the only pill this can mean is the open detail's own header's.
     return this.detailRegion()
-      .getByRole("button", { name: verdict })
+      .getByRole("button", { name: verdict, exact: true })
       .evaluate((el) => el === document.activeElement);
   }
 

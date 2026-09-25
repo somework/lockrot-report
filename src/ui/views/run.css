@@ -1,0 +1,282 @@
+/*
+ * Run data (PD-RUN-1..4, DESIGN.md §5): a serif answer about the run, a note when the document
+ * leaves out fields this page reads, the thresholds as small scales in the Findings list's own
+ * guides, then every recorded field in three dense groups. The Findings ledger's vocabulary
+ * (ledger-rows.css, advisories.css): the same serif answer, hairline rules and muted labels.
+ */
+
+/* ---------- the answer ---------- */
+.run-top {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 4px 0 2px;
+}
+/* The tab's one h2, so the sections under it (h3) keep the heading order; the eyebrow the summary
+   band's "Flagged packages" wears. */
+.run-eyebrow {
+  margin: 0;
+  font-family: var(--cond);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.run-answer {
+  margin: 0;
+  max-width: 46em;
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.run-answer b {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.run-answer .mono {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--ink);
+}
+.run-answer .run-warn {
+  color: var(--high);
+}
+.run-when {
+  white-space: nowrap;
+}
+
+/* The document leaves out fields this page reads: an informational rule, not a warning. */
+.run-absent {
+  margin: 0;
+  max-width: 60em;
+  padding: 8px 12px;
+  border-left: 3px solid var(--low);
+  background: var(--low-soft);
+  border-radius: 0 var(--radius-s) var(--radius-s) 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.run-absent b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.run-absent code {
+  font-size: 12px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- thresholds on the shared scale ---------- */
+.run-thr {
+  container: runthr / inline-size;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border-strong);
+}
+.run-thr-row {
+  display: grid;
+  grid-template-columns: minmax(140px, 200px) minmax(180px, 360px) minmax(0, 1fr);
+  column-gap: 20px;
+  align-items: center;
+  padding: 10px 0 9px;
+  border-bottom: 1px solid var(--border);
+}
+.run-thr-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+  row-gap: 1px;
+  min-width: 0;
+}
+.run-thr-subject {
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--ink);
+}
+.run-thr-what {
+  font-size: 12px;
+  color: var(--muted);
+}
+.run-thr-checks {
+  flex-basis: 100%;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.run-thr-scale {
+  display: grid;
+  grid-template-rows: 16px 14px;
+  row-gap: 2px;
+  min-width: 0;
+}
+.run-thr-track {
+  position: relative;
+}
+/* The hairline from 0 to the edge, as a Findings row's age track draws it. */
+.run-thr-track::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--border-strong);
+}
+.run-thr-zone {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  background: color-mix(in srgb, var(--tone) 26%, transparent);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.run-thr-ticks {
+  position: relative;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 14px;
+  color: var(--muted);
+}
+.run-thr-tick {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.run-thr-tick.tone-med,
+.run-thr-tick.tone-crit {
+  color: var(--tone);
+  font-weight: 600;
+}
+.run-thr-tick.is-start {
+  left: 0;
+  transform: none;
+}
+.run-thr-tick.is-end {
+  right: 0;
+  transform: none;
+}
+.run-thr-words {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  min-width: 0;
+}
+.run-thr-words b {
+  font-weight: 650;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.run-thr-keys {
+  font-size: 10.5px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+/* A narrow list (a phone, paper's half width): the name over the scale, the words under it. */
+@container runthr (max-width: 559.98px) {
+  .run-thr-row {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 6px;
+  }
+  .run-thr-words {
+    flex-direction: row;
+    flex-wrap: wrap;
+    column-gap: 10px;
+  }
+}
+.run-thr-others {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin: 0;
+  font-size: 12.5px;
+}
+.run-thr-others div {
+  display: flex;
+  gap: 6px;
+}
+.run-thr-others dt {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.run-thr-others dd {
+  margin: 0;
+}
+.run-null-line {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ---------- every recorded field ---------- */
+.run-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 14px 28px;
+}
+.run-field-group {
+  min-width: 0;
+  border-top: 1px solid var(--border-strong);
+}
+.run-field-title {
+  margin: 0;
+  padding: 7px 0 6px;
+  font-family: var(--cond);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.run-kv {
+  grid-template-columns: fit-content(50%) minmax(0, 1fr);
+  gap: 0;
+}
+.run-kv dt,
+.run-kv dd {
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+.run-kv dt {
+  padding-right: 12px;
+}
+.run-kv dd {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.run-null {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--muted);
+}
+
+@media (forced-colors: active) {
+  .run-absent {
+    border-left-color: CanvasText;
+  }
+  .run-thr-track::before {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+  .run-thr-zone {
+    forced-color-adjust: none;
+    background: repeating-linear-gradient(135deg, Canvas 0 3px, GrayText 3px 4px);
+  }
+  .run-thr-zone.tone-crit {
+    background: repeating-linear-gradient(135deg, Canvas 0 2px, CanvasText 2px 3px);
+  }
+  .run-thr-tick.tone-med,
+  .run-thr-tick.tone-crit {
+    color: CanvasText;
+  }
+}

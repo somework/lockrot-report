@@ -79,6 +79,31 @@ describe("normalize over real fixtures", () => {
   }
 });
 
+// PD-RUN-3: which keys this page reads the document leaves out — presence, not value.
+describe("report.absent", () => {
+  test("names a key the document leaves out, never one it wrote as null", () => {
+    const report = minimalReport({ run: { fail_on: null, target_php: "8.4" } });
+    delete report.libyears;
+    const result = normalize(bundle(report));
+    expect(result.ok && result.model.report.absent).toEqual([
+      "libyears",
+      "run.project",
+      "run.lock_file",
+      "run.thresholds",
+      "run.flagged_verdicts",
+    ]);
+  });
+
+  test("capsule-0.10-drupal leaves out abandoned and libyears; wallabag leaves out nothing", () => {
+    const capsule = normalize(loadFixture("capsule-0.10-drupal.json"));
+    expect(capsule.ok && capsule.model.report.absent).toEqual(["abandoned", "libyears"]);
+    const wallabag = normalize(loadFixture("wallabag_wallabag.json"));
+    expect(wallabag.ok && wallabag.model.report.absent).toEqual([]);
+    const noFailOn = normalize(loadFixture("mini-no-fail-on.json"));
+    expect(noFailOn.ok && noFailOn.model.report.absent).toEqual(["run.fail_on"]);
+  });
+});
+
 // -------------------------------------------------------------------------------------------
 // Malformed / edge inputs
 // -------------------------------------------------------------------------------------------

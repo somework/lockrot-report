@@ -1484,8 +1484,10 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
 });
 
 describe("RunView", () => {
-  it("shows an em dash instead of the word 'undefined' for a run field the document never carried", () => {
-    // Arrange: a report with every K6-affected scalar left null.
+  // PD-RUN-4: a missing value says why in words — "not in this document" when the key is absent,
+  // "not recorded" when lockrot wrote it as null — never the word "undefined" and never a bare dash.
+  it("says why a run field has no value instead of 'undefined' or an em dash", () => {
+    // Arrange: every K6-affected scalar left null, the keys present.
     const model = makeModel([]);
 
     // Act
@@ -1493,32 +1495,89 @@ describe("RunView", () => {
 
     // Assert
     expect(screen.queryByText(/undefined/i)).toBeNull();
-    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+    expect(screen.queryByText("—")).toBeNull();
+    expect(screen.getByText("packages checked").nextElementSibling?.textContent).toBe("not recorded");
+    expect(screen.getByText("network failures").nextElementSibling?.textContent).toBe("not recorded");
   });
 
-  it("fail-on: an em dash for a document that predates the field, the word 'none' only when the run said so (PD-SUMMARY-3)", () => {
-    // Arrange: makeModel([]) leaves run.failOn null, same as a document written before the field.
-    const predatesField = makeModel([]);
+  it("fail-on: the reason for a document without the field, the word 'none' only when the run said so (PD-SUMMARY-3)", () => {
+    // Arrange: a document that leaves run.fail_on out entirely (report.absent names it).
+    const base = makeModel([]);
+    const predatesField: Model = { ...base, report: { ...base.report, absent: ["run.fail_on"] } };
     const explicitNone: Model = {
-      ...predatesField,
-      report: { ...predatesField.report, run: { ...predatesField.report.run, failOn: "none" } },
+      ...base,
+      report: { ...base.report, run: { ...base.report.run, failOn: "none" } },
     };
     const gated: Model = {
-      ...predatesField,
-      report: { ...predatesField.report, run: { ...predatesField.report.run, failOn: "critical" } },
+      ...base,
+      report: { ...base.report, run: { ...base.report.run, failOn: "critical" } },
     };
 
     // Act + Assert
     const { unmount: unmountPredates } = renderIn(predatesField, stateWith({ view: "run" }), <RunView />);
-    expect(screen.getByText("fail-on").nextElementSibling?.textContent).toBe("—");
+    expect(screen.getByText("fail-on").nextElementSibling?.textContent).toBe("not in this document");
     unmountPredates();
 
     const { unmount: unmountNone } = renderIn(explicitNone, stateWith({ view: "run" }), <RunView />);
     expect(screen.getByText("fail-on").nextElementSibling?.textContent).toBe("none");
+    expect(document.querySelector(".run-answer")?.textContent).toContain("no gate (--fail-on=none)");
     unmountNone();
 
     renderIn(gated, stateWith({ view: "run" }), <RunView />);
     expect(screen.getByText("fail-on").nextElementSibling?.textContent).toBe("critical");
+    expect(document.querySelector(".run-answer")?.textContent).toContain("--fail-on=critical");
+  });
+
+  // PD-RUN-1: the run in a sentence, from the document's own fields.
+  it("opens with the run in one paragraph: lockrot, packages, lock, PHP, dev, when, lookups", () => {
+    renderIn(loadModel("wallabag_wallabag.json"), stateWith({ view: "run" }), <RunView />);
+    const answer = document.querySelector(".run-answer")?.textContent.replace(/\s+/g, " ");
+    expect(answer).toBe(
+      "lockrot 0.11.0 checked 271 packages in wallabag/wallabag’s composer.lock against PHP 8.4, " +
+        "require-dev included, and wrote this report on 2026-09-24 00:00 UTC. Every network lookup " +
+        "answered and every repository answer in this file was fetched during the run. It ran with no " +
+        "gate (--fail-on=none).",
+    );
+    expect(document.querySelector(".run-absent")).toBeNull();
+  });
+
+  it("gives the cache's age against generated_at, and names fields the document leaves out (PD-RUN-3)", () => {
+    renderIn(loadModel("capsule-0.10-drupal.json"), stateWith({ view: "run" }), <RunView />);
+    expect(document.querySelector(".run-answer")?.textContent).toContain(
+      "the oldest cached repository activity it used was 24 hours old",
+    );
+    const absent = document.querySelector(".run-absent");
+    expect(Array.from(absent?.querySelectorAll("code") ?? [], (el) => el.textContent)).toEqual([
+      "abandoned",
+      "libyears",
+    ]);
+    expect(absent?.textContent).toContain("lockrot 0.10.0 (report schema 1)");
+    expect(screen.getByText("libyears behind").nextElementSibling?.textContent).toBe("not in this document");
+    expect(screen.getByText("oldest activity cache").nextElementSibling?.textContent).toBe(
+      "2026-09-20 19:17 UTC · 24 hours before the run",
+    );
+  });
+
+  // PD-RUN-2: thresholds on the Findings list's own scale.
+  it("draws each warn/high pair as a scale with its guides, captioned like the Findings axis", () => {
+    renderIn(loadModel("wallabag_wallabag.json"), stateWith({ view: "run" }), <RunView />);
+    const rows = Array.from(document.querySelectorAll(".run-thr-row"));
+    expect(rows.map((row) => row.querySelector(".run-thr-subject")?.textContent)).toEqual([
+      "release",
+      "push",
+    ]);
+    const scale = rows[0]?.querySelector('[role="img"]');
+    expect(scale?.getAttribute("aria-label")).toBe(
+      "years since the last release: warn at 3 years, high at 5 years (release-warn-years, release-high-years)",
+    );
+    expect(Array.from(rows[0]?.querySelectorAll(".run-thr-tick") ?? [], (el) => el.textContent)).toEqual([
+      "0",
+      "3y",
+      "5y",
+      "10y+",
+    ]);
+    const guide = rows[0]?.querySelector<HTMLElement>(".age-guide.is-warn");
+    expect(guide?.style.left).toBe("30%");
   });
 
   it("reads the baseline as a stat row, never a raw JSON dump (PD-BASELINE-4)", () => {

@@ -144,13 +144,16 @@ test.describe("PD-SUMMARY-2: the header's gate fact", () => {
   });
 });
 
-test.describe("PD-SUMMARY-3: the Run tab's fail-on em dash", () => {
+test.describe("PD-SUMMARY-3: the Run tab's fail-on without the field", () => {
   // mini-no-fail-on.json (fixtures/bundles/): mini.json with `run.fail_on` deleted outright, not
   // set to "none" — the one built page that exercises the null branch end to end. (This test used
   // to be skipped with no fixture and no assertion; tests/unit/ui/views.test.tsx#RunView already
   // covered the branch directly against a synthetic model, but nothing here proved the page wired
   // it up — a regression review caught the gap.)
-  test("a document without run.fail_on prints an em dash, not the word 'none'", async ({ page }) => {
+  // PD-RUN-4: the em dash became the reason — the field is not in the document.
+  test("a document without run.fail_on says it is not in the document, not the word 'none'", async ({
+    page,
+  }) => {
     await report.goto("mini-no-fail-on" as FixtureName);
     await report.tab("run");
     const panel = page.getByRole("tabpanel");
@@ -158,7 +161,7 @@ test.describe("PD-SUMMARY-3: the Run tab's fail-on em dash", () => {
     // document with no baseline at all (RunView.tsx#baselineText), which a panel-wide text search
     // would also match.
     const failOn = panel.locator("dt", { hasText: /^fail-on$/ }).locator("xpath=following-sibling::dd[1]");
-    await expect(failOn).toHaveText("—");
+    await expect(failOn).toHaveText("not in this document");
   });
 
   // PD-SUMMARY-2 (Header.tsx): the same document renders no gate fact at all — a run.fail_on the

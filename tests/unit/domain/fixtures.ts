@@ -96,6 +96,7 @@ const EMPTY_REPORT: ReportModel = {
   libyears: null,
   baseline: null,
   notes: [],
+  absent: [],
   findings: [],
 };
 

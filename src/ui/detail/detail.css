@@ -312,6 +312,29 @@
 .detail-check.is-unreported i {
   border-style: dotted;
 }
+/* A cell with evidence in the panel (PD-RUN-5): a button that looks like its cell, the id underlined
+   so it reads as something to press. */
+button.detail-check {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.detail-check.is-linked .detail-check-id {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 2px;
+}
+.detail-check.is-linked:hover .detail-check-id {
+  text-decoration-style: solid;
+  text-decoration-color: currentColor;
+}
+.detail-check.is-linked:hover i {
+  box-shadow: 0 0 0 2px var(--surface-3);
+}
 .detail-checks-tally {
   margin: 0;
   font-size: 12.5px;
@@ -762,4 +785,47 @@
 }
 .detail-advisory-meta .mono {
   color: var(--ink-2);
+}
+
+/* ---------- provenance (PD-RUN-5) ----------
+   Each source's facts on one flowing line: the source in small caps, then "label value" pairs with
+   a middle dot between them, wrapping between pairs, never inside a short one. */
+.detail-prov {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.detail-prov-line {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scroll-margin: 16px;
+}
+.detail-prov-source {
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+}
+.detail-kv.detail-prov-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 0;
+  margin: 0;
+}
+.detail-prov-fact {
+  display: inline-flex;
+  gap: 5px;
+  align-items: baseline;
+  min-width: 0;
+}
+/* The dot belongs to the fact before it, so a wrapped line never starts on one. */
+.detail-prov-fact:not(:last-child)::after {
+  content: "·";
+  padding: 0 7px 0 2px;
+  color: var(--muted);
+}
+.detail-prov-fact dd {
+  overflow-wrap: anywhere;
 }

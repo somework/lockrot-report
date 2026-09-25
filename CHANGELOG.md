@@ -10,6 +10,18 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Added
 
+- Run data opens with the run in one sentence: which lockrot, how many packages of which lock,
+  against which PHP, whether require-dev was in, when (UTC), whether every lookup answered, how old
+  the cached repository activity was, and the gate. The thresholds are drawn on the same 3y/5y
+  scale as the Findings column, and the fields sit in three groups: told, reached, measured.
+- A document that leaves out fields this page reads (an older lockrot's `abandoned` or `libyears`,
+  `run.fail_on`) gets a note naming them, and each empty value says why ("not in this document",
+  "not recorded", "not reported by this run") instead of an em dash.
+- In an open package, a check cell with something to show is a button: a fired check opens its row,
+  a check that could not run opens S10, a quiet archived or push-age check opens the repository
+  activity. Provenance lists that activity (forge, repository, archived, last push, fetched fresh
+  or from the cache) as one compact line under the package metadata.
+
 - The Advisories tab answers first: how many advisories on which packages, by severity, how many
   sit on packages installed for production, how many are fixed on the branch you are on, only on
   another branch or not at all, and how long ago they were reported. Under a filter it says

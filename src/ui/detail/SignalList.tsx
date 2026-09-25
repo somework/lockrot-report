@@ -247,19 +247,87 @@ function SignalData({ data, pkg }: { data: Readonly<Record<string, unknown>>; pk
   );
 }
 
+/** The id a fired check's row carries, so a strip cell can point at it. */
+export function firedRowId(id: string): string {
+  return `detail-sig-${id}`;
+}
+
+/** The Provenance section's repository-activity facts (Detail.tsx), a quiet S3's or S4's evidence. */
+export const ACTIVITY_FACTS_ID = "detail-prov-activity";
+
+/**
+ * Where a cell's evidence sits in the open panel, or `null` when it has none to point at: a fired
+ * check's own row; a check that could not run, S10's row (which names it); a quiet S3 (archived) or
+ * S4 (push age), the repository activity lockrot read — when this file carries it.
+ */
+function evidenceTarget(cell: CheckCell, s10Fired: boolean, hasActivity: boolean): string | null {
+  if (cell.state === "fired") return firedRowId(cell.id);
+  if (cell.state === "blocked") return s10Fired ? firedRowId("S10") : null;
+  if (cell.state === "quiet" && (cell.id === "S3" || cell.id === "S4") && hasActivity)
+    return ACTIVITY_FACTS_ID;
+  return null;
+}
+
+/** What a cell's state is called when its button is read out. */
+const STATE_WORDS: Readonly<Record<CheckState, string>> = {
+  fired: "fired",
+  quiet: "quiet",
+  blocked: "could not run",
+  unreported: "not reported",
+};
+
+/** Opens every `<details>` around the evidence (and the evidence itself when it is one), brings it
+ *  into view and moves focus to its summary — the reader lands where the strip pointed. */
+function reveal(id: string): void {
+  const target = document.getElementById(id);
+  if (target === null) return;
+  if (target instanceof HTMLDetailsElement) target.open = true;
+  for (let d = target.parentElement?.closest("details"); d; d = d.parentElement?.closest("details")) {
+    d.open = true;
+  }
+  const reduce =
+    typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  target.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+  const owner = target instanceof HTMLDetailsElement ? target : target.closest("details");
+  const summary = owner?.querySelector<HTMLElement>(":scope > summary") ?? null;
+  summary?.focus({ preventScroll: true });
+}
+
 /** One cell of the strip: a bar filled in its level's tone when the check fired, outlined when it
  *  stayed quiet, hatched when it could not run, dotted when the document does not say, with the id
- *  and the check's one- or two-word name under it. The whole strip is `aria-hidden`: the tally and
- *  the lines under it say every state in words, and the cells do nothing a keyboard or a screen
- *  reader would need. */
-function Cell({ cell }: { cell: CheckCell }) {
+ *  and the check's one- or two-word name under it. A cell with evidence in the panel (PD-RUN-5) is a
+ *  button that opens it and moves there; every other cell is hidden from assistive tech, since the
+ *  tally and the lines under the strip say every state in words. */
+function Cell({ cell, target }: { cell: CheckCell; target: string | null }) {
   const tone = cell.signal === null ? "" : ` ${toneClass(levelTone(cell.signal.level))}`;
-  return (
-    <span className={`detail-check is-${cell.state}${tone}`}>
-      <i />
+  const className = `detail-check is-${cell.state}${tone}`;
+  const body = (
+    <>
+      <i aria-hidden="true" />
       <span className="detail-check-id">{cell.id}</span>
       <span className="detail-check-name">{checkName(cell)}</span>
-    </span>
+    </>
+  );
+  if (target === null) {
+    return (
+      <span className={className} aria-hidden="true">
+        {body}
+      </span>
+    );
+  }
+  const label = `${cell.id} ${checkName(cell)}, ${STATE_WORDS[cell.state]}: show the evidence`;
+  return (
+    <button
+      type="button"
+      className={`${className} is-linked`}
+      aria-label={label}
+      title={label}
+      onClick={() => {
+        reveal(target);
+      }}
+    >
+      {body}
+    </button>
   );
 }
 
@@ -310,7 +378,7 @@ function FiredRow({ signal, pkg }: { signal: Signal; pkg: string }) {
   const def = SIGNAL_DEFS[signal.id];
 
   return (
-    <details className={`detail-fired ${toneClass(levelTone(signal.level))}`}>
+    <details id={firedRowId(signal.id)} className={`detail-fired ${toneClass(levelTone(signal.level))}`}>
       <summary className="detail-fired-summary">
         <span className="detail-fired-id">{signal.id}</span>
         <span className="detail-fired-text">
@@ -345,16 +413,26 @@ function cellsIn(cells: readonly CheckCell[], state: CheckState): readonly Check
  * gets the strip, then the same explanatory line legacy showed instead of an empty list.
  */
 export function SignalList({ finding }: { finding: Finding }) {
+  const { model } = useReport();
   const strip = checkStrip(finding);
+  const hasActivity = (model.details.get(finding.package)?.activity ?? null) !== null;
+  const s10Fired = strip.fired.some((signal) => signal.id === "S10");
+  const targets = strip.cells.map((cell) => evidenceTarget(cell, s10Fired, hasActivity));
+  const linked = targets.some((target) => target !== null);
   const tally = checkTally(strip);
   const unreported = cellsIn(strip.cells, "unreported");
 
   return (
     <section className="detail-section detail-checks">
       <h3>Checks</h3>
-      <div className="detail-strip" aria-hidden="true">
-        {strip.cells.map((cell) => (
-          <Cell key={cell.id} cell={cell} />
+      <div
+        className="detail-strip"
+        role={linked ? "group" : undefined}
+        aria-label={linked ? "Checks with evidence in this panel" : undefined}
+        aria-hidden={linked ? undefined : "true"}
+      >
+        {strip.cells.map((cell, index) => (
+          <Cell key={cell.id} cell={cell} target={targets[index] ?? null} />
         ))}
       </div>
       <p className="detail-checks-tally">

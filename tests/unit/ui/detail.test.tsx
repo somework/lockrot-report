@@ -444,13 +444,24 @@ describe("Detail", () => {
       return (el?.textContent ?? "").replace(/\s+/g, " ").trim();
     }
 
-    it("draws all ten checks as a strip hidden from assistive tech, the tally saying it in words", () => {
+    it("draws all ten checks as a strip, the tally saying it in words, the cells with evidence as buttons", () => {
       const { container } = renderDetail(WALLABAG, "sensio/framework-extra-bundle");
       // The count is said once, by the tally, not again beside the heading.
       expect(text(container.querySelector(".detail-checks > h3"))).toBe("Checks");
       const strip = container.querySelector(".detail-strip");
-      expect(strip?.getAttribute("aria-hidden")).toBe("true");
-      expect(strip?.querySelectorAll("[tabindex], a, button").length).toBe(0);
+      // PD-RUN-5: the five fired cells point at their rows; the quiet ones, with nothing to show,
+      // stay hidden from assistive tech (S3 and S4 fired here, so no quiet cell reaches Provenance).
+      expect(strip?.getAttribute("role")).toBe("group");
+      expect(
+        Array.from(strip?.querySelectorAll("button") ?? [], (b) => b.getAttribute("aria-label")),
+      ).toEqual([
+        "S1 abandoned, fired: show the evidence",
+        "S2 release age, fired: show the evidence",
+        "S3 archived, fired: show the evidence",
+        "S4 push age, fired: show the evidence",
+        "S7 flagged deps, fired: show the evidence",
+      ]);
+      expect(strip?.querySelectorAll('span.detail-check[aria-hidden="true"]').length).toBe(5);
       const cells = Array.from(container.querySelectorAll(".detail-check")).map(
         (el) =>
           `${el.querySelector(".detail-check-id")?.textContent}:${["is-fired", "is-quiet", "is-blocked", "is-unreported"].find((c) => el.classList.contains(c))}`,
@@ -1153,6 +1164,35 @@ describe("Detail", () => {
       expect(lockEntry?.textContent).toContain("4.7");
       expect(lockEntry?.textContent).toContain("newest v3.6.1 released");
       expect(lockEntry?.textContent).toContain("2026-09-17");
+    });
+
+    // PD-RUN-5: the repository activity lockrot read, as one compact line under the metadata one.
+    it("shows the repository activity in provenance, and a quiet S4 cell opens it", () => {
+      const { container } = renderDetail(KOEL, "predis/predis");
+      const activity = container.querySelector("#detail-prov-activity");
+      expect(activity?.querySelector(".detail-prov-source")?.textContent).toBe("GitHub");
+      expect(Array.from(activity?.querySelectorAll("dt") ?? [], (el) => el.textContent)).toEqual([
+        "repository",
+        "archived",
+        "last push",
+        "fetched",
+      ]);
+      expect(activity?.textContent).toContain("predis/predis");
+      expect(activity?.textContent).toContain("during this run");
+
+      const provenance = container.querySelector<HTMLDetailsElement>("#detail-provenance");
+      expect(provenance?.open).toBe(false);
+      const s4 = screen.getByRole("button", { name: "S4 push age, quiet: show the evidence" });
+      fireEvent.click(s4);
+      expect(provenance?.open).toBe(true);
+    });
+
+    it("a fired cell opens its own row", () => {
+      const { container } = renderDetail(KOEL, "predis/predis");
+      const row = container.querySelector<HTMLDetailsElement>("#detail-sig-S8");
+      expect(row?.open).toBe(false);
+      fireEvent.click(screen.getByRole("button", { name: "S8 branch stopped, fired: show the evidence" }));
+      expect(row?.open).toBe(true);
     });
 
     it("shows provenance from the explain metadata", () => {

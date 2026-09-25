@@ -1,5 +1,5 @@
 import type { ComponentChildren } from "preact";
-import type { ExplainMetadata, Finding, PackageDetails } from "../../model/types";
+import type { ExplainActivity, ExplainMetadata, Finding, PackageDetails } from "../../model/types";
 import { isContextOnly } from "../../domain/age";
 import { ageText, day } from "../../domain/format";
 import { safeHref } from "../../domain/links";
@@ -13,7 +13,7 @@ import { FollowUpstream } from "./FollowUpstream";
 import { KeyValue, presentRows, type KeyValueRow } from "./KeyValue";
 import { LibyearsRow } from "./LibyearsRow";
 import { PriorityWhy } from "./PriorityWhy";
-import { SignalList } from "./SignalList";
+import { ACTIVITY_FACTS_ID, SignalList } from "./SignalList";
 import { Timeline } from "./Timeline";
 import "./detail.css";
 
@@ -85,11 +85,11 @@ export function Detail({ onClose }: DetailProps) {
           </summary>
           <KeyValue rows={lockRows(finding, details, now)} />
         </details>
-        <details className="detail-section detail-reference">
+        <details className="detail-section detail-reference" id="detail-provenance">
           <summary className="detail-reference-summary">
             <h3>Provenance</h3>
           </summary>
-          <KeyValue rows={provenanceRows(finding, details?.metadata ?? null)} />
+          <Provenance finding={finding} details={details} now={now} />
         </details>
       </div>
     </aside>
@@ -129,11 +129,85 @@ function lockRows(finding: Finding, details: PackageDetails | null, now: Date): 
   ]);
 }
 
+/** A source's facts as one flowing line: its name, then each label and value, "·" between them. */
+function FactsLine({
+  source,
+  rows,
+  id,
+}: {
+  source: ComponentChildren;
+  rows: readonly KeyValueRow[];
+  id?: string;
+}) {
+  return (
+    <div className="detail-prov-line" id={id}>
+      <span className="detail-prov-source">{source}</span>
+      <dl className="detail-kv detail-prov-facts">
+        {rows.map((row) => (
+          <div className="detail-prov-fact" key={row.label}>
+            <dt>{row.label}</dt>
+            <dd>{row.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+/** The repository activity lockrot read for this package (PD-RUN-5): where, whether archived, the
+ *  last push and how long before the report that was, and when it was fetched — fresh or from
+ *  lockrot's cache. `null` when the file carries none. */
+function activityRows(activity: ExplainActivity, now: Date): readonly KeyValueRow[] {
+  return presentRows([
+    { label: "repository", value: activity.repository },
+    { label: "archived", value: activity.archived ? "yes" : "no" },
+    {
+      label: "last push",
+      value: activity.pushedAt
+        ? `${day(activity.pushedAt)} · ${ageText(activity.pushedAt, now)}`
+        : "none recorded",
+    },
+    {
+      label: "fetched",
+      value: `${day(activity.fetchedAt)} · ${activity.fromCache ? "from lockrot’s cache" : "during this run"}`,
+    },
+  ]);
+}
+
+/**
+ * "Provenance" (PD-RUN-5, DESIGN.md §5): where the panel's facts came from, as compact lines — the
+ * package metadata (its date, releases listed, last stable) and, when the file carries it, the
+ * repository activity from the forge. The strip's quiet S3/S4 cells point at the activity line.
+ */
+function Provenance({
+  finding,
+  details,
+  now,
+}: {
+  finding: Finding;
+  details: PackageDetails | null;
+  now: Date;
+}) {
+  const activity = details?.activity ?? null;
+  return (
+    <div className="detail-prov">
+      <FactsLine source="Package metadata" rows={provenanceRows(finding, details?.metadata ?? null)} />
+      {activity !== null && (
+        <FactsLine
+          id={ACTIVITY_FACTS_ID}
+          source={activity.forge ?? "Repository activity"}
+          rows={activityRows(activity, now)}
+        />
+      )}
+    </div>
+  );
+}
+
 /** "Provenance": always renders (critic.md C6 — `day()` never returns an empty string, so the
  *  `metadata` row alone guarantees it). */
 function provenanceRows(finding: Finding, metadata: ExplainMetadata | null): readonly KeyValueRow[] {
   return presentRows([
-    { label: "metadata", value: day(metadata?.dataDate ?? finding.dataDate) },
+    { label: "as of", value: day(metadata?.dataDate ?? finding.dataDate) },
     {
       label: "releases listed",
       value: metadata && metadata.releasesListed !== null ? String(metadata.releasesListed) : null,

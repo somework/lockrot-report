@@ -43,6 +43,33 @@ const LIBYEARS_UNMEASURED_REASONS = [
   "metadata_unavailable",
 ] as const;
 
+/**
+ * The keys `buildReportModel` reads, report level then `run.`, that a document may leave out
+ * entirely — an older lockrot release that predates one, or a hand-built document. `absentKeys`
+ * lists the ones missing from THIS document; nothing here knows which release added which key.
+ * `generated_at`, `lockrot` and `findings` are not listed: a document without them is not a report.
+ */
+const ABSENT_CHECKED = [
+  "packages_checked",
+  "include_dev",
+  "network_failures",
+  "activity_cache_oldest_at",
+  "not_from_composer_repository",
+  "abandoned",
+  "libyears",
+  "baseline",
+  "notes",
+  "counts",
+  "priorities",
+  "exposure",
+  "run.project",
+  "run.lock_file",
+  "run.target_php",
+  "run.fail_on",
+  "run.thresholds",
+  "run.flagged_verdicts",
+] as const;
+
 const NOT_A_REPORT_MESSAGE =
   "This does not look like a lockrot report. Expected either the html bundle " +
   "({report, details}) or a --format=json document (with 'lockrot' and 'findings').";
@@ -149,8 +176,16 @@ function buildReportModel(source: Record<string, unknown>, generatedAt: string):
     libyears: buildLibyears(source.libyears),
     baseline: buildBaseline(source.baseline),
     notes: asStringArray(source.notes),
+    absent: absentKeys(source),
     findings: asArray(source.findings).map(buildFinding),
   };
+}
+
+/** `ABSENT_CHECKED` keys missing from `source` — `in`, not a null check: a key lockrot wrote as
+ *  `null` is present. A `run` that is not an object carries none of its keys. */
+function absentKeys(source: Record<string, unknown>): readonly string[] {
+  const run = isRecord(source.run) ? source.run : {};
+  return ABSENT_CHECKED.filter((key) => (key.startsWith("run.") ? !(key.slice(4) in run) : !(key in source)));
 }
 
 function buildRunSettings(raw: unknown): RunSettings {
