@@ -282,23 +282,18 @@ describe("PriorityLedger (the summary band's lead)", () => {
     expect((waffle as HTMLElement).style.getPropertyValue("--rows-xwide")).toBe("5");
   });
 
-  it("pads each width's last partial column so it fills from the bottom, outside the square count", () => {
-    // Arrange: koel_koel's 202 squares — 6 rows at the wide budget leave 4 over (33 × 6 = 198), so
-    // 2 blanks; 5 rows at the xwide budget leave 2 over, so 3 blanks.
+  it("fills the last partial column from the top, with no blank slots before it", () => {
+    // Arrange: koel_koel's 202 squares leave a partial last column at every width.
     const model = loadFixture("koel_koel.json");
 
     // Act
     const { container } = renderIn(<PriorityLedger />, model, INITIAL_STATE);
 
-    // Assert: blanks are never squares, and sit right before the last column's squares.
+    // Assert: every child is a square, in order, so the grid's column-major flow ends at the top
+    // of the last column rather than leaving a lone square in the bottom-right corner.
     const waffle = container.querySelector(".waffle") as HTMLElement;
-    expect(waffle.querySelectorAll(".waffle-pad-wide")).toHaveLength(2);
-    expect(waffle.querySelectorAll(".waffle-pad-xwide")).toHaveLength(3);
-    const children = [...waffle.children];
-    const firstWidePad = children.findIndex((child) => child.classList.contains("waffle-pad-wide"));
-    expect(children.slice(0, firstWidePad).filter((c) => c.classList.contains("waffle-cell"))).toHaveLength(
-      198,
-    );
+    expect(waffle.children).toHaveLength(202);
+    expect([...waffle.children].every((child) => child.classList.contains("waffle-cell"))).toBe(true);
   });
 
   it("draws a small lock's waffle too, as one short row", () => {
@@ -339,6 +334,8 @@ describe("PriorityLedger (the summary band's lead)", () => {
     expect(container.querySelector(".clean-mark")).toBeNull();
     expect(container.querySelector(".waffle")).toBeNull();
     expect(screen.queryByText(/nothing flagged/i)).toBeNull();
+    // Four disabled "0" chips had nothing to filter: an empty lock shows none.
+    expect(container.querySelector(".lead-chips")).toBeNull();
   });
 
   it("falls back to findings.length when packagesChecked is null (an older document)", () => {
@@ -373,6 +370,10 @@ describe("VerdictLedger", () => {
     );
     expect(quiet).toEqual(["unknown 1", "finished 23", "ok 171"]);
     expect(screen.getByText(/why the 7 are flagged/i)).toBeTruthy();
+    // The bars are split in the chips' priority tones, and the header says so in words.
+    expect(container.querySelector(".ledger-head-note")?.textContent).toBe(
+      "most common first, split by priority",
+    );
   });
 
   it("splits each bar by its packages' priorities, in the priority tones, scaled to the longest", () => {

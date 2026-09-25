@@ -186,31 +186,6 @@
   background: var(--tone);
   transition: opacity 0.15s ease;
 }
-/* The blanks that let the last column fill from the bottom (Waffle.tsx): one set per width, since
-   each width has its own row count, and only the set for the current width takes a grid slot. */
-.waffle-pad {
-  display: none;
-}
-@media (min-width: 1440px) {
-  .waffle-pad-xwide {
-    display: block;
-  }
-}
-@media (min-width: 1181px) and (max-width: 1439px) {
-  .waffle-pad-wide {
-    display: block;
-  }
-}
-@media (min-width: 760px) and (max-width: 1180px) {
-  .waffle-pad-mid {
-    display: block;
-  }
-}
-@media (max-width: 759px) {
-  .waffle-pad-narrow {
-    display: block;
-  }
-}
 .waffle-rest {
   background: var(--surface-3);
 }

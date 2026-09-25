@@ -63,36 +63,26 @@ function Guides({ guides }: { guides: readonly Guide[] }) {
  * guide's caption sits left of its line and the younger's right of it, so the two can never run
  * into each other however close a long axis draws them. On the guide, not in the key: a key entry
  * "┃3 ┃5 years ago" read as a count, and a year label beside a guide read as that guide's year.
- * One caption says "ago" ("5y ago", then "3y" reads the same way): the older one when its side of
- * the strip has the room, else the younger one when its side has. `--room` is a caption's own side
- * as a share of the strip, `--other` the older caption's, and timeline.css turns them into a width
- * that is either all of " ago" or none of it — the strip's width is the browser's to decide.
+ * Every caption is just "5y" or "3y", at every width: a caption that said "ago" only when its side
+ * had the room read differently from one fixture to the next. The key says "years ago" once.
  */
 export function GuideCaptions({ guides }: { guides: readonly Guide[] }) {
   const oldest = Math.max(...guides.map((guide) => guide.years));
   const older = guides.length > 1 ? guides.find((guide) => guide.years === oldest) : undefined;
   return (
     <>
-      {guides.map((guide) => {
-        const left = guide === older;
-        const room: Record<string, string> = {
-          "--x": `${guide.x}%`,
-          "--room": String(left ? guide.x : 100 - guide.x),
-          ...(older !== undefined && !left ? { "--other": String(older.x) } : {}),
-        };
-        return (
-          <span
-            key={guide.years}
-            className={`detail-timeline-guide-cap is-${guide.level} ${left ? "is-left" : "is-right"} ${toneClass(
-              guide.tone,
-            )}`}
-            style={room}
-            aria-hidden="true"
-          >
-            {guide.years}y<span className="detail-timeline-guide-ago"> ago</span>
-          </span>
-        );
-      })}
+      {guides.map((guide) => (
+        <span
+          key={guide.years}
+          className={`detail-timeline-guide-cap is-${guide.level} ${
+            guide === older ? "is-left" : "is-right"
+          } ${toneClass(guide.tone)}`}
+          style={at("--x", guide.x)}
+          aria-hidden="true"
+        >
+          {guide.years}y
+        </span>
+      ))}
     </>
   );
 }

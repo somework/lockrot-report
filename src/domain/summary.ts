@@ -52,19 +52,6 @@ export function waffleRows(total: number, columns: number): number {
 }
 
 /**
- * Where the waffle's last, partial column needs blank slots so it fills from the bottom up: the
- * grid fills each column top-down, so a remainder would otherwise stick out along the top edge and
- * read as a glitch rather than as the end of the count. `pads` blanks go in at index `at` — just
- * before the last partial column's squares. `{ at: total, pads: 0 }` when every column is full.
- */
-export function wafflePadding(total: number, rows: number): { at: number; pads: number } {
-  const remainder = rows > 0 ? total % rows : 0;
-  if (total <= rows || remainder === 0) return { at: total, pads: 0 };
-
-  return { at: total - remainder, pads: rows - remainder };
-}
-
-/**
  * The flagged packages behind each verdict, split by priority in the waffle's own order (most
  * urgent first): what lets a verdict's bar be drawn in the same priority tones as the chips and
  * squares above it, so one colour means one thing across the whole band. Counts only — every
@@ -144,18 +131,24 @@ export function libyearsSplit(
  * The phone fold's one-line peek at what it holds, as its three parts: "6 reasons", "2 advisories",
  * "263.6 libyears" (the caller joins them with " · "). Each is a count the fold itself shows in
  * full; a part with nothing to count says so briefly rather than vanishing, so the line always has
- * the same three slots.
+ * the same three slots — in the words the unfolded band uses for the same case: "no packages" for
+ * an empty lock ("No packages in this lock"), "libyears not reported" for a run with no libyears
+ * block ("This run did not report libyears."), "no libyears to measure" when the block had nothing to
+ * measure ("Nothing to measure."), "not measured" when it had packages but measured none.
  */
 export function foldPeek(parts: {
+  packages: number;
   reasons: number;
   advisories: number;
   advisoryCheckIncomplete: boolean;
   libyears: LibyearsBlock | null;
 }): readonly [string, string, string] {
   const reasons =
-    parts.reasons === 0
-      ? "nothing flagged"
-      : `${parts.reasons} ${parts.reasons === 1 ? "reason" : "reasons"}`;
+    parts.reasons > 0
+      ? `${parts.reasons} ${parts.reasons === 1 ? "reason" : "reasons"}`
+      : parts.packages === 0
+        ? "no packages"
+        : "nothing flagged";
   const advisories =
     parts.advisories > 0
       ? `${parts.advisories} ${parts.advisories === 1 ? "advisory" : "advisories"}`
@@ -163,6 +156,14 @@ export function foldPeek(parts: {
         ? "advisory check incomplete"
         : "no advisories";
   const libyears = parts.libyears && parts.libyears.measured ? fixed(parts.libyears.total, 1) : null;
+  const libyearsPart =
+    libyears !== null
+      ? `${libyears} libyears`
+      : parts.libyears === null
+        ? "libyears not reported"
+        : parts.libyears.unmeasured.every(([, count]) => count === 0)
+          ? "no libyears to measure"
+          : "libyears not measured";
 
-  return [reasons, advisories, libyears === null ? "libyears not measured" : `${libyears} libyears`];
+  return [reasons, advisories, libyearsPart];
 }

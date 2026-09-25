@@ -130,8 +130,17 @@ export function Answer({
 
 /** One line, only for the marks a reader cannot read off the table itself: their own marker (a
  *  ring, or a diamond for a snapshot — one shape in every case, never an age colour), the first
- *  row's, and the line. The threshold guides are captioned on the axis instead (`GuideCaptions`). */
-export function Key({ timeline, topWord }: { timeline: TimelineModel; topWord: TopWord }) {
+ *  row's, and the line. The threshold guides are captioned on the axis ("3y", "5y",
+ *  `GuideCaptions`); the key only says, once and without a number, what those captions count. */
+export function Key({
+  timeline,
+  topWord,
+  guides,
+}: {
+  timeline: TimelineModel;
+  topWord: TopWord;
+  guides: boolean;
+}) {
   const mine = timeline.mine;
   return (
     <p className="detail-timeline-key">
@@ -156,6 +165,12 @@ export function Key({ timeline, topWord }: { timeline: TimelineModel; topWord: T
         <span className="detail-timeline-swatch-line" aria-hidden="true" />
         time since its last release
       </span>
+      {guides && (
+        <span className="detail-timeline-key-item">
+          <span className="detail-timeline-swatch-guide" aria-hidden="true" />
+          age limit, in years ago
+        </span>
+      )}
     </p>
   );
 }

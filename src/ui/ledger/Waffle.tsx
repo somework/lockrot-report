@@ -1,6 +1,6 @@
 import { toneClass } from "../common/common";
 import { TONE } from "../../domain/vocab";
-import { wafflePadding, waffleRows, type WaffleRun } from "../../domain/summary";
+import { waffleRows, type WaffleRun } from "../../domain/summary";
 
 /**
  * The most squares one waffle row may hold at each of ledger.css's four waffle widths. The square
@@ -19,9 +19,8 @@ const BUDGETS = Object.keys(COLUMNS) as Budget[];
  * so it reads left to right like a stacked bar whose units can still be counted — three critical
  * packages are three squares, not a sliver.
  *
- * The last, partial column fills from the bottom: each width gets its own blank pads, placed just
- * before that column and shown only at that width (`waffle-pad-*`, ledger.css), since each width
- * has its own row count.
+ * The last, partial column fills from the top, like every column before it, so the count ends where
+ * reading does: a lone remainder square hanging at the bottom-right corner read as a stray mark.
  *
  * `aria-hidden`: the figure and the chips beside it say every number this draws, in words. Tones
  * are classes and the only inline styles are the row counts, numbers (DESIGN.md §1.3).
@@ -34,26 +33,12 @@ export function Waffle({ runs, total }: { runs: readonly WaffleRun[]; total: num
     Budget,
     number
   >;
-  const pads = BUDGETS.map((budget) => ({ budget, ...wafflePadding(squares, rows[budget]) }));
-
   const cells = Array.from({ length: squares }, (_, index) => {
-    const before = pads
-      .filter((pad) => pad.at === index && pad.pads > 0)
-      .flatMap((pad) =>
-        Array.from({ length: pad.pads }, (_, n) => (
-          <i key={`pad-${pad.budget}-${n}`} className={`waffle-pad waffle-pad-${pad.budget}`} />
-        )),
-      );
     const tone = tones[index];
-    const cell = (
-      <i
-        key={`cell-${index}`}
-        className={tone === undefined ? "waffle-cell waffle-rest" : `waffle-cell ${tone}`}
-      />
+    return (
+      <i key={index} className={tone === undefined ? "waffle-cell waffle-rest" : `waffle-cell ${tone}`} />
     );
-
-    return before.length > 0 ? [...before, cell] : [cell];
-  }).flat();
+  });
 
   return (
     <div

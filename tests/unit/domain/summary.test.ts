@@ -6,7 +6,6 @@ import {
   rankVerdicts,
   sharePhrase,
   WAFFLE_MIN_ROWS,
-  wafflePadding,
   waffleRows,
   waffleRuns,
 } from "../../../src/domain/summary";
@@ -87,24 +86,6 @@ describe("waffleRows", () => {
     expect(waffleRows(1, 46)).toBe(1);
     expect(waffleRows(0, 46)).toBe(1);
     expect(waffleRows(10, 0)).toBe(10);
-  });
-});
-
-describe("wafflePadding", () => {
-  it("puts the blanks just before the last partial column, so it fills from the bottom", () => {
-    // Arrange / Act: 271 squares in 6 rows — 45 full columns (270) and 1 square left over.
-    const padding = wafflePadding(271, 6);
-
-    // Assert: 5 blanks go in at index 270, pushing the last square to the column's bottom slot.
-    expect(padding).toEqual({ at: 270, pads: 5 });
-  });
-
-  it("adds nothing when every column is full, or when the waffle is a single column or row", () => {
-    // Arrange / Act / Assert
-    expect(wafflePadding(270, 6)).toEqual({ at: 270, pads: 0 });
-    expect(wafflePadding(4, 1)).toEqual({ at: 4, pads: 0 });
-    expect(wafflePadding(3, 3)).toEqual({ at: 3, pads: 0 });
-    expect(wafflePadding(0, 1)).toEqual({ at: 0, pads: 0 });
   });
 });
 
@@ -249,7 +230,13 @@ describe("libyearsSplit", () => {
 describe("foldPeek", () => {
   it("counts what the folded tier holds", () => {
     // Arrange / Act
-    const peek = foldPeek({ reasons: 6, advisories: 2, advisoryCheckIncomplete: false, libyears: block() });
+    const peek = foldPeek({
+      packages: 9,
+      reasons: 6,
+      advisories: 2,
+      advisoryCheckIncomplete: false,
+      libyears: block(),
+    });
 
     // Assert
     expect(peek).toEqual(["6 reasons", "2 advisories", "263.6 libyears"]);
@@ -257,16 +244,46 @@ describe("foldPeek", () => {
 
   it("keeps all three slots when there is nothing to count", () => {
     // Arrange / Act
-    const clean = foldPeek({ reasons: 0, advisories: 0, advisoryCheckIncomplete: false, libyears: null });
+    const clean = foldPeek({
+      packages: 4,
+      reasons: 0,
+      advisories: 0,
+      advisoryCheckIncomplete: false,
+      libyears: block({ measured: 0 }),
+    });
     const incomplete = foldPeek({
+      packages: 4,
       reasons: 1,
       advisories: 0,
       advisoryCheckIncomplete: true,
-      libyears: block({ measured: 0 }),
+      libyears: null,
     });
 
     // Assert
     expect(clean).toEqual(["nothing flagged", "no advisories", "libyears not measured"]);
-    expect(incomplete).toEqual(["1 reason", "advisory check incomplete", "libyears not measured"]);
+    expect(incomplete).toEqual(["1 reason", "advisory check incomplete", "libyears not reported"]);
+  });
+
+  it("says what the unfolded band says for an empty lock and for a run with no libyears block", () => {
+    // Arrange / Act: the band reads "No packages in this lock" and "This run did not report libyears."
+    const empty = foldPeek({
+      packages: 0,
+      reasons: 0,
+      advisories: 0,
+      advisoryCheckIncomplete: false,
+      libyears: null,
+    });
+
+    const nothingToMeasure = foldPeek({
+      packages: 0,
+      reasons: 0,
+      advisories: 0,
+      advisoryCheckIncomplete: false,
+      libyears: block({ measured: 0, unmeasured: [] }),
+    });
+
+    // Assert: the band reads "Nothing to measure." for a block with no package in it.
+    expect(empty).toEqual(["no packages", "no advisories", "libyears not reported"]);
+    expect(nothingToMeasure[2]).toBe("no libyears to measure");
   });
 });

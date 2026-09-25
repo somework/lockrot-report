@@ -74,14 +74,17 @@ export function LibyearsLedger() {
               >
                 {worst.package}
               </button>{" "}
-              <span className="mono">{worst.version}</span>
-              {fixed(worst.libyears, 1) !== null && (
-                <>
-                  {" "}
-                  at <b className="mono">{fixed(worst.libyears, 1)}</b>
-                </>
-              )}
-              .
+              {/* "4.0.4 at 5.8." stays on one line: split, "at" dangled and the figure read alone. */}
+              <span className="nowrap">
+                <span className="mono">{worst.version}</span>
+                {fixed(worst.libyears, 1) !== null && (
+                  <>
+                    {" "}
+                    at <b className="mono">{fixed(worst.libyears, 1)}</b>
+                  </>
+                )}
+                .
+              </span>
             </>
           )}
         </p>

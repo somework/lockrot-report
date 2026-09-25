@@ -10,6 +10,7 @@
   .detail-timeline-swatch,
   .detail-timeline-swatch-line,
   .detail-timeline-guide-cap,
+  .detail-timeline-swatch-guide,
   .detail-timeline-year::before,
   .detail-timeline-row.is-mine::before,
   .detail-timeline-row.is-newest::before {
@@ -26,6 +27,7 @@
     background: GrayText;
   }
   .detail-timeline-guide,
+  .detail-timeline-swatch-guide,
   .detail-timeline-year::before {
     border-color: GrayText;
   }

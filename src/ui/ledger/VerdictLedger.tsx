@@ -95,7 +95,12 @@ export function VerdictLedger() {
         {flagged.length === 0
           ? "Verdicts"
           : `Why the ${flaggedCount} ${flaggedCount === 1 ? "is" : "are"} flagged`}
-        {flagged.length > 1 && <span className="ledger-head-note">most common first</span>}
+        {/* The bars' parts take the priority chips' tones, so the note says so in words too. */}
+        {flagged.length > 0 && (
+          <span className="ledger-head-note">
+            {flagged.length > 1 ? "most common first, split by priority" : "split by priority"}
+          </span>
+        )}
       </p>
       {flagged.length > 0 && (
         // `--longest` is a count, through the CSSOM like every other length here (DESIGN.md §1.3).

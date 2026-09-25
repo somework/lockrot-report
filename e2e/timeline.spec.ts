@@ -241,6 +241,8 @@ test.describe("PD-TIMELINE-2: nothing clipped, wrapped mid-word or ellipsised on
               ?.getBoundingClientRect();
             for (const caption of section.querySelectorAll(".detail-timeline-guide-cap")) {
               const box = caption.getBoundingClientRect();
+              // One fixed pattern at every width: "5y", "3y" — never "5y ago" at one width only.
+              if (!/^\d+y$/.test(caption.textContent)) found.push(`caption "${caption.textContent}"`);
               if (latest !== undefined && box.right > latest.left - 4)
                 found.push(`${caption.textContent} meets LATEST`);
               if (branch !== undefined && box.left < branch.right + 2)

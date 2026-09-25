@@ -18,7 +18,8 @@ import "./ledger.css";
  * Kept from the priority block it grew out of (legacy `renderLedger()`, `report.js:249-258`):
  *
  * - every one of the four priorities gets a chip even at a count of zero, unlike the verdict and
- *   advisory chips (a reader should see the whole scale, not just what fired); a zero chip dims;
+ *   advisory chips (a reader should see the whole scale, not just what fired); a zero chip dims —
+ *   except in a lock with no packages at all, which has no scale to show and gets no chips;
  * - the eyebrow's tooltip names all three verdicts the count excludes (critic.md M29);
  * - a priority this renderer does not know (a future lockrot) still gets a chip, after the four
  *   known ones, at `TONE()`'s neutral fallback (DESIGN.md §2); `none` never does.
@@ -66,21 +67,24 @@ export function PriorityLedger() {
             </span>
           </p>
         )}
-        <div className="legend lead-chips">
-          {shown.map((p) => (
-            <LegendButton
-              key={p}
-              tone={TONE(p)}
-              dim={(counts[p] ?? 0) === 0}
-              pressed={state.filters.prio.includes(p)}
-              label={p}
-              count={counts[p] ?? 0}
-              onToggle={() => {
-                dispatch({ type: "toggle", group: "prio", key: p });
-              }}
-            />
-          ))}
-        </div>
+        {/* No chips for an empty lock: four disabled "0" filters there had nothing to filter. */}
+        {!empty && (
+          <div className="legend lead-chips">
+            {shown.map((p) => (
+              <LegendButton
+                key={p}
+                tone={TONE(p)}
+                dim={(counts[p] ?? 0) === 0}
+                pressed={state.filters.prio.includes(p)}
+                label={p}
+                count={counts[p] ?? 0}
+                onToggle={() => {
+                  dispatch({ type: "toggle", group: "prio", key: p });
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
       {/* Drawn for any lock with a package in it: four packages are four squares, the same size
           as a big lock's, so the lead never leaves its right-hand side empty for a small one. */}

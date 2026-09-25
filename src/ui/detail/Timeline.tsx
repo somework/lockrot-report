@@ -109,7 +109,7 @@ export function Timeline({
         )}
         <Axis ticks={timeline.ticks} guides={guides} />
       </div>
-      <Key timeline={timeline} topWord={topWord} />
+      <Key timeline={timeline} topWord={topWord} guides={guides.length > 0} />
     </section>
   );
 }

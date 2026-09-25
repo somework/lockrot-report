@@ -625,17 +625,17 @@ describe("Detail", () => {
     it("captions the threshold guides on the axis itself, warn and high apart by pattern (PD-TIMELINE-4)", () => {
       const { container } = renderDetail(KOEL, "meilisearch/meilisearch-php");
       const captions = Array.from(container.querySelectorAll(".detail-timeline-guide-cap"));
-      // Both carry " ago"; timeline.css shows it on one caption, the older's when it has the room.
-      expect(captions.map((cap) => cap.textContent)).toEqual(["3y ago", "5y ago"]);
-      const [younger, older] = captions as HTMLElement[];
-      expect(younger?.style.getPropertyValue("--other")).toBe(older?.style.getPropertyValue("--room"));
-      expect(older?.style.getPropertyValue("--other")).toBe("");
+      // One fixed pattern at every width: just the years, "ago" said once in the key.
+      expect(captions.map((cap) => cap.textContent)).toEqual(["3y", "5y"]);
       // The older guide's caption sits left of its line, the younger's right, so they never meet.
       expect(captions.map((cap) => cap.classList.contains("is-left"))).toEqual([false, true]);
       expect(container.querySelector(".detail-timeline-guide.is-warn")).not.toBeNull();
       expect(container.querySelector(".detail-timeline-guide.is-high")).not.toBeNull();
-      // Out of the key: "┃3 ┃5 years ago" there read as a count.
-      expect(container.querySelector(".detail-timeline-key")?.textContent).not.toMatch(/\d/);
+      // Out of the key: "┃3 ┃5 years ago" there read as a count. The key names what the captions
+      // count, once and without a number.
+      const key = container.querySelector(".detail-timeline-key")?.textContent ?? "";
+      expect(key).not.toMatch(/\d/);
+      expect(key).toContain("age limit, in years ago");
     });
 
     it("never tones a snapshot's age: a checkout date is not a release age", () => {
@@ -673,6 +673,7 @@ describe("Detail", () => {
       expect(screen.getByRole("table", { name: "Release branches, most recent release first" })).toBeTruthy();
       expect(container.querySelector(".detail-timeline-age")?.classList.contains("is-toned")).toBe(false);
       expect(container.querySelector(".detail-timeline-guide")).toBeNull();
+      expect(container.querySelector(".detail-timeline-key")?.textContent).not.toContain("years ago");
       // No php constraint recorded: a dash on screen, words for a screen reader.
       expect(container.querySelector(".detail-timeline-php")?.textContent).toBe("—none recorded");
     });

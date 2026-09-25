@@ -163,16 +163,17 @@
   box-shadow: 0 0 0 2px var(--row-bg);
 }
 /* Warn dashed, high dotted: the two differ in pattern as well as tone, so forced colours, which
-   drop the tone, still tell them apart. */
+   drop the tone, still tell them apart. Both lines are a hairline in a faded tone — they are a
+   scale, not a finding, and the 5y one drawn heavier was the loudest vertical in the chart; the
+   caption's text keeps the full tone. */
 .detail-timeline-guide,
 .detail-timeline-guide-cap {
-  --guide: 1px dashed var(--tone);
+  --guide: 1px dashed color-mix(in srgb, var(--tone) 55%, transparent);
   --guide-w: 1px;
 }
 .detail-timeline-guide.is-high,
 .detail-timeline-guide-cap.is-high {
-  --guide: 2px dotted var(--tone);
-  --guide-w: 2px;
+  --guide: 1px dotted color-mix(in srgb, var(--tone) 55%, transparent);
 }
 .detail-timeline-guide {
   position: absolute;
@@ -180,7 +181,6 @@
   bottom: -1px;
   left: var(--x);
   border-left: var(--guide);
-  opacity: 0.7;
 }
 
 /* The guides' captions, in the header right above the first row; each caption's own border is its
@@ -212,28 +212,6 @@
   padding-right: 4px;
   border-right: var(--guide);
 }
-/* " ago" is all there or not at all: its width is 0 until its side of the strip (`--room`, a share
-   of the strip; `1cqw` is 1% of it) is `--ago-need` wide — "5y ago" and its padding, less the part
-   that may hang into the column gap — then jumps to the whole word. A step, not a squeeze: the ×999
-   makes the ramp between the two under a pixel wide. */
-.detail-timeline-guide-ago {
-  --ago-need: 32px;
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-  white-space: pre;
-  max-width: clamp(0px, (var(--room) * 1cqw - var(--ago-need)) * 999, 3em);
-}
-/* The younger caption's " ago": only when the older one has no room for its own (`--other`, 0 when
-   there is no older guide), and only when "3y ago" fits before the today rule — the min() of the
-   two steps is their AND. */
-.detail-timeline-guide-cap.is-right .detail-timeline-guide-ago {
-  max-width: min(
-    clamp(0px, (var(--room) * 1cqw - 44px) * 999, 3em),
-    clamp(0px, (var(--ago-need) - var(--other, 0) * 1cqw) * 999, 3em)
-  );
-}
-
 /* The reader's row: an ink rule and ring — one "you" in every case, whatever the age — while the
    line and a faint wash of the row take the age's tone against the run's thresholds (`domain/age.ts`).
    A snapshot, never toned, keeps a neutral wash. */
@@ -499,6 +477,13 @@
   border-radius: 2px;
   background: var(--border-strong);
 }
+/* A guide as the key draws it: a short upright dash in muted ink, not a tone — the key names what
+   both guides count, not which is which (their captions do that). */
+.detail-timeline-swatch-guide {
+  display: inline-block;
+  height: 11px;
+  border-left: 1px dashed var(--muted);
+}
 
 /* A phone-width panel: every column a notch smaller, so the strip — the part that answers — keeps
    a readable width next to the version and the constraint. */
@@ -529,10 +514,5 @@
   .detail-timeline-php,
   .detail-timeline-range {
     font-size: 10px;
-  }
-  /* "5y ago" hanging into the gap beside "BRANCH ↓" read as one heading: here the whole caption
-     keeps inside the strip, with a gap to spare, or says just "5y". */
-  .detail-timeline-guide-ago {
-    --ago-need: 46px;
   }
 }

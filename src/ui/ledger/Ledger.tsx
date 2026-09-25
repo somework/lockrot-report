@@ -27,6 +27,7 @@ function FoldSummary() {
   const { model } = useReport();
   const advisories = allAdvisories(model).length;
   const peek = foldPeek({
+    packages: model.report.packagesChecked ?? model.report.findings.length,
     reasons: rankVerdicts(model.report.counts, model.report.run.flaggedVerdicts).flagged.length,
     advisories,
     advisoryCheckIncomplete: advisories === 0 && advisoryCheckIncomplete(model),
