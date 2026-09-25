@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { radiusCards } from "../../../src/domain/radius";
+import { placedOnRadius, radiusCards } from "../../../src/domain/radius";
 import { makeFinding, makeModel } from "./fixtures";
 import type { Model } from "../../../src/model/types";
 
@@ -102,5 +102,29 @@ describe("radiusCards", () => {
     // Assert
     expect(bigCard?.meterPercent).toBe(100);
     expect(smallCard?.meterPercent).toBe(25);
+  });
+});
+
+describe("placedOnRadius (PD-RAIL-1)", () => {
+  it("keeps a pulled finding and a flagged card head, drops a flagged direct requirement with no card", () => {
+    // Arrange: acme/parent is in `exposure` and pulls acme/child; acme/alone is a flagged direct
+    // requirement `exposure` does not list, so no card ever names it.
+    const parent = makeFinding({ package: "acme/parent", chain: ["acme/parent"] });
+    const child = makeFinding({ package: "acme/child", chain: ["acme/parent", "acme/child"] });
+    const alone = makeFinding({ package: "acme/alone", chain: ["acme/alone"] });
+    const model = modelWithExposure(makeModel([parent, child, alone]), [
+      { package: "acme/parent", flagged: 1 },
+    ]);
+
+    // Act
+    const placed = placedOnRadius(model, [parent, child, alone]);
+
+    // Assert: exactly the packages the cards show, as headers or as rows.
+    const cards = radiusCards(model, [parent, child, alone]);
+    const shown = new Set(
+      cards.flatMap((c) => [...(c.parentFlagged ? [c.package] : []), ...c.pulled.map((p) => p.package)]),
+    );
+    expect(placed.map((f) => f.package)).toEqual(["acme/parent", "acme/child"]);
+    expect(new Set(placed.map((f) => f.package))).toEqual(shown);
   });
 });

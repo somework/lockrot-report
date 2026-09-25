@@ -668,6 +668,40 @@ export class NewReportPage implements ReportPage {
     await this.railLocator(group, key).click();
   }
 
+  async railRows(): Promise<{ label: string; count: number }[]> {
+    const buttons = this.page.getByRole("group", { name: "Filters" }).getByRole("button");
+    return buttons.evaluateAll((els) =>
+      els.map((el) => {
+        const count = el.querySelector(".c")?.textContent ?? "";
+        const label = el.textContent.replace(count, "").replace(/\s+/g, " ").trim();
+        return { label, count: Number(count) };
+      }),
+    );
+  }
+
+  async toggleRailRowAt(index: number): Promise<void> {
+    await this.page.getByRole("group", { name: "Filters" }).getByRole("button").nth(index).click();
+  }
+
+  async listedPackageCount(): Promise<number> {
+    // The same candidates `rows()` reads, counted in one page call: a per-row locator round trip
+    // over wallabag's 271 packages, once per rail row, would take minutes.
+    return this.page.evaluate(() => {
+      const names = new Set<string>();
+      const implicit: Record<string, string> = { TR: "row", LI: "listitem" };
+      for (const el of document.querySelectorAll(
+        '[role="row"], [role="option"], [role="listitem"], tr, li',
+      )) {
+        const role = el.getAttribute("role") ?? implicit[el.tagName] ?? "";
+        if (!["row", "option", "listitem"].includes(role)) continue;
+        if (el.querySelector('[role="columnheader"], th')) continue;
+        const name = el.getAttribute("aria-label") ?? el.textContent;
+        if (name) names.add(name.trim());
+      }
+      return names.size;
+    });
+  }
+
   async railOptionPressed(group: RailGroup, key: string): Promise<boolean | null> {
     const el = this.railLocator(group, key);
     if ((await el.count()) === 0) return null;
@@ -866,39 +900,117 @@ export class NewReportPage implements ReportPage {
     return this.page.evaluate(() => getComputedStyle(document.body).overflow === "hidden");
   }
 
-  async tabsEdgeShadowVisible(): Promise<boolean> {
-    const tabs = this.page.locator(".tabs");
-    const rect = await tabs.boundingBox();
-    if (rect === null) throw new Error("tabs row not found");
-    const overflows = await tabs.evaluate((el) => el.scrollWidth > el.clientWidth);
-    if (!overflows) return false;
+  async tabsOverflow(): Promise<boolean> {
+    return this.page.getByRole("tablist").evaluate((el) => el.scrollWidth > el.clientWidth + 1);
+  }
 
-    // A thin strip a few pixels below the row's own top edge, clear of every tab's own label text
-    // (`.tab`'s own padding-top, on top of the row's own, keeps a glyph from ever reaching this
-    // high) — the same strip in both themes, so this reads the cue's own contrast, never a glyph's.
-    const sampleWidth = 40;
-    const buf = await this.page.screenshot({
-      clip: {
-        x: Math.max(0, rect.x + rect.width - sampleWidth),
-        y: Math.round(rect.y + 3),
-        width: sampleWidth,
-        height: 1,
-      },
+  /** The chevrons are `aria-hidden` pointer affordances (PD-TABS-1), so no role reaches them: the
+   *  class is the only handle, and it stays inside this file. */
+  private tabsChevron(side: "prev" | "next"): Locator {
+    return this.page.locator(`.tabs-scroll-${side}`);
+  }
+
+  async tabsOverflowCue(): Promise<{ prev: boolean; next: boolean }> {
+    const strip = await this.page.getByRole("tablist").boundingBox();
+    if (strip === null) throw new Error("tab list not found");
+    // The header's own surface, a few pixels into the strip's top-left padding: above every label
+    // and clear of the chevrons, which sit on the row's vertical middle.
+    const surface = decodePng(
+      await this.page.screenshot({
+        clip: { x: strip.x + 2, y: Math.round(strip.y + 3), width: 1, height: 1 },
+      }),
+    );
+    const base = [surface.data.readUInt8(0), surface.data.readUInt8(1), surface.data.readUInt8(2)] as const;
+
+    const painted = async (side: "prev" | "next"): Promise<boolean> => {
+      const chevron = this.tabsChevron(side);
+      if (!(await chevron.isVisible())) return false;
+      const box = await chevron.boundingBox();
+      if (box === null) return false;
+      // One pixel row through the button's middle, where the chevron's stroke crosses it.
+      const png = decodePng(
+        await this.page.screenshot({
+          clip: { x: box.x, y: Math.round(box.y + box.height / 2), width: Math.round(box.width), height: 1 },
+        }),
+      );
+      let best = 0;
+      for (let x = 0; x < png.width; x += 1) {
+        const contrast = Math.max(
+          Math.abs(png.data.readUInt8(x * 4) - base[0]),
+          Math.abs(png.data.readUInt8(x * 4 + 1) - base[1]),
+          Math.abs(png.data.readUInt8(x * 4 + 2) - base[2]),
+        );
+        best = Math.max(best, contrast);
+      }
+      return best > 90;
+    };
+
+    return { prev: await painted("prev"), next: await painted("next") };
+  }
+
+  async scrollTabs(side: "prev" | "next"): Promise<void> {
+    const list = await this.page.getByRole("tablist").elementHandle();
+    const before = await list.evaluate((el) => el.scrollLeft);
+    await this.tabsChevron(side).click();
+    // The chevron glides (unless reduced motion is asked for), and a frame or two can pass
+    // mid-glide without the row moving: wait until it has moved and then held still for
+    // `STILL_FRAMES` frames in a row, i.e. has come to rest.
+    await list.evaluate(
+      (el, start) =>
+        new Promise<void>((resolve) => {
+          const STILL_FRAMES = 8;
+          let last = el.scrollLeft;
+          let still = 0;
+          const tick = () => {
+            const now = el.scrollLeft;
+            still = now === last && now !== start ? still + 1 : 0;
+            last = now;
+            if (still >= STILL_FRAMES) resolve();
+            else requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }),
+      before,
+    );
+  }
+
+  async tabInFullView(name: ViewName): Promise<boolean> {
+    return this.tabLocator(name).evaluate((tab) => {
+      const list = tab.closest('[role="tablist"]');
+      if (list === null) return false;
+      const box = list.getBoundingClientRect();
+      const rect = tab.getBoundingClientRect();
+      if (rect.left < box.left - 0.5 || rect.right > box.right + 0.5) return false;
+      // Not under a chevron: the label must be readable, not merely inside the scroller's box.
+      const chevrons = [...document.querySelectorAll<HTMLElement>(".tabs-scroll")].filter(
+        (el) => !el.hidden && el.getBoundingClientRect().width > 0,
+      );
+      return chevrons.every((el) => {
+        const c = el.getBoundingClientRect();
+        return c.right <= rect.left + 0.5 || c.left >= rect.right - 0.5;
+      });
     });
-    const png = decodePng(buf);
-    const at = (x: number): [number, number, number] => [
-      png.data.readUInt8(x * 4),
-      png.data.readUInt8(x * 4 + 1),
-      png.data.readUInt8(x * 4 + 2),
-    ];
-    // The leftmost sampled pixel sits outside the cue's own width (14px, `app.css`), so it is the
-    // plain surface colour; the rightmost one is the row's true trailing edge, where the cue is at
-    // its strongest.
-    const [fr, fg, fb] = at(0);
-    const [er, eg, eb] = at(png.width - 1);
-    const contrast = Math.max(Math.abs(fr - er), Math.abs(fg - eg), Math.abs(fb - eb));
+  }
 
-    return contrast > 90;
+  async isFocusOnTabsChevron(): Promise<boolean> {
+    return this.page.evaluate(() => document.activeElement?.classList.contains("tabs-scroll") ?? false);
+  }
+
+  async focusTab(name: ViewName): Promise<void> {
+    await this.tabLocator(name).focus();
+  }
+
+  async focusedTab(): Promise<ViewName | null> {
+    const text = await this.page.evaluate(() => {
+      const el = document.activeElement;
+      return el?.getAttribute("role") === "tab" ? el.textContent : null;
+    });
+    if (text === null) return null;
+    return (Object.keys(VIEW_LABEL) as ViewName[]).find((view) => text.includes(VIEW_LABEL[view])) ?? null;
+  }
+
+  async pressKey(key: string): Promise<void> {
+    await this.page.keyboard.press(key);
   }
 
   async bundleKeys(): Promise<string[]> {

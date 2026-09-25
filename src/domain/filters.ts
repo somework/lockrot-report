@@ -13,6 +13,7 @@ import { PRIORITIES } from "../model/types";
 import type { Filters, FilterGroup, SortKey, State } from "../state/types";
 import { matchesFinding, parseQuery } from "./query";
 import { fixShapeOf, type FixShape } from "./advisories";
+import { placedOnRadius } from "./radius";
 // `vocab.ts` is another agent's file (DESIGN.md §3); these three names are its documented exports.
 import { isFlagged, SIGNAL_NAMES, VERDICT_ORDER } from "./vocab";
 
@@ -266,10 +267,12 @@ export function signalSortKey(id: string): readonly [number, string] {
   return digits !== undefined ? [Number(digits), ""] : [Number.MAX_SAFE_INTEGER, id];
 }
 
+/** A signal id counts a package once, however many times it fired on it: selecting the id keeps
+ *  that package once (`passesRail`), so the count is what the list will show (PD-RAIL-1). */
 function buildSignalGroup(state: State, here: readonly Finding[]): RailGroup | null {
   const counts = new Map<string, number>();
   for (const f of here) {
-    for (const signal of f.signals) counts.set(signal.id, (counts.get(signal.id) ?? 0) + 1);
+    for (const id of new Set(f.signals.map((signal) => signal.id))) counts.set(id, (counts.get(id) ?? 0) + 1);
   }
   if (counts.size === 0) return null;
 
@@ -296,12 +299,19 @@ const FIX_GROUP_TEXT: readonly (readonly [FixShape, string])[] = [
   ["none", "No fix listed"],
 ];
 
+/**
+ * PD-RAIL-1: each fix shape counts the packages with at least one advisory of that shape — exactly
+ * the packages `passesRail` keeps when the row is selected — not the advisories. Legacy counted
+ * advisories (`report.js:376-383`) while filtering packages, so spomky-labs/otphp's two
+ * other-branch advisories read "Moving to another branch 2" over a list of one row. A package whose
+ * advisories take two shapes counts once under each, as it is listed under either.
+ */
 function buildFixGroup(state: State, here: readonly Finding[]): RailGroup | null {
   const counts: Record<FixShape, number> = { branch: 0, move: 0, none: 0 };
   let total = 0;
   for (const f of here) {
-    for (const advisory of f.advisories) {
-      counts[fixShapeOf(advisory)] += 1;
+    for (const shape of new Set(f.advisories.map(fixShapeOf))) {
+      counts[shape] += 1;
       total += 1;
     }
   }
@@ -323,7 +333,11 @@ function buildFixGroup(state: State, here: readonly Finding[]): RailGroup | null
  * not `renderRail()`) and are not part of this list.
  */
 export function railGroups(model: Model, state: State): readonly RailGroup[] {
-  const here = population(model, state.view);
+  // PD-RAIL-1: every count is the packages the list shows once that row is selected, so on Blast
+  // radius only the flagged findings that tab has a place for count — not the flagged direct
+  // requirements with no card (radius.ts#placedOnRadius).
+  const everyone = population(model, state.view);
+  const here = state.view === "radius" ? placedOnRadius(model, everyone) : everyone;
   const groups: RailGroup[] = [];
 
   const since = buildSinceGroup(model, state, here);

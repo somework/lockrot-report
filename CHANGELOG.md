@@ -187,10 +187,18 @@ tag or the address format, says so under **Breaking** in its entry.
   panel leaves behind instead of leaving it empty.
 - The advisory ledger no longer says a clean lock has no advisory twice, once above the bar and once
   again in its legend.
-- The tab row's own edge shadow, the cue that it scrolls sideways, is visible at a phone width in
-  both themes; it used to fade into the background instead of standing out from it.
-- The All packages table draws the same edge-shadow cue as the tab row when it scrolls sideways; it
-  used to clip a column with nothing on screen saying more of it exists.
+- On a phone, the tab row fades out on whichever side has tabs out of sight, under a small arrow
+  button that scrolls it, and the selected tab, one opened from a shared link included, is scrolled
+  fully into view. At 390px the row used to cut "Blast radius" mid-word and leave "Run data"
+  off-screen with only a faint shadow to say so. The arrows are for a mouse or a finger: Tab still
+  reaches the row once, and the arrow keys still move between tabs. From 768px up nothing changes.
+- The All packages table draws an edge-shadow cue when it scrolls sideways; it used to clip a column
+  with nothing on screen saying more of it exists.
+- Every count in the filter rail is now the number of packages its button lists. "What the fix
+  costs" counted advisories, so a package with two advisories fixed only on another branch read
+  "Moving to another branch 2" over a list of one; a signal that fired twice on one package counted
+  it twice; and on Blast radius the counts included flagged direct requirements that tab has no card
+  for.
 
 ## [0.12.0]
 

@@ -387,6 +387,95 @@ describe("railGroups / fix", () => {
   });
 });
 
+describe("railGroups counts packages, the unit the rail filters in (PD-RAIL-1)", () => {
+  it("counts a package once per fix shape, however many advisories of that shape it carries", () => {
+    // Arrange: spomky-labs/otphp's shape in wallabag — two advisories, both fixed only on another
+    // branch — beside a package with one advisory of each of the other two shapes.
+    const twoMoves = makeFinding({
+      package: "acme/moves",
+      verdict: "abandoned",
+      advisories: [
+        makeAdvisory({ id: "GHSA-1", fixedBy: "3.0.0", fixedOnBranch: false }),
+        makeAdvisory({ id: "GHSA-2", fixedBy: "3.1.0", fixedOnBranch: false }),
+      ],
+    });
+    const mixed = makeFinding({
+      package: "acme/mixed",
+      verdict: "abandoned",
+      advisories: [
+        makeAdvisory({ id: "GHSA-3", fixedBy: "1.0.1", fixedOnBranch: true }),
+        makeAdvisory({ id: "GHSA-4", fixedBy: null }),
+      ],
+    });
+    const model = modelWith([twoMoves, mixed]);
+
+    // Act
+    const fix = railGroups(model, stateWith({ view: "findings" })).find((g) => g.group === "fix");
+
+    // Assert: one package under each shape, as selecting each lists one package.
+    expect(fix?.rows.map((r) => [r.key, r.count])).toEqual([
+      ["branch", 1],
+      ["move", 1],
+      ["none", 1],
+    ]);
+    for (const row of fix?.rows ?? []) {
+      const state = stateWith({ view: "findings", filters: withFilters({ fix: [row.key] }) });
+      expect(applyFilters(model, state, "findings")).toHaveLength(row.count);
+    }
+  });
+
+  it("counts a signal id once per package even when it fired twice on it", () => {
+    // Arrange
+    const twice = makeFinding({
+      package: "acme/twice",
+      verdict: "abandoned",
+      signals: [makeSignal({ id: "S5" }), makeSignal({ id: "S5" })],
+    });
+    const model = modelWith([twice]);
+
+    // Act
+    const signal = railGroups(model, stateWith({ view: "findings" })).find((g) => g.group === "signal");
+
+    // Assert
+    expect(signal?.rows.map((r) => [r.key, r.count])).toEqual([["S5", 1]]);
+  });
+
+  it("on Blast radius, leaves out a flagged direct requirement no card lists", () => {
+    // Arrange: acme/parent heads a card and pulls acme/child; acme/alone is flagged and direct but
+    // not in `exposure`, so the tab has no place for it.
+    const parent = makeFinding({
+      package: "acme/parent",
+      verdict: "abandoned",
+      direct: true,
+      chain: ["acme/parent"],
+    });
+    const child = makeFinding({
+      package: "acme/child",
+      verdict: "abandoned",
+      direct: false,
+      chain: ["acme/parent", "acme/child"],
+    });
+    const alone = makeFinding({
+      package: "acme/alone",
+      verdict: "abandoned",
+      direct: true,
+      chain: ["acme/alone"],
+    });
+    const model = modelWith([parent, child, alone], { exposure: [{ package: "acme/parent", flagged: 1 }] });
+
+    // Act
+    const scope = (view: "findings" | "radius") =>
+      railGroups(model, stateWith({ view }))
+        .find((g) => g.group === "scope")
+        ?.rows.find((r) => r.key === "direct")?.count;
+
+    // Assert: Findings lists all three, so its "Direct" counts both direct ones; Blast radius only
+    // ever shows acme/parent of those two.
+    expect(scope("findings")).toBe(2);
+    expect(scope("radius")).toBe(1);
+  });
+});
+
 describe("hiddenByFilters (PD-DETAIL-4, DESIGN.md §5)", () => {
   it("is false while the package matches the current tab's own filters", () => {
     // Arrange

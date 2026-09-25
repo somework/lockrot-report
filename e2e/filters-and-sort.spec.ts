@@ -140,3 +140,40 @@ test.describe("sort (Packages tab)", () => {
     expect(await report.sortState()).toEqual({ key: "verdict", desc: false });
   });
 });
+
+// PD-RAIL-1 (DESIGN.md §5): a rail row's count is the number of packages the list shows once it is
+// selected, on every tab that lists packages by row, over the three real corpora. The fix-cost group
+// used to count advisories over a filter that keeps packages: wallabag's spomky-labs/otphp, with two
+// other-branch advisories, read "Moving to another branch 2" over one row. Blast radius lists under
+// cards, not by row; tests/unit/ui/railCounts.test.ts holds it to the same rule.
+test.describe("PD-RAIL-1: every rail count is the list it selects", () => {
+  test.describe.configure({ timeout: 120_000 });
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  // koel and mautic carry no advisory, so their Advisories tab has no rail to check.
+  const cases = [
+    ...(["findings", "advisories", "packages"] as const).map((view) => [FIXTURES.wallabag, view] as const),
+    ...[FIXTURES.koel, FIXTURES.mautic].flatMap((fixture) =>
+      (["findings", "packages"] as const).map((view) => [fixture, view] as const),
+    ),
+  ];
+
+  for (const [fixture, view] of cases) {
+    test(`${fixture}, ${view}`, async () => {
+      await report.goto(fixture);
+      await report.tab(view);
+      const rows = await report.railRows();
+      expect(rows.length).toBeGreaterThan(0);
+
+      const mismatches: string[] = [];
+      for (const [index, row] of rows.entries()) {
+        await report.toggleRailRowAt(index);
+        const listed = await report.listedPackageCount();
+        if (listed !== row.count) mismatches.push(`${row.label}: shows ${row.count}, lists ${listed}`);
+        await report.toggleRailRowAt(index);
+      }
+
+      expect(mismatches).toEqual([]);
+    });
+  }
+});

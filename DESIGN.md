@@ -245,13 +245,16 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 | PD-LEDGER-1                 | "No advisory affects this lock" even when the check may not have run        | "No advisory found; N packages could not be confirmed clear", in a neutral tone                                                               |
 | PD-LEDGER-2                 | a legend entry, a filter toggle, looked like plain text                     | a chip with hover, focus and pressed states, and a title naming the click                                                                     |
 | PD-DISCLOSURE-1             | each `<summary>` drew its own text-glyph marker                             | one CSS-drawn triangle for every `<summary>`, with hover and focus states                                                                     |
+| PD-TABS-1                   | at 390px "Blast radius" cut mid-word, "Run data" off-screen, no clear cue   | the hidden side fades under a chevron that scrolls the row (no Tab stop, hidden from AT); the selected tab scrolls into view                  |
+| PD-RAIL-1                   | the fix-cost rail counted advisories but kept packages: otphp "2", one row  | a rail count is the packages its button lists: once per fix shape or signal; Blast radius counts only packages with a card                    |
 
 Changed on purpose, and not a legacy bug:
 
 - An advisory whose severity the page cannot bucket sorts with the unrated ones, last. The legacy
   page sorted it first, by accident of `indexOf` returning -1 (critic C1).
 
-Deliberately kept although odd: rail counts are per-tab totals, not faceted; the detail survives a
+Deliberately kept although odd: rail counts are per-tab totals, not faceted (each counts packages,
+the unit the rail filters in, PD-RAIL-1); the detail survives a
 filter that hides its package; `data-goto` keeps the detail open.
 
 ## 6. Testing
@@ -350,8 +353,12 @@ there is one, the baseline, every advisory and the release branches. "The lock e
 default (PD-DETAIL-1/PD-DETAIL-2).
 
 **Tabs** follow the ARIA tabs pattern: one tab in the Tab order, arrows/Home/End move and select,
-the current view's column is the `tabpanel`. When the tab row overflows it scrolls sideways, with
-edge shadows drawn by CSS alone (`background-attachment: local` over `scroll`) as the cue.
+the current view's column is the `tabpanel`. When the tab row overflows it scrolls sideways
+(PD-TABS-1): each side with tabs out of sight fades into the header's surface under a chevron
+button that pages the row, and the selected tab is scrolled into full view on load and on every
+switch, instantly under reduced motion. The chevrons sit outside the `tablist`, `tabIndex=-1` and
+`aria-hidden`: pointer affordances only, since the single Tab stop and the arrow keys already reach
+every tab. In forced colours the fade goes and the chevrons keep the system's button colours.
 
 **The detail sheet** locks page scroll only while it is shown with content in it (M13). The
 glossary is a native `<dialog>`; where `showModal()` throws it opens non-modal but pinned

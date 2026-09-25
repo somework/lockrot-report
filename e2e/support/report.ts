@@ -220,6 +220,12 @@ export interface ReportPage {
 
   railOption(group: RailGroup, key: string): Promise<void>;
   railOptionPressed(group: RailGroup, key: string): Promise<boolean | null>;
+  /** Every rail button in order, as its label and the count it shows (PD-RAIL-1). */
+  railRows(): Promise<{ label: string; count: number }[]>;
+  /** Clicks the rail button at that position (the order `railRows()` gives), selecting or clearing it. */
+  toggleRailRowAt(index: number): Promise<void>;
+  /** How many different packages the current view's rows name — `rows()` without duplicates. */
+  listedPackageCount(): Promise<number>;
 
   /** Clicks a Packages-table column header once (toggles direction on a repeat click). */
   sortBy(key: string): Promise<void>;
@@ -280,15 +286,28 @@ export interface ReportPage {
   copyButtonLabel(): Promise<string | null>;
   clickCopyButton(): Promise<void>;
 
+  /** Whether the tab row is wider than its own box, so part of it is scrolled out of sight. */
+  tabsOverflow(): Promise<boolean>;
   /**
-   * Whether the tab row's own scroll-shadow cue (its trailing edge, `.tabs` in `ui/app.css`) is
-   * actually visible where the row overflows — read from real painted pixels, not
-   * `getComputedStyle`, since a background gradient can be present in the DOM and still fade to
-   * nothing a reader would notice (a walk found exactly that at 390px: the cue existed but never
-   * registered next to a tab cut off mid-word). `false` when the row does not overflow at all,
-   * the same as `false` for "no cue to see".
+   * The tab row's overflow cue on each side (PD-TABS-1): whether that side's chevron is shown and
+   * actually paints a mark distinct from the header's surface — read from real pixels, since a cue
+   * can be present in the DOM and still vanish against its background (a walk found exactly that at
+   * 390px with the older edge shadow). Both false where the row fits.
    */
-  tabsEdgeShadowVisible(): Promise<boolean>;
+  tabsOverflowCue(): Promise<{ prev: boolean; next: boolean }>;
+  /** Clicks the tab row's chevron on that side and waits for the row to come to rest. */
+  scrollTabs(side: "prev" | "next"): Promise<void>;
+  /** Whether the whole tab — label and badge — is inside the row's visible box and clear of both
+   *  chevrons. */
+  tabInFullView(name: ViewName): Promise<boolean>;
+  /** Whether keyboard focus sits on one of the tab row's chevrons (it never should: PD-TABS-1). */
+  isFocusOnTabsChevron(): Promise<boolean>;
+  /** Moves keyboard focus onto a tab without clicking it. */
+  focusTab(name: ViewName): Promise<void>;
+  /** The tab that holds keyboard focus, or null when focus is not on a tab. */
+  focusedTab(): Promise<ViewName | null>;
+  /** Presses one named key (`ArrowLeft`, `End`, …) on whatever holds focus. */
+  pressKey(key: string): Promise<void>;
   /** Whether the page currently prevents the document from scrolling (M13's stuck state). */
   isScrollLocked(): Promise<boolean>;
   /** The embedded bundle's top-level keys, from `#lockrot-data` — contract item 7 in history.md. */

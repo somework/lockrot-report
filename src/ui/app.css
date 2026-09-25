@@ -130,28 +130,104 @@
 }
 
 /* ---------- tabs ----------
-   The tab row scrolls sideways when it does not fit. The two "local" gradients are painted with
-   the content and cover the two "scroll" shadows at each end until there is something to scroll
-   to on that side: a cue drawn by CSS alone, which the legacy row lacked (css-html.md §10.3).
-   visual review: at 390px, with the last tab cut mid-word, the cue drawn from `--border-strong`
-   read as no cue at all — that token is a hairline-border colour, chosen for a 1px rule, and faded
-   to transparent over 8px it never reached enough contrast against `--surface` to notice next to a
-   clipped word. `--muted` (already legible text on `--surface` in both themes) and a wider, 14px
-   fade read as an actual shadow instead of a slightly different white. */
-.tabs {
+   The tab row scrolls sideways when it does not fit (a phone: 582px of tabs in 390px).
+   PD-TABS-1: the side with tabs out of sight fades the row out into the header's surface, under a
+   small chevron button that scrolls it (Tabs.tsx sets `can-prev`/`can-next` on `.tabs-strip` from the
+   row's own scroll position). This replaces the scroll-shadow cue the row used to draw with
+   background gradients alone — a walk at 390px still found a clipped "Blast radius" and an
+   off-screen "Run data" with nothing saying either was there. Where the five tabs fit, neither class
+   is set and nothing here draws. */
+.tabs-strip {
+  position: relative;
   max-width: var(--page-max);
   margin: 0 auto;
+}
+.tabs {
   padding: 10px var(--gutter) 0;
   display: flex;
   gap: 2px;
   overflow-x: auto;
-  scrollbar-width: thin;
+  scrollbar-width: none;
   overscroll-behavior-x: contain;
-  background:
-    linear-gradient(to right, var(--surface) 40%, transparent) left center / 36px 100% no-repeat local,
-    linear-gradient(to left, var(--surface) 40%, transparent) right center / 36px 100% no-repeat local,
-    linear-gradient(to right, var(--muted), transparent) left center / 14px 100% no-repeat scroll,
-    linear-gradient(to left, var(--muted), transparent) right center / 14px 100% no-repeat scroll;
+  /* A tab focused with ArrowLeft/ArrowRight scrolls in clear of the chevron and fade at that edge
+     (Tabs.tsx#EDGE_CLEARANCE). */
+  scroll-padding-inline: 40px;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+.tabs-strip::before,
+.tabs-strip::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 2px;
+  width: 72px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.tabs-strip::before {
+  left: 0;
+  background: linear-gradient(to right, var(--surface) 40%, transparent);
+}
+.tabs-strip::after {
+  right: 0;
+  background: linear-gradient(to left, var(--surface) 40%, transparent);
+}
+.tabs-strip.can-prev::before,
+.tabs-strip.can-next::after {
+  opacity: 1;
+}
+.tabs-scroll {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-top: -9px;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink-2);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease;
+}
+.tabs-scroll[hidden] {
+  display: none;
+}
+.tabs-scroll:hover {
+  color: var(--ink);
+  border-color: var(--muted);
+}
+.tabs-scroll-prev {
+  left: 4px;
+}
+.tabs-scroll-next {
+  right: 4px;
+}
+.tabs-scroll-icon {
+  display: block;
+}
+/* Forced colours paint the fade in the author's surface colour over system-coloured text, so it
+   goes; the chevron buttons keep the system's own button colours and stay the cue. */
+@media (forced-colors: active) {
+  .tabs-strip::before,
+  .tabs-strip::after {
+    display: none;
+  }
+  .tabs-scroll {
+    border-color: ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    box-shadow: none;
+  }
 }
 .tab {
   flex: none;
