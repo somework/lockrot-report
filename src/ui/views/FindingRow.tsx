@@ -22,9 +22,10 @@ import "./ledger-rows.css";
  * most natural "yes, that one" — closed the very detail the reader was reading; Close and Escape
  * are the ways out). A click that landed on a real `<a>` (a signal id's own link), a `<button>`, or
  * inside an open popover (its content is a descendant of the row in the DOM even though the top
- * layer draws it elsewhere) is left to do its own thing. The row's own verdict word is plain text,
- * not one of those (PD-GLOSSARY-4/5), so a click on it falls through to the row like any other word
- * in it. Keyboard activation (Enter/Space, and DESIGN.md M5's fix so a focused control's own Enter
+ * layer draws it elsewhere) is left to do its own thing, and so is a part marked `data-no-open` (a
+ * Blast radius row's squares, which open its list) and a row nested inside this one. The row's own
+ * verdict word is plain text, not one of those (PD-GLOSSARY-4/5), so a click on it falls through to
+ * the row like any other word in it. Keyboard activation (Enter/Space, and DESIGN.md M5's fix so a focused control's own Enter
  * is left alone) is `ui/keyboard.ts`'s job, with the same open-never-close rule: it reads the same
  * `data-pkg` every row carries through one document-level listener, so a row needs no `onKeyDown`
  * of its own — adding one would just race the global handler over who dispatches first.
@@ -37,7 +38,11 @@ export function openInteractions(
 } {
   return {
     onClick: (event) => {
-      if ((event.target as HTMLElement).closest("a, button, [popover]")) return;
+      const target = event.target as HTMLElement;
+      if (target.closest("a, button, [popover], [data-no-open]")) return;
+      // A row nested in this one (a Blast radius row's own packages) opens its own package.
+      const row = target.closest("[data-pkg]");
+      if (row !== null && row !== event.currentTarget) return;
       dispatch({ type: "select", pkg });
     },
   };

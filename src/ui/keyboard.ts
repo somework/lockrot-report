@@ -238,9 +238,12 @@ export function findRow(root: ParentNode, pkg: string): HTMLElement | null {
   return null;
 }
 
-/** The current view's rows, in document order — the order `renderedPackages` lists them in. */
+/** The current view's rows, in document order — the order `renderedPackages` lists them in. A row
+ *  inside a closed fold (`hidden`, Blast radius) is not on screen, so it is not one of them. */
 export function listRows(root: ParentNode): HTMLElement[] {
-  return Array.from(root.querySelectorAll<HTMLElement>("[data-pkg]"));
+  return Array.from(root.querySelectorAll<HTMLElement>("[data-pkg]")).filter(
+    (node) => node.closest("[hidden]") === null,
+  );
 }
 
 /** A row's position among the view's rows, or null when it is not one. */

@@ -232,9 +232,9 @@ export interface ReportPage {
   sortState(): Promise<SortState | null>;
 
   /**
-   * The Blast radius card for one direct requirement: the count it states ("N flagged packages
-   * underneath") against how many rows it actually lists — M24/M25's exact disagreement. Null when
-   * no such card is rendered.
+   * The Blast radius row for one direct requirement: the count its squares state ("N flagged
+   * packages listed under it") against how many package rows it holds, open or folded — M24/M25's
+   * exact disagreement. Null when no such row is rendered.
    */
   radiusCard(parent: string): Promise<{ statedCount: number | null; listedCount: number } | null>;
 

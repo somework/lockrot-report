@@ -35,6 +35,13 @@ export interface State {
   sort: SortKey;
   sortDesc: boolean;
   filters: Filters;
+  /**
+   * What the reader opened or closed on the Blast radius tab (a row's packages, a fold), by key
+   * (`domain/radius.ts#rowKey`). Like `sort`, not part of the fragment, whose format does not change
+   * (DESIGN.md §4): a key never touched takes its default, which follows `pkg` — a link naming a
+   * package opens the row and fold that list it (PD-RADIUS-3).
+   */
+  disclosure: Readonly<Record<string, boolean>>;
 }
 
 export type Action =
@@ -44,6 +51,7 @@ export type Action =
   | { type: "clear" }
   | { type: "sort"; key: SortKey }
   | { type: "select"; pkg: string | null }
+  | { type: "disclose"; key: string; open: boolean }
   | { type: "restore"; state: State };
 
 export const EMPTY_FILTERS: Filters = {
@@ -63,4 +71,5 @@ export const INITIAL_STATE: State = {
   sort: "verdict",
   sortDesc: false,
   filters: EMPTY_FILTERS,
+  disclosure: {},
 };

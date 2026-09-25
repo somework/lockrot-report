@@ -1069,95 +1069,135 @@ describe("AdvisoriesView", () => {
   });
 });
 
-describe("RadiusView", () => {
-  it("renders a card per direct requirement, its pulled packages as selectable rows", () => {
+describe("RadiusView (PD-RADIUS-1..5)", () => {
+  function withExposure(model: Model, exposure: readonly { package: string; flagged: number }[]): Model {
+    return { ...model, report: { ...model.report, exposure } };
+  }
+  const child = (pkg: string, parent: string, extra: Parameters<typeof makeFinding>[0] = {}) =>
+    makeFinding({ package: pkg, direct: false, chain: [parent, pkg], directDependents: [parent], ...extra });
+
+  it("answers first, then a row per direct requirement whose packages open under it", () => {
     // Arrange: vendor/direct pulls in vendor/transitive (mini.json's own chain/exposure data).
     const model = loadModel("mini.json");
 
     // Act
     renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
 
-    // Assert
-    expect(screen.getByText("vendor/direct")).toBeTruthy();
-    expect(screen.getByRole("listitem", { name: "vendor/transitive" })).toBeTruthy();
+    // Assert: the answer names the row; the row is a list item; its package is folded away.
+    expect(screen.getByText(/your one direct requirement, pulls in/)).toBeTruthy();
+    expect(screen.getByRole("listitem", { name: "vendor/direct" })).toBeTruthy();
+    expect(screen.queryByRole("listitem", { name: "vendor/transitive" })).toBeNull();
+    expect(
+      screen
+        .getByRole("button", { name: /Show the 1 package listed under vendor\/direct/ })
+        .getAttribute("aria-expanded"),
+    ).toBe("false");
   });
 
-  it("shows 'flagged itself' as the whole card when a flagged parent pulls nothing in (M25)", () => {
+  it("shows an open row's packages, and its toggle asks to close it", () => {
     // Arrange
-    const parent = makeFinding({ package: "acme/lonely", chain: [] });
-    const model = flaggedModel([parent]);
-    const withExposure: Model = {
-      ...model,
-      report: { ...model.report, exposure: [{ package: "acme/lonely", flagged: 1 }] },
-    };
-
-    // Act
-    renderIn(withExposure, stateWith({ view: "radius" }), <RadiusView />);
-
-    // Assert: no eyebrow count (nothing to count) and no pulled-package list.
-    expect(screen.getByText("flagged itself")).toBeTruthy();
-    expect(screen.queryByText(/underneath/)).toBeNull();
-    expect(screen.queryByRole("list", { name: /Pulled in by/ })).toBeNull();
-  });
-
-  it("still marks a flagged parent 'flagged itself' even when it also pulls packages in (M24/M25)", () => {
-    // Arrange: acme/parent is itself flagged AND pulls in one child — before the fix, that own
-    // flagged status was dropped entirely once there were rows to show.
-    const parent = makeFinding({ package: "acme/parent", chain: [] });
-    const child = makeFinding({ package: "acme/child", chain: ["acme/parent"] });
-    const model = flaggedModel([parent, child]);
-    const withExposure: Model = {
-      ...model,
-      report: { ...model.report, exposure: [{ package: "acme/parent", flagged: 99 }] },
-    };
-
-    // Act
-    renderIn(withExposure, stateWith({ view: "radius" }), <RadiusView />);
-
-    // Assert: the eyebrow count matches the one row listed, and "flagged itself" still shows.
-    expect(screen.getByText(/1 flagged package underneath/)).toBeTruthy();
-    expect(screen.getByRole("listitem", { name: "acme/child" })).toBeTruthy();
-    expect(screen.getByText("flagged itself")).toBeTruthy();
-  });
-
-  it("shows no 'flagged itself' marker for a parent that is not itself flagged", () => {
-    // Arrange: acme/parent never appears as a finding at all — only its pulled child does — so it
-    // is not one of the run's flagged packages.
-    const child = makeFinding({ package: "acme/child", chain: ["acme/parent"] });
-    const model = flaggedModel([child]);
-    const withExposure: Model = {
-      ...model,
-      report: { ...model.report, exposure: [{ package: "acme/parent", flagged: 1 }] },
-    };
-
-    // Act
-    renderIn(withExposure, stateWith({ view: "radius" }), <RadiusView />);
-
-    // Assert
-    expect(screen.queryByText("flagged itself")).toBeNull();
-  });
-
-  it("never closes an already-open pulled package on a second click, unlike FindingRow's toggle", () => {
-    // Arrange: acme/child is already open (state.pkg), and its own PulledRow is clicked again.
-    const child = makeFinding({ package: "acme/child", chain: ["acme/parent"] });
-    const model = flaggedModel([child]);
-    const withExposure: Model = {
-      ...model,
-      report: { ...model.report, exposure: [{ package: "acme/parent", flagged: 1 }] },
-    };
+    const model = loadModel("mini.json");
     const { dispatch } = renderIn(
-      withExposure,
-      stateWith({ view: "radius", pkg: "acme/child" }),
+      model,
+      stateWith({ view: "radius", disclosure: { "row:vendor/direct": true } }),
       <RadiusView />,
     );
-    const row = screen.getByRole("listitem", { name: "acme/child" });
+    const toggle = screen.getByRole("button", { name: /Show the 1 package/ });
 
     // Act
-    fireEvent.click(row);
+    fireEvent.click(toggle);
 
     // Assert
-    expect(dispatch).toHaveBeenCalledWith({ type: "select", pkg: "acme/child" });
-    expect(dispatch).not.toHaveBeenCalledWith({ type: "select", pkg: null });
+    expect(screen.getByRole("listitem", { name: "vendor/transitive" })).toBeTruthy();
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(dispatch).toHaveBeenCalledWith({ type: "disclose", key: "row:vendor/direct", open: false });
+    expect(dispatch).not.toHaveBeenCalledWith(expect.objectContaining({ type: "select" }));
+  });
+
+  it("opens the requirement itself on a click on its row, and a listed package on a click on its own", () => {
+    // Arrange
+    const kid = child("acme/child", "acme/parent");
+    const model = withExposure(flaggedModel([kid]), [{ package: "acme/parent", flagged: 1 }]);
+    const { dispatch } = renderIn(model, stateWith({ view: "radius", pkg: "acme/child" }), <RadiusView />);
+
+    // Act
+    fireEvent.click(screen.getByRole("listitem", { name: "acme/child" }));
+    fireEvent.click(screen.getByText("parent"));
+
+    // Assert: the nested row opened its own package only; the parent's name opened the parent.
+    expect(dispatch.mock.calls.map(([action]) => action)).toEqual([
+      { type: "select", pkg: "acme/child" },
+      { type: "select", pkg: "acme/parent" },
+    ]);
+  });
+
+  it("says a flagged requirement is flagged itself beside the packages it pulls in (M24/M25)", () => {
+    // Arrange
+    const parent = makeFinding({ package: "acme/parent", chain: ["acme/parent"], verdict: "pinned" });
+    const model = withExposure(flaggedModel([parent, child("acme/child", "acme/parent")]), [
+      { package: "acme/parent", flagged: 99 },
+    ]);
+
+    // Act
+    renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    // Assert: the squares count what is listed, and the parent's own flag is a tag beside its name.
+    expect(screen.getByRole("img", { name: /^1 flagged package listed under it/ })).toBeTruthy();
+    expect(screen.getByText("pinned itself")).toBeTruthy();
+  });
+
+  it("folds a flagged requirement that lists nothing into its own tail", () => {
+    // Arrange
+    const parent = makeFinding({ package: "acme/lonely", chain: ["acme/lonely"], verdict: "stale" });
+    const model = withExposure(flaggedModel([parent]), [{ package: "acme/lonely", flagged: 0 }]);
+
+    // Act
+    renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    // Assert
+    const head = screen.getByRole("button", { name: /1 more is flagged themselves/ });
+    expect(head.getAttribute("aria-expanded")).toBe("false");
+    expect(screen.queryByText(/underneath/)).toBeNull();
+  });
+
+  it("names no tag for a requirement that is not flagged", () => {
+    const model = withExposure(flaggedModel([child("acme/child", "acme/parent")]), [
+      { package: "acme/parent", flagged: 1 },
+    ]);
+
+    renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    expect(screen.queryByText(/itself/)).toBeNull();
+  });
+
+  it("jumps from what a row reaches to the row that lists it", () => {
+    // Arrange: acme/deep is listed under acme/lib, and acme/bundle reaches it too.
+    const deep = child("acme/deep", "acme/lib", { directDependents: ["acme/lib", "acme/bundle"] });
+    const other = child("acme/other", "acme/bundle");
+    const model = withExposure(flaggedModel([deep, other]), [
+      { package: "acme/bundle", flagged: 2 },
+      { package: "acme/lib", flagged: 1 },
+    ]);
+    const { dispatch } = renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "acme/lib" }));
+
+    // Assert
+    expect(screen.getByText(/\+1 more it reaches, listed under/)).toBeTruthy();
+    expect(dispatch).toHaveBeenCalledWith({ type: "disclose", key: "row:acme/lib", open: true });
+  });
+
+  it("names flagged direct requirements that exposure[] leaves out, once, at the end", () => {
+    const alone = makeFinding({ package: "acme/alone", chain: ["acme/alone"], verdict: "silent" });
+    const model = withExposure(flaggedModel([alone, child("acme/child", "acme/parent")]), [
+      { package: "acme/parent", flagged: 1 },
+    ]);
+
+    renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    expect(screen.getByText(/1 flagged direct requirement has/)).toBeTruthy();
+    expect(screen.getByText("acme/alone")).toBeTruthy();
   });
 });
 

@@ -3,7 +3,7 @@ import { useReport } from "../context";
 import { applyFilters, hiddenByFilters, population } from "../../domain/filters";
 import { allAdvisories, passesAdvisoryRail } from "../../domain/advisories";
 import { matchesAdvisory, parseQuery } from "../../domain/query";
-import { radiusCards } from "../../domain/radius";
+import { radiusLayout } from "../../domain/radius";
 import { countPhrase, plural } from "../../domain/format";
 import { searchSplit, searchSplitPhrase } from "../../domain/searchHits";
 import { NoWrap } from "../common/common";
@@ -18,7 +18,7 @@ const PLACEHOLDER = "Filter: guzzle, verdict:left-behind, severity:critical, cve
 /**
  * "N of M …", read off the same domain functions the four filterable views use to decide what they
  * list — `applyFilters` for Findings/Packages, `allAdvisories` plus `matchesAdvisory` (and the
- * advisory-level rail check above) for Advisories, `radiusCards` for Blast radius — so this line
+ * advisory-level rail check above) for Advisories, `radiusLayout` for Blast radius — so this line
  * can never disagree with the rows underneath it (this task's brief). `null` on the Run tab, which
  * has nothing to count; legacy leaves `countLine` empty there too (`report.js:855,879`).
  *
@@ -57,9 +57,12 @@ function countLine(model: Model, state: State): string | null {
   }
 
   if (state.view === "radius") {
-    const cards = radiusCards(model, applyFilters(model, state, "radius"));
+    // The requirements with a row of their own: those that list packages, and those flagged
+    // themselves. The ones that only reach packages listed under those rows are named in the tab's
+    // own tail, not counted here.
+    const layout = radiusLayout(model, applyFilters(model, state, "radius"));
     return countPhrase(
-      cards.length,
+      layout.ranked.length + layout.selfOnly.length,
       model.report.exposure.length,
       "direct requirement",
       "direct requirements",

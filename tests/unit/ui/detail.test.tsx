@@ -278,6 +278,7 @@ function renderDetail(
     sort: "verdict",
     sortDesc: false,
     filters: EMPTY_FILTERS,
+    disclosure: {},
     ...stateOverrides,
   };
   const dispatch: (action: Action) => void = vi.fn();

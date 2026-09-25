@@ -85,7 +85,7 @@ test.describe("1440×900, a package open", () => {
 test.describe("Blast radius shares the same fix", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("the cards grid fills the shell's own width when no detail is open", async ({ page }) => {
+  test("the ledger fills the shell's own width when no detail is open", async ({ page }) => {
     const report: ReportPage = await createReportPage(page);
     await report.goto(FIXTURES.wallabag);
     expect((await report.detail()).open).toBe(false); // nothing opens by itself (PD-ROWS-9)
@@ -93,7 +93,7 @@ test.describe("Blast radius shares the same fix", () => {
     expect((await report.detail()).open).toBe(false);
 
     const shellBox = await box(shellLocator(page));
-    const cardsBox = await box(page.locator(".cards"));
+    const cardsBox = await box(page.locator(".rl"));
 
     // Same allowance as the packages table above: `.shell`'s own right gutter padding, not a
     // reserved, empty detail column.

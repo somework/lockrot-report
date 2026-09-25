@@ -91,6 +91,20 @@ tag or the address format, says so under **Breaking** in its entry.
   naming up to three packages that only mention the word, and each such row on Findings, All
   packages and Advisories quotes its evidence around the hit, "matched in: pulls in 14 flagged
   packages: hoa/compiler (abandoned)…". What a search matches, and its `q=` address, are unchanged.
+- Blast radius is a ranked ledger. It opens with one sentence, "wallabag/rulerz (14) and
+  phpunit/phpunit (13) pull in 27 of the 49 flagged packages that sit under 17 of your 29 direct
+  requirements", then gives each direct requirement a row: its rank, its version, "dev", "<verdict>
+  itself" when it is flagged too, a square per flagged package listed under it (the same square size
+  on every row, coloured by priority as in the summary band), a sentence on what it pulls in ("14
+  abandoned — all hoa/*"), and those packages' years since release on the Findings axis. A hollow
+  square with "+N" counts what the row also reaches that is listed under another row, and "listed
+  under X" jumps to that row, opens it and marks those packages. A row's toggle shows its packages
+  as a chain tree with their verdict, reason and age; a click on the row opens the requirement's
+  full detail, the same one Findings opens. Rows that pull in one package each fold under one line
+  (open on a wide screen, closed on a phone). After the ranking come the requirements that are
+  flagged themselves with nothing listed under them, and those that reach flagged packages only
+  through rows above, listed by the package they reach. A footnote names flagged direct
+  requirements that lockrot's exposure list leaves out. Print opens every row and fold.
 
 ### Changed
 
@@ -183,7 +197,7 @@ tag or the address format, says so under **Breaking** in its entry.
   into the page once the panel's own content ends.
 - Switching tabs scrolls back to the top, so the new tab starts at its own first row instead of
   wherever the last one happened to be scrolled to.
-- On a wide screen, the All packages table and the Blast radius cards use the width a closed detail
+- On a wide screen, the All packages table and the Blast radius ledger use the width a closed detail
   panel leaves behind instead of leaving it empty.
 - The advisory ledger no longer says a clean lock has no advisory twice, once above the bar and once
   again in its legend.
@@ -197,7 +211,7 @@ tag or the address format, says so under **Breaking** in its entry.
 - Every count in the filter rail is now the number of packages its button lists. "What the fix
   costs" counted advisories, so a package with two advisories fixed only on another branch read
   "Moving to another branch 2" over a list of one; a signal that fired twice on one package counted
-  it twice; and on Blast radius the counts included flagged direct requirements that tab has no card
+  it twice; and on Blast radius the counts included flagged direct requirements that tab has no row
   for.
 
 ## [0.12.0]

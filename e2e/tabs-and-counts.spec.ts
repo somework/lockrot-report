@@ -66,9 +66,12 @@ test.describe("Packages view", () => {
 });
 
 test.describe("Blast radius view", () => {
-  test("one card, naming the direct requirement that pulls in the abandoned package", async () => {
+  test("one row, naming the direct requirement that pulls in the abandoned package", async ({ page }) => {
     await report.tab("radius");
-    expect(await report.rows()).toEqual(["vendor/transitive"]);
+    // PD-RADIUS-3: a requirement's packages are folded under it until its toggle opens them.
+    expect(await report.rows()).toEqual(["vendor/direct"]);
+    await page.getByRole("button", { name: /Show the 1 package listed under vendor\/direct/ }).click();
+    expect(await report.rows()).toEqual(["vendor/direct", "vendor/transitive"]);
   });
 });
 

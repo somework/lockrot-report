@@ -287,13 +287,14 @@ test.describe("M7: j/k must not open a package that has no row on screen", () =>
   test("Blast radius only ever selects a package it actually lists", async () => {
     // M7 (DESIGN.md §5), fixed on purpose: legacy's j/k walked every flagged finding while Radius
     // only lists each direct requirement's pulled children, so j/k could open a package with no
-    // card and no row on screen (mini.json's vendor/snapshot: direct:false, chain:[]).
+    // card and no row on screen (mini.json's vendor/snapshot: direct:false, chain:[]). Since
+    // PD-RADIUS-3 the requirement is a row itself, its packages folded under it until opened.
     await report.tab("radius");
-    expect(await report.rows()).toEqual(["vendor/transitive"]);
+    expect(await report.rows()).toEqual(["vendor/direct"]);
     await report.pressJ();
-    expect((await report.detail()).name).toBe("vendor/transitive");
-    await report.pressJ(); // legacy: cursor advances to vendor/snapshot, which has no row here
-    expect((await report.detail()).name).toBe("vendor/transitive");
+    expect((await report.detail()).name).toBe("vendor/direct");
+    await report.pressJ(); // a folded package and one with no row are both off screen
+    expect((await report.detail()).name).toBe("vendor/direct");
   });
 });
 

@@ -737,24 +737,19 @@ export class NewReportPage implements ReportPage {
     return null;
   }
 
-  /** No fixed role for a card; found by its heading text and read as whatever container element
-   *  wraps that heading — the accessible contract this asks for is just that the stated count and
-   *  the `data-open`-equivalent openable rows agree, not a specific markup shape. */
+  /** A Blast radius row (PD-RADIUS-1): the list item named after the requirement. Its stated count
+   *  is the squares' accessible name ("N flagged packages listed under it: …"); what it lists is the
+   *  list items nested under it, open or folded — the M24/M25 contract is only that the two agree. */
   async radiusCard(parent: string): Promise<{ statedCount: number | null; listedCount: number } | null> {
     return this.page.evaluate((name) => {
-      const heading = Array.from(document.querySelectorAll("h1,h2,h3,h4,[role=heading]")).find(
-        (h) => h.textContent === name,
+      const row = Array.from(document.querySelectorAll("li[aria-label]")).find(
+        (li) => li.getAttribute("aria-label") === name,
       );
-      const card =
-        heading?.closest("article, section, [role=region], [role=listitem]") ?? heading?.parentElement;
-      if (!card) return null;
-      const text = card.textContent;
-      const match = /(\d+)\s+flagged/.exec(text);
+      if (!row) return null;
+      const label = row.querySelector('[role="img"]')?.getAttribute("aria-label") ?? "";
+      const match = /^(\d+)\s+flagged/.exec(label);
       const statedCount = match ? Number(match[1]) : null;
-      // The openable entries are the rows `rows()` reads (list items or options, one per package);
-      // a card drawn with bare buttons or links instead is counted by those.
-      const rows = card.querySelectorAll('li, [role="listitem"], [role="option"]').length;
-      const listedCount = rows > 0 ? rows : card.querySelectorAll('[role="button"], a, button').length;
+      const listedCount = row.querySelectorAll("li[aria-label]").length;
 
       return { statedCount, listedCount };
     }, parent);

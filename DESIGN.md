@@ -129,8 +129,11 @@ Rules the lint config enforces: no `innerHTML`/`outerHTML`/`insertAdjacentHTML`,
 State is one object owned by a reducer in `App`:
 
 ```ts
-{ view, q, pkg, sort, sortDesc, filters: { prio, verdict, scope, signal, sev, fix, since } }
+{ view, q, pkg, sort, sortDesc, filters: { prio, verdict, scope, signal, sev, fix, since }, disclosure }
 ```
+
+`disclosure` holds the Blast radius rows and folds the reader opened or closed; like `sort` it is not
+written to the fragment (PD-RADIUS-3).
 
 The fragment format is a documented user feature (`docs/ci.md`) and **does not change**:
 `view=<v>&q=<enc>&prio=<enc a,b>&verdict=…&scope=…&signal=…&sev=…&fix=…&since=…&pkg=<enc>`,
@@ -246,7 +249,12 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 | PD-LEDGER-2                 | a legend entry, a filter toggle, looked like plain text                     | a chip with hover, focus and pressed states, and a title naming the click                                                                     |
 | PD-DISCLOSURE-1             | each `<summary>` drew its own text-glyph marker                             | one CSS-drawn triangle for every `<summary>`, with hover and focus states                                                                     |
 | PD-TABS-1                   | at 390px "Blast radius" cut mid-word, "Run data" off-screen, no clear cue   | the hidden side fades under a chevron that scrolls the row (no Tab stop, hidden from AT); the selected tab scrolls into view                  |
-| PD-RAIL-1                   | the fix-cost rail counted advisories but kept packages: otphp "2", one row  | a rail count is the packages its button lists: once per fix shape or signal; Blast radius counts only packages with a card                    |
+| PD-RAIL-1                   | the fix-cost rail counted advisories but kept packages: otphp "2", one row  | a rail count is the packages its button lists: once per fix shape or signal; Blast radius counts only packages with a row                     |
+| PD-RADIUS-1                 | a card per requirement, a meter bar, a flat list                            | an answer sentence; a ranked ledger row each: squares on one scale by priority, what it pulls in, their ages                                  |
+| PD-RADIUS-2                 | what a card reached but did not list went unsaid                            | a hollow square and "+N"; "listed under X" jumps to X's row, opens it, focuses it, marks the packages                                         |
+| PD-RADIUS-3                 | every card's packages drawn at once                                         | a toggle opens a row as a chain tree; one-each rows fold (closed on a phone); `#pkg=` opens its row                                           |
+| PD-RADIUS-4                 | requirements with nothing listed had no card                                | two tails: flagged themselves; reaching packages only through rows above, by package reached                                                  |
+| PD-RADIUS-5                 | a flagged direct requirement not in exposure vanished                       | a footnote names each, and says it is on Findings                                                                                             |
 
 Changed on purpose, and not a legacy bug:
 

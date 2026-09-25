@@ -63,6 +63,9 @@ export function reducer(state: State, action: Action): State {
     case "select":
       return { ...state, pkg: action.pkg };
 
+    case "disclose":
+      return { ...state, disclosure: { ...state.disclosure, [action.key]: action.open } };
+
     case "restore":
       return action.state;
   }

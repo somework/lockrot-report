@@ -101,6 +101,8 @@ interface ShortcutDeps {
   sheet: boolean;
   /** The list's Tab stop (`rowCursor.ts`). */
   cursor: string | null;
+  /** Phone widths, where Blast radius starts its one-each rows folded. */
+  narrow: boolean;
 }
 
 /** Carries out what keyboard.ts decided. */
@@ -204,7 +206,7 @@ function useShortcuts(deps: ShortcutDeps) {
           search: current.search.current,
           dialogOpen: current.glossaryOpen,
           selected: state.pkg,
-          rendered: () => renderedPackages(model, state, state.view),
+          rendered: () => renderedPackages(model, state, state.view, current.narrow),
           sheetOpen: current.sheet,
         }),
       );
@@ -307,8 +309,8 @@ export function App({ model }: { model: Model }) {
   const lastOpened = useRef<string | null>(state.pkg);
   if (state.pkg !== null) lastOpened.current = state.pkg;
   const cursor = useMemo(
-    () => pickCursor(renderedPackages(model, state, state.view), state.pkg, lastOpened.current),
-    [model, state],
+    () => pickCursor(renderedPackages(model, state, state.view, narrow), state.pkg, lastOpened.current),
+    [model, state, narrow],
   );
 
   useShortcuts({
@@ -323,6 +325,7 @@ export function App({ model }: { model: Model }) {
     lastRow,
     sheet,
     cursor,
+    narrow,
   });
 
   // A tab switch a reader clicked (or the quiet note's "See the advisories") used to leave the

@@ -5,14 +5,14 @@
 // advisories read "Moving to another branch 2" over a list of one row.
 //
 // "The list" is read off the same functions the views render with (`ui/views/order.ts`, and
-// `radiusCards` for the Blast radius cards' own headers), never off `railGroups`' own arithmetic,
+// `radiusLayout` for the Blast radius rows, open or folded), never off `railGroups`' own arithmetic,
 // so the two sides of each comparison are computed independently.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { applyFilters, railGroups } from "../../../src/domain/filters";
-import { radiusCards } from "../../../src/domain/radius";
+import { radiusLayout, radiusListed } from "../../../src/domain/radius";
 import { normalize } from "../../../src/model/normalize";
 import type { Model, View } from "../../../src/model/types";
 import { EMPTY_FILTERS, INITIAL_STATE, type FilterGroup, type State } from "../../../src/state/types";
@@ -30,15 +30,12 @@ function load(name: string): Model {
   return result.model;
 }
 
-/** Every package with a place on the tab's list, each once. Blast radius also lists a flagged direct
- *  requirement as its own card's header, even when that card pulls in nothing (radius.ts). */
+/** Every package with a place on the tab's list, each once. Blast radius lists a flagged package
+ *  under a row that may be folded, and a flagged direct requirement as a row of its own, even when
+ *  nothing is listed under it (radius.ts), so it is read off the tab's layout, rows open or not. */
 function listedPackages(model: Model, state: State): ReadonlySet<string> {
-  const rows = new Set(renderedPackages(model, state, state.view));
-  if (state.view !== "radius") return rows;
-  const headers = radiusCards(model, applyFilters(model, state, "radius"))
-    .filter((card) => card.parentFlagged)
-    .map((card) => card.package);
-  return new Set([...rows, ...headers]);
+  if (state.view === "radius") return radiusListed(radiusLayout(model, applyFilters(model, state, "radius")));
+  return new Set(renderedPackages(model, state, state.view));
 }
 
 function selecting(view: View, group: FilterGroup, key: string): State {

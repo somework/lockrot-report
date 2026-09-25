@@ -15,11 +15,17 @@ export function bootState(hash: string): State {
 
 /**
  * The state a link pasted into an open page asks for (DESIGN.md §4: the legacy page ignored
- * `hashchange`). The address carries no sort order, so the table keeps the one the reader chose;
- * everything the address does carry replaces what was there instead of adding to it.
+ * `hashchange`). The address carries no sort order and no open Blast radius rows, so those keep
+ * what the reader chose; everything the address does carry replaces what was there instead of adding
+ * to it.
  */
 export function stateFromHashChange(hash: string, current: State): State {
-  return parseHash(hash, { ...INITIAL_STATE, sort: current.sort, sortDesc: current.sortDesc });
+  return parseHash(hash, {
+    ...INITIAL_STATE,
+    sort: current.sort,
+    sortDesc: current.sortDesc,
+    disclosure: current.disclosure,
+  });
 }
 
 /**

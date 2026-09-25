@@ -1,0 +1,903 @@
+/*
+ * The Blast radius ledger (PD-RADIUS-1..5, DESIGN.md §5): the answer sentence, then one row per
+ * direct requirement — rank · requirement · squares · what it pulls in · years since release ·
+ * toggle — with its packages as a chain tree under it when open, one-each rows folded under one
+ * head, and two tails. The shared pieces come from the Findings ledger (`ledger-rows.css`): the age
+ * cell (`.fc-age`, `.age-track`, `.age-guide`, `.age-bar`), the verdict word (`.fc-verdict`), the
+ * reason (`.fc-why`), the version and "dev" chip, and the column head's axis (`.fhead-age`).
+ *
+ * Like the Findings list, the layout follows the list's own width (a container query): stacked on
+ * a phone, two lines from 600px (beside an open package, a tablet), one line from 990px.
+ */
+
+.rl {
+  container: rl / inline-size;
+  --rl-pad: 8px;
+  --rl-rank: 22px;
+  --rl-gap: 8px;
+  --rl-tog: 30px;
+  --rl-age-w: 100%;
+  --rl-pad-y: 10px;
+  --rk-pad-y: 7px;
+  --rk-step: 16px;
+  /* The age cell's number column: wide enough for a range, "10.9–11.4". */
+  --fl-num: 64px;
+}
+
+/* ---------- the answer, the tails line and the key ---------- */
+.rl-answer {
+  margin: 2px 0 6px;
+  max-width: 48em;
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.32;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.rl-answer b {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.rl-answer .rl-pk {
+  font-size: 0.84em;
+  font-weight: 650;
+}
+.rl-pk {
+  font-family: var(--sans);
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.rl-vw {
+  color: var(--tone);
+  font-weight: 600;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.rl-tails {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.rl-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--muted);
+}
+.rl-key-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.rl-key-item .rl-u:last-of-type {
+  margin-right: 6px;
+}
+
+/* A link-styled button: a jump to a row or a fold, never a navigation. */
+.rl-jump {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--ink-2);
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 2px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.rl-jump:hover {
+  color: var(--accent-ink);
+  text-decoration-color: currentColor;
+}
+
+/* ---------- the column head ---------- */
+.rl-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: var(--rl-rank) minmax(0, 1fr) var(--rl-tog);
+  column-gap: var(--rl-gap);
+  height: 36px;
+  padding: 0 var(--rl-pad);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border-strong);
+  box-shadow: 0 -3px 0 var(--bg);
+  font-family: var(--cond);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+@media (min-width: 760px) {
+  .rl-head {
+    top: var(--topbar-h);
+  }
+}
+.rl-h {
+  display: none;
+  align-self: end;
+  min-width: 0;
+  padding-bottom: 7px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rl-head .fhead-age {
+  grid-column: 2 / 4;
+  grid-row: 1;
+}
+
+.rl-list,
+.rl-receipt,
+.rr-kids {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- a direct requirement's row ---------- */
+.rrow {
+  position: relative;
+  border-bottom: 1px solid var(--border);
+}
+.rrow:focus-visible {
+  outline: none;
+}
+.rrow:focus-visible > .rr-line {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.rr-line {
+  --row-bg: var(--bg);
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--rl-rank) minmax(0, 1fr) var(--rl-tog);
+  grid-template-areas:
+    "rank pkg tog"
+    ". sq sq"
+    ". say say"
+    ". age age";
+  column-gap: var(--rl-gap);
+  row-gap: 5px;
+  align-items: center;
+  padding: var(--rl-pad-y) var(--rl-pad);
+  background: var(--row-bg);
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.rr-line:hover,
+.rrow.is-open > .rr-line {
+  --row-bg: var(--surface);
+}
+.rrow[aria-current="true"] > .rr-line {
+  --row-bg: var(--accent-soft);
+}
+.rrow[aria-current="true"] > .rr-line::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+}
+.rr-rank {
+  grid-area: rank;
+  align-self: start;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.rr-pkg {
+  grid-area: pkg;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.rr-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.rl-vendor {
+  font-weight: 400;
+  color: var(--ink-2);
+}
+.rl-name {
+  display: inline-block;
+  max-width: 100%;
+  font-weight: 650;
+  color: var(--ink);
+}
+.rr-pkg .tag {
+  font-family: var(--cond);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  line-height: 15px;
+  text-transform: uppercase;
+  padding: 0 5px;
+}
+.rr-pkg .fc-dev {
+  margin-left: 0;
+}
+
+/* The squares: one per flagged package, one size on every row, a gap every five. */
+.rl-sq {
+  grid-area: sq;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.rl-sq.is-toggle {
+  cursor: pointer;
+}
+.rl-num {
+  flex: none;
+  width: 22px;
+  text-align: right;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.rl-num.is-zero {
+  font-weight: 500;
+  color: var(--muted);
+}
+.rl-units {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 2px;
+  min-width: 0;
+}
+.rl-u {
+  flex: none;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--tone);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.rl-u.is-tally {
+  margin-left: 3px;
+}
+/* Reached too, listed under another row: one hollow square and a count, quieter than any solid
+   one, so a row's length is only ever what it lists. */
+.rl-else {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.rl-u.is-else {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--muted) 70%, transparent);
+}
+
+/* What it pulls in: a serif sentence, names in the sans the rows use. */
+.rr-say {
+  grid-area: say;
+  min-width: 0;
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.rr-say b {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.rl-also {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+.rl-quiet {
+  font-family: var(--sans);
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* Years since release: the Findings age cell, a whisker and a tick per distinct age. */
+.rl .fc-age {
+  grid-area: age;
+  min-height: 20px;
+}
+.rl-age .age-track::before {
+  z-index: 0;
+}
+.rl-whisker {
+  position: absolute;
+  top: 50%;
+  height: 0;
+  border-top: 1.5px solid color-mix(in srgb, var(--ink-2) 60%, transparent);
+  transform: translateY(-50%);
+}
+.rl-whisker::before,
+.rl-whisker::after {
+  content: "";
+  position: absolute;
+  top: -7.75px;
+  height: 14px;
+  border-left: 1.5px solid color-mix(in srgb, var(--ink-2) 60%, transparent);
+}
+.rl-whisker::before {
+  left: 0;
+}
+.rl-whisker::after {
+  right: -1px;
+}
+.rl-tick {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 12px;
+  margin-left: -1px;
+  border-radius: 1px;
+  transform: translateY(-50%);
+  background: var(--tone);
+  z-index: 1;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.rl-tick.is-context {
+  width: 1px;
+  margin-left: -0.5px;
+  background: color-mix(in srgb, var(--muted) 80%, var(--border-strong));
+}
+.rl-tick.is-over {
+  margin-left: -3px;
+}
+.rl .age-num {
+  white-space: nowrap;
+}
+
+.rr-tog {
+  grid-area: tog;
+  align-self: start;
+  justify-self: end;
+}
+.rl-chev {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-s);
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.rl-chev:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.rl-chev svg,
+.rl-fold-chev svg {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.16s ease;
+}
+.rl-chev[aria-expanded="true"] svg,
+.rl-fold-head[aria-expanded="true"] .rl-fold-chev svg {
+  transform: rotate(90deg);
+}
+
+/* ---------- the packages a row lists: a chain tree ---------- */
+.rr-kids {
+  padding-bottom: 4px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.rk {
+  --row-bg: var(--surface);
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--rl-rank) 86px minmax(0, 1fr);
+  grid-template-areas:
+    ". pkg pkg"
+    ". verdict why"
+    ". age age";
+  column-gap: var(--rl-gap);
+  row-gap: 2px;
+  align-items: baseline;
+  padding: var(--rk-pad-y) var(--rl-pad);
+  border-top: 1px solid var(--border);
+  background: var(--row-bg);
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    outline-color 0.3s ease;
+}
+.rk:first-child {
+  border-top: 0;
+}
+.rk:hover {
+  --row-bg: var(--surface-2);
+}
+.rk[aria-current="true"] {
+  --row-bg: var(--accent-soft);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.rk:focus-visible {
+  outline-offset: -2px;
+}
+/* The packages a jump named, for a moment: a tint and an outline, so the mark does not rest on
+   colour alone. */
+.rk.is-flash {
+  --row-bg: var(--accent-soft);
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.rk-pkg {
+  grid-area: pkg;
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 8px;
+  min-width: 0;
+  padding-left: calc(var(--depth, 0) * 12px + 14px);
+}
+/* Phone: the tree is an indent and an elbow per row. */
+.rk-pkg::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--depth, 0) * 12px + 1px);
+  top: 0;
+  width: 8px;
+  height: 9px;
+  border-left: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border-strong);
+}
+.rk-via {
+  font-size: 11.5px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.rk .fc-verdict {
+  grid-area: verdict;
+}
+.rk-why {
+  grid-area: why;
+  overflow-wrap: break-word;
+}
+.rk-tree {
+  display: none;
+}
+
+/* ---------- the "only through rows above" receipt ---------- */
+.rrc {
+  --row-bg: var(--bg);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 1px;
+  padding: 8px var(--rl-pad) 9px calc(var(--rl-pad) + var(--rl-rank) + var(--rl-gap));
+  border-bottom: 1px solid var(--border);
+  background: var(--row-bg);
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+}
+.rrc:hover {
+  --row-bg: var(--surface);
+}
+.rrc[aria-current="true"] {
+  --row-bg: var(--accent-soft);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.rrc:focus-visible {
+  outline-offset: -2px;
+}
+.rrc-under,
+.rrc-behind {
+  font-size: 12px;
+  color: var(--muted);
+}
+.rrc-behind .rl-pk {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+/* ---------- folds: the one-each rows, and the two tails ---------- */
+.rl-fold.is-tail {
+  margin-top: 22px;
+  border-top: 1px solid var(--border-strong);
+}
+.rl-fold-head {
+  display: grid;
+  grid-template-columns: var(--rl-rank) minmax(0, 1fr) var(--rl-tog);
+  column-gap: var(--rl-gap);
+  align-items: start;
+  width: 100%;
+  margin: 0;
+  padding: 13px var(--rl-pad) 10px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.rl-fold-head:hover {
+  background: var(--surface);
+}
+.rl-fold-head:focus-visible {
+  outline-offset: -2px;
+}
+.rl-fold-rank {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.rl-fold-title {
+  min-width: 0;
+  font-family: var(--serif);
+  font-size: 15.5px;
+  line-height: 1.35;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.rl-fold-title b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.rl-fold-sub {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.rl-fold-chev {
+  display: grid;
+  place-items: center;
+  justify-self: end;
+  width: 28px;
+  height: 22px;
+  color: var(--muted);
+}
+.rl-fold.is-singles .rl-fold-head {
+  border-bottom-color: var(--border-strong);
+}
+
+.rl-foot b {
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.rl-foot {
+  margin: 20px 0 0;
+  max-width: 60em;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* ---------- two lines: beside an open package, a tablet ---------- */
+@container rl (min-width: 600px) {
+  .rl > * {
+    --rl-rank: 26px;
+    --rl-gap: 14px;
+    --rl-age-w: 210px;
+    --rl-pad-y: 9px;
+    --rk-pad-y: 5px;
+  }
+  .rl-head {
+    grid-template-columns: var(--rl-rank) minmax(0, 1fr) var(--rl-age-w) var(--rl-tog);
+    height: 40px;
+  }
+  .rl-h-rank,
+  .rl-h-pkg {
+    display: block;
+  }
+  .rl-h-rank {
+    text-align: right;
+  }
+  .rl-head .fhead-age {
+    grid-column: 3;
+  }
+  .rr-line {
+    grid-template-columns: var(--rl-rank) minmax(0, 1fr) var(--rl-age-w) var(--rl-tog);
+    grid-template-areas:
+      "rank pkg sq tog"
+      ". say age tog";
+    row-gap: 4px;
+  }
+  .rr-line > .fc-age {
+    align-self: stretch;
+    margin-bottom: calc(-1 * var(--rl-pad-y) - 1px);
+  }
+  .rl-fold-head {
+    grid-template-columns: var(--rl-rank) minmax(0, 1fr) var(--rl-tog);
+  }
+
+  /* The chain tree: a rail per ancestor still to come, an elbow into each row. */
+  .rk {
+    --rk-x0: calc(var(--rl-pad) + var(--rl-rank) + 4px);
+    --rk-elbow-y: calc(var(--rk-pad-y) + 9px);
+    grid-template-columns:
+      calc(var(--rl-rank) + (var(--depth, 0) + 1) * var(--rk-step)) 86px minmax(0, 1fr)
+      var(--rl-age-w) var(--rl-tog);
+    grid-template-areas:
+      ". pkg pkg age ."
+      ". verdict why age .";
+    row-gap: 0;
+  }
+  .rk-pkg {
+    padding-left: 0;
+  }
+  .rk-pkg::before {
+    display: none;
+  }
+  .rk > .fc-age {
+    align-self: stretch;
+    margin-block: calc(-1 * var(--rk-pad-y)) calc(-1 * var(--rk-pad-y) - 1px);
+  }
+  /* Only as wide as the lines it draws, so it never sits over the row's text. */
+  .rk-tree {
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: calc(var(--rk-x0) + var(--depth, 0) * var(--rk-step) + var(--rl-gap) + 8px);
+    pointer-events: none;
+  }
+  .rk-rail,
+  .rk-elbow {
+    position: absolute;
+    left: calc(var(--rk-x0) + var(--lvl) * var(--rk-step));
+    top: 0;
+    bottom: 0;
+    border-left: 1px solid var(--border-strong);
+  }
+  .rk-elbow.is-last {
+    bottom: auto;
+    height: var(--rk-elbow-y);
+  }
+  .rk-elbow::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: var(--rk-elbow-y);
+    width: calc(var(--rl-gap) + 8px);
+    border-top: 1px solid var(--border-strong);
+  }
+  .rk-elbow.is-last::after {
+    top: 100%;
+  }
+  .rrc {
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+    column-gap: 14px;
+    align-items: baseline;
+  }
+  .rrc-behind {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- one line: the tab with no package open, 1280 and up ---------- */
+@container rl (min-width: 990px) {
+  .rl > * {
+    --rl-gap: 16px;
+    --rl-age-w: 200px;
+    --rl-pad-y: 8px;
+    --rk-pad-y: 4px;
+  }
+  .rl-head {
+    grid-template-columns:
+      var(--rl-rank) minmax(0, 1.05fr) var(--rl-sq) minmax(0, 1.55fr) var(--rl-age-w)
+      var(--rl-tog);
+    height: 42px;
+  }
+  .rl-h-sq,
+  .rl-h-say {
+    display: block;
+  }
+  .rl-h-narrow {
+    display: none;
+  }
+  .rl-head .fhead-age {
+    grid-column: 5;
+  }
+  .rr-line {
+    grid-template-columns:
+      var(--rl-rank) minmax(0, 1.05fr) var(--rl-sq) minmax(0, 1.55fr) var(--rl-age-w)
+      var(--rl-tog);
+    grid-template-areas: "rank pkg sq say age tog";
+    min-height: 46px;
+  }
+  .rr-line > .fc-age {
+    margin-block: calc(-1 * var(--rl-pad-y)) calc(-1 * var(--rl-pad-y) - 1px);
+  }
+  .rr-rank,
+  .rr-tog {
+    align-self: center;
+  }
+  .rk {
+    --rk-elbow-y: 50%;
+    grid-template-columns:
+      var(--rl-rank) minmax(0, 1.05fr) var(--rl-sq) minmax(0, 1.55fr) var(--rl-age-w)
+      var(--rl-tog);
+    grid-template-areas: ". pkg verdict why age .";
+    align-items: center;
+    min-height: 32px;
+  }
+  .rk-pkg {
+    padding-left: calc(var(--depth, 0) * var(--rk-step) + 12px);
+  }
+  .rk .fc-verdict {
+    padding-left: 30px;
+  }
+  .rrc {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) minmax(0, 1.9fr);
+    column-gap: 16px;
+  }
+  .rrc-behind {
+    grid-column: auto;
+  }
+}
+
+/* ---------- motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .rr-line,
+  .rk,
+  .rl-fold-head,
+  .rl-chev svg,
+  .rl-fold-chev svg {
+    transition: none;
+  }
+}
+
+/* ---------- forced colours ----------
+   Each mark keeps a shape of its own when system colours replace the tones: a critical or high
+   square solid, a medium one hatched, a low one hollow; a counted-elsewhere square dotted; a tick
+   solid, a context one stippled; the tree's lines in the system ink. */
+@media (forced-colors: active) {
+  .rl-u,
+  .rl-tick,
+  .rl-whisker,
+  .rl-whisker::before,
+  .rl-whisker::after,
+  .rk-rail,
+  .rk-elbow,
+  .rk-elbow::after,
+  .rk-pkg::before {
+    forced-color-adjust: none;
+  }
+  .rl-u {
+    background: CanvasText;
+  }
+  .rl-u.tone-med {
+    background: repeating-linear-gradient(135deg, CanvasText 0 2px, Canvas 2px 4px);
+    box-shadow: inset 0 0 0 1px CanvasText;
+  }
+  .rl-u.tone-low,
+  .rl-u.tone-none {
+    background: Canvas;
+    box-shadow: inset 0 0 0 1.5px CanvasText;
+  }
+  .rl-u.is-else {
+    background: Canvas;
+    box-shadow: none;
+    outline: 1px dotted CanvasText;
+    outline-offset: -1px;
+  }
+  .rl-tick {
+    background: CanvasText;
+  }
+  .rl-tick.is-context {
+    width: 2px;
+    background: repeating-linear-gradient(0deg, CanvasText 0 2px, Canvas 2px 3px);
+  }
+  .rl-whisker,
+  .rl-whisker::before,
+  .rl-whisker::after,
+  .rk-rail,
+  .rk-elbow,
+  .rk-elbow::after,
+  .rk-pkg::before {
+    border-color: CanvasText;
+  }
+  .rrow[aria-current="true"] > .rr-line,
+  .rk[aria-current="true"],
+  .rrc[aria-current="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+  .rk.is-flash {
+    outline: 3px dashed Highlight;
+  }
+}
+
+/* ---------- print: every row and fold open, no controls ---------- */
+@media print {
+  .rr-kids[hidden],
+  .rl-fold-body[hidden] {
+    display: block !important;
+  }
+  .rl-chev,
+  .rl-fold-chev,
+  .rl-tails {
+    display: none !important;
+  }
+  .rl-head {
+    position: static;
+    box-shadow: none;
+    background: none;
+  }
+  .rrow {
+    break-inside: auto;
+  }
+  .rr-line,
+  .rk,
+  .rrc,
+  .rl-fold-head {
+    break-inside: avoid;
+  }
+  .rr-line,
+  .rk,
+  .rrc,
+  .rr-line:hover,
+  .rrow.is-open > .rr-line,
+  .rrow[aria-current="true"] > .rr-line,
+  .rk[aria-current="true"] {
+    --row-bg: transparent;
+    box-shadow: none;
+  }
+  .rr-kids {
+    background: none;
+  }
+  .rrow[aria-current="true"] > .rr-line::before {
+    display: none;
+  }
+  .rl .age-none {
+    background: var(--bg);
+  }
+}
