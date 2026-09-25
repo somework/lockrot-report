@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact";
 import type { ExplainMetadata, Finding, PackageDetails } from "../../model/types";
+import { isContextOnly } from "../../domain/age";
 import { ageText, day } from "../../domain/format";
 import { safeHref } from "../../domain/links";
 import { OutLink } from "../common/common";
@@ -72,6 +73,7 @@ export function Detail({ onClose }: DetailProps) {
           metadata={details?.metadata ?? null}
           lock={details?.lock ?? null}
           installedVersion={finding.version}
+          ageToned={!isContextOnly(finding)}
         />
         <SignalList finding={finding} />
         {/* a11y review: a bare <summary> dropped the section's own heading, so a screen-reader

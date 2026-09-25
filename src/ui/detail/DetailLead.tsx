@@ -10,6 +10,8 @@ import {
   type PulledEntry,
 } from "../../domain/answer";
 import { ageText, fixed } from "../../domain/format";
+import { waysIn } from "../../domain/reach";
+import { timelineModel, type TimelineModel } from "../../domain/timeline";
 import { Muted, OutLink, toneClass } from "../common/common";
 import { useReport } from "../context";
 import "./detail-lead.css";
@@ -87,19 +89,35 @@ function yearsAgo(years: number): string {
 interface Fact {
   readonly label: string;
   readonly value: ComponentChildren;
+  /** A quieter line under the value, for when the value alone would read wrong: an age that is not
+   *  the reader's own branch's, or a 0.0 libyears that only means nothing newer came out. */
+  readonly note?: ComponentChildren;
   readonly wide?: boolean;
 }
 
+/** The fact a document did not carry, said in the same muted words wherever it happens. */
+const NOT_RECORDED = <Muted>not recorded</Muted>;
+
+/**
+ * Four facts, always the same four in the same places: a gap is said ("not recorded", "not
+ * measured") rather than left out, so a reader comparing two packages never finds a column gone.
+ */
 function Facts({ finding, details }: { finding: Finding; details: PackageDetails | null }) {
   const { model, now } = useReport();
   const lock = details?.lock ?? null;
-  const facts: Fact[] = [
-    { label: "Installed", value: finding.version },
-    ageFactCell(finding, details?.metadata?.installedRelease ?? lock?.released ?? null),
-  ];
+  const timeline = timelineModel(details?.metadata?.branches ?? [], lock, finding.version, now);
   const libyears = fixed(finding.libyears, 1);
-  facts.push({ label: "Libyears", value: libyears ?? <Muted>not measured</Muted> });
-  if (lock?.php) facts.push({ label: "PHP", value: lock.php, wide: lock.php.length > 14 });
+  const facts: readonly Fact[] = [
+    { label: "Installed", value: finding.version, wide: finding.version.length > 16 },
+    ageFactCell(finding, details?.metadata?.installedRelease ?? lock?.released ?? null),
+    {
+      label: "Libyears",
+      value: libyears ?? <Muted>not measured</Muted>,
+      // 0.0 is how far behind the newest release you are, not how healthy the package is.
+      note: finding.libyears === 0 ? "nothing newer" : undefined,
+    },
+    { label: "PHP", value: lock?.php ? lock.php : NOT_RECORDED, wide: (lock?.php?.length ?? 0) > 14 },
+  ];
 
   return (
     <dl className="detail-facts">
@@ -107,39 +125,57 @@ function Facts({ finding, details }: { finding: Finding; details: PackageDetails
         <div key={fact.label} className={fact.wide ? "detail-fact is-wide" : "detail-fact"}>
           <dt>{fact.label}</dt>
           <dd>{fact.value}</dd>
+          {fact.note !== undefined && <dd className="detail-fact-note">{fact.note}</dd>}
         </div>
       ))}
     </dl>
   );
 
-  /** The age the Findings row draws for this package (`age.ts#ageFact`, S8 > S2 > S4), labelled by
-   *  which signal supplied it and in its zone's tone unless the verdict does not rest on age. With no
-   *  such signal it falls back to the installed release's own date (the explain metadata's, then the
-   *  lock's), and failing that says why: lockrot could not read it, or the document has none. */
+  /** The age the Findings row draws for this package (`age.ts#ageFact`, S8 > S2 > S4) — the same age
+   *  the answer sentence quotes — labelled by which signal supplied it and in its zone's tone unless
+   *  the verdict does not rest on age. With no such signal it falls back to the installed release's
+   *  own date (the explain metadata's, then the lock's), and failing that says why: lockrot could not
+   *  read it, or the document has none. */
   function ageFactCell(f: Finding, released: string | null): Fact {
     const fact = ageFact(f, model.report.run.thresholds);
     if (fact !== null) {
-      const label =
-        fact.kind === "branch" ? "Branch released" : fact.kind === "push" ? "Last push" : "Last release";
       const tone = fact.contextOnly ? null : ageZone(fact.years, fact.warn, fact.high);
-      return {
-        label,
-        value: (
-          <span className={tone === null ? undefined : `detail-fact-toned ${toneClass(tone)}`}>
-            {yearsAgo(fact.years)}
-          </span>
-        ),
-      };
+      const value = (
+        <span className={tone === null ? undefined : `detail-fact-toned ${toneClass(tone)}`}>
+          {yearsAgo(fact.years)}
+        </span>
+      );
+      if (fact.kind === "branch") return { label: "Branch released", value };
+      if (fact.kind === "push") return { label: "Last push", value };
+      const newer = newerThanYours(timeline);
+      return newer === null
+        ? { label: "Last release", value }
+        : { label: "Newest release", value, note: newer };
     }
     // A snapshot's lock date is when a branch was checked out, not a release (the release-branches
     // answer draws the same distinction), so it is labelled as a date, never as a release.
     const snapshot = f.verdict === "pinned" || f.signals.some((s) => s.id === "S6");
     if (released) return { label: snapshot ? "Snapshot dated" : "Released", value: ageText(released, now) };
-    return {
-      label: "Last release",
-      value: <Muted>{ageNotRead(f) ? "not read" : "not recorded"}</Muted>,
-    };
+    if (snapshot) return { label: "Released", value: <Muted>no, a branch snapshot</Muted> };
+    return { label: "Last release", value: ageNotRead(f) ? <Muted>not read</Muted> : NOT_RECORDED };
   }
+}
+
+/**
+ * When the package's newest release is on a newer branch than the reader's, the S2 age is that
+ * branch's, not theirs — the release-branches answer further down quotes their own branch's age,
+ * which is older. The note says whose release it is so the two numbers do not read as a
+ * contradiction (an evaluator found three different ages on one screen with nothing between them).
+ */
+function newerThanYours(timeline: TimelineModel | null): ComponentChildren | null {
+  const mine = timeline?.mine ?? null;
+  if (timeline === null || mine === null || mine.snapshot || timeline.newerCount === 0) return null;
+  if (!timeline.topReleasedLast) return <>on a newer branch than {mine.branch}</>;
+  return (
+    <>
+      on <span className="mono">{timeline.top.branch}</span>, newer than yours
+    </>
+  );
 }
 
 /**
@@ -152,7 +188,9 @@ function Chain({ finding }: { finding: Finding }) {
   const { model, dispatch } = useReport();
   const hops = finding.chain.length > 0 ? finding.chain : [finding.package];
   const flagged = new Set(model.report.findings.map((f) => f.package));
-  const others = finding.directDependents.filter((pkg) => pkg !== hops[0] && pkg !== finding.package);
+  // The same ways in the answer sentence and the ladder's reach rung count (`reach.ts#waysIn`).
+  const others = waysIn(finding).filter((pkg) => pkg !== hops[0]);
+  const also = hops.length > 1 ? "Also required through" : "Required through";
 
   return (
     <>
@@ -185,11 +223,11 @@ function Chain({ finding }: { finding: Finding }) {
       </span>
       {others.length > 0 && (
         <span className="detail-chain-also">
-          Also required through{" "}
+          {also}{" "}
           {others.length === 1 ? (
             <span className="mono">{others[0]}</span>
           ) : (
-            `${others.length} other packages`
+            `${others.length} other requirements of yours`
           )}
           .
         </span>
@@ -199,8 +237,8 @@ function Chain({ finding }: { finding: Finding }) {
 }
 
 /** The most entries "What it pulls in" names one by one; past it, the line counts them by verdict
- *  instead, since a longer run of names is the bare package list a reader cannot take in (S7's own
- *  detail below still names every one). */
+ *  instead, since a longer run of names is the bare package list a reader cannot take in — and a
+ *  fold under the count names every one, by verdict, so the count is never a dead end. */
 const PULLS_IN_NAMED = 4;
 
 /** "a, b and c" with each item already a node. */
@@ -213,6 +251,8 @@ function PullsIn({ finding }: { finding: Finding }) {
   if (pulled === null) return null;
 
   const named = pulled.entries.length <= PULLS_IN_NAMED;
+  const byVerdict = pulledVerdicts(pulled);
+  const total = byVerdict.reduce((sum, { packages }) => sum + packages.length, 0);
   return (
     <div className="detail-path">
       <dt>
@@ -228,13 +268,37 @@ function PullsIn({ finding }: { finding: Finding }) {
         ) : (
           <>
             {joinAnd(
-              pulledVerdicts(pulled).map(({ verdict, count }) => (
-                <span key={verdict} className="detail-pulled">
-                  <b>{count}</b> {verdict}
+              byVerdict.map(({ verdict, packages }) => (
+                <span key={verdict} className="detail-pulled is-count">
+                  <b>{packages.length}</b> {verdict}
                 </span>
               )),
             )}
-            ; S7 below names each one.
+            .
+            <details className="detail-pulls-all">
+              <summary>Name all {total}</summary>
+              <dl className="detail-pulls-list">
+                {byVerdict.map(({ verdict, packages }) => (
+                  <div key={verdict} className="detail-pulls-group">
+                    <dt>
+                      {verdict} <span className="detail-pulls-n">{packages.length}</span>
+                    </dt>
+                    <dd>
+                      {packages.map((pkg, index) => (
+                        <Fragment key={pkg}>
+                          {/* The comma rides with its name, so a line never starts on one. */}
+                          <span className="detail-pulls-item">
+                            <PackageName pkg={pkg} />
+                            {index < packages.length - 2 ? "," : ""}
+                          </span>
+                          {index === packages.length - 2 ? " and " : index < packages.length - 1 ? " " : ""}
+                        </Fragment>
+                      ))}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </details>
           </>
         )}
       </dd>
@@ -242,8 +306,26 @@ function PullsIn({ finding }: { finding: Finding }) {
   );
 }
 
-function PulledNode({ entry }: { entry: PulledEntry }) {
+/** A package name that opens its own finding when it is one here, through the same `select` every
+ *  row sends; plain mono otherwise. */
+function PackageName({ pkg }: { pkg: string }) {
   const { model, dispatch } = useReport();
+  if (!model.report.findings.some((f) => f.package === pkg)) return <span className="mono">{pkg}</span>;
+  return (
+    <button
+      type="button"
+      className="detail-hop-link"
+      title={`Open ${pkg}`}
+      onClick={() => {
+        dispatch({ type: "select", pkg });
+      }}
+    >
+      {pkg}
+    </button>
+  );
+}
+
+function PulledNode({ entry }: { entry: PulledEntry }) {
   const pkg = entry.packages[0];
   if (entry.vendor !== null || pkg === undefined) {
     return (
@@ -253,24 +335,9 @@ function PulledNode({ entry }: { entry: PulledEntry }) {
       </span>
     );
   }
-  const inReport = model.report.findings.some((f) => f.package === pkg);
   return (
     <span className="detail-pulled">
-      {inReport ? (
-        <button
-          type="button"
-          className="detail-hop-link"
-          title={`Open ${pkg}`}
-          onClick={() => {
-            dispatch({ type: "select", pkg });
-          }}
-        >
-          {pkg}
-        </button>
-      ) : (
-        <span className="mono">{pkg}</span>
-      )}{" "}
-      <span className="detail-pulled-verdict">({entry.verdict})</span>
+      <PackageName pkg={pkg} /> <span className="detail-pulled-verdict">({entry.verdict})</span>
     </span>
   );
 }

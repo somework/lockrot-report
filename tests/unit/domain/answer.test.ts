@@ -44,6 +44,33 @@ describe("answerParts", () => {
     });
   });
 
+  it("quotes the same age the key facts do for an abandoned package: S8, then S2, then S4", () => {
+    // Arrange: S2 and S4 both fired; the fact and the row read S2, so the sentence must too.
+    const released = answer({
+      verdict: "abandoned",
+      signals: [
+        makeSignal({ id: "S1" }),
+        makeSignal({ id: "S2", data: { years: 9.1 } }),
+        makeSignal({ id: "S4", data: { years: 5.4 } }),
+      ],
+    });
+    const branch = answer({
+      verdict: "abandoned",
+      signals: [
+        makeSignal({ id: "S8", data: { branch: "1.x", years: 9.7 } }),
+        makeSignal({ id: "S2", data: { years: 9.1 } }),
+      ],
+    });
+
+    // Act / Assert
+    expect(answerText(released)).toBe(
+      "Marked abandoned upstream; its last release was 9.1 years ago. You require it directly.",
+    );
+    expect(answerText(branch)).toBe(
+      "Abandoned; the branch you’re on, 1.x, last released 9.7 years ago. You require it directly.",
+    );
+  });
+
   it("links the replacement only when lockrot resolved it to a package name", () => {
     const parts = answer({ verdict: "abandoned", replacement: "vendor/successor" }, "free text");
     expect(parts.find((p) => p.kind === "replacement")).toEqual({
@@ -99,7 +126,7 @@ describe("answerParts", () => {
       ],
     });
     expect(answerText(parts)).toBe(
-      "Silent: no release for 9.3 years and no push for 5 months. It comes in through a/one and 2 other packages, for development only.",
+      "Silent: no release for 9.3 years and no push for 5 months. It comes in through 3 of your requirements, a/one among them, for development only.",
     );
     expect(parts.filter((p) => p.kind === "figure")).toEqual([
       { kind: "figure", text: "9.3 years", tone: "crit" },
@@ -210,9 +237,9 @@ describe("pulledVerdicts", () => {
     ];
     const pulled = pulledIn(makeFinding({ signals: [makeSignal({ id: "S7", data: { packages } })] }));
     expect(pulled && pulledVerdicts(pulled)).toEqual([
-      { verdict: "abandoned", count: 3 },
-      { verdict: "stale", count: 2 },
-      { verdict: "silent", count: 1 },
+      { verdict: "abandoned", packages: ["hoa/x", "hoa/y", "hoa/z"] },
+      { verdict: "stale", packages: ["b/one", "c/one"] },
+      { verdict: "silent", packages: ["a/one"] },
     ]);
   });
 });

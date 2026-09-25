@@ -49,7 +49,15 @@ tag or the address format, says so under **Breaking** in its entry.
   releasing. It comes in through scheb/2fa-google-authenticator. 2 security advisories affect your
   version and no fix is coming on 10.x."), then its installed version, the age its row draws (in the
   same colour), its libyears and PHP constraint, then how it gets in from composer.json and what
-  flagged packages it pulls in — each a flagged package's name opening it.
+  flagged packages it pulls in — each a flagged package's name opening it. The four facts are always
+  there: a missing one says "not recorded" rather than disappearing. When the package's newest
+  release is on a newer branch than yours, that fact is labelled "Newest release" and says which
+  branch; a libyears of 0.0 says "nothing newer". A package that pulls in more flagged packages than
+  fit in a line counts them by verdict, with "Name all" listing every one of them there.
+- The priority ladder's reach step says "You don't require it directly" and names every requirement
+  of yours it comes in through ("It comes through wallabag/rulerz and wallabag/rulerz-bundle."), the
+  same ways in the answer sentence and the chain name. Its heading note uses priority words: "one
+  rule moved it down from critical", "no rule moved it off high".
 - A definition that names a threshold setting shows what this run set it to, "5 years
   (release-high-years)".
 - The package detail says when the search or a filter hides its package from the list, with a

@@ -84,6 +84,17 @@ function pickSource(finding: Finding): Source | null {
   return null;
 }
 
+/**
+ * The age every place in the open package quotes first — the same S8 > S2 > S4 pick a Findings row
+ * draws — without needing the run's thresholds: the answer sentence (`domain/answer.ts`) and the
+ * key-facts cell (`detail/DetailLead.tsx`) both read it, so the two never name different ages for
+ * one package. `null` when none of the three carries a numeric `years`.
+ */
+export function ageSource(finding: Finding): { readonly kind: AgeKind; readonly years: number } | null {
+  const source = pickSource(finding);
+  return source === null ? null : { kind: source.kind, years: source.years };
+}
+
 function thresholdYears(thresholds: Thresholds, name: string): number | null {
   for (const [n, years] of thresholds) {
     if (n === name) return years;
@@ -113,7 +124,7 @@ function resolveSource(finding: Finding, thresholds: Thresholds): Resolved | nul
 /** `abandoned` and `pinned` never reach the priority ladder through S2/S4/S8 (`domain/priority.ts`)
  *  — see `AgeScale.contextOnly`'s own comment for why a scale drawn for either still needs a
  *  neutral tone rather than the zone's. */
-function isContextOnly(finding: Finding): boolean {
+export function isContextOnly(finding: Finding): boolean {
   return finding.verdict === "abandoned" || finding.verdict === "pinned";
 }
 

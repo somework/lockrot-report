@@ -12,6 +12,7 @@
  */
 
 import type { Finding, KnownPriority } from "../model/types";
+import { WAYS_NAMED, waysIn } from "./reach";
 import { hasNoFixExpected } from "./sniff";
 import { vocabTable } from "./vocab";
 
@@ -39,6 +40,9 @@ export interface PriorityStep {
   /** One plain sentence: the fact this rule read, then what it did ("no step down" when it did not
    *  apply), so a rule that left the priority alone is still named rather than left out. */
   readonly text: string;
+  /** The fact behind the rule when a sentence alone would leave it unnamed — today only the reach
+   *  rung's ways in ("It comes through a/b and c/d.") — drawn quieter under `text`; `null` otherwise. */
+  readonly note: string | null;
   /** Whether the rule moved the ladder (the verdict's own starting rung always counts as applied).
    *  A step up clamped at critical is still `applied`: the rule fired, there was nowhere higher. */
   readonly applied: boolean;
@@ -96,6 +100,7 @@ export function priorityWhy(finding: Finding): readonly PriorityStep[] {
   const verdict: PriorityStep = {
     rule: "verdict",
     text: `${capitalize(finding.verdict)} packages start at ${base}.`,
+    note: null,
     applied: true,
     to: base,
   };
@@ -105,31 +110,47 @@ export function priorityWhy(finding: Finding): readonly PriorityStep[] {
   return [verdict, reach, dev, advisory];
 }
 
-/** Step 3 of contract.md §2.4: a package you do not require yourself steps down once. */
+/** Step 3 of contract.md §2.4: a package you do not require yourself steps down once. The rule is
+ *  "not required directly", not "only one way in", so the note names every way in `waysIn` finds —
+ *  the same list the answer sentence and the chain read. */
 function reachStep(finding: Finding, from: KnownPriority): PriorityStep {
   if (finding.direct) {
-    return { rule: "reach", text: "You require it directly: no step down.", applied: false, to: from };
+    return {
+      rule: "reach",
+      text: "You require it directly: no step down.",
+      note: null,
+      applied: false,
+      to: from,
+    };
   }
-  const via = finding.chain.length > 1 ? finding.chain[0] : undefined;
   return {
     rule: "reach",
-    text:
-      via !== undefined
-        ? `Only reached through ${via}: one step down.`
-        : "Only reached through another package: one step down.",
+    text: "You don’t require it directly: one step down.",
+    note: waysNote(waysIn(finding)),
     applied: true,
     to: stepDown(from),
   };
 }
 
+/** "It comes through a/b." · "It comes through a/b and c/d." · "It comes through 3 of your
+ *  requirements, a/b among them." · `null` when the document names no way in. */
+function waysNote(ways: readonly string[]): string | null {
+  const [first, second] = ways;
+  if (first === undefined) return null;
+  if (ways.length === 1) return `It comes through ${first}.`;
+  if (ways.length <= WAYS_NAMED && second !== undefined) return `It comes through ${first} and ${second}.`;
+  return `It comes through ${ways.length} of your requirements, ${first} among them.`;
+}
+
 /** Step 4: a package only `require-dev` installs steps down once more. */
 function devStep(finding: Finding, from: KnownPriority): PriorityStep {
   if (!finding.dev) {
-    return { rule: "dev", text: "Needed in production: no step down.", applied: false, to: from };
+    return { rule: "dev", text: "Needed in production: no step down.", note: null, applied: false, to: from };
   }
   return {
     rule: "dev",
     text: "Installed for development only: one step down.",
+    note: null,
     applied: true,
     to: stepDown(from),
   };
@@ -143,6 +164,7 @@ function advisoryStep(finding: Finding, from: KnownPriority): PriorityStep {
     return {
       rule: "advisory",
       text: "An advisory with no fix coming: one step up.",
+      note: null,
       applied: true,
       to: stepUp(from),
     };
@@ -153,6 +175,7 @@ function advisoryStep(finding: Finding, from: KnownPriority): PriorityStep {
       finding.advisories.length > 0
         ? "Its advisories have a fix: no step up."
         : "No security advisory: no step up.",
+    note: null,
     applied: false,
     to: from,
   };

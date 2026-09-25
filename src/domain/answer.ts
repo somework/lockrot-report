@@ -10,7 +10,15 @@
  */
 
 import type { Finding, Signal } from "../model/types";
-import { ageZone, pushThresholds, releaseThresholds, type AgeLegend, type Thresholds } from "./age";
+import {
+  ageSource,
+  ageZone,
+  pushThresholds,
+  releaseThresholds,
+  type AgeLegend,
+  type Thresholds,
+} from "./age";
+import { WAYS_NAMED, waysIn } from "./reach";
 import { hasNoFixExpected } from "./sniff";
 import type { Tone } from "./vocab";
 
@@ -86,7 +94,7 @@ function verdictClause(finding: Finding, thresholds: Thresholds): AnswerPart[] {
 
   switch (finding.verdict) {
     case "abandoned":
-      return abandonedClause(finding, s2, s4);
+      return abandonedClause(finding);
     case "silent": {
       if (s2 === null && s4 === null) return [text("Silent: no recent release and no recent push.")];
       const parts: AnswerPart[] = [text("Silent: ")];
@@ -137,8 +145,10 @@ function verdictClause(finding: Finding, thresholds: Thresholds): AnswerPart[] {
 }
 
 /** Abandoned: S1 (the repository's own flag) and S3 (archived), then how long it has been quiet —
- *  in ink, since an abandoned package's priority never rests on its age (`age.ts#isContextOnly`). */
-function abandonedClause(finding: Finding, s2: number | null, s4: number | null): AnswerPart[] {
+ *  the one age the key facts beside it quote (`age.ts#ageSource`, S8 > S2 > S4), so the sentence and
+ *  the facts never name two different ages; in ink, since an abandoned package's priority never
+ *  rests on its age (`age.ts#isContextOnly`). */
+function abandonedClause(finding: Finding): AnswerPart[] {
   const marked = signal(finding, "S1") !== undefined;
   const s3 = signal(finding, "S3");
   const archived = s3 !== undefined ? `archived on ${hostName(str(s3.data, "host"))}` : null;
@@ -150,9 +160,23 @@ function abandonedClause(finding: Finding, s2: number | null, s4: number | null)
         : archived !== null
           ? archived.charAt(0).toUpperCase() + archived.slice(1)
           : "Abandoned";
-  if (s4 !== null) return [text(`${lead}, with no push for `), age(s4, null, true), text(".")];
-  if (s2 !== null) return [text(`${lead}; its last release was `), age(s2, null, true), text(" ago.")];
-  return [text(`${lead}.`)];
+  const source = ageSource(finding);
+  if (source === null) return [text(`${lead}.`)];
+  const years = age(source.years, null, true);
+  if (source.kind === "push") return [text(`${lead}, with no push for `), years, text(".")];
+  if (source.kind === "branch") {
+    const branch = str(signal(finding, "S8")?.data, "branch");
+    if (branch !== null) {
+      return [
+        text(`${lead}; the branch you’re on, `),
+        name(branch),
+        text(", last released "),
+        years,
+        text(" ago."),
+      ];
+    }
+  }
+  return [text(`${lead}; its last release was `), years, text(" ago.")];
 }
 
 /** Old promise: S5's own release year, the PHP it was written for and the open constraint. */
@@ -174,21 +198,25 @@ function oldPromiseClause(finding: Finding): AnswerPart[] {
   ];
 }
 
-/** How it gets in: required directly, or through the first hop of its chain (and any other direct
- *  requirement that also reaches it). */
+/** How it gets in: required directly, or through every requirement of yours that reaches it
+ *  (`reach.ts#waysIn`, the same list the ladder's reach rung and the chain name) — both named up to
+ *  two, counted past that with the first still named. */
 function reachClause(finding: Finding): AnswerPart[] {
   const dev = finding.dev ? ", for development only" : "";
   if (finding.direct) return [text(` You require it directly${dev}.`)];
-  const via = finding.chain.length > 1 ? finding.chain[0] : undefined;
-  if (via === undefined) return [text(` Nothing you require directly reaches it${dev}.`)];
+  const ways = waysIn(finding);
+  const [first, second] = ways;
+  if (first === undefined) return [text(` Nothing you require directly reaches it${dev}.`)];
 
-  const others = finding.directDependents.filter((pkg) => pkg !== via);
-  const parts: AnswerPart[] = [text(" It comes in through "), name(via)];
-  const first = others[0];
-  if (others.length === 1 && first !== undefined) parts.push(text(" and "), name(first));
-  else if (others.length > 1) parts.push(text(` and ${others.length} other packages`));
-  parts.push(text(`${dev}.`));
-  return parts;
+  if (ways.length === 1) return [text(" It comes in through "), name(first), text(`${dev}.`)];
+  if (ways.length <= WAYS_NAMED && second !== undefined) {
+    return [text(" It comes in through "), name(first), text(" and "), name(second), text(`${dev}.`)];
+  }
+  return [
+    text(` It comes in through ${ways.length} of your requirements, `),
+    name(first),
+    text(` among them${dev}.`),
+  ];
 }
 
 function replacementClause(finding: Finding, metadataReplacement: string | null): AnswerPart[] {
@@ -315,12 +343,17 @@ export function pulledIn(finding: Finding): PulledIn | null {
   return { flagged: flagged ?? packages.length, entries };
 }
 
-/** How many of what it pulls in carry each verdict, most first (ties keep S7's own order) — the
- *  sentence "What it pulls in" says instead of a list once there are too many entries to name. */
-export function pulledVerdicts(pulled: PulledIn): readonly { verdict: string; count: number }[] {
-  const counts = new Map<string, number>();
+/** What it pulls in, by verdict, most first (ties keep S7's own order), each verdict with its own
+ *  packages in S7's order — the sentence "What it pulls in" says once there are too many entries to
+ *  name, and the list its "Name all" fold opens, so the count and the names always agree. */
+export function pulledVerdicts(
+  pulled: PulledIn,
+): readonly { verdict: string; packages: readonly string[] }[] {
+  const byVerdict = new Map<string, string[]>();
   for (const entry of pulled.entries) {
-    counts.set(entry.verdict, (counts.get(entry.verdict) ?? 0) + entry.packages.length);
+    byVerdict.set(entry.verdict, [...(byVerdict.get(entry.verdict) ?? []), ...entry.packages]);
   }
-  return [...counts].map(([verdict, count]) => ({ verdict, count })).sort((a, b) => b.count - a.count);
+  return [...byVerdict]
+    .map(([verdict, packages]) => ({ verdict, packages }))
+    .sort((a, b) => b.packages.length - a.packages.length);
 }

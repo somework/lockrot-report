@@ -53,20 +53,23 @@
   color: var(--accent-ink);
 }
 
-/* ---------- key facts ---------- */
+/* ---------- key facts ----------
+   Always four, on a four-column grid — two by two on a phone, never three and an orphan. A long value
+   (a version or constraint past its column) takes a whole row instead of being cut. */
 .detail-facts {
   margin: 0;
   padding-top: 12px;
   border-top: 1px solid var(--border);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 20px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, max-content));
+  justify-content: start;
+  gap: 12px 28px;
 }
 .detail-fact {
   min-width: 0;
 }
 .detail-fact.is-wide {
-  flex: 1 1 100%;
+  grid-column: 1 / -1;
 }
 .detail-facts dt,
 .detail-path dt {
@@ -83,12 +86,22 @@
   font-family: var(--mono);
   font-size: 13px;
   color: var(--ink);
-  white-space: nowrap;
+  overflow-wrap: anywhere;
   font-variant-numeric: tabular-nums;
 }
-.detail-fact.is-wide dd {
-  white-space: normal;
-  overflow-wrap: anywhere;
+/* The quieter line under a value: whose age it is, or what a 0.0 means. It never widens its column
+   (`contain: inline-size` gives it no width of its own), it wraps inside it. */
+.detail-facts dd.detail-fact-note {
+  margin-top: 3px;
+  contain: inline-size;
+  font-family: var(--sans);
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--muted);
+}
+.detail-fact-note .mono {
+  font-size: 10.5px;
+  color: var(--ink-2);
 }
 .detail-facts dd .muted {
   font-family: var(--sans);
@@ -187,12 +200,85 @@
 .detail-pulled {
   white-space: normal;
 }
+.detail-pulled.is-count,
+.detail-pulls-item {
+  white-space: nowrap;
+}
+/* …but a name longer than the column still breaks inside itself rather than run past the panel. */
+.detail-pulls-item > * {
+  white-space: normal;
+}
 .detail-pulled-verdict {
   color: var(--muted);
 }
 .detail-pulled b {
   font-weight: 600;
   color: var(--ink);
+}
+/* "Name all N": the count's own fold, so the verdict counts are never a dead end. Closed, it is one
+   quiet line; open, one row per verdict — the verdict word in the condensed caption face, its
+   packages after it. */
+.detail-pulls-all {
+  margin-top: 4px;
+}
+/* The page's one fold marker (base.css), set right after the words and in their link colour. */
+.detail-pulls-all > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--accent-ink);
+  border-radius: 3px;
+}
+.detail-pulls-all > summary::after {
+  margin-left: 0;
+  border-left-color: currentColor;
+}
+.detail-pulls-all > summary:hover {
+  text-decoration: underline;
+}
+.detail-pulls-all > summary:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+/* One grid for every verdict group, so the package lists all start on one left edge whatever the
+   verdict word's length; each group is only a pair of cells in it. */
+.detail-pulls-list {
+  margin: 8px 0 0;
+  padding: 8px 0 2px 12px;
+  border-left: 2px solid var(--border);
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 7px 12px;
+  align-items: baseline;
+}
+.detail-pulls-group {
+  display: contents;
+}
+.detail-pulls-group > dt {
+  white-space: nowrap;
+  font-family: var(--cond);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0;
+}
+.detail-pulls-n {
+  font-family: var(--mono);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+.detail-pulls-group > dd {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.detail-pulls-group .mono,
+.detail-pulls-group .detail-hop-link {
+  font-size: 11.5px;
 }
 
 /* ---------- why this priority: the ladder ----------
@@ -239,7 +325,9 @@
   margin: 0;
   min-height: 34px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
   padding: 4px 0;
   border-top: 1px solid var(--border);
   font-size: 12.5px;
@@ -248,6 +336,13 @@
 }
 .detail-ladder-text.is-quiet {
   color: var(--muted);
+}
+/* The fact behind a rung (which of your requirements it comes through), under its rule, quieter. */
+.detail-ladder-note {
+  margin-top: 1px;
+  font-size: 11.5px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
 }
 .detail-ladder-text.is-result {
   display: block;
@@ -329,15 +424,32 @@
     0 0 0 4.5px var(--tone);
 }
 
-/* Under ~360px of panel the track keeps its four rungs but narrows; the sentences take the room. */
+/* A phone: the facts go two by two, and the ladder's track narrows so the rules keep their room. */
+@media (max-width: 480px) {
+  .detail-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 18px;
+  }
+  /* Each verdict over its own names, so the names get the whole width. */
+  .detail-pulls-list {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2px;
+  }
+  .detail-pulls-group > dd {
+    margin-bottom: 6px;
+  }
+}
 @media (max-width: 420px) {
   .detail-ladder {
-    --rung-w: 112px;
+    --rung-w: 116px;
     column-gap: 10px;
   }
   .detail-ladder-head {
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0;
+  }
+  .detail-ladder-text {
+    font-size: 12px;
   }
   .detail-answer {
     font-size: 17.5px;
@@ -353,11 +465,20 @@
   .detail-ladder-line {
     forced-color-adjust: none;
   }
+  /* The rungs recede to a dotted GrayText line so the connector stays the one solid stroke. */
   .detail-ladder-track {
     background-image:
-      linear-gradient(GrayText, GrayText), linear-gradient(GrayText, GrayText),
-      linear-gradient(GrayText, GrayText), linear-gradient(GrayText, GrayText);
-    border-top-color: GrayText;
+      linear-gradient(GrayText 50%, transparent 0), linear-gradient(GrayText 50%, transparent 0),
+      linear-gradient(GrayText 50%, transparent 0), linear-gradient(GrayText 50%, transparent 0);
+    background-size: 1px 4px;
+    background-repeat: repeat-y;
+    border-top-color: CanvasText;
+  }
+  .detail-ladder-track.is-result {
+    border-top-color: CanvasText;
+  }
+  .detail-pulls-all > summary {
+    color: LinkText;
   }
   .detail-ladder-line {
     stroke: CanvasText;

@@ -24,17 +24,19 @@ function rungX(index: number): number {
 
 const WORDS = ["no", "one", "two", "three"];
 
-/** "two rules moved it from high", "one rule applied; it ends where abandoned starts", "nothing moved
- *  it from where abandoned starts" — counted from the same steps the ladder draws. */
-function aside(steps: readonly PriorityStep[], finding: Finding): string {
+/** "no rule moved it off critical", "one rule moved it down from critical", "two rules applied and
+ *  cancelled out, so it stays high" — counted from the same steps the ladder draws, and said in
+ *  priority words, the ones the track is captioned with, rather than the verdict's. */
+function aside(steps: readonly PriorityStep[]): string {
   const first = steps[0];
   const last = steps[steps.length - 1];
   if (first === undefined || last === undefined) return "";
   const applied = steps.slice(1).filter((step) => step.applied).length;
-  if (applied === 0) return `nothing moved it from where ${finding.verdict} starts`;
+  if (applied === 0) return `no rule moved it off ${first.to}`;
   const rules = `${WORDS[applied] ?? applied} rule${applied === 1 ? "" : "s"}`;
-  if (last.to === first.to) return `${rules} applied; it ends where ${finding.verdict} starts`;
-  return `${rules} moved it from ${first.to}`;
+  if (last.to === first.to) return `${rules} applied and cancelled out, so it stays ${first.to}`;
+  const direction = rungIndex(last.to) > rungIndex(first.to) ? "down" : "up";
+  return `${rules} moved it ${direction} from ${first.to}`;
 }
 
 /**
@@ -58,7 +60,7 @@ export function PriorityWhy({ finding }: { finding: Finding }) {
     <section className="detail-section detail-why">
       <h3>
         Why this is {finding.priority}
-        <span className="detail-why-aside">{aside(steps, finding)}</span>
+        <span className="detail-why-aside">{aside(steps)}</span>
       </h3>
       <div className="detail-ladder">
         <span className="detail-ladder-corner" aria-hidden="true" />
@@ -72,7 +74,15 @@ export function PriorityWhy({ finding }: { finding: Finding }) {
         {steps.map((step, index) => (
           <LadderRow
             key={step.rule}
-            text={step.text}
+            text={
+              step.note === null ? (
+                step.text
+              ) : (
+                <>
+                  {step.text} <span className="detail-ladder-note">{step.note}</span>
+                </>
+              )
+            }
             state={step.applied ? "applied" : "quiet"}
             tone={TONE(step.to)}
             index={rungIndex(step.to)}

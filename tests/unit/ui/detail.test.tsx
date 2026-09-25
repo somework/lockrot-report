@@ -22,6 +22,8 @@ function loadModel(fixture: string): Model {
 
 const MINI = loadModel("mini.json");
 const KOEL = loadModel("koel_koel.json");
+const WALLABAG = loadModel("wallabag_wallabag.json");
+const MAUTIC = loadModel("mautic_mautic.json");
 
 /**
  * The findings the real fixtures don't carry an example of: security advisories, the three
@@ -370,13 +372,17 @@ describe("Detail", () => {
       ]);
       expect(rows).toEqual([
         ["Abandoned packages start at critical.", "applied"],
-        ["Only reached through vendor/direct: one step down.", "applied"],
+        ["You don’t require it directly: one step down. It comes through vendor/direct.", "applied"],
         ["Needed in production: no step down.", "quiet"],
         ["No security advisory: no step up.", "quiet"],
         ["So: high.", "result"],
       ]);
+      // Said in priority words, the track's own, not the verdict's.
       expect(container.querySelector(".detail-why-aside")?.textContent).toBe(
-        "one rule moved it from critical",
+        "one rule moved it down from critical",
+      );
+      expect(container.querySelector(".detail-ladder-note")?.textContent).toBe(
+        "It comes through vendor/direct.",
       );
       // One dot per row, on the rung the ladder is at: critical, then high for the rest.
       const dots = Array.from(container.querySelectorAll(".detail-ladder-dot")).map((el) =>
@@ -447,6 +453,75 @@ describe("Detail", () => {
       expect(labels).toContain("Libyears");
       const facts = container.querySelector(".detail-facts")?.textContent ?? "";
       expect(facts).toContain("4.7");
+    });
+
+    /** Each fact as [label, value, note?], in order. */
+    function factRows(container: ParentNode): string[][] {
+      return Array.from(container.querySelectorAll(".detail-fact")).map((fact) =>
+        Array.from(fact.children).map((cell) => cell.textContent),
+      );
+    }
+
+    it("quotes one age for a package with two ways in, and says whose release it is (evaluator: three ages, one screen)", () => {
+      const { container } = renderDetail(WALLABAG, "hoa/event");
+      const answer = container.querySelector(".detail-answer")?.textContent ?? "";
+      // The answer quotes the fact's own age (S2, 9.1 years), not S4's 5.4, and both ways in.
+      expect(answer).toBe(
+        "Marked abandoned upstream and archived on GitHub; its last release was 9.1 years ago. It comes in through wallabag/rulerz and wallabag/rulerz-bundle.",
+      );
+      // That release is 2.x's, not the reader's 1.x — so the fact says so, and the release-branches
+      // answer's 9.7 years for 1.x no longer reads as a third, unexplained age.
+      expect(factRows(container)[1]).toEqual(["Newest release", "9.1 y ago", "on 2.x, newer than yours"]);
+      expect(container.querySelector(".detail-timeline-answer")?.textContent).toBe(
+        "You’re on 1.x. Its last release was 9.7 years ago.",
+      );
+      // The ladder's reach rung names the same two ways in, and never says "only".
+      const reach = container.querySelectorAll(".detail-ladder-text")[1]?.textContent ?? "";
+      expect(reach).toBe(
+        "You don’t require it directly: one step down. It comes through wallabag/rulerz and wallabag/rulerz-bundle.",
+      );
+    });
+
+    it("always shows the same four facts, a gap said rather than left out", () => {
+      const { container } = renderDetail(WALLABAG, "hoa/event");
+      expect(factRows(container).map((row) => row[0])).toEqual([
+        "Installed",
+        "Newest release",
+        "Libyears",
+        "PHP",
+      ]);
+      expect(factRows(container)[3]).toEqual(["PHP", "not recorded"]);
+    });
+
+    it("glosses a libyears of 0.0 so it does not read as good news, and keeps an abandoned age in ink everywhere", () => {
+      const { container } = renderDetail(WALLABAG, "sensio/framework-extra-bundle");
+      expect(factRows(container)[2]).toEqual(["Libyears", "0.0", "nothing newer"]);
+      // Abandoned never rests on age: ink in the answer, the fact and the release-branches answer alike.
+      expect(container.querySelector(".detail-answer-figure.is-toned")).toBeNull();
+      expect(container.querySelector(".detail-fact-toned")).toBeNull();
+      expect(container.querySelector(".detail-timeline-age")?.classList.contains("is-toned")).toBe(false);
+    });
+
+    it("counts a long pulls-in list by verdict and names every package in its fold, never pointing elsewhere", () => {
+      const { container, dispatch } = renderDetail(MAUTIC, "mautic/core-lib");
+      const pulls = container.querySelector(".detail-pulls");
+      expect(pulls?.textContent).not.toContain("S7 below");
+      const fold = pulls?.querySelector("details.detail-pulls-all");
+      expect(fold?.querySelector("summary")?.textContent).toBe("Name all 21");
+      const named = Array.from(
+        fold?.querySelectorAll(".detail-pulls-group dd .mono, .detail-pulls-group dd button") ?? [],
+      );
+      expect(named).toHaveLength(21);
+      // Each group's count is its own names' count.
+      for (const group of Array.from(fold?.querySelectorAll(".detail-pulls-group") ?? [])) {
+        const n = Number(group.querySelector(".detail-pulls-n")?.textContent);
+        expect(group.querySelectorAll("dd .mono, dd button")).toHaveLength(n);
+      }
+      const button = fold?.querySelector("button");
+      if (button) {
+        fireEvent.click(button);
+        expect(dispatch).toHaveBeenCalledWith({ type: "select", pkg: button.textContent });
+      }
     });
   });
 

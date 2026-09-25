@@ -22,10 +22,15 @@ export function Timeline({
   metadata,
   lock,
   installedVersion,
+  ageToned = true,
 }: {
   metadata: ExplainMetadata | null;
   lock: ExplainLock | null;
   installedVersion: string;
+  /** False when the finding's verdict does not rest on age (`age.ts#isContextOnly`: abandoned,
+   *  pinned). The reader's own age then stays in ink here too, as it does in the answer sentence and
+   *  the key facts above — one age must not read as neutral there and as a warning here. */
+  ageToned?: boolean;
 }) {
   const { model, now } = useReport();
   const [openFolds, setOpenFolds] = useState<readonly string[]>([]);
@@ -35,7 +40,7 @@ export function Timeline({
   const thresholds = releaseThresholds(model.report.run.thresholds);
   // A snapshot's date is a checkout, not a release: it never takes the release-age tone.
   const toneOf = (lane: TimelineLane): Tone | null =>
-    thresholds === null || lane.snapshot
+    thresholds === null || lane.snapshot || !ageToned
       ? null
       : ageZone(yearsSince(lane.date, now), thresholds.warn, thresholds.high);
   const guides: Guide[] =

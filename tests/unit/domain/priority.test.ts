@@ -35,10 +35,22 @@ describe("priorityWhy", () => {
 
     // Assert
     expect(steps).toEqual([
-      { rule: "verdict", text: "Stale packages start at medium.", applied: true, to: "medium" },
-      { rule: "reach", text: "You require it directly: no step down.", applied: false, to: "medium" },
-      { rule: "dev", text: "Needed in production: no step down.", applied: false, to: "medium" },
-      { rule: "advisory", text: "No security advisory: no step up.", applied: false, to: "medium" },
+      { rule: "verdict", text: "Stale packages start at medium.", note: null, applied: true, to: "medium" },
+      {
+        rule: "reach",
+        text: "You require it directly: no step down.",
+        note: null,
+        applied: false,
+        to: "medium",
+      },
+      { rule: "dev", text: "Needed in production: no step down.", note: null, applied: false, to: "medium" },
+      {
+        rule: "advisory",
+        text: "No security advisory: no step up.",
+        note: null,
+        applied: false,
+        to: "medium",
+      },
     ]);
   });
 
@@ -58,14 +70,15 @@ describe("priorityWhy", () => {
     // Assert
     expect(steps[1]).toEqual({
       rule: "reach",
-      text: "Only reached through vendor/direct: one step down.",
+      text: "You don’t require it directly: one step down.",
+      note: "It comes through vendor/direct.",
       applied: true,
       to: "medium",
     });
     expect(steps.map((s) => s.to)).toEqual(["high", "medium", "medium", "medium"]);
   });
 
-  it("says 'another package' when a transitive finding carries no chain", () => {
+  it("names no way in when a transitive finding carries no chain and no direct dependents", () => {
     // Arrange
     const finding = makeFinding({ verdict: "pinned", priority: "medium", direct: false, chain: [] });
 
@@ -73,7 +86,51 @@ describe("priorityWhy", () => {
     const steps = priorityWhy(finding);
 
     // Assert
-    expect(steps[1]?.text).toBe("Only reached through another package: one step down.");
+    expect(steps[1]).toMatchObject({ text: "You don’t require it directly: one step down.", note: null });
+  });
+
+  it("names both ways in when two of your requirements reach it, never 'only' the first (evaluator blocker)", () => {
+    // Arrange: wallabag's hoa/event — the chain runs through wallabag/rulerz, and
+    // wallabag/rulerz-bundle requires it too. The rule is "not required directly", not "one way in".
+    const finding = makeFinding({
+      package: "hoa/event",
+      verdict: "abandoned",
+      priority: "high",
+      direct: false,
+      chain: ["wallabag/rulerz", "hoa/consistency", "hoa/exception", "hoa/event"],
+      directDependents: ["wallabag/rulerz", "wallabag/rulerz-bundle"],
+    });
+
+    // Act
+    const steps = priorityWhy(finding);
+
+    // Assert
+    expect(steps[1]).toEqual({
+      rule: "reach",
+      text: "You don’t require it directly: one step down.",
+      note: "It comes through wallabag/rulerz and wallabag/rulerz-bundle.",
+      applied: true,
+      to: "high",
+    });
+    expect(steps.map((s) => `${s.text} ${s.note ?? ""}`).join(" ")).not.toContain("Only");
+  });
+
+  it("counts the ways in past two, still naming the chain's first hop", () => {
+    // Arrange
+    const finding = makeFinding({
+      verdict: "stale",
+      priority: "low",
+      direct: false,
+      chain: ["b/two", "acme/widget"],
+      directDependents: ["a/one", "b/two", "c/three", "acme/widget"],
+    });
+
+    // Act
+    const steps = priorityWhy(finding);
+
+    // Assert: the chain's own first hop leads, then the others in document order; the package
+    // itself is never one of its own ways in.
+    expect(steps[1]?.note).toBe("It comes through 3 of your requirements, b/two among them.");
   });
 
   it("steps down twice for a transitive dev finding", () => {
@@ -122,6 +179,7 @@ describe("priorityWhy", () => {
     expect(steps.at(-1)).toEqual({
       rule: "advisory",
       text: "An advisory with no fix coming: one step up.",
+      note: null,
       applied: true,
       to: "critical",
     });
@@ -143,6 +201,7 @@ describe("priorityWhy", () => {
     expect(steps.at(-1)).toEqual({
       rule: "advisory",
       text: "Its advisories have a fix: no step up.",
+      note: null,
       applied: false,
       to: "high",
     });
