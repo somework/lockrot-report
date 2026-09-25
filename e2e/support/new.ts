@@ -881,7 +881,8 @@ export class NewReportPage implements ReportPage {
   }
 
   async copyButtonLabel(): Promise<string | null> {
-    const button = this.page.getByRole("button", { name: /copy|copied|select it and copy/i });
+    // Anchored: the header's own "Copy summary" (PD-PRINT-1) is a different button.
+    const button = this.page.getByRole("button", { name: /^(copy|copied|select it and copy)$/i });
     if ((await button.count()) === 0) return null;
 
     return (await button.first().textContent())?.trim() ?? null;

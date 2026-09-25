@@ -694,3 +694,35 @@ describe("Ledger", () => {
     );
   });
 });
+
+describe("PriorityLedger's scope line (PD-SUMMARY-9)", () => {
+  it("splits the flagged packages by install scope and by reach, under the figure", () => {
+    // Arrange: wallabag's 69 flagged — 18 of them require-dev only, 20 direct requirements.
+    const model = loadFixture("wallabag_wallabag.json");
+
+    // Act
+    const { container } = renderIn(<PriorityLedger />, model, INITIAL_STATE);
+
+    // Assert
+    const line = container.querySelector(".lead-scope");
+    expect(line?.textContent).toBe("51 in production, 18 dev-only ·20 required directly, 49 pulled in");
+    expect([...(line?.querySelectorAll("b") ?? [])].map((b) => b.textContent)).toEqual([
+      "51",
+      "18",
+      "20",
+      "49",
+    ]);
+  });
+
+  it('says "all N" when every flagged package sits on one side of a split', () => {
+    const { container } = renderIn(<PriorityLedger />, loadMini(), INITIAL_STATE);
+
+    expect(container.querySelector(".lead-scope")?.textContent).toBe("all 2 in production ·all 2 pulled in");
+  });
+
+  it("draws no line for a lock with nothing flagged", () => {
+    const { container } = renderIn(<PriorityLedger />, loadFixture("mini-split.json"), INITIAL_STATE);
+
+    expect(container.querySelector(".lead-scope")).toBeNull();
+  });
+});

@@ -2,6 +2,7 @@ import type { ComponentChildren } from "preact";
 import { useId, useLayoutEffect, useRef } from "preact/hooks";
 import { day } from "../domain/format";
 import { useReport } from "./context";
+import { CopySummary } from "./CopySummary";
 import { themeButtonLabel, type Theme } from "./useTheme";
 
 /** The gate fact's two states the run can actually be in, plus its text — kept together so the
@@ -135,6 +136,21 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
             >
               {label}
             </button>
+          </span>
+          {/* Print prints the whole report in sections, whatever tab is open (print/PrintDocument.tsx);
+              the browser's own Print does the same through the same `beforeprint`. */}
+          <span className="run-actions share-actions">
+            <button
+              className="icon-btn print-btn"
+              type="button"
+              title="Print the whole report, or save it as a PDF, whatever tab is open"
+              onClick={() => {
+                window.print();
+              }}
+            >
+              Print / PDF
+            </button>
+            <CopySummary />
           </span>
         </div>
       </div>

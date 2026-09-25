@@ -70,6 +70,34 @@
 .lead-share {
   color: var(--muted);
 }
+/* PD-SUMMARY-9: the flagged packages split by install scope and by reach, one quiet line that
+   hangs off the figure (a pulled-up gap) rather than a fourth block in the band. Each clause wraps
+   whole, and a clause that starts a line drops its "·" the way the phone fold's peek does. */
+.lead-scope {
+  margin: -4px 0 0;
+  overflow: hidden;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.lead-scope-parts {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -1.4em;
+}
+.lead-scope-item {
+  white-space: nowrap;
+}
+.lead-scope-sep {
+  display: inline-block;
+  width: 1.4em;
+  text-align: center;
+}
+.lead-scope b {
+  font-weight: 600;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
 
 /* A clean report reads as good at a glance: a tick and the sentence in the "none" tone, and the
    waffle's squares washed the same green (below), instead of a grey 0 beside an empty chart. */

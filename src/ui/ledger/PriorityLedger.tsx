@@ -4,9 +4,44 @@ import { TONE } from "../../domain/vocab";
 import { population } from "../../domain/filters";
 import { plural } from "../../domain/format";
 import { RANKED_PRIORITIES, sharePhrase, waffleRuns } from "../../domain/summary";
+import { rollupClauses, scopeRollup } from "../../domain/share";
 import { CleanMark } from "./CleanMark";
 import { Waffle } from "./Waffle";
 import "./ledger.css";
+
+/** A clause with its counts set as figures: "51 in production, 18 dev-only". */
+function Clause({ text }: { text: string }) {
+  return (
+    <span className="lead-scope-part">
+      {text.split(/(\d+)/).map((piece, i) => (i % 2 === 1 ? <b key={i}>{piece}</b> : piece))}
+    </span>
+  );
+}
+
+/**
+ * The flagged packages split two ways under the chips (PD-SUMMARY-9): where they are installed
+ * (`Finding.dev`) and how they get in (`Finding.direct`) — "51 in production, 18 dev-only · 20
+ * required directly, 49 pulled in". The rail's Scope counts, in one line a phone reader sees
+ * without opening Filters. Words, not a mark: the waffle beside it already draws the 69.
+ */
+function ScopeLine({ clauses }: { clauses: readonly string[] }) {
+  if (clauses.length === 0) return null;
+  return (
+    <p className="lead-scope">
+      <span className="lead-scope-parts">
+        {clauses.map((clause, i) => (
+          <span key={clause} className="lead-scope-item">
+            <span className="lead-scope-sep" aria-hidden="true">
+              {i > 0 ? "·" : ""}
+            </span>
+            <Clause text={clause} />
+            {i < clauses.length - 1 ? " " : ""}
+          </span>
+        ))}
+      </span>
+    </p>
+  );
+}
 
 /**
  * The summary band's lead: the one answer a first-time reader needs — how many packages are
@@ -67,6 +102,7 @@ export function PriorityLedger() {
             </span>
           </p>
         )}
+        {!clean && <ScopeLine clauses={rollupClauses(scopeRollup(flagged))} />}
         {/* No chips for an empty lock: four disabled "0" filters there had nothing to filter. */}
         {!empty && (
           <div className="legend lead-chips">

@@ -85,6 +85,53 @@
   .run-actions {
     width: 100%;
     padding-top: 4px;
+    flex-wrap: wrap;
+  }
+  /* A phone keeps the four page controls on one row where they fit (390px does, just), and the
+     share pair wraps under the other two as a pair where they do not (320px). */
+  .run-actions:has(+ .share-actions) {
+    width: auto;
+  }
+  .share-actions {
+    width: auto;
+  }
+}
+
+/* ---------- print / share (Header.tsx, CopySummary.tsx) ---------- */
+.share-actions {
+  position: relative;
+}
+.copy-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.copy-pop {
+  width: min(420px, calc(100vw - 2 * var(--gutter)));
+  max-width: none;
+}
+.copy-pop-label {
+  display: block;
+  margin-bottom: 8px;
+}
+.copy-pop-text {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--surface-2);
+  color: var(--ink);
+  font: 12px/1.5 var(--mono);
+}
+@media screen {
+  /* Only ever filled while the page prints (print/usePrintDocument.ts). */
+  .print-doc {
+    display: none;
   }
 }
 

@@ -10,6 +10,17 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Added
 
+- "Print / PDF" in the header prints the whole report as one document, whatever tab is open: the
+  summary band, Findings with every signal, Advisories in full, the ranked rows of Blast radius and
+  the run's facts, in numbered sections; All packages is added when you print from that tab, and the
+  print says which. Filters and search on screen do not narrow it. Every page after the first
+  repeats the project, the data date and the lockrot version, and pages are numbered, in browsers
+  that support page-margin boxes. The browser's own Print does the same.
+- "Copy summary" puts three plain lines on the clipboard: the run, the flagged count by priority,
+  and where the flagged packages sit with the advisories and libyears. Where the clipboard is not
+  available the same text opens selected, to copy by hand.
+- Under the summary figure, one line splits the flagged packages by where they are installed and
+  how they get in: "51 in production, 18 dev-only · 20 required directly, 49 pulled in".
 - The summary band leads with one answer: how many packages are flagged, out of how many, and what
   share of the lock that is, next to the priority chips and a waffle of one square per package,
   flagged first, at the same square size for a lock of 4 packages or 900. Hovering a priority chip
@@ -191,6 +202,8 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Fixed
 
+- Printing from the dark theme printed pale text on white paper; paper now always uses the light
+  colours. The All packages table no longer loses its right-hand columns at the page margin.
 - `j`, `k`, `/` and `?` work on a non-Latin keyboard layout (Russian and others) and with Caps Lock
   on: the page reads the physical key when the layout's own character is not the shortcut.
 - The package detail scrolls as one region instead of two nested ones, and opening another package

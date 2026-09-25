@@ -15,6 +15,7 @@ import { Ledger } from "./ledger/Ledger";
 import { NewerSchemaBanner } from "./NewerSchemaBanner";
 import { Rail } from "./rail/Rail";
 import { anchorShift, measureRow, type RowAnchor } from "./rowAnchor";
+import { usePrintDocument } from "./print/usePrintDocument";
 import { pickCursor } from "./rowCursor";
 import { SearchBar } from "./search/SearchBar";
 import { tabId, Tabs } from "./Tabs";
@@ -431,6 +432,9 @@ export function App({ model }: { model: Model }) {
     () => ({ model, state, dispatch: dispatchTracked, now, wide, cursor, openGlossary, openGlossaryFrom }),
     [model, state, dispatchTracked, now, wide, cursor, openGlossary, openGlossaryFrom],
   );
+  // The printed report (print/PrintDocument.tsx): mounted into `printHost` only while the page prints.
+  const printHost = useRef<HTMLDivElement>(null);
+  usePrintDocument(printHost, value);
   const filterable = population(model, state.view).length > 0;
   const panelId = `${idBase}-panel`;
   // The detail's own grid column (`.shell`, ui/app.css) is static CSS and can't see that
@@ -455,6 +459,8 @@ export function App({ model }: { model: Model }) {
       >
         <Tabs idBase={idBase} panelId={panelId} />
       </Header>
+      {/* Empty on screen; print.css hides `<main>` while it holds the printed report. */}
+      <div className="print-doc" ref={printHost} />
       <main>
         {state.view !== "run" && <LedgerSlot narrow={narrow} inert={sheet} />}
         <div className={shellClass}>
