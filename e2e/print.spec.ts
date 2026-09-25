@@ -182,3 +182,62 @@ test("printing from the dark theme prints dark ink on white", async ({ page }) =
   // --ink's light value, #0f1a19.
   expect(ink).toBe("rgb(15, 26, 25)");
 });
+
+// PD-PRINT-4: a Findings group on paper is a table whose head — the group's name and the column
+// head with the age axis' captions — Chromium repeats on every page the group runs onto. The repeat
+// needs the head to be a table-header-group that does not break inside; each row a table row.
+test("a printed Findings group repeats its name and age axis on every page it runs onto", async ({
+  page,
+}) => {
+  await report.goto(FIXTURES.wallabag);
+  await page.emulateMedia({ media: "print" });
+  await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
+
+  const layout = await page.locator(".pd-findings .pf-group").evaluateAll((groups) =>
+    groups.map((group) => {
+      const top = group.querySelector(".pf-top");
+      const row = group.querySelector(".pf-tr");
+      const style = (el: Element | null) => (el ? getComputedStyle(el) : null);
+      return {
+        group: style(group)?.display,
+        head: style(top)?.display,
+        headBreak: style(top)?.breakInside,
+        axis: top?.querySelector(".fhead-axis")?.textContent,
+        row: style(row)?.display,
+      };
+    }),
+  );
+  expect(layout).toHaveLength(4);
+  for (const group of layout) {
+    expect(group).toEqual({
+      group: "table",
+      head: "table-header-group",
+      headBreak: "avoid",
+      axis: "Years since release03y5y10y+",
+      row: "table-row",
+    });
+  }
+  // No section is forced onto a page of its own any more.
+  expect(await page.locator(".pd-findings").evaluate((el) => getComputedStyle(el).breakBefore)).toBe("auto");
+});
+
+test("printed All packages heads are words, so the repeated head on a continuation page is not blank", async ({
+  page,
+}) => {
+  await report.gotoWithHash(FIXTURES.wallabag, "view=packages");
+  await page.emulateMedia({ media: "print" });
+  await expect.poll(() => printedSections(page)).toEqual([...SECTIONS, "6 All packages"]);
+
+  const heads = page.locator(".pd-packages thead th");
+  await expect(heads).toHaveText([
+    "Package",
+    "Version",
+    "Libyears",
+    /^Verdict/,
+    "Priority",
+    "Reached",
+    "Signals",
+  ]);
+  await expect(page.locator(".pd-packages thead button")).toHaveCount(0);
+  await expect(page.getByText("Every package's data is as of 2026-09-24.", { exact: false })).toBeVisible();
+});

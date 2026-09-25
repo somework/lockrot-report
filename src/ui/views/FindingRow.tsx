@@ -12,6 +12,7 @@ import { reachText, rowSignals, shortFact, vendorOf } from "../../domain/rows";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { AgeCell, AgeCellEmpty } from "./AgeScale";
 import { MatchNote, useSearchHit } from "../search/MatchNote";
+import { usePrinted } from "../print/printContext";
 import "./views.css";
 import "./ledger-rows.css";
 
@@ -188,16 +189,11 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
   const dim = (on: boolean) => (on ? " is-ditto" : "");
   const why = key ? shortFact(key, finding) : finding.evidence;
   const hit = useSearchHit(finding);
+  const printed = usePrinted();
+  const rowClass = `frow ${toneClass(TONE(finding.verdict))}`;
 
-  return (
-    <li
-      tabIndex={rowTabIndex(finding.package, cursor)}
-      aria-current={isOpen ? "true" : undefined}
-      aria-label={finding.package}
-      data-pkg={finding.package}
-      className={`frow ${toneClass(TONE(finding.verdict))}`}
-      {...openInteractions(finding.package, dispatch)}
-    >
+  const cells = (
+    <>
       <span className={`fcell fc-verdict${dim(ditto.verdict)}`} title={VERDICT_DEFS[finding.verdict] ?? ""}>
         {finding.verdict}
       </span>
@@ -241,6 +237,31 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
       ) : (
         <AgeCellEmpty axis={axis} notRead={ageNotRead(finding)} />
       )}
+    </>
+  );
+
+  // On paper (PD-PRINT-4) the row is a table row around the same grid, so the group's head repeats
+  // on every page it runs onto and a page breaks between rows; nothing on paper opens or focuses.
+  if (printed) {
+    return (
+      <li className="pf-tr" aria-label={finding.package} data-pkg={finding.package}>
+        <div className="pf-td">
+          <div className={rowClass}>{cells}</div>
+        </div>
+      </li>
+    );
+  }
+
+  return (
+    <li
+      tabIndex={rowTabIndex(finding.package, cursor)}
+      aria-current={isOpen ? "true" : undefined}
+      aria-label={finding.package}
+      data-pkg={finding.package}
+      className={rowClass}
+      {...openInteractions(finding.package, dispatch)}
+    >
+      {cells}
     </li>
   );
 }

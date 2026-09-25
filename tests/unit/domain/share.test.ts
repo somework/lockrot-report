@@ -5,6 +5,7 @@ import {
   rollupClauses,
   runningLine,
   scopeRollup,
+  sharedDataDay,
   summaryText,
   type SummaryFacts,
 } from "../../../src/domain/share";
@@ -95,7 +96,7 @@ describe("summaryText", () => {
     expect(lines).toEqual([
       "lockrot report for wallabag/wallabag · data as of 2026-09-24 · lockrot 0.11.0 · target PHP 8.4",
       "3 of 271 packages flagged (1%): 1 critical, 1 high, 1 low.",
-      "2 in production, 1 dev-only; 1 required directly, 2 pulled in · 2 security advisories on 1 package · 263.6 libyears behind.",
+      "2 in production, 1 dev-only · 1 required directly, 2 pulled in · 2 security advisories on 1 package · 263.6 libyears behind.",
     ]);
   });
 
@@ -134,6 +135,23 @@ describe("summaryText", () => {
     );
 
     expect(text.split("\n")[1]).toContain(": 1 low, 1 urgent.");
+  });
+});
+
+describe("sharedDataDay", () => {
+  it("is the one day every package's data is as of", () => {
+    expect(
+      sharedDataDay([{ dataDate: "2026-09-24T03:00:00+00:00" }, { dataDate: "2026-09-24T21:10:00+00:00" }]),
+    ).toBe("2026-09-24");
+  });
+
+  it("is null when the days differ, when one is undated, or when there are no packages", () => {
+    expect(
+      sharedDataDay([{ dataDate: "2026-09-24T00:00:00Z" }, { dataDate: "2026-09-23T00:00:00Z" }]),
+    ).toBeNull();
+    expect(sharedDataDay([{ dataDate: "2026-09-24T00:00:00Z" }, { dataDate: null }])).toBeNull();
+    expect(sharedDataDay([{ dataDate: null }])).toBeNull();
+    expect(sharedDataDay([])).toBeNull();
   });
 });
 

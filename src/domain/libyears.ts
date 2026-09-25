@@ -80,6 +80,21 @@ export function libyearsAtZero(
 }
 
 /**
+ * `libyearsAtZero` in the word or two a printed table has room for beside the `0.0` (PD-PRINT-4):
+ * "newest", or "not behind" the newest stable it names. The printed section's lede says what
+ * "newest" stands for. `null` on the same terms as `libyearsAtZero`.
+ */
+export function libyearsAtZeroMark(
+  finding: Pick<Finding, "libyears" | "version"> | null,
+  meta: Pick<ExplainMetadata, "lastStableVersion"> | null,
+): string | null {
+  if (!finding || finding.libyears !== 0) return null;
+  const newest = meta?.lastStableVersion ?? null;
+
+  return newest && newest !== finding.version ? `not behind ${newest}` : "newest";
+}
+
+/**
  * The libyears block, minus the total, as the ledger's items after the number: `"across 191 of 200
  * packages"`, `"94.5 from direct requirements"`, `"furthest behind smalot/pdfparser v1.1.0 at
  * 4.7"`. `"none of the N packages could be measured"` when nothing was, `"nothing to measure"` on an

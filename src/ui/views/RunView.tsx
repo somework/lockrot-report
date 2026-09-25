@@ -36,6 +36,10 @@ function unmeasuredText(block: LibyearsBlock | null): string {
   return parts.length > 0 ? parts.join(" · ") : "—";
 }
 
+/** A value longer than this takes a line of its own on paper (print.css `.kv-long`), where the facts
+ *  sit two pairs to a line. */
+const LONG_VALUE = 32;
+
 /** The Run tab: what the run was told to do, and what it saw — ported from legacy `viewRun`
  *  (report.js:627-662). */
 export function RunView() {
@@ -103,12 +107,15 @@ export function RunView() {
         <h3>Run</h3>
         <div className="tablewrap kv-wrap">
           <dl className="kv">
-            {kv.map(([label, value]) => (
-              <Fragment key={label}>
-                <dt>{label}</dt>
-                <dd>{value}</dd>
-              </Fragment>
-            ))}
+            {kv.map(([label, value]) => {
+              const long = value.length > LONG_VALUE ? "kv-long" : undefined;
+              return (
+                <Fragment key={label}>
+                  <dt className={long}>{label}</dt>
+                  <dd className={long}>{value}</dd>
+                </Fragment>
+              );
+            })}
           </dl>
         </div>
         <p className="run-footer">

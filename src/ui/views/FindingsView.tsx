@@ -10,6 +10,7 @@ import { AgeAxis as AgeAxisHead } from "./AgeScale";
 import { FindingRow, NO_DITTO, type Ditto } from "./FindingRow";
 import { GroupSentence, RunNote } from "./LedgerNotes";
 import { EmptyState } from "./EmptyState";
+import { usePrinted } from "../print/printContext";
 import "./views.css";
 import "./ledger-rows.css";
 
@@ -86,6 +87,18 @@ interface ListProps {
   readonly quoted: string | null;
 }
 
+function rowItems(findings: readonly Finding[], axis: AgeAxis | null, quoted: string | null) {
+  return findings.map((finding, i) => (
+    <FindingRow
+      key={finding.package}
+      finding={finding}
+      axis={axis}
+      quoted={quoted}
+      ditto={dittoFor(finding, findings[i - 1], quoted)}
+    />
+  ));
+}
+
 function Rows({
   findings,
   label,
@@ -94,16 +107,19 @@ function Rows({
 }: ListProps & { findings: readonly Finding[]; label: string }) {
   return (
     <ul className="frows" aria-label={label}>
-      {findings.map((finding, i) => (
-        <FindingRow
-          key={finding.package}
-          finding={finding}
-          axis={axis}
-          quoted={quoted}
-          ditto={dittoFor(finding, findings[i - 1], quoted)}
-        />
-      ))}
+      {rowItems(findings, axis, quoted)}
     </ul>
+  );
+}
+
+/** A priority group's head: its name, its count, the sentence counting its members. */
+function GroupHead({ priority, findings }: { priority: string; findings: readonly Finding[] }) {
+  return (
+    <header className="fgroup-head">
+      <h2>{priority}</h2>
+      <span className="fgroup-count">{plural(findings.length, "package", "packages")}</span>
+      <GroupSentence counts={groupCounts(findings)} />
+    </header>
   );
 }
 
@@ -116,11 +132,7 @@ function Group({ priority, findings, axis, quoted }: ListProps & { priority: str
     // No accessible name on purpose: a named <section> is a landmark region, and the page's one
     // region is the open package's detail; the group's own <h2> already heads it.
     <section className={`fgroup ${tone}`}>
-      <header className="fgroup-head">
-        <h2>{priority}</h2>
-        <span className="fgroup-count">{plural(findings.length, "package", "packages")}</span>
-        <GroupSentence counts={groupCounts(findings)} />
-      </header>
+      <GroupHead priority={priority} findings={findings} />
       {segmentRuns(findings).map((segment) => {
         const first = segment.findings[0]?.package ?? "";
         if (!segment.run) {
@@ -145,6 +157,55 @@ function Group({ priority, findings, axis, quoted }: ListProps & { priority: str
               quoted={quoted}
             />
           </div>
+        );
+      })}
+    </section>
+  );
+}
+
+/**
+ * A priority group on paper (PD-PRINT-4, DESIGN.md §5): a table whose head — the group's name and
+ * sentence, then the column head with the age axis' captions — is a `table-header-group`, which the
+ * print engine repeats at the top of every page the group runs onto (print.css). A continuation page
+ * then still says which group its rows are in and what their bars and guides measure. Every row is a
+ * table row of its own, so a page breaks between rows, never inside one; a run's note is a row too,
+ * the first of its run's rows, and the run's rule is drawn down each of them.
+ */
+function PrintedGroup({
+  priority,
+  findings,
+  axis,
+  quoted,
+}: ListProps & { priority: string; findings: Finding[] }) {
+  const { model } = useReport();
+  const { thresholds } = model.report.run;
+  const context =
+    axis !== null && findings.some((f) => ageScale(f, thresholds, axis.max)?.contextOnly === true);
+  return (
+    <section className={`fgroup pf-group ${toneClass(TONE(priority))}`}>
+      <div className="pf-top">
+        <GroupHead priority={priority} findings={findings} />
+        <ColumnHead axis={axis} quoted={quoted} context={context} />
+      </div>
+      {segmentRuns(findings).map((segment) => {
+        const first = segment.findings[0]?.package ?? "";
+        if (!segment.run) {
+          return (
+            <ul key={first} className="frows">
+              {rowItems(segment.findings, axis, quoted)}
+            </ul>
+          );
+        }
+        const facts = runFacts(segment.findings, thresholds);
+        return (
+          <ul key={first} className={`frows pf-run ${toneClass(TONE(facts.verdict))}`}>
+            <li className="pf-tr pf-note">
+              <div className="pf-td">
+                <RunNote facts={facts} />
+              </div>
+            </li>
+            {rowItems(segment.findings, axis, quoted)}
+          </ul>
         );
       })}
     </section>
@@ -187,6 +248,7 @@ function ColumnHead({ axis, quoted, context }: ListProps & { context: boolean })
  *  (PD-ROWS-4/5/6, DESIGN.md §5). Ported from legacy `viewFindings` (report.js:448-478). */
 export function FindingsView() {
   const { model, state } = useReport();
+  const printed = usePrinted();
   const quiet = model.report.findings.filter(
     (finding) =>
       finding.advisories.length > 0 && (finding.verdict === "ok" || finding.verdict === "finished"),
@@ -207,16 +269,30 @@ export function FindingsView() {
         <EmptyState reason={population(model, "findings").length === 0 ? "clean" : "filtered"} />
       ) : (
         <div className={axis ? "fledger" : "fledger no-axis"}>
-          <ColumnHead axis={axis} quoted={quoted} context={context} />
-          {groupByPriority(visible).map((group) => (
-            <Group
-              key={group.priority}
-              priority={group.priority}
-              findings={group.findings}
-              axis={axis}
-              quoted={quoted}
-            />
-          ))}
+          {printed ? (
+            groupByPriority(visible).map((group) => (
+              <PrintedGroup
+                key={group.priority}
+                priority={group.priority}
+                findings={group.findings}
+                axis={axis}
+                quoted={quoted}
+              />
+            ))
+          ) : (
+            <>
+              <ColumnHead axis={axis} quoted={quoted} context={context} />
+              {groupByPriority(visible).map((group) => (
+                <Group
+                  key={group.priority}
+                  priority={group.priority}
+                  findings={group.findings}
+                  axis={axis}
+                  quoted={quoted}
+                />
+              ))}
+            </>
+          )}
         </div>
       )}
     </div>

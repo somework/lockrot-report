@@ -7,7 +7,7 @@
  */
 
 import type { Finding, LibyearsBlock, View } from "../model/types";
-import { fixed, plural } from "./format";
+import { day, fixed, plural } from "./format";
 import { RANKED_PRIORITIES, sharePhrase } from "./summary";
 
 /** The flagged packages counted twice over: by install scope (`Finding.dev`) and by reach
@@ -116,13 +116,17 @@ export function summaryText(facts: SummaryFacts): string {
         ? "no advisory found, but the advisory check was incomplete"
         : "no security advisory";
   const ly = facts.libyears && facts.libyears.measured ? fixed(facts.libyears.total, 1) : null;
-  const tail = [
-    ...(clauses.length > 0 ? [clauses.join("; ")] : []),
-    advisories,
-    ...(ly !== null ? [`${ly} libyears behind`] : []),
-  ];
+  const tail = [...clauses, advisories, ...(ly !== null ? [`${ly} libyears behind`] : [])];
 
   return [head, count, `${capitalise(tail.join(" · "))}.`].join("\n");
+}
+
+/** The one data date every package shares, as a day, or null when they differ (or there are none):
+ *  a printed All packages table then says it once instead of in a column of 271 equal cells. */
+export function sharedDataDay(findings: readonly Pick<Finding, "dataDate">[]): string | null {
+  const days = new Set(findings.map((f) => (f.dataDate ? day(f.dataDate) : null)));
+  const [only] = days;
+  return days.size === 1 && only !== undefined ? only : null;
 }
 
 /** The line every printed page repeats at its top: the project, the data date, the lockrot. */

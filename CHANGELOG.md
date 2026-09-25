@@ -16,6 +16,13 @@ tag or the address format, says so under **Breaking** in its entry.
   print says which. Filters and search on screen do not narrow it. Every page after the first
   repeats the project, the data date and the lockrot version, and pages are numbered, in browsers
   that support page-margin boxes. The browser's own Print does the same.
+- A printed report wastes less paper and reads on every page: each Findings priority group repeats
+  its name, its sentence and the years-since-release scale at the top of every page it runs onto,
+  and a page breaks between packages, never inside one. No section starts a page of its own any
+  more, a heading always keeps its first rows, and an empty lock prints on one page. The printed All
+  packages table repeats its column names on every page, gives a data date every package shares
+  once instead of in a column, and marks a zero libyears "newest". Package names print as names,
+  without the screen's "opens its detail".
 - "Copy summary" puts three plain lines on the clipboard: the run, the flagged count by priority,
   and where the flagged packages sit with the advisories and libyears. Where the clipboard is not
   available the same text opens selected, to copy by hand.

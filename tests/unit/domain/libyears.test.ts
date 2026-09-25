@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   libyearsAtZero,
+  libyearsAtZeroMark,
   libyearsItems,
   libyearsReason,
   libyearsRowPhrases,
@@ -98,6 +99,22 @@ describe("libyearsReason", () => {
     // string is neither a dev branch nor a stable one, so it falls to the "no release date" reason.
     expect(reason).toBe("no release date lockrot trusts");
   }, 10_000);
+});
+
+describe("libyearsAtZeroMark", () => {
+  const meta: Pick<ExplainMetadata, "lastStableVersion"> = { lastStableVersion: "v1.2.4" };
+
+  test("says libyearsAtZero's two readings in the words a printed table has room for", () => {
+    expect(libyearsAtZeroMark({ libyears: 0, version: "v1.2.4" }, meta)).toBe("newest");
+    expect(libyearsAtZeroMark({ libyears: 0, version: "v1.2.4" }, null)).toBe("newest");
+    expect(libyearsAtZeroMark({ libyears: 0, version: "v1.1.9" }, meta)).toBe("not behind v1.2.4");
+  });
+
+  test("is null wherever libyearsAtZero is: a value that is not exactly zero, or no finding", () => {
+    expect(libyearsAtZeroMark({ libyears: 0.025, version: "v1.2.3" }, meta)).toBeNull();
+    expect(libyearsAtZeroMark({ libyears: null, version: "v1.2.3" }, meta)).toBeNull();
+    expect(libyearsAtZeroMark(null, meta)).toBeNull();
+  });
 });
 
 describe("libyearsAtZero", () => {

@@ -4,12 +4,14 @@ import { useReport } from "../context";
 import { applyFilters, population } from "../../domain/filters";
 import { packagistUrl } from "../../domain/links";
 import { day, fixed } from "../../domain/format";
-import { libyearsAtZero, libyearsReason } from "../../domain/libyears";
+import { libyearsAtZero, libyearsAtZeroMark, libyearsReason } from "../../domain/libyears";
+import { sharedDataDay } from "../../domain/share";
 import { Pill, Muted } from "../common/common";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
 import { MatchNote, useSearchHit } from "../search/MatchNote";
+import { usePrinted } from "../print/printContext";
 import "./views.css";
 
 /** Column headers in display order, matching the accessible names `e2e/support/new.ts` expects
@@ -40,12 +42,14 @@ const COLUMNS: readonly { key: SortKey; label: string; title?: string }[] = [
  */
 function LibyearsCell({ finding }: { finding: Finding }) {
   const { model } = useReport();
+  const printed = usePrinted();
   const value = fixed(finding.libyears, 1);
   if (value === null) {
     return <Muted title={`not measured: ${libyearsReason(finding)}`}>—</Muted>;
   }
   const metadata = model.details.get(finding.package)?.metadata ?? null;
-  const zeroReason = libyearsAtZero(finding, metadata);
+  // On paper, the short mark; the printed section's lede says what "newest" stands for.
+  const zeroReason = printed ? libyearsAtZeroMark(finding, metadata) : libyearsAtZero(finding, metadata);
 
   return (
     <>
@@ -73,7 +77,7 @@ function PackageCell({ finding }: { finding: Finding }) {
   );
 }
 
-function PackageRow({ finding }: { finding: Finding }) {
+function PackageRow({ finding, dated }: { finding: Finding; dated: boolean }) {
   const { state, dispatch, cursor } = useReport();
   const isOpen = state.pkg === finding.package;
   const hit = useSearchHit(finding);
@@ -103,7 +107,7 @@ function PackageRow({ finding }: { finding: Finding }) {
         {finding.dev ? " · dev" : ""}
       </td>
       <td className="num">{finding.signals.map((signal) => signal.id).join(" ") || "—"}</td>
-      <td className="num">{day(finding.dataDate)}</td>
+      {dated && <td className="num">{day(finding.dataDate)}</td>}
     </tr>
   );
 }
@@ -114,8 +118,12 @@ function PackageRow({ finding }: { finding: Finding }) {
  *  rows do (PD-ROWS-12): `aria-selected` means nothing on a plain table's row. */
 export function PackagesView() {
   const { model, state, dispatch } = useReport();
+  const printed = usePrinted();
   const visible = applyFilters(model, state, "packages");
   const activeSort: SortKey = state.sort;
+  // On paper a column of one repeated date is dropped; the printed section's lede gives it once.
+  const dated = !printed || sharedDataDay(visible) === null;
+  const columns = dated ? COLUMNS : COLUMNS.filter((column) => column.key !== "data");
 
   if (visible.length === 0) {
     return <EmptyState reason={population(model, "packages").length === 0 ? "clean" : "filtered"} />;
@@ -126,9 +134,20 @@ export function PackagesView() {
       <table>
         <thead>
           <tr>
-            {COLUMNS.map((column) => {
+            {columns.map((column) => {
               const active = column.key === activeSort;
               const sort = active ? (state.sortDesc ? "descending" : "ascending") : "none";
+              const arrow = active ? (state.sortDesc ? " ↓" : " ↑") : "";
+              // A heading's button is not repeated on a continuation page (Chromium prints the
+              // repeated head blank), so paper gets the words themselves.
+              if (printed) {
+                return (
+                  <th key={column.key} aria-sort={sort}>
+                    {column.label}
+                    {arrow}
+                  </th>
+                );
+              }
               return (
                 <th key={column.key} aria-sort={sort} title={column.title}>
                   <button
@@ -139,7 +158,7 @@ export function PackagesView() {
                     }}
                   >
                     {column.label}
-                    {active ? (state.sortDesc ? " ↓" : " ↑") : ""}
+                    {arrow}
                   </button>
                 </th>
               );
@@ -148,7 +167,7 @@ export function PackagesView() {
         </thead>
         <tbody>
           {visible.map((finding) => (
-            <PackageRow key={finding.package} finding={finding} />
+            <PackageRow key={finding.package} finding={finding} dated={dated} />
           ))}
         </tbody>
       </table>

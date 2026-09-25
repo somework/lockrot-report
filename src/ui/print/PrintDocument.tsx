@@ -3,7 +3,7 @@ import { population } from "../../domain/filters";
 import { plural } from "../../domain/format";
 import { advisoryCheckIncomplete, allAdvisories } from "../../domain/advisories";
 import { FOLD_SINGLES } from "../../domain/radius";
-import { printSections, type PrintSection } from "../../domain/share";
+import { printSections, sharedDataDay, type PrintSection } from "../../domain/share";
 import type { View } from "../../model/types";
 import { EMPTY_FILTERS, INITIAL_STATE } from "../../state/types";
 import { ReportContext, type ReportContextValue } from "../context";
@@ -14,6 +14,7 @@ import { FindingsView } from "../views/FindingsView";
 import { PackagesView } from "../views/PackagesView";
 import { RadiusView } from "../views/RadiusView";
 import { RunView } from "../views/RunView";
+import { PrintContext } from "./printContext";
 
 const NOOP = (): void => undefined;
 
@@ -67,10 +68,14 @@ interface SectionProps {
   readonly index: number;
   readonly section: PrintSection;
   readonly lede: ComponentChildren;
+  /** Whether anything prints under the lede. When nothing does, the lede is the section's last line
+   *  and must not hold on to the next section's heading: a chain of "keep with next" from one
+   *  section into the next pushed both onto a fresh page. */
+  readonly more: boolean;
   readonly children: ComponentChildren;
 }
 
-function Section({ index, section, lede, children }: SectionProps) {
+function Section({ index, section, lede, more, children }: SectionProps) {
   return (
     <section className={`pd-sect pd-${section}`}>
       <header className="pd-head">
@@ -79,10 +84,26 @@ function Section({ index, section, lede, children }: SectionProps) {
           {TITLES[section]}
         </h2>
       </header>
-      {lede !== null && <p className="pd-lede">{lede}</p>}
+      {lede !== null && <p className={more ? "pd-lede is-lead" : "pd-lede"}>{lede}</p>}
       {children}
     </section>
   );
+}
+
+/** Packages the run checked: `packagesChecked`, else the findings' count. */
+function lockSize(base: ReportContextValue): number {
+  const { report } = base.model;
+  return report.packagesChecked ?? report.findings.length;
+}
+
+/** Whether a section prints anything under its lede: an empty Findings or Advisories tab's own
+ *  empty state is hidden on paper, where its lede already says so. */
+function hasBody(section: PrintSection, base: ReportContextValue): boolean {
+  const { model } = base;
+  if (section === "summary") return lockSize(base) > 0;
+  if (section === "findings") return population(model, "findings").length > 0;
+  if (section === "advisories") return allAdvisories(model).length > 0;
+  return true;
 }
 
 /** Each section's one line under its heading: what it holds, counted, and what the print leaves
@@ -91,10 +112,11 @@ function lede(section: PrintSection, base: ReportContextValue): ComponentChildre
   const { model } = base;
   switch (section) {
     case "summary":
-      return null;
+      // An empty lock's band is three empty tiers; on paper its one line says it all.
+      return lockSize(base) === 0 ? "No packages in this lock." : null;
     case "findings": {
       const n = population(model, "findings").length;
-      const checked = model.report.packagesChecked ?? model.report.findings.length;
+      const checked = lockSize(base);
       return n === 0 ? (
         <>
           {checked === 0
@@ -131,21 +153,27 @@ function lede(section: PrintSection, base: ReportContextValue): ComponentChildre
     case "run":
       return null;
     case "packages": {
-      const n = population(model, "packages").length;
+      const all = population(model, "packages");
+      const shared = sharedDataDay(all);
+      const zeroes = all.some((f) => f.libyears === 0);
       return (
         <>
-          Printed because the page was open on All packages: <b>{plural(n, "package", "packages")}</b>, in the
-          order the table had them.
+          Printed because the page was open on All packages:{" "}
+          <b>{plural(all.length, "package", "packages")}</b>, in the order the table had them.
+          {shared !== null && <> Every package's data is as of {shared}.</>}
+          {zeroes && (
+            <> A libyears of 0.0 marked “newest” is an installed release that is the newest stable.</>
+          )}
         </>
       );
     }
   }
 }
 
-function SectionBody({ section }: { section: PrintSection }) {
+function SectionBody({ section, base }: { section: PrintSection; base: ReportContextValue }) {
   switch (section) {
     case "summary":
-      return <Ledger />;
+      return lockSize(base) === 0 ? null : <Ledger />;
     case "findings":
       return <FindingsView />;
     case "advisories":
@@ -180,37 +208,45 @@ const SECTION_VIEW: Readonly<Record<PrintSection, View>> = {
  * own state (tab, filters, scroll, open package) is left exactly as it was.
  */
 export function PrintDocument({ base }: { base: ReportContextValue }) {
-  const { state } = base;
+  const { state, model } = base;
   const sections = printSections(state.view);
   const packages = sections.includes("packages");
+  // An empty lock has no packages to leave out.
+  const any = population(model, "packages").length > 0;
+  const note = [
+    ...(screenNarrowed(base)
+      ? ["The filters and search on screen do not apply: every section is printed in full."]
+      : []),
+    ...(packages
+      ? ["All packages is included because the page was open on it."]
+      : any
+        ? ["All packages is left out; print from that tab to include it."]
+        : []),
+  ].join(" ");
 
   return (
-    <div className="pd">
-      <p className="pd-intro">
-        <span className="pd-intro-lead">
-          Printed from the <b>{tabLabel(state.view)}</b> tab.
-        </span>{" "}
-        {sections.map((s, i) => (
-          <span key={s} className="pd-toc-item">
-            <span className="pd-toc-num">{i + 1}</span> {TITLES[s]}
-            {s === "radius" ? " (top)" : ""}
-          </span>
+    <PrintContext.Provider value={true}>
+      <div className="pd">
+        <p className="pd-intro">
+          <span className="pd-intro-lead">
+            Printed from the <b>{tabLabel(state.view)}</b> tab.
+          </span>{" "}
+          {sections.map((s, i) => (
+            <span key={s} className="pd-toc-item">
+              <span className="pd-toc-num">{i + 1}</span> {TITLES[s]}
+              {s === "radius" ? " (top)" : ""}
+            </span>
+          ))}
+        </p>
+        {note !== "" && <p className="pd-intro-note">{note}</p>}
+        {sections.map((section, i) => (
+          <ReportContext.Provider key={section} value={sectionValue(base, SECTION_VIEW[section])}>
+            <Section index={i + 1} section={section} lede={lede(section, base)} more={hasBody(section, base)}>
+              <SectionBody section={section} base={base} />
+            </Section>
+          </ReportContext.Provider>
         ))}
-      </p>
-      <p className="pd-intro-note">
-        {screenNarrowed(base) &&
-          "The filters and search on screen do not apply: every section is printed in full. "}
-        {packages
-          ? "All packages is included because the page was open on it."
-          : "All packages is left out; print from that tab to include it."}
-      </p>
-      {sections.map((section, i) => (
-        <ReportContext.Provider key={section} value={sectionValue(base, SECTION_VIEW[section])}>
-          <Section index={i + 1} section={section} lede={lede(section, base)}>
-            <SectionBody section={section} />
-          </Section>
-        </ReportContext.Provider>
-      ))}
-    </div>
+      </div>
+    </PrintContext.Provider>
   );
 }

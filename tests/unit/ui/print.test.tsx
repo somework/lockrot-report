@@ -91,6 +91,80 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     expect(doc.querySelector(".pd-intro-note")?.textContent).toContain("do not apply");
   });
 
+  it("lays each Findings priority group out as a table whose head, the group and the axis, repeats per page", () => {
+    // Arrange
+    const { container } = render(<App model={loadFixture("wallabag_wallabag.json")} />);
+
+    // Act
+    window.dispatchEvent(new Event("beforeprint"));
+
+    // Assert: one head per group — its name and the column head with the age axis' captions — and
+    // no column head of the screen's kind above the groups.
+    const doc = printDoc(container);
+    const groups = [...doc.querySelectorAll(".pd-findings .pf-group")];
+    expect(groups.map((g) => g.querySelector(".pf-top h2")?.textContent)).toEqual([
+      "critical",
+      "high",
+      "medium",
+      "low",
+    ]);
+    for (const group of groups) {
+      expect(group.querySelector(".pf-top .fhead-axis")?.textContent).toBe("Years since release03y5y10y+");
+    }
+    expect(doc.querySelectorAll(".pd-findings .fledger > .fhead")).toHaveLength(0);
+    // Every row is a row of its own around the screen's grid; a run's note is a row too.
+    const rows = doc.querySelectorAll(".pd-findings .pf-tr[data-pkg] > .pf-td > .frow");
+    expect(rows).toHaveLength(69);
+    expect(doc.querySelectorAll(".pd-findings .pf-run > .pf-note .frun-note").length).toBeGreaterThan(0);
+  });
+
+  it("prints All packages' column heads as words, not buttons, and a shared data date once", () => {
+    window.location.hash = "#view=packages";
+    const { container } = render(<App model={loadFixture("wallabag_wallabag.json")} />);
+
+    window.dispatchEvent(new Event("beforeprint"));
+
+    const doc = printDoc(container);
+    const heads = [...doc.querySelectorAll(".pd-packages thead th")];
+    expect(heads.map((th) => th.textContent)).toEqual([
+      "Package",
+      "Version",
+      "Libyears",
+      "Verdict ↑",
+      "Priority",
+      "Reached",
+      "Signals",
+    ]);
+    expect(doc.querySelectorAll(".pd-packages thead button")).toHaveLength(0);
+    expect(doc.querySelector(".pd-packages .pd-lede")?.textContent).toContain(
+      "Every package's data is as of 2026-09-24.",
+    );
+    expect(doc.querySelector('.pd-packages tr[data-pkg="hoa/stream"]')?.textContent).toContain(
+      "0.0 · newest",
+    );
+  });
+
+  it("prints an empty lock as one line per section, without a note about All packages", () => {
+    const { container } = render(<App model={loadFixture("empty-lockrot-self.json")} />);
+
+    window.dispatchEvent(new Event("beforeprint"));
+
+    const doc = printDoc(container);
+    expect(doc.querySelector(".pd-summary .pd-lede")?.textContent).toBe("No packages in this lock.");
+    expect(doc.querySelector(".pd-summary .ledger")).toBeNull();
+    expect(doc.querySelector(".pd-intro-note")).toBeNull();
+  });
+
+  it("does not tell a reader on paper that a name opens its detail", () => {
+    const { container } = render(<App model={loadFixture("koel_koel.json")} />);
+
+    window.dispatchEvent(new Event("beforeprint"));
+
+    const foot = printDoc(container).querySelector(".pd-radius .rl-foot")?.textContent ?? "";
+    expect(foot).toContain("They are:");
+    expect(foot).not.toContain("opens its detail");
+  });
+
   it("sets the running line the @page header prints as a CSS string on <html>", () => {
     render(<App model={loadFixture("mini.json")} />);
 
@@ -136,7 +210,9 @@ describe("the header's print and share controls", () => {
     });
     expect(writeText).toHaveBeenCalledWith(summaryFor(model));
     expect(summaryFor(model).split("\n")).toHaveLength(3);
-    expect(summaryFor(model)).toContain("51 in production, 18 dev-only; 20 required directly, 49 pulled in");
+    expect(summaryFor(model)).toContain(
+      "51 in production, 18 dev-only · 20 required directly, 49 pulled in · ",
+    );
   });
 
   it("falls back to the text, selected in a popover, when the clipboard refuses", async () => {

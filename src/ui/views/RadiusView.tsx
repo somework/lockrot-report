@@ -24,6 +24,7 @@ import {
 import { useReport } from "../context";
 import { firstRows } from "../rowCursor";
 import { useNarrow } from "../useWide";
+import { usePrinted } from "../print/printContext";
 import { AgeAxis as AgeAxisHead } from "./AgeScale";
 import { joined, MixWords, squaresWidth, VerdictWord } from "./RadiusMarks";
 import { childKey, parentKey, ParentRow, receiptKey, ReceiptRow, type RowEnv } from "./RadiusRows";
@@ -399,13 +400,21 @@ function TailLinks({ layout, go }: { layout: RadiusLayout; go: (key: string, id:
  *  Findings row opens, so the rail can count them as on this tab (PD-RAIL-1). */
 function Unlisted({ findings }: { findings: readonly Finding[] }) {
   const { dispatch } = useReport();
+  const printed = usePrinted();
   if (findings.length === 0) return null;
   const many = findings.length > 1;
+  // Paper has no detail to open: there the names follow the sentence alone.
+  const opens = printed
+    ? many
+      ? "They are"
+      : "It is"
+    : many
+      ? "Each opens its detail, as on Findings"
+      : "It opens its detail, as on Findings";
   return (
     <p className="rl-foot">
       <b>{plural(findings.length, "flagged direct requirement has", "flagged direct requirements have")}</b>{" "}
-      no row: lockrot's exposure list does not name {many ? "them" : "it"}.{" "}
-      {many ? "Each opens its detail, as on Findings" : "It opens its detail, as on Findings"}:{" "}
+      no row: lockrot's exposure list does not name {many ? "them" : "it"}. {opens}:{" "}
       {joined(
         findings.map((f) => (
           <span key={f.package} className="fl-unit">

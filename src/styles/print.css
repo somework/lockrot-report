@@ -132,8 +132,18 @@
     border-color: #999;
   }
 
+  /* The colophon closes the last page in one piece, at paper's size: a page of its own for its last
+   * two lines was the worst of the old breaks. */
   .colophon {
     border-top-color: #999;
+    padding: 12px 0 0;
+    gap: 3px;
+    font-size: 10.5px;
+    break-inside: avoid;
+  }
+  .colophon .cta {
+    padding: 4px 10px;
+    line-height: 1.6;
   }
   .colophon .cta {
     background: none;
@@ -240,7 +250,7 @@
   }
 
   .pd-sect {
-    margin-top: 30px;
+    margin-top: 26px;
   }
   .pd-head {
     display: flex;
@@ -270,11 +280,11 @@
     margin: 8px 0 10px;
     font: 14px/1.4 var(--serif);
     color: var(--ink-2);
-    break-after: avoid;
   }
-  /* A run's note heads its rows: never the last line of a page with its rows on the next. */
-  .pd .frun-note,
-  .pd .fgroup-head {
+  /* A lede keeps to what follows it only when something does (PrintDocument's `more`): an empty
+   * section's lede is its last line, and a keep from it would chain into the next section's heading
+   * and push both overleaf. */
+  .pd-lede.is-lead {
     break-after: avoid;
   }
   /* An empty Findings or Advisories section: its lede already says so, in the report's words. */
@@ -295,17 +305,8 @@
     padding: 3px 9px 3px 8px;
   }
 
-  /* Findings opens a page of its own: its column head and first group head would otherwise sit at
-   * the foot of the summary's page with their rows overleaf — the rows' ledger is a size container
-   * (ledger-rows.css), and Chromium will not carry a break-avoid across its edge. Every other
-   * section follows on: a heading, a column head and a group's head each keep to the first row
-   * under them instead. */
-  .pd-findings {
-    break-before: page;
-  }
-  .pd-findings.pd-sect {
-    margin-top: 0;
-  }
+  /* The sections follow on; none forces a page of its own. A heading, a lede, a column head and a
+   * group's head each keep to the first row under them instead, so a page never ends on one. */
   .pd .fhead,
   .pd .rl-head,
   .pd .rl-answer,
@@ -313,12 +314,67 @@
   .pd .advgroup > header {
     break-after: avoid;
   }
+  /* A two-line answer or key is not split across pages either: the second line of a key alone at
+   * the top of a page keys nothing. */
+  .pd .rl-answer,
+  .pd .rl-key {
+    break-inside: avoid;
+  }
   /* The same rule from the other side: Chromium does not carry a head's break-after into the list
    * that follows, so a list's first entry refuses the break before it too. */
-  .pd .frows > :first-child,
   .pd .rl-list > :first-child,
   .pd .adv-list > :first-child {
     break-before: avoid;
+  }
+
+  /* PD-PRINT-4: a Findings priority group is a table on paper (FindingsView's PrintedGroup). Its
+   * head — the group's name and sentence, the column head with the age axis' captions — is a
+   * table-header-group, which Chromium repeats at the top of every page the group runs onto, so a
+   * bar on page 5 still has its 0/3y/5y/10y+ scale and its group above it. The repeat needs
+   * `break-inside: avoid` on the head (the UA gives <thead> that; a div needs it said). Each row is
+   * a table row around the screen's own grid, which keeps the break between rows. */
+  .pd .pf-group {
+    display: table;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    margin-top: 22px;
+  }
+  .pd .pf-group:first-child {
+    margin-top: 6px;
+  }
+  .pd .pf-top {
+    display: table-header-group;
+    break-inside: avoid;
+    break-after: avoid;
+  }
+  .pd .pf-top .fgroup-head {
+    border-bottom: 0;
+    padding-top: 4px;
+    padding-bottom: 2px;
+  }
+  .pd .pf-group > .frows {
+    display: table-row-group;
+  }
+  .pd .pf-tr {
+    display: table-row;
+    break-inside: avoid;
+  }
+  .pd .pf-td {
+    display: table-cell;
+    padding: 0;
+  }
+  /* The first row keeps to the head above it; a run's note keeps to the run's first row. */
+  .pd .pf-group > .frows:first-of-type > .pf-tr:first-child,
+  .pd .pf-note + .pf-tr {
+    break-before: avoid;
+  }
+  /* A run's rule, row by row: the screen draws it down the run's wrapper, which paper splits. */
+  .pd .pf-run > .pf-tr > .pf-td {
+    border-left: 2px solid var(--tone);
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 
   /* The All packages table on paper: every column on the page, not a scroller clipped at the
@@ -339,8 +395,12 @@
   .pd .tablewrap td:first-child {
     overflow-wrap: anywhere;
   }
-  .pd .tablewrap td:nth-child(2),
-  .pd .tablewrap td:last-child {
+  /* A package's Packagist link has nowhere to go on paper; its underline only adds noise. */
+  .pd .tablewrap .lnk {
+    border-bottom: 0;
+  }
+  /* Short values keep to one line; the package name is the one that wraps. */
+  .pd .tablewrap td:not(:first-child) {
     white-space: nowrap;
   }
   .pd .tablewrap .pill {
@@ -377,10 +437,46 @@
     padding-left: 0;
     padding-right: 0;
   }
+  /* The column head's words wrap on paper instead of ending in an ellipsis at the margin. */
+  .pd .rl-head {
+    height: auto;
+    min-height: 36px;
+  }
+  .pd .rl-h {
+    white-space: normal;
+    overflow: visible;
+  }
+  /* With nothing flagged, the tab's one line prints as a line, not as the screen's dashed box. */
+  .pd .rl > .empty {
+    margin: 8px 0 0;
+    padding: 0;
+    border: 0;
+    text-align: left;
+    font: 14px/1.4 var(--serif);
+    color: var(--ink-2);
+  }
 
-  /* Run data, compact: the facts in two columns of label/value pairs, the notes as plain lines. */
+  /* A package name that opens something on screen prints as the name: nothing on paper opens. */
+  .pd button,
+  .pd .pkg-link-btn,
+  .pd .rl-jump {
+    text-decoration: none;
+    color: inherit;
+  }
+  .pd a {
+    text-decoration: none;
+  }
+
+  /* Run data, compact: the facts in two columns of label/value pairs, except that a long value (the
+   * libyears not measured, a baseline) takes the whole line rather than wrapping in a narrow cell
+   * (RunView's `kv-long`); each block kept to one page with its heading. */
   .pd-run .sect {
     margin-top: 10px;
+    break-inside: avoid;
+  }
+  .pd-run .note {
+    margin: 0;
+    padding: 6px 10px;
   }
   .pd-run .sect h3 {
     margin: 0 0 4px;
@@ -398,6 +494,15 @@
     grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr);
     gap: 3px 12px;
     font-size: 10.5px;
+  }
+  .pd-run .kv {
+    grid-auto-flow: row dense;
+  }
+  .pd-run .kv > dt.kv-long {
+    grid-column: 1;
+  }
+  .pd-run .kv > dd.kv-long {
+    grid-column: 2 / -1;
   }
   .pd-run .kv dd {
     font-size: 10px;
