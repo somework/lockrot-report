@@ -4,7 +4,7 @@ import { useReport } from "../context";
 import { applyFilters, population } from "../../domain/filters";
 import { packagistUrl } from "../../domain/links";
 import { day, fixed } from "../../domain/format";
-import { libyearsReason } from "../../domain/libyears";
+import { libyearsAtZero, libyearsReason } from "../../domain/libyears";
 import { Pill, Muted } from "../common/common";
 import { rowInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
@@ -29,12 +29,28 @@ const COLUMNS: readonly { key: SortKey; label: string; title?: string }[] = [
   { key: "data", label: "Data as of" },
 ];
 
+/**
+ * `0.0` reads as "fresh" next to an abandoned or silent package (a walk found this on wallabag's own
+ * lock) — it is a clamped difference of release dates (`domain/libyears.ts#libyearsAtZero`'s own
+ * comment), not an age. Where it lands on zero because the installed release is the one lockrot
+ * measured everything else against, this says so, in the domain's own words rather than a new one
+ * invented here; a measured-but-not-zero value carries no such note; there is no clamping to explain.
+ */
 function LibyearsCell({ finding }: { finding: Finding }) {
+  const { model } = useReport();
   const value = fixed(finding.libyears, 1);
   if (value === null) {
     return <Muted title={`not measured: ${libyearsReason(finding)}`}>—</Muted>;
   }
-  return <>{value}</>;
+  const metadata = model.details.get(finding.package)?.metadata ?? null;
+  const zeroReason = libyearsAtZero(finding, metadata);
+
+  return (
+    <>
+      {value}
+      {zeroReason !== null && <Muted> · {zeroReason}</Muted>}
+    </>
+  );
 }
 
 function PackageCell({ finding }: { finding: Finding }) {

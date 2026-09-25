@@ -15,7 +15,7 @@ import { PackagesView } from "../../../src/ui/views/PackagesView";
 import { AdvisoriesView } from "../../../src/ui/views/AdvisoriesView";
 import { RadiusView } from "../../../src/ui/views/RadiusView";
 import { RunView } from "../../../src/ui/views/RunView";
-import { makeFinding, makeModel, makeSignal } from "../domain/fixtures";
+import { makeFinding, makeMetadata, makeModel, makeSignal } from "../domain/fixtures";
 
 afterEach(cleanup);
 
@@ -598,6 +598,53 @@ describe("PackagesView", () => {
 
     // Assert
     expect(dispatch).toHaveBeenCalledWith({ type: "sort", key: "libyears" });
+  });
+
+  it("names a zero libyears value as the installed release being the newest known one, not silence (a walk finding)", () => {
+    // Arrange: libyears 0 on its own reads as "fresh" next to an abandoned package, when it is
+    // really the domain's own clamp (`domain/libyears.ts#libyearsAtZero`) — the metadata's own
+    // newest version matches what is installed, so that is the reason this cell should give.
+    const finding = makeFinding({
+      package: "acme/quiet",
+      verdict: "abandoned",
+      libyears: 0,
+      version: "v1.0.0",
+    });
+    const model = makeModel([finding]);
+    const withMetadata = {
+      ...model,
+      details: new Map([
+        [
+          finding.package,
+          {
+            metadata: makeMetadata({ lastStableVersion: "v1.0.0" }),
+            lock: null,
+            activity: null,
+            repositoryLink: null,
+          },
+        ],
+      ]),
+    };
+
+    // Act
+    renderIn(withMetadata, stateWith({ view: "packages" }), <PackagesView />);
+
+    // Assert
+    const row = screen.getByRole("row", { name: "acme/quiet" });
+    expect(within(row).getByText(/the installed release is the newest/)).toBeTruthy();
+  });
+
+  it("gives a measured, non-zero libyears value no such note", () => {
+    // Arrange
+    const finding = makeFinding({ package: "acme/behind", verdict: "stale", libyears: 1.5 });
+    const model = makeModel([finding]);
+
+    // Act
+    renderIn(model, stateWith({ view: "packages" }), <PackagesView />);
+
+    // Assert
+    const row = screen.getByRole("row", { name: "acme/behind" });
+    expect(row.textContent).not.toContain("newest");
   });
 });
 

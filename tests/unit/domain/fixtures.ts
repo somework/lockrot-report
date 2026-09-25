@@ -2,7 +2,14 @@
 // it as a suite; it only gives every test in this directory a Finding/Advisory/Model to start from
 // and override, instead of restating every required field in each test.
 
-import type { Advisory, Finding, Model, ReportModel, Signal } from "../../../src/model/types";
+import type {
+  Advisory,
+  ExplainMetadata,
+  Finding,
+  Model,
+  ReportModel,
+  Signal,
+} from "../../../src/model/types";
 
 export function makeAdvisory(overrides: Partial<Advisory> = {}): Advisory {
   return {
@@ -49,6 +56,25 @@ export function makeFinding(overrides: Partial<Finding> = {}): Finding {
     libyears: null,
     baseline: null,
     advisories: [],
+    ...overrides,
+  };
+}
+
+export function makeMetadata(overrides: Partial<ExplainMetadata> = {}): ExplainMetadata {
+  return {
+    abandoned: false,
+    replacement: null,
+    releasesListed: null,
+    hasStableRelease: true,
+    lastStableRelease: null,
+    lastStableVersion: null,
+    lastStableDatedBy: null,
+    installedRelease: null,
+    installedReleaseDatedBy: null,
+    repository: null,
+    type: null,
+    dataDate: null,
+    branches: [],
     ...overrides,
   };
 }
