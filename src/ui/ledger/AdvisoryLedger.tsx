@@ -65,26 +65,30 @@ export function AdvisoryLedger() {
         )}
       </div>
       <div className="legend">
-        {shown.length === 0 ? (
-          <span className="legend-empty">
-            {incomplete
-              ? `advisory check incomplete; ${checkedPhrase} not confirmed clear`
-              : "no advisory affects this lock"}
-          </span>
-        ) : (
-          shown.map((sev) => (
-            <LegendButton
-              key={sev}
-              tone={sevTone(sev)}
-              pressed={state.filters.sev.includes(sev)}
-              label={sev}
-              count={counts[sev] ?? 0}
-              onToggle={() => {
-                dispatch({ type: "toggle", group: "sev", key: sev });
-              }}
-            />
-          ))
-        )}
+        {shown.length === 0
+          ? // A genuinely clean run's own line already says so once, in the eyebrow above the bar
+            // (`label`) — a walk found this legend repeating that exact sentence a second time, under
+            // a bar with no segment for it to caption. The incomplete case still gets its own line
+            // here: the eyebrow already named the count once, and repeating that a check may not have
+            // run, right where the (empty) bar itself would otherwise draw a false "all clear", is
+            // worth the second mention a truly clean run does not need.
+            incomplete && (
+              <span className="legend-empty">
+                advisory check incomplete; {checkedPhrase} not confirmed clear
+              </span>
+            )
+          : shown.map((sev) => (
+              <LegendButton
+                key={sev}
+                tone={sevTone(sev)}
+                pressed={state.filters.sev.includes(sev)}
+                label={sev}
+                count={counts[sev] ?? 0}
+                onToggle={() => {
+                  dispatch({ type: "toggle", group: "sev", key: sev });
+                }}
+              />
+            ))}
       </div>
     </div>
   );

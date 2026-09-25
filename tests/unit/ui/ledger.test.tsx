@@ -290,7 +290,7 @@ describe("VerdictLedger", () => {
 });
 
 describe("AdvisoryLedger", () => {
-  it("shows the muted fallback, in the green all-clear tone, when the check ran and found nothing", () => {
+  it("shows the muted fallback once, in the green all-clear tone, when the check ran and found nothing", () => {
     // Arrange: mini.json's network_failures is false and its notes name neither the advisory nor
     // the audit check (PD-LEDGER-1, DESIGN.md §5) — the clean case.
     const model = loadMini();
@@ -298,9 +298,11 @@ describe("AdvisoryLedger", () => {
     // Act
     renderIn(<AdvisoryLedger />, model, INITIAL_STATE);
 
-    // Assert: legacy shows the same message twice — the eyebrow (title case) and the legend
-    // fallback (lower case, `report.js:278-291`) — so both are expected here.
-    expect(screen.getAllByText(/no advisory affects this lock/i)).toHaveLength(2);
+    // Assert: legacy showed the same message twice — the eyebrow (title case) and the legend
+    // fallback (lower case, `report.js:278-291`) — a walk found that same repeat still here, an
+    // empty bar with nothing else beside it captioned by the exact sentence already above it. The
+    // legend now says nothing at all for a genuinely clean run; only the eyebrow carries the line.
+    expect(screen.getAllByText(/no advisory affects this lock/i)).toHaveLength(1);
     expect(screen.queryByRole("button", { name: /^critical/ })).toBeNull();
     expect(
       screen.getByRole("img", { name: "Advisory severity distribution" }).querySelector(".bar-seg")
