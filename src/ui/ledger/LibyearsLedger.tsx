@@ -56,6 +56,8 @@ export function LibyearsLedger() {
           </p>
         </>
       )}
+      {/* A document with no libyears block at all still says why the figure is a dash. */}
+      {!block && <p className="ledger-note">This run did not report libyears.</p>}
       {scope !== undefined && (
         <p className="ledger-note">
           {scope.charAt(0).toUpperCase() + scope.slice(1)}.

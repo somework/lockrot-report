@@ -53,10 +53,28 @@ test.describe("PD-SUMMARY-6: the summary band's lead", () => {
     }
   });
 
-  test("mini: a lock of four packages draws no waffle, only the figure and chips", async () => {
+  test("mini: a lock of four packages still draws its four squares, at the same size", async () => {
     await report.goto(FIXTURES.mini);
     expect(await report.hasSummaryLine("of 4 packages")).toBe(true);
+    expect(await report.summaryWaffle()).toEqual({ flagged: 2, total: 4 });
+  });
+
+  test("an empty lock says so, rather than 'nothing flagged in 0 packages'", async ({ page }) => {
+    await report.goto(FIXTURES.empty);
+    expect(await report.hasSummaryLine("No packages in this lock")).toBe(true);
     expect(await report.summaryWaffle()).toBeNull();
+    await expect(page.getByRole("group", { name: "Ledger" })).toContainText("No packages, so no verdicts.");
+  });
+
+  test("at 1024×768 the band leaves room for the list: the tier sits in columns, not a stack", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await report.goto(FIXTURES.wallabag);
+    const band = await page.getByRole("group", { name: "Ledger" }).boundingBox();
+    expect(band).not.toBeNull();
+    // Was 811px tall here, which put the first package below a 768px screen.
+    expect(band?.height ?? Infinity).toBeLessThan(560);
   });
 });
 

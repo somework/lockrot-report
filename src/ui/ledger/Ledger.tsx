@@ -37,17 +37,23 @@ function FoldSummary() {
     <summary>
       <span className="ledger-fold-summary">
         <span className="ledger-fold-title">More about this lock</span>
+        {/* Each part keeps its separator in front of it, and a part that wraps to a new line has
+            that separator clipped off at the line's start (ledger.css), so no line ever begins
+            with a stray "·" and "263.6 libyears" never splits. */}
         <span className="ledger-fold-peek">
-          {/* The space before each dot sits outside the nowrap span: the one place a wrap may fall. */}
-          {peek.map((part, index) => (
-            <Fragment key={part}>
-              {index > 0 && " "}
-              <span>
-                {index > 0 && "· "}
-                {part}
-              </span>
-            </Fragment>
-          ))}
+          <span className="ledger-fold-parts">
+            {peek.map((part, index) => (
+              <Fragment key={part}>
+                {index > 0 && " "}
+                <span className="ledger-fold-part">
+                  <span className="ledger-fold-sep" aria-hidden="true">
+                    {index > 0 ? "· " : ""}
+                  </span>
+                  {part}
+                </span>
+              </Fragment>
+            ))}
+          </span>
         </span>
       </span>
     </summary>

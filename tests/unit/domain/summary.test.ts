@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   foldPeek,
   libyearsSplit,
+  priorityRunsByVerdict,
   rankVerdicts,
   sharePhrase,
   WAFFLE_MIN_ROWS,
+  wafflePadding,
   waffleRows,
   waffleRuns,
 } from "../../../src/domain/summary";
@@ -68,16 +70,73 @@ describe("waffleRows", () => {
     expect(waffleRows(271, 26)).toBe(11);
   });
 
-  it("keeps a small lock a block, not a one-row bar", () => {
-    // Arrange / Act / Assert: ceil(30 / 46) = 1, floored at the minimum.
-    expect(waffleRows(30, 46)).toBe(WAFFLE_MIN_ROWS);
+  it("grows a mid-sized lock into a block of at least five rows, not a long bar", () => {
+    // Arrange / Act / Assert: ceil(202 / 50) = 5; 60 packages at ten a row would be 6, capped at 5.
+    expect(waffleRows(202, 50)).toBe(WAFFLE_MIN_ROWS);
+    expect(waffleRows(60, 50)).toBe(WAFFLE_MIN_ROWS);
+  });
+
+  it("keeps a small lock a short strip, ten squares a row", () => {
+    // Arrange / Act / Assert: 4 → one row of 4; 30 → three rows of 10.
+    expect(waffleRows(4, 46)).toBe(1);
+    expect(waffleRows(30, 46)).toBe(3);
   });
 
   it("never asks for more rows than there are packages, nor for zero rows", () => {
     // Arrange / Act / Assert
-    expect(waffleRows(3, 46)).toBe(3);
+    expect(waffleRows(1, 46)).toBe(1);
     expect(waffleRows(0, 46)).toBe(1);
     expect(waffleRows(10, 0)).toBe(10);
+  });
+});
+
+describe("wafflePadding", () => {
+  it("puts the blanks just before the last partial column, so it fills from the bottom", () => {
+    // Arrange / Act: 271 squares in 6 rows — 45 full columns (270) and 1 square left over.
+    const padding = wafflePadding(271, 6);
+
+    // Assert: 5 blanks go in at index 270, pushing the last square to the column's bottom slot.
+    expect(padding).toEqual({ at: 270, pads: 5 });
+  });
+
+  it("adds nothing when every column is full, or when the waffle is a single column or row", () => {
+    // Arrange / Act / Assert
+    expect(wafflePadding(270, 6)).toEqual({ at: 270, pads: 0 });
+    expect(wafflePadding(4, 1)).toEqual({ at: 4, pads: 0 });
+    expect(wafflePadding(3, 3)).toEqual({ at: 3, pads: 0 });
+    expect(wafflePadding(0, 1)).toEqual({ at: 0, pads: 0 });
+  });
+});
+
+describe("priorityRunsByVerdict", () => {
+  it("splits each verdict's flagged packages by priority, most urgent first", () => {
+    // Arrange: priority is the document's own, so one verdict can span several.
+    const flagged = [
+      { verdict: "abandoned", priority: "high" },
+      { verdict: "left-behind", priority: "low" },
+      { verdict: "abandoned", priority: "critical" },
+      { verdict: "abandoned", priority: "high" },
+      { verdict: "left-behind", priority: "high" },
+    ];
+
+    // Act
+    const runs = priorityRunsByVerdict(flagged);
+
+    // Assert
+    expect(runs.get("abandoned")).toEqual([
+      { priority: "critical", count: 1 },
+      { priority: "high", count: 2 },
+    ]);
+    expect(runs.get("left-behind")).toEqual([
+      { priority: "high", count: 1 },
+      { priority: "low", count: 1 },
+    ]);
+    expect(runs.has("stale")).toBe(false);
+  });
+
+  it("returns an empty map for a clean report", () => {
+    // Arrange / Act / Assert
+    expect(priorityRunsByVerdict([]).size).toBe(0);
   });
 });
 

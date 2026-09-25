@@ -276,11 +276,32 @@ describe("PriorityLedger (the summary band's lead)", () => {
       "tone-low",
     ]);
     expect(cells.slice(7).every((cell) => cell.classList.contains("waffle-rest"))).toBe(true);
-    // Rows are numbers through the CSSOM, never a style string (DESIGN.md §1.3).
-    expect((waffle as HTMLElement).style.getPropertyValue("--rows-wide")).toBe("5");
+    // Rows are numbers through the CSSOM, never a style string (DESIGN.md §1.3): 202 squares are
+    // 6 rows at the 38-column budget, 5 at the 50-column one.
+    expect((waffle as HTMLElement).style.getPropertyValue("--rows-wide")).toBe("6");
+    expect((waffle as HTMLElement).style.getPropertyValue("--rows-xwide")).toBe("5");
   });
 
-  it("leaves the waffle out for a lock of a handful of packages", () => {
+  it("pads each width's last partial column so it fills from the bottom, outside the square count", () => {
+    // Arrange: koel_koel's 202 squares — 6 rows at the wide budget leave 4 over (33 × 6 = 198), so
+    // 2 blanks; 5 rows at the xwide budget leave 2 over, so 3 blanks.
+    const model = loadFixture("koel_koel.json");
+
+    // Act
+    const { container } = renderIn(<PriorityLedger />, model, INITIAL_STATE);
+
+    // Assert: blanks are never squares, and sit right before the last column's squares.
+    const waffle = container.querySelector(".waffle") as HTMLElement;
+    expect(waffle.querySelectorAll(".waffle-pad-wide")).toHaveLength(2);
+    expect(waffle.querySelectorAll(".waffle-pad-xwide")).toHaveLength(3);
+    const children = [...waffle.children];
+    const firstWidePad = children.findIndex((child) => child.classList.contains("waffle-pad-wide"));
+    expect(children.slice(0, firstWidePad).filter((c) => c.classList.contains("waffle-cell"))).toHaveLength(
+      198,
+    );
+  });
+
+  it("draws a small lock's waffle too, as one short row", () => {
     // Arrange: mini.json checks 4.
     const model = loadMini();
 
@@ -288,7 +309,9 @@ describe("PriorityLedger (the summary band's lead)", () => {
     const { container } = renderIn(<PriorityLedger />, model, INITIAL_STATE);
 
     // Assert
-    expect(container.querySelector(".waffle")).toBeNull();
+    const waffle = container.querySelector(".waffle") as HTMLElement;
+    expect(waffle.querySelectorAll(".waffle-cell")).toHaveLength(4);
+    expect(waffle.style.getPropertyValue("--rows-xwide")).toBe("1");
   });
 
   it("says nothing was flagged, in the none tone, for a clean report", () => {
@@ -303,15 +326,19 @@ describe("PriorityLedger (the summary band's lead)", () => {
     expect(container.querySelector(".lead-num")).toBeNull();
   });
 
-  it("keeps the plural at a total of zero packages", () => {
+  it("says a lock with no packages has none, without the all-clear tone or a waffle", () => {
     // Arrange: empty-lockrot-self.json — 0 packages, every priority 0.
     const model = loadFixture("empty-lockrot-self.json");
 
     // Act
-    renderIn(<PriorityLedger />, model, INITIAL_STATE);
+    const { container } = renderIn(<PriorityLedger />, model, INITIAL_STATE);
 
-    // Assert
-    expect(screen.getByText("Nothing flagged in 0 packages")).toBeTruthy();
+    // Assert: "nothing flagged in 0 packages" read as a clean bill of health for nothing at all.
+    const line = screen.getByText("No packages in this lock");
+    expect(line.className).not.toContain("tone-none");
+    expect(container.querySelector(".clean-mark")).toBeNull();
+    expect(container.querySelector(".waffle")).toBeNull();
+    expect(screen.queryByText(/nothing flagged/i)).toBeNull();
   });
 
   it("falls back to findings.length when packagesChecked is null (an older document)", () => {
@@ -348,19 +375,70 @@ describe("VerdictLedger", () => {
     expect(screen.getByText(/why the 7 are flagged/i)).toBeTruthy();
   });
 
-  it("draws each bar in its verdict's own tone, scaled to the longest", () => {
-    // Arrange
+  it("splits each bar by its packages' priorities, in the priority tones, scaled to the longest", () => {
+    // Arrange: koel_koel's stale 3 are one medium and two low; its silent 1 is critical.
     const model = loadFixture("koel_koel.json");
+
+    // Act
+    const { container } = renderIn(<VerdictLedger />, model, INITIAL_STATE);
+
+    // Assert: the row itself carries no tone — a colour here always means a priority.
+    const stale = screen.getByRole("button", { name: "stale 3" });
+    expect(stale.className).not.toMatch(/tone-/);
+    const parts = [...stale.querySelectorAll(".legend-seg")] as HTMLElement[];
+    expect(parts.map((part) => [part.className, part.style.flexGrow])).toEqual([
+      ["legend-seg tone-med", "1"],
+      ["legend-seg tone-low", "2"],
+    ]);
+    const silent = screen.getByRole("button", { name: "silent 1" });
+    expect((silent.querySelector(".legend-fill") as HTMLElement).style.width).toMatch(/^33\.3/);
+    expect(silent.querySelector(".legend-track")?.getAttribute("aria-hidden")).toBe("true");
+    // The track is only as long as the longest bar needs (ledger.css `--unit`).
+    expect(
+      (container.querySelector(".verdict-bars") as HTMLElement).style.getPropertyValue("--longest"),
+    ).toBe("3");
+  });
+
+  it("draws the part of a count the findings do not account for in neutral ink, never a guessed priority", () => {
+    // Arrange: the document's count says 5 stale, but only 3 stale findings are listed.
+    const model = loadFixture("koel_koel.json");
+    const withMore: Model = {
+      ...model,
+      report: { ...model.report, counts: { ...model.report.counts, stale: 5 } },
+    };
+
+    // Act
+    renderIn(<VerdictLedger />, withMore, INITIAL_STATE);
+
+    // Assert
+    const rest = screen
+      .getByRole("button", { name: "stale 5" })
+      .querySelector(".legend-seg-rest") as HTMLElement;
+    expect(rest.style.flexGrow).toBe("2");
+    expect(rest.className).not.toMatch(/tone-/);
+  });
+
+  it("says there is nothing to rank on a clean report, above its quiet line", () => {
+    // Arrange: mini-split.json — one `ok` finding, nothing flagged.
+    const model = loadFixture("mini-split.json");
 
     // Act
     renderIn(<VerdictLedger />, model, INITIAL_STATE);
 
     // Assert
-    const silent = screen.getByRole("button", { name: "silent 1" });
-    expect(silent.className).toContain("tone-crit");
-    const fill = silent.querySelector(".legend-fill") as HTMLElement;
-    expect(fill.style.width).toMatch(/^33\.3/);
-    expect(silent.querySelector(".legend-track")?.getAttribute("aria-hidden")).toBe("true");
+    expect(screen.getByText("Nothing is flagged, so there is nothing to rank.")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "ok 1" })).toBeTruthy();
+  });
+
+  it("says why the column is empty for a lock with no packages", () => {
+    // Arrange
+    const model = loadFixture("empty-lockrot-self.json");
+
+    // Act
+    renderIn(<VerdictLedger />, model, INITIAL_STATE);
+
+    // Assert
+    expect(screen.getByText("No packages, so no verdicts.")).toBeTruthy();
   });
 
   it("skips a verdict with a zero count instead of showing it at zero", () => {
@@ -520,6 +598,19 @@ describe("LibyearsLedger", () => {
     expect(screen.getByText("—")).toBeTruthy();
     expect(screen.getByText("None of the 4 packages could be measured.")).toBeTruthy();
     expect(container.querySelector(".libyears-bar")).toBeNull();
+  });
+
+  it("explains the dash for a document with no libyears block at all", () => {
+    // Arrange: mini-advisory-incomplete.json carries no libyears block.
+    const model = loadFixture("mini-advisory-incomplete.json");
+
+    // Act
+    renderIn(<LibyearsLedger />, model, INITIAL_STATE);
+
+    // Assert
+    expect(model.report.libyears).toBeNull();
+    expect(screen.getByText("—")).toBeTruthy();
+    expect(screen.getByText("This run did not report libyears.")).toBeTruthy();
   });
 
   it("splits the figure into direct requirements and what they pull in", () => {

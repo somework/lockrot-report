@@ -33,22 +33,52 @@ export function waffleRuns(flagged: readonly Pick<Finding, "priority">[]): reado
   return [...known, ...rest].map((priority) => ({ priority, count: counts.get(priority) ?? 0 }));
 }
 
-/** Below this many packages the waffle is left out: a handful of squares is no chart, and the
- *  figure and chips beside it already say everything it would. */
-export const WAFFLE_MIN_PACKAGES = 12;
-
 /**
  * How many squares tall the waffle is, for a strip `columns` squares wide at most. The square size
- * never changes (a 40-package lock and a 900-package one compare at the same scale), so a bigger
- * lock grows taller instead: at least five rows, so a small lock still reads as a block rather than
- * a one-row bar, and never more rows than there are packages.
+ * never changes (a 4-package lock and a 900-package one compare at the same scale), so a bigger
+ * lock grows taller instead. A small lock stays a short strip — ten squares a row until it reaches
+ * the five-row block every mid-sized lock is — so four packages draw four squares in a line, not a
+ * one-square-wide column, and never more rows than there are packages.
  */
 export const WAFFLE_MIN_ROWS = 5;
+export const WAFFLE_SMALL_ROW = 10;
 
 export function waffleRows(total: number, columns: number): number {
   if (total <= 0) return 1;
+  const fitted = Math.ceil(total / Math.max(1, columns));
+  const small = Math.min(WAFFLE_MIN_ROWS, Math.ceil(total / WAFFLE_SMALL_ROW));
 
-  return Math.min(total, Math.max(WAFFLE_MIN_ROWS, Math.ceil(total / Math.max(1, columns))));
+  return Math.min(total, Math.max(fitted, small));
+}
+
+/**
+ * Where the waffle's last, partial column needs blank slots so it fills from the bottom up: the
+ * grid fills each column top-down, so a remainder would otherwise stick out along the top edge and
+ * read as a glitch rather than as the end of the count. `pads` blanks go in at index `at` — just
+ * before the last partial column's squares. `{ at: total, pads: 0 }` when every column is full.
+ */
+export function wafflePadding(total: number, rows: number): { at: number; pads: number } {
+  const remainder = rows > 0 ? total % rows : 0;
+  if (total <= rows || remainder === 0) return { at: total, pads: 0 };
+
+  return { at: total - remainder, pads: rows - remainder };
+}
+
+/**
+ * The flagged packages behind each verdict, split by priority in the waffle's own order (most
+ * urgent first): what lets a verdict's bar be drawn in the same priority tones as the chips and
+ * squares above it, so one colour means one thing across the whole band. Counts only — every
+ * finding keeps the priority the document gave it.
+ */
+export function priorityRunsByVerdict(
+  flagged: readonly Pick<Finding, "verdict" | "priority">[],
+): ReadonlyMap<string, readonly WaffleRun[]> {
+  const byVerdict = new Map<string, Pick<Finding, "priority">[]>();
+  for (const finding of flagged) {
+    byVerdict.set(finding.verdict, [...(byVerdict.get(finding.verdict) ?? []), finding]);
+  }
+
+  return new Map([...byVerdict].map(([verdict, findings]) => [verdict, waffleRuns(findings)]));
 }
 
 /**

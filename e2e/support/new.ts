@@ -533,6 +533,25 @@ export class NewReportPage implements ReportPage {
     }));
   }
 
+  /** A verdict bar's row frame and its first priority part under the current media (PD-SUMMARY-7):
+   *  the part must keep a fill, and an unpressed row must not draw a frame of its own. */
+  async verdictBarForcedColors(verdict: string): Promise<{ partFilled: boolean; rowFramed: boolean }> {
+    return this.page
+      .getByRole("group", { name: "Ledger" })
+      .getByRole("button", { name: new RegExp(`^${escapeRegExp(verdict)} \\d+$`) })
+      .evaluate((el) => {
+        const part = el.querySelector(".legend-seg");
+        if (!(part instanceof HTMLElement)) throw new Error("verdict bar has no priority part");
+        const pageBg = getComputedStyle(document.body).backgroundColor;
+        const fill = getComputedStyle(part).backgroundColor;
+        const row = getComputedStyle(el);
+        return {
+          partFilled: fill !== pageBg && fill !== "rgba(0, 0, 0, 0)",
+          rowFramed: row.borderTopColor !== row.backgroundColor,
+        };
+      });
+  }
+
   async summaryWaffleForcedColors(): Promise<{ flaggedDistinct: boolean; restOutlined: boolean }> {
     return this.page
       .locator(".waffle")
@@ -843,8 +862,9 @@ export class NewReportPage implements ReportPage {
   async ledgerSegmentPrintStyle(): Promise<{ backgroundColor: string; printColorAdjust: string }> {
     const bar = this.page.getByRole("group", { name: "Ledger" }).locator(".legend-btn-bar").first();
     return bar.evaluate((el) => {
-      const segment = el.querySelector(".legend-fill");
-      if (!(segment instanceof HTMLElement)) throw new Error("the first verdict bar has no fill");
+      // The bar's first priority part (VerdictLedger.tsx): the element that actually paints a tone.
+      const segment = el.querySelector(".legend-seg");
+      if (!(segment instanceof HTMLElement)) throw new Error("the first verdict bar has no priority part");
       const style = getComputedStyle(segment);
       return {
         backgroundColor: style.backgroundColor,

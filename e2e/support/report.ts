@@ -200,6 +200,9 @@ export interface ReportPage {
   /** The waffle's first flagged and first quiet square under the current media: their computed
    *  fill and outline, against the page's own background (forced colors must keep both visible). */
   summaryWaffleForcedColors(): Promise<{ flaggedDistinct: boolean; restOutlined: boolean }>;
+  /** A verdict bar (`VerdictLedger.tsx`) under the current media: whether its first priority part
+   *  keeps a fill, and whether its row draws a border distinct from its own background. */
+  verdictBarForcedColors(verdict: string): Promise<{ partFilled: boolean; rowFramed: boolean }>;
 
   /** The header's gate-fact button (Header.tsx): "no gate" or "gate: <value>", or null when the
    *  document predates `run.fail_on` and the header shows neither. */

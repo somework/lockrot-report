@@ -3,7 +3,7 @@ import { LegendButton, toneClass } from "../common/common";
 import { TONE } from "../../domain/vocab";
 import { population } from "../../domain/filters";
 import { plural } from "../../domain/format";
-import { RANKED_PRIORITIES, sharePhrase, WAFFLE_MIN_PACKAGES, waffleRuns } from "../../domain/summary";
+import { RANKED_PRIORITIES, sharePhrase, waffleRuns } from "../../domain/summary";
 import { CleanMark } from "./CleanMark";
 import { Waffle } from "./Waffle";
 import "./ledger.css";
@@ -34,14 +34,21 @@ export function PriorityLedger() {
   const unknown = Object.keys(counts).filter((p) => !known.has(p) && p !== "none" && (counts[p] ?? 0) > 0);
   const shown: readonly string[] = [...RANKED_PRIORITIES, ...unknown];
   const clean = flagged.length === 0;
+  const empty = total === 0 && clean;
 
   return (
-    <div className={clean ? "ledger-lead is-clean" : "ledger-lead"}>
+    <div className={empty ? "ledger-lead is-empty" : clean ? "ledger-lead is-clean" : "ledger-lead"}>
       <div className="lead-answer">
         <span className="eyebrow" title="Every verdict except ok, finished and unknown">
           Flagged packages
         </span>
-        {clean ? (
+        {empty ? (
+          // A lock with no packages is not a clean bill of health, just nothing to judge: no tick,
+          // no green, and no "nothing flagged in 0 packages" to puzzle over.
+          <p className="lead-figure">
+            <span className="lead-clean lead-empty">No packages in this lock</span>
+          </p>
+        ) : clean ? (
           <p className={`lead-figure ${toneClass("none")}`}>
             <CleanMark size={30} />
             <span className={`lead-clean ${toneClass("none")}`}>
@@ -75,7 +82,9 @@ export function PriorityLedger() {
           ))}
         </div>
       </div>
-      {total >= WAFFLE_MIN_PACKAGES && (
+      {/* Drawn for any lock with a package in it: four packages are four squares, the same size
+          as a big lock's, so the lead never leaves its right-hand side empty for a small one. */}
+      {total > 0 && (
         <figure className="lead-waffle">
           <Waffle runs={waffleRuns(flagged)} total={total} />
           <figcaption className="lead-waffle-cap">

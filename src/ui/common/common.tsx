@@ -108,6 +108,12 @@ function DocsPill({
   );
 }
 
+/** A filter toggle's tooltip: what the click does, not the visible label again. Shared by every
+ *  chip and by the verdict bars (`VerdictLedger`), which are toggles of the same filters. */
+export function filterTitle(label: string, pressed: boolean): string {
+  return pressed ? `Showing only ${label} — click to clear this filter` : `Show only ${label}`;
+}
+
 /**
  * A ledger legend entry: the tally beside its swatch, and a filter toggle for that bucket at once
  * (verdict, priority or advisory severity) — shared by `VerdictLedger`, `PriorityLedger` and
@@ -121,7 +127,6 @@ export function LegendButton({
   pressed,
   label,
   count,
-  share,
   onToggle,
 }: {
   tone: Tone;
@@ -131,32 +136,20 @@ export function LegendButton({
   pressed: boolean;
   label: string;
   count: number;
-  /** 0..1: draws the chip as one row of a ranked bar chart (`legend-btn-bar`, ledger.css), its
-   *  bar this long, between the label and the count. The bar is `aria-hidden`, so the accessible
-   *  name stays "label count", the same as a plain chip's. */
-  share?: number | undefined;
   onToggle: () => void;
 }) {
-  const bar = share !== undefined;
-  const classes = ["legend-btn", toneClass(tone), dim && "legend-btn-dim", bar && "legend-btn-bar"];
+  const classes = ["legend-btn", toneClass(tone), dim && "legend-btn-dim"];
 
   return (
     <button
       type="button"
       className={classes.filter(Boolean).join(" ")}
       aria-pressed={pressed}
-      title={pressed ? `Showing only ${label} — click to clear this filter` : `Show only ${label}`}
+      title={filterTitle(label, pressed)}
       onClick={onToggle}
     >
       <i className="swatch" aria-hidden="true" />
-      {label}{" "}
-      {bar && (
-        <span className="legend-track" aria-hidden="true">
-          {/* The length is data, so it goes through the CSSOM (DESIGN.md §1.3), never a style string. */}
-          <span className="legend-fill" style={{ width: `${Math.max(0, Math.min(1, share)) * 100}%` }} />
-        </span>
-      )}
-      <i className="count">{count}</i>
+      {label} <i className="count">{count}</i>
     </button>
   );
 }

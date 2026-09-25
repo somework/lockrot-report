@@ -100,11 +100,13 @@ test.describe("PD-ROWS-2: the age scale stays visible in forced-colors mode", ()
 });
 
 test.describe("PD-LEDGER-2: a ledger legend chip stays legible in forced-colors mode", () => {
+  // A priority chip ("high 1" on mini.json): the verdicts mini flags are drawn as bars now, with no
+  // swatch of their own (PD-SUMMARY-7) — `verdictBarForcedColors` below covers those.
   test("an unpressed chip's swatch paints a colour distinct from the page", async ({ page }) => {
     await report.goto(FIXTURES.mini);
     await page.emulateMedia({ colorScheme: "light", forcedColors: "active" });
 
-    const style = await report.legendButtonForcedColorsStyle("verdict", "abandoned");
+    const style = await report.legendButtonForcedColorsStyle("prio", "high");
     const pageBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
     expect(style.swatchBackgroundColor).not.toBe(pageBg);
     expect(style.swatchBackgroundColor).not.toBe("rgba(0, 0, 0, 0)");
@@ -117,9 +119,9 @@ test.describe("PD-LEDGER-2: a ledger legend chip stays legible in forced-colors 
     // change land in the same tick as the click, so this reads the settled colour, not a mid-fade one.
     await page.emulateMedia({ colorScheme: "light", forcedColors: "active", reducedMotion: "reduce" });
 
-    const before = await report.legendButtonForcedColorsStyle("verdict", "abandoned");
-    await report.ledgerButton("verdict", "abandoned");
-    const after = await report.legendButtonForcedColorsStyle("verdict", "abandoned");
+    const before = await report.legendButtonForcedColorsStyle("prio", "high");
+    await report.ledgerButton("prio", "high");
+    const after = await report.legendButtonForcedColorsStyle("prio", "high");
 
     // `border-color` is the property `.legend-btn[aria-pressed="true"]` itself declares (`Highlight`,
     // against the unpressed rule's `--border`, both forced); `background-color` also changes but
@@ -172,6 +174,22 @@ test.describe("PD-LEDGER-2: a ledger legend chip stays legible in forced-colors 
     const ratio = await report.legendButtonPressedLabelDistinctPixelRatio("verdict", "abandoned");
     expect(ratio).toBeGreaterThan(0.15);
   });
+});
+
+test.describe("PD-SUMMARY-7: a verdict bar keeps its marks, not a frame, in forced-colors mode", () => {
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`the bar's priority parts keep a fill and an unpressed row draws no box, ${colorScheme}`, async ({
+      page,
+    }) => {
+      await report.goto(FIXTURES.wallabag);
+      await page.emulateMedia({ colorScheme, forcedColors: "active" });
+
+      expect(await report.verdictBarForcedColors("left-behind")).toEqual({
+        partFilled: true,
+        rowFramed: false,
+      });
+    });
+  }
 });
 
 test.describe("PD-SUMMARY-6: the summary band's waffle stays readable in forced-colors mode", () => {

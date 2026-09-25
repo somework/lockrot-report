@@ -86,7 +86,7 @@
   }
 
   /* Colour that carries meaning must survive an actual print, not a screen render's approximation
-   * of one: the summary band's marks (ledger.css: a waffle square, a verdict chip's bar, an
+   * of one: the summary band's marks (ledger.css: a waffle square, a verdict bar's priority parts, an
    * advisory square, the libyears bar, a chip's swatch), a Findings/Packages/Radius row's own
    * verdict/priority pill (styles/base.css `.pill`) and its priority-tone stripe (views.css
    * `.row .stripe`), and the tone-coloured text a Findings priority-group heading and the band's
@@ -98,7 +98,7 @@
    * live in. Elements this omits (a pill inside `.shell-detail`, a signal id in the glossary) are
    * never on screen when a reader prints, since the rule above already hides their containers. */
   .waffle-cell,
-  .legend-fill,
+  .legend-seg,
   .advisory-square,
   .libyears-bar > span,
   .swatch,
