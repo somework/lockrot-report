@@ -1,7 +1,7 @@
 import type { ComponentChildren } from "preact";
 import { useId, useRef } from "preact/hooks";
 import { safeHref } from "../../domain/links";
-import { DOCS_URL, TONE, VERDICT_DEFS, type Tone } from "../../domain/vocab";
+import { annotateThresholds, DOCS_URL, TONE, VERDICT_DEFS, type Tone } from "../../domain/vocab";
 import { useReport } from "../context";
 import "./common.css";
 
@@ -15,10 +15,18 @@ export function toneClass(tone: Tone): string {
   return `tone-${tone}`;
 }
 
-/** A verdict or priority word in its tone. `docs` gives it a popover holding the definition. */
+/**
+ * A verdict or priority word in its tone. `docs` gives it a popover holding the definition. `title`
+ * (and the popover's own definition text, `DocsPill` below) runs the raw `VERDICT_DEFS` entry through
+ * `annotateThresholds` first, the same call `Glossary.tsx#VerdictDefs` makes, so a reader who only
+ * ever meets a row's own pill still gets this run's actual years rather than the two config key names
+ * the unfilled text names (a11y review, DESIGN.md §5 PD-GLOSSARY-8).
+ */
 export function Pill({ word, docs = false }: { word: string; docs?: boolean }) {
+  const { model } = useReport();
   const className = `pill ${toneClass(TONE(word))}`;
-  const title = VERDICT_DEFS[word];
+  const def = VERDICT_DEFS[word];
+  const title = def === undefined ? undefined : annotateThresholds(def, model.report.run.thresholds);
   if (!docs) {
     return (
       <span className={className} title={title}>

@@ -46,6 +46,19 @@ describe("Pill", () => {
     expect(pill.getAttribute("title")).toMatch(/Composer repository marks it abandoned/);
   });
 
+  it("fills the configured years into a plain pill's title (a11y review, PD-GLOSSARY-8)", () => {
+    // Arrange / Act: mini.json's run set both silent thresholds to 5 years — the raw VERDICT_DEFS
+    // text names the config keys, not a number, so a reader who only ever meets a row's own pill
+    // (not the glossary or a DocsPill popover) needs the same annotateThresholds pass to see it.
+    renderIn(<Pill word="silent" />);
+
+    // Assert
+    const pill = screen.getByText("silent");
+    expect(pill.getAttribute("title")).toBe(
+      "No stable release for at least 5 years (release-high-years) and no repository push for at least 5 years (push-high-years).",
+    );
+  });
+
   describe("with docs (PD-GLOSSARY-4)", () => {
     it("is a button, not a link out to lockrot.dev, so it still works with no network", () => {
       // Arrange / Act
