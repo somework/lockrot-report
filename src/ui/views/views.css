@@ -243,7 +243,7 @@
    fill. The dot can't lean on colour to say which zone it's in either, so its shape carries that
    instead: a hollow ring below warn, a diamond at warn..high, a filled dot at or above high — each
    with a Canvas border so it reads as its own mark next to the tick beside it, not a fourth one.
-   Second a11y review (DESIGN.md §5 PD-ROWS-2): at 1x density a 2px dashed border on an 8px
+   Second a11y review (PD-ROWS-2): at 1x density a 2px dashed border on an 8px
    circle breaks into two slash fragments instead of a ring, and the dot's opaque `background: Canvas`
    painted over whatever tick shared its position — koel_koel's jwilsson/spotify-web-api-php sits at
    3.1y against a warn threshold of 3, close enough that the dot erased the warn tick outright. The

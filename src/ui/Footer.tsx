@@ -33,7 +33,7 @@ function useFooterHeight() {
     observer.observe(node);
     // The sticky columns give up the footer's height only while the footer is on screen: sized
     // against it all the time, a short viewport (a laptop at 125% zoom, devtools open) left them a
-    // sliver for the whole page to protect the last screenful of it (DESIGN.md §5 PD-DETAIL-5).
+    // sliver for the whole page to protect the last screenful of it (DESIGN.md §8, PD-DETAIL-5).
     const visible =
       typeof IntersectionObserver === "undefined"
         ? null

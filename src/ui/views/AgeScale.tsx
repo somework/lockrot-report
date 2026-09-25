@@ -84,7 +84,7 @@ export function AgeScale({ scale, verdict }: { scale: AgeScaleData; verdict: Ver
  * otherwise hand its `.sig-lines` the full width of the key-fact line while a neighbouring row's
  * only has what a 64px track and its label leave over — the two wrap their signal text at
  * different widths for a reason nothing on screen explains, so the list reads as uneven from row to
- * row (PD-ROWS-3, DESIGN.md §5's "reserve the space" note). `aria-hidden`, since it carries no fact;
+ * row (PD-ROWS-3). `aria-hidden`, since it carries no fact;
  * `views.css` hides it under 760px, where the key-fact line already stacks instead of sharing a row.
  */
 export function AgeScalePlaceholder() {

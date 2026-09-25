@@ -239,7 +239,7 @@ export class NewReportPage implements ReportPage {
       .evaluate((el) => el === document.activeElement);
   }
 
-  /** PD-DETAIL-5's own follow-up (DESIGN.md §5): `.shell-detail.is-side`'s sticky containing block
+  /** PD-DETAIL-5 (DESIGN.md §8): `.shell-detail.is-side`'s sticky containing block
    *  (`.shell`'s own grid row, `ui/app.css`) can end before the panel's full travel does, dragging
    *  its sticky `.detail-head` up above its intended `top` and behind the page's fixed `.topbar` —
    *  raw class selectors, not a role/name query, since the question here is exactly this

@@ -191,14 +191,14 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 | PD-GLOSSARY-2               | the glossary opened as one long scroll                                         | only the verdicts are in view; the other sections fold                                                            |
 | PD-GLOSSARY-3               | the glossary's link read "full reference"                                      | "How lockrot decides (lockrot.dev)", to `#verdicts-and-priority`                                                  |
 | PD-GLOSSARY-4/PD-GLOSSARY-5 | a verdict pill linked out, unreachable offline; a row's pill had no definition | every pill opens its definition in a popover, with "In the glossary" and the lockrot.dev link                     |
-| PD-GLOSSARY-6/PD-SUMMARY-4  | Escape knew nothing of popovers                                                | an open popover closes first, and alone, by the browser's own dismissal                                           |
+| PD-GLOSSARY-6/PD-SUMMARY-4  | Escape knew nothing of popovers                                                | an open popover closes first, and alone                                                                           |
 | PD-GLOSSARY-7               | "In the glossary" opened the glossary at the top                               | it scrolls to that verdict's entry, marks it briefly and focuses it                                               |
 | PD-GLOSSARY-8               | a definition named a config key, not the run's value                           | the value leads, the key beside it: "5 years (release-high-years)"                                                |
 | PD-GLOSSARY-9               | "finished" covered only the built-in allowlist                                 | it says how a reader accepts a package themselves, `extra.lockrot.ignore`                                         |
 | PD-DETAIL-1/PD-DETAIL-2     | the detail led with the baseline and showed every reference section            | "Follow the upstream" first; reached-by, lock entry and provenance fold, closed                                   |
 | PD-DETAIL-3                 | two nested scroll regions; a new package kept the last one's scroll            | `.shell-detail` alone scrolls; a new package starts at the top                                                    |
 | PD-DETAIL-4                 | the detail never said a filter hid its package from the list                   | it says so, with "Clear filters"; the search status says so too                                                   |
-| PD-DETAIL-5                 | at 1440px the side detail's end could not be reached                           | the wheel chains into the page; the column fits above the footer (§8)                                             |
+| PD-DETAIL-5                 | at 1440px the side detail's end could not be reached                           | the wheel chains into the page; the column makes room for the footer (§8)                                         |
 | PD-ROWS-1                   | a row showed up to three signal lines                                          | the highest-level signal and "+N more signals"; print shows them all                                              |
 | PD-ROWS-2                   | nothing showed an age against the run's thresholds                             | an age scale: warn and high ticks, a dot at the S8/S2/S4 age                                                      |
 | PD-ROWS-3                   | each row scaled its own track, with no legend                                  | one legend and one maximum per list; `abandoned`/`pinned` rows get a neutral dot                                  |
@@ -276,19 +276,19 @@ ledger collapses into one line, the priority counts over a small copy of the pri
 under its key fact there instead of taking width from the package name (PD-ROWS-2).
 
 **The summary line** is the first five seconds: how many packages carry each priority, out of how
-many were checked, above the ledger (`ledger/SummaryBand.tsx`, PD-SUMMARY-1). The run's gate is not
-part of it; it is a quiet fact in the header (below).
+many were checked, above the ledger (`ledger/SummaryBand.tsx`, PD-SUMMARY-1). The gate is in the
+header (below).
 
 **Sticky offsets are measured, not guessed.** Only the header band (brand, run facts, tabs) is
 sticky, and only from 760px up. `Header` publishes its real height as `--topbar-h` through the
 CSSOM (a ResizeObserver); the rail and the detail column stick under it and scroll on their own
 when taller than the viewport. The legacy page hard-coded 196px and overlapped a wrapped header.
 Both columns are at most `--sticky-room` tall (`ui/app.css`): the viewport less the topbar and a
-16px gap on each side. At the page's end the row they stick in stops the footer's height above the
-viewport's bottom, so while the footer is on screen `--sticky-room` also gives up `--footer-h`,
-floored at 50vh; `Footer.tsx` measures it and toggles `:root.footer-in-view` from an
-IntersectionObserver. Only then, so a short viewport keeps a usable column everywhere else
-(PD-DETAIL-5).
+16px gap on each side. At the page's end the footer takes the bottom of the viewport, so while the
+footer is on screen `--sticky-room` also subtracts `--footer-h`, never below 50vh; `Footer.tsx`
+measures it and toggles `:root.footer-in-view` from an IntersectionObserver. Doing this only then
+keeps a usable column on a short viewport everywhere else. Where the 50vh floor wins, the panel's
+top slides under the header at the page's end (PD-DETAIL-5).
 
 `.shell-detail` (`is-side`/`is-sheet`) alone owns the detail's geometry and scrolling; `Detail`
 only lays out its children, and opening another package starts at the top (PD-DETAIL-3). A wheel
@@ -335,8 +335,9 @@ shape. `e2e/forced-colors.spec.ts` emulates the mode.
 - A verdict pill's definition (`ui/common/common.tsx`, PD-GLOSSARY-4) and the gate fact are native
   `popover="auto"` elements opened by a `<button popovertarget>`. They never trap focus, so
   `j`/`k`/`?` still act while one is open.
-- Escape closes one thing per press: an open popover first (`decideEscape` ignores the key and the
-  browser dismisses it, PD-GLOSSARY-6/PD-SUMMARY-4), then the glossary, then detail (focus returns
+- Escape closes one thing per press: an open popover first (`decideEscape` returns `ignore`, so the
+  keydown is not cancelled and the browser's popover light-dismiss closes it alone,
+  PD-GLOSSARY-6/PD-SUMMARY-4), then the glossary, then detail (focus returns
   to the row whose `data-pkg` equals the closed package, found by attribute comparison), then the
   search box's focus.
 

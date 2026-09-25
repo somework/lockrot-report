@@ -187,7 +187,7 @@ test.describe("1440×900 (side): every part of the detail is reachable by wheel 
 
       await expect(provenance).toBeInViewport();
 
-      // Visual review (PD-DETAIL-5's own follow-up, DESIGN.md §5): once the page settles from this
+      // Visual review (PD-DETAIL-5, DESIGN.md §8): once the page settles from this
       // gesture, the panel's own sticky header must have resumed below the fixed one, not slid in
       // behind it — `.shell`'s grid row can otherwise end before the panel's full travel does,
       // dragging the header up past its intended `top`.

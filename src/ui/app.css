@@ -254,7 +254,7 @@
      16px gap on each side. Their sticky containing block is this row, and at the page's maximum
      scroll the row ends exactly `--footer-h` above the viewport's bottom, so a column that tall would
      be dragged up under the topbar there; the rule below gives the footer's height back only while
-     the footer is on screen (DESIGN.md §5 PD-DETAIL-5, `e2e/detail-scroll.spec.ts`). */
+     the footer is on screen (DESIGN.md §8, PD-DETAIL-5, `e2e/detail-scroll.spec.ts`). */
   --sticky-room: calc(100vh - var(--topbar-h) - 32px);
 }
 /* ...but only once the footer is actually on screen (`Footer.tsx` sets the class from an
@@ -323,7 +323,7 @@
    panel's own height is what decides whether its stuck bottom can still fit above the row's true
    final edge (`100vh` − `--footer-h`) once the reader reaches the true bottom of the page — the row's
    own height cancels out of that comparison, so no floor on the row could ever have fixed it (a11y
-   /regression review, DESIGN.md §5 PD-DETAIL-5: koel_koel and wallabag_wallabag at
+   /regression review of PD-DETAIL-5: koel_koel and wallabag_wallabag at
    1440px, wheeled to the page's actual end rather than only until Provenance first came into view). */
 .shell-detail.is-side {
   position: sticky;

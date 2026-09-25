@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
 test.describe("PD-ROWS-1/PD-ROWS-2: the Findings row's key fact and age scale", () => {
   test("wallabag_wallabag: javibravo/simpleue shows exactly one fact line and a scale naming both thresholds", async () => {
     // javibravo/simpleue carries S2 (high, 8.9y), S4 (high, 8.8y) and S5 (warn) — S2 and S4 tie on
-    // level, so S2 wins the numeric id order (DESIGN.md §5's own tie-break), and only its line
+    // level, so S2 wins on S-id order (a tie on level goes to the lower id), and only its line
     // shows; the run's release-warn-years/release-high-years are 3/5.
     await report.goto(FIXTURES.wallabag);
 
@@ -75,9 +75,9 @@ test.describe("PD-ROWS-1/PD-ROWS-2: the Findings row's key fact and age scale", 
   test("wallabag_wallabag: sensio/framework-extra-bundle's dot sits on the warn tick without erasing it, in the default colour scheme too", async () => {
     // Regression review: PD-ROWS-3's own shared maximum bunches every row's warn/high ticks at a
     // fixed spot, and this finding's own S2 (3.6y against a 3/5 warn/high pair, the same shape
-    // DESIGN.md §5 records for it) puts its dot right on the warn tick — before this, the dot's
+    // the PD-ROWS-3 test below uses) puts its dot right on the warn tick — before this, the dot's
     // opaque fill painted over it, in the page's ordinary colours, not only in forced-colors mode
-    // (`ageScaleWarnTickSurvivesDot`'s own comment; DESIGN.md §5 PD-ROWS-2 first proved this same
+    // (`ageScaleWarnTickSurvivesDot`'s own comment; PD-ROWS-2's forced-colors review first proved this same
     // paint-order technique against a forced-colors screenshot of a different package).
     await report.goto(FIXTURES.wallabag);
 
@@ -88,7 +88,7 @@ test.describe("PD-ROWS-1/PD-ROWS-2: the Findings row's key fact and age scale", 
 
 test.describe("PD-ROWS-3: a scale drawn for context, not for the verdict's own priority", () => {
   test("wallabag_wallabag: sensio/framework-extra-bundle reads its own S1/S3 as CRITICAL, but its S2 age is only warn — the scale must say so, not agree with a zone it did not cause", async () => {
-    // The exact shape DESIGN.md §5 (PD-ROWS-3) records: abandoned (S1, marked abandoned; S3,
+    // The shape this test pins (PD-ROWS-3): abandoned (S1, marked abandoned; S3,
     // archived) starts this finding at critical — its S2 (3.6y, against a 3/5 warn/high pair)
     // would, on its own, only ever reach the warn zone. The scale still draws (the age fact is
     // real) but must name itself as context, not as the reason for the row's own priority.

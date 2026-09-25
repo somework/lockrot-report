@@ -14,7 +14,7 @@ tag or the address format, says so under **Breaking** in its entry.
   summary itself, over a small copy of the priority bar.
 - The header names the run's gate, "no gate" or "gate: <value>", with a popover saying what that
   means for the run's exit code.
-- A Findings row carries an age scale: the run's warn and high thresholds, and a dot at the
+- A Findings row whose package has an S8, S2 or S4 age carries an age scale: the run's warn and high thresholds, and a dot at the
   package's age. One caption above the list names the thresholds, and every row shares one scale.
   An age that did not set the priority (an abandoned or pinned package) draws a neutral dot.
 - A definition that names a threshold setting shows what this run set it to, "5 years
@@ -61,6 +61,8 @@ tag or the address format, says so under **Breaking** in its entry.
 - A signal's disclosure in the package detail shows its whole focus ring.
 - A long repository link in "The lock entry" wraps instead of widening the panel on a phone.
 - "Priority of the 1 flagged package" reads in the singular.
+- On a wide screen, the end of a long package detail can be scrolled into view; the wheel carries on
+  into the page once the panel's own content ends.
 
 ## [0.12.0]
 
