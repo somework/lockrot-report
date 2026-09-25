@@ -358,17 +358,19 @@ describe("Detail", () => {
       expect(screen.queryByText(/^Why this is/)).toBeNull();
     });
 
-    it("shows the steps and the document's own final priority", () => {
+    it("shows the steps, as plain sentences, and the document's own final priority", () => {
       renderDetail(MINI, "vendor/transitive");
       screen.getByText("Why this is high");
-      expect(screen.getByText("abandoned starts at critical")).toBeTruthy();
-      expect(screen.getByText("nothing requires it directly, one step down")).toBeTruthy();
+      expect(screen.getByText("Abandoned packages start at critical.")).toBeTruthy();
+      expect(screen.getByText("Only reached through another package: one step down.")).toBeTruthy();
+      screen.getByText("So:", { exact: false });
+      expect(screen.getByText("high", { selector: ".detail-why-result b" })).toBeTruthy();
     });
 
     it("clamps a step-up at critical instead of implying a level beyond it", () => {
       renderDetail(EXTRA_MODEL, "vendor/vulnerable");
       screen.getByText("Why this is critical");
-      expect(screen.getByText("an advisory no release will fix, one step up")).toBeTruthy();
+      expect(screen.getByText("An advisory with no fix coming: one step up.")).toBeTruthy();
     });
   });
 

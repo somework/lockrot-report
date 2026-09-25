@@ -2,6 +2,13 @@
  * `priorityWhy` rebuilds the ladder `Priority::of()` walks (contract.md §2.4), purely from a
  * finding's own fields, so the page can explain why a finding landed on the priority it shows —
  * ported from legacy's `priorityWhy` (report.js:728-735), as data rather than pre-rendered HTML.
+ *
+ * Each step's `text` is a full sentence (PD-DETAIL/regression review: a first-time-reader walk read
+ * the old form — a verdict's name, the word "starts", a bare priority, chained by arrows to more
+ * chips the same shape — as "a code-style chip, then the word critical", explaining nothing. There
+ * is no code here to quote; `PriorityWhy.tsx` renders each sentence plain, ending with the ladder's
+ * own final value, which stays the document's own `finding.priority` rather than a recomputation
+ * (critic.md M30, unchanged by this rewrite).
  */
 
 import type { Finding, KnownPriority, Priority } from "../model/types";
@@ -55,6 +62,12 @@ function stepUp(p: KnownPriority): KnownPriority {
   return LADDER[Math.max(index - 1, 0)] ?? p;
 }
 
+/** Capitalises the first letter only — good enough for the verdict word this sentence starts on
+ *  (`abandoned`, `left-behind`, ...); nothing here ever has to title-case a multi-word phrase. */
+function capitalize(word: string): string {
+  return word.length === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1);
+}
+
 /**
  * The steps behind `finding.priority`. Empty when the finding's priority is `"none"` or its
  * verdict has no entry in `PRIORITY_BASE` — for current documents that is every verdict but the six
@@ -66,21 +79,21 @@ export function priorityWhy(finding: Finding): readonly PriorityStep[] {
 
   const steps: PriorityStep[] = [];
   let current: KnownPriority = base;
-  steps.push({ text: `${finding.verdict} starts at ${base}`, to: current });
+  steps.push({ text: `${capitalize(finding.verdict)} packages start at ${base}.`, to: current });
 
   if (!finding.direct) {
     current = stepDown(current);
-    steps.push({ text: "nothing requires it directly, one step down", to: current });
+    steps.push({ text: "Only reached through another package: one step down.", to: current });
   }
   if (finding.dev) {
     current = stepDown(current);
-    steps.push({ text: "development only, one step down", to: current });
+    steps.push({ text: "Only installed for development: one step down.", to: current });
   }
   // M31 fix: hasNoFixExpected reads only the finding's own evidence, excluding the S7 summary
   // Finding::evidence() appends after it — see sniff.ts.
   if (hasNoFixExpected(finding)) {
     current = stepUp(current);
-    steps.push({ text: "an advisory no release will fix, one step up", to: current });
+    steps.push({ text: "An advisory with no fix coming: one step up.", to: current });
   }
   return steps;
 }

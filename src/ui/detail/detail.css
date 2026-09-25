@@ -180,30 +180,32 @@
   overflow-wrap: anywhere;
 }
 
-/* ---------- why this priority ---------- */
+/* ---------- why this priority ----------
+   Plain sentences, one per step of `domain/priority.ts#priorityWhy`'s ladder, not the mono,
+   bordered chip chain this used to be — a first-time-reader walk read that as "a code-style chip,
+   then the word critical", explaining nothing (`PriorityWhy.tsx`'s own comment). */
 .detail-why {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-  font-size: 12px;
-  color: var(--muted);
-}
-.detail-why-result {
-  font-weight: 500;
-  color: var(--ink-2);
+  flex-direction: column;
+  gap: 4px;
 }
 .detail-why-step {
-  font-family: var(--mono);
-  font-size: 11px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-2);
 }
-.detail-why-arrow {
-  margin: 0 6px;
-  color: var(--muted);
+.detail-why-result {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+/* The one thing the old chip styling carried worth keeping (`PriorityWhy.tsx`'s own comment): the
+   final priority in its own tone, the same colour a pill or a row's stripe already gives that word
+   elsewhere — the tone class alone only sets `--tone` (styles/base.css), so this is what actually
+   reads it. */
+.detail-why-result b {
+  font-weight: 600;
+  color: var(--tone);
 }
 
 /* ---------- signals ---------- */

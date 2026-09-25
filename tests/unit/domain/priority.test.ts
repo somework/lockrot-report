@@ -34,7 +34,7 @@ describe("priorityWhy", () => {
     const steps = priorityWhy(finding);
 
     // Assert
-    expect(steps).toEqual([{ text: "stale starts at medium", to: "medium" }]);
+    expect(steps).toEqual([{ text: "Stale packages start at medium.", to: "medium" }]);
   });
 
   it("steps down once for a transitive finding", () => {
@@ -46,8 +46,8 @@ describe("priorityWhy", () => {
 
     // Assert
     expect(steps).toEqual([
-      { text: "pinned starts at high", to: "high" },
-      { text: "nothing requires it directly, one step down", to: "medium" },
+      { text: "Pinned packages start at high.", to: "high" },
+      { text: "Only reached through another package: one step down.", to: "medium" },
     ]);
   });
 
@@ -60,9 +60,9 @@ describe("priorityWhy", () => {
 
     // Assert
     expect(steps).toEqual([
-      { text: "pinned starts at high", to: "high" },
-      { text: "nothing requires it directly, one step down", to: "medium" },
-      { text: "development only, one step down", to: "low" },
+      { text: "Pinned packages start at high.", to: "high" },
+      { text: "Only reached through another package: one step down.", to: "medium" },
+      { text: "Only installed for development: one step down.", to: "low" },
     ]);
   });
 
@@ -74,7 +74,7 @@ describe("priorityWhy", () => {
     const steps = priorityWhy(finding);
 
     // Assert
-    expect(steps.at(-1)).toEqual({ text: "development only, one step down", to: "low" });
+    expect(steps.at(-1)).toEqual({ text: "Only installed for development: one step down.", to: "low" });
   });
 
   it("steps up once when the finding has an unfixable advisory", () => {
@@ -92,8 +92,8 @@ describe("priorityWhy", () => {
 
     // Assert
     expect(steps).toEqual([
-      { text: "left-behind starts at high", to: "high" },
-      { text: "an advisory no release will fix, one step up", to: "critical" },
+      { text: "Left-behind packages start at high.", to: "high" },
+      { text: "An advisory with no fix coming: one step up.", to: "critical" },
     ]);
   });
 
@@ -113,8 +113,8 @@ describe("priorityWhy", () => {
     // Assert: the step still reports the text "one step up", but the value it lands on stays
     // critical — legacy only ever showed the document's own priority here, never a recomputed one.
     expect(steps).toEqual([
-      { text: "abandoned starts at critical", to: "critical" },
-      { text: "an advisory no release will fix, one step up", to: "critical" },
+      { text: "Abandoned packages start at critical.", to: "critical" },
+      { text: "An advisory with no fix coming: one step up.", to: "critical" },
     ]);
   });
 
@@ -134,7 +134,7 @@ describe("priorityWhy", () => {
     const steps = priorityWhy(finding);
 
     // Assert
-    expect(steps).toEqual([{ text: "silent starts at critical", to: "critical" }]);
+    expect(steps).toEqual([{ text: "Silent packages start at critical.", to: "critical" }]);
   });
 
   it("covers every PRIORITY_BASE verdict with an entry", () => {
