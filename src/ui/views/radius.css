@@ -89,6 +89,12 @@
 .rl-key-item .rl-u:last-of-type {
   margin-right: 6px;
 }
+.rl-key-dash {
+  margin-right: 5px;
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--ink-2);
+}
 
 /* A link-styled button: a jump to a row or a fold, never a navigation. */
 .rl-jump {
@@ -148,6 +154,14 @@
 .rl-head .fhead-age {
   grid-column: 2 / 4;
   grid-row: 1;
+}
+.rl-head[hidden] {
+  display: none;
+}
+/* The "flagged themselves" tail's own head: under the fold's head, it says the ages below are the
+   requirements' own; sticky within the tail, so it covers the list's head while the tail scrolls. */
+.rl-head.is-own {
+  border-top: 0;
 }
 
 .rl-list,
@@ -399,6 +413,11 @@
 }
 .rl .age-num {
   white-space: nowrap;
+}
+/* No age to draw: a dash in the number's place, the guides unbroken (the key says what it means). */
+.rl-age-dash {
+  font-weight: 600;
+  color: var(--muted);
 }
 
 .rr-tog {
@@ -914,7 +933,7 @@
   .rrow[aria-current="true"] > .rr-line::before {
     display: none;
   }
-  .rl .age-none {
-    background: var(--bg);
+  .rl-head.is-own[hidden] {
+    display: grid !important;
   }
 }

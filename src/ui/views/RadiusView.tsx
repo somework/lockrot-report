@@ -39,11 +39,27 @@ function Pk({ name }: { name: string }) {
 }
 
 /**
+ * "the 29 direct requirements lockrot's exposure list names": the one denominator the tab counts
+ * against. `exposure[]` is not every direct requirement the project has — the footnote names flagged
+ * ones it leaves out — so no sentence here says "your 29 direct requirements" (PD-RADIUS-1).
+ */
+function ExposureList({ n, lead }: { n: number; lead: ComponentChildren }) {
+  return n === 1 ? (
+    <>the one direct requirement lockrot's exposure list names</>
+  ) : (
+    <>
+      {lead} the <b>{n}</b> direct requirements lockrot's exposure list names
+    </>
+  );
+}
+
+/**
  * The tab's answer, first (PD-RADIUS-1): the fewest rows that hold half of what is listed, by name
- * and count, against every flagged package listed and every direct requirement — "wallabag/rulerz
- * (14) and phpunit/phpunit (13) pull in 27 of the 49 flagged packages that sit under 17 of your 29
- * direct requirements." Counts only. Under a filter every count is of the packages that match it,
- * and the sentence says "matching" (PD-RADIUS-6).
+ * and count, against every flagged package listed and every direct requirement `exposure` names —
+ * "wallabag/rulerz (14) and phpunit/phpunit (13) pull in 27 of the 49 flagged packages that sit
+ * under 17 of the 29 direct requirements lockrot's exposure list names." Counts only. Under a
+ * filter every count is of the packages that match it, and the sentence says "matching"
+ * (PD-RADIUS-6).
  */
 function AnswerSentence({ answer, id, narrowed }: { answer: Answer; id: string; narrowed: boolean }) {
   const { top, held, total, rows, exposureCount } = answer;
@@ -55,13 +71,13 @@ function AnswerSentence({ answer, id, narrowed }: { answer: Answer; id: string; 
       <p className="rl-answer" id={id}>
         {exposureCount === 1 ? (
           <>
-            <Pk name={lead.package} />, your one direct requirement, pulls in <b>{lead.count}</b> {flagged}{" "}
+            <Pk name={lead.package} />, <ExposureList n={1} lead="" />, pulls in <b>{lead.count}</b> {flagged}{" "}
             {lead.count === 1 ? "package" : "packages"}.
           </>
         ) : (
           <>
-            <Pk name={lead.package} /> is the only one of your <b>{exposureCount}</b> direct requirements with{" "}
-            {flagged} packages under it: <b>{lead.count}</b>.
+            <ExposureList n={exposureCount} lead="Of" />, only <Pk name={lead.package} /> has {flagged}{" "}
+            packages under it: <b>{lead.count}</b>.
           </>
         )}
       </p>
@@ -87,13 +103,23 @@ function AnswerSentence({ answer, id, narrowed }: { answer: Answer; id: string; 
           <b>{held}</b> of the <b>{total}</b> {flagged} packages
         </>
       )}{" "}
-      that sit under <b>{rows}</b> of your <b>{exposureCount}</b> direct requirements.
+      that sit under{" "}
+      <ExposureList
+        n={exposureCount}
+        lead={
+          <>
+            <b>{rows}</b> of
+          </>
+        }
+      />
+      .
     </p>
   );
 }
 
 /** Under a filter, what the counts cover and what they are without it: "Only flagged packages that
- *  match the filter are counted. Without it, 49 sit under 17 of your 29 direct requirements." */
+ *  match the filter are counted. Without it, 49 sit under 17 of the 29 direct requirements
+ *  lockrot's exposure list names." */
 function ScopeNote({ layout }: { layout: RadiusLayout }) {
   if (!layout.narrowed) return null;
   return (
@@ -102,52 +128,91 @@ function ScopeNote({ layout }: { layout: RadiusLayout }) {
       {layout.unfilteredTotal > 0 && (
         <>
           {" "}
-          Without it, <b>{layout.unfilteredTotal}</b> sit under <b>{layout.unfilteredRows}</b> of your{" "}
-          <b>{layout.exposureCount}</b> direct requirements.
+          Without it, <b>{layout.unfilteredTotal}</b> sit under{" "}
+          <ExposureList
+            n={layout.exposureCount}
+            lead={
+              <>
+                <b>{layout.unfilteredRows}</b> of
+              </>
+            }
+          />
+          .
         </>
       )}
     </p>
   );
 }
 
-/** The key under the answer: what a square is and what the hollow one is. Two short items, so a
- *  phone keeps it to two lines; "one square size on every row" is in each squares cell's title. */
-function Key({ hollow }: { hollow: boolean }) {
+/** The key under the answer: what a square is, what the hollow one is, and what a dash in the age
+ *  column means. Short items, so a phone keeps it to two lines; "one square size on every row" is in
+ *  each squares cell's title. */
+function Key({ squares, hollow }: { squares: boolean; hollow: boolean }) {
   return (
     <p className="rl-key" aria-hidden="true">
-      <span className="rl-key-item">
-        <i className="rl-u tone-crit" />
-        <i className="rl-u tone-high" />
-        <i className="rl-u tone-med" />
-        <i className="rl-u tone-low" />a flagged package under the row, by priority
-      </span>
+      {squares && (
+        <span className="rl-key-item">
+          <i className="rl-u tone-crit" />
+          <i className="rl-u tone-high" />
+          <i className="rl-u tone-med" />
+          <i className="rl-u tone-low" />a flagged package under the row, by priority
+        </span>
+      )}
       {hollow && (
         <span className="rl-key-item">
           <i className="rl-u is-else" />
           +N reached too, listed under another row
         </span>
       )}
+      <span className="rl-key-item">
+        <span className="rl-key-dash">–</span>
+        in years: not flagged for age
+      </span>
     </p>
   );
 }
 
-function Head({ axis }: { axis: ReturnType<typeof ageAxis> }) {
+/**
+ * The column head. Its age caption says whose years the column shows, since the tab draws two kinds:
+ * a ranked row's are those of the packages listed under it ("Their years since release"); a row in
+ * the "flagged themselves" tail lists none, so its are the requirement's own, and that tail carries
+ * its own head saying so.
+ */
+function Head({
+  axis,
+  own = false,
+  hidden = false,
+}: {
+  axis: ReturnType<typeof ageAxis>;
+  own?: boolean;
+  hidden?: boolean;
+}) {
   return (
-    <div className="rl-head">
+    <div className={own ? "rl-head is-own" : "rl-head"} hidden={hidden}>
       <span className="rl-h rl-h-rank" aria-hidden="true">
-        #
+        {own ? "" : "#"}
       </span>
       <span className="rl-h rl-h-pkg" aria-hidden="true">
-        Direct requirement
-        <span className="rl-h-narrow"> · flagged under it · what it pulls in</span>
+        {own ? "Flagged itself" : "Direct requirement"}
+        <span className="rl-h-narrow">
+          {own ? " · listed under it" : " · flagged under it · what it pulls in"}
+        </span>
       </span>
       <span className="rl-h rl-h-sq" aria-hidden="true">
         Flagged underneath
       </span>
       <span className="rl-h rl-h-say" aria-hidden="true">
-        What it pulls in
+        {own ? "Listed under it" : "What it pulls in"}
       </span>
-      {axis ? <AgeAxisHead axis={axis} /> : <span className="fhead-age" />}
+      {axis ? (
+        <AgeAxisHead
+          axis={axis}
+          caption={own ? "Its own years since release" : "Their years since release"}
+          whose={own ? "each requirement's own" : "the flagged packages listed under each requirement"}
+        />
+      ) : (
+        <span className="fhead-age" />
+      )}
     </div>
   );
 }
@@ -308,7 +373,8 @@ function TailLinks({ layout, go }: { layout: RadiusLayout; go: (key: string, id:
           go(FOLD_SELF, "rl-fold-self");
         }}
       >
-        {layout.selfOnly.length} flagged themselves{"\u00a0↓"}
+        {layout.selfOnly.length} flagged {layout.selfOnly.length === 1 ? "itself" : "themselves"}
+        {"\u00a0↓"}
       </button>
     ),
     layout.throughOther.length > 0 && (
@@ -359,6 +425,50 @@ function Unlisted({ findings }: { findings: readonly Finding[] }) {
       )}
       .
     </p>
+  );
+}
+
+/**
+ * The "flagged themselves" tail's head: "5 more are flagged themselves, all left-behind, with nothing
+ * flagged listed under them." Under a filter that keeps what they list off the tab, what puts them
+ * here is that they match it themselves: "1 more matches the filter itself (pinned); nothing listed
+ * under it does."
+ */
+function SelfTitle({
+  lead,
+  many,
+  filtered,
+  mix,
+  only,
+}: {
+  lead: string;
+  many: boolean;
+  filtered: boolean;
+  mix: ReturnType<typeof verdictMix>;
+  only: string | undefined;
+}) {
+  const verdicts = only ? (
+    <>
+      {many ? "all " : ""}
+      <VerdictWord verdict={only} />
+    </>
+  ) : (
+    <MixWords mix={mix} />
+  );
+  if (filtered) {
+    return (
+      <>
+        <b>{lead}</b> {many ? "match the filter themselves" : "matches the filter itself"} ({verdicts});
+        nothing listed under {many ? "them" : "it"} does.
+      </>
+    );
+  }
+  return (
+    <>
+      <b>{lead}</b> {many ? "are flagged themselves" : "is flagged itself"}
+      {only ? <>, {verdicts}</> : <> ({verdicts})</>}, with nothing flagged listed under{" "}
+      {many ? "them" : "it"}.
+    </>
   );
 }
 
@@ -414,13 +524,12 @@ export function RadiusView() {
   // "12 more are…" after ranked rows; with none above, "12 direct requirements are…".
   const more = layout.ranked.length > 0;
   const selfN = layout.selfOnly.length;
+  // A row here may list packages the filter keeps off: then the tail is of requirements that match
+  // the filter themselves, with nothing listed under them that does.
+  const selfFiltered = layout.selfOnly.some((r) => r.unfiltered > 0);
   const selfLead = more
-    ? plural(selfN, "more is", "more are")
-    : plural(selfN, "direct requirement is", "direct requirements are");
-  // A row here may list packages the filter keeps off: then it is not "nothing flagged".
-  const selfNothing = layout.selfOnly.some((r) => r.unfiltered > 0)
-    ? "nothing that matches the filter"
-    : "nothing flagged";
+    ? `${String(selfN)} more`
+    : plural(selfN, "direct requirement", "direct requirements");
   const onlyVerdict = selfMix.length === 1 ? selfMix[0]?.verdict : undefined;
   const ranked = (rows: readonly RadiusRow[], from: number) =>
     rows.map((row, i) => (
@@ -440,14 +549,16 @@ export function RadiusView() {
         <AnswerSentence answer={answer} id="rl-answer" narrowed={layout.narrowed} />
       ) : (
         <p className="rl-answer" id="rl-answer">
-          None of your <b>{layout.exposureCount}</b> direct requirements lists a flagged package
-          {layout.narrowed ? " that matches the filter" : ""}.
+          No flagged package{layout.narrowed ? " that matches the filter" : ""} sits under{" "}
+          <ExposureList n={layout.exposureCount} lead="any of" />.
         </p>
       )}
       <ScopeNote layout={layout} />
       {more && <TailLinks layout={layout} go={go} />}
-      {more && <Key hollow={shown.some((r) => r.elsewhere.length > 0)} />}
-      {(more || (layout.selfOnly.length > 0 && selfOpen)) && <Head axis={axis} />}
+      {(more || selfOpen) && (
+        <Key squares={more} hollow={more && shown.some((r) => r.elsewhere.length > 0)} />
+      )}
+      {more && <Head axis={axis} />}
       {layout.lead.length > 0 && (
         <ul
           className="rl-list"
@@ -488,20 +599,15 @@ export function RadiusView() {
             onToggle={toggle(FOLD_SELF, selfOpen)}
             sub={vendorWords(layout.selfOnly.flatMap((r) => (r.self ? [r.self] : [])))}
           >
-            <b>{selfLead}</b> flagged {selfN > 1 ? "themselves" : "itself"}
-            {onlyVerdict ? (
-              <>
-                , {layout.selfOnly.length > 1 ? "all " : ""}
-                <VerdictWord verdict={onlyVerdict} />
-              </>
-            ) : (
-              <>
-                {" "}
-                (<MixWords mix={selfMix} />)
-              </>
-            )}
-            , with {selfNothing} listed under {selfN > 1 ? "them" : "it"}.
+            <SelfTitle
+              lead={selfLead}
+              many={selfN > 1}
+              filtered={selfFiltered}
+              mix={selfMix}
+              only={onlyVerdict}
+            />
           </FoldHead>
+          {axis && <Head axis={axis} own hidden={!selfOpen} />}
           <ul
             className="rl-list rl-fold-body"
             id="rl-self"

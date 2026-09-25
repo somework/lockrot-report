@@ -1084,7 +1084,10 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
     renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
 
     // Assert: the answer names the row; the row is a list item; its package is folded away.
-    expect(screen.getByText(/your one direct requirement, pulls in/)).toBeTruthy();
+    // exposure[] is not every direct requirement, so the answer never says "your one".
+    expect(
+      screen.getByText(/the one direct requirement lockrot's exposure list names, pulls in/),
+    ).toBeTruthy();
     expect(screen.getByRole("listitem", { name: "vendor/direct" })).toBeTruthy();
     expect(screen.queryByRole("listitem", { name: "vendor/transitive" })).toBeNull();
     expect(
@@ -1184,14 +1187,18 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
     renderIn(model, stateWith({ view: "radius", filters }), <RadiusView />);
 
     // Assert
-    expect(screen.getByText(/lists a flagged package/).textContent).toContain("that matches the filter");
+    expect(screen.getByText(/^No flagged package/).textContent).toBe(
+      "No flagged package that matches the filter sits under the one direct requirement lockrot's exposure list names.",
+    );
     expect(screen.getByText(/Only flagged packages that match the filter are counted/).textContent).toBe(
-      "Only flagged packages that match the filter are counted. Without it, 2 sit under 1 of your 1 direct requirements.",
+      "Only flagged packages that match the filter are counted. Without it, 2 sit under the one direct requirement lockrot's exposure list names.",
     );
     expect(screen.getByText("None of the 2 flagged packages listed under it match the filter.")).toBeTruthy();
     expect(screen.queryByText("Nothing flagged is listed under it.")).toBeNull();
     expect(
-      screen.getByRole("button", { name: /with nothing that matches the filter listed under it/ }),
+      screen.getByRole("button", {
+        name: /^1 direct requirement matches the filter itself \( ?pinned ?\); nothing listed under it does\./,
+      }),
     ).toBeTruthy();
   });
 
@@ -1233,6 +1240,49 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
 
     expect(screen.getByText(/1 flagged direct requirement has/)).toBeTruthy();
     expect(screen.getByText("acme/alone")).toBeTruthy();
+  });
+
+  it("marks a missing value with a dash, and says the tail's ages are the requirement's own", () => {
+    // Arrange: acme/lonely is flagged, lists nothing and has no age signal.
+    const lonely = makeFinding({ package: "acme/lonely", chain: ["acme/lonely"], verdict: "stale" });
+    const base = withExposure(flaggedModel([lonely]), [{ package: "acme/lonely", flagged: 0 }]);
+    const thresholds = [
+      ["release-warn-years", 3],
+      ["release-high-years", 5],
+    ] as const;
+    const model = { ...base, report: { ...base.report, run: { ...base.report.run, thresholds } } };
+
+    // Act
+    const { container } = renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+    const row = screen.getByRole("listitem", { name: "acme/lonely" });
+
+    // Assert: a dash, never a "0" or a phrase across the guides; the words are the cell's name.
+    expect(row.querySelector(".rl-num")?.textContent).toBe("–");
+    expect(within(row).getByRole("img", { name: "not flagged for age" })).toBeTruthy();
+    expect(row.querySelector(".age-none")).toBeNull();
+    expect(row.querySelectorAll(".age-guide")).toHaveLength(2);
+    expect(container.querySelector(".rl-head.is-own .fhead-axis-label")?.textContent).toBe(
+      "Its own years since release",
+    );
+  });
+
+  it("quotes the evidence a flagged-itself row matched the search in", () => {
+    // Arrange: acme/bundle's name lacks "hoa"; its evidence names the hoa/* packages it pulls in.
+    const bundle = makeFinding({
+      package: "acme/bundle",
+      chain: ["acme/bundle"],
+      verdict: "pinned",
+      evidence: "pinned to branch snapshot dev-master; pulls in 2 flagged packages: hoa/compiler, hoa/event",
+    });
+    const model = withExposure(flaggedModel([bundle]), [{ package: "acme/bundle", flagged: 0 }]);
+
+    // Act
+    renderIn(model, stateWith({ view: "radius", q: "hoa" }), <RadiusView />);
+    const row = screen.getByRole("listitem", { name: "acme/bundle" });
+
+    // Assert
+    expect(within(row).getByText("matched in:")).toBeTruthy();
+    expect(within(row).getByText("hoa").tagName).toBe("MARK");
   });
 });
 

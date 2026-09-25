@@ -10,6 +10,7 @@ import {
   placedOnRadius,
   pulledTree,
   radiusAnswer,
+  radiusCountPhrase,
   radiusLayout,
   radiusListed,
   radiusRowOrder,
@@ -242,6 +243,40 @@ describe("under a filter (PD-RADIUS-6)", () => {
     const layout = radiusLayout(wallabag, population(wallabag, "radius"));
 
     expect(radiusShownCount(layout)).toBe(29);
+  });
+});
+
+describe("radiusCountPhrase", () => {
+  it("keeps the plain count when exposure[] names every flagged direct requirement", () => {
+    const parent = makeFinding({ package: "acme/parent", direct: true, chain: ["acme/parent"] });
+    const model = modelWithExposure(makeModel([parent]), [{ package: "acme/parent", flagged: 0 }]);
+
+    expect(radiusCountPhrase(radiusLayout(model, [parent]))).toBe("1 of 1 direct requirement");
+  });
+
+  it("says which list it counts and adds the flagged direct requirements exposure[] leaves out", () => {
+    // wallabag: exposure[] names 29 requirements; 8 flagged direct requirements are not on it.
+    const wallabag = load("wallabag_wallabag");
+    const all = population(wallabag, "radius");
+
+    const layout = radiusLayout(wallabag, all, all);
+
+    expect(layout.unfilteredUnlisted).toBe(8);
+    expect(layout.unlisted).toHaveLength(8);
+    expect(radiusCountPhrase(layout)).toBe(
+      "29 of 29 direct requirements on the exposure list, plus 8 of 8 flagged ones it leaves out",
+    );
+  });
+
+  it("counts the left-out ones a filter keeps against all of them", () => {
+    const wallabag = load("wallabag_wallabag");
+    const all = population(wallabag, "radius");
+    const silent = all.filter((f) => f.verdict === "silent");
+
+    const layout = radiusLayout(wallabag, silent, all);
+
+    expect(layout.unfilteredUnlisted).toBe(8);
+    expect(radiusCountPhrase(layout)).toMatch(/, plus 2 of 8 flagged ones it leaves out$/);
   });
 });
 

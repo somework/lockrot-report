@@ -257,6 +257,9 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 | PD-RADIUS-5                 | a flagged direct requirement not in exposure vanished                       | a footnote names each; each name opens its detail, as on Findings                                                                             |
 | PD-RADIUS-6                 | a filter silently changed what "flagged" counted                            | under a filter the sentences say "matching", a note gives the unfiltered counts, a row says what the filter hides under it                    |
 | PD-RADIUS-7                 | (new layout) squares sat under the age head beside an open package          | from 600 to 989px the squares stay under the name; the right column is the age axis alone, every age a tick or a whisker                      |
+| PD-RADIUS-8                 | "your 29 direct requirements" counted exposure[] as every requirement       | every count is "of the N direct requirements lockrot's exposure list names"; the count line adds the left-out ones                            |
+| PD-RADIUS-9                 | "not flagged for age" was drawn across the warn and high guides             | a muted dash in the number's place, the words in its name and the key; a row listing nothing shows "–", not "0"                               |
+| PD-RADIUS-10                | one "years since release" head over two kinds of age                        | "Their years since release" over ranked rows; the flagged-themselves tail has its own head, "Its own…"                                        |
 
 Changed on purpose, and not a legacy bug:
 

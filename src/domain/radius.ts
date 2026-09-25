@@ -17,6 +17,7 @@
 
 import type { Finding, Model, Verdict } from "../model/types";
 import { PRIORITIES } from "../model/types";
+import { countPhrase } from "./format";
 import { VERDICT_ORDER } from "./vocab";
 
 /** A flagged package a row reaches but does not list: `listedUnder` is the row that lists it (the
@@ -69,7 +70,11 @@ export interface RadiusLayout {
   readonly receipt: readonly RadiusReceipt[];
   /** Flagged direct requirements `exposure` does not name, so no row can. */
   readonly unlisted: readonly Finding[];
-  /** How many direct requirements `exposure` names. */
+  /** `unlisted` with no filter applied: every flagged direct requirement `exposure` leaves out. */
+  readonly unfilteredUnlisted: number;
+  /** How many direct requirements `exposure` names — not every direct requirement the project has:
+   *  `unfilteredUnlisted` more are flagged and missing from it, so the view always says "the N
+   *  direct requirements lockrot's exposure list names", never "your N". */
   readonly exposureCount: number;
   /** Whether the query box or the rail keeps any flagged package off the tab: every count above is
    *  then of the packages that match, and the view says so. */
@@ -166,6 +171,7 @@ export function radiusLayout(
     throughOther,
     receipt: receiptOf(throughOther),
     unlisted: visibleFlagged.filter((f) => f.direct && !parents.has(f.package)),
+    unfilteredUnlisted: allFlagged.filter((f) => f.direct && !parents.has(f.package)).length,
     exposureCount: rows.length,
     narrowed,
     unfilteredTotal: unfilteredListed.size,
@@ -199,6 +205,26 @@ export function radiusListed(layout: RadiusLayout): ReadonlySet<string> {
 /** The direct requirements the tab names by row or in a tail — what its count line counts. */
 export function radiusShownCount(layout: RadiusLayout): number {
   return layout.ranked.length + layout.selfOnly.length + layout.throughOther.length;
+}
+
+/**
+ * The status line's count for the tab: "29 of 29 direct requirements" when `exposure` names every
+ * flagged direct requirement; when it leaves some out, the footnote names them too, so the line
+ * counts them as well and says which list the first number is of — "29 of 29 direct requirements
+ * on the exposure list, plus 8 of 8 flagged ones it leaves out".
+ */
+export function radiusCountPhrase(layout: RadiusLayout): string {
+  const head = countPhrase(
+    radiusShownCount(layout),
+    layout.exposureCount,
+    "direct requirement",
+    "direct requirements",
+  );
+  if (layout.unfilteredUnlisted === 0) return head;
+  const ones = layout.unfilteredUnlisted === 1 ? "flagged one" : "flagged ones";
+  return `${head} on the exposure list, plus ${String(layout.unlisted.length)} of ${String(
+    layout.unfilteredUnlisted,
+  )} ${ones} it leaves out`;
 }
 
 /**

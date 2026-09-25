@@ -106,12 +106,22 @@ export function AgeCellEmpty({ axis, notRead }: { axis: AgeAxisData | null; notR
  * list. The captions are one `role="img"` with the thresholds spelled out, so a screen reader hears
  * "warn at 3 years", not "3y".
  */
-export function AgeAxis({ axis }: { axis: AgeAxisData }) {
-  const label = `age axis: years since the last release, 0 to ${axis.max} and more; warn at ${axis.warn} years, high at ${axis.high} years`;
+export function AgeAxis({
+  axis,
+  caption = "Years since release",
+  whose = "",
+}: {
+  axis: AgeAxisData;
+  /** The head's visible words; Blast radius says whose ages its column shows. */
+  caption?: string;
+  /** Said after "age axis" to a screen reader, as `caption` says it on screen. */
+  whose?: string;
+}) {
+  const label = `age axis${whose ? ` (${whose})` : ""}: years since the last release, 0 to ${axis.max} and more; warn at ${axis.warn} years, high at ${axis.high} years`;
   return (
     <span className="fhead-age" role="img" aria-label={label} title={label}>
       <span className="fhead-axis" aria-hidden="true">
-        <span className="fhead-axis-label">Years since release</span>
+        <span className="fhead-axis-label">{caption}</span>
         <span className="fhead-tick is-start">0</span>
         <span className="fhead-tick is-warn tone-med" style={{ left: pct(axis.warn, axis.max) }}>
           {axis.warn}y

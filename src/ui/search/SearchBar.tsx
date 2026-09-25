@@ -3,7 +3,7 @@ import { useReport } from "../context";
 import { applyFilters, hiddenByFilters, population } from "../../domain/filters";
 import { allAdvisories, passesAdvisoryRail } from "../../domain/advisories";
 import { matchesAdvisory, parseQuery } from "../../domain/query";
-import { radiusLayout, radiusShownCount } from "../../domain/radius";
+import { radiusCountPhrase, radiusLayout } from "../../domain/radius";
 import { countPhrase, plural } from "../../domain/format";
 import { searchSplit, searchSplitPhrase } from "../../domain/searchHits";
 import { NoWrap } from "../common/common";
@@ -57,15 +57,11 @@ function countLine(model: Model, state: State): string | null {
   }
 
   if (state.view === "radius") {
-    // Every requirement the tab names: a ranked row, a row in the "flagged themselves" tail, or a
-    // name in the "only through rows above" tail — against the tab's own count, `exposure`'s.
-    const layout = radiusLayout(model, applyFilters(model, state, "radius"));
-    return countPhrase(
-      radiusShownCount(layout),
-      model.report.exposure.length,
-      "direct requirement",
-      "direct requirements",
-    );
+    // Every requirement the tab names: a ranked row, a row in the "flagged themselves" tail, a
+    // name in the "only through rows above" tail — against `exposure`'s own count — and, when
+    // `exposure` leaves flagged direct requirements out, the ones the footnote names.
+    const layout = radiusLayout(model, applyFilters(model, state, "radius"), population(model, "radius"));
+    return radiusCountPhrase(layout);
   }
 
   return null;

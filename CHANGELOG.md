@@ -92,26 +92,32 @@ tag or the address format, says so under **Breaking** in its entry.
   packages and Advisories quotes its evidence around the hit, "matched in: pulls in 14 flagged
   packages: hoa/compiler (abandoned)…". What a search matches, and its `q=` address, are unchanged.
 - Blast radius is a ranked ledger. It opens with one sentence, "wallabag/rulerz (14) and
-  phpunit/phpunit (13) pull in 27 of the 49 flagged packages that sit under 17 of your 29 direct
-  requirements", then gives each direct requirement a row: its rank, its version, "dev", "<verdict>
+  phpunit/phpunit (13) pull in 27 of the 49 flagged packages that sit under 17 of the 29 direct
+  requirements lockrot's exposure list names", then gives each direct requirement a row: its rank, its version, "dev", "<verdict>
   itself" when it is flagged too, a square per flagged package listed under it (the same square size
   on every row, coloured by priority as in the summary band), a sentence on what it pulls in ("14
-  abandoned — all hoa/*"), and those packages' years since release on the Findings axis. A hollow
+  abandoned — all hoa/*"), and those packages' years since release on the Findings axis ("Their
+  years since release"; a dash where no age signal fired, so no words sit across the guides). A hollow
   ring with "+N" counts what the row also reaches that is listed under another row, and "listed
   under X" jumps to that row, opens it and marks those packages. A row's toggle shows its packages
   as a chain tree with their verdict, reason and age; a click on the row opens the requirement's
   full detail, the same one Findings opens. Rows that pull in one package each fold under one line
   (open on a wide screen, closed on a phone). After the ranking come the requirements that are
-  flagged themselves with nothing listed under them, and those that reach flagged packages only
-  through rows above, listed by the package they reach. A footnote names flagged direct
-  requirements that lockrot's exposure list leaves out, each name opening its detail. Print opens
-  every row and fold.
+  flagged themselves with nothing listed under them (under a head of their own, "Its own years since
+  release", since their ages are the requirement's own; a dash, not "0", where the squares go), and
+  those that reach flagged packages only through rows above, listed by the package they reach. A
+  footnote names flagged direct requirements that lockrot's exposure list leaves out, each name
+  opening its detail. Print opens every row and fold.
 - Under a search or a rail filter, Blast radius says its counts are of the flagged packages that
   match ("…with matching flagged packages under it: 14"), gives the counts without the filter on
   the line below, and a row whose packages the filter hides says how many ("None of the 14 flagged
   packages listed under it match the filter.") instead of "Nothing flagged is listed under it". With
-  no row left to rank, the "flagged themselves" tail opens as the list. The count line counts every
-  direct requirement the tab names, the "only through rows above" tail too.
+  no row left to rank, the "flagged themselves" tail opens as the list, headed "12 direct
+  requirements match the filter themselves (…); nothing listed under them does", and a row there
+  whose name lacks the searched words quotes the evidence they were found in. The count line counts
+  every direct requirement the tab names, the "only through rows above" tail too, and when the
+  exposure list leaves flagged direct requirements out it says so: "29 of 29 direct requirements on
+  the exposure list, plus 8 of 8 flagged ones it leaves out".
 
 ### Changed
 

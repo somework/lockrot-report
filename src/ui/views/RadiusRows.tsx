@@ -8,6 +8,7 @@ import { SIGNAL_DEFS, TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { Tag, toneClass } from "../common/common";
 import { useReport } from "../context";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
+import { MatchNote, useSearchHit } from "../search/MatchNote";
 import { openInteractions } from "./FindingRow";
 import {
   AgeSpread,
@@ -76,6 +77,18 @@ function AlsoLine({ row, tabIndex, env }: { row: RadiusRow; tabIndex: -1 | undef
           ),
         ),
       )}
+    </span>
+  );
+}
+
+/** Why a requirement in the "flagged themselves" tail matches the search box when its name does not
+ *  hold the words: the evidence words around the hit, as a Findings row quotes them (PD-SEARCH-1). */
+function SelfMatch({ finding }: { finding: Finding }) {
+  const hit = useSearchHit(finding);
+  if (hit === null || hit.field !== "evidence") return null;
+  return (
+    <span className="rl-also">
+      <MatchNote hit={hit} shown={finding.package} />
     </span>
   );
 }
@@ -162,6 +175,7 @@ export function ParentRow({ row, rank, expandable, open, env }: ParentProps) {
           ) : row.elsewhere.length === 0 ? (
             <span className="rl-quiet">Nothing flagged is listed under it.</span>
           ) : null}
+          {row.count === 0 && row.self && <SelfMatch finding={row.self} />}
           {row.count > 0 && row.unfiltered > row.count && (
             <span className="rl-also">{filteredOut(row.unfiltered - row.count)}</span>
           )}
@@ -171,6 +185,7 @@ export function ParentRow({ row, rank, expandable, open, env }: ParentProps) {
           findings={row.count > 0 ? row.pulled : row.self ? [row.self] : []}
           axis={env.axis}
           thresholds={model.report.run.thresholds}
+          own={row.count === 0 && row.self !== null}
         />
         <span className="rr-tog">
           {canOpen && (

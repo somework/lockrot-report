@@ -22,10 +22,13 @@ test("answers first: the fewest rows that hold half of what is listed", async ({
   await open(page, "view=radius");
 
   await expect(page.locator(".rl-answer")).toHaveText(
-    "wallabag/rulerz (14) and phpunit/phpunit (13) pull in 27 of the 49 flagged packages that sit under 17 of your 29 direct requirements.",
+    "wallabag/rulerz (14) and phpunit/phpunit (13) pull in 27 of the 49 flagged packages that sit under 17 of the 29 direct requirements lockrot's exposure list names.",
   );
-  // Every requirement the tab names: 17 ranked, 5 flagged themselves, 7 through rows above.
-  expect(await report.countLine()).toBe("29 of 29 direct requirements");
+  // Every requirement the tab names: 17 ranked, 5 flagged themselves, 7 through rows above — and
+  // the 8 flagged direct requirements exposure[] leaves out, which the footnote names.
+  expect(await report.countLine()).toBe(
+    "29 of 29 direct requirements on the exposure list, plus 8 of 8 flagged ones it leaves out",
+  );
 });
 
 test("a row's toggle shows its packages as a tree; the requirement opens the full Findings detail", async ({
@@ -113,15 +116,19 @@ test("under the rail's Direct filter every sentence says it counts matching pack
   await open(page, "view=radius&scope=direct");
 
   await expect(page.locator(".rl-answer")).toHaveText(
-    "None of your 29 direct requirements lists a flagged package that matches the filter.",
+    "No flagged package that matches the filter sits under any of the 29 direct requirements lockrot's exposure list names.",
   );
   await expect(page.locator(".rl-scope")).toHaveText(
-    "Only flagged packages that match the filter are counted. Without it, 49 sit under 17 of your 29 direct requirements.",
+    "Only flagged packages that match the filter are counted. Without it, 49 sit under 17 of the 29 direct requirements lockrot's exposure list names.",
   );
   // Nothing ranks, so the "flagged themselves" tail is the list, open, and says no "more".
-  const self = page.getByRole("button", { name: /^12 direct requirements are flagged themselves/ });
+  const self = page.getByRole("button", { name: /^12 direct requirements match the filter themselves/ });
   await expect(self).toHaveAttribute("aria-expanded", "true");
-  await expect(self).toContainText("with nothing that matches the filter listed under them");
+  await expect(self).toContainText("nothing listed under them does");
+  // The tail's own head says its ages are each requirement's own, and a row listing nothing shows a
+  // dash where the squares go, never a "0".
+  await expect(page.locator(".rl-head.is-own")).toContainText("Its own years since release");
+  await expect(row(page, "wallabag/rulerz").locator(".rl-num")).toHaveText("–");
   await expect(row(page, "wallabag/rulerz")).toContainText(
     "None of the 14 flagged packages listed under it match the filter.",
   );
@@ -134,12 +141,14 @@ test("a search narrows the answer to what matches it", async ({ page }) => {
   await open(page, "view=radius&q=hoa");
 
   await expect(page.locator(".rl-answer")).toHaveText(
-    "wallabag/rulerz is the only one of your 29 direct requirements with matching flagged packages under it: 14.",
+    "Of the 29 direct requirements lockrot's exposure list names, only wallabag/rulerz has matching flagged packages under it: 14.",
   );
-  await page.getByRole("button", { name: /1 more is flagged itself/ }).click();
-  await expect(row(page, "wallabag/rulerz-bundle")).toContainText(
-    "The one flagged package listed under it does not match the filter.",
-  );
+  await page.getByRole("button", { name: /1 more matches the filter itself/ }).click();
+  const bundle = row(page, "wallabag/rulerz-bundle");
+  await expect(bundle).toContainText("The one flagged package listed under it does not match the filter.");
+  // Its name lacks "hoa": the row quotes the evidence the search found it in.
+  await expect(bundle.locator("mark")).toHaveText("hoa");
+  await expect(bundle).toContainText("matched in:");
 });
 
 test("the footnote's names open the same detail as Findings", async ({ page }) => {
@@ -162,7 +171,7 @@ test("beside an open package the squares stay in the requirement's column, off t
     const line = row(page, "phpunit/phpunit").locator(".rr-line").first();
     const squares = await line.locator(".rl-sq").boundingBox();
     const age = await line.locator(".fc-age").boundingBox();
-    const axis = await page.locator(".rl-head .fhead-age").boundingBox();
+    const axis = await page.locator(".rl-head:not(.is-own) .fhead-age").boundingBox();
     if (!squares || !age || !axis) throw new Error("no box");
     expect(squares.x + squares.width).toBeLessThanOrEqual(axis.x);
     expect(age.x).toBeGreaterThanOrEqual(axis.x - 1);

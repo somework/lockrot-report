@@ -115,8 +115,9 @@ export function Squares({ row, onToggle }: { row: RadiusRow; onToggle: (() => vo
       data-no-open={onToggle ? "" : undefined}
       onClick={onToggle ?? undefined}
     >
+      {/* A row listing nothing shows a dash, not a loud "0" where the squares go. */}
       <span className={row.count > 0 ? "rl-num" : "rl-num is-zero"} aria-hidden="true">
-        {row.count}
+        {row.count > 0 ? row.count : "–"}
       </span>
       <span className="rl-units" aria-hidden="true">
         {sorted.map((f, i) => (
@@ -154,25 +155,34 @@ export function AgeSpread({
   findings,
   axis,
   thresholds,
+  own = false,
 }: {
   findings: readonly Finding[];
   axis: AgeAxis | null;
   thresholds: Thresholds;
+  /** The ages are the row's own requirement's, not those of packages listed under it. */
+  own?: boolean;
 }) {
   const scales = axis ? findings.map((f) => ageScale(f, thresholds, axis.max)).filter((s) => s !== null) : [];
   if (axis === null || scales.length === 0) {
     // The Findings age cell's own words (`AgeCellEmpty`), so a package reads the same on a row here
-    // and under one: "age not read" when an S10 blocked every one's age check, else "not flagged
-    // for age".
+    // and under one — "age not read" when an S10 blocked every one's age check, else "not flagged
+    // for age" — said by the cell's name and title. On screen the cell is a dash in the number's
+    // place, as a ledger marks a missing value, and the key under the answer says what it means:
+    // the phrase itself, drawn across the track, sat on the warn and high guides.
     const notRead = findings.length > 0 && findings.every(ageNotRead);
-    const title =
-      findings.length === 0
-        ? "nothing listed under this row"
-        : notRead
-          ? "lockrot could not read the age of these packages (see their S10 signal)"
-          : "none of S2 (no stable release), S4 (no push) or S8 (the installed branch stopped) fired";
+    const words = notRead ? "age not read" : "not flagged for age";
+    const title = notRead
+      ? "age not read: lockrot could not read the age of these packages (see their S10 signal)"
+      : "not flagged for age: none of S2 (no stable release), S4 (no push) or S8 (the installed branch stopped) fired";
+    const some = findings.length > 0;
     return (
-      <span className="fcell fc-age rl-age is-empty">
+      <span
+        className="fcell fc-age rl-age is-empty"
+        role={some ? "img" : undefined}
+        aria-label={some ? words : undefined}
+        title={some ? title : undefined}
+      >
         <span className="age-track" aria-hidden="true">
           {axis && (
             <>
@@ -181,9 +191,9 @@ export function AgeSpread({
             </>
           )}
         </span>
-        {findings.length > 0 && (
-          <span className="age-none" title={title}>
-            {notRead ? "age not read" : "not flagged for age"}
+        {some && (
+          <span className="age-num rl-age-dash" aria-hidden="true">
+            –
           </span>
         )}
       </span>
@@ -204,6 +214,7 @@ export function AgeSpread({
   const text = lo.toFixed(1) === hi.toFixed(1) ? lo.toFixed(1) : `${lo.toFixed(1)}–${hi.toFixed(1)}`;
   const missing = findings.length - scales.length;
   const label = [
+    own ? "its own " : "",
     scales.length > 1 ? `${String(scales.length)} packages, ` : "",
     `years since release ${lo.toFixed(1) === hi.toFixed(1) ? lo.toFixed(1) : `${lo.toFixed(1)} to ${hi.toFixed(1)}`}`,
     `; warn at ${String(axis.warn)} years, high at ${String(axis.high)}`,
