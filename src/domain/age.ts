@@ -170,11 +170,7 @@ export function ageLegend(thresholds: Thresholds): AgeLegend | null {
   const release = releaseThresholds(thresholds);
   if (release !== null) return release;
 
-  const pushWarn = thresholdYears(thresholds, "push-warn-years");
-  const pushHigh = thresholdYears(thresholds, "push-high-years");
-  if (pushWarn !== null && pushHigh !== null) return { warn: pushWarn, high: pushHigh };
-
-  return null;
+  return pushThresholds(thresholds);
 }
 
 /**
@@ -185,6 +181,19 @@ export function ageLegend(thresholds: Thresholds): AgeLegend | null {
  * recorded one of the two thresholds that signal's kind is measured against.
  */
 export function ageScale(finding: Finding, thresholds: Thresholds, max: number): AgeScale | null {
+  const fact = ageFact(finding, thresholds);
+  return fact === null ? null : { ...fact, max };
+}
+
+export type AgeFact = Omit<AgeScale, "max">;
+
+/**
+ * The same age a Findings row draws, without a shared axis: which signal supplies it (S8 > S2 > S4),
+ * its years, its two thresholds, and whether the verdict made it context only. The open package's
+ * key facts (`detail/DetailLead.tsx`) read it so the detail and the row never name two different
+ * ages for one package. `null` for exactly the reasons `ageScale` gives.
+ */
+export function ageFact(finding: Finding, thresholds: Thresholds): AgeFact | null {
   const resolved = resolveSource(finding, thresholds);
   if (resolved === null) return null;
 
@@ -193,9 +202,15 @@ export function ageScale(finding: Finding, thresholds: Thresholds, max: number):
     years: resolved.years,
     warn: resolved.warn,
     high: resolved.high,
-    max,
     contextOnly: isContextOnly(finding),
   };
+}
+
+/** The run's push warn/high pair, the one S4's years are measured against; `null` unless both. */
+export function pushThresholds(thresholds: Thresholds): AgeLegend | null {
+  const warn = thresholdYears(thresholds, "push-warn-years");
+  const high = thresholdYears(thresholds, "push-high-years");
+  return warn !== null && high !== null ? { warn, high } : null;
 }
 
 /**

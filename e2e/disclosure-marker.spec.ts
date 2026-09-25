@@ -55,12 +55,13 @@ test.describe("PD-DISCLOSURE-1: one marker, every fold", () => {
     }
   });
 
-  test("the detail panel's three reference sections each draw the same marker", async ({ page }) => {
+  // "How it is reached" is no longer one of them: its chain opens the panel now (PD-DETAIL-6).
+  test("the detail panel's two reference sections each draw the same marker", async ({ page }) => {
     await report.goto(FIXTURES.mini);
     await report.openPackage("vendor/transitive");
     const detail = page.getByRole("complementary", { name: "vendor/transitive" });
 
-    for (const title of ["How it is reached", "The lock entry", "Provenance"]) {
+    for (const title of ["The lock entry", "Provenance"]) {
       const summary = detail.locator("summary", { hasText: title });
       const box = await markerBox(summary);
       expect(box.content).not.toBe("none");

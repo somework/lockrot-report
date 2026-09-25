@@ -357,18 +357,37 @@ describe("Detail", () => {
       expect(screen.queryByText(/^Why this is/)).toBeNull();
     });
 
-    it("shows the steps, as plain sentences, and the document's own final priority", () => {
-      renderDetail(MINI, "vendor/transitive");
-      screen.getByText("Why this is high");
-      expect(screen.getByText("Abandoned packages start at critical.")).toBeTruthy();
-      expect(screen.getByText("Only reached through another package: one step down.")).toBeTruthy();
-      screen.getByText("So:", { exact: false });
-      expect(screen.getByText("high", { selector: ".detail-why-result b" })).toBeTruthy();
+    it("shows every rule as a sentence, applied or not, and the document's own final priority", () => {
+      const { container } = renderDetail(MINI, "vendor/transitive");
+      screen.getByText("Why this is high", { exact: false });
+      const rows = Array.from(container.querySelectorAll(".detail-ladder-text")).map((el) => [
+        el.textContent,
+        el.classList.contains("is-applied")
+          ? "applied"
+          : el.classList.contains("is-quiet")
+            ? "quiet"
+            : "result",
+      ]);
+      expect(rows).toEqual([
+        ["Abandoned packages start at critical.", "applied"],
+        ["Only reached through vendor/direct: one step down.", "applied"],
+        ["Needed in production: no step down.", "quiet"],
+        ["No security advisory: no step up.", "quiet"],
+        ["So: high.", "result"],
+      ]);
+      expect(container.querySelector(".detail-why-aside")?.textContent).toBe(
+        "one rule moved it from critical",
+      );
+      // One dot per row, on the rung the ladder is at: critical, then high for the rest.
+      const dots = Array.from(container.querySelectorAll(".detail-ladder-dot")).map((el) =>
+        Array.from(el.classList).find((c) => c.startsWith("at-")),
+      );
+      expect(dots).toEqual(["at-0", "at-1", "at-1", "at-1", "at-1"]);
     });
 
     it("clamps a step-up at critical instead of implying a level beyond it", () => {
       renderDetail(EXTRA_MODEL, "vendor/vulnerable");
-      screen.getByText("Why this is critical");
+      screen.getByText("Why this is critical", { exact: false });
       expect(screen.getByText("An advisory with no fix coming: one step up.")).toBeTruthy();
     });
   });
@@ -391,17 +410,43 @@ describe("Detail", () => {
     });
   });
 
-  describe("how it is reached", () => {
-    it("shows composer.json for a direct finding, ignoring any chain field", () => {
+  describe("how it gets in (PD-DETAIL-6: the chain opens the panel, no longer a closed reference)", () => {
+    it("shows composer.json for a direct finding", () => {
       const { container } = renderDetail(MINI, "vendor/direct");
-      openReference(container, "How it is reached");
-      expect(container.querySelector(".detail-chain")?.textContent).toBe("composer.json → vendor/direct");
+      expect(container.querySelector(".detail-chain")?.textContent).toBe("composer.json›vendor/direct");
+      expect(container.querySelector(".detail-chain .is-self")?.textContent).toBe("vendor/direct");
     });
 
-    it("shows the full chain for a transitive finding", () => {
-      const { container } = renderDetail(MINI, "vendor/transitive");
-      openReference(container, "How it is reached");
-      expect(container.querySelector(".detail-chain")?.textContent).toBe("vendor/direct → vendor/transitive");
+    it("shows the full chain for a transitive finding, a flagged hop opening that package", () => {
+      const { container, dispatch } = renderDetail(MINI, "vendor/transitive");
+      expect(container.querySelector(".detail-chain")?.textContent).toBe(
+        "composer.json›vendor/direct›vendor/transitive",
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "vendor/direct" }));
+      expect(dispatch).toHaveBeenCalledWith({ type: "select", pkg: "vendor/direct" });
+    });
+
+    it("lists what it pulls in from S7, each flagged package one click away", () => {
+      const { container, dispatch } = renderDetail(MINI, "vendor/direct");
+      const pulls = container.querySelector(".detail-pulls");
+      expect(pulls?.textContent).toBe("vendor/transitive (abandoned)");
+      fireEvent.click(screen.getByRole("button", { name: "vendor/transitive" }));
+      expect(dispatch).toHaveBeenCalledWith({ type: "select", pkg: "vendor/transitive" });
+    });
+  });
+
+  describe("the answer and its key facts (PD-DETAIL-6)", () => {
+    it("says what it is, how it gets in, and the four facts, in the lead above every section", () => {
+      const { container } = renderDetail(KOEL, "predis/predis");
+      const answer = container.querySelector(".detail-answer")?.textContent ?? "";
+      expect(answer).toMatch(/^Left behind on /);
+      expect(answer).toContain("You require it directly.");
+      const labels = Array.from(container.querySelectorAll(".detail-facts dt")).map((el) => el.textContent);
+      expect(labels.slice(0, 2)).toEqual(["Installed", "Branch released"]);
+      expect(labels).toContain("Libyears");
+      const facts = container.querySelector(".detail-facts")?.textContent ?? "";
+      expect(facts).toContain("4.7");
     });
   });
 
@@ -425,34 +470,37 @@ describe("Detail", () => {
   });
 
   describe("replacement", () => {
-    it("links a resolved package-name replacement to Packagist", () => {
-      renderDetail(EXTRA_MODEL, "vendor/replaced");
-      const link = screen.getByRole("link", { name: "replacement: vendor/successor" });
+    it("links a resolved package-name replacement to Packagist, in the answer sentence", () => {
+      const { container } = renderDetail(EXTRA_MODEL, "vendor/replaced");
+      expect(container.querySelector(".detail-answer")?.textContent).toContain(
+        "Its named replacement is vendor/successor.",
+      );
+      const link = screen.getByRole("link", { name: "vendor/successor" });
       expect(link.getAttribute("href")).toBe("https://packagist.org/packages/vendor/successor");
     });
 
     it("shows Packagist's own free-text replacement as plain text, not a link (critic.md M32)", () => {
-      renderDetail(EXTRA_MODEL, "vendor/freetext-replacement");
-      expect(screen.queryByRole("link", { name: /replacement:/ })).toBeNull();
-      expect(screen.getByText("replacement: some/other-package")).toBeTruthy();
+      const { container } = renderDetail(EXTRA_MODEL, "vendor/freetext-replacement");
+      expect(screen.queryByRole("link", { name: "some/other-package" })).toBeNull();
+      expect(container.querySelector(".detail-answer-replacement")?.textContent).toBe("some/other-package");
     });
 
-    it("shows the require-dev and transitive tags for a dev, transitive finding", () => {
+    it("says a dev, transitive finding is both, in the answer and on its chain", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/freetext-replacement");
-      expect(container.textContent).toContain("transitive");
-      expect(container.textContent).toContain("require-dev");
+      expect(container.querySelector(".detail-answer")?.textContent).toContain(", for development only.");
+      expect(container.querySelector(".detail-chain")?.textContent).toContain("require-dev");
     });
   });
 
   describe("advisories", () => {
     it("omits the section for a finding with no advisory", () => {
       renderDetail(MINI, "vendor/transitive");
-      expect(screen.queryByText(/security advisor/)).toBeNull();
+      expect(screen.queryByRole("heading", { name: /security advisor/ })).toBeNull();
     });
 
     it("titles the section with the advisory count and lists the fix ladder", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/vulnerable");
-      screen.getByText("2 security advisories");
+      screen.getByRole("heading", { name: "2 security advisories" });
 
       const rungs = container.querySelectorAll(".detail-rung");
       expect(rungs.length).toBe(2);
@@ -680,14 +728,16 @@ describe("Detail", () => {
   });
 
   describe("a fully-detailed real finding (predis/predis, koel_koel.json)", () => {
-    it("renders the header's pills, tags and outbound links", () => {
+    it("renders the header's version, pills and outbound links", () => {
       const { container } = renderDetail(KOEL, "predis/predis");
       // Scoped to the pills row: "high" also appears as the bold result of "Why this is high"
-      // further down the panel, and a page-wide text query would find both.
+      // further down the panel, and a page-wide text query would find both. The direct/transitive
+      // tag moved into the answer sentence (PD-DETAIL-6), so the pills are the two words alone.
       const pills = container.querySelector(".detail-pills");
       expect(pills?.textContent).toContain("left-behind");
       expect(pills?.textContent).toContain("high");
-      expect(pills?.textContent).toContain("direct");
+      expect(pills?.querySelector(".tag")).toBeNull();
+      expect(container.querySelector(".detail-version")?.textContent).toMatch(/^v?\d/);
       expect(screen.getByRole("link", { name: "packagist" }).getAttribute("href")).toBe(
         "https://packagist.org/packages/predis/predis",
       );
@@ -725,14 +775,15 @@ describe("Detail", () => {
       return markers.map((marker) => text.indexOf(marker));
     }
 
-    it("puts follow-the-upstream right after the header, then priority, release branches, signals, and the three reference sections last", () => {
+    it("puts the answer and how it gets in first, then priority, follow-the-upstream, release branches, signals, and the two reference sections last", () => {
       const { container } = renderDetail(KOEL, "predis/predis");
       const order = markerOrder(container, [
-        "Follow the upstream",
+        "Left behind on",
+        "How it gets in",
         "Why this is high",
+        "Follow the upstream",
         "Release branches",
         "Signals — what was observed",
-        "How it is reached",
         "The lock entry",
         "Provenance",
       ]);
@@ -740,13 +791,9 @@ describe("Detail", () => {
       expect(order).toEqual([...order].sort((a, b) => a - b));
     });
 
-    it("puts against the baseline ahead of why this priority and the reference sections", () => {
+    it("puts why this priority ahead of against the baseline, and both ahead of the reference sections", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/worsened");
-      const order = markerOrder(container, [
-        "The baseline recorded",
-        "Why this is medium",
-        "How it is reached",
-      ]);
+      const order = markerOrder(container, ["Why this is medium", "The baseline recorded", "The lock entry"]);
       expect(order).not.toContain(-1);
       expect(order).toEqual([...order].sort((a, b) => a - b));
     });
@@ -754,18 +801,18 @@ describe("Detail", () => {
     it("puts every advisory ahead of signals and the reference sections", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/vulnerable");
       const order = markerOrder(container, [
-        "2 security advisories",
+        "Every advisory",
         "Signals — what was observed",
-        "How it is reached",
+        "The lock entry",
       ]);
       expect(order).not.toContain(-1);
       expect(order).toEqual([...order].sort((a, b) => a - b));
     });
 
-    it("closes the three reference sections by default", () => {
+    it("closes the two reference sections by default", () => {
       const { container } = renderDetail(KOEL, "predis/predis");
       const references = container.querySelectorAll<HTMLDetailsElement>("details.detail-reference");
-      expect(references.length).toBe(3);
+      expect(references.length).toBe(2);
       for (const reference of references) {
         expect(reference.open).toBe(false);
       }

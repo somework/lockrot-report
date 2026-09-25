@@ -145,7 +145,9 @@ test.describe("no horizontal overflow inside the open detail sheet at 320px (reg
     await report.openPackage("sensio/framework-extra-bundle");
 
     const detail = page.getByRole("complementary", { name: "sensio/framework-extra-bundle" });
-    for (const title of ["How it is reached", "The lock entry", "Provenance"]) {
+    // The chain that used to sit in a closed "How it is reached" now opens the panel (PD-DETAIL-6),
+    // so it is already on screen here; the two reference sections that remain are opened.
+    for (const title of ["The lock entry", "Provenance"]) {
       await detail.locator("summary", { hasText: title }).click();
     }
 

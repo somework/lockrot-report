@@ -590,8 +590,12 @@ export class NewReportPage implements ReportPage {
     return collapse((await this.gateFactPopover().textContent()) ?? "");
   }
 
+  /** Scoped to the rail's own group: the open detail's chain names packages as buttons too
+   *  (PD-DETAIL-6), and a page-wide name match found `vendor/direct` for the rail's "Direct". */
   private railLocator(group: RailGroup, key: string): Locator {
-    return this.page.getByRole("button", { name: railLabel(group, key) });
+    return this.page
+      .getByRole("group", { name: "Filters" })
+      .getByRole("button", { name: railLabel(group, key) });
   }
 
   async railOption(group: RailGroup, key: string): Promise<void> {

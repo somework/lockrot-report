@@ -44,6 +44,12 @@ tag or the address format, says so under **Breaking** in its entry.
   says why: "not flagged for age", or "age not read" when a check could not run. In forced colours
   the track behind a bar is not drawn, so a short bar never looks long.
 - Filtering by exactly one signal makes every row quote that signal instead of its own top one.
+- An open package starts with one sentence saying what it is and how it gets in, in the release
+  branches' serif ("Left behind on 10.x: its last release was 4.5 years ago while 11.x kept
+  releasing. It comes in through scheb/2fa-google-authenticator. 2 security advisories affect your
+  version and no fix is coming on 10.x."), then its installed version, the age its row draws (in the
+  same colour), its libyears and PHP constraint, then how it gets in from composer.json and what
+  flagged packages it pulls in — each a flagged package's name opening it.
 - A definition that names a threshold setting shows what this run set it to, "5 years
   (release-high-years)".
 - The package detail says when the search or a filter hides its package from the list, with a
@@ -61,12 +67,17 @@ tag or the address format, says so under **Breaking** in its entry.
   opened offline cannot reach; "In the glossary" opens the glossary on that verdict. A pill inside a
   Findings row stays plain text instead, its title still carrying the definition: a click there
   opens the package, the same as clicking anywhere else in the row.
-- "Why this is `<priority>`" explains each step of the ladder in a plain sentence instead of a
-  code-style chip chain.
+- "Why this is `<priority>`" is a ladder: the verdict's starting priority, then each rule — reach,
+  dev, an advisory with no fix — in the order lockrot applies them, including the ones that did not
+  apply ("You require it directly: no step down."), each a dot on a critical · high · medium · low
+  track, ending "So: <priority>".
+- The detail header puts the installed version beside the name and the pills and links on one line;
+  the direct/transitive and require-dev tags and the replacement link moved into the answer
+  sentence, and "How it is reached" is no longer a folded section.
 - A Findings row shows one signal, its most serious, said short; the package's detail lists the
   rest (the row no longer counts them), and a printed row shows them all.
-- The package detail leads with "Follow the upstream"; "How it is reached", "The lock entry" and
-  "Provenance" start folded.
+- The package detail leads with its answer and the priority ladder, then "Follow the upstream";
+  "The lock entry" and "Provenance" start folded.
 - The search hint is one line, "Press ? for keys and search syntax"; the keys and the search syntax
   are in the glossary.
 - The glossary opens on the nine verdicts, the other sections folded, and its reference link names

@@ -1,0 +1,382 @@
+/*
+ * The top of the open package (PD-DETAIL-6/7, DESIGN.md §5): the answer sentence, its key facts, how
+ * it gets in and what it pulls in (`DetailLead.tsx`), then the priority ladder (`PriorityWhy.tsx`).
+ * Split from detail.css, whose sections it sits above, to keep that file to the panel's reference
+ * parts. The answer shares the release-branches answer's serif, size and mono-in-serif rule
+ * (timeline.css), so the two answers in one panel read as one voice.
+ */
+
+/* ---------- the answer ---------- */
+.detail-lead {
+  padding: 14px 16px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+/* A measure for the serif line when the panel is a wide sheet (760–1199px): past ~40em a sentence
+   stops reading as one thought. */
+.detail-answer {
+  margin: 0;
+  max-width: 40em;
+  font: 19px/1.34 var(--serif);
+  color: var(--ink);
+  text-wrap: pretty;
+}
+/* Mono inside a serif line reads large at the same size; 0.84em sits it on the serif's x-height —
+   the release-branches answer's own rule (`.detail-timeline-name`). */
+.detail-answer-name {
+  font-family: var(--mono);
+  font-size: 0.84em;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.detail-answer-figure {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.detail-answer-figure.is-toned {
+  color: var(--tone);
+}
+.detail-answer-replacement {
+  font-weight: 600;
+}
+/* `.out` is the header's small, muted link; inside the sentence the replacement link reads at the
+   sentence's own size and ink, underlined so it is still visibly a link. */
+.detail-answer-replacement .out {
+  font-size: inherit;
+  color: inherit;
+  white-space: normal;
+  border-bottom: 1px solid var(--border-strong);
+}
+.detail-answer-replacement a.out:hover {
+  color: var(--accent-ink);
+}
+
+/* ---------- key facts ---------- */
+.detail-facts {
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+}
+.detail-fact {
+  min-width: 0;
+}
+.detail-fact.is-wide {
+  flex: 1 1 100%;
+}
+.detail-facts dt,
+.detail-path dt {
+  font-family: var(--cond);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.detail-facts dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.detail-fact.is-wide dd {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.detail-facts dd .muted {
+  font-family: var(--sans);
+  font-size: 12px;
+}
+.detail-fact-toned {
+  color: var(--tone);
+  font-weight: 600;
+}
+
+/* ---------- how it gets in, what it pulls in ---------- */
+.detail-paths {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.detail-path {
+  min-width: 0;
+}
+/* The count after the label reads in ordinary case, a quieter half of the same caption. */
+.detail-path-count {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ink-2);
+}
+.detail-path dd {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.detail-chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  row-gap: 2px;
+}
+.detail-hop,
+.detail-hop-link {
+  font-family: var(--mono);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.detail-hop {
+  color: var(--ink-2);
+}
+.detail-hop.is-root {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--muted);
+}
+.detail-hop.is-self {
+  color: var(--ink);
+  font-weight: 600;
+}
+.detail-hop-sep {
+  color: var(--muted);
+  margin: 0 6px;
+}
+.detail-hop-note {
+  margin-left: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.detail-hop-note::before {
+  content: "· ";
+}
+/* A hop or a pulled-in package that is itself a finding here: a button that opens it, drawn as a
+   link because that is what it does — the same underline the page's other in-page links carry. */
+.detail-hop-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent-ink) 40%, transparent);
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.detail-hop-link:hover {
+  text-decoration-color: currentColor;
+}
+.detail-chain-also {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.detail-chain-also .mono {
+  font-size: 11.5px;
+}
+.detail-pulled {
+  white-space: normal;
+}
+.detail-pulled-verdict {
+  color: var(--muted);
+}
+.detail-pulled b {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ---------- why this priority: the ladder ----------
+   Two columns: the rule's sentence, and a four-rung track (crit · high · med · low). Each row is one
+   rule of `domain/priority.ts#priorityWhy`, in its order; the dot sits on the rung the ladder is on
+   after that rule. Applied: filled, in that rung's tone. Not applied: hollow, where it already was. */
+.detail-why > h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+.detail-why-aside {
+  font-family: var(--sans);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+/* Capped so that in a wide sheet the track stays near the sentences it marks. */
+.detail-ladder {
+  --rung-w: 128px;
+  max-width: 560px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--rung-w);
+  column-gap: 14px;
+}
+.detail-ladder-head {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  text-align: center;
+  font-family: var(--cond);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding-bottom: 5px;
+}
+.detail-ladder-head span {
+  color: var(--tone);
+}
+.detail-ladder-text {
+  margin: 0;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--ink);
+}
+.detail-ladder-text.is-quiet {
+  color: var(--muted);
+}
+.detail-ladder-text.is-result {
+  display: block;
+  padding-top: 8px;
+  border-top-color: var(--border-strong);
+  font: 18px/1.3 var(--serif);
+}
+.detail-ladder-text.is-result b {
+  font-weight: 600;
+  color: var(--tone);
+}
+/* The four rungs: a hairline at each column's centre, drawn as four one-pixel backgrounds. */
+.detail-ladder-track {
+  position: relative;
+  border-top: 1px solid var(--border);
+  background-repeat: no-repeat;
+  background-image:
+    linear-gradient(var(--border), var(--border)), linear-gradient(var(--border), var(--border)),
+    linear-gradient(var(--border), var(--border)), linear-gradient(var(--border), var(--border));
+  background-size: 1px 100%;
+  background-position:
+    calc(12.5% - 0.5px) 0,
+    calc(37.5% - 0.5px) 0,
+    calc(62.5% - 0.5px) 0,
+    calc(87.5% - 0.5px) 0;
+}
+.detail-ladder-track.is-result {
+  border-top-color: var(--border-strong);
+}
+.detail-ladder-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.detail-ladder-line {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1.5;
+}
+.detail-ladder-dot {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1.5px solid var(--muted);
+}
+.detail-ladder-dot.at-0 {
+  left: 12.5%;
+}
+.detail-ladder-dot.at-1 {
+  left: 37.5%;
+}
+.detail-ladder-dot.at-2 {
+  left: 62.5%;
+}
+.detail-ladder-dot.at-3 {
+  left: 87.5%;
+}
+.detail-ladder-dot.is-applied {
+  width: 11px;
+  height: 11px;
+  margin: -5.5px 0 0 -5.5px;
+  background: var(--tone);
+  border-color: var(--tone);
+}
+.detail-ladder-dot.is-result {
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  background: var(--tone);
+  border-color: var(--tone);
+  box-shadow:
+    0 0 0 3px var(--surface),
+    0 0 0 4.5px var(--tone);
+}
+
+/* Under ~360px of panel the track keeps its four rungs but narrows; the sentences take the room. */
+@media (max-width: 420px) {
+  .detail-ladder {
+    --rung-w: 112px;
+    column-gap: 10px;
+  }
+  .detail-ladder-head {
+    font-size: 9px;
+    letter-spacing: 0;
+  }
+  .detail-answer {
+    font-size: 17.5px;
+  }
+}
+
+/* Forced colours: system colours replace every tone, so the dots keep identity by shape — hollow
+   for a rule that did not apply, filled for one that did, ringed for the result — and the line and
+   rungs are drawn in the system's text and grey. */
+@media (forced-colors: active) {
+  .detail-ladder-dot,
+  .detail-ladder-track,
+  .detail-ladder-line {
+    forced-color-adjust: none;
+  }
+  .detail-ladder-track {
+    background-image:
+      linear-gradient(GrayText, GrayText), linear-gradient(GrayText, GrayText),
+      linear-gradient(GrayText, GrayText), linear-gradient(GrayText, GrayText);
+    border-top-color: GrayText;
+  }
+  .detail-ladder-line {
+    stroke: CanvasText;
+  }
+  .detail-ladder-dot {
+    background: Canvas;
+    border-color: CanvasText;
+  }
+  .detail-ladder-dot.is-applied,
+  .detail-ladder-dot.is-result {
+    background: CanvasText;
+    border-color: CanvasText;
+  }
+  .detail-ladder-dot.is-result {
+    box-shadow:
+      0 0 0 3px Canvas,
+      0 0 0 4.5px Highlight;
+  }
+  .detail-hop-link {
+    color: LinkText;
+  }
+}

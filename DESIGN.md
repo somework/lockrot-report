@@ -101,7 +101,8 @@ src/
     severity.ts           advisory severity normalisation
     advisories.ts         advisoriesOf, fixLadder, advisory sort and match
     filters.ts            filter groups, population per view, matches(), rail facet counts
-    priority.ts           priorityWhy — the page's explanation of a finding's priority
+    priority.ts           priorityWhy — every rule of a finding's priority, applied or not
+    answer.ts             the open package's answer sentence and what it pulls in (S7)
     libyears.ts           ledger items, sort key, reason, row phrases
     timeline.ts           release branches: order, folds, one shared axis, age phrases
     age.ts                a Findings row's age scale: signal, thresholds, shared maximum
@@ -203,6 +204,8 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 | PD-DETAIL-3                 | two nested scroll regions; a new package kept the last one's scroll        | `.shell-detail` alone scrolls; a new package starts at the top                                                                                |
 | PD-DETAIL-4                 | the detail never said a filter hid its package from the list               | it says so, with "Clear filters"; the search status says so too                                                                               |
 | PD-DETAIL-5                 | at 1440px the side detail's end could not be reached                       | the wheel chains into the page; the column makes room for the footer (§8)                                                                     |
+| PD-DETAIL-6                 | the header was a name, pills, tags and links; the chain folded away        | an answer sentence (verdict, reach, replacement, advisories), four key facts, the chain with clickable hops, and S7's flagged pulls           |
+| PD-DETAIL-7                 | "Why this is critical" named only the rules that applied                   | every rule of `priorityWhy` in order, applied or not ("no step down"), on a crit·high·med·low track; "So:" is `finding.priority`              |
 | PD-ROWS-1                   | a row showed up to three signal lines                                      | the highest-level signal and "+N more signals"; print shows them all                                                                          |
 | PD-ROWS-2                   | nothing showed an age against the run's thresholds                         | an age scale: warn and high ticks, a dot at the S8 (branch stopped) / S2 (no stable release) / S4 (no push) age                               |
 | PD-ROWS-3                   | each row scaled its own track, with no legend                              | one legend and one maximum per list; `abandoned`/`pinned` rows get a neutral dot                                                              |
@@ -318,10 +321,12 @@ over `is-side` chains into the page once its own content ends, since page scroll
 from its in-flow position into its stuck one (PD-DETAIL-5). `is-sheet` keeps
 `overscroll-behavior: contain`: it covers a page whose scroll is locked (M13).
 
-**The detail panel** leads with what a reader can act on: the header, "Follow the upstream" when
-there is one, then the baseline, the priority, every advisory, the release branches and the
-signals. "How it is reached", "The lock entry" and "Provenance" come last, each a `<details>`
-closed by default (PD-DETAIL-1/PD-DETAIL-2).
+**The detail panel** leads with the answer: the header (name, version, pills, links; the only part
+that sticks), then a serif sentence composed from the finding's own fields, its key facts, how it
+gets in and what flagged packages it pulls in (PD-DETAIL-6), then the priority ladder
+(PD-DETAIL-7), "Follow the upstream" when there is one, the baseline, every advisory, the release
+branches and the signals. "The lock entry" and "Provenance" come last, each a `<details>` closed by
+default (PD-DETAIL-1/PD-DETAIL-2).
 
 **Tabs** follow the ARIA tabs pattern: one tab in the Tab order, arrows/Home/End move and select,
 the current view's column is the `tabpanel`. When the tab row overflows it scrolls sideways, with

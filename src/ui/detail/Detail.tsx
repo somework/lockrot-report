@@ -1,4 +1,3 @@
-import { Fragment } from "preact";
 import type { ComponentChildren } from "preact";
 import type { ExplainMetadata, Finding, PackageDetails } from "../../model/types";
 import { ageText, day } from "../../domain/format";
@@ -7,6 +6,7 @@ import { OutLink } from "../common/common";
 import { useReport } from "../context";
 import { AdvisoryList } from "./AdvisoryList";
 import { DetailHeader } from "./DetailHeader";
+import { DetailLead } from "./DetailLead";
 import { FollowUpstream } from "./FollowUpstream";
 import { KeyValue, presentRows, type KeyValueRow } from "./KeyValue";
 import { LibyearsRow } from "./LibyearsRow";
@@ -22,10 +22,11 @@ export interface DetailProps {
 /**
  * The package detail panel — ported section by section from legacy `renderDetail`
  * (`report.js:737-845`), reordered so the reader meets the answer before the reference (PD-DETAIL-1,
- * DESIGN.md §8): follow the upstream (the action, when there is one), against the baseline, why this
- * priority, every advisory, release branches, signals, then three reference sections — how it is
- * reached, the lock entry, provenance — each a `<details>` closed by default, since a reader who
- * opened the panel to act on it rarely needs the lock's raw fields first.
+ * DESIGN.md §8; PD-DETAIL-6): the answer sentence with its key facts and how the package gets in,
+ * why this priority, follow the upstream (the action, when there is one), against the baseline,
+ * every advisory, release branches, signals, then two reference sections — the lock entry and
+ * provenance — each a `<details>` closed by default, since a reader who opened the panel to act on
+ * it rarely needs the lock's raw fields first.
  *
  * Renders nothing while no package is open (`state.pkg === null`). When `state.pkg` names no
  * finding in this report — an unknown `pkg=` in a pasted link — critic.md's M13 fix applies: a small
@@ -50,17 +51,13 @@ export function Detail({ onClose }: DetailProps) {
 
   const details = model.details.get(finding.package) ?? null;
   const baselineText = baselineParagraph(finding, model.report.baseline?.path ?? "the baseline");
-  // `finding.chain` already ends with the finding's own package (Model's own doc comment: "Direct
-  // requirement → … → this package"; contract.md confirms `direct === (chain.length === 1)`) — a
-  // direct finding's chain is just `[finding.package]`, which legacy's `.concat([f.package])` would
-  // have doubled had it been ported literally, so the direct branch replaces it with the literal
-  // "composer.json" instead of appending onto it.
-  const chain = finding.direct ? ["composer.json", finding.package] : finding.chain;
 
   return (
     <aside className="detail" role="complementary" aria-label={finding.package}>
       <DetailHeader finding={finding} onClose={onClose} />
+      <DetailLead finding={finding} details={details} />
       <div className="detail-body">
+        <PriorityWhy finding={finding} />
         <FollowUpstream finding={finding} />
         {baselineText !== null && (
           <section className="detail-section">
@@ -68,7 +65,6 @@ export function Detail({ onClose }: DetailProps) {
             <p className="detail-baseline">{baselineText}</p>
           </section>
         )}
-        <PriorityWhy finding={finding} />
         <AdvisoryList finding={finding} />
         {/* Keyed by package: a fold opened on one package's timeline must not stay open on the next. */}
         <Timeline
@@ -79,23 +75,11 @@ export function Detail({ onClose }: DetailProps) {
         />
         <SignalList finding={finding} />
         {/* a11y review: a bare <summary> dropped the section's own heading, so a screen-reader
-            reader moving by heading found none of these three. A <summary> accepts one heading as
+            reader moving by heading found none of these. A <summary> accepts one heading as
             content, so the text moves into an <h3> — the layout (the flex row, the chevron) stays
             on the <summary> itself, restyled to the same look in detail.css's
-            `.detail-reference-summary h3`. */}
-        <details className="detail-section detail-reference">
-          <summary className="detail-reference-summary">
-            <h3>How it is reached</h3>
-          </summary>
-          <p className="detail-chain">
-            {chain.map((pkg, index) => (
-              <Fragment key={pkg}>
-                {index > 0 && " → "}
-                <span className="mono">{pkg}</span>
-              </Fragment>
-            ))}
-          </p>
-        </details>
+            `.detail-reference-summary h3`. "How it is reached" used to be a third one; its chain
+            now opens the panel, in `DetailLead` (PD-DETAIL-6). */}
         <details className="detail-section detail-reference">
           <summary className="detail-reference-summary">
             <h3>The lock entry</h3>
