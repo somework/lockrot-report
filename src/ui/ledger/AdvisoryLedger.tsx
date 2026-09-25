@@ -2,21 +2,24 @@ import { useReport } from "../context";
 import { LegendButton, toneClass } from "../common/common";
 import { plural } from "../../domain/format";
 import { population } from "../../domain/filters";
-import { advisoryCheckIncomplete, allAdvisories, sevTone } from "../../domain/advisories";
+import { advisoryCheckIncomplete, advisoryPackages, allAdvisories, sevTone } from "../../domain/advisories";
 import { SEVERITIES } from "../../model/types";
+import { CleanMark } from "./CleanMark";
 import "./ledger.css";
 
+/** How many packages the block names by hand before it points at the Advisories tab instead. */
+const NAMED_PACKAGES = 3;
+
 /**
- * Every advisory's severity, across every package the run checked — ported from legacy
- * `renderLedger()`'s advisory block (`report.js:273-291`). Like `VerdictLedger`, a severity bucket
- * with a zero count is skipped rather than shown at zero; a report with no advisories at all shows
- * the muted fallback line legacy did (`report.js:291`), instead of an empty bar and legend —
- * PD-LEDGER-1 (DESIGN.md §5) splits that fallback in two, below.
+ * Every advisory's severity, across every package the run checked — grown out of legacy
+ * `renderLedger()`'s advisory block (`report.js:273-291`). Each advisory is one square
+ * (PD-SUMMARY-8, DESIGN.md §5): the old full-width bar drew two advisories as big as 69 findings.
+ * A severity with no advisory gets no chip; a report with none at all says so in words, with no
+ * mark to caption, and PD-LEDGER-1 splits that sentence in two, below.
  *
  * `packagesWithAdvisories` reuses `population(model, "advisories")` — the same population the
- * Advisories tab and the search bar's count line read (`domain/filters.ts`) — rather than
- * recomputing "packages with at least one advisory" a second way, so the two numbers can never
- * drift apart.
+ * Advisories tab and the search bar's count line read — so the numbers can never drift apart. The
+ * "fixed by" line quotes each advisory's own `fixed_by`, verbatim; nothing here compares versions.
  */
 export function AdvisoryLedger() {
   const { model, state, dispatch } = useReport();
@@ -37,58 +40,95 @@ export function AdvisoryLedger() {
   const totalChecked = model.report.packagesChecked ?? model.report.findings.length;
   const checkedPhrase = plural(totalChecked, "package", "packages");
 
-  const label =
-    advisories.length === 0
-      ? incomplete
-        ? `No advisory found; ${checkedPhrase} could not be confirmed clear`
-        : "No advisory affects this lock"
-      : `${plural(advisories.length, "advisory", "advisories")} on ${plural(packagesWithAdvisories, "package", "packages")}`;
-
-  return (
-    <div className="ledger-block">
-      <span className="eyebrow">{label}</span>
-      <div className="bar" role="img" aria-label="Advisory severity distribution">
-        {shown.length === 0 ? (
-          // A green bar claims a clean check; a check that may not have run gets the same neutral
-          // "low" tone an unknown verdict or priority already renders at (PriorityLedger,
-          // VerdictLedger), never the affirmative "none" tone (PD-LEDGER-1).
-          <span className={`bar-seg ${toneClass(incomplete ? "low" : "none")}`} style={{ flexGrow: 1 }} />
+  if (advisories.length === 0) {
+    return (
+      <div className="ledger-block ledger-advisories">
+        <span className="eyebrow ledger-head">Security advisories</span>
+        {incomplete ? (
+          // Never the affirmative "none" tone: a check that may not have run is not a clean one.
+          <>
+            <p className={`ledger-fig ledger-fig-text ${toneClass("low")}`}>
+              No advisory found; {checkedPhrase} could not be confirmed clear
+            </p>
+            <p className="ledger-note">The run's own notes say why, under Run data.</p>
+          </>
         ) : (
-          shown.map((sev) => (
-            <span
-              key={sev}
-              className={`bar-seg ${toneClass(sevTone(sev))}`}
-              style={{ flexGrow: counts[sev] ?? 0 }}
-              title={`${sev}: ${counts[sev] ?? 0}`}
-            />
-          ))
+          <p className={`ledger-fig ledger-all-clear ${toneClass("none")}`}>
+            <CleanMark size={18} />
+            <span className="ledger-fig-text">No advisory affects this lock</span>
+          </p>
         )}
       </div>
+    );
+  }
+
+  const packages = advisoryPackages(advisories);
+  const named = packages.slice(0, NAMED_PACKAGES);
+
+  return (
+    <div className="ledger-block ledger-advisories">
+      <span className="eyebrow ledger-head">Security advisories</span>
+      <p className="ledger-fig">
+        <span className="ledger-fig-num">{advisories.length}</span>{" "}
+        <span className="ledger-fig-unit">
+          {advisories.length === 1 ? "advisory" : "advisories"} on{" "}
+          {plural(packagesWithAdvisories, "package", "packages")}
+        </span>
+      </p>
+      {/* One square per advisory, most severe first (`allAdvisories` sorts them); `aria-hidden`
+          since the chips below carry the same counts in words. */}
+      <div className="advisory-squares" aria-hidden="true">
+        {advisories.map(({ advisory }, index) => (
+          <i
+            key={`${advisory.id}-${index}`}
+            className={`advisory-square ${toneClass(sevTone(advisory.severity))}`}
+          />
+        ))}
+      </div>
       <div className="legend">
-        {shown.length === 0
-          ? // A genuinely clean run's own line already says so once, in the eyebrow above the bar
-            // (`label`) — a walk found this legend repeating that exact sentence a second time, under
-            // a bar with no segment for it to caption. The incomplete case still gets its own line
-            // here: the eyebrow already named the count once, and repeating that a check may not have
-            // run, right where the (empty) bar itself would otherwise draw a false "all clear", is
-            // worth the second mention a truly clean run does not need.
-            incomplete && (
-              <span className="legend-empty">
-                advisory check incomplete; {checkedPhrase} not confirmed clear
-              </span>
-            )
-          : shown.map((sev) => (
-              <LegendButton
-                key={sev}
-                tone={sevTone(sev)}
-                pressed={state.filters.sev.includes(sev)}
-                label={sev}
-                count={counts[sev] ?? 0}
-                onToggle={() => {
-                  dispatch({ type: "toggle", group: "sev", key: sev });
-                }}
-              />
-            ))}
+        {shown.map((sev) => (
+          <LegendButton
+            key={sev}
+            tone={sevTone(sev)}
+            pressed={state.filters.sev.includes(sev)}
+            label={sev}
+            count={counts[sev] ?? 0}
+            onToggle={() => {
+              dispatch({ type: "toggle", group: "sev", key: sev });
+            }}
+          />
+        ))}
+      </div>
+      {/* Paragraphs, not a list: `role=listitem` is how the page's own rows are found (the e2e
+          contract, print.css), and these lines are notes, not rows. */}
+      <div className="ledger-note advisory-packages">
+        {named.map((entry) => (
+          <p key={entry.package}>
+            <button
+              type="button"
+              className="ledger-pkg"
+              onClick={() => {
+                dispatch({ type: "select", pkg: entry.package });
+              }}
+            >
+              {entry.package}
+            </button>{" "}
+            {entry.fixedBy.length > 0 ? (
+              <>
+                — fixed by <span className="mono">{entry.fixedBy.join(", ")}</span>
+                {entry.someUnfixed && "; some list no fix"}
+              </>
+            ) : (
+              "— no fix listed"
+            )}
+          </p>
+        ))}
+        {packages.length > named.length && (
+          <p>
+            and {plural(packages.length - named.length, "more package", "more packages")} on the Advisories
+            tab
+          </p>
+        )}
       </div>
     </div>
   );

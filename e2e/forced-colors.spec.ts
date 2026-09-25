@@ -1,7 +1,7 @@
 /**
  * a11y review (DESIGN.md §5, PD-ROWS-2/PD-LEDGER-2): two surfaces paint their meaning entirely
  * through `--tone`-derived colour, which Windows/Chromium forced-colors mode replaces with Canvas —
- * the page's own background — leaving nothing behind. `ledger.css`'s bar segments already carry the
+ * the page's own background — leaving nothing behind. `ledger.css`'s own marks already carry the
  * fix this file proves for the age scale and the legend chip: measured before the fix, in both
  * colour schemes, every part named below computed to the same colour as the page itself.
  */
@@ -172,4 +172,17 @@ test.describe("PD-LEDGER-2: a ledger legend chip stays legible in forced-colors 
     const ratio = await report.legendButtonPressedLabelDistinctPixelRatio("verdict", "abandoned");
     expect(ratio).toBeGreaterThan(0.15);
   });
+});
+
+test.describe("PD-SUMMARY-6: the summary band's waffle stays readable in forced-colors mode", () => {
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`flagged squares keep a fill and quiet ones an outline, ${colorScheme} forced colors`, async ({
+      page,
+    }) => {
+      await report.goto(FIXTURES.wallabag);
+      await page.emulateMedia({ colorScheme, forcedColors: "active" });
+
+      expect(await report.summaryWaffleForcedColors()).toEqual({ flaggedDistinct: true, restOutlined: true });
+    });
+  }
 });

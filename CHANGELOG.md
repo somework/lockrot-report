@@ -10,8 +10,14 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Added
 
-- A line above the ledger counts the flagged packages by priority. On a phone it is the folded
-  summary itself, over a small copy of the priority bar.
+- The summary band leads with one answer: how many packages are flagged, out of how many, and what
+  share of the lock that is, next to the priority chips and a waffle of one square per package,
+  flagged first. Hovering a priority chip lights its squares. A clean report says so with a tick.
+- Under it, three columns: a bar per flagged verdict, most common first, each one a filter, with
+  the verdicts that are not flagged in one quiet line; one square per security advisory, with each
+  package and the version its advisories name as the fix; libyears over a bar split into the
+  project's own requirements and what they pull in. On a phone these three fold behind one line
+  that counts them, and the lead stays in view.
 - The header names the run's gate, "no gate" or "gate: <value>", with a popover saying what that
   means for the run's exit code.
 - A Findings row whose package has an age the run measures (how long its branch has been stopped,

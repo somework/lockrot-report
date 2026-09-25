@@ -123,6 +123,32 @@ export function allAdvisories(model: Model): readonly AdvisoryWithFinding[] {
   return sortAdvisories(pairs, (pair) => pair.advisory.severity);
 }
 
+/** One package the advisories touch, with the `fixed_by` versions its advisories name, verbatim. */
+export interface AdvisoryPackage {
+  readonly package: string;
+  /** Distinct, in the order its advisories list them; empty when none names a fix. */
+  readonly fixedBy: readonly string[];
+  /** True when at least one of its advisories names no fix at all. */
+  readonly someUnfixed: boolean;
+}
+
+/**
+ * The packages behind a list of advisories, in the list's own order (so, from `allAdvisories`, the
+ * package carrying the most severe advisory first), each with the fix versions its advisories name.
+ * Display only: the versions are the advisories' own `fixed_by` text, never compared or ranked.
+ */
+export function advisoryPackages(pairs: readonly AdvisoryWithFinding[]): readonly AdvisoryPackage[] {
+  const byPackage = new Map<string, { fixedBy: string[]; someUnfixed: boolean }>();
+  for (const { advisory, finding } of pairs) {
+    const entry = byPackage.get(finding.package) ?? { fixedBy: [], someUnfixed: false };
+    const fix = advisory.fixedBy;
+    const fixedBy = fix && !entry.fixedBy.includes(fix) ? [...entry.fixedBy, fix] : entry.fixedBy;
+    byPackage.set(finding.package, { fixedBy, someUnfixed: entry.someUnfixed || !fix });
+  }
+
+  return [...byPackage].map(([name, entry]) => ({ package: name, ...entry }));
+}
+
 /** An advisory's fix shape: a release that clears it either exists on the installed branch, exists
  *  only on another branch, or does not exist at all (report.js:508,538). Drives both the Advisories
  *  tab's three groups and the query grammar's `fix:` filter. */

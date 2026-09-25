@@ -97,7 +97,9 @@ test.describe("PD-DISCLOSURE-1: one marker, every fold", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await report.goto(FIXTURES.mini);
 
-    const ledgerSummary = page.getByText("Summary").locator("xpath=ancestor-or-self::summary[1]");
+    const ledgerSummary = page
+      .getByText("More about this lock")
+      .locator("xpath=ancestor-or-self::summary[1]");
     const railSummary = page.getByText("Filters").locator("xpath=ancestor-or-self::summary[1]");
     for (const summary of [ledgerSummary, railSummary]) {
       const box = await markerBox(summary);

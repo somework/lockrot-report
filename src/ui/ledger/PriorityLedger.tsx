@@ -2,72 +2,93 @@ import { useReport } from "../context";
 import { LegendButton, toneClass } from "../common/common";
 import { TONE } from "../../domain/vocab";
 import { population } from "../../domain/filters";
-import { pluralNoun } from "../../domain/format";
+import { plural } from "../../domain/format";
+import { RANKED_PRIORITIES, sharePhrase, WAFFLE_MIN_PACKAGES, waffleRuns } from "../../domain/summary";
+import { CleanMark } from "./CleanMark";
+import { Waffle } from "./Waffle";
 import "./ledger.css";
 
-/** The four priorities a finding can actually carry (`none` is a package with no rot verdict at
- *  all, and legacy never gives it a bar segment or a legend button — `report.js:250-251`). */
-const SHOWN_PRIORITIES = ["critical", "high", "medium", "low"] as const;
-
 /**
- * The report's priority distribution, over the packages the run actually flagged. Ported from
- * legacy `renderLedger()`'s priority block (`report.js:249-258`), with three deliberate differences:
+ * The summary band's lead: the one answer a first-time reader needs — how many packages are
+ * flagged, out of how many — as the loudest thing on the page, with the priority chips that
+ * filter by it and a waffle of every package beside it (DESIGN.md §5 PD-SUMMARY-6). It replaced
+ * both the counts sentence above the ledger and the ledger's own priority bar, which said the same
+ * thing twice.
  *
- * - every one of the four priorities gets a legend button even at a count of zero, unlike the
- *   verdict and advisory ledgers beside it (this task's brief; the asymmetry is intentional, not
- *   an oversight — a reader scanning the row should see the whole scale, not just what fired);
- * - the eyebrow's tooltip is corrected for critic.md M29: legacy's static
- *   `title="Every verdict except ok and finished"` sits on a count (`FLAGGED.length`) that also
- *   excludes `unknown` — a package lockrot could not check is not a finding either. The text here
- *   names all three exclusions, so it matches the number it labels;
- * - a priority this renderer does not know (a future lockrot) still gets a bar segment and legend
- *   button, appended after the four known ones at a neutral tone — DESIGN.md §2's forward-
- *   compatibility contract, same reasoning as `VerdictLedger`. `"none"` is never included: it is a
- *   package with no rot verdict at all, not an unknown priority.
+ * Kept from the priority block it grew out of (legacy `renderLedger()`, `report.js:249-258`):
+ *
+ * - every one of the four priorities gets a chip even at a count of zero, unlike the verdict and
+ *   advisory chips (a reader should see the whole scale, not just what fired); a zero chip dims;
+ * - the eyebrow's tooltip names all three verdicts the count excludes (critic.md M29);
+ * - a priority this renderer does not know (a future lockrot) still gets a chip, after the four
+ *   known ones, at `TONE()`'s neutral fallback (DESIGN.md §2); `none` never does.
+ *
+ * The figure is the Findings tab's own population, so the two can never disagree.
  */
 export function PriorityLedger() {
   const { model, state, dispatch } = useReport();
   const counts = model.report.priorities;
-  const flaggedCount = population(model, "findings").length;
-  const known = new Set<string>(SHOWN_PRIORITIES);
+  const flagged = population(model, "findings");
+  const total = model.report.packagesChecked ?? model.report.findings.length;
+  const known = new Set<string>(RANKED_PRIORITIES);
   const unknown = Object.keys(counts).filter((p) => !known.has(p) && p !== "none" && (counts[p] ?? 0) > 0);
-  const shown: readonly string[] = [...SHOWN_PRIORITIES, ...unknown];
-  const bars = shown.filter((p) => (counts[p] ?? 0) > 0);
+  const shown: readonly string[] = [...RANKED_PRIORITIES, ...unknown];
+  const clean = flagged.length === 0;
 
   return (
-    <div className="ledger-block">
-      <span className="eyebrow" title="Every verdict except ok, finished and unknown">
-        Priority of the <span className="ledger-figure">{flaggedCount}</span> flagged{" "}
-        {pluralNoun(flaggedCount, "package", "packages")}
-      </span>
-      <div className="bar" role="img" aria-label="Priority distribution">
-        {bars.length === 0 ? (
-          <span className={`bar-seg ${toneClass("none")}`} style={{ flexGrow: 1 }} />
+    <div className={clean ? "ledger-lead is-clean" : "ledger-lead"}>
+      <div className="lead-answer">
+        <span className="eyebrow" title="Every verdict except ok, finished and unknown">
+          Flagged packages
+        </span>
+        {clean ? (
+          <p className={`lead-figure ${toneClass("none")}`}>
+            <CleanMark size={30} />
+            <span className={`lead-clean ${toneClass("none")}`}>
+              Nothing flagged in {plural(total, "package", "packages")}
+            </span>
+          </p>
         ) : (
-          bars.map((p) => (
-            <span
-              key={p}
-              className={`bar-seg ${toneClass(TONE(p))}`}
-              style={{ flexGrow: counts[p] ?? 0 }}
-              title={`${p}: ${counts[p] ?? 0}`}
-            />
-          ))
+          <p className="lead-figure">
+            <span className="lead-num">{flagged.length}</span>
+            <span className="lead-of">
+              <span className="lead-of-line">of {plural(total, "package", "packages")}</span>{" "}
+              <span className="lead-of-line">
+                flagged <span className="lead-share">· {sharePhrase(flagged.length, total)} of the lock</span>
+              </span>
+            </span>
+          </p>
         )}
+        <div className="legend lead-chips">
+          {shown.map((p) => (
+            <LegendButton
+              key={p}
+              tone={TONE(p)}
+              dim={(counts[p] ?? 0) === 0}
+              pressed={state.filters.prio.includes(p)}
+              label={p}
+              count={counts[p] ?? 0}
+              onToggle={() => {
+                dispatch({ type: "toggle", group: "prio", key: p });
+              }}
+            />
+          ))}
+        </div>
       </div>
-      <div className="legend">
-        {shown.map((p) => (
-          <LegendButton
-            key={p}
-            tone={TONE(p)}
-            pressed={state.filters.prio.includes(p)}
-            label={p}
-            count={counts[p] ?? 0}
-            onToggle={() => {
-              dispatch({ type: "toggle", group: "prio", key: p });
-            }}
-          />
-        ))}
-      </div>
+      {total >= WAFFLE_MIN_PACKAGES && (
+        <figure className="lead-waffle">
+          <Waffle runs={waffleRuns(flagged)} total={total} />
+          <figcaption className="lead-waffle-cap">
+            One square per package
+            {!clean && (
+              <span className="lead-waffle-key">
+                <i className="waffle-cell waffle-rest" aria-hidden="true" />
+                {Math.max(0, total - flagged.length)} not flagged
+              </span>
+            )}
+          </figcaption>
+        </figure>
+      )}
     </div>
   );
 }

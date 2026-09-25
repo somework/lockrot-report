@@ -188,18 +188,18 @@ export interface ReportPage {
    *  zero means the label painted the same colour as what is behind it — invisible whatever its
    *  computed `color` says. */
   legendButtonPressedLabelDistinctPixelRatio(group: LedgerGroup, key: string): Promise<number>;
-  /** The tooltip on "Priority of the N flagged packages" (M29). */
+  /** The tooltip on the summary band's "Flagged packages" eyebrow (M29). */
   priorityLedgerTooltip(): Promise<string | null>;
-  /** Whether the priority-counts line — the wide band above the ledger, or the phone fold's
-   *  `<summary>` at a narrow width, whichever the viewport currently renders (App.tsx#LedgerSlot,
-   *  SummaryBand.tsx) — contains this exact wording. The line spans several sibling elements (one
-   *  per priority), so no single element carries the whole sentence as its own text; the caller
-   *  passes the wording it expects rather than this reading it back. */
+  /** Whether this exact wording is visible on the page — a phone reader must see the summary
+   *  band's lead (figure, "of N packages", chips) without opening any fold (App.tsx#LedgerSlot,
+   *  ledger/Ledger.tsx). */
   hasSummaryLine(text: string): Promise<boolean>;
-  /** Whether the phone fold's own `<summary>` (App.tsx#LedgerSlot) carries a visible, non-empty
-   *  priority bar of its own (PD-SUMMARY-5, DESIGN.md §5) — `false` on a wide screen, where the
-   *  fold does not render at all, the same as `false` for a clean report with nothing to bar. */
-  hasSummaryPriorityBar(): Promise<boolean>;
+  /** The summary band's waffle (ledger/Waffle.tsx, PD-SUMMARY-6): how many of its squares are
+   *  flagged and how many in all, or null when it is not drawn or not visible. */
+  summaryWaffle(): Promise<{ flagged: number; total: number } | null>;
+  /** The waffle's first flagged and first quiet square under the current media: their computed
+   *  fill and outline, against the page's own background (forced colors must keep both visible). */
+  summaryWaffleForcedColors(): Promise<{ flaggedDistinct: boolean; restOutlined: boolean }>;
 
   /** The header's gate-fact button (Header.tsx): "no gate" or "gate: <value>", or null when the
    *  document predates `run.fail_on` and the header shows neither. */
@@ -291,8 +291,8 @@ export interface ReportPage {
    *  visible under the current media — used to check that print styling hides interactive chrome. */
   isNavigationVisible(): Promise<boolean>;
 
-  /** The verdict-distribution bar's first segment (Ledger.tsx's `role=img, name="Verdict
-   *  distribution"`): its computed background colour, and the computed `print-color-adjust` (or
+  /** The first flagged verdict's bar fill (ledger/VerdictLedger.tsx, a chip drawn as a bar): its
+   *  computed background colour, and the computed `print-color-adjust` (or
    *  its `-webkit-` form) that keeps that colour once an actual print applies Chromium's
    *  ink-saving default — a plain screenshot never exercises that default, so the property itself
    *  is what a print test can assert on (print.css). */

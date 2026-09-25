@@ -12,7 +12,6 @@ import { Glossary } from "./Glossary";
 import { Header } from "./Header";
 import { decideKey, findRow, keyInputFrom, prevents, type KeyDecision } from "./keyboard";
 import { Ledger } from "./ledger/Ledger";
-import { SummaryBand, SummaryCounts, SummaryPriorityBar } from "./ledger/SummaryBand";
 import { NewerSchemaBanner } from "./NewerSchemaBanner";
 import { Rail } from "./rail/Rail";
 import { SearchBar } from "./search/SearchBar";
@@ -103,47 +102,15 @@ function useShortcuts(deps: ShortcutDeps) {
 }
 
 /**
- * Phone widths get the ledger as a one-line summary that unfolds (DESIGN.md §8). Both the wide
- * band and the folded `<summary>` show the same priority-counts line (`SummaryCounts`), so a
- * phone reader sees it without unfolding anything; the fold keeps the "Summary" eyebrow the
- * "Filters" disclosure beside it also carries. PD-SUMMARY-5 (DESIGN.md §5): the counts line was
- * the fold's only content, so a phone reader saw no chart at all until they unfolded it — a small
- * echo of the ledger's own priority bar now sits under the counts, inside the fold's `<summary>`
- * itself (`SummaryPriorityBar`, non-interactive, `aria-hidden`).
+ * The summary band (DESIGN.md §8): the lead — how many packages are flagged — at every width; on a
+ * phone only the supporting tier under it folds (`Ledger`'s `narrow`), so a phone reader gets the
+ * answer without a tap and the list still starts right under it.
  */
 function LedgerSlot({ narrow }: { narrow: boolean }) {
-  if (!narrow) {
-    return (
-      <div className="ledger-band">
-        <SummaryBand />
-        <Ledger />
-      </div>
-    );
-  }
-
   return (
-    <details className="ledger-fold">
-      <summary>
-        {/* `.ledger-fold-summary` is its own flex column (app.css) so the priority bar sits on
-            its own line under the counts row, rather than fighting that row for width; the
-            marker (`base.css`'s shared chevron) stays pinned to the summary's own top-right
-            corner regardless of how tall this content grows (its own `align-self: flex-start`). */}
-        <span className="ledger-fold-summary">
-          {/* One extra span around SummaryCounts: the row below is flex with no wrap, and
-              SummaryCounts renders several sibling spans (one per priority) — left bare, each
-              would be its own flex item and the row could not wrap at all at 320px. Wrapped, it
-              is one flex item whose own inline content wraps normally. */}
-          <span className="ledger-fold-summary-head">
-            <span className="eyebrow">Summary</span>{" "}
-            <span>
-              <SummaryCounts />
-            </span>
-          </span>
-          <SummaryPriorityBar />
-        </span>
-      </summary>
-      <Ledger />
-    </details>
+    <div className="ledger-band">
+      <Ledger narrow={narrow} />
+    </div>
   );
 }
 

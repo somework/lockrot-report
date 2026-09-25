@@ -509,27 +509,48 @@ export class NewReportPage implements ReportPage {
 
   async priorityLedgerTooltip(): Promise<string | null> {
     return this.page
-      .getByText(/priority of the .* flagged packages/i)
+      .getByRole("group", { name: "Ledger" })
+      .getByText("Flagged packages", { exact: true })
       .first()
       .getAttribute("title");
   }
 
   async hasSummaryLine(text: string): Promise<boolean> {
-    // Visible, not just present: the phone fold's <summary> is shown closed by default, and this
-    // is the assertion that a reader sees the line without opening it — a collapsed <details>'s
-    // non-summary content would fail the same check.
+    // Visible, not just present: on a phone the band's supporting tier sits in a closed fold, and
+    // this is the assertion that a reader sees the lead without opening anything.
     const line = this.page.getByText(text);
     return (await line.count()) > 0 && (await line.first().isVisible());
   }
 
-  /** `.summary-bar` (`ledger/SummaryBand.tsx#SummaryPriorityBar`, PD-SUMMARY-5, DESIGN.md §5):
-   *  found by class, not an accessible query, since the bar is deliberately `aria-hidden` — nothing
-   *  here asserts what a screen reader hears, only that a sighted phone reader sees a shape, and
-   *  that it carries at least one segment (a clean report renders none at all). */
-  async hasSummaryPriorityBar(): Promise<boolean> {
-    const bar = this.page.locator(".summary-bar");
-    if ((await bar.count()) === 0 || !(await bar.first().isVisible())) return false;
-    return (await bar.first().locator(".bar-seg").count()) > 0;
+  /** `.waffle` (`ledger/Waffle.tsx`): found by class, not an accessible query, since it is
+   *  deliberately `aria-hidden` — the figure and chips beside it carry every number in words. */
+  async summaryWaffle(): Promise<{ flagged: number; total: number } | null> {
+    const waffle = this.page.locator(".waffle");
+    if ((await waffle.count()) === 0 || !(await waffle.first().isVisible())) return null;
+    return waffle.first().evaluate((el) => ({
+      flagged: el.querySelectorAll(".waffle-cell:not(.waffle-rest)").length,
+      total: el.querySelectorAll(".waffle-cell").length,
+    }));
+  }
+
+  async summaryWaffleForcedColors(): Promise<{ flaggedDistinct: boolean; restOutlined: boolean }> {
+    return this.page
+      .locator(".waffle")
+      .first()
+      .evaluate((el) => {
+        const flagged = el.querySelector(".waffle-cell:not(.waffle-rest)");
+        const rest = el.querySelector(".waffle-rest");
+        if (!(flagged instanceof HTMLElement) || !(rest instanceof HTMLElement)) {
+          throw new Error("waffle needs a flagged and a quiet square for this check");
+        }
+        const pageBg = getComputedStyle(document.body).backgroundColor;
+        const fill = getComputedStyle(flagged).backgroundColor;
+        const restStyle = getComputedStyle(rest);
+        return {
+          flaggedDistinct: fill !== pageBg && fill !== "rgba(0, 0, 0, 0)",
+          restOutlined: restStyle.outlineStyle === "solid" && restStyle.outlineColor !== pageBg,
+        };
+      });
   }
 
   /** The accessible name the gate fact's button always starts with (Header.tsx#gateFact) —
@@ -820,12 +841,10 @@ export class NewReportPage implements ReportPage {
   }
 
   async ledgerSegmentPrintStyle(): Promise<{ backgroundColor: string; printColorAdjust: string }> {
-    const bar = this.page
-      .getByRole("group", { name: "Ledger" })
-      .getByRole("img", { name: "Verdict distribution" });
+    const bar = this.page.getByRole("group", { name: "Ledger" }).locator(".legend-btn-bar").first();
     return bar.evaluate((el) => {
-      const segment = el.firstElementChild;
-      if (!(segment instanceof HTMLElement)) throw new Error("Verdict distribution bar has no segment");
+      const segment = el.querySelector(".legend-fill");
+      if (!(segment instanceof HTMLElement)) throw new Error("the first verdict bar has no fill");
       const style = getComputedStyle(segment);
       return {
         backgroundColor: style.backgroundColor,

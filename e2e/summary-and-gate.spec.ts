@@ -1,7 +1,8 @@
 /**
- * PD-SUMMARY-1/2/3 (DESIGN.md §5, §8): the priority-counts line above the ledger (and its phone-
- * fold twin), the header's quiet gate fact and its popover, and the Run tab's em dash for a
- * document that predates `run.fail_on`.
+ * PD-SUMMARY-6 (DESIGN.md §5, §8): the summary band's lead — the flagged figure, its chips and the
+ * waffle — at every width, with only the supporting tier folded on a phone; PD-SUMMARY-2/3: the
+ * header's quiet gate fact and its popover, and the Run tab's em dash for a document that predates
+ * `run.fail_on`.
  */
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
@@ -13,66 +14,74 @@ test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);
 });
 
-test.describe("PD-SUMMARY-1: the priority-counts line above the ledger", () => {
-  test("wallabag_wallabag: every non-zero priority, in order, then the package total", async () => {
+test.describe("PD-SUMMARY-6: the summary band's lead", () => {
+  test("wallabag_wallabag: 69 of 271 packages flagged, one waffle square per package", async ({ page }) => {
     // wallabag_wallabag.json: priorities {critical:3, high:38, medium:8, low:20}, packagesChecked 271.
     await report.goto(FIXTURES.wallabag);
-    expect(await report.hasSummaryLine("3 critical · 38 high · 8 medium · 20 low of 271 packages")).toBe(
-      true,
-    );
+    const ledger = page.getByRole("group", { name: "Ledger" });
+    await expect(ledger.locator(".lead-num")).toHaveText("69");
+    expect(await report.hasSummaryLine("of 271 packages")).toBe(true);
+    expect(await report.hasSummaryLine("flagged · 25% of the lock")).toBe(true);
+    for (const name of ["critical 3", "high 38", "medium 8", "low 20"]) {
+      await expect(ledger.getByRole("button", { name, exact: true })).toBeVisible();
+    }
+    expect(await report.summaryWaffle()).toEqual({ flagged: 69, total: 271 });
   });
 
-  test("koel_koel: a smaller fixture, same rule", async () => {
-    // koel_koel.json: priorities {critical:1, high:3, medium:1, low:2}, packagesChecked 202.
-    await report.goto(FIXTURES.koel);
-    expect(await report.hasSummaryLine("1 critical · 3 high · 1 medium · 2 low of 202 packages")).toBe(true);
+  test("wallabag_wallabag: the verdict bars rank the flagged verdicts, the rest sit in a quiet line", async ({
+    page,
+  }) => {
+    await report.goto(FIXTURES.wallabag);
+    const ledger = page.getByRole("group", { name: "Ledger" });
+    await expect(ledger.locator(".legend-btn-bar")).toHaveText([
+      "left-behind 23",
+      "abandoned 21",
+      "stale 12",
+      "silent 8",
+      "pinned 4",
+      "old-promise 1",
+    ]);
+    await expect(ledger.locator(".ledger-quiet .legend-btn")).toHaveText(["finished 18", "ok 184"]);
   });
 
-  test("mini: zero buckets (critical, low) are dropped rather than shown at 0", async () => {
-    // mini.json: priorities {critical:0, high:1, medium:1, low:0, none:2}, packagesChecked 4.
+  test("the band never overflows the page, 320px to 1920px", async ({ page }) => {
+    await report.goto(FIXTURES.wallabag);
+    for (const width of [320, 390, 768, 1024, 1180, 1181, 1440, 1920]) {
+      await page.setViewportSize({ width, height: 900 });
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      expect(overflow, `at ${width}px`).toBeLessThanOrEqual(0);
+    }
+  });
+
+  test("mini: a lock of four packages draws no waffle, only the figure and chips", async () => {
     await report.goto(FIXTURES.mini);
-    expect(await report.hasSummaryLine("1 high · 1 medium of 4 packages")).toBe(true);
-    expect(await report.hasSummaryLine("0 critical")).toBe(false);
+    expect(await report.hasSummaryLine("of 4 packages")).toBe(true);
+    expect(await report.summaryWaffle()).toBeNull();
   });
 });
 
-test.describe("PD-SUMMARY-1: the phone fold shows the same line, closed", () => {
+test.describe("PD-SUMMARY-6: on a phone the lead stays open, the tier folds", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("koel_koel at 390px: the counts are visible without opening the ledger fold", async ({ page }) => {
+  test("koel_koel at 390px: figure, chips and waffle are visible; the verdict bars wait in the fold", async ({
+    page,
+  }) => {
     await report.goto(FIXTURES.koel);
-    // The fold starts closed: its own content (a legend button, say) is not visible yet, proving
-    // this checks the closed <summary>, not the unfolded ledger underneath it.
-    await expect(page.getByRole("button", { name: /^critical/ })).toBeHidden();
-    expect(await report.hasSummaryLine("1 critical · 3 high · 1 medium · 2 low of 202 packages")).toBe(true);
+    const ledger = page.getByRole("group", { name: "Ledger" });
+    expect(await report.hasSummaryLine("of 202 packages")).toBe(true);
+    await expect(ledger.getByRole("button", { name: "critical 1", exact: true })).toBeVisible();
+    expect(await report.summaryWaffle()).toEqual({ flagged: 7, total: 202 });
+    // The tier starts folded: a verdict bar is not visible until the reader opens it.
+    await expect(ledger.getByRole("button", { name: /^left-behind/ })).toBeHidden();
+    const summary = page.getByText("More about this lock").locator("xpath=ancestor::summary[1]");
+    await expect(summary).toContainText("3 reasons · no advisories · 89.6 libyears");
+    await summary.click();
+    await expect(ledger.getByRole("button", { name: /^left-behind/ })).toBeVisible();
   });
 
-  test("mini at 390px, in the clean state too (mini-split.json)", async () => {
+  test("mini-split.json's clean state reads as good at a glance", async () => {
     await report.goto(FIXTURES.miniSplit);
     expect(await report.hasSummaryLine("Nothing flagged in 1 package")).toBe(true);
-  });
-});
-
-test.describe("PD-SUMMARY-5: the phone fold's own priority bar (DESIGN.md §5)", () => {
-  test.use({ viewport: { width: 390, height: 844 } });
-
-  test("koel_koel at 390px: a non-interactive priority bar sits inside the closed fold, beside the counts", async () => {
-    // Before this, the fold's closed <summary> gave a phone reader words only — no chart at all
-    // until they tapped it open.
-    await report.goto(FIXTURES.koel);
-    expect(await report.hasSummaryPriorityBar()).toBe(true);
-  });
-
-  test("mini-split.json's clean state draws no bar at all — nothing fired, so no segment beats none", async () => {
-    await report.goto(FIXTURES.miniSplit);
-    expect(await report.hasSummaryPriorityBar()).toBe(false);
-  });
-});
-
-test.describe("PD-SUMMARY-5: no fold, no bar, on a wide screen", () => {
-  test("koel_koel at 1440px: the wide ledger band renders no duplicate priority bar", async () => {
-    await report.goto(FIXTURES.koel);
-    expect(await report.hasSummaryPriorityBar()).toBe(false);
   });
 });
 

@@ -121,27 +121,42 @@ export function LegendButton({
   pressed,
   label,
   count,
+  share,
   onToggle,
 }: {
   tone: Tone;
-  /** The verdict ledger's own `ok` bucket: full-contrast text, a faded swatch (`legend-btn-dim` in
-   *  ledger.css). */
+  /** A bucket with nothing, or nothing flagged, in it: full-contrast text, a faded swatch
+   *  (`legend-btn-dim` in ledger.css). */
   dim?: boolean;
   pressed: boolean;
   label: string;
   count: number;
+  /** 0..1: draws the chip as one row of a ranked bar chart (`legend-btn-bar`, ledger.css), its
+   *  bar this long, between the label and the count. The bar is `aria-hidden`, so the accessible
+   *  name stays "label count", the same as a plain chip's. */
+  share?: number | undefined;
   onToggle: () => void;
 }) {
+  const bar = share !== undefined;
+  const classes = ["legend-btn", toneClass(tone), dim && "legend-btn-dim", bar && "legend-btn-bar"];
+
   return (
     <button
       type="button"
-      className={`legend-btn ${toneClass(tone)}${dim ? " legend-btn-dim" : ""}`}
+      className={classes.filter(Boolean).join(" ")}
       aria-pressed={pressed}
       title={pressed ? `Showing only ${label} — click to clear this filter` : `Show only ${label}`}
       onClick={onToggle}
     >
       <i className="swatch" aria-hidden="true" />
-      {label} <i className="count">{count}</i>
+      {label}{" "}
+      {bar && (
+        <span className="legend-track" aria-hidden="true">
+          {/* The length is data, so it goes through the CSSOM (DESIGN.md §1.3), never a style string. */}
+          <span className="legend-fill" style={{ width: `${Math.max(0, Math.min(1, share)) * 100}%` }} />
+        </span>
+      )}
+      <i className="count">{count}</i>
     </button>
   );
 }

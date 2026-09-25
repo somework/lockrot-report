@@ -13,7 +13,10 @@ import { PriorityLedger } from "../../../src/ui/ledger/PriorityLedger";
 import { VerdictLedger } from "../../../src/ui/ledger/VerdictLedger";
 import { AdvisoryLedger } from "../../../src/ui/ledger/AdvisoryLedger";
 import { LibyearsLedger } from "../../../src/ui/ledger/LibyearsLedger";
-import { SummaryBand, SummaryCounts } from "../../../src/ui/ledger/SummaryBand";
+
+// koel_koel.json: 202 packages, priorities {critical:1, high:3, medium:1, low:2}, verdicts
+// left-behind 3, stale 3, silent 1 (flagged) and unknown 1, finished 23, ok 171; libyears 89.59
+// total, 28.03 from direct requirements, furthest behind predis/predis v1.1.10 at 4.7.
 
 afterEach(cleanup);
 
@@ -140,18 +143,32 @@ function renderIn(
   );
 }
 
-describe("PriorityLedger", () => {
-  it("always shows all four non-none priorities, including one at zero", () => {
+describe("PriorityLedger (the summary band's lead)", () => {
+  it("always shows all four non-none priorities, including one at zero, dimmed", () => {
     // Arrange
     const model = loadMini();
 
     // Act
     renderIn(<PriorityLedger />, model, INITIAL_STATE);
 
-    // Assert: mini.json has critical:0, high:1, medium:1, low:0 — all four still get a button.
-    expect(screen.getByRole("button", { name: /^critical/ }).textContent).toContain("0");
-    expect(screen.getByRole("button", { name: /^high/ }).textContent).toContain("1");
-    expect(screen.getByRole("button", { name: /^low/ }).textContent).toContain("0");
+    // Assert: mini.json has critical:0, high:1, medium:1, low:0 — all four still get a chip, and
+    // the accessible name stays "label count", the order the e2e suite clicks by.
+    expect(screen.getByRole("button", { name: "critical 0" }).className).toContain("legend-btn-dim");
+    expect(screen.getByRole("button", { name: "high 1" }).className).not.toContain("legend-btn-dim");
+    expect(screen.getByRole("button", { name: "low 0" })).toBeTruthy();
+  });
+
+  it("leads with the flagged figure out of the packages checked, and its share of the lock", () => {
+    // Arrange
+    const model = loadFixture("koel_koel.json");
+
+    // Act
+    const { container } = renderIn(<PriorityLedger />, model, INITIAL_STATE);
+
+    // Assert
+    expect(container.querySelector(".lead-num")?.textContent).toBe("7");
+    expect(screen.getByText("of 202 packages")).toBeTruthy();
+    expect(container.querySelector(".lead-of")?.textContent).toContain("flagged · 3% of the lock");
   });
 
   it("gives the eyebrow a tooltip that matches the flagged count it labels (critic.md M29)", () => {
@@ -159,16 +176,26 @@ describe("PriorityLedger", () => {
     const model = loadMini();
 
     // Act
-    renderIn(<PriorityLedger />, model, INITIAL_STATE);
+    const { container } = renderIn(<PriorityLedger />, model, INITIAL_STATE);
 
-    // Assert: flagged excludes ok, finished AND unknown (mini.json has one of each) — the tooltip
-    // has to say so, unlike legacy's "except ok and finished" which under-counts.
-    const eyebrow = screen.getByText(/priority of the/i);
+    // Assert: flagged excludes ok, finished AND unknown (mini.json has one of each).
+    const eyebrow = screen.getByText("Flagged packages");
     expect(eyebrow.getAttribute("title")).toBe("Every verdict except ok, finished and unknown");
-    expect(eyebrow.textContent).toContain("2");
+    expect(container.querySelector(".lead-num")?.textContent).toBe("2");
   });
 
-  it("dispatches a prio toggle when a legend button is clicked", () => {
+  it("singularises 'package' for a lock of exactly one (regression review)", () => {
+    // Arrange
+    const model = loadWithOneFlagged();
+
+    // Act
+    renderIn(<PriorityLedger />, model, INITIAL_STATE);
+
+    // Assert
+    expect(screen.getByText("of 1 package")).toBeTruthy();
+  });
+
+  it("dispatches a prio toggle when a chip is clicked", () => {
     // Arrange
     const model = loadMini();
     const dispatch = vi.fn();
@@ -194,7 +221,7 @@ describe("PriorityLedger", () => {
     expect(screen.getByRole("button", { name: /^medium/ }).getAttribute("aria-pressed")).toBe("false");
   });
 
-  it("keeps an unknown priority's bar segment and legend button rather than dropping it (DESIGN.md §2)", () => {
+  it("keeps an unknown priority's chip rather than dropping it (DESIGN.md §2)", () => {
     // Arrange: a document from a future lockrot that adds a priority this renderer does not know.
     const model = loadMini();
     const withUrgent: Model = {
@@ -211,36 +238,131 @@ describe("PriorityLedger", () => {
     expect(button.className).toContain("tone-low");
   });
 
-  it("singularises 'package' for exactly one flagged package (regression review)", () => {
-    // Arrange: the eyebrow used to read "Priority of the 1 flagged packages" regardless of count.
-    const model = loadWithOneFlagged();
+  it("never shows a chip for the 'none' bucket, however large", () => {
+    // Arrange
+    const model = loadMini();
+    const withNone: Model = {
+      ...model,
+      report: { ...model.report, priorities: { ...model.report.priorities, none: 999 } },
+    };
+
+    // Act
+    const { container } = renderIn(<PriorityLedger />, withNone, INITIAL_STATE);
+
+    // Assert
+    expect(screen.queryByRole("button", { name: /^none/ })).toBeNull();
+    expect(container.textContent).not.toContain("999");
+  });
+
+  it("draws one hidden square per package, the flagged ones first in their priority's tone", () => {
+    // Arrange
+    const model = loadFixture("koel_koel.json");
+
+    // Act
+    const { container } = renderIn(<PriorityLedger />, model, INITIAL_STATE);
+
+    // Assert: 7 flagged (1 critical, 3 high, 1 medium, 2 low), then 195 quiet squares.
+    const waffle = container.querySelector(".waffle");
+    expect(waffle?.getAttribute("aria-hidden")).toBe("true");
+    const cells = [...(waffle?.querySelectorAll(".waffle-cell") ?? [])];
+    expect(cells).toHaveLength(202);
+    expect(cells.slice(0, 7).map((cell) => cell.className.replace("waffle-cell ", ""))).toEqual([
+      "tone-crit",
+      "tone-high",
+      "tone-high",
+      "tone-high",
+      "tone-med",
+      "tone-low",
+      "tone-low",
+    ]);
+    expect(cells.slice(7).every((cell) => cell.classList.contains("waffle-rest"))).toBe(true);
+    // Rows are numbers through the CSSOM, never a style string (DESIGN.md §1.3).
+    expect((waffle as HTMLElement).style.getPropertyValue("--rows-wide")).toBe("5");
+  });
+
+  it("leaves the waffle out for a lock of a handful of packages", () => {
+    // Arrange: mini.json checks 4.
+    const model = loadMini();
+
+    // Act
+    const { container } = renderIn(<PriorityLedger />, model, INITIAL_STATE);
+
+    // Assert
+    expect(container.querySelector(".waffle")).toBeNull();
+  });
+
+  it("says nothing was flagged, in the none tone, for a clean report", () => {
+    // Arrange: mini-split.json — one `ok` finding, priorities all 0 except none, packagesChecked 1.
+    const model = loadFixture("mini-split.json");
+
+    // Act
+    const { container } = renderIn(<PriorityLedger />, model, INITIAL_STATE);
+
+    // Assert
+    expect(screen.getByText("Nothing flagged in 1 package").className).toContain("tone-none");
+    expect(container.querySelector(".lead-num")).toBeNull();
+  });
+
+  it("keeps the plural at a total of zero packages", () => {
+    // Arrange: empty-lockrot-self.json — 0 packages, every priority 0.
+    const model = loadFixture("empty-lockrot-self.json");
 
     // Act
     renderIn(<PriorityLedger />, model, INITIAL_STATE);
 
     // Assert
-    const eyebrow = screen.getByText(/priority of the/i);
-    expect(eyebrow.textContent).toBe("Priority of the 1 flagged package");
+    expect(screen.getByText("Nothing flagged in 0 packages")).toBeTruthy();
   });
 
-  it("never shows a bar segment or legend button for the 'none' bucket", () => {
-    // Arrange: `none` is a package with no rot verdict at all — never a bar segment, per the four
-    // named priorities' own doc comment.
+  it("falls back to findings.length when packagesChecked is null (an older document)", () => {
+    // Arrange
     const model = loadMini();
-    const withNone: Model = {
+    const withoutPackagesChecked: Model = {
       ...model,
-      report: { ...model.report, priorities: { ...model.report.priorities, none: 7 } },
+      report: { ...model.report, packagesChecked: null },
     };
 
     // Act
-    renderIn(<PriorityLedger />, withNone, INITIAL_STATE);
+    renderIn(<PriorityLedger />, withoutPackagesChecked, INITIAL_STATE);
 
     // Assert
-    expect(screen.queryByRole("button", { name: /^none/ })).toBeNull();
+    expect(screen.getByText(`of ${model.report.findings.length} packages`)).toBeTruthy();
   });
 });
 
 describe("VerdictLedger", () => {
+  it("ranks the flagged verdicts as bars, most common first, and lists the rest as quiet chips", () => {
+    // Arrange
+    const model = loadFixture("koel_koel.json");
+
+    // Act
+    const { container } = renderIn(<VerdictLedger />, model, INITIAL_STATE);
+
+    // Assert: the tie (left-behind 3, stale 3) keeps verdict order.
+    const bars = [...container.querySelectorAll(".legend-btn-bar")].map((bar) => bar.textContent);
+    expect(bars).toEqual(["left-behind 3", "stale 3", "silent 1"]);
+    const quiet = [...container.querySelectorAll(".ledger-quiet .legend-btn")].map(
+      (chip) => chip.textContent,
+    );
+    expect(quiet).toEqual(["unknown 1", "finished 23", "ok 171"]);
+    expect(screen.getByText(/why the 7 are flagged/i)).toBeTruthy();
+  });
+
+  it("draws each bar in its verdict's own tone, scaled to the longest", () => {
+    // Arrange
+    const model = loadFixture("koel_koel.json");
+
+    // Act
+    renderIn(<VerdictLedger />, model, INITIAL_STATE);
+
+    // Assert
+    const silent = screen.getByRole("button", { name: "silent 1" });
+    expect(silent.className).toContain("tone-crit");
+    const fill = silent.querySelector(".legend-fill") as HTMLElement;
+    expect(fill.style.width).toMatch(/^33\.3/);
+    expect(silent.querySelector(".legend-track")?.getAttribute("aria-hidden")).toBe("true");
+  });
+
   it("skips a verdict with a zero count instead of showing it at zero", () => {
     // Arrange
     const model = loadMini();
@@ -257,7 +379,7 @@ describe("VerdictLedger", () => {
     expect(screen.getByRole("button", { name: /^finished/ })).toBeTruthy();
   });
 
-  it("dispatches a verdict toggle when a legend button is clicked", () => {
+  it("dispatches a verdict toggle from a bar and from a quiet chip alike", () => {
     // Arrange
     const model = loadMini();
     const dispatch = vi.fn();
@@ -265,12 +387,14 @@ describe("VerdictLedger", () => {
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: /^abandoned/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^finished/ }));
 
     // Assert
     expect(dispatch).toHaveBeenCalledWith({ type: "toggle", group: "verdict", key: "abandoned" });
+    expect(dispatch).toHaveBeenCalledWith({ type: "toggle", group: "verdict", key: "finished" });
   });
 
-  it("keeps an unknown verdict's bar segment and legend button rather than dropping it (DESIGN.md §2)", () => {
+  it("keeps an unknown verdict's chip rather than dropping it (DESIGN.md §2)", () => {
     // Arrange: a document from a future lockrot that adds a verdict this renderer does not know.
     const model = loadMini();
     const withRotten: Model = {
@@ -281,33 +405,29 @@ describe("VerdictLedger", () => {
     // Act
     renderIn(<VerdictLedger />, withRotten, INITIAL_STATE);
 
-    // Assert: shown after the known verdicts, at a neutral ("low") tone, not silently dropped.
+    // Assert: the run does not flag it, so a quiet chip at a neutral ("low") tone.
     const button = screen.getByRole("button", { name: /^rotten/ });
     expect(button.textContent).toContain("2");
     expect(button.className).toContain("tone-low");
-    fireEvent.click(button);
+    expect(button.className).not.toContain("legend-btn-bar");
   });
 });
 
 describe("AdvisoryLedger", () => {
-  it("shows the muted fallback once, in the green all-clear tone, when the check ran and found nothing", () => {
+  it("says the lock is clear once, in the green all-clear tone, with no mark to caption", () => {
     // Arrange: mini.json's network_failures is false and its notes name neither the advisory nor
     // the audit check (PD-LEDGER-1, DESIGN.md §5) — the clean case.
     const model = loadMini();
 
     // Act
-    renderIn(<AdvisoryLedger />, model, INITIAL_STATE);
+    const { container } = renderIn(<AdvisoryLedger />, model, INITIAL_STATE);
 
-    // Assert: legacy showed the same message twice — the eyebrow (title case) and the legend
-    // fallback (lower case, `report.js:278-291`) — a walk found that same repeat still here, an
-    // empty bar with nothing else beside it captioned by the exact sentence already above it. The
-    // legend now says nothing at all for a genuinely clean run; only the eyebrow carries the line.
+    // Assert
+    const line = screen.getByText("No advisory affects this lock").closest("p");
+    expect(line?.className).toContain("tone-none");
     expect(screen.getAllByText(/no advisory affects this lock/i)).toHaveLength(1);
+    expect(container.querySelector(".advisory-square")).toBeNull();
     expect(screen.queryByRole("button", { name: /^critical/ })).toBeNull();
-    expect(
-      screen.getByRole("img", { name: "Advisory severity distribution" }).querySelector(".bar-seg")
-        ?.className,
-    ).toContain("tone-none");
   });
 
   it("says the check may be incomplete, in a neutral tone, when the run's own data says so (PD-LEDGER-1)", () => {
@@ -320,33 +440,61 @@ describe("AdvisoryLedger", () => {
 
     // Assert: neither says the lock is clean nor stays silent about why there is nothing to show.
     expect(screen.queryByText(/no advisory affects this lock/i)).toBeNull();
-    expect(screen.getAllByText(/no advisory found; 2 packages could not be confirmed clear/i)).toHaveLength(
-      1,
-    );
-    expect(screen.getByText(/advisory check incomplete; 2 packages not confirmed clear/i)).toBeTruthy();
-    const segment = screen
-      .getByRole("img", { name: "Advisory severity distribution" })
-      .querySelector(".bar-seg");
-    expect(segment?.className).toContain("tone-low");
-    expect(segment?.className).not.toContain("tone-none");
+    const line = screen.getByText("No advisory found; 2 packages could not be confirmed clear");
+    expect(line.className).toContain("tone-low");
+    expect(line.className).not.toContain("tone-none");
+    expect(screen.getByText(/under run data/i)).toBeTruthy();
   });
 
-  it("buckets advisories by severity, skipping a bucket with no advisory in it", () => {
+  it("draws one square per advisory and a chip per severity, skipping empty severities", () => {
     // Arrange
     const model = loadWithAdvisories();
 
     // Act
-    renderIn(<AdvisoryLedger />, model, INITIAL_STATE);
+    const { container } = renderIn(<AdvisoryLedger />, model, INITIAL_STATE);
 
     // Assert: two criticals, one medium, nothing high/low/unrated.
+    expect(screen.getByText("3")).toBeTruthy();
+    expect(screen.getByText("advisories on 2 packages")).toBeTruthy();
+    const squares = [...container.querySelectorAll(".advisory-square")].map((sq) => sq.className);
+    expect(squares).toEqual([
+      "advisory-square tone-crit",
+      "advisory-square tone-crit",
+      "advisory-square tone-med",
+    ]);
+    expect(container.querySelector(".advisory-squares")?.getAttribute("aria-hidden")).toBe("true");
     expect(screen.getByRole("button", { name: /^critical/ }).textContent).toContain("2");
     expect(screen.getByRole("button", { name: /^medium/ }).textContent).toContain("1");
     expect(screen.queryByRole("button", { name: /^high/ })).toBeNull();
-    expect(screen.queryByRole("button", { name: /^low/ })).toBeNull();
     expect(screen.queryByRole("button", { name: /^unrated/ })).toBeNull();
   });
 
-  it("dispatches a sev toggle when a severity bucket is clicked", () => {
+  it("names each package with its advisories' own fix versions, verbatim", () => {
+    // Arrange
+    const model = loadWithAdvisories();
+
+    // Act
+    const { container } = renderIn(<AdvisoryLedger />, model, INITIAL_STATE);
+
+    // Assert
+    const lines = [...container.querySelectorAll(".advisory-packages p")].map((line) => line.textContent);
+    expect(lines).toEqual(["acme/one — fixed by 1.0.1; some list no fix", "acme/two — no fix listed"]);
+  });
+
+  it("opens a named package's detail", () => {
+    // Arrange
+    const model = loadWithAdvisories();
+    const dispatch = vi.fn();
+    renderIn(<AdvisoryLedger />, model, INITIAL_STATE, dispatch);
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "acme/two" }));
+
+    // Assert
+    expect(dispatch).toHaveBeenCalledWith({ type: "select", pkg: "acme/two" });
+  });
+
+  it("dispatches a sev toggle when a severity chip is clicked", () => {
     // Arrange
     const model = loadWithAdvisories();
     const dispatch = vi.fn();
@@ -366,11 +514,43 @@ describe("LibyearsLedger", () => {
     const model = loadMini();
 
     // Act
-    renderIn(<LibyearsLedger />, model, INITIAL_STATE);
+    const { container } = renderIn(<LibyearsLedger />, model, INITIAL_STATE);
 
     // Assert: mini.json's libyears.measured is 0, across 4 total (0 + 4 unmeasured) packages.
     expect(screen.getByText("—")).toBeTruthy();
-    expect(screen.getByText("none of the 4 packages could be measured")).toBeTruthy();
+    expect(screen.getByText("None of the 4 packages could be measured.")).toBeTruthy();
+    expect(container.querySelector(".libyears-bar")).toBeNull();
+  });
+
+  it("splits the figure into direct requirements and what they pull in", () => {
+    // Arrange
+    const model = loadFixture("koel_koel.json");
+
+    // Act
+    const { container } = renderIn(<LibyearsLedger />, model, INITIAL_STATE);
+
+    // Assert: 89.59 total, 28.03 direct, 61.56 pulled in.
+    expect(container.querySelector(".ledger-fig-num")?.textContent).toBe("89.6");
+    expect(container.querySelector(".libyears-parts")?.textContent).toBe(
+      "28.0 your direct requirements61.6 pulled in by them",
+    );
+    expect(container.querySelector(".libyears-bar")?.getAttribute("aria-hidden")).toBe("true");
+    expect(container.querySelector(".ledger-note")?.textContent).toBe(
+      "Across 196 of 202 packages. Furthest behind: predis/predis v1.1.10 at 4.7.",
+    );
+  });
+
+  it("opens the furthest-behind package's detail", () => {
+    // Arrange
+    const model = loadFixture("koel_koel.json");
+    const dispatch = vi.fn();
+    renderIn(<LibyearsLedger />, model, INITIAL_STATE, dispatch);
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "predis/predis" }));
+
+    // Assert
+    expect(dispatch).toHaveBeenCalledWith({ type: "select", pkg: "predis/predis" });
   });
 });
 
@@ -387,105 +567,37 @@ describe("Ledger", () => {
     expect(container.textContent).toBe("");
   });
 
-  it("renders all four blocks on a filterable tab", () => {
+  it("renders the lead and its three supporting columns on a filterable tab", () => {
     // Arrange
     const model = loadMini();
 
     // Act
-    renderIn(<Ledger />, model, INITIAL_STATE);
+    const { container } = renderIn(<Ledger />, model, INITIAL_STATE);
 
     // Assert
-    expect(screen.getByText(/priority of the/i)).toBeTruthy();
-    expect(screen.getByText(/verdicts across/i)).toBeTruthy();
-    expect(screen.getAllByText(/no advisory affects this lock/i).length).toBeGreaterThan(0);
-    expect(screen.getByText("Libyears behind")).toBeTruthy();
-  });
-});
-
-describe("SummaryBand", () => {
-  it("lists each non-zero, non-none priority in document order, then the package total", () => {
-    // Arrange: mini.json's priorities {critical:0, high:1, medium:1, low:0, none:2}, packagesChecked 4.
-    const model = loadMini();
-
-    // Act
-    const { container } = renderIn(<SummaryBand />, model, INITIAL_STATE);
-
-    // Assert: critical and low are zero and dropped; none is never shown at all.
-    // The space after the dot is a non-breaking one (ledger.css's `.summary-dot`): the leading
-    // space is the line's only wrap point, so the dot can't be stranded apart from its own pair.
-    expect(container.textContent).toBe("1 high · 1 medium of 4 packages");
-    expect(container.querySelector(".summary-count.tone-high")?.textContent).toBe("1 high");
-    // The dot before "medium" is that span's own child (the separator sits with the item it
-    // introduces), so its textContent carries it too.
-    expect(container.querySelector(".summary-count.tone-med")?.textContent).toBe(" · 1 medium");
+    expect(screen.getByRole("group", { name: "Ledger" })).toBeTruthy();
+    expect(screen.getByText("Flagged packages")).toBeTruthy();
+    expect(screen.getByText(/why the 2 are flagged/i)).toBeTruthy();
+    expect(screen.getByText("Security advisories")).toBeTruthy();
+    expect(screen.getByText("Libyears")).toBeTruthy();
+    expect(container.querySelector("details")).toBeNull();
   });
 
-  it("says nothing was flagged, in the none tone, when every shown priority is zero", () => {
-    // Arrange: mini-split.json — one `ok` finding, priorities all 0 except none, packagesChecked 1.
-    const model = loadFixture("mini-split.json");
-
-    // Act
-    const { container, getByText } = renderIn(<SummaryBand />, model, INITIAL_STATE);
-
-    // Assert: singular "package", and no per-priority counts at all.
-    expect(getByText("Nothing flagged in 1 package").className).toContain("tone-none");
-    expect(container.querySelector(".summary-count")).toBeNull();
-  });
-
-  it("keeps the plural even at a total of zero packages", () => {
-    // Arrange: empty-lockrot-self.json — 0 packages, every priority 0.
-    const model = loadFixture("empty-lockrot-self.json");
-
-    // Act
-    renderIn(<SummaryBand />, model, INITIAL_STATE);
-
-    // Assert
-    expect(screen.getByText("Nothing flagged in 0 packages")).toBeTruthy();
-  });
-
-  it("falls back to findings.length when packagesChecked is null (an older document)", () => {
+  it("on a phone, folds only the supporting columns, behind a line that counts them", () => {
     // Arrange
-    const model = loadMini();
-    const withoutPackagesChecked: Model = {
-      ...model,
-      report: { ...model.report, packagesChecked: null },
-    };
+    const model = loadFixture("koel_koel.json");
 
     // Act
-    const { container } = renderIn(<SummaryBand />, withoutPackagesChecked, INITIAL_STATE);
+    const { container } = renderIn(<Ledger narrow />, model, INITIAL_STATE);
 
-    // Assert: mini.json carries 4 findings, same number packagesChecked happened to be.
-    expect(container.textContent).toContain(`of ${model.report.findings.length} packages`);
-  });
-
-  it("never renders a count for the none bucket, however large", () => {
-    // Arrange: `none` is a package with no rot verdict at all, not a priority a reader filters on.
-    const model = loadMini();
-    const withNone: Model = {
-      ...model,
-      report: { ...model.report, priorities: { ...model.report.priorities, none: 999 } },
-    };
-
-    // Act
-    const { container } = renderIn(<SummaryBand />, withNone, INITIAL_STATE);
-
-    // Assert
-    expect(container.textContent).not.toContain("999");
-    expect(container.textContent).not.toContain("none");
-  });
-
-  it("wraps the same content SummaryCounts renders, for the phone fold's <summary> to reuse bare", () => {
-    // Arrange
-    const model = loadMini();
-
-    // Act
-    const band = renderIn(<SummaryBand />, model, INITIAL_STATE);
-    const wrapped = band.container.querySelector("div.summary p.summary-counts");
-    band.unmount();
-    const bare = renderIn(<SummaryCounts />, model, INITIAL_STATE);
-
-    // Assert
-    expect(wrapped).toBeTruthy();
-    expect(bare.container.textContent).toBe("1 high · 1 medium of 4 packages");
+    // Assert: the lead (figure and chips) sits outside the fold, the tier inside it.
+    const fold = container.querySelector("details.ledger-fold");
+    expect(fold).not.toBeNull();
+    expect(fold?.querySelector(".ledger-lead")).toBeNull();
+    expect(fold?.querySelector(".ledger-tier")).not.toBeNull();
+    expect(container.querySelector(".ledger-lead")?.closest("details")).toBeNull();
+    expect(fold?.querySelector("summary")?.textContent).toBe(
+      "More about this lock3 reasons · no advisories · 89.6 libyears",
+    );
   });
 });

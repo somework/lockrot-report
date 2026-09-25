@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   advisoriesOf,
   advisoryCheckIncomplete,
+  advisoryPackages,
   allAdvisories,
   fixLadder,
   fixShapeOf,
@@ -393,5 +394,43 @@ describe("groupAdvisories", () => {
 
     // Assert
     expect(groups).toEqual([]);
+  });
+});
+
+describe("advisoryPackages", () => {
+  it("lists each package once, in the advisories' order, with its distinct fix versions verbatim", () => {
+    // Arrange: two advisories on one package share a fix, a third names none.
+    const otphp = makeFinding({ package: "spomky-labs/otphp" });
+    const other = makeFinding({ package: "acme/other" });
+    const pairs = [
+      { advisory: makeAdvisory({ id: "A", fixedBy: "11.5.0" }), finding: otphp },
+      { advisory: makeAdvisory({ id: "B", fixedBy: "11.5.0" }), finding: otphp },
+      { advisory: makeAdvisory({ id: "C", fixedBy: null }), finding: other },
+    ];
+
+    // Act
+    const packages = advisoryPackages(pairs);
+
+    // Assert
+    expect(packages).toEqual([
+      { package: "spomky-labs/otphp", fixedBy: ["11.5.0"], someUnfixed: false },
+      { package: "acme/other", fixedBy: [], someUnfixed: true },
+    ]);
+  });
+
+  it("marks a package whose advisories name a fix for some but not all", () => {
+    // Arrange
+    const finding = makeFinding({ package: "acme/mixed" });
+    const pairs = [
+      { advisory: makeAdvisory({ id: "A", fixedBy: "2.0.1" }), finding },
+      { advisory: makeAdvisory({ id: "B", fixedBy: null }), finding },
+      { advisory: makeAdvisory({ id: "C", fixedBy: "1.9.9" }), finding },
+    ];
+
+    // Act
+    const [entry] = advisoryPackages(pairs);
+
+    // Assert: never compared or ranked, just listed in the order the advisories give them.
+    expect(entry).toEqual({ package: "acme/mixed", fixedBy: ["2.0.1", "1.9.9"], someUnfixed: true });
   });
 });

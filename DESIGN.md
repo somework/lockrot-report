@@ -184,9 +184,13 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 
 | id                          | before                                                                 | new                                                                                                                 |
 | --------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| PD-SUMMARY-1/PD-SUMMARY-5   | nothing said how many packages carried each priority                   | "N critical · N high … of M packages" above the ledger; on a phone, the fold's summary, over a small priority bar   |
+| PD-SUMMARY-1/PD-SUMMARY-5   | nothing said how many packages carried each priority                   | a counts line and a phone-fold bar, both since replaced by PD-SUMMARY-6: they said it twice                         |
 | PD-SUMMARY-2                | the header said nothing about the run's gate                           | "no gate" or "gate: `<value>`" beside the version, with a popover saying what it means                              |
 | PD-SUMMARY-3                | the Run tab's fail-on read "none" for a document without `run.fail_on` | an em dash; "none" only when the run said so                                                                        |
+| PD-SUMMARY-6                | four equal ledger columns, no single "how bad" read                    | a lead: "69 of 271 packages flagged", chips, a waffle (a square a package); three columns below, folded on a phone  |
+| PD-SUMMARY-7                | one verdict bar, 70% `ok` green                                        | a bar per flagged verdict, most common first, each its own filter; the rest one quiet "Not flagged" line            |
+| PD-SUMMARY-8                | a full-width advisory bar: 2 advisories drawn as big as 69 findings    | a square per advisory, severity chips, each package with its advisories' `fixed_by`, verbatim                       |
+| PD-SUMMARY-9                | libyears was a number and three lines of text                          | the number over one bar split into direct requirements and what they pull in, in neutral ink                        |
 | PD-GLOSSARY-1               | the search hint spelled out every key and search term, on every tab    | "Press ? for keys and search syntax"; the rest is the glossary's "Keys and search"                                  |
 | PD-GLOSSARY-2               | the glossary opened as one long scroll                                 | only the verdicts are in view; the other sections fold                                                              |
 | PD-GLOSSARY-3               | the glossary's link read "full reference"                              | "How lockrot decides (lockrot.dev)", to `#verdicts-and-priority`                                                    |
@@ -270,22 +274,22 @@ type, tones, vocabulary) and changes layout only where the legacy page failed a 
 **Breakpoints.** Three, all driven by `matchMedia` in `ui/useWide.ts` and mirrored in
 `ui/app.css`:
 
-| width        | layout                                                                                     |
-| ------------ | ------------------------------------------------------------------------------------------ |
-| ≥ 1181px     | rail · list · detail column (the legacy WIDE layout); the boot-time pick fills the detail  |
-| 760 – 1180px | rail · list; the detail opens as a full-screen sheet                                       |
-| < 760px      | one column, **list first**: a folded ledger summary, a "Filters" disclosure, then the list |
+| width        | layout                                                                                    |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| ≥ 1181px     | rail · list · detail column (the legacy WIDE layout); the boot-time pick fills the detail |
+| 760 – 1180px | rail · list; the detail opens as a full-screen sheet                                      |
+| < 760px      | one column: the summary's lead, its folded tier, a "Filters" disclosure, then the list    |
 
 The legacy page pushed the findings below the whole ledger and the whole rail at 320px, so a phone
 reader scrolled past two screens of bars and buttons before the first package. Under 760px the
-ledger collapses into one line, the priority counts over a small copy of the priority bar
-(PD-SUMMARY-1/PD-SUMMARY-5), that unfolds into the full ledger, and the rail becomes a closed
-`<details>` whose summary counts the rail filters that are on. A Findings row's age scale stacks
-under its key fact there instead of taking width from the package name (PD-ROWS-2).
+summary band keeps its lead (the flagged figure, the priority chips and the waffle) and folds
+its three supporting columns into one line that counts them (PD-SUMMARY-6), and the rail becomes a
+closed `<details>` whose summary counts the rail filters that are on. A Findings row's age scale
+stacks under its key fact there instead of taking width from the package name (PD-ROWS-2).
 
-**The summary line** is the first five seconds: how many packages carry each priority, out of how
-many were checked, above the ledger (`ledger/SummaryBand.tsx`, PD-SUMMARY-1). The gate is in the
-header (below).
+**The summary band's lead** is the first five seconds: how many packages are flagged, out of how
+many were checked, with the priority chips that filter by it and a waffle of every package
+(`ledger/PriorityLedger.tsx`, PD-SUMMARY-6). The gate is in the header (below).
 
 **Sticky offsets are measured, not guessed.** Only the header band (brand, run facts, tabs) is
 sticky, and only from 760px up. `Header` publishes its real height as `--topbar-h` through the

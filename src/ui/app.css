@@ -195,18 +195,9 @@
   border-bottom: 1px solid var(--border);
 }
 
-/* ---------- ledger fold (phone widths) ----------
-   The ledger keeps its own padding on wider screens; folded, the fold carries the page gutter and
-   the ledger inside it drops its own. */
-.ledger-fold {
-  max-width: var(--page-max);
-  margin: 0 auto;
-  padding: 12px var(--gutter) 0;
-}
-.ledger-fold > .ledger {
-  padding: 0 0 4px;
-}
-.ledger-fold > summary,
+/* ---------- rail fold (phone widths) ----------
+   The ledger's own phone fold (the summary band's supporting tier) is styled with the rest of the
+   band, in ledger/ledger.css. */
 .rail-fold > summary {
   display: flex;
   align-items: baseline;
@@ -219,31 +210,9 @@
   color: var(--ink-2);
 }
 /* The disclosure marker itself (shape, rotation, hover/focus) is the one shared rule in
-   `styles/base.css`; the wrapped counts span (`.ledger-fold-summary-head`, App.tsx's LedgerSlot)
-   can grow to two lines at 320px, and a baseline-aligned marker would sit next to whichever pair
-   ends the first line instead of the row as a whole, so this row's own marker keeps a position
-   override the shared rule does not assume for every surface. */
-.ledger-fold > summary::after,
+   `styles/base.css`; pinned to the row's top so a wrapped summary keeps it beside its first line. */
 .rail-fold > summary::after {
   align-self: flex-start;
-}
-.ledger-fold[open] > summary {
-  margin-bottom: 14px;
-}
-/* PD-SUMMARY-5 (DESIGN.md §5): the fold's own content column, so the priority bar sits on its own
-   line under the counts row instead of squeezing into it — `.ledger-fold > summary` above stays a
-   plain flex row of [this column, the marker], the same shape every other fold's summary keeps. */
-.ledger-fold-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-  flex: 1 1 auto;
-}
-.ledger-fold-summary-head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
 }
 
 /* ---------- layout ---------- */

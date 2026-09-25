@@ -178,18 +178,24 @@ test.describe("1440×900 (side): every part of the detail is reachable by wheel 
           const top = Math.max(0, panel?.top ?? 0);
           return r.top < bottom && r.bottom > top && r.left < window.innerWidth && r.right > 0;
         });
-      for (let i = 0; i < 25 && !(await inViewport()); i++) {
-        await page.mouse.wheel(0, 400);
-      }
-
       // A single `wheel(0, 400)` tick, once `.shell-detail`'s own scroll is exhausted and the rest
       // chains into the page (PD-DETAIL-5), does not move the page by exactly 400px: Chromium turns
       // the leftover delta into a brief momentum scroll of its own that keeps going for a beat after
-      // this call returns (measured, over many repeats: up to ~800px total from one 400px tick). This
-      // waits for that to finish, the same way `disclosure-marker.spec.ts`'s own `settledRotation()`
-      // waits out a CSS transition, before either assertion below reads a final position rather than
-      // a still-moving one.
-      await page.waitForTimeout(250);
+      // this call returns (measured, over many repeats: up to ~800px total from one 400px tick). Each
+      // round waits for that to finish, the same way `disclosure-marker.spec.ts`'s own
+      // `settledRotation()` waits out a CSS transition, before reading a final position rather than a
+      // still-moving one. The momentum can carry the footer into view after the heading already
+      // showed, and the panel then gives the footer its height back (`:root.footer-in-view`), which
+      // clips the heading again — a reader keeps wheeling there, so the gesture goes on for another
+      // round instead of reading that settled-but-clipped moment as the end (PD-SUMMARY-6's taller
+      // band put koel_koel's page exactly on that edge).
+      for (let round = 0; round < 3; round++) {
+        for (let i = 0; i < 25 && !(await inViewport()); i++) {
+          await page.mouse.wheel(0, 400);
+        }
+        await page.waitForTimeout(250);
+        if (await inViewport()) break;
+      }
 
       await expect(provenance).toBeInViewport();
 
