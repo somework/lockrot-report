@@ -233,9 +233,15 @@ export interface ReportPage {
    *  the browser's UA stylesheet gives a non-modal `<dialog>` otherwise (M28). */
   glossaryPosition(): Promise<string>;
 
-  /** Clicks a verdict pill (the word, in its row) — PD-GLOSSARY-4/5. On a Findings row this must
-   *  open the pill's popover without also opening or closing the row's own detail. */
+  /** Clicks the verdict pill in the open package's own detail header — PD-GLOSSARY-4/5. Opens
+   *  `pkg` first if it is not already the open one, then must open the pill's popover without also
+   *  closing the detail. */
   clickVerdictPill(pkg: string, verdict: string): Promise<void>;
+  /** Clicks a Findings row's own verdict pill — a walk found readers took it for the row's own
+   *  target, not a definition trigger (PD-GLOSSARY-4/5, DESIGN.md §5). Must behave exactly like a
+   *  click anywhere else on the row: open the package if it is closed, close it again if it is the
+   *  one already open — never a popover, since the row's own pill carries none. */
+  clickPillInFindingsRow(pkg: string, verdict: string): Promise<void>;
   /** Whether some pill's popover is currently showing (`:popover-open`), wherever it was opened. */
   isPillPopoverOpen(): Promise<boolean>;
   /** Every visible word in the open pill popover, whitespace-collapsed. */

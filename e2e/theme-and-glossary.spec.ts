@@ -151,18 +151,38 @@ test.describe("PD-GLOSSARY-1: the search hint", () => {
 });
 
 test.describe("PD-GLOSSARY-4/5: a verdict pill's popover", () => {
-  test("clicking a pill in a Findings row opens its definition and does not toggle the row's detail", async () => {
+  test("clicking the verdict pill in the detail header opens its definition without closing the detail", async () => {
+    // A walk found a reader took a Findings row's own pill for the row's own target and clicked it
+    // expecting the package, landing on a definition popover instead. The pill that still opens one
+    // lives in the open package's own detail header (`DetailHeader.tsx`) — `clickVerdictPill` opens
+    // the package first (a no-op here, since a wide screen already auto-opens one, DESIGN.md §5).
     await report.goto(FIXTURES.mini);
-    // Whatever the detail pane holds on load (the wide-screen boot pick, DESIGN.md §5) must stay
-    // exactly as it is — the click below must neither open nor close it, whichever package it names.
-    const before = await report.detail();
+    await report.openPackage("vendor/transitive");
     expect(await report.isPillPopoverOpen()).toBe(false);
 
     await report.clickVerdictPill("vendor/transitive", "abandoned");
 
     expect(await report.isPillPopoverOpen()).toBe(true);
     expect(await report.pillPopoverText()).toMatch(/composer repository marks it abandoned/i);
-    expect(await report.detail()).toEqual(before);
+    expect((await report.detail()).open).toBe(true);
+    expect((await report.detail()).name).toBe("vendor/transitive");
+  });
+
+  test("a Findings row's own pill is plain: clicking it opens the package, not a popover (PD-GLOSSARY-4/5)", async () => {
+    await report.goto(FIXTURES.mini);
+    await report.closeDetail();
+    expect((await report.detail()).open).toBe(false);
+
+    await report.clickPillInFindingsRow("vendor/transitive", "abandoned");
+
+    expect(await report.isPillPopoverOpen()).toBe(false);
+    expect((await report.detail()).open).toBe(true);
+    expect((await report.detail()).name).toBe("vendor/transitive");
+
+    // The same click contract as the rest of the row: a second click on the now-open package's own
+    // pill closes it again, rather than doing nothing or re-opening a popover.
+    await report.clickPillInFindingsRow("vendor/transitive", "abandoned");
+    expect((await report.detail()).open).toBe(false);
   });
 
   // visual review: fixed and viewport-centred with no dimming, the popover could land squarely on
@@ -223,7 +243,6 @@ test.describe("PD-GLOSSARY-4/5: a verdict pill's popover", () => {
     await report.openPackage("vendor/transitive");
     expect((await report.detail()).open).toBe(true);
 
-    // The row's own pill, not the detail's — both exist at once in the wide layout (DESIGN.md §8).
     await report.clickVerdictPill("vendor/transitive", "abandoned");
     expect(await report.isPillPopoverOpen()).toBe(true);
 

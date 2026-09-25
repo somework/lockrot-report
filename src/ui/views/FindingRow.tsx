@@ -15,13 +15,15 @@ import "./views.css";
 /**
  * The click contract FindingRow and PackagesView's rows share: a click anywhere on the row toggles
  * the detail pane, closing it again on a second click of the same package — unless the click landed
- * on a real `<a>`, a `<button>` (PD-GLOSSARY-4: the verdict pill's popover trigger and its own "In
- * the glossary" button), or inside an open popover (its content is a descendant of the row in the
- * DOM even though the top layer draws it elsewhere), each of which is left to do its own thing.
- * Keyboard activation (Enter/Space, and DESIGN.md M5's fix so a focused control's own Enter is left
- * alone) is `ui/keyboard.ts`'s job: it reads the same `data-pkg` every row here carries through one
- * document-level listener, so a row needs no `onKeyDown` of its own — adding one would just race the
- * global handler over who dispatches first.
+ * on a real `<a>` (a signal id's own link), a `<button>`, or inside an open popover (its content is
+ * a descendant of the row in the DOM even though the top layer draws it elsewhere), each of which is
+ * left to do its own thing. Both rows' own verdict pill is plain text, not one of those (PD-GLOSSARY-
+ * 4/5, DESIGN.md §5: a pill in the row is the row's own target, not a popover's), so a click on it
+ * falls through to the row like any other word in it. Keyboard activation (Enter/Space, and
+ * DESIGN.md M5's fix so a focused control's own Enter is left alone) is `ui/keyboard.ts`'s job: it
+ * reads the same `data-pkg` every row here carries through one document-level listener, so a row
+ * needs no `onKeyDown` of its own — adding one would just race the global handler over who
+ * dispatches first.
  */
 export function rowInteractions(
   pkg: string,
@@ -149,9 +151,12 @@ function RowTags({ finding }: { finding: Finding }) {
  *  its age scale (or the evidence sentence when the finding carries no signal at all) — ported from
  *  legacy `rowHtml` (report.js:406-446), collapsed from up to three signal lines to one plus a scale
  *  per PD-ROWS-1/PD-ROWS-2 (DESIGN.md §5): a reviewer's own reading of the up-to-three lines was
- *  "text, text, text, no scales". The verdict pill carries `docs` (PD-GLOSSARY-5) so a reader gets
- *  the definition without opening the package at all; `rowInteractions`'s guard above is what keeps
- *  that click from also toggling the row.
+ *  "text, text, text, no scales". The verdict pill is plain here, not `docs` (PD-GLOSSARY-4/5,
+ *  DESIGN.md §5) — a first-time-reader walk took the pill for the row's own target and clicked it
+ *  to open the package, landing on a definition popover instead; its `title` still carries the
+ *  definition, on hover, and the click now falls through to `rowInteractions` below, same as
+ *  clicking the package name or the version beside it. The detail header's own pill
+ *  (`DetailHeader.tsx`) keeps the popover, where a definition is the click a reader wants.
  *
  *  regression review: on screen, only the key fact stands in for the rest ("+N more signals, open
  *  the package") — but print drops `.shell-detail` entirely (`styles/print.css`), so a reader on
@@ -187,7 +192,7 @@ export function FindingRow({ finding, ageMax }: { finding: Finding; ageMax: numb
       <span className="stripe" />
       <span className="body">
         <span className="line1">
-          <Pill word={finding.verdict} docs />
+          <Pill word={finding.verdict} />
           {finding.replacement && (
             <Tag title="the repository names this package as the replacement">→ {finding.replacement}</Tag>
           )}

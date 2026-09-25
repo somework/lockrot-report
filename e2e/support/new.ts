@@ -657,10 +657,21 @@ export class NewReportPage implements ReportPage {
     return this.glossaryLocator().evaluate((el) => getComputedStyle(el).position);
   }
 
-  /** PD-GLOSSARY-4/5: the verdict word inside a row (`pkgLocator`) is a `<button>`, its accessible
-   *  name the verdict itself, same case-insensitive matching every role lookup here uses. */
+  /** PD-GLOSSARY-4/5: the verdict pill with a popover is the open detail's own header, not a row's
+   *  — a walk found a row's own pill read as the row's click target, and it is plain text there now
+   *  (`views/FindingRow.tsx`), no `<button>` role at all. Opens `pkg` first (a no-op if it is
+   *  already open), then clicks its header pill, whose accessible name is the verdict itself, same
+   *  case-insensitive matching every role lookup here uses. */
   async clickVerdictPill(pkg: string, verdict: string): Promise<void> {
-    await this.pkgLocator(pkg).getByRole("button", { name: verdict }).click();
+    await this.openPackage(pkg);
+    await this.detailRegion().getByRole("button", { name: verdict }).click();
+  }
+
+  /** The row's own pill carries no button role at all now (`views/FindingRow.tsx`), so it is found
+   *  the same way `pillPrintStyle` finds it: by its own visible word, `exact` so a short verdict
+   *  does not also match a longer phrase that contains it. */
+  async clickPillInFindingsRow(pkg: string, verdict: string): Promise<void> {
+    await this.pkgLocator(pkg).getByText(verdict, { exact: true }).click();
   }
 
   /** There is no accessible role for "the currently open popover" to query by name — `:popover-open`
@@ -711,8 +722,10 @@ export class NewReportPage implements ReportPage {
     });
   }
 
-  async isPillFocused(pkg: string, verdict: string): Promise<boolean> {
-    return this.pkgLocator(pkg)
+  async isPillFocused(_pkg: string, verdict: string): Promise<boolean> {
+    // `_pkg` documents intent only — the row itself carries no pill button to focus any more
+    // (PD-GLOSSARY-4/5); the only pill this can mean is the open detail's own header's.
+    return this.detailRegion()
       .getByRole("button", { name: verdict })
       .evaluate((el) => el === document.activeElement);
   }
@@ -827,8 +840,11 @@ export class NewReportPage implements ReportPage {
     pkg: string,
     verdict: string,
   ): Promise<{ borderColor: string; printColorAdjust: string }> {
+    // Not `getByRole("button", ...)` any more: a row's own verdict pill is plain text now
+    // (PD-GLOSSARY-4/5), with no button role to query by — its visible word still is one, though,
+    // and `exact` keeps this from also matching a longer phrase that happens to contain it.
     return this.pkgLocator(pkg)
-      .getByRole("button", { name: verdict })
+      .getByText(verdict, { exact: true })
       .evaluate((el) => {
         const style = getComputedStyle(el);
         return {

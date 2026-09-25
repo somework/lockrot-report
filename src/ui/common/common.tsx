@@ -34,9 +34,11 @@ export function Pill({ word, docs = false }: { word: string; docs?: boolean }) {
  * PD-GLOSSARY-4: this used to be an `<a>` out to lockrot.dev — useless offline, and a report opened
  * from a PHAR or a file:// path has no network at all (DESIGN.md §1.1). A native popover holds the
  * same definition the glossary would give it, in place, plus a way into the full glossary and the
- * lockrot.dev link for whoever does have it open. `useId` keeps every instance's popover unique, so
- * two pills for the same verdict on screen at once (a Findings row and its open detail) don't fight
- * over which is `popovertarget`'s match.
+ * lockrot.dev link for whoever does have it open. Used only where a pill is not also a row's own
+ * click target — today that is the open detail's own header (`DetailHeader.tsx`); a row's pill
+ * (`views/FindingRow.tsx`, PD-GLOSSARY-5) stays plain instead, since a reader who clicks the word in
+ * a row wants the package, not its definition. `useId` keeps every instance's popover unique in case
+ * that ever changes and two show at once.
  *
  * A `<button popovertarget>` is a control (`ui/keyboard.ts`'s `CONTROLS` already matches `button`),
  * so Enter on the pill activates it instead of toggling whatever row it sits in (M5), and the row's

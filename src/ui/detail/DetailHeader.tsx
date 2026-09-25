@@ -42,6 +42,9 @@ export function DetailHeader({ finding, onClose }: DetailHeaderProps) {
         <div className="detail-head-main">
           <h2 className="detail-title">{finding.package}</h2>
           <div className="detail-pills">
+            {/* `docs`, unlike the same verdict's pill in its own row (`views/FindingRow.tsx`,
+                PD-GLOSSARY-4/5, DESIGN.md §5): a pill up here is not also the row's own click
+                target, so a definition popover is what a reader wants from it. */}
             <Pill word={finding.verdict} docs />
             {finding.priority !== "none" && <Pill word={finding.priority} />}
             <Tag>{finding.direct ? "direct" : "transitive"}</Tag>
