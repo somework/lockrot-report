@@ -31,10 +31,22 @@ function useFooterHeight() {
       root.style.setProperty("--footer-h", `${Math.ceil(node.getBoundingClientRect().height)}px`);
     });
     observer.observe(node);
+    // The sticky columns give up the footer's height only while the footer is on screen: sized
+    // against it all the time, a short viewport (a laptop at 125% zoom, devtools open) left them a
+    // sliver for the whole page to protect the last screenful of it (DESIGN.md §5 PD-DETAIL-5).
+    const visible =
+      typeof IntersectionObserver === "undefined"
+        ? null
+        : new IntersectionObserver(([entry]) => {
+            root.classList.toggle("footer-in-view", entry?.isIntersecting === true);
+          });
+    visible?.observe(node);
 
     return () => {
       observer.disconnect();
+      visible?.disconnect();
       root.style.removeProperty("--footer-h");
+      root.classList.remove("footer-in-view");
     };
   }, []);
 

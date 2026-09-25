@@ -250,22 +250,19 @@
   grid-template-columns: 210px minmax(0, 1fr) minmax(0, 420px);
   gap: 20px;
   align-items: start;
-  /* `.shell-rail` and `.shell-detail.is-side`'s sticky containing block is this row, and the row's
-     own height cancels out of where their stuck range actually ends: `Footer` renders straight after
-     `.shell` with nothing sized to hold it away, so at the page's true maximum scroll — whatever
-     `.shell`'s own row height is — the row's bottom edge, on screen, always sits at exactly
-     `100vh` minus the footer's own rendered height (`--footer-h`, `Footer.tsx#useFooterHeight`),
-     never further down, because a taller row only pushes the document (and so the maximum scroll)
-     down by the same amount it grows by. An earlier fix reserved extra row height instead
-     (`grid-auto-rows`, gated on a measured `.shell-has-tall-detail`) and could not have worked for
-     that reason: it moved *when*, during a scroll gesture, the panel's stuck header met the fixed
-     one, never *whether* it did once the reader reached the bottom of the page — confirmed on
-     koel_koel and wallabag_wallabag at 1440px, wheeling all the way to the end (DESIGN.md §5
-     PD-DETAIL-5, §8; `e2e/detail-scroll.spec.ts`). `--sticky-room` bounds `max-height` below instead,
-     the one variable that actually decides whether the stuck panel's own bottom can reach the row's
-     true final edge: `100vh` minus the topbar (`--topbar-h`) and the footer (`--footer-h`), minus a
-     16px gap kept on each side, the same margins `top`/`max-height` already kept. */
-  --sticky-room: calc(100vh - var(--topbar-h) - var(--footer-h) - 32px);
+  /* The height the sticky rail and detail column may take: the viewport under the topbar, with a
+     16px gap on each side. Their sticky containing block is this row, and at the page's maximum
+     scroll the row ends exactly `--footer-h` above the viewport's bottom, so a column that tall would
+     be dragged up under the topbar there; the rule below gives the footer's height back only while
+     the footer is on screen (DESIGN.md §5 PD-DETAIL-5, `e2e/detail-scroll.spec.ts`). */
+  --sticky-room: calc(100vh - var(--topbar-h) - 32px);
+}
+/* ...but only once the footer is actually on screen (`Footer.tsx` sets the class from an
+   IntersectionObserver). Subtracting it at every scroll position shrank both columns by 170-190px on
+   every screen, to a sliver on short viewports. The floor keeps a short viewport usable at the very
+   end of the page, at the cost of the panel's top sliding under the header there. */
+:root.footer-in-view .shell {
+  --sticky-room: max(calc(100vh - var(--topbar-h) - var(--footer-h) - 32px), 50vh);
 }
 /* Run data has nothing to filter, so the rail goes, and its column with it, or the list would
    inherit the rail's 210px and every value would wrap one character at a time. */
