@@ -18,7 +18,7 @@ function Lnk({ href, children }: { href: string; children: ComponentChildren }) 
  * renders straight after `.shell` with nothing sized to hold it away, so the page's true maximum scroll
  * always leaves exactly `--footer-h` of the footer standing between a stuck panel's lowest reachable
  * point and the viewport's own bottom edge, whatever `.shell`'s own row height happens to be (DESIGN.md
- * §5 PD-DETAIL-5, §8). Set through the CSSOM, which the page's CSP allows (DESIGN.md §1.3).
+ * §8, PD-DETAIL-5). Set through the CSSOM, which the page's CSP allows (DESIGN.md §1.3).
  */
 function useFooterHeight() {
   const ref = useRef<HTMLElement>(null);

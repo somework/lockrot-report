@@ -14,8 +14,10 @@ tag or the address format, says so under **Breaking** in its entry.
   summary itself, over a small copy of the priority bar.
 - The header names the run's gate, "no gate" or "gate: <value>", with a popover saying what that
   means for the run's exit code.
-- A Findings row whose package has an S8, S2 or S4 age carries an age scale: the run's warn and high thresholds, and a dot at the
-  package's age. One caption above the list names the thresholds, and every row shares one scale.
+- A Findings row whose package has an age the run measures (how long its branch has been stopped,
+  or how long it has gone without a stable release or a push) carries an age scale, when the run
+  recorded that age's warn and high thresholds: the two thresholds, and a dot at the package's age.
+  One caption above the list names the thresholds, and every row shares one scale.
   An age that did not set the priority (an abandoned or pinned package) draws a neutral dot.
 - A definition that names a threshold setting shows what this run set it to, "5 years
   (release-high-years)".

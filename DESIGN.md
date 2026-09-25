@@ -200,7 +200,7 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 | PD-DETAIL-4                 | the detail never said a filter hid its package from the list                   | it says so, with "Clear filters"; the search status says so too                                                   |
 | PD-DETAIL-5                 | at 1440px the side detail's end could not be reached                           | the wheel chains into the page; the column makes room for the footer (§8)                                         |
 | PD-ROWS-1                   | a row showed up to three signal lines                                          | the highest-level signal and "+N more signals"; print shows them all                                              |
-| PD-ROWS-2                   | nothing showed an age against the run's thresholds                             | an age scale: warn and high ticks, a dot at the S8/S2/S4 age                                                      |
+| PD-ROWS-2                   | nothing showed an age against the run's thresholds                             | an age scale: warn and high ticks, a dot at the S8 (branch stopped) / S2 (no stable release) / S4 (no push) age   |
 | PD-ROWS-3                   | each row scaled its own track, with no legend                                  | one legend and one maximum per list; `abandoned`/`pinned` rows get a neutral dot                                  |
 | PD-TIMELINE-1               | the first year label lost half its width off the axis                          | clamped to the axis and left-aligned                                                                              |
 | PD-TIMELINE-2               | a wrapped branch label pulled its dot between its lines                        | the dot stays level with the first line                                                                           |
@@ -286,9 +286,9 @@ when taller than the viewport. The legacy page hard-coded 196px and overlapped a
 Both columns are at most `--sticky-room` tall (`ui/app.css`): the viewport less the topbar and a
 16px gap on each side. At the page's end the footer takes the bottom of the viewport, so while the
 footer is on screen `--sticky-room` also subtracts `--footer-h`, never below 50vh; `Footer.tsx`
-measures it and toggles `:root.footer-in-view` from an IntersectionObserver. Doing this only then
-keeps a usable column on a short viewport everywhere else. Where the 50vh floor wins, the panel's
-top slides under the header at the page's end (PD-DETAIL-5).
+measures it and toggles `:root.footer-in-view` from an IntersectionObserver. Subtracting it only
+while the footer is visible keeps a usable column on a short viewport. Where the 50vh floor wins,
+the panel's top slides under the header at the page's end, an accepted limitation (PD-DETAIL-5).
 
 `.shell-detail` (`is-side`/`is-sheet`) alone owns the detail's geometry and scrolling; `Detail`
 only lays out its children, and opening another package starts at the top (PD-DETAIL-3). A wheel
@@ -334,12 +334,11 @@ shape. `e2e/forced-colors.spec.ts` emulates the mode.
   inside it (M5).
 - A verdict pill's definition (`ui/common/common.tsx`, PD-GLOSSARY-4) and the gate fact are native
   `popover="auto"` elements opened by a `<button popovertarget>`. They never trap focus, so
-  `j`/`k`/`?` still act while one is open.
-- Escape closes one thing per press: an open popover first (`decideEscape` returns `ignore`, so the
-  keydown is not cancelled and the browser's popover light-dismiss closes it alone,
-  PD-GLOSSARY-6/PD-SUMMARY-4), then the glossary, then detail (focus returns
-  to the row whose `data-pkg` equals the closed package, found by attribute comparison), then the
-  search box's focus.
+  `j`/`k`/`?` still act while one is open. Escape is left to the browser, which closes an open
+  popover on its own (`decideEscape` returns `ignore`).
+- Escape closes one thing per press: an open popover first (PD-GLOSSARY-6/PD-SUMMARY-4), then the
+  glossary, then detail (focus returns to the row whose `data-pkg` equals the closed package, found
+  by attribute comparison), then the search box's focus.
 
 **Theme.** The button names the action relative to the _effective_ theme, the pinned one or the
 OS preference (M11). The choice persists under `lockrot-theme`; an unrecognised stored value is
