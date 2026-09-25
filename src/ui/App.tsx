@@ -208,9 +208,18 @@ export function App({ model }: { model: Model }) {
   // dispatches `"view"` at all), so a pasted link that restores a tab does not fight a reader's own
   // scroll position.
   const tabChangedByReader = useRef(false);
+  // Tabs.tsx dispatches "view" even for the tab already selected (on purpose: it closes the open
+  // detail), so the flag above must only latch when the view actually moves — comparing against a
+  // ref, not `state.view` itself, keeps `dispatchTracked`'s identity tied to `dispatch` alone rather
+  // than recreating it on every state change. Written directly in the render body: it is always
+  // current before an event handler can fire, no effect needed. Missing this comparison left the
+  // flag set after a same-tab click, so the *next* view change for any reason — including a
+  // hashchange restore — scrolled to 0 regardless of who caused it (regression review).
+  const currentView = useRef(state.view);
+  currentView.current = state.view;
   const dispatchTracked = useCallback(
     (action: Action) => {
-      if (action.type === "view") tabChangedByReader.current = true;
+      if (action.type === "view" && action.view !== currentView.current) tabChangedByReader.current = true;
       dispatch(action);
     },
     [dispatch],

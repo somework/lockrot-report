@@ -194,6 +194,26 @@ describe("tabs", () => {
 
     expect(scrollTo).not.toHaveBeenCalled();
   });
+
+  // Regression: Tabs.tsx dispatches "view" even for the tab already selected (it closes the open
+  // detail), which used to latch the "a reader changed tabs" flag without the effect that clears it
+  // ever running (the effect depends on `state.view`, which did not change). The flag then stayed
+  // set for the *next* view change for any reason, including this hashchange restore.
+  test("clicking the already-selected tab first does not make a later hashchange restore scroll", async () => {
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
+    render(<App model={MINI} />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /Findings/ }));
+    expect(scrollTo).not.toHaveBeenCalled();
+
+    history.replaceState(null, "", "/report.html#view=packages");
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    await waitFor(() => {
+      expect(screen.getByRole("tab", { selected: true }).textContent).toContain("All packages");
+    });
+
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
 });
 
 describe("keyboard", () => {
