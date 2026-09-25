@@ -6,8 +6,12 @@
  *   only a keypress on the row itself opens its detail — and, like a click, never closes the package
  *   that is already open (PD-ROWS-7); Escape does that.
  * - M7/M8/M9: `j`/`k` walk the rows the current view has on screen, in the order it shows them,
- *   starting from the open package. The legacy page kept a separate cursor over a list that could
- *   differ from the rows drawn, and could open a package that had no row at all.
+ *   starting from the row that holds focus, else the open package. The legacy page kept a separate
+ *   cursor over a list that could differ from the rows drawn, and could open a package that had no
+ *   row at all.
+ * - PD-ROWS-11: focus follows the selection. `j`/`k` move from the focused row, so after Escape
+ *   hands focus back to a row, `j` continues below it instead of restarting at the top; and Escape
+ *   pressed in a text field closes the detail without pulling focus out of the field.
  * - M10: nothing but Escape acts while the glossary is open; the legacy page kept moving the
  *   selection behind it.
  * - PD-GLOSSARY-6, PD-SUMMARY-4: an open popover (a verdict pill's, the header's gate fact) eats
@@ -50,7 +54,8 @@ export type KeyDecision =
   | { type: "focusSearch" }
   | { type: "openGlossary" }
   | { type: "closeGlossary" }
-  | { type: "closeDetail"; restore: string }
+  /** `restore` is the row to hand focus back to, or null to leave focus where it is (a text field). */
+  | { type: "closeDetail"; restore: string | null }
   | { type: "blurSearch" };
 
 const IGNORE: KeyDecision = { type: "ignore" };
@@ -79,21 +84,28 @@ export function decideKey(input: KeyInput): KeyDecision {
 function decideEscape(input: KeyInput): KeyDecision {
   if (input.popoverOpen) return IGNORE;
   if (input.dialogOpen) return { type: "closeGlossary" };
-  if (input.selected !== null) return { type: "closeDetail", restore: input.selected };
+  // Escape typed in the search box closes the detail but leaves the caret where it is: pulling focus
+  // out to a row would steal it from the field the reader is typing in (PD-ROWS-11).
+  if (input.selected !== null) return { type: "closeDetail", restore: input.typing ? null : input.selected };
   if (input.searchFocused) return { type: "blurSearch" };
 
   return IGNORE;
 }
 
 /**
- * The next row from the open package, clamped at both ends. With nothing open, or with the open
- * package not on screen (filtered out, or on another tab's list), both keys start at the first row,
- * as the legacy cursor did from -1.
+ * The next row from where the reader is, clamped at both ends: the row that holds focus (the key
+ * landed in it) when it is one of the view's rows, else the open package. Focus and the open package
+ * agree after every `j`/`k`, click and Enter; they part only once Escape closes the detail and hands
+ * focus back to its row, and `j` then continues from that row rather than from the top (PD-ROWS-11).
+ * With neither on screen (filtered out, or on another tab's list), both keys start at the first
+ * row, as the legacy cursor did from -1.
  */
 function decideMove(input: KeyInput, step: 1 | -1): KeyDecision {
   const count = input.rendered.length;
   if (count === 0) return IGNORE;
-  const at = input.selected === null ? -1 : input.rendered.indexOf(input.selected);
+  const focused = input.rowPkg !== null && input.rendered.includes(input.rowPkg) ? input.rowPkg : null;
+  const from = focused ?? input.selected;
+  const at = from === null ? -1 : input.rendered.indexOf(from);
   const next = at < 0 ? 0 : Math.min(count - 1, Math.max(0, at + step));
   const pkg = input.rendered[next];
 

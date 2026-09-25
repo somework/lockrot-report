@@ -168,12 +168,21 @@ export function Tag({ children, tone, title }: { children: ComponentChildren; to
  * data, and the one place a value becomes an `href` is where a `javascript:` URL has to stop. When
  * the check fails the text is still shown, unlinked.
  */
-export function OutLink({ href, children }: { href: string | null; children: ComponentChildren }) {
+export function OutLink({
+  href,
+  children,
+  tabIndex,
+}: {
+  href: string | null;
+  children: ComponentChildren;
+  /** -1 inside a list row that is not the list's Tab stop (PD-ROWS-11, `ui/rowCursor.ts`). */
+  tabIndex?: -1 | undefined;
+}) {
   const safe = safeHref(href);
   if (safe === null) return <span className="out">{children}</span>;
 
   return (
-    <a className="out" href={safe} target="_blank" rel="noopener noreferrer">
+    <a className="out" href={safe} target="_blank" rel="noopener noreferrer" tabIndex={tabIndex}>
       {children}
     </a>
   );

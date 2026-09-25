@@ -28,6 +28,7 @@ function renderIn(ui: ComponentChild, openGlossaryFrom: (returnTo: HTMLElement |
     dispatch: vi.fn(),
     now: new Date(model.report.generatedAt),
     wide: true,
+    cursor: null,
     openGlossary: vi.fn(),
     openGlossaryFrom,
   };

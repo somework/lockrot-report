@@ -126,11 +126,87 @@ test.describe("M5: Enter on a link inside a row must not hijack the link", () =>
 test.describe("M6: Packages-table rows are focusable and show a selected state", () => {
   test("a row can receive keyboard focus and is marked selected once open", async () => {
     // M6 (DESIGN.md §5), fixed on purpose: legacy's Packages-table rows carried no
-    // tabindex/role/aria-current at all, unlike Findings' rows.
+    // tabindex/role/aria-current at all, unlike Findings' rows. Focusable, but since PD-ROWS-11 not
+    // each a Tab stop: with nothing open the first row is the list's one, and opening this row
+    // makes it the one (this test used to read "focusable" as "in the Tab order").
     await report.tab("packages");
     expect(await report.rowFocusable("vendor/snapshot")).toBe(true);
+    expect(await report.rowInTabOrder("vendor/snapshot")).toBe(false);
     await report.openPackage("vendor/snapshot");
     expect(await report.rowSelected("vendor/snapshot")).toBe(true);
+    expect(await report.rowInTabOrder("vendor/snapshot")).toBe(true);
+  });
+});
+
+test.describe("PD-ROWS-11: keyboard focus follows the selection", () => {
+  test("after a click, j moves focus with the open package, so Enter opens the row j reached", async () => {
+    // M5's mismatch: focus stayed on the clicked row while j moved the open package on, so Enter
+    // opened the clicked row again instead of the one on screen as open.
+    await report.clickPackage("vendor/transitive");
+    await report.pressJ();
+    const reached = (await report.detail()).name;
+    expect(reached).not.toBe("vendor/transitive");
+    expect(await report.focusedRowName()).toBe(reached);
+
+    await report.pressEnter();
+    expect((await report.detail()).name).toBe(reached);
+    await report.pressK();
+    expect(await report.focusedRowName()).toBe("vendor/transitive");
+    expect((await report.detail()).name).toBe("vendor/transitive");
+  });
+
+  test("Escape gives focus back to the row, and j continues below it rather than from the top", async () => {
+    await report.tab("packages");
+    await report.pressJ();
+    await report.pressJ();
+    expect((await report.detail()).name).toBe("vendor/snapshot");
+    await report.pressEscape();
+    expect((await report.detail()).open).toBe(false);
+    expect(await report.focusedRowName()).toBe("vendor/snapshot");
+    expect(await report.rowInTabOrder("vendor/snapshot")).toBe(true);
+
+    const rows = await report.rows();
+    await report.pressJ();
+    expect((await report.detail()).name).toBe(rows[2]);
+  });
+
+  test("j and k typed into the search box stay text, with a package open", async () => {
+    await report.tab("packages");
+    await report.pressJ();
+    const open = (await report.detail()).name;
+    await report.focusSearch();
+    await report.typeKeys("jk");
+    expect(await report.searchValue()).toBe("jk");
+    expect(await report.isSearchFocused()).toBe(true);
+    expect((await report.detail()).name).toBe(open);
+  });
+
+  test("Escape typed in the search box closes the package and leaves focus in the box", async () => {
+    await report.tab("packages");
+    await report.pressJ();
+    await report.focusSearch();
+    await report.pressEscape();
+    expect((await report.detail()).open).toBe(false);
+    expect(await report.isSearchFocused()).toBe(true);
+  });
+
+  test("Tab reaches one row of the list, then its own links, then leaves the list for the detail", async () => {
+    // Every row, and each Findings row's signal link, used to be a Tab stop of its own.
+    const rows = await report.rows();
+    expect(rows.length).toBeGreaterThan(1);
+    expect(new Set(await report.listTabStops())).toEqual(new Set([rows[0]]));
+
+    await report.clickPackage(rows[1] ?? "");
+    const stops = await report.listTabStops();
+    expect(new Set(stops)).toEqual(new Set([rows[1]]));
+
+    let tabs = 0;
+    while (!(await report.isFocusInDetail()) && tabs < stops.length + 1) {
+      await report.pressTab();
+      tabs += 1;
+    }
+    expect(await report.isFocusInDetail()).toBe(true);
+    expect(tabs).toBeLessThanOrEqual(stops.length);
   });
 });
 

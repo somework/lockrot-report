@@ -15,6 +15,7 @@ import { Ledger } from "./ledger/Ledger";
 import { NewerSchemaBanner } from "./NewerSchemaBanner";
 import { Rail } from "./rail/Rail";
 import { anchorShift, measureRow, type RowAnchor } from "./rowAnchor";
+import { pickCursor } from "./rowCursor";
 import { SearchBar } from "./search/SearchBar";
 import { tabId, Tabs } from "./Tabs";
 import { useHashState } from "./useHashState";
@@ -28,6 +29,17 @@ import "../styles/print.css";
 /** The package whose row to focus and bring into view once the list re-renders: the one `j`/`k`
  *  just opened, or the one Close or Escape just closed. */
 type RowRequest = string | null;
+
+/** How a row `j`/`k` walk to is brought into view: glided, unless the reader asked the system for
+ *  less motion. Explicit, not the page's CSS `scroll-behavior`: that would also glide the instant
+ *  `scrollBy` that keeps a reflowed row in place (PD-ROWS-10), which must land before paint. */
+function rowScrollBehavior(): ScrollBehavior {
+  try {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+  } catch {
+    return "auto";
+  }
+}
 
 interface ShortcutDeps {
   model: Model;
@@ -51,12 +63,14 @@ function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
       dispatch({ type: "select", pkg: decision.pkg });
       break;
     case "move":
-      // Focus follows the package `j`/`k` open, as it stays on a row that was clicked: a keyboard
-      // reader sees the ring on the row whose package is now open, not only once Escape closes it.
+      // Focus follows the package `j`/`k` open, as it stays on a row that was clicked: the ring is
+      // on the row whose package is now open, so the Enter that follows opens that same row, never
+      // the one clicked before the walk (PD-ROWS-11, M5).
       rowRequest.current = decision.pkg;
       dispatch({ type: "select", pkg: decision.pkg });
       break;
     case "closeDetail":
+      // Null when Escape was typed in the search box: the detail closes, the caret stays.
       rowRequest.current = decision.restore;
       dispatch({ type: "select", pkg: null });
       break;
@@ -246,9 +260,11 @@ export function App({ model }: { model: Model }) {
     rowRequest.current = null;
     const row = request === null ? null : findRow(document, request);
     row?.focus({ preventScroll: true });
-    // `nearest`: a `j` that walks past the screen's edge moves the page by a row, not a screen.
-    // `html`'s `scroll-padding-top` (ui/app.css) keeps it clear of the sticky header and head.
-    if (typeof row?.scrollIntoView === "function") row.scrollIntoView({ block: "nearest" });
+    // `nearest`: a `j` that walks past the screen's edge moves the page by a row, not a screen, and
+    // a row already on screen does not move at all. `html`'s `scroll-padding-top` (ui/app.css) keeps
+    // it clear of the sticky header and head.
+    if (typeof row?.scrollIntoView === "function")
+      row.scrollIntoView({ block: "nearest", behavior: rowScrollBehavior() });
   }, [state]);
 
   // A `#pkg=` link opens its package on load (PD-ROWS-9) — and now also brings its row into view:
@@ -282,10 +298,20 @@ export function App({ model }: { model: Model }) {
     detailScrollRef.current?.scrollTo(0, 0);
   }, [state.pkg]);
 
+  // The list's one Tab stop (PD-ROWS-11): the open package's row, else the one last opened — the
+  // row Escape or Close just handed focus to — else the first. Written in the render body, like
+  // `currentView` above: every change to it comes with a state change that renders anyway.
+  const lastOpened = useRef<string | null>(state.pkg);
+  if (state.pkg !== null) lastOpened.current = state.pkg;
+  const cursor = useMemo(
+    () => pickCursor(renderedPackages(model, state, state.view), state.pkg, lastOpened.current),
+    [model, state],
+  );
+
   const now = useMemo(() => new Date(model.report.generatedAt), [model]);
   const value = useMemo(
-    () => ({ model, state, dispatch: dispatchTracked, now, wide, openGlossary, openGlossaryFrom }),
-    [model, state, dispatchTracked, now, wide, openGlossary, openGlossaryFrom],
+    () => ({ model, state, dispatch: dispatchTracked, now, wide, cursor, openGlossary, openGlossaryFrom }),
+    [model, state, dispatchTracked, now, wide, cursor, openGlossary, openGlossaryFrom],
   );
   const filterable = population(model, state.view).length > 0;
   const panelId = `${idBase}-panel`;

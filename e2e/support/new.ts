@@ -262,8 +262,38 @@ export class NewReportPage implements ReportPage {
     return headBox.y >= topbarBox.y + topbarBox.height;
   }
 
+  /** A `tabindex` of any value makes a row focusable; only 0 puts it in the Tab order. */
   async rowFocusable(name: string): Promise<boolean> {
+    return this.pkgLocator(name).evaluate(
+      (el) => el.hasAttribute("tabindex") || (el as HTMLElement).tabIndex >= 0,
+    );
+  }
+
+  async rowInTabOrder(name: string): Promise<boolean> {
     return this.pkgLocator(name).evaluate((el) => (el as HTMLElement).tabIndex >= 0);
+  }
+
+  /** Reads `[data-pkg]` rows under the tabpanel directly: the question is which elements the
+   *  browser's own Tab sequence holds, which no role query can answer. A `hidden` element (a
+   *  Findings row's print-only signal lines) is skipped, as the browser skips it. */
+  async listTabStops(): Promise<string[]> {
+    return this.page.getByRole("tabpanel").evaluate((panel) => {
+      const stops: string[] = [];
+      for (const row of panel.querySelectorAll<HTMLElement>("[data-pkg]")) {
+        const name = row.getAttribute("data-pkg") ?? "";
+        if (row.tabIndex >= 0) stops.push(name);
+        for (const inner of row.querySelectorAll<HTMLElement>("a[href], button, input, [tabindex]")) {
+          if (inner.tabIndex >= 0 && inner.closest("[hidden]") === null) stops.push(name);
+        }
+      }
+      return stops;
+    });
+  }
+
+  async isFocusInDetail(): Promise<boolean> {
+    const region = this.detailRegion();
+    if ((await region.count()) === 0) return false;
+    return region.first().evaluate((el) => el.contains(document.activeElement));
   }
 
   /** `aria-selected` (M6: the new packages table marks the open row selected, unlike legacy). */
@@ -279,7 +309,8 @@ export class NewReportPage implements ReportPage {
     return this.page.evaluate(() => {
       const active = document.activeElement;
       if (!active) return null;
-      const role = active.getAttribute("role");
+      // A Findings row is a plain `<li>` and a Packages row a `<tr>`: their roles are implicit.
+      const role = active.getAttribute("role") ?? { LI: "listitem", TR: "row" }[active.tagName];
       if (role === "row" || role === "option" || role === "listitem") {
         return active.getAttribute("aria-label") ?? active.textContent.trim();
       }
@@ -290,6 +321,14 @@ export class NewReportPage implements ReportPage {
 
   async pressEnter(): Promise<void> {
     await this.page.keyboard.press("Enter");
+  }
+
+  async pressTab(back = false): Promise<void> {
+    await this.page.keyboard.press(back ? "Shift+Tab" : "Tab");
+  }
+
+  async typeKeys(text: string): Promise<void> {
+    await this.page.keyboard.type(text);
   }
 
   async focusLinkInRow(name: string): Promise<void> {

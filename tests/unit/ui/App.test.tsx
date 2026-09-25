@@ -71,8 +71,8 @@ function loadModel(name: string): Model {
 
 const MINI = loadModel("mini");
 
-/** Stubs matchMedia: the layout and the OS colour preference, per test. */
-function media({ wide = true, narrow = false, dark = false } = {}) {
+/** Stubs matchMedia: the layout, the OS colour preference and reduced motion, per test. */
+function media({ wide = true, narrow = false, dark = false, reduce = false } = {}) {
   window.matchMedia = ((query: string) => ({
     matches: query.includes("1181")
       ? wide
@@ -80,7 +80,9 @@ function media({ wide = true, narrow = false, dark = false } = {}) {
         ? narrow
         : query.includes("dark")
           ? dark
-          : false,
+          : query.includes("reduced-motion")
+            ? reduce
+            : false,
     media: query,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
@@ -304,6 +306,74 @@ describe("keyboard", () => {
     if (link === null) throw new Error("the stand-in row has a link");
     key("Enter", link);
     expect(detailName()).toBeNull();
+  });
+
+  // PD-ROWS-11 (M5's mismatch): a click left focus on the clicked row while `j` moved the open
+  // package on, so the Enter after the walk opened the clicked row again, not the one `j` reached.
+  test("after a click, j moves focus with the open package, so Enter opens the row j reached", () => {
+    render(<App model={MINI} />);
+    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    const first = screen.getByRole("option", { name: "vendor/transitive" });
+    first.focus();
+    fireEvent.click(first);
+    expect(detailName()).toBe("vendor/transitive");
+
+    key("j", first);
+    expect(detailName()).toBe("vendor/snapshot");
+    const focused = document.activeElement;
+    expect(focused?.getAttribute("data-pkg")).toBe("vendor/snapshot");
+
+    key("Enter", focused ?? document.body);
+    expect(detailName()).toBe("vendor/snapshot");
+  });
+
+  test("after Escape hands focus back to a row, j continues below it, not from the top", () => {
+    render(<App model={MINI} />);
+    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    key("j");
+    key("j");
+    expect(detailName()).toBe("vendor/snapshot");
+    key("Escape");
+    expect(detailName()).toBeNull();
+    const row = document.activeElement;
+    expect(row?.getAttribute("data-pkg")).toBe("vendor/snapshot");
+    const third = screen.getAllByRole("option")[2]?.getAttribute("data-pkg");
+
+    // The legacy cursor started again at -1 with nothing open, so this `j` opened the first row.
+    key("j", row ?? document.body);
+    expect(detailName()).toBe(third);
+    expect(third).not.toBe("vendor/transitive");
+  });
+
+  test("Escape typed in the search box closes the detail and leaves focus in the box", () => {
+    render(<App model={MINI} />);
+    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    key("j");
+    const search = screen.getByRole("searchbox");
+    search.focus();
+
+    key("Escape", search);
+    expect(detailName()).toBeNull();
+    expect(document.activeElement).toBe(search);
+  });
+
+  test("a row j walks to glides into view, or jumps under prefers-reduced-motion", () => {
+    const behaviours: (ScrollBehavior | undefined)[] = [];
+    vi.spyOn(HTMLElement.prototype, "scrollIntoView").mockImplementation(
+      (options?: boolean | ScrollIntoViewOptions) => {
+        if (typeof options === "object" && options.block === "nearest") behaviours.push(options.behavior);
+      },
+    );
+    for (const reduce of [false, true]) {
+      media({ reduce });
+      render(<App model={MINI} />);
+      fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+      key("j");
+      cleanup();
+    }
+
+    expect(behaviours).toEqual(["smooth", "auto"]);
+    vi.restoreAllMocks();
   });
 
   test("/ focuses the search box; j typed there is text", () => {

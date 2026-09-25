@@ -39,6 +39,26 @@ describe("j / k walk the rendered rows", () => {
     expect(decideKey(input({ key: "j", selected: "elsewhere/pkg" }))).toEqual({ type: "move", pkg: "a/one" });
   });
 
+  // PD-ROWS-11: after Escape handed focus back to a row, `j` restarted at the top of the list.
+  test("move from the focused row when nothing is open", () => {
+    expect(decideKey(input({ key: "j", rowPkg: "a/two" }))).toEqual({ type: "move", pkg: "a/three" });
+    expect(decideKey(input({ key: "k", rowPkg: "a/two" }))).toEqual({ type: "move", pkg: "a/one" });
+  });
+
+  test("move from the focused row, not the open package, when the two differ", () => {
+    expect(decideKey(input({ key: "j", rowPkg: "a/one", selected: "a/three" }))).toEqual({
+      type: "move",
+      pkg: "a/two",
+    });
+  });
+
+  test("ignore a focused element whose package the view does not list", () => {
+    expect(decideKey(input({ key: "j", rowPkg: "elsewhere/pkg", selected: "a/one" }))).toEqual({
+      type: "move",
+      pkg: "a/two",
+    });
+  });
+
   test("do nothing when the view has no rows", () => {
     expect(decideKey(input({ key: "j", rendered: [] }))).toEqual({ type: "ignore" });
   });
@@ -78,6 +98,13 @@ describe("Escape closes the topmost thing, one per press", () => {
       type: "closeDetail",
       restore: "a/two",
     });
+  });
+
+  // PD-ROWS-11: Escape typed in the search box used to pull focus out of it onto the closed row.
+  test("the detail from inside the search box, leaving focus in the box", () => {
+    expect(decideKey(input({ key: "Escape", selected: "a/two", searchFocused: true, typing: true }))).toEqual(
+      { type: "closeDetail", restore: null },
+    );
   });
 
   test("then the search box's focus, keeping the browser's own Escape", () => {

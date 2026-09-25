@@ -6,6 +6,7 @@ import { packagistUrl } from "../../domain/links";
 import { day, fixed } from "../../domain/format";
 import { libyearsAtZero, libyearsReason } from "../../domain/libyears";
 import { Pill, Muted } from "../common/common";
+import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
 import "./views.css";
@@ -54,24 +55,30 @@ function LibyearsCell({ finding }: { finding: Finding }) {
 }
 
 function PackageCell({ finding }: { finding: Finding }) {
-  const { model } = useReport();
+  const { model, cursor } = useReport();
   const url = packagistUrl(finding, model.details);
   if (url === null) return <>{finding.package}</>;
 
   return (
-    <a className="lnk" href={url} target="_blank" rel="noopener noreferrer">
+    <a
+      className="lnk"
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      tabIndex={innerTabIndex(finding.package, cursor)}
+    >
       {finding.package}
     </a>
   );
 }
 
 function PackageRow({ finding }: { finding: Finding }) {
-  const { state, dispatch } = useReport();
+  const { state, dispatch, cursor } = useReport();
   const isOpen = state.pkg === finding.package;
 
   return (
     <tr
-      tabIndex={0}
+      tabIndex={rowTabIndex(finding.package, cursor)}
       aria-selected={isOpen}
       aria-label={finding.package}
       data-pkg={finding.package}

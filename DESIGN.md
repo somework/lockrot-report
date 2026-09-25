@@ -223,6 +223,7 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 | PD-ROWS-8                   | a tinted band above a run; forced colours drew a solid track past each bar  | the run note is unfilled, only its tone rule; forced colours draw no track under a bar                                                        |
 | PD-ROWS-9                   | ≥1181px opened the first flagged package on load, the list squeezed beside  | nothing opens by itself: the list takes the full width; a click, Enter, `j`/`k` or `#pkg=` opens one; Close gives the width back              |
 | PD-ROWS-10                  | opening a row reflowed the list and slid a row 30 down off the screen       | the row acted on keeps its place on screen through open and close; a `#pkg=` row scrolls into view; `j`/`k` focus it                          |
+| PD-ROWS-11                  | every row and its links a Tab stop; `j` after Escape went to the top        | one Tab stop a list: the open, else last opened, else first row; `j`/`k` move from the focused row; Escape in search keeps focus              |
 | PD-TIMELINE-1               | the first year label lost half its width off the axis                       | the axis runs from 1 January of the oldest year, labelled at the left edge, to a "today" rule labelled under it                               |
 | PD-TIMELINE-2               | labels floated beside each dot and wrapped around it                        | a table: branch, a line from last release to today, latest version, raw php constraint; one line a row                                        |
 | PD-TIMELINE-3               | a package without maintained branches showed each version twice             | the version once; its third column is the release date, so every table keeps the same four columns                                            |
@@ -364,12 +365,20 @@ shape. `e2e/forced-colors.spec.ts` emulates the mode.
 
 **Keyboard** decisions are one pure function, `ui/keyboard.ts#decideKey`:
 
-- `j`/`k` move from the open package through the rows the current view draws
-  (`views/order.ts#renderedPackages`), clamped at both ends; with nothing open, or the open package
-  not on screen, both start at the first row. There is no separate cursor, so a row clicked or a
-  package opened from an advisory is where `j` continues from (fixes M7–M9; the legacy first `j`
-  after its boot pick re-selected the same package). On load nothing is open, so `j` opens the
-  first row. Focus moves to the row `j`/`k` open, as it stays on a row clicked (PD-ROWS-10).
+- `j`/`k` move from the row that holds focus, else the open package, through the rows the current
+  view draws (`views/order.ts#renderedPackages`), clamped at both ends; with neither on screen,
+  both start at the first row. There is no separate cursor, so a row clicked, a package opened from
+  an advisory, or the row Escape just handed focus back to is where `j` continues from (fixes M7–M9;
+  the legacy first `j` after its boot pick re-selected the same package). On load nothing is open,
+  so `j` opens the first row. Focus moves to the row `j`/`k` open, as it stays on a row clicked
+  (PD-ROWS-10), so focus and the open package agree and Enter opens the row on screen as open
+  (PD-ROWS-11). The row is brought into view with `block: "nearest"`, `behavior: "smooth"` unless
+  `prefers-reduced-motion: reduce` (checked in script: a CSS `scroll-behavior` would also glide
+  PD-ROWS-10's instant `scrollBy`).
+- Roving tabindex (`ui/rowCursor.ts`, PD-ROWS-11): one row of the list has `tabindex="0"` — the open
+  package's, else the one last opened, else the first — every other row `-1`, and the links inside
+  a row are `-1` except on that row. Tab reaches the list once, then that row's links, then the
+  detail. A package listed twice (Advisories, Blast radius) is a Tab stop on each of its rows.
 - Nothing but Escape acts while the glossary is open (M10). Printable shortcuts are ignored while
   focus is in any text field, and every shortcut is ignored with Ctrl, Meta or Alt held.
 - Enter/Space toggle a row only when the key lands on the row itself, not on a link or control
@@ -380,7 +389,8 @@ shape. `e2e/forced-colors.spec.ts` emulates the mode.
   popover on its own (`decideEscape` returns `ignore`).
 - Escape closes one thing per press: an open popover first (PD-GLOSSARY-6/PD-SUMMARY-4), then the
   glossary, then detail (focus returns to the row whose `data-pkg` equals the closed package, found
-  by attribute comparison), then the search box's focus.
+  by attribute comparison; pressed in a text field, focus stays in the field, PD-ROWS-11), then the
+  search box's focus.
 
 **Theme.** The button names the action relative to the _effective_ theme, the pinned one or the
 OS preference (M11). The choice persists under `lockrot-theme`; an unrecognised stored value is

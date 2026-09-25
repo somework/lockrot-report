@@ -285,7 +285,16 @@ function renderDetail(
 
   const result = render(
     <ReportContext.Provider
-      value={{ model, state, dispatch, now, wide: true, openGlossary: vi.fn(), openGlossaryFrom: vi.fn() }}
+      value={{
+        model,
+        state,
+        dispatch,
+        now,
+        wide: true,
+        cursor: null,
+        openGlossary: vi.fn(),
+        openGlossaryFrom: vi.fn(),
+      }}
     >
       <Detail onClose={onClose} />
     </ReportContext.Provider>,

@@ -6,6 +6,7 @@ import { sevTone } from "../../domain/advisories";
 import { cveUrl } from "../../domain/links";
 import { day, ageText } from "../../domain/format";
 import { Tag, OutLink, NoWrap } from "../common/common";
+import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
 import { advisoryGroupsFor } from "./order";
@@ -20,14 +21,15 @@ function fixText(advisory: Advisory): string {
 }
 
 function AdvisoryRow({ finding, advisory }: { finding: Finding; advisory: Advisory }) {
-  const { state, dispatch, now } = useReport();
+  const { state, dispatch, now, cursor } = useReport();
   const isOpen = state.pkg === finding.package;
+  const inner = innerTabIndex(finding.package, cursor);
   const cve = cveUrl(advisory);
   const openedAgo = advisory.reportedAt ? ageText(advisory.reportedAt, now).replace(" ago", "") : null;
 
   return (
     <li
-      tabIndex={0}
+      tabIndex={rowTabIndex(finding.package, cursor)}
       aria-current={isOpen ? "true" : undefined}
       aria-label={finding.package}
       data-pkg={finding.package}
@@ -41,7 +43,9 @@ function AdvisoryRow({ finding, advisory }: { finding: Finding; advisory: Adviso
           {finding.package} {finding.version}
         </span>
         {cve !== null ? (
-          <OutLink href={cve}>{advisory.cve}</OutLink>
+          <OutLink href={cve} tabIndex={inner}>
+            {advisory.cve}
+          </OutLink>
         ) : (
           <span className="mono">{advisory.cve ?? advisory.id}</span>
         )}
@@ -51,7 +55,11 @@ function AdvisoryRow({ finding, advisory }: { finding: Finding; advisory: Adviso
           reported <NoWrap>{day(advisory.reportedAt)}</NoWrap>
           {openedAgo !== null ? `, open ${openedAgo}` : ""}
         </span>
-        {advisory.link && <OutLink href={advisory.link}>advisory</OutLink>}
+        {advisory.link && (
+          <OutLink href={advisory.link} tabIndex={inner}>
+            advisory
+          </OutLink>
+        )}
       </span>
     </li>
   );

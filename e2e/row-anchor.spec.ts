@@ -92,6 +92,29 @@ test.describe("1440×900 keyboard and links", () => {
     expect(await focusedPkg(page)).toBe(await rowAt(page, 1));
   });
 
+  // PD-ROWS-11: a row `j` walks to past the screen's bottom edge is brought into view by the least
+  // scroll that shows it — glided by default, and at once for a reader who asked for less motion.
+  for (const reducedMotion of ["reduce", "no-preference"] as const) {
+    test(`j walked past the screen's edge keeps the focused row on screen (${reducedMotion} motion)`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ reducedMotion });
+      const report = await createReportPage(page);
+      await report.goto(FIXTURES.wallabag);
+
+      for (let i = 0; i < DEEP_ROW; i++) await report.pressJ();
+      const pkg = await rowAt(page, DEEP_ROW - 1);
+      expect(await focusedPkg(page)).toBe(pkg);
+      if (reducedMotion === "reduce") {
+        expect((await place(page, pkg)).inView).toBe(true);
+      } else {
+        await expect.poll(async () => (await place(page, pkg)).inView).toBe(true);
+      }
+      // `nearest`, not `start` or `center`: the row lands at the bottom edge, not scrolled to the top.
+      await expect.poll(async () => (await place(page, pkg)).top).toBeGreaterThan(900 / 2);
+    });
+  }
+
   test("a #pkg= link scrolls its row into view on load, so Close hands focus to a row on screen", async ({
     page,
   }) => {

@@ -15,6 +15,8 @@ import { PackagesView } from "../../../src/ui/views/PackagesView";
 import { AdvisoriesView } from "../../../src/ui/views/AdvisoriesView";
 import { RadiusView } from "../../../src/ui/views/RadiusView";
 import { RunView } from "../../../src/ui/views/RunView";
+import { renderedPackages } from "../../../src/ui/views/order";
+import { pickCursor } from "../../../src/ui/rowCursor";
 import { makeFinding, makeMetadata, makeModel, makeSignal } from "../domain/fixtures";
 
 afterEach(cleanup);
@@ -41,7 +43,9 @@ function flaggedModel(findings: Parameters<typeof makeModel>[0]): Model {
   };
 }
 
-function renderIn(model: Model, state: State, ui: ComponentChild) {
+/** Renders `ui` the way App provides it, the list's Tab stop included (`rowCursor.ts`, PD-ROWS-11):
+ *  the open package's row, else `lastOpened`'s, else the first. */
+function renderIn(model: Model, state: State, ui: ComponentChild, lastOpened: string | null = null) {
   const dispatch = vi.fn<(action: Action) => void>();
   const value: ReportContextValue = {
     model,
@@ -49,6 +53,7 @@ function renderIn(model: Model, state: State, ui: ComponentChild) {
     dispatch,
     now: new Date(model.report.generatedAt),
     wide: true,
+    cursor: pickCursor(renderedPackages(model, state, state.view), state.pkg, lastOpened),
     openGlossary: vi.fn(),
     openGlossaryFrom: vi.fn(),
   };
@@ -880,9 +885,11 @@ describe("PackagesView", () => {
     renderIn(model, stateWith({ view: "packages" }), <PackagesView />);
 
     // Assert: private/thing (finished) has no rot verdict but still belongs on this tab (M6: rows
-    // are focusable, unlike legacy's plain `<tr>`).
+    // are focusable, unlike legacy's plain `<tr>`). Focusable, not each a Tab stop: with nothing open
+    // only the first row is in the Tab order (PD-ROWS-11), so this one is `tabindex="-1"`.
     const row = screen.getByRole("row", { name: "private/thing" });
-    expect(row.tabIndex).toBe(0);
+    expect(row.hasAttribute("tabindex")).toBe(true);
+    expect(row.tabIndex).toBe(-1);
     expect(row.getAttribute("aria-selected")).toBe("false");
   });
 
@@ -1199,5 +1206,91 @@ describe("RunView", () => {
     expect(screen.queryByText(/{"path"/)).toBeNull();
     expect(screen.getByText(/baseline\.json/)).toBeTruthy();
     expect(screen.getByText(/old\/pkg/)).toBeTruthy();
+  });
+});
+
+// PD-ROWS-11: every row used to be a Tab stop, and each Findings row's signal link another, so Tab
+// walked two stops a package before it left the list. One row is the list's Tab stop now.
+describe("the list's one Tab stop (PD-ROWS-11)", () => {
+  function tabStops(container: Element): string[] {
+    return Array.from(container.querySelectorAll<HTMLElement>("[data-pkg]"))
+      .filter((row) => row.tabIndex === 0)
+      .map((row) => row.getAttribute("data-pkg") ?? "");
+  }
+
+  it("is the first row with nothing open, and every other row stays focusable", () => {
+    const model = loadModel("mini.json");
+    const { container } = renderIn(model, stateWith({ view: "packages" }), <PackagesView />);
+
+    const rows = Array.from(container.querySelectorAll<HTMLElement>("[data-pkg]"));
+    expect(tabStops(container)).toEqual([rows[0]?.getAttribute("data-pkg")]);
+    expect(rows.every((row) => row.hasAttribute("tabindex"))).toBe(true);
+  });
+
+  it("is the open package's row, and only that row's links are tabbable", () => {
+    const model = loadModel("mini.json");
+    const { container } = renderIn(
+      model,
+      stateWith({ view: "findings", pkg: "vendor/snapshot" }),
+      <FindingsView />,
+    );
+
+    expect(tabStops(container)).toEqual(["vendor/snapshot"]);
+    for (const row of container.querySelectorAll<HTMLElement>("[data-pkg]")) {
+      const tabbable = row.getAttribute("data-pkg") === "vendor/snapshot";
+      for (const link of row.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+        expect(link.tabIndex).toBe(tabbable ? 0 : -1);
+      }
+    }
+  });
+
+  it("stays on the package last opened once Escape or Close has closed it", () => {
+    const model = loadModel("mini.json");
+    const { container } = renderIn(
+      model,
+      stateWith({ view: "packages" }),
+      <PackagesView />,
+      "vendor/snapshot",
+    );
+
+    expect(tabStops(container)).toEqual(["vendor/snapshot"]);
+  });
+
+  it("keeps an Advisories row's own links out of the Tab order on every row but the Tab stop's", () => {
+    const advised = (pkg: string) =>
+      makeFinding({
+        package: pkg,
+        verdict: "abandoned",
+        priority: "critical",
+        advisories: [
+          {
+            id: `GHSA-${pkg}`,
+            cve: null,
+            title: pkg,
+            link: `https://example.com/${pkg}`,
+            severityRaw: "high",
+            severity: "high",
+            reportedAt: null,
+            affectedVersions: null,
+            fixedBy: null,
+            fixedOnBranch: false,
+          },
+        ],
+      });
+    const model = flaggedModel([advised("acme/one"), advised("acme/two")]);
+    const { container } = renderIn(
+      model,
+      stateWith({ view: "advisories", pkg: "acme/two" }),
+      <AdvisoriesView />,
+    );
+
+    const rows = Array.from(container.querySelectorAll<HTMLElement>("[data-pkg]"));
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      const own = row.getAttribute("data-pkg") === "acme/two";
+      expect(row.tabIndex).toBe(own ? 0 : -1);
+      const link = row.querySelector<HTMLAnchorElement>("a[href]");
+      expect(link?.tabIndex).toBe(own ? 0 : -1);
+    }
   });
 });

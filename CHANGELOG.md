@@ -89,6 +89,13 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Changed
 
+- Keyboard focus follows the open package. `j` and `k` move focus with it, also after a click, so
+  Enter opens the package you walked to, not the row you clicked before; after Escape closes a
+  package, `j` continues below its row instead of starting again at the top; Escape typed in the
+  search box closes the package and leaves the cursor in the box. A row `j` walks to past the edge
+  of the screen glides into view, or jumps there if your system asks for less motion. Tab reaches
+  one row of the list, the open package's (else the last one opened, else the first), then that
+  row's own links, then the package detail, instead of every row and every signal link in turn.
 - A wide screen no longer opens the first flagged package by itself on load: the Findings list takes
   the full width, one line a row from 1440px up, until you open a package with a click, Enter or
   `j`. A link with `#pkg=` still opens its package on load, and closing a package gives the list

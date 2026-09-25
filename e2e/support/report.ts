@@ -102,8 +102,16 @@ export interface ReportPage {
    *  is a full-screen sheet rather than a side column — the fixed header sits above the sheet's own
    *  `z-index` there, so this question does not apply. */
   detailHeaderClearsTopbar(): Promise<boolean | null>;
-  /** Whether the row for this package can receive keyboard focus at all (M6). */
+  /** Whether the row for this package can receive keyboard focus at all (M6): by `j`/`k`, a
+   *  click or script — not necessarily by Tab, which reaches one row only (PD-ROWS-11). */
   rowFocusable(name: string): Promise<boolean>;
+  /** Whether Tab can reach this row: true for exactly one row of the list (PD-ROWS-11). */
+  rowInTabOrder(name: string): Promise<boolean>;
+  /** Every element Tab can reach inside the current view's rows, as the name of the row it sits in
+   *  (the row itself and each link of it), in document order (PD-ROWS-11). */
+  listTabStops(): Promise<string[]>;
+  /** Whether keyboard focus is anywhere inside the open detail. */
+  isFocusInDetail(): Promise<boolean>;
   /** Whether the row is marked as the current selection for assistive tech (M6). */
   rowSelected(name: string): Promise<boolean>;
   /** Moves keyboard focus onto the row/card for this package, without clicking it. */
@@ -112,6 +120,10 @@ export interface ReportPage {
   focusedRowName(): Promise<string | null>;
   /** Presses Enter on whatever currently holds focus. */
   pressEnter(): Promise<void>;
+  /** Presses Tab, or Shift+Tab with `back`. */
+  pressTab(back?: boolean): Promise<void>;
+  /** Types text into whatever holds focus, one key at a time, as a reader would. */
+  typeKeys(text: string): Promise<void>;
   /** Moves keyboard focus onto the first outbound link inside a package's row (e.g. a signal-id
    *  link or the Packagist link) without clicking it, so a spec can then press Enter on it (M5). */
   focusLinkInRow(name: string): Promise<void>;

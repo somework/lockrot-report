@@ -17,6 +17,9 @@ export interface ReportContextValue {
   now: Date;
   /** The two-column layout (≥ 1181px): the detail sits beside the list instead of over it. */
   wide: boolean;
+  /** The package whose row is the list's one Tab stop (`rowCursor.ts#pickCursor`, PD-ROWS-11), or
+   *  null when the view draws no rows. */
+  cursor: string | null;
   /** Opens the glossary dialog, returning focus to whatever was focused when it closes (usually
    *  `document.activeElement` at the moment it opens — the "?" key's row, the header's own
    *  button). */

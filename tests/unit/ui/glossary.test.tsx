@@ -28,6 +28,7 @@ function renderGlossary(props: { open: boolean; highlightTerm?: string | null; o
     dispatch: vi.fn(),
     now: new Date(model.report.generatedAt),
     wide: true,
+    cursor: null,
     openGlossary: vi.fn(),
     openGlossaryFrom: vi.fn(),
   };

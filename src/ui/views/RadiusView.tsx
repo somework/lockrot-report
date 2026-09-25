@@ -4,6 +4,7 @@ import { applyFilters } from "../../domain/filters";
 import { radiusCards } from "../../domain/radius";
 import { plural } from "../../domain/format";
 import { Pill, Tag } from "../common/common";
+import { rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
 import "./views.css";
 
@@ -11,12 +12,12 @@ import "./views.css";
  *  detail, never a bare navigation link. A list item like the Findings rows, so every view's rows
  *  share one role and one way of marking the open one (`aria-current`). */
 function PulledRow({ pulled }: { pulled: RadiusPulled }) {
-  const { state, dispatch } = useReport();
+  const { state, dispatch, cursor } = useReport();
   const isOpen = state.pkg === pulled.package;
 
   return (
     <li
-      tabIndex={0}
+      tabIndex={rowTabIndex(pulled.package, cursor)}
       aria-current={isOpen ? "true" : undefined}
       aria-label={pulled.package}
       data-pkg={pulled.package}

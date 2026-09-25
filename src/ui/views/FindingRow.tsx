@@ -9,6 +9,7 @@ import { sevTone } from "../../domain/advisories";
 import { severityRank } from "../../domain/severity";
 import { ageNotRead, ageScale, type AgeAxis } from "../../domain/age";
 import { reachText, rowSignals, shortFact, vendorOf } from "../../domain/rows";
+import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { AgeCell, AgeCellEmpty } from "./AgeScale";
 import "./views.css";
 import "./ledger-rows.css";
@@ -53,13 +54,15 @@ export interface Ditto {
 
 export const NO_DITTO: Ditto = { verdict: false, vendor: false, why: false, reach: false };
 
-/** A signal id, linked to its own entry in lockrot's docs, with the signal's definition on hover. */
-function SignalId({ signal }: { signal: Signal }) {
+/** A signal id, linked to its own entry in lockrot's docs, with the signal's definition on hover.
+ *  `tabIndex` is -1 on every row but the list's Tab stop (PD-ROWS-11, `rowCursor.ts`). */
+function SignalId({ signal, tabIndex }: { signal: Signal; tabIndex: -1 | undefined }) {
   const doc = SIGNAL_DOC[signal.id] ?? `${DOCS_URL}#the-signals`;
   return (
     <a
       className="sid"
       href={doc}
+      tabIndex={tabIndex}
       target="_blank"
       rel="noopener noreferrer"
       title={SIGNAL_DEFS[signal.id] ?? ""}
@@ -70,10 +73,10 @@ function SignalId({ signal }: { signal: Signal }) {
 }
 
 /** One of the other signals, as print shows it under the quoted one (legacy `signalLine`). */
-function SignalLine({ signal }: { signal: Signal }) {
+function SignalLine({ signal, tabIndex }: { signal: Signal; tabIndex: -1 | undefined }) {
   return (
     <span className="sig-line">
-      <SignalId signal={signal} />
+      <SignalId signal={signal} tabIndex={tabIndex} />
       <span>{signal.summary}</span>
     </span>
   );
@@ -158,7 +161,8 @@ export interface FindingRowProps {
  * its way in share one wrapper (`.fc-line`): a flex line in the two-line layout, dissolved into the
  * row's own grid in the others. A list item rather than a listbox option,
  * because it holds a link (the signal id) and an option's children are presentational. The open row
- * is marked with `aria-current`; its accessible name is the package alone.
+ * is marked with `aria-current`; its accessible name is the package alone. One row of the list is
+ * its Tab stop (PD-ROWS-11, `rowCursor.ts`); the others, and their signal links, are `tabindex=-1`.
  *
  * The verdict word is plain text with its definition as a `title` (PD-GLOSSARY-4/5): a click on it
  * opens the package, like a click anywhere else in the row. The quoted signal's id links to its
@@ -166,8 +170,9 @@ export interface FindingRowProps {
  * screen while `print.css` un-hides that exact selector — paper has no package to open (PD-ROWS-1).
  */
 export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
-  const { model, state, dispatch } = useReport();
+  const { model, state, dispatch, cursor } = useReport();
   const isOpen = state.pkg === finding.package;
+  const inner = innerTabIndex(finding.package, cursor);
   const { key, rest } = rowSignals(finding, quoted);
   const scale = axis ? ageScale(finding, model.report.run.thresholds, axis.max) : null;
   const vendor = vendorOf(finding.package);
@@ -176,7 +181,7 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
 
   return (
     <li
-      tabIndex={0}
+      tabIndex={rowTabIndex(finding.package, cursor)}
       aria-current={isOpen ? "true" : undefined}
       aria-label={finding.package}
       data-pkg={finding.package}
@@ -210,12 +215,12 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
       </span>
       <span className={`fcell fc-why${dim(ditto.why)}`} title={key?.summary ?? finding.evidence}>
         <AdvisoryTag finding={finding} />
-        {key && <SignalId signal={key} />}
+        {key && <SignalId signal={key} tabIndex={inner} />}
         <span className="fc-why-text">{key ? shortFact(key, finding) : finding.evidence}</span>
         {rest.length > 0 && (
           <span className="sig-rest" hidden>
             {rest.map((signal) => (
-              <SignalLine key={signal.id} signal={signal} />
+              <SignalLine key={signal.id} signal={signal} tabIndex={inner} />
             ))}
           </span>
         )}
