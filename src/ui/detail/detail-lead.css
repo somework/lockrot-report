@@ -54,22 +54,44 @@
 }
 
 /* ---------- key facts ----------
-   Always four, on a four-column grid — two by two on a phone, never three and an orphan. A long value
-   (a version or constraint past its column) takes a whole row instead of being cut. */
-.detail-facts {
-  margin: 0;
+   Always four, in one row — two by two when the panel itself (not the viewport) is too narrow for
+   four, never three and an orphan. Each fact is three subgrid rows of one grid (label, value, note),
+   so every value sits on one line across the columns however a label or a note wraps. A column is as
+   wide as its content, a note included, and the row spreads across the panel. A long value (a
+   version or constraint past its column) takes a whole row instead of being cut. */
+.detail-facts-frame {
+  container-type: inline-size;
   padding-top: 12px;
   border-top: 1px solid var(--border);
+}
+.detail-facts {
+  margin: 0;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, max-content));
-  justify-content: start;
-  gap: 12px 28px;
+  grid-template-columns: repeat(4, auto);
+  justify-content: space-between;
+  grid-auto-rows: auto;
+  /* The row gap parts one band of facts from the next (two by two, or after a wide one); inside a
+     fact, its own subgrid gap spaces label, value and note. */
+  gap: 12px 14px;
 }
 .detail-fact {
   min-width: 0;
+  display: grid;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  row-gap: 3px;
 }
 .detail-fact.is-wide {
   grid-column: 1 / -1;
+}
+.detail-facts dt {
+  margin: 0;
+  white-space: nowrap;
+}
+@container (max-width: 359.98px) {
+  .detail-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 .detail-facts dt,
 .detail-path dt {
@@ -89,11 +111,10 @@
   overflow-wrap: anywhere;
   font-variant-numeric: tabular-nums;
 }
-/* The quieter line under a value: whose age it is, or what a 0.0 means. It never widens its column
-   (`contain: inline-size` gives it no width of its own), it wraps inside it. */
+/* The quieter line under a value: whose age it is, or what a 0.0 means. It counts toward its
+   column's width, so on a panel with room it stays one line; only when the four no longer fit does
+   it wrap, with the columns. */
 .detail-facts dd.detail-fact-note {
-  margin-top: 3px;
-  contain: inline-size;
   font-family: var(--sans);
   font-size: 11px;
   line-height: 1.3;
@@ -424,12 +445,9 @@
     0 0 0 4.5px var(--tone);
 }
 
-/* A phone: the facts go two by two, and the ladder's track narrows so the rules keep their room. */
+/* A phone: the fold's names go under their verdict, and the ladder's track narrows so the rules keep
+   their room. (The facts go two by two by the panel's own width, above.) */
 @media (max-width: 480px) {
-  .detail-facts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 18px;
-  }
   /* Each verdict over its own names, so the names get the whole width. */
   .detail-pulls-list {
     grid-template-columns: minmax(0, 1fr);
@@ -440,12 +458,14 @@
   }
 }
 @media (max-width: 420px) {
+  /* 31px a rung: the smallest at which CRIT, HIGH and MED still keep a visible gap between them at
+     the caption's 9px (an evaluator found them run together at 29px and 10px). */
   .detail-ladder {
-    --rung-w: 116px;
+    --rung-w: 124px;
     column-gap: 10px;
   }
   .detail-ladder-head {
-    font-size: 10px;
+    font-size: 9px;
     letter-spacing: 0;
   }
   .detail-ladder-text {
@@ -465,11 +485,13 @@
   .detail-ladder-line {
     forced-color-adjust: none;
   }
-  /* The rungs recede to a dotted GrayText line so the connector stays the one solid stroke. */
+  /* The rungs recede to a sparse dotted line so the connector stays the one solid stroke. CanvasText,
+     not GrayText: Chromium's light forced palette paints GrayText maroon, which read as a red limit
+     rule (ledger.css makes the same choice for its waffle). */
   .detail-ladder-track {
     background-image:
-      linear-gradient(GrayText 50%, transparent 0), linear-gradient(GrayText 50%, transparent 0),
-      linear-gradient(GrayText 50%, transparent 0), linear-gradient(GrayText 50%, transparent 0);
+      linear-gradient(CanvasText 1px, transparent 0), linear-gradient(CanvasText 1px, transparent 0),
+      linear-gradient(CanvasText 1px, transparent 0), linear-gradient(CanvasText 1px, transparent 0);
     background-size: 1px 4px;
     background-repeat: repeat-y;
     border-top-color: CanvasText;

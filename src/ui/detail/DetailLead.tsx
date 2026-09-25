@@ -120,22 +120,27 @@ function Facts({ finding, details }: { finding: Finding; details: PackageDetails
   ];
 
   return (
-    <dl className="detail-facts">
-      {facts.map((fact) => (
-        <div key={fact.label} className={fact.wide ? "detail-fact is-wide" : "detail-fact"}>
-          <dt>{fact.label}</dt>
-          <dd>{fact.value}</dd>
-          {fact.note !== undefined && <dd className="detail-fact-note">{fact.note}</dd>}
-        </div>
-      ))}
-    </dl>
+    <div className="detail-facts-frame">
+      <dl className="detail-facts">
+        {facts.map((fact) => (
+          <div key={fact.label} className={fact.wide ? "detail-fact is-wide" : "detail-fact"}>
+            <dt>{fact.label}</dt>
+            <dd>{fact.value}</dd>
+            {fact.note !== undefined && <dd className="detail-fact-note">{fact.note}</dd>}
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 
   /** The age the Findings row draws for this package (`age.ts#ageFact`, S8 > S2 > S4) — the same age
-   *  the answer sentence quotes — labelled by which signal supplied it and in its zone's tone unless
-   *  the verdict does not rest on age. With no such signal it falls back to the installed release's
-   *  own date (the explain metadata's, then the lock's), and failing that says why: lockrot could not
-   *  read it, or the document has none. */
+   *  the answer sentence quotes — in its zone's tone unless the verdict does not rest on age. The
+   *  slot keeps one short label, "Last release", in every case a release is what it dates, so a
+   *  reader comparing packages scans one column; whose release it is (your branch's, or a newer
+   *  branch's) goes in the note under the value. Only a push age, which is not a release at all, is
+   *  labelled for what it is. With no such signal it falls back to the installed release's own date
+   *  (the explain metadata's, then the lock's), and failing that says why: lockrot could not read
+   *  it, or the document has none. */
   function ageFactCell(f: Finding, released: string | null): Fact {
     const fact = ageFact(f, model.report.run.thresholds);
     if (fact !== null) {
@@ -145,20 +150,40 @@ function Facts({ finding, details }: { finding: Finding; details: PackageDetails
           {yearsAgo(fact.years)}
         </span>
       );
-      if (fact.kind === "branch") return { label: "Branch released", value };
       if (fact.kind === "push") return { label: "Last push", value };
-      const newer = newerThanYours(timeline);
-      return newer === null
-        ? { label: "Last release", value }
-        : { label: "Newest release", value, note: newer };
+      if (fact.kind === "branch") return { label: LAST_RELEASE, value, note: onYourBranch(timeline) };
+      return { label: LAST_RELEASE, value, note: newerThanYours(timeline) ?? undefined };
     }
     // A snapshot's lock date is when a branch was checked out, not a release (the release-branches
-    // answer draws the same distinction), so it is labelled as a date, never as a release.
+    // answer draws the same distinction), so the slot says there is none and dates the snapshot.
     const snapshot = f.verdict === "pinned" || f.signals.some((s) => s.id === "S6");
-    if (released) return { label: snapshot ? "Snapshot dated" : "Released", value: ageText(released, now) };
-    if (snapshot) return { label: "Released", value: <Muted>no, a branch snapshot</Muted> };
-    return { label: "Last release", value: ageNotRead(f) ? <Muted>not read</Muted> : NOT_RECORDED };
+    const dated = released ? ageText(released, now) : null;
+    if (snapshot) {
+      return {
+        label: LAST_RELEASE,
+        value: <Muted>none, a snapshot</Muted>,
+        note: dated !== null && dated !== "undated" ? `dated ${dated}` : undefined,
+      };
+    }
+    // The installed version's own date is not the package's last release (a newer one may exist that
+    // this document did not read), so it keeps its own label and says whose it is.
+    if (dated !== null) return { label: "Released", value: dated, note: "your version" };
+    return { label: LAST_RELEASE, value: ageNotRead(f) ? <Muted>not read</Muted> : NOT_RECORDED };
   }
+}
+
+/** The one label the second fact carries whenever it dates a release (or says there is none). */
+const LAST_RELEASE = "Last release";
+
+/** S8's age is the reader's own branch's last release; the note names the branch. */
+function onYourBranch(timeline: TimelineModel | null): ComponentChildren {
+  const mine = timeline?.mine ?? null;
+  if (mine === null || mine.snapshot) return "on your branch";
+  return (
+    <>
+      on your <span className="mono">{mine.branch}</span>
+    </>
+  );
 }
 
 /**

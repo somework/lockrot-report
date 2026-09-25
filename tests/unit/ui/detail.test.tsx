@@ -449,7 +449,7 @@ describe("Detail", () => {
       expect(answer).toMatch(/^Left behind on /);
       expect(answer).toContain("You require it directly.");
       const labels = Array.from(container.querySelectorAll(".detail-facts dt")).map((el) => el.textContent);
-      expect(labels.slice(0, 2)).toEqual(["Installed", "Branch released"]);
+      expect(labels.slice(0, 2)).toEqual(["Installed", "Last release"]);
       expect(labels).toContain("Libyears");
       const facts = container.querySelector(".detail-facts")?.textContent ?? "";
       expect(facts).toContain("4.7");
@@ -471,9 +471,9 @@ describe("Detail", () => {
       );
       // That release is 2.x's, not the reader's 1.x — so the fact says so, and the release-branches
       // answer's 9.7 years for 1.x no longer reads as a third, unexplained age.
-      expect(factRows(container)[1]).toEqual(["Newest release", "9.1 y ago", "on 2.x, newer than yours"]);
+      expect(factRows(container)[1]).toEqual(["Last release", "9.1 y ago", "on 2.x, newer than yours"]);
       expect(container.querySelector(".detail-timeline-answer")?.textContent).toBe(
-        "You’re on 1.x. Its last release was 9.7 years ago.",
+        "Your branch, 1.x, had its last release 9.7 years ago.",
       );
       // The ladder's reach rung names the same two ways in, and never says "only".
       const reach = container.querySelectorAll(".detail-ladder-text")[1]?.textContent ?? "";
@@ -486,11 +486,25 @@ describe("Detail", () => {
       const { container } = renderDetail(WALLABAG, "hoa/event");
       expect(factRows(container).map((row) => row[0])).toEqual([
         "Installed",
-        "Newest release",
+        "Last release",
         "Libyears",
         "PHP",
       ]);
       expect(factRows(container)[3]).toEqual(["PHP", "not recorded"]);
+    });
+
+    it("keeps one label in the release slot and puts whose release it is in the note (evaluator: four labels)", () => {
+      // S8: the reader's own branch's last release, named under the value.
+      const branch = factRows(renderDetail(KOEL, "predis/predis").container)[1];
+      expect(branch?.[0]).toBe("Last release");
+      expect(branch?.[2]).toMatch(/^on your \S+$/);
+    });
+
+    it("says a snapshot has no release in the same slot, under the same label", () => {
+      const { container } = renderDetail(MAUTIC, "mautic/core-lib");
+      const row = factRows(container)[1];
+      expect(row?.slice(0, 2)).toEqual(["Last release", "none, a snapshot"]);
+      if (row?.[2] !== undefined) expect(row[2]).toMatch(/^dated \d/);
     });
 
     it("glosses a libyears of 0.0 so it does not read as good news, and keeps an abandoned age in ink everywhere", () => {
@@ -664,7 +678,7 @@ describe("Detail", () => {
       screen.getByText("Release branches");
       const answer = container.querySelector(".detail-timeline-answer")?.textContent;
       const sub = container.querySelector(".detail-timeline-sub")?.textContent;
-      expect(answer).toBe("You’re on 0.24.x. Its last release was 4.1 years ago.");
+      expect(answer).toBe("Your branch, 0.24.x, had its last release 4.1 years ago.");
       expect(sub).toBe(
         "There are 4 newer branches. The newest is 1.x, released v1.17.0 on 2026-08-04 (7 weeks ago) and requires php ^7.4 || ^8.0.",
       );

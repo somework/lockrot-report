@@ -50,10 +50,16 @@ tag or the address format, says so under **Breaking** in its entry.
   version and no fix is coming on 10.x."), then its installed version, the age its row draws (in the
   same colour), its libyears and PHP constraint, then how it gets in from composer.json and what
   flagged packages it pulls in — each a flagged package's name opening it. The four facts are always
-  there: a missing one says "not recorded" rather than disappearing. When the package's newest
-  release is on a newer branch than yours, that fact is labelled "Newest release" and says which
-  branch; a libyears of 0.0 says "nothing newer". A package that pulls in more flagged packages than
-  fit in a line counts them by verdict, with "Name all" listing every one of them there.
+  there: a missing one says "not recorded" rather than disappearing. The age is always labelled
+  "Last release", with whose release it is under it ("on your 10.x", or "on 2.x, newer than yours");
+  a branch snapshot says "none, a snapshot" there; a libyears of 0.0 says "nothing newer". The four
+  values sit on one line whatever the labels and notes under them, and go two by two when the panel
+  itself is too narrow for four. A package that pulls in more flagged packages than fit in a line
+  counts them by verdict, worst first as S7 lists them, with "Name all" listing every one of them
+  there.
+- When a newer branch exists, the release-branches answer names its subject: "Your branch, 1.x, had
+  its last release 9.7 years ago.", so it no longer reads as contradicting the package's newest
+  release quoted at the top.
 - The priority ladder's reach step says "You don't require it directly" and names every requirement
   of yours it comes in through ("It comes through wallabag/rulerz and wallabag/rulerz-bundle."), the
   same ways in the answer sentence and the chain name. Its heading note uses priority words: "one

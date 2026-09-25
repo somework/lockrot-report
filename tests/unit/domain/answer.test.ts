@@ -228,7 +228,7 @@ describe("pulledIn", () => {
 });
 
 describe("pulledVerdicts", () => {
-  it("counts every package by verdict, most first, ties in S7's own order", () => {
+  it("counts every package by verdict, worst verdict first (S7's own order), not most first", () => {
     const packages = [
       { package: "a/one", verdict: "silent" },
       { package: "b/one", verdict: "stale" },
@@ -238,9 +238,18 @@ describe("pulledVerdicts", () => {
     const pulled = pulledIn(makeFinding({ signals: [makeSignal({ id: "S7", data: { packages } })] }));
     expect(pulled && pulledVerdicts(pulled)).toEqual([
       { verdict: "abandoned", packages: ["hoa/x", "hoa/y", "hoa/z"] },
-      { verdict: "stale", packages: ["b/one", "c/one"] },
       { verdict: "silent", packages: ["a/one"] },
+      { verdict: "stale", packages: ["b/one", "c/one"] },
     ]);
+  });
+
+  it("puts a verdict VERDICT_ORDER does not list last, whatever its count", () => {
+    const packages = [
+      ...["x", "y", "z"].map((n) => ({ package: `odd/${n}`, verdict: "mystery" })),
+      { package: "a/one", verdict: "stale" },
+    ];
+    const pulled = pulledIn(makeFinding({ signals: [makeSignal({ id: "S7", data: { packages } })] }));
+    expect(pulled && pulledVerdicts(pulled).map((group) => group.verdict)).toEqual(["stale", "mystery"]);
   });
 });
 

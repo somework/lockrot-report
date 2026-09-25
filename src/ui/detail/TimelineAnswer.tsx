@@ -102,9 +102,12 @@ export function Answer({
         </>
       );
   } else {
+    // The subject is named: a newer branch exists, so "its last release" alone would read as the
+    // package's — the age the answer at the top quotes, which is that newer branch's (an evaluator
+    // read the two serif sentences, 9.1 and 9.7 years, as a contradiction).
     lead = (
       <>
-        You’re on {name(mine.branch)}. Its last release was {age(mine)} ago.
+        Your branch, {name(mine.branch)}, had its last release {age(mine)} ago.
       </>
     );
     sub =

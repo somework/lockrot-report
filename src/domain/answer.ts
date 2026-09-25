@@ -20,7 +20,7 @@ import {
 } from "./age";
 import { WAYS_NAMED, waysIn } from "./reach";
 import { hasNoFixExpected } from "./sniff";
-import type { Tone } from "./vocab";
+import { VERDICT_ORDER, type Tone } from "./vocab";
 
 export type AnswerPart =
   | { readonly kind: "text"; readonly text: string }
@@ -343,8 +343,9 @@ export function pulledIn(finding: Finding): PulledIn | null {
   return { flagged: flagged ?? packages.length, entries };
 }
 
-/** What it pulls in, by verdict, most first (ties keep S7's own order), each verdict with its own
- *  packages in S7's order — the sentence "What it pulls in" says once there are too many entries to
+/** What it pulls in, by verdict, worst first — `VERDICT_ORDER`, the order S7's own text lists them
+ *  in, so the fold and the S7 signal below it never disagree — each verdict with its own packages in
+ *  S7's order — the sentence "What it pulls in" says once there are too many entries to
  *  name, and the list its "Name all" fold opens, so the count and the names always agree. */
 export function pulledVerdicts(
   pulled: PulledIn,
@@ -355,5 +356,12 @@ export function pulledVerdicts(
   }
   return [...byVerdict]
     .map(([verdict, packages]) => ({ verdict, packages }))
-    .sort((a, b) => b.packages.length - a.packages.length);
+    .sort((a, b) => verdictRank(a.verdict) - verdictRank(b.verdict));
+}
+
+/** A verdict's place in `VERDICT_ORDER` (the order S7's own text lists them in, worst first); a
+ *  verdict it does not list goes last, and `sort` keeps those in S7's order. */
+function verdictRank(verdict: string): number {
+  const index = (VERDICT_ORDER as readonly string[]).indexOf(verdict);
+  return index === -1 ? VERDICT_ORDER.length : index;
 }

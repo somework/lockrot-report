@@ -53,7 +53,7 @@ test.describe("PD-TIMELINE-7: the answer comes first", () => {
   test("meilisearch-php: where you are, then what is newer", async ({ page }) => {
     await openTimeline(page, ...MEILI);
     await expect(page.locator(".detail-timeline-answer")).toHaveText(
-      "You’re on 0.24.x. Its last release was 4.1 years ago.",
+      "Your branch, 0.24.x, had its last release 4.1 years ago.",
     );
     await expect(page.locator(".detail-timeline-sub")).toContainText(
       "There are 4 newer branches. The newest is 1.x",
