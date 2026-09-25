@@ -309,6 +309,30 @@
 .tab .n:empty {
   display: none;
 }
+/* PD-ADV-7: a hollow ring in the high tone after a count from an incomplete advisory check — the
+   count is what was found, not everything there is. */
+.tab-flag {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 4px;
+  border: 1.5px solid var(--high);
+  border-radius: 50%;
+  vertical-align: 1px;
+}
+.tab-flag-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (forced-colors: active) {
+  .tab-flag {
+    border-color: CanvasText;
+  }
+}
 
 /* ---------- ledger band ----------
    The summary sits on the header's surface, as on the legacy page, so the page reads as a band of

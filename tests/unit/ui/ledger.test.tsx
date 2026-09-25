@@ -526,6 +526,29 @@ describe("AdvisoryLedger", () => {
     expect(screen.getByText(/under run data/i)).toBeTruthy();
   });
 
+  it("says a count from an incomplete check is one, with the tab's own tag (PD-ADV-7)", () => {
+    // Arrange: mini-advisories-partial.json — six advisories, and network_failures true.
+    const model = loadFixture("mini-advisories-partial.json");
+
+    // Act
+    const { container } = renderIn(<AdvisoryLedger />, model, INITIAL_STATE);
+
+    // Assert: the count stands, and the line under it says it may not be all of them.
+    expect(screen.getByText("advisories on 5 packages")).toBeTruthy();
+    const note = container.querySelector(".ledger-partial");
+    expect(note?.querySelector(".ci-tag")?.textContent).toBe("Check incomplete");
+    expect(note?.textContent).toContain("This may not be every advisory");
+  });
+
+  it("names an empty incomplete check with the same tag", () => {
+    const { container } = renderIn(
+      <AdvisoryLedger />,
+      loadFixture("mini-advisory-incomplete.json"),
+      INITIAL_STATE,
+    );
+    expect(container.querySelector(".ci-tag")?.textContent).toBe("Check incomplete");
+  });
+
   it("draws one square per advisory and a chip per severity, skipping empty severities", () => {
     // Arrange
     const model = loadWithAdvisories();

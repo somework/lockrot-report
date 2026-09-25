@@ -264,6 +264,20 @@ describe("foldPeek", () => {
     expect(incomplete).toEqual(["1 reason", "advisory check incomplete", "libyears not reported"]);
   });
 
+  it("says a count of advisories from an incomplete check is one (PD-ADV-7)", () => {
+    // Arrange / Act
+    const peek = foldPeek({
+      packages: 6,
+      reasons: 4,
+      advisories: 6,
+      advisoryCheckIncomplete: true,
+      libyears: block(),
+    });
+
+    // Assert
+    expect(peek[1]).toBe("6 advisories, check incomplete");
+  });
+
   it("says what the unfolded band says for an empty lock and for a run with no libyears block", () => {
     // Arrange / Act: the band reads "No packages in this lock" and "This run did not report libyears."
     const empty = foldPeek({

@@ -5,6 +5,7 @@ import { population } from "../../domain/filters";
 import { advisoryCheckIncomplete, advisoryPackages, allAdvisories, sevTone } from "../../domain/advisories";
 import { SEVERITIES } from "../../model/types";
 import { CleanMark } from "./CleanMark";
+import { CheckIncompleteTag } from "../common/CheckIncompleteTag";
 import "./ledger.css";
 
 /** How many packages the block names by hand before it points at the Advisories tab instead. */
@@ -35,8 +36,9 @@ export function AdvisoryLedger() {
   // PD-LEDGER-1 (DESIGN.md §5): "no advisory" was a finding whenever `advisories.length` was 0,
   // whether or not the check that would have found one ever ran. `advisoryCheckIncomplete` reads
   // the same run-wide facts (`network_failures`, `notes`) the Run tab's own notes list already
-  // shows, so this line and that list can never disagree about whether the run says so.
-  const incomplete = advisories.length === 0 && advisoryCheckIncomplete(model);
+  // shows, so this line and that list can never disagree about whether the run says so. PD-ADV-7:
+  // the same holds when it did find some — a count from a partial check is said to be one.
+  const incomplete = advisoryCheckIncomplete(model);
   const totalChecked = model.report.packagesChecked ?? model.report.findings.length;
   const checkedPhrase = plural(totalChecked, "package", "packages");
 
@@ -47,6 +49,7 @@ export function AdvisoryLedger() {
         {incomplete ? (
           // Never the affirmative "none" tone: a check that may not have run is not a clean one.
           <>
+            <CheckIncompleteTag />
             <p className={`ledger-fig ledger-fig-text ${toneClass("low")}`}>
               No advisory found; {checkedPhrase} could not be confirmed clear
             </p>
@@ -75,6 +78,11 @@ export function AdvisoryLedger() {
           {plural(packagesWithAdvisories, "package", "packages")}
         </span>
       </p>
+      {incomplete && (
+        <p className="ledger-note ledger-partial">
+          <CheckIncompleteTag /> This may not be every advisory; the run's own notes say why, under Run data.
+        </p>
+      )}
       {/* One square per advisory, most severe first (`allAdvisories` sorts them); `aria-hidden`
           since the chips below carry the same counts in words. */}
       <div className="advisory-squares" aria-hidden="true">

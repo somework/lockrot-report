@@ -371,6 +371,14 @@
   color: var(--ink-2);
 }
 
+/* PD-ADV-7: the check-incomplete tag keeps its own width in the column, never a full-width bar. */
+.ledger-block > .ci-tag {
+  align-self: flex-start;
+}
+.ledger-partial {
+  color: var(--ink-2);
+}
+
 /* A package named in the tier opens its detail, like a row would. */
 .ledger-pkg {
   font: 12px var(--mono);

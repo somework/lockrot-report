@@ -23,7 +23,7 @@ export function summaryFor(model: Model): string {
     flagged: population(model, "findings"),
     advisories: advisories.length,
     advisoryPackages: population(model, "advisories").length,
-    advisoryCheckIncomplete: advisories.length === 0 && advisoryCheckIncomplete(model),
+    advisoryCheckIncomplete: advisoryCheckIncomplete(model),
     libyears,
   });
 }

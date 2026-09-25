@@ -10,6 +10,7 @@ import {
   type FixShape,
 } from "../../domain/advisories";
 import {
+  axisCaption,
   advisoryRowName,
   fixesOfShape,
   reportedAxis,
@@ -20,6 +21,7 @@ import {
   tickLabel,
   type AdvisoryTally,
   type ReportedAxis,
+  type SeverityCount,
 } from "../../domain/advisoryLedger";
 import { useReport } from "../context";
 import { population } from "../../domain/filters";
@@ -28,6 +30,7 @@ import { day, plural } from "../../domain/format";
 import { vendorOf } from "../../domain/rows";
 import { toneClass } from "../common/common";
 import { CleanMark } from "../ledger/CleanMark";
+import { CheckIncompleteTag } from "../common/CheckIncompleteTag";
 import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
@@ -42,9 +45,18 @@ function Num({ n }: { n: number }) {
   return <b>{n}</b>;
 }
 
-/** A package name in the sentence's own sans, as the Blast radius answer names one. */
+/** A package name in the sentence's own sans, as the Blast radius answer names one. It may wrap
+ *  after the slash and nowhere else: never at a hyphen inside the name ("acme/http-" / "client"). */
 function Pk({ name }: { name: string }) {
-  return <span className="al-pk">{name}</span>;
+  const vendor = vendorOf(name);
+  if (vendor === null) return <span className="al-pk">{name}</span>;
+  return (
+    <span className="al-pk">
+      <span className="al-pk-part">{vendor}/</span>
+      <wbr />
+      <span className="al-pk-part">{name.slice(vendor.length + 1)}</span>
+    </span>
+  );
 }
 
 /** "a, b and c", each item already a node. */
@@ -100,17 +112,13 @@ function Packages({ names }: { names: readonly string[] }) {
   return <>{joinAnd(names.map((name) => <Pk key={name} name={name} />))}</>;
 }
 
-/** "both in production", "3 in production, 2 dev-only", "only for development". */
+/** "both in production", "all three dev-only", "installed only for development" — one scope
+ *  only; the answer splits a list that holds both scopes by severity itself. */
 function scopePart(tally: AdvisoryTally): ComponentChildren {
-  const { total, production, dev } = tally;
+  const { total, production } = tally;
   const all = allOf(total);
-  if (dev === 0) return all ? `${all} in production` : "in production";
-  if (production === 0) return all ? `${all} dev-only` : "installed only for development";
-  return (
-    <>
-      <Num n={production} /> in production, <Num n={dev} /> dev-only
-    </>
-  );
+  if (production > 0) return all ? `${all} in production` : "in production";
+  return all ? <span className="fl-unit">{`${all} dev-only`}</span> : "installed only for development";
 }
 
 /** How the advisories are fixed, from each one's own `fixed_by`/`fixed_on_branch`. */
@@ -166,11 +174,11 @@ function SeverityWord({ severity }: { severity: Severity }) {
 }
 
 /** "1 critical, 2 high and 1 unrated", each count and word one unbreakable unit. */
-function SeverityCounts({ tally }: { tally: AdvisoryTally }) {
+function SeverityCounts({ tally, counts }: { tally?: AdvisoryTally; counts?: readonly SeverityCount[] }) {
   return (
     <>
       {joinAnd(
-        tally.severities.map((s) => (
+        (counts ?? tally?.severities ?? []).map((s) => (
           <span key={s.severity} className="fl-unit">
             <Num n={s.count} /> <SeverityWord severity={s.severity} />
           </span>
@@ -228,7 +236,7 @@ function RunDataLink() {
 function PartialCheck() {
   return (
     <p className="al-partial">
-      <span className="al-partial-tag">Check incomplete</span>{" "}
+      <CheckIncompleteTag />{" "}
       <span>
         The advisory check may not have run for every package, so this list may be partial: a package with no
         row here could not be confirmed clear. The run's own notes say why, under <RunDataLink />.
@@ -269,9 +277,24 @@ function AdvisoryAnswer({
         ) : (
           <>
             <Num n={tally.total} /> {narrowed ? `matching ${noun}` : noun} on{" "}
-            <Packages names={tally.packages} />, by severity <SeverityCounts tally={tally} />
-            {tally.dev > 0 && tally.production > 0 ? "; " : ", "}
-            {scopePart(tally)}.
+            <Packages names={tally.packages} />
+            {tally.dev > 0 && tally.production > 0 ? (
+              // Both scopes: each one's own severities, so "is the critical one in production?"
+              // is answered in the sentence, not by scanning the rows.
+              <>
+                : <Num n={tally.production} /> in production (
+                <SeverityCounts counts={tally.productionSeverities} />) and{" "}
+                <span className="fl-unit">
+                  <Num n={tally.dev} /> dev-only
+                </span>{" "}
+                (<SeverityCounts counts={tally.devSeverities} />
+                ).
+              </>
+            ) : (
+              <>
+                , by severity <SeverityCounts tally={tally} />, {scopePart(tally)}.
+              </>
+            )}
           </>
         )}{" "}
         <FixSentence tally={tally} pairs={pairs} />
@@ -326,14 +349,14 @@ function ColumnHead({ axis }: { axis: ReportedAxis | null }) {
       <span className="al-col al-col-aff">Affects</span>
       <span className="al-col al-col-fix">Fixed by</span>
       <span className="al-col al-col-age">
-        <span className="al-age-label">Reported, years ago</span>
+        <span className="al-age-label">{axisCaption(axis)}</span>
         {axis?.ticks.map((tick) => (
           <span
             key={tick}
             className={`al-tick${tick === 0 ? " is-start" : tick === axis.max ? " is-end" : ""}`}
             style={{ left: `${(100 * tick) / axis.max}%` }}
           >
-            {tickLabel(tick)}
+            {tickLabel(tick, axis)}
           </span>
         ))}
       </span>
@@ -348,22 +371,16 @@ const FIX_WHERE: Readonly<Record<FixShape, string>> = {
 };
 
 /** A package name with its vendor quieter and a wrap point after the slash, as Findings rows draw
- *  it. Under a row that already named the same package (PD-ROWS-5), a ditto mark stands in for the
- *  vendor on screen and the whole name goes quiet; the vendor stays in the text a screen reader and
- *  a search read. */
+ *  it. Under a row that already named the same package (PD-ROWS-5), the whole name goes quiet, as
+ *  a repeated value does on a Findings row — still there in full, never a mark to decode. */
 function PackageName({ finding, ditto }: { finding: Finding; ditto: boolean }) {
   const vendor = vendorOf(finding.package);
   const name = vendor === null ? finding.package : finding.package.slice(vendor.length + 1);
   return (
     <span className={`ac-name${ditto ? " is-ditto" : ""}`} title={`${finding.package} ${finding.version}`}>
-      {ditto && (
-        <span className="ac-ditto" aria-hidden="true">
-          〃
-        </span>
-      )}
       {vendor !== null && (
         <>
-          <span className={ditto ? "ac-vendor ac-sr" : "ac-vendor"}>{vendor}/</span>
+          <span className="ac-vendor">{vendor}/</span>
           <wbr />
         </>
       )}
@@ -547,6 +564,7 @@ function NoAdvisories() {
     const checked = model.report.packagesChecked ?? model.report.findings.length;
     return (
       <div className="empty al-empty">
+        <CheckIncompleteTag />
         <p className="al-answer">
           No advisory found; {plural(checked, "package", "packages")} could not be confirmed clear.
         </p>

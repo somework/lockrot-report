@@ -44,6 +44,10 @@
   font-weight: 650;
   color: var(--ink);
 }
+/* Each half of "vendor/name" stays whole; the name may wrap only at the slash. */
+.al-pk-part {
+  white-space: nowrap;
+}
 /* A severity word in the sentence, in the tone its rows' severity takes. */
 .al-sw {
   color: var(--tone);
@@ -73,15 +77,6 @@
   color: var(--ink-2);
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
-}
-.al-partial-tag {
-  font-family: var(--cond);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink);
-  white-space: nowrap;
 }
 
 /* No advisory at all: the tab's empty box, holding PD-LEDGER-1's sentence — with the band's
@@ -286,27 +281,14 @@
   font-size: 11.5px;
   color: var(--muted);
 }
-/* PD-ROWS-5: the row above named the same package — still read, only quieter. */
+/* PD-ROWS-5: the row above named the same package — still there in full, only quieter, as a
+   repeated value on a Findings row is. */
 .ac-name.is-ditto,
 .ac-name.is-ditto .ac-vendor {
   color: var(--muted);
 }
 .ac-name.is-ditto b {
   font-weight: 500;
-}
-.ac-ditto {
-  margin-right: 5px;
-  font-weight: 600;
-  color: var(--muted);
-}
-/* Read by a screen reader and a search, not drawn. */
-.ac-sr {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 .ac-reach {
   font-size: 12px;

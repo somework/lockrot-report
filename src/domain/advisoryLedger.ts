@@ -42,9 +42,25 @@ export interface AdvisoryTally {
   readonly fixes: readonly string[];
   /** Per severity bucket, most severe first; buckets with no advisory are left out. */
   readonly severities: readonly SeverityCount[];
+  /** The same buckets over the advisories on production packages only, then on dev-only ones — so
+   *  a sentence can say which severities a production deploy carries. */
+  readonly productionSeverities: readonly SeverityCount[];
+  readonly devSeverities: readonly SeverityCount[];
   /** Years since the earliest and the latest `reported_at`; `null` when none is dated. */
   readonly oldestYears: number | null;
   readonly newestYears: number | null;
+}
+
+/** The severity buckets of a list of advisories, most severe first, empty buckets left out. */
+function severityCounts(pairs: readonly AdvisoryWithFinding[]): readonly SeverityCount[] {
+  const bySeverity = new Map<Severity, number>();
+  for (const { advisory } of pairs) {
+    bySeverity.set(advisory.severity, (bySeverity.get(advisory.severity) ?? 0) + 1);
+  }
+  return SEVERITIES.flatMap((severity) => {
+    const count = bySeverity.get(severity) ?? 0;
+    return count > 0 ? [{ severity, count }] : [];
+  });
 }
 
 /** Counts over a list of advisory/finding pairs — the whole tab, or one fix-shape group. */
@@ -52,7 +68,6 @@ export function tallyAdvisories(pairs: readonly AdvisoryWithFinding[], now: Date
   const packages: string[] = [];
   const fixes: string[] = [];
   const shapes: Record<FixShape, number> = { branch: 0, move: 0, none: 0 };
-  const bySeverity = new Map<Severity, number>();
   let production = 0;
   let oldest: number | null = null;
   let newest: number | null = null;
@@ -61,7 +76,6 @@ export function tallyAdvisories(pairs: readonly AdvisoryWithFinding[], now: Date
     if (!packages.includes(finding.package)) packages.push(finding.package);
     if (advisory.fixedBy && !fixes.includes(advisory.fixedBy)) fixes.push(advisory.fixedBy);
     shapes[fixShapeOf(advisory)] += 1;
-    bySeverity.set(advisory.severity, (bySeverity.get(advisory.severity) ?? 0) + 1);
     if (!finding.dev) production += 1;
     const years = reportedYears(advisory, now);
     if (years !== null) {
@@ -70,11 +84,6 @@ export function tallyAdvisories(pairs: readonly AdvisoryWithFinding[], now: Date
     }
   }
 
-  const severities = SEVERITIES.flatMap((severity) => {
-    const count = bySeverity.get(severity) ?? 0;
-    return count > 0 ? [{ severity, count }] : [];
-  });
-
   return {
     total: pairs.length,
     packages,
@@ -82,7 +91,9 @@ export function tallyAdvisories(pairs: readonly AdvisoryWithFinding[], now: Date
     dev: pairs.length - production,
     shapes,
     fixes,
-    severities,
+    severities: severityCounts(pairs),
+    productionSeverities: severityCounts(pairs.filter((pair) => !pair.finding.dev)),
+    devSeverities: severityCounts(pairs.filter((pair) => pair.finding.dev)),
     oldestYears: oldest,
     newestYears: newest,
   };
@@ -187,9 +198,16 @@ export function reportedShort(years: number): string {
   return `${String(short.n)} ${short.unit === "week" ? "wk" : "d"}`;
 }
 
-/** A tick's caption: "0", "6 mo", "1y", "3y". */
-export function tickLabel(years: number): string {
+/** A tick's caption: "0", "6 mo", "12 mo" on an axis a year long; "0", "1y", "3y" on a longer
+ *  one — the unit the axis' caption names (`axisCaption`). */
+export function tickLabel(years: number, axis: ReportedAxis): string {
   if (years === 0) return "0";
-  if (years < 1) return `${Math.round(years * 12)} mo`;
+  if (axis.max === 1) return `${Math.round(years * 12)} mo`;
   return `${years}y`;
+}
+
+/** The axis' caption, in the unit its ticks are in: months on an axis a year long, else years. */
+export function axisCaption(axis: ReportedAxis | null): string {
+  if (axis === null) return "Reported";
+  return axis.max === 1 ? "Reported, months ago" : "Reported, years ago";
 }

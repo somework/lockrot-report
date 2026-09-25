@@ -134,7 +134,8 @@ export function libyearsSplit(
  * the same three slots — in the words the unfolded band uses for the same case: "no packages" for
  * an empty lock ("No packages in this lock"), "libyears not reported" for a run with no libyears
  * block ("This run did not report libyears."), "no libyears to measure" when the block had nothing to
- * measure ("Nothing to measure."), "not measured" when it had packages but measured none.
+ * measure ("Nothing to measure."), "not measured" when it had packages but measured none. A count
+ * of advisories from a check the run says was incomplete says so: "6 advisories, check incomplete".
  */
 export function foldPeek(parts: {
   packages: number;
@@ -149,9 +150,12 @@ export function foldPeek(parts: {
       : parts.packages === 0
         ? "no packages"
         : "nothing flagged";
+  const found = `${parts.advisories} ${parts.advisories === 1 ? "advisory" : "advisories"}`;
   const advisories =
     parts.advisories > 0
-      ? `${parts.advisories} ${parts.advisories === 1 ? "advisory" : "advisories"}`
+      ? parts.advisoryCheckIncomplete
+        ? `${found}, check incomplete`
+        : found
       : parts.advisoryCheckIncomplete
         ? "advisory check incomplete"
         : "no advisories";

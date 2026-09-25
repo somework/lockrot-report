@@ -28,7 +28,17 @@ tag or the address format, says so under **Breaking** in its entry.
   The reported-ago axis now also shows beside an open package, at laptop widths and on paper; group
   sentences wrap back to the left edge; on a phone the range and the fix sit together at the foot
   of each row; the answer says "by severity" to keep it apart from the summary band's priorities;
-  a repeated package reads as a ditto mark; the empty tab no longer shows "0 of 0 advisories".
+  a repeated package reads quieter; the empty tab no longer shows "0 of 0 advisories".
+- A count of advisories from a check the run says was incomplete now says so everywhere it
+  appears: a "Check incomplete" tag in the summary band (the same tag the empty and the non-empty
+  Advisories tab use), a ring beside the Advisories tab's count, "6 advisories, check incomplete"
+  in the phone fold's line, and "(advisory check incomplete, so the list may be partial)" in the
+  text "Copy summary" puts on the clipboard.
+- When advisories sit on both production and dev-only packages, the Advisories answer counts each
+  side by severity ("4 in production (1 critical, 1 high, 1 medium and 1 low) and 2 dev-only (…)").
+  The reported-ago axis names the unit its ticks are in ("Reported, months ago" over 0 · 6 mo ·
+  12 mo), a repeated package on the next row keeps its full name, only quieter, and a package
+  named in an answer or group sentence wraps only at its slash, never at a hyphen.
 
 - "Print / PDF" in the header prints the whole report as one document, whatever tab is open: the
   summary band, Findings with every signal, Advisories in full, the ranked rows of Blast radius and

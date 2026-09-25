@@ -68,6 +68,8 @@ export interface SummaryFacts {
   readonly flagged: readonly Pick<Finding, "dev" | "direct" | "priority">[];
   readonly advisories: number;
   readonly advisoryPackages: number;
+  /** The run says its advisory check may not have covered every package (`advisoryCheckIncomplete`),
+   *  whether or not it found any: a count from a partial check is said to be one. */
   readonly advisoryCheckIncomplete: boolean;
   readonly libyears: LibyearsBlock | null;
 }
@@ -109,9 +111,12 @@ export function summaryText(facts: SummaryFacts): string {
         : `${String(n)} of ${plural(facts.checked, "package", "packages")} flagged (${sharePhrase(n, facts.checked)}): ${priorityCounts(facts.flagged)}.`;
 
   const clauses = rollupClauses(scopeRollup(facts.flagged));
+  const found = `${plural(facts.advisories, "security advisory", "security advisories")} on ${plural(facts.advisoryPackages, "package", "packages")}`;
   const advisories =
     facts.advisories > 0
-      ? `${plural(facts.advisories, "security advisory", "security advisories")} on ${plural(facts.advisoryPackages, "package", "packages")}`
+      ? facts.advisoryCheckIncomplete
+        ? `${found} (advisory check incomplete, so the list may be partial)`
+        : found
       : facts.advisoryCheckIncomplete
         ? "no advisory found, but the advisory check was incomplete"
         : "no security advisory";

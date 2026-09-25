@@ -22,7 +22,7 @@ test("the answer leads, then one row per advisory, grouped by fix shape and most
   await report.gotoWithHash(FIXTURES.miniAdvisories, "view=advisories");
 
   await expect(page.locator(".al-answer")).toContainText(
-    "6 advisories on 5 packages, by severity 1 critical, 2 high",
+    "6 advisories on 5 packages: 4 in production (1 critical, 1 high, 1 medium and 1 low)",
   );
   await expect(page.locator(".al-group-head h2")).toHaveText([
     "A release on the branch you are on",
@@ -72,6 +72,52 @@ test("advisories found by a check that may not have covered every package say so
   await expect.poll(() => report.hash()).toContain("view=run");
 });
 
+test("a count from an incomplete check says so in the band, the tab, the phone fold and the copied summary", async ({
+  page,
+}) => {
+  // PD-ADV-7: mini-advisories-partial.json — six advisories, network_failures true.
+  await page.addInitScript(() => {
+    const writes: string[] = [];
+    (window as unknown as { __copied: string[] }).__copied = writes;
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: (text: string) => {
+          writes.push(text);
+          return Promise.resolve();
+        },
+      },
+    });
+  });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await report.goto(FIXTURES.miniAdvisoriesPartial);
+  await expect(page.locator(".ledger-partial")).toContainText("Check incomplete");
+  await expect(page.getByRole("tab", { name: /^Advisories/ })).toHaveAccessibleName(
+    /^Advisories\s*6\s*,\s*check incomplete$/,
+  );
+  await page.getByRole("button", { name: "Copy summary" }).click();
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __copied: string[] }).__copied.join("\n")))
+    .toContain("6 security advisories on 5 packages (advisory check incomplete, so the list may be partial)");
+
+  await page.setViewportSize({ width: 320, height: 800 });
+  const fold = page.getByText("More about this lock").locator("xpath=ancestor::summary[1]");
+  await expect(fold).toContainText("6 advisories, check incomplete");
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBe(0);
+});
+
+test("the reported-ago axis names the unit its ticks are in", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await report.gotoWithHash(FIXTURES.wallabag, "view=advisories");
+  await expect(page.locator(".al-age-label")).toHaveText("Reported, months ago");
+  await expect(page.locator(".al-tick")).toHaveText(["0", "6 mo", "12 mo"]);
+  await report.gotoWithHash(FIXTURES.miniAdvisories, "view=advisories");
+  await expect(page.locator(".al-age-label")).toHaveText("Reported, years ago");
+});
+
 test("a fragment opens its package and marks each of its rows current", async ({ page }) => {
   await report.gotoWithHash(FIXTURES.miniAdvisories, "view=advisories&pkg=acme%2Fhttp-client");
   const current = page.locator('.adv[aria-current="true"]');
@@ -93,10 +139,12 @@ test("an incomplete check never reads as clean, and points at Run data", async (
   await expect(page.locator(".al-empty")).toContainText(
     "No advisory found; 2 packages could not be confirmed clear.",
   );
+  // The same tag the non-empty partial state leads with (PD-ADV-7).
+  await expect(page.locator(".al-empty .ci-tag")).toHaveText("Check incomplete");
   // No "0 of 0 advisories" above the sentence.
   await expect(page.locator(".count-line")).toHaveCount(0);
   await page.locator(".al-empty").getByRole("button", { name: "Run data" }).click();
-  expect(await report.hash()).toContain("view=run");
+  await expect.poll(() => report.hash()).toContain("view=run");
 });
 
 for (const width of [320, 390]) {

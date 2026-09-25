@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  axisCaption,
   advisoryChipTitle,
   advisoryRowName,
   fixesOfShape,
@@ -86,6 +87,18 @@ describe("tallyAdvisories", () => {
     ]);
   });
 
+  it("splits the severities by where each package is installed", () => {
+    const tally = tallyAdvisories(pairs, NOW);
+    expect(tally.productionSeverities).toEqual([
+      { severity: "critical", count: 1 },
+      { severity: "low", count: 1 },
+    ]);
+    expect(tally.devSeverities).toEqual([
+      { severity: "high", count: 1 },
+      { severity: "unrated", count: 1 },
+    ]);
+  });
+
   it("finds the oldest and newest reported ages over the dated ones only", () => {
     const tally = tallyAdvisories(pairs, NOW);
     expect(tally.oldestYears).toBeCloseTo(2, 1);
@@ -135,9 +148,21 @@ describe("reportedAxis", () => {
   });
 });
 
-describe("tickLabel", () => {
-  it("reads 0, months under a year and whole years", () => {
-    expect([0, 0.5, 1, 3].map(tickLabel)).toEqual(["0", "6 mo", "1y", "3y"]);
+describe("tickLabel and axisCaption", () => {
+  it("reads a year-long axis in months, and says months in its caption", () => {
+    const axis = { max: 1, ticks: [0, 0.5, 1] };
+    expect(axis.ticks.map((tick) => tickLabel(tick, axis))).toEqual(["0", "6 mo", "12 mo"]);
+    expect(axisCaption(axis)).toBe("Reported, months ago");
+  });
+
+  it("reads a longer axis in whole years, and says years in its caption", () => {
+    const axis = { max: 3, ticks: [0, 1, 2, 3] };
+    expect(axis.ticks.map((tick) => tickLabel(tick, axis))).toEqual(["0", "1y", "2y", "3y"]);
+    expect(axisCaption(axis)).toBe("Reported, years ago");
+  });
+
+  it("names no unit when there is no axis to draw", () => {
+    expect(axisCaption(null)).toBe("Reported");
   });
 });
 

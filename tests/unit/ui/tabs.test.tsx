@@ -10,17 +10,15 @@ import { Tabs } from "../../../src/ui/Tabs";
 
 afterEach(cleanup);
 
-function loadMini(): Model {
-  const raw = JSON.parse(
-    readFileSync(join(process.cwd(), "fixtures", "bundles", "mini.json"), "utf8"),
-  ) as unknown;
+function loadMini(name = "mini.json"): Model {
+  const raw = JSON.parse(readFileSync(join(process.cwd(), "fixtures", "bundles", name), "utf8")) as unknown;
   const result = normalize(raw);
-  if (!result.ok) throw new Error("mini.json fixture failed to normalize");
+  if (!result.ok) throw new Error(`${name} fixture failed to normalize`);
   return result.model;
 }
 
-function renderTabs(state: State = INITIAL_STATE) {
-  const model = loadMini();
+function renderTabs(state: State = INITIAL_STATE, fixture = "mini.json") {
+  const model = loadMini(fixture);
   return render(
     <ReportContext.Provider
       value={{
@@ -38,6 +36,20 @@ function renderTabs(state: State = INITIAL_STATE) {
     </ReportContext.Provider>,
   );
 }
+
+describe("the Advisories tab's count from an incomplete check (PD-ADV-7)", () => {
+  it("carries a mark, named in the tab's own name", () => {
+    renderTabs(INITIAL_STATE, "mini-advisories-partial.json");
+    const tab = screen.getByRole("tab", { name: /^Advisories/ });
+    expect(tab.textContent).toBe("Advisories6, check incomplete");
+    expect(tab.querySelector(".tab-flag")?.getAttribute("title")).toBe("advisory check incomplete");
+  });
+
+  it("carries none when the run reports a complete check", () => {
+    renderTabs(INITIAL_STATE, "mini-advisories.json");
+    expect(screen.getByRole("tab", { name: /^Advisories/ }).querySelector(".tab-flag")).toBeNull();
+  });
+});
 
 describe("Tabs' overflow chevrons (PD-TABS-1)", () => {
   it("keep the tab list the only thing a keyboard or screen reader meets: one Tab stop, chevrons hidden from both", () => {

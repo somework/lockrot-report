@@ -124,6 +124,14 @@ describe("summaryText", () => {
     expect(text).toContain("no advisory found, but the advisory check was incomplete");
   });
 
+  it("says a count of advisories from an incomplete check may be partial (PD-ADV-7)", () => {
+    const text = summaryText(facts({ advisories: 6, advisoryPackages: 5, advisoryCheckIncomplete: true }));
+
+    expect(text).toContain(
+      "6 security advisories on 5 packages (advisory check incomplete, so the list may be partial)",
+    );
+  });
+
   it("keeps a priority a newer lockrot added, after the four known ones", () => {
     const text = summaryText(
       facts({

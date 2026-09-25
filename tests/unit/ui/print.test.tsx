@@ -215,6 +215,14 @@ describe("the header's print and share controls", () => {
     );
   });
 
+  it("copies the caveat with the count when the advisory check was incomplete (PD-ADV-7)", () => {
+    const text = summaryFor(loadFixture("mini-advisories-partial.json"));
+    expect(text).toContain(
+      "6 security advisories on 5 packages (advisory check incomplete, so the list may be partial)",
+    );
+    expect(summaryFor(loadFixture("mini-advisories.json"))).not.toContain("incomplete");
+  });
+
   it("falls back to the text, selected in a popover, when the clipboard refuses", async () => {
     stubClipboard({ writeText: () => Promise.reject(new Error("denied")) });
     render(<App model={loadFixture("mini.json")} />);

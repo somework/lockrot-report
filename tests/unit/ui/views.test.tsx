@@ -1115,8 +1115,9 @@ describe("AdvisoriesView as a ledger (PD-ADV-1..3)", () => {
 
     const answer = container.querySelector(".al-answer")?.textContent.replace(/\s+/g, " ");
     expect(answer).toBe(
-      "6 advisories on 5 packages, by severity 1 critical, 2 high, 1 medium, 1 low and 1 unrated; 4 in " +
-        "production, 2 dev-only. Of them, 3 are fixed on the branch you are on, 2 only on another branch " +
+      // Both scopes: each with its own severities, so the critical one reads as in production.
+      "6 advisories on 5 packages: 4 in production (1 critical, 1 high, 1 medium and 1 low) and 2 " +
+        "dev-only (1 high and 1 unrated). Of them, 3 are fixed on the branch you are on, 2 only on another branch " +
         "and 1 with no fix listed. Reported between 2 weeks and 2.6 years ago.",
     );
     const heads = [...container.querySelectorAll(".al-group-head h2")].map((h) => h.textContent);
@@ -1175,8 +1176,9 @@ describe("AdvisoriesView as a ledger (PD-ADV-1..3)", () => {
     // The row under it names the same package: quieter, never removed (PD-ROWS-5).
     expect(critical.querySelector(".ac-name.is-ditto")).toBeNull();
     expect(medium.querySelector(".ac-name.is-ditto")).not.toBeNull();
-    expect(medium.querySelector(".ac-ditto")?.getAttribute("aria-hidden")).toBe("true");
+    // No mark to decode: the full name, vendor and all, only quieter.
     expect(medium.querySelector(".ac-name")?.textContent).toContain("acme/http-client");
+    expect(medium.querySelector(".ac-name")?.textContent).not.toContain("〃");
     expect(within(low).getByText("no CVE assigned")).toBeTruthy();
     expect(unrated.querySelector(".ac-sev")?.textContent).toBe("unrated");
     expect(unrated.querySelector(".ac-scope")?.textContent).toBe("dev");

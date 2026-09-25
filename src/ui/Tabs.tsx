@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { RefObject } from "preact";
-import { allAdvisories } from "../domain/advisories";
+import { advisoryCheckIncomplete, allAdvisories } from "../domain/advisories";
 import { population } from "../domain/filters";
 import type { Model, View } from "../model/types";
 import { useReport } from "./context";
@@ -158,6 +158,9 @@ function Chevron({ dir }: { dir: "prev" | "next" }) {
 export function Tabs({ idBase, panelId }: { idBase: string; panelId: string }) {
   const { model, state, dispatch } = useReport();
   const counts = useMemo(() => tabCounts(model), [model]);
+  // PD-ADV-7: the Advisories count from a check the run says was incomplete carries a mark, so the
+  // tab bar never reads "6" as the whole story.
+  const partial = useMemo(() => advisoryCheckIncomplete(model), [model]);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const scroller = useRef<HTMLElement>(null);
   const overflow = useOverflow(scroller);
@@ -228,6 +231,11 @@ export function Tabs({ idBase, panelId }: { idBase: string; panelId: string }) {
             >
               {label}
               <span className="n">{counts[view]}</span>
+              {view === "advisories" && partial && (
+                <span className="tab-flag" title="advisory check incomplete">
+                  <span className="tab-flag-sr">, check incomplete</span>
+                </span>
+              )}
             </button>
           );
         })}

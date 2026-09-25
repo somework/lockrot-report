@@ -30,7 +30,7 @@ function FoldSummary() {
     packages: model.report.packagesChecked ?? model.report.findings.length,
     reasons: rankVerdicts(model.report.counts, model.report.run.flaggedVerdicts).flagged.length,
     advisories,
-    advisoryCheckIncomplete: advisories === 0 && advisoryCheckIncomplete(model),
+    advisoryCheckIncomplete: advisoryCheckIncomplete(model),
     libyears: model.report.libyears,
   });
 
