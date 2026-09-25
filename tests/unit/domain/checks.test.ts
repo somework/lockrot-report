@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   blockedByS10,
+  checkName,
   checkStrip,
   checkTally,
   dataLabel,
   levelTone,
   timestampParts,
+  wrapParts,
 } from "../../../src/domain/checks";
 import { CHECK_NAMES } from "../../../src/domain/vocab";
 import { SIGNAL_IDS } from "../../../src/model/types";
@@ -215,5 +217,69 @@ describe("CHECK_NAMES", () => {
       expect(name?.split(" ").length, id).toBeLessThanOrEqual(2);
     }
     expect(CHECK_NAMES.S10).toBe("check gaps");
+    expect(CHECK_NAMES.S1).toBe("abandoned");
+  });
+});
+
+describe("checkName", () => {
+  it("says a quiet S10 means every check ran, and names every other cell by CHECK_NAMES", () => {
+    expect(checkName({ id: "S10", state: "quiet" })).toBe("all checks ran");
+    expect(checkName({ id: "S10", state: "fired" })).toBe("check gaps");
+    expect(checkName({ id: "S2", state: "blocked" })).toBe("release age");
+    expect(checkName({ id: "S5", state: "quiet" })).toBe("predates PHP");
+    expect(checkName({ id: "S9", state: "unreported" })).toBe("advisories");
+  });
+});
+
+describe("wrapParts", () => {
+  const atoms = (text: string) =>
+    wrapParts(text)
+      .filter((p) => p.atomic)
+      .map((p) => p.text);
+  const joined = (text: string) =>
+    wrapParts(text)
+      .map((p) => p.text)
+      .join("");
+
+  it("leaves plain prose as one plain run", () => {
+    expect(wrapParts("the age of the package was not read")).toEqual([
+      { text: "the age of the package was not read", atomic: false },
+    ]);
+    expect(wrapParts("")).toEqual([{ text: "", atomic: false }]);
+  });
+
+  it("keeps a verdict, a date and an advisory id whole, punctuation with them", () => {
+    expect(atoms("branch 10.x last released 2022-03-17 (4.5 years ago)")).toEqual(["2022-03-17"]);
+    expect(atoms("gaufrette/extras (left-behind), next")).toEqual(["gaufrette/", "extras", "(left-behind),"]);
+    expect(atoms("v10.0.3 (PKSA-kbc7-dq62-pt7d, PKSA-qv5y-crcz-9nxw);")).toEqual([
+      "(PKSA-kbc7-dq62-pt7d,",
+      "PKSA-qv5y-crcz-9nxw);",
+    ]);
+  });
+
+  it("splits a package name and a URL only after a slash, never inside '//', and after '::'", () => {
+    expect(atoms("composer/package-versions-deprecated")).toEqual([
+      "composer/",
+      "package-versions-deprecated",
+    ]);
+    expect(atoms("https://github.com/Spomky-Labs/otphp")).toEqual([
+      "https://",
+      "github.com/",
+      "Spomky-Labs/",
+      "otphp",
+    ]);
+    expect(atoms("Factory::loadFromProvisioningUri")).toEqual(["Factory::", "loadFromProvisioningUri"]);
+    expect(atoms("trailing/")).toEqual(["trailing/"]);
+  });
+
+  it("changes no character: the parts joined are the text", () => {
+    for (const text of [
+      "pulls in 21 flagged packages: composer/package-versions-deprecated (abandoned), a/b and 16 more",
+      "  leading and trailing  ",
+      "a\u00a0› b/c-d",
+      "https://x.io//double/slash",
+    ]) {
+      expect(joined(text)).toBe(text);
+    }
   });
 });

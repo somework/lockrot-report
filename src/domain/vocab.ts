@@ -112,7 +112,7 @@ export const SIGNAL_NAMES: Readonly<Record<string, string>> = vocabTable({
  * reports when it fires and which there are none of when it stays quiet.
  */
 export const CHECK_NAMES: Readonly<Record<string, string>> = vocabTable({
-  S1: "abandoned flag",
+  S1: "abandoned",
   S2: "release age",
   S3: "archived",
   S4: "push age",

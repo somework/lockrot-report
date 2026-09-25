@@ -1,22 +1,24 @@
 import { Fragment, type ComponentChildren } from "preact";
 import type { Finding, Signal } from "../../model/types";
 import {
+  checkName,
   checkStrip,
   checkTally,
   dataLabel,
   levelTone,
   timestampParts,
+  wrapParts,
   type CheckCell,
   type CheckState,
 } from "../../domain/checks";
-import { annotateThresholds, CHECK_NAMES, DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC } from "../../domain/vocab";
+import { annotateThresholds, DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC } from "../../domain/vocab";
 import { OutLink, toneClass } from "../common/common";
 import { useReport } from "../context";
 import "./detail.css";
 
 /** A scalar the way legacy's dump wrote it (`report.js:716`): `null` spelled out, a string as
- *  itself, a number or boolean as its JSON digits. The text a list of scalars joins; `DataScalar`
- *  draws a single `null` or timestamp its own way. */
+ *  itself, a number or boolean as its JSON digits. `DataScalar` draws a single `null` or timestamp
+ *  its own way. */
 function scalar(value: unknown): string | null {
   if (value === null) return "null";
   if (typeof value === "string") return value;
@@ -24,31 +26,72 @@ function scalar(value: unknown): string | null {
   return null;
 }
 
-/** A list of scalars as "S2, S8"; `null` for anything else. */
-function scalarList(value: unknown): string | null {
+/** A list of scalars' texts, or `null` when any item is not a scalar. */
+function scalarItems(value: unknown): readonly string[] | null {
   if (!Array.isArray(value)) return null;
   const items = value.map(scalar);
-  return items.every((item): item is string => item !== null) ? items.join(", ") : null;
+  return items.every((item): item is string => item !== null) ? items : null;
 }
 
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** One flat object as "check release_dates · reason undated_releases · blocks S2, S8", each key in
- *  the muted label colour and each scalar drawn as a top-level one is; a value nested deeper than a
- *  list of scalars stays JSON. */
+function isScalar(value: unknown): value is string | number | boolean | null {
+  return value === null || ["string", "number", "boolean"].includes(typeof value);
+}
+
+/**
+ * Text that wraps between words and, inside a package name, URL, id or date, only after a "/" or
+ * "::" (`domain/checks.ts#wrapParts`). Each identifier piece is an inline-block: kept whole on its
+ * line while it fits one, wrapped inside only when it alone is wider than the line.
+ */
+function Wrapped({ text }: { text: string }) {
+  const parts = wrapParts(text);
+  if (parts.length === 1 && parts[0]?.atomic !== true) return <>{text}</>;
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.atomic ? (
+          <span key={index} className="detail-token">
+            {part.text}
+          </span>
+        ) : (
+          <Fragment key={index}>{part.text}</Fragment>
+        ),
+      )}
+    </>
+  );
+}
+
+/** How a list of scalars is joined: a dependency chain the way the panel's "How it gets in" writes
+ *  one ("mautic/core-lib › doctrine/dbal"), any other list with commas ("S2, S8"). */
+function joinerFor(key: string): string {
+  return key === "chain" ? " › " : ", ";
+}
+
+/** A list of scalars, each item's separator kept with it ("S2," then "S8"; "mautic/core-lib ›"),
+ *  so a wrapped line never starts on one. */
+function ScalarList({ items, joiner }: { items: readonly string[]; joiner: string }) {
+  const glued = joiner.trimEnd().replace(/^ /, "\u00a0");
+  return (
+    <Wrapped text={items.map((item, index) => (index < items.length - 1 ? item + glued : item)).join(" ")} />
+  );
+}
+
+/** One object in a signal's data (an S7 package, an S9 advisory, an S10 unchecked check): one line
+ *  per field, its label beside its value, the labels of every object in the list sharing one column
+ *  (`detail.css`, subgrid). The first field, the object's name, leads in ink. */
 function DataRecord({ record }: { record: Readonly<Record<string, unknown>> }) {
   return (
-    <span className="detail-data-item">
-      {Object.entries(record).map(([key, value], index) => (
+    <dl className="detail-data-item">
+      {Object.entries(record).map(([key, value]) => (
         <Fragment key={key}>
-          {index > 0 && " · "}
-          <span className="detail-data-key">{dataLabel(key)}</span>{" "}
-          {isScalar(value) ? <DataScalar value={value} /> : (scalarList(value) ?? JSON.stringify(value))}
+          <dt>{dataLabel(key)}</dt>
+          <dd>{formatDataValue(value, key)}</dd>
         </Fragment>
       ))}
-    </span>
+    </dl>
   );
 }
 
@@ -63,8 +106,9 @@ function DataScalar({ value }: { value: string | number | boolean | null }) {
       </span>
     );
   }
-  const parts = typeof value === "string" ? timestampParts(value) : null;
-  if (parts === null) return <>{scalar(value)}</>;
+  if (typeof value !== "string") return <>{scalar(value)}</>;
+  const parts = timestampParts(value);
+  if (parts === null) return <Wrapped text={value} />;
   return (
     <>
       <span className="detail-data-date">{parts.date}</span>
@@ -74,26 +118,27 @@ function DataScalar({ value }: { value: string | number | boolean | null }) {
   );
 }
 
-function isScalar(value: unknown): value is string | number | boolean | null {
-  return value === null || ["string", "number", "boolean"].includes(typeof value);
+/** Whether a value needs the row's whole width: a list of objects (S7's packages, S9's advisories,
+ *  S10's unchecked checks), one object, or anything shown as JSON. */
+function isWide(value: unknown): boolean {
+  return !isScalar(value) && scalarItems(value) === null;
 }
 
-/** Whether a value needs the row's whole width: a list of objects (S7's packages, S9's advisories,
- *  S10's unchecked checks) or anything shown as JSON. */
-function isWide(value: unknown): boolean {
-  return !isScalar(value) && scalarList(value) === null;
+/** Whether a value is drawn as bordered per-field objects. */
+function hasRecords(value: unknown): boolean {
+  return isRecord(value) || (Array.isArray(value) && value.length > 0 && value.every(isRecord));
 }
 
 /**
  * A signal's `data` value, readable rather than raw: a scalar as `DataScalar` draws it, a list of
- * scalars joined ("S2, S8" rather than `["S2","S8"]`), a list of objects one line per object,
- * anything deeper as JSON. Every key and value the document carries is still shown; only the
- * punctuation changes.
+ * scalars joined ("S2, S8" rather than `["S2","S8"]`), an object or a list of objects one bordered
+ * block each, one line per field, anything deeper as JSON. Every key and value the document carries
+ * is still shown; only the punctuation changes.
  */
-function formatDataValue(value: unknown): ComponentChildren {
+function formatDataValue(value: unknown, key: string): ComponentChildren {
   if (isScalar(value)) return <DataScalar value={value} />;
-  const list = scalarList(value);
-  if (list !== null) return list;
+  const items = scalarItems(value);
+  if (items !== null) return <ScalarList items={items} joiner={joinerFor(key)} />;
   if (isRecord(value)) return <DataRecord record={value} />;
   if (Array.isArray(value) && value.every(isRecord)) {
     return value.map((record, index) => <DataRecord key={index} record={record} />);
@@ -115,10 +160,11 @@ function SignalData({ data }: { data: Readonly<Record<string, unknown>> }) {
     <dl className="detail-kv detail-data">
       {entries.map(([key, value]) => {
         const wide = isWide(value) ? "is-wide" : undefined;
+        const ddClass = hasRecords(value) ? "is-wide has-records" : wide;
         return (
           <Fragment key={key}>
             <dt className={wide}>{dataLabel(key)}</dt>
-            <dd className={wide}>{formatDataValue(value)}</dd>
+            <dd className={ddClass}>{formatDataValue(value, key)}</dd>
           </Fragment>
         );
       })}
@@ -137,12 +183,17 @@ function Cell({ cell }: { cell: CheckCell }) {
     <span className={`detail-check is-${cell.state}${tone}`}>
       <i />
       <span className="detail-check-id">{cell.id}</span>
-      <span className="detail-check-name">{CHECK_NAMES[cell.id] ?? ""}</span>
+      <span className="detail-check-name">{checkName(cell)}</span>
     </span>
   );
 }
 
-/** "Quiet: S5 predates PHP · S6 snapshot", one such line per state that has any cells. */
+/**
+ * "Quiet: S5 · S6 · S8", one such line per state that has any cells. The ids alone are shown: the
+ * strip right above already names each check, and saying every name twice doubled the block's
+ * weight. The names stay in the line for a screen reader ("S5 predates PHP"), since the strip is
+ * hidden from it. Each " ·" belongs to the item before it, so a wrapped line never starts on one.
+ */
 function StateLine({
   label,
   cells,
@@ -158,10 +209,12 @@ function StateLine({
       {label}{" "}
       {cells.map((cell, index) => (
         <Fragment key={cell.id}>
-          {index > 0 && " · "}
           <span className="detail-checks-item">
-            <span className="detail-checks-id">{cell.id}</span> {CHECK_NAMES[cell.id] ?? ""}
+            <span className="detail-checks-id">{cell.id}</span>
+            <span className="detail-sr"> {checkName(cell)}</span>
+            {index < cells.length - 1 && " ·"}
           </span>
+          {index < cells.length - 1 && " "}
         </Fragment>
       ))}
       {suffix}
@@ -185,12 +238,18 @@ function FiredRow({ signal }: { signal: Signal }) {
     <details className={`detail-fired ${toneClass(levelTone(signal.level))}`}>
       <summary className="detail-fired-summary">
         <span className="detail-fired-id">{signal.id}</span>
-        <span className="detail-fired-text">{signal.summary}</span>
+        <span className="detail-fired-text">
+          <Wrapped text={signal.summary} />
+        </span>
         <span className="detail-fired-level">{signal.level}</span>
       </summary>
       <div className="detail-fired-body">
         <p className="detail-fired-def">
-          {def !== undefined && <>{annotateThresholds(def, model.report.run.thresholds)} </>}
+          {def !== undefined && (
+            <>
+              <Wrapped text={annotateThresholds(def, model.report.run.thresholds)} />{" "}
+            </>
+          )}
           <OutLink href={doc}>{signal.id} in lockrot’s docs</OutLink>
         </p>
         <SignalData data={signal.data} />
@@ -205,7 +264,7 @@ function cellsIn(cells: readonly CheckCell[], state: CheckState): readonly Check
 
 /**
  * "Checks" (PD-DETAIL-12, DESIGN.md §5): a strip of all ten checks, a tally of their states, the
- * quiet and could-not-run ones named in one muted line each, then only the fired ones, highest
+ * quiet and could-not-run ones listed by id in one muted line each, then only the fired ones, highest
  * level first, each expandable into its data. States come from `domain/checks.ts#checkStrip`: the
  * fired signals and S10's own list of the checks it stopped. A finding with no signal at all still
  * gets the strip, then the same explanatory line legacy showed instead of an empty list.

@@ -449,17 +449,41 @@ describe("Detail", () => {
       expect(text(container.querySelector(".detail-checks-tally"))).toBe(
         "5 fired · 5 quiet · every check ran.",
       );
-      // A quiet S10 says what its silence means, never "check could not run" under "every check ran".
+      // A quiet S10 says what its silence means, never "check gaps" under "every check ran". The
+      // line reads each name to a screen reader (the strip is hidden from it)…
       expect(text(container.querySelector(".detail-checks-line"))).toBe(
-        "Quiet: S5 predates PHP · S6 snapshot · S8 branch stopped · S9 advisories · S10 check gaps",
+        "Quiet: S5 predates PHP · S6 snapshot · S8 branch stopped · S9 advisories · S10 all checks ran",
       );
-      // Each cell names its check under its id; each quiet item is one unbreakable span.
-      expect(
-        Array.from(container.querySelectorAll(".detail-check-name"), (el) => el.textContent).slice(0, 3),
-      ).toEqual(["abandoned flag", "release age", "archived"]);
-      expect(Array.from(container.querySelectorAll(".detail-checks-line .detail-checks-item"), text)).toEqual(
-        ["S5 predates PHP", "S6 snapshot", "S8 branch stopped", "S9 advisories", "S10 check gaps"],
-      );
+      // …but shows only the ids, since the strip right above names every check already.
+      const line = container.querySelector(".detail-checks-line");
+      expect(Array.from(line?.querySelectorAll(".detail-checks-id") ?? [], (el) => el.textContent)).toEqual([
+        "S5",
+        "S6",
+        "S8",
+        "S9",
+        "S10",
+      ]);
+      expect(Array.from(line?.querySelectorAll(".detail-sr") ?? [], text)).toEqual([
+        "predates PHP",
+        "snapshot",
+        "branch stopped",
+        "advisories",
+        "all checks ran",
+      ]);
+      // Each cell names its check under its id, S10's quiet cell included.
+      const names = Array.from(container.querySelectorAll(".detail-check-name"), (el) => el.textContent);
+      expect(names.slice(0, 3)).toEqual(["abandoned", "release age", "archived"]);
+      expect(names[9]).toBe("all checks ran");
+      // Each item is one unbreakable span carrying the separator after it, so a wrapped line never
+      // starts on "·"; the last item has none.
+      expect(Array.from(line?.querySelectorAll(".detail-checks-item") ?? [], text)).toEqual([
+        "S5 predates PHP ·",
+        "S6 snapshot ·",
+        "S8 branch stopped ·",
+        "S9 advisories ·",
+        "S10 all checks ran",
+      ]);
+      expect(line?.querySelector(".detail-checks-item")?.textContent).toMatch(/\u00a0·$/);
     });
 
     it("lists only the fired checks, high level first, each closed and opening onto its data", () => {
@@ -495,21 +519,63 @@ describe("Detail", () => {
       const lines = Array.from(container.querySelectorAll(".detail-checks-line")).map(text);
       expect(lines).toEqual([
         "Could not run: S2 release age (undated releases, see S10)",
-        "Quiet: S1 abandoned flag · S3 archived · S4 push age · S5 predates PHP · S6 snapshot · S9 advisories",
+        "Quiet: S1 abandoned · S3 archived · S4 push age · S5 predates PHP · S6 snapshot · S9 advisories",
       ]);
       expect(container.querySelector(".detail-check.is-blocked .detail-check-id")?.textContent).toBe("S2");
+      // A fired S10 keeps its name: it is only its quiet state that reads "all checks ran".
+      expect(container.querySelectorAll(".detail-check-name")[9]?.textContent).toBe("check gaps");
     });
 
-    it("writes a list of objects in a signal's data one line per object, and a list of ids joined", () => {
+    it("writes each object in a signal's data one line per field, and a list of ids joined", () => {
       const { container } = renderDetail(WALLABAG, "scheb/2fa-google-authenticator");
       const s10 = Array.from(container.querySelectorAll("details.detail-fired")).find(
         (row) => row.querySelector(".detail-fired-id")?.textContent === "S10",
       );
-      const values = Array.from(s10?.querySelectorAll(".detail-kv dd") ?? []).map(text);
-      expect(values).toEqual(["check release_dates · reason undated_releases · blocks S2, S8", "S2, S8"]);
+      const top = s10?.querySelector("dl.detail-data");
+      const dds = Array.from(top?.querySelectorAll(":scope > dd") ?? []);
+      expect(dds.map((dd) => dd.classList.contains("has-records"))).toEqual([true, false]);
+      expect(text(dds[1] ?? null)).toBe("S2, S8");
+      // The object is its own label/value list, one field a line, not a "key value · key value" run.
+      const item = top?.querySelector(".detail-data-item");
+      expect(item?.tagName).toBe("DL");
+      const pairs = Array.from(item?.querySelectorAll(":scope > dt") ?? [], (dt) => [
+        text(dt),
+        text(dt.nextElementSibling),
+      ]);
+      expect(pairs).toEqual([
+        ["check", "release_dates"],
+        ["reason", "undated_releases"],
+        ["blocks", "S2, S8"],
+      ]);
       // The list of objects takes the row's full width; the list of ids sits beside its label.
-      const wide = Array.from(s10?.querySelectorAll(".detail-data .is-wide") ?? []).map((el) => el.tagName);
+      const wide = Array.from(top?.querySelectorAll(":scope > .is-wide") ?? []).map((el) => el.tagName);
       expect(wide).toEqual(["DT", "DD"]);
+    });
+
+    it("joins a dependency chain with › and keeps each separator with the hop before it", () => {
+      const { container } = renderDetail(WALLABAG, "scheb/2fa-google-authenticator");
+      const s7 = Array.from(container.querySelectorAll("details.detail-fired")).find(
+        (row) => row.querySelector(".detail-fired-id")?.textContent === "S7",
+      );
+      const chain = Array.from(s7?.querySelectorAll(".detail-data-item > dt") ?? []).find(
+        (dt) => dt.textContent === "chain",
+      )?.nextElementSibling;
+      expect(chain?.textContent).toBe(
+        "scheb/2fa-google-authenticator\u00a0› scheb/2fa-bundle\u00a0› symfony/security-bundle\u00a0› symfony/security-guard",
+      );
+      // A package name wraps only after its "/", never at its hyphens: each piece is one token.
+      const tokens = Array.from(chain?.querySelectorAll(".detail-token") ?? [], (el) => el.textContent);
+      expect(tokens.slice(0, 2)).toEqual(["scheb/", "2fa-google-authenticator"]);
+    });
+
+    it("keeps a date and a verdict in a fired check's summary whole", () => {
+      const { container } = renderDetail(WALLABAG, "spomky-labs/otphp");
+      const tokens = Array.from(
+        container.querySelectorAll(".detail-fired-text .detail-token"),
+        (el) => el.textContent,
+      );
+      expect(tokens).toContain("2022-03-17");
+      expect(tokens).toContain("(PKSA-kbc7-dq62-pt7d,");
     });
 
     it("labels data keys without underscores and splits a timestamp into date and quieter time", () => {

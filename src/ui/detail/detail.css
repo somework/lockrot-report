@@ -278,12 +278,14 @@
   font-size: 10.5px;
   line-height: 1;
 }
+/* A name wraps only between its words, never inside one (no `overflow-wrap` here on purpose): the
+   longest single word, "advisories", fits the narrowest cell whole (the 320px sheet, below). Balanced
+   so a two-word name that must wrap splits evenly. */
 .detail-check-name {
-  font-size: 11px;
-  line-height: 1.15;
+  font-size: 10.5px;
+  line-height: 1.2;
   font-variant-caps: all-small-caps;
-  letter-spacing: 0.03em;
-  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 .detail-check.is-fired {
   color: var(--ink);
@@ -325,9 +327,17 @@
   line-height: 1.5;
   color: var(--muted);
 }
-/* "S5 predates PHP" is one item: a line breaks only at the " · " between items. */
+/* "S5 ·" is one item, its separator glued to it: a line breaks only after a separator. */
 .detail-checks-item {
   white-space: nowrap;
+}
+/* A piece of a package name, URL, id or date (SignalList.tsx#Wrapped): a line breaks around it, or
+   after its "/", never at its own hyphens ("left-/behind", "2022-/03-17") while it fits a line.
+   Only a piece wider than the whole line wraps inside, at a hyphen first. */
+.detail-token {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .detail-checks-id {
   font-family: var(--mono);
@@ -367,7 +377,7 @@
   font-size: 12.5px;
   line-height: 1.4;
   color: var(--ink);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 .detail-fired-level {
   font-size: 11px;
@@ -394,26 +404,35 @@
   line-height: 1.4;
   border-top: 1px solid var(--border);
 }
-.detail-data dt,
-.detail-data dd {
+/* Long values wrap at their spaces and, in a package name or URL, after a "/" (SignalList.tsx
+   inserts the break points); inside a word only when a single segment is wider than the column.
+   `.detail-kv dd`'s `word-break: break-word` would split any word anywhere, so it is reset here. */
+.detail-data > dt,
+.detail-data > dd {
   padding: 3px 0;
   border-bottom: 1px solid var(--border);
+  word-break: normal;
+  overflow-wrap: break-word;
 }
-.detail-data dt {
-  overflow-wrap: anywhere;
-}
-.detail-fired-body .detail-data dd {
+.detail-fired-body .detail-data > dd {
   font-size: 11.5px;
-  overflow-wrap: anywhere;
 }
 /* A list of objects takes the row's full width under its label. */
-.detail-data dt.is-wide {
+.detail-data > dt.is-wide {
   grid-column: 1 / -1;
   border-bottom: 0;
   padding-bottom: 0;
 }
-.detail-data dd.is-wide {
+.detail-data > dd.is-wide {
   grid-column: 1 / -1;
+}
+/* Its objects stack, and every object's field labels share one column (subgrid), so "severity" in
+   the second advisory sits exactly under "severity" in the first. */
+.detail-data > dd.has-records {
+  display: grid;
+  grid-template-columns: fit-content(8.5em) minmax(0, 1fr);
+  gap: 6px 10px;
+  padding: 5px 0 8px;
 }
 .detail-data-null {
   color: var(--muted);
@@ -431,19 +450,35 @@
   font-size: 12px;
   color: var(--muted);
 }
-/* A list of objects in a signal's data (S7's packages, S9's advisories): one line each. */
+/* One object in a signal's data (an S7 package, an S9 advisory): one line per field, a rule down
+   its left edge, its first field (the object's name) in ink. */
 .detail-data-item {
-  display: block;
-  padding-left: 8px;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: fit-content(8.5em) minmax(0, 1fr);
+  grid-template-columns: subgrid;
+  row-gap: 1px;
+  margin: 0;
+  padding: 2px 0 2px 9px;
   border-left: 2px solid var(--border-strong);
 }
-.detail-data-item + .detail-data-item {
-  margin-top: 6px;
-}
-.detail-data-key {
+.detail-data-item > dt {
   font-family: var(--sans);
   font-size: 11px;
+  line-height: 1.5;
   color: var(--muted);
+}
+.detail-data-item > dd {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+.detail-data-item > dd:first-of-type {
+  color: var(--ink);
+  font-weight: 600;
 }
 /* Text for a screen reader alone, kept in the accessibility tree (a null value's word under its
    dash). */
@@ -458,9 +493,9 @@
   white-space: nowrap;
   border: 0;
 }
-/* A 320px phone's sheet: the body gives its indent back to the data, and the strip's names drop
-   their tracking and a size step so "advisories" still fits a 52px cell whole. Labels stay beside
-   their values at every width; a long label wraps inside its own 40%. */
+/* A 320px phone's sheet: the body gives its indent back to the data, and the strip's names drop a
+   size step and the gaps a pixel so the longest single word, "abandoned" (53px), fits its 55px cell
+   whole. Labels stay beside their values at every width; a long label wraps inside its own 40%. */
 .detail-fired-list {
   container: fired / inline-size;
 }
@@ -468,17 +503,20 @@
   .detail-fired-body {
     padding-left: 10px;
   }
+  /* "affected versions" wraps under itself rather than narrowing an advisory's title. */
+  .detail-data > dd.has-records {
+    grid-template-columns: fit-content(5.5em) minmax(0, 1fr);
+  }
 }
 .detail-checks {
   container: checks / inline-size;
 }
 @container checks (max-width: 329.98px) {
   .detail-strip {
-    column-gap: 4px;
+    column-gap: 3px;
   }
   .detail-check-name {
-    font-size: 10px;
-    letter-spacing: 0;
+    font-size: 9.5px;
   }
 }
 
@@ -497,6 +535,14 @@
   .detail-check.is-fired i {
     background: CanvasText;
     border-color: CanvasText;
+  }
+  /* Without the tones, a fired cell's level is kept by its fill: high solid, warn solid with a ring
+     of Canvas inside its edge, info filled only in its lower half. */
+  .detail-check.is-fired.tone-med i {
+    box-shadow: inset 0 0 0 2px Canvas;
+  }
+  .detail-check.is-fired.tone-low i {
+    background: linear-gradient(to top, CanvasText 0 50%, Canvas 50% 100%);
   }
   .detail-check.is-blocked i {
     border-color: CanvasText;

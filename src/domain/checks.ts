@@ -13,7 +13,7 @@
 import type { Finding, KnownSignalId, Signal, SignalLevel } from "../model/types";
 import { SIGNAL_IDS } from "../model/types";
 import { sortedSignals } from "./rows";
-import type { Tone } from "./vocab";
+import { CHECK_NAMES, type Tone } from "./vocab";
 
 /**
  * - `fired`: the signal is on the finding.
@@ -128,6 +128,16 @@ export function checkTally(strip: CheckStrip): readonly string[] {
 }
 
 /**
+ * The words under a cell and beside its id for a screen reader: the check's short name
+ * (`vocab.ts#CHECK_NAMES`), except a quiet S10, which says what its silence means — "all checks
+ * ran" — rather than a name ("check gaps") that reads as if there were gaps.
+ */
+export function checkName(cell: Pick<CheckCell, "id" | "state">): string {
+  if (cell.id === "S10" && cell.state === "quiet") return "all checks ran";
+  return CHECK_NAMES[cell.id] ?? "";
+}
+
+/**
  * A key in a signal's `data` as a label: "branch_last_release" reads "branch last release". Only the
  * underscores change, so the label still names the document's own key.
  */
@@ -146,6 +156,58 @@ export function timestampParts(value: string): { readonly date: string; readonly
   const match = ISO_TIMESTAMP.exec(value);
   if (match === null || match[1] === undefined || match[2] === undefined) return null;
   return { date: match[1], time: match[2] };
+}
+
+/** One run of text for `wrapParts`: `atomic` runs are drawn so a line never breaks inside them. */
+export interface WrapPart {
+  readonly text: string;
+  readonly atomic: boolean;
+}
+
+/** A token that names something — a package, a URL, an advisory id, a date, a setting, a verdict —
+ *  rather than a plain word: it carries a hyphen, a slash or a "::". */
+const IDENTIFIER = /[-/]|::/;
+
+/** A token split after each "/" that ends a path segment (a "//" stays whole) and after each "::". */
+function identifierPieces(token: string): string[] {
+  const pieces: string[] = [];
+  let start = 0;
+  for (let i = 0; i < token.length - 1; i += 1) {
+    const slash = token[i] === "/" && token[i + 1] !== "/" && token[i - 1] !== "/";
+    const scope = token[i] === ":" && token[i - 1] === ":";
+    const slashAfterSlash = token[i] === "/" && token[i - 1] === "/";
+    if (slash || scope || slashAfterSlash) {
+      pieces.push(token.slice(start, i + 1));
+      start = i + 1;
+    }
+  }
+  pieces.push(token.slice(start));
+  return pieces;
+}
+
+/**
+ * Text split so it wraps where a reader expects: between words, and inside an identifier only after
+ * a "/" or "::" — "composer/" then "package-versions-deprecated", "https://", "github.com/", … — never
+ * at the hyphens of "left-behind", "2022-03-17" or "PKSA-kbc7-dq62-pt7d". Each identifier piece is
+ * `atomic` (the renderer keeps it on one line unless it alone is wider than the line); everything
+ * else, spaces included, is a plain run. Punctuation attached to a token stays with it. Joined, the
+ * parts are the text unchanged.
+ */
+export function wrapParts(text: string): readonly WrapPart[] {
+  const parts: WrapPart[] = [];
+  let plain = "";
+  for (const token of text.split(/(\s+)/)) {
+    if (token === "") continue;
+    if (!IDENTIFIER.test(token) || /^\s+$/.test(token)) {
+      plain += token;
+      continue;
+    }
+    if (plain !== "") parts.push({ text: plain, atomic: false });
+    plain = "";
+    for (const piece of identifierPieces(token)) parts.push({ text: piece, atomic: true });
+  }
+  if (plain !== "" || parts.length === 0) parts.push({ text: plain, atomic: false });
+  return parts;
 }
 
 /**
