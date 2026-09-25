@@ -167,10 +167,16 @@ test.describe("1440×900 (side): every part of the detail is reachable by wheel 
       // `isVisible()` is not what this loop needs to poll: it is true for an element that is
       // rendered but scrolled out of view (exactly the starting state here), so the exit condition
       // has to read the viewport intersection `toBeInViewport()` checks, not plain visibility.
+      // Clipped by the panel as well as the window: the panel's `max-height` shrinks by the footer's
+      // height once the footer scrolls into view (`:root.footer-in-view`), which can push a heading
+      // that was just visible back below the panel's own bottom edge.
       const inViewport = () =>
         provenance.evaluate((el) => {
           const r = el.getBoundingClientRect();
-          return r.top < window.innerHeight && r.bottom > 0 && r.left < window.innerWidth && r.right > 0;
+          const panel = el.closest(".shell-detail")?.getBoundingClientRect();
+          const bottom = Math.min(window.innerHeight, panel?.bottom ?? Infinity);
+          const top = Math.max(0, panel?.top ?? 0);
+          return r.top < bottom && r.bottom > top && r.left < window.innerWidth && r.right > 0;
         });
       for (let i = 0; i < 25 && !(await inViewport()); i++) {
         await page.mouse.wheel(0, 400);
