@@ -25,12 +25,17 @@ tag or the address format, says so under **Breaking** in its entry.
   button to clear them; the search status says so too.
 - The glossary's `finished` entry says how to accept a package you consider complete yourself, with
   `extra.lockrot.ignore`.
+- The All packages table says, next to a libyears value of exactly `0.0`, when that is because the
+  installed release is the newest one lockrot knows of.
 
 ### Changed
 
-- A verdict pill, a Findings row's included, opens its definition in place instead of linking to
-  lockrot.dev, which a report opened offline cannot reach. "In the glossary" opens the glossary on
-  that verdict.
+- A verdict pill opens its definition in place instead of linking to lockrot.dev, which a report
+  opened offline cannot reach; "In the glossary" opens the glossary on that verdict. A pill inside a
+  Findings row stays plain text instead, its title still carrying the definition: a click there
+  opens the package, the same as clicking anywhere else in the row.
+- "Why this is `<priority>`" explains each step of the ladder in a plain sentence instead of a
+  code-style chip chain.
 - A Findings row shows one signal, its most serious, and how many more there are; a printed row
   shows them all.
 - The package detail leads with "Follow the upstream"; "How it is reached", "The lock entry" and
@@ -65,6 +70,14 @@ tag or the address format, says so under **Breaking** in its entry.
 - "Priority of the 1 flagged package" reads in the singular.
 - On a wide screen, the end of a long package detail can be scrolled into view; the wheel carries on
   into the page once the panel's own content ends.
+- Switching tabs scrolls back to the top, so the new tab starts at its own first row instead of
+  wherever the last one happened to be scrolled to.
+- On a wide screen, the All packages table and the Blast radius cards use the width a closed detail
+  panel leaves behind instead of leaving it empty.
+- The advisory ledger no longer says a clean lock has no advisory twice, once above the bar and once
+  again in its legend.
+- The tab row's own edge shadow, the cue that it scrolls sideways, is visible at a phone width in
+  both themes; it used to fade into the background instead of standing out from it.
 
 ## [0.12.0]
 
