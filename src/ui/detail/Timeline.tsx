@@ -6,14 +6,12 @@ import type { Tone } from "../../domain/vocab";
 import { useReport } from "../context";
 import { Answer, Key } from "./TimelineAnswer";
 import { FoldRows, GuideCaptions, LaneRow, Sr, at, type Guide, type TopWord } from "./TimelineRows";
+import { placeYears } from "./timelineAxis";
 import "./timeline.css";
-
-/** How close (in % of the axis) a year label may sit to a threshold guide before it is dropped: a
- *  year printed beside a dashed guide read as that guide's own date. The left-edge year stays. */
-const NEAR_GUIDE = 10;
+import "./timeline-forced.css";
 
 /**
- * "Release branches", answer first (PD-TIMELINE-1..9, DESIGN.md §5): two sentences that say where
+ * "Release branches", answer first (PD-TIMELINE-1..12, DESIGN.md §5): two sentences that say where
  * the reader is and what is newer, then one row per branch that matters on one shared time axis
  * ending at a "today" rule — the line from each dot to that rule is the time since that branch's
  * last release. Rows sort newest version first; the reader's own row and the newest one carry the
@@ -117,24 +115,30 @@ export function Timeline({
 }
 
 /** The axis sits under the rows, not in the header: "today" above the rule butted into the LATEST
- *  header beside it and read as one phrase ("today LATEST"). Each year hangs from a hairline tick,
- *  so its label is tied to a point on the axis rather than to the nearest guide. Decorative — every
- *  row's own cell already carries its date for a screen reader. */
+ *  header beside it and read as one phrase ("today LATEST"). Each year hangs from a hairline tick on
+ *  its true place, its label beside the tick when a guide's line would otherwise run into it
+ *  (`timelineAxis.ts`). Decorative — every row's own cell already carries its date for a screen
+ *  reader. */
 function Axis({ ticks, guides }: { ticks: readonly TimelineTick[]; guides: readonly Guide[] }) {
-  const shown = ticks.filter(
-    (tick, index) => index === 0 || guides.every((guide) => Math.abs(guide.x - tick.x) > NEAR_GUIDE),
+  const years = placeYears(
+    ticks,
+    guides.map((guide) => guide.x),
   );
   return (
     <div className="detail-timeline-row detail-timeline-axis-row" aria-hidden="true">
       <span />
       <span className="detail-timeline-axis">
-        {shown.map((tick, index) => (
+        {years.map((year) => (
           <span
-            key={tick.year}
-            className={index === 0 ? "detail-timeline-year is-first" : "detail-timeline-year"}
-            style={at("--x", tick.x)}
+            key={year.year}
+            className={[
+              "detail-timeline-year",
+              `is-${year.place}`,
+              ...year.keptAt.map((w) => `is-kept-${w}`),
+            ].join(" ")}
+            style={at("--x", year.x)}
           >
-            {tick.year}
+            {year.year}
           </span>
         ))}
         <span className="detail-timeline-today">today</span>

@@ -625,7 +625,11 @@ describe("Detail", () => {
     it("captions the threshold guides on the axis itself, warn and high apart by pattern (PD-TIMELINE-4)", () => {
       const { container } = renderDetail(KOEL, "meilisearch/meilisearch-php");
       const captions = Array.from(container.querySelectorAll(".detail-timeline-guide-cap"));
+      // Both carry " ago"; timeline.css shows it on one caption, the older's when it has the room.
       expect(captions.map((cap) => cap.textContent)).toEqual(["3y ago", "5y ago"]);
+      const [younger, older] = captions as HTMLElement[];
+      expect(younger?.style.getPropertyValue("--other")).toBe(older?.style.getPropertyValue("--room"));
+      expect(older?.style.getPropertyValue("--other")).toBe("");
       // The older guide's caption sits left of its line, the younger's right, so they never meet.
       expect(captions.map((cap) => cap.classList.contains("is-left"))).toEqual([false, true]);
       expect(container.querySelector(".detail-timeline-guide.is-warn")).not.toBeNull();

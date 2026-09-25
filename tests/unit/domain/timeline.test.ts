@@ -7,6 +7,7 @@ import {
   sameVersion,
   sortLanes,
   timelineModel,
+  yearTicks,
   type TimelineModel,
 } from "../../../src/domain/timeline";
 import type { BranchRow, ExplainLock } from "../../../src/model/types";
@@ -331,12 +332,39 @@ describe("timelineModel / the shared axis", () => {
     expect(timeline?.lanes[0]?.x).toBe(100);
   });
 
-  it("labels at most two years, none in the right-hand zone the today label owns", () => {
+  it("labels years at the smallest round step that keeps to three, none where today's label goes", () => {
     // Act
     const timeline = model("wallabag_wallabag", "spomky-labs/otphp");
 
-    // Assert: 2014..2026 in steps of six; 2026 itself would sit under "today".
-    expect(timeline.ticks.map((tick) => tick.year)).toEqual([2014, 2020]);
+    // Assert: 2014..2026 — every three years would be four labels (2023 at 71%), so every five;
+    // 2024 would sit under "today".
+    expect(timeline.ticks.map((tick) => tick.year)).toEqual([2014, 2019]);
+  });
+
+  it("gives a nine-year axis a year between its ends, not only the first (PD-TIMELINE-11)", () => {
+    // Arrange: rector/rector's axis, 2017 to now.
+    const t0 = Date.UTC(2017, 0, 1);
+    const x = (t: number): number => ((t - t0) / (NOW.getTime() - t0)) * 100;
+
+    // Act
+    const ticks = yearTicks(2017, NOW, x);
+
+    // Assert
+    expect(ticks.map((tick) => tick.year)).toEqual([2017, 2020, 2023]);
+    expect(ticks[0]?.x).toBe(0);
+  });
+
+  it("labels a short axis every year, and a century-long one still with at most three", () => {
+    // Arrange
+    const axis = (start: number) => {
+      const t0 = Date.UTC(start, 0, 1);
+      return (t: number): number => ((t - t0) / (NOW.getTime() - t0)) * 100;
+    };
+
+    // Act / Assert
+    expect(yearTicks(2024, NOW, axis(2024)).map((tick) => tick.year)).toEqual([2024, 2025]);
+    expect(yearTicks(1900, NOW, axis(1900)).length).toBeLessThanOrEqual(3);
+    expect(yearTicks(2026, NOW, axis(2026)).map((tick) => tick.year)).toEqual([2026]);
   });
 
   it("places a threshold N years before now on the same axis, or null when it falls off it", () => {

@@ -216,18 +216,33 @@ function foldOlder(older: readonly TimelineLane[]): TimelineRow[] {
   return older.map((lane) => ({ kind: "lane", lane }));
 }
 
-/** At most two year labels, the first on the axis's own left edge (x = 0, 1 January of the
- *  oldest year — so it can never run off the axis, the old PD-TIMELINE-1 bug), none in the right-hand
- *  zone the "today" label owns. */
-function yearTicks(startYear: number, now: Date, x: (t: number) => number): TimelineTick[] {
-  const span = now.getUTCFullYear() - startYear;
-  const step = Math.max(1, Math.ceil(span / 2));
+/** Year steps a reader counts in, smallest first; the axis takes the smallest that fits. */
+const YEAR_STEPS = [1, 2, 3, 5, 10, 20, 25, 50];
+
+/** The most year labels an axis carries, "today" not counted: a nine-year axis with only its first
+ *  year and "today" left the scale between them to guesswork (PD-TIMELINE-11). */
+const MAX_YEAR_LABELS = 3;
+
+/** Every `step` years from the left edge, none in the right-hand zone "today" owns. */
+function ticksEvery(step: number, startYear: number, now: Date, x: (t: number) => number): TimelineTick[] {
   const ticks: TimelineTick[] = [];
   for (let year = startYear; year <= now.getUTCFullYear(); year += step) {
     const tx = x(Date.UTC(year, 0, 1));
     if (tx <= 100 - TODAY_ZONE) ticks.push({ x: tx, year });
   }
   return ticks;
+}
+
+/** Up to MAX_YEAR_LABELS year labels at the smallest step in YEAR_STEPS that keeps within it, the
+ *  first on the axis's own left edge (x = 0, 1 January of the oldest year — so it can never run off
+ *  the axis, the old PD-TIMELINE-1 bug). */
+export function yearTicks(startYear: number, now: Date, x: (t: number) => number): TimelineTick[] {
+  for (const step of YEAR_STEPS) {
+    const ticks = ticksEvery(step, startYear, now, x);
+    if (ticks.length <= MAX_YEAR_LABELS) return ticks;
+  }
+  const span = now.getUTCFullYear() - startYear;
+  return ticksEvery(Math.ceil(span / (MAX_YEAR_LABELS - 1)), startYear, now, x);
 }
 
 /**

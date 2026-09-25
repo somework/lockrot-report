@@ -113,7 +113,7 @@ test.describe("PD-TIMELINE-1/2: the axis and the rows hold their geometry (1440Ã
   });
 
   test("no year label sits on a threshold guide, and each hangs from its own tick", async ({ page }) => {
-    for (const [fixture, pkg] of [MEILI, RESUME, PDFPARSER]) {
+    for (const [fixture, pkg] of [MEILI, RESUME, PDFPARSER, RECTOR, BRICK]) {
       await openTimeline(page, fixture, pkg);
       const clashes = await page.locator(".detail-timeline").evaluate((section) => {
         const guides = Array.from(
@@ -149,11 +149,60 @@ test.describe("PD-TIMELINE-1/2: the axis and the rows hold their geometry (1440Ã
     }
   });
 
-  test("a release from last week still shows a stub of line before the rule", async ({ page }) => {
+  test("a release from last week sits on the today rule itself", async ({ page }) => {
     // predis/predis 3.x: v3.6.1, six days before the report.
     await openTimeline(page, ...PREDIS);
-    const tail = await page.locator(".detail-timeline-row.is-newest .detail-timeline-tail").boundingBox();
-    expect(tail?.width ?? 0).toBeGreaterThanOrEqual(6);
+    const strip = await page.locator(".detail-timeline-row.is-newest .detail-timeline-strip").boundingBox();
+    const dot = await page.locator(".detail-timeline-row.is-newest .detail-timeline-dot").boundingBox();
+    if (strip === null || dot === null) throw new Error("the newest row has no strip or dot");
+    expect(Math.abs(dot.x + dot.width / 2 - (strip.x + strip.width))).toBeLessThanOrEqual(2);
+  });
+});
+
+test.describe("PD-TIMELINE-11: every dot at its true date, however recent", () => {
+  for (const width of [390, 1440]) {
+    test(`brick/math, folds open, ${String(width)}px: a newer release is never drawn left of an older one`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await openTimeline(page, ...BRICK);
+      await openFolds(page);
+      const problems = await page.locator(".detail-timeline").evaluate((section) => {
+        const found: string[] = [];
+        const lanes = Array.from(section.querySelectorAll<HTMLElement>(".detail-timeline-strip[title]")).map(
+          (strip) => {
+            const dot = strip.querySelector(".detail-timeline-dot");
+            if (dot === null) throw new Error("a lane without a dot");
+            const box = strip.getBoundingClientRect();
+            const mark = dot.getBoundingClientRect();
+            const share = Number.parseFloat(strip.style.getPropertyValue("--x")) / 100;
+            return {
+              date: strip.title.split(" Â· ")[1] ?? "",
+              centre: mark.left + mark.width / 2,
+              // Where the date falls on the axis, in pixels, with no minimum stub or clamp.
+              truth: box.left + share * (box.width - parseFloat(getComputedStyle(strip).borderRightWidth)),
+            };
+          },
+        );
+        for (const lane of lanes) {
+          if (Math.abs(lane.centre - lane.truth) > 1) found.push(`${lane.date} drawn off its date`);
+        }
+        const byDate = [...lanes].sort((a, b) => a.date.localeCompare(b.date));
+        byDate.slice(1).forEach((lane, index) => {
+          const before = byDate[index];
+          if (before !== undefined && lane.centre < before.centre - 0.5)
+            found.push(`${lane.date} left of the older ${before.date}`);
+        });
+        return found;
+      });
+      expect(problems).toEqual([]);
+    });
+  }
+
+  test("rector: the axis keeps a year between its first and today (1440px)", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await openTimeline(page, ...RECTOR);
+    await expect(page.locator(".detail-timeline-year:visible")).toHaveText(["2017", "2020"]);
   });
 });
 
@@ -176,9 +225,31 @@ test.describe("PD-TIMELINE-2: nothing clipped, wrapped mid-word or ellipsised on
             for (const cell of cells) {
               if (getComputedStyle(cell).textOverflow === "ellipsis")
                 found.push(`ellipsis: ${cell.className}`);
+              // A strip's dot may overhang its today rule on purpose â€” a release from last week sits
+              // on the rule (PD-TIMELINE-11) â€” so a strip is checked against its neighbour instead.
+              // The same for the guides' captions, which may hang into the gaps either side of theirs.
+              if (cell.matches(".detail-timeline-strip, .detail-timeline-strip-head")) continue;
               if (cell.scrollWidth > cell.clientWidth + 1 && cell.clientWidth > 0) {
                 found.push(`overflow: ${cell.className} "${cell.textContent}"`);
               }
+            }
+            const latest = section
+              .querySelector(".detail-timeline-head > :nth-child(3)")
+              ?.getBoundingClientRect();
+            const branch = section
+              .querySelector(".detail-timeline-head > :nth-child(1)")
+              ?.getBoundingClientRect();
+            for (const caption of section.querySelectorAll(".detail-timeline-guide-cap")) {
+              const box = caption.getBoundingClientRect();
+              if (latest !== undefined && box.right > latest.left - 4)
+                found.push(`${caption.textContent} meets LATEST`);
+              if (branch !== undefined && box.left < branch.right + 2)
+                found.push(`${caption.textContent} meets BRANCH`);
+            }
+            for (const dot of section.querySelectorAll(".detail-timeline-dot")) {
+              const next = dot.closest("[role='cell']")?.nextElementSibling;
+              if (next != null && dot.getBoundingClientRect().right > next.getBoundingClientRect().left)
+                found.push(`a dot runs into "${next.textContent}"`);
             }
             return found;
           });

@@ -57,9 +57,14 @@ tag or the address format, says so under **Breaking** in its entry.
   as written. Three or more branches older than yours fold into one row, and so do more than four
   between the newest and yours. A dev-branch checkout gets its own row, its age in plain ink rather
   than a release-age colour. Two lines, captioned "3y" and "5y" at the top, mark the run's release
-  warn and high years, one dashed and one dotted. A package whose branches are only its releases
-  shows each release's date where a branch shows its latest version. When a lower branch released
-  after the highest one, the sentence calls that one the highest rather than the newest.
+  warn and high years, one dashed and one dotted; one of the two captions says "ago" where the strip
+  has room. Every dot sits at its true date, so a release from last week sits on the "today" rule
+  and never left of an older one. Your row takes a faint wash of your age colour, while the newest
+  branch's line stays neutral whatever its age. The axis labels up to three years; a year next to a
+  threshold line moves to one side of its tick instead of disappearing. A package whose branches are
+  only its releases shows each release's date where a branch shows its latest version. When a lower
+  branch released after the highest one, the sentence calls that one the highest rather than the
+  newest.
 
 ### Fixed
 

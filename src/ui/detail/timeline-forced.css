@@ -1,0 +1,63 @@
+/* The release-branch timeline under forced colours, split out of timeline.css (whose classes it
+   restyles) to keep that file to its layout. System colours replace every tone, so shape carries
+   identity — a ring for the reader, a diamond for a snapshot, a filled disc for the newest, a hollow dot for the rest, a dash
+   for the warn guide and dots for the high one. */
+@media (forced-colors: active) {
+  .detail-timeline-dot,
+  .detail-timeline-tail,
+  .detail-timeline-guide,
+  .detail-timeline-rug-tick,
+  .detail-timeline-swatch,
+  .detail-timeline-swatch-line,
+  .detail-timeline-guide-cap,
+  .detail-timeline-year::before,
+  .detail-timeline-row.is-mine::before,
+  .detail-timeline-row.is-newest::before {
+    forced-color-adjust: none;
+  }
+  .detail-timeline-dot {
+    background: Canvas;
+    border-color: CanvasText;
+    box-shadow: 0 0 0 2px Canvas;
+  }
+  .detail-timeline-tail,
+  .detail-timeline-rug-tick,
+  .detail-timeline-swatch-line {
+    background: GrayText;
+  }
+  .detail-timeline-guide,
+  .detail-timeline-year::before {
+    border-color: GrayText;
+  }
+  .detail-timeline-rug {
+    forced-color-adjust: none;
+    background: Canvas;
+    box-shadow: inset 0 0 0 1px GrayText;
+  }
+  .detail-timeline-guide-cap.is-left,
+  .detail-timeline-guide-cap.is-right {
+    color: CanvasText;
+    border-color: GrayText;
+  }
+  .detail-timeline-row.is-mine::before,
+  .detail-timeline-row.is-mine .detail-timeline-tail,
+  .detail-timeline-row.is-mine.is-toned .detail-timeline-tail {
+    background: Highlight;
+  }
+  .detail-timeline-row.is-mine .detail-timeline-dot,
+  .detail-timeline-swatch.is-mine,
+  .detail-timeline-swatch.is-snapshot {
+    background: Canvas;
+    border-color: Highlight;
+  }
+  .detail-timeline-row.is-newest::before,
+  .detail-timeline-row.is-newest .detail-timeline-dot,
+  .detail-timeline-swatch.is-newest {
+    background: LinkText;
+    border-color: LinkText;
+  }
+  .detail-timeline-fold-btn::before {
+    forced-color-adjust: none;
+    border-left-color: CanvasText;
+  }
+}

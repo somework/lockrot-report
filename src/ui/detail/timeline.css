@@ -1,4 +1,4 @@
-/* ---------- release branches (PD-TIMELINE-1..9, DESIGN.md §5) ----------
+/* ---------- release branches (PD-TIMELINE-1..12, DESIGN.md §5) ----------
  * Answer first: two sentences, then a table whose middle column is one shared time axis ending at
  * a "today" rule (each strip cell's right border, so the rule runs unbroken down every row). Rows
  * are subgrid rows of one grid, so every branch, version and constraint lines up in its column
@@ -63,6 +63,9 @@
   column-gap: 12px;
   margin-top: 4px;
   font: 11.5px/1.3 var(--mono);
+  /* The strip stops this short of its column, so a dot on the today rule — a release from last
+     week — has room for its right half without touching the LATEST column. */
+  --rule-gap: 7px;
 }
 .detail-timeline-row {
   grid-column: 1 / -1;
@@ -78,6 +81,9 @@
      runs the full width. */
   padding-right: 8px;
   border-top: 1px solid var(--border);
+  /* What a marker's halo is drawn in: the row's own background, so a guide or the today rule
+     passing under a dot stops short of it instead of cutting through it. */
+  --row-bg: var(--surface);
 }
 .detail-timeline-head {
   min-height: 0;
@@ -115,29 +121,38 @@
   white-space: normal;
 }
 
-/* The strip: the line runs from the branch's last release (the dot) to today (the right border). */
+/* The strip: the line runs from the branch's last release (the dot) to today (the right border).
+ * Every dot sits on its true date, however close to today (PD-TIMELINE-11): a release from last
+ * week sits on the rule itself, which is where "today" is. An earlier minimum stub pinned every dot
+ * within 9px of the rule to one spot, so on a phone 1.4 years of releases read as the same week, and
+ * the newest branch looked older than the one below it. */
+.detail-timeline-strip,
+.detail-timeline-head > .detail-timeline-strip-head,
+.detail-timeline-axis {
+  margin-right: var(--rule-gap);
+}
 .detail-timeline-strip {
   position: relative;
+  isolation: isolate;
   align-self: stretch;
   min-height: 30px;
   border-right: 1.5px solid var(--border-strong);
-  /* How far left of the rule the dot's centre stays at most, so a release from last week still
-     shows a stub of line rather than a dot swallowed by the rule — at most a dot's width of drift. */
-  --room: 9px;
 }
 .detail-timeline-tail,
 .detail-timeline-dot {
   position: absolute;
   top: 50%;
-  left: min(var(--x), calc(100% - var(--room)));
+  left: var(--x);
 }
 .detail-timeline-tail {
+  z-index: 1;
   right: 0;
   height: 1.5px;
   transform: translateY(-50%);
   background: var(--border-strong);
 }
 .detail-timeline-dot {
+  z-index: 2;
   box-sizing: border-box;
   width: 7px;
   height: 7px;
@@ -145,6 +160,7 @@
   transform: translate(-50%, -50%);
   background: var(--surface);
   border: 1.5px solid var(--muted);
+  box-shadow: 0 0 0 2px var(--row-bg);
 }
 /* Warn dashed, high dotted: the two differ in pattern as well as tone, so forced colours, which
    drop the tone, still tell them apart. */
@@ -196,17 +212,37 @@
   padding-right: 4px;
   border-right: var(--guide);
 }
-/* A narrow strip keeps the number and drops "ago": "3y" sits well clear of the next column. */
-@container timeline-strip (max-width: 220px) {
-  .detail-timeline-guide-ago {
-    display: none;
-  }
+/* " ago" is all there or not at all: its width is 0 until its side of the strip (`--room`, a share
+   of the strip; `1cqw` is 1% of it) is `--ago-need` wide — "5y ago" and its padding, less the part
+   that may hang into the column gap — then jumps to the whole word. A step, not a squeeze: the ×999
+   makes the ramp between the two under a pixel wide. */
+.detail-timeline-guide-ago {
+  --ago-need: 32px;
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  white-space: pre;
+  max-width: clamp(0px, (var(--room) * 1cqw - var(--ago-need)) * 999, 3em);
+}
+/* The younger caption's " ago": only when the older one has no room for its own (`--other`, 0 when
+   there is no older guide), and only when "3y ago" fits before the today rule — the min() of the
+   two steps is their AND. */
+.detail-timeline-guide-cap.is-right .detail-timeline-guide-ago {
+  max-width: min(
+    clamp(0px, (var(--room) * 1cqw - 44px) * 999, 3em),
+    clamp(0px, (var(--ago-need) - var(--other, 0) * 1cqw) * 999, 3em)
+  );
 }
 
-/* The reader's row: a neutral tint and an ink rule and ring — one "you" in every case, whatever the
-   age — while the line itself takes the age's tone against the run's thresholds (`domain/age.ts`). */
+/* The reader's row: an ink rule and ring — one "you" in every case, whatever the age — while the
+   line and a faint wash of the row take the age's tone against the run's thresholds (`domain/age.ts`).
+   A snapshot, never toned, keeps a neutral wash. */
 .detail-timeline-row.is-mine {
-  background: var(--surface-2);
+  --row-bg: var(--surface-2);
+  background: var(--row-bg);
+}
+.detail-timeline-row.is-mine.is-toned {
+  --row-bg: color-mix(in srgb, var(--tone) 10%, var(--surface));
 }
 .detail-timeline-row.is-mine::before,
 .detail-timeline-row.is-newest::before {
@@ -223,9 +259,6 @@
 .detail-timeline-row.is-mine .detail-timeline-latest {
   color: var(--ink);
   font-weight: 600;
-}
-.detail-timeline-row.is-mine .detail-timeline-strip {
-  --room: 11px;
 }
 .detail-timeline-row.is-mine .detail-timeline-tail {
   height: 4px;
@@ -259,13 +292,12 @@
 .detail-timeline-row.is-newest .detail-timeline-latest {
   color: var(--ink);
 }
-.detail-timeline-row.is-newest .detail-timeline-strip {
-  --room: 10px;
-}
+/* Its line stays neutral: the accent names the row, not its age — a teal line from a release
+   eight years old read as healthy beside a toned "you". Its age is in the sentence above. */
 .detail-timeline-row.is-newest .detail-timeline-tail {
-  height: 3px;
-  border-radius: 2px;
-  background: var(--accent);
+  height: 2px;
+  border-radius: 1px;
+  background: var(--muted);
 }
 .detail-timeline-row.is-newest .detail-timeline-dot {
   width: 10px;
@@ -312,7 +344,9 @@
 .detail-timeline-fold-btn[aria-expanded="true"]::before {
   transform: rotate(90deg);
 }
+/* Above the guides, so a guide stops at the rug's edge rather than striking through its ticks. */
 .detail-timeline-rug {
+  z-index: 1;
   position: absolute;
   top: 50%;
   left: calc(var(--lo) - 3px);
@@ -326,6 +360,7 @@
   box-shadow: inset 0 0 0 1px var(--border);
 }
 .detail-timeline-rug-tick {
+  z-index: 2;
   position: absolute;
   top: 50%;
   left: var(--x);
@@ -368,11 +403,24 @@
   height: 4px;
   border-left: 1px solid var(--border-strong);
 }
-.detail-timeline-year.is-first {
+.detail-timeline-year.is-first,
+.detail-timeline-year.is-after {
   transform: none;
 }
-.detail-timeline-year.is-first::before {
+.detail-timeline-year.is-first::before,
+.detail-timeline-year.is-after::before {
   left: 0;
+}
+/* A year beside a guide sits to the side away from it, its tick still on the year's true place. */
+.detail-timeline-year.is-after {
+  padding-left: 3px;
+}
+.detail-timeline-year.is-before {
+  transform: translateX(-100%);
+  padding-right: 3px;
+}
+.detail-timeline-year.is-before::before {
+  left: 100%;
 }
 .detail-timeline-today {
   position: absolute;
@@ -380,8 +428,31 @@
   right: 0;
   color: var(--ink-2);
 }
-/* A narrow strip keeps the two ends — the oldest year and today — and drops the years between. */
-@container (max-width: 150px) {
+/* A narrow strip keeps the two ends — the oldest year and today — and the one year between them
+   that still fits at that width (`timelineAxis.ts`, whose NARROW_TIERS these widths are), so the
+   scale is never guesswork; the narrowest keeps only the ends. */
+@container (max-width: 149.98px) {
+  .detail-timeline-year:not(.is-first, .is-kept-140) {
+    display: none;
+  }
+}
+@container (max-width: 139.98px) {
+  .detail-timeline-year.is-kept-140:not(.is-kept-124) {
+    display: none;
+  }
+  .detail-timeline-year.is-kept-124 {
+    display: block;
+  }
+}
+@container (max-width: 123.98px) {
+  .detail-timeline-year.is-kept-124:not(.is-kept-108) {
+    display: none;
+  }
+  .detail-timeline-year.is-kept-108 {
+    display: block;
+  }
+}
+@container (max-width: 107.98px) {
   .detail-timeline-year:not(.is-first) {
     display: none;
   }
@@ -435,83 +506,33 @@
   .detail-timeline-answer {
     font-size: 17.5px;
   }
+  /* A dot on the rule overhangs by half its width plus its halo; 4px here and the 8px column gap
+     still clear the LATEST text. */
   .detail-timeline-grid {
     column-gap: 8px;
     font-size: 10.5px;
+    --rule-gap: 4px;
   }
-  /* Every pixel goes to the strip here; the gutter after the constraint is a wide-panel luxury. */
+  /* A narrower gutter after the constraint, but still one: "^7.2 || ^8.0" ran to the panel's edge. */
   .detail-timeline-row {
-    padding-right: 0;
+    padding-right: 4px;
   }
   .detail-timeline-branch,
   .detail-timeline-fold-btn {
     font-size: 11.5px;
   }
+  /* Any constraint may break at its own spaces here, and only does when the strip is already at its
+     floor — the grid shrinks an auto column only then — so the gutter above never costs the strip. */
+  .detail-timeline-php {
+    white-space: normal;
+  }
   .detail-timeline-php,
   .detail-timeline-range {
     font-size: 10px;
   }
-}
-
-/* Forced colours: system colours replace every tone, so shape carries identity — a ring for the
-   reader, a diamond for a snapshot, a filled disc for the newest, a hollow dot for the rest, a dash
-   for the warn guide and dots for the high one. */
-@media (forced-colors: active) {
-  .detail-timeline-dot,
-  .detail-timeline-tail,
-  .detail-timeline-guide,
-  .detail-timeline-rug-tick,
-  .detail-timeline-swatch,
-  .detail-timeline-swatch-line,
-  .detail-timeline-guide-cap,
-  .detail-timeline-year::before,
-  .detail-timeline-row.is-mine::before,
-  .detail-timeline-row.is-newest::before {
-    forced-color-adjust: none;
-  }
-  .detail-timeline-dot {
-    background: Canvas;
-    border-color: CanvasText;
-  }
-  .detail-timeline-tail,
-  .detail-timeline-rug-tick,
-  .detail-timeline-swatch-line {
-    background: GrayText;
-  }
-  .detail-timeline-guide,
-  .detail-timeline-year::before {
-    border-color: GrayText;
-  }
-  .detail-timeline-rug {
-    forced-color-adjust: none;
-    background: Canvas;
-    box-shadow: inset 0 0 0 1px GrayText;
-  }
-  .detail-timeline-guide-cap.is-left,
-  .detail-timeline-guide-cap.is-right {
-    color: CanvasText;
-    border-color: GrayText;
-  }
-  .detail-timeline-row.is-mine::before,
-  .detail-timeline-row.is-mine .detail-timeline-tail,
-  .detail-timeline-row.is-mine.is-toned .detail-timeline-tail {
-    background: Highlight;
-  }
-  .detail-timeline-row.is-mine .detail-timeline-dot,
-  .detail-timeline-swatch.is-mine,
-  .detail-timeline-swatch.is-snapshot {
-    background: Canvas;
-    border-color: Highlight;
-  }
-  .detail-timeline-row.is-newest::before,
-  .detail-timeline-row.is-newest .detail-timeline-tail,
-  .detail-timeline-row.is-newest .detail-timeline-dot,
-  .detail-timeline-swatch.is-newest {
-    background: LinkText;
-    border-color: LinkText;
-  }
-  .detail-timeline-fold-btn::before {
-    forced-color-adjust: none;
-    border-left-color: CanvasText;
+  /* "5y ago" hanging into the gap beside "BRANCH ↓" read as one heading: here the whole caption
+     keeps inside the strip, with a gap to spare, or says just "5y". */
+  .detail-timeline-guide-ago {
+    --ago-need: 46px;
   }
 }
