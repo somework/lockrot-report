@@ -90,8 +90,8 @@ test.describe("j / k walk the visible list and open each package", () => {
   });
 });
 
-test.describe("Enter on a focused row toggles its detail", () => {
-  test("opens, then closes on a second Enter", async () => {
+test.describe("Enter on a focused row opens its detail, and never closes it (PD-ROWS-7)", () => {
+  test("opens, then a second Enter keeps it open; Escape closes it", async () => {
     // Findings' rows have always been focusable (unlike Packages' before M6's fix), so this test
     // drives Enter from a Findings row.
     await report.closeDetail(); // clear the boot auto-open first
@@ -102,6 +102,8 @@ test.describe("Enter on a focused row toggles its detail", () => {
     // re-focus before the second press rather than assuming keyboard focus persisted across it.
     await report.focusRow("vendor/snapshot");
     await report.pressEnter();
+    expect((await report.detail()).name).toBe("vendor/snapshot");
+    await report.pressEscape();
     expect((await report.detail()).open).toBe(false);
   });
 });

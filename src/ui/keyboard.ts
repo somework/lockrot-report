@@ -3,7 +3,8 @@
  * happen. Ported from legacy report.js:1021-1049 (js-4.md §8), with the fixes DESIGN.md §5 lists:
  *
  * - M5: Enter or Space on a link (or any other control) inside a row is left to that control;
- *   only a keypress on the row itself toggles its detail.
+ *   only a keypress on the row itself opens its detail — and, like a click, never closes the package
+ *   that is already open (PD-ROWS-7); Escape does that.
  * - M7/M8/M9: `j`/`k` walk the rows the current view has on screen, in the order it shows them,
  *   starting from the open package. The legacy page kept a separate cursor over a list that could
  *   differ from the rows drawn, and could open a package that had no row at all.
@@ -44,7 +45,7 @@ export interface KeyInput {
 
 export type KeyDecision =
   | { type: "ignore" }
-  | { type: "toggleRow"; pkg: string | null }
+  | { type: "openRow"; pkg: string }
   | { type: "move"; pkg: string }
   | { type: "focusSearch" }
   | { type: "openGlossary" }
@@ -61,7 +62,7 @@ export function decideKey(input: KeyInput): KeyDecision {
 
   if (input.key === "Enter" || input.key === " ") {
     if (input.rowPkg === null || input.onControl || input.typing) return IGNORE;
-    return { type: "toggleRow", pkg: input.selected === input.rowPkg ? null : input.rowPkg };
+    return { type: "openRow", pkg: input.rowPkg };
   }
   if (input.typing) return IGNORE;
   if (input.key === "?") return { type: "openGlossary" };

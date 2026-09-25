@@ -239,13 +239,15 @@ describe("keyboard", () => {
     });
   });
 
-  test("Enter on a row toggles it; Enter on a link inside the row does not (M5)", () => {
+  test("Enter on a row opens it and a second Enter keeps it open (PD-ROWS-7); Enter on a link inside the row does not (M5)", () => {
     render(<App model={MINI} />);
     fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
     const row = screen.getByRole("option", { name: "vendor/snapshot" });
     key("Enter", row);
     expect(detailName()).toBe("vendor/snapshot");
     key("Enter", row);
+    expect(detailName()).toBe("vendor/snapshot");
+    key("Escape");
     expect(detailName()).toBeNull();
     const link = row.querySelector("a");
     if (link === null) throw new Error("the stand-in row has a link");

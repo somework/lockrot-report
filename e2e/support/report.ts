@@ -79,11 +79,10 @@ export interface ReportPage {
   /** Package names for the current view's rendered rows/cards, in document order. Duplicates are
    *  possible (e.g. one Advisories row per advisory, several under the same package). */
   rows(): Promise<string[]>;
-  /** A single click on the row/card/button that represents this package, whatever the page's
-   *  native toggle semantics are for it (a Findings/Packages row toggles; a `data-open` button
-   *  always opens). */
+  /** A single click on the row/card/button that represents this package. Every list's row opens
+   *  its package and never closes it (PD-ROWS-7); a `data-open` button always opens. */
   clickPackage(name: string): Promise<void>;
-  /** Ensures the detail pane ends up open on this package, regardless of toggle semantics. */
+  /** Ensures the detail pane ends up open on this package. */
   openPackage(name: string): Promise<void>;
   closeDetail(): Promise<void>;
   detail(): Promise<DetailSnapshot>;

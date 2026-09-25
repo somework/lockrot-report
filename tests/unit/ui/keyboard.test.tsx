@@ -111,11 +111,18 @@ describe("Escape closes the topmost thing, one per press", () => {
 });
 
 describe("Enter and Space on a row", () => {
-  test("open the row's package, or close it when it is the open one", () => {
-    expect(decideKey(input({ key: "Enter", rowPkg: "a/two" }))).toEqual({ type: "toggleRow", pkg: "a/two" });
-    expect(decideKey(input({ key: " ", rowPkg: "a/two", selected: "a/two" }))).toEqual({
-      type: "toggleRow",
-      pkg: null,
+  test("open the row's package", () => {
+    expect(decideKey(input({ key: "Enter", rowPkg: "a/two" }))).toEqual({ type: "openRow", pkg: "a/two" });
+    expect(decideKey(input({ key: " ", rowPkg: "a/two", selected: "a/one" }))).toEqual({
+      type: "openRow",
+      pkg: "a/two",
+    });
+  });
+
+  test("leave the open package open when its own row is pressed again (PD-ROWS-7)", () => {
+    expect(decideKey(input({ key: "Enter", rowPkg: "a/two", selected: "a/two" }))).toEqual({
+      type: "openRow",
+      pkg: "a/two",
     });
   });
 
@@ -128,7 +135,7 @@ describe("Enter and Space on a row", () => {
   });
 
   test("the page's own actions cancel the browser's default", () => {
-    expect(prevents({ type: "toggleRow", pkg: "a/one" })).toBe(true);
+    expect(prevents({ type: "openRow", pkg: "a/one" })).toBe(true);
     expect(prevents({ type: "ignore" })).toBe(false);
   });
 });

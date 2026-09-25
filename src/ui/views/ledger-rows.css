@@ -6,11 +6,13 @@
  * `.empty`.
  *
  * The layout follows the list's own width, not the viewport's (a container query): the list is
- * ~1170px wide at 1440 with no package open, ~730px beside an open one, ~760px at 1024 and ~360px on
- * a phone. From 900px a row is one 36px line under five column heads; from 560px it is two lines,
- * the package over its reason and reach, the verdict and the age beside both; under that the verdict
- * moves down beside the reason. Every row and the head share each mode's grid, so the age bars and
- * their guides line up down the whole list.
+ * ~1170px wide at 1440 with no package open, 570-790px beside an open one (1280-1920), ~510px at
+ * 768 and ~360px on a phone. From 1040px a row is one line under five column heads — the width the
+ * three text columns need at their 90th percentile across the fixtures (package ~250px, reason
+ * ~230px, way in ~200px); from 480px it is two lines, the package and how it gets in over the
+ * verdict and the reason, the age beside both; under that, three. No cell is ever cut to an
+ * ellipsis: a value too long for its cell wraps (at a vendor's slash first), and the row grows. Every
+ * row and the head share each mode's grid, so the age bars and their guides line up down the list.
  */
 
 .fledger {
@@ -18,8 +20,11 @@
   --fl-pad-l: 14px;
   --fl-pad-r: 10px;
   --fl-gap: 10px;
-  --fl-verdict: 88px;
-  --fl-age: 150px;
+  /* Wide enough for the longest verdict, LEFT-BEHIND, on one line. */
+  --fl-verdict: 86px;
+  /* Phone: the age column is the verdict column plus this, so it lines up from row to row. */
+  --fl-age-x: 50px;
+  --fl-age: 132px;
   --fl-num: 28px;
   --fl-pad-y: 7px;
 }
@@ -30,9 +35,13 @@
   top: 0;
   z-index: 3;
   display: grid;
-  /* Phone: the head captions the third line of every row — the age bar and the reach. */
-  grid-template-columns: var(--fl-verdict) minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-areas: "age age reach";
+  /* Phone: the head captions the third line of every row — the age bar and the reach — with the
+     grey-bar key above the reach. */
+  grid-template-columns: var(--fl-verdict) var(--fl-age-x) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "age age key"
+    "age age reach";
   column-gap: var(--fl-gap);
   align-items: end;
   height: 40px;
@@ -70,6 +79,7 @@
 }
 .fhead-reach {
   grid-area: reach;
+  justify-self: end;
   text-align: right;
 }
 .fhead-age {
@@ -78,6 +88,28 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--fl-num);
   column-gap: 6px;
+}
+/* The key to a grey bar, in the head's top line: the swatch is the bar itself, the words the same
+   ones an age cell with no bar uses. Sentence case, so it reads as a note, not a column's name. */
+.fhead-key {
+  grid-area: key;
+  justify-self: end;
+  align-self: start;
+  margin-top: 6px;
+  min-width: 0;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: none;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.fhead-key .fledger-key {
+  width: 16px;
+  margin-right: 6px;
+  vertical-align: 1px;
 }
 /* The axis' captions sit over the track part of the age column only — the number column beside it
    has no scale to caption. */
@@ -220,13 +252,15 @@
   position: relative;
   display: grid;
   /* Phone: three lines — the package; its verdict and reason; its age and how it gets in. The age
-     takes a fixed share of the row, so the bars still line up from row to row. */
-  grid-template-columns: var(--fl-verdict) minmax(0, 1fr) minmax(0, 1fr);
+     takes a fixed width, so the bars still line up from row to row, and the way in wraps beside it
+     rather than losing its end. */
+  grid-template-columns: var(--fl-verdict) var(--fl-age-x) minmax(0, 1fr);
   grid-template-areas:
     "pkg pkg pkg"
     "verdict why why"
     "age age reach";
   column-gap: var(--fl-gap);
+  row-gap: 1px;
   align-items: baseline;
   padding: var(--fl-pad-y) var(--fl-pad-r) var(--fl-pad-y) var(--fl-pad-l);
   border-bottom: 1px solid var(--border);
@@ -256,15 +290,16 @@
   outline-offset: -2px;
 }
 
+/* Every text cell wraps rather than cutting its value short; `anywhere` is the last resort for a
+   single word wider than its cell, so nothing ever runs past the row. */
 .fcell {
   min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .fc-verdict {
   grid-area: verdict;
+  white-space: nowrap;
   font-family: var(--cond);
   font-size: 10.5px;
   font-weight: 700;
@@ -302,23 +337,31 @@
   margin-left: 6px;
 }
 
-/* The reason and the reach share one line in the two-line modes; wide, `display: contents` hands
-   both to the row's own grid as two columns. */
-.fc-tail {
+/* The package and how it gets in: one flex line in the two-line layout; elsewhere dissolved, so
+   the row's own grid places each. */
+.fc-line {
   display: contents;
 }
-/* On a phone the reason may take a second line rather than lose its end to an ellipsis. */
 .fc-why {
   grid-area: why;
   color: var(--ink);
   font-size: 12.5px;
-  white-space: normal;
+}
+.fc-why:not(.is-ditto) .fc-why-text {
+  font-weight: 500;
 }
 .fc-reach {
   grid-area: reach;
+  justify-self: end;
   text-align: right;
   color: var(--ink);
   font-size: 12px;
+}
+/* A name after its vendor's slash moves to the next line whole when it can, and breaks at its own
+   hyphens only when it is wider than the whole cell. */
+.fc-unit {
+  display: inline-block;
+  max-width: 100%;
 }
 .fc-via {
   color: var(--muted);
@@ -344,6 +387,9 @@
   margin-right: 6px;
 }
 .fc-why .sid {
+  /* A signal id never splits, even where the cell's own `overflow-wrap: anywhere` would let it. */
+  overflow-wrap: normal;
+  white-space: nowrap;
   margin-right: 6px;
   font-family: var(--mono);
   font-size: 10.5px;
@@ -475,43 +521,59 @@
   transition: background-color 0.12s ease;
 }
 
-.fledger-foot {
-  margin: 12px 0 0;
-  padding-left: var(--fl-pad-l);
-  font-size: 12px;
-  color: var(--muted);
-}
+/* The swatch in the head's grey-bar key: the context bar's own shape, end cap included. */
 .fledger-key {
+  position: relative;
   display: inline-block;
   width: 18px;
   height: 6px;
-  margin-right: 7px;
-  vertical-align: 1px;
   border-radius: 0 3px 3px 0;
   background: var(--border-strong);
 }
+.fledger-key::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: -2px;
+  width: 2px;
+  height: 10px;
+  border-radius: 1px;
+  background: var(--muted);
+}
 
-/* ---------- two lines (the list beside an open package, a tablet) ---------- */
-@container fledger (min-width: 560px) {
+/* ---------- phone, narrowest: the age column gives the way in a little more room ---------- */
+@container fledger (max-width: 339px) {
+  .fledger > * {
+    --fl-age-x: 36px;
+  }
+  .fhead-axis-label {
+    letter-spacing: 0.03em;
+  }
+}
+
+/* ---------- two lines (beside an open package, a tablet) ---------- */
+@container fledger (min-width: 480px) {
   /* A container query styles the container's descendants, never the container itself: the widths
      are set on its children, which every row and head inherits them from. */
   .fledger > * {
-    --fl-age: 150px;
-    --fl-pad-y: 6px;
+    --fl-pad-y: 5px;
   }
   .fhead {
     grid-template-columns: var(--fl-verdict) minmax(0, 1fr) var(--fl-age);
-    grid-template-areas: "verdict pkg age";
+    grid-template-areas:
+      "key key age"
+      "pkg pkg age";
   }
-  .fhead-verdict,
   .fhead-pkg {
     display: block;
   }
-  .fhead-verdict {
-    grid-area: verdict;
+  /* Left, clear of the age column's caption, which is wider than the column and overhangs it. */
+  .fhead-key {
+    justify-self: start;
   }
+  /* "Reached" sits over the right end of the rows' first line, where each row's way in ends. */
   .fhead-reach {
-    display: none;
+    grid-area: pkg;
   }
   .fhead-axis-label {
     left: auto;
@@ -520,32 +582,26 @@
   .frow {
     grid-template-columns: var(--fl-verdict) minmax(0, 1fr) var(--fl-age);
     grid-template-areas:
-      "verdict pkg age"
-      "verdict tail age";
+      "line line age"
+      "verdict why age";
+    row-gap: 0;
   }
-  .fc-verdict {
-    align-self: start;
-    line-height: 19px;
-  }
-  .fc-why {
-    white-space: nowrap;
-  }
-  .fc-tail {
-    grid-area: tail;
+  /* The package, then how it gets in pushed to the line's right end; when both do not fit, the way
+     in drops to a line of its own, still right-aligned, rather than either being cut. */
+  .fc-line {
+    grid-area: line;
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
-    column-gap: 12px;
+    column-gap: 14px;
     min-width: 0;
   }
-  /* The reason gives way first: the reach is usually shorter, and ellipsised it loses the one
-     name that says which requirement to look at. */
-  .fc-why {
-    flex: 1 2 auto;
+  .fc-pkg {
+    flex: 0 1 auto;
   }
   .fc-reach {
     flex: 0 1 auto;
     margin-left: auto;
-    max-width: 55%;
   }
   /* Edge to edge of the row, so the guides run on unbroken from one row into the next. */
   .fc-age {
@@ -554,34 +610,41 @@
 }
 
 /* ---------- one line (the list with no package open) ---------- */
-@container fledger (min-width: 900px) {
+@container fledger (min-width: 1040px) {
   .fledger > * {
     --fl-age: 172px;
     --fl-verdict: 92px;
     --fl-gap: 14px;
-    --fl-pad-y: 0px;
+    --fl-pad-y: 4px;
   }
   .fhead {
     grid-template-columns:
       var(--fl-verdict) minmax(0, 1.15fr) minmax(0, 1.3fr) var(--fl-age)
       minmax(0, 0.95fr);
-    grid-template-areas: "verdict pkg why age reach";
+    grid-template-areas:
+      ". . key age ."
+      "verdict pkg why age reach";
   }
-  .fhead-why,
-  .fhead-reach {
+  .fhead-verdict,
+  .fhead-why {
     display: block;
+  }
+  .fhead-verdict {
+    grid-area: verdict;
   }
   .fhead-why {
     grid-area: why;
   }
-  .fhead-reach {
-    grid-area: reach;
-  }
   .fhead-narrow {
     display: none;
   }
+  .fhead-key {
+    justify-self: end;
+    margin-right: 4px;
+  }
   .fhead-reach {
-    display: block;
+    grid-area: reach;
+    justify-self: start;
     text-align: left;
   }
   .fhead-axis-label {
@@ -594,32 +657,24 @@
       minmax(0, 0.95fr);
     grid-template-areas: "verdict pkg why age reach";
     align-items: center;
-    height: 36px;
+    min-height: 36px;
   }
-  .fc-verdict {
-    align-self: center;
-  }
-  .fc-tail {
+  .fc-line {
     display: contents;
   }
-  .fc-why {
-    grid-area: why;
-  }
   .fc-reach {
-    grid-area: reach;
+    justify-self: start;
     margin-left: 0;
-    max-width: none;
     text-align: left;
-  }
-  .fc-age {
-    margin-block: 0 -1px;
   }
 }
 
 /* ---------- forced colours ----------
    System colours replace every tone, so each mark keeps a shape of its own: the guides their dash
-   and dots, a bar past `high` solid, one between the thresholds hatched, a younger one hollow, a
-   context-only one grey; the run's rule and the open row's bar in the system's own ink. */
+   and dots, a bar past `high` solid, one between the thresholds hatched, a younger one hollow, and a
+   context-only one a light stipple with its end cap — never a solid fill, which in a forced palette
+   (GrayText is a dark maroon in some) read heavier than the critical bars it is meant to sit below.
+   The run's rule and the open row's bar in the system's own ink. */
 @media (forced-colors: active) {
   .age-track::before,
   .age-guide,
@@ -628,7 +683,8 @@
   .fhead-tick,
   .frun::before,
   .frow[aria-current="true"]::before,
-  .fledger-key {
+  .fledger-key,
+  .fledger-key::after {
     forced-color-adjust: none;
   }
   .age-track::before {
@@ -639,7 +695,9 @@
   .fhead-tick.is-high {
     border-left-color: CanvasText;
   }
-  .fhead-tick {
+  .fhead-tick,
+  .fhead-tick.is-warn,
+  .fhead-tick.is-high {
     color: CanvasText;
   }
   .age-bar {
@@ -655,9 +713,11 @@
   }
   .age-bar-context,
   .fledger-key {
-    background: GrayText;
+    background: repeating-linear-gradient(90deg, CanvasText 0 1px, Canvas 1px 4px);
+    box-shadow: none;
   }
-  .age-bar-context::before {
+  .age-bar-context::before,
+  .fledger-key::after {
     background: CanvasText;
   }
   .age-bar.is-over::after {
@@ -677,7 +737,7 @@
 
 /* ---------- print ----------
    Paper has no package to open, so every signal a row carries prints under its reason
-   (`.sig-rest`, un-hidden in styles/print.css) and nothing is cut to one line. */
+   (`.sig-rest`, un-hidden in styles/print.css); every cell already wraps rather than cutting. */
 @media print {
   .fhead {
     position: static;
@@ -688,17 +748,14 @@
   .frow:hover,
   .frow[aria-current="true"] {
     --row-bg: transparent;
-    height: auto;
   }
   .frow[aria-current="true"]::before {
     display: none;
   }
-  .frow .fcell:not(.fc-age) {
-    white-space: normal;
-    overflow: visible;
-  }
-  .fc-tail {
-    flex-wrap: wrap;
+  /* The row's background is gone on paper; the phrase keeps the page's own, so no guide runs
+     through its letters. */
+  .age-none {
+    background: var(--bg);
   }
   .frun::before {
     print-color-adjust: exact;

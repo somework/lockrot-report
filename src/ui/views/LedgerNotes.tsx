@@ -23,7 +23,11 @@ function joinAnd(items: readonly ComponentChildren[]): ComponentChildren[] {
   });
 }
 
-/** "you require all three directly", "each comes in through another package", or both counted. */
+/**
+ * "you require all three directly" or "each comes in through another package" when the group is
+ * alike; counted in the filter rail's own two words — "13 direct, 25 transitive" — when it is mixed,
+ * so a long group's sentence stays near one line instead of running to five (a judge's must-fix).
+ */
 function reachPart(counts: GroupCounts): ComponentChildren {
   const { total, direct } = counts;
   const transitive = total - direct;
@@ -37,8 +41,7 @@ function reachPart(counts: GroupCounts): ComponentChildren {
   }
   return (
     <>
-      <Num n={direct} /> you require directly, <Num n={transitive} /> {transitive === 1 ? "comes" : "come"} in
-      through another package
+      <Num n={direct} /> direct, <Num n={transitive} /> transitive
     </>
   );
 }
@@ -49,12 +52,13 @@ function devPart(counts: GroupCounts): ComponentChildren {
   if (dev === total) return total === 1 ? ", for development only" : ", all for development only";
   return (
     <>
-      ; <Num n={dev} /> {dev === 1 ? "is" : "are"} for development only
+      , <Num n={dev} /> dev-only
     </>
   );
 }
 
-/** "2 silent and 1 abandoned; you require all three directly." */
+/** "2 silent and 1 abandoned; you require all three directly." or "19 abandoned, 9 left-behind,
+ *  6 silent, 3 pinned and 1 old-promise; 13 direct, 25 transitive, 1 dev-only." */
 export function GroupSentence({ counts }: { counts: GroupCounts }) {
   const verdicts = counts.verdicts.map((v) => (
     <span key={v.verdict}>

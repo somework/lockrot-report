@@ -176,7 +176,7 @@ describe("FindingsView", () => {
     expect(dispatch).toHaveBeenCalledWith({ type: "select", pkg: "signal/pkg" });
   });
 
-  it("closes the same package on a second click", () => {
+  it("keeps the open package open on a second click of its own row (PD-ROWS-7)", () => {
     // Arrange
     const finding = makeFinding({ package: "open/pkg", verdict: "abandoned", priority: "critical" });
     const model = flaggedModel([finding]);
@@ -189,8 +189,10 @@ describe("FindingsView", () => {
     // Act
     fireEvent.click(row);
 
-    // Assert: toggling the open package closes it (`pkg: null`).
-    expect(dispatch).toHaveBeenCalledWith({ type: "select", pkg: null });
+    // Assert: a click selects, it never toggles — the open package stays open (Close and Escape
+    // are the ways out), so a second "yes, that one" click can't close what the reader is reading.
+    expect(dispatch).toHaveBeenCalledWith({ type: "select", pkg: "open/pkg" });
+    expect(dispatch).not.toHaveBeenCalledWith({ type: "select", pkg: null });
   });
 
   it("never attaches its own Enter/Space handling — that is ui/keyboard.ts's job, driven by data-pkg", () => {
@@ -421,7 +423,7 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
 
     // Assert: no accessible scale, a short reason instead of a bare dash, and both guides still drawn.
     expect(within(unscaledRow).queryByRole("img")).toBeNull();
-    expect(within(unscaledRow).getByText("no age signal")).toBeTruthy();
+    expect(within(unscaledRow).getByText("not flagged for age")).toBeTruthy();
     expect(within(blockedRow).getByText("age not read")).toBeTruthy();
     expect(unscaledRow.querySelectorAll(".age-guide")).toHaveLength(2);
   });
@@ -627,6 +629,79 @@ describe("FindingsView / the ledger's sentences and ditto (PD-ROWS-5/PD-ROWS-6, 
     );
   });
 
+  it("counts a mixed group's reach in the rail's own words, so its sentence stays short", () => {
+    // Arrange: two direct (one of them dev-only) and one transitive.
+    const model = modelWith([
+      makeFinding({ package: "a/one", verdict: "abandoned", priority: "high" }),
+      makeFinding({ package: "b/two", verdict: "left-behind", priority: "high", dev: true }),
+      makeFinding({
+        package: "c/three",
+        verdict: "left-behind",
+        priority: "high",
+        direct: false,
+        chain: ["a/one", "c/three"],
+      }),
+    ]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+
+    // Assert
+    const group = screen.getByRole("heading", { name: "high" }).closest(".fgroup");
+    expect(group?.querySelector(".fgroup-sentence")?.textContent).toBe(
+      "2 left-behind and 1 abandoned; 2 direct, 1 transitive, 1 dev-only.",
+    );
+  });
+
+  it("keys a grey bar in the column head only when a visible row draws one", () => {
+    // Arrange: an abandoned row with an age draws a grey (context) bar; a silent one does not.
+    const grey = modelWith([hoa("compiler", 9.1)]);
+    const toned = modelWith([
+      makeFinding({
+        package: "old/pkg",
+        verdict: "silent",
+        priority: "critical",
+        signals: [makeSignal({ id: "S2", level: "high", data: { years: 8 } })],
+      }),
+    ]);
+
+    // Act
+    const { container: withGrey, unmount } = renderIn(grey, stateWith(), <FindingsView />);
+    const keyText = withGrey.querySelector(".fhead .fhead-key")?.textContent;
+    unmount();
+    const { container: withoutGrey } = renderIn(toned, stateWith(), <FindingsView />);
+
+    // Assert: the key uses the same words an age cell with no bar does; no footnote below the list.
+    expect(keyText).toBe("not flagged for age");
+    expect(withoutGrey.querySelector(".fhead-key")).toBeNull();
+    expect(withoutGrey.querySelector(".fledger-foot")).toBeNull();
+  });
+
+  it("breaks a long way in after its vendor's slash, never cutting it short", () => {
+    // Arrange
+    const model = modelWith([
+      makeFinding({
+        package: "gedmo/doctrine-extensions",
+        verdict: "abandoned",
+        priority: "high",
+        direct: false,
+        chain: ["stof/doctrine-extensions-bundle", "gedmo/doctrine-extensions"],
+      }),
+    ]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+    const reach = screen
+      .getByRole("listitem", { name: "gedmo/doctrine-extensions" })
+      .querySelector(".fc-reach");
+
+    // Assert: the whole name is there, with a break opportunity after the slash and the rest kept
+    // together as one unit.
+    expect(reach?.textContent).toBe("via stof/doctrine-extensions-bundle");
+    expect(reach?.querySelector("wbr")).not.toBeNull();
+    expect(reach?.querySelector(".fc-unit")?.textContent).toBe("doctrine-extensions-bundle");
+  });
+
   it("writes one sentence above three or more consecutive alike rows, and none above two", () => {
     // Arrange: three hoa/* rows through the same parent, then two through another.
     const other = (name: string) =>
@@ -821,11 +896,11 @@ describe("AdvisoriesView", () => {
     expect(screen.getByText(/nothing was flagged/i)).toBeTruthy();
   });
 
-  it("keeps a package's detail open across two rows for the same package, unlike FindingRow's toggle", () => {
+  it("keeps a package's detail open across two rows for the same package", () => {
     // Arrange: a finding with two advisories gets one AdvisoryRow per advisory, both `data-pkg`ed
     // to the same package — clicking the second one must not close what the first one opened
-    // (legacy's own affordance, report.js:969-970, which never clears `open`; unlike FindingRow's
-    // toggle, which closes the same package on a second click).
+    // (legacy's own affordance, report.js:969-970, which never clears `open` — and, since PD-ROWS-7,
+    // every list's rule).
     const finding = makeFinding({
       package: "acme/multi",
       verdict: "abandoned",

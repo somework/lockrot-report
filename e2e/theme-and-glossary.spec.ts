@@ -180,9 +180,10 @@ test.describe("PD-GLOSSARY-4/5: a verdict pill's popover", () => {
     expect((await report.detail()).name).toBe("vendor/transitive");
 
     // The same click contract as the rest of the row: a second click on the now-open package's own
-    // pill closes it again, rather than doing nothing or re-opening a popover.
+    // pill keeps it open (PD-ROWS-7), rather than closing it or opening a popover.
     await report.clickPillInFindingsRow("vendor/transitive", "abandoned");
-    expect((await report.detail()).open).toBe(false);
+    expect(await report.isPillPopoverOpen()).toBe(false);
+    expect((await report.detail()).name).toBe("vendor/transitive");
   });
 
   // visual review: fixed and viewport-centred with no dimming, the popover could land squarely on

@@ -45,7 +45,7 @@ interface ShortcutDeps {
 function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
   const { dispatch, search, openGlossary, setGlossaryOpen, rowRequest } = deps;
   switch (decision.type) {
-    case "toggleRow":
+    case "openRow":
       dispatch({ type: "select", pkg: decision.pkg });
       break;
     case "move":

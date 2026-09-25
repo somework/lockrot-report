@@ -4,7 +4,7 @@ import { applyFilters, population } from "../../domain/filters";
 import { plural } from "../../domain/format";
 import { toneClass } from "../common/common";
 import { SIGNAL_NAMES, TONE } from "../../domain/vocab";
-import { ageAxis, type AgeAxis } from "../../domain/age";
+import { ageAxis, ageScale, type AgeAxis } from "../../domain/age";
 import { groupCounts, reachText, runFacts, segmentRuns, vendorOf, whyText } from "../../domain/rows";
 import { AgeAxis as AgeAxisHead } from "./AgeScale";
 import { FindingRow, NO_DITTO, type Ditto } from "./FindingRow";
@@ -149,9 +149,12 @@ function Group({ priority, findings, axis, quoted }: ListProps & { priority: str
   );
 }
 
-/** The column head over every row (PD-ROWS-4): what each column is, and the age axis' captions. The
- *  words are for the eye (`aria-hidden`); each row already names its own parts. */
-function ColumnHead({ axis, quoted }: ListProps) {
+/** The column head over every row (PD-ROWS-4): what each column is, the age axis' captions, and —
+ *  when a visible row draws one — the key to a grey bar, sticky with the axis it qualifies rather
+ *  than a footnote sixty rows below the first grey bar. The words are for the eye (`aria-hidden`);
+ *  each row already names its own parts, and a grey bar's own label says why it is grey. */
+function ColumnHead({ axis, quoted, context }: ListProps & { context: boolean }) {
+  const why = quoted ? `${quoted} · ${SIGNAL_NAMES[quoted] ?? "signal"}` : "Why it is flagged";
   return (
     <div className="fhead">
       <span className="fhead-col fhead-verdict" aria-hidden="true">
@@ -159,16 +162,20 @@ function ColumnHead({ axis, quoted }: ListProps) {
       </span>
       <span className="fhead-col fhead-pkg" aria-hidden="true">
         Package
-        <span className="fhead-narrow">
-          {quoted ? ` · ${quoted} · how it gets in` : " · why it is flagged · how it gets in"}
-        </span>
+        <span className="fhead-narrow">{quoted ? ` · ${quoted}` : " · why it is flagged"}</span>
       </span>
       <span className="fhead-col fhead-why" aria-hidden="true">
-        {quoted ? `${quoted} · ${SIGNAL_NAMES[quoted] ?? "signal"}` : "Why it is flagged"}
+        {why}
       </span>
       <span className="fhead-col fhead-reach" aria-hidden="true">
         Reached
       </span>
+      {context && (
+        <span className="fhead-key" aria-hidden="true">
+          <span className="fledger-key" />
+          not flagged for age
+        </span>
+      )}
       {axis ? <AgeAxisHead axis={axis} /> : <span className="fhead-age" />}
     </div>
   );
@@ -186,7 +193,10 @@ export function FindingsView() {
   const axis = ageAxis(model.report.run.thresholds);
   const signals = state.filters.signal;
   const quoted = signals.length === 1 ? (signals[0] ?? null) : null;
-  const context = axis !== null && visible.some((f) => f.verdict === "abandoned" || f.verdict === "pinned");
+  // The grey-bar key is shown only when a visible row actually draws a grey bar.
+  const context =
+    axis !== null &&
+    visible.some((f) => ageScale(f, model.report.run.thresholds, axis.max)?.contextOnly === true);
 
   return (
     <div>
@@ -195,7 +205,7 @@ export function FindingsView() {
         <EmptyState reason={population(model, "findings").length === 0 ? "clean" : "filtered"} />
       ) : (
         <div className={axis ? "fledger" : "fledger no-axis"}>
-          <ColumnHead axis={axis} quoted={quoted} />
+          <ColumnHead axis={axis} quoted={quoted} context={context} />
           {groupByPriority(visible).map((group) => (
             <Group
               key={group.priority}
@@ -205,12 +215,6 @@ export function FindingsView() {
               quoted={quoted}
             />
           ))}
-          {context && (
-            <p className="fledger-foot">
-              <span className="fledger-key" aria-hidden="true" />A grey bar is an age shown for context: an
-              abandoned or pinned package is not flagged for its age.
-            </p>
-          )}
         </div>
       )}
     </div>

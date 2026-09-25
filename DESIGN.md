@@ -206,9 +206,10 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 | PD-ROWS-1                   | a row showed up to three signal lines                                    | the highest-level signal and "+N more signals"; print shows them all                                                                          |
 | PD-ROWS-2                   | nothing showed an age against the run's thresholds                       | an age scale: warn and high ticks, a dot at the S8 (branch stopped) / S2 (no stable release) / S4 (no push) age                               |
 | PD-ROWS-3                   | each row scaled its own track, with no legend                            | one legend and one maximum per list; `abandoned`/`pinned` rows get a neutral dot                                                              |
-| PD-ROWS-4                   | ~90px cards; "+N more signals"; a dot on a 64px track; a floating legend | one ledger row (36px wide, two lines beside the detail, three on a phone); a bar on one axis, `max(10, 2×high)`, captioned in the column head |
+| PD-ROWS-4                   | ~90px cards; "+N more signals"; a dot on a 64px track; a floating legend | one ledger row (36px wide, two lines beside the detail, three on a phone), wrapped, never cut; one axis, `max(10, 2×high)`, keyed in the head |
 | PD-ROWS-5                   | every row repeated its verdict, reason and parent in full                | a value the row above showed is `--muted` (the verdict keeps its tone); a one-signal filter makes every row quote it                          |
 | PD-ROWS-6                   | nothing summed a group up; 14 alike hoa/* cards in a row                 | a serif sentence per priority, counted by verdict and reach; one above 3+ consecutive rows sharing verdict and way in                         |
+| PD-ROWS-7                   | a second click or Enter on the open row closed its detail                | a row opens its package and never closes it (Findings, Packages, Advisories, Blast radius); Close and Escape close                            |
 | PD-TIMELINE-1               | the first year label lost half its width off the axis                    | the axis runs from 1 January of the oldest year, labelled at the left edge, to a "today" rule labelled under it                               |
 | PD-TIMELINE-2               | labels floated beside each dot and wrapped around it                     | a table: branch, a line from last release to today, latest version, raw php constraint; one line a row                                        |
 | PD-TIMELINE-3               | a package without maintained branches showed each version twice          | the version once; its third column is the release date, so every table keeps the same four columns                                            |
@@ -288,8 +289,10 @@ reader scrolled past two screens of bars and buttons before the first package. U
 summary band keeps its lead (the flagged figure, the priority chips and the waffle) and folds
 its three supporting columns into one line that counts them (PD-SUMMARY-6), and the rail becomes a
 closed `<details>` whose summary counts the rail filters that are on. The Findings rows follow the
-list's own width, not the viewport's (a container query, PD-ROWS-4): one line from 900px of list,
-two from 560px (the list beside an open package), three below that.
+list's own width, not the viewport's (a container query, PD-ROWS-4): one line from 1040px of list
+(the width the three text columns need at their 90th percentile across the fixtures), two from
+480px (the list beside an open package, 570-790px at 1280-1920, since the first package opens on
+load), three below that. At every width a cell too narrow for its value wraps it, never an ellipsis.
 
 **The summary band's lead** is the first five seconds: how many packages are flagged, out of how
 many were checked, with the priority chips that filter by it and a waffle of every package

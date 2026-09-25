@@ -6,7 +6,7 @@ import { packagistUrl } from "../../domain/links";
 import { day, fixed } from "../../domain/format";
 import { libyearsAtZero, libyearsReason } from "../../domain/libyears";
 import { Pill, Muted } from "../common/common";
-import { rowInteractions } from "./FindingRow";
+import { openInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
 import "./views.css";
 
@@ -75,7 +75,7 @@ function PackageRow({ finding }: { finding: Finding }) {
       aria-selected={isOpen}
       aria-label={finding.package}
       data-pkg={finding.package}
-      {...rowInteractions(finding.package, isOpen, dispatch)}
+      {...openInteractions(finding.package, dispatch)}
     >
       <td>
         <PackageCell finding={finding} />

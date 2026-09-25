@@ -78,7 +78,10 @@ export function AgeCell({ scale, verdict }: { scale: AgeScaleData; verdict: Verd
 /**
  * The same cell for a row with no age to draw: the guides still run through it, so the column's two
  * lines do not break, and a short muted phrase says why there is no bar — "age not read" when an
- * S10 says a check that measures age could not run, "no age signal" when none of S2, S4 or S8 fired.
+ * S10 says a check that measures age could not run, "not flagged for age" when none of S2, S4 or S8
+ * fired. (It said "no age signal", which read as "the age is unknown" beside a detail that states
+ * the last release plainly; the column head's key uses the same words for a grey bar.) The phrase
+ * sits on the row's own background, above the guides, so no line runs through its letters.
  */
 export function AgeCellEmpty({ axis, notRead }: { axis: AgeAxisData | null; notRead: boolean }) {
   const title = notRead
@@ -90,7 +93,7 @@ export function AgeCellEmpty({ axis, notRead }: { axis: AgeAxisData | null; notR
         {axis && <Guides warn={axis.warn} high={axis.high} max={axis.max} />}
       </span>
       <span className="age-none" title={title}>
-        {notRead ? "age not read" : "no age signal"}
+        {notRead ? "age not read" : "not flagged for age"}
       </span>
     </span>
   );

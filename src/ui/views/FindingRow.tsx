@@ -14,41 +14,18 @@ import "./views.css";
 import "./ledger-rows.css";
 
 /**
- * The click contract FindingRow and PackagesView's rows share: a click anywhere on the row toggles
- * the detail pane, closing it again on a second click of the same package — unless the click landed
- * on a real `<a>` (a signal id's own link), a `<button>`, or inside an open popover (its content is
- * a descendant of the row in the DOM even though the top layer draws it elsewhere), each of which is
- * left to do its own thing. Both rows' own verdict word is plain text, not one of those (PD-GLOSSARY-
- * 4/5, DESIGN.md §5: a verdict in the row is the row's own target, not a popover's), so a click on it
- * falls through to the row like any other word in it. Keyboard activation (Enter/Space, and
- * DESIGN.md M5's fix so a focused control's own Enter is left alone) is `ui/keyboard.ts`'s job: it
- * reads the same `data-pkg` every row here carries through one document-level listener, so a row
- * needs no `onKeyDown` of its own — adding one would just race the global handler over who
- * dispatches first.
- */
-export function rowInteractions(
-  pkg: string,
-  isOpen: boolean,
-  dispatch: (action: Action) => void,
-): {
-  onClick: (event: TargetedMouseEvent<HTMLElement>) => void;
-} {
-  return {
-    onClick: (event) => {
-      if ((event.target as HTMLElement).closest("a, button, [popover]")) return;
-      dispatch({ type: "select", pkg: isOpen ? null : pkg });
-    },
-  };
-}
-
-/**
- * The click contract AdvisoryRow and PulledRow share instead: a click always opens `pkg`, and never
- * closes it again — legacy's own affordance for these two lists (`<button data-open>`, always
- * `select(open.dataset.open)`, `report.js:969-970`, which never clears `open`). Both lists can show
- * the same package under more than one row (several advisories, or several direct requirements
- * pulling the same transitive package in); with the toggle above, clicking a second row for an
- * already-open package would close it instead of doing nothing (quality/parity fix — this was
- * `rowInteractions` for both, unlike legacy).
+ * The click contract every list row shares — Findings, Packages, Advisories and Blast radius: a
+ * click anywhere on the row opens `pkg`, and a click on the package that is already open leaves it
+ * open (PD-ROWS-7, DESIGN.md §5: the row used to toggle, so a second click on the open row — the
+ * most natural "yes, that one" — closed the very detail the reader was reading; Close and Escape
+ * are the ways out). A click that landed on a real `<a>` (a signal id's own link), a `<button>`, or
+ * inside an open popover (its content is a descendant of the row in the DOM even though the top
+ * layer draws it elsewhere) is left to do its own thing. The row's own verdict word is plain text,
+ * not one of those (PD-GLOSSARY-4/5), so a click on it falls through to the row like any other word
+ * in it. Keyboard activation (Enter/Space, and DESIGN.md M5's fix so a focused control's own Enter
+ * is left alone) is `ui/keyboard.ts`'s job, with the same open-never-close rule: it reads the same
+ * `data-pkg` every row carries through one document-level listener, so a row needs no `onKeyDown`
+ * of its own — adding one would just race the global handler over who dispatches first.
  */
 export function openInteractions(
   pkg: string,
@@ -128,6 +105,20 @@ function AdvisoryTag({ finding }: { finding: Finding }) {
   );
 }
 
+/** A package name that wraps after its vendor's slash — "sensio/" over "framework-extra-bundle" —
+ *  rather than at the last hyphen that happens to fit (`.fc-unit`, ledger-rows.css). */
+function Breakable({ name }: { name: string }) {
+  const slash = name.indexOf("/");
+  if (slash < 0) return <span className="fc-unit">{name}</span>;
+  return (
+    <>
+      {name.slice(0, slash + 1)}
+      <wbr />
+      <span className="fc-unit">{name.slice(slash + 1)}</span>
+    </>
+  );
+}
+
 function Reach({ finding }: { finding: Finding }) {
   const root = finding.chain[0];
   return (
@@ -136,7 +127,7 @@ function Reach({ finding }: { finding: Finding }) {
         reachText(finding)
       ) : (
         <>
-          <span className="fc-via">via</span> {root}
+          <span className="fc-via">via</span> <Breakable name={root} />
         </>
       )}
       {finding.dev && (
@@ -161,8 +152,11 @@ export interface FindingRowProps {
 /**
  * A Findings-tab row, one line of a ledger (PD-ROWS-4, DESIGN.md §5): verdict · package · why it is
  * flagged · years since release on the list's shared axis · how it gets in. Wide, a single line
- * under the column head; narrower (the list beside an open package, a phone), two lines — the
- * package over its reason and reach, the age beside both. A list item rather than a listbox option,
+ * under the column head; beside an open package, two lines — the package and how it gets in, then
+ * the verdict and the reason, the age beside both; on a phone, three. No value is ever cut to an
+ * ellipsis: a cell too narrow for its words wraps them instead (`ledger-rows.css`). The package and
+ * its way in share one wrapper (`.fc-line`): a flex line in the two-line layout, dissolved into the
+ * row's own grid in the others. A list item rather than a listbox option,
  * because it holds a link (the signal id) and an option's children are presentational. The open row
  * is marked with `aria-current`; its accessible name is the package alone.
  *
@@ -187,28 +181,21 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
       aria-label={finding.package}
       data-pkg={finding.package}
       className={`frow ${toneClass(TONE(finding.verdict))}`}
-      {...rowInteractions(finding.package, isOpen, dispatch)}
+      {...openInteractions(finding.package, dispatch)}
     >
       <span className={`fcell fc-verdict${dim(ditto.verdict)}`} title={VERDICT_DEFS[finding.verdict] ?? ""}>
         {finding.verdict}
       </span>
-      <span className="fcell fc-pkg" title={`${finding.package} ${finding.version}`}>
-        {vendor !== null && <span className={`fc-vendor${dim(ditto.vendor)}`}>{vendor}/</span>}
-        <span className="fc-name">{name}</span> <span className="fc-ver">{finding.version}</span>
-        <BaselineTag finding={finding} />
-      </span>
-      <span className="fc-tail">
-        <span className={`fcell fc-why${dim(ditto.why)}`} title={key?.summary ?? finding.evidence}>
-          <AdvisoryTag finding={finding} />
-          {key && <SignalId signal={key} />}
-          <span className="fc-why-text">{key ? shortFact(key, finding) : finding.evidence}</span>
-          {rest.length > 0 && (
-            <span className="sig-rest" hidden>
-              {rest.map((signal) => (
-                <SignalLine key={signal.id} signal={signal} />
-              ))}
-            </span>
+      <span className="fc-line">
+        <span className="fcell fc-pkg" title={`${finding.package} ${finding.version}`}>
+          {vendor !== null && (
+            <>
+              <span className={`fc-vendor${dim(ditto.vendor)}`}>{vendor}/</span>
+              <wbr />
+            </>
           )}
+          <span className="fc-name fc-unit">{name}</span> <span className="fc-ver">{finding.version}</span>
+          <BaselineTag finding={finding} />
         </span>
         <span
           className={`fcell fc-reach${dim(ditto.reach)}`}
@@ -220,6 +207,18 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
         >
           <Reach finding={finding} />
         </span>
+      </span>
+      <span className={`fcell fc-why${dim(ditto.why)}`} title={key?.summary ?? finding.evidence}>
+        <AdvisoryTag finding={finding} />
+        {key && <SignalId signal={key} />}
+        <span className="fc-why-text">{key ? shortFact(key, finding) : finding.evidence}</span>
+        {rest.length > 0 && (
+          <span className="sig-rest" hidden>
+            {rest.map((signal) => (
+              <SignalLine key={signal.id} signal={signal} />
+            ))}
+          </span>
+        )}
       </span>
       {scale ? (
         <AgeCell scale={scale} verdict={finding.verdict} />

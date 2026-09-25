@@ -26,8 +26,11 @@ tag or the address format, says so under **Breaking** in its entry.
   means for the run's exit code.
 - The Findings list is a ledger: one dense row per package — verdict, package, why it is flagged,
   years since release, how it gets in — under a column head, about a third of a card's height. Beside
-  an open package a row takes two lines, on a phone three. Each priority group opens with a sentence
-  counting it ("2 silent and 1 abandoned; you require all three directly."), and three or more
+  an open package a row takes two lines, the package and how it gets in over the verdict and the
+  reason; on a phone three. No value is cut short with an ellipsis at any width: a long name or way
+  in wraps, after its vendor's slash first. Each priority group opens with a sentence counting it
+  ("2 silent and 1 abandoned; you require all three directly.", or for a mixed group "…; 13 direct,
+  25 transitive, 1 dev-only."), and three or more
   consecutive rows that share a verdict and a way in get one above them ("These 14 hoa/* packages are
   all marked abandoned by their repository, last released 9.1–9.7 years ago, and all come in through
   wallabag/rulerz."). Nothing is folded away or reordered; a word the row above already said is
@@ -36,7 +39,8 @@ tag or the address format, says so under **Breaking** in its entry.
   threshold, at least 10), with the warn and high thresholds as guides running down every row and
   captioned once in the column head; an older age runs to the edge with a cut mark and its exact
   years beside it. An age that did not set the priority (an abandoned or pinned package) draws a
-  grey bar. A row with no age says why: "no age signal", or "age not read" when a check could not run.
+  grey bar, keyed in the column head as "not flagged for age". A row with no age says why: "not
+  flagged for age", or "age not read" when a check could not run.
 - Filtering by exactly one signal makes every row quote that signal instead of its own top one.
 - A definition that names a threshold setting shows what this run set it to, "5 years
   (release-high-years)".
@@ -49,6 +53,8 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Changed
 
+- Clicking a row, or pressing Enter on it, opens its package and never closes it again: a second
+  click on the open row used to close the very detail being read. Close and Escape close it.
 - A verdict pill opens its definition in place instead of linking to lockrot.dev, which a report
   opened offline cannot reach; "In the glossary" opens the glossary on that verdict. A pill inside a
   Findings row stays plain text instead, its title still carrying the definition: a click there
