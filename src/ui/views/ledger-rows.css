@@ -7,9 +7,9 @@
  *
  * The layout follows the list's own width, not the viewport's (a container query): the list is
  * ~1170px wide at 1440 with no package open, 570-790px beside an open one (1280-1920), ~510px at
- * 768 and ~360px on a phone. From 1040px a row is one line under five column heads — the width the
- * three text columns need at their 90th percentile across the fixtures (package ~250px, reason
- * ~230px, way in ~200px); from 480px it is two lines, the package and how it gets in over the
+ * 768 and ~360px on a phone. From 990px (1280 and up, no package open) a row is one line under
+ * five column heads — the width the three text columns need at their 90th percentile across the
+ * fixtures (package ~250px, reason ~230px, way in ~200px); from 480px it is two lines, the package and how it gets in over the
  * verdict and the reason, the age beside both; under that, three. No cell is ever cut to an
  * ellipsis: a value too long for its cell wraps (at a vendor's slash first), and the row grows. Every
  * row and the head share each mode's grid, so the age bars and their guides line up down the list.
@@ -204,6 +204,10 @@
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
+/* A count and its word ("1 old-promise", "1 dev-only") wrap as one: never at the hyphen. */
+.fl-unit {
+  white-space: nowrap;
+}
 
 .frows {
   list-style: none;
@@ -214,7 +218,9 @@
 /* ---------- a run: the sentence above alike rows, and the rule beside them ----------
    Every row stays; the note says out loud what the quieter, repeated words below it share. The rule
    down the run's left edge is in the run's verdict tone, so the verdict never loses its colour while
-   the rows under it repeat it (a judge's must-fix: a greyed verdict read as "less urgent"). */
+   the rows under it repeat it (a judge's must-fix: a greyed verdict read as "less urgent"). The note
+   itself is unfilled: a run sits inside a priority group, and a tinted band read louder than the
+   group's own head. */
 .frun {
   position: relative;
 }
@@ -236,7 +242,6 @@
   line-height: 1.35;
   color: var(--ink-2);
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(90deg, var(--tone-soft), transparent 75%);
 }
 .frun-note b {
   font-weight: 600;
@@ -479,9 +484,10 @@
   transform: skewX(-24deg);
 }
 /* PD-ROWS-3: an age that did not set the priority (abandoned, pinned) — neutral, with an end cap so
-   its length still reads. */
+   its length still reads. A little of `--muted` in the grey keeps it visible on the dark theme's
+   track (`--border-strong` alone sat at ~1.6:1 there) while staying well under any toned bar. */
 .age-bar-context {
-  background: var(--border-strong);
+  background: color-mix(in srgb, var(--muted) 28%, var(--border-strong));
 }
 .age-bar-context::before {
   content: "";
@@ -528,7 +534,7 @@
   width: 18px;
   height: 6px;
   border-radius: 0 3px 3px 0;
-  background: var(--border-strong);
+  background: color-mix(in srgb, var(--muted) 28%, var(--border-strong));
 }
 .fledger-key::after {
   content: "";
@@ -567,17 +573,21 @@
   .fhead-pkg {
     display: block;
   }
-  /* Left, clear of the age column's caption, which is wider than the column and overhangs it. */
+  /* Beside the axis it keys, as in the one-line head — right-aligned up to the age column, with
+     room for that column's caption, which is a little wider than the column and overhangs it. */
   .fhead-key {
-    justify-self: start;
+    justify-self: end;
+    margin-right: 18px;
   }
   /* "Reached" sits over the right end of the rows' first line, where each row's way in ends. */
   .fhead-reach {
     grid-area: pkg;
   }
+  /* Right-aligned with the whole column, the number column included, so it overhangs the column's
+     left edge by a few pixels only and leaves the key beside it room. */
   .fhead-axis-label {
     left: auto;
-    right: 0;
+    right: calc(-6px - var(--fl-num));
   }
   .frow {
     grid-template-columns: var(--fl-verdict) minmax(0, 1fr) var(--fl-age);
@@ -610,10 +620,10 @@
 }
 
 /* ---------- one line (the list with no package open) ---------- */
-@container fledger (min-width: 1040px) {
+@container fledger (min-width: 990px) {
   .fledger > * {
-    --fl-age: 172px;
-    --fl-verdict: 92px;
+    --fl-age: 160px;
+    --fl-verdict: 90px;
     --fl-gap: 14px;
     --fl-pad-y: 4px;
   }
@@ -687,8 +697,11 @@
   .fledger-key::after {
     forced-color-adjust: none;
   }
+  /* No hairline under a bar here: in a forced palette (GrayText is a dark maroon in some) the
+     empty remainder of the track read louder than a stippled bar, so a 4.3-year bar looked to run
+     to 8. The guides and the head's ticks still carry the scale. */
   .age-track::before {
-    background: GrayText;
+    display: none;
   }
   .age-guide,
   .fhead-tick.is-warn,

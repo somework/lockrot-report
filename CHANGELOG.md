@@ -32,15 +32,17 @@ tag or the address format, says so under **Breaking** in its entry.
   ("2 silent and 1 abandoned; you require all three directly.", or for a mixed group "…; 13 direct,
   25 transitive, 1 dev-only."), and three or more
   consecutive rows that share a verdict and a way in get one above them ("These 14 hoa/* packages are
-  all marked abandoned by their repository, last released 9.1–9.7 years ago, and all come in through
-  wallabag/rulerz."). Nothing is folded away or reordered; a word the row above already said is
-  drawn quieter, the verdict keeping its colour.
+  all marked abandoned by their repository and were last released 9.1–9.7 years ago. All come in
+  through wallabag/rulerz."). Nothing is folded away or reordered; a word the row above already said
+  is drawn quieter, the verdict keeping its colour. A count never splits from its word at a hyphen
+  ("1 old-promise"). With no package open, a row is one line from 1280px up.
 - A row's age is a bar on one axis for the whole list, 0 to 10 years (twice the run's high
   threshold, at least 10), with the warn and high thresholds as guides running down every row and
   captioned once in the column head; an older age runs to the edge with a cut mark and its exact
   years beside it. An age that did not set the priority (an abandoned or pinned package) draws a
-  grey bar, keyed in the column head as "not flagged for age". A row with no age says why: "not
-  flagged for age", or "age not read" when a check could not run.
+  grey bar, keyed in the column head beside the axis as "not flagged for age". A row with no age
+  says why: "not flagged for age", or "age not read" when a check could not run. In forced colours
+  the track behind a bar is not drawn, so a short bar never looks long.
 - Filtering by exactly one signal makes every row quote that signal instead of its own top one.
 - A definition that names a threshold setting shows what this run set it to, "5 years
   (release-high-years)".

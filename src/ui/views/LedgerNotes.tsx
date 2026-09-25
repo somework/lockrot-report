@@ -1,6 +1,5 @@
 import type { ComponentChildren } from "preact";
 import type { GroupCounts, RunFacts } from "../../domain/rows";
-import type { AgeKind } from "../../domain/age";
 
 /**
  * The two sentences the Findings list reads out loud (PD-ROWS-6, DESIGN.md §5), in the serif the
@@ -52,16 +51,20 @@ function devPart(counts: GroupCounts): ComponentChildren {
   if (dev === total) return total === 1 ? ", for development only" : ", all for development only";
   return (
     <>
-      , <Num n={dev} /> dev-only
+      ,{" "}
+      <span className="fl-unit">
+        <Num n={dev} /> dev-only
+      </span>
     </>
   );
 }
 
 /** "2 silent and 1 abandoned; you require all three directly." or "19 abandoned, 9 left-behind,
- *  6 silent, 3 pinned and 1 old-promise; 13 direct, 25 transitive, 1 dev-only." */
+ *  6 silent, 3 pinned and 1 old-promise; 13 direct, 25 transitive, 1 dev-only." Each count and its
+ *  word are one unbreakable unit, so a hyphenated verdict never splits at its hyphen ("old-/promise"). */
 export function GroupSentence({ counts }: { counts: GroupCounts }) {
   const verdicts = counts.verdicts.map((v) => (
-    <span key={v.verdict}>
+    <span key={v.verdict} className="fl-unit">
       <Num n={v.count} /> {v.verdict}
     </span>
   ));
@@ -85,19 +88,13 @@ function runReason(facts: RunFacts): string {
     case "pinned":
       return "pinned to a branch snapshot";
     case "left-behind":
-      return "left behind on an older branch";
+      return "left behind on older branches";
     case "old-promise":
       return "released before the target PHP";
     default:
       return facts.verdict;
   }
 }
-
-const AGE_LEAD: Readonly<Record<AgeKind, string>> = {
-  branch: "their branch last released",
-  release: "last released",
-  push: "last pushed",
-};
 
 function yearsRange(min: number, max: number): string {
   const lo = min.toFixed(1);
@@ -106,29 +103,50 @@ function yearsRange(min: number, max: number): string {
 }
 
 /**
- * "These 14 hoa/* packages are all marked abandoned by their repository, last released 9.1–9.7
- * years ago, and all come in through wallabag/rulerz." Above a run of consecutive rows only; says
- * what the rows below share, so their repeated words can stay quiet.
+ * How old the run is, carried on as the same sentence's second verb ("… and were last released
+ * 9.1–9.7 years ago") rather than tacked on after a comma. A left-behind run's own reason already
+ * names the branches, so their age reads straight on from it ("left behind on older branches last
+ * released 3.7–10.3 years ago").
+ */
+function agePart(facts: RunFacts): ComponentChildren {
+  const age = facts.age;
+  if (age === null) return null;
+  const years = <span className="mono">{yearsRange(age.min, age.max)}</span>;
+  if (age.kind === "branch") {
+    return facts.verdict === "left-behind" ? (
+      <> last released {years} years ago</>
+    ) : (
+      <> and their installed branches were last released {years} years ago</>
+    );
+  }
+  return (
+    <>
+      {" "}
+      and were last {age.kind === "push" ? "pushed" : "released"} {years} years ago
+    </>
+  );
+}
+
+/**
+ * "These 14 hoa/* packages are all marked abandoned by their repository and were last released
+ * 9.1–9.7 years ago. All come in through wallabag/rulerz." Above a run of consecutive rows only;
+ * says what the rows below share, so their repeated words can stay quiet. Two sentences, never a
+ * comma splice: what they are and how old, then how they get in.
  */
 export function RunNote({ facts }: { facts: RunFacts }) {
   const who = facts.vendor !== null ? <span className="mono">{facts.vendor}/*</span> : null;
-  const age = facts.age;
   return (
     <p className="frun-note">
       These <Num n={facts.count} /> {who}
       {who && " "}packages are all {runReason(facts)}
-      {age && (
-        <>
-          , {AGE_LEAD[age.kind]} <span className="mono">{yearsRange(age.min, age.max)}</span> years ago
-        </>
-      )}
+      {agePart(facts)}.{" "}
       {facts.via !== null ? (
         <>
-          , and all come in through <b className="mono">{facts.via}</b>
+          All come in through <b className="mono">{facts.via}</b>
           {facts.dev ? ", for development only" : ""}.
         </>
       ) : (
-        <>, and you require each one directly{facts.dev ? " for development" : ""}.</>
+        <>You require each one directly{facts.dev ? ", for development only" : ""}.</>
       )}
     </p>
   );

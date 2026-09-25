@@ -728,10 +728,70 @@ describe("FindingsView / the ledger's sentences and ditto (PD-ROWS-5/PD-ROWS-6, 
     const notes = container.querySelectorAll(".frun-note");
     expect(notes).toHaveLength(1);
     expect(notes[0]?.textContent).toBe(
-      "These 3 hoa/* packages are all marked abandoned by their repository, last released 9.1–9.7 years ago, and all come in through wallabag/rulerz.",
+      "These 3 hoa/* packages are all marked abandoned by their repository and were last released 9.1–9.7 years ago. All come in through wallabag/rulerz.",
     );
     // Every row stays a row; the note folds nothing away.
     expect(screen.getAllByRole("listitem")).toHaveLength(5);
+  });
+
+  it("reads a left-behind run's branch age straight on from its reason, in two sentences", () => {
+    // Arrange: three left-behind rows on old branches, all through one parent.
+    const behind = (name: string, years: number) =>
+      makeFinding({
+        package: `${name}/lib`,
+        verdict: "left-behind",
+        priority: "high",
+        direct: false,
+        chain: ["mautic/core-lib", `${name}/lib`],
+        signals: [makeSignal({ id: "S8", level: "warn", data: { years } })],
+      });
+    const model = modelWith([behind("a", 3.7), behind("b", 10.3), behind("c", 5)]);
+
+    // Act
+    const { container } = renderIn(model, stateWith(), <FindingsView />);
+
+    // Assert: no comma splice ("…older branch, their branch last released …, and all come in…").
+    expect(container.querySelector(".frun-note")?.textContent).toBe(
+      "These 3 packages are all left behind on older branches last released 3.7–10.3 years ago. All come in through mautic/core-lib.",
+    );
+  });
+
+  it("says a run of direct requirements is required directly, for development when it is", () => {
+    // Arrange: three direct dev-only abandoned rows from one vendor, with no age signal.
+    const model = modelWith(
+      ["a", "b", "c"].map((v) =>
+        makeFinding({
+          package: `acme/${v}`,
+          verdict: "abandoned",
+          priority: "high",
+          dev: true,
+          signals: [makeSignal({ id: "S3", level: "high" })],
+        }),
+      ),
+    );
+
+    // Act
+    const { container } = renderIn(model, stateWith(), <FindingsView />);
+
+    // Assert
+    expect(container.querySelector(".frun-note")?.textContent).toBe(
+      "These 3 acme/* packages are all archived upstream. You require each one directly, for development only.",
+    );
+  });
+
+  it("keeps each count and its hyphenated word in one unit that cannot split at the hyphen", () => {
+    // Arrange
+    const model = modelWith([
+      makeFinding({ package: "a/one", verdict: "old-promise", priority: "high", dev: true }),
+      makeFinding({ package: "b/two", verdict: "left-behind", priority: "high" }),
+    ]);
+
+    // Act
+    const { container } = renderIn(model, stateWith(), <FindingsView />);
+
+    // Assert
+    const units = [...container.querySelectorAll(".fgroup-sentence .fl-unit")].map((u) => u.textContent);
+    expect(units).toEqual(["1 left-behind", "1 old-promise", "1 dev-only"]);
   });
 
   it("quietens what repeats the row above, but never the verdict's tone, and starts fresh after a note", () => {
