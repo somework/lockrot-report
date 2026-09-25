@@ -132,7 +132,12 @@
 /* ---------- tabs ----------
    The tab row scrolls sideways when it does not fit. The two "local" gradients are painted with
    the content and cover the two "scroll" shadows at each end until there is something to scroll
-   to on that side: a cue drawn by CSS alone, which the legacy row lacked (css-html.md §10.3). */
+   to on that side: a cue drawn by CSS alone, which the legacy row lacked (css-html.md §10.3).
+   visual review: at 390px, with the last tab cut mid-word, the cue drawn from `--border-strong`
+   read as no cue at all — that token is a hairline-border colour, chosen for a 1px rule, and faded
+   to transparent over 8px it never reached enough contrast against `--surface` to notice next to a
+   clipped word. `--muted` (already legible text on `--surface` in both themes) and a wider, 14px
+   fade read as an actual shadow instead of a slightly different white. */
 .tabs {
   max-width: var(--page-max);
   margin: 0 auto;
@@ -145,8 +150,8 @@
   background:
     linear-gradient(to right, var(--surface) 40%, transparent) left center / 36px 100% no-repeat local,
     linear-gradient(to left, var(--surface) 40%, transparent) right center / 36px 100% no-repeat local,
-    linear-gradient(to right, var(--border-strong), transparent) left center / 8px 100% no-repeat scroll,
-    linear-gradient(to left, var(--border-strong), transparent) right center / 8px 100% no-repeat scroll;
+    linear-gradient(to right, var(--muted), transparent) left center / 14px 100% no-repeat scroll,
+    linear-gradient(to left, var(--muted), transparent) right center / 14px 100% no-repeat scroll;
 }
 .tab {
   flex: none;

@@ -758,6 +758,41 @@ export class NewReportPage implements ReportPage {
     return this.page.evaluate(() => getComputedStyle(document.body).overflow === "hidden");
   }
 
+  async tabsEdgeShadowVisible(): Promise<boolean> {
+    const tabs = this.page.locator(".tabs");
+    const rect = await tabs.boundingBox();
+    if (rect === null) throw new Error("tabs row not found");
+    const overflows = await tabs.evaluate((el) => el.scrollWidth > el.clientWidth);
+    if (!overflows) return false;
+
+    // A thin strip a few pixels below the row's own top edge, clear of every tab's own label text
+    // (`.tab`'s own padding-top, on top of the row's own, keeps a glyph from ever reaching this
+    // high) — the same strip in both themes, so this reads the cue's own contrast, never a glyph's.
+    const sampleWidth = 40;
+    const buf = await this.page.screenshot({
+      clip: {
+        x: Math.max(0, rect.x + rect.width - sampleWidth),
+        y: Math.round(rect.y + 3),
+        width: sampleWidth,
+        height: 1,
+      },
+    });
+    const png = decodePng(buf);
+    const at = (x: number): [number, number, number] => [
+      png.data.readUInt8(x * 4),
+      png.data.readUInt8(x * 4 + 1),
+      png.data.readUInt8(x * 4 + 2),
+    ];
+    // The leftmost sampled pixel sits outside the cue's own width (14px, `app.css`), so it is the
+    // plain surface colour; the rightmost one is the row's true trailing edge, where the cue is at
+    // its strongest.
+    const [fr, fg, fb] = at(0);
+    const [er, eg, eb] = at(png.width - 1);
+    const contrast = Math.max(Math.abs(fr - er), Math.abs(fg - eg), Math.abs(fb - eb));
+
+    return contrast > 90;
+  }
+
   async bundleKeys(): Promise<string[]> {
     return this.page.evaluate(() => {
       const node = document.getElementById("lockrot-data");

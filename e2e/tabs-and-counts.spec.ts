@@ -104,6 +104,21 @@ test.describe("a tab switch resets scroll (a first-time-reader walk found the ol
   });
 });
 
+for (const colorScheme of ["light", "dark"] as const) {
+  test.describe(`the tab row's own scroll-shadow cue at 390px, ${colorScheme} mode (a first-time-reader walk found no hint it scrolls)`, () => {
+    test.use({ viewport: { width: 390, height: 844 }, colorScheme });
+
+    test("is visible", async ({ page }) => {
+      const wallabag = await createReportPage(page);
+      // wallabag_wallabag's five tab labels, with their real badge counts, overflow 390px — `mini`'s
+      // shorter labels do not reliably.
+      await wallabag.goto(FIXTURES.wallabag);
+
+      expect(await wallabag.tabsEdgeShadowVisible()).toBe(true);
+    });
+  });
+}
+
 test.describe("M14: an unrecognised view= falls back", () => {
   test("an unrecognised view falls back to Findings, tab marked selected (M14)", async () => {
     // M14 (DESIGN.md §5), fixed on purpose: legacy left no tab aria-selected and showed Run

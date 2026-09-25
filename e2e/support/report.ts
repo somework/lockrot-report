@@ -267,6 +267,15 @@ export interface ReportPage {
   copyButtonLabel(): Promise<string | null>;
   clickCopyButton(): Promise<void>;
 
+  /**
+   * Whether the tab row's own scroll-shadow cue (its trailing edge, `.tabs` in `ui/app.css`) is
+   * actually visible where the row overflows — read from real painted pixels, not
+   * `getComputedStyle`, since a background gradient can be present in the DOM and still fade to
+   * nothing a reader would notice (a walk found exactly that at 390px: the cue existed but never
+   * registered next to a tab cut off mid-word). `false` when the row does not overflow at all,
+   * the same as `false` for "no cue to see".
+   */
+  tabsEdgeShadowVisible(): Promise<boolean>;
   /** Whether the page currently prevents the document from scrolling (M13's stuck state). */
   isScrollLocked(): Promise<boolean>;
   /** The embedded bundle's top-level keys, from `#lockrot-data` — contract item 7 in history.md. */
