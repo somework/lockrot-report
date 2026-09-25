@@ -86,6 +86,11 @@ tag or the address format, says so under **Breaking** in its entry.
   `extra.lockrot.ignore`.
 - The All packages table says, next to a libyears value of exactly `0.0`, why: the installed release
   is the newest lockrot knows of, or it is not behind the newest stable release.
+- A search says where it matched when that is not only the package name: the status line splits
+  the count, `16 match “hoa/”: 14 by name, 2 mention it (wallabag/rulerz, wallabag/rulerz-bundle)`,
+  naming up to three packages that only mention the word, and each such row on Findings, All
+  packages and Advisories quotes its evidence around the hit, "matched in: pulls in 14 flagged
+  packages: hoa/compiler (abandoned)…". What a search matches, and its `q=` address, are unchanged.
 
 ### Changed
 

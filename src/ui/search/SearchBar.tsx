@@ -1,11 +1,14 @@
-import type { Ref } from "preact";
+import { Fragment, type Ref } from "preact";
 import { useReport } from "../context";
 import { applyFilters, hiddenByFilters, population } from "../../domain/filters";
 import { allAdvisories, passesAdvisoryRail } from "../../domain/advisories";
 import { matchesAdvisory, parseQuery } from "../../domain/query";
 import { radiusCards } from "../../domain/radius";
 import { countPhrase, plural } from "../../domain/format";
-import type { Model } from "../../model/types";
+import { searchSplit, searchSplitPhrase } from "../../domain/searchHits";
+import { NoWrap } from "../common/common";
+import { advisoryGroupsFor } from "../views/order";
+import type { Finding, Model } from "../../model/types";
 import type { State } from "../../state/types";
 import "./search.css";
 
@@ -64,6 +67,54 @@ function countLine(model: Model, state: State): string | null {
   }
 
   return null;
+}
+
+/**
+ * The packages a tab lists, each once, in list order — what the status line's search split counts
+ * (PD-SEARCH-1). The Advisories tab lists a package once per advisory; Blast radius lists pulled
+ * packages under direct requirements, not the findings free text matched, so it has no split.
+ */
+function listedPackages(model: Model, state: State): readonly Finding[] | null {
+  if (state.view === "findings" || state.view === "packages") return applyFilters(model, state, state.view);
+  if (state.view !== "advisories") return null;
+  const seen = new Set<string>();
+  const listed: Finding[] = [];
+  for (const group of advisoryGroupsFor(model, state)) {
+    for (const { finding } of group.advisories) {
+      if (seen.has(finding.package)) continue;
+      seen.add(finding.package);
+      listed.push(finding);
+    }
+  }
+  return listed;
+}
+
+/** The status line's "16 match “hoa/”: 14 by name, 2 mention it (a, b)" — null when free text found
+ *  every listed package by its name, or there is no free text (PD-SEARCH-1). */
+function SearchSplitNote({ model, state }: { model: Model; state: State }) {
+  const listed = listedPackages(model, state);
+  if (listed === null) return null;
+  const unit = state.view === "advisories" ? { one: "package", many: "packages" } : null;
+  const phrase = searchSplitPhrase(searchSplit(listed, parseQuery(state.q)), unit);
+  if (phrase === null) return null;
+  return (
+    <span className="match-split">
+      {" · "}
+      {phrase.text}
+      {phrase.names.length > 0 && (
+        <>
+          {" ("}
+          {phrase.names.map((name, i) => (
+            <Fragment key={name}>
+              {i > 0 && ", "}
+              <NoWrap>{name}</NoWrap>
+            </Fragment>
+          ))}
+          {")"}
+        </>
+      )}
+    </span>
+  );
 }
 
 /** Selected filter keys plus a non-blank query — the same "active" sum legacy's `render()` totals
@@ -138,6 +189,7 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
         <p className="count-line" role="status" aria-live="polite">
           {line}
           {active > 0 && <span className="active-filters"> {plural(active, "filter", "filters")} on</span>}
+          <SearchSplitNote model={model} state={state} />
           {openPkgHidden && (
             <span className="hidden-pkg-note"> · {state.pkg} is hidden by the current filters</span>
           )}

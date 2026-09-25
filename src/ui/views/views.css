@@ -266,6 +266,10 @@
 .adv .m .mono {
   color: var(--ink-2);
 }
+/* PD-SEARCH-1: under the facts, in the text column. */
+.adv > .match-note {
+  grid-column: 2;
+}
 
 /* ---------- Run ---------- */
 .sect {

@@ -10,6 +10,7 @@ import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
 import { advisoryGroupsFor } from "./order";
+import { MatchNote, useSearchHit } from "../search/MatchNote";
 import "./views.css";
 
 /** The fix-cost sentence for one advisory, verbatim from legacy `advRow` (report.js:482-484). */
@@ -33,6 +34,7 @@ function AdvisoryRow({ finding, advisory, first }: AdvisoryRowProps) {
   const inner = innerTabIndex(finding.package, cursor, first);
   const cve = cveUrl(advisory);
   const openedAgo = advisory.reportedAt ? ageText(advisory.reportedAt, now).replace(" ago", "") : null;
+  const hit = useSearchHit(finding);
 
   return (
     <li
@@ -68,6 +70,7 @@ function AdvisoryRow({ finding, advisory, first }: AdvisoryRowProps) {
           </OutLink>
         )}
       </span>
+      <MatchNote hit={hit} shown={`${advisory.title ?? advisory.id} ${advisory.cve ?? advisory.id}`} />
     </li>
   );
 }

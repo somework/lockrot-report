@@ -98,6 +98,7 @@ src/
     links.ts              safeHref, packagistUrl, cveUrl, repoHost
     install.ts            installCommand (the clipboard guard)
     query.ts              parseQuery, the search grammar
+    searchHits.ts         where free text found a package: split, evidence excerpt (PD-SEARCH-1)
     severity.ts           advisory severity normalisation
     advisories.ts         advisoriesOf, fixLadder, advisory sort and match
     filters.ts            filter groups, population per view, matches(), rail facet counts
@@ -145,6 +146,9 @@ Changes from the legacy page, each a fix:
 - `hashchange` is honoured (a link pasted into an open page applies);
 - a whitespace-only query is not an active filter and is not written;
 - the fallback URL keeps `location.search`.
+
+Free text still means every word somewhere in the name, version, verdict or evidence, and `q=` is
+written as before; only the page's explanation of where a word matched is new (PD-SEARCH-1).
 
 ## 5. Behaviour: parity, and the deliberate differences
 
@@ -225,6 +229,7 @@ Changed on purpose after the extraction, so a reader meets the answer before the
 | PD-ROWS-10                  | opening a row reflowed the list and slid a row 30 down off the screen       | the row acted on keeps its place on screen through open and close; a `#pkg=` row scrolls into view; `j`/`k` focus it                          |
 | PD-ROWS-11                  | every row and its links a Tab stop; `j` after Escape went to the top        | one Tab stop a list: the open, else last opened, else first row; `j`/`k` move from the focused row; Escape in search keeps focus              |
 | PD-ROWS-12                  | a sheet hid the focused row; `j` stuck on a package listed twice            | a sheet takes focus, the page under it `inert`; `/` closes it; rows walked by position; Esc in search goes to the list                        |
+| PD-SEARCH-1                 | "hoa/" listed wallabag/rulerz; nothing on its row said why                  | the status splits the count by where it matched, naming ≤3 packages that only mention it; such a row quotes its evidence around the hit       |
 | PD-TIMELINE-1               | the first year label lost half its width off the axis                       | the axis runs from 1 January of the oldest year, labelled at the left edge, to a "today" rule labelled under it                               |
 | PD-TIMELINE-2               | labels floated beside each dot and wrapped around it                        | a table: branch, a line from last release to today, latest version, raw php constraint; one line a row                                        |
 | PD-TIMELINE-3               | a package without maintained branches showed each version twice             | the version once; its third column is the release date, so every table keeps the same four columns                                            |

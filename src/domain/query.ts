@@ -111,6 +111,28 @@ function matchesCveTerm(advisory: Advisory, terms: readonly string[]): boolean {
   return terms.some((term) => id.includes(term));
 }
 
+/** The words of a query with no `key:` prefix, lower-cased — what free text searches for. */
+export function freeTextTerms(terms: readonly Term[]): readonly string[] {
+  return valuesOf(terms, null);
+}
+
+/** The four parts of a finding free text searches, in the order legacy joined them into one
+ *  haystack (`report.js:207`): the package name, its version, its verdict, its evidence. */
+export type SearchField = "name" | "version" | "verdict" | "evidence";
+
+/** Each searched part of a finding with its value, in haystack order. A free-text term never
+ *  contains whitespace (the query is split on it), and the parts are joined with a space, so a term
+ *  that is in the haystack is always inside one part — which is what lets `domain/searchHits.ts`
+ *  say which part matched without searching differently from `matchesFinding`. */
+export function searchFields(f: Finding): readonly (readonly [SearchField, string])[] {
+  return [
+    ["name", f.package],
+    ["version", f.version],
+    ["verdict", f.verdict],
+    ["evidence", f.evidence],
+  ];
+}
+
 /**
  * The query-string part of legacy's `matches(f, terms)` (`report.js:205-222`): free text, then
  * `verdict:`/`priority:`/`direct:`/`dev:`/`signal:`/`severity:`/`cve:`. The rail's own selections
@@ -118,9 +140,12 @@ function matchesCveTerm(advisory: Advisory, terms: readonly string[]): boolean {
  * them from.
  */
 export function matchesFinding(f: Finding, terms: readonly Term[]): boolean {
-  const text = valuesOf(terms, null);
+  const text = freeTextTerms(terms);
   if (text.length > 0) {
-    const haystack = `${f.package} ${f.version} ${f.verdict} ${f.evidence}`.toLowerCase();
+    const haystack = searchFields(f)
+      .map(([, value]) => value)
+      .join(" ")
+      .toLowerCase();
     if (!text.every((term) => haystack.includes(term))) return false;
   }
 

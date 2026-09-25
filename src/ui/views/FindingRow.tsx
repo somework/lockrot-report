@@ -11,6 +11,7 @@ import { ageNotRead, ageScale, type AgeAxis } from "../../domain/age";
 import { reachText, rowSignals, shortFact, vendorOf } from "../../domain/rows";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { AgeCell, AgeCellEmpty } from "./AgeScale";
+import { MatchNote, useSearchHit } from "../search/MatchNote";
 import "./views.css";
 import "./ledger-rows.css";
 
@@ -168,6 +169,8 @@ export interface FindingRowProps {
  * opens the package, like a click anywhere else in the row. The quoted signal's id links to its
  * docs; the others stay mounted under a native `hidden` attribute, so they read as inaccessible on
  * screen while `print.css` un-hides that exact selector — paper has no package to open (PD-ROWS-1).
+ * A row the search box found only in its evidence quotes the words around the hit under its reason
+ * (PD-SEARCH-1), unless the reason already shows them.
  */
 export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
   const { model, state, dispatch, cursor } = useReport();
@@ -178,6 +181,8 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
   const vendor = vendorOf(finding.package);
   const name = vendor === null ? finding.package : finding.package.slice(vendor.length + 1);
   const dim = (on: boolean) => (on ? " is-ditto" : "");
+  const why = key ? shortFact(key, finding) : finding.evidence;
+  const hit = useSearchHit(finding);
 
   return (
     <li
@@ -216,7 +221,8 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
       <span className={`fcell fc-why${dim(ditto.why)}`} title={key?.summary ?? finding.evidence}>
         <AdvisoryTag finding={finding} />
         {key && <SignalId signal={key} tabIndex={inner} />}
-        <span className="fc-why-text">{key ? shortFact(key, finding) : finding.evidence}</span>
+        <span className="fc-why-text">{why}</span>
+        <MatchNote hit={hit} shown={why} />
         {rest.length > 0 && (
           <span className="sig-rest" hidden>
             {rest.map((signal) => (

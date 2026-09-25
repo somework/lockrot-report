@@ -9,6 +9,7 @@ import { Pill, Muted } from "../common/common";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
+import { MatchNote, useSearchHit } from "../search/MatchNote";
 import "./views.css";
 
 /** Column headers in display order, matching the accessible names `e2e/support/new.ts` expects
@@ -75,6 +76,7 @@ function PackageCell({ finding }: { finding: Finding }) {
 function PackageRow({ finding }: { finding: Finding }) {
   const { state, dispatch, cursor } = useReport();
   const isOpen = state.pkg === finding.package;
+  const hit = useSearchHit(finding);
 
   return (
     <tr
@@ -86,6 +88,7 @@ function PackageRow({ finding }: { finding: Finding }) {
     >
       <td>
         <PackageCell finding={finding} />
+        <MatchNote hit={hit} />
       </td>
       <td className="num">{finding.version}</td>
       <td className="num">
