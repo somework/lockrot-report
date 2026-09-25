@@ -105,8 +105,8 @@ function yearsRange(min: number, max: number): string {
 /**
  * How old the run is, carried on as the same sentence's second verb ("… and were last released
  * 9.1–9.7 years ago") rather than tacked on after a comma. A left-behind run's own reason already
- * names the branches, so their age reads straight on from it ("left behind on older branches last
- * released 3.7–10.3 years ago").
+ * names the branches, so it takes the same verb as every other run ("left behind on older branches
+ * and were last released 3.7–10.3 years ago").
  */
 function agePart(facts: RunFacts): ComponentChildren {
   const age = facts.age;
@@ -114,7 +114,7 @@ function agePart(facts: RunFacts): ComponentChildren {
   const years = <span className="mono">{yearsRange(age.min, age.max)}</span>;
   if (age.kind === "branch") {
     return facts.verdict === "left-behind" ? (
-      <> last released {years} years ago</>
+      <> and were last released {years} years ago</>
     ) : (
       <> and their installed branches were last released {years} years ago</>
     );

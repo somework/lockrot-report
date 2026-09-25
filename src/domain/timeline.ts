@@ -14,6 +14,7 @@
  */
 
 import type { BranchRow, ExplainLock } from "../model/types";
+import { yearsPhrase } from "./format";
 
 const MS_PER_DAY = 24 * 3600 * 1000;
 const MS_PER_JULIAN_YEAR = 365.25 * MS_PER_DAY;
@@ -173,18 +174,13 @@ export function sortLanes<T extends Sortable>(lanes: readonly T[]): { sorted: T[
 }
 
 /**
- * How long ago `iso` was, in the unit a reader holds for that span: days under a week, weeks under
- * about two months, months under a year, then years to one decimal ("7 weeks", "4 months", "4.1
- * years"). The answer sentence's wording; `ageText` (format.ts) stays the terse "4.1 y ago" of the
- * reference sections. A date at or after `now` reads "1 day", never "0 days" or a negative span.
+ * How long ago `iso` was, spelled out for the answer sentence ("7 months", "4.1 years") in the
+ * page's one age unit (`format.ts#yearsPhrase`), so it never quotes "8 weeks" beside the facts
+ * row's "2 mo ago" for the same release. A date at or after `now` reads "1 month", never "0" or a
+ * negative span.
  */
 export function agePhrase(iso: string, now: Date): string {
-  const days = (now.getTime() - new Date(iso).getTime()) / MS_PER_DAY;
-  const unit = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`;
-  if (days < 7) return unit(Math.max(1, Math.round(days)), "day", "days");
-  if (days < 60) return unit(Math.round(days / 7), "week", "weeks");
-  if (days < 365) return unit(Math.round(days / 30.44), "month", "months");
-  return `${(days / 365.25).toFixed(1)} years`;
+  return yearsPhrase(yearsSince(iso, now));
 }
 
 /** Years between `iso` and `now` (fractional; negative for a future date). */

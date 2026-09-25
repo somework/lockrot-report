@@ -25,7 +25,11 @@
 }
 /* Mono inside a serif line reads large at the same size; 0.84em sits it on the serif's x-height —
    the release-branches answer's own rule (`.detail-timeline-name`). */
+/* A name inside the sentence is kept whole: it moves to the next line entire rather than breaking
+   after its "/", and breaks inside only when it alone is wider than the line. */
 .detail-answer-name {
+  display: inline-block;
+  max-width: 100%;
   font-family: var(--mono);
   font-size: 0.84em;
   font-weight: 600;
@@ -39,7 +43,10 @@
   color: var(--tone);
 }
 .detail-answer-replacement {
+  display: inline-block;
+  max-width: 100%;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 /* `.out` is the header's small, muted link; inside the sentence the replacement link reads at the
    sentence's own size and ink, underlined so it is still visibly a link. */
@@ -162,6 +169,22 @@
   flex-wrap: wrap;
   align-items: baseline;
   row-gap: 2px;
+}
+/* A hop and the "›" after it (the last hop: its "· require-dev") are one flex item, so a wrapped
+   line never starts on a separator or on the dev note alone. The hop itself may still shrink and
+   break inside a name wider than the whole line. */
+.detail-chain-step {
+  display: inline-flex;
+  align-items: baseline;
+  min-width: 0;
+  max-width: 100%;
+}
+.detail-chain-step > .detail-hop,
+.detail-chain-step > .detail-hop-link {
+  min-width: 0;
+}
+.detail-hop-note {
+  white-space: nowrap;
 }
 .detail-hop,
 .detail-hop-link {

@@ -9,7 +9,7 @@ import {
   type AnswerPart,
   type PulledEntry,
 } from "../../domain/answer";
-import { ageText, fixed } from "../../domain/format";
+import { ageText, fixed, yearsAgo } from "../../domain/format";
 import { waysIn } from "../../domain/reach";
 import { timelineModel, type TimelineModel } from "../../domain/timeline";
 import { Muted, OutLink, toneClass } from "../common/common";
@@ -79,11 +79,6 @@ function AnswerNode({ part }: { part: AnswerPart }) {
         <b className="detail-answer-replacement">{part.text}</b>
       );
   }
-}
-
-/** "3.6 y ago" / "7 mo ago", from a signal's own years — the unit `ageText` gives a date. */
-function yearsAgo(years: number): string {
-  return years < 1 ? `${Math.max(1, Math.round(years * 12))} mo ago` : `${years.toFixed(1)} y ago`;
 }
 
 interface Fact {
@@ -210,7 +205,7 @@ function newerThanYours(timeline: TimelineModel | null): ComponentChildren | nul
  * a direct finding's chain is just itself.
  */
 function Chain({ finding }: { finding: Finding }) {
-  const { model, dispatch } = useReport();
+  const { model } = useReport();
   const hops = finding.chain.length > 0 ? finding.chain : [finding.package];
   const flagged = new Set(model.report.findings.map((f) => f.package));
   // The same ways in the answer sentence and the ladder's reach rung count (`reach.ts#waysIn`).
@@ -220,31 +215,26 @@ function Chain({ finding }: { finding: Finding }) {
   return (
     <>
       <span className="detail-chain">
-        <span className="detail-hop is-root">composer.json</span>
-        {hops.map((pkg) => (
-          <Fragment key={pkg}>
-            <span className="detail-hop-sep" aria-hidden="true">
-              ›
+        {/* Each hop carries the "›" after it, and the last one its "· require-dev", as one unit: a
+            line breaks only after a separator, never before one or before the dev note alone. */}
+        {["composer.json", ...hops].map((pkg, index) => {
+          const last = index === hops.length;
+          return (
+            <span key={`${index}-${pkg}`} className="detail-chain-step">
+              {index === 0 ? (
+                <span className="detail-hop is-root">{pkg}</span>
+              ) : (
+                <Hop pkg={pkg} self={pkg === finding.package} flagged={flagged.has(pkg)} />
+              )}
+              {!last && (
+                <span className="detail-hop-sep" aria-hidden="true">
+                  ›
+                </span>
+              )}
+              {last && finding.dev && <span className="detail-hop-note">require-dev</span>}
             </span>
-            {pkg === finding.package ? (
-              <span className="detail-hop is-self">{pkg}</span>
-            ) : flagged.has(pkg) ? (
-              <button
-                type="button"
-                className="detail-hop-link"
-                title={`Open ${pkg}`}
-                onClick={() => {
-                  dispatch({ type: "select", pkg });
-                }}
-              >
-                {pkg}
-              </button>
-            ) : (
-              <span className="detail-hop">{pkg}</span>
-            )}
-          </Fragment>
-        ))}
-        {finding.dev && <span className="detail-hop-note">require-dev</span>}
+          );
+        })}
       </span>
       {others.length > 0 && (
         <span className="detail-chain-also">
@@ -258,6 +248,26 @@ function Chain({ finding }: { finding: Finding }) {
         </span>
       )}
     </>
+  );
+}
+
+/** One hop of the chain: the open package in ink, a hop that is itself a finding here a button
+ *  that opens it (the same `select` every row sends), any other in mono. */
+function Hop({ pkg, self, flagged }: { pkg: string; self: boolean; flagged: boolean }) {
+  const { dispatch } = useReport();
+  if (self) return <span className="detail-hop is-self">{pkg}</span>;
+  if (!flagged) return <span className="detail-hop">{pkg}</span>;
+  return (
+    <button
+      type="button"
+      className="detail-hop-link"
+      title={`Open ${pkg}`}
+      onClick={() => {
+        dispatch({ type: "select", pkg });
+      }}
+    >
+      {pkg}
+    </button>
   );
 }
 

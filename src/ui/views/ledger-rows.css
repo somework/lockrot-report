@@ -314,10 +314,10 @@
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
-/* A repeat keeps its tone and loses its weight: quieter, never greyed. */
+/* A repeat keeps its full tone and loses only its weight: quieter, never dimmed or greyed. A
+   critical row's verdict never repeats (FindingsView.tsx#dittoFor). */
 .fc-verdict.is-ditto {
   font-weight: 500;
-  color: color-mix(in srgb, var(--tone) 60%, var(--muted));
 }
 
 .fc-pkg {

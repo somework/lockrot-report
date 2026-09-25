@@ -42,9 +42,31 @@ function years(iso: string | null | undefined, now: Date): number | null {
 export function ageText(iso: string | null | undefined, now: Date): string {
   const y = years(iso, now);
   if (y === null) return "undated";
-  if (y < 1) return `${Math.max(1, Math.round(y * 12))} mo ago`;
+  return yearsAgo(y);
+}
 
-  return `${y.toFixed(1)} y ago`;
+/**
+ * The page's one age unit: whole months under a year (never fewer than one), tenths of a year from
+ * one on. `yearsAgo` is its terse form ("7 mo ago", "3.6 y ago"), for the facts row and the
+ * reference sections; `yearsPhrase` spells the same figure out ("7 months", "3.6 years") for a
+ * sentence. Both round alike, so a panel that quotes one age twice quotes the same number in the
+ * same unit (an evaluator read "2 mo ago" beside "8 weeks ago" as two different ages).
+ */
+function monthsUnderAYear(years: number): number | null {
+  return years < 1 ? Math.max(1, Math.round(years * 12)) : null;
+}
+
+/** "7 mo ago", "3.6 y ago" — see `monthsUnderAYear`. */
+export function yearsAgo(years: number): string {
+  const months = monthsUnderAYear(years);
+  return months !== null ? `${months} mo ago` : `${years.toFixed(1)} y ago`;
+}
+
+/** "1 month", "7 months", "3.6 years" — see `monthsUnderAYear`. */
+export function yearsPhrase(years: number): string {
+  const months = monthsUnderAYear(years);
+  if (months !== null) return months === 1 ? "1 month" : `${months} months`;
+  return `${years.toFixed(1)} years`;
 }
 
 /** `one` when `n` is exactly `1`, `many` otherwise — the word `plural()` prefixes with the count.

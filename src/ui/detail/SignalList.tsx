@@ -5,11 +5,14 @@ import {
   checkStrip,
   checkTally,
   dataLabel,
+  identifierPieces,
   levelTone,
+  pulledRows,
   timestampParts,
   wrapParts,
   type CheckCell,
   type CheckState,
+  type PulledRow,
 } from "../../domain/checks";
 import { annotateThresholds, DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC } from "../../domain/vocab";
 import { OutLink, toneClass } from "../common/common";
@@ -44,22 +47,40 @@ function isScalar(value: unknown): value is string | number | boolean | null {
 /**
  * Text that wraps between words and, inside a package name, URL, id or date, only after a "/" or
  * "::" (`domain/checks.ts#wrapParts`). Each identifier piece is an inline-block: kept whole on its
- * line while it fits one, wrapped inside only when it alone is wider than the line.
+ * line while it fits one, wrapped inside only when it alone is wider than the line. `prose` keeps a
+ * whole identifier as one piece, for a sentence rather than a narrow data column.
  */
-function Wrapped({ text }: { text: string }) {
-  const parts = wrapParts(text);
+function Wrapped({ text, prose = false }: { text: string; prose?: boolean }) {
+  const parts = wrapParts(text, { paths: !prose });
   if (parts.length === 1 && parts[0]?.atomic !== true) return <>{text}</>;
   return (
     <>
       {parts.map((part, index) =>
         part.atomic ? (
           <span key={index} className="detail-token">
-            {part.text}
+            {prose ? <PathPieces token={part.text} /> : part.text}
           </span>
         ) : (
           <Fragment key={index}>{part.text}</Fragment>
         ),
       )}
+    </>
+  );
+}
+
+/** A whole identifier inside prose, its pieces each kept whole in turn: the outer `detail-token`
+ *  keeps the name on one line while it fits, and only a name wider than the line breaks — after its
+ *  "/" or "::", never at a hyphen ("package-versions-/deprecated") while a piece fits. */
+function PathPieces({ token }: { token: string }) {
+  const pieces = identifierPieces(token);
+  if (pieces.length === 1) return <>{token}</>;
+  return (
+    <>
+      {pieces.map((piece, index) => (
+        <span key={index} className="detail-token">
+          {piece}
+        </span>
+      ))}
     </>
   );
 }
@@ -70,8 +91,9 @@ function joinerFor(key: string): string {
   return key === "chain" ? " › " : ", ";
 }
 
-/** A list of scalars, each item's separator kept with it ("S2," then "S8"; "mautic/core-lib ›"),
- *  so a wrapped line never starts on one. */
+/** A list of scalars, each item's separator kept with it ("S2," then "S8"; "mautic/core-lib ›",
+ *  glued by a no-break space that `wrapParts` keeps inside the item's last piece), so a wrapped line
+ *  never starts on one. */
 function ScalarList({ items, joiner }: { items: readonly string[]; joiner: string }) {
   const glued = joiner.trimEnd().replace(/^ /, "\u00a0");
   return (
@@ -92,6 +114,56 @@ function DataRecord({ record }: { record: Readonly<Record<string, unknown>> }) {
         </Fragment>
       ))}
     </dl>
+  );
+}
+
+/** A pulled-in package's "via": the hops between the open package and it, or "direct". */
+function Via({ hops }: { hops: readonly string[] }) {
+  if (hops.length === 0) return <span className="detail-data-null">direct</span>;
+  return <ScalarList items={hops} joiner=" › " />;
+}
+
+/**
+ * S7's flagged packages as one compact table — package · verdict · via — instead of one bordered
+ * three-line block each (21 of them ran past 2000px). "Via" is the chain between the open package
+ * and the row's package (`checks.ts#pulledRows`); "direct" when there is none. On a narrow sheet the
+ * via column folds under each package as a muted second line, left out for a direct one, and the
+ * column head says so (`detail.css`); only one of the two is ever displayed, so a screen reader hears
+ * it once.
+ */
+function PulledTable({ rows }: { rows: readonly PulledRow[] }) {
+  return (
+    <table className="detail-pulled-table">
+      <thead>
+        <tr>
+          <th scope="col">
+            package<span className="detail-pulled-via-head">, and its via unless direct</span>
+          </th>
+          <th scope="col">verdict</th>
+          <th scope="col" className="detail-pulled-via">
+            via
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr key={row.package}>
+            <td>
+              <Wrapped text={row.package} />
+              {row.via.length > 0 && (
+                <span className="detail-pulled-via-under">
+                  via <Via hops={row.via} />
+                </span>
+              )}
+            </td>
+            <td className="detail-pulled-verdict">{row.verdict}</td>
+            <td className="detail-pulled-via">
+              <Via hops={row.via} />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
@@ -135,8 +207,10 @@ function hasRecords(value: unknown): boolean {
  * block each, one line per field, anything deeper as JSON. Every key and value the document carries
  * is still shown; only the punctuation changes.
  */
-function formatDataValue(value: unknown, key: string): ComponentChildren {
+function formatDataValue(value: unknown, key: string, openPackage: string | null = null): ComponentChildren {
   if (isScalar(value)) return <DataScalar value={value} />;
+  const pulled = openPackage === null ? null : pulledRows(value, openPackage);
+  if (pulled !== null) return <PulledTable rows={pulled} />;
   const items = scalarItems(value);
   if (items !== null) return <ScalarList items={items} joiner={joinerFor(key)} />;
   if (isRecord(value)) return <DataRecord record={value} />;
@@ -151,7 +225,7 @@ function formatDataValue(value: unknown, key: string): ComponentChildren {
  * check's data costs one line per key, not two; a list of objects takes the full width under its
  * label, at every width (`detail.css`).
  */
-function SignalData({ data }: { data: Readonly<Record<string, unknown>> }) {
+function SignalData({ data, pkg }: { data: Readonly<Record<string, unknown>>; pkg: string }) {
   const entries = Object.entries(data);
   if (entries.length === 0) {
     return <p className="detail-data-empty">This check carries no data.</p>;
@@ -160,11 +234,12 @@ function SignalData({ data }: { data: Readonly<Record<string, unknown>> }) {
     <dl className="detail-kv detail-data">
       {entries.map(([key, value]) => {
         const wide = isWide(value) ? "is-wide" : undefined;
-        const ddClass = hasRecords(value) ? "is-wide has-records" : wide;
+        const table = pulledRows(value, pkg) !== null;
+        const ddClass = hasRecords(value) && !table ? "is-wide has-records" : wide;
         return (
           <Fragment key={key}>
             <dt className={wide}>{dataLabel(key)}</dt>
-            <dd className={ddClass}>{formatDataValue(value, key)}</dd>
+            <dd className={ddClass}>{formatDataValue(value, key, pkg)}</dd>
           </Fragment>
         );
       })}
@@ -229,7 +304,7 @@ function StateLine({
  * `<summary>`: a summary is itself a control, and a link nested in it is unreachable to assistive
  * tech and fires the disclosure on click.
  */
-function FiredRow({ signal }: { signal: Signal }) {
+function FiredRow({ signal, pkg }: { signal: Signal; pkg: string }) {
   const { model } = useReport();
   const doc = SIGNAL_DOC[signal.id] ?? `${DOCS_URL}#the-signals`;
   const def = SIGNAL_DEFS[signal.id];
@@ -239,7 +314,7 @@ function FiredRow({ signal }: { signal: Signal }) {
       <summary className="detail-fired-summary">
         <span className="detail-fired-id">{signal.id}</span>
         <span className="detail-fired-text">
-          <Wrapped text={signal.summary} />
+          <Wrapped text={signal.summary} prose />
         </span>
         <span className="detail-fired-level">{signal.level}</span>
       </summary>
@@ -247,12 +322,12 @@ function FiredRow({ signal }: { signal: Signal }) {
         <p className="detail-fired-def">
           {def !== undefined && (
             <>
-              <Wrapped text={annotateThresholds(def, model.report.run.thresholds)} />{" "}
+              <Wrapped text={annotateThresholds(def, model.report.run.thresholds)} prose />{" "}
             </>
           )}
           <OutLink href={doc}>{signal.id} in lockrot’s docs</OutLink>
         </p>
-        <SignalData data={signal.data} />
+        <SignalData data={signal.data} pkg={pkg} />
       </div>
     </details>
   );
@@ -306,7 +381,7 @@ export function SignalList({ finding }: { finding: Finding }) {
       ) : (
         <div className="detail-fired-list">
           {strip.fired.map((signal) => (
-            <FiredRow key={signal.id} signal={signal} />
+            <FiredRow key={signal.id} signal={signal} pkg={finding.package} />
           ))}
         </div>
       )}

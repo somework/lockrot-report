@@ -10,6 +10,7 @@
  */
 
 import type { Finding, Signal } from "../model/types";
+import { yearsPhrase } from "./format";
 import {
   ageSource,
   ageZone,
@@ -58,14 +59,9 @@ function num(data: Signal["data"] | undefined, key: string): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-/** "3.6 years", "1 month", "7 months" — a signal's own `years`, as the list's rows round it. */
-export function yearsPhrase(years: number): string {
-  if (years < 1) {
-    const months = Math.max(1, Math.round(years * 12));
-    return months === 1 ? "1 month" : `${months} months`;
-  }
-  return `${years.toFixed(1)} years`;
-}
+/** "3.6 years", "1 month", "7 months" — a signal's own `years`, in the page's one age unit
+ *  (`format.ts#yearsPhrase`). */
+export { yearsPhrase };
 
 /** An age figure in its zone's tone, or in ink when the verdict does not rest on age
  *  (`contextOnly`) or the run never recorded the pair it is measured against. */

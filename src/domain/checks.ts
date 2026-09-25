@@ -169,7 +169,7 @@ export interface WrapPart {
 const IDENTIFIER = /[-/]|::/;
 
 /** A token split after each "/" that ends a path segment (a "//" stays whole) and after each "::". */
-function identifierPieces(token: string): string[] {
+export function identifierPieces(token: string): string[] {
   const pieces: string[] = [];
   let start = 0;
   for (let i = 0; i < token.length - 1; i += 1) {
@@ -190,13 +190,20 @@ function identifierPieces(token: string): string[] {
  * a "/" or "::" — "composer/" then "package-versions-deprecated", "https://", "github.com/", … — never
  * at the hyphens of "left-behind", "2022-03-17" or "PKSA-kbc7-dq62-pt7d". Each identifier piece is
  * `atomic` (the renderer keeps it on one line unless it alone is wider than the line); everything
- * else, spaces included, is a plain run. Punctuation attached to a token stays with it. Joined, the
- * parts are the text unchanged.
+ * else, spaces included, is a plain run. Punctuation attached to a token stays with it, and so does
+ * a separator glued on with a no-break space ("doctrine/dbal\u00a0›"): it rides in the token's last
+ * piece, so a line breaks after it, never before it. Joined, the parts are the text unchanged.
+ *
+ * `paths: false` is for prose (a fired check's summary, its definition): an identifier is one piece,
+ * never broken after its "/" while it fits the line — a package name read inside a sentence stays
+ * whole. The "/"-breaks are for narrow data columns only (the renderer may still offer them inside a
+ * prose piece, for when it alone is wider than the line).
  */
-export function wrapParts(text: string): readonly WrapPart[] {
+export function wrapParts(text: string, { paths = true }: { paths?: boolean } = {}): readonly WrapPart[] {
   const parts: WrapPart[] = [];
   let plain = "";
-  for (const token of text.split(/(\s+)/)) {
+  // Split at breaking whitespace only: a no-break space keeps what it joins in one token.
+  for (const token of text.split(/([^\S\u00a0]+)/)) {
     if (token === "") continue;
     if (!IDENTIFIER.test(token) || /^\s+$/.test(token)) {
       plain += token;
@@ -204,10 +211,44 @@ export function wrapParts(text: string): readonly WrapPart[] {
     }
     if (plain !== "") parts.push({ text: plain, atomic: false });
     plain = "";
-    for (const piece of identifierPieces(token)) parts.push({ text: piece, atomic: true });
+    const pieces = paths ? identifierPieces(token) : [token];
+    for (const piece of pieces) parts.push({ text: piece, atomic: true });
   }
   if (plain !== "" || parts.length === 0) parts.push({ text: plain, atomic: false });
   return parts;
+}
+
+/** One flagged package S7 pulls in, as its `data.packages` entry names it. */
+export interface PulledRow {
+  readonly package: string;
+  readonly verdict: string;
+  /** The hops between the open package and this one: the chain without its first hop when that is
+   *  the open package, and without its last when that is this package. Empty: pulled in directly. */
+  readonly via: readonly string[];
+}
+
+/**
+ * S7's `data.packages` as table rows (package · verdict · via), or `null` when the value is not a
+ * list of `{package, verdict, chain}` objects with no other field — any other shape keeps the
+ * generic per-field drawing, so nothing the document carries is hidden. The chain's first hop is
+ * the open package every row repeats, and its last the row's own package, so neither is said again.
+ */
+export function pulledRows(value: unknown, openPackage: string): readonly PulledRow[] | null {
+  if (!Array.isArray(value) || value.length === 0) return null;
+  const rows: PulledRow[] = [];
+  for (const item of value) {
+    if (typeof item !== "object" || item === null || Array.isArray(item)) return null;
+    const record = item as Readonly<Record<string, unknown>>;
+    const keys = Object.keys(record).sort().join(",");
+    const chain = strings(record.chain);
+    const { package: pkg, verdict } = record;
+    if (keys !== "chain,package,verdict" || chain === null) return null;
+    if (typeof pkg !== "string" || typeof verdict !== "string") return null;
+    const start = chain[0] === openPackage ? 1 : 0;
+    const end = chain.length > start && chain[chain.length - 1] === pkg ? chain.length - 1 : chain.length;
+    rows.push({ package: pkg, verdict, via: chain.slice(start, end) });
+  }
+  return rows;
 }
 
 /**

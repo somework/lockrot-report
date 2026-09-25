@@ -1,3 +1,4 @@
+import { ageText } from "../../../src/domain/format";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -454,17 +455,20 @@ describe("sameVersion (PD-TIMELINE-3, DESIGN.md §5)", () => {
 describe("agePhrase", () => {
   const ago = (days: number): string => new Date(NOW.getTime() - days * 86_400_000).toISOString();
 
-  it("says days under a week, weeks under two months, months under a year, then years", () => {
-    expect(agePhrase(ago(1), NOW)).toBe("1 day");
-    expect(agePhrase(ago(6), NOW)).toBe("6 days");
-    expect(agePhrase(ago(7), NOW)).toBe("1 week");
-    expect(agePhrase(ago(51), NOW)).toBe("7 weeks");
+  it("spells out the page's one age unit: whole months under a year, then years", () => {
+    expect(agePhrase(ago(1), NOW)).toBe("1 month");
+    expect(agePhrase(ago(51), NOW)).toBe("2 months");
     expect(agePhrase(ago(110), NOW)).toBe("4 months");
     expect(agePhrase(ago(1500), NOW)).toBe("4.1 years");
   });
 
+  it("quotes the same figure the facts row's terse form does", () => {
+    const iso = ago(56);
+    expect(agePhrase(iso, NOW).split(" ")[0]).toBe(ageText(iso, NOW).split(" ")[0]);
+  });
+
   it("never says zero or a negative span for a date at or after now", () => {
-    expect(agePhrase(NOW.toISOString(), NOW)).toBe("1 day");
-    expect(agePhrase(ago(-30), NOW)).toBe("1 day");
+    expect(agePhrase(NOW.toISOString(), NOW)).toBe("1 month");
+    expect(agePhrase(ago(-30), NOW)).toBe("1 month");
   });
 });

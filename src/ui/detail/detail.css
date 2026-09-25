@@ -437,6 +437,55 @@
 .detail-data-null {
   color: var(--muted);
 }
+/* S7's flagged packages (SignalList.tsx#PulledTable): one line a package where the columns allow,
+   package in ink, verdict in words, the hops between the open package and it muted. Rules between
+   rows keep a wrapped name with its own verdict. */
+.detail-pulled-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+.detail-pulled-table th {
+  padding: 4px 8px 3px 0;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 400;
+  text-align: left;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border-strong);
+}
+.detail-pulled-table td {
+  padding: 3px 8px 3px 0;
+  vertical-align: baseline;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: break-word;
+}
+.detail-pulled-table th:last-child,
+.detail-pulled-table td:last-child {
+  padding-right: 0;
+}
+.detail-pulled-table td:first-child {
+  color: var(--ink);
+  font-weight: 600;
+}
+.detail-pulled-table .detail-pulled-verdict {
+  width: 1%;
+  font-family: var(--sans);
+  font-weight: 400;
+  white-space: nowrap;
+}
+.detail-pulled-table td.detail-pulled-via {
+  width: 40%;
+  color: var(--muted);
+}
+.detail-pulled-via-under,
+.detail-pulled-via-head {
+  display: none;
+  font-weight: 400;
+  color: var(--muted);
+}
 /* A timestamp breaks, when it has to, only between its date and its time. */
 .detail-data-date,
 .detail-data-time {
@@ -493,15 +542,33 @@
   white-space: nowrap;
   border: 0;
 }
-/* A 320px phone's sheet: the body gives its indent back to the data, and the strip's names drop a
-   size step and the gaps a pixel so the longest single word, "abandoned" (53px), fits its 55px cell
-   whole. Labels stay beside their values at every width; a long label wraps inside its own 40%. */
+/* A 320px phone's sheet: the body gives its indent back to the data, and the strip's names drop
+   half a size step (never under 10px) and the gaps close so the longest single word, "abandoned",
+   fits its cell whole. Labels stay beside their values at every width; a long label wraps inside its own 40%. */
 .detail-fired-list {
   container: fired / inline-size;
+}
+/* A phone's sheet: three columns do not fit a package name, its verdict and its chain side by side,
+   so the via folds under its package as a muted second line and the table keeps two columns. */
+@container fired (max-width: 439.98px) {
+  .detail-pulled-table .detail-pulled-via {
+    display: none;
+  }
+  .detail-pulled-via-under {
+    display: block;
+  }
+  .detail-pulled-via-head {
+    display: inline;
+  }
 }
 @container fired (max-width: 299.98px) {
   .detail-fired-body {
     padding-left: 10px;
+  }
+  /* Labels take only what the longest needs (up to 7em, wrapping past it), so a value such as a
+     repository's "SensioFrameworkExtraBundle" keeps the rest of the line and stays whole. */
+  .detail-data {
+    grid-template-columns: fit-content(7em) minmax(0, 1fr);
   }
   /* "affected versions" wraps under itself rather than narrowing an advisory's title. */
   .detail-data > dd.has-records {
@@ -516,7 +583,8 @@
     column-gap: 3px;
   }
   .detail-check-name {
-    font-size: 9.5px;
+    font-size: 10px;
+    letter-spacing: -0.01em;
   }
 }
 

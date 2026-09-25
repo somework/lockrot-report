@@ -752,7 +752,7 @@ describe("FindingsView / the ledger's sentences and ditto (PD-ROWS-5/PD-ROWS-6, 
 
     // Assert: no comma splice ("…older branch, their branch last released …, and all come in…").
     expect(container.querySelector(".frun-note")?.textContent).toBe(
-      "These 3 packages are all left behind on older branches last released 3.7–10.3 years ago. All come in through mautic/core-lib.",
+      "These 3 packages are all left behind on older branches and were last released 3.7–10.3 years ago. All come in through mautic/core-lib.",
     );
   });
 
@@ -812,6 +812,22 @@ describe("FindingsView / the ledger's sentences and ditto (PD-ROWS-5/PD-ROWS-6, 
     // The verdict word is still there, in the row's own tone class, only lighter.
     expect(second.querySelector(".fc-verdict")?.textContent).toBe("abandoned");
     expect(second.className).toContain("tone-crit");
+  });
+
+  it("never quietens a repeated verdict in the critical group, and elsewhere drops only its weight", () => {
+    // Arrange
+    const crit = (name: string) =>
+      makeFinding({ package: `c/${name}`, verdict: "silent", priority: "critical", direct: true });
+    const model = modelWith([crit("one"), crit("two"), hoa("compiler", 9.1), hoa("event", 9.7)]);
+
+    // Act
+    renderIn(model, stateWith(), <FindingsView />);
+
+    // Assert
+    const verdict = (name: string) =>
+      screen.getByRole("listitem", { name }).querySelector(".fc-verdict")?.className ?? "";
+    expect(verdict("c/two")).not.toContain("is-ditto");
+    expect(verdict("hoa/event")).toContain("is-ditto");
   });
 
   it("keeps the baseline badge, the dev marker and the open row's state", () => {

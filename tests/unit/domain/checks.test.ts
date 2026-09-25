@@ -6,6 +6,7 @@ import {
   checkTally,
   dataLabel,
   levelTone,
+  pulledRows,
   timestampParts,
   wrapParts,
 } from "../../../src/domain/checks";
@@ -232,6 +233,23 @@ describe("checkName", () => {
 });
 
 describe("wrapParts", () => {
+  it("keeps a separator glued on with a no-break space inside the piece before it", () => {
+    const parts = wrapParts("mautic/core-lib\u00a0› doctrine/dbal");
+    expect(parts).toEqual([
+      { text: "mautic/", atomic: true },
+      { text: "core-lib\u00a0›", atomic: true },
+      { text: " ", atomic: false },
+      { text: "doctrine/", atomic: true },
+      { text: "dbal", atomic: true },
+    ]);
+  });
+
+  it("keeps a whole identifier as one piece in prose", () => {
+    const parts = wrapParts("pulls in doctrine/annotations (abandoned)", { paths: false });
+    expect(parts.filter((part) => part.atomic).map((part) => part.text)).toEqual(["doctrine/annotations"]);
+    expect(parts.map((part) => part.text).join("")).toBe("pulls in doctrine/annotations (abandoned)");
+  });
+
   const atoms = (text: string) =>
     wrapParts(text)
       .filter((p) => p.atomic)
@@ -281,5 +299,36 @@ describe("wrapParts", () => {
     ]) {
       expect(joined(text)).toBe(text);
     }
+  });
+});
+
+describe("pulledRows", () => {
+  const OPEN = "mautic/core-lib";
+
+  it("drops the open package's hop and the row's own, leaving what it comes in through", () => {
+    const rows = pulledRows(
+      [
+        { package: "doctrine/cache", verdict: "abandoned", chain: [OPEN, "doctrine/dbal", "doctrine/cache"] },
+        { package: "gaufrette/extras", verdict: "silent", chain: [OPEN, "gaufrette/extras"] },
+      ],
+      OPEN,
+    );
+    expect(rows).toEqual([
+      { package: "doctrine/cache", verdict: "abandoned", via: ["doctrine/dbal"] },
+      { package: "gaufrette/extras", verdict: "silent", via: [] },
+    ]);
+  });
+
+  it("keeps a first hop that is not the open package", () => {
+    const rows = pulledRows([{ package: "c/c", verdict: "stale", chain: ["a/a", "b/b", "c/c"] }], OPEN);
+    expect(rows?.[0]?.via).toEqual(["a/a", "b/b"]);
+  });
+
+  it("returns null for any other shape, so the generic drawing shows every field", () => {
+    expect(pulledRows([], OPEN)).toBeNull();
+    expect(pulledRows("x", OPEN)).toBeNull();
+    expect(pulledRows([{ package: "a/a", verdict: "stale", chain: "a/a" }], OPEN)).toBeNull();
+    expect(pulledRows([{ package: "a/a", verdict: "stale", chain: [], extra: 1 }], OPEN)).toBeNull();
+    expect(pulledRows([{ id: "S2" }], OPEN)).toBeNull();
   });
 });

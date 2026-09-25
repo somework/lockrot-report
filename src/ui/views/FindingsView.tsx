@@ -67,12 +67,14 @@ function groupByPriority(findings: readonly Finding[]): { priority: string; find
 }
 
 /** What a row repeats of the row above it in the same segment (PD-ROWS-5): a segment's first row,
- *  and every row right after a run note, repeats nothing — the note or the group head broke the line. */
+ *  and every row right after a run note, repeats nothing — the note or the group head broke the line.
+ *  A critical row's verdict is never a repeat: every critical verdict keeps its full weight, so none
+ *  reads as less urgent than the one above it (a judge's must-fix). */
 function dittoFor(finding: Finding, prev: Finding | undefined, quoted: string | null): Ditto {
   if (!prev) return NO_DITTO;
   const vendor = vendorOf(finding.package);
   return {
-    verdict: prev.verdict === finding.verdict,
+    verdict: prev.verdict === finding.verdict && finding.priority !== "critical",
     vendor: vendor !== null && vendorOf(prev.package) === vendor,
     why: whyText(prev, quoted) === whyText(finding, quoted),
     reach: reachText(prev) === reachText(finding) && prev.dev === finding.dev,

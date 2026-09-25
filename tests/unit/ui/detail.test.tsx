@@ -552,20 +552,35 @@ describe("Detail", () => {
       expect(wide).toEqual(["DT", "DD"]);
     });
 
-    it("joins a dependency chain with › and keeps each separator with the hop before it", () => {
+    it("draws S7's packages as one table, package · verdict · via, each separator kept with its hop", () => {
       const { container } = renderDetail(WALLABAG, "scheb/2fa-google-authenticator");
       const s7 = Array.from(container.querySelectorAll("details.detail-fired")).find(
         (row) => row.querySelector(".detail-fired-id")?.textContent === "S7",
       );
-      const chain = Array.from(s7?.querySelectorAll(".detail-data-item > dt") ?? []).find(
-        (dt) => dt.textContent === "chain",
-      )?.nextElementSibling;
-      expect(chain?.textContent).toBe(
-        "scheb/2fa-google-authenticator\u00a0› scheb/2fa-bundle\u00a0› symfony/security-bundle\u00a0› symfony/security-guard",
+      const table = s7?.querySelector("table.detail-pulled-table");
+      expect(Array.from(table?.querySelectorAll("thead th") ?? [], (th) => th.getAttribute("scope"))).toEqual(
+        ["col", "col", "col"],
       );
-      // A package name wraps only after its "/", never at its hyphens: each piece is one token.
-      const tokens = Array.from(chain?.querySelectorAll(".detail-token") ?? [], (el) => el.textContent);
-      expect(tokens.slice(0, 2)).toEqual(["scheb/", "2fa-google-authenticator"]);
+      expect(s7?.querySelector(".detail-data-item")).toBeNull();
+      const cells = Array.from(table?.querySelectorAll("tbody tr:first-child td") ?? []);
+      expect(cells[0]?.querySelector(".detail-token")?.textContent).toBe("symfony/");
+      expect(cells[1]?.textContent).toBe("abandoned");
+      // The open package's hop and the row's own are dropped: only what it comes in through stays.
+      const via = cells[2];
+      expect(via?.textContent).toBe("scheb/2fa-bundle\u00a0› symfony/security-bundle");
+      // A package name wraps only after its "/", never at its hyphens, and the "›" rides in the
+      // piece before it, so a line never starts on one.
+      const tokens = Array.from(via?.querySelectorAll(".detail-token") ?? [], (el) => el.textContent);
+      expect(tokens).toEqual(["scheb/", "2fa-bundle\u00a0›", "symfony/", "security-bundle"]);
+    });
+
+    it("keeps a package name in a fired check's summary whole", () => {
+      const { container } = renderDetail(WALLABAG, "sensio/framework-extra-bundle");
+      const tokens = Array.from(
+        container.querySelectorAll(".detail-fired-text > .detail-token"),
+        (el) => el.textContent,
+      );
+      expect(tokens).toContain("doctrine/annotations");
     });
 
     it("keeps a date and a verdict in a fired check's summary whole", () => {
@@ -764,6 +779,14 @@ describe("Detail", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/freetext-replacement");
       expect(container.querySelector(".detail-answer")?.textContent).toContain(", for development only.");
       expect(container.querySelector(".detail-chain")?.textContent).toContain("require-dev");
+      // The note rides in the last hop's own unit, and every "›" in the unit of the hop before it,
+      // so a wrapped line never starts on a separator or on the note alone.
+      const steps = Array.from(container.querySelectorAll(".detail-chain > .detail-chain-step"));
+      expect(steps.at(-1)?.querySelector(".detail-hop-note")?.textContent).toBe("require-dev");
+      expect(steps.at(-1)?.querySelector(".detail-hop-sep")).toBeNull();
+      expect(steps.slice(0, -1).every((step) => step.lastElementChild?.matches(".detail-hop-sep"))).toBe(
+        true,
+      );
     });
   });
 
@@ -866,7 +889,7 @@ describe("Detail", () => {
       const sub = container.querySelector(".detail-timeline-sub")?.textContent;
       expect(answer).toBe("Your branch, 0.24.x, had its last release 4.1 years ago.");
       expect(sub).toBe(
-        "There are 4 newer branches. The newest is 1.x, released v1.17.0 on 2026-08-04 (7 weeks ago) and requires php ^7.4 || ^8.0.",
+        "There are 4 newer branches. The newest is 1.x, released v1.17.0 on 2026-08-04 (2 months ago) and requires php ^7.4 || ^8.0.",
       );
       // The age takes the run's own warn..high tone (3 and 5 years): 4.1 is past warn, short of high.
       expect(container.querySelector(".detail-timeline-age")?.classList.contains("tone-med")).toBe(true);
@@ -962,9 +985,9 @@ describe("Detail", () => {
     });
 
     it("never tones a snapshot's age: a checkout date is not a release age", () => {
-      // rector/rector (mautic_mautic.json): a dev-main snapshot seven weeks old.
+      // rector/rector (mautic_mautic.json): a dev-main snapshot two months old.
       const { container } = renderDetail(loadModel("mautic_mautic.json"), "rector/rector");
-      expect(container.querySelector(".detail-timeline-answer")?.textContent).toContain("dated 7 weeks ago");
+      expect(container.querySelector(".detail-timeline-answer")?.textContent).toContain("dated 2 months ago");
       expect(container.querySelector(".detail-timeline-age")?.classList.contains("is-toned")).toBe(false);
       expect(
         container.querySelector(".detail-timeline-row.is-snapshot")?.classList.contains("is-toned"),
