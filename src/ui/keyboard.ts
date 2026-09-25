@@ -180,15 +180,32 @@ function hasOpenPopover(): boolean {
   }
 }
 
+/**
+ * The shortcut a key press means, read from the physical key where the layout would hide it: on a
+ * Russian (or any non-Latin) layout the J key reports `key: "о"`, and with Caps Lock on it reports
+ * `"J"`, so matching `event.key` alone left `j`/`k` dead for those readers. `/` and `?` sit on the
+ * Slash key only on a US-style layout, so their own `key` still counts wherever the layout puts
+ * them. Shift+J stays unmapped: only Caps Lock's capital (no Shift held) is read as `j`.
+ */
+export function shortcutKey(event: Pick<KeyboardEvent, "key" | "code" | "shiftKey">): string {
+  if (event.key === "j" || event.key === "k" || event.key === "/" || event.key === "?") return event.key;
+  if (!event.shiftKey && event.code === "KeyJ") return "j";
+  if (!event.shiftKey && event.code === "KeyK") return "k";
+  if (event.code === "Slash") return event.shiftKey ? "?" : "/";
+
+  return event.key;
+}
+
 /** Reads a KeyboardEvent and the page around it into a `KeyInput`. */
 export function keyInputFrom(event: KeyboardEvent, context: KeyContext): KeyInput {
   const target = event.target instanceof Element ? event.target : null;
   const row = target?.closest("[data-pkg]") ?? null;
   const control = target?.closest(CONTROLS) ?? null;
   const active = document.activeElement;
+  const key = shortcutKey(event);
 
   return {
-    key: event.key,
+    key,
     modified: event.ctrlKey || event.metaKey || event.altKey,
     typing: target?.closest(TEXT_FIELDS) != null,
     searchFocused: context.search !== null && active === context.search,
@@ -197,12 +214,12 @@ export function keyInputFrom(event: KeyboardEvent, context: KeyContext): KeyInpu
     // `popover="auto"` natively, without a dispatch either way. Only Escape reads it.
     popoverOpen: event.key === "Escape" && hasOpenPopover(),
     rowPkg: row?.getAttribute("data-pkg") ?? null,
-    rowIndex: row !== null && (event.key === "j" || event.key === "k") ? rowPosition(document, row) : null,
+    rowIndex: row !== null && (key === "j" || key === "k") ? rowPosition(document, row) : null,
     // A control that contains the row is not "inside" it; a row that is itself a control is, since
     // its native activation already fires its click.
     onControl: control !== null && (row === null || row.contains(control)),
     selected: context.selected,
-    rendered: event.key === "j" || event.key === "k" ? context.rendered() : [],
+    rendered: key === "j" || key === "k" ? context.rendered() : [],
     sheetOpen: context.sheetOpen,
     searchAvailable: context.search !== null,
   };

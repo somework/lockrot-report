@@ -164,6 +164,8 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Fixed
 
+- `j`, `k`, `/` and `?` work on a non-Latin keyboard layout (Russian and others) and with Caps Lock
+  on: the page reads the physical key when the layout's own character is not the shortcut.
 - The package detail scrolls as one region instead of two nested ones, and opening another package
   starts it at the top.
 - The Run tab shows a dash, not "none", for a document that does not record `--fail-on`.

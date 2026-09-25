@@ -6,6 +6,7 @@ import {
   prevents,
   rowAt,
   rowPosition,
+  shortcutKey,
   type KeyInput,
 } from "../../../src/ui/keyboard";
 
@@ -383,5 +384,21 @@ describe("rowAt and rowPosition tell a package's rows apart (PD-ROWS-12)", () =>
     expect(rowAt(document, "missing", 0)).toBeNull();
     expect(second === undefined ? null : rowPosition(document, second)).toBe(2);
     expect(rowPosition(document, document.body)).toBeNull();
+  });
+});
+
+describe("shortcutKey reads the physical key where the layout hides it", () => {
+  test.each([
+    ["Latin j", { key: "j", code: "KeyJ", shiftKey: false }, "j"],
+    ["Russian layout J key", { key: "о", code: "KeyJ", shiftKey: false }, "j"],
+    ["Russian layout K key", { key: "л", code: "KeyK", shiftKey: false }, "k"],
+    ["Caps Lock J", { key: "J", code: "KeyJ", shiftKey: false }, "j"],
+    ["Shift+J stays unmapped", { key: "J", code: "KeyJ", shiftKey: true }, "J"],
+    ["Russian layout Slash key", { key: ".", code: "Slash", shiftKey: false }, "/"],
+    ["Russian layout Shift+Slash", { key: ",", code: "Slash", shiftKey: true }, "?"],
+    ["a layout's own ? elsewhere", { key: "?", code: "Digit7", shiftKey: true }, "?"],
+    ["any other key", { key: "x", code: "KeyX", shiftKey: false }, "x"],
+  ])("%s", (_name, event, expected) => {
+    expect(shortcutKey(event)).toBe(expected);
   });
 });

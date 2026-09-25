@@ -310,3 +310,37 @@ test.describe("M10: j/k must not act while the glossary is open", () => {
     expect(await report.hash()).toBe("#pkg=vendor%2Ftransitive");
   });
 });
+
+test.describe("shortcuts work on a non-Latin layout (shortcutKey)", () => {
+  /** A Russian layout's J key: `key` is the Cyrillic letter, `code` the physical key. Playwright's
+   *  own `keyboard.press` always types the US layout, so the event is dispatched by hand. */
+  async function pressOnLayout(
+    page: import("@playwright/test").Page,
+    key: string,
+    code: string,
+  ): Promise<void> {
+    await page.evaluate(
+      ([k, c]) => {
+        (document.activeElement ?? document.body).dispatchEvent(
+          new KeyboardEvent("keydown", { key: k, code: c, bubbles: true, cancelable: true }),
+        );
+      },
+      [key, code] as const,
+    );
+  }
+
+  test("the J key on a Russian layout opens the first row, K steps back", async ({ page }) => {
+    await pressOnLayout(page, "о", "KeyJ");
+    await expect.poll(() => page.evaluate(() => location.hash)).toContain("pkg=");
+    const first = await page.evaluate(() => location.hash);
+    await pressOnLayout(page, "о", "KeyJ");
+    await expect.poll(() => page.evaluate(() => location.hash)).not.toBe(first);
+    await pressOnLayout(page, "л", "KeyK");
+    await expect.poll(() => page.evaluate(() => location.hash)).toBe(first);
+  });
+
+  test("the Slash key on a Russian layout focuses search", async ({ page }) => {
+    await pressOnLayout(page, ".", "Slash");
+    expect(await report.isSearchFocused()).toBe(true);
+  });
+});

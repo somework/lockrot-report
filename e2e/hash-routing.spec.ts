@@ -50,9 +50,10 @@ test.describe("PD-ROWS-9: only the reader or the address opens a package", () =>
   test("opening a package writes it to the address, and closing it takes it out again", async () => {
     await report.goto(FIXTURES.mini);
     await report.openPackage("vendor/snapshot");
-    expect(await report.hash()).toContain("pkg=vendor%2Fsnapshot");
+    // Polled: the address is written after the render that opens the panel, not in the same tick.
+    await expect.poll(() => report.hash()).toContain("pkg=vendor%2Fsnapshot");
     await report.closeDetail();
-    expect(await report.hash()).toBe("");
+    await expect.poll(() => report.hash()).toBe("");
   });
 });
 
