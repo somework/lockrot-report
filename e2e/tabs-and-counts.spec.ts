@@ -72,6 +72,38 @@ test.describe("Blast radius view", () => {
   });
 });
 
+test.describe("a tab switch resets scroll (a first-time-reader walk found the old page)", () => {
+  // wallabag_wallabag.json: 69 flagged findings, tall enough on every tab (findings, packages,
+  // radius) that scrolling well down one and switching tabs lands mid-list in the next unless the
+  // switch itself resets the scroll — `mini`'s own four findings are too short to reproduce it.
+  test("a user-driven tab switch scrolls back to the top; a hashchange restore does not", async ({
+    page,
+  }) => {
+    const wallabag = await createReportPage(page);
+    await wallabag.goto(FIXTURES.wallabag);
+    await page.evaluate(() => {
+      window.scrollTo(0, 2000);
+    });
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+
+    // A click on a tab — Tabs.tsx's own dispatch, the same path "See the advisories" (FindingsView's
+    // quiet note) uses — is the "user action" DESIGN.md means; the new tab's own first row should be
+    // where the reader lands, not wherever the last tab happened to be scrolled to.
+    await wallabag.tab("packages");
+
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+    // A pasted link's hashchange restores state without the reader ever clicking a tab — it must
+    // not fight a scroll position the reader chose themselves.
+    await page.evaluate(() => {
+      window.scrollTo(0, 2000);
+    });
+    await wallabag.setLocationHash("view=radius");
+    expect(await wallabag.activeTab()).toBe("radius");
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+  });
+});
+
 test.describe("M14: an unrecognised view= falls back", () => {
   test("an unrecognised view falls back to Findings, tab marked selected (M14)", async () => {
     // M14 (DESIGN.md §5), fixed on purpose: legacy left no tab aria-selected and showed Run

@@ -170,6 +170,30 @@ describe("tabs", () => {
       expect(screen.getByRole("tab", { selected: true }).textContent).toContain("Blast radius");
     });
   });
+
+  // A first-time-reader walk: scrolled deep into Findings, then switched tabs and landed mid-list
+  // in a shorter tab, with nothing on screen explaining why.
+  test("a clicked tab scrolls the page back to the top", () => {
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
+    render(<App model={MINI} />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+
+    expect(scrollTo).toHaveBeenCalledWith(0, 0);
+  });
+
+  test("a hashchange restore does not fight a reader's own scroll position", async () => {
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
+    render(<App model={MINI} />);
+
+    history.replaceState(null, "", "/report.html#view=radius");
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    await waitFor(() => {
+      expect(screen.getByRole("tab", { selected: true }).textContent).toContain("Blast radius");
+    });
+
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
 });
 
 describe("keyboard", () => {

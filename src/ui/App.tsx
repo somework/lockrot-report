@@ -199,6 +199,33 @@ export function App({ model }: { model: Model }) {
   const idBase = useId();
   useShortcuts({ model, state, dispatch, search, glossaryOpen, openGlossary, setGlossaryOpen, rowRequest });
 
+  // A tab switch a reader clicked (or the quiet note's "See the advisories") used to leave the
+  // page's scroll wherever it was on the tab just left — a Findings list scrolled down to
+  // "hoa/compiler" handed the next tab's much shorter content the same scroll offset, landing mid
+  // list with no sign why. `dispatchTracked` marks every `"view"` action this ref sees; the effect
+  // below fires only for those, never for the boot pick or a `hashchange` restore (`useHashState`
+  // reaches the reducer directly for both, through `restore`/the lazy initial state, and never
+  // dispatches `"view"` at all), so a pasted link that restores a tab does not fight a reader's own
+  // scroll position.
+  const tabChangedByReader = useRef(false);
+  const dispatchTracked = useCallback(
+    (action: Action) => {
+      if (action.type === "view") tabChangedByReader.current = true;
+      dispatch(action);
+    },
+    [dispatch],
+  );
+
+  useEffect(() => {
+    if (!tabChangedByReader.current) return;
+    tabChangedByReader.current = false;
+    // The topbar (brand, run facts, tabs) is the page's first element and sticky from 760px up
+    // (DESIGN.md §8), so it already sits at the top of the viewport the instant the page scrolls at
+    // all; scrolling the window itself back to 0 is what puts the tab row and the new tab's own
+    // first row directly under it, on every width.
+    window.scrollTo(0, 0);
+  }, [state.view]);
+
   // A layout effect, so the row is focused in the same task as the render that follows the key or
   // click. A plain effect waits for the next frame, and a reader (or a test) who moves focus in
   // between would have it pulled back to the closed package's row.
@@ -234,11 +261,19 @@ export function App({ model }: { model: Model }) {
 
   const now = useMemo(() => new Date(model.report.generatedAt), [model]);
   const value = useMemo(
-    () => ({ model, state, dispatch, now, wide, openGlossary, openGlossaryFrom }),
-    [model, state, dispatch, now, wide, openGlossary, openGlossaryFrom],
+    () => ({ model, state, dispatch: dispatchTracked, now, wide, openGlossary, openGlossaryFrom }),
+    [model, state, dispatchTracked, now, wide, openGlossary, openGlossaryFrom],
   );
   const filterable = population(model, state.view).length > 0;
   const panelId = `${idBase}-panel`;
+  // The detail's own grid column (`.shell`, ui/app.css) is static CSS and can't see that
+  // `.shell-detail` below is unmounted while `state.pkg` is null — left alone, the wide layout kept
+  // reserving that column's width with nothing in it, so the list column never grew to fill the
+  // space a closed panel had freed (a walk found this on All packages and Blast radius at 1440).
+  const detailOpen = state.pkg !== null;
+  const shellClass = ["shell", !filterable && "no-rail", !detailOpen && "no-detail"]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <ReportContext.Provider value={value}>
@@ -247,7 +282,7 @@ export function App({ model }: { model: Model }) {
         <Tabs idBase={idBase} panelId={panelId} />
       </Header>
       {state.view !== "run" && <LedgerSlot narrow={narrow} />}
-      <main className={filterable ? "shell" : "shell no-rail"}>
+      <main className={shellClass}>
         {filterable && <RailSlot narrow={narrow} />}
         <div className="shell-main" id={panelId} role="tabpanel" aria-labelledby={tabId(idBase, state.view)}>
           {/* SearchBar hides its own box and hint when the tab has nothing to filter, and keeps the
