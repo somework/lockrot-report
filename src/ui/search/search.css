@@ -83,6 +83,20 @@
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
+/* Dark-mode salience (PD-SEARCH-1 polish item 7): `--med-soft` alone (`#2e2814`) reads as barely
+   more than the row's own background next to it — too close to vanish as "a highlight" rather than
+   read as one. Mixing in a slice of `--med` itself keeps the same hue family (no new colour) while
+   lifting it enough to register at a glance; `--ink` still keeps comfortably past 4.5:1 on the
+   result (measured ~5.3:1, versus ~10:1 on the plain `--med-soft` it replaces). Light mode already
+   clears contrast and reads fine as-is, so only the dark values move. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .match-note mark {
+    background: color-mix(in srgb, var(--med) 40%, var(--med-soft));
+  }
+}
+:root[data-theme="dark"] .match-note mark {
+  background: color-mix(in srgb, var(--med) 40%, var(--med-soft));
+}
 @media (forced-colors: active) {
   .match-note mark {
     forced-color-adjust: none;

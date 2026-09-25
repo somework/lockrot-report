@@ -218,9 +218,16 @@
 /* ---------- layout ---------- */
 /* What a row brought into view — by `j`/`k`, a `#pkg=` link on load, or a focus — must clear: the
    Findings list's sticky 40px column head, and from 760px up the sticky header above it
-   (PD-ROWS-10). Without it a `j` past the top edge left its row under the head. */
+   (PD-ROWS-10). Without it a `j` past the top edge left its row under the head.
+
+   `scroll-padding-bottom` (PD-SEARCH-1 polish item 8) keeps the same one-row clearance at the
+   bottom edge: without it, `j`'s `scrollIntoView({block: "nearest"})` (App.tsx#focusRow) is free to
+   land the newly focused row flush against the viewport's own bottom edge, with nothing of the row
+   below it in view to show there is more list to walk to. Nothing sticky sits at the bottom to clear
+   the way the head does at the top, so this is one flat value at every width. */
 html {
   scroll-padding-top: 48px;
+  scroll-padding-bottom: 48px;
 }
 @media (min-width: 760px) {
   html {

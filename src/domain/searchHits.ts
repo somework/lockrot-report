@@ -4,13 +4,20 @@
  * (`query.ts#matchesFinding`) — but a word found only in the evidence left a row on the list with
  * nothing on it that said why: "hoa/" listed wallabag/rulerz, whose evidence names the hoa/*
  * packages it pulls in. This module says which part each word was found in, so the status line can
- * split the count ("14 by name, 2 mention it") and such a row can quote the words around the hit.
- * It never decides *whether* a package matches; that stays `matchesFinding`'s job alone.
+ * split the count ("14 on the row, 2 mention it") and such a row can quote the words around the
+ * hit. It never decides *whether* a package matches; that stays `matchesFinding`'s job alone.
  */
 
 import type { Finding } from "../model/types";
 import { plural } from "./format";
-import { freeTextTerms, searchFields, type SearchField, type Term } from "./query";
+import {
+  freeTextTerms,
+  freeTextTermsVerbatim,
+  parseQuery,
+  searchFields,
+  type SearchField,
+  type Term,
+} from "./query";
 
 /** How far, in characters, an excerpt reaches either side of the hit before it is cut — enough for
  *  "pulls in 14 flagged packages: hoa/compiler (abandoned)", short enough for a row's one quiet line. */
@@ -132,74 +139,83 @@ export function searchHit(f: Finding, terms: readonly Term[]): SearchHit | null 
   return { field, term: evidenceTerm, excerpt: evidenceExcerpt(f.evidence, evidenceTerm) };
 }
 
-/** How the packages on a list were found by free text: how many by each part, and which packages
- *  only mention a word in their evidence, in list order. */
+/** How the packages on a list were found by free text: how many sit somewhere on the row itself
+ *  (name, version or verdict — whatever the row already shows) versus only in their evidence, and
+ *  which packages those are, in list order. `query` keeps the reader's own case (PD-SEARCH-1 polish
+ *  item 4); matching itself stays case-insensitive throughout. */
 export interface SearchSplit {
   readonly query: string;
   readonly words: number;
   readonly total: number;
-  readonly byName: number;
-  readonly byVersion: number;
-  readonly byVerdict: number;
+  readonly onRow: number;
   readonly mentions: readonly string[];
 }
 
 /**
- * The split of `findings` (the packages a list shows, each once) by where free text found them.
- * Null when the query has no free text. A package listed twice (a tab with a row per advisory)
- * should be passed once.
+ * The split of `findings` (the packages a list shows, each once) by whether free text found them
+ * somewhere on the row (name, version, verdict — a search hit needs no explaining there, the row
+ * already shows it) or only in their evidence, which no row prints in full. Null when the query has
+ * no free text. A package listed twice (a tab with a row per advisory) should be passed once.
+ *
+ * Takes the reader's own raw query text rather than an already-parsed `Term[]`, so `query` can echo
+ * it back verbatim (PD-SEARCH-1 polish item 4) while matching still runs case-insensitively.
  */
-export function searchSplit(findings: readonly Finding[], terms: readonly Term[]): SearchSplit | null {
+export function searchSplit(findings: readonly Finding[], rawQuery: string): SearchSplit | null {
+  const terms = parseQuery(rawQuery);
   const words = freeTextTerms(terms);
   if (words.length === 0) return null;
 
-  let byName = 0;
-  let byVersion = 0;
-  let byVerdict = 0;
+  let onRow = 0;
   const mentions: string[] = [];
   let total = 0;
   for (const finding of findings) {
     const hit = searchHit(finding, terms);
     if (hit === null) continue;
     total += 1;
-    if (hit.field === "name") byName += 1;
-    else if (hit.field === "version") byVersion += 1;
-    else if (hit.field === "verdict") byVerdict += 1;
-    else mentions.push(finding.package);
+    if (hit.field === "evidence") mentions.push(finding.package);
+    else onRow += 1;
   }
-  return { query: words.join(" "), words: words.length, total, byName, byVersion, byVerdict, mentions };
+  return { query: freeTextTermsVerbatim(rawQuery).join(" "), words: words.length, total, onRow, mentions };
 }
 
 /** At most this many "mention" packages are named in the status line; more are only counted. */
 export const MENTIONS_NAMED = 3;
 
 /**
- * The status line's split, as words: `16 match "hoa/": 14 by name, 2 mention it` plus the
- * packages to name after it (at most `MENTIONS_NAMED`; none past that, the count alone). Null when
- * there is nothing to explain — every package was found by its name, or none was found at all — so
- * the line reads as it always did for a search that finds what it names. `unit` names what is
- * counted when the list's own rows are not packages (the Advisories tab: "3 packages match …").
+ * The status line's split, as words. Null when there is nothing to explain — every package was
+ * found somewhere on its own row, or none was found at all — so the line reads as it always did for
+ * a search that finds what it shows. `unit` names what is counted when the list's own rows are not
+ * packages (the Advisories tab: "3 packages match …").
+ *
+ * `split.total` is always the same number the tab's own "N of M" count line already gives for
+ * Findings and Packages (both list exactly `findings`, and every one of them already passed the
+ * query to be listed at all) — so repeating it here (`unit === null`) would just say the same
+ * number twice; the line opens straight on the split instead, e.g. "14 on the row, 2 mention
+ * “hoa/” (a, b)". The Advisories tab counts a different unit (rows are advisories, the split counts
+ * packages), so the two numbers can genuinely differ and the split keeps its own count, e.g.
+ * "3 packages match “hoa/”: 1 on the row, 2 mention it (a, b)".
  */
 export function searchSplitPhrase(
   split: SearchSplit | null,
   unit: { readonly one: string; readonly many: string } | null = null,
 ): { readonly text: string; readonly names: readonly string[] } | null {
-  if (split === null || split.total === 0 || split.byName === split.total) return null;
+  if (split === null || split.total === 0 || split.onRow === split.total) return null;
 
-  const counted = unit === null ? `${split.total}` : plural(split.total, unit.one, unit.many);
-  const verb = split.total === 1 ? "matches" : "match";
-  const parts: string[] = [];
-  if (split.byName > 0) parts.push(`${split.byName} by name`);
-  if (split.byVersion > 0) parts.push(`${split.byVersion} by version`);
-  if (split.byVerdict > 0) parts.push(`${split.byVerdict} by verdict`);
   const n = split.mentions.length;
-  if (n > 0) {
-    const pronoun = split.words === 1 ? "it" : "them";
-    parts.push(`${n} ${n === 1 ? "mentions" : "mention"} ${pronoun}`);
+  const names = n <= MENTIONS_NAMED ? split.mentions : [];
+  const onRowPart = split.onRow > 0 ? [`${split.onRow} on the row`] : [];
+
+  if (unit === null) {
+    const mentionPart = `${n} ${n === 1 ? "mentions" : "mention"} “${split.query}”`;
+    return { text: [...onRowPart, mentionPart].join(", "), names };
   }
 
+  const counted = plural(split.total, unit.one, unit.many);
+  const verb = split.total === 1 ? "matches" : "match";
+  const pronoun = split.words === 1 ? "it" : "them";
+  const mentionPart = `${n} ${n === 1 ? "mentions" : "mention"} ${pronoun}`;
   return {
-    text: `${counted} ${verb} “${split.query}”: ${parts.join(", ")}`,
-    names: n <= MENTIONS_NAMED ? split.mentions : [],
+    text: `${counted} ${verb} “${split.query}”: ${[...onRowPart, mentionPart].join(", ")}`,
+    names,
   };
 }

@@ -51,18 +51,20 @@ function state(overrides: Partial<State>): State {
 }
 
 describe("PD-SEARCH-1: the status line splits a free-text count by where it matched", () => {
-  it("counts by name and names the two packages that only mention the word", () => {
+  it("counts what is on the row and names the two packages that only mention the word", () => {
     renderIn(<SearchBar inputRef={createRef()} />, wallabag(), state({ q: "hoa/" }));
 
     const line = screen.getByRole("status").textContent;
     expect(line).toContain("16 of");
-    // A separator of its own, so a screen reader does not run "on" into "16".
+    // A single space of its own, so a screen reader does not run "on" into "14" — but no literal
+    // "·" glyph any more (PD-SEARCH-1 polish item 1), and no repeated "16" either (item 2): the
+    // Findings tab's split total is always the same 16 the line already opened with.
     expect(line).toContain(
-      "1 filter on · 16 match “hoa/”: 14 by name, 2 mention it (wallabag/rulerz, wallabag/rulerz-bundle)",
+      "1 filter on 14 on the row, 2 mention “hoa/” (wallabag/rulerz, wallabag/rulerz-bundle)",
     );
   });
 
-  it("says nothing more when every listed package matched by its name", () => {
+  it("says nothing more when every listed package matched on its own row", () => {
     renderIn(<SearchBar inputRef={createRef()} />, wallabag(), state({ q: "hoa/stream" }));
 
     expect(screen.getByRole("status").textContent).toBe("1 of 69 flagged package 1 filter on");
@@ -71,7 +73,7 @@ describe("PD-SEARCH-1: the status line splits a free-text count by where it matc
   it("splits the All packages tab too, which filters through the same matchesFinding", () => {
     renderIn(<SearchBar inputRef={createRef()} />, wallabag(), state({ view: "packages", q: "hoa/" }));
 
-    expect(screen.getByRole("status").textContent).toContain("14 by name, 2 mention it");
+    expect(screen.getByRole("status").textContent).toContain("14 on the row, 2 mention “hoa/”");
   });
 
   it("counts packages, not advisory rows, on the Advisories tab", () => {
@@ -80,6 +82,26 @@ describe("PD-SEARCH-1: the status line splits a free-text count by where it matc
     const line = screen.getByRole("status").textContent;
     expect(line).toContain("2 of 2 advisories");
     expect(line).toContain("1 package matches “11.x”: 1 mentions it (spomky-labs/otphp)");
+  });
+
+  it("echoes the query as typed, case kept (PD-SEARCH-1 polish item 4)", () => {
+    renderIn(<SearchBar inputRef={createRef()} />, wallabag(), state({ q: "HOA/" }));
+
+    const line = screen.getByRole("status").textContent;
+    expect(line).toContain("14 on the row, 2 mention “HOA/”");
+    expect(line).not.toContain("hoa/");
+  });
+
+  it("keeps the named packages out of what the live region announces (PD-SEARCH-1 polish item 6)", () => {
+    const { container } = renderIn(<SearchBar inputRef={createRef()} />, wallabag(), state({ q: "hoa/" }));
+
+    const status = screen.getByRole("status");
+    // The names are still on the page — a sighted reader still sees them beside the counts...
+    expect(status.textContent).toContain("wallabag/rulerz, wallabag/rulerz-bundle");
+    // ...but marked aria-hidden, so a screen reader's announcement of this live region skips them
+    // and speaks only the short counts every keystroke actually changes.
+    const hiddenNames = container.querySelector('.match-split [aria-hidden="true"]');
+    expect(hiddenNames?.textContent).toContain("wallabag/rulerz, wallabag/rulerz-bundle");
   });
 });
 
@@ -94,6 +116,19 @@ describe("PD-SEARCH-1: a row found only in its evidence quotes the words around 
     expect(container.querySelector('[data-pkg="hoa/compiler"] .match-note')).toBeNull();
     // The row's accessible name is still the package alone.
     expect(rulerz?.getAttribute("aria-label")).toBe("wallabag/rulerz");
+  });
+
+  it("Findings: the note carries its own full text as a title (PD-SEARCH-1 polish item 5)", () => {
+    const { container } = renderIn(<FindingsView />, wallabag(), state({ q: "hoa/" }));
+
+    const note = container.querySelector('[data-pkg="wallabag/rulerz"] .match-note');
+    // The wide ledger clips the note itself to one line with CSS (ledger-rows.css); the title gives
+    // a mouse reader the part that clips, and the element's own text — what a screen reader gets —
+    // is the same full excerpt either way, never shortened to only the title.
+    expect(note?.getAttribute("title")).toBe(
+      "matched in: pulls in 14 flagged packages: hoa/compiler (abandoned)…",
+    );
+    expect(note?.textContent).toBe(note?.getAttribute("title"));
   });
 
   it("Findings: no note without free text, and none for a field-only query", () => {

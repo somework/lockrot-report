@@ -89,20 +89,32 @@ function listedPackages(model: Model, state: State): readonly Finding[] | null {
   return listed;
 }
 
-/** The status line's "16 match “hoa/”: 14 by name, 2 mention it (a, b)" — null when free text found
- *  every listed package by its name, or there is no free text (PD-SEARCH-1). */
+/** The status line's "14 on the row, 2 mention “hoa/” (a, b)" — null when free text found every
+ *  listed package on its own row, or there is no free text (PD-SEARCH-1).
+ *
+ * No literal " · " separator of its own (PD-SEARCH-1 polish item 1): that text used to open this
+ * span, so at 320/390 — where `.count-line`'s flex-wrap drops the whole span to a line of its own —
+ * a lone "· 14 on the row …" opened the line, and at 1440 it sat right after the row's own 12px flex
+ * `gap`, doubling up on the same separation. A single leading space instead (the same convention
+ * `.active-filters` already uses) keeps a screen reader from running the line before it straight
+ * into this one, without ever being the one visible character to open a wrapped line. */
 function SearchSplitNote({ model, state }: { model: Model; state: State }) {
   const listed = listedPackages(model, state);
   if (listed === null) return null;
   const unit = state.view === "advisories" ? { one: "package", many: "packages" } : null;
-  const phrase = searchSplitPhrase(searchSplit(listed, parseQuery(state.q)), unit);
+  const phrase = searchSplitPhrase(searchSplit(listed, state.q), unit);
   if (phrase === null) return null;
   return (
     <span className="match-split">
-      {" · "}
+      {" "}
       {phrase.text}
       {phrase.names.length > 0 && (
-        <>
+        // a11y review (PD-SEARCH-1 polish item 6): `.count-line` is a live region that re-announces
+        // its whole text on every keystroke — up to three package names read out loud each time was
+        // more than the line's own short counts needed. The names stay on screen (still what a
+        // sighted reader wants beside the counts) but `aria-hidden` takes them out of what gets
+        // announced; the counts alone are.
+        <span aria-hidden="true">
           {" ("}
           {phrase.names.map((name, i) => (
             <Fragment key={name}>
@@ -111,7 +123,7 @@ function SearchSplitNote({ model, state }: { model: Model; state: State }) {
             </Fragment>
           ))}
           {")"}
-        </>
+        </span>
       )}
     </span>
   );
@@ -190,8 +202,10 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
           {line}
           {active > 0 && <span className="active-filters"> {plural(active, "filter", "filters")} on</span>}
           <SearchSplitNote model={model} state={state} />
+          {/* Same fix as `SearchSplitNote`'s own comment above: a leading space, not a literal
+              " · ", so this span never opens a wrapped line with a lone separator glyph. */}
           {openPkgHidden && (
-            <span className="hidden-pkg-note"> · {state.pkg} is hidden by the current filters</span>
+            <span className="hidden-pkg-note"> {state.pkg} is hidden by the current filters</span>
           )}
         </p>
       )}

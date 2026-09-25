@@ -125,52 +125,69 @@ describe("searchHit", () => {
 describe("searchSplit / searchSplitPhrase", () => {
   const listed = [hoaCompiler, rulerz, bundle];
 
-  it("counts by name and names the packages that only mention the word", () => {
-    const split = searchSplit(listed, parseQuery("hoa/"));
+  it("counts what is on the row and names the packages that only mention the word", () => {
+    const split = searchSplit(listed, "hoa/");
     expect(split).toMatchObject({
       total: 3,
-      byName: 1,
+      onRow: 1,
       mentions: ["wallabag/rulerz", "wallabag/rulerz-bundle"],
     });
+    // Findings/Packages (`unit` omitted): `split.total` (3) is always the same number the tab's own
+    // "N of M" line already gives (PD-SEARCH-1 polish item 2), so the phrase never repeats it — it
+    // opens straight on the split, naming the query itself in the "mention" part since there is no
+    // longer an intro sentence for a pronoun to read back to (item 4 also keeps the query's own
+    // case, here already lower).
     expect(searchSplitPhrase(split)).toEqual({
-      text: "3 match “hoa/”: 1 by name, 2 mention it",
+      text: "1 on the row, 2 mention “hoa/”",
       names: ["wallabag/rulerz", "wallabag/rulerz-bundle"],
     });
   });
 
   it("names no package past three, only counts them", () => {
     const many = [1, 2, 3, 4].map((n) => makeFinding({ package: `x/p${n}`, evidence: "pulls in hoa/regex" }));
-    const phrase = searchSplitPhrase(searchSplit([hoaCompiler, ...many], parseQuery("hoa/")));
-    expect(phrase).toEqual({ text: "5 match “hoa/”: 1 by name, 4 mention it", names: [] });
+    const phrase = searchSplitPhrase(searchSplit([hoaCompiler, ...many], "hoa/"));
+    expect(phrase).toEqual({ text: "1 on the row, 4 mention “hoa/”", names: [] });
   });
 
-  it("has nothing to say when every package was found by its name, or none at all", () => {
-    expect(searchSplitPhrase(searchSplit([hoaCompiler], parseQuery("hoa/")))).toBeNull();
-    expect(searchSplitPhrase(searchSplit([], parseQuery("hoa/")))).toBeNull();
-    expect(searchSplit(listed, parseQuery("verdict:pinned"))).toBeNull();
+  it("has nothing to say when every package was found on its own row, or none at all", () => {
+    expect(searchSplitPhrase(searchSplit([hoaCompiler], "hoa/"))).toBeNull();
+    expect(searchSplitPhrase(searchSplit([], "hoa/"))).toBeNull();
+    expect(searchSplit(listed, "verdict:pinned")).toBeNull();
     expect(searchSplitPhrase(null)).toBeNull();
   });
 
-  it("singularises, counts version and verdict hits, and says 'them' for several words", () => {
-    expect(searchSplitPhrase(searchSplit([rulerz], parseQuery("hoa/")))?.text).toBe(
-      "1 matches “hoa/”: 1 mentions it",
-    );
-    expect(searchSplitPhrase(searchSplit([rulerz, bundle], parseQuery("pinned")))?.text).toBe(
-      "2 match “pinned”: 2 by verdict",
-    );
-    expect(searchSplitPhrase(searchSplit([rulerz], parseQuery("dev-master")))?.text).toBe(
-      "1 matches “dev-master”: 1 by version",
-    );
-    expect(searchSplitPhrase(searchSplit([rulerz], parseQuery("wallabag hoa/event")))?.text).toBe(
-      "1 matches “wallabag hoa/event”: 1 mentions them",
+  it("a version or verdict hit is 'on the row' too (PD-SEARCH-1 polish item 3)", () => {
+    // "dev-master" is rulerz's own version; "pinned" is both rulerz's and bundle's own verdict. Both
+    // rows show the word that matched them without any help from this line, so there is nothing to
+    // split out — same as a name-only match always was.
+    expect(searchSplitPhrase(searchSplit([rulerz], "dev-master"))).toBeNull();
+    expect(searchSplitPhrase(searchSplit([rulerz, bundle], "pinned"))).toBeNull();
+  });
+
+  it("singularises and quotes the query itself (not a pronoun) when there is no intro sentence left", () => {
+    expect(searchSplitPhrase(searchSplit([rulerz], "hoa/"))?.text).toBe("1 mentions “hoa/”");
+    expect(searchSplitPhrase(searchSplit([rulerz], "wallabag hoa/event"))?.text).toBe(
+      "1 mentions “wallabag hoa/event”",
     );
   });
 
-  it("names its unit when the list's rows are not packages (the Advisories tab)", () => {
-    const phrase = searchSplitPhrase(searchSplit(listed, parseQuery("hoa/")), {
+  it("keeps the reader's own case in the echoed query (PD-SEARCH-1 polish item 4)", () => {
+    const split = searchSplit(listed, "HOA/");
+    expect(split?.query).toBe("HOA/");
+    // Matching itself is still case-insensitive: the same three packages are found either way.
+    expect(split).toMatchObject({ total: 3, onRow: 1 });
+    expect(searchSplitPhrase(split)?.text).toBe("1 on the row, 2 mention “HOA/”");
+  });
+
+  it("keeps each word's own case in a multi-word query, key:value tokens dropped from the echo", () => {
+    expect(searchSplit(listed, "HOA/ verdict:abandoned Event")?.query).toBe("HOA/ Event");
+  });
+
+  it("names its unit and keeps its own count on the Advisories tab (PD-SEARCH-1 polish item 2)", () => {
+    const phrase = searchSplitPhrase(searchSplit(listed, "hoa/"), {
       one: "package",
       many: "packages",
     });
-    expect(phrase?.text).toBe("3 packages match “hoa/”: 1 by name, 2 mention it");
+    expect(phrase?.text).toBe("3 packages match “hoa/”: 1 on the row, 2 mention it");
   });
 });

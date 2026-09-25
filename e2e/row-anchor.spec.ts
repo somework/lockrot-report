@@ -115,6 +115,29 @@ test.describe("1440×900 keyboard and links", () => {
     });
   }
 
+  // PD-SEARCH-1 polish item 8: `html`'s `scroll-padding-bottom` (app.css) keeps the same clearance
+  // at the bottom edge that `scroll-padding-top` already keeps at the top, so a row `j` walks to
+  // does not land flush against the viewport's own bottom edge with nothing of the list below it.
+  test("j walked past the screen's edge leaves a little clearance below the focused row", async ({
+    page,
+  }) => {
+    const report = await createReportPage(page);
+    await report.goto(FIXTURES.wallabag);
+
+    for (let i = 0; i < DEEP_ROW; i++) await report.pressJ();
+    const pkg = await rowAt(page, DEEP_ROW - 1);
+    await expect.poll(async () => (await place(page, pkg)).inView).toBe(true);
+
+    const clearance = await page.evaluate((name) => {
+      const row = [...document.querySelectorAll(".frow")].find(
+        (node) => node.getAttribute("data-pkg") === name,
+      );
+      if (row === undefined) throw new Error(`no row for ${name}`);
+      return innerHeight - row.getBoundingClientRect().bottom;
+    }, pkg);
+    expect(clearance).toBeGreaterThan(20);
+  });
+
   test("a #pkg= link scrolls its row into view on load, so Close hands focus to a row on screen", async ({
     page,
   }) => {

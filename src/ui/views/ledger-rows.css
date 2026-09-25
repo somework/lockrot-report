@@ -677,6 +677,16 @@
     margin-left: 0;
     text-align: left;
   }
+  /* PD-SEARCH-1 polish item 5: below this width the note wraps under the reason (there is room for
+     a second line); from here the row is one line under its column heads, and letting the note wrap
+     grew every noted row from 36px to 60px for a fact the row's own `title` (MatchNote.tsx) still
+     gives in full on hover. One clipped line keeps the row's own height. */
+  .fc-why .match-note {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
 
 /* ---------- forced colours ----------

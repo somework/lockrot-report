@@ -19,11 +19,19 @@ test.beforeEach(async ({ page }) => {
 test("the status line splits the count and names the two packages that only mention the word", async () => {
   await report.search("hoa/");
   expect(await report.rows()).toHaveLength(16);
+  // No repeated "16" (PD-SEARCH-1 polish item 2: the Findings tab's split total is always the same
+  // 16 the line already opened with) and no literal "·" glyph (item 1).
   expect(await report.countLine()).toContain(
-    "16 match “hoa/”: 14 by name, 2 mention it (wallabag/rulerz, wallabag/rulerz-bundle)",
+    "14 on the row, 2 mention “hoa/” (wallabag/rulerz, wallabag/rulerz-bundle)",
   );
   // The address is unchanged: the query is still just q=.
   expect(await report.hash()).toContain("q=hoa%2F");
+});
+
+test("the query is echoed back with the reader's own case, matching stays case-insensitive", async () => {
+  await report.search("HOA/");
+  expect(await report.rows()).toHaveLength(16);
+  expect(await report.countLine()).toContain("14 on the row, 2 mention “HOA/”");
 });
 
 test("a row found only in its evidence quotes the hit; a row found by its name does not", async ({
@@ -38,11 +46,42 @@ test("a row found only in its evidence quotes the hit; a row found by its name d
   await expect(page.locator('[data-pkg="hoa/compiler"] .match-note')).toHaveCount(0);
   // The row's accessible name is still the package alone.
   await expect(page.getByRole("listitem", { name: "wallabag/rulerz", exact: true })).toBeVisible();
+  // PD-SEARCH-1 polish item 5: the same words again as a `title`, for a mouse reader once the wide
+  // ledger clips the note itself to one line.
+  await expect(rulerz.locator(".match-note")).toHaveAttribute(
+    "title",
+    "matched in: pulls in 14 flagged packages: hoa/compiler (abandoned)…",
+  );
+});
+
+test("the note stays one line on the wide, one-line ledger, instead of growing the row", async ({ page }) => {
+  await report.search("hoa/");
+  const note = page.locator('[data-pkg="wallabag/rulerz"] .match-note');
+  const [noteBox, style] = await Promise.all([
+    note.boundingBox(),
+    note.evaluate((el) => {
+      const computed = getComputedStyle(el);
+      return { whiteSpace: computed.whiteSpace, textOverflow: computed.textOverflow };
+    }),
+  ]);
+  expect(style.whiteSpace).toBe("nowrap");
+  expect(style.textOverflow).toBe("ellipsis");
+  // One line of this note's own 11.5px/16px text (search.css); two would be ~32px.
+  expect(noteBox?.height ?? 0).toBeLessThan(20);
+});
+
+test("the names beside the split are visible but out of the live region's own announcement", async ({
+  page,
+}) => {
+  await report.search("hoa/");
+  const namesNode = page.locator('.match-split [aria-hidden="true"]');
+  await expect(namesNode).toBeVisible();
+  await expect(namesNode).toHaveText("(wallabag/rulerz, wallabag/rulerz-bundle)");
 });
 
 test("a #q= link loads with the split and the notes already in place", async ({ page }) => {
   await report.gotoWithHash(FIXTURES.wallabag, "view=packages&q=hoa%2F");
-  expect(await report.countLine()).toContain("14 by name, 2 mention it");
+  expect(await report.countLine()).toContain("14 on the row, 2 mention “hoa/”");
   await expect(page.locator('[data-pkg="wallabag/rulerz-bundle"] .match-note mark')).toHaveText("hoa/");
 });
 

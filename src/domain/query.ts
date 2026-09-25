@@ -116,6 +116,19 @@ export function freeTextTerms(terms: readonly Term[]): readonly string[] {
   return valuesOf(terms, null);
 }
 
+/**
+ * The same free-text words, exactly as typed — case kept, `key:value` tokens dropped. Matching
+ * itself stays case-insensitive (`freeTextTerms`, `matchesFinding`); this is for display only, so
+ * the status line can echo a reader's own "HOA/" back as "HOA/" rather than folding it to lower
+ * case first (PD-SEARCH-1 polish item 4). Tokenised the same way `parseQuery` splits `raw`, so the
+ * two never disagree about which token is a bare word.
+ */
+export function freeTextTermsVerbatim(raw: string): readonly string[] {
+  const trimmed = raw.trim();
+  if (trimmed === "") return [];
+  return trimmed.split(/\s+/).filter((part) => part !== "" && !FIELD_PATTERN.test(part));
+}
+
 /** The four parts of a finding free text searches, in the order legacy joined them into one
  *  haystack (`report.js:207`): the package name, its version, its verdict, its evidence. */
 export type SearchField = "name" | "version" | "verdict" | "evidence";
