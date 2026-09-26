@@ -75,7 +75,8 @@
       "level": "high",
       "summary": "repository archived on GitHub",
       "data": {
-       "forge": "github"
+       "repo": "vendor/archived",
+       "host": "github.com"
       }
      }
     ],

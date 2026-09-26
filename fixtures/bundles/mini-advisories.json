@@ -103,9 +103,11 @@
           {
             "id": "S4",
             "level": "high",
-            "summary": "no push to the repository since 2021-02-10 (5.6 years)",
+            "summary": "last push 2021-02-10 (5.6 years ago)",
             "data": {
-              "pushed_at": "2021-02-10T00:00:00+00:00",
+              "last_push": "2021-02-10T00:00:00+00:00",
+              "repo": "acme/http-client",
+              "host": "github.com",
               "years": 5.6
             }
           },
