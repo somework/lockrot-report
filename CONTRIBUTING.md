@@ -1,6 +1,6 @@
 # Contributing
 
-Node 24 (`.nvmrc`). Everything below is an npm script:
+Node 26 (`.nvmrc`). Everything below is an npm script:
 
 | command                                                     | what it does                                                    |
 | ----------------------------------------------------------- | --------------------------------------------------------------- |
