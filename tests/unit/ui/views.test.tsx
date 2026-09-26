@@ -1485,7 +1485,7 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
 
 describe("RunView", () => {
   // PD-RUN-4: a missing value says why in words — "not in this document" when the key is absent,
-  // "not recorded" when lockrot wrote it as null — never the word "undefined" and never a bare dash.
+  // "left empty by this run" when lockrot wrote it as null — never the word "undefined" and never a bare dash.
   it("says why a run field has no value instead of 'undefined' or an em dash", () => {
     // Arrange: every K6-affected scalar left null, the keys present.
     const model = makeModel([]);
@@ -1496,8 +1496,12 @@ describe("RunView", () => {
     // Assert
     expect(screen.queryByText(/undefined/i)).toBeNull();
     expect(screen.queryByText("—")).toBeNull();
-    expect(screen.getByText("packages checked").nextElementSibling?.textContent).toBe("not recorded");
-    expect(screen.getByText("network failures").nextElementSibling?.textContent).toBe("not recorded");
+    expect(screen.getByText("packages checked").nextElementSibling?.textContent).toBe(
+      "left empty by this run",
+    );
+    expect(screen.getByText("network failures").nextElementSibling?.textContent).toBe(
+      "left empty by this run",
+    );
   });
 
   it("fail-on: the reason for a document without the field, the word 'none' only when the run said so (PD-SUMMARY-3)", () => {
@@ -1563,7 +1567,8 @@ describe("RunView", () => {
     renderIn(loadModel("wallabag_wallabag.json"), stateWith({ view: "run" }), <RunView />);
     const value = screen.getByText("abandoned with a replacement").nextElementSibling;
     expect(Array.from(value?.querySelectorAll(".run-part") ?? [], (el) => el.textContent)).toEqual([
-      "0 of 21 ·",
+      // The dot is real text inside the part before it (copied and read aloud), drawn in the gap.
+      "0 of 21 · ",
       "1 more named in words only",
     ]);
   });
@@ -1577,6 +1582,19 @@ describe("RunView", () => {
     renderIn(failed, stateWith({ view: "run" }), <RunView />);
     expect(screen.getByText("network failures").nextElementSibling?.textContent).toBe(
       "yes · no count recorded · 2 notes above",
+    );
+    // "2 notes above" is a button that moves to the notes, not plain text; the fragment stays put.
+    const hash = window.location.hash;
+    fireEvent.click(screen.getByRole("button", { name: "2 notes above" }));
+    expect(document.activeElement).toBe(screen.getByRole("heading", { name: "What this run could not see" }));
+    expect(window.location.hash).toBe(hash);
+  });
+
+  it("gathers the subjects that share a scale with a bracket and says the numbers hold for both", () => {
+    renderIn(loadModel("wallabag_wallabag.json"), stateWith({ view: "run" }), <RunView />);
+    expect(document.querySelector(".run-thr-names")?.classList.contains("is-shared")).toBe(true);
+    expect(document.querySelector(".run-thr-words")?.textContent).toMatch(
+      /^both: warn at 3 · high at 5 years/,
     );
   });
 

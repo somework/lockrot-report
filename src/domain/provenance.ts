@@ -110,3 +110,37 @@ function activitySource(model: Model, finding: Finding): ActivitySource {
 export function provenance(model: Model, finding: Finding): Provenance {
   return { metadata: metadataSource(model, finding), activity: activitySource(model, finding) };
 }
+
+/** The repository-activity checks, whose evidence is the Provenance activity line. */
+export const ACTIVITY_CHECKS: readonly string[] = ["S3", "S4"];
+
+/** Each absent-activity reason, as the clause that follows "with no repository activity in this
+ *  file" on the check strip. */
+const UNREAD_BECAUSE: Readonly<Record<string, string>> = {
+  [NOT_FROM_COMPOSER]: "the package is not from a Composer repository",
+  [NO_FACTS_IN_FILE]: "the file explains no package",
+  [NO_FACTS_FOR_PACKAGE]: "the file does not explain this package",
+};
+
+export interface QuietUnread {
+  /** The quiet activity checks ("S3", "S4"), in id order. */
+  readonly ids: readonly string[];
+  /** Why the file holds no activity for them, as a clause. */
+  readonly because: string;
+}
+
+/**
+ * The quiet S3/S4 cells of a package this file holds no repository activity for — neither an
+ * activity block nor a fired S3/S4 naming the repository. The strip marks them apart, so "quiet"
+ * never reads as "the repository was looked at and found fine" beside a Provenance line that says no
+ * activity is on file. `null` when activity is on file or no activity check is quiet.
+ */
+export function quietUnread(model: Model, finding: Finding): QuietUnread | null {
+  const activity = activitySource(model, finding);
+  if (activity.kind !== "missing") return null;
+  const ids = checkStrip(finding)
+    .cells.filter((cell) => ACTIVITY_CHECKS.includes(cell.id) && cell.state === "quiet")
+    .map((cell) => cell.id);
+  if (ids.length === 0) return null;
+  return { ids, because: UNREAD_BECAUSE[activity.reason] ?? "none is recorded for this package" };
+}

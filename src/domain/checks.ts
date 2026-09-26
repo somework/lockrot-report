@@ -115,11 +115,15 @@ export function checkStrip(finding: Finding): CheckStrip {
  * The line under the strip: "5 fired · 5 quiet · every check ran", "3 fired · 6 quiet · 1 could
  * not run", "1 fired · 9 not reported". "Every check ran" is said only when S10 did not fire —
  * S10 firing is lockrot saying a check did not, even when that check's own signal fired anyway.
+ * `unread` quiet cells (`provenance.ts#quietUnread`: S3/S4 with no repository activity on file) are
+ * counted inside the quiet figure — "8 quiet (2 with no activity on file)" — so "every check ran"
+ * never reads as every check having had something to look at.
  */
-export function checkTally(strip: CheckStrip): readonly string[] {
+export function checkTally(strip: CheckStrip, unread = 0): readonly string[] {
   const { fired, quiet, blocked, unreported } = strip.counts;
   const parts = [`${fired} fired`];
-  if (quiet > 0 || unreported === 0) parts.push(`${quiet} quiet`);
+  if (unread > 0) parts.push(`${quiet} quiet (${unread} with no activity on file)`);
+  else if (quiet > 0 || unreported === 0) parts.push(`${quiet} quiet`);
   if (blocked > 0) parts.push(`${blocked} could not run`);
   if (unreported > 0) parts.push(`${unreported} not reported`);
   const s10Fired = strip.cells.some((cell) => cell.id === "S10" && cell.state === "fired");

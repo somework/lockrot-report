@@ -14,6 +14,7 @@ import {
   type CheckState,
   type PulledRow,
 } from "../../domain/checks";
+import { ACTIVITY_CHECKS, quietUnread } from "../../domain/provenance";
 import { annotateThresholds, DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC } from "../../domain/vocab";
 import { OutLink, toneClass } from "../common/common";
 import { useReport } from "../context";
@@ -258,13 +259,13 @@ export const ACTIVITY_FACTS_ID = "detail-prov-activity";
 /**
  * Where a cell's evidence sits in the open panel, or `null` when it has none to point at: a fired
  * check's own row; a check that could not run, S10's row (which names it); a quiet S3 (archived) or
- * S4 (push age), the repository activity lockrot read — when this file carries it.
+ * S4 (push age), Provenance's repository-activity line — the facts it read, or why this file holds
+ * none, which is always drawn.
  */
-function evidenceTarget(cell: CheckCell, s10Fired: boolean, hasActivity: boolean): string | null {
+function evidenceTarget(cell: CheckCell, s10Fired: boolean): string | null {
   if (cell.state === "fired") return firedRowId(cell.id);
   if (cell.state === "blocked") return s10Fired ? firedRowId("S10") : null;
-  if (cell.state === "quiet" && (cell.id === "S3" || cell.id === "S4") && hasActivity)
-    return ACTIVITY_FACTS_ID;
+  if (cell.state === "quiet" && ACTIVITY_CHECKS.includes(cell.id)) return ACTIVITY_FACTS_ID;
   return null;
 }
 
@@ -301,13 +302,14 @@ function reveal(id: string): void {
 }
 
 /** One cell of the strip: a bar filled in its level's tone when the check fired, outlined when it
- *  stayed quiet, hatched when it could not run, dotted when the document does not say, with the id
+ *  stayed quiet (dashed when a quiet S3/S4 has no repository activity on file), hatched when it
+ *  could not run, dotted when the document does not say, with the id
  *  and the check's one- or two-word name under it. A cell with evidence in the panel (PD-RUN-5) is a
  *  button that opens it and moves there; every other cell is hidden from assistive tech, since the
  *  tally and the lines under the strip say every state in words. */
-function Cell({ cell, target }: { cell: CheckCell; target: string | null }) {
+function Cell({ cell, target, unread }: { cell: CheckCell; target: string | null; unread: boolean }) {
   const tone = cell.signal === null ? "" : ` ${toneClass(levelTone(cell.signal.level))}`;
-  const className = `detail-check is-${cell.state}${tone}`;
+  const className = `detail-check is-${cell.state}${tone}${unread ? " is-unread" : ""}`;
   const body = (
     <>
       <i aria-hidden="true" />
@@ -322,7 +324,9 @@ function Cell({ cell, target }: { cell: CheckCell; target: string | null }) {
       </span>
     );
   }
-  const label = `${cell.id} ${checkName(cell)}, ${STATE_WORDS[cell.state]}: show the evidence`;
+  const label = unread
+    ? `${cell.id} ${checkName(cell)}, quiet with no repository activity in this file: show why`
+    : `${cell.id} ${checkName(cell)}, ${STATE_WORDS[cell.state]}: show the evidence`;
   return (
     <button
       type="button"
@@ -351,7 +355,7 @@ function StateLine({
 }: {
   label: string;
   cells: readonly CheckCell[];
-  suffix?: string | null;
+  suffix?: ComponentChildren;
 }) {
   if (cells.length === 0) return null;
   return (
@@ -422,12 +426,14 @@ function cellsIn(cells: readonly CheckCell[], state: CheckState): readonly Check
 export function SignalList({ finding }: { finding: Finding }) {
   const { model } = useReport();
   const strip = checkStrip(finding);
-  const hasActivity = (model.details.get(finding.package)?.activity ?? null) !== null;
+  const unread = quietUnread(model, finding);
+  const unreadIds = new Set(unread?.ids ?? []);
   const s10Fired = strip.fired.some((signal) => signal.id === "S10");
-  const targets = strip.cells.map((cell) => evidenceTarget(cell, s10Fired, hasActivity));
+  const targets = strip.cells.map((cell) => evidenceTarget(cell, s10Fired));
   const linked = targets.some((target) => target !== null);
-  const tally = checkTally(strip);
+  const tally = checkTally(strip, unreadIds.size);
   const unreported = cellsIn(strip.cells, "unreported");
+  const quiet = cellsIn(strip.cells, "quiet");
 
   return (
     <section className="detail-section detail-checks">
@@ -439,7 +445,7 @@ export function SignalList({ finding }: { finding: Finding }) {
         aria-hidden={linked ? undefined : "true"}
       >
         {strip.cells.map((cell, index) => (
-          <Cell key={cell.id} cell={cell} target={targets[index] ?? null} />
+          <Cell key={cell.id} cell={cell} target={targets[index] ?? null} unread={unreadIds.has(cell.id)} />
         ))}
       </div>
       <p className="detail-checks-tally">
@@ -458,7 +464,28 @@ export function SignalList({ finding }: { finding: Finding }) {
           {unreported.length === 1 ? "check is" : `${unreported.length} are`} not reported as quiet.
         </p>
       )}
-      <StateLine label="Quiet:" cells={cellsIn(strip.cells, "quiet")} />
+      <StateLine label="Quiet:" cells={quiet.filter((cell) => !unreadIds.has(cell.id))} />
+      {unread !== null && (
+        <StateLine
+          label="Quiet with no repository activity in this file:"
+          cells={quiet.filter((cell) => unreadIds.has(cell.id))}
+          suffix={
+            <>
+              {" "}
+              — {unread.because}.{" "}
+              <button
+                type="button"
+                className="detail-checks-link"
+                onClick={() => {
+                  reveal(ACTIVITY_FACTS_ID);
+                }}
+              >
+                See Provenance
+              </button>
+            </>
+          }
+        />
+      )}
       {strip.fired.length === 0 ? (
         <p className="detail-signal-empty">
           No signal fired. The verdict comes from what lockrot could not learn.

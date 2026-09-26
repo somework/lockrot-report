@@ -88,9 +88,21 @@ describe("activityTally and cacheNullReason", () => {
     expect(cacheNullReason(fresh)).toBe(
       "none — all 2 repository answers in this file were fetched during the run",
     );
-    const cached: Model = { ...base, details: withActivity([true]) };
-    expect(cacheNullReason(cached)).toBe("not recorded");
-    expect(cacheNullReason(base)).toBe("not recorded");
+    const cached: Model = { ...base, details: withActivity([true, false]) };
+    expect(cacheNullReason(cached)).toBe(
+      "left empty by this run, though 1 of the 2 repository answers here came from the cache",
+    );
+  });
+
+  // Eval: a bare "not recorded" gave no reason; every null now says why from what the file holds.
+  it("says why the date is empty when the file explains no package, or none carries activity", () => {
+    const base = makeModel([]);
+    expect(cacheNullReason(base)).toBe("left empty by this run — this file explains no package");
+    const noActivity: Model = {
+      ...base,
+      details: new Map([["v/p", { metadata: null, lock: null, repositoryLink: null, activity: null }]]),
+    };
+    expect(cacheNullReason(noActivity)).toBe("none — no package in this file carries repository activity");
   });
 
   it("says the key is absent when the document leaves it out", () => {
@@ -107,7 +119,7 @@ describe("activityTally and cacheNullReason", () => {
 describe("nullReason", () => {
   it("tells an absent key from one written as null", () => {
     const base = makeModel([]);
-    expect(nullReason(base.report, "libyears")).toBe("not recorded");
+    expect(nullReason(base.report, "libyears")).toBe("left empty by this run");
     expect(nullReason({ ...base.report, absent: ["libyears"] }, "libyears")).toBe("not in this document");
   });
 });

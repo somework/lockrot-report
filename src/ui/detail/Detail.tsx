@@ -1,8 +1,8 @@
 import type { ComponentChildren } from "preact";
 import type { ExplainActivity, Finding, PackageDetails } from "../../model/types";
 import { isContextOnly } from "../../domain/age";
-import { provenance, type ActivitySource, type MetadataSource } from "../../domain/provenance";
-import { ageText, day } from "../../domain/format";
+import { provenance, quietUnread, type ActivitySource, type MetadataSource } from "../../domain/provenance";
+import { agePhrase, day } from "../../domain/format";
 import { safeHref } from "../../domain/links";
 import { OutLink } from "../common/common";
 import { useReport } from "../context";
@@ -122,7 +122,7 @@ function lockRows(finding: Finding, details: PackageDetails | null, now: Date): 
     { label: "php constraint", value: lock?.php || null },
     {
       label: "released",
-      value: lock?.released ? `${day(lock.released)} · ${ageText(lock.released, now)}` : null,
+      value: lock?.released ? dated(lock.released, now) : null,
     },
     { label: "libyears behind", value: <LibyearsRow finding={finding} metadata={metadata} /> },
     { label: "repository", value: repository },
@@ -130,19 +130,24 @@ function lockRows(finding: Finding, details: PackageDetails | null, now: Date): 
   ]);
 }
 
-/** A source's facts as one flowing line: its name (and, when the facts are borrowed, where from),
- *  then each label and value, "·" between them, then — when the file gives none — why, in words. */
+/** A source's facts as one flowing line: its name, where they were read ("GitHub"), and — when the
+ *  facts are borrowed — from which check, then each label and value, a dot between them, then — when
+ *  the file gives none — why, in words, and any note that ties the line to the strip above. */
 function FactsLine({
   source,
   rows,
   reason = null,
+  where = null,
   from = null,
+  note = null,
   id,
 }: {
-  source: ComponentChildren;
+  source: string;
   rows: readonly KeyValueRow[];
   reason?: string | null;
+  where?: string | null;
   from?: string | null;
+  note?: string | null;
   id?: string;
 }) {
   return (
@@ -151,6 +156,7 @@ function FactsLine({
     <div className="detail-prov-line" id={id} tabIndex={id === undefined ? undefined : -1}>
       <span className="detail-prov-source">
         {source}
+        {where !== null && <span className="detail-prov-where"> · {where}</span>}
         {from !== null && <span className="detail-prov-from"> {from}</span>}
       </span>
       {rows.length > 0 && (
@@ -164,6 +170,7 @@ function FactsLine({
         </dl>
       )}
       {reason !== null && <span className="detail-prov-reason">{reason}</span>}
+      {note !== null && <span className="detail-prov-note">{note}</span>}
     </div>
   );
 }
@@ -173,9 +180,10 @@ function Unrecorded({ children }: { children: string }) {
   return <span className="detail-prov-null">{children}</span>;
 }
 
-/** A dated fact: its day, then how long before the report that was. */
+/** A dated fact: its day, then how long before the report that was, spelled out as the fired
+ *  checks above word it ("8.2 years ago"). */
 function dated(iso: string, now: Date): string {
-  return `${day(iso)} · ${ageText(iso, now)}`;
+  return `${day(iso)} · ${agePhrase(iso, now)}`;
 }
 
 /** The repository activity lockrot read for this package (PD-RUN-5): where, whether archived, the
@@ -233,13 +241,13 @@ function fromWords(ids: readonly string[]): string {
 function Provenance({ finding, now }: { finding: Finding; now: Date }) {
   const { model } = useReport();
   const { metadata, activity } = provenance(model, finding);
+  const unread = quietUnread(model, finding);
+  const note =
+    unread === null
+      ? null
+      : `${unread.ids.join(" and ")} show quiet above, with no repository activity in this file.`;
   // Both sources absent for one reason ("not from a Composer repository"): said once, not twice.
-  if (
-    metadata.kind === "missing" &&
-    activity.kind === "missing" &&
-    metadata.asOf === null &&
-    metadata.reason === activity.reason
-  ) {
+  if (metadata.kind === "missing" && activity.kind === "missing" && metadata.reason === activity.reason) {
     return (
       <div className="detail-prov">
         <FactsLine
@@ -247,6 +255,7 @@ function Provenance({ finding, now }: { finding: Finding; now: Date }) {
           source="Package metadata · repository activity"
           rows={[]}
           reason={metadata.reason}
+          note={note}
         />
       </div>
     );
@@ -261,30 +270,38 @@ function Provenance({ finding, now }: { finding: Finding; now: Date }) {
       {activity.kind === "read" && (
         <FactsLine
           id={ACTIVITY_FACTS_ID}
-          source={activity.activity.forge ?? "Repository activity"}
+          source="Repository activity"
+          where={activity.activity.forge}
           rows={activityRows(activity.activity, now)}
         />
       )}
       {activity.kind === "signal" && (
         <FactsLine
           id={ACTIVITY_FACTS_ID}
-          source={activity.host ?? "Repository activity"}
+          source="Repository activity"
+          where={activity.host}
           from={fromWords(activity.from)}
           rows={signalActivityRows(activity, now)}
         />
       )}
       {activity.kind === "missing" && (
-        <FactsLine id={ACTIVITY_FACTS_ID} source="Repository activity" rows={[]} reason={activity.reason} />
+        <FactsLine
+          id={ACTIVITY_FACTS_ID}
+          source="Repository activity"
+          rows={[]}
+          reason={activity.reason}
+          note={note}
+        />
       )}
     </div>
   );
 }
 
-/** The metadata line's facts: its date, releases listed and last stable when lockrot read it; only
- *  the finding's own date (when it has one) when it did not. */
+/** The metadata line's facts: its date, releases listed and last stable when lockrot read it; none
+ *  when it did not — an "as of" over absent data would date nothing (the reason says why instead). */
 function metadataRows(source: MetadataSource): readonly KeyValueRow[] {
+  if (source.kind === "missing") return [];
   const asOf = { label: "as of", value: source.asOf ? day(source.asOf) : null };
-  if (source.kind === "missing") return presentRows([asOf]);
   const { metadata } = source;
   return presentRows([
     { ...asOf, value: asOf.value ?? <Unrecorded>undated</Unrecorded> },

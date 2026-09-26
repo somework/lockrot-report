@@ -42,9 +42,11 @@ function PairScale({ pairs, max }: { pairs: readonly ThresholdPair[]; max: numbe
   const whats = pairs.map((p) => `years ${SUBJECTS[p.subject]?.what ?? p.subject}`).join(" and ");
   const keys = pairs.flatMap((p) => [p.warnName, p.highName]);
   const label = `${whats}: warn at ${pair.warn} years, high at ${pair.high} years (${keys.join(", ")})`;
+  const shared = pairs.length > 1;
   return (
     <li className="run-thr-row">
-      <span className="run-thr-names">
+      {/* Two subjects on one scale: a bracket gathers them, pointing at the scale they share. */}
+      <span className={shared ? "run-thr-names is-shared" : "run-thr-names"}>
         {pairs.map((p) => (
           <SubjectName key={p.subject} pair={p} />
         ))}
@@ -72,6 +74,7 @@ function PairScale({ pairs, max }: { pairs: readonly ThresholdPair[]; max: numbe
       </span>
       <span className="run-thr-words" aria-hidden="true">
         <span>
+          {shared && (pairs.length === 2 ? "both: " : `all ${pairs.length}: `)}
           warn at <b>{pair.warn}</b> · high at <b>{pair.high}</b> years
         </span>
         <span className="run-thr-keys mono">

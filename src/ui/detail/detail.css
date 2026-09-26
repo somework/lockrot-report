@@ -312,6 +312,12 @@
 .detail-check.is-unreported i {
   border-style: dotted;
 }
+/* A quiet S3/S4 with no repository activity on file (provenance.ts#quietUnread): the quiet outline
+   broken into dashes and no fill — quiet, with nothing on file behind it. Not hatched: it ran. */
+.detail-check.is-unread i {
+  border-style: dashed;
+  border-color: var(--muted);
+}
 /* A cell with evidence in the panel (PD-RUN-5): a button that looks like its cell, the id underlined
    so it reads as something to press. */
 button.detail-check {
@@ -361,6 +367,23 @@ button.detail-check {
   display: inline-block;
   max-width: 100%;
   overflow-wrap: anywhere;
+}
+/* "See Provenance": a button drawn as the page's in-page links are (detail-lead.css#detail-hop-link). */
+.detail-checks-link {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent-ink) 40%, transparent);
+  text-underline-offset: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.detail-checks-link:hover {
+  text-decoration-color: currentColor;
 }
 .detail-checks-id {
   font-family: var(--mono);
@@ -808,26 +831,38 @@ button.detail-check {
   letter-spacing: 0.04em;
   color: var(--ink-2);
 }
+/* The dot between two facts sits in the gap before the second, drawn outside its box; a fact that
+   starts a line has its dot left of the list's own edge, where the clip hides it — so no line ends
+   or starts on a dot, at any width. Clipped sideways only: nothing in a fact is focusable. */
 .detail-kv.detail-prov-facts {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px 0;
+  gap: 2px 16px;
   margin: 0;
+  overflow-x: clip;
 }
 .detail-prov-fact {
+  position: relative;
   display: inline-flex;
   gap: 5px;
   align-items: baseline;
   min-width: 0;
 }
-/* The dot belongs to the fact before it, so a wrapped line never starts on one. */
-.detail-prov-fact:not(:last-child)::after {
+.detail-prov-fact + .detail-prov-fact::before {
   content: "·";
-  padding: 0 7px 0 2px;
+  position: absolute;
+  right: calc(100% + 6px);
   color: var(--muted);
 }
 .detail-prov-fact dd {
   overflow-wrap: anywhere;
+}
+/* Where the facts were read ("GitHub", "github.com"): as the document writes it, never in caps, so
+   a forge and a host keep their own spelling. */
+.detail-prov-where {
+  font-variant-caps: normal;
+  letter-spacing: 0;
+  color: var(--ink);
 }
 /* Where the facts were borrowed from ("from S4’s data"): quieter than the source, never in caps. */
 .detail-prov-from {
@@ -845,6 +880,11 @@ button.detail-check {
 }
 .detail-prov-reason {
   font-size: 12.5px;
+}
+/* The strip's quiet S3/S4 said from this side: the same facts, so the two never disagree. */
+.detail-prov-note {
+  font-size: 12px;
+  color: var(--muted);
 }
 /* The strip moves focus onto the activity line; its ring sits just outside the text. */
 .detail-prov-line:focus-visible {

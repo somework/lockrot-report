@@ -5,6 +5,7 @@ import {
   NO_FACTS_IN_FILE,
   NOT_FROM_COMPOSER,
   provenance,
+  quietUnread,
 } from "../../../src/domain/provenance";
 import { makeFinding, makeMetadata, makeModel, makeSignal } from "./fixtures";
 
@@ -142,5 +143,47 @@ describe("provenance — repository activity", () => {
       kind: "missing",
       reason: "none recorded for this package",
     });
+  });
+});
+
+describe("quietUnread", () => {
+  it("names the quiet S3/S4 of a package the file holds no activity for, and why", () => {
+    const finding = makeFinding({ signals: [makeSignal({ id: "S6", level: "warn" })] });
+    const notComposer = withDetails(makeModel([finding]), {
+      [finding.package]: { lock: { ...LOCK, fromComposerRepository: false } },
+    });
+    expect(quietUnread(notComposer, finding)).toEqual({
+      ids: ["S3", "S4"],
+      because: "the package is not from a Composer repository",
+    });
+    expect(quietUnread(makeModel([finding]), finding)).toEqual({
+      ids: ["S3", "S4"],
+      because: "the file explains no package",
+    });
+    const plain = withDetails(makeModel([finding]), { [finding.package]: {} });
+    expect(quietUnread(plain, finding)?.because).toBe("none is recorded for this package");
+  });
+
+  it("is null when activity is on file, from the details or a fired S3/S4", () => {
+    const finding = makeFinding();
+    const activity = {
+      forge: "GitHub",
+      repository: "acme/widget",
+      archived: false,
+      pushedAt: null,
+      fetchedAt: null,
+      fromCache: false,
+    };
+    const read = withDetails(makeModel([finding]), { [finding.package]: { activity } });
+    expect(quietUnread(read, finding)).toBeNull();
+    const fired = makeFinding({ signals: [S4] });
+    expect(quietUnread(makeModel([fired]), fired)).toBeNull();
+  });
+
+  it("leaves out an activity check that could not run: S10 already says so", () => {
+    const s10 = makeSignal({ id: "S10", data: { unchecked: [{ reason: "offline", blocks: ["S4"] }] } });
+    const finding = makeFinding({ signals: [s10] });
+    const model = withDetails(makeModel([finding]), { [finding.package]: {} });
+    expect(quietUnread(model, finding)?.ids).toEqual(["S3"]);
   });
 });

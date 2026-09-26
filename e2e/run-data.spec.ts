@@ -97,17 +97,61 @@ test("Provenance says why a source is absent instead of a dash, and reads S4's o
   let detail = page.getByRole("complementary", { name: "drupal/core" });
   await detail.getByRole("heading", { name: "Provenance", level: 3 }).click();
   await expect(detail.locator(".detail-prov")).toHaveText(
-    "Package metadata · repository activitynone — not from a Composer repository",
+    "Package metadata · repository activitynone — not from a Composer repositoryS3 and S4 show quiet above, with no repository activity in this file.",
   );
 
   await report.gotoWithHash("synthetic-no-details" as FixtureName, "pkg=daverandom%2Fresume");
   detail = page.getByRole("complementary", { name: "daverandom/resume" });
   await detail.getByRole("heading", { name: "Provenance", level: 3 }).click();
   const activity = detail.locator("#detail-prov-activity");
-  await expect(activity.locator(".detail-prov-source")).toHaveText("github.com from S4’s data");
+  await expect(activity.locator(".detail-prov-source")).toHaveText(
+    "Repository activity · github.com from S4’s data",
+  );
+  await expect(activity).toContainText("8.2 years ago");
   await expect(activity).toContainText("DaveRandom/Resume");
   await expect(activity).toContainText("2018-06-25");
   await expect(detail.locator(".detail-prov")).toContainText("not in this document — it explains no package");
   const results = await new AxeBuilder({ page }).include("#detail-provenance").analyze();
   expect(results.violations.map((v) => v.id)).toEqual([]);
+});
+
+test("a quiet S4 with no activity on file is marked apart and opens Provenance's reason", async ({
+  page,
+}) => {
+  await report.gotoWithHash("capsule-0.10-drupal" as FixtureName, "pkg=drupal%2Fcore");
+  const detail = page.getByRole("complementary", { name: "drupal/core" });
+  await expect(detail.locator(".detail-checks-tally")).toHaveText(
+    "2 fired · 8 quiet (2 with no activity on file) · every check ran.",
+  );
+  await detail
+    .getByRole("button", { name: "S4 push age, quiet with no repository activity in this file: show why" })
+    .click();
+  const line = detail.locator("#detail-prov-activity");
+  await expect(line).toBeFocused();
+  await expect(line).toContainText("none — not from a Composer repository");
+  await expect(line).toContainText("S3 and S4 show quiet above");
+  const results = await new AxeBuilder({ page })
+    .include(".detail-checks")
+    .include("#detail-provenance")
+    .analyze();
+  expect(results.violations.map((v) => v.id)).toEqual([]);
+});
+
+test("at 320px a value's parts wrap between parts, each whole on one line", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await report.gotoWithHash(FIXTURES.wallabag, "view=run");
+  const parts = page.locator(".run-part");
+  expect(await parts.count()).toBeGreaterThan(2);
+  const heights = await parts.evaluateAll((els) =>
+    els.map((el) => el.getBoundingClientRect().height / (parseFloat(getComputedStyle(el).lineHeight) || 18)),
+  );
+  for (const lines of heights) expect(lines).toBeLessThan(1.5);
+});
+
+test("'2 notes above' moves to the notes and keeps the fragment", async ({ page }) => {
+  await report.gotoWithHash("mini-advisory-incomplete", "view=run");
+  const hash = await report.hash();
+  await page.getByRole("button", { name: "2 notes above" }).click();
+  await expect(page.getByRole("heading", { name: "What this run could not see" })).toBeFocused();
+  expect(await report.hash()).toBe(hash);
 });

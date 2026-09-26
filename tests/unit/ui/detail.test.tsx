@@ -1155,14 +1155,58 @@ describe("Detail", () => {
       expect(
         Array.from(provenance?.querySelectorAll(".detail-prov-reason") ?? [], (el) => el.textContent),
       ).toEqual(["none — not from a Composer repository"]);
+      // The strip's quiet S3/S4 said from this side too, so the two never read as a contradiction.
+      expect(provenance?.querySelector(".detail-prov-note")?.textContent).toBe(
+        "S3 and S4 show quiet above, with no repository activity in this file.",
+      );
+    });
+
+    // Eval (auditor): a quiet S4 beside "no activity read" contradicted itself, and the cell was a
+    // dead span. Now it is marked apart, counted in the tally, named in its own line, and links.
+    it("marks a quiet S3/S4 with no activity on file, and points it at Provenance's reason", () => {
+      const { container } = renderDetail(loadModel("capsule-0.10-drupal.json"), "drupal/core");
+      expect(container.querySelector(".detail-checks-tally")?.textContent).toBe(
+        "2 fired · 8 quiet (2 with no activity on file) · every check ran.",
+      );
+      const unread = Array.from(container.querySelectorAll(".detail-check.is-unread"), (el) =>
+        el.getAttribute("aria-label"),
+      );
+      expect(unread).toEqual([
+        "S3 archived, quiet with no repository activity in this file: show why",
+        "S4 push age, quiet with no repository activity in this file: show why",
+      ]);
+      const lines = Array.from(container.querySelectorAll(".detail-checks-line"), (el) =>
+        el.textContent.replace(/\s+/g, " "),
+      );
+      expect(lines[0]).toBe(
+        "Quiet: S1 abandoned · S2 release age · S5 predates PHP · S8 branch stopped · S9 advisories · S10 all checks ran",
+      );
+      expect(lines[1]).toBe(
+        "Quiet with no repository activity in this file: S3 archived · S4 push age — the package is not from a Composer repository. See Provenance",
+      );
+      fireEvent.click(
+        screen.getByRole("button", { name: /^S4 push age, quiet with no repository activity/ }),
+      );
+      expect(container.querySelector<HTMLDetailsElement>("#detail-provenance")?.open).toBe(true);
+      expect(document.activeElement).toBe(container.querySelector("#detail-prov-activity"));
+    });
+
+    it("gives an absent metadata source no as-of date, only its reason", () => {
+      const { container } = renderDetail(loadModel("synthetic-no-details.json"), "daverandom/resume");
+      const metadata = openReference(container, "Provenance")?.querySelector(".detail-prov-line");
+      expect(metadata?.querySelectorAll("dt").length).toBe(0);
+      expect(metadata?.textContent).not.toContain("as of");
     });
 
     it("reads the forge facts off a fired S4 when the document has no details", () => {
       const { container } = renderDetail(loadModel("synthetic-no-details.json"), "daverandom/resume");
       const activity = container.querySelector("#detail-prov-activity");
-      expect(activity?.querySelector(".detail-prov-source")?.textContent).toBe("github.com from S4’s data");
+      expect(activity?.querySelector(".detail-prov-source")?.textContent).toBe(
+        "Repository activity · github.com from S4’s data",
+      );
       expect(activity?.textContent).toContain("DaveRandom/Resume");
-      expect(activity?.textContent).toContain("2018-06-25");
+      // Spelled out as the fired S4 above words it ("8.2 years ago"), not "8.2 y ago".
+      expect(activity?.textContent).toContain("2018-06-25 · 8.2 years ago");
       expect(activity?.textContent).toContain("no (S3 quiet)");
       expect(activity?.textContent).toContain("not in this document");
       const metadata = openReference(container, "Provenance")?.querySelector(".detail-prov-reason");
@@ -1207,7 +1251,9 @@ describe("Detail", () => {
     it("shows the repository activity in provenance, and a quiet S4 cell opens it", () => {
       const { container } = renderDetail(KOEL, "predis/predis");
       const activity = container.querySelector("#detail-prov-activity");
-      expect(activity?.querySelector(".detail-prov-source")?.textContent).toBe("GitHub");
+      expect(activity?.querySelector(".detail-prov-source")?.textContent).toBe(
+        "Repository activity · GitHub",
+      );
       expect(Array.from(activity?.querySelectorAll("dt") ?? [], (el) => el.textContent)).toEqual([
         "repository",
         "archived",

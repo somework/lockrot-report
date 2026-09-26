@@ -125,6 +125,15 @@ describe("checkStrip", () => {
     expect(checkTally(checkStrip(finding))).toEqual(["2 fired", "8 quiet"]);
   });
 
+  it("counts quiet cells with no activity on file inside the quiet figure", () => {
+    const finding = makeFinding({ signals: [makeSignal({ id: "S6", level: "warn" })] });
+    expect(checkTally(checkStrip(finding), 2)).toEqual([
+      "1 fired",
+      "9 quiet (2 with no activity on file)",
+      "every check ran",
+    ]);
+  });
+
   it("keeps a newer lockrot's check in the fired list, outside the ten cells", () => {
     const finding = makeFinding({
       signals: [makeSignal({ id: "S11", level: "high" }), makeSignal({ id: "S2", level: "warn" })],

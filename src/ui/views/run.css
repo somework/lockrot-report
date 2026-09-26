@@ -94,6 +94,33 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+  justify-self: start;
+}
+/* Subjects that share one scale: a "]" bracket down their right side, its point aimed at the scale,
+   so the scale reads as covering both, not only the first. */
+.run-thr-names.is-shared {
+  position: relative;
+  padding-right: 16px;
+}
+.run-thr-names.is-shared::before {
+  content: "";
+  position: absolute;
+  right: 4px;
+  top: 3px;
+  bottom: 3px;
+  width: 6px;
+  border: 1px solid var(--border-strong);
+  border-left: 0;
+  border-radius: 0 3px 3px 0;
+}
+.run-thr-names.is-shared::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  width: 6px;
+  height: 1px;
+  background: var(--border-strong);
 }
 .run-thr-name {
   display: flex;
@@ -204,6 +231,14 @@
     flex-wrap: wrap;
     column-gap: 10px;
   }
+  /* The scale sits right under the names here, and "both:" leads its words: no bracket to point. */
+  .run-thr-names.is-shared {
+    padding-right: 0;
+  }
+  .run-thr-names.is-shared::before,
+  .run-thr-names.is-shared::after {
+    content: none;
+  }
 }
 .run-thr-others {
   display: flex;
@@ -236,6 +271,7 @@
   gap: 14px 28px;
 }
 .run-field-group {
+  container: runfield / inline-size;
   min-width: 0;
   border-top: 1px solid var(--border-strong);
 }
@@ -279,11 +315,65 @@
   font-size: 12px;
   color: var(--muted);
 }
-/* One part of a value ("branch snapshot 4 ·"): kept whole on its line while it fits one, so a value
-   wraps between its parts, never inside one; only a part wider than the column breaks. */
+/* A value in parts, right-aligned like every value: they wrap between parts, never inside one while
+   it fits. The dot between two sits just past the first part's box (not in the flow), so a part that
+   ends a line puts its dot past the column's edge, where the clip hides it; mid-line it sits in the
+   gap. Clipped sideways only, with 4px of room for the notes button's focus ring. */
+.run-parts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 0 14px;
+  margin-right: -4px;
+  padding-right: 4px;
+  overflow-x: clip;
+}
 .run-part {
-  display: inline-block;
+  position: relative;
   max-width: 100%;
+}
+/* Absolutely placed, so its spaces collapse away and only the dot shows, in the gap. */
+.run-sep {
+  position: absolute;
+  left: calc(100% + 5px);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-style: normal;
+  color: var(--muted);
+}
+/* "2 notes above": a button drawn as the page's in-page links are. */
+.run-jump {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent-ink) 40%, transparent);
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.run-jump:hover {
+  text-decoration-color: currentColor;
+}
+.run-jump-target {
+  scroll-margin-top: 72px;
+}
+/* A narrow group (a phone, three columns at 1024): a value in parts, or a long reason, takes the
+   group's whole width on the line under its label, so each part fits whole instead of wrapping
+   inside a half-width column. */
+@container runfield (max-width: 399.98px) {
+  .run-kv dt.is-long {
+    grid-column: 1 / -1;
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  .run-kv dd.is-long {
+    grid-column: 1 / -1;
+    padding-top: 1px;
+  }
 }
 
 @media (forced-colors: active) {
@@ -291,6 +381,13 @@
     border-left-color: CanvasText;
   }
   .run-thr-track::before {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+  .run-thr-names.is-shared::before {
+    border-color: CanvasText;
+  }
+  .run-thr-names.is-shared::after {
     forced-color-adjust: none;
     background: CanvasText;
   }

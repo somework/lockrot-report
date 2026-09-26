@@ -1,4 +1,5 @@
-import { Fragment } from "preact";
+import { Fragment, type RefObject } from "preact";
+import { useRef } from "preact/hooks";
 import type { BaselineSummary, Model, ReportModel } from "../../model/types";
 import { useReport } from "../context";
 import { baselineDelta } from "../../domain/baseline";
@@ -107,12 +108,17 @@ interface Missing {
 /** A value in short parts ("2026-09-23 12:00 UTC" · "24 hours before the run"): each kept whole on
  *  its line, wrapping only between parts, never inside one. */
 interface Parts {
-  readonly parts: readonly (string | Missing | Aside)[];
+  readonly parts: readonly Part[];
 }
 /** A part that qualifies the value before it ("24 hours before the run"): quieter, in the sans. */
 interface Aside {
   readonly aside: string;
 }
+/** A part that points at a section above ("2 notes above"): a button that moves there. */
+interface Jump {
+  readonly jump: string;
+}
+type Part = string | Missing | Aside | Jump;
 type FieldValue = string | Missing | Parts;
 
 function isMissing(value: FieldValue): value is Missing {
@@ -141,7 +147,7 @@ function unmeasuredText(report: ReportModel): FieldValue {
  *  report libyears), or the block is there but measured nothing. */
 function libyearsReason(report: ReportModel): string {
   if (!carries(report, "libyears")) return NOT_IN_DOCUMENT;
-  if (report.libyears === null) return "not reported by this run";
+  if (report.libyears === null) return NOT_RECORDED;
   return report.libyears.measured === 0 ? "nothing measured" : NOT_RECORDED;
 }
 
@@ -161,7 +167,7 @@ function networkText(report: ReportModel): FieldValue {
     parts: [
       "yes",
       { missing: "no count recorded" },
-      ...(notes > 0 ? [{ aside: `${plural(notes, "note", "notes")} above` }] : []),
+      ...(notes > 0 ? [{ jump: `${plural(notes, "note", "notes")} above` }] : []),
     ],
   };
 }
@@ -298,32 +304,78 @@ function keepZone(text: string): string {
   return text.replace(/ UTC$/, "\u00a0UTC");
 }
 
-function partClass(part: string | Missing | Aside): string {
-  if (typeof part === "string") return "";
-  return "missing" in part ? " run-null" : " run-aside";
+/** Whether a value needs the group's whole width on a narrow sheet: one in parts, or a reason long
+ *  enough that a half-width column would wrap it three lines deep. */
+const LONG_REASON = 28;
+function isLong(value: FieldValue): boolean {
+  if (typeof value === "string") return false;
+  return isMissing(value) ? value.missing.length > LONG_REASON : true;
 }
 
-function FieldValueText({ value }: { value: FieldValue }) {
+/** The dot after a part: real text, so a copied value and a screen reader keep " · " between parts,
+ *  drawn outside the part's box (run.css). */
+function Sep({ last }: { last: boolean }) {
+  return last ? null : <span className="run-sep"> · </span>;
+}
+
+function PartText({ part, last, onJump }: { part: Part; last: boolean; onJump: () => void }) {
+  if (typeof part === "string") {
+    return (
+      <span className="run-part">
+        {keepZone(part)}
+        <Sep last={last} />
+      </span>
+    );
+  }
+  if ("missing" in part) {
+    return (
+      <span className="run-part run-null">
+        {part.missing}
+        <Sep last={last} />
+      </span>
+    );
+  }
+  if ("aside" in part) {
+    return (
+      <span className="run-part run-aside">
+        {part.aside}
+        <Sep last={last} />
+      </span>
+    );
+  }
+  return (
+    <span className="run-part run-aside">
+      <button type="button" className="run-jump" onClick={onJump}>
+        {part.jump}
+      </button>
+      <Sep last={last} />
+    </span>
+  );
+}
+
+/** A value, or its parts in one wrapping row: each part whole on its line; the dot between two sits
+ *  after the first, outside its box, so the one ending a line falls past the column's edge and is
+ *  clipped (run.css) — no line starts or ends on a dot. */
+function FieldValueText({ value, onJump }: { value: FieldValue; onJump: () => void }) {
   if (typeof value === "string") return <>{value}</>;
   if (isMissing(value)) return <span className="run-null">{value.missing}</span>;
-  // Each part whole on its line; the " ·" belongs to the part before it, so a wrapped line never
-  // starts on one.
   return (
-    <>
-      {value.parts.map((part, index) => {
-        const last = index === value.parts.length - 1;
-        return (
-          <Fragment key={index}>
-            <span className={`run-part${partClass(part)}`}>
-              {typeof part === "string" ? keepZone(part) : "missing" in part ? part.missing : part.aside}
-              {!last && " ·"}
-            </span>
-            {!last && " "}
-          </Fragment>
-        );
-      })}
-    </>
+    <span className="run-parts">
+      {value.parts.map((part, index) => (
+        <PartText key={index} part={part} last={index === value.parts.length - 1} onJump={onJump} />
+      ))}
+    </span>
   );
+}
+
+/** Brings the notes section into view and puts focus on its heading. */
+function jumpTo(ref: RefObject<HTMLHeadingElement>): void {
+  const heading = ref.current;
+  if (heading === null) return;
+  const reduce =
+    typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  heading.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+  heading.focus({ preventScroll: true });
 }
 
 /**
@@ -334,6 +386,10 @@ function FieldValueText({ value }: { value: FieldValue }) {
 export function RunView() {
   const { model } = useReport();
   const { report } = model;
+  const notesRef = useRef<HTMLHeadingElement>(null);
+  const toNotes = () => {
+    jumpTo(notesRef);
+  };
 
   return (
     <div className="run-sections">
@@ -341,7 +397,9 @@ export function RunView() {
 
       {report.notes.length > 0 && (
         <section className="sect">
-          <h3>What this run could not see</h3>
+          <h3 ref={notesRef} tabIndex={-1} className="run-jump-target">
+            What this run could not see
+          </h3>
           {report.notes.map((note) => (
             <div className="note" key={note}>
               {note}{" "}
@@ -364,14 +422,17 @@ export function RunView() {
             <div className="run-field-group" key={group.title}>
               <h4 className="run-field-title">{group.title}</h4>
               <dl className="kv run-kv">
-                {group.fields.map(({ label, value }) => (
-                  <Fragment key={label}>
-                    <dt>{label}</dt>
-                    <dd>
-                      <FieldValueText value={value} />
-                    </dd>
-                  </Fragment>
-                ))}
+                {group.fields.map(({ label, value }) => {
+                  const long = isLong(value) ? "is-long" : undefined;
+                  return (
+                    <Fragment key={label}>
+                      <dt className={long}>{label}</dt>
+                      <dd className={long}>
+                        <FieldValueText value={value} onJump={toNotes} />
+                      </dd>
+                    </Fragment>
+                  );
+                })}
               </dl>
             </div>
           ))}

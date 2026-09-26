@@ -15,8 +15,9 @@ tag or the address format, says so under **Breaking** in its entry.
   the cached repository activity was, and the gate. The thresholds are drawn on the same 3y/5y
   scale as the Findings column, and the fields sit in three groups: told, reached, measured.
 - A document that leaves out fields this page reads (an older lockrot's `abandoned` or `libyears`,
-  `run.fail_on`) gets a note naming them, and each empty value says why ("not in this document",
-  "not recorded", "not reported by this run") instead of an em dash.
+  `run.fail_on`) gets a note naming them, and each empty value says why ("not in this document"
+  when the key is absent, "left empty by this run" when it is null, or what the file shows, such as
+  "none — all 69 repository answers in this file were fetched during the run") instead of an em dash.
 - In an open package, a check cell with something to show is a button: a fired check opens its row,
   a check that could not run opens S10, a quiet archived or push-age check opens the repository
   activity. Provenance lists that activity (forge, repository, archived, last push, fetched fresh
@@ -25,6 +26,18 @@ tag or the address format, says so under **Breaking** in its entry.
   Composer repository, not in this document, S10 stopped the check, none recorded), and a document
   without per-package facts shows the forge, repository and last push a fired S3/S4 carries,
   marked as read from that check. A quiet S4 cell now moves focus onto the activity line itself.
+- A quiet archived or push-age check on a package this file holds no repository activity for (one
+  not from a Composer repository, say) is drawn dashed, counted in the tally ("8 quiet (2 with no
+  activity on file)"), named on its own line with the reason and a "See Provenance" link, and its
+  cell opens Provenance, which says the same from its side. Before, "every check ran" and a quiet
+  S4 sat above "none — not from a Composer repository" with nothing tying the two together.
+- Run data values in parts ("yes · no count recorded · 2 notes above") no longer leave a dot hanging
+  at a line's end, and on a phone they take the full width under their label so no part wraps
+  inside itself. "2 notes above" moves to the notes. Provenance's facts lines drop the dot at a
+  wrap the same way, give ages in words as the fired checks above them do ("8.2 years ago"), label
+  every activity line "Repository activity" with its forge or host as the document writes it, and
+  no longer date package metadata the file does not hold. Subjects sharing one threshold scale are
+  bracketed together and the scale's words say "both".
 
 - The Advisories tab answers first: how many advisories on which packages, by severity, how many
   sit on packages installed for production, how many are fixed on the branch you are on, only on

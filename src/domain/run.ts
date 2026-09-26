@@ -15,9 +15,11 @@ const MS_PER_JULIAN_YEAR = 365.25 * MS_PER_DAY;
 const HOURS_UNTIL = 48 * MS_PER_HOUR;
 const DAYS_UNTIL = 60 * MS_PER_DAY;
 
-/** What a reader is told for a value the document does not give, instead of a bare em dash. */
+/** What a reader is told for a value the document does not give, instead of a bare em dash: the key
+ *  is not in the document at all, or the run wrote it as null. One wording family everywhere on Run
+ *  data, so "not in this document" and "left empty by this run" always mean these two things. */
 export const NOT_IN_DOCUMENT = "not in this document";
-export const NOT_RECORDED = "not recorded";
+export const NOT_RECORDED = "left empty by this run";
 
 /**
  * An ISO 8601 instant as `2026-09-24 00:00 UTC`: one zone for every reader, so the page says the
@@ -88,19 +90,21 @@ export function nullReason(report: ReportModel, key: string): string {
   return carries(report, key) ? NOT_RECORDED : NOT_IN_DOCUMENT;
 }
 
-/** The sentence the oldest-cache row gives when the document has no date for it. When this file
- *  explains packages with repository activity and none of those came from the cache, it says so
- *  with the count; otherwise only that the date is absent or empty. */
+/** The sentence the oldest-cache row gives when the document has no date for it — always with the
+ *  reason this file shows: no key; no package explained; no package carrying repository activity;
+ *  every answer fetched during the run (with the count); or answers from the cache but no date. */
 export function cacheNullReason(model: Model): string {
   const { report } = model;
   if (!carries(report, "activity_cache_oldest_at")) return NOT_IN_DOCUMENT;
+  if (model.details.size === 0) return `${NOT_RECORDED} — this file explains no package`;
   const tally = activityTally(model.details);
-  if (tally.total > 0 && tally.fromCache === 0) {
+  if (tally.total === 0) return "none — no package in this file carries repository activity";
+  if (tally.fromCache === 0) {
     return tally.total === 1
       ? "none — the one repository answer in this file was fetched during the run"
       : `none — all ${tally.total} repository answers in this file were fetched during the run`;
   }
-  return NOT_RECORDED;
+  return `${NOT_RECORDED}, though ${tally.fromCache} of the ${tally.total} repository answers here came from the cache`;
 }
 
 export interface ThresholdPair {

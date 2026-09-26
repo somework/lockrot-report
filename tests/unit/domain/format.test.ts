@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { ageText, countPhrase, day, fixed, plural, pluralNoun } from "../../../src/domain/format";
+import { agePhrase, ageText, countPhrase, day, fixed, plural, pluralNoun } from "../../../src/domain/format";
 
 // Every case here that has a line number in its title is ported verbatim (values unchanged, only
 // the assertion syntax adapted) from tests/js/lib.test.js; the ones without are new, covering what
@@ -124,5 +124,15 @@ describe("countPhrase", () => {
 
   test("zero of zero stays plural, same as any other non-one count", () => {
     expect(countPhrase(0, 0, "flagged package", "flagged packages")).toBe("0 of 0 flagged packages");
+  });
+});
+
+describe("agePhrase", () => {
+  const now = new Date("2026-09-24T00:00:00Z");
+  test("spells out the same figure ageText gives, in years or months", () => {
+    expect(agePhrase("2018-06-25T10:20:17Z", now)).toBe("8.2 years ago");
+    expect(ageText("2018-06-25T10:20:17Z", now)).toBe("8.2 y ago");
+    expect(agePhrase("2026-09-01T00:00:00Z", now)).toBe("1 month ago");
+    expect(agePhrase(null, now)).toBe("undated");
   });
 });
