@@ -120,13 +120,14 @@ export function LaneRow({
         role="cell"
         className="detail-timeline-strip"
         style={at("--x", lane.x)}
-        title={`${version} · ${day(lane.date)} · ${ago} ago`}
+        title={`${version} · ${day(lane.date)} · ${ago} ago${lane.datedBy !== null ? ` · dated by ${lane.datedBy}` : ""}`}
       >
         <Guides guides={guides} />
         <span className="detail-timeline-tail" aria-hidden="true" />
         <span className="detail-timeline-dot" aria-hidden="true" />
         <Sr>
           {lane.snapshot ? "snapshot dated" : "last release"} {day(lane.date)}, {ago} ago
+          {lane.datedBy !== null && `, dated by ${lane.datedBy}`}
         </Sr>
       </span>
       <span role="cell" className="detail-timeline-latest">

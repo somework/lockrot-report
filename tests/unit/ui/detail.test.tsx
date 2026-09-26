@@ -444,8 +444,54 @@ describe("Detail", () => {
       expect(dd?.querySelector(".detail-data-null .detail-sr")?.textContent).toBe("null");
     });
 
-    it("shows the no-signal-fired line for a finding with none", () => {
+    it("gives a flagged finding with no signal no reason it cannot back", () => {
+      // vendor/newpkg: abandoned, and no signal at all.
       renderDetail(EXTRA_MODEL, "vendor/newpkg");
+      expect(screen.getByText("No signal fired.")).toBeTruthy();
+      expect(screen.queryByText(/could not learn/)).toBeNull();
+    });
+
+    it("says an ok package's checks all ran, a finished one's verdict comes from the allowlist, and only unknown lacks data", () => {
+      const quiet = (pkg: string, verdict: string) => ({
+        package: pkg,
+        version: "1.0.0",
+        verdict,
+        priority: "none",
+        direct: true,
+        dev: false,
+        signals: [],
+        chain: [],
+        evidence: "",
+      });
+      const result = normalize({
+        report: {
+          lockrot: { version: "0.13.0", schema: 1 },
+          generated_at: "2026-01-01T00:00:00Z",
+          findings: [
+            quiet("vendor/fine", "ok"),
+            { ...quiet("vendor/done", "finished"), allowlist_reason: "complete by design" },
+            quiet("vendor/gone", "unknown"),
+          ],
+        },
+      });
+      if (!result.ok) throw new Error("fixture failed to normalize");
+      const { model } = result;
+
+      const ok = renderDetail(model, "vendor/fine");
+      expect(screen.getByText("No signal fired: every check ran and found nothing.")).toBeTruthy();
+      expect(screen.queryByText(/could not learn/)).toBeNull();
+      ok.unmount();
+
+      const finished = renderDetail(model, "vendor/done");
+      expect(screen.getByText("No signal fired. The verdict comes from the allowlist.")).toBeTruthy();
+      expect(
+        screen.getByText("On the allowlist as finished, so it is not flagged: complete by design.", {
+          exact: false,
+        }),
+      ).toBeTruthy();
+      finished.unmount();
+
+      renderDetail(model, "vendor/gone");
       expect(
         screen.getByText("No signal fired. The verdict comes from what lockrot could not learn."),
       ).toBeTruthy();
@@ -1147,6 +1193,59 @@ describe("Detail", () => {
       expect(container.querySelector(".detail-timeline-sub")?.textContent).toContain("The highest is 1.x");
       expect(container.querySelector(".detail-timeline-key")?.textContent).toContain("highest");
       expect(rowHeaders(container)[0]).toBe("1.x, the highest");
+    });
+
+    it("names the monorepo that dated a split package's rows", () => {
+      // lockrot 0.13.0 dates illuminate/* by laravel/framework's tags (`dated_by`,
+      // `installed_release_dated_by`); here meilisearch-php's 1.x and its installed version stand in.
+      const details = KOEL.details.get("meilisearch/meilisearch-php");
+      if (details?.metadata == null) throw new Error("meilisearch-php has no metadata");
+      const branches = details.metadata.branches.map((branch) =>
+        branch.branch === "1.x" || branch.branch === "0.23.x"
+          ? { ...branch, datedBy: "laravel/framework" }
+          : branch,
+      );
+      const split: PackageDetails = {
+        ...details,
+        metadata: { ...details.metadata, branches },
+      };
+      const model: Model = {
+        ...KOEL,
+        details: new Map([...KOEL.details, ["meilisearch/meilisearch-php", split] as const]),
+      };
+      const { container } = renderDetail(model, "meilisearch/meilisearch-php");
+      const note = container.querySelector(".detail-timeline-dated-by")?.textContent ?? "";
+      expect(note).toContain("1.x");
+      expect(note).toContain("laravel/framework");
+      expect(note).not.toContain("0.24.x");
+      const row = [...container.querySelectorAll(".detail-timeline-row")].find(
+        (el) => el.querySelector('[role="rowheader"]')?.textContent.startsWith("1.x") === true,
+      );
+      expect(row?.querySelector(".detail-timeline-strip")?.textContent).toContain(
+        "dated by laravel/framework",
+      );
+    });
+
+    it("says whose tag dates the installed version when a monorepo supplied it", () => {
+      const metadata = KOEL.details.get("meilisearch/meilisearch-php")?.metadata;
+      if (metadata == null) throw new Error("meilisearch-php has no metadata");
+      const split: PackageDetails = {
+        lock: null,
+        activity: null,
+        repositoryLink: null,
+        metadata: {
+          ...metadata,
+          branches: [],
+          installedRelease: "2025-01-31T10:04:17+00:00",
+          installedReleaseDatedBy: "laravel/framework",
+        },
+      };
+      const model: Model = {
+        ...EXTRA_MODEL,
+        details: new Map([...EXTRA_MODEL.details, ["vendor/newpkg", split] as const]),
+      };
+      const { container } = renderDetail(model, "vendor/newpkg");
+      expect(container.textContent).toContain("your version, dated by laravel/framework");
     });
 
     it("falls back to date order, and to no tone or guides, when the names or the thresholds are missing", () => {

@@ -25,9 +25,9 @@ test("answers first: the fewest rows that hold half of what is listed", async ({
     "wallabag/rulerz (14) and phpunit/phpunit (13) pull in 27 of the 49 flagged packages that sit under 17 of the 29 direct requirements lockrot's exposure list names.",
   );
   // Every requirement the tab names: 17 ranked, 5 flagged themselves, 7 through rows above — and
-  // the 8 flagged direct requirements exposure[] leaves out, which the footnote names.
+  // the 8 flagged direct requirements with nothing flagged counted under them, which the footnote names.
   expect(await report.countLine()).toBe(
-    "29 of 29 direct requirements on the exposure list, plus 8 of 8 flagged ones it leaves out",
+    "29 of 29 direct requirements on the exposure list, plus 8 of 8 flagged ones with nothing flagged counted under them",
   );
 });
 
@@ -118,7 +118,7 @@ test("under the rail's Direct filter every sentence says it counts matching pack
   // The answer says what the filter shows, not only what it does not: 12 rows below, 8 in the
   // footnote.
   await expect(page.locator(".rl-answer")).toHaveText(
-    "The filter matches 20 flagged direct requirements themselves, and nothing listed under any of them: 12 on lockrot's exposure list, below, and 8 it does not name, at the end.",
+    "The filter matches 20 flagged direct requirements themselves, and nothing listed under any of them: 12 on lockrot's exposure list, below, and 8 with nothing flagged counted under them, at the end.",
   );
   await expect(page.locator(".rl-scope")).toHaveText(
     "Only flagged packages that match the filter are counted. Without it, 49 sit under 17 of the 29 direct requirements lockrot's exposure list names.",

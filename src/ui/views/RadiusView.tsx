@@ -44,8 +44,9 @@ function Pk({ name }: { name: string }) {
 
 /**
  * "the 29 direct requirements lockrot's exposure list names": the one denominator the tab counts
- * against. `exposure[]` is not every direct requirement the project has — the footnote names flagged
- * ones it leaves out — so no sentence here says "your 29 direct requirements" (PD-RADIUS-1).
+ * against. `exposure[]` is not every direct requirement the project has — only those with flagged
+ * packages under them; the footnote names the flagged ones with none — so no sentence here says
+ * "your 29 direct requirements" (PD-RADIUS-1).
  */
 function ExposureList({ n, lead }: { n: number; lead: ComponentChildren }) {
   return n === 1 ? (
@@ -123,13 +124,15 @@ function AnswerSentence({ answer, id, narrowed }: { answer: Answer; id: string; 
 
 /**
  * Where the flagged direct requirements are when none lists anything: "12 on lockrot's exposure
- * list, below, and 8 it does not name, at the end" — the tail fold and the footnote, in that order.
+ * list, below, and 8 with nothing flagged counted under them, at the end" — the tail fold and the footnote,
+ * in that order.
  */
 function whereWords(self: number, unlisted: number): ComponentChildren {
   if (self > 0 && unlisted > 0) {
     return (
       <>
-        : <b>{self}</b> on lockrot's exposure list, below, and <b>{unlisted}</b> it does not name, at the end.
+        : <b>{self}</b> on lockrot's exposure list, below, and <b>{unlisted}</b> with nothing flagged counted
+        under {unlisted === 1 ? "it" : "them"}, at the end.
       </>
     );
   }
@@ -140,9 +143,9 @@ function whereWords(self: number, unlisted: number): ComponentChildren {
       <>; it is on lockrot's exposure list, below.</>
     );
   return unlisted > 1 ? (
-    <>; lockrot's exposure list names none of them, so they are at the end.</>
+    <>; none has anything flagged counted under it, so they are at the end.</>
   ) : (
-    <>; lockrot's exposure list does not name it, so it is at the end.</>
+    <>; it has nothing flagged counted under it, so it is at the end.</>
   );
 }
 
@@ -150,7 +153,7 @@ function whereWords(self: number, unlisted: number): ComponentChildren {
  * The answer when no row lists anything (a filter, or a lock whose flagged packages are all direct
  * requirements): what there is instead, never only what there is not — "The filter matches 20
  * flagged direct requirements themselves, and nothing listed under any of them: 12 on lockrot's
- * exposure list, below, and 8 it does not name, at the end."
+ * exposure list, below, and 8 with nothing flagged counted under them, at the end."
  */
 function NoRankAnswer({ layout, id }: { layout: RadiusLayout; id: string }) {
   const self = layout.selfOnly.length;
@@ -516,8 +519,9 @@ function TailLinks({ layout, go }: { layout: RadiusLayout; go: (key: string, id:
   return <p className="rl-tails">Below the ranking: {joined(links)}</p>;
 }
 
-/** Flagged direct requirements `exposure[]` does not name: said once, at the end, so the tab's
- *  count never silently leaves them out. Each name opens that package's full detail, the one a
+/** Flagged direct requirements with nothing flagged counted under them (lockrot does not count a
+ *  package shared by more than eight requirements), which `exposure[]` therefore does not name:
+ *  said once, at the end, so the tab's count never silently leaves them out. Each name opens that package's full detail, the one a
  *  Findings row opens, so the rail can count them as on this tab (PD-RAIL-1). */
 function Unlisted({ findings }: { findings: readonly Finding[] }) {
   const { dispatch } = useReport();
@@ -535,7 +539,8 @@ function Unlisted({ findings }: { findings: readonly Finding[] }) {
   return (
     <p className="rl-foot">
       <b>{plural(findings.length, "flagged direct requirement has", "flagged direct requirements have")}</b>{" "}
-      no row: lockrot's exposure list does not name {many ? "them" : "it"}. {opens}:{" "}
+      no row: nothing flagged is counted under {many ? "them" : "it"}, so lockrot's exposure list has no entry
+      for {many ? "them" : "it"}. {opens}:{" "}
       {joined(
         findings.map((f) => (
           <span key={f.package} className="fl-unit">

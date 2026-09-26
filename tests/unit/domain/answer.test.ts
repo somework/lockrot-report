@@ -179,6 +179,16 @@ describe("answerParts", () => {
     });
     expect(answerText(parts)).toBe("Archived on constructor. You require it directly.");
   });
+
+  it("quotes the allowlist's reason for a finished package, one full stop at the end", () => {
+    const reason = "PHP-FIG interface packages are complete by design.";
+    expect(answerText(answer({ verdict: "finished", allowlistReason: reason }))).toBe(
+      "On the allowlist as finished, so it is not flagged: PHP-FIG interface packages are complete by design. You require it directly.",
+    );
+    expect(answerText(answer({ verdict: "finished", allowlistReason: "  " }))).toBe(
+      "On the allowlist as finished, so it is not flagged. You require it directly.",
+    );
+  });
 });
 
 describe("yearsPhrase", () => {

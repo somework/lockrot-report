@@ -254,7 +254,7 @@ describe("radiusCountPhrase", () => {
     expect(radiusCountPhrase(radiusLayout(model, [parent]))).toBe("1 of 1 direct requirement");
   });
 
-  it("says which list it counts and adds the flagged direct requirements exposure[] leaves out", () => {
+  it("says which list it counts and adds the flagged direct requirements with nothing flagged counted under them", () => {
     // wallabag: exposure[] names 29 requirements; 8 flagged direct requirements are not on it.
     const wallabag = load("wallabag_wallabag");
     const all = population(wallabag, "radius");
@@ -264,7 +264,7 @@ describe("radiusCountPhrase", () => {
     expect(layout.unfilteredUnlisted).toBe(8);
     expect(layout.unlisted).toHaveLength(8);
     expect(radiusCountPhrase(layout)).toBe(
-      "29 of 29 direct requirements on the exposure list, plus 8 of 8 flagged ones it leaves out",
+      "29 of 29 direct requirements on the exposure list, plus 8 of 8 flagged ones with nothing flagged counted under them",
     );
   });
 
@@ -276,7 +276,9 @@ describe("radiusCountPhrase", () => {
     const layout = radiusLayout(wallabag, silent, all);
 
     expect(layout.unfilteredUnlisted).toBe(8);
-    expect(radiusCountPhrase(layout)).toMatch(/, plus 2 of 8 flagged ones it leaves out$/);
+    expect(radiusCountPhrase(layout)).toMatch(
+      /, plus 2 of 8 flagged ones with nothing flagged counted under them$/,
+    );
   });
 });
 

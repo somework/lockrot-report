@@ -68,9 +68,10 @@ export interface RadiusLayout {
   readonly throughOther: readonly RadiusRow[];
   /** `throughOther`'s packages, one entry per flagged package. */
   readonly receipt: readonly RadiusReceipt[];
-  /** Flagged direct requirements `exposure` does not name, so no row can. */
+  /** Flagged direct requirements `exposure` does not name — nothing flagged is counted under them —
+   *  so no row can. */
   readonly unlisted: readonly Finding[];
-  /** `unlisted` with no filter applied: every flagged direct requirement `exposure` leaves out. */
+  /** `unlisted` with no filter applied: every flagged direct requirement `exposure` does not name. */
   readonly unfilteredUnlisted: number;
   /** How many direct requirements `exposure` names — not every direct requirement the project has:
    *  `unfilteredUnlisted` more are flagged and missing from it, so the view always says "the N
@@ -209,9 +210,12 @@ export function radiusShownCount(layout: RadiusLayout): number {
 
 /**
  * The status line's count for the tab: "29 of 29 direct requirements" when `exposure` names every
- * flagged direct requirement; when it leaves some out, the footnote names them too, so the line
- * counts them as well and says which list the first number is of — "29 of 29 direct requirements
- * on the exposure list, plus 8 of 8 flagged ones it leaves out".
+ * flagged direct requirement. `exposure` lists only requirements with flagged packages counted under
+ * them (lockrot's docs/verdicts.md, "Transitive exposure"; a package shared by more than eight
+ * requirements is not counted), so a flagged requirement with none is not on it by definition. The
+ * footnote names those; the line counts them as well and says which list the first number is of —
+ * "29 of 29 direct requirements on the exposure list, plus 8 of 8 flagged ones with nothing flagged
+ * counted under them".
  */
 export function radiusCountPhrase(layout: RadiusLayout): string {
   const head = countPhrase(
@@ -224,7 +228,7 @@ export function radiusCountPhrase(layout: RadiusLayout): string {
   const ones = layout.unfilteredUnlisted === 1 ? "flagged one" : "flagged ones";
   return `${head} on the exposure list, plus ${String(layout.unlisted.length)} of ${String(
     layout.unfilteredUnlisted,
-  )} ${ones} it leaves out`;
+  )} ${ones} with nothing flagged counted under ${layout.unfilteredUnlisted === 1 ? "it" : "them"}`;
 }
 
 /**

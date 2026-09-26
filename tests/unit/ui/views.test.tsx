@@ -1495,7 +1495,7 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
     expect(dispatch).toHaveBeenCalledWith({ type: "disclose", key: "row:acme/lib", open: true });
   });
 
-  it("names flagged direct requirements that exposure[] leaves out, once, at the end", () => {
+  it("names flagged direct requirements with nothing flagged counted under them, once, at the end", () => {
     const alone = makeFinding({ package: "acme/alone", chain: ["acme/alone"], verdict: "silent" });
     const model = withExposure(flaggedModel([alone, child("acme/child", "acme/parent")]), [
       { package: "acme/parent", flagged: 1 },

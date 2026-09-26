@@ -1,4 +1,4 @@
-import type { ComponentChildren } from "preact";
+import { Fragment, type ComponentChildren } from "preact";
 import { day, plural } from "../../domain/format";
 import { agePhrase, type TimelineLane, type TimelineModel } from "../../domain/timeline";
 import type { Tone } from "../../domain/vocab";
@@ -175,5 +175,35 @@ export function Key({
         </span>
       )}
     </p>
+  );
+}
+
+/** Which rows' dates a monorepo supplied (a split package's `dated_by`): lockrot reads a split
+ *  package's release dates off its parent's tags, and the reader should know whose dates the dots
+ *  stand on. One line per parent, the branches in the table's own order; nothing when every date is
+ *  the package's own. */
+export function DatedBy({ timeline }: { timeline: TimelineModel }) {
+  const byParent = new Map<string, string[]>();
+  for (const lane of timeline.lanes) {
+    if (lane.datedBy === null) continue;
+    byParent.set(lane.datedBy, [...(byParent.get(lane.datedBy) ?? []), lane.branch]);
+  }
+  if (byParent.size === 0) return null;
+  return (
+    <>
+      {[...byParent].map(([parent, branches]) => (
+        <p key={parent} className="detail-timeline-dated-by">
+          {branches.length === 1 ? "The date on " : "Dates on "}
+          {branches.map((branch, i) => (
+            <Fragment key={branch}>
+              {i > 0 && ", "}
+              <span className="mono">{branch}</span>
+            </Fragment>
+          ))}{" "}
+          {branches.length === 1 ? "comes" : "come"} from <span className="mono">{parent}</span>’s tags: it is
+          split out of that repository.
+        </p>
+      ))}
+    </>
   );
 }

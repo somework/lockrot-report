@@ -301,6 +301,43 @@ describe("timelineModel / topReleasedLast", () => {
   });
 });
 
+describe("timelineModel / dated by a monorepo", () => {
+  it("carries a branch's dated_by on its lane only when the lane's date is a release date", () => {
+    // Arrange: illuminate/collections' shape from a lockrot 0.13.0 run — laravel/framework dates
+    // 12.x; 11.x falls back to its commit date, which the parent did not supply.
+    const branches = [
+      makeBranch({
+        branch: "12.x",
+        highest: "v12.1.0",
+        highestReleased: "2026-09-08T00:00:00Z",
+        datedBy: "laravel/framework",
+      }),
+      makeBranch({
+        branch: "11.x",
+        highest: "v11.2.0",
+        highestCommitDate: "2026-08-25T00:00:00Z",
+        datedBy: "laravel/framework",
+      }),
+      makeBranch({
+        branch: "10.x",
+        installed: true,
+        highest: "v10.49.0",
+        highestReleased: "2025-09-08T00:00:00Z",
+      }),
+    ];
+
+    // Act
+    const timeline = timelineModel(branches, null, "v10.48.28", NOW);
+
+    // Assert
+    expect(timeline?.lanes.map((lane) => [lane.branch, lane.datedBy])).toEqual([
+      ["12.x", "laravel/framework"],
+      ["11.x", null],
+      ["10.x", null],
+    ]);
+  });
+});
+
 describe("timelineModel / the shared axis", () => {
   it("starts on 1 January of the oldest date's year and ends at now, folded lanes included", () => {
     // Act
