@@ -358,8 +358,10 @@ tag or the address format, says so under **Breaking** in its entry.
   libyears number keeps clear of how the package gets in at 320px.
 - Printing from the dark theme printed pale text on white paper; paper now always uses the light
   colours. The All packages table no longer loses its right-hand columns at the page margin.
-- `j`, `k`, `/` and `?` work on a non-Latin keyboard layout (Russian and others) and with Caps Lock
-  on: the page reads the physical key when the layout's own character is not the shortcut.
+- `j` and `k` work on a non-Latin keyboard layout (Russian and others) and with Caps Lock on: the
+  page reads the physical J/K key when the layout printed no Latin letter there, so a Dvorak or
+  Colemak reader's own letters on those keys still type nothing but themselves. `/` and `?` count
+  wherever the layout puts them.
 - The package detail scrolls as one region instead of two nested ones, and opening another package
   starts it at the top.
 - The Run tab shows a dash, not "none", for a document that does not record `--fail-on`.

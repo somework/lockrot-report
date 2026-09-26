@@ -387,15 +387,24 @@ describe("rowAt and rowPosition tell a package's rows apart (PD-ROWS-12)", () =>
   });
 });
 
-describe("shortcutKey reads the physical key where the layout hides it", () => {
+describe("shortcutKey reads the physical key only where the layout prints no Latin letter", () => {
   test.each([
     ["Latin j", { key: "j", code: "KeyJ", shiftKey: false }, "j"],
     ["Russian layout J key", { key: "о", code: "KeyJ", shiftKey: false }, "j"],
     ["Russian layout K key", { key: "л", code: "KeyK", shiftKey: false }, "k"],
     ["Caps Lock J", { key: "J", code: "KeyJ", shiftKey: false }, "j"],
     ["Shift+J stays unmapped", { key: "J", code: "KeyJ", shiftKey: true }, "J"],
-    ["Russian layout Slash key", { key: ".", code: "Slash", shiftKey: false }, "/"],
-    ["Russian layout Shift+Slash", { key: ",", code: "Slash", shiftKey: true }, "?"],
+    ["Caps Lock K", { key: "K", code: "KeyK", shiftKey: false }, "k"],
+    // CodeRabbit on #6: the J/K positions print other letters on Dvorak and Colemak, typed on purpose.
+    ["Dvorak h on the J position", { key: "h", code: "KeyJ", shiftKey: false }, "h"],
+    ["Dvorak t on the K position", { key: "t", code: "KeyK", shiftKey: false }, "t"],
+    ["Colemak n on the J position", { key: "n", code: "KeyJ", shiftKey: false }, "n"],
+    ["Dvorak's own j elsewhere", { key: "j", code: "KeyC", shiftKey: false }, "j"],
+    ["Dvorak Caps Lock H on the J position", { key: "H", code: "KeyJ", shiftKey: false }, "H"],
+    // The Slash position prints "." on a Russian layout and "-" on a German one: never read as "/".
+    ["Russian layout Slash position", { key: ".", code: "Slash", shiftKey: false }, "."],
+    ["German layout Slash position", { key: "-", code: "Slash", shiftKey: false }, "-"],
+    ["a layout's own / elsewhere", { key: "/", code: "Digit7", shiftKey: true }, "/"],
     ["a layout's own ? elsewhere", { key: "?", code: "Digit7", shiftKey: true }, "?"],
     ["any other key", { key: "x", code: "KeyX", shiftKey: false }, "x"],
   ])("%s", (_name, event, expected) => {

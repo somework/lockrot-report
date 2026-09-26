@@ -340,8 +340,21 @@ test.describe("shortcuts work on a non-Latin layout (shortcutKey)", () => {
     await expect.poll(() => page.evaluate(() => location.hash)).toBe(first);
   });
 
-  test("the Slash key on a Russian layout focuses search", async ({ page }) => {
-    await pressOnLayout(page, ".", "Slash");
+  test("a / typed wherever the layout puts it focuses search", async ({ page }) => {
+    await pressOnLayout(page, "/", "Digit7");
     expect(await report.isSearchFocused()).toBe(true);
+  });
+
+  // CodeRabbit on #6: the J position prints h on Dvorak, and the Slash position prints - on a German
+  // layout; both are keys that reader typed on purpose, so neither may act as a shortcut.
+  test("a Latin letter on the J position (Dvorak h) does not move the selection", async ({ page }) => {
+    await pressOnLayout(page, "h", "KeyJ");
+    await page.waitForTimeout(100);
+    expect(await page.evaluate(() => location.hash)).not.toContain("pkg=");
+  });
+
+  test("a - on the Slash position (German layout) does not focus search", async ({ page }) => {
+    await pressOnLayout(page, "-", "Slash");
+    expect(await report.isSearchFocused()).toBe(false);
   });
 });

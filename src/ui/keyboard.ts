@@ -181,20 +181,29 @@ function hasOpenPopover(): boolean {
 }
 
 /**
- * The shortcut a key press means, read from the physical key where the layout would hide it: on a
- * Russian (or any non-Latin) layout the J key reports `key: "о"`, and with Caps Lock on it reports
- * `"J"`, so matching `event.key` alone left `j`/`k` dead for those readers. `/` and `?` sit on the
- * Slash key only on a US-style layout, so their own `key` still counts wherever the layout puts
- * them. Shift+J stays unmapped: only Caps Lock's capital (no Shift held) is read as `j`.
+ * The shortcut a key press means. On a Russian (or any non-Latin) layout the J key reports
+ * `key: "о"`, and with Caps Lock on it reports `"J"`, so matching `event.key` alone left `j`/`k`
+ * dead for those readers.
+ *
+ * The physical key (`event.code`) is read only where the layout printed no Latin letter at all:
+ * on Dvorak or Colemak the J/K position prints `h`/`t` or `n`/`e`, letters that reader typed on
+ * purpose, and their own `j`/`k` already arrive as `event.key`. `/` and `?` are read by character
+ * only: the Slash position prints `-` on a German layout and `.` on a Russian one, while every
+ * layout that has `/` and `?` reports them as such wherever it puts them. Shift+J stays unmapped:
+ * only Caps Lock's capital (no Shift held) is read as `j`.
  */
 export function shortcutKey(event: Pick<KeyboardEvent, "key" | "code" | "shiftKey">): string {
   if (event.key === "j" || event.key === "k" || event.key === "/" || event.key === "?") return event.key;
-  if (!event.shiftKey && event.code === "KeyJ") return "j";
-  if (!event.shiftKey && event.code === "KeyK") return "k";
-  if (event.code === "Slash") return event.shiftKey ? "?" : "/";
+  if (event.shiftKey) return event.key;
+  if (event.key === "J" || event.key === "K") return event.key.toLowerCase();
+  if (LATIN_LETTER.test(event.key)) return event.key;
+  if (event.code === "KeyJ") return "j";
+  if (event.code === "KeyK") return "k";
 
   return event.key;
 }
+
+const LATIN_LETTER = /^[a-z]$/i;
 
 /** Reads a KeyboardEvent and the page around it into a `KeyInput`. */
 export function keyInputFrom(event: KeyboardEvent, context: KeyContext): KeyInput {
