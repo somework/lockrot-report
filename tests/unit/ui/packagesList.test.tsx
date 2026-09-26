@@ -3,8 +3,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createRef, type ComponentChild } from "preact";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/preact";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/preact";
 import { normalize } from "../../../src/model/normalize";
 import type { Model } from "../../../src/model/types";
 import { EMPTY_FILTERS, INITIAL_STATE, type Action, type State } from "../../../src/state/types";
@@ -62,13 +62,29 @@ describe("PackagesView (PD-PACKAGES-1): libyears as a scale, its marks keyed onc
     expect(container.querySelector(".pk-key")?.textContent).toContain("not measured");
   });
 
-  it("keys, for the stacked rows, what a full bar is and what the left rule is (PD-PACKAGES-3)", () => {
+  it("keys, for the stacked rows, what a full bar is, what a dot is and what the left rule is (PD-PACKAGES-3/5)", () => {
     const { container } = renderIn(model, packages(), <PackagesView />);
-    const narrow = [...container.querySelectorAll(".pk-key .pk-key-narrow")].map((el) =>
-      el.textContent.trim(),
-    );
+    const words = (selector: string) =>
+      [...container.querySelectorAll(`.pk-key ${selector}`)].map((el) => el.textContent.trim());
     // The scale is the population's largest value rounded up: 2.5 → 3.
-    expect(narrow).toEqual(["a full bar is 3 libyears", "left rule: priority"]);
+    expect(words(".pk-key-stacked")).toEqual(["a full bar is 3 libyears"]);
+    expect(words(".pk-key-tablet")).toEqual(["a signal that fired, S1 to S10 left to right"]);
+    expect(words(".pk-key-phone")).toEqual(["left rule: priority"]);
+  });
+
+  it("says where a mark's reason is on the last mark's own line: either of two, or the one", () => {
+    const { container } = renderIn(model, packages(), <PackagesView />);
+    const items = [...container.querySelectorAll(".pk-key .pk-key-item")];
+    const hinted = items.filter((item) => item.querySelector(".pk-key-hover") !== null);
+    expect(hinted.map((item) => item.textContent.trim())).toEqual(["? not measured · hover either for why"]);
+    cleanup();
+
+    const zeroOnly = makeModel([
+      makeFinding({ package: "a/behind", libyears: 2.5 }),
+      makeFinding({ package: "b/newest", libyears: 0 }),
+    ]);
+    const other = renderIn(zeroOnly, packages(), <PackagesView />);
+    expect(other.container.querySelector(".pk-key-hover")?.textContent).toBe(" · hover it for why");
   });
 
   it("marks each row with a priority by its word, for the forced-colours rule (PD-PACKAGES-3)", () => {
@@ -98,6 +114,58 @@ describe("PackagesView (PD-PACKAGES-1): libyears as a scale, its marks keyed onc
     expect(bar?.style.width).toBe(`${(2.5 / 3) * 100}%`);
     const head = screen.getByRole("columnheader", { name: /libyears/i });
     expect(head.querySelector(".ly-axis")?.textContent).toBe("03y");
+  });
+});
+
+describe("PackagesView (PD-PACKAGES-5): the wrap is a keyboard region only while it scrolls", () => {
+  const model = makeModel([makeFinding({ package: "a/b" })]);
+  let observed: (() => void)[] = [];
+
+  beforeEach(() => {
+    observed = [];
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(callback: () => void) {
+          observed.push(callback);
+        }
+        observe(): void {}
+        disconnect(): void {}
+      },
+    );
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function sized(scroll: number, client: number): void {
+    const wrap = document.querySelector<HTMLElement>(".tablewrap");
+    if (wrap === null) throw new Error("no wrap");
+    Object.defineProperty(wrap, "scrollWidth", { configurable: true, value: scroll });
+    Object.defineProperty(wrap, "clientWidth", { configurable: true, value: client });
+    // A synchronous callback: `act` flushes the state it sets before returning.
+    void act(() => {
+      observed.forEach((callback) => {
+        callback();
+      });
+    });
+  }
+
+  it("is a plain box while the table fits", () => {
+    renderIn(model, packages(), <PackagesView />);
+    sized(600, 600);
+    const wrap = document.querySelector(".tablewrap");
+    expect(wrap?.hasAttribute("tabindex")).toBe(false);
+    expect(wrap?.hasAttribute("role")).toBe(false);
+  });
+
+  it("becomes a named, focusable region while the table is wider than it, and stops when it fits again", () => {
+    renderIn(model, packages(), <PackagesView />);
+    sized(1019, 506);
+    const region = screen.getByRole("region", { name: "All packages table, scrolls sideways" });
+    expect(region.getAttribute("tabindex")).toBe("0");
+    sized(506, 506);
+    expect(screen.queryByRole("region")).toBeNull();
   });
 });
 

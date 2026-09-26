@@ -1,14 +1,13 @@
 /*
  * The All packages list (PD-PACKAGES-1/2/3, DESIGN.md §5): an answer and a key above the table, the
  * libyears column as bars on one scale, the signals column as a row of ten dots, and — once the
- * list is narrower than 480px — the same table's rows stacked two lines each instead of a table
- * clipped at its second column. The layout follows the list's own width (a container query), as
+ * list is narrower than the table's 1000px — the same table's rows stacked two lines each instead of
+ * a table clipped at its fourth column (PD-PACKAGES-5), narrower still on a phone (PD-PACKAGES-3). The layout follows the list's own width (a container query), as
  * the Findings ledger's does (ledger-rows.css): a phone, and a list squeezed beside an open package,
  * are the same problem.
  */
 
 .pk {
-  container: pk / inline-size;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -16,6 +15,14 @@
   --ly-track: 64px;
   --ly-num: 30px;
   --sig-slot: 11px;
+}
+
+/* The list's width drives its layout on a screen only: on paper the printed table keeps its columns
+   (PD-PRINT-4), and a page is narrower than the 1000px the screen's table asks for. */
+@media screen {
+  .pk {
+    container: pk / inline-size;
+  }
 }
 
 /* ---------- the answer and the key ---------- */
@@ -63,9 +70,11 @@
   border-radius: 3px;
   background: var(--surface);
 }
-/* The stacked rows' own key items (PackagesView.tsx#PackagesLede): what a full bar is and what the
-   left rule is, where the head has no room for the scale or a Priority column. */
-.pk-key-narrow {
+/* The stacked rows' own key items (PackagesView.tsx#PackagesLede): what a full bar is, what a dot
+   is and what the left rule is, where the head has no room for the scale or the caption. */
+.pk-key-stacked,
+.pk-key-tablet,
+.pk-key-phone {
   display: none;
 }
 .pk-key-bar {
@@ -79,6 +88,14 @@
   position: absolute;
   inset: 0;
   border-radius: 0 2px 2px 0;
+  background: var(--ink-2);
+}
+.pk-key-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  vertical-align: 0;
   background: var(--ink-2);
 }
 .pk-key-rule {
@@ -213,6 +230,20 @@
   text-transform: none;
 }
 
+/* The wide table's cells a little tighter than the page's other tables: at 1280px the eight columns
+   ran 11px past the list's edge with 12px each side. A name wraps after its vendor's slash rather
+   than push the date column out when a lock's names are longer still. */
+@container pk (min-width: 1000px) {
+  .pk-table th,
+  .pk-table td {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .pk-table td.pk-name {
+    white-space: normal;
+  }
+}
+
 /* The two heads that carry a caption line up their words with the other heads' by their top. */
 .pk-table th {
   vertical-align: bottom;
@@ -228,15 +259,22 @@
   white-space: normal;
 }
 
-/* ---------- a phone: the rows stacked ---------- */
-@container pk (max-width: 480px) {
+/* ---------- under 1000px of list: the rows stacked ---------- */
+/* The table needs about 990px for its eight columns. Under that — a tablet beside the rail, a laptop
+   list beside an open package — the same table's rows stack two lines each (PD-PACKAGES-5): name
+   and version, then verdict, priority, the libyears bar, the ten signal dots and the way in, each at
+   one x down the list. Under 480px (a phone) the priority and the dots give way to the row's left
+   rule (PD-PACKAGES-3). The two share everything in this block; the phone's own rules follow it. */
+@container pk (max-width: 999px) {
   /* A container query styles what is inside the container, never the container itself, so the
      narrower track is set on the lede and the wrap: set on .pk it never took effect. */
   .pk-lede,
   .tablewrap {
-    --ly-track: 44px;
+    --ly-track: 56px;
+    --sig-slot: 10px;
   }
-  .pk-key-narrow {
+  .pk-key-stacked,
+  .pk-key-tablet {
     display: inline;
   }
   .pk-table,
@@ -244,23 +282,54 @@
   .pk-table tbody {
     display: block;
   }
-  /* The head becomes the list's sort bar: the same buttons, in a wrapping line. */
+  /* The head becomes the list's sort bar: the same buttons, as a row of chips after a "Sort" label,
+     so it reads as one control rather than loose capitals wrapping over three lines. */
   .pk-table thead tr {
     display: flex;
     flex-wrap: wrap;
-    column-gap: 14px;
-    row-gap: 2px;
-    padding: 8px 12px;
+    align-items: center;
+    gap: 5px 6px;
+    padding: 9px 12px;
     border-bottom: 1px solid var(--border-strong);
+    background: var(--surface-2);
+  }
+  .pk-table thead tr::before {
+    content: "Sort";
+    content: "Sort" / "";
+    margin-right: 2px;
+    font-family: var(--cond);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
   }
   .pk-table th {
     position: static;
     display: block;
     flex: 0 0 auto;
     width: auto;
-    padding: 2px 0;
+    padding: 0;
     border: 0;
     background: none;
+  }
+  .pk-table th .sort-btn {
+    padding: 3px 9px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    line-height: 1.3;
+    transition:
+      border-color 120ms ease,
+      color 120ms ease;
+  }
+  .pk-table th .sort-btn:hover {
+    border-color: var(--border-strong);
+    color: var(--ink-2);
+  }
+  .pk-table th .sort-btn.active {
+    border-color: var(--ink-2);
+    color: var(--ink);
   }
   /* No date column here to sort, and one repeated date is what nearly every lock carries. */
   .pk-table th.pk-data {
@@ -278,11 +347,14 @@
   .pk-table tbody tr {
     position: relative;
     display: grid;
-    /* The verdict takes a fixed width, so the libyears bars start at one x down the list. */
-    grid-template-columns: 84px minmax(0, 1fr) auto;
+    /* Every cell but the last takes a fixed width, so each starts at one x down the list: the rows
+       are separate grids, and an auto column would move with its own row's words. */
+    grid-template-columns:
+      84px 66px calc(var(--ly-track) + 6px + var(--ly-num)) calc(var(--sig-slot) * 10 + 6px)
+      minmax(0, 1fr);
     grid-template-areas:
-      "name name ver"
-      "verdict ly reach";
+      "name name name name ver"
+      "verdict prio ly sig reach";
     column-gap: 10px;
     row-gap: 3px;
     align-items: baseline;
@@ -293,8 +365,7 @@
   .pk-table tbody tr:last-child {
     border-bottom: 0;
   }
-  /* The priority, which has no column here, is the row's left rule in its tone; its words stay
-     in the row for a screen reader. */
+  /* The priority's tone as the row's left rule too, so a run of them reads down the edge. */
   .pk-table tbody tr.has-prio {
     border-left-color: var(--tone);
   }
@@ -330,6 +401,7 @@
   .pk-ver {
     grid-area: ver;
     justify-self: end;
+    text-align: right;
     font-size: 11.5px;
     color: var(--muted);
   }
@@ -345,10 +417,69 @@
     font-weight: 700;
     letter-spacing: 0.08em;
   }
+  /* The priority keeps its pill, the summary band's own priority chip, a size down: a boxed word
+     beside the verdict's bare one, so the two never read as one phrase. */
+  .pk-prio {
+    grid-area: prio;
+    align-self: center;
+  }
+  .pk-prio .pill {
+    padding: 0 5px;
+    font-size: 10px;
+    line-height: 1.5;
+  }
   .pk-ly {
     grid-area: ly;
     align-self: center;
     font-size: 11.5px;
+  }
+  /* At the column's right end, 6px clear of a libyears number beside it. */
+  .pk-sig {
+    grid-area: sig;
+    align-self: center;
+    justify-self: end;
+  }
+  .pk-reach {
+    grid-area: reach;
+    justify-self: end;
+    text-align: right;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .pk-table td.pk-data {
+    display: none;
+  }
+  /* A name after its vendor's slash moves to the next line whole when it can, as a Findings row's
+     does, rather than breaking at whichever hyphen happens to fit. */
+  .pk-unit {
+    display: inline-block;
+    max-width: 100%;
+  }
+}
+
+/* ---------- a phone: the priority as the row's rule ---------- */
+@container pk (max-width: 480px) {
+  .pk-lede,
+  .tablewrap {
+    --ly-track: 44px;
+  }
+  .pk-key-tablet {
+    display: none;
+  }
+  .pk-key-phone {
+    display: inline;
+  }
+  /* A phone is held, not hovered; the reasons are the marks' words and the open package's. */
+  .pk-key-hover {
+    display: none;
+  }
+  .pk-table tbody tr {
+    /* The verdict takes a fixed width, so the libyears bars start at one x down the list. */
+    grid-template-columns: 84px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "name name ver"
+      "verdict ly reach";
+    column-gap: 10px;
   }
   /* The number follows its track at one x down the list and takes only its own width, so it keeps
      clear of the way in beside it at 320px ("0.6 transitive" nearly touched). */
@@ -359,13 +490,8 @@
   .pk-table .ly-num {
     text-align: left;
   }
-  .pk-reach {
-    grid-area: reach;
-    justify-self: end;
-    text-align: right;
-    font-size: 12px;
-    color: var(--ink-2);
-  }
+  /* The priority, which has no room here, is the row's left rule in its tone; its words stay in
+     the row for a screen reader. */
   .pk-table td.pk-prio {
     position: absolute;
     width: 1px;
@@ -374,8 +500,7 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
-  .pk-table td.pk-sig,
-  .pk-table td.pk-data {
+  .pk-table td.pk-sig {
     display: none;
   }
   /* Forced colours paint every tone in the one system ink, so the left rule can no longer tell a
@@ -389,7 +514,6 @@
     }
     .pk-table td.pk-prio {
       position: static;
-      grid-area: prio;
       width: auto;
       height: auto;
       overflow: visible;
@@ -404,16 +528,18 @@
       border: 0;
       font-weight: 700;
     }
+    .pk-key-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      vertical-align: 0;
+      background: var(--ink-2);
+    }
     .pk-key-rule {
       forced-color-adjust: none;
       background: CanvasText;
     }
-  }
-  /* A name after its vendor's slash moves to the next line whole when it can, as a Findings row's
-     does, rather than breaking at whichever hyphen happens to fit. */
-  .pk-unit {
-    display: inline-block;
-    max-width: 100%;
   }
 }
 
@@ -423,12 +549,14 @@
   .ly-track::before,
   .sig-dot,
   .pk-key-mark,
-  .pk-key-bar > span {
+  .pk-key-bar > span,
+  .pk-key-dot {
     forced-color-adjust: none;
   }
   .ly-bar,
   .sig-dot.is-fired,
-  .pk-key-bar > span {
+  .pk-key-bar > span,
+  .pk-key-dot {
     background: CanvasText;
   }
   /* No hairline and no GrayText here: GrayText is a dark maroon in some forced palettes, and a

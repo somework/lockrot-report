@@ -14,6 +14,10 @@ tag or the address format, says so under **Breaking** in its entry.
   libyears bar and how it gets in, with the priority as the row's left rule — instead of a table
   cut after its second column. The list opens with how many of the listed packages are behind their
   newest stable release, how many are not, and how many could not be measured.
+- All packages on a tablet, or beside an open package: under 1000px of list the rows stack two
+  lines each — name and version, then verdict, priority, the libyears bar, the ten signal dots and
+  how it gets in — instead of a table scrolled past its fourth column; the column heads become a
+  row of sort chips. The eight-column table now fits from 1280px, Data as of included.
 - All packages draws libyears as bars on one scale captioned in the column head, a zero as a muted
   dash and an unmeasured value as a "?", each explained once in a key above the table; the signals
   column is ten dots per row under a 1…10 caption, filled in the level's tone where a signal fired.
@@ -322,6 +326,9 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Fixed
 
+- A table wider than its frame is a named region in the tab order, so the keyboard can scroll it;
+  the key's "hover for why" sits on the last mark's line, says "it" when there is only one mark,
+  and is left off a phone.
 - All packages no longer scrolls the whole page sideways between 600 and 1024px: the table scrolls
   inside its own frame again. A search's "matched in" line wraps under the name instead of pushing
   the last column out of view at 1440px.

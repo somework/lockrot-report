@@ -106,16 +106,99 @@ for (const width of [320, 390, 480] as const) {
 // The regression a6f2bce did not have and 98713f1 did: the cells' screen-reader words are placed
 // absolutely, and with a static wrap they were placed against the page, outside the wrap's scroller,
 // so the whole page scrolled sideways wherever the table is wider than the list.
-for (const width of [600, 768, 900, 1024] as const) {
-  test(`${width}px: the table scrolls inside its wrap, never the page`, async ({ page }) => {
+// PD-PACKAGES-5: and from 481 to 999px of list (a tablet beside the rail, 768px's list is 508px) the
+// table no longer scrolls at all — its rows stack two lines each, keeping the priority and the dots.
+for (const width of [600, 768, 900, 1024, 1181] as const) {
+  test(`${width}px: PD-PACKAGES-5, two-line rows with verdict, priority, libyears, signals and reach in view`, async ({
+    page,
+  }) => {
     await page.setViewportSize({ width, height: 900 });
     for (const fixture of [FIXTURES.wallabag, FIXTURES.mautic]) {
       await report.goto(fixture);
       await report.tab("packages");
       await noPageOverflow(page);
+
+      const wrap = page.locator(".tablewrap");
+      const [scroll, client] = await wrap.evaluate((el) => [el.scrollWidth, el.clientWidth]);
+      expect(scroll).toBeLessThanOrEqual(client);
+      // Nothing scrolls, so nothing is announced as a scroller.
+      expect(await wrap.getAttribute("role")).toBeNull();
+
+      const first = page.locator(".pk-table tbody tr").first();
+      expect(await first.evaluate((el) => getComputedStyle(el).display)).toBe("grid");
+      for (const cell of [
+        ".pk-name",
+        ".pk-ver",
+        ".pk-verdict",
+        ".pk-prio",
+        ".pk-ly",
+        ".pk-sig",
+        ".pk-reach",
+      ]) {
+        await expect(first.locator(cell)).toBeVisible();
+      }
+      expect(await first.locator(".pk-sig .sig-dot").count()).toBe(10);
+      const height = (await first.boundingBox())?.height ?? 0;
+      expect(height).toBeLessThanOrEqual(64);
+
+      // The key says what a full bar and a dot are; the rule's item is a phone's only.
+      const key = page.locator(".pk-key");
+      await expect(key.getByText(/a full bar is \d+ libyears/)).toBeVisible();
+      await expect(key.getByText("a signal that fired, S1 to S10 left to right")).toBeVisible();
+      await expect(key.getByText("left rule: priority")).toBeHidden();
+
+      // The head is a sort bar of chips, every one on screen within the wrap.
+      const wrapBox = await wrap.boundingBox();
+      const chips = await page
+        .locator(".pk-table thead .sort-btn")
+        .evaluateAll((els) =>
+          els
+            .filter((el) => (el as HTMLElement).offsetWidth > 0)
+            .map((el) => el.getBoundingClientRect().right),
+        );
+      expect(chips.length).toBe(7);
+      for (const right of chips) expect(right).toBeLessThanOrEqual((wrapBox?.x ?? 0) + (wrapBox?.width ?? 0));
     }
   });
 }
+
+test.describe("1280px: the eight-column table fits its list", () => {
+  test.use({ viewport: { width: 1280, height: 900 } });
+
+  test("Data as of ends inside the wrap, nothing scrolls sideways", async ({ page }) => {
+    for (const fixture of [FIXTURES.wallabag, FIXTURES.mautic]) {
+      await report.goto(fixture);
+      await report.tab("packages");
+      const wrap = page.locator(".tablewrap");
+      const [scroll, client] = await wrap.evaluate((el) => [el.scrollWidth, el.clientWidth]);
+      expect(scroll).toBeLessThanOrEqual(client);
+      await expect(page.locator("th.pk-data")).toBeVisible();
+    }
+  });
+});
+
+test.describe("PD-PACKAGES-5: a table wider than its wrap is a region a keyboard can scroll", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("the wrap takes focus, is named, and the arrow keys scroll it", async ({ page }) => {
+    await report.goto(FIXTURES.wallabag);
+    await report.tab("packages");
+    const wrap = page.locator(".tablewrap");
+    expect(await wrap.getAttribute("tabindex")).toBeNull();
+
+    // Stand in for a lock whose names are longer than any fixture's: the table outgrows the wrap
+    // (CSSOM, which the page's CSP allows).
+    await page.locator(".pk-table").evaluate((el) => {
+      (el as HTMLElement).style.minWidth = "2400px";
+    });
+    const region = page.getByRole("region", { name: "All packages table, scrolls sideways" });
+    await expect(region).toHaveAttribute("tabindex", "0");
+    await region.focus();
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("End");
+    await expect.poll(() => wrap.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
+  });
+});
 
 test.describe("1440px: PD-PACKAGES-1/2 on the table", () => {
   test.use({ viewport: { width: 1440, height: 900 } });

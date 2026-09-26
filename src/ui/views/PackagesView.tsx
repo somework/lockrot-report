@@ -1,7 +1,9 @@
 import type { Finding } from "../../model/types";
 import { SIGNAL_IDS } from "../../model/types";
 import type { SortKey } from "../../state/types";
+import { useRef } from "preact/hooks";
 import { useReport } from "../context";
+import { useOverflowX } from "../useOverflowX";
 import { applyFilters, population } from "../../domain/filters";
 import { packagistUrl } from "../../domain/links";
 import { day, fixed } from "../../domain/format";
@@ -194,6 +196,7 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
 
   return (
     <tr
+      role="row"
       className={rowClass}
       tabIndex={rowTabIndex(finding.package, cursor)}
       aria-current={isOpen ? "true" : undefined}
@@ -201,7 +204,7 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
       data-pkg={finding.package}
       {...openInteractions(finding.package, dispatch)}
     >
-      <td className="pk-name">
+      <td role="cell" className="pk-name">
         <PackageCell finding={finding} />
         {finding.advisories.length > 0 && (
           <>
@@ -211,24 +214,30 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
         )}
         <MatchNote hit={hit} />
       </td>
-      <td className="num pk-ver">{finding.version}</td>
-      <td className="num pk-ly">
+      <td role="cell" className="num pk-ver">
+        {finding.version}
+      </td>
+      <td role="cell" className="num pk-ly">
         <LibyearsCell finding={finding} max={max} />
       </td>
-      <td className="pk-verdict">
+      <td role="cell" className="pk-verdict">
         <Pill word={finding.verdict} />
       </td>
-      <td className="pk-prio">
+      <td role="cell" className="pk-prio">
         {finding.priority === "none" ? <Muted>—</Muted> : <Pill word={finding.priority} />}
       </td>
-      <td className="pk-reach">
+      <td role="cell" className="pk-reach">
         {finding.direct ? "direct" : "transitive"}
         {finding.dev ? " · dev" : ""}
       </td>
-      <td className="num pk-sig">
+      <td role="cell" className="num pk-sig">
         <SignalsCell finding={finding} />
       </td>
-      {dated && <td className="num pk-data">{day(finding.dataDate)}</td>}
+      {dated && (
+        <td role="cell" className="num pk-data">
+          {day(finding.dataDate)}
+        </td>
+      )}
     </tr>
   );
 }
@@ -248,10 +257,11 @@ function Count({ n, one = "package", many = "packages" }: { n: number; one?: str
  * the libyears cells below, nothing more — then what the cells' two marks mean, said once here
  * instead of on every row. Paper keeps its own printed lede (PrintDocument), so none is drawn there.
  *
- * Two of the key's items are for the stacked rows only (PD-PACKAGES-3, packages.css
- * `.pk-key-narrow`): there the table's head is a sort bar that has no room for the Libyears head's
- * 0…Ny scale or a Priority column, so the key says what a full bar is and what the row's left rule
- * is.
+ * Some of the key's items are for the stacked rows only (PD-PACKAGES-3/5, packages.css): there the
+ * table's head is a sort bar with no room for the Libyears head's 0…Ny scale or the Signals head's
+ * 1…10 caption, so the key says what a full bar is (`.pk-key-stacked`), what a dot is on the
+ * two-line rows that keep the dots (`.pk-key-tablet`), and what the left rule is on a phone's rows,
+ * which have no Priority word (`.pk-key-phone`).
  */
 function PackagesLede({ tally, listed, max }: { tally: LibyearsTally; listed: number; max: number | null }) {
   const { behind, current, unmeasured } = tally;
@@ -276,7 +286,7 @@ function PackagesLede({ tally, listed, max }: { tally: LibyearsTally; listed: nu
       </p>
       <p className="pk-key">
         {max !== null && behind > 0 && (
-          <span className="pk-key-item pk-key-narrow">
+          <span className="pk-key-item pk-key-stacked">
             <span className="pk-key-bar" aria-hidden="true">
               <span />
             </span>{" "}
@@ -289,6 +299,7 @@ function PackagesLede({ tally, listed, max }: { tally: LibyearsTally; listed: nu
               —
             </span>{" "}
             not behind its newest stable
+            {unmeasured === 0 && <HoverHint both={false} />}
           </span>
         )}
         {unmeasured > 0 && (
@@ -297,17 +308,24 @@ function PackagesLede({ tally, listed, max }: { tally: LibyearsTally; listed: nu
               ?
             </span>{" "}
             not measured
+            <HoverHint both={current > 0} />
           </span>
         )}
-        {(current > 0 || unmeasured > 0) && (
-          <span className="pk-key-item pk-key-hover">hover either for why</span>
-        )}
-        <span className="pk-key-item pk-key-narrow" aria-hidden="true">
+        <span className="pk-key-item pk-key-tablet" aria-hidden="true">
+          <span className="pk-key-dot" /> a signal that fired, S1 to S10 left to right
+        </span>
+        <span className="pk-key-item pk-key-phone" aria-hidden="true">
           <span className="pk-key-rule" /> left rule: priority
         </span>
       </p>
     </div>
   );
+}
+
+/** Where a mark's reason is, said on the last mark's own line so it never wraps away from the marks
+ *  it means; hidden where nothing can hover (packages.css). */
+function HoverHint({ both }: { both: boolean }) {
+  return <span className="pk-key-hover"> · hover {both ? "either" : "it"} for why</span>;
 }
 
 /** The Libyears head's scale, over the bars' track: 0 at its left end, the scale's edge at its right
@@ -332,20 +350,101 @@ function SignalsAxis() {
   );
 }
 
+/**
+ * The table itself, in its sideways scroller. At every width the page lays it out for it fits — as
+ * a table from 1000px of list, as two-line rows under that (PD-PACKAGES-3/5, packages.css) — so the
+ * wrap scrolls only when a lock's own names or versions are longer than any fixture's. While it
+ * does, the wrap is a named region in the tab order, so a keyboard can scroll it to the cells past
+ * its edge (WCAG 2.1.1; axe's `scrollable-region-focusable`); while it does not, it is neither.
+ */
+function PackagesTable({
+  visible,
+  dated,
+  max,
+}: {
+  visible: readonly Finding[];
+  dated: boolean;
+  max: number | null;
+}) {
+  const { state, dispatch } = useReport();
+  const printed = usePrinted();
+  const wrap = useRef<HTMLDivElement>(null);
+  const scrolls = useOverflowX(wrap);
+  const activeSort: SortKey = state.sort;
+  const columns = dated ? COLUMNS : COLUMNS.filter((column) => column.key !== "data");
+
+  return (
+    <div
+      ref={wrap}
+      className="tablewrap"
+      {...(scrolls
+        ? { tabIndex: 0, role: "region", "aria-label": "All packages table, scrolls sideways" }
+        : {})}
+    >
+      <table className="pk-table" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
+            {columns.map((column) => {
+              const active = column.key === activeSort;
+              const sort = active ? (state.sortDesc ? "descending" : "ascending") : "none";
+              const arrow = active ? (state.sortDesc ? " ↓" : " ↑") : "";
+              // A heading's button is not repeated on a continuation page (Chromium prints the
+              // repeated head blank), so paper gets the words themselves.
+              if (printed) {
+                return (
+                  <th key={column.key} role="columnheader" aria-sort={sort}>
+                    {column.label}
+                    {arrow}
+                  </th>
+                );
+              }
+              return (
+                <th
+                  key={column.key}
+                  role="columnheader"
+                  className={column.cell}
+                  aria-sort={sort}
+                  title={column.title}
+                >
+                  <button
+                    type="button"
+                    className={`sort-btn${active ? " active" : ""}`}
+                    onClick={() => {
+                      dispatch({ type: "sort", key: column.key });
+                    }}
+                  >
+                    {column.label}
+                    {arrow}
+                  </button>
+                  {column.key === "libyears" && max !== null && <LibyearsAxis max={max} />}
+                  {column.key === "signals" && <SignalsAxis />}
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody role="rowgroup">
+          {visible.map((finding) => (
+            <PackageRow key={finding.package} finding={finding} dated={dated} max={max} />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 /** The All packages tab: every package in the document, sortable by column — ported from legacy
  *  `viewPackages` (report.js:558-593), fixed per DESIGN.md §5 M6: rows are focusable and mark the
  *  open package, which legacy's plain `<tr>` never did — with `aria-current`, as every other tab's
- *  rows do (PD-ROWS-12): `aria-selected` means nothing on a plain table's row. Under 480px of list
- *  the table's rows stack, two lines each (PD-PACKAGES-3, packages.css): one table, restyled, so
+ *  rows do (PD-ROWS-12): `aria-selected` means nothing on a plain table's row. Under 1000px of list
+ *  the table's rows stack, two lines each (PD-PACKAGES-3/5, packages.css): one table, restyled, so
  *  the rows, their order and their keyboard contract stay the same at every width. */
 export function PackagesView() {
-  const { model, state, dispatch } = useReport();
+  const { model, state } = useReport();
   const printed = usePrinted();
   const visible = applyFilters(model, state, "packages");
-  const activeSort: SortKey = state.sort;
   // On paper a column of one repeated date is dropped; the printed section's lede gives it once.
   const dated = !printed || sharedDataDay(visible) === null;
-  const columns = dated ? COLUMNS : COLUMNS.filter((column) => column.key !== "data");
   const max = printed ? null : libyearsAxisMax(population(model, "packages"));
 
   if (visible.length === 0) {
@@ -355,50 +454,7 @@ export function PackagesView() {
   return (
     <div className="pk">
       {!printed && <PackagesLede tally={libyearsTally(visible)} listed={visible.length} max={max} />}
-      <div className="tablewrap">
-        <table className="pk-table">
-          <thead>
-            <tr>
-              {columns.map((column) => {
-                const active = column.key === activeSort;
-                const sort = active ? (state.sortDesc ? "descending" : "ascending") : "none";
-                const arrow = active ? (state.sortDesc ? " ↓" : " ↑") : "";
-                // A heading's button is not repeated on a continuation page (Chromium prints the
-                // repeated head blank), so paper gets the words themselves.
-                if (printed) {
-                  return (
-                    <th key={column.key} aria-sort={sort}>
-                      {column.label}
-                      {arrow}
-                    </th>
-                  );
-                }
-                return (
-                  <th key={column.key} className={column.cell} aria-sort={sort} title={column.title}>
-                    <button
-                      type="button"
-                      className={`sort-btn${active ? " active" : ""}`}
-                      onClick={() => {
-                        dispatch({ type: "sort", key: column.key });
-                      }}
-                    >
-                      {column.label}
-                      {arrow}
-                    </button>
-                    {column.key === "libyears" && max !== null && <LibyearsAxis max={max} />}
-                    {column.key === "signals" && <SignalsAxis />}
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((finding) => (
-              <PackageRow key={finding.package} finding={finding} dated={dated} max={max} />
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <PackagesTable visible={visible} dated={dated} max={max} />
     </div>
   );
 }
