@@ -219,10 +219,13 @@ function replacementClause(finding: Finding, metadataReplacement: string | null)
   const s1 = str(signal(finding, "S1")?.data, "replacement");
   const replacement = finding.replacement ?? metadataReplacement ?? s1;
   if (replacement === null) return [];
+  const linked = finding.replacement !== null;
+  // Run data counts only a replacement lockrot resolved to a package (`abandoned.with_replacement`);
+  // one named only in words says so here, so the two never read as a contradiction.
   return [
     text(" Its named replacement is "),
-    { kind: "replacement", text: replacement, linked: finding.replacement !== null },
-    text("."),
+    { kind: "replacement", text: replacement, linked },
+    text(linked ? "." : ", in words only — not a package lockrot resolved."),
   ];
 }
 

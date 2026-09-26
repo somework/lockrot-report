@@ -5,11 +5,13 @@ import {
   cacheAge,
   cacheNullReason,
   nullReason,
+  replacementInWordsOnly,
+  sameScalePairs,
   spanPhrase,
   thresholdGroups,
   utcMinute,
 } from "../../../src/domain/run";
-import { makeModel } from "./fixtures";
+import { makeFinding, makeModel, makeSignal } from "./fixtures";
 
 const HOUR = 3600 * 1000;
 
@@ -83,7 +85,9 @@ describe("activityTally and cacheNullReason", () => {
   it("says every answer was fetched during the run only when none came from the cache", () => {
     const base = makeModel([]);
     const fresh: Model = { ...base, details: withActivity([false, false]) };
-    expect(cacheNullReason(fresh)).toBe("none — all 2 in this file were fetched during the run");
+    expect(cacheNullReason(fresh)).toBe(
+      "none — all 2 repository answers in this file were fetched during the run",
+    );
     const cached: Model = { ...base, details: withActivity([true]) };
     expect(cacheNullReason(cached)).toBe("not recorded");
     expect(cacheNullReason(base)).toBe("not recorded");
@@ -137,5 +141,46 @@ describe("thresholdGroups", () => {
 
   it("keeps the 10-year floor the Findings axis uses", () => {
     expect(thresholdGroups([]).max).toBe(10);
+  });
+});
+
+describe("sameScalePairs", () => {
+  it("draws pairs that share both numbers once, keeping first-seen order", () => {
+    const { pairs } = thresholdGroups([
+      ["release-warn-years", 3],
+      ["release-high-years", 5],
+      ["push-warn-years", 3],
+      ["push-high-years", 5],
+      ["tag-warn-years", 2],
+      ["tag-high-years", 5],
+    ]);
+    expect(sameScalePairs(pairs).map((row) => row.map((pair) => pair.subject))).toEqual([
+      ["release", "push"],
+      ["tag"],
+    ]);
+  });
+});
+
+describe("replacementInWordsOnly", () => {
+  it("counts abandoned findings whose successor is named only in words, not resolved to a package", () => {
+    const words = makeFinding({
+      package: "a/words",
+      signals: [makeSignal({ id: "S1", data: { replacement: "Symfony" } })],
+    });
+    const resolved = makeFinding({
+      package: "a/resolved",
+      replacement: "b/next",
+      signals: [makeSignal({ id: "S1", data: { replacement: "b/next" } })],
+    });
+    const none = makeFinding({
+      package: "a/none",
+      signals: [makeSignal({ id: "S1", data: { replacement: null } })],
+    });
+    const stale = makeFinding({
+      package: "a/stale",
+      verdict: "stale",
+      signals: [makeSignal({ id: "S1", data: { replacement: "x" } })],
+    });
+    expect(replacementInWordsOnly(makeModel([words, resolved, none, stale]))).toBe(1);
   });
 });

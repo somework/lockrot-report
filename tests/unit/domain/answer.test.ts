@@ -33,7 +33,7 @@ describe("answerParts", () => {
 
     // Assert
     expect(answerText(parts)).toBe(
-      "Marked abandoned upstream and archived on GitHub, with no push for 3.6 years. You require it directly. Its named replacement is Symfony.",
+      "Marked abandoned upstream and archived on GitHub, with no push for 3.6 years. You require it directly. Its named replacement is Symfony, in words only — not a package lockrot resolved.",
     );
     // Abandoned never rests on age: the years are a figure in ink, not the zone's tone.
     expect(parts.find((p) => p.kind === "figure")).toEqual({ kind: "figure", text: "3.6 years", tone: null });

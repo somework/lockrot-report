@@ -1,4 +1,5 @@
-import { thresholdGroups, type ThresholdPair } from "../../domain/run";
+import { Fragment } from "preact";
+import { sameScalePairs, thresholdGroups, type ThresholdPair } from "../../domain/run";
 import { useReport } from "../context";
 import "./ledger-rows.css";
 import "./run.css";
@@ -16,20 +17,37 @@ function pct(value: number, max: number): string {
   return `${Math.min(100, Math.max(0, (value / max) * 100))}%`;
 }
 
-/**
- * One pair on the shared scale: the caution band from warn to high and the critical band past high,
- * under the same dashed warn and dotted high guides a Findings row draws, captioned 0 · warn · high ·
- * the edge exactly as the Findings column head captions its axis. One `role="img"` carries the fact.
- */
-function PairScale({ pair, max }: { pair: ThresholdPair; max: number }) {
+/** One subject's name, what its years count from, and the checks that read it. */
+function SubjectName({ pair }: { pair: ThresholdPair }) {
   const subject = SUBJECTS[pair.subject];
-  const label = `years ${subject?.what ?? pair.subject}: warn at ${pair.warn} years, high at ${pair.high} years (${pair.warnName}, ${pair.highName})`;
+  return (
+    <span className="run-thr-name">
+      <span className="run-thr-subject">{pair.subject}</span>
+      {subject !== undefined && <span className="run-thr-what">{subject.what}</span>}
+      {subject !== undefined && <span className="run-thr-checks mono">{subject.checks}</span>}
+    </span>
+  );
+}
+
+/**
+ * One scale for every pair that shares both numbers (`sameScalePairs`): the caution band from warn
+ * to high and the critical band past high, under the same dashed warn and dotted high guides a
+ * Findings row draws, captioned 0 · warn · high · the edge exactly as the Findings column head
+ * captions its axis; the subjects it holds for stacked beside it, so two identical scales are not
+ * drawn twice. One `role="img"` carries the fact.
+ */
+function PairScale({ pairs, max }: { pairs: readonly ThresholdPair[]; max: number }) {
+  const [pair] = pairs;
+  if (pair === undefined) return null;
+  const whats = pairs.map((p) => `years ${SUBJECTS[p.subject]?.what ?? p.subject}`).join(" and ");
+  const keys = pairs.flatMap((p) => [p.warnName, p.highName]);
+  const label = `${whats}: warn at ${pair.warn} years, high at ${pair.high} years (${keys.join(", ")})`;
   return (
     <li className="run-thr-row">
-      <span className="run-thr-name">
-        <span className="run-thr-subject">{pair.subject}</span>
-        {subject !== undefined && <span className="run-thr-what">{subject.what}</span>}
-        {subject !== undefined && <span className="run-thr-checks mono">{subject.checks}</span>}
+      <span className="run-thr-names">
+        {pairs.map((p) => (
+          <SubjectName key={p.subject} pair={p} />
+        ))}
       </span>
       <span className="run-thr-scale" role="img" aria-label={label} title={label}>
         <span className="run-thr-track" aria-hidden="true">
@@ -57,7 +75,14 @@ function PairScale({ pair, max }: { pair: ThresholdPair; max: number }) {
           warn at <b>{pair.warn}</b> · high at <b>{pair.high}</b> years
         </span>
         <span className="run-thr-keys mono">
-          {pair.warnName} · {pair.highName}
+          {keys.map((key, index) => (
+            <Fragment key={key}>
+              <span className="run-thr-key">
+                {key}
+                {index < keys.length - 1 && " ·"}
+              </span>{" "}
+            </Fragment>
+          ))}
         </span>
       </span>
     </li>
@@ -86,8 +111,8 @@ export function RunThresholds() {
       <h3>Thresholds in force</h3>
       {groups.pairs.length > 0 && (
         <ul className="run-thr">
-          {groups.pairs.map((pair) => (
-            <PairScale key={pair.subject} pair={pair} max={groups.max} />
+          {sameScalePairs(groups.pairs).map((pairs) => (
+            <PairScale key={pairs.map((p) => p.subject).join(" ")} pairs={pairs} max={groups.max} />
           ))}
         </ul>
       )}

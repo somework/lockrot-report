@@ -1553,22 +1553,44 @@ describe("RunView", () => {
     ]);
     expect(absent?.textContent).toContain("lockrot 0.10.0 (report schema 1)");
     expect(screen.getByText("libyears behind").nextElementSibling?.textContent).toBe("not in this document");
-    expect(screen.getByText("oldest activity cache").nextElementSibling?.textContent).toBe(
-      "2026-09-20 19:17 UTC · 24 hours before the run",
+    expect(
+      screen.getByText("oldest activity cache").nextElementSibling?.textContent.replace(/\u00a0/g, " "),
+    ).toBe("2026-09-20 19:17 UTC · 24 hours before the run");
+  });
+
+  // PD-RUN-4: the abandoned count beside the panel that quotes "Symfony" — never a contradiction.
+  it("says how many abandoned findings name a replacement only in words, beside lockrot's count", () => {
+    renderIn(loadModel("wallabag_wallabag.json"), stateWith({ view: "run" }), <RunView />);
+    const value = screen.getByText("abandoned with a replacement").nextElementSibling;
+    expect(Array.from(value?.querySelectorAll(".run-part") ?? [], (el) => el.textContent)).toEqual([
+      "0 of 21 ·",
+      "1 more named in words only",
+    ]);
+  });
+
+  it("says a network failure has no count, and points at the run's notes", () => {
+    const base = makeModel([]);
+    const failed: Model = {
+      ...base,
+      report: { ...base.report, networkFailures: true, notes: ["GitHub did not answer", "offline"] },
+    };
+    renderIn(failed, stateWith({ view: "run" }), <RunView />);
+    expect(screen.getByText("network failures").nextElementSibling?.textContent).toBe(
+      "yes · no count recorded · 2 notes above",
     );
   });
 
   // PD-RUN-2: thresholds on the Findings list's own scale.
   it("draws each warn/high pair as a scale with its guides, captioned like the Findings axis", () => {
     renderIn(loadModel("wallabag_wallabag.json"), stateWith({ view: "run" }), <RunView />);
+    // wallabag's release and push pairs share 3/5, so they share one scale, both subjects named.
     const rows = Array.from(document.querySelectorAll(".run-thr-row"));
-    expect(rows.map((row) => row.querySelector(".run-thr-subject")?.textContent)).toEqual([
-      "release",
-      "push",
-    ]);
+    expect(
+      rows.map((row) => Array.from(row.querySelectorAll(".run-thr-subject"), (el) => el.textContent)),
+    ).toEqual([["release", "push"]]);
     const scale = rows[0]?.querySelector('[role="img"]');
     expect(scale?.getAttribute("aria-label")).toBe(
-      "years since the last release: warn at 3 years, high at 5 years (release-warn-years, release-high-years)",
+      "years since the last release and years since the last push: warn at 3 years, high at 5 years (release-warn-years, release-high-years, push-warn-years, push-high-years)",
     );
     expect(Array.from(rows[0]?.querySelectorAll(".run-thr-tick") ?? [], (el) => el.textContent)).toEqual([
       "0",

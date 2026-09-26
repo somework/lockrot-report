@@ -346,15 +346,19 @@ describe("Detail", () => {
       const { container } = renderDetail(MINI, "private/thing");
 
       const lockEntry = sectionKeyValue(container, "The lock entry");
-      const provenance = sectionKeyValue(container, "Provenance");
+      const provenance = openReference(container, "Provenance");
       expect(lockEntry?.textContent).toContain("installed");
       expect(lockEntry?.textContent).toContain("3.0.0");
       expect(lockEntry?.querySelectorAll("dt").length).toBe(2); // installed, libyears behind — nothing else
       expect(lockEntry?.textContent).toContain("not measured");
       expect(lockEntry?.textContent).toContain("not from a Composer repository");
 
-      expect(provenance?.querySelectorAll("dt").length).toBe(1); // metadata only
-      expect(provenance?.textContent).toContain("—");
+      // PD-RUN-5: no bare dash — each source says why this file gives nothing for it.
+      expect(provenance?.querySelectorAll("dt").length ?? 0).toBe(0);
+      expect(provenance?.textContent).not.toContain("—");
+      expect(
+        Array.from(provenance?.querySelectorAll(".detail-prov-reason") ?? [], (el) => el.textContent),
+      ).toEqual(["not in this document for this package"]);
     });
 
     it("drops an empty-string lock value and falls back to metadata, like legacy's truthiness checks", () => {
@@ -1136,6 +1140,39 @@ describe("Detail", () => {
       expect(container.querySelector(".detail-timeline-key")?.textContent).not.toContain("years ago");
       // No php constraint recorded: a dash on screen, words for a screen reader.
       expect(container.querySelector(".detail-timeline-php")?.textContent).toBe("—none recorded");
+    });
+  });
+
+  // PD-RUN-5: Provenance never ends on a bare dash — a source this file gives nothing for says why.
+  describe("provenance without an explain block", () => {
+    it("says a package from outside a Composer repository has neither metadata nor activity", () => {
+      const { container } = renderDetail(loadModel("capsule-0.10-drupal.json"), "drupal/core");
+      const provenance = openReference(container, "Provenance");
+      // One reason for both sources, said once.
+      expect(provenance?.querySelector(".detail-prov-source")?.textContent).toBe(
+        "Package metadata · repository activity",
+      );
+      expect(
+        Array.from(provenance?.querySelectorAll(".detail-prov-reason") ?? [], (el) => el.textContent),
+      ).toEqual(["none — not from a Composer repository"]);
+    });
+
+    it("reads the forge facts off a fired S4 when the document has no details", () => {
+      const { container } = renderDetail(loadModel("synthetic-no-details.json"), "daverandom/resume");
+      const activity = container.querySelector("#detail-prov-activity");
+      expect(activity?.querySelector(".detail-prov-source")?.textContent).toBe("github.com from S4’s data");
+      expect(activity?.textContent).toContain("DaveRandom/Resume");
+      expect(activity?.textContent).toContain("2018-06-25");
+      expect(activity?.textContent).toContain("no (S3 quiet)");
+      expect(activity?.textContent).toContain("not in this document");
+      const metadata = openReference(container, "Provenance")?.querySelector(".detail-prov-reason");
+      expect(metadata?.textContent).toBe("not in this document — it explains no package");
+    });
+
+    it("moves focus onto the activity line itself when a quiet S4 points there", () => {
+      const { container } = renderDetail(KOEL, "predis/predis");
+      fireEvent.click(screen.getByRole("button", { name: "S4 push age, quiet: show the evidence" }));
+      expect(document.activeElement).toBe(container.querySelector("#detail-prov-activity"));
     });
   });
 

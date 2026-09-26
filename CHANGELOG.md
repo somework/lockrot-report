@@ -21,6 +21,10 @@ tag or the address format, says so under **Breaking** in its entry.
   a check that could not run opens S10, a quiet archived or push-age check opens the repository
   activity. Provenance lists that activity (forge, repository, archived, last push, fetched fresh
   or from the cache) as one compact line under the package metadata.
+- Provenance never ends on a dash: a package with no metadata or activity says why (not from a
+  Composer repository, not in this document, S10 stopped the check, none recorded), and a document
+  without per-package facts shows the forge, repository and last push a fired S3/S4 carries,
+  marked as read from that check. A quiet S4 cell now moves focus onto the activity line itself.
 
 - The Advisories tab answers first: how many advisories on which packages, by severity, how many
   sit on packages installed for production, how many are fixed on the branch you are on, only on
@@ -201,6 +205,13 @@ tag or the address format, says so under **Breaking** in its entry.
   the exposure list, plus 8 of 8 flagged ones it leaves out".
 
 ### Changed
+
+- Run data draws threshold pairs that share both numbers on one scale; the abandoned-replacement
+  count says how many more name a successor only in words (the package panel now says "in words
+  only" for those); "network failures: yes" says lockrot records no count and points at the notes;
+  a value such as the cache date and its age wraps between its parts, never inside one, and the
+  `--fail-on` flag in the sentence never breaks at a hyphen. In forced colours the warn and high
+  threshold bands differ by pattern (single hatch, cross-hatch), not only by colour.
 
 - With no advisory at all, the Advisories tab says "No advisory affects this lock", or, when the
   run's notes say the check may not have run, "No advisory found; N packages could not be confirmed

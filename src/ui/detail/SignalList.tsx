@@ -277,7 +277,8 @@ const STATE_WORDS: Readonly<Record<CheckState, string>> = {
 };
 
 /** Opens every `<details>` around the evidence (and the evidence itself when it is one), brings it
- *  into view and moves focus to its summary — the reader lands where the strip pointed. */
+ *  into view and moves focus to it — a focusable facts line itself, otherwise its summary — so the
+ *  reader lands where the strip pointed. */
 function reveal(id: string): void {
   const target = document.getElementById(id);
   if (target === null) return;
@@ -288,6 +289,12 @@ function reveal(id: string): void {
   const reduce =
     typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   target.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+  // A plain evidence line (Provenance's activity facts) takes focus itself, so a screen reader
+  // reads the facts rather than the section's heading.
+  if (!(target instanceof HTMLDetailsElement) && target.hasAttribute("tabindex")) {
+    target.focus({ preventScroll: true });
+    return;
+  }
   const owner = target instanceof HTMLDetailsElement ? target : target.closest("details");
   const summary = owner?.querySelector<HTMLElement>(":scope > summary") ?? null;
   summary?.focus({ preventScroll: true });

@@ -37,10 +37,12 @@
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
+/* A version, a file name, a flag: kept whole ("--fail-on=none" never breaks at its hyphens). */
 .run-answer .mono {
   font-size: 0.8em;
   font-weight: 600;
   color: var(--ink);
+  white-space: nowrap;
 }
 .run-answer .run-warn {
   color: var(--high);
@@ -86,6 +88,12 @@
   align-items: center;
   padding: 10px 0 9px;
   border-bottom: 1px solid var(--border);
+}
+.run-thr-names {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
 }
 .run-thr-name {
   display: flex;
@@ -180,6 +188,11 @@
   color: var(--muted);
   overflow-wrap: anywhere;
 }
+/* Each key kept whole while it fits, so the list wraps between names, not inside one. */
+.run-thr-key {
+  display: inline-block;
+  max-width: 100%;
+}
 /* A narrow list (a phone, paper's half width): the name over the scale, the words under it. */
 @container runthr (max-width: 559.98px) {
   .run-thr-row {
@@ -259,6 +272,19 @@
   font-style: italic;
   color: var(--muted);
 }
+/* What qualifies a value ("24 hours before the run"): quieter than it, not italic — it is recorded,
+   not missing. */
+.run-aside {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--muted);
+}
+/* One part of a value ("branch snapshot 4 ·"): kept whole on its line while it fits one, so a value
+   wraps between its parts, never inside one; only a part wider than the column breaks. */
+.run-part {
+  display: inline-block;
+  max-width: 100%;
+}
 
 @media (forced-colors: active) {
   .run-absent {
@@ -268,12 +294,16 @@
     forced-color-adjust: none;
     background: CanvasText;
   }
+  /* Told apart by pattern, not colour: warn a sparse single hatch, high a dense cross-hatch, both
+     in CanvasText (GrayText renders as an accent colour in some high-contrast themes). */
   .run-thr-zone {
     forced-color-adjust: none;
-    background: repeating-linear-gradient(135deg, Canvas 0 3px, GrayText 3px 4px);
+    background: repeating-linear-gradient(135deg, Canvas 0 4px, CanvasText 4px 5px);
   }
   .run-thr-zone.tone-crit {
-    background: repeating-linear-gradient(135deg, Canvas 0 2px, CanvasText 2px 3px);
+    background:
+      repeating-linear-gradient(45deg, transparent 0 3px, CanvasText 3px 4px),
+      repeating-linear-gradient(135deg, Canvas 0 3px, CanvasText 3px 4px);
   }
   .run-thr-tick.tone-med,
   .run-thr-tick.tone-crit {

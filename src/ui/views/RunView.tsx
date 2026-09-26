@@ -3,7 +3,7 @@ import type { BaselineSummary, Model, ReportModel } from "../../model/types";
 import { useReport } from "../context";
 import { baselineDelta } from "../../domain/baseline";
 import { EMPTY_FILTERS } from "../../state/types";
-import { fixed } from "../../domain/format";
+import { fixed, plural } from "../../domain/format";
 import { noteDocLink } from "../../domain/sniff";
 import {
   cacheAge,
@@ -12,6 +12,7 @@ import {
   NOT_IN_DOCUMENT,
   NOT_RECORDED,
   nullReason,
+  replacementInWordsOnly,
   utcMinute,
 } from "../../domain/run";
 import { RunAnswer } from "./RunAnswer";
@@ -103,10 +104,19 @@ function BaselineStats({ baseline }: { baseline: BaselineSummary }) {
 interface Missing {
   readonly missing: string;
 }
-type FieldValue = string | Missing;
+/** A value in short parts ("2026-09-23 12:00 UTC" · "24 hours before the run"): each kept whole on
+ *  its line, wrapping only between parts, never inside one. */
+interface Parts {
+  readonly parts: readonly (string | Missing | Aside)[];
+}
+/** A part that qualifies the value before it ("24 hours before the run"): quieter, in the sans. */
+interface Aside {
+  readonly aside: string;
+}
+type FieldValue = string | Missing | Parts;
 
 function isMissing(value: FieldValue): value is Missing {
-  return typeof value !== "string";
+  return typeof value !== "string" && "missing" in value;
 }
 
 /** `value` as text, or the reason the document gives none for `key`. */
@@ -124,7 +134,7 @@ function unmeasuredText(report: ReportModel): FieldValue {
     .filter(([, count]) => count > 0)
     .map(([reason, count]) => `${reason.replace(/_/g, " ")} ${count}`);
 
-  return parts.length > 0 ? parts.join(" · ") : "none";
+  return parts.length > 0 ? { parts } : "none";
 }
 
 /** Why there is no libyears figure: the key is absent, lockrot wrote it as null (the run did not
@@ -139,6 +149,34 @@ function libyearsFigure(report: ReportModel, value: number | null | undefined): 
   const ly = report.libyears;
   const text = ly && ly.measured ? fixed(value, 2) : null;
   return text ?? { missing: libyearsReason(report) };
+}
+
+/** "none", or "yes" with what the document can say about it: lockrot records whether a lookup
+ *  failed, not how many did, and the run's notes above name them. */
+function networkText(report: ReportModel): FieldValue {
+  if (report.networkFailures === null) return { missing: nullReason(report, "network_failures") };
+  if (!report.networkFailures) return "none";
+  const notes = report.notes.length;
+  return {
+    parts: [
+      "yes",
+      { missing: "no count recorded" },
+      ...(notes > 0 ? [{ aside: `${plural(notes, "note", "notes")} above` }] : []),
+    ],
+  };
+}
+
+/** "0 of 21", then — when some abandoned findings name a successor only in words — how many, so the
+ *  count never reads as a contradiction of a panel that quotes one (`replacementInWordsOnly`). */
+function abandonedText(model: Model): FieldValue {
+  const { report } = model;
+  if (!report.abandoned) return { missing: nullReason(report, "abandoned") };
+  const count = `${report.abandoned.withReplacement} of ${report.abandoned.total}`;
+  const inWords = replacementInWordsOnly(model);
+  if (inWords === 0) return count;
+  return {
+    parts: [count, { aside: `${inWords} more named in words only` }],
+  };
 }
 
 interface Field {
@@ -200,12 +238,7 @@ function fieldGroups(model: Model): readonly FieldGroup[] {
         },
         {
           label: "network failures",
-          value:
-            report.networkFailures === null
-              ? { missing: nullReason(report, "network_failures") }
-              : report.networkFailures
-                ? "yes"
-                : "none",
+          value: networkText(report),
         },
         {
           label: "oldest activity cache",
@@ -214,7 +247,7 @@ function fieldGroups(model: Model): readonly FieldGroup[] {
               ? { missing: cacheNullReason(model) }
               : cache.before === null
                 ? utcMinute(cache.oldest)
-                : `${utcMinute(cache.oldest)} · ${cache.before} before the run`,
+                : { parts: [utcMinute(cache.oldest), { aside: `${cache.before} before the run` }] },
         },
         {
           label: "not from a Composer repository",
@@ -231,9 +264,7 @@ function fieldGroups(model: Model): readonly FieldGroup[] {
       fields: [
         {
           label: "abandoned with a replacement",
-          value: report.abandoned
-            ? `${report.abandoned.withReplacement} of ${report.abandoned.total}`
-            : { missing: nullReason(report, "abandoned") },
+          value: abandonedText(model),
         },
         { label: "libyears behind", value: libyearsFigure(report, ly?.total) },
         { label: "libyears, direct requirements", value: libyearsFigure(report, ly?.directRequirements) },
@@ -261,9 +292,38 @@ function fieldGroups(model: Model): readonly FieldGroup[] {
   ];
 }
 
+/** "19:17 UTC" held together, so a narrow column breaks a timestamp after its date, not before its
+ *  zone. */
+function keepZone(text: string): string {
+  return text.replace(/ UTC$/, "\u00a0UTC");
+}
+
+function partClass(part: string | Missing | Aside): string {
+  if (typeof part === "string") return "";
+  return "missing" in part ? " run-null" : " run-aside";
+}
+
 function FieldValueText({ value }: { value: FieldValue }) {
+  if (typeof value === "string") return <>{value}</>;
   if (isMissing(value)) return <span className="run-null">{value.missing}</span>;
-  return <>{value}</>;
+  // Each part whole on its line; the " ·" belongs to the part before it, so a wrapped line never
+  // starts on one.
+  return (
+    <>
+      {value.parts.map((part, index) => {
+        const last = index === value.parts.length - 1;
+        return (
+          <Fragment key={index}>
+            <span className={`run-part${partClass(part)}`}>
+              {typeof part === "string" ? keepZone(part) : "missing" in part ? part.missing : part.aside}
+              {!last && " ·"}
+            </span>
+            {!last && " "}
+          </Fragment>
+        );
+      })}
+    </>
+  );
 }
 
 /**

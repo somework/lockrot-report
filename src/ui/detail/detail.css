@@ -829,3 +829,25 @@ button.detail-check {
 .detail-prov-fact dd {
   overflow-wrap: anywhere;
 }
+/* Where the facts were borrowed from ("from S4’s data"): quieter than the source, never in caps. */
+.detail-prov-from {
+  font-variant-caps: normal;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+/* A source the file gives nothing for says why, in the same muted italic Run data uses. */
+.detail-prov-reason,
+.detail-prov-null {
+  font-family: var(--sans);
+  font-style: italic;
+  color: var(--muted);
+}
+.detail-prov-reason {
+  font-size: 12.5px;
+}
+/* The strip moves focus onto the activity line; its ring sits just outside the text. */
+.detail-prov-line:focus-visible {
+  outline-offset: 3px;
+  border-radius: 3px;
+}

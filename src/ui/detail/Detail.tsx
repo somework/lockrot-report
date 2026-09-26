@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact";
-import type { ExplainActivity, ExplainMetadata, Finding, PackageDetails } from "../../model/types";
+import type { ExplainActivity, Finding, PackageDetails } from "../../model/types";
 import { isContextOnly } from "../../domain/age";
+import { provenance, type ActivitySource, type MetadataSource } from "../../domain/provenance";
 import { ageText, day } from "../../domain/format";
 import { safeHref } from "../../domain/links";
 import { OutLink } from "../common/common";
@@ -89,7 +90,7 @@ export function Detail({ onClose }: DetailProps) {
           <summary className="detail-reference-summary">
             <h3>Provenance</h3>
           </summary>
-          <Provenance finding={finding} details={details} now={now} />
+          <Provenance finding={finding} now={now} />
         </details>
       </div>
     </aside>
@@ -129,94 +130,179 @@ function lockRows(finding: Finding, details: PackageDetails | null, now: Date): 
   ]);
 }
 
-/** A source's facts as one flowing line: its name, then each label and value, "·" between them. */
+/** A source's facts as one flowing line: its name (and, when the facts are borrowed, where from),
+ *  then each label and value, "·" between them, then — when the file gives none — why, in words. */
 function FactsLine({
   source,
   rows,
+  reason = null,
+  from = null,
   id,
 }: {
   source: ComponentChildren;
   rows: readonly KeyValueRow[];
+  reason?: string | null;
+  from?: string | null;
   id?: string;
 }) {
   return (
-    <div className="detail-prov-line" id={id}>
-      <span className="detail-prov-source">{source}</span>
-      <dl className="detail-kv detail-prov-facts">
-        {rows.map((row) => (
-          <div className="detail-prov-fact" key={row.label}>
-            <dt>{row.label}</dt>
-            <dd>{row.value}</dd>
-          </div>
-        ))}
-      </dl>
+    // tabIndex -1: a strip cell that points here moves focus onto the line itself (SignalList's
+    // `reveal`), so a screen reader lands on the facts, not on the section's summary.
+    <div className="detail-prov-line" id={id} tabIndex={id === undefined ? undefined : -1}>
+      <span className="detail-prov-source">
+        {source}
+        {from !== null && <span className="detail-prov-from"> {from}</span>}
+      </span>
+      {rows.length > 0 && (
+        <dl className="detail-kv detail-prov-facts">
+          {rows.map((row) => (
+            <div className="detail-prov-fact" key={row.label}>
+              <dt>{row.label}</dt>
+              <dd>{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {reason !== null && <span className="detail-prov-reason">{reason}</span>}
     </div>
   );
 }
 
+/** A value the document does not give, said in words and set apart from a recorded one. */
+function Unrecorded({ children }: { children: string }) {
+  return <span className="detail-prov-null">{children}</span>;
+}
+
+/** A dated fact: its day, then how long before the report that was. */
+function dated(iso: string, now: Date): string {
+  return `${day(iso)} · ${ageText(iso, now)}`;
+}
+
 /** The repository activity lockrot read for this package (PD-RUN-5): where, whether archived, the
  *  last push and how long before the report that was, and when it was fetched — fresh or from
- *  lockrot's cache. `null` when the file carries none. */
+ *  lockrot's cache. */
 function activityRows(activity: ExplainActivity, now: Date): readonly KeyValueRow[] {
   return presentRows([
     { label: "repository", value: activity.repository },
     { label: "archived", value: activity.archived ? "yes" : "no" },
     {
       label: "last push",
-      value: activity.pushedAt
-        ? `${day(activity.pushedAt)} · ${ageText(activity.pushedAt, now)}`
-        : "none recorded",
+      value: activity.pushedAt ? dated(activity.pushedAt, now) : <Unrecorded>none recorded</Unrecorded>,
     },
     {
       label: "fetched",
-      value: `${day(activity.fetchedAt)} · ${activity.fromCache ? "from lockrot’s cache" : "during this run"}`,
+      value: activity.fetchedAt ? (
+        `${day(activity.fetchedAt)} · ${activity.fromCache ? "from lockrot’s cache" : "during this run"}`
+      ) : (
+        <Unrecorded>
+          {activity.fromCache ? "from lockrot’s cache, date not recorded" : "not recorded"}
+        </Unrecorded>
+      ),
     },
   ]);
 }
 
+/** The same facts as a fired S3/S4 check carries them, when the file holds no activity block. */
+function signalActivityRows(
+  source: Extract<ActivitySource, { kind: "signal" }>,
+  now: Date,
+): readonly KeyValueRow[] {
+  return presentRows([
+    { label: "repository", value: source.repository },
+    {
+      label: "archived",
+      value: source.archived === null ? null : source.archived ? "yes (S3 fired)" : "no (S3 quiet)",
+    },
+    { label: "last push", value: source.lastPush ? dated(source.lastPush, now) : null },
+    { label: "fetched", value: <Unrecorded>not in this document</Unrecorded> },
+  ]);
+}
+
+/** "S4’s data", "S3’s and S4’s data". */
+function fromWords(ids: readonly string[]): string {
+  return `from ${ids.map((id) => `${id}’s`).join(" and ")} data`;
+}
+
 /**
  * "Provenance" (PD-RUN-5, DESIGN.md §5): where the panel's facts came from, as compact lines — the
- * package metadata (its date, releases listed, last stable) and, when the file carries it, the
- * repository activity from the forge. The strip's quiet S3/S4 cells point at the activity line.
+ * package metadata (its date, releases listed, last stable) and the repository activity from the
+ * forge, or the same facts as a fired S3/S4 carries them. A source the file gives nothing for says
+ * why (`domain/provenance.ts`) — never a bare dash. The strip's quiet S3/S4 cells point at the
+ * activity line.
  */
-function Provenance({
-  finding,
-  details,
-  now,
-}: {
-  finding: Finding;
-  details: PackageDetails | null;
-  now: Date;
-}) {
-  const activity = details?.activity ?? null;
-  return (
-    <div className="detail-prov">
-      <FactsLine source="Package metadata" rows={provenanceRows(finding, details?.metadata ?? null)} />
-      {activity !== null && (
+function Provenance({ finding, now }: { finding: Finding; now: Date }) {
+  const { model } = useReport();
+  const { metadata, activity } = provenance(model, finding);
+  // Both sources absent for one reason ("not from a Composer repository"): said once, not twice.
+  if (
+    metadata.kind === "missing" &&
+    activity.kind === "missing" &&
+    metadata.asOf === null &&
+    metadata.reason === activity.reason
+  ) {
+    return (
+      <div className="detail-prov">
         <FactsLine
           id={ACTIVITY_FACTS_ID}
-          source={activity.forge ?? "Repository activity"}
-          rows={activityRows(activity, now)}
+          source="Package metadata · repository activity"
+          rows={[]}
+          reason={metadata.reason}
         />
+      </div>
+    );
+  }
+  return (
+    <div className="detail-prov">
+      <FactsLine
+        source="Package metadata"
+        rows={metadataRows(metadata)}
+        reason={metadata.kind === "missing" ? metadata.reason : null}
+      />
+      {activity.kind === "read" && (
+        <FactsLine
+          id={ACTIVITY_FACTS_ID}
+          source={activity.activity.forge ?? "Repository activity"}
+          rows={activityRows(activity.activity, now)}
+        />
+      )}
+      {activity.kind === "signal" && (
+        <FactsLine
+          id={ACTIVITY_FACTS_ID}
+          source={activity.host ?? "Repository activity"}
+          from={fromWords(activity.from)}
+          rows={signalActivityRows(activity, now)}
+        />
+      )}
+      {activity.kind === "missing" && (
+        <FactsLine id={ACTIVITY_FACTS_ID} source="Repository activity" rows={[]} reason={activity.reason} />
       )}
     </div>
   );
 }
 
-/** "Provenance": always renders (critic.md C6 — `day()` never returns an empty string, so the
- *  `metadata` row alone guarantees it). */
-function provenanceRows(finding: Finding, metadata: ExplainMetadata | null): readonly KeyValueRow[] {
+/** The metadata line's facts: its date, releases listed and last stable when lockrot read it; only
+ *  the finding's own date (when it has one) when it did not. */
+function metadataRows(source: MetadataSource): readonly KeyValueRow[] {
+  const asOf = { label: "as of", value: source.asOf ? day(source.asOf) : null };
+  if (source.kind === "missing") return presentRows([asOf]);
+  const { metadata } = source;
   return presentRows([
-    { label: "as of", value: day(metadata?.dataDate ?? finding.dataDate) },
+    { ...asOf, value: asOf.value ?? <Unrecorded>undated</Unrecorded> },
     {
       label: "releases listed",
-      value: metadata && metadata.releasesListed !== null ? String(metadata.releasesListed) : null,
+      value: metadata.releasesListed !== null ? String(metadata.releasesListed) : null,
     },
     {
       label: "last stable",
-      value: metadata?.lastStableVersion
-        ? `${metadata.lastStableVersion} · ${day(metadata.lastStableRelease)}`
-        : null,
+      value: metadata.lastStableVersion ? (
+        metadata.lastStableRelease ? (
+          `${metadata.lastStableVersion} · ${day(metadata.lastStableRelease)}`
+        ) : (
+          <>
+            {metadata.lastStableVersion} · <Unrecorded>undated</Unrecorded>
+          </>
+        )
+      ) : null,
     },
   ]);
 }

@@ -5,7 +5,7 @@
  * `generated_at`.
  */
 
-import type { Model, PackageDetails, ReportModel } from "../model/types";
+import type { Finding, Model, PackageDetails, ReportModel } from "../model/types";
 import { yearsPhrase } from "./format";
 
 const MS_PER_HOUR = 3600 * 1000;
@@ -97,8 +97,8 @@ export function cacheNullReason(model: Model): string {
   const tally = activityTally(model.details);
   if (tally.total > 0 && tally.fromCache === 0) {
     return tally.total === 1
-      ? "none — the one in this file was fetched during the run"
-      : `none — all ${tally.total} in this file were fetched during the run`;
+      ? "none — the one repository answer in this file was fetched during the run"
+      : `none — all ${tally.total} repository answers in this file were fetched during the run`;
   }
   return NOT_RECORDED;
 }
@@ -150,4 +150,40 @@ export function thresholdGroups(thresholds: readonly (readonly [string, number])
   const others = thresholds.filter(([name]) => !paired.has(name));
   const highest = pairs.reduce((top, pair) => Math.max(top, pair.high, pair.warn), 0);
   return { pairs, others, max: Math.max(AXIS_FLOOR_YEARS, 2 * highest) };
+}
+
+/** The Findings axis' guides are one picture per (warn, high): pairs that share both numbers are
+ *  drawn once, their subjects listed together, in the order they first appear. */
+export function sameScalePairs(pairs: readonly ThresholdPair[]): readonly (readonly ThresholdPair[])[] {
+  const rows: ThresholdPair[][] = [];
+  for (const pair of pairs) {
+    const row = rows.find((group) => {
+      const [first] = group;
+      return first !== undefined && first.warn === pair.warn && first.high === pair.high;
+    });
+    if (row === undefined) rows.push([pair]);
+    else row.push(pair);
+  }
+  return rows;
+}
+
+function namesReplacementInWords(finding: Finding, details: ReadonlyMap<string, PackageDetails>): boolean {
+  const s1 = finding.signals.find((signal) => signal.id === "S1")?.data["replacement"];
+  const metadata = details.get(finding.package)?.metadata?.replacement ?? null;
+  return (typeof s1 === "string" && s1 !== "") || (metadata !== null && metadata !== "");
+}
+
+/**
+ * Abandoned findings that name a replacement only in words — S1's `replacement` or the metadata's
+ * free text set, `finding.replacement` (the package lockrot resolved) not. `abandoned.with_replacement`
+ * counts only the resolved ones, so Run data says these apart from it rather than let "0 of 21" read
+ * as a contradiction of a panel that quotes "Symfony".
+ */
+export function replacementInWordsOnly(model: Model): number {
+  return model.report.findings.filter(
+    (finding) =>
+      finding.verdict === "abandoned" &&
+      finding.replacement === null &&
+      namesReplacementInWords(finding, model.details),
+  ).length;
 }

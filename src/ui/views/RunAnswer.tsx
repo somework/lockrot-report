@@ -92,7 +92,14 @@ function howComplete(model: Model): ComponentChildren {
 function gate(model: Model): ComponentChildren {
   const failOn = model.report.run.failOn;
   if (failOn === null) return null;
-  if (failOn === "none") return " It ran with no gate (--fail-on=none).";
+  if (failOn === "none") {
+    return (
+      <>
+        {" "}
+        It ran with no gate (<code className="mono">--fail-on=none</code>).
+      </>
+    );
+  }
   return (
     <>
       {" "}
