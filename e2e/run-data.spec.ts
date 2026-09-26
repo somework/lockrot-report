@@ -32,8 +32,13 @@ test("wallabag: the run in one sentence, the thresholds as scales, axe-clean in 
   await expect(abandoned).toHaveText("0 of 21 · 1 more named in words only");
   for (const colorScheme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme });
-    const results = await new AxeBuilder({ page }).include(".run-sections").analyze();
-    expect(results.violations.map((v) => v.id)).toEqual([]);
+    // Polled: a theme switch starts 0.12s colour transitions (base.css, app.css), and under load
+    // axe sampled a colour mid-fade; a real violation stays and still fails the poll.
+    await expect
+      .poll(async () =>
+        (await new AxeBuilder({ page }).include(".run-sections").analyze()).violations.map((v) => v.id),
+      )
+      .toEqual([]);
   }
 });
 
@@ -73,11 +78,14 @@ test("a quiet S4 cell opens Provenance at the repository activity line, and keep
   expect(await report.hash()).toBe(hash);
   for (const colorScheme of ["light", "dark"] as const) {
     await page.emulateMedia({ colorScheme });
-    const results = await new AxeBuilder({ page })
-      .include(".detail-checks")
-      .include("#detail-provenance")
-      .analyze();
-    expect(results.violations.map((v) => v.id)).toEqual([]);
+    // Polled for the same theme-switch transitions as above.
+    await expect
+      .poll(async () =>
+        (
+          await new AxeBuilder({ page }).include(".detail-checks").include("#detail-provenance").analyze()
+        ).violations.map((v) => v.id),
+      )
+      .toEqual([]);
   }
 });
 
