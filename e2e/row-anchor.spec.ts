@@ -20,8 +20,8 @@ async function rowAt(page: Page, index: number): Promise<string> {
   return pkg;
 }
 
-/** The row's viewport top, and whether all of it is on screen. */
-async function place(page: Page, pkg: string): Promise<{ top: number; inView: boolean }> {
+/** The row's viewport top, whether all of it is on screen, and the room left below it. */
+async function place(page: Page, pkg: string): Promise<{ top: number; inView: boolean; clearance: number }> {
   return page.evaluate((name) => {
     const row = [...document.querySelectorAll(".frow")].find(
       (node) => node.getAttribute("data-pkg") === name,
@@ -29,7 +29,11 @@ async function place(page: Page, pkg: string): Promise<{ top: number; inView: bo
     if (row === undefined) throw new Error(`no row for ${name}`);
     const rect = row.getBoundingClientRect();
 
-    return { top: rect.top, inView: rect.top >= 0 && rect.bottom <= innerHeight };
+    return {
+      top: rect.top,
+      inView: rect.top >= 0 && rect.bottom <= innerHeight,
+      clearance: innerHeight - rect.bottom,
+    };
   }, pkg);
 }
 
@@ -130,15 +134,7 @@ test.describe("1440×900 keyboard and links", () => {
 
     // Polled: the last `j` opens the detail beside the list, and the rows it narrows can still be
     // settling for a frame or two after the row first reads as in view (seen in Firefox under load).
-    const clearance = () =>
-      page.evaluate((name) => {
-        const row = [...document.querySelectorAll(".frow")].find(
-          (node) => node.getAttribute("data-pkg") === name,
-        );
-        if (row === undefined) throw new Error(`no row for ${name}`);
-        return innerHeight - row.getBoundingClientRect().bottom;
-      }, pkg);
-    await expect.poll(clearance).toBeGreaterThan(20);
+    await expect.poll(async () => (await place(page, pkg)).clearance).toBeGreaterThan(20);
   });
 
   test("a #pkg= link scrolls its row into view on load, so Close hands focus to a row on screen", async ({
