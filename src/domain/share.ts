@@ -91,7 +91,8 @@ function capitalise(text: string): string {
 
 /**
  * Three lines of plain text a reader pastes into a chat or a ticket: what was checked and when, the
- * headline count by priority, then where the flagged packages sit, the advisories and libyears.
+ * headline count by priority ("by priority:" said, so the advisories after it never read as
+ * their severity), then where the flagged packages sit, the advisories and libyears.
  * Same words as the summary band; nothing the band does not show.
  */
 export function summaryText(facts: SummaryFacts): string {
@@ -108,7 +109,7 @@ export function summaryText(facts: SummaryFacts): string {
       ? "No packages in this lock."
       : n === 0
         ? `Nothing flagged in ${plural(facts.checked, "package", "packages")}.`
-        : `${String(n)} of ${plural(facts.checked, "package", "packages")} flagged (${sharePhrase(n, facts.checked)}): ${priorityCounts(facts.flagged)}.`;
+        : `${String(n)} of ${plural(facts.checked, "package", "packages")} flagged (${sharePhrase(n, facts.checked)}), by priority: ${priorityCounts(facts.flagged)}.`;
 
   const clauses = rollupClauses(scopeRollup(facts.flagged));
   const found = `${plural(facts.advisories, "security advisory", "security advisories")} on ${plural(facts.advisoryPackages, "package", "packages")}`;

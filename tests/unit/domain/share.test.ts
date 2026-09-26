@@ -95,7 +95,7 @@ describe("summaryText", () => {
     // Assert
     expect(lines).toEqual([
       "lockrot report for wallabag/wallabag · data as of 2026-09-24 · lockrot 0.11.0 · target PHP 8.4",
-      "3 of 271 packages flagged (1%): 1 critical, 1 high, 1 low.",
+      "3 of 271 packages flagged (1%), by priority: 1 critical, 1 high, 1 low.",
       "2 in production, 1 dev-only · 1 required directly, 2 pulled in · 2 security advisories on 1 package · 263.6 libyears behind.",
     ]);
   });

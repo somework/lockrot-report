@@ -115,16 +115,23 @@ test("under the rail's Direct filter every sentence says it counts matching pack
 }) => {
   await open(page, "view=radius&scope=direct");
 
+  // The answer says what the filter shows, not only what it does not: 12 rows below, 8 in the
+  // footnote.
   await expect(page.locator(".rl-answer")).toHaveText(
-    "No flagged package that matches the filter sits under any of the 29 direct requirements lockrot's exposure list names.",
+    "The filter matches 20 flagged direct requirements themselves, and nothing listed under any of them: 12 on lockrot's exposure list, below, and 8 it does not name, at the end.",
   );
   await expect(page.locator(".rl-scope")).toHaveText(
     "Only flagged packages that match the filter are counted. Without it, 49 sit under 17 of the 29 direct requirements lockrot's exposure list names.",
   );
-  // Nothing ranks, so the "flagged themselves" tail is the list, open, and says no "more".
-  const self = page.getByRole("button", { name: /^12 direct requirements match the filter themselves/ });
-  await expect(self).toHaveAttribute("aria-expanded", "true");
+  // Nothing ranks, so the "flagged themselves" tail is the list: a heading over rows always shown,
+  // not a fold, and it says no "more".
+  await expect(
+    page.getByRole("button", { name: /^12 direct requirements match the filter themselves/ }),
+  ).toHaveCount(0);
+  const self = page.locator("#rl-fold-self");
+  await expect(self).toContainText(/^12 direct requirements match the filter themselves/);
   await expect(self).toContainText("nothing listed under them does");
+  await expect(page.getByRole("list", { name: "Direct requirements flagged themselves" })).toBeVisible();
   // The tail's own head says its ages are each requirement's own, and a row listing nothing shows a
   // dash where the squares go, never a "0".
   await expect(page.locator(".rl-head.is-own")).toContainText("Its own years since release");
@@ -143,10 +150,14 @@ test("a search narrows the answer to what matches it", async ({ page }) => {
   await expect(page.locator(".rl-answer")).toHaveText(
     "Of the 29 direct requirements lockrot's exposure list names, only wallabag/rulerz has matching flagged packages under it: 14.",
   );
-  await page.getByRole("button", { name: /1 more matches the filter itself/ }).click();
+  // rulerz-bundle's name lacks "hoa": the tail head says the match is in its evidence, not itself.
+  await page.getByRole("button", { name: /^1 more matches “hoa” only in its own evidence/ }).click();
   const bundle = row(page, "wallabag/rulerz-bundle");
-  await expect(bundle).toContainText("The one flagged package listed under it does not match the filter.");
-  // Its name lacks "hoa": the row quotes the evidence the search found it in.
+  // Its 15 (lockrot's count, the one its evidence quotes) as 14 + 1, in one statement.
+  await expect(bundle).toContainText(
+    "Of the 15 flagged packages it pulls in, 14 that match are listed under wallabag/rulerz; the other one, listed under it, does not match.",
+  );
+  await expect(bundle).not.toContainText("Reaches 14 flagged packages");
   await expect(bundle.locator("mark")).toHaveText("hoa");
   await expect(bundle).toContainText("matched in:");
 });
@@ -176,6 +187,24 @@ test("beside an open package the squares stay in the requirement's column, off t
     expect(squares.x + squares.width).toBeLessThanOrEqual(axis.x);
     expect(age.x).toBeGreaterThanOrEqual(axis.x - 1);
   }
+});
+
+// The ranked list's sticky head ("Their years since release") stops where the ranked rows do, so
+// it never sits over the "flagged themselves" tail's own head ("Its own years since release").
+test("on a phone the tail's own column head never shares the top with the ranking's", async ({ page }) => {
+  await open(page, "view=radius", 390);
+  await page.getByRole("button", { name: /^5 more are flagged themselves/ }).click();
+  const own = page.locator(".rl-head.is-own");
+  const main = page.locator(".rl-ranked > .rl-head");
+  // Scroll the tail's first row to the top: its head is then stuck there.
+  await row(page, "scheb/2fa-backup-code").evaluate((el) => {
+    el.scrollIntoView({ block: "start" });
+  });
+  const ownBox = await own.boundingBox();
+  const mainBox = await main.boundingBox();
+  if (ownBox === null || mainBox === null) throw new Error("a head has no box");
+  expect(ownBox.y).toBeLessThan(40);
+  expect(mainBox.y + mainBox.height).toBeLessThanOrEqual(ownBox.y + 1);
 });
 
 test("on a phone the one-each rows start folded: no wall of rows", async ({ page }) => {

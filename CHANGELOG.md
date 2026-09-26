@@ -326,6 +326,23 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Fixed
 
+- Blast radius under a filter that ranks nothing: the answer says what the filter shows ("The
+  filter matches 20 flagged direct requirements themselves, and nothing listed under any of them: 12
+  on lockrot's exposure list, below, and 8 it does not name, at the end"), and that tail is a heading
+  over rows always shown, never a fold.
+- Blast radius under a search: a requirement found only through its evidence is said to be ("1 more
+  matches “hoa” only in its own evidence"), and its cell reads its counts as one statement ("Of the
+  15 flagged packages it pulls in, 14 that match are listed under wallabag/rulerz; the other one,
+  listed under it, does not match").
+- Blast radius on a phone: the ranking's sticky column head stops where the ranked rows do, so it
+  never sits over the "flagged themselves" tail's own head.
+- Blast radius colour: priority squares are a row's one loud colour; a verdict is a word in ink after
+  a small dot of its colour, an age tick is ink until it passes the 3y or 5y guide, then that guide's
+  colour, and the key names every colour left.
+- Printed Blast radius: one rule, not two, where the last ranked row meets a tail.
+- "Copy summary" says "by priority:" before the priority counts, and the band's advisory chips carry
+  a visible "By severity", so neither reads as the other.
+
 - In forced colours the selected tab is marked again: every tab used to wear the same underline.
 - A screen reader hears each tab as "Findings 69", not "Findings69"; the summary band's priority
   chips and advisory-severity chips are named groups, so its two "high" chips are told apart; the

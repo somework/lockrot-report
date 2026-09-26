@@ -480,6 +480,10 @@
 .ledger-quiet .legend-btn {
   padding: 2px 9px 2px 8px;
 }
+/* "By severity" before the advisory chips: they share the priority chips' words. */
+.advisory-chips {
+  align-items: center;
+}
 
 /* One square per advisory, never a full-width bar: two advisories look like two. */
 .advisory-squares {

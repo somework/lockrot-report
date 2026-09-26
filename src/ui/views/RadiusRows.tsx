@@ -46,17 +46,11 @@ function Chevron() {
   );
 }
 
-/** "+1 more it reaches, listed under symfony/security-bundle" — the row named is a button that
- *  jumps there and marks the packages it lists for this row. */
-function AlsoLine({ row, tabIndex, env }: { row: RadiusRow; tabIndex: -1 | undefined; env: RowEnv }) {
-  if (row.elsewhere.length === 0) return null;
-  const lead =
-    row.count > 0
-      ? `+${plural(row.elsewhere.length, "more it reaches", "more it reaches")}, listed under `
-      : `Reaches ${plural(row.elsewhere.length, "flagged package", "flagged packages")}, listed under `;
+/** The rows a row's "elsewhere" packages are listed under, each a button that jumps there and
+ *  marks the packages it lists for this row. */
+function ListingLinks({ row, tabIndex, env }: { row: RadiusRow; tabIndex: -1 | undefined; env: RowEnv }) {
   return (
-    <span className="rl-also">
-      {lead}
+    <>
       {joined(
         groupByListing(row.elsewhere).map(({ under, packages }) =>
           under === null ? (
@@ -77,6 +71,56 @@ function AlsoLine({ row, tabIndex, env }: { row: RadiusRow; tabIndex: -1 | undef
           ),
         ),
       )}
+    </>
+  );
+}
+
+/** "+1 more it reaches, listed under symfony/security-bundle". */
+function AlsoLine({ row, tabIndex, env }: { row: RadiusRow; tabIndex: -1 | undefined; env: RowEnv }) {
+  if (row.elsewhere.length === 0) return null;
+  const lead =
+    row.count > 0
+      ? `+${plural(row.elsewhere.length, "more it reaches", "more it reaches")}, listed under `
+      : `Reaches ${plural(row.elsewhere.length, "flagged package", "flagged packages")}, listed under `;
+  return (
+    <span className="rl-also">
+      {lead}
+      <ListingLinks row={row} tabIndex={tabIndex} env={env} />
+    </span>
+  );
+}
+
+/**
+ * A tail row the filter left nothing under, though it lists some and reaches others that do match,
+ * as one statement over lockrot's own count (`exposure[].flagged`, the number its evidence quotes):
+ * "Of the 15 flagged packages it pulls in, 14 that match are listed under wallabag/rulerz; the other
+ * one, listed under it, does not match." Only when the counts add up that way (`reachSplits`); else
+ * the row says the two facts apart.
+ */
+function reachSplits(row: RadiusRow): boolean {
+  return (
+    row.count === 0 &&
+    row.elsewhere.length > 0 &&
+    row.unfiltered > 0 &&
+    row.exposure - row.elsewhere.length >= row.unfiltered
+  );
+}
+
+function ReachSplit({ row, tabIndex, env }: { row: RadiusRow; tabIndex: -1 | undefined; env: RowEnv }) {
+  const matching = row.count + row.elsewhere.length;
+  const rest = row.exposure - matching;
+  const listed = row.unfiltered - row.count;
+  const restWords =
+    rest === listed
+      ? rest === 1
+        ? "the other one, listed under it, does not match"
+        : `the other ${String(rest)}, listed under it, do not match`
+      : `the other ${String(rest)} do not match, ${String(listed)} of them listed under it`;
+  return (
+    <span className="rl-quiet">
+      Of the {row.exposure} flagged packages it pulls in, {matching}{" "}
+      {matching === 1 ? "that matches is" : "that match are"} listed under{" "}
+      <ListingLinks row={row} tabIndex={tabIndex} env={env} />; {restWords}.
     </span>
   );
 }
@@ -127,6 +171,8 @@ export function ParentRow({ row, rank, expandable, open, env }: ParentProps) {
     dispatch({ type: "disclose", key: `row:${row.package}`, open: !open });
   };
   const flash = env.flash?.under === row.package ? env.flash.packages : [];
+  // Lists some, none of them matching, and reaches matching ones listed elsewhere: one statement.
+  const split = reachSplits(row);
 
   return (
     <li
@@ -164,7 +210,9 @@ export function ParentRow({ row, rank, expandable, open, env }: ParentProps) {
         </span>
         <Squares row={row} onToggle={canOpen ? toggle : null} />
         <span className="rr-say">
-          {row.count > 0 ? (
+          {split ? (
+            <ReachSplit row={row} tabIndex={inner} env={env} />
+          ) : row.count > 0 ? (
             <PullsSentence row={row} />
           ) : row.unfiltered > 0 ? (
             <span className="rl-quiet">
@@ -179,7 +227,7 @@ export function ParentRow({ row, rank, expandable, open, env }: ParentProps) {
           {row.count > 0 && row.unfiltered > row.count && (
             <span className="rl-also">{filteredOut(row.unfiltered - row.count)}</span>
           )}
-          <AlsoLine row={row} tabIndex={inner} env={env} />
+          {!split && <AlsoLine row={row} tabIndex={inner} env={env} />}
         </span>
         <AgeSpread
           findings={row.count > 0 ? row.pulled : row.self ? [row.self] : []}

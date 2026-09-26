@@ -48,9 +48,25 @@
   font-size: 12.5px;
   color: var(--ink);
 }
+/* A verdict: the word in ink, its colour only a small dot before it. A row's one loud colour is its
+   priority squares; a verdict in full colour beside them read as a second scale (the key names both). */
 .rl-vw {
-  color: var(--tone);
+  color: var(--ink);
   font-weight: 600;
+  white-space: nowrap;
+}
+.rl-vw::before,
+.rk .fc-verdict::before,
+.rr-pkg .tag::before,
+.rl-key-dot {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: var(--tone);
+  vertical-align: 0.14em;
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
@@ -88,6 +104,27 @@
 }
 .rl-key-item .rl-u:last-of-type {
   margin-right: 6px;
+}
+.rl-key-dot {
+  margin-right: 0;
+}
+.rl-key-dot:last-of-type,
+.rl-key-tick:last-of-type {
+  margin-right: 6px;
+}
+.rl-key-tick.is-context {
+  width: 1px;
+  background: color-mix(in srgb, var(--muted) 80%, var(--border-strong));
+}
+.rl-key-tick {
+  display: inline-block;
+  width: 2px;
+  height: 12px;
+  margin-right: 3px;
+  border-radius: 1px;
+  background: var(--tone);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
 }
 .rl-key-dash {
   margin-right: 5px;
@@ -265,6 +302,17 @@
 .rr-pkg .fc-dev {
   margin-left: 0;
 }
+/* "Pinned itself": the verdict in ink on a neutral chip, its colour the dot, as every verdict here. */
+.rr-pkg .tag {
+  color: var(--ink-2);
+  border-color: var(--border-strong);
+  background: transparent;
+}
+.rr-pkg .tag::before {
+  width: 5px;
+  height: 5px;
+  vertical-align: 0.1em;
+}
 
 /* The squares: one per flagged package, one size on every row, a gap every five. */
 .rl-sq {
@@ -403,6 +451,11 @@
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
+/* Under the warn guide: ink, no colour. Past a guide the tick takes its tone class, the guide's. */
+.rl-tick.is-under,
+.rl-key-tick.is-under {
+  background: color-mix(in srgb, var(--ink-2) 75%, transparent);
+}
 .rl-tick.is-context {
   width: 1px;
   margin-left: -0.5px;
@@ -529,6 +582,7 @@
 }
 .rk .fc-verdict {
   grid-area: verdict;
+  color: var(--ink-2);
 }
 .rk-why {
   grid-area: why;
@@ -595,6 +649,13 @@
 }
 .rl-fold-head:hover {
   background: var(--surface);
+}
+/* The tail that is the whole list: a heading, not a control. */
+.rl-fold-head.is-fixed {
+  cursor: auto;
+}
+.rl-fold-head.is-fixed:hover {
+  background: none;
 }
 .rl-fold-head:focus-visible {
   outline-offset: -2px;
@@ -868,7 +929,19 @@
   .rl-tick {
     background: CanvasText;
   }
-  .rl-tick.is-context {
+  /* The verdict's word carries it; its dot has no colour to show here. */
+  .rl-vw::before,
+  .rk .fc-verdict::before,
+  .rr-pkg .tag::before,
+  .rl-key-dot {
+    display: none;
+  }
+  .rl-key-tick {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+  .rl-tick.is-context,
+  .rl-key-tick.is-context {
     width: 2px;
     background: repeating-linear-gradient(0deg, CanvasText 0 2px, Canvas 2px 3px);
   }

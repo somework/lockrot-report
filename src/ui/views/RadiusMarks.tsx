@@ -47,7 +47,9 @@ export function joined(parts: readonly ComponentChildren[]): ComponentChildren {
   ));
 }
 
-/** A verdict word in its own tone, titled with its definition — the Findings row's verdict colour. */
+/** A verdict word in ink after a small dot in its own tone, titled with its definition: the dot is
+ *  the Findings row's verdict colour, kept small so the row's one loud colour is its priority
+ *  squares. */
 export function VerdictWord({ verdict }: { verdict: string }) {
   return (
     <span className={`rl-vw ${toneClass(TONE(verdict))}`} title={VERDICT_DEFS[verdict] ?? ""}>
@@ -141,6 +143,14 @@ function pct(value: number, max: number): string {
   return `${String(Math.min(100, Math.max(0, (value / max) * 100)))}%`;
 }
 
+/** A tick's look: grey for a context-only age, ink under the warn guide, and past a guide that
+ *  guide's own colour — so the age column adds no colour of its own to the row's priority squares
+ *  and verdict dots, only the two its guides already draw (the key says so). */
+function tickClass(tone: Tick["tone"]): string {
+  if (tone === "context") return "is-context";
+  return tone === "none" ? "is-under" : toneClass(tone);
+}
+
 interface Tick {
   readonly years: number;
   readonly tone: "context" | ReturnType<typeof ageZone>;
@@ -149,8 +159,9 @@ interface Tick {
 /**
  * The years since release of the packages a row lists, on the tab's one axis (the Findings axis,
  * `max(10, 2 × high)`): a whisker from the youngest to the oldest with end caps, and a tick at each
- * distinct age (to a tenth of a year) in its zone's tone — grey for an `abandoned` or `pinned`
- * package, whose age is context, not its reason (PD-ROWS-3). A single package is a tick alone.
+ * distinct age (to a tenth of a year): ink under the warn guide, the guide's colour past it, grey for
+ * an `abandoned` or `pinned` package, whose age is context, not its reason (PD-ROWS-3). A single
+ * package is a tick alone.
  */
 export function AgeSpread({
   findings,
@@ -237,9 +248,7 @@ export function AgeSpread({
         {[...byTenth.values()].map((tick) => (
           <span
             key={tick.years.toFixed(1)}
-            className={`rl-tick ${tick.tone === "context" ? "is-context" : toneClass(tick.tone)}${
-              tick.years > axis.max ? " is-over" : ""
-            }`}
+            className={`rl-tick ${tickClass(tick.tone)}${tick.years > axis.max ? " is-over" : ""}`}
             style={{ left: pct(tick.years, axis.max) }}
           />
         ))}

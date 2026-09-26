@@ -2,6 +2,8 @@ import type { ComponentChildren } from "preact";
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import type { Finding } from "../../model/types";
 import { applyFilters, population } from "../../domain/filters";
+import { freeTextTermsVerbatim, parseQuery } from "../../domain/query";
+import { searchHit } from "../../domain/searchHits";
 import { ageAxis } from "../../domain/age";
 import { plural } from "../../domain/format";
 import {
@@ -119,6 +121,75 @@ function AnswerSentence({ answer, id, narrowed }: { answer: Answer; id: string; 
   );
 }
 
+/**
+ * Where the flagged direct requirements are when none lists anything: "12 on lockrot's exposure
+ * list, below, and 8 it does not name, at the end" — the tail fold and the footnote, in that order.
+ */
+function whereWords(self: number, unlisted: number): ComponentChildren {
+  if (self > 0 && unlisted > 0) {
+    return (
+      <>
+        : <b>{self}</b> on lockrot's exposure list, below, and <b>{unlisted}</b> it does not name, at the end.
+      </>
+    );
+  }
+  if (self > 0)
+    return self > 1 ? (
+      <>; all are on lockrot's exposure list, below.</>
+    ) : (
+      <>; it is on lockrot's exposure list, below.</>
+    );
+  return unlisted > 1 ? (
+    <>; lockrot's exposure list names none of them, so they are at the end.</>
+  ) : (
+    <>; lockrot's exposure list does not name it, so it is at the end.</>
+  );
+}
+
+/**
+ * The answer when no row lists anything (a filter, or a lock whose flagged packages are all direct
+ * requirements): what there is instead, never only what there is not — "The filter matches 20
+ * flagged direct requirements themselves, and nothing listed under any of them: 12 on lockrot's
+ * exposure list, below, and 8 it does not name, at the end."
+ */
+function NoRankAnswer({ layout, id }: { layout: RadiusLayout; id: string }) {
+  const self = layout.selfOnly.length;
+  const unlisted = layout.unlisted.length;
+  const all = self + unlisted;
+  if (all === 0) {
+    return (
+      <p className="rl-answer" id={id}>
+        No flagged package{layout.narrowed ? " that matches the filter" : ""} sits under{" "}
+        <ExposureList n={layout.exposureCount} lead="any of" />.
+      </p>
+    );
+  }
+  const many = all > 1;
+  if (layout.narrowed) {
+    return (
+      <p className="rl-answer" id={id}>
+        The filter matches <b>{all}</b> flagged direct{" "}
+        {many ? "requirements themselves" : "requirement itself"}, and nothing listed under{" "}
+        {many ? "any of them" : "it"}
+        {whereWords(self, unlisted)}
+      </p>
+    );
+  }
+  return (
+    <p className="rl-answer" id={id}>
+      No flagged package sits under <ExposureList n={layout.exposureCount} lead="any of" />.{" "}
+      {many ? (
+        <>
+          The <b>{all}</b> flagged are direct requirements themselves
+        </>
+      ) : (
+        <>The one flagged package is a direct requirement itself</>
+      )}
+      {whereWords(self, unlisted)}
+    </p>
+  );
+}
+
 /** Under a filter, what the counts cover and what they are without it: "Only flagged packages that
  *  match the filter are counted. Without it, 49 sit under 17 of the 29 direct requirements
  *  lockrot's exposure list names." */
@@ -146,10 +217,22 @@ function ScopeNote({ layout }: { layout: RadiusLayout }) {
   );
 }
 
-/** The key under the answer: what a square is, what the hollow one is, and what a dash in the age
- *  column means. Short items, so a phone keeps it to two lines; "one square size on every row" is in
- *  each squares cell's title. */
-function Key({ squares, hollow }: { squares: boolean; hollow: boolean }) {
+/**
+ * The key under the answer: every colour and mark a row draws. The squares are the row's one loud
+ * colour, by priority as the summary band's waffle; a verdict keeps only a small dot of its own
+ * colour; an age tick is ink until it passes a guide, then takes that guide's colour; a dash in the
+ * age column means no age to draw. Short items, so a phone keeps it to a few lines; "one square size
+ * on every row" is in each squares cell's title.
+ */
+function Key({
+  squares,
+  hollow,
+  axis,
+}: {
+  squares: boolean;
+  hollow: boolean;
+  axis: ReturnType<typeof ageAxis>;
+}) {
   return (
     <p className="rl-key" aria-hidden="true">
       {squares && (
@@ -165,6 +248,25 @@ function Key({ squares, hollow }: { squares: boolean; hollow: boolean }) {
           <i className="rl-u is-else" />
           +N reached too, listed under another row
         </span>
+      )}
+      <span className="rl-key-item">
+        <i className="rl-key-dot tone-crit" />
+        <i className="rl-key-dot tone-med" />
+        verdict, its colour on Findings
+      </span>
+      {axis && (
+        <>
+          <span className="rl-key-item">
+            <i className="rl-key-tick is-under" />
+            <i className="rl-key-tick tone-med" />
+            <i className="rl-key-tick tone-crit" />
+            years; past {axis.warn}y or {axis.high}y, that guide's colour
+          </span>
+          <span className="rl-key-item">
+            <i className="rl-key-tick is-context" />
+            faint: abandoned or pinned, age only context
+          </span>
+        </>
       )}
       <span className="rl-key-item">
         <span className="rl-key-dash">–</span>
@@ -219,7 +321,11 @@ function Head({
   );
 }
 
-/** A fold's head: a button over its rows, its sentence the fold's whole summary. */
+/**
+ * A fold's head: a button over its rows, its sentence the fold's whole summary. `fixed` — a tail that
+ * is the whole list, nothing ranked above it — makes it a plain heading over rows always shown, never
+ * a fold that could hide what the answer sentence just counted.
+ */
 function FoldHead({
   id,
   controls,
@@ -228,6 +334,7 @@ function FoldHead({
   children,
   sub,
   onToggle,
+  fixed = false,
 }: {
   id: string;
   controls: string;
@@ -236,7 +343,24 @@ function FoldHead({
   children: ComponentChildren;
   sub?: ComponentChildren;
   onToggle: () => void;
+  fixed?: boolean;
 }) {
+  const body = (
+    <>
+      <span className="rl-fold-rank">{rank ?? ""}</span>
+      <span className="rl-fold-title">
+        {children}
+        {sub && <span className="rl-fold-sub">{sub}</span>}
+      </span>
+    </>
+  );
+  if (fixed) {
+    return (
+      <div id={id} className="rl-fold-head is-fixed">
+        {body}
+      </div>
+    );
+  }
   return (
     <button
       type="button"
@@ -246,11 +370,7 @@ function FoldHead({
       aria-controls={controls}
       onClick={onToggle}
     >
-      <span className="rl-fold-rank">{rank ?? ""}</span>
-      <span className="rl-fold-title">
-        {children}
-        {sub && <span className="rl-fold-sub">{sub}</span>}
-      </span>
+      {body}
       <span className="rl-fold-chev" aria-hidden="true">
         <svg viewBox="0 0 12 12" focusable="false">
           <path d="M4 2l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" />
@@ -441,22 +561,30 @@ function Unlisted({ findings }: { findings: readonly Finding[] }) {
 /**
  * The "flagged themselves" tail's head: "5 more are flagged themselves, all left-behind, with nothing
  * flagged listed under them." Under a filter that keeps what they list off the tab, what puts them
- * here is that they match it themselves: "1 more matches the filter itself (pinned); nothing listed
- * under it does."
+ * here is that they match it themselves — and where: "1 more matches “hoa” only in its own evidence
+ * (pinned); nothing listed under it matches the filter" when the search found the words only in what
+ * lockrot wrote about it (`domain/searchHits.ts`), not in its name, version or verdict.
  */
 function SelfTitle({
   lead,
-  many,
+  count,
   filtered,
   mix,
   only,
+  byEvidence,
+  query,
 }: {
   lead: string;
-  many: boolean;
+  count: number;
   filtered: boolean;
   mix: ReturnType<typeof verdictMix>;
   only: string | undefined;
+  /** How many of the tail's requirements the search found only in their evidence. */
+  byEvidence: number;
+  /** The search's free text as the reader typed it. */
+  query: string;
 }) {
+  const many = count > 1;
   const verdicts = only ? (
     <>
       {many ? "all " : ""}
@@ -465,19 +593,33 @@ function SelfTitle({
   ) : (
     <MixWords mix={mix} />
   );
+  const them = many ? "them" : "it";
+  if (filtered && byEvidence === count) {
+    return (
+      <>
+        <b>{lead}</b> {many ? "match" : "matches"} “{query}” only in {many ? "their" : "its"} own evidence (
+        {verdicts}); nothing listed under {them} matches the filter.
+      </>
+    );
+  }
   if (filtered) {
     return (
       <>
-        <b>{lead}</b> {many ? "match the filter themselves" : "matches the filter itself"} ({verdicts});
-        nothing listed under {many ? "them" : "it"} does.
+        <b>{lead}</b> {many ? "match the filter themselves" : "matches the filter itself"} ({verdicts})
+        {byEvidence > 0 && (
+          <>
+            , {byEvidence === 1 ? "one" : byEvidence} only in {byEvidence === 1 ? "its" : "their"} own
+            evidence
+          </>
+        )}
+        ; nothing listed under {them} does.
       </>
     );
   }
   return (
     <>
       <b>{lead}</b> {many ? "are flagged themselves" : "is flagged itself"}
-      {only ? <>, {verdicts}</> : <> ({verdicts})</>}, with nothing flagged listed under{" "}
-      {many ? "them" : "it"}.
+      {only ? <>, {verdicts}</> : <> ({verdicts})</>}, with nothing flagged listed under {them}.
     </>
   );
 }
@@ -542,6 +684,12 @@ export function RadiusView() {
     ? `${String(selfN)} more`
     : plural(selfN, "direct requirement", "direct requirements");
   const onlyVerdict = selfMix.length === 1 ? selfMix[0]?.verdict : undefined;
+  // Where the search found each tail requirement: "only in its own evidence" when no part a row
+  // shows holds the words (PD-SEARCH-1).
+  const terms = parseQuery(state.q);
+  const selfByEvidence = layout.selfOnly.filter(
+    (r) => r.self !== null && searchHit(r.self, terms)?.field === "evidence",
+  ).length;
   const ranked = (rows: readonly RadiusRow[], from: number) =>
     rows.map((row, i) => (
       <ParentRow
@@ -555,7 +703,7 @@ export function RadiusView() {
     ));
 
   const key = (more || selfOpen) && (
-    <Key squares={more} hollow={more && shown.some((r) => r.elsewhere.length > 0)} />
+    <Key squares={more} hollow={shown.some((r) => r.elsewhere.length > 0)} axis={axis} />
   );
   const head = more && <Head axis={axis} />;
   const list = layout.lead.length > 0 && (
@@ -563,74 +711,85 @@ export function RadiusView() {
       {ranked(layout.lead, 1)}
     </ul>
   );
+  const singlesFold = layout.singles.length > 0 && (
+    <div className="rl-fold is-singles">
+      <FoldHead
+        id="rl-fold-singles"
+        controls="rl-singles"
+        open={singlesOpen}
+        rank={`${String(layout.lead.length + 1)}–${String(layout.lead.length + layout.singles.length)}`}
+        onToggle={toggle(FOLD_SINGLES, singlesOpen)}
+      >
+        <b>{layout.singles.length} more</b> pull in one flagged package each:{" "}
+        <MixWords mix={verdictMix(layout.singles.flatMap((r) => r.pulled))} />
+      </FoldHead>
+      <ul
+        className="rl-list rl-fold-body"
+        id="rl-singles"
+        hidden={!singlesOpen}
+        aria-label="Direct requirements that pull in one flagged package each"
+      >
+        {ranked(layout.singles, layout.lead.length + 1)}
+      </ul>
+    </div>
+  );
 
   return (
     <div className={axis ? "rl" : "rl no-axis"} style={{ "--rl-sq": squaresWidth(shown) }}>
       {answer ? (
         <AnswerSentence answer={answer} id="rl-answer" narrowed={layout.narrowed} />
       ) : (
-        <p className="rl-answer" id="rl-answer">
-          No flagged package{layout.narrowed ? " that matches the filter" : ""} sits under{" "}
-          <ExposureList n={layout.exposureCount} lead="any of" />.
-        </p>
+        <NoRankAnswer layout={layout} id="rl-answer" />
       )}
       <ScopeNote layout={layout} />
       {more && <TailLinks layout={layout} go={go} />}
       {printed && list ? (
         // PD-PRINT-5: on paper the key and the column head are a table's head, which the print
         // engine repeats over every page the ranked rows run onto (print.css `.rl-ptable`).
-        <div className="rl-ptable">
-          <div className="rl-ptop">
-            {key}
-            {head}
+        <>
+          <div className="rl-ptable">
+            <div className="rl-ptop">
+              {key}
+              {head}
+            </div>
+            {list}
           </div>
-          {list}
-        </div>
+          {singlesFold}
+        </>
       ) : (
         <>
           {key}
-          {head}
-          {list}
+          {/* The ranked rows and their one-each fold in a box of their own, so the sticky column head
+              — "Their years since release" — stops where they do and never sits over the "flagged
+              themselves" tail's own head, "Its own years since release". */}
+          {more ? (
+            <div className="rl-ranked">
+              {head}
+              {list}
+              {singlesFold}
+            </div>
+          ) : null}
         </>
       )}
-      {layout.singles.length > 0 && (
-        <div className="rl-fold is-singles">
-          <FoldHead
-            id="rl-fold-singles"
-            controls="rl-singles"
-            open={singlesOpen}
-            rank={`${String(layout.lead.length + 1)}–${String(layout.lead.length + layout.singles.length)}`}
-            onToggle={toggle(FOLD_SINGLES, singlesOpen)}
-          >
-            <b>{layout.singles.length} more</b> pull in one flagged package each:{" "}
-            <MixWords mix={verdictMix(layout.singles.flatMap((r) => r.pulled))} />
-          </FoldHead>
-          <ul
-            className="rl-list rl-fold-body"
-            id="rl-singles"
-            hidden={!singlesOpen}
-            aria-label="Direct requirements that pull in one flagged package each"
-          >
-            {ranked(layout.singles, layout.lead.length + 1)}
-          </ul>
-        </div>
-      )}
       {layout.selfOnly.length > 0 && (
-        <div className="rl-fold is-tail">
+        <div className={more ? "rl-fold is-tail" : "rl-fold is-tail is-whole"}>
           <FoldHead
             id="rl-fold-self"
             controls="rl-self"
             open={selfOpen}
             rank={null}
+            fixed={!more}
             onToggle={toggle(FOLD_SELF, selfOpen)}
             sub={vendorWords(layout.selfOnly.flatMap((r) => (r.self ? [r.self] : [])))}
           >
             <SelfTitle
               lead={selfLead}
-              many={selfN > 1}
+              count={selfN}
               filtered={selfFiltered}
               mix={selfMix}
               only={onlyVerdict}
+              byEvidence={selfByEvidence}
+              query={freeTextTermsVerbatim(state.q).join(" ")}
             />
           </FoldHead>
           {axis && <Head axis={axis} own hidden={!selfOpen} />}

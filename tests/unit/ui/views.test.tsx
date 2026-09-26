@@ -1359,11 +1359,30 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
     // Act
     renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
 
-    // Assert: no ranked row above it, so no "more", and the tail is the list — open, under the head.
-    const head = screen.getByRole("button", { name: /^1 direct requirement is flagged itself/ });
-    expect(head.getAttribute("aria-expanded")).toBe("true");
+    // Assert: no ranked row above it, so no "more", and the tail is the list — shown under a heading
+    // that is not a fold, and the answer says where the one flagged package is.
+    expect(screen.queryByRole("button", { name: /^1 direct requirement is flagged itself/ })).toBeNull();
+    expect(document.getElementById("rl-fold-self")?.textContent).toMatch(
+      /^1 direct requirement is flagged itself/,
+    );
     expect(screen.getByRole("listitem", { name: "acme/lonely" })).toBeTruthy();
     expect(screen.queryByText(/Below the ranking/)).toBeNull();
+    expect(document.getElementById("rl-answer")?.textContent).toBe(
+      "No flagged package sits under the one direct requirement lockrot's exposure list names. The one flagged package is a direct requirement itself; it is on lockrot's exposure list, below.",
+    );
+  });
+
+  it("keeps the tail that is the whole list shown even after the reader shut it as a fold", () => {
+    // Arrange: the reader closed the tail while a ranking stood above it; a filter then left none.
+    const parent = makeFinding({ package: "acme/lonely", chain: ["acme/lonely"], verdict: "stale" });
+    const model = withExposure(flaggedModel([parent]), [{ package: "acme/lonely", flagged: 0 }]);
+
+    // Act
+    renderIn(model, stateWith({ view: "radius", disclosure: { "fold:self": false } }), <RadiusView />);
+
+    // Assert
+    const list = screen.getByRole("list", { name: "Direct requirements flagged themselves" });
+    expect(list.hidden).toBe(false);
   });
 
   it("scopes every sentence to the filter and keeps what the filter hides countable (PD-RADIUS-6)", () => {
@@ -1384,19 +1403,68 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
     renderIn(model, stateWith({ view: "radius", filters }), <RadiusView />);
 
     // Assert
-    expect(screen.getByText(/^No flagged package/).textContent).toBe(
-      "No flagged package that matches the filter sits under the one direct requirement lockrot's exposure list names.",
+    expect(document.getElementById("rl-answer")?.textContent).toBe(
+      "The filter matches 1 flagged direct requirement itself, and nothing listed under it; it is on lockrot's exposure list, below.",
     );
     expect(screen.getByText(/Only flagged packages that match the filter are counted/).textContent).toBe(
       "Only flagged packages that match the filter are counted. Without it, 2 sit under the one direct requirement lockrot's exposure list names.",
     );
     expect(screen.getByText("None of the 2 flagged packages listed under it match the filter.")).toBeTruthy();
     expect(screen.queryByText("Nothing flagged is listed under it.")).toBeNull();
+    expect(document.getElementById("rl-fold-self")?.textContent).toMatch(
+      /^1 direct requirement matches the filter itself \( ?pinned ?\); nothing listed under it does\./,
+    );
+  });
+
+  it("says a tail requirement matched the search only in its evidence, and its counts as one statement", () => {
+    // Arrange: wallabag's rulerz-bundle in small — it lists acme/bridge (no "hoa" anywhere), reaches
+    // two hoa/* packages listed under acme/rulerz, and "hoa" is in its own evidence only.
+    const bundle = makeFinding({
+      package: "acme/bundle",
+      direct: true,
+      chain: ["acme/bundle"],
+      verdict: "pinned",
+      evidence: "pulls in 3 flagged packages: hoa/compiler (abandoned)",
+    });
+    const rulerz = makeFinding({
+      package: "acme/rulerz",
+      direct: true,
+      chain: ["acme/rulerz"],
+      verdict: "pinned",
+    });
+    const hoa = (pkg: string) =>
+      child(pkg, "acme/rulerz", { verdict: "abandoned", directDependents: ["acme/rulerz", "acme/bundle"] });
+    const model = withExposure(
+      flaggedModel([
+        bundle,
+        rulerz,
+        child("acme/bridge", "acme/bundle", { verdict: "pinned" }),
+        hoa("hoa/a"),
+        hoa("hoa/b"),
+      ]),
+      [
+        { package: "acme/rulerz", flagged: 2 },
+        { package: "acme/bundle", flagged: 3 },
+      ],
+    );
+
+    // Act
+    renderIn(
+      model,
+      stateWith({ view: "radius", q: "hoa", disclosure: { "fold:self": true } }),
+      <RadiusView />,
+    );
+
+    // Assert: the tail head says where the match is; the cell reconciles 3 = 2 + 1 in one sentence.
     expect(
-      screen.getByRole("button", {
-        name: /^1 direct requirement matches the filter itself \( ?pinned ?\); nothing listed under it does\./,
-      }),
-    ).toBeTruthy();
+      screen.getByRole("button", { name: /^1 more matches “hoa” only in its own evidence/ }).textContent,
+    ).toMatch(/\( ?pinned ?\); nothing listed under it matches the filter\./);
+    const row = screen.getByRole("listitem", { name: "acme/bundle" });
+    expect(row.textContent).toContain(
+      "Of the 3 flagged packages it pulls in, 2 that match are listed under acme/rulerz; the other one, listed under it, does not match.",
+    );
+    expect(row.textContent).not.toContain("Reaches 2 flagged packages");
+    expect(row.textContent).not.toContain("does not match the filter.");
   });
 
   it("names no tag for a requirement that is not flagged", () => {
@@ -1474,7 +1542,11 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
     const model = withExposure(flaggedModel([bundle]), [{ package: "acme/bundle", flagged: 0 }]);
 
     // Act
-    renderIn(model, stateWith({ view: "radius", q: "hoa" }), <RadiusView />);
+    renderIn(
+      model,
+      stateWith({ view: "radius", q: "hoa", disclosure: { "fold:self": true } }),
+      <RadiusView />,
+    );
     const row = screen.getByRole("listitem", { name: "acme/bundle" });
 
     // Assert

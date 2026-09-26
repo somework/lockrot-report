@@ -429,11 +429,13 @@ function holds(rows: readonly RadiusRow[], pkg: string | null): boolean {
 }
 
 export function isFoldOpen(layout: RadiusLayout, key: string, input: OpenInput): boolean {
+  // With nothing ranked above it (a filter left no row listing anything), this tail is the list: it
+  // is always shown, whatever the reader did to the fold while there was a ranking above it.
+  if (key === FOLD_SELF && layout.ranked.length === 0) return true;
   const set = input.disclosure[key];
   if (set !== undefined) return set;
   if (key === FOLD_SINGLES) return !input.narrow || holds(layout.singles, input.pkg);
-  // With nothing ranked above it (a filter left no row listing anything), this tail is the list.
-  if (key === FOLD_SELF) return layout.ranked.length === 0 || holds(layout.selfOnly, input.pkg);
+  if (key === FOLD_SELF) return holds(layout.selfOnly, input.pkg);
   return layout.receipt.some((r) => r.finding.package === input.pkg);
 }
 

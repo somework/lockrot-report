@@ -287,7 +287,20 @@ test("the Blast radius tab on screen keeps its plain list: the print table is pa
 }) => {
   await report.gotoWithHash(FIXTURES.koel, "view=radius");
   await expect(page.locator("main .rl-ptable")).toHaveCount(0);
-  await expect(page.locator("main .rl > .rl-head")).toHaveCount(1);
+  await expect(page.locator("main .rl > .rl-ranked > .rl-head")).toHaveCount(1);
+});
+
+// One rule where the last ranked row meets the tail after it: the row's own line draws it, so the
+// tail's top rule (8px of air under it) would print as a double rule.
+test("the printed Blast radius draws one rule, not two, where its ranked rows meet a tail", async ({
+  page,
+}) => {
+  await report.gotoWithHash(FIXTURES.koel, "view=radius");
+  await page.emulateMedia({ media: "print" });
+  const tail = page.locator(".pd .rl-ptable + .rl-fold.is-tail");
+  await expect(tail).toHaveCount(1);
+  await expect(tail).toHaveCSS("border-top-width", "0px");
+  await expect(page.locator(".pd .rl-ptable .rr-line").last()).toHaveCSS("border-bottom-width", "1px");
 });
 
 // PD-PRINT-5: the axis that repeats on every printed page reads as a scale — "Reached" clear of its

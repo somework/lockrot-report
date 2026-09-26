@@ -539,6 +539,13 @@
   .pd .rl-fold.is-tail {
     margin-top: 8px;
   }
+  /* One rule where the rows meet a tail: a ranked row's line (or an open fold's last row) already
+   * draws one, so the tail's own top rule would sit a line of air under it as a double rule. Only a
+   * fold shut on paper ends with no rule, and the tail after it keeps its own. */
+  .pd .rl-ptable + .rl-fold.is-tail,
+  .pd .rl-fold:has(> .rl-fold-body:not([hidden])) + .rl-fold.is-tail {
+    border-top: 0;
+  }
   .pd .rl-foot {
     margin-top: 12px;
   }
