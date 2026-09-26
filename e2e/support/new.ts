@@ -6,7 +6,15 @@
  * not a licence to fall back to a CSS selector here — fix the markup, not this file.
  */
 import type { Locator, Page } from "@playwright/test";
-import type { DetailSnapshot, LedgerGroup, RailGroup, ReportPage, SortState, ViewName } from "./report";
+import type {
+  DetailSnapshot,
+  LedgerGroup,
+  RailGroup,
+  ReportPage,
+  RowGeometry,
+  SortState,
+  ViewName,
+} from "./report";
 import { pageUrl, type FixtureName } from "./pages";
 import { decodePng, distinctPixelRatio } from "./png";
 
@@ -198,6 +206,23 @@ export class NewReportPage implements ReportPage {
 
   async clickPackage(name: string): Promise<void> {
     await this.pkgLocator(name).click();
+  }
+
+  async rowGeometry(name: string): Promise<RowGeometry> {
+    return this.pkgLocator(name).evaluate((row) => {
+      const rect = row.getBoundingClientRect();
+      return {
+        top: rect.top,
+        inView: rect.top >= 0 && rect.bottom <= innerHeight,
+        clearance: innerHeight - rect.bottom,
+      };
+    });
+  }
+
+  async centerRow(name: string): Promise<void> {
+    await this.pkgLocator(name).evaluate((row) => {
+      row.scrollIntoView({ block: "center" });
+    });
   }
 
   async openPackage(name: string): Promise<void> {
@@ -707,13 +732,23 @@ export class NewReportPage implements ReportPage {
   }
 
   async listedPackageCount(): Promise<number> {
-    // The same candidates `rows()` reads, counted in one page call: a per-row locator round trip
-    // over wallabag's 271 packages, once per rail row, would take minutes. `getByRole` (what
-    // `rows()` uses) skips what is not rendered or is hidden from the accessibility tree, so this
-    // does too: folded Blast radius rows, the closed glossary and the print-only copy would
-    // otherwise add a constant the rail never counts (CodeRabbit on #6).
+    return new Set(await this.renderedRowNames()).size;
+  }
+
+  async rowNameAt(index: number): Promise<string | null> {
+    return (await this.renderedRowNames())[index] ?? null;
+  }
+
+  /**
+   * The names `rows()` reads, in document order, collected in one page call: a per-row locator
+   * round trip over wallabag's 271 packages, once per rail row, would take minutes. `getByRole`
+   * (what `rows()` uses) skips what is not rendered or is hidden from the accessibility tree, so
+   * this does too: folded Blast radius rows, the closed glossary and the print-only copy would
+   * otherwise add rows the list never shows (CodeRabbit on #6).
+   */
+  private renderedRowNames(): Promise<string[]> {
     return this.page.evaluate(() => {
-      const names = new Set<string>();
+      const names: string[] = [];
       const implicit: Record<string, string> = { TR: "row", LI: "listitem" };
       for (const el of document.querySelectorAll<HTMLElement>(
         '[role="row"], [role="option"], [role="listitem"], tr, li',
@@ -725,9 +760,9 @@ export class NewReportPage implements ReportPage {
         if (!["row", "option", "listitem"].includes(role)) continue;
         if (el.querySelector('[role="columnheader"], th')) continue;
         const name = el.getAttribute("data-pkg") ?? el.getAttribute("aria-label") ?? el.textContent;
-        if (name) names.add(name.trim());
+        if (name) names.push(name.trim());
       }
-      return names.size;
+      return names;
     });
   }
 

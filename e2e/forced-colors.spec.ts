@@ -165,10 +165,13 @@ test.describe("PD-SUMMARY-7: a verdict bar keeps its marks, not a frame, in forc
       await report.goto(FIXTURES.wallabag);
       await page.emulateMedia({ colorScheme, forcedColors: "active" });
 
-      expect(await report.verdictBarForcedColors("left-behind")).toEqual({
-        partFilled: true,
-        rowFramed: false,
-      });
+      // Polled: under load Firefox can read styles before the forced palette has been applied.
+      await expect
+        .poll(() => report.verdictBarForcedColors("left-behind"))
+        .toEqual({
+          partFilled: true,
+          rowFramed: false,
+        });
     });
   }
 });
@@ -181,7 +184,9 @@ test.describe("PD-SUMMARY-6: the summary band's waffle stays readable in forced-
       await report.goto(FIXTURES.wallabag);
       await page.emulateMedia({ colorScheme, forcedColors: "active" });
 
-      expect(await report.summaryWaffleForcedColors()).toEqual({ flaggedDistinct: true, restOutlined: true });
+      await expect
+        .poll(() => report.summaryWaffleForcedColors())
+        .toEqual({ flaggedDistinct: true, restOutlined: true });
     });
   }
 });

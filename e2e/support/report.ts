@@ -46,6 +46,12 @@ export interface SortState {
  * only in accessible terms: a `ViewName`, a filter group's key, a package name, never a CSS class
  * or an id.
  */
+export interface RowGeometry {
+  top: number;
+  inView: boolean;
+  clearance: number;
+}
+
 export interface ReportPage {
   /** Loads one fixture bundle's built page, hash-less. */
   goto(fixture: FixtureName): Promise<void>;
@@ -82,6 +88,11 @@ export interface ReportPage {
   /** A single click on the row/card/button that represents this package. Every list's row opens
    *  its package and never closes it (PD-ROWS-7); a `data-open` button always opens. */
   clickPackage(name: string): Promise<void>;
+  /** The package's row box in the viewport: its top, whether all of it is on screen, and the room
+   *  left below it (PD-ROWS-10/11 read the page's own geometry through this). */
+  rowGeometry(name: string): Promise<RowGeometry>;
+  /** Scrolls the package's row to the middle of the viewport, the way a reader's own scroll would. */
+  centerRow(name: string): Promise<void>;
   /** Ensures the detail pane ends up open on this package. */
   openPackage(name: string): Promise<void>;
   closeDetail(): Promise<void>;
@@ -226,6 +237,8 @@ export interface ReportPage {
   toggleRailRowAt(index: number): Promise<void>;
   /** Clicks the rail button `railRows()` reported as `label` (PD-RAIL-2: rows come and go). */
   toggleRailRow(label: string): Promise<void>;
+  /** The name `rows()` would give at `index`, read in one page call; null past the end. */
+  rowNameAt(index: number): Promise<string | null>;
   /** How many different packages the current view's rows name — `rows()` without duplicates. */
   listedPackageCount(): Promise<number>;
 

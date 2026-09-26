@@ -43,8 +43,9 @@ async function seriousViolations(page: Page): Promise<string[]> {
 
 test.describe("axe: no serious or critical violations", () => {
   // An axe pass over wallabag's 271-row pages takes 30-40s when the whole suite shares the machine,
-  // past the 30s default; the budget is for load, not for a slow page.
-  test.describe.configure({ timeout: 90_000 });
+  // and over two minutes in Firefox or WebKit with all three browsers running at once; the budget
+  // is for load, not for a slow page.
+  test.describe.configure({ timeout: 180_000 });
   test.use({ viewport: { width: 1440, height: 900 } });
 
   for (const fixture of AXE_FIXTURES) {
