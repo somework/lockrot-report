@@ -440,6 +440,17 @@ function FiredRow({ signal, pkg }: { signal: Signal; pkg: string }) {
   );
 }
 
+/**
+ * The line in place of the fired list when no signal fired. Legacy said the verdict came from what
+ * lockrot could not learn, which holds for `unknown` only: an `ok` package ran every check and an
+ * allowlisted `finished` one is vouched for by the allowlist, not by missing data.
+ */
+function noSignalLine(verdict: string): string {
+  if (verdict === "ok") return "No signal fired: every check ran and found nothing.";
+  if (verdict === "finished") return "No signal fired. The verdict comes from the allowlist.";
+  return "No signal fired. The verdict comes from what lockrot could not learn.";
+}
+
 function cellsIn(cells: readonly CheckCell[], state: CheckState): readonly CheckCell[] {
   return cells.filter((cell) => cell.state === state);
 }
@@ -515,9 +526,7 @@ export function SignalList({ finding }: { finding: Finding }) {
         />
       )}
       {strip.fired.length === 0 ? (
-        <p className="detail-signal-empty">
-          No signal fired. The verdict comes from what lockrot could not learn.
-        </p>
+        <p className="detail-signal-empty">{noSignalLine(finding.verdict)}</p>
       ) : (
         <div className="detail-fired-list">
           {strip.fired.map((signal) => (

@@ -450,6 +450,45 @@ describe("Detail", () => {
         screen.getByText("No signal fired. The verdict comes from what lockrot could not learn."),
       ).toBeTruthy();
     });
+
+    it("says an ok package's checks all ran, and a finished one's verdict comes from the allowlist", () => {
+      const quiet = (pkg: string, verdict: string) => ({
+        package: pkg,
+        version: "1.0.0",
+        verdict,
+        priority: "none",
+        direct: true,
+        dev: false,
+        signals: [],
+        chain: [],
+        evidence: "",
+      });
+      const result = normalize({
+        report: {
+          lockrot: { version: "0.13.0", schema: 1 },
+          generated_at: "2026-01-01T00:00:00Z",
+          findings: [
+            quiet("vendor/fine", "ok"),
+            { ...quiet("vendor/done", "finished"), allowlist_reason: "complete by design" },
+          ],
+        },
+      });
+      if (!result.ok) throw new Error("fixture failed to normalize");
+      const { model } = result;
+
+      const ok = renderDetail(model, "vendor/fine");
+      expect(screen.getByText("No signal fired: every check ran and found nothing.")).toBeTruthy();
+      expect(screen.queryByText(/could not learn/)).toBeNull();
+      ok.unmount();
+
+      renderDetail(model, "vendor/done");
+      expect(screen.getByText("No signal fired. The verdict comes from the allowlist.")).toBeTruthy();
+      expect(
+        screen.getByText("On the allowlist as finished, so it is not flagged: complete by design.", {
+          exact: false,
+        }),
+      ).toBeTruthy();
+    });
   });
 
   describe("checks (PD-DETAIL-12)", () => {

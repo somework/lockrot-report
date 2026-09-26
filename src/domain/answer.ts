@@ -129,8 +129,12 @@ function verdictClause(finding: Finding, thresholds: Thresholds): AnswerPart[] {
       if (s2 !== null) return [text("Stale: its last release was "), age(s2, release, false), text(" ago.")];
       if (s4 !== null) return [text("Stale: its last push was "), age(s4, push, false), text(" ago.")];
       return [text("Stale.")];
-    case "finished":
-      return [text("On the allowlist as finished, so it is not flagged.")];
+    case "finished": {
+      // lockrot's allowlist entry says why the package is complete by design; the page quotes it.
+      const reason = finding.allowlistReason?.trim().replace(/\.$/, "") ?? "";
+      if (reason === "") return [text("On the allowlist as finished, so it is not flagged.")];
+      return [text(`On the allowlist as finished, so it is not flagged: ${reason}.`)];
+    }
     case "ok":
       return [text("Nothing flagged it.")];
     case "unknown":
