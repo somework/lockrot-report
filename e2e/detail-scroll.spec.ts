@@ -18,6 +18,8 @@ const OTHER_PACKAGE = "sensio/framework-extra-bundle";
 /** fixtures/bundles/koel_koel.json's own tallest detail (PD-DETAIL-5): 21 release branches, one
  *  timeline lane apiece — far more than `spomky-labs/otphp`'s own two advisories give the panel. */
 const KOEL_LONG_PACKAGE = "meilisearch/meilisearch-php";
+/** Longer than Firefox's wheel transaction (`mousewheel.transaction.timeout`, 1500ms by default). */
+const WHEEL_TRANSACTION_MS = 1600;
 
 const BREAKPOINTS = [
   { label: "1440×900 (side)", width: 1440, height: 900 },
@@ -184,11 +186,18 @@ test.describe("1440×900 (side): every part of the detail is reachable by wheel 
       // clips the heading again — a reader keeps wheeling there, so the gesture goes on for another
       // round instead of reading that settled-but-clipped moment as the end (PD-SUMMARY-6's taller
       // band put koel_koel's page exactly on that edge).
+      //
+      // Between rounds the pause outlasts Firefox's wheel transaction (`mousewheel.transaction.timeout`,
+      // 1500ms): ticks closer together than that keep going to the box the first one scrolled. Once
+      // the leftover delta has chained into the page, every later tick of the gesture went to the
+      // page — already at its end — while the pointer sat over a panel with room left, so Provenance
+      // never came into view (seen in CI: the page at its bottom, the panel at Release branches). A
+      // reader pauses and wheels again; after the pause the wheel scrolls what is under the pointer.
       for (let round = 0; round < 3; round++) {
         for (let i = 0; i < 25 && !(await inViewport()); i++) {
           await page.mouse.wheel(0, 400);
         }
-        await page.waitForTimeout(250);
+        await page.waitForTimeout(WHEEL_TRANSACTION_MS);
         if (await inViewport()) break;
       }
 
