@@ -30,6 +30,14 @@ export function tabCounts(model: Model): Readonly<Record<View, string>> {
   };
 }
 
+/** A tab's accessible name: its label and its badge as separate words, and PD-ADV-7's mark in words
+ *  ("Advisories 6, check incomplete"); a tab with no badge is its label alone. */
+export function tabName(label: string, count: string, checkIncomplete: boolean): string {
+  const name = count === "" ? label : `${label} ${count}`;
+
+  return checkIncomplete ? `${name}, check incomplete` : name;
+}
+
 export function tabId(idBase: string, view: View): string {
   return `${idBase}-tab-${view}`;
 }
@@ -207,6 +215,7 @@ export function Tabs({ idBase, panelId }: { idBase: string; panelId: string }) {
       <nav ref={scroller} className="tabs" role="tablist" aria-label="Report views">
         {TABS.map(({ view, label }, index) => {
           const selected = state.view === view;
+          const flagged = view === "advisories" && partial;
           return (
             <button
               key={view}
@@ -219,6 +228,9 @@ export function Tabs({ idBase, panelId }: { idBase: string; panelId: string }) {
               role="tab"
               aria-selected={selected ? "true" : "false"}
               aria-controls={panelId}
+              // The label and its count are two inline runs with no space between them, so the name
+              // computed from content ran them together ("Findings69", "All packages271").
+              aria-label={tabName(label, counts[view], flagged)}
               tabIndex={selected ? 0 : -1}
               // Even the current tab dispatches: a click on it closes the open detail, as on the
               // legacy page.
@@ -231,11 +243,7 @@ export function Tabs({ idBase, panelId }: { idBase: string; panelId: string }) {
             >
               {label}
               <span className="n">{counts[view]}</span>
-              {view === "advisories" && partial && (
-                <span className="tab-flag" title="advisory check incomplete">
-                  <span className="tab-flag-sr">, check incomplete</span>
-                </span>
-              )}
+              {flagged && <span className="tab-flag" title="advisory check incomplete" />}
             </button>
           );
         })}

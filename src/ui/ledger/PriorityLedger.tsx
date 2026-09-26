@@ -105,7 +105,7 @@ export function PriorityLedger() {
         {!clean && <ScopeLine clauses={rollupClauses(scopeRollup(flagged))} />}
         {/* No chips for an empty lock: four disabled "0" filters there had nothing to filter. */}
         {!empty && (
-          <div className="legend lead-chips">
+          <div className="legend lead-chips" role="group" aria-label="Priority">
             {shown.map((p) => (
               <LegendButton
                 key={p}

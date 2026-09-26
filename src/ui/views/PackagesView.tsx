@@ -381,7 +381,7 @@ function PackagesTable({
         ? { tabIndex: 0, role: "region", "aria-label": "All packages table, scrolls sideways" }
         : {})}
     >
-      <table className="pk-table" role="table">
+      <table className="pk-table" role="table" aria-label="All packages">
         <thead role="rowgroup">
           <tr role="row">
             {columns.map((column) => {
@@ -414,7 +414,8 @@ function PackagesTable({
                     }}
                   >
                     {column.label}
-                    {arrow}
+                    {/* The header's `aria-sort` says the order; the arrow is for the eye. */}
+                    <span aria-hidden="true">{arrow}</span>
                   </button>
                   {column.key === "libyears" && max !== null && <LibyearsAxis max={max} />}
                   {column.key === "signals" && <SignalsAxis />}

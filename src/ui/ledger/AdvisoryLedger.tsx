@@ -93,7 +93,9 @@ export function AdvisoryLedger() {
           />
         ))}
       </div>
-      <div className="legend">
+      {/* A group, so "high 1" here and the priority chips' "high 38" above are told apart by more
+          than their counts. */}
+      <div className="legend" role="group" aria-label="Advisory severity">
         {shown.map((sev) => (
           <LegendButton
             key={sev}

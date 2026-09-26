@@ -373,17 +373,21 @@
   border-radius: 50%;
   vertical-align: 1px;
 }
-.tab-flag-sr {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
 @media (forced-colors: active) {
   .tab-flag {
     border-color: CanvasText;
+  }
+  /* Forced colours repaint the unselected tabs' transparent underline in the text colour, so every
+     tab wore the selected one's rule and none read as current: the idle ones get the page's own
+     colour and the selected one the system highlight. */
+  .tab {
+    border-bottom-color: Canvas;
+  }
+  .tab:hover {
+    border-bottom-color: CanvasText;
+  }
+  .tab[aria-selected="true"] {
+    border-bottom-color: Highlight;
   }
 }
 

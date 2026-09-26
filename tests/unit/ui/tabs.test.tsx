@@ -6,7 +6,7 @@ import { normalize } from "../../../src/model/normalize";
 import type { Model } from "../../../src/model/types";
 import { INITIAL_STATE, type State } from "../../../src/state/types";
 import { ReportContext } from "../../../src/ui/context";
-import { Tabs } from "../../../src/ui/Tabs";
+import { tabName, Tabs } from "../../../src/ui/Tabs";
 
 afterEach(cleanup);
 
@@ -41,8 +41,23 @@ describe("the Advisories tab's count from an incomplete check (PD-ADV-7)", () =>
   it("carries a mark, named in the tab's own name", () => {
     renderTabs(INITIAL_STATE, "mini-advisories-partial.json");
     const tab = screen.getByRole("tab", { name: /^Advisories/ });
-    expect(tab.textContent).toBe("Advisories6, check incomplete");
+    expect(tab.getAttribute("aria-label")).toBe("Advisories 6, check incomplete");
     expect(tab.querySelector(".tab-flag")?.getAttribute("title")).toBe("advisory check incomplete");
+  });
+});
+
+describe("tab names (cross-cutting a11y sweep)", () => {
+  it("say the label and its count as two words, not run together", () => {
+    renderTabs();
+    const names = screen.getAllByRole("tab").map((tab) => tab.getAttribute("aria-label"));
+    expect(names.every((name) => name !== null && !/[a-z]\d/.test(name))).toBe(true);
+    expect(names[0]).toMatch(/^Findings \d+$/);
+  });
+
+  it("tabName: a tab with no badge is its label alone", () => {
+    expect(tabName("Run data", "", false)).toBe("Run data");
+    expect(tabName("All packages", "271", false)).toBe("All packages 271");
+    expect(tabName("Advisories", "0", true)).toBe("Advisories 0, check incomplete");
   });
 
   it("carries none when the run reports a complete check", () => {

@@ -326,6 +326,10 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Fixed
 
+- In forced colours the selected tab is marked again: every tab used to wear the same underline.
+- A screen reader hears each tab as "Findings 69", not "Findings69"; the summary band's priority
+  chips and advisory-severity chips are named groups, so its two "high" chips are told apart; the
+  All packages table has a name, and its sorted column's button no longer reads its arrow aloud.
 - A table wider than its frame is a named region in the tab order, so the keyboard can scroll it;
   the key's "hover for why" sits on the last mark's line, says "it" when there is only one mark,
   and is left off a phone.
