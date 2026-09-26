@@ -65,6 +65,19 @@ test.describe("Escape priority chain", () => {
   });
 });
 
+test.describe("focusedRowName() names a row the way rows() does", () => {
+  // CodeRabbit on #6: an Advisories row's accessible name is "package, severity, id", while
+  // `rows()` reads its `data-pkg`; the two helpers must agree for any spec that compares them.
+  test("an Advisories row is named by its package", async () => {
+    await report.goto(FIXTURES.wallabag);
+    await report.tab("advisories");
+    const first = (await report.rows())[0];
+    if (first === undefined) throw new Error("wallabag's Advisories tab lists no row");
+    await report.focusRow(first);
+    expect(await report.focusedRowName()).toBe(first);
+  });
+});
+
 test.describe("j / k walk the visible list and open each package", () => {
   test("j moves forward, k moves back, both open the detail", async () => {
     await report.tab("packages"); // nothing open, so j starts at the first row

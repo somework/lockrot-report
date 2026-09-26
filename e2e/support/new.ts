@@ -371,7 +371,11 @@ export class NewReportPage implements ReportPage {
       // A Findings row is a plain `<li>` and a Packages row a `<tr>`: their roles are implicit.
       const role = active.getAttribute("role") ?? { LI: "listitem", TR: "row" }[active.tagName];
       if (role === "row" || role === "option" || role === "listitem") {
-        return active.getAttribute("aria-label") ?? active.textContent.trim();
+        // The same name `rows()` reads: an Advisories row's accessible name adds its severity and
+        // id ("spomky-labs/otphp, high, PKSA-…"), its `data-pkg` is the package alone.
+        return (
+          active.getAttribute("data-pkg") ?? active.getAttribute("aria-label") ?? active.textContent.trim()
+        );
       }
 
       return null;
