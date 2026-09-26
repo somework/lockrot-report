@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { applyFilters, population, railGroups } from "../../../src/domain/filters";
+import {
+  activeFilters,
+  applyFilters,
+  hiddenByFilters,
+  population,
+  railGroups,
+} from "../../../src/domain/filters";
 import { EMPTY_FILTERS, INITIAL_STATE } from "../../../src/state/types";
 import type { Filters, State } from "../../../src/state/types";
 import type { Finding, Model } from "../../../src/model/types";
@@ -286,26 +292,40 @@ describe("railGroups / since", () => {
 
     // Assert
     expect(since?.title).toBe("Since baseline.json");
-    expect(since?.rows).toEqual([
-      { key: "new", label: "New", count: 0, on: false },
-      { key: "worsened", label: "Worsened", count: 0, on: false },
-      { key: "known", label: "Already accepted", count: 1, on: false },
-    ]);
+    // PD-RAIL-2: New and Worsened would list nothing, so they are left out.
+    expect(since?.rows).toEqual([{ key: "known", label: "Already accepted", count: 1, on: false }]);
   });
 });
 
 describe("railGroups / scope", () => {
-  it("always renders all four rows, even at zero count", () => {
-    // Arrange
-    const model = modelWith([]);
+  it("leaves out a row that would list nothing, and the whole group once none is left (PD-RAIL-2)", () => {
+    // Arrange: one flagged package, direct and in production — Transitive and require-dev list nothing.
+    const one = modelWith([makeFinding({ verdict: "abandoned", direct: true, dev: false })]);
 
     // Act
-    const groups = railGroups(model, stateWith({ view: "findings" }));
-    const scope = groups.find((g) => g.group === "scope");
+    const scope = railGroups(one, stateWith({ view: "findings" })).find((g) => g.group === "scope");
+    const none = railGroups(modelWith([]), stateWith({ view: "findings" }));
 
     // Assert
-    expect(scope?.rows.map((r) => r.key)).toEqual(["direct", "transitive", "prod", "dev"]);
-    expect(scope?.rows.every((r) => r.count === 0)).toBe(true);
+    expect(scope?.rows.map((r) => r.key)).toEqual(["direct", "prod"]);
+    expect(none.find((g) => g.group === "scope")).toBeUndefined();
+  });
+
+  it("keeps a selected row even when it lists nothing, so it can be turned off", () => {
+    // Arrange: Transitive is on, and the only package is direct.
+    const model = modelWith([makeFinding({ verdict: "abandoned", direct: true })]);
+    const state = stateWith({ view: "findings", filters: withFilters({ scope: ["transitive"] }) });
+
+    // Act
+    const scope = railGroups(model, state).find((g) => g.group === "scope");
+
+    // Assert
+    expect(scope?.rows.find((r) => r.key === "transitive")).toEqual({
+      key: "transitive",
+      label: "Transitive",
+      count: 0,
+      on: true,
+    });
   });
 
   it("reflects the state's current selection through `on`", () => {
@@ -384,5 +404,170 @@ describe("railGroups / fix", () => {
 
     // Assert: "move" never occurred, so it is dropped entirely, not shown at zero.
     expect(fix?.rows.map((r) => r.key)).toEqual(["branch", "none"]);
+  });
+});
+
+describe("railGroups counts packages, the unit the rail filters in (PD-RAIL-1)", () => {
+  it("counts a package once per fix shape, however many advisories of that shape it carries", () => {
+    // Arrange: spomky-labs/otphp's shape in wallabag — two advisories, both fixed only on another
+    // branch — beside a package with one advisory of each of the other two shapes.
+    const twoMoves = makeFinding({
+      package: "acme/moves",
+      verdict: "abandoned",
+      advisories: [
+        makeAdvisory({ id: "GHSA-1", fixedBy: "3.0.0", fixedOnBranch: false }),
+        makeAdvisory({ id: "GHSA-2", fixedBy: "3.1.0", fixedOnBranch: false }),
+      ],
+    });
+    const mixed = makeFinding({
+      package: "acme/mixed",
+      verdict: "abandoned",
+      advisories: [
+        makeAdvisory({ id: "GHSA-3", fixedBy: "1.0.1", fixedOnBranch: true }),
+        makeAdvisory({ id: "GHSA-4", fixedBy: null }),
+      ],
+    });
+    const model = modelWith([twoMoves, mixed]);
+
+    // Act
+    const fix = railGroups(model, stateWith({ view: "findings" })).find((g) => g.group === "fix");
+
+    // Assert: one package under each shape, as selecting each lists one package.
+    expect(fix?.rows.map((r) => [r.key, r.count])).toEqual([
+      ["branch", 1],
+      ["move", 1],
+      ["none", 1],
+    ]);
+    for (const row of fix?.rows ?? []) {
+      const state = stateWith({ view: "findings", filters: withFilters({ fix: [row.key] }) });
+      expect(applyFilters(model, state, "findings")).toHaveLength(row.count);
+    }
+  });
+
+  it("counts a signal id once per package even when it fired twice on it", () => {
+    // Arrange
+    const twice = makeFinding({
+      package: "acme/twice",
+      verdict: "abandoned",
+      signals: [makeSignal({ id: "S5" }), makeSignal({ id: "S5" })],
+    });
+    const model = modelWith([twice]);
+
+    // Act
+    const signal = railGroups(model, stateWith({ view: "findings" })).find((g) => g.group === "signal");
+
+    // Assert
+    expect(signal?.rows.map((r) => [r.key, r.count])).toEqual([["S5", 1]]);
+  });
+
+  it("on Blast radius, counts a flagged direct requirement the footnote names, and no stray one", () => {
+    // Arrange: acme/parent heads a card and pulls acme/child; acme/alone is flagged and direct but
+    // not in `exposure`, so the tab names it in its footnote, with a link to its detail. acme/stray
+    // is transitive and its chain reaches no row, so the tab has no place for it.
+    const parent = makeFinding({
+      package: "acme/parent",
+      verdict: "abandoned",
+      direct: true,
+      chain: ["acme/parent"],
+    });
+    const child = makeFinding({
+      package: "acme/child",
+      verdict: "abandoned",
+      direct: false,
+      chain: ["acme/parent", "acme/child"],
+    });
+    const alone = makeFinding({
+      package: "acme/alone",
+      verdict: "abandoned",
+      direct: true,
+      chain: ["acme/alone"],
+    });
+    const stray = makeFinding({
+      package: "acme/stray",
+      verdict: "abandoned",
+      direct: false,
+      chain: ["acme/elsewhere", "acme/stray"],
+    });
+    const model = modelWith([parent, child, alone, stray], {
+      exposure: [{ package: "acme/parent", flagged: 1 }],
+    });
+
+    // Act
+    const scope = (view: "findings" | "radius", key: string) =>
+      railGroups(model, stateWith({ view }))
+        .find((g) => g.group === "scope")
+        ?.rows.find((r) => r.key === key)?.count;
+
+    // Assert: both tabs name both direct ones, so Direct plus Transitive is the flagged count
+    // whenever every chain reaches a row; acme/stray is on Findings only.
+    expect([scope("findings", "direct"), scope("findings", "transitive")]).toEqual([2, 2]);
+    expect([scope("radius", "direct"), scope("radius", "transitive")]).toEqual([2, 1]);
+  });
+});
+
+describe("hiddenByFilters (PD-DETAIL-4, DESIGN.md §5)", () => {
+  it("is false while the package matches the current tab's own filters", () => {
+    // Arrange
+    const finding = makeFinding({ package: "open/pkg", verdict: "abandoned" });
+    const model = modelWith([finding]);
+
+    // Act + Assert
+    expect(hiddenByFilters(model, stateWith({ view: "findings" }), "open/pkg")).toBe(false);
+  });
+
+  it("is true once a search term excludes it from the tab it still belongs to", () => {
+    // Arrange
+    const finding = makeFinding({ package: "open/pkg", verdict: "abandoned" });
+    const model = modelWith([finding]);
+
+    // Act + Assert
+    expect(hiddenByFilters(model, stateWith({ view: "findings", q: "no-such-package" }), "open/pkg")).toBe(
+      true,
+    );
+  });
+
+  it("is true once a rail filter excludes it", () => {
+    // Arrange
+    const finding = makeFinding({ package: "open/pkg", verdict: "abandoned", direct: true });
+    const model = modelWith([finding]);
+    const state = stateWith({ view: "findings", filters: withFilters({ scope: ["transitive"] }) });
+
+    // Act + Assert
+    expect(hiddenByFilters(model, state, "open/pkg")).toBe(true);
+  });
+
+  it("is false for a package the tab never lists at all, filters or not — a different fact", () => {
+    // Arrange: an `ok` verdict never enters the Findings population regardless of any filter.
+    const finding = makeFinding({ package: "healthy/pkg", verdict: "ok" });
+    const model = modelWith([finding]);
+    const state = stateWith({ view: "findings", q: "no-such-package" });
+
+    // Act + Assert
+    expect(hiddenByFilters(model, state, "healthy/pkg")).toBe(false);
+  });
+});
+
+describe("activeFilters (PD-RAIL-4)", () => {
+  it("lists every selection in the fragment's group order, each with its kind and its own words", () => {
+    const filters = withFilters({
+      since: ["new"],
+      scope: ["dev"],
+      signal: ["S4"],
+      prio: ["high"],
+      fix: ["move"],
+    });
+
+    expect(activeFilters(filters)).toEqual([
+      { group: "prio", key: "high", groupLabel: "Priority", label: "high" },
+      { group: "scope", key: "dev", groupLabel: "Scope", label: "require-dev" },
+      { group: "signal", key: "S4", groupLabel: "Signal", label: "S4 no recent push" },
+      { group: "fix", key: "move", groupLabel: "Fix", label: "Moving to another branch" },
+      { group: "since", key: "new", groupLabel: "Since baseline", label: "New" },
+    ]);
+  });
+
+  it("is empty when nothing is selected, and keeps an id it has no name for as is", () => {
+    expect(activeFilters(withFilters({}))).toEqual([]);
+    expect(activeFilters(withFilters({ signal: ["S99"] }))[0]?.label).toBe("S99");
   });
 });

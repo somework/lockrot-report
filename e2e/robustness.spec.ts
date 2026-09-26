@@ -11,8 +11,7 @@ import { FIXTURES } from "./support/pages";
  * (`showModal()` throwing is covered on its own in theme-and-glossary.spec.ts's M28 section, since
  * it needs the glossary open/position assertions that live there.)
  *
- * These are parity checks, not "fixed legacy bug" ones — the guard already exists in legacy and the
- * rewrite has to keep it, so both renderers are expected to pass unconditionally.
+ * The guard came from the legacy page, and this page has to keep it, unconditionally.
  */
 let report: ReportPage;
 

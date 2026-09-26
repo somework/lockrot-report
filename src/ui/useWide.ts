@@ -13,8 +13,9 @@ function currentMatch(query: string, fallback: boolean): boolean {
 
 /**
  * Whether a media query matches, now and after every change. The first value is read synchronously
- * so the very first render already knows the layout: the boot-time pick of a package depends on it
- * (critic.md M16). `fallback` is the answer where `matchMedia` does not exist.
+ * so the very first render already knows the layout: a package the address opens on load is drawn
+ * as a side column or a sheet from its first frame. `fallback` is the answer where `matchMedia` does
+ * not exist.
  */
 export function useMediaQuery(query: string, fallback: boolean): boolean {
   const [matches, setMatches] = useState(() => currentMatch(query, fallback));

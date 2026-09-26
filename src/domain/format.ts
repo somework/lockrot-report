@@ -42,14 +42,52 @@ function years(iso: string | null | undefined, now: Date): number | null {
 export function ageText(iso: string | null | undefined, now: Date): string {
   const y = years(iso, now);
   if (y === null) return "undated";
-  if (y < 1) return `${Math.max(1, Math.round(y * 12))} mo ago`;
+  return yearsAgo(y);
+}
 
-  return `${y.toFixed(1)} y ago`;
+/** "8.2 years ago", "7 months ago" — `ageText` spelled out (`yearsPhrase`); "undated" without a date. */
+export function agePhrase(iso: string | null | undefined, now: Date): string {
+  const y = years(iso, now);
+  if (y === null) return "undated";
+  return `${yearsPhrase(y)} ago`;
+}
+
+/**
+ * The page's one age unit: whole months under a year (never fewer than one), tenths of a year from
+ * one on. `yearsAgo` is its terse form ("7 mo ago", "3.6 y ago"), for the facts row;
+ * `yearsPhrase` spells the same figure out ("7 months", "3.6 years") for a sentence, and `agePhrase`
+ * for the reference sections, which sit under fired checks that lockrot words "(8.2 years ago)".
+ * All round alike, so a panel that quotes one age twice quotes the same number in the same unit (an evaluator read "2 mo ago" beside "8 weeks ago" as two different ages).
+ */
+function monthsUnderAYear(years: number): number | null {
+  return years < 1 ? Math.max(1, Math.round(years * 12)) : null;
+}
+
+/** "7 mo ago", "3.6 y ago" — see `monthsUnderAYear`. */
+export function yearsAgo(years: number): string {
+  const months = monthsUnderAYear(years);
+  return months !== null ? `${months} mo ago` : `${years.toFixed(1)} y ago`;
+}
+
+/** "1 month", "7 months", "3.6 years" — see `monthsUnderAYear`. */
+export function yearsPhrase(years: number): string {
+  const months = monthsUnderAYear(years);
+  if (months !== null) return months === 1 ? "1 month" : `${months} months`;
+  return `${years.toFixed(1)} years`;
+}
+
+/** `one` when `n` is exactly `1`, `many` otherwise — the word `plural()` prefixes with the count.
+ *  Its own export: a caller that draws the count separately from the noun (`PriorityLedger`'s own
+ *  `<span className="ledger-figure">`, styled apart from the eyebrow text around it) still needs the
+ *  same singular/plural choice `plural()` makes, without also getting the count folded into the same
+ *  string. */
+export function pluralNoun(n: number, one: string, many: string): string {
+  return n === 1 ? one : many;
 }
 
 /** `"N {one}"` when `n` is exactly `1`, `"N {many}"` otherwise. Ported from legacy `plural()` (`lib.js:84-86`). */
 export function plural(n: number, one: string, many: string): string {
-  return `${n} ${n === 1 ? one : many}`;
+  return `${n} ${pluralNoun(n, one, many)}`;
 }
 
 /**

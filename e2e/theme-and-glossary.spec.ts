@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { currentRenderer, FIXTURES } from "./support/pages";
+import { FIXTURES } from "./support/pages";
 
-const renderer = currentRenderer();
 let report: ReportPage;
 
 test.beforeEach(async ({ page }) => {
@@ -32,13 +31,9 @@ test.describe("M11: the theme button must reflect the effective theme, not just 
   test.use({ colorScheme: "dark" });
 
   test("the first click under an OS dark preference actually switches to light", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M11: the template ships no data-theme (report.html has none) and CSS follows " +
-        "prefers-color-scheme when it is absent; the first click computes next='dark' from the " +
-        "(absent) attribute and sets it explicitly — visually a no-op — only the second click " +
-        "reaches light (report.js:1006-1012)",
-    );
+    // M11 (DESIGN.md §5), fixed on purpose: legacy's template shipped no data-theme attribute, so
+    // the first click computed "next" off that absent attribute and set it explicitly — visually
+    // a no-op — and only a second click reached light.
     await report.goto(FIXTURES.mini);
     expect(await report.theme()).toBe("dark"); // OS preference, no stored/explicit theme yet
     await report.toggleTheme();
@@ -58,19 +53,211 @@ test.describe("glossary", () => {
     await report.closeGlossaryButton();
     expect(await report.isGlossaryOpen()).toBe(false);
   });
+
+  test("PD-GLOSSARY-2/10: opens with the nine verdicts and libyears visible, the other sections collapsed", async ({
+    page,
+  }) => {
+    await report.goto(FIXTURES.mini);
+    await report.openGlossary();
+    const dialog = page.getByRole("dialog", { name: /what these words mean/i });
+
+    // "The nine verdicts" is not behind a <summary> at all — it is always in view.
+    await expect(dialog.getByRole("heading", { name: "The nine verdicts" })).toBeVisible();
+
+    // The other four sections are each a closed <details>: the <summary> is there to click and is
+    // always visible, but its content is not part of what a sighted reader sees without opening it.
+    // PD-GLOSSARY-10: libyears is open from the start (the band and All packages lead with it).
+    const libyears = dialog.locator("summary", { hasText: "One number for the lock: libyears" });
+    expect(
+      await libyears.locator("xpath=ancestor::details[1]").evaluate((el) => (el as HTMLDetailsElement).open),
+    ).toBe(true);
+    const titles = [
+      "The signals",
+      "How a priority is reached",
+      "Keys and search",
+      "For the lock's maintainers: accepting a package",
+    ];
+    for (const title of titles) {
+      const summary = dialog.locator("summary", { hasText: title });
+      await expect(summary).toBeVisible();
+      const details = summary.locator("xpath=ancestor::details[1]");
+      expect(await details.evaluate((el) => (el as HTMLDetailsElement).open)).toBe(false);
+    }
+  });
 });
 
 test.describe("M2: S10 belongs in the glossary like every other signal", () => {
   test("the glossary lists S10 (the vocabulary is a fixed constant, independent of the fixture)", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M2: fillLegend() iterates Object.keys(SIGNAL_DEFS), which only has S1..S9 — S10 " +
-        "(NotCheckedRule) is emitted by the analyzer but was never given a name or a definition " +
-        "(report.js:28-33,49-59,1092-1096)",
-    );
+    // M2 (DESIGN.md §5), fixed on purpose: legacy's glossary only had definitions for S1..S9 — S10
+    // (NotCheckedRule) is emitted by the analyzer but was never given a name or a definition.
+    //
+    // PD-GLOSSARY-2: S10 now sits inside "The signals", a collapsed <details> — this still passes
+    // unchanged because textContent (glossaryText's source) reads a closed <details>'s content the
+    // same as an open one; only layout hides it, not the DOM.
     await report.goto(FIXTURES.mini);
     await report.openGlossary();
     expect(await report.glossaryText()).toContain("S10");
+  });
+});
+
+test.describe("PD-GLOSSARY-8: threshold values in definitions", () => {
+  test("leads with what this run set a config key to, the key name kept beside it", async () => {
+    // mini.json records all four thresholds: release-warn-years 3, release-high-years 5,
+    // push-warn-years 3, push-high-years 5.
+    await report.goto(FIXTURES.mini);
+    await report.openGlossary();
+    const text = await report.glossaryText();
+
+    expect(text).toContain("3 years (release-warn-years)");
+    expect(text).toContain("5 years (release-high-years)");
+    expect(text).toContain("5 years (push-high-years)");
+    // The key name itself is kept — it is what a reader would set — not replaced by the value.
+    expect(text).toContain("release-warn-years");
+  });
+});
+
+test.describe("PD-GLOSSARY-9/10: how to accept a package yourself, in its own fold", () => {
+  test("names extra.lockrot.ignore and links to the configuration docs' allowlist section", async ({
+    page,
+  }) => {
+    await report.goto(FIXTURES.mini);
+    await report.openGlossary();
+    const dialog = page.getByRole("dialog", { name: /what these words mean/i });
+
+    // PD-GLOSSARY-10: a step for whoever maintains the lock, not part of what "finished" means, so
+    // it left that definition for a closed fold of its own at the end.
+    const finishedTerm = dialog.locator('dt[data-term="finished"]');
+    await expect(finishedTerm.locator("xpath=following-sibling::dd[1]")).not.toContainText(
+      "extra.lockrot.ignore",
+    );
+
+    await dialog.locator("summary", { hasText: /accepting a package/i }).click();
+    const note = dialog.locator(".glossary-note");
+    await expect(note).toBeVisible();
+    await expect(note).toContainText("extra.lockrot.ignore");
+    await expect(note).toContainText("composer.json");
+
+    const link = note.getByRole("link", { name: /lockrot\.dev/i });
+    await expect(link).toHaveAttribute("href", "https://lockrot.dev/configuration/#the-allowlist");
+  });
+});
+
+test.describe("PD-GLOSSARY-1: the search hint", () => {
+  test("is one short line pointing at the glossary, not the old keys/search-syntax paragraph", async ({
+    page,
+  }) => {
+    // Scoped to `.hint` itself: the glossary's own "Keys and search" section (PD-GLOSSARY-2) now
+    // carries the address-bar note and the `verdict:`/`priority:`/... key list verbatim, so a
+    // page-wide text search for them would still find a match there even with the glossary closed
+    // (a <dialog> without `open` stays in the DOM). The hint paragraph is the one thing under test.
+    await report.goto(FIXTURES.mini);
+    const hint = page.locator(".hint");
+    await expect(hint).toHaveText(/press \? for keys and search syntax/i);
+    await expect(hint).not.toContainText("address bar is a link");
+    await expect(hint).not.toContainText("priority:");
+  });
+});
+
+test.describe("PD-GLOSSARY-4/5: a verdict pill's popover", () => {
+  test("clicking the verdict pill in the detail header opens its definition without closing the detail", async () => {
+    // A walk found a reader took a Findings row's own pill for the row's own target and clicked it
+    // expecting the package, landing on a definition popover instead. The pill that still opens one
+    // lives in the open package's own detail header (`DetailHeader.tsx`) — `clickVerdictPill` opens
+    // the package first (a no-op here, since the line above already opened it).
+    await report.goto(FIXTURES.mini);
+    await report.openPackage("vendor/transitive");
+    expect(await report.isPillPopoverOpen()).toBe(false);
+
+    await report.clickVerdictPill("vendor/transitive", "abandoned");
+
+    expect(await report.isPillPopoverOpen()).toBe(true);
+    expect(await report.pillPopoverText()).toMatch(/composer repository marks it abandoned/i);
+    expect((await report.detail()).open).toBe(true);
+    expect((await report.detail()).name).toBe("vendor/transitive");
+  });
+
+  test("a Findings row's own pill is plain: clicking it opens the package, not a popover (PD-GLOSSARY-4/5)", async () => {
+    await report.goto(FIXTURES.mini);
+    expect((await report.detail()).open).toBe(false); // nothing opens by itself (PD-ROWS-9)
+
+    await report.clickPillInFindingsRow("vendor/transitive", "abandoned");
+
+    expect(await report.isPillPopoverOpen()).toBe(false);
+    expect((await report.detail()).open).toBe(true);
+    expect((await report.detail()).name).toBe("vendor/transitive");
+
+    // The same click contract as the rest of the row: a second click on the now-open package's own
+    // pill keeps it open (PD-ROWS-7), rather than closing it or opening a popover.
+    await report.clickPillInFindingsRow("vendor/transitive", "abandoned");
+    expect(await report.isPillPopoverOpen()).toBe(false);
+    expect((await report.detail()).name).toBe("vendor/transitive");
+  });
+
+  // visual review: fixed and viewport-centred with no dimming, the popover could land squarely on
+  // the very row it opened from on a short page, with no cue it was an overlay rather than broken
+  // layout (`mini`'s own list is short enough at 1024/1440px for the centred card to overlap it).
+  test("dims the page behind it, like the glossary's own backdrop", async () => {
+    await report.goto(FIXTURES.mini);
+    expect(await report.pillPopoverBackdropVisible()).toBe(false);
+
+    await report.clickVerdictPill("vendor/transitive", "abandoned");
+
+    expect(await report.pillPopoverBackdropVisible()).toBe(true);
+  });
+
+  test('"In the glossary" opens the glossary', async () => {
+    await report.goto(FIXTURES.mini);
+    await report.clickVerdictPill("vendor/transitive", "abandoned");
+    expect(await report.isPillPopoverOpen()).toBe(true);
+
+    await report.openGlossaryFromPillPopover();
+
+    expect(await report.isGlossaryOpen()).toBe(true);
+  });
+
+  test('"In the glossary" scrolls to and focuses that verdict\'s own entry (PD-GLOSSARY-7, DESIGN.md §5)', async () => {
+    // Before this fix, "In the glossary" opened the dialog scrolled to the top, same as the "?"
+    // shortcut — a reader who wanted "abandoned"'s own entry still had to find it among the other
+    // eight, and the dialog's default focus landed on Close, not on any entry.
+    await report.goto(FIXTURES.mini);
+    await report.clickVerdictPill("vendor/transitive", "abandoned");
+    await report.openGlossaryFromPillPopover();
+    expect(await report.isGlossaryOpen()).toBe(true);
+
+    const focused = await report.glossaryFocusedEntry();
+    expect(focused?.text).toMatch(/^abandoned/);
+    expect(focused?.inView).toBe(true);
+  });
+
+  test('"In the glossary" returns focus to the pill once the glossary closes (a11y review)', async () => {
+    // The old behaviour: "In the glossary" carries `popovertargetaction="hide"`, which hides the
+    // popover — its own ancestor — in the same click, so by the time the glossary's dialog reads
+    // `document.activeElement` to remember who opened it, that button is already gone and focus has
+    // already fallen to `<body>`. Closing the glossary then left focus on its own (also now closed)
+    // Close button, with the next Tab landing back at the top of the page, instead of on the pill.
+    await report.goto(FIXTURES.mini);
+    await report.clickVerdictPill("vendor/transitive", "abandoned");
+    await report.openGlossaryFromPillPopover();
+    expect(await report.isGlossaryOpen()).toBe(true);
+
+    await report.closeGlossaryButton();
+
+    expect(await report.isGlossaryOpen()).toBe(false);
+    expect(await report.isPillFocused("vendor/transitive", "abandoned")).toBe(true);
+  });
+
+  test("Escape closes the popover without closing an already-open detail (PD-GLOSSARY-6)", async () => {
+    await report.goto(FIXTURES.mini);
+    await report.openPackage("vendor/transitive");
+    expect((await report.detail()).open).toBe(true);
+
+    await report.clickVerdictPill("vendor/transitive", "abandoned");
+    expect(await report.isPillPopoverOpen()).toBe(true);
+
+    await report.pressEscape();
+
+    expect(await report.isPillPopoverOpen()).toBe(false);
+    expect((await report.detail()).open).toBe(true);
   });
 });
 
@@ -90,12 +277,8 @@ test.describe("M28: the glossary must stay reachable when showModal() is not all
   });
 
   test("the fallback glossary is still reachable and stays in view", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M28: the fallback sets a plain open attribute with no positioning of its own " +
-        "(report.css:589-600), so the UA default renders it in normal flow after the footer " +
-        "(report.js:1098-1107)",
-    );
+    // M28 (DESIGN.md §5), fixed on purpose: legacy's fallback set a plain open attribute with no
+    // positioning of its own, so the UA default rendered it in normal flow after the footer.
     await report.goto(FIXTURES.mini);
     await report.openGlossary();
     expect(await report.isGlossaryOpen()).toBe(true);

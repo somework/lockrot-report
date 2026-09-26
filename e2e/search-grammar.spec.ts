@@ -1,8 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { currentRenderer, FIXTURES } from "./support/pages";
-
-const renderer = currentRenderer();
+import { FIXTURES } from "./support/pages";
 
 /**
  * The search grammar (`LockrotLib.parseQuery`, `matches()`): a bare word against package/version/
@@ -85,10 +83,8 @@ test("a whitespace-only query matches everything (parseQuery trims before splitt
 });
 
 test("WS-Q: a whitespace-only query is not counted as an active filter (DESIGN.md §4)", async () => {
-  test.fail(
-    renderer === "legacy",
-    "WS-Q: legacy counts raw untrimmed state.q as one active filter even when it is only whitespace (report.js:873)",
-  );
+  // WS-Q (DESIGN.md §5), fixed on purpose: legacy counted raw, untrimmed state.q as one active
+  // filter even when it was only whitespace.
   await report.search("   ");
   const line = await report.countLine();
   expect(line).not.toBeNull();

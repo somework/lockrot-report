@@ -1,0 +1,150 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+#
+# CodeRabbit for lockrot-report: the renderer behind `lockrot --format=html`. This file overrides
+# the UI settings for this repository (sources do not merge: what is not set here is CodeRabbit's
+# default). Review guidance lives in the repository's own docs, which CodeRabbit reads as code
+# guidelines below; the path instructions only add what a reviewer needs at the file's location.
+language: en-US
+tone_instructions: >-
+  Be brief and concrete. Name the file and line, the failing input, and the fix. Cite the DESIGN.md
+  row (PD-*, M*, C*) or CONTRIBUTING.md rule a finding rests on. No praise, no restating the diff.
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  review_status: true
+  collapse_walkthrough: true
+  changed_files_summary: true
+  sequence_diagrams: false
+  poem: false
+  in_progress_fortune: false
+  estimate_code_review_effort: true
+  auto_review:
+    enabled: true
+    drafts: false
+    # Release PRs only bump the version and move the changelog heading.
+    ignore_title_keywords: ["chore: release"]
+    ignore_usernames: ["dependabot[bot]"]
+
+  # CodeRabbit already skips dist/, node_modules/, lock files and media. On top of that:
+  path_filters:
+    # Reports captured from real lockrot runs: data, not code, and ~2 MB of it. The hand-written
+    # fixtures (mini*.json, empty-lockrot-self.json) stay in review: they must keep the exact
+    # shapes lockrot emits, and have drifted from them before.
+    - "!fixtures/bundles/wallabag_wallabag.json"
+    - "!fixtures/bundles/wallabag_baseline.json"
+    - "!fixtures/bundles/koel_koel.json"
+    - "!fixtures/bundles/koel_koel-all.json"
+    - "!fixtures/bundles/mautic_mautic.json"
+    - "!fixtures/bundles/capsule-0.10-drupal.json"
+    - "!fixtures/bundles/synthetic-no-details.json"
+    # lockrot's hand-written page at the commit in legacy/SOURCE_COMMIT: frozen history, never edited.
+    - "!legacy/**"
+    - "!build/**"
+    - "!test-results/**"
+    - "!playwright-report/**"
+
+  path_instructions:
+    - path: "src/**"
+      instructions: |
+        This page is display-only: it lays out the JSON lockrot writes. Flag any new analysis
+        (verdicts, priorities, grouping into decisions, constraint parsing, "replacing X clears N"
+        claims); counting, filtering and date arithmetic over existing fields are fine.
+        The page ships under a sha256-pinned CSP with no network: flag innerHTML/outerHTML/
+        insertAdjacentHTML/dangerouslySetInnerHTML, style="…" strings in markup, injected <style>,
+        fetch/XHR/WebSocket, and new runtime dependencies. A Preact style={{…}} object (CSSOM) is fine.
+        Rendering must be deterministic: "now" is report.generatedAt, never Date.now()/new Date()/
+        Math.random(). The URL fragment (#view=, pkg=, q=, filters) and the {{TITLE}}/{{DESCRIPTION}}/
+        {{DATA}} placeholders are public interface. A deliberate behaviour change needs a DESIGN.md §5
+        row and a test that names it.
+    - path: "src/domain/**"
+      instructions: |
+        Pure functions over the model: no DOM, no Preact, no globals. Each exported function should
+        have unit tests under tests/unit/domain/. Check edge cases: empty reports, missing optional
+        fields (older report schemas), package names containing CSS/regex metacharacters.
+    - path: "src/ui/**"
+      instructions: |
+        Check keyboard access (native <button>/<a>/<details>, one Tab stop per list, roving focus),
+        accessible names (a list row is named by its package), forced-colors (meaning never carried
+        by colour alone), light and dark themes, and 320px width without horizontal page scroll.
+    - path: "**/*.css"
+      instructions: |
+        Colours and sizes come from the tokens in src/styles/tokens.css, defined for both themes.
+        Each visual encoding needs a forced-colors fallback and survives print.css. Flag layout-bound
+        animations and anything that would scroll the page sideways at 320px.
+    - path: "e2e/**"
+      instructions: |
+        CI runs every spec in Chromium, Firefox and WebKit. Prefer web-first assertions and
+        expect.poll over fixed waitForTimeout; flag assertions that hold only in Chromium's
+        behaviour (forced-colors painting, smooth scrolling, keyboard scrolling) unless the test
+        says why it is skipped elsewhere. Rows and controls are found by role and name through the
+        page object in e2e/support/, not by CSS classes, unless the file says why.
+    - path: "fixtures/bundles/**"
+      instructions: |
+        Hand-written fixtures must use exactly the shapes lockrot emits: compare signal data keys,
+        details (metadata, lock, activity) and run fields with the captured reports in the same
+        directory (wallabag_wallabag.json, koel_koel.json) and with lockrot's
+        resources/lockrot-report.schema.json. Flag invented keys.
+    - path: "scripts/**"
+      instructions: |
+        The build must stay reproducible byte for byte (two builds, same sha) and must keep the
+        CSP hashes in the template in step with the inlined script and style.
+    - path: ".github/workflows/**"
+      instructions: |
+        A job's name is referenced by the `main` ruleset's required status checks: renaming or
+        removing a job (or a matrix value in its name) needs the ruleset updated in the same change,
+        or every PR waits forever on a check that will never report.
+    - path: "{DESIGN.md,CHANGELOG.md,CONTRIBUTING.md}"
+      instructions: |
+        Check that what the text claims matches the code in this PR. Do not rewrite prose for
+        style. DESIGN.md §5 rows stay short (one or two sentences).
+
+  tools:
+    eslint:
+      enabled: true
+    actionlint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    # actionlint already checks the workflows, the only other YAML here.
+    yamllint:
+      enabled: false
+    # The repo lints with ESLint and formats with Prettier; Biome would contradict both.
+    biome:
+      enabled: false
+    # The docs wrap at 100 columns and keep their own style; these only add noise on them.
+    markdownlint:
+      enabled: false
+    languagetool:
+      enabled: false
+
+  pre_merge_checks:
+    # The code documents intent in comments, not per-function docstrings; a coverage percentage
+    # would flag every small helper.
+    docstrings:
+      mode: "off"
+
+  finishing_touches:
+    docstrings:
+      enabled: false
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    # Added to CodeRabbit's defaults (CLAUDE.md, AGENTS.md, …): the rules the code keeps, and the
+    # page's contract with its deliberate differences (DESIGN.md §5).
+    filePatterns:
+      - "CONTRIBUTING.md"
+      - "DESIGN.md"
+  learnings:
+    scope: local
+  linked_repositories:
+    - repository: "somework/lockrot"
+      instructions: >-
+        lockrot writes the JSON this page renders. Its report schema
+        (resources/lockrot-report.schema.json) and signal rules (src/Signal/) define every field
+        the page may read; the page must not compute what lockrot decides.
+
+chat:
+  auto_reply: true

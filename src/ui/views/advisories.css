@@ -1,0 +1,631 @@
+/*
+ * The Advisories tab as a ledger (PD-ADV-1..3, DESIGN.md §5): a serif answer, one sticky column
+ * head, then per fix shape a head and one dense row per advisory — severity · the advisory (title,
+ * CVE or "no CVE assigned", its id, the day reported) · package, way in, prod or dev · the range it
+ * affects · the release that fixes it and where · years since it was reported on one shared axis.
+ * The Findings ledger's own vocabulary (ledger-rows.css): the same type scale, rules, hover and
+ * open-row marks, so the two tabs read as one report.
+ *
+ * The layout follows the list's own width (a container query): one line from 900px (the list with no
+ * package open at 1280 and up), a right-hand fix column from 480px (beside an open package, a
+ * tablet, paper — with the age bar and a slim axis head over that column, PD-ADV-6), the severity
+ * beside the package and the range with its fix at the foot (a phone). No value
+ * is ever cut: every cell wraps.
+ */
+
+/* ---------- the answer ---------- */
+.al-top {
+  margin: 4px 0 14px;
+}
+.al-answer {
+  margin: 0;
+  max-width: 50em;
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.34;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.al-answer b {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.al-answer .mono,
+.al-group-sentence .mono {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--ink);
+}
+/* A package named in a sentence: the sans the rows use, a size under the serif's. */
+.al-pk {
+  font-family: var(--sans);
+  font-size: 0.84em;
+  font-weight: 650;
+  color: var(--ink);
+}
+/* Each half of "vendor/name" stays whole; the name may wrap only at the slash. */
+.al-pk-part {
+  white-space: nowrap;
+}
+/* A severity word in the sentence, in the tone its rows' severity takes. */
+.al-sw {
+  color: var(--tone);
+  font-weight: 600;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.al-scope {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.al-scope b {
+  color: var(--ink);
+  font-weight: 600;
+}
+/* The run says its advisory check may not have covered every package: said right under the
+   answer, in the high tone's rule, so the count above never reads as the whole story. */
+.al-partial {
+  margin: 8px 0 0;
+  max-width: 50em;
+  padding: 6px 12px 7px;
+  border-left: 3px solid var(--high);
+  background: var(--surface);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-2);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+/* No advisory at all: the tab's empty box, holding PD-LEDGER-1's sentence — with the band's
+   all-clear mark only when the check ran for every package. */
+.al-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.al-empty .al-answer {
+  max-width: 36em;
+}
+.al-clean {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--tone);
+}
+
+/* ---------- the ledger ---------- */
+.aledger {
+  container: aledger / inline-size;
+  --al-pad-l: 14px;
+  --al-pad-r: 10px;
+  --al-gap: 10px;
+  /* Wide enough for the longest severity word a feed writes, MODERATE, on one line. */
+  --al-sev: 78px;
+  --al-fix: 150px;
+  --al-age: 168px;
+  --al-num: 34px;
+}
+
+/* The column head exists for the one-line layout only; the narrower rows label their own values. */
+.al-head {
+  display: none;
+}
+
+/* ---------- a fix-shape group ---------- */
+.advgroup {
+  margin-top: 22px;
+}
+.advgroup:first-of-type,
+.al-head + .advgroup {
+  margin-top: 6px;
+}
+/* A run-in head: the name and count lead the line and the sentence runs on after them, so a
+   sentence that wraps returns to the left edge like any paragraph instead of hanging under the
+   count. */
+.al-group-head {
+  padding: 0 var(--al-pad-r) 8px var(--al-pad-l);
+  border-bottom: 1px solid var(--border-strong);
+  line-height: 1.35;
+}
+.al-group-head h2 {
+  display: inline;
+  margin: 0 12px 0 0;
+  font-family: var(--cond);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.al-group-count {
+  margin-right: 12px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.al-group-sentence {
+  display: inline;
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 15.5px;
+  line-height: 1.35;
+  color: var(--ink-2);
+}
+.al-group-sentence b {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.adv-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- a row ---------- */
+.adv {
+  --row-bg: var(--bg);
+  position: relative;
+  display: grid;
+  /* Phone: the severity and the package on one line, then the advisory and its ids, then the range
+     it affects with the release that fixes it right under it. */
+  grid-template-columns: var(--al-sev) minmax(0, 1fr);
+  grid-template-areas:
+    "sev pkg"
+    "title title"
+    "ids ids"
+    "aff aff"
+    "fix fix";
+  column-gap: var(--al-gap);
+  row-gap: 2px;
+  align-items: baseline;
+  padding: 8px var(--al-pad-r) 8px var(--al-pad-l);
+  border-bottom: 1px solid var(--border);
+  background: var(--row-bg);
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.adv:hover {
+  --row-bg: var(--surface);
+}
+.adv[aria-current="true"] {
+  --row-bg: var(--accent-soft);
+}
+.adv[aria-current="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+}
+.adv:focus-visible {
+  outline-offset: -2px;
+}
+.adv > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ac-sev {
+  grid-area: sev;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  font-family: var(--cond);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tone);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.ac-title {
+  grid-area: title;
+  font-weight: 500;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.ac-ids {
+  grid-area: ids;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 10px;
+  font-size: 11.5px;
+  line-height: 17px;
+  color: var(--muted);
+}
+.ac-id {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-2);
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+.ac-nocve {
+  font-style: italic;
+  white-space: nowrap;
+}
+.ac-reported {
+  white-space: nowrap;
+}
+
+.ac-pkg {
+  grid-area: pkg;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 10px;
+}
+.ac-name {
+  color: var(--ink);
+}
+.ac-name b {
+  font-weight: 600;
+}
+.ac-vendor {
+  color: var(--ink-2);
+}
+.ac-ver {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+/* PD-ROWS-5: the row above named the same package — still there in full, only quieter, as a
+   repeated value on a Findings row is. */
+.ac-name.is-ditto,
+.ac-name.is-ditto .ac-vendor {
+  color: var(--muted);
+}
+.ac-name.is-ditto b {
+  font-weight: 500;
+}
+.ac-reach {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.ac-via {
+  color: var(--muted);
+}
+/* Where the package is installed: production solid, development dashed and quiet. */
+.ac-scope {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 4px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  vertical-align: 1px;
+}
+.ac-scope.is-prod {
+  color: var(--ink);
+  border-color: var(--ink-2);
+  font-weight: 600;
+}
+.ac-scope.is-dev {
+  color: var(--muted);
+  border-style: dashed;
+}
+
+.ac-aff {
+  grid-area: aff;
+  color: var(--muted);
+  font-size: 12px;
+}
+.ac-aff .mono {
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+
+.ac-fix {
+  grid-area: fix;
+  font-size: 12px;
+  color: var(--muted);
+}
+.ac-fixver {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.ac-where {
+  white-space: nowrap;
+}
+.ac-fix.is-branch .ac-where {
+  color: var(--none);
+  font-weight: 500;
+}
+.ac-fix.is-none .ac-where {
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+/* The years since it was reported: a bar on the list's one axis, the figure beside it. Shown only
+   in the one-line layout, where the column head captions the axis; narrower, the advisory's own
+   line says "reported … ago" in words. */
+.ac-age {
+  display: none;
+}
+.ac-ago {
+  display: inline;
+}
+
+.adv > .match-note {
+  grid-column: 1 / -1;
+}
+
+/* ---------- two columns (beside an open package, a laptop with the rail, paper) ---------- */
+/* The right-hand column stacks what fixing it takes: the release and where it is, the range it
+   affects, then years since it was reported on the list's one axis, captioned by a slim column head
+   over that column only. */
+@container aledger (min-width: 480px) {
+  .al-head,
+  .adv {
+    /* Wide enough that "fixed by 2.3.4 on your branch" stays one line and the axis has room. */
+    --al-fix: 200px;
+  }
+  .adv {
+    grid-template-columns: var(--al-sev) minmax(0, 1fr) var(--al-fix);
+    grid-template-areas:
+      "sev title fix"
+      "sev pkg aff"
+      "sev ids age";
+    row-gap: 1px;
+  }
+  .ac-fix,
+  .ac-aff {
+    text-align: right;
+  }
+  .adv > .match-note {
+    grid-column: 2 / -1;
+  }
+  .al-head {
+    grid-template-columns: var(--al-sev) minmax(0, 1fr) var(--al-fix);
+    grid-template-areas: "sev adv age";
+    column-gap: var(--al-gap);
+  }
+  .al-col-pkg,
+  .al-col-aff,
+  .al-col-fix {
+    display: none;
+  }
+  .al-head {
+    position: sticky;
+    top: var(--topbar-h);
+    z-index: 3;
+    display: grid;
+    align-items: end;
+    height: 40px;
+    padding: 0 var(--al-pad-r) 0 var(--al-pad-l);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border-strong);
+    box-shadow: 0 -3px 0 var(--bg);
+    font-family: var(--cond);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .al-col {
+    min-width: 0;
+    padding-bottom: 7px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .al-col-sev {
+    grid-area: sev;
+  }
+  .al-col-adv {
+    grid-area: adv;
+  }
+  /* The axis' captions over the track part of the column; the figure beside it has none. */
+  .al-col-age {
+    grid-area: age;
+    position: relative;
+    align-self: stretch;
+    margin-right: calc(var(--al-num) + 6px);
+    overflow: visible;
+  }
+  .al-age-label {
+    position: absolute;
+    top: 6px;
+    left: 0;
+  }
+  .al-tick {
+    position: absolute;
+    bottom: 7px;
+    transform: translateX(-50%);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1;
+  }
+  .al-tick.is-start {
+    transform: none;
+  }
+  .al-tick.is-end {
+    transform: translateX(-100%);
+  }
+  /* The figure beside the bar says how long ago; the words would say it twice. */
+  .aledger:not(.no-axis) .ac-ago {
+    display: none;
+  }
+  .ac-age {
+    grid-area: age;
+    align-self: center;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--al-num);
+    column-gap: 6px;
+    align-items: center;
+    min-height: 17px;
+  }
+  .ac-track {
+    position: relative;
+    align-self: stretch;
+  }
+  .ac-track::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: var(--border);
+  }
+  .ac-guide {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-left: 1px dotted var(--border-strong);
+  }
+  .ac-bar {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    min-width: 3px;
+    height: 6px;
+    transform: translateY(-50%);
+    border-radius: 0 3px 3px 0;
+    background: var(--tone);
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .ac-num {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    white-space: nowrap;
+    color: var(--ink-2);
+  }
+  .ac-age-none {
+    grid-column: 1 / -1;
+    text-align: right;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+}
+
+/* ---------- one line (the list with no package open) ---------- */
+@container aledger (min-width: 900px) {
+  .al-head,
+  .adv {
+    grid-template-columns:
+      var(--al-sev) minmax(0, 1.9fr) minmax(0, 1.2fr) minmax(0, 0.62fr) minmax(0, 0.7fr)
+      var(--al-age);
+    grid-template-areas:
+      "sev title pkg aff fix age"
+      "sev ids pkg aff fix age";
+    column-gap: 14px;
+  }
+  .al-head {
+    grid-template-areas: "sev adv pkg aff fix age";
+    height: 44px;
+  }
+  .al-col-pkg,
+  .al-col-aff,
+  .al-col-fix {
+    display: block;
+  }
+  .al-col-pkg {
+    grid-area: pkg;
+  }
+  .al-col-aff {
+    grid-area: aff;
+  }
+  .al-col-fix {
+    grid-area: fix;
+  }
+  .adv {
+    align-items: center;
+    row-gap: 0;
+    padding-block: 6px;
+  }
+  .ac-fix,
+  .ac-aff {
+    text-align: left;
+  }
+  .ac-fix .ac-where {
+    display: block;
+  }
+  .ac-lbl {
+    /* The column head names these; the words stay for a screen reader. */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .ac-pkg {
+    flex-direction: column;
+  }
+  .ac-reach {
+    display: block;
+  }
+  .ac-age {
+    align-self: stretch;
+    margin-block: -6px -7px;
+  }
+  .ac-age-none {
+    text-align: left;
+  }
+  .adv > .match-note {
+    grid-column: title-start / fix-end;
+  }
+}
+
+/* ---------- forced colours: every tone becomes the system ink; the bar keeps its length ---------- */
+@media (forced-colors: active) {
+  .ac-bar,
+  .adv[aria-current="true"]::before {
+    forced-color-adjust: none;
+  }
+  .ac-bar {
+    background: CanvasText;
+  }
+  .adv[aria-current="true"]::before {
+    background: Highlight;
+  }
+  .adv[aria-current="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+  .ac-scope.is-prod {
+    border-color: CanvasText;
+  }
+}
+
+/* ---------- print: no package to open, no sticky head ---------- */
+@media print {
+  .al-head {
+    position: static;
+    box-shadow: none;
+  }
+  .adv,
+  .adv:hover,
+  .adv[aria-current="true"] {
+    --row-bg: transparent;
+    break-inside: avoid;
+  }
+  .adv[aria-current="true"]::before {
+    display: none;
+  }
+}

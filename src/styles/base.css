@@ -81,6 +81,17 @@ code {
 .nowrap {
   white-space: nowrap;
 }
+/* Words for a screen reader only, beside a mark drawn for the eye (a dash, a row of dots). */
+.vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 .eyebrow {
   font-family: var(--cond);
   font-weight: 600;
@@ -210,6 +221,64 @@ a.out:hover {
 }
 .icon-btn:disabled:hover {
   border-color: var(--border);
+}
+
+/* ---------- disclosure marker (<details>/<summary>) ----------
+ * One marker for every fold on the page — the ledger and rail summaries, the glossary's own
+ * sections and the detail panel's reference/signal disclosures each used to draw their own "▸"
+ * text glyph, at slightly different sizes and with no hover or focus state of its own. A text
+ * glyph's exact shape and size depend on whatever font a viewer's OS (or a headless browser with no
+ * system fonts installed) substitutes for it; one review environment rendered "▸" as a near-
+ * invisible 3-4px dot instead of a triangle. A shape drawn from a CSS border needs no font and
+ * renders identically everywhere, at any pixel density.
+ *
+ * `list-style: none` (not `display: none` on the native marker alone) is what actually removes a
+ * `<summary>`'s built-in triangle: it is a list-item marker, governed by `list-style`, on every
+ * engine this page ships to — `::-webkit-details-marker` is Blink/WebKit's own extra hook for the
+ * same thing and is kept only as a second guard. Every surface below still owns its own summary's
+ * layout (flex row, gap, padding, colour) — only the marker itself, and hiding the native one, move
+ * here so every fold reads as the same affordance.
+ */
+summary {
+  cursor: pointer;
+  list-style: none;
+}
+summary::-webkit-details-marker {
+  display: none;
+}
+summary::after {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  flex-shrink: 0;
+  margin-left: auto;
+  border-style: solid;
+  border-width: 4px 0 4px 5px;
+  border-color: transparent transparent transparent var(--muted);
+  transition: transform 0.15s ease;
+}
+details[open] > summary::after {
+  transform: rotate(90deg);
+}
+summary:hover::after,
+summary:focus-visible::after {
+  border-left-color: var(--ink-2);
+}
+/* a11y review: forced-colors mode forces every border side to a system colour, including the three
+   sides left `transparent` on purpose to cut the triangle out of the border box — without an
+   opt-out, "transparent" itself gets overridden (Chromium), so the marker's non-pointing sides paint
+   solid instead of disappearing, and the shape reads as a small flag rather than a triangle. The
+   same class of override PD-LEDGER-2's own forced-colors fix already found on a pressed legend chip
+   (`forced-color-adjust: none`, `ledger/ledger.css`) — opting the marker out keeps every side exactly
+   as authored, so only the one side this rule gives a real colour (CanvasText) ever paints. */
+@media (forced-colors: active) {
+  summary::after,
+  summary:hover::after,
+  summary:focus-visible::after {
+    forced-color-adjust: none;
+    border-left-color: CanvasText;
+  }
 }
 
 /* Motion is decoration here, never information: with reduced motion asked for, all of it goes. */

@@ -83,6 +83,13 @@ export interface ReportModel {
   libyears: LibyearsBlock | null;
   baseline: BaselineSummary | null;
   notes: readonly string[];
+  /**
+   * The report-level and `run.` keys this page reads that the document does not carry at all, in
+   * `ABSENT_CHECKED` order (normalize.ts) — `run.fail_on` for a document written before that field.
+   * A key present with a `null` value is not absent: that is the document's own answer. Empty for
+   * a document that carries every one.
+   */
+  absent: readonly string[];
   /** In document order, which lockrot sorts: priority desc, verdict severity desc, direct first, name. */
   findings: readonly Finding[];
 }

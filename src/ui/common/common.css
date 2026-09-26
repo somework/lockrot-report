@@ -1,0 +1,92 @@
+/*
+ * PD-GLOSSARY-4: the verdict pill's popover — a definition where the reader already is, instead of
+ * a tab out to lockrot.dev that a report opened offline (a PHAR, a file:// path, DESIGN.md §1.1)
+ * could never follow. Sized and centred like the glossary dialog (app.css's `.glossary`) rather
+ * than anchored to the pill: CSS anchor positioning is not yet interoperable across the three
+ * browsers DESIGN.md §6 runs this suite on, so a fixed, centred card degrades the same way
+ * everywhere instead of anchoring correctly in one engine and centring by accident in the others.
+ */
+
+/* The pill itself is a <span> (docs=false) or a <button> (docs=true); the button needs the UA
+   chrome stripped so it reads as the same pill either way. */
+button.pill {
+  appearance: none;
+  border-color: var(--tone);
+}
+
+[popover].pill-pop {
+  position: fixed;
+  /* visual review: viewport-centred (`inset: 0; margin: auto`) with nothing behind it, this could
+     land squarely on the very row it was opened from on a short page (a small fixture, a narrow
+     viewport) — no dimming and no offset to read as "on top of", not "instead of". Biased toward the
+     top instead of the dead centre, the same way a native `<dialog>`'s browser-default placement
+     rarely fights the content that opened it; `left`/`right: 0` plus `margin: 0 auto` keeps the
+     horizontal centring `inset: 0` used to also give it. */
+  inset: 12% 0 auto 0;
+  margin: 0 auto;
+  height: fit-content;
+  width: min(300px, calc(100% - 32px));
+  max-width: none;
+  padding: 14px 16px;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+/* The other half of the same fix: dimming the page behind it, like `.glossary::backdrop` (app.css),
+   so an overlap with the row underneath reads as an intentional overlay instead of broken layout. */
+[popover].pill-pop::backdrop {
+  background: var(--backdrop);
+}
+/* `display` is deliberately left out of the rule above: the UA stylesheet's own `[popover]:not(
+   :popover-open) { display: none }` is what keeps a closed popover out of layout and the
+   accessibility tree, and it is not `!important` — setting `display` unconditionally here would
+   silently defeat it (every pill's popover, closed or not, would sit in the page). Scoping it to
+   `:popover-open` gives the open one flex layout and leaves every closed one exactly as the UA
+   default hides it. */
+.pill-pop:popover-open {
+  display: flex;
+  flex-direction: column;
+}
+
+.pill-pop-word {
+  font-family: var(--cond);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--tone);
+}
+
+.pill-pop-def {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.pill-pop-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: baseline;
+}
+
+.pill-pop-action {
+  appearance: none;
+  border: none;
+  padding: 0;
+  background: none;
+  font: inherit;
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--border-strong);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.12s ease;
+}
+.pill-pop-action:hover {
+  color: var(--accent-ink);
+  border-bottom-style: solid;
+}

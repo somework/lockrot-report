@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { currentRenderer, FIXTURES } from "./support/pages";
+import { FIXTURES } from "./support/pages";
 
-const renderer = currentRenderer();
 let report: ReportPage;
 
 test.beforeEach(async ({ page }) => {
@@ -29,7 +28,7 @@ test.describe("detail panel — basic content", () => {
     expect((await report.detail()).open).toBe(false);
   });
 
-  test("a validated replacement is named in the detail (parity, both renderers)", async () => {
+  test("a validated replacement is named in the detail", async () => {
     // fixtures/bundles/mautic_mautic.json: rector/type-perfect (abandoned, direct, high) carries a
     // Packagist-validated finding.replacement, unlike Packagist's own free-text field.
     await report.goto(FIXTURES.mautic);
@@ -42,13 +41,10 @@ test.describe("detail panel — basic content", () => {
 
 test.describe("M25: a radius card must not claim more packages than it draws", () => {
   test("the stated count matches the number of rows actually listed", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M25: when the direct requirement is itself flagged and also pulls others, " +
-        "flagged = pulled.length + 1 but only `pulled` is rendered — the parent itself is never a " +
-        "row (report.js:605,613-617). wallabag/rulerz-bundle (pinned, direct) pulls in " +
-        "wallabag/rulerz-bridge and others while also being flagged itself.",
-    );
+    // M25 (DESIGN.md §5), fixed on purpose: legacy's radius card counted
+    // flagged = pulled.length + 1 but rendered only `pulled`, so a parent that was itself flagged
+    // never got a row of its own. wallabag/rulerz-bundle (pinned, direct) pulls in
+    // wallabag/rulerz-bridge and others while also being flagged itself.
     await report.goto(FIXTURES.wallabag);
     await report.tab("radius");
     const card = await report.radiusCard("wallabag/rulerz-bundle");

@@ -21,7 +21,7 @@ import {
   type AdvisoryGroup,
 } from "../../domain/advisories";
 import { matchesAdvisory, parseQuery } from "../../domain/query";
-import { radiusCards } from "../../domain/radius";
+import { radiusLayout, radiusRowOrder } from "../../domain/radius";
 
 /**
  * The Advisories tab's rows, grouped and ordered exactly as `AdvisoriesView` renders them, so both
@@ -55,18 +55,20 @@ function advisoriesOrder(model: Model, state: State): readonly string[] {
   );
 }
 
-/** Radius lists one row per pulled package, card by card, in the exact order `RadiusView` renders
- *  its cards and, within a card, its pulled rows (`radius.ts`'s own sort and list order). */
-function radiusOrder(model: Model, state: State): readonly string[] {
-  const flagged = applyFilters(model, state, "radius");
-  return radiusCards(model, flagged).flatMap((card) => card.pulled.map((pulled) => pulled.package));
+/** Radius lists a row per direct requirement and, under an open one, a row per package it lists,
+ *  in the exact order `RadiusView` renders them (`radius.ts#radiusRowOrder`): a row folded away is
+ *  not on screen, so `j`/`k` never walk to it. */
+function radiusOrder(model: Model, state: State, narrow: boolean): readonly string[] {
+  const layout = radiusLayout(model, applyFilters(model, state, "radius"));
+  return radiusRowOrder(layout, { disclosure: state.disclosure, pkg: state.pkg, narrow });
 }
 
 /**
  * Package names in the order their rows appear on screen for `view`, top to bottom. The Run tab
- * describes the run, not its packages, so it never has rows to walk.
+ * describes the run, not its packages, so it never has rows to walk. `narrow` is the phone layout,
+ * where Blast radius folds its one-each rows by default.
  */
-export function renderedPackages(model: Model, state: State, view: View): readonly string[] {
+export function renderedPackages(model: Model, state: State, view: View, narrow = false): readonly string[] {
   switch (view) {
     case "findings":
     case "packages":
@@ -74,7 +76,7 @@ export function renderedPackages(model: Model, state: State, view: View): readon
     case "advisories":
       return advisoriesOrder(model, state);
     case "radius":
-      return radiusOrder(model, state);
+      return radiusOrder(model, state, narrow);
     case "run":
       return [];
   }

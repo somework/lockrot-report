@@ -3,7 +3,9 @@
  * contract with every component stylesheet and with the report's look across releases, so a change
  * here is a visual change to every published report. Two light-theme values are a shade darker
  * than legacy's: --muted (#5f726f) and --high (#a95a07) fell just short of 4.5:1 on the tinted
- * surfaces they sit on (--surface-2, --high-soft), which axe reports as a contrast failure.
+ * surfaces they sit on (--surface-2, --high-soft), which axe reports as a contrast failure. The dark
+ * --high (#ec9046, legacy #e0a055) is a step more orange: next to the mustard --med in the waffle
+ * the two read as one tone; it keeps at least 5.9:1 on every dark surface.
  *
  * Theming, as the legacy page does it: light lives on bare :root; the OS dark preference applies
  * unless the reader pinned light (data-theme="light"); an explicit data-theme="dark" applies
@@ -40,6 +42,9 @@
      render from file:// and under a strict CSP. These are the stacks every target already has. */
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --cond: var(--sans);
+  /* The one accent face: an answer sentence set apart from the UI text around it. A system stack
+     like the two above, for the same reason; the same in both themes. */
+  --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 
   /* The spacing and radius steps the legacy stylesheet used as scattered literals (css-html.md
@@ -85,7 +90,7 @@
     --accent-ink: #6fd8ca;
     --crit: #ef8074;
     --crit-soft: #351916;
-    --high: #e0a055;
+    --high: #ec9046;
     --high-soft: #332412;
     --med: #cdb250;
     --med-soft: #2e2814;
@@ -112,7 +117,7 @@
   --accent-ink: #6fd8ca;
   --crit: #ef8074;
   --crit-soft: #351916;
-  --high: #e0a055;
+  --high: #ec9046;
   --high-soft: #332412;
   --med: #cdb250;
   --med-soft: #2e2814;

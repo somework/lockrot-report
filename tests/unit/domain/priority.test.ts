@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PRIORITY_BASE, priorityWhy } from "../../../src/domain/priority";
-import { makeFinding, makeSignal } from "./fixtures";
+import { makeAdvisory, makeFinding, makeSignal } from "./fixtures";
 
 describe("priorityWhy", () => {
   it("returns no steps when the priority is none", () => {
@@ -26,7 +26,7 @@ describe("priorityWhy", () => {
     expect(steps).toEqual([]);
   });
 
-  it("starts the ladder at the verdict's PRIORITY_BASE", () => {
+  it("returns every rule in Priority::of()'s order, the ones that did not apply included", () => {
     // Arrange
     const finding = makeFinding({ verdict: "stale", priority: "medium", direct: true, dev: false });
 
@@ -34,21 +34,103 @@ describe("priorityWhy", () => {
     const steps = priorityWhy(finding);
 
     // Assert
-    expect(steps).toEqual([{ text: "stale starts at medium", to: "medium" }]);
+    expect(steps).toEqual([
+      { rule: "verdict", text: "Stale packages start at medium.", note: null, applied: true, to: "medium" },
+      {
+        rule: "reach",
+        text: "You require it directly: no step down.",
+        note: null,
+        applied: false,
+        to: "medium",
+      },
+      { rule: "dev", text: "Needed in production: no step down.", note: null, applied: false, to: "medium" },
+      {
+        rule: "advisory",
+        text: "No security advisory: no step up.",
+        note: null,
+        applied: false,
+        to: "medium",
+      },
+    ]);
   });
 
-  it("steps down once for a transitive finding", () => {
+  it("steps down once for a transitive finding, naming the first hop of its chain", () => {
     // Arrange
-    const finding = makeFinding({ verdict: "pinned", priority: "medium", direct: false, dev: false });
+    const finding = makeFinding({
+      verdict: "pinned",
+      priority: "medium",
+      direct: false,
+      dev: false,
+      chain: ["vendor/direct", "acme/widget"],
+    });
 
     // Act
     const steps = priorityWhy(finding);
 
     // Assert
-    expect(steps).toEqual([
-      { text: "pinned starts at high", to: "high" },
-      { text: "nothing requires it directly, one step down", to: "medium" },
-    ]);
+    expect(steps[1]).toEqual({
+      rule: "reach",
+      text: "You don’t require it directly: one step down.",
+      note: "It comes through vendor/direct.",
+      applied: true,
+      to: "medium",
+    });
+    expect(steps.map((s) => s.to)).toEqual(["high", "medium", "medium", "medium"]);
+  });
+
+  it("names no way in when a transitive finding carries no chain and no direct dependents", () => {
+    // Arrange
+    const finding = makeFinding({ verdict: "pinned", priority: "medium", direct: false, chain: [] });
+
+    // Act
+    const steps = priorityWhy(finding);
+
+    // Assert
+    expect(steps[1]).toMatchObject({ text: "You don’t require it directly: one step down.", note: null });
+  });
+
+  it("names both ways in when two of your requirements reach it, never 'only' the first (evaluator blocker)", () => {
+    // Arrange: wallabag's hoa/event — the chain runs through wallabag/rulerz, and
+    // wallabag/rulerz-bundle requires it too. The rule is "not required directly", not "one way in".
+    const finding = makeFinding({
+      package: "hoa/event",
+      verdict: "abandoned",
+      priority: "high",
+      direct: false,
+      chain: ["wallabag/rulerz", "hoa/consistency", "hoa/exception", "hoa/event"],
+      directDependents: ["wallabag/rulerz", "wallabag/rulerz-bundle"],
+    });
+
+    // Act
+    const steps = priorityWhy(finding);
+
+    // Assert
+    expect(steps[1]).toEqual({
+      rule: "reach",
+      text: "You don’t require it directly: one step down.",
+      note: "It comes through wallabag/rulerz and wallabag/rulerz-bundle.",
+      applied: true,
+      to: "high",
+    });
+    expect(steps.map((s) => `${s.text} ${s.note ?? ""}`).join(" ")).not.toContain("Only");
+  });
+
+  it("counts the ways in past two, still naming the chain's first hop", () => {
+    // Arrange
+    const finding = makeFinding({
+      verdict: "stale",
+      priority: "low",
+      direct: false,
+      chain: ["b/two", "acme/widget"],
+      directDependents: ["a/one", "b/two", "c/three", "acme/widget"],
+    });
+
+    // Act
+    const steps = priorityWhy(finding);
+
+    // Assert: the chain's own first hop leads, then the others in document order; the package
+    // itself is never one of its own ways in.
+    expect(steps[1]?.note).toBe("It comes through 3 of your requirements, b/two among them.");
   });
 
   it("steps down twice for a transitive dev finding", () => {
@@ -59,11 +141,13 @@ describe("priorityWhy", () => {
     const steps = priorityWhy(finding);
 
     // Assert
-    expect(steps).toEqual([
-      { text: "pinned starts at high", to: "high" },
-      { text: "nothing requires it directly, one step down", to: "medium" },
-      { text: "development only, one step down", to: "low" },
+    expect(steps.map((s) => [s.rule, s.applied, s.to])).toEqual([
+      ["verdict", true, "high"],
+      ["reach", true, "medium"],
+      ["dev", true, "low"],
+      ["advisory", false, "low"],
     ]);
+    expect(steps[2]?.text).toBe("Installed for development only: one step down.");
   });
 
   it("floors a step-down at low, never reaching none", () => {
@@ -74,7 +158,8 @@ describe("priorityWhy", () => {
     const steps = priorityWhy(finding);
 
     // Assert
-    expect(steps.at(-1)).toEqual({ text: "development only, one step down", to: "low" });
+    expect(steps.map((s) => s.to)).toEqual(["medium", "low", "low", "low"]);
+    expect(steps[2]?.applied).toBe(true);
   });
 
   it("steps up once when the finding has an unfixable advisory", () => {
@@ -91,10 +176,35 @@ describe("priorityWhy", () => {
     const steps = priorityWhy(finding);
 
     // Assert
-    expect(steps).toEqual([
-      { text: "left-behind starts at high", to: "high" },
-      { text: "an advisory no release will fix, one step up", to: "critical" },
-    ]);
+    expect(steps.at(-1)).toEqual({
+      rule: "advisory",
+      text: "An advisory with no fix coming: one step up.",
+      note: null,
+      applied: true,
+      to: "critical",
+    });
+  });
+
+  it("says an advisory had a fix when there is one and the step did not apply", () => {
+    // Arrange
+    const finding = makeFinding({
+      verdict: "left-behind",
+      priority: "high",
+      advisories: [makeAdvisory({ fixedBy: "2.0.1" })],
+      evidence: "1 security advisory affects 1.0.0; fixed by 2.0.1",
+    });
+
+    // Act
+    const steps = priorityWhy(finding);
+
+    // Assert
+    expect(steps.at(-1)).toEqual({
+      rule: "advisory",
+      text: "Its advisories have a fix: no step up.",
+      note: null,
+      applied: false,
+      to: "high",
+    });
   });
 
   it("clamps the step-up ceiling at critical instead of implying a level beyond it (M30 fix)", () => {
@@ -110,12 +220,13 @@ describe("priorityWhy", () => {
     // Act
     const steps = priorityWhy(finding);
 
-    // Assert: the step still reports the text "one step up", but the value it lands on stays
+    // Assert: the rule still fired (applied, "one step up"), but the value it lands on stays
     // critical — legacy only ever showed the document's own priority here, never a recomputed one.
-    expect(steps).toEqual([
-      { text: "abandoned starts at critical", to: "critical" },
-      { text: "an advisory no release will fix, one step up", to: "critical" },
-    ]);
+    expect(steps.at(-1)).toMatchObject({
+      text: "An advisory with no fix coming: one step up.",
+      applied: true,
+      to: "critical",
+    });
   });
 
   it("ignores an S7 summary's unrelated wording when deciding the step-up (M31 fix)", () => {
@@ -134,7 +245,7 @@ describe("priorityWhy", () => {
     const steps = priorityWhy(finding);
 
     // Assert
-    expect(steps).toEqual([{ text: "silent starts at critical", to: "critical" }]);
+    expect(steps.at(-1)).toMatchObject({ rule: "advisory", applied: false, to: "critical" });
   });
 
   it("covers every PRIORITY_BASE verdict with an entry", () => {

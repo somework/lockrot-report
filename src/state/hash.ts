@@ -22,7 +22,8 @@ function isFilterGroup(key: string): key is FilterGroup {
  * Builds the fragment for `state`, without a leading `#`. Order and encoding follow js-4.md §3a
  * steps 1-6 exactly: `view` (raw, unencoded), `q` (skipped when the trimmed value is empty — the
  * one deliberate difference from legacy's plain truthiness check), each of `FILTER_GROUPS` in that
- * fixed order, then `pkg` (only when it was not the page's own automatic pick).
+ * fixed order, then `pkg`. The legacy page left out a `pkg` it had opened by itself; this page never
+ * opens one by itself (PD-ROWS-9), so an open package is always written.
  */
 export function serializeHash(state: State): string {
   const parts: string[] = [];
@@ -42,7 +43,7 @@ export function serializeHash(state: State): string {
     }
   }
 
-  if (state.pkg && !state.pkgAuto) {
+  if (state.pkg) {
     parts.push("pkg=" + encodeURIComponent(state.pkg));
   }
 
@@ -78,7 +79,6 @@ export function parseHash(fragment: string, base: State): State {
   let view: View = base.view;
   let q = base.q;
   let pkg = base.pkg;
-  let pkgAuto = base.pkgAuto;
   let filters: Filters = base.filters;
 
   for (const piece of h.split("&")) {
@@ -105,10 +105,8 @@ export function parseHash(fragment: string, base: State): State {
       continue;
     }
     if (key === "pkg") {
-      // Mirrors the `select()` chokepoint (js-4.md §2): a package named in the hash is never the
-      // automatic pick, so it round-trips straight back into the next `writeHash()`.
+      // A package named in the hash round-trips straight back into the next `writeHash()`.
       pkg = value;
-      pkgAuto = false;
       continue;
     }
     if (isFilterGroup(key)) {
@@ -121,7 +119,7 @@ export function parseHash(fragment: string, base: State): State {
     // Any other key — including an unrecognised group name — is ignored.
   }
 
-  return { ...base, view, q, pkg, pkgAuto, filters };
+  return { ...base, view, q, pkg, filters };
 }
 
 /** The minimal `window` surface `writeHash` needs; lets tests pass a fake instead of jsdom. */

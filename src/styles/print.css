@@ -1,8 +1,17 @@
 /*
- * Print is pure CSS, as it was in the legacy page (legacy/report.css:629-636, 813, 816): there is no
- * print button and no beforeprint handler. A printed report keeps what it says and drops what only
- * works on a screen: the tabs, the filters, the search box, the two header buttons, and the detail
- * pane (a sheet or a side column that would print as a clipped box).
+ * Print. The header's "Print / PDF" and the browser's own Print both print one document in
+ * sections, whatever tab is open (print/PrintDocument.tsx, mounted into `.print-doc` by
+ * print/usePrintDocument.ts on `beforeprint` or a print medium): the summary band, Findings,
+ * Advisories in full, the top of Blast radius, the run's facts, and All packages only when the
+ * reader printed from that tab. While it holds anything, `<main>` — the tab on screen — is hidden
+ * here, so a print never carries the screen's filters, open package or scroll. If it never mounts
+ * (an engine that fires neither event), the rules below still print the open tab as before.
+ *
+ * A printed report keeps what it says and drops what only works on a screen: the tabs, the filters,
+ * the search box, the header's buttons, and the detail pane (a sheet or a side column that would
+ * print as a clipped box). The gate fact's button (regression review: its label is the only place a
+ * printed page carries "no gate"/"gate: <value>" in the masthead) stays, minus its ⓘ icon and its
+ * popover, which have nothing to do on paper.
  *
  * `.searchbar` and `.hint` are SearchBar's own classes (search/SearchBar.tsx); the count line it
  * renders beneath them stays, as it did on the legacy page.
@@ -11,8 +20,64 @@
  * the accessibility contract (e2e/support/new.ts) asks every list entry to carry, so they hold
  * whatever class names the list components use.
  */
+
+/* Every page after the first repeats the project, the data date and the lockrot version at its
+ * top (the first has the masthead), and every page is numbered at its foot. `--lr-running-head` is
+ * a CSS string usePrintDocument sets on <html>; margin boxes inherit it from the root. An engine
+ * without page-margin boxes (Firefox, Safari) ignores both and still has each section's own line. */
+@page {
+  margin: 15mm 13mm 16mm;
+
+  @top-left {
+    content: var(--lr-running-head, "");
+    font: 7.5pt/1.2 var(--mono);
+    color: #536562;
+    vertical-align: bottom;
+    padding-bottom: 3mm;
+  }
+  @bottom-right {
+    content: "page " counter(page) " of " counter(pages);
+    font: 7.5pt/1.2 var(--mono);
+    color: #536562;
+    vertical-align: top;
+    padding-top: 3mm;
+  }
+}
+@page :first {
+  @top-left {
+    content: none;
+  }
+}
+
 @media print {
-  :root {
+  /* Paper is light whatever the screen's theme: the dark tokens (tokens.css, a pinned
+   * data-theme="dark" or the OS preference) would print pale ink on white. `:root` three times
+   * outranks both dark selectors (each two classes' worth) without an !important. */
+  :root:root:root {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #eef2f1;
+    --surface-3: #e3e9e7;
+    --border: #cfd9d6;
+    --border-strong: #9fb0ac;
+    --ink: #0f1a19;
+    --ink-2: #3a4b49;
+    --muted: #536562;
+    --accent: #0f766e;
+    --accent-soft: #d7ece8;
+    --accent-ink: #0a574f;
+    --crit: #a92b1f;
+    --crit-soft: #f6dfdc;
+    --high: #955005;
+    --high-soft: #f7e7d3;
+    --med: #7c6300;
+    --med-soft: #f4edd2;
+    --low: #456472;
+    --low-soft: #dfe9ee;
+    --none: #366b4b;
+    --none-soft: #dcebe1;
+    --shadow: none;
+    --gutter: 0px;
     color-scheme: light;
   }
   body {
@@ -23,16 +88,34 @@
   .topbar {
     position: static;
     box-shadow: none;
+    border-bottom: 2px solid var(--ink);
   }
-  .tabs,
+  .topbar-in {
+    padding-top: 0;
+    padding-bottom: 8px;
+  }
+
+  /* The printed report replaces the tab on screen. */
+  .print-doc:not(:empty) ~ main {
+    display: none;
+  }
+  .tabs-strip,
   .shell-rail,
   .rail-fold,
   .searchbar,
   .hint,
   .shell-detail,
   .glossary-open,
-  .theme-toggle {
+  .theme-toggle,
+  .share-actions,
+  .fact-btn-icon,
+  .fact-pop {
     display: none !important;
+  }
+  .fact-btn {
+    border: none;
+    padding: 0;
+    color: inherit;
   }
 
   .shell {
@@ -49,11 +132,513 @@
     border-color: #999;
   }
 
+  /* The colophon closes the last page in one piece, at paper's size: a page of its own for its last
+   * two lines was the worst of the old breaks. */
   .colophon {
+    display: block;
     border-top-color: #999;
+    padding: 8px 0 0;
+    font-size: 10.5px;
+    line-height: 1.5;
+    break-inside: avoid;
+  }
+  .colophon > p {
+    margin: 0 0 4px;
+  }
+  /* The links' words and the author's line share one line on paper, where no link opens. */
+  .colophon > p:nth-last-of-type(2),
+  .colophon > p:last-of-type {
+    display: inline;
+  }
+  .colophon > p:last-of-type::before {
+    content: " · ";
+  }
+  .colophon .cta {
+    padding: 3px 10px;
+    line-height: 1.55;
   }
   .colophon .cta {
     background: none;
     border-left-color: #999;
+  }
+
+  /* PD-ROWS-1 (DESIGN.md §5, regression review): a Findings row quotes one signal on screen, and
+   * the package's detail — which this file already hides above — lists the rest; paper has nothing
+   * to open. `.sig-rest` (views/FindingRow.tsx) carries the rest under a native `hidden` attribute,
+   * which base.css makes `!important` on purpose (so a class-based display rule elsewhere can never
+   * leave a hidden element holding its grid column by winning a specificity tie); un-hiding it for
+   * print has to match that `!important`, or lose to it. It takes a line of its own under the reason.
+   */
+  .sig-rest[hidden] {
+    display: flex !important;
+    flex-direction: column;
+    gap: 3px;
+    flex-basis: 100%;
+    margin-top: 3px;
+  }
+  .sig-rest .sig-line {
+    display: flex;
+    gap: 6px;
+  }
+
+  /* Colour that carries meaning must survive an actual print, not a screen render's approximation
+   * of one: the summary band's marks (ledger.css: a waffle square, a verdict bar's priority parts, an
+   * advisory square, the libyears bar, a chip's swatch), a Packages/Radius row's own verdict or
+   * priority pill (styles/base.css `.pill`), and the tone-coloured text a Findings priority-group
+   * heading and the band's clean-report line paint with the same `--tone` custom property
+   * (`.fgroup-head h2`, `.lead-clean`). Chromium's print default drops background colour — and, per the same
+   * "Background graphics" setting, any colour it treats as decorative — unless the rule opts out;
+   * `ledger-rows.css`'s verdict word, age bars and guides already carry this for PD-ROWS-4, and
+   * this gathers the rest of the page's tone-bearing elements here, in the one file print decisions
+   * live in. Elements this omits (a pill inside `.shell-detail`, a signal id in the glossary) are
+   * never on screen when a reader prints, since the rule above already hides their containers. */
+  .brand .dot,
+  .waffle-cell,
+  .legend-seg,
+  .advisory-square,
+  .libyears-bar > span,
+  .swatch,
+  .pill,
+  .fgroup-head h2,
+  .lead-chips .count,
+  .lead-clean {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* The summary band's tier folds on a phone (ledger/Ledger.tsx); paper has no tap to open it, so
+   * a print from a phone shows it open. `::details-content` is the closed <details>' hidden slot. */
+  .ledger-fold > summary {
+    display: none;
+  }
+  .ledger-fold::details-content {
+    content-visibility: visible;
+    display: block;
+    height: auto;
+  }
+  .ledger-fold {
+    border-top: 0;
+  }
+  .ledger,
+  .ledger-lead {
+    break-inside: avoid;
+  }
+}
+
+/* ---------- the printed report (print/PrintDocument.tsx) ----------
+ * Numbered sections under one rule each: a serif title with its number in mono, then the section's
+ * one-line answer in the page's serif; the running line (project, data date, lockrot) is the
+ * `@page` header above. The views inside are
+ * the tabs' own components; only their screen spacing is trimmed to paper's. */
+@media print {
+  .pd {
+    font-size: 12px;
+  }
+  .pd-intro {
+    margin: 10px 0 2px;
+    font: 15px/1.45 var(--serif);
+    color: var(--ink);
+  }
+  .pd-intro-lead {
+    margin-right: 0.4em;
+  }
+  .pd-toc-item {
+    white-space: nowrap;
+    color: var(--ink-2);
+  }
+  .pd-toc-item + .pd-toc-item::before {
+    content: "·";
+    margin: 0 0.45em;
+    color: var(--muted);
+  }
+  .pd-toc-num {
+    font: 600 10px var(--mono);
+    color: var(--muted);
+  }
+  .pd-intro-note {
+    margin: 0 0 4px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .pd-sect {
+    margin-top: 26px;
+  }
+  .pd-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2px 16px;
+    padding-bottom: 4px;
+    border-bottom: 1.5px solid var(--ink);
+    break-after: avoid;
+    break-inside: avoid;
+  }
+  .pd-title {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0;
+    font: 600 19px/1.2 var(--serif);
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .pd-num {
+    font: 600 11px var(--mono);
+    color: var(--muted);
+  }
+  .pd-lede {
+    margin: 8px 0 10px;
+    font: 14px/1.4 var(--serif);
+    color: var(--ink-2);
+  }
+  /* A lede keeps to what follows it only when something does (PrintDocument's `more`): an empty
+   * section's lede is its last line, and a keep from it would chain into the next section's heading
+   * and push both overleaf. */
+  .pd-lede.is-lead {
+    break-after: avoid;
+  }
+  /* A lede is one sentence or three: it is never split, its last line alone atop the next page. */
+  .pd-lede {
+    break-inside: avoid;
+  }
+  /* An empty Findings or Advisories section: its lede already says so, in the report's words. */
+  .pd-findings .empty,
+  .pd-advisories .empty {
+    display: none;
+  }
+  .pd-lede b {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* The summary band on paper: no screen band padding, the same left edge as every section. */
+  .pd .ledger {
+    padding: 12px 0 0;
+  }
+  .pd .lead-chips .legend-btn {
+    padding: 3px 9px 3px 8px;
+  }
+
+  /* The sections follow on; none forces a page of its own. A heading, a lede, a column head and a
+   * group's head each keep to the first row under them instead, so a page never ends on one. */
+  .pd .fhead,
+  .pd .rl-head,
+  .pd .rl-answer,
+  .pd .rl-key,
+  .pd .advgroup > header {
+    break-after: avoid;
+  }
+  /* A two-line answer or key is not split across pages either: the second line of a key alone at
+   * the top of a page keys nothing. */
+  .pd .rl-answer,
+  .pd .rl-key {
+    break-inside: avoid;
+  }
+  /* The same rule from the other side: Chromium does not carry a head's break-after into the list
+   * that follows, so a list's first entry refuses the break before it too. */
+  .pd .rl-list > :first-child,
+  .pd .adv-list > :first-child {
+    break-before: avoid;
+  }
+
+  /* PD-PRINT-4: a Findings priority group is a table on paper (FindingsView's PrintedGroup). Its
+   * head — the group's name and sentence, the column head with the age axis' captions — is a
+   * table-header-group, which Chromium repeats at the top of every page the group runs onto, so a
+   * bar on page 5 still has its 0/3y/5y/10y+ scale and its group above it. The repeat needs
+   * `break-inside: avoid` on the head (the UA gives <thead> that; a div needs it said). Each row is
+   * a table row around the screen's own grid, which keeps the break between rows. */
+  .pd .pf-group {
+    display: table;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    margin-top: 22px;
+  }
+  .pd .pf-group:first-child {
+    margin-top: 6px;
+  }
+  .pd .pf-top {
+    display: table-header-group;
+    break-inside: avoid;
+    break-after: avoid;
+  }
+  .pd .pf-top .fgroup-head {
+    border-bottom: 0;
+    padding-top: 4px;
+    padding-bottom: 2px;
+  }
+  .pd .pf-group > .frows {
+    display: table-row-group;
+  }
+  .pd .pf-tr {
+    display: table-row;
+    break-inside: avoid;
+  }
+  .pd .pf-td {
+    display: table-cell;
+    padding: 0;
+  }
+  /* The first row keeps to the head above it; a run's note keeps to the run's first row. */
+  .pd .pf-group > .frows:first-of-type > .pf-tr:first-child,
+  .pd .pf-note + .pf-tr {
+    break-before: avoid;
+  }
+  /* A run's rule, row by row: the screen draws it down the run's wrapper, which paper splits. */
+  .pd .pf-run > .pf-tr > .pf-td {
+    border-left: 2px solid var(--tone);
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* PD-PRINT-5: the age axis on paper, where its head repeats on every page. The Findings age
+   * column widens from the screen's 132px to 184px (and the gap before it from 10px to 18px), so the
+   * 3y and 5y captions each clear the next guide and "Years since release" no longer overhangs into
+   * the grey-bar key; the rows take the same widths, so their bars and guides stay under the head.
+   * "0" gets a solid tick of its own, like the thresholds' dashed and dotted ones, so it reads as the
+   * scale's start rather than the end of the "Reached" caption beside it. */
+  .pd .fledger > * {
+    --fl-age: 184px;
+    --fl-gap: 18px;
+  }
+  .pd .fhead-tick.is-start {
+    display: flex;
+    align-items: flex-end;
+    height: 17px;
+    padding-left: 3px;
+    border-left: 1px solid var(--border-strong);
+  }
+  /* The grey-bar key moves into the age column itself, between its caption and its ticks — over the
+   * bars it keys, and no longer stacked on "Reached" in the corner beside them. */
+  .pd .fhead:has(.fhead-key) {
+    height: 56px;
+  }
+  .pd .fhead-key {
+    grid-area: age;
+    justify-self: start;
+    align-self: start;
+    margin: 21px 0 0;
+  }
+  /* Blast radius's axis on paper: its column widens from 210px to 230px and the gap before it from
+   * 14px to 18px, so its 3y and 5y captions clear each other's guides as the Findings ones do. */
+  .pd .rl > * {
+    --rl-age-w: 230px;
+    --rl-gap: 18px;
+  }
+
+  /* PD-PRINT-5: Blast radius's ranked rows are a table on paper too (RadiusView's `.rl-ptable`), its
+   * head — the key and the column head with the age axis — a table-header-group repeated on every
+   * page the rows run onto, and each row one unbreakable table row. A table row draws no border of
+   * its own here (separate borders), so the row's rule moves onto its line. */
+  .pd .rl-ptable {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  .pd .rl-ptop {
+    display: table-header-group;
+    break-inside: avoid;
+    break-after: avoid;
+  }
+  /* The key at paper's size keeps to one line, so it costs a continuation page one line, not two. */
+  .pd .rl-key {
+    column-gap: 14px;
+    font-size: 10.5px;
+  }
+  .pd .rl-ptop > .rl-key {
+    padding-top: 2px;
+    margin-bottom: 6px;
+  }
+  .pd .rl-ptable > .rl-list {
+    display: table-row-group;
+  }
+  .pd .rl-ptable > .rl-list > .rrow {
+    display: table-row;
+    break-inside: avoid;
+  }
+  .pd .rl-ptable > .rl-list > .rrow > .rr-line {
+    border-bottom: 1px solid var(--border);
+  }
+  /* What follows the ranking — the one-each count, the two tails, the unlisted requirements — keeps
+   * to the last ranked row, so it never opens a page of its own looking like the start of Run data:
+   * a page that carries it over starts with the repeated head and a ranked row. */
+  .pd .rl-ptable ~ .rl-fold,
+  .pd .rl-ptable ~ .rl-foot {
+    break-before: avoid;
+  }
+
+  /* The All packages table on paper: every column on the page, not a scroller clipped at the
+   * margin — the cells wrap and the type steps down, and the header repeats on every page. */
+  /* No box: a page break leaves a boxed table's side rules running on past its last row on every
+   * page but the last. The rules between rows and under the head carry the table, as the ledgers'. */
+  .pd .tablewrap {
+    overflow: visible;
+    background: none;
+    border: 0;
+    border-radius: 0;
+  }
+  .pd .tablewrap table {
+    font-size: 10px;
+  }
+  .pd .tablewrap th,
+  .pd .tablewrap td {
+    padding: 4px 5px;
+    white-space: normal;
+  }
+  .pd .tablewrap td:first-child {
+    overflow-wrap: anywhere;
+  }
+  /* A package's Packagist link has nowhere to go on paper; its underline only adds noise. */
+  .pd .tablewrap .lnk {
+    border-bottom: 0;
+  }
+  /* Short values keep to one line; the package name is the one that wraps. */
+  .pd .tablewrap td:not(:first-child) {
+    white-space: nowrap;
+  }
+  .pd .tablewrap .pill {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+  .pd .tablewrap th {
+    position: static;
+    font-size: 8.5px;
+    border-bottom-color: var(--border-strong);
+  }
+  .pd .tablewrap .sort-btn {
+    padding: 0;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+  }
+
+  /* Blast radius prints its top: the jump links and the folds' chevrons are screen affordances,
+   * and a fold head prints as the one-line count it is. */
+  .pd .rl-fold-chev,
+  .pd .rl-tails {
+    display: none;
+  }
+  /* radius.css prints the tab itself unfolded, every row's packages listed; the report's section is
+   * its top, so the rows stay shut here — each keeps its count, its squares and its verdict mix. */
+  .pd .rr-kids[hidden],
+  .pd .rl-fold-body[hidden],
+  .pd .rl-head[hidden] {
+    display: none !important;
+  }
+  .pd .rl-fold-head {
+    border: 0;
+    background: none;
+    padding: 9px 0 6px;
+  }
+  /* Paper's spacing for the tails: a rule and a line of air between them, not the screen's tap
+   * targets' padding. */
+  .pd .rl-fold.is-tail {
+    margin-top: 8px;
+  }
+  /* One rule where the rows meet a tail: a ranked row's line (or an open fold's last row) already
+   * draws one, so the tail's own top rule would sit a line of air under it as a double rule. Only a
+   * fold shut on paper ends with no rule, and the tail after it keeps its own. */
+  .pd .rl-ptable + .rl-fold.is-tail,
+  .pd .rl-fold:has(> .rl-fold-body:not([hidden])) + .rl-fold.is-tail {
+    border-top: 0;
+  }
+  .pd .rl-foot {
+    margin-top: 12px;
+  }
+  /* The column head's words wrap on paper instead of ending in an ellipsis at the margin. */
+  .pd .rl-head {
+    height: auto;
+    min-height: 36px;
+  }
+  .pd .rl-h {
+    white-space: normal;
+    overflow: visible;
+  }
+  /* With nothing flagged, the tab's one line prints as a line, not as the screen's dashed box. */
+  .pd .rl > .empty {
+    margin: 8px 0 0;
+    padding: 0;
+    border: 0;
+    text-align: left;
+    font: 14px/1.4 var(--serif);
+    color: var(--ink-2);
+  }
+
+  /* A package name that opens something on screen prints as the name: nothing on paper opens. */
+  .pd button,
+  .pd .pkg-link-btn,
+  .pd .rl-jump {
+    text-decoration: none;
+    color: inherit;
+  }
+  .pd a {
+    text-decoration: none;
+  }
+
+  /* Run data, compact (PD-RUN-1..4): the answer a size down, the scales at their screen layout, the
+   * recorded fields in their three groups side by side; each block kept to one page with its
+   * heading. */
+  .pd-run .run-sections {
+    gap: 8px;
+    padding-top: 6px;
+  }
+  .pd-run .sect,
+  .pd-run .run-top {
+    margin-top: 0;
+    gap: 5px;
+    break-inside: avoid;
+  }
+  .pd-run .run-answer {
+    font-size: 13.5px;
+  }
+  .pd-run .run-absent {
+    padding: 4px 8px;
+    font-size: 10.5px;
+  }
+  .pd-run .note {
+    margin: 0;
+    padding: 6px 10px;
+  }
+  .pd-run .sect h3 {
+    margin: 0 0 4px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .pd-run .run-thr-row {
+    grid-template-columns: 150px minmax(0, 260px) minmax(0, 1fr);
+    padding: 5px 0;
+  }
+  .pd-run .run-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px 16px;
+  }
+  .pd-run .run-kv {
+    font-size: 10px;
+  }
+  .pd-run .run-kv dt,
+  .pd-run .run-kv dd {
+    padding: 2px 0;
+  }
+  .pd-run .run-kv dd,
+  .pd-run .run-null {
+    font-size: 9.5px;
+    overflow-wrap: break-word;
+  }
+  .pd-run .run-footer {
+    font-size: 10px;
+  }
+}
+
+/* A print medium wider than any paper is a screen emulating print (a preview pane, a test's
+ * screenshot): it has no page margins to sit inside, so it gets a gutter of its own. */
+@media print and (min-width: 1000px) {
+  body {
+    padding: 0 24px;
   }
 }

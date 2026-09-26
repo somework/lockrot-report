@@ -1,0 +1,302 @@
+/*
+ * The baseline surfaces (PD-BASELINE-1..7, DESIGN.md §5). The delta line takes the Advisories
+ * answer's type (advisories.css `.al-answer`): the serif at 18px, counts in the ink. Whatever the
+ * baseline says moved — new, worsened — wears one colour of its own on every surface (the delta
+ * line, the rows' tags, the detail, Run data): the page's accent, never a priority's tone, since red
+ * and orange already mean critical and high on the rows those words sit beside (PD-BASELINE-7). A
+ * count that filters is a button that reads as the sentence it sits in: a dotted rule under it, a
+ * soft fill on hover and while it is pressed.
+ */
+
+/* In the summary band, straight under the lead: an accent rule down its left edge marks it as the
+   one part of the band about the baseline rather than the lock. */
+.bl-top {
+  margin: 20px 0 0;
+  padding: 1px 0 1px 14px;
+  border-left: 3px solid var(--accent);
+}
+.bl-answer {
+  margin: 0;
+  max-width: 52em;
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.4;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.bl-answer b {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.bl-path {
+  font-family: var(--mono);
+  font-size: 0.78em;
+  font-weight: 600;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+/* The line under the answer (the entries gone from the lock): the Advisories answer's scope line,
+   quieter than the sentence it follows, the names in the mono the rows' versions use. */
+.bl-gone-note {
+  margin: 5px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+/* A name moves to the next line whole ("symfony/swiftmailer-" / "bundle" read as two names), and
+   breaks inside only when it is wider than the line itself. */
+.bl-pk {
+  display: inline-block;
+  max-width: 100%;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+
+.bl-count {
+  white-space: nowrap;
+}
+.bl-change,
+.bl-count.bl-change b {
+  color: var(--accent-ink);
+}
+.bl-count.bl-change {
+  font-weight: 600;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.bl-toggle {
+  margin: 0 -3px;
+  padding: 0 3px;
+  border: 0;
+  border-bottom: 1px dotted currentColor;
+  border-radius: var(--radius-s) var(--radius-s) 0 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.bl-toggle.bl-change {
+  color: var(--accent-ink);
+}
+.bl-toggle:hover {
+  background: var(--surface-3);
+  border-bottom-style: solid;
+}
+.bl-toggle.bl-change:hover,
+.bl-toggle.bl-change[aria-pressed="true"] {
+  background: var(--accent-soft);
+}
+.bl-toggle[aria-pressed="true"] {
+  background: var(--surface-3);
+  border-bottom: 2px solid currentColor;
+}
+.bl-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.bl-more {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-strong);
+  background: none;
+  font: inherit;
+  color: var(--accent-ink);
+  cursor: pointer;
+}
+.bl-more:hover,
+.bl-more:focus-visible {
+  border-bottom-color: currentColor;
+}
+
+@media (max-width: 759px) {
+  .bl-answer {
+    font-size: 16.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bl-toggle,
+  .bl-stat-btn {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .bl-toggle,
+  .bl-stat-btn {
+    border-bottom-color: ButtonText;
+  }
+  .bl-top {
+    border-left-color: CanvasText;
+  }
+  /* Doubled class: outranks `.bl-toggle.bl-change[aria-pressed]`'s accent fill above. */
+  .bl-toggle.bl-toggle[aria-pressed="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
+  .bl-toggle.bl-toggle[aria-pressed="true"] b {
+    color: HighlightText;
+  }
+}
+
+@media print {
+  .bl-toggle,
+  .bl-stat-btn {
+    border-bottom: 0;
+    background: none;
+  }
+  .bl-more {
+    border-bottom: 0;
+    color: inherit;
+  }
+}
+
+/* ---------- the detail's "Against the baseline" (PD-BASELINE-3) ---------- */
+
+/* previous → current: the verdict the baseline accepted, an arrow, the verdict now, each in the
+   pill every other verdict on the page wears; "no entry" in a dashed, toneless box for a finding the
+   baseline never listed. The sentence under it says the same in words, for every reader. */
+.bl-step {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 2px 0 8px;
+}
+.bl-arrow {
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1;
+}
+.bl-none {
+  display: inline-block;
+  padding: 1px 7px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-s);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.bl-state {
+  margin-left: 4px;
+  font-family: var(--cond);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+.bl-state.bl-state-quiet {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ---------- Run data's stat row (PD-BASELINE-4) ---------- */
+
+.bl-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 36px;
+  margin: 0;
+  padding: 14px 16px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+}
+.bl-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  min-width: 0;
+}
+.bl-stat dd {
+  margin: 0;
+  font: 600 30px/1 var(--sans);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.bl-stat.bl-change dd {
+  color: var(--accent-ink);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+/* A stat that lists its findings (PD-BASELINE-6): the figure is the button, with the dotted rule
+   the delta line's counts wear, so it reads as the same kind of control. */
+.bl-stat-btn {
+  margin: 0 -4px;
+  padding: 0 4px 3px;
+  border: 0;
+  border-bottom: 1px dotted currentColor;
+  border-radius: var(--radius-s) var(--radius-s) 0 0;
+  background: none;
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.bl-stat-btn:hover {
+  background: var(--surface-3);
+  border-bottom-style: solid;
+}
+.bl-stat.bl-change .bl-stat-btn:hover {
+  background: var(--accent-soft);
+}
+.bl-stat-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.bl-stat dt {
+  font-family: var(--cond);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.bl-stat dd.bl-gone {
+  font: inherit;
+  letter-spacing: normal;
+}
+.bl-stat-gone {
+  flex: 1 1 16em;
+}
+.bl-gone-list {
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.bl-run-path {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.bl-run-path .mono {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- a row's baseline tag (PD-BASELINE-2, -7) ---------- */
+
+/* The tag every row fact wears (styles/base.css `.tag`), in the baseline's accent. */
+.tag.bl-tag {
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}

@@ -1,0 +1,518 @@
+/* ---------- release branches (PD-TIMELINE-1..12, DESIGN.md §5) ----------
+ * Answer first: two sentences, then a table whose middle column is one shared time axis ending at
+ * a "today" rule (each strip cell's right border, so the rule runs unbroken down every row). Rows
+ * are subgrid rows of one grid, so every branch, version and constraint lines up in its column
+ * whatever its length, and nothing floats beside a dot any more. */
+.detail-timeline {
+  container-type: inline-size;
+}
+.detail-timeline-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.detail-timeline-answer {
+  margin: 2px 0 0;
+  font: 19px/1.32 var(--serif);
+  color: var(--ink);
+  text-wrap: pretty;
+}
+/* Mono inside a serif line reads large at the same size; 0.84em sits it on the serif's x-height. */
+.detail-timeline-name {
+  font-family: var(--mono);
+  font-size: 0.84em;
+  font-weight: 600;
+}
+.detail-timeline-age {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.detail-timeline-age.is-toned {
+  color: var(--tone);
+}
+.detail-timeline-sub {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.detail-timeline-sub b {
+  font-weight: 600;
+  color: var(--ink);
+}
+/* A long constraint ("^5.3.3 || ^7.0 || ^8.0") breaks at its own spaces like any word; nothing
+   here is ever cut with an ellipsis. */
+.detail-timeline-sub .mono {
+  font-size: 12px;
+  color: var(--ink);
+}
+.detail-timeline-sub .detail-timeline-go {
+  color: var(--accent-ink);
+}
+
+.detail-timeline-grid {
+  display: grid;
+  /* `auto`, not `max-content`, for the version: it grows to its full width whenever the panel has
+     room, and only a phone-width panel with a long tag ("v2.0.2-stable") breaks it at its hyphen
+     rather than squeezing the strip, the column that answers, below its minimum. */
+  grid-template-columns: max-content minmax(72px, 1fr) auto fit-content(13ch);
+  column-gap: 12px;
+  margin-top: 4px;
+  font: 11.5px/1.3 var(--mono);
+  /* The strip stops this short of its column, so a dot on the today rule — a release from last
+     week — has room for its right half without touching the LATEST column. */
+  --rule-gap: 7px;
+}
+.detail-timeline-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  position: relative;
+  min-height: 30px;
+  /* Room for the 3px rule on the reader's and the newest row, outside the text's own column. */
+  padding-left: 10px;
+  margin-left: -10px;
+  /* The constraint, the last column, keeps a gutter from the panel's edge; the row's rule still
+     runs the full width. */
+  padding-right: 8px;
+  border-top: 1px solid var(--border);
+  /* What a marker's halo is drawn in: the row's own background, so a guide or the today rule
+     passing under a dot stops short of it instead of cutting through it. */
+  --row-bg: var(--surface);
+}
+.detail-timeline-head {
+  min-height: 0;
+  border-top: 0;
+  padding-bottom: 6px;
+  align-items: end;
+}
+.detail-timeline-head > span {
+  font: 600 10.5px/1 var(--cond);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.detail-timeline-order {
+  margin-left: 3px;
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
+.detail-timeline-branch {
+  font-size: 12px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.detail-timeline-latest {
+  color: var(--ink-2);
+}
+/* A constraint stays on one line — a row is one line — unless it is long enough to crowd the strip
+   out of a phone-width panel ("^5.3.3 || ^7.0 || ^8.0"); then it breaks at its own spaces. */
+.detail-timeline-php {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.detail-timeline-php.is-long {
+  white-space: normal;
+}
+
+/* The strip: the line runs from the branch's last release (the dot) to today (the right border).
+ * Every dot sits on its true date, however close to today (PD-TIMELINE-11): a release from last
+ * week sits on the rule itself, which is where "today" is. An earlier minimum stub pinned every dot
+ * within 9px of the rule to one spot, so on a phone 1.4 years of releases read as the same week, and
+ * the newest branch looked older than the one below it. */
+.detail-timeline-strip,
+.detail-timeline-head > .detail-timeline-strip-head,
+.detail-timeline-axis {
+  margin-right: var(--rule-gap);
+}
+.detail-timeline-strip {
+  position: relative;
+  isolation: isolate;
+  align-self: stretch;
+  min-height: 30px;
+  border-right: 1.5px solid var(--border-strong);
+}
+.detail-timeline-tail,
+.detail-timeline-dot {
+  position: absolute;
+  top: 50%;
+  left: var(--x);
+}
+.detail-timeline-tail {
+  z-index: 1;
+  right: 0;
+  height: 1.5px;
+  transform: translateY(-50%);
+  background: var(--border-strong);
+}
+.detail-timeline-dot {
+  z-index: 2;
+  box-sizing: border-box;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--surface);
+  border: 1.5px solid var(--muted);
+  box-shadow: 0 0 0 2px var(--row-bg);
+}
+/* Warn dashed, high dotted: the two differ in pattern as well as tone, so forced colours, which
+   drop the tone, still tell them apart. Both lines are a hairline in a faded tone — they are a
+   scale, not a finding, and the 5y one drawn heavier was the loudest vertical in the chart; the
+   caption's text keeps the full tone. */
+.detail-timeline-guide,
+.detail-timeline-guide-cap {
+  --guide: 1px dashed color-mix(in srgb, var(--tone) 55%, transparent);
+  --guide-w: 1px;
+}
+.detail-timeline-guide.is-high,
+.detail-timeline-guide-cap.is-high {
+  --guide: 1px dotted color-mix(in srgb, var(--tone) 55%, transparent);
+}
+.detail-timeline-guide {
+  position: absolute;
+  top: 0;
+  bottom: -1px;
+  left: var(--x);
+  border-left: var(--guide);
+}
+
+/* The guides' captions, in the header right above the first row; each caption's own border is its
+   guide's line, continued up to the words. */
+.detail-timeline-head > .detail-timeline-strip-head {
+  position: relative;
+  align-self: stretch;
+  min-height: 16px;
+  container: timeline-strip / inline-size;
+}
+.detail-timeline-guide-cap {
+  position: absolute;
+  bottom: -6px;
+  padding-bottom: 6px;
+  font: 500 10px/1 var(--mono);
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  color: var(--tone);
+}
+.detail-timeline-guide-cap.is-right {
+  left: var(--x);
+  padding-left: 4px;
+  border-left: var(--guide);
+}
+/* Its border on the right, so shifted by the border's own width to sit on the rows' line. */
+.detail-timeline-guide-cap.is-left {
+  right: calc(100% - var(--x) - var(--guide-w));
+  padding-right: 4px;
+  border-right: var(--guide);
+}
+/* The reader's row: an ink rule and ring — one "you" in every case, whatever the age — while the
+   line and a faint wash of the row take the age's tone against the run's thresholds (`domain/age.ts`).
+   A snapshot, never toned, keeps a neutral wash. */
+.detail-timeline-row.is-mine {
+  --row-bg: var(--surface-2);
+  background: var(--row-bg);
+}
+.detail-timeline-row.is-mine.is-toned {
+  --row-bg: color-mix(in srgb, var(--tone) 10%, var(--surface));
+}
+.detail-timeline-row.is-mine::before,
+.detail-timeline-row.is-newest::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 5px;
+  bottom: 5px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+.detail-timeline-row.is-mine .detail-timeline-branch,
+.detail-timeline-row.is-mine .detail-timeline-latest {
+  color: var(--ink);
+  font-weight: 600;
+}
+.detail-timeline-row.is-mine .detail-timeline-tail {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ink-2);
+}
+.detail-timeline-row.is-mine.is-toned .detail-timeline-tail {
+  background: var(--tone);
+}
+.detail-timeline-row.is-mine .detail-timeline-dot {
+  width: 14px;
+  height: 14px;
+  border: 3px solid var(--ink);
+  background: var(--surface);
+}
+.detail-timeline-row.is-snapshot .detail-timeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* The newest branch: the one place to look for a move. */
+.detail-timeline-row.is-newest::before {
+  background: var(--accent);
+}
+.detail-timeline-row.is-newest .detail-timeline-branch {
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+.detail-timeline-row.is-newest .detail-timeline-latest {
+  color: var(--ink);
+}
+/* Its line stays neutral: the accent names the row, not its age — a teal line from a release
+   eight years old read as healthy beside a toned "you". Its age is in the sentence above. */
+.detail-timeline-row.is-newest .detail-timeline-tail {
+  height: 2px;
+  border-radius: 1px;
+  background: var(--muted);
+}
+.detail-timeline-row.is-newest .detail-timeline-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.detail-timeline-row.is-folded .detail-timeline-branch,
+.detail-timeline-row.is-folded .detail-timeline-latest {
+  color: var(--muted);
+}
+
+/* A fold: its branches as a rug of ticks on the same axis, and the range of names it stands for. */
+.detail-timeline-fold-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: 12px var(--sans);
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.detail-timeline-fold-btn:hover {
+  color: var(--ink);
+}
+/* The page's one disclosure marker (`styles/base.css`, PD-DISCLOSURE-1), drawn the same way: a
+   button, not a <summary>, only because a <details> cannot be a table row. */
+.detail-timeline-fold-btn::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 4px 0 4px 5px;
+  border-color: transparent transparent transparent var(--muted);
+  transition: transform 0.15s ease;
+}
+.detail-timeline-fold-btn:hover::before,
+.detail-timeline-fold-btn:focus-visible::before {
+  border-left-color: var(--ink-2);
+}
+.detail-timeline-fold-btn[aria-expanded="true"]::before {
+  transform: rotate(90deg);
+}
+/* Above the guides, so a guide stops at the rug's edge rather than striking through its ticks. */
+.detail-timeline-rug {
+  z-index: 1;
+  position: absolute;
+  top: 50%;
+  left: calc(var(--lo) - 3px);
+  width: calc(var(--hi) - var(--lo) + 6px);
+  height: 14px;
+  transform: translateY(-50%);
+  min-width: 8px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  /* An outline, not only a tint: in dark mode the tint alone all but vanished into the panel. */
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.detail-timeline-rug-tick {
+  z-index: 2;
+  position: absolute;
+  top: 50%;
+  left: var(--x);
+  width: 1.5px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  background: var(--muted);
+}
+.detail-timeline-range {
+  grid-column: 3 / -1;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* The axis, under the rows: the oldest year on the left edge, "today" on the rule. */
+.detail-timeline-axis-row {
+  min-height: 0;
+  border-top: 1px solid var(--border-strong);
+}
+.detail-timeline-axis {
+  grid-column: 2;
+  position: relative;
+  height: 20px;
+  container-type: inline-size;
+  font-size: 10.5px;
+  color: var(--muted);
+}
+.detail-timeline-year {
+  position: absolute;
+  top: 6px;
+  left: var(--x);
+  transform: translateX(-50%);
+}
+.detail-timeline-year::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  height: 4px;
+  border-left: 1px solid var(--border-strong);
+}
+.detail-timeline-year.is-first,
+.detail-timeline-year.is-after {
+  transform: none;
+}
+.detail-timeline-year.is-first::before,
+.detail-timeline-year.is-after::before {
+  left: 0;
+}
+/* A year beside a guide sits to the side away from it, its tick still on the year's true place. */
+.detail-timeline-year.is-after {
+  padding-left: 3px;
+}
+.detail-timeline-year.is-before {
+  transform: translateX(-100%);
+  padding-right: 3px;
+}
+.detail-timeline-year.is-before::before {
+  left: 100%;
+}
+.detail-timeline-today {
+  position: absolute;
+  top: 6px;
+  right: 0;
+  color: var(--ink-2);
+}
+/* A narrow strip keeps the two ends — the oldest year and today — and the one year between them
+   that still fits at that width (`timelineAxis.ts`, whose NARROW_TIERS these widths are), so the
+   scale is never guesswork; the narrowest keeps only the ends. */
+@container (max-width: 149.98px) {
+  .detail-timeline-year:not(.is-first, .is-kept-140) {
+    display: none;
+  }
+}
+@container (max-width: 139.98px) {
+  .detail-timeline-year.is-kept-140:not(.is-kept-124) {
+    display: none;
+  }
+  .detail-timeline-year.is-kept-124 {
+    display: block;
+  }
+}
+@container (max-width: 123.98px) {
+  .detail-timeline-year.is-kept-124:not(.is-kept-108) {
+    display: none;
+  }
+  .detail-timeline-year.is-kept-108 {
+    display: block;
+  }
+}
+@container (max-width: 107.98px) {
+  .detail-timeline-year:not(.is-first) {
+    display: none;
+  }
+}
+
+.detail-timeline-key {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.detail-timeline-key-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.detail-timeline-swatch {
+  box-sizing: border-box;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.detail-timeline-swatch.is-mine {
+  border: 2.5px solid var(--ink);
+}
+.detail-timeline-swatch.is-snapshot {
+  width: 9px;
+  height: 9px;
+  border: 2.5px solid var(--ink);
+  border-radius: 1px;
+  transform: rotate(45deg);
+}
+.detail-timeline-swatch.is-newest {
+  background: var(--accent);
+}
+.detail-timeline-swatch-line {
+  display: inline-block;
+  width: 16px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border-strong);
+}
+/* A guide as the key draws it: a short upright dash in muted ink, not a tone — the key names what
+   both guides count, not which is which (their captions do that). */
+.detail-timeline-swatch-guide {
+  display: inline-block;
+  height: 11px;
+  border-left: 1px dashed var(--muted);
+}
+
+/* A phone-width panel: every column a notch smaller, so the strip — the part that answers — keeps
+   a readable width next to the version and the constraint. */
+@container (max-width: 340px) {
+  .detail-timeline-answer {
+    font-size: 17.5px;
+  }
+  /* A dot on the rule overhangs by half its width plus its halo; 4px here and the 8px column gap
+     still clear the LATEST text. */
+  .detail-timeline-grid {
+    column-gap: 8px;
+    font-size: 10.5px;
+    --rule-gap: 4px;
+  }
+  /* A narrower gutter after the constraint, but still one: "^7.2 || ^8.0" ran to the panel's edge. */
+  .detail-timeline-row {
+    padding-right: 4px;
+  }
+  .detail-timeline-branch,
+  .detail-timeline-fold-btn {
+    font-size: 11.5px;
+  }
+  /* Any constraint may break at its own spaces here, and only does when the strip is already at its
+     floor — the grid shrinks an auto column only then — so the gutter above never costs the strip. */
+  .detail-timeline-php {
+    white-space: normal;
+  }
+  .detail-timeline-php,
+  .detail-timeline-range {
+    font-size: 10px;
+  }
+}

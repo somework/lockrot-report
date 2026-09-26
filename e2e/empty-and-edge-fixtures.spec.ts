@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { currentRenderer, FIXTURES } from "./support/pages";
+import { FIXTURES } from "./support/pages";
 
-const renderer = currentRenderer();
 let report: ReportPage;
 
 test.beforeEach(async ({ page }) => {
@@ -20,16 +19,13 @@ test.describe("the empty lock (fixtures/bundles/empty-lockrot-self.json — 0 pa
     expect(await report.rows()).toEqual([]);
   });
 
-  test("the boot auto-open never fires when there is nothing flagged", async () => {
+  test("no detail is open when there is nothing flagged", async () => {
     expect((await report.detail()).open).toBe(false);
   });
 
   test("M20: a clean report says nothing was flagged, not that a filter matched nothing", async () => {
-    test.fail(
-      renderer === "legacy",
-      "M20: with FLAGGED empty, viewFindings() falls straight into the generic emptyState() — " +
-        '"Nothing matches this filter." — even though no filter is active (report.js:464,664-666)',
-    );
+    // M20 (DESIGN.md §5), fixed on purpose: legacy fell straight into the generic empty state
+    // ("Nothing matches this filter.") even with no filter active.
     const message = await report.emptyMessage();
     expect(message).not.toBeNull();
     expect(message?.toLowerCase()).not.toContain("matches this filter");
@@ -69,10 +65,8 @@ test.describe("the no-details fixture (fixtures/bundles/mini-split.json — deta
 
 test.describe("M21: Blast radius must not force a plural word onto a count of one", () => {
   test("mini.json has exactly one exposure entry: the count line should read it as singular", async () => {
-    test.fail(
-      renderer === "legacy",
-      'M21: the count line is always "{n} of {m} direct requirements", 1-of-1 included ' + "(report.js:878)",
-    );
+    // M21 (DESIGN.md §5), fixed on purpose: legacy's count line was always plural ("1 of 1 direct
+    // requirements"), 1-of-1 included.
     await report.goto(FIXTURES.mini);
     await report.tab("radius");
     const line = await report.countLine();

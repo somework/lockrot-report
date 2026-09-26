@@ -85,27 +85,249 @@
   .run-actions {
     width: 100%;
     padding-top: 4px;
+    flex-wrap: wrap;
+  }
+  /* A phone keeps the four page controls on one row where they fit (390px does, just), and the
+     share pair wraps under the other two as a pair where they do not (320px). */
+  .run-actions:has(+ .share-actions) {
+    width: auto;
+  }
+  .share-actions {
+    width: auto;
   }
 }
 
+/* ---------- print / share (Header.tsx, CopySummary.tsx) ---------- */
+.share-actions {
+  position: relative;
+}
+.copy-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.copy-pop {
+  width: min(420px, calc(100vw - 2 * var(--gutter)));
+  max-width: none;
+}
+.copy-pop-label {
+  display: block;
+  margin-bottom: 8px;
+}
+.copy-pop-text {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--surface-2);
+  color: var(--ink);
+  font: 12px/1.5 var(--mono);
+}
+@media screen {
+  /* Only ever filled while the page prints (print/usePrintDocument.ts). */
+  .print-doc {
+    display: none;
+  }
+}
+
+/* ---------- the gate fact (Header.tsx) ----------
+   A quiet fact beside "lockrot <version>", not a band: most runs carry no --fail-on, and a run
+   that does still exits 0 on the page's own reading of it (the page never re-derives whether the
+   gate fired, DESIGN.md §8). The popover is native (`popover="auto"` + `popovertarget`) — Escape
+   closes it as the browser's own default action, before keyboard.ts's chain ever sees the key
+   (DESIGN.md §8, keyboard.ts#decideEscape). */
+.fact-btn {
+  background: none;
+  border: 0;
+  border-bottom: 1px dotted var(--border-strong);
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.fact-btn:hover,
+.fact-btn:focus-visible {
+  color: var(--ink);
+  border-bottom-color: currentColor;
+}
+/* PD-BASELINE-5: the count beside the gate, as quiet as the fact it qualifies — muted words, the
+   numbers in the ink and the mono every other run-meta value takes. */
+.gate-tally {
+  color: var(--muted);
+  white-space: nowrap;
+}
+.gate-tally b {
+  color: var(--ink);
+  font-weight: 600;
+}
+/* PD-BASELINE-6: the "of them not accepted" count, when it can list its findings. It reads as the
+   fact it is, in the baseline's accent (views/baseline.css), with the dotted rule every other
+   count-that-filters on the page wears. */
+.gate-focus {
+  margin: 0 -3px;
+  padding: 0 3px;
+  border: 0;
+  border-bottom: 1px dotted currentColor;
+  border-radius: var(--radius-s) var(--radius-s) 0 0;
+  background: none;
+  font: inherit;
+  color: var(--accent-ink);
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.gate-focus b {
+  color: inherit;
+}
+.gate-focus:hover {
+  background: var(--accent-soft);
+  border-bottom-style: solid;
+}
+.gate-focus:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gate-focus {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .gate-focus {
+    color: LinkText;
+    border-bottom-color: LinkText;
+  }
+}
+@media print {
+  .gate-focus {
+    border-bottom: 0;
+    color: inherit;
+  }
+}
+.fact-pop {
+  position: fixed;
+  inset: auto;
+  top: calc(var(--topbar-h, 110px) - 40px);
+  right: var(--gutter);
+  margin: 0;
+  /* a11y/regression review: a right-hand inset alone left the shrink-to-fit width filling the rest
+     of the viewport at 320px, so the left edge (and its border and rounded corner) sat flush on the
+     screen, with no gutter on that side. Bounded against both gutters, the same way `.pill-pop`
+     bounds its own width against `100%` (common.css). */
+  max-width: min(340px, calc(100vw - 2 * var(--gutter)));
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  color: var(--ink-2);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 /* ---------- tabs ----------
-   The tab row scrolls sideways when it does not fit. The two "local" gradients are painted with
-   the content and cover the two "scroll" shadows at each end until there is something to scroll
-   to on that side: a cue drawn by CSS alone, which the legacy row lacked (css-html.md §10.3). */
-.tabs {
+   The tab row scrolls sideways when it does not fit (a phone: 582px of tabs in 390px).
+   PD-TABS-1: the side with tabs out of sight fades the row out into the header's surface, under a
+   small chevron button that scrolls it (Tabs.tsx sets `can-prev`/`can-next` on `.tabs-strip` from the
+   row's own scroll position). This replaces the scroll-shadow cue the row used to draw with
+   background gradients alone — a walk at 390px still found a clipped "Blast radius" and an
+   off-screen "Run data" with nothing saying either was there. Where the five tabs fit, neither class
+   is set and nothing here draws. */
+.tabs-strip {
+  position: relative;
   max-width: var(--page-max);
   margin: 0 auto;
+}
+.tabs {
   padding: 10px var(--gutter) 0;
   display: flex;
   gap: 2px;
   overflow-x: auto;
-  scrollbar-width: thin;
+  scrollbar-width: none;
   overscroll-behavior-x: contain;
-  background:
-    linear-gradient(to right, var(--surface) 40%, transparent) left center / 36px 100% no-repeat local,
-    linear-gradient(to left, var(--surface) 40%, transparent) right center / 36px 100% no-repeat local,
-    linear-gradient(to right, var(--border-strong), transparent) left center / 8px 100% no-repeat scroll,
-    linear-gradient(to left, var(--border-strong), transparent) right center / 8px 100% no-repeat scroll;
+  /* A tab focused with ArrowLeft/ArrowRight scrolls in clear of the chevron and fade at that edge
+     (Tabs.tsx#EDGE_CLEARANCE). */
+  scroll-padding-inline: 40px;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+.tabs-strip::before,
+.tabs-strip::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 2px;
+  width: 72px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.tabs-strip::before {
+  left: 0;
+  background: linear-gradient(to right, var(--surface) 40%, transparent);
+}
+.tabs-strip::after {
+  right: 0;
+  background: linear-gradient(to left, var(--surface) 40%, transparent);
+}
+.tabs-strip.can-prev::before,
+.tabs-strip.can-next::after {
+  opacity: 1;
+}
+.tabs-scroll {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-top: -9px;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink-2);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease;
+}
+.tabs-scroll[hidden] {
+  display: none;
+}
+.tabs-scroll:hover {
+  color: var(--ink);
+  border-color: var(--muted);
+}
+.tabs-scroll-prev {
+  left: 4px;
+}
+.tabs-scroll-next {
+  right: 4px;
+}
+.tabs-scroll-icon {
+  display: block;
+}
+/* Forced colours paint the fade in the author's surface colour over system-coloured text, so it
+   goes; the chevron buttons keep the system's own button colours and stay the cue. */
+@media (forced-colors: active) {
+  .tabs-strip::before,
+  .tabs-strip::after {
+    display: none;
+  }
+  .tabs-scroll {
+    border-color: ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    box-shadow: none;
+  }
 }
 .tab {
   flex: none;
@@ -140,6 +362,34 @@
 .tab .n:empty {
   display: none;
 }
+/* PD-ADV-7: a hollow ring in the high tone after a count from an incomplete advisory check — the
+   count is what was found, not everything there is. */
+.tab-flag {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 4px;
+  border: 1.5px solid var(--high);
+  border-radius: 50%;
+  vertical-align: 1px;
+}
+@media (forced-colors: active) {
+  .tab-flag {
+    border-color: CanvasText;
+  }
+  /* Forced colours repaint the unselected tabs' transparent underline in the text colour, so every
+     tab wore the selected one's rule and none read as current: the idle ones get the page's own
+     colour and the selected one the system highlight. */
+  .tab {
+    border-bottom-color: Canvas;
+  }
+  .tab:hover {
+    border-bottom-color: CanvasText;
+  }
+  .tab[aria-selected="true"] {
+    border-bottom-color: Highlight;
+  }
+}
 
 /* ---------- ledger band ----------
    The summary sits on the header's surface, as on the legacy page, so the page reads as a band of
@@ -149,18 +399,9 @@
   border-bottom: 1px solid var(--border);
 }
 
-/* ---------- ledger fold (phone widths) ----------
-   The ledger keeps its own padding on wider screens; folded, the fold carries the page gutter and
-   the ledger inside it drops its own. */
-.ledger-fold {
-  max-width: var(--page-max);
-  margin: 0 auto;
-  padding: 12px var(--gutter) 0;
-}
-.ledger-fold > .ledger {
-  padding: 0 0 4px;
-}
-.ledger-fold > summary,
+/* ---------- rail fold (phone widths) ----------
+   The ledger's own phone fold (the summary band's supporting tier) is styled with the rest of the
+   band, in ledger/ledger.css. */
 .rail-fold > summary {
   display: flex;
   align-items: baseline;
@@ -169,32 +410,34 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-m);
-  cursor: pointer;
-  list-style: none;
   font-size: 13px;
   color: var(--ink-2);
 }
-.ledger-fold > summary::-webkit-details-marker,
-.rail-fold > summary::-webkit-details-marker {
-  display: none;
-}
-.ledger-fold > summary::after,
+/* The disclosure marker itself (shape, rotation, hover/focus) is the one shared rule in
+   `styles/base.css`; pinned to the row's top so a wrapped summary keeps it beside its first line. */
 .rail-fold > summary::after {
-  content: "▸";
-  margin-left: auto;
-  color: var(--muted);
-  font-size: 11px;
-  transition: transform 0.15s ease;
-}
-.ledger-fold[open] > summary::after,
-.rail-fold[open] > summary::after {
-  transform: rotate(90deg);
-}
-.ledger-fold[open] > summary {
-  margin-bottom: 14px;
+  align-self: flex-start;
 }
 
 /* ---------- layout ---------- */
+/* What a row brought into view — by `j`/`k`, a `#pkg=` link on load, or a focus — must clear: the
+   Findings list's sticky 40px column head, and from 760px up the sticky header above it
+   (PD-ROWS-10). Without it a `j` past the top edge left its row under the head.
+
+   `scroll-padding-bottom` (PD-SEARCH-1 polish item 8) keeps the same one-row clearance at the
+   bottom edge: without it, `j`'s `scrollIntoView({block: "nearest"})` (App.tsx#focusRow) is free to
+   land the newly focused row flush against the viewport's own bottom edge, with nothing of the row
+   below it in view to show there is more list to walk to. Nothing sticky sits at the bottom to clear
+   the way the head does at the top, so this is one flat value at every width. */
+html {
+  scroll-padding-top: 48px;
+  scroll-padding-bottom: 48px;
+}
+@media (min-width: 760px) {
+  html {
+    scroll-padding-top: calc(var(--topbar-h) + 48px);
+  }
+}
 .shell {
   max-width: var(--page-max);
   margin: 0 auto;
@@ -203,35 +446,73 @@
   grid-template-columns: 210px minmax(0, 1fr) minmax(0, 420px);
   gap: 20px;
   align-items: start;
+  /* The height the sticky rail and detail column may take: the viewport under the topbar, with a
+     16px gap on each side. Their sticky containing block is this row, and at the page's maximum
+     scroll the row ends exactly `--footer-h` above the viewport's bottom, so a column that tall would
+     be dragged up under the topbar there; the rule below gives the footer's height back only while
+     the footer is on screen (DESIGN.md §8, PD-DETAIL-5, `e2e/detail-scroll.spec.ts`). */
+  --sticky-room: calc(100vh - var(--topbar-h) - 32px);
+}
+/* ...but only once the footer is actually on screen (`Footer.tsx` sets the class from an
+   IntersectionObserver). Subtracting it at every scroll position shrank both columns by 170-190px on
+   every screen, to a sliver on short viewports. The floor keeps a short viewport usable at the very
+   end of the page, at the cost of the panel's top sliding under the header there. */
+:root.footer-in-view .shell {
+  --sticky-room: max(calc(100vh - var(--topbar-h) - var(--footer-h) - 32px), 50vh);
 }
 /* Run data has nothing to filter, so the rail goes, and its column with it, or the list would
    inherit the rail's 210px and every value would wrap one character at a time. */
 .shell.no-rail {
   grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
 }
+/* No package open at the wide layout: `.shell-detail` (below) does not render at all, but this
+   grid's own template is static CSS with no way to know that on its own — left alone, the third
+   track sat there reserved and empty, and the list column never grew to use the width a closed
+   panel had freed (a walk found the All packages table stopping well short of the viewport at
+   1440, with nothing drawn in the gap after it). `App.tsx` never combines `no-rail` with an open
+   detail — Run, the one `no-rail` tab, always closes its detail on the switch that opened it — but
+   both classes still get their own rule here rather than relying on that never happening. */
+.shell.no-detail {
+  grid-template-columns: 210px minmax(0, 1fr);
+}
+.shell.no-rail.no-detail {
+  grid-template-columns: minmax(0, 1fr);
+}
 @media (max-width: 1180px) {
-  .shell {
+  .shell,
+  .shell.no-detail {
     grid-template-columns: 200px minmax(0, 1fr);
   }
-  .shell.no-rail {
+  .shell.no-rail,
+  .shell.no-rail.no-detail {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 759px) {
   .shell,
-  .shell.no-rail {
+  .shell.no-rail,
+  .shell.no-detail,
+  .shell.no-rail.no-detail {
     grid-template-columns: minmax(0, 1fr);
     gap: 12px;
   }
 }
 .shell-main {
   min-width: 0;
+  /* Where a "focus" press (the gate tally, a Run data count) scrolls the list to: its top just
+     clear of the header, which is sticky from 760px up and scrolls away below that. */
+  scroll-margin-top: 12px;
+}
+@media (min-width: 760px) {
+  .shell-main {
+    scroll-margin-top: calc(var(--topbar-h) + 12px);
+  }
 }
 
 .shell-rail {
   position: sticky;
   top: calc(var(--topbar-h) + 16px);
-  max-height: calc(100vh - var(--topbar-h) - 32px);
+  max-height: var(--sticky-room);
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -249,12 +530,27 @@
 .shell-detail:empty {
   display: none;
 }
+/* PD-DETAIL-5 (DESIGN.md §5/§8): `max-height` is measured against the stuck position
+   (`--topbar-h` + 16px), but a sticky element sits at its normal in-flow position — lower down the
+   page, below the ledger — until scrolling brings that position to the sticky offset. At scroll 0
+   the box was still taller than the room actually left under it, so its own bottom (the last
+   section, Provenance) rendered off the bottom of the viewport; `overscroll-behavior: contain` then
+   stopped a wheel over the box from ever chaining into the page to bring it into its stuck
+   position, where it does fit. Dropping `contain` here (kept on `.is-sheet` below, a full-screen
+   overlay that must not scroll the body behind it) lets that chaining happen: the wheel scrolls the
+   box's own content first, and once that reaches its end, the same wheel scrolls the page, which is
+   exactly what carries the box up into its sticky slot.
+   `max-height` itself is `--sticky-room` (`.shell`, above), not a fixed share of the viewport: the
+   panel's own height is what decides whether its stuck bottom can still fit above the row's true
+   final edge (`100vh` − `--footer-h`) once the reader reaches the true bottom of the page — the row's
+   own height cancels out of that comparison, so no floor on the row could ever have fixed it (a11y
+   /regression review of PD-DETAIL-5: koel_koel and wallabag_wallabag at
+   1440px, wheeled to the page's actual end rather than only until Provenance first came into view). */
 .shell-detail.is-side {
   position: sticky;
   top: calc(var(--topbar-h) + 16px);
-  max-height: calc(100vh - var(--topbar-h) - 32px);
+  max-height: var(--sticky-room);
   overflow-y: auto;
-  overscroll-behavior: contain;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-l);
@@ -312,10 +608,24 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   max-height: 84vh;
   overflow-y: auto;
   overscroll-behavior: contain;
+  /* PD-GLOSSARY-7 (DESIGN.md §5): lets `Glossary.tsx#useHighlightTerm`'s unqualified
+     `scrollIntoView({ block: "center" })` read as smooth scrolling without asking for it explicitly
+     — the page-wide `prefers-reduced-motion` rule (styles/base.css) already forces this property
+     back to `auto` for a reader who asked for less motion, which an explicit "smooth" argument to
+     `scrollIntoView` would not have honoured. */
+  scroll-behavior: smooth;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: 11px;
-  background: var(--surface);
+  /* visual review: `background`/`color` longhand, not the shorthand — a report of the dialog
+     painting stale (a white panel with dark-theme text, while `getComputedStyle` already read the
+     right dark `--surface`) pointed at this top-layer element specifically, never the pill or gate
+     popovers (`popover="auto"`, not `<dialog>`). Not reproduced here across several repro attempts
+     (a fresh `lockrot-theme` at boot, the live toggle, an explicit reload, `colorScheme: "dark"`,
+     headed and software-rendered Chromium, several fixtures and widths, the exact Chromium build
+     this repo's own e2e suite pins) — the longhand costs nothing regardless, in case the underlying
+     bug is a `<dialog>`-in-top-layer repaint quirk somewhere the shorthand form triggers. */
+  background-color: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow);
 }
@@ -369,6 +679,28 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   color: var(--muted);
   font-weight: 600;
 }
+/* PD-GLOSSARY-2: the signals, priority, libyears and keys sections fold behind a <summary> instead
+   of an <h3>, disclosed with the same marker as every other fold on the page (`styles/base.css`,
+   DESIGN.md §8) so a reader who already knows that affordance recognises it here too. Flex + the
+   section's own `gap` (above) spaces the summary from its content with the details open; nothing
+   extra to do for it closed, since a hidden child takes no gap. */
+.glossary-sect > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+/* a11y review: the heading text moved from the <summary> itself into an <h3> inside it (Glossary.tsx),
+   so a heading-navigating screen reader stops here again; these rules keep the same look, just
+   retargeted at the <h3> instead of the <summary>. */
+.glossary-sect > summary h3 {
+  margin: 0;
+  font-family: var(--cond);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
 .glossary .deflist {
   display: grid;
   grid-template-columns: minmax(96px, auto) minmax(0, 1fr);
@@ -388,8 +720,39 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
 .glossary .deflist dd {
   color: var(--ink-2);
 }
+/* PD-GLOSSARY-9 (DESIGN.md §5): the `finished` entry's second paragraph, its own allowlist note —
+   spaced off from the definition above it, in the muted tone a secondary fact gets elsewhere on the
+   page (`.muted`, styles/base.css), rather than reading as more of the same sentence. */
+.glossary .deflist .glossary-note {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
 .glossary .term-toned {
   color: var(--tone);
+}
+/* PD-GLOSSARY-7 (DESIGN.md §5): the mark "In the glossary" leaves on the entry it scrolled to.
+   `styles/base.css`'s page-wide `prefers-reduced-motion` rule already zeroes every `animation`
+   (`!important`), so a reduced-motion reader would otherwise lose the mark the instant it applied;
+   the block below restores it as a plain, un-animated highlight instead of dropping it. Both are
+   removed by `useHighlightTerm`'s own timer after the same `HIGHLIGHT_MS`, so neither lingers. */
+@keyframes glossary-highlight-fade {
+  from {
+    background-color: var(--accent-soft);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+.glossary .deflist dt.glossary-highlight,
+.glossary .deflist dd.glossary-highlight {
+  animation: glossary-highlight-fade 1.6s ease-out;
+  border-radius: var(--radius-s);
+}
+@media (prefers-reduced-motion: reduce) {
+  .glossary .deflist dt.glossary-highlight,
+  .glossary .deflist dd.glossary-highlight {
+    background-color: var(--accent-soft);
+  }
 }
 .glossary .small-note {
   font-size: 12px;

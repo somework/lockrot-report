@@ -118,9 +118,9 @@ describe("serializeHash", () => {
     expect(h).toBe("verdict=" + encodeURIComponent("stale,silent"));
   });
 
-  it("writes pkg when it was chosen explicitly", () => {
+  it("writes pkg whenever a package is open: the page never opens one by itself (PD-ROWS-9)", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, pkg: "acme/widget", pkgAuto: false };
+    const state: State = { ...INITIAL_STATE, pkg: "acme/widget" };
 
     // Act
     const h = serializeHash(state);
@@ -129,9 +129,9 @@ describe("serializeHash", () => {
     expect(h).toBe("pkg=acme%2Fwidget");
   });
 
-  it("omits pkg when it is the page's own automatic pick", () => {
+  it("omits pkg when no package is open", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, pkg: "acme/widget", pkgAuto: true };
+    const state: State = { ...INITIAL_STATE, view: "findings", pkg: null };
 
     // Act
     const h = serializeHash(state);
@@ -148,7 +148,6 @@ describe("serializeHash", () => {
       q: "curl",
       filters: { ...EMPTY_FILTERS, prio: ["high"], sev: ["critical"] },
       pkg: "acme/widget",
-      pkgAuto: false,
     };
 
     // Act
@@ -187,7 +186,6 @@ describe("parseHash", () => {
       q: "curl",
       filters: { ...EMPTY_FILTERS, prio: ["high"], sev: ["critical"] },
       pkg: "acme/widget",
-      pkgAuto: false,
     };
 
     // Act
@@ -199,7 +197,6 @@ describe("parseHash", () => {
     expect(restored.q).toBe(state.q);
     expect(restored.filters).toEqual(state.filters);
     expect(restored.pkg).toBe(state.pkg);
-    expect(restored.pkgAuto).toBe(false);
   });
 
   it("skips a piece with no = silently", () => {
@@ -237,16 +234,15 @@ describe("parseHash", () => {
     expect(next.q).toBe("a b&c");
   });
 
-  it("sets pkg and clears pkgAuto, mirroring select()", () => {
+  it("sets pkg, decoded, over whatever base had open", () => {
     // Arrange
-    const base: State = { ...INITIAL_STATE, pkgAuto: true };
+    const base: State = { ...INITIAL_STATE, pkg: "other/pkg" };
 
     // Act
     const next = parseHash("pkg=acme%2Fwidget", base);
 
     // Assert
     expect(next.pkg).toBe("acme/widget");
-    expect(next.pkgAuto).toBe(false);
   });
 
   it("adds comma-separated keys to a filter group, skipping empty segments", () => {

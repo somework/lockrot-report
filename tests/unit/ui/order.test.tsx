@@ -153,39 +153,41 @@ describe("renderedPackages: advisories", () => {
 });
 
 describe("renderedPackages: radius", () => {
-  it("lists a card's pulled packages, largest card first, never the parent itself", () => {
-    // Arrange: `direct/small` pulls one package in, `direct/big` pulls two.
-    const pulledA = makeFinding({
-      package: "pulled/a",
-      verdict: "stale",
-      direct: false,
-      chain: ["direct/big"],
-    });
-    const pulledB = makeFinding({
-      package: "pulled/b",
-      verdict: "stale",
-      direct: false,
-      chain: ["direct/big"],
-    });
-    const pulledC = makeFinding({
-      package: "pulled/c",
-      verdict: "stale",
-      direct: false,
-      chain: ["direct/small"],
-    });
-    const model = modelWith([pulledA, pulledB, pulledC], {
+  // `direct/small` pulls one package in, `direct/big` pulls two.
+  const pulled = (pkg: string, parent: string) =>
+    makeFinding({ package: pkg, verdict: "stale", direct: false, chain: [parent, pkg] });
+  const model = modelWith(
+    [pulled("pulled/a", "direct/big"), pulled("pulled/b", "direct/big"), pulled("pulled/c", "direct/small")],
+    {
       exposure: [
         { package: "direct/small", flagged: 1 },
         { package: "direct/big", flagged: 2 },
       ],
-    });
+    },
+  );
 
+  it("lists a row per direct requirement, most listed first, its packages folded away (PD-RADIUS-3)", () => {
     // Act
     const order = renderedPackages(model, stateWith(), "radius");
 
-    // Assert: direct/big's two rows before direct/small's one, "direct/big"/"direct/small"
-    // themselves never appear — only what each one pulls in.
-    expect(order).toEqual(["pulled/a", "pulled/b", "pulled/c"]);
+    // Assert: a closed row's packages are not on screen, so j/k never walk to them.
+    expect(order).toEqual(["direct/big", "direct/small"]);
+  });
+
+  it("lists an open row's packages right after it", () => {
+    // Act
+    const order = renderedPackages(model, stateWith({ disclosure: { "row:direct/big": true } }), "radius");
+
+    // Assert
+    expect(order).toEqual(["direct/big", "pulled/a", "pulled/b", "direct/small"]);
+  });
+
+  it("opens the row that lists the open package", () => {
+    // Act
+    const order = renderedPackages(model, stateWith({ pkg: "pulled/c" }), "radius");
+
+    // Assert
+    expect(order).toEqual(["direct/big", "direct/small", "pulled/c"]);
   });
 });
 

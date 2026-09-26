@@ -10,9 +10,10 @@
 
 import type { Finding, Model, Priority, View } from "../model/types";
 import { PRIORITIES } from "../model/types";
-import type { Filters, FilterGroup, SortKey, State } from "../state/types";
+import { FILTER_GROUPS, type Filters, type FilterGroup, type SortKey, type State } from "../state/types";
 import { matchesFinding, parseQuery } from "./query";
 import { fixShapeOf, type FixShape } from "./advisories";
+import { placedOnRadius } from "./radius";
 // `vocab.ts` is another agent's file (DESIGN.md §3); these three names are its documented exports.
 import { isFlagged, SIGNAL_NAMES, VERDICT_ORDER } from "./vocab";
 
@@ -54,9 +55,10 @@ export function population(model: Model, view: View): readonly Finding[] {
  * unknown package, since `BaselineComparison` only ever records a status for a flagged finding —
  * under "known" (`baselineState(f) !== "new" && !== "worsened"` is true for `null` too), so
  * "Already accepted" silently counted every healthy package. Here "known" means the baseline
- * itself said so, nothing else does.
+ * itself said so, nothing else does. Exported for `domain/baseline.ts`'s delta line, which counts
+ * the same buckets the rail does.
  */
-function sinceBucket(f: Finding): "new" | "worsened" | "known" | null {
+export function sinceBucket(f: Finding): "new" | "worsened" | "known" | null {
   if (f.baseline === null) return null;
   const status = f.baseline.status;
   if (status === "new") return "new";
@@ -182,6 +184,19 @@ export function applyFilters(model: Model, state: State, view: View): readonly F
   return filtered;
 }
 
+/**
+ * Whether `pkg` belongs to `state.view`'s own population but the search box or a rail filter keeps
+ * it off the list there (PD-DETAIL-4, DESIGN.md §5) — the one fact `DetailHeader`'s "Hidden by the
+ * current filters." note and the search status line (`ui/search/SearchBar.tsx`) both read, so
+ * neither can say something the other doesn't. False for a package the tab never lists at all (an
+ * `ok` package on the Findings tab, say), which is a different fact this does not claim.
+ */
+export function hiddenByFilters(model: Model, state: State, pkg: string): boolean {
+  const inTab = population(model, state.view).some((f) => f.package === pkg);
+  if (!inTab) return false;
+  return !applyFilters(model, state, state.view).some((f) => f.package === pkg);
+}
+
 // -------------------------------------------------------------------------------------------
 // The rail itself (legacy `renderRail()`, report.js:319-394)
 // -------------------------------------------------------------------------------------------
@@ -199,80 +214,131 @@ export interface RailGroup {
   readonly rows: readonly RailRow[];
 }
 
-/** Counts are per the tab's whole population, not faceted against the filters already active on
- *  the other groups — kept exactly as legacy computed them (DESIGN.md §5, "deliberately kept"). */
 function hasBaseline(model: Model): boolean {
   return model.report.baseline !== null && model.report.findings.some((f) => f.baseline !== null);
 }
 
-function buildSinceGroup(model: Model, state: State, here: readonly Finding[]): RailGroup | null {
-  if (model.report.baseline === null || !hasBaseline(model)) return null;
-  const rows: readonly (readonly [string, string])[] = [
-    ["new", "New"],
-    ["worsened", "Worsened"],
-    ["known", "Already accepted"],
-  ];
-  return {
-    group: "since",
-    title: `Since ${model.report.baseline.path}`,
-    rows: rows.map(([key, label]) => ({
-      key,
-      label,
-      count: here.filter((f) => sinceBucket(f) === key).length,
-      on: state.filters.since.includes(key),
-    })),
-  };
+/**
+ * The filters with `key` turned on in `group`, the way a click on its rail row turns it on (the
+ * reducer's `toggle`): added to what the group already has — ANDed for Scope's buttons, ORed for
+ * every other group's rows — every other filter and the search staying as they are. A row already
+ * on leaves the filters as they are.
+ */
+function withRowOn(filters: Filters, group: FilterGroup, key: string): Filters {
+  const current = filters[group];
+  return current.includes(key) ? filters : { ...filters, [group]: [...current, key] };
 }
 
-function buildScopeGroup(state: State, here: readonly Finding[]): RailGroup {
-  const rows: readonly (readonly [string, string, (f: Finding) => boolean])[] = [
-    ["direct", "Direct", (f) => f.direct],
-    ["transitive", "Transitive", (f) => !f.direct],
-    ["prod", "require", (f) => !f.dev],
-    ["dev", "require-dev", (f) => f.dev],
-  ];
-  return {
-    group: "scope",
-    title: "Scope",
-    rows: rows.map(([key, label, predicate]) => ({
-      key,
-      label,
-      count: here.filter(predicate).length,
-      on: state.filters.scope.includes(key),
-    })),
-  };
+/** What a rail row counts over: the tab's population, with Blast radius narrowed to the flagged
+ *  findings that tab has a place for (PD-RAIL-1, radius.ts#placedOnRadius), and the query parsed. */
+interface RailScope {
+  readonly state: State;
+  readonly here: readonly Finding[];
+  readonly terms: ReturnType<typeof parseQuery>;
 }
+
+function countUnder(scope: RailScope, filters: Filters): number {
+  return scope.here.filter((f) => matchesFinding(f, scope.terms) && passesRail(filters, f)).length;
+}
+
+/**
+ * A rail row's count and whether it is shown (PD-RAIL-2). The count is the list's length with the
+ * row on: for a row that is off, what a click on it lists — in an ORed group that already has a
+ * selection, the union of that selection and this row, not the row's own share, so "S7 32" beside a
+ * list of 3 is the 32 the list becomes; for a row that is on, the list as it stands.
+ *
+ * A row that is off is shown only when some package it matches would be listed under the other
+ * filters — its own share, with its group's selection set aside. In an ORed group with a selection
+ * the count alone cannot say that: a row whose packages are all already listed and one that matches
+ * none of them both count the list as it stands.
+ */
+function rowCount(scope: RailScope, group: FilterGroup, key: string): { count: number; shown: boolean } {
+  const filters = scope.state.filters;
+  const count = countUnder(scope, withRowOn(filters, group, key));
+  if (filters[group].includes(key)) return { count, shown: true };
+  const own =
+    group === "scope" || filters[group].length === 0
+      ? count
+      : countUnder(scope, { ...filters, [group]: [key] });
+  return { count, shown: own > 0 };
+}
+
+/**
+ * One group's rows, each counting what the list shows with it on (PD-RAIL-2). A row matching
+ * nothing the other filters leave is left out unless it is selected — a reader must always be able
+ * to turn off what is on — and a group left with no rows is left out whole.
+ */
+function groupOf(
+  scope: RailScope,
+  group: FilterGroup,
+  title: string,
+  rows: readonly (readonly [key: string, label: string])[],
+): RailGroup | null {
+  const selected = scope.state.filters[group];
+  const shown = rows.flatMap(([key, label]) => {
+    const { count, shown: visible } = rowCount(scope, group, key);
+    return visible ? [{ key, label, count, on: selected.includes(key) }] : [];
+  });
+  return shown.length === 0 ? null : { group, title, rows: shown };
+}
+
+const SINCE_ROWS: readonly (readonly [string, string])[] = [
+  ["new", "New"],
+  ["worsened", "Worsened"],
+  ["known", "Already accepted"],
+];
+
+const SCOPE_ROWS: readonly (readonly [string, string])[] = [
+  ["direct", "Direct"],
+  ["transitive", "Transitive"],
+  ["prod", "require"],
+  ["dev", "require-dev"],
+];
+
+/**
+ * The rail's own short names for S1–S10 (PD-RAIL-3): the rail is 200–210px wide, and five of the
+ * glossary's names ("release predates the target PHP", "no push to the repository", …) broke over
+ * two lines there, so the list of checks read as a ragged block. Each button's `title` still gives
+ * the full definition (`SIGNAL_DEFS`); an id without an entry here takes its `SIGNAL_NAMES` name.
+ */
+export const RAIL_SIGNAL_LABELS: Readonly<Record<string, string>> = {
+  S1: "marked abandoned",
+  S2: "no stable release",
+  S3: "repository archived",
+  S4: "no recent push",
+  S5: "predates target PHP",
+  S6: "branch snapshot",
+  S7: "pulls in flagged",
+  S8: "branch stopped",
+  S9: "security advisories",
+  S10: "a check did not run",
+};
 
 /** `S<n>` sorts by `n` (the M2 fix: numeric id order, so S10 lands after S9 instead of between S1
- *  and S2); any id that isn't `S<digits>` sorts after all of those, alphabetically among itself. */
-function signalSortKey(id: string): readonly [number, string] {
+ *  and S2); any id that isn't `S<digits>` sorts after all of those, alphabetically among itself.
+ *  Exported for `domain/rows.ts`'s key-fact pick (PD-ROWS-1), which ties on this same order
+ *  instead of restating it. */
+export function signalSortKey(id: string): readonly [number, string] {
   const match = /^S(\d+)$/.exec(id);
   const digits = match?.[1];
   return digits !== undefined ? [Number(digits), ""] : [Number.MAX_SAFE_INTEGER, id];
 }
 
-function buildSignalGroup(state: State, here: readonly Finding[]): RailGroup | null {
-  const counts = new Map<string, number>();
-  for (const f of here) {
-    for (const signal of f.signals) counts.set(signal.id, (counts.get(signal.id) ?? 0) + 1);
-  }
-  if (counts.size === 0) return null;
+function signalLabel(id: string): string {
+  return RAIL_SIGNAL_LABELS[id] ?? SIGNAL_NAMES[id] ?? "";
+}
 
-  const ids = [...counts.keys()].sort((a, b) => {
+/** Every id that fired on the tab's population, whatever else is selected — which rows exist does
+ *  not depend on the other filters; only their counts do. A signal id counts a package once,
+ *  however many times it fired on it (PD-RAIL-1). */
+function signalRows(here: readonly Finding[]): readonly (readonly [string, string])[] {
+  const ids = [...new Set(here.flatMap((f) => f.signals.map((signal) => signal.id)))];
+  ids.sort((a, b) => {
     const [an, as] = signalSortKey(a);
     const [bn, bs] = signalSortKey(b);
     return an !== bn ? an - bn : as.localeCompare(bs);
   });
-  return {
-    group: "signal",
-    title: "Signal",
-    rows: ids.map((id) => ({
-      key: id,
-      label: SIGNAL_NAMES[id] ?? "",
-      count: counts.get(id) ?? 0,
-      on: state.filters.signal.includes(id),
-    })),
-  };
+  return ids.map((id) => [id, signalLabel(id)]);
 }
 
 const FIX_GROUP_TEXT: readonly (readonly [FixShape, string])[] = [
@@ -281,46 +347,105 @@ const FIX_GROUP_TEXT: readonly (readonly [FixShape, string])[] = [
   ["none", "No fix listed"],
 ];
 
-function buildFixGroup(state: State, here: readonly Finding[]): RailGroup | null {
-  const counts: Record<FixShape, number> = { branch: 0, move: 0, none: 0 };
-  let total = 0;
-  for (const f of here) {
-    for (const advisory of f.advisories) {
-      counts[fixShapeOf(advisory)] += 1;
-      total += 1;
-    }
-  }
-  if (total === 0) return null;
-
-  const rows = FIX_GROUP_TEXT.filter(([shape]) => counts[shape] > 0).map(([shape, label]) => ({
-    key: shape,
-    label,
-    count: counts[shape],
-    on: state.filters.fix.includes(shape),
-  }));
-  return { group: "fix", title: "What the fix costs", rows };
+/**
+ * PD-RAIL-1: each fix shape counts the packages with at least one advisory of that shape — exactly
+ * the packages `passesRail` keeps when the row is selected — not the advisories. Legacy counted
+ * advisories (`report.js:376-383`) while filtering packages, so spomky-labs/otphp's two
+ * other-branch advisories read "Moving to another branch 2" over a list of one row. A package whose
+ * advisories take two shapes counts once under each, as it is listed under either.
+ */
+function fixRows(here: readonly Finding[]): readonly (readonly [string, string])[] {
+  const shapes = new Set(here.flatMap((f) => f.advisories.map(fixShapeOf)));
+  return FIX_GROUP_TEXT.filter(([shape]) => shapes.has(shape));
 }
 
 /**
- * The rail's groups, in legacy's fixed emission order: Since (only with a baseline), Scope
- * (always), Signal (only if any signal fired), What the fix costs (only with ≥1 advisory). The
- * ledger's own priority/verdict/severity legends are a different UI surface (`renderLedger()`,
- * not `renderRail()`) and are not part of this list.
+ * The rail's groups, in legacy's fixed emission order: Since (only with a baseline), Scope, Signal
+ * (only if any signal fired), What the fix costs (only with ≥1 advisory). The ledger's own
+ * priority/verdict/severity legends are a different UI surface (`renderLedger()`, not
+ * `renderRail()`) and are not part of this list.
+ *
+ * PD-RAIL-1: every count is the packages the list shows once that row is selected, so on Blast
+ * radius only the flagged findings that tab has a place for count — not the flagged direct
+ * requirements with no card (radius.ts#placedOnRadius). PD-RAIL-2: "once that row is selected"
+ * means with everything else the reader chose still on, the row added to its own group's selection
+ * as a click adds it — legacy counted the whole population whatever else was selected (DESIGN.md
+ * M18), so "Direct 20" sat beside a list of 3.
  */
 export function railGroups(model: Model, state: State): readonly RailGroup[] {
-  const here = population(model, state.view);
-  const groups: RailGroup[] = [];
+  const everyone = population(model, state.view);
+  const here = state.view === "radius" ? placedOnRadius(model, everyone) : everyone;
+  const scope: RailScope = { state, here, terms: parseQuery(state.q) };
 
-  const since = buildSinceGroup(model, state, here);
-  if (since) groups.push(since);
+  const groups = [
+    model.report.baseline !== null && hasBaseline(model)
+      ? groupOf(scope, "since", `Since ${model.report.baseline.path}`, SINCE_ROWS)
+      : null,
+    groupOf(scope, "scope", "Scope", SCOPE_ROWS),
+    groupOf(scope, "signal", "Signal", signalRows(here)),
+    groupOf(scope, "fix", "What the fix costs", fixRows(here)),
+  ];
+  return groups.filter((group): group is RailGroup => group !== null);
+}
 
-  groups.push(buildScopeGroup(state, here));
+// -------------------------------------------------------------------------------------------
+// The active-filters line (PD-RAIL-4)
+// -------------------------------------------------------------------------------------------
 
-  const signal = buildSignalGroup(state, here);
-  if (signal) groups.push(signal);
+export interface ActiveFilter {
+  readonly group: FilterGroup;
+  readonly key: string;
+  /** Which kind of filter it is, said before the value ("Scope", "Signal"): "New" or "critical"
+   *  alone does not say which of the page's several lists of words it came from. */
+  readonly groupLabel: string;
+  /** The value, in the words the control that turned it on uses. */
+  readonly label: string;
+}
 
-  const fix = buildFixGroup(state, here);
-  if (fix) groups.push(fix);
+const GROUP_LABELS: Readonly<Record<FilterGroup, string>> = {
+  prio: "Priority",
+  verdict: "Verdict",
+  scope: "Scope",
+  signal: "Signal",
+  sev: "Severity",
+  fix: "Fix",
+  since: "Since baseline",
+};
 
-  return groups;
+const SCOPE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(SCOPE_ROWS);
+const SINCE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(SINCE_ROWS);
+const FIX_LABELS: Readonly<Record<string, string>> = Object.fromEntries(FIX_GROUP_TEXT);
+
+function activeLabel(group: FilterGroup, key: string): string {
+  switch (group) {
+    case "scope":
+      return SCOPE_LABELS[key] ?? key;
+    case "signal": {
+      const label = signalLabel(key);
+      return label === "" ? key : `${key} ${label}`;
+    }
+    case "fix":
+      return FIX_LABELS[key] ?? key;
+    case "since":
+      return SINCE_LABELS[key] ?? key;
+    default:
+      return key;
+  }
+}
+
+/**
+ * Every selection that narrows the list, from the rail and the ledger's chips alike, in the order
+ * the fragment writes the groups (`FILTER_GROUPS`) and, inside a group, the order they were chosen
+ * — what the active-filters line under the search box lists, each removable on its own (PD-RAIL-4).
+ * The search box's own text is not one of these: the line adds it itself.
+ */
+export function activeFilters(filters: Filters): readonly ActiveFilter[] {
+  return FILTER_GROUPS.flatMap((group) =>
+    filters[group].map((key) => ({
+      group,
+      key,
+      groupLabel: GROUP_LABELS[group],
+      label: activeLabel(group, key),
+    })),
+  );
 }

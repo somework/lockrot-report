@@ -1,94 +1,153 @@
-import type { ExplainMetadata } from "../../model/types";
-import { day } from "../../domain/format";
-import { timelineLayout, type TimelineLane } from "../../domain/timeline";
+import { useState } from "preact/hooks";
+import type { ExplainLock, ExplainMetadata } from "../../model/types";
+import { ageZone, releaseThresholds } from "../../domain/age";
+import { timelineModel, yearsSince, type TimelineLane, type TimelineTick } from "../../domain/timeline";
+import type { Tone } from "../../domain/vocab";
 import { useReport } from "../context";
-import "./detail.css";
-
-/** `lane.newest` is suppressed on the installed branch (`timeline.ts`'s own doc comment) — a
- *  package can only be "still releasing" on a branch it has moved off of. */
-function laneClassName(lane: TimelineLane): string {
-  const classes = ["detail-timeline-lane"];
-  if (lane.installed) classes.push("detail-timeline-lane-installed");
-  if (lane.newest && !lane.installed) classes.push("detail-timeline-lane-newest");
-  return classes.join(" ");
-}
+import { Answer, Key } from "./TimelineAnswer";
+import { FoldRows, GuideCaptions, LaneRow, Sr, at, type Guide, type TopWord } from "./TimelineRows";
+import { placeYears } from "./timelineAxis";
+import "./timeline.css";
+import "./timeline-forced.css";
 
 /**
- * "Release branches": the branch/release timeline, ported from legacy `timeline()`
- * (`report.js:669-709`). `timelineLayout` (domain/timeline.ts) already applies the C2 and M26 fixes;
- * this only lays out the numbers it returns. Renders nothing when fewer than two branches carry a
- * date — the same threshold legacy used to skip the whole section.
+ * "Release branches", answer first (PD-TIMELINE-1..12, DESIGN.md §5): two sentences that say where
+ * the reader is and what is newer, then one row per branch that matters on one shared time axis
+ * ending at a "today" rule — the line from each dot to that rule is the time since that branch's
+ * last release. Rows sort newest version first; the reader's own row and the newest one carry the
+ * weight, everything older than the reader's folds into one row. `domain/timeline.ts` decides all
+ * of that; this only draws it. Renders nothing when fewer than two rows would be drawn.
  */
-/**
- * Whether a lane's label grows leftward from its dot rather than rightward: whichever side of the
- * track has more room. Legacy flipped only past 62%, and let a long label spill over the track's
- * edge; the rewrite clipped it at the edge instead, so a dot at 53% with its label on the right
- * lost the end of it ("… · p…"). Where neither side is wide enough, the label wraps.
- */
-export function labelGrowsLeft(x: number): boolean {
-  return x > 50;
-}
-
 export function Timeline({
   metadata,
+  lock,
   installedVersion,
+  ageToned = true,
 }: {
   metadata: ExplainMetadata | null;
+  lock: ExplainLock | null;
   installedVersion: string;
+  /** False when the finding's verdict does not rest on age (`age.ts#isContextOnly`: abandoned,
+   *  pinned). The reader's own age then stays in ink here too, as it does in the answer sentence and
+   *  the key facts above — one age must not read as neutral there and as a warning here. */
+  ageToned?: boolean;
 }) {
-  const { now } = useReport();
-  const layout = timelineLayout(metadata?.branches ?? [], now);
-  if (layout.lanes.length === 0) return null;
+  const { model, now } = useReport();
+  const [openFolds, setOpenFolds] = useState<readonly string[]>([]);
+  const timeline = timelineModel(metadata?.branches ?? [], lock, installedVersion, now);
+  if (timeline === null) return null;
+
+  const thresholds = releaseThresholds(model.report.run.thresholds);
+  // A snapshot's date is a checkout, not a release: it never takes the release-age tone.
+  const toneOf = (lane: TimelineLane): Tone | null =>
+    thresholds === null || lane.snapshot || !ageToned
+      ? null
+      : ageZone(yearsSince(lane.date, now), thresholds.warn, thresholds.high);
+  const guides: Guide[] =
+    thresholds === null
+      ? []
+      : [
+          { years: thresholds.warn, level: "warn" as const, tone: "med" as const },
+          { years: thresholds.high, level: "high" as const, tone: "crit" as const },
+        ].flatMap((guide) => {
+          const x = timeline.xOfYearsAgo(guide.years);
+          return x === null ? [] : [{ ...guide, x }];
+        });
+  const toggle = (which: string): void => {
+    setOpenFolds((open) => (open.includes(which) ? open.filter((w) => w !== which) : [...open, which]));
+  };
+  const { releasesOnly } = timeline;
+  const topWord: TopWord = timeline.topReleasedLast ? "newest" : "highest";
+  const order = timeline.sortedBy === "version" ? "newest version first" : "most recent release first";
 
   return (
-    <section className="detail-section">
-      <h3>Release branches</h3>
-      <div className="detail-timeline">
-        <div className="detail-timeline-axis">
-          {layout.ticks.map((tick) => (
-            <span key={tick.year} className="detail-timeline-tick" style={{ left: `${tick.x}%` }}>
-              {tick.year}
+    <section className="detail-section detail-timeline">
+      <h3>{releasesOnly ? "Release history" : "Release branches"}</h3>
+      <Answer
+        timeline={timeline}
+        installedVersion={installedVersion}
+        tone={timeline.mine ? toneOf(timeline.mine) : null}
+        topWord={topWord}
+      />
+      <div
+        role="table"
+        className="detail-timeline-grid"
+        aria-label={`${releasesOnly ? "Releases" : "Release branches"}, ${order}`}
+      >
+        <div role="row" className="detail-timeline-row detail-timeline-head">
+          <span role="columnheader" aria-sort="descending" title={order}>
+            {releasesOnly ? "release" : "branch"}
+            <span className="detail-timeline-order" aria-hidden="true">
+              ↓
             </span>
-          ))}
+          </span>
+          <span role="columnheader" className="detail-timeline-strip-head">
+            <Sr>time since the last release, on one axis ending today</Sr>
+            <GuideCaptions guides={guides} />
+          </span>
+          <span role="columnheader">{releasesOnly ? "released" : "latest"}</span>
+          <span role="columnheader">PHP</span>
         </div>
-        {layout.lanes.map((lane) => {
-          // The label grows toward whichever edge is further away, starting just past the dot.
-          // It is in the flow of the track, so a label too long for its side wraps — the php
-          // constraint moves to a second line — and the lane grows to hold it: nothing is cut.
-          const labelPastMidpoint = labelGrowsLeft(lane.x);
-          const labelStyle = labelPastMidpoint
-            ? { marginRight: `${100 - lane.x + 2}%` }
-            : { marginLeft: `${lane.x + 2}%` };
-
-          return (
-            <div key={lane.branch} className={laneClassName(lane)}>
-              <span className="detail-timeline-branch">{lane.branch}</span>
-              <span className="detail-timeline-track">
-                <span className="detail-timeline-dot" style={{ left: `${lane.x}%` }} />
-                <span
-                  className={labelPastMidpoint ? "detail-timeline-label is-flipped" : "detail-timeline-label"}
-                  style={labelStyle}
-                >
-                  {lane.label} · {day(lane.date)}
-                  {/* A no-break space: a wrapped label keeps "php" next to its constraint. */}
-                  {lane.php !== null && ` · php\u00a0${lane.php}`}
-                </span>
-              </span>
-            </div>
-          );
-        })}
+        {timeline.rows.map((row) =>
+          row.kind === "lane" ? (
+            <LaneRow
+              key={row.lane.branch}
+              lane={row.lane}
+              tone={row.lane.installed ? toneOf(row.lane) : null}
+              guides={guides}
+              releasesOnly={releasesOnly}
+              topWord={topWord}
+            />
+          ) : (
+            <FoldRows
+              key={row.which}
+              fold={row}
+              open={openFolds.includes(row.which)}
+              onToggle={() => {
+                toggle(row.which);
+              }}
+              guides={guides}
+              releasesOnly={releasesOnly}
+              topWord={topWord}
+            />
+          ),
+        )}
+        <Axis ticks={timeline.ticks} guides={guides} />
       </div>
-      <div className="detail-timeline-legend">
-        <span className="detail-timeline-legend-item">
-          <span className="detail-timeline-swatch detail-timeline-swatch-installed" />
-          you are on {installedVersion}
-        </span>
-        <span className="detail-timeline-legend-item">
-          <span className="detail-timeline-swatch detail-timeline-swatch-newest" />
-          branch still releasing
-        </span>
-        <span className="detail-timeline-legend-item">one dot = that branch's newest dated release</span>
-      </div>
+      <Key timeline={timeline} topWord={topWord} guides={guides.length > 0} />
     </section>
+  );
+}
+
+/** The axis sits under the rows, not in the header: "today" above the rule butted into the LATEST
+ *  header beside it and read as one phrase ("today LATEST"). Each year hangs from a hairline tick on
+ *  its true place, its label beside the tick when a guide's line would otherwise run into it
+ *  (`timelineAxis.ts`). Decorative — every row's own cell already carries its date for a screen
+ *  reader. */
+function Axis({ ticks, guides }: { ticks: readonly TimelineTick[]; guides: readonly Guide[] }) {
+  const years = placeYears(
+    ticks,
+    guides.map((guide) => guide.x),
+  );
+  return (
+    <div className="detail-timeline-row detail-timeline-axis-row" aria-hidden="true">
+      <span />
+      <span className="detail-timeline-axis">
+        {years.map((year) => (
+          <span
+            key={year.year}
+            className={[
+              "detail-timeline-year",
+              `is-${year.place}`,
+              ...year.keptAt.map((w) => `is-kept-${w}`),
+            ].join(" ")}
+            style={at("--x", year.x)}
+          >
+            {year.year}
+          </span>
+        ))}
+        <span className="detail-timeline-today">today</span>
+      </span>
+    </div>
   );
 }

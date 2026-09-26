@@ -1,6 +1,9 @@
 import type { ComponentChildren } from "preact";
+import { useId, useRef } from "preact/hooks";
 import { safeHref } from "../../domain/links";
-import { DOCS_URL, TONE, VERDICT_DEFS, type Tone } from "../../domain/vocab";
+import { annotateThresholds, DOCS_URL, TONE, VERDICT_DEFS, type Tone } from "../../domain/vocab";
+import { useReport } from "../context";
+import "./common.css";
 
 /**
  * The small pieces every surface uses. Tone is a class, never an inline style: the page runs under
@@ -12,10 +15,18 @@ export function toneClass(tone: Tone): string {
   return `tone-${tone}`;
 }
 
-/** A verdict or priority word in its tone. `docs` links it to the glossary on lockrot.dev. */
+/**
+ * A verdict or priority word in its tone. `docs` gives it a popover holding the definition. `title`
+ * (and the popover's own definition text, `DocsPill` below) runs the raw `VERDICT_DEFS` entry through
+ * `annotateThresholds` first, the same call `Glossary.tsx#VerdictDefs` makes, so a reader who only
+ * ever meets a row's own pill still gets this run's actual years rather than the two config key names
+ * the unfilled text names (a11y review, DESIGN.md §5 PD-GLOSSARY-8).
+ */
 export function Pill({ word, docs = false }: { word: string; docs?: boolean }) {
+  const { model } = useReport();
   const className = `pill ${toneClass(TONE(word))}`;
-  const title = VERDICT_DEFS[word];
+  const def = VERDICT_DEFS[word];
+  const title = def === undefined ? undefined : annotateThresholds(def, model.report.run.thresholds);
   if (!docs) {
     return (
       <span className={className} title={title}>
@@ -24,16 +35,122 @@ export function Pill({ word, docs = false }: { word: string; docs?: boolean }) {
     );
   }
 
+  return <DocsPill word={word} className={className} title={title} />;
+}
+
+/**
+ * PD-GLOSSARY-4: this used to be an `<a>` out to lockrot.dev — useless offline, and a report opened
+ * from a PHAR or a file:// path has no network at all (DESIGN.md §1.1). A native popover holds the
+ * same definition the glossary would give it, in place, plus a way into the full glossary and the
+ * lockrot.dev link for whoever does have it open. Used only where a pill is not also a row's own
+ * click target — today that is the open detail's own header (`DetailHeader.tsx`); a row's pill
+ * (`views/FindingRow.tsx`, PD-GLOSSARY-5) stays plain instead, since a reader who clicks the word in
+ * a row wants the package, not its definition. `useId` keeps every instance's popover unique in case
+ * that ever changes and two show at once.
+ *
+ * A `<button popovertarget>` is a control (`ui/keyboard.ts`'s `CONTROLS` already matches `button`),
+ * so Enter on the pill activates it instead of toggling whatever row it sits in (M5), and the row's
+ * own click guard is widened to ignore it and its popover in `views/FindingRow.tsx`.
+ *
+ * a11y review: "In the glossary" carries `popovertargetaction="hide"`, which hides this popover — the
+ * button's own ancestor — in the same click, before Preact's `onClick` handler runs; by the time the
+ * glossary's dialog would read `document.activeElement` to remember who to give focus back to, this
+ * button is already display:none and focus has already fallen to `<body>`. `pillRef` holds the pill
+ * itself (still visible, still in the row) instead, and `openGlossaryFrom` passes it through so the
+ * glossary returns focus there on close, not to `<body>` (`Glossary.tsx#useDialog`).
+ */
+function DocsPill({
+  word,
+  className,
+  title,
+}: {
+  word: string;
+  className: string;
+  title: string | undefined;
+}) {
+  const id = useId();
+  const pillRef = useRef<HTMLButtonElement>(null);
+  const { openGlossaryFrom } = useReport();
+
   return (
-    <a
-      className={className}
-      title={title}
-      href={`${DOCS_URL}#the-nine-verdicts`}
-      target="_blank"
-      rel="noopener noreferrer"
+    <>
+      <button
+        ref={pillRef}
+        type="button"
+        className={className}
+        title={title}
+        popovertarget={id}
+        popovertargetaction="toggle"
+      >
+        {word}
+      </button>
+      <div id={id} popover="auto" className={`pill-pop ${toneClass(TONE(word))}`}>
+        <p className="pill-pop-word">{word}</p>
+        <p className="pill-pop-def">{title}</p>
+        <div className="pill-pop-actions">
+          <button
+            type="button"
+            className="pill-pop-action"
+            popovertarget={id}
+            popovertargetaction="hide"
+            onClick={() => {
+              // PD-GLOSSARY-7 (DESIGN.md §5): `word` is what the glossary scrolls to and marks, so
+              // "In the glossary" lands the reader on this pill's own entry, not the top of the list.
+              openGlossaryFrom(pillRef.current, word);
+            }}
+          >
+            In the glossary
+          </button>
+          <OutLink href={`${DOCS_URL}#the-nine-verdicts`}>lockrot.dev</OutLink>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/** A filter toggle's tooltip: what the click does, not the visible label again. Shared by every
+ *  chip and by the verdict bars (`VerdictLedger`), which are toggles of the same filters. */
+export function filterTitle(label: string, pressed: boolean): string {
+  return pressed ? `Showing only ${label} — click to clear this filter` : `Show only ${label}`;
+}
+
+/**
+ * A ledger legend entry: the tally beside its swatch, and a filter toggle for that bucket at once
+ * (verdict, priority or advisory severity) — shared by `VerdictLedger`, `PriorityLedger` and
+ * `AdvisoryLedger` so the three chips look, hover and focus alike (PD-LEDGER-2, DESIGN.md §5: a
+ * plain-text look gave no hint that clicking one did anything). `title` names the click's effect
+ * rather than repeating the visible label, since the label is already on the button.
+ */
+export function LegendButton({
+  tone,
+  dim = false,
+  pressed,
+  label,
+  count,
+  onToggle,
+}: {
+  tone: Tone;
+  /** A bucket with nothing, or nothing flagged, in it: full-contrast text, a faded swatch
+   *  (`legend-btn-dim` in ledger.css). */
+  dim?: boolean;
+  pressed: boolean;
+  label: string;
+  count: number;
+  onToggle: () => void;
+}) {
+  const classes = ["legend-btn", toneClass(tone), dim && "legend-btn-dim"];
+
+  return (
+    <button
+      type="button"
+      className={classes.filter(Boolean).join(" ")}
+      aria-pressed={pressed}
+      title={filterTitle(label, pressed)}
+      onClick={onToggle}
     >
-      {word}
-    </a>
+      <i className="swatch" aria-hidden="true" />
+      {label} <i className="count">{count}</i>
+    </button>
   );
 }
 
@@ -51,12 +168,21 @@ export function Tag({ children, tone, title }: { children: ComponentChildren; to
  * data, and the one place a value becomes an `href` is where a `javascript:` URL has to stop. When
  * the check fails the text is still shown, unlinked.
  */
-export function OutLink({ href, children }: { href: string | null; children: ComponentChildren }) {
+export function OutLink({
+  href,
+  children,
+  tabIndex,
+}: {
+  href: string | null;
+  children: ComponentChildren;
+  /** -1 inside a list row that is not the list's Tab stop (PD-ROWS-11, `ui/rowCursor.ts`). */
+  tabIndex?: -1 | undefined;
+}) {
   const safe = safeHref(href);
   if (safe === null) return <span className="out">{children}</span>;
 
   return (
-    <a className="out" href={safe} target="_blank" rel="noopener noreferrer">
+    <a className="out" href={safe} target="_blank" rel="noopener noreferrer" tabIndex={tabIndex}>
       {children}
     </a>
   );

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   advisoriesOf,
+  advisoryCheckIncomplete,
+  advisoryPackages,
   allAdvisories,
   fixLadder,
   fixShapeOf,
@@ -9,6 +11,7 @@ import {
   sevTone,
   sortAdvisories,
 } from "../../../src/domain/advisories";
+import type { Model } from "../../../src/model/types";
 import { EMPTY_FILTERS } from "../../../src/state/types";
 import { makeAdvisory, makeFinding, makeModel } from "./fixtures";
 
@@ -278,6 +281,78 @@ describe("passesAdvisoryRail", () => {
   });
 });
 
+describe("advisoryCheckIncomplete", () => {
+  // PD-LEDGER-1 (DESIGN.md §5): whether AdvisoryLedger's "no advisory" reads as a clean check or an
+  // incomplete one. Not exercised through allAdvisories()/a finding at all — this reads only the
+  // run-wide facts (`network_failures`, `notes`) the schema actually carries for a whole-lock check.
+
+  it("is false when the run recorded no network failure and no matching note", () => {
+    // Arrange
+    const model = makeModel([]);
+
+    // Act / Assert
+    expect(advisoryCheckIncomplete(model)).toBe(false);
+  });
+
+  it("is true when the report says a network failure occurred", () => {
+    // Arrange
+    const base = makeModel([]);
+    const model: Model = { ...base, report: { ...base.report, networkFailures: true } };
+
+    // Act / Assert
+    expect(advisoryCheckIncomplete(model)).toBe(true);
+  });
+
+  it("is true when a note names the advisory check, case-insensitively", () => {
+    // Arrange
+    const base = makeModel([]);
+    const model: Model = {
+      ...base,
+      report: {
+        ...base.report,
+        notes: ["this run was --offline; the security ADVISORY check could not run"],
+      },
+    };
+
+    // Act / Assert
+    expect(advisoryCheckIncomplete(model)).toBe(true);
+  });
+
+  it("is true when a note names the audit check instead", () => {
+    // Arrange: verdicts.md's own wording for one way this check is skipped ("needs Composer 2.4").
+    const base = makeModel([]);
+    const model: Model = {
+      ...base,
+      report: {
+        ...base.report,
+        notes: ["composer audit needs Composer 2.4 or newer; advisories were not checked"],
+      },
+    };
+
+    // Act / Assert
+    expect(advisoryCheckIncomplete(model)).toBe(true);
+  });
+
+  it("ignores a note about something else entirely", () => {
+    // Arrange: mini.json's own notes — about repository activity and a non-Composer package, not
+    // the advisory check.
+    const base = makeModel([]);
+    const model: Model = {
+      ...base,
+      report: {
+        ...base.report,
+        notes: [
+          "GitHub did not answer for 3 repositories (private, renamed or removed); repository activity missing",
+          "1 package is not from a Composer repository and was not checked",
+        ],
+      },
+    };
+
+    // Act / Assert
+    expect(advisoryCheckIncomplete(model)).toBe(false);
+  });
+});
+
 describe("groupAdvisories", () => {
   it("groups pairs by fix shape in the fixed branch/move/none order", () => {
     // Arrange
@@ -319,5 +394,43 @@ describe("groupAdvisories", () => {
 
     // Assert
     expect(groups).toEqual([]);
+  });
+});
+
+describe("advisoryPackages", () => {
+  it("lists each package once, in the advisories' order, with its distinct fix versions verbatim", () => {
+    // Arrange: two advisories on one package share a fix, a third names none.
+    const otphp = makeFinding({ package: "spomky-labs/otphp" });
+    const other = makeFinding({ package: "acme/other" });
+    const pairs = [
+      { advisory: makeAdvisory({ id: "A", fixedBy: "11.5.0" }), finding: otphp },
+      { advisory: makeAdvisory({ id: "B", fixedBy: "11.5.0" }), finding: otphp },
+      { advisory: makeAdvisory({ id: "C", fixedBy: null }), finding: other },
+    ];
+
+    // Act
+    const packages = advisoryPackages(pairs);
+
+    // Assert
+    expect(packages).toEqual([
+      { package: "spomky-labs/otphp", fixedBy: ["11.5.0"], someUnfixed: false },
+      { package: "acme/other", fixedBy: [], someUnfixed: true },
+    ]);
+  });
+
+  it("marks a package whose advisories name a fix for some but not all", () => {
+    // Arrange
+    const finding = makeFinding({ package: "acme/mixed" });
+    const pairs = [
+      { advisory: makeAdvisory({ id: "A", fixedBy: "2.0.1" }), finding },
+      { advisory: makeAdvisory({ id: "B", fixedBy: null }), finding },
+      { advisory: makeAdvisory({ id: "C", fixedBy: "1.9.9" }), finding },
+    ];
+
+    // Act
+    const [entry] = advisoryPackages(pairs);
+
+    // Assert: never compared or ranked, just listed in the order the advisories give them.
+    expect(entry).toEqual({ package: "acme/mixed", fixedBy: ["2.0.1", "1.9.9"], someUnfixed: true });
   });
 });

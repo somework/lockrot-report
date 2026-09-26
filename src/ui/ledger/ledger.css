@@ -1,104 +1,644 @@
-/* The ledger strip: four equal-width blocks on a wide screen, collapsing to two and then one
-   column as the report narrows. Ported from legacy report.css's `.ledger`/`.ledger-block` rules. */
+/* The summary band (PD-SUMMARY-6, DESIGN.md §5): one answer, the lead, then three supporting
+   facts, the tier. The lead outweighs the tier about three to one — a 76px figure against 26px —
+   so the eye lands on "how many are flagged" before anything else, and every mark below it
+   supports that answer with one encoding of its own. */
 .ledger {
-  max-width: 1500px;
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 18px 20px 14px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px 28px;
-}
-
-@media (max-width: 1400px) {
-  .ledger {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 759px) {
-  .ledger {
-    grid-template-columns: 1fr;
-  }
+  padding: 22px 20px 20px;
 }
 
 .ledger-block {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  min-width: 0;
 }
 
-.ledger-figure {
+/* ---------- the lead ---------- */
+.ledger-lead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px 32px;
+  align-items: start;
+}
+/* From 760px the waffle sits beside the answer, anchored to it on the left rather than to the
+   band's right edge: its first (flagged) squares then always start at the same distance from the
+   chips that name them, whatever the lock's size. Each width's row budget (Waffle.tsx) is what
+   fits there. */
+@media (min-width: 760px) {
+  .ledger-lead {
+    grid-template-columns: minmax(0, max-content) max-content;
+    justify-content: start;
+  }
+}
+@media (min-width: 1181px) {
+  .ledger-lead {
+    column-gap: 56px;
+  }
+}
+
+.lead-answer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.lead-figure {
+  margin: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+}
+.lead-num {
+  font: 600 76px/0.8 var(--sans);
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
-
-/* The one ledger block whose weight is a number rather than a bar (libyears). */
-.figure {
-  margin: 0;
-  font-family: var(--mono);
-  font-size: 22px;
-  line-height: 1;
+/* The one serif on the band, besides the tier's units: the answer's own sentence, set apart from
+   the UI text around it (tokens.css `--serif`, a system stack). */
+.lead-of {
+  display: flex;
+  flex-direction: column;
+  font: 20px/1.2 var(--serif);
+  color: var(--ink-2);
+  padding-bottom: 1px;
+}
+.lead-share {
+  color: var(--muted);
+}
+/* PD-SUMMARY-9: the flagged packages split by install scope and by reach, one quiet line that
+   hangs off the figure (a pulled-up gap) rather than a fourth block in the band. Each clause wraps
+   whole, and a clause that starts a line drops its "·" the way the phone fold's peek does. */
+.lead-scope {
+  margin: -4px 0 0;
+  overflow: hidden;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.lead-scope-parts {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -1.4em;
+}
+.lead-scope-item {
+  white-space: nowrap;
+}
+.lead-scope-sep {
+  display: inline-block;
+  width: 1.4em;
+  text-align: center;
+}
+.lead-scope b {
+  font-weight: 600;
+  color: var(--ink-2);
   font-variant-numeric: tabular-nums;
 }
 
-.bar {
-  display: flex;
-  height: 10px;
-  border-radius: 3px;
-  overflow: hidden;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+/* A clean report reads as good at a glance: a tick and the sentence in the "none" tone, and the
+   waffle's squares washed the same green (below), instead of a grey 0 beside an empty chart. */
+.ledger-lead.is-clean .lead-figure {
+  align-items: center;
+  gap: 12px;
+}
+.clean-mark {
+  flex: none;
+  color: var(--tone);
+}
+.lead-clean {
+  font: 26px/1.15 var(--serif);
+  color: var(--tone);
+  text-wrap: balance;
+}
+.lead-empty {
+  color: var(--ink-2);
 }
 
-/* Tone-* classes (toneClass()) define --tone/--tone-soft on the element itself (styles/base.css);
-   the dynamic width is the one part CSP forces through the CSSOM instead (style={{flexGrow}}). */
-.bar-seg {
+/* The priority chips are the lead's controls, so a size up from the tier's. Counts take their
+   chip's tone, so "3" reads as critical before the word does. */
+.lead-chips {
+  gap: 6px;
+}
+.lead-chips .legend-btn {
+  font-size: 13.5px;
+  padding: 5px 12px 5px 10px;
+  gap: 7px;
+}
+.lead-chips .legend-btn .count {
+  color: var(--tone);
+  font-weight: 600;
+}
+.lead-chips .legend-btn-dim .count {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.lead-waffle {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.lead-waffle-cap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.lead-waffle-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.lead-waffle-key .waffle-cell {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+}
+
+/* ---------- the waffle (Waffle.tsx) ----------
+   One square per package, filled column by column so it reads left to right like a stacked bar
+   whose units can still be counted. The square size is fixed per width, never per report: the
+   row count is what grows with the lock, passed in as three custom properties (numbers, through
+   the CSSOM — DESIGN.md §1.3) and picked here by the same breakpoints Waffle.tsx budgets for. */
+.waffle {
+  --cell: 14px;
+  --gap: 3px;
+  --rows: var(--rows-xwide);
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(var(--rows), var(--cell));
+  grid-auto-columns: var(--cell);
+  gap: var(--gap);
+  width: max-content;
+  max-width: 100%;
+}
+@media (max-width: 1439px) {
+  .waffle {
+    --rows: var(--rows-wide);
+  }
+}
+@media (max-width: 1180px) {
+  .waffle {
+    --cell: 10px;
+    --gap: 2px;
+    --rows: var(--rows-mid);
+  }
+}
+@media (max-width: 759px) {
+  .lead-num {
+    font-size: 60px;
+  }
+  .lead-of {
+    font-size: 17px;
+  }
+  .lead-chips .legend-btn {
+    font-size: 13px;
+    padding: 4px 10px 4px 9px;
+  }
+  .waffle {
+    --cell: 9px;
+    --gap: 2px;
+    --rows: var(--rows-narrow);
+  }
+}
+.waffle-cell {
+  border-radius: 2px;
+  background: var(--tone);
+  transition: opacity 0.15s ease;
+}
+.waffle-rest {
+  background: var(--surface-3);
+}
+.waffle.is-clean .waffle-rest {
+  background: color-mix(in srgb, var(--none) 32%, var(--surface));
+}
+
+/* A priority chip, its squares and its parts of the verdict bars are one control: hovering or
+   focusing a chip dims every other square and bar part, and a pressed chip keeps its own lit while
+   the rest recede. Pure CSS (`:has`), no state — the band never re-renders its marks for a filter
+   (it is boot-only, DESIGN.md §5). */
+.ledger:has(.lead-chips [aria-pressed="true"]) :is(.waffle-cell, .legend-seg) {
+  opacity: 0.25;
+}
+.ledger:has(.lead-chips .tone-crit[aria-pressed="true"]) :is(.waffle-cell, .legend-seg).tone-crit,
+.ledger:has(.lead-chips .tone-high[aria-pressed="true"]) :is(.waffle-cell, .legend-seg).tone-high,
+.ledger:has(.lead-chips .tone-med[aria-pressed="true"]) :is(.waffle-cell, .legend-seg).tone-med,
+.ledger:has(.lead-chips .tone-low[aria-pressed="true"]) :is(.waffle-cell, .legend-seg).tone-low {
+  opacity: 1;
+}
+.ledger:has(.lead-chips .tone-crit:is(:hover, :focus-visible)) :is(.waffle-cell, .legend-seg):not(.tone-crit),
+.ledger:has(.lead-chips .tone-high:is(:hover, :focus-visible)) :is(.waffle-cell, .legend-seg):not(.tone-high),
+.ledger:has(.lead-chips .tone-med:is(:hover, :focus-visible)) :is(.waffle-cell, .legend-seg):not(.tone-med),
+.ledger:has(.lead-chips .tone-low:is(:hover, :focus-visible)) :is(.waffle-cell, .legend-seg):not(.tone-low) {
+  opacity: 0.2;
+}
+/* ...and the hovered chip's own marks light up even while another chip's filter dims them. */
+.ledger:has(.lead-chips .tone-crit:is(:hover, :focus-visible)) :is(.waffle-cell, .legend-seg).tone-crit,
+.ledger:has(.lead-chips .tone-high:is(:hover, :focus-visible)) :is(.waffle-cell, .legend-seg).tone-high,
+.ledger:has(.lead-chips .tone-med:is(:hover, :focus-visible)) :is(.waffle-cell, .legend-seg).tone-med,
+.ledger:has(.lead-chips .tone-low:is(:hover, :focus-visible)) :is(.waffle-cell, .legend-seg).tone-low {
+  opacity: 1;
+}
+
+/* ---------- the tier ---------- */
+.ledger-tier {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr);
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.ledger-tier > .ledger-block {
+  padding: 0 28px;
+  border-left: 1px solid var(--border);
+}
+.ledger-tier > .ledger-block:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.ledger-tier > .ledger-block:last-child {
+  padding-right: 0;
+}
+@media (max-width: 1180px) {
+  .ledger-tier > .ledger-block {
+    padding: 0 20px;
+  }
+}
+/* Under 960px three columns get too narrow for a sentence, but stacking all three made the band
+   taller than a 1024×768 screen: the verdicts keep the left half, and the other two share the
+   right, one over the other. */
+@media (max-width: 959px) {
+  .ledger-tier {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+  .ledger-tier > .ledger-verdicts {
+    grid-row: span 2;
+  }
+  .ledger-tier > .ledger-advisories {
+    padding-right: 0;
+    padding-bottom: 16px;
+  }
+  .ledger-tier > .ledger-libyears {
+    grid-column: 2;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+}
+@media (max-width: 759px) {
+  .ledger-tier {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 16px;
+  }
+  .ledger-tier > .ledger-block,
+  .ledger-tier > .ledger-verdicts,
+  .ledger-tier > .ledger-advisories,
+  .ledger-tier > .ledger-libyears {
+    grid-row: auto;
+    grid-column: auto;
+    padding: 0;
+    border-left: 0;
+    border-top: 0;
+  }
+  .ledger-tier > .ledger-block + .ledger-block {
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+  }
+}
+
+/* The note never splits ("first" alone on a line read as a stray word), and when it wraps as a
+   whole it starts flush left: the gap between it and the heading is a flex gap, not a margin. */
+.ledger-verdicts > .ledger-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
+}
+.ledger-head-note {
+  white-space: nowrap;
+  font-weight: 400;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+/* A tier column's own figure: the number in the sans, its unit in the serif the lead uses. */
+.ledger-fig {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+}
+.ledger-fig-num {
+  font: 600 26px/1 var(--sans);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.ledger-fig-unit {
+  font: 15px/1.25 var(--serif);
+  color: var(--ink-2);
+}
+.ledger-fig-text {
+  font: 16px/1.35 var(--serif);
+  color: var(--tone);
+}
+.ledger-all-clear {
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.ledger-note {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.ledger-note b {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.ledger-note .mono {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+/* PD-ADV-7: the check-incomplete tag keeps its own width in the column, never a full-width bar. */
+.ledger-block > .ci-tag {
+  align-self: flex-start;
+}
+.ledger-partial {
+  color: var(--ink-2);
+}
+
+/* A package named in the tier opens its detail, like a row would. */
+.ledger-pkg {
+  font: 12px var(--mono);
+  color: var(--accent-ink);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent-ink) 40%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.12s ease;
+}
+.ledger-pkg:hover {
+  text-decoration-color: currentColor;
+}
+
+/* Why they are flagged: each bar is its verdict's own filter toggle (VerdictLedger.tsx), laid out
+   on one shared grid (subgrid) so every label, bar and count lines up with the longest label.
+   The bar track is only as long as the longest bar needs at `--unit` per package: the ranking still
+   reads at a glance, but a count of 1 in a small lock stays one unit long instead of a full-width
+   bar that shouts. A long ranking takes whatever room the column has instead. */
+.verdict-bars {
+  --unit: 16px;
+  display: grid;
+  grid-template-columns: max-content minmax(0, calc(var(--longest, 1) * var(--unit))) max-content;
+  /* A subgrid takes its gaps from here, not from its own rule. */
+  gap: 1px 14px;
+  margin-inline: -8px;
+}
+@media (max-width: 759px) {
+  .verdict-bars {
+    --unit: 12px;
+  }
+}
+/* Doubled class: these override the plain chip rules further down, whatever their order. */
+.legend-btn.legend-btn-bar {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  padding: 5px 8px;
+  border-radius: var(--radius-s);
+  background: transparent;
+  border-color: transparent;
+  font-size: 13px;
+  text-align: left;
+  color: var(--ink-2);
+}
+.legend-btn.legend-btn-bar:hover:not([aria-pressed="true"]) {
+  background: var(--surface-2);
+  border-color: transparent;
+}
+/* No tone of its own: the bar's parts carry the priority tones, so the pressed row is marked in the
+   page's accent, the colour of every other selected control. */
+.legend-btn.legend-btn-bar[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--ink);
+}
+.legend-btn.legend-btn-bar .count {
+  font-weight: 600;
+  color: var(--ink);
+}
+.legend-track {
   display: block;
+  height: 10px;
+}
+.legend-fill {
+  display: flex;
+  gap: 1px;
+  height: 100%;
+  min-width: 3px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.legend-seg {
+  flex: 1 1 0;
+  min-width: 2px;
+  background: var(--tone);
+  transition: opacity 0.15s ease;
+}
+/* A part the findings do not account for: neutral, never a guessed priority. */
+.legend-seg-rest {
+  background: var(--muted);
+}
+
+/* The verdicts the run does not flag: one quiet line, still filters. */
+.ledger-quiet {
+  align-items: center;
+  gap: 6px;
+}
+.ledger-quiet-label {
+  margin-right: 2px;
+  color: var(--muted);
+}
+.ledger-quiet .legend-btn {
+  padding: 2px 9px 2px 8px;
+}
+/* "By severity" before the advisory chips: they share the priority chips' words. */
+.advisory-chips {
+  align-items: center;
+}
+
+/* One square per advisory, never a full-width bar: two advisories look like two. */
+.advisory-squares {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.advisory-square {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
   background: var(--tone);
 }
-
-.bar-seg-dim {
-  opacity: 0.35;
+.advisory-packages {
+  display: grid;
+  gap: 3px;
+}
+.advisory-packages > p {
+  margin: 0;
 }
 
+/* Libyears is years, not packages: neutral ink, direct solid, what they pull in hatched. */
+.libyears-bar {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+}
+.libyears-bar > span {
+  flex: 0 1 0;
+  min-width: 3px;
+  border-radius: 2px;
+}
+.libyears-direct {
+  background: var(--ink-2);
+}
+.libyears-transitive {
+  background: repeating-linear-gradient(135deg, var(--border-strong) 0 3px, transparent 3px 6px);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+.libyears-parts {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.libyears-parts b {
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+/* ---------- the phone fold ----------
+   Under 760px the tier folds behind one summary line (Ledger.tsx); the lead above it never does. */
+.ledger-fold {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.ledger-fold > summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 0 2px;
+}
+/* The shared marker (`styles/base.css`) sits beside the title line, not centred on both lines. */
+.ledger-fold > summary::after {
+  margin-top: 5px;
+}
+.ledger-fold-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.ledger-fold-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+/* Every part carries a separator slot in front of it (empty on the first); the row is pulled one
+   slot to the left and clipped, so whichever part starts a line has its "·" cut off. A wrap then
+   falls between parts ("263.6 libyears" never splits) with no stray dot at either line's edge. */
+.ledger-fold-peek {
+  font: 12px/1.4 var(--mono);
+  color: var(--muted);
+  overflow: hidden;
+}
+.ledger-fold-parts {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: -3ch;
+}
+.ledger-fold-part {
+  white-space: nowrap;
+}
+.ledger-fold-sep {
+  display: inline-block;
+  width: 3ch;
+  text-align: center;
+}
+.ledger-fold > .ledger-tier {
+  margin-top: 10px;
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* ---------- chips (LegendButton) ---------- */
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 16px;
+  gap: 4px 6px;
   font-size: 12px;
 }
 
-.legend-empty {
-  color: var(--muted);
-}
-
+/* PD-LEDGER-2 (DESIGN.md §5): a legend entry is a filter toggle, not static text ("Anatoly:
+   'the ledger legend looks like plain text, I didn't know I could click it'"). A pill-shaped chip
+   with its own hover/focus/pressed states reads as a control at a glance. */
 .legend-btn {
-  background: none;
-  border: 0;
-  border-bottom: 1px solid transparent;
-  padding: 2px 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px 3px 8px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   color: inherit;
   font: inherit;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
 }
 
 .legend-btn:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
   color: var(--ink);
 }
 
 .legend-btn[aria-pressed="true"] {
-  border-bottom-color: currentColor;
+  background: var(--tone-soft);
+  border-color: var(--tone);
+  color: var(--tone);
 }
 
-/* A bucket with nothing flagged in it reads quieter, but its text keeps full contrast: the legacy
-   page faded the whole button to 35% opacity, which left the label unreadable. Only the swatch fades. */
+/* A bucket with nothing (or nothing flagged) in it reads quieter, but its text keeps full contrast:
+   the legacy page faded the whole button to 35% opacity, which left the label unreadable. */
 .legend-btn-dim {
   color: var(--muted);
 }
 .legend-btn-dim .swatch {
-  opacity: 0.35;
+  opacity: 0.4;
 }
 
 .legend-btn .swatch {
@@ -112,8 +652,80 @@
   display: inline-block;
 }
 
-.legend-btn .count,
-.legend > .count {
+.legend-btn .count {
   font-family: var(--mono);
+  font-style: normal;
   color: var(--muted);
+}
+
+/* a11y review: forced-colors mode flattens `--tone`/`--tone-soft`/`--border`/`--muted` to Canvas —
+   a pressed chip and an unpressed one both computed to a 1px Canvas-on-Canvas border, and every
+   tone-filled mark (swatch, bar, square) disappeared into the page. System colours give each mark a
+   fill neither mode can erase, and read a pressed chip apart the way `Highlight`/`HighlightText`
+   mark any other pressed control.
+
+   Second a11y review: `.legend-btn` is a native `<button>`, which forced-colors mode normalises to
+   its own system button appearance at paint time — a `background: Highlight` lost to that
+   normalisation although `getComputedStyle` still reported it, leaving a light-on-light label
+   (confirmed by screenshot). `forced-color-adjust: none` turns that off for the pressed rule, so the
+   pair it declares is what actually paints; `e2e/forced-colors.spec.ts` reads the label's pixels.
+
+   The waffle keeps its meaning by fill alone: flagged squares solid, the rest outlined. */
+@media (forced-colors: active) {
+  .legend-btn .swatch,
+  .legend-seg,
+  .waffle-cell,
+  .advisory-square,
+  .libyears-direct {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+  .legend-btn-dim .swatch {
+    background: ButtonText;
+    opacity: 1;
+  }
+  /* CanvasText, not GrayText: Chromium's light forced palette paints GrayText maroon, which read
+     as a warning colour on the one set of squares that means "fine". */
+  .waffle-rest,
+  .waffle.is-clean .waffle-rest {
+    background: Canvas;
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+  /* A verdict row is a button, but boxing all six in a system border drew a stack of heavy frames
+     around one chart: unpressed rows keep an invisible border until hovered, like on screen. */
+  .legend-btn.legend-btn-bar {
+    forced-color-adjust: none;
+    background: Canvas;
+    border-color: Canvas;
+    color: CanvasText;
+  }
+  .legend-btn.legend-btn-bar .count {
+    color: CanvasText;
+  }
+  .legend-btn.legend-btn-bar:hover:not([aria-pressed="true"]) {
+    background: Canvas;
+    border-color: CanvasText;
+  }
+  .legend-btn.legend-btn-bar:focus-visible {
+    outline-color: Highlight;
+  }
+  .libyears-transitive {
+    forced-color-adjust: none;
+    background: repeating-linear-gradient(135deg, CanvasText 0 1px, transparent 1px 5px);
+    box-shadow: inset 0 0 0 1px CanvasText;
+  }
+  .legend-btn[aria-pressed="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
+    border-color: Highlight;
+    color: HighlightText;
+  }
+  .legend-btn[aria-pressed="true"] .swatch,
+  .legend-btn[aria-pressed="true"] .legend-seg {
+    background: HighlightText;
+  }
+  .legend-btn[aria-pressed="true"] .count {
+    color: HighlightText;
+  }
 }

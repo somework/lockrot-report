@@ -1,7 +1,6 @@
 /**
- * Checks only the new renderer has to pass (DESIGN.md §6 "New-only checks"): the legacy page was
- * never written against them, so they are skipped under RENDERER=legacy rather than marked as
- * known failures.
+ * Page-quality checks (DESIGN.md §6): properties the built page has to hold on their own, not
+ * differences against the legacy page this renderer was proven against during the extraction.
  *
  * - axe: no serious or critical violation, in both colour schemes, with a package detail open;
  * - CSP: no `securitypolicyviolation` on any fixture page, through boot and the common
@@ -14,27 +13,22 @@ import { expect, test, type Page } from "@playwright/test";
 import { readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createReportPage } from "./support/report";
-import { currentRenderer, pageUrl, REPO_ROOT, type FixtureName } from "./support/pages";
+import { pageUrl, REPO_ROOT, type FixtureName } from "./support/pages";
 
-test.skip(currentRenderer() !== "new", "new-renderer-only checks (DESIGN.md §6)");
-
-/** Every page `scripts/pages.mjs` built, one per fixture bundle. Empty under RENDERER=legacy, whose
- *  run skips this file and must not need `build/pages/` to exist. */
+/** Every page `scripts/pages.mjs` built, one per fixture bundle. */
 function builtFixtures(): FixtureName[] {
-  if (currentRenderer() !== "new") return [];
-
   return readdirSync(join(REPO_ROOT, "build/pages"))
     .filter((file) => file.endsWith(".html"))
     .map((file) => file.replace(/\.html$/, "") as FixtureName);
 }
 
-const AXE_FIXTURES = ["mini", "koel_koel", "wallabag_wallabag"] as FixtureName[];
+const AXE_FIXTURES = ["mini", "koel_koel", "wallabag_wallabag", "wallabag_baseline"] as FixtureName[];
 const SCHEMES = ["light", "dark"] as const;
 const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;
 
 async function load(page: Page, fixture: FixtureName, hash = ""): Promise<void> {
   await page.goto("about:blank");
-  await page.goto(pageUrl("new", fixture) + (hash ? "#" + hash : ""));
+  await page.goto(pageUrl(fixture) + (hash ? "#" + hash : ""));
   await expect(page.getByRole("tab").first()).toBeVisible();
 }
 
@@ -48,6 +42,10 @@ async function seriousViolations(page: Page): Promise<string[]> {
 }
 
 test.describe("axe: no serious or critical violations", () => {
+  // An axe pass over wallabag's 271-row pages takes 30-40s when the whole suite shares the machine,
+  // and over two minutes in Firefox or WebKit with all three browsers running at once; the budget
+  // is for load, not for a slow page.
+  test.describe.configure({ timeout: 180_000 });
   test.use({ viewport: { width: 1440, height: 900 } });
 
   for (const fixture of AXE_FIXTURES) {
@@ -56,12 +54,14 @@ test.describe("axe: no serious or critical violations", () => {
         await page.emulateMedia({ colorScheme });
         await load(page, fixture);
         const report = await createReportPage(page);
-        if (!(await report.detail()).open) {
-          // Nothing flagged to auto-open: open the first package of the full list instead.
+        // Nothing opens by itself (PD-ROWS-9): open the first Findings row, as the legacy boot
+        // pick did, or the first package of the full list when nothing is flagged.
+        let first = (await report.rows())[0];
+        if (first === undefined) {
           await report.tab("packages");
-          const first = (await report.rows())[0];
-          if (first !== undefined) await report.openPackage(first);
+          first = (await report.rows())[0];
         }
+        if (first !== undefined) await report.openPackage(first);
         expect((await report.detail()).open).toBe(true);
         expect(await seriousViolations(page)).toEqual([]);
       });
@@ -73,6 +73,17 @@ test.describe("axe: no serious or critical violations", () => {
       for (const colorScheme of SCHEMES) {
         await page.emulateMedia({ colorScheme });
         await load(page, "wallabag_wallabag", view === "findings" ? "" : `view=${view}`);
+        expect(await seriousViolations(page)).toEqual([]);
+      }
+    });
+  }
+
+  // PD-BASELINE-1/4: the delta line's toned counts (one of them pressed) and Run data's stat row.
+  for (const hash of ["since=new", "view=run"]) {
+    test(`wallabag_baseline, ${hash}, both schemes`, async ({ page }) => {
+      for (const colorScheme of SCHEMES) {
+        await page.emulateMedia({ colorScheme });
+        await load(page, "wallabag_baseline", hash);
         expect(await seriousViolations(page)).toEqual([]);
       }
     });
@@ -133,6 +144,35 @@ test.describe("no horizontal overflow at 320px", () => {
       expect(overflowing).toEqual([]);
     });
   }
+});
+
+test.describe("no horizontal overflow inside the open detail sheet at 320px (regression review)", () => {
+  // The page itself stays at scrollWidth 320 here (the check above), but `.shell-detail` is its own
+  // scrollable region (`overflow-y: auto`, PD-DETAIL-3) and can widen sideways on its own: "The lock
+  // entry" can show a package's repository URL as its own link text (`Detail.tsx#lockRows`), and
+  // `.out`'s `white-space: nowrap` (meant for the short labels its other callers pass) used to stop
+  // it from ever wrapping, running the sheet past the viewport it is meant to fill.
+  test.use({ viewport: { width: 320, height: 720 } });
+
+  test("wallabag_wallabag: sensio/framework-extra-bundle's repository link wraps instead of widening the sheet", async ({
+    page,
+  }) => {
+    await load(page, "wallabag_wallabag");
+    const report = await createReportPage(page);
+    await report.openPackage("sensio/framework-extra-bundle");
+
+    const detail = page.getByRole("complementary", { name: "sensio/framework-extra-bundle" });
+    // The chain that used to sit in a closed "How it is reached" now opens the panel (PD-DETAIL-6),
+    // so it is already on screen here; the two reference sections that remain are opened.
+    for (const title of ["The lock entry", "Provenance"]) {
+      await detail.locator("summary", { hasText: title }).click();
+    }
+
+    const { scrollWidth, clientWidth } = await page
+      .locator(".shell-detail")
+      .evaluate((el) => ({ scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }));
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+  });
 });
 
 /**

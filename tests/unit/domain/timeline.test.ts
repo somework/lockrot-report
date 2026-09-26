@@ -1,6 +1,18 @@
+import { ageText } from "../../../src/domain/format";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { timelineLayout } from "../../../src/domain/timeline";
-import type { BranchRow } from "../../../src/model/types";
+import {
+  agePhrase,
+  branchVersionKey,
+  sameVersion,
+  sortLanes,
+  timelineModel,
+  yearTicks,
+  type TimelineModel,
+} from "../../../src/domain/timeline";
+import type { BranchRow, ExplainLock } from "../../../src/model/types";
+import { normalize } from "../../../src/model/normalize";
 
 function makeBranch(overrides: Partial<BranchRow> = {}): BranchRow {
   return {
@@ -17,129 +29,369 @@ function makeBranch(overrides: Partial<BranchRow> = {}): BranchRow {
   };
 }
 
-describe("timelineLayout / not enough data", () => {
-  it("returns an empty layout with fewer than two dated branches", () => {
+function makeLock(overrides: Partial<ExplainLock> = {}): ExplainLock {
+  return {
+    php: null,
+    released: null,
+    repository: null,
+    fromComposerRepository: true,
+    dev: false,
+    branchSnapshot: false,
+    type: null,
+    ...overrides,
+  };
+}
+
+const NOW = new Date("2026-09-24T00:00:00.000Z");
+
+/** A real fixture package's branches, lock and installed version, as the page normalizes them. */
+function fixture(bundle: string, pkg: string) {
+  const raw = JSON.parse(
+    readFileSync(join(process.cwd(), "fixtures", "bundles", `${bundle}.json`), "utf8"),
+  ) as unknown;
+  const result = normalize(raw);
+  if (!result.ok) throw new Error(`${bundle} failed to normalize`);
+  const details = result.model.details.get(pkg);
+  const finding = result.model.report.findings.find((f) => f.package === pkg);
+  if (details === undefined || finding === undefined) throw new Error(`${pkg} not in ${bundle}`);
+  return { branches: details.metadata?.branches ?? [], lock: details.lock, version: finding.version };
+}
+
+function model(bundle: string, pkg: string): TimelineModel {
+  const { branches, lock, version } = fixture(bundle, pkg);
+  const result = timelineModel(branches, lock, version, NOW);
+  if (result === null) throw new Error(`${pkg} drew no timeline`);
+  return result;
+}
+
+/** Each row as a short string: a lane's branch, or "fold:<which>:<count>". */
+function rowShape(timeline: TimelineModel): string[] {
+  return timeline.rows.map((row) =>
+    row.kind === "lane" ? row.lane.branch : `fold:${row.which}:${String(row.lanes.length)}`,
+  );
+}
+
+describe("branchVersionKey", () => {
+  it("reads a branch name as version parts, a wildcard above every number", () => {
+    expect(branchVersionKey("0.27.x")).toEqual([0, 27, Infinity]);
+    expect(branchVersionKey("11.x")).toEqual([11, Infinity]);
+    expect(branchVersionKey("0.0.3")).toEqual([0, 0, 3]);
+    expect(branchVersionKey("v2.1")).toEqual([2, 1]);
+  });
+
+  it("returns null for a name that is not version-shaped", () => {
+    for (const name of ["master", "dev-main", "3.x-dev", "", "release/1.0"]) {
+      expect(branchVersionKey(name)).toBeNull();
+    }
+  });
+});
+
+describe("sortLanes", () => {
+  it("orders by version, newest first, even when an older branch released last", () => {
+    // Arrange: 3.x shipped a maintenance release after 4.x's last one — date order put it on top.
+    const lanes = [
+      { branch: "3.x", time: 300 },
+      { branch: "10.x", time: 100 },
+      { branch: "4.x", time: 200 },
+      { branch: "0.9.x", time: 50 },
+    ];
+
+    // Act
+    const { sorted, by } = sortLanes(lanes);
+
+    // Assert: numeric, not lexical ("10.x" above "4.x"), and not by date.
+    expect(by).toBe("version");
+    expect(sorted.map((lane) => lane.branch)).toEqual(["10.x", "4.x", "3.x", "0.9.x"]);
+  });
+
+  it("falls back to date order for every lane when any name is not version-shaped", () => {
+    // Arrange
+    const lanes = [
+      { branch: "2.x", time: 100 },
+      { branch: "master", time: 300 },
+      { branch: "1.x", time: 200 },
+    ];
+
+    // Act
+    const { sorted, by } = sortLanes(lanes);
+
+    // Assert
+    expect(by).toBe("date");
+    expect(sorted.map((lane) => lane.branch)).toEqual(["master", "1.x", "2.x"]);
+  });
+
+  it("breaks a version tie on date, then name, whatever the input order", () => {
+    // Arrange: "2" and "v2" are the same version.
+    const a = [
+      { branch: "v2", time: 100 },
+      { branch: "2", time: 200 },
+    ];
+
+    // Act / Assert
+    expect(sortLanes(a).sorted.map((lane) => lane.branch)).toEqual(["2", "v2"]);
+    expect(sortLanes([...a].reverse()).sorted.map((lane) => lane.branch)).toEqual(["2", "v2"]);
+  });
+
+  it("sorts the 21 meilisearch-php branches (koel_koel) highest version first", () => {
+    // Act
+    const timeline = model("koel_koel", "meilisearch/meilisearch-php");
+
+    // Assert: "0.10.x" sorts above "0.9.x", which a string sort would not do.
+    expect(timeline.sortedBy).toBe("version");
+    expect(timeline.lanes.map((lane) => lane.branch).slice(0, 6)).toEqual([
+      "1.x",
+      "0.27.x",
+      "0.26.x",
+      "0.25.x",
+      "0.24.x",
+      "0.23.x",
+    ]);
+    expect(timeline.lanes.map((lane) => lane.branch).slice(-3)).toEqual(["0.10.x", "0.9.x", "0.8.x"]);
+  });
+});
+
+describe("timelineModel / rows and folds", () => {
+  it("meilisearch-php: every newer branch, yours, then the 16 older in one fold", () => {
+    // Act
+    const timeline = model("koel_koel", "meilisearch/meilisearch-php");
+
+    // Assert
+    expect(rowShape(timeline)).toEqual(["1.x", "0.27.x", "0.26.x", "0.25.x", "0.24.x", "fold:older:16"]);
+    expect(timeline.mine?.branch).toBe("0.24.x");
+    expect(timeline.newerCount).toBe(4);
+    expect(timeline.top).toMatchObject({ branch: "1.x", newest: true, label: "v1.17.0" });
+  });
+
+  it("brick/math (mautic_mautic): more than four newer branches fold between the newest and yours", () => {
+    // Act
+    const timeline = model("mautic_mautic", "brick/math");
+
+    // Assert
+    expect(rowShape(timeline)).toEqual(["1.x", "fold:between:9", "0.11.x", "fold:older:10"]);
+    expect(timeline.newerCount).toBe(10);
+  });
+
+  it("fewer than three older branches keep their own rows: a fold would cost as much as it hides", () => {
+    // Arrange
+    const branches = [
+      makeBranch({ branch: "2.x", highestReleased: "2026-01-01T00:00:00Z" }),
+      makeBranch({ branch: "1.x", installed: true, highestReleased: "2022-01-01T00:00:00Z" }),
+      makeBranch({ branch: "0.9.x", highestReleased: "2020-01-01T00:00:00Z" }),
+      makeBranch({ branch: "0.8.x", highestReleased: "2019-01-01T00:00:00Z" }),
+    ];
+
+    // Act
+    const two = timelineModel(branches, null, "v1.0.0", NOW);
+    const three = timelineModel(
+      [...branches, makeBranch({ branch: "0.7.x", highestReleased: "2018-01-01T00:00:00Z" })],
+      null,
+      "v1.0.0",
+      NOW,
+    );
+
+    // Assert
+    expect(two && rowShape(two)).toEqual(["2.x", "1.x", "0.9.x", "0.8.x"]);
+    expect(three && rowShape(three)).toEqual(["2.x", "1.x", "fold:older:3"]);
+  });
+
+  it("predis/predis (koel_koel): its two older branches stay two rows, not a '2 older' fold", () => {
+    // Act
+    const timeline = model("koel_koel", "predis/predis");
+
+    // Assert
+    expect(rowShape(timeline)).toEqual(["3.x", "2.x", "1.x", "0.8.x", "0.7.x"]);
+  });
+
+  it("daverandom/resume (koel_koel): two releases, the installed one on top, no newest marker", () => {
+    // Act
+    const timeline = model("koel_koel", "daverandom/resume");
+
+    // Assert: the newest lane is the reader's own — nothing newer to point at.
+    expect(rowShape(timeline)).toEqual(["0.0.3", "0.0.2"]);
+    expect(timeline.releasesOnly).toBe(true);
+    expect(timeline.newerCount).toBe(0);
+    expect(timeline.lanes.some((lane) => lane.newest)).toBe(false);
+  });
+
+  it("rector/rector (mautic_mautic): a dev-main snapshot gets its own row from the lock, above the newest branch", () => {
+    // Act
+    const timeline = model("mautic_mautic", "rector/rector");
+
+    // Assert
+    expect(rowShape(timeline)).toEqual(["dev-main", "2.x", "fold:older:20"]);
+    expect(timeline.mine).toMatchObject({
+      branch: "dev-main",
+      snapshot: true,
+      installed: true,
+      date: "2026-08-04T09:29:27+00:00",
+      php: "^7.4|^8.0",
+    });
+  });
+
+  it("draws a snapshot next to a single release branch (friendsofsymfony/oauth-server-bundle, wallabag)", () => {
+    // Act
+    const timeline = model("wallabag_wallabag", "friendsofsymfony/oauth-server-bundle");
+
+    // Assert: one dated branch alone would draw nothing; with the snapshot there are two rows.
+    expect(rowShape(timeline)).toEqual(["dev-master", "1.x"]);
+  });
+
+  it("draws nothing below two rows", () => {
     // Arrange
     const oneDated = [
       makeBranch({ highestReleased: "2020-01-01T00:00:00.000Z" }),
       makeBranch({ branch: "2.x" }),
     ];
 
-    // Act
-    const layout = timelineLayout(oneDated, new Date("2024-01-01T00:00:00.000Z"));
-
-    // Assert
-    expect(layout).toEqual({ lanes: [], ticks: [] });
+    // Act / Assert
+    expect(timelineModel(oneDated, null, "1.0.0", NOW)).toBeNull();
+    expect(timelineModel([], null, "1.0.0", NOW)).toBeNull();
+    // A snapshot with no date of its own adds no row either.
+    expect(timelineModel(oneDated, makeLock({ branchSnapshot: true }), "dev-main", NOW)).toBeNull();
   });
 
-  it("returns an empty layout for zero branches", () => {
+  it("with no installed branch and no snapshot, shows the newest and folds the rest", () => {
+    // Arrange
+    const branches = ["4.x", "3.x", "2.x", "1.x"].map((branch, index) =>
+      makeBranch({ branch, highestReleased: `${String(2024 - index)}-01-01T00:00:00Z` }),
+    );
+
     // Act
-    const layout = timelineLayout([], new Date("2024-01-01T00:00:00.000Z"));
+    const timeline = timelineModel(branches, null, "v9.9.9", NOW);
 
     // Assert
-    expect(layout).toEqual({ lanes: [], ticks: [] });
+    expect(timeline && rowShape(timeline)).toEqual(["4.x", "fold:older:3"]);
+    expect(timeline?.mine).toBeNull();
   });
 });
 
-describe("timelineLayout / horizontal position", () => {
-  it("plots the oldest dated branch at exactly 4% and a branch halfway to now at 48%", () => {
-    // Arrange: min = epoch 0, now = epoch 1,000,000ms, mid-branch at epoch 500,000ms — clean
-    // fractions so the 4%/88%-span formula (report.js:677) checks against round numbers.
-    const min = new Date(0).toISOString();
-    const mid = new Date(500_000).toISOString();
-    const now = new Date(1_000_000);
-    const branches = [
-      makeBranch({ branch: "old", highestReleased: min }),
-      makeBranch({ branch: "mid", highestReleased: mid }),
-    ];
-
+describe("timelineModel / topReleasedLast", () => {
+  it("is true when the highest version also released last", () => {
     // Act
-    const layout = timelineLayout(branches, now);
-    const oldLane = layout.lanes.find((lane) => lane.branch === "old");
-    const midLane = layout.lanes.find((lane) => lane.branch === "mid");
+    const timeline = model("koel_koel", "meilisearch/meilisearch-php");
 
     // Assert
-    expect(oldLane?.x).toBeCloseTo(4, 10);
-    expect(midLane?.x).toBeCloseTo(48, 10);
+    expect(timeline.topReleasedLast).toBe(true);
   });
 
-  it("never reaches the 92% right edge unless a branch is dated exactly at `now`", () => {
-    // Arrange
+  it("is false when a maintenance branch shipped after the highest one, so it is not called newest", () => {
+    // Arrange: 3.x's last release (2025) is later than 4.x's (2023); version order still puts 4.x first.
     const branches = [
-      makeBranch({ branch: "old", highestReleased: new Date(0).toISOString() }),
-      makeBranch({ branch: "recent", highestReleased: new Date(900_000).toISOString() }),
+      makeBranch({ branch: "3.x", installed: true, highestReleased: "2025-06-01T00:00:00Z" }),
+      makeBranch({ branch: "4.x", highestReleased: "2023-01-01T00:00:00Z" }),
     ];
 
     // Act
-    const layout = timelineLayout(branches, new Date(1_000_000));
-    const recentLane = layout.lanes.find((lane) => lane.branch === "recent");
+    const timeline = timelineModel(branches, null, "v3.0.0", NOW);
 
     // Assert
-    expect(recentLane?.x).toBeLessThan(92);
+    expect(timeline?.top.branch).toBe("4.x");
+    expect(timeline?.topReleasedLast).toBe(false);
   });
 
-  it("plots a branch dated exactly at `now` at the 92% edge", () => {
+  it("is always true in date order, where the first row is the latest release by definition", () => {
     // Arrange
-    const now = new Date(1_000_000);
     const branches = [
-      makeBranch({ branch: "old", highestReleased: new Date(0).toISOString() }),
-      makeBranch({ branch: "current", highestReleased: now.toISOString() }),
+      makeBranch({ branch: "master", highestReleased: "2026-01-01T00:00:00Z" }),
+      makeBranch({ branch: "1.x", installed: true, highestReleased: "2020-01-01T00:00:00Z" }),
     ];
 
-    // Act
-    const layout = timelineLayout(branches, now);
-    const currentLane = layout.lanes.find((lane) => lane.branch === "current");
-
-    // Assert
-    expect(currentLane?.x).toBeCloseTo(92, 10);
+    // Act / Assert
+    expect(timelineModel(branches, null, "v1.0.0", NOW)?.topReleasedLast).toBe(true);
   });
 });
 
-describe("timelineLayout / lane ordering and newest/installed", () => {
-  it("orders lanes newest-first and marks exactly one lane as newest", () => {
-    // Arrange
-    const branches = [
-      makeBranch({ branch: "9.x", highestReleased: "2018-01-01T00:00:00.000Z" }),
-      makeBranch({ branch: "10.x", highestReleased: "2022-01-01T00:00:00.000Z" }),
-      makeBranch({ branch: "8.x", highestReleased: "2016-01-01T00:00:00.000Z" }),
-    ];
-
+describe("timelineModel / the shared axis", () => {
+  it("starts on 1 January of the oldest date's year and ends at now, folded lanes included", () => {
     // Act
-    const layout = timelineLayout(branches, new Date("2024-01-01T00:00:00.000Z"));
+    const timeline = model("koel_koel", "meilisearch/meilisearch-php");
 
-    // Assert
-    expect(layout.lanes.map((lane) => lane.branch)).toEqual(["10.x", "9.x", "8.x"]);
-    expect(layout.lanes.filter((lane) => lane.newest)).toHaveLength(1);
-    expect(layout.lanes[0]?.newest).toBe(true);
+    // Assert: the oldest lane (0.8.x, 2020-01-07) sits a week into the axis; the axis starts at
+    // 2020-01-01 whether or not its lane is folded, so opening the fold never rescales it.
+    const oldest = timeline.lanes[timeline.lanes.length - 1];
+    expect(oldest?.branch).toBe("0.8.x");
+    expect(oldest?.x).toBeGreaterThan(0);
+    expect(oldest?.x).toBeLessThan(1);
+    expect(timeline.ticks[0]).toEqual({ x: 0, year: 2020 });
+    for (const lane of timeline.lanes) {
+      expect(lane.x).toBeGreaterThanOrEqual(0);
+      expect(lane.x).toBeLessThanOrEqual(100);
+    }
   });
 
-  it("marks `newest` independently of `installed` — the caller decides the is-newest-unless-installed CSS rule", () => {
-    // Arrange: the newest branch happens to also be the installed one.
+  it("clamps a date after now to the today edge", () => {
+    // Arrange
     const branches = [
-      makeBranch({ branch: "9.x", highestReleased: "2018-01-01T00:00:00.000Z" }),
-      makeBranch({ branch: "10.x", highestReleased: "2022-01-01T00:00:00.000Z", installed: true }),
+      makeBranch({ branch: "2.x", highestReleased: "2027-01-01T00:00:00Z" }),
+      makeBranch({ branch: "1.x", highestReleased: "2020-01-01T00:00:00Z" }),
     ];
 
     // Act
-    const layout = timelineLayout(branches, new Date("2024-01-01T00:00:00.000Z"));
-    const newestLane = layout.lanes.find((lane) => lane.branch === "10.x");
+    const timeline = timelineModel(branches, null, "1.0.0", NOW);
 
-    // Assert: both flags are true at once; legacy's CSS-class suppression is a rendering choice,
-    // not something this pure layout function should bake in.
-    expect(newestLane).toMatchObject({ newest: true, installed: true });
+    // Assert
+    expect(timeline?.lanes[0]?.x).toBe(100);
+  });
+
+  it("labels years at the smallest round step that keeps to three, none where today's label goes", () => {
+    // Act
+    const timeline = model("wallabag_wallabag", "spomky-labs/otphp");
+
+    // Assert: 2014..2026 — every three years would be four labels (2023 at 71%), so every five;
+    // 2024 would sit under "today".
+    expect(timeline.ticks.map((tick) => tick.year)).toEqual([2014, 2019]);
+  });
+
+  it("gives a nine-year axis a year between its ends, not only the first (PD-TIMELINE-11)", () => {
+    // Arrange: rector/rector's axis, 2017 to now.
+    const t0 = Date.UTC(2017, 0, 1);
+    const x = (t: number): number => ((t - t0) / (NOW.getTime() - t0)) * 100;
+
+    // Act
+    const ticks = yearTicks(2017, NOW, x);
+
+    // Assert
+    expect(ticks.map((tick) => tick.year)).toEqual([2017, 2020, 2023]);
+    expect(ticks[0]?.x).toBe(0);
+  });
+
+  it("labels a short axis every year, and a century-long one still with at most three", () => {
+    // Arrange
+    const axis = (start: number) => {
+      const t0 = Date.UTC(start, 0, 1);
+      return (t: number): number => ((t - t0) / (NOW.getTime() - t0)) * 100;
+    };
+
+    // Act / Assert
+    expect(yearTicks(2024, NOW, axis(2024)).map((tick) => tick.year)).toEqual([2024, 2025]);
+    expect(yearTicks(1900, NOW, axis(1900)).length).toBeLessThanOrEqual(3);
+    expect(yearTicks(2026, NOW, axis(2026)).map((tick) => tick.year)).toEqual([2026]);
+  });
+
+  it("places a threshold N years before now on the same axis, or null when it falls off it", () => {
+    // Act
+    const timeline = model("koel_koel", "meilisearch/meilisearch-php");
+    const three = timeline.xOfYearsAgo(3);
+    const five = timeline.xOfYearsAgo(5);
+
+    // Assert
+    expect(three).not.toBeNull();
+    expect(five).not.toBeNull();
+    expect(five ?? 0).toBeLessThan(three ?? 0);
+    expect(timeline.xOfYearsAgo(10)).toBeNull(); // before 2020-01-01
+    expect(timeline.xOfYearsAgo(0)).toBeNull(); // today is the rule itself
   });
 });
 
-describe("timelineLayout / label and date pairing (critic.md M26 fix)", () => {
+describe("timelineModel / label and date pairing (critic.md M26 fix)", () => {
   it("labels an undated highest tag's commit date with the SAME tag, not a different one's date", () => {
-    // Arrange: "2.x" has no highest_released (a shared-commit tag) but does have a commit date for
-    // that same highest tag, and a *different*, later-dated newest_dated tag that must not be used.
+    // Arrange: "2.x" has no highest_released (a shared-commit tag) but a commit date for that same
+    // highest tag, and a *different*, later-dated newest_dated tag that must not be used.
     const branches = [
       makeBranch({ branch: "1.x", highestReleased: "2018-01-01T00:00:00.000Z" }),
       makeBranch({
         branch: "2.x",
         highest: "2.4.0",
-        highestReleased: null,
         highestCommitDate: "2020-06-01T00:00:00.000Z",
         newestDated: "2.3.0",
         newestDatedReleased: "2021-09-01T00:00:00.000Z",
@@ -147,91 +399,76 @@ describe("timelineLayout / label and date pairing (critic.md M26 fix)", () => {
     ];
 
     // Act
-    const layout = timelineLayout(branches, new Date("2024-01-01T00:00:00.000Z"));
-    const lane = layout.lanes.find((l) => l.branch === "2.x");
+    const lane = timelineModel(branches, null, "1.0.0", NOW)?.lanes.find((l) => l.branch === "2.x");
 
-    // Assert: label is the highest tag ("2.4.0"), and the date is that SAME tag's commit date, not
-    // "2.3.0"'s later release date.
+    // Assert
     expect(lane).toMatchObject({ label: "2.4.0", date: "2020-06-01T00:00:00.000Z" });
   });
 
-  it("falls back to the newest DATED tag, labelled with ITS OWN version, when the highest tag has no date at all", () => {
-    // Arrange: "3.x" has neither a release date nor a commit date for its highest tag.
+  it("falls back to the newest DATED tag, labelled with ITS OWN version", () => {
+    // Arrange
     const branches = [
       makeBranch({ branch: "1.x", highestReleased: "2018-01-01T00:00:00.000Z" }),
       makeBranch({
         branch: "3.x",
         highest: "3.1.0",
-        highestReleased: null,
-        highestCommitDate: null,
         newestDated: "3.0.0",
         newestDatedReleased: "2019-05-01T00:00:00.000Z",
       }),
     ];
 
     // Act
-    const layout = timelineLayout(branches, new Date("2024-01-01T00:00:00.000Z"));
-    const lane = layout.lanes.find((l) => l.branch === "3.x");
+    const lane = timelineModel(branches, null, "1.0.0", NOW)?.lanes.find((l) => l.branch === "3.x");
 
-    // Assert: the label follows the date's own tag ("3.0.0"), never the undated "highest" ("3.1.0").
+    // Assert
     expect(lane).toMatchObject({ label: "3.0.0", date: "2019-05-01T00:00:00.000Z" });
   });
 
-  it("excludes a branch with no usable date at all from the dated set", () => {
+  it("drops a branch with no usable date at all", () => {
     // Arrange
     const branches = [
       makeBranch({ branch: "1.x", highestReleased: "2018-01-01T00:00:00.000Z" }),
       makeBranch({ branch: "2.x", highestReleased: "2020-01-01T00:00:00.000Z" }),
-      makeBranch({ branch: "undated", highest: "0.1.0" }),
+      makeBranch({ branch: "0.1.x", highest: "0.1.0" }),
     ];
 
-    // Act
-    const layout = timelineLayout(branches, new Date("2024-01-01T00:00:00.000Z"));
-
-    // Assert
-    expect(layout.lanes.map((lane) => lane.branch)).toEqual(["2.x", "1.x"]);
+    // Act / Assert
+    expect(timelineModel(branches, null, "1.0.0", NOW)?.lanes.map((lane) => lane.branch)).toEqual([
+      "2.x",
+      "1.x",
+    ]);
   });
 });
 
-describe("timelineLayout / year ticks (critic.md C2 fix)", () => {
-  it("keeps the first year tick even though it lands left of the earliest dated release", () => {
-    // Arrange: earliest dated release is 2018-03-01, so startYear (2018)'s Jan-1 instant is before
-    // `min` — legacy's `if (t < min) continue` (report.js:701) dropped this tick in practice every
-    // time; it must survive here.
-    const branches = [
-      makeBranch({ branch: "9.x", highestReleased: "2018-03-01T00:00:00.000Z" }),
-      makeBranch({ branch: "10.x", highestReleased: "2020-06-15T00:00:00.000Z" }),
-    ];
-    const now = new Date("2022-01-01T00:00:00.000Z");
-
-    // Act
-    const layout = timelineLayout(branches, now);
-
-    // Assert: one tick per year, 2018 through 2022 inclusive (step 1, since the span is ≤4 years),
-    // and the 2018 tick is present and plots left of the 4% mark the earliest release itself gets.
-    expect(layout.ticks.map((tick) => tick.year)).toEqual([2018, 2019, 2020, 2021, 2022]);
-    const firstTick = layout.ticks[0];
-    expect(firstTick?.year).toBe(2018);
-    expect(firstTick?.x).toBeLessThan(4);
+describe("sameVersion (PD-TIMELINE-3, DESIGN.md §5)", () => {
+  it("matches a branch name against its tag's bare 'v' prefix", () => {
+    expect(sameVersion("0.0.3", "v0.0.3")).toBe(true);
+    expect(sameVersion("v0.0.3", "0.0.3")).toBe(true);
+    expect(sameVersion("1.x", "1.x")).toBe(true);
   });
 
-  it("steps every 2 years once the span exceeds 4 years, and every 3 beyond 8", () => {
-    // Arrange
-    const sixYears = [
-      makeBranch({ branch: "old", highestReleased: "2016-01-01T00:00:00.000Z" }),
-      makeBranch({ branch: "new", highestReleased: "2017-01-01T00:00:00.000Z" }),
-    ];
-    const tenYears = [
-      makeBranch({ branch: "old", highestReleased: "2012-01-01T00:00:00.000Z" }),
-      makeBranch({ branch: "new", highestReleased: "2013-01-01T00:00:00.000Z" }),
-    ];
+  it("does not match a real branch name against a different tag's version", () => {
+    expect(sameVersion("5.x", "v5.7.1")).toBe(false);
+  });
+});
 
-    // Act
-    const sixYearLayout = timelineLayout(sixYears, new Date("2022-01-01T00:00:00.000Z"));
-    const tenYearLayout = timelineLayout(tenYears, new Date("2022-01-01T00:00:00.000Z"));
+describe("agePhrase", () => {
+  const ago = (days: number): string => new Date(NOW.getTime() - days * 86_400_000).toISOString();
 
-    // Assert
-    expect(sixYearLayout.ticks.map((tick) => tick.year)).toEqual([2016, 2018, 2020, 2022]);
-    expect(tenYearLayout.ticks.map((tick) => tick.year)).toEqual([2012, 2015, 2018, 2021]);
+  it("spells out the page's one age unit: whole months under a year, then years", () => {
+    expect(agePhrase(ago(1), NOW)).toBe("1 month");
+    expect(agePhrase(ago(51), NOW)).toBe("2 months");
+    expect(agePhrase(ago(110), NOW)).toBe("4 months");
+    expect(agePhrase(ago(1500), NOW)).toBe("4.1 years");
+  });
+
+  it("quotes the same figure the facts row's terse form does", () => {
+    const iso = ago(56);
+    expect(agePhrase(iso, NOW).split(" ")[0]).toBe(ageText(iso, NOW).split(" ")[0]);
+  });
+
+  it("never says zero or a negative span for a date at or after now", () => {
+    expect(agePhrase(NOW.toISOString(), NOW)).toBe("1 month");
+    expect(agePhrase(ago(-30), NOW)).toBe("1 month");
   });
 });

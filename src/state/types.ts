@@ -27,13 +27,21 @@ export interface State {
   view: View;
   /** The search box as typed. `query.ts` trims and parses it; an all-whitespace query is no filter. */
   q: string;
-  /** The package whose detail is open, or null. */
+  /**
+   * The package whose detail is open, or null. Only the reader opens one (a click, Enter, `j`/`k`)
+   * or the address names one; the page never picks a package by itself (PD-ROWS-9, DESIGN.md §5).
+   */
   pkg: string | null;
-  /** True while `pkg` is the page's own boot-time pick; such a pick never reaches the address bar. */
-  pkgAuto: boolean;
   sort: SortKey;
   sortDesc: boolean;
   filters: Filters;
+  /**
+   * What the reader opened or closed on the Blast radius tab (a row's packages, a fold), by key
+   * (`domain/radius.ts#rowKey`). Like `sort`, not part of the fragment, whose format does not change
+   * (DESIGN.md §4): a key never touched takes its default, which follows `pkg` — a link naming a
+   * package opens the row and fold that list it (PD-RADIUS-3).
+   */
+  disclosure: Readonly<Record<string, boolean>>;
 }
 
 export type Action =
@@ -41,9 +49,11 @@ export type Action =
   | { type: "query"; q: string }
   | { type: "toggle"; group: FilterGroup; key: string }
   | { type: "clear" }
+  /** Findings, listed through exactly these rail filters: the query box emptied, no detail open. */
+  | { type: "focus"; filters: Filters }
   | { type: "sort"; key: SortKey }
   | { type: "select"; pkg: string | null }
-  | { type: "autoSelect"; pkg: string }
+  | { type: "disclose"; key: string; open: boolean }
   | { type: "restore"; state: State };
 
 export const EMPTY_FILTERS: Filters = {
@@ -60,8 +70,8 @@ export const INITIAL_STATE: State = {
   view: "findings",
   q: "",
   pkg: null,
-  pkgAuto: false,
   sort: "verdict",
   sortDesc: false,
   filters: EMPTY_FILTERS,
+  disclosure: {},
 };

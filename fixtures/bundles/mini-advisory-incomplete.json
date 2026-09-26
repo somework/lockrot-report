@@ -1,0 +1,121 @@
+{
+ "report": {
+  "$schema": "https://lockrot.dev/schema/report-1.json",
+  "lockrot": {
+   "version": "0.11.0",
+   "schema": 1
+  },
+  "generated_at": "2026-09-24T00:00:00+00:00",
+  "run": {
+   "project": "acme/offline-audit",
+   "target_php": "8.4",
+   "lock_file": "composer.lock",
+   "fail_on": "silent",
+   "thresholds": {
+    "release-warn-years": 3,
+    "release-high-years": 5,
+    "push-warn-years": 3,
+    "push-high-years": 5
+   },
+   "flagged_verdicts": [
+    "abandoned",
+    "silent",
+    "pinned",
+    "left-behind",
+    "old-promise",
+    "stale"
+   ]
+  },
+  "activity_cache_oldest_at": null,
+  "packages_checked": 2,
+  "include_dev": false,
+  "not_from_composer_repository": 0,
+  "network_failures": true,
+  "counts": {
+   "abandoned": 1,
+   "silent": 0,
+   "pinned": 0,
+   "left-behind": 0,
+   "old-promise": 0,
+   "stale": 0,
+   "unknown": 0,
+   "finished": 0,
+   "ok": 1
+  },
+  "abandoned": {
+   "total": 1,
+   "with_replacement": 0
+  },
+  "priorities": {
+   "critical": 1,
+   "high": 0,
+   "medium": 0,
+   "low": 0,
+   "none": 1
+  },
+  "exposure": [],
+  "libyears": null,
+  "baseline": null,
+  "notes": [
+   "this run was --offline; the security advisory check could not run and is treated as absent evidence",
+   "GitHub did not answer for 1 repository (private, renamed or removed); repository activity missing"
+  ],
+  "findings": [
+   {
+    "package": "vendor/archived",
+    "version": "1.4.0",
+    "verdict": "abandoned",
+    "priority": "critical",
+    "direct": true,
+    "dev": false,
+    "replacement": null,
+    "signals": [
+     {
+      "id": "S3",
+      "level": "high",
+      "summary": "repository archived on GitHub",
+      "data": {
+       "repo": "vendor/archived",
+       "host": "github.com"
+      }
+     }
+    ],
+    "chain": [
+     "vendor/archived"
+    ],
+    "direct_dependents": [
+     "vendor/archived"
+    ],
+    "evidence": "repository archived on GitHub",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-24T00:00:00+00:00",
+    "libyears": null,
+    "baseline": null
+   },
+   {
+    "package": "vendor/fine",
+    "version": "2.1.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": true,
+    "dev": false,
+    "replacement": null,
+    "signals": [],
+    "chain": [
+     "vendor/fine"
+    ],
+    "direct_dependents": [
+     "vendor/fine"
+    ],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-24T00:00:00+00:00",
+    "libyears": null,
+    "baseline": null
+   }
+  ]
+ },
+ "details": []
+}

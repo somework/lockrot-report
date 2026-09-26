@@ -6,7 +6,7 @@ import type { State } from "../../../src/state/types";
 describe("reducer / view", () => {
   it("switches the active tab and closes an open detail pane", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, view: "findings", pkg: "acme/widget", pkgAuto: false };
+    const state: State = { ...INITIAL_STATE, view: "findings", pkg: "acme/widget" };
 
     // Act
     const next = reducer(state, { type: "view", view: "packages" });
@@ -14,12 +14,11 @@ describe("reducer / view", () => {
     // Assert
     expect(next.view).toBe("packages");
     expect(next.pkg).toBeNull();
-    expect(next.pkgAuto).toBe(false);
   });
 
   it("keeps the open detail pane when keepDetail is set, as data-goto does", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, view: "findings", pkg: "acme/widget", pkgAuto: true };
+    const state: State = { ...INITIAL_STATE, view: "findings", pkg: "acme/widget" };
 
     // Act
     const next = reducer(state, { type: "view", view: "advisories", keepDetail: true });
@@ -27,7 +26,6 @@ describe("reducer / view", () => {
     // Assert
     expect(next.view).toBe("advisories");
     expect(next.pkg).toBe("acme/widget");
-    expect(next.pkgAuto).toBe(true);
   });
 
   it("does not mutate the original state object", () => {
@@ -107,7 +105,6 @@ describe("reducer / clear", () => {
       q: "left-pad",
       view: "packages",
       pkg: "acme/widget",
-      pkgAuto: false,
       sort: "libyears",
       sortDesc: true,
       filters: { ...EMPTY_FILTERS, prio: ["high"], verdict: ["stale"] },
@@ -150,7 +147,7 @@ describe("reducer / sort", () => {
     expect(next.sortDesc).toBe(false);
   });
 
-  it("switching to a different column always resets to ascending", () => {
+  it("switching to a different column resets to ascending", () => {
     // Arrange
     const state: State = { ...INITIAL_STATE, sort: "package", sortDesc: true };
 
@@ -161,42 +158,42 @@ describe("reducer / sort", () => {
     expect(next.sort).toBe("version");
     expect(next.sortDesc).toBe(false);
   });
+
+  it("opens the Libyears column largest first (PD-PACKAGES-4)", () => {
+    // Arrange
+    const state: State = { ...INITIAL_STATE, sort: "package", sortDesc: false };
+
+    // Act
+    const first = reducer(state, { type: "sort", key: "libyears" });
+    const second = reducer(first, { type: "sort", key: "libyears" });
+
+    // Assert
+    expect(first.sortDesc).toBe(true);
+    expect(second.sortDesc).toBe(false);
+  });
 });
 
-describe("reducer / select and autoSelect", () => {
-  it("select sets the package and clears the automatic-pick flag", () => {
+describe("reducer / select", () => {
+  it("select opens the package and changes nothing else", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, pkg: null, pkgAuto: true };
+    const state = INITIAL_STATE;
 
     // Act
     const next = reducer(state, { type: "select", pkg: "acme/widget" });
 
     // Assert
-    expect(next.pkg).toBe("acme/widget");
-    expect(next.pkgAuto).toBe(false);
+    expect(next).toEqual({ ...INITIAL_STATE, pkg: "acme/widget" });
   });
 
   it("select with null closes the detail pane", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, pkg: "acme/widget", pkgAuto: false };
+    const state: State = { ...INITIAL_STATE, pkg: "acme/widget" };
 
     // Act
     const next = reducer(state, { type: "select", pkg: null });
 
     // Assert
     expect(next.pkg).toBeNull();
-  });
-
-  it("autoSelect sets the package and marks it as the automatic pick", () => {
-    // Arrange
-    const state = INITIAL_STATE;
-
-    // Act
-    const next = reducer(state, { type: "autoSelect", pkg: "acme/widget" });
-
-    // Assert
-    expect(next.pkg).toBe("acme/widget");
-    expect(next.pkgAuto).toBe(true);
   });
 });
 
@@ -216,5 +213,29 @@ describe("reducer / restore", () => {
 
     // Assert
     expect(next).toBe(restored);
+  });
+});
+
+// PD-BASELINE-6: one press that lists a set counted elsewhere on the page.
+describe("reducer / focus", () => {
+  it("opens Findings with exactly the given filters, the query emptied and no detail open", () => {
+    // Arrange
+    const state: State = {
+      ...INITIAL_STATE,
+      view: "run",
+      q: "guzzle",
+      pkg: "acme/widget",
+      filters: { ...EMPTY_FILTERS, scope: ["dev"] },
+      sort: "package",
+      sortDesc: true,
+    };
+    const filters = { ...EMPTY_FILTERS, prio: ["critical", "high"], since: ["new", "worsened"] };
+
+    // Act
+    const next = reducer(state, { type: "focus", filters });
+
+    // Assert
+    expect(next).toEqual({ ...state, view: "findings", q: "", pkg: null, filters });
+    expect(state.view).toBe("run");
   });
 });

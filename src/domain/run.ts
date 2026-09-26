@@ -1,0 +1,193 @@
+/**
+ * Run data, arranged (PD-RUN-1..4, DESIGN.md §5): what the run was told and what it recorded, read
+ * straight off the document — counts, presence and date arithmetic, nothing inferred beyond what a
+ * field says. No DOM and no clock: the one instant it measures from is the report's own
+ * `generated_at`.
+ */
+
+import type { Finding, Model, PackageDetails, ReportModel } from "../model/types";
+import { yearsPhrase } from "./format";
+
+const MS_PER_HOUR = 3600 * 1000;
+const MS_PER_DAY = 24 * MS_PER_HOUR;
+const MS_PER_JULIAN_YEAR = 365.25 * MS_PER_DAY;
+/** Under this a span reads in hours; under `DAYS_UNTIL` in days; past it `yearsPhrase` takes over. */
+const HOURS_UNTIL = 48 * MS_PER_HOUR;
+const DAYS_UNTIL = 60 * MS_PER_DAY;
+
+/** What a reader is told for a value the document does not give, instead of a bare em dash: the key
+ *  is not in the document at all, or the run wrote it as null. One wording family everywhere on Run
+ *  data, so "not in this document" and "left empty by this run" always mean these two things. */
+export const NOT_IN_DOCUMENT = "not in this document";
+export const NOT_RECORDED = "left empty by this run";
+
+/**
+ * An ISO 8601 instant as `2026-09-24 00:00 UTC`: one zone for every reader, so the page says the
+ * same thing wherever it is opened. The string itself when it does not parse.
+ */
+export function utcMinute(iso: string): string {
+  const ms = Date.parse(iso);
+  if (Number.isNaN(ms)) return iso;
+  const text = new Date(ms).toISOString();
+  return `${text.slice(0, 10)} ${text.slice(11, 16)} UTC`;
+}
+
+/** A span of time in the unit a reader holds: "less than an hour", hours under two days, days
+ *  under two months, then the page's usual months/years (`yearsPhrase`). */
+export function spanPhrase(ms: number): string {
+  const span = Math.max(0, ms);
+  if (span < MS_PER_HOUR) return "less than an hour";
+  if (span < HOURS_UNTIL) {
+    const hours = Math.max(1, Math.round(span / MS_PER_HOUR));
+    return hours === 1 ? "1 hour" : `${hours} hours`;
+  }
+  if (span < DAYS_UNTIL) return `${Math.round(span / MS_PER_DAY)} days`;
+  return yearsPhrase(span / MS_PER_JULIAN_YEAR);
+}
+
+export interface CacheAge {
+  /** `activity_cache_oldest_at` as given. */
+  readonly oldest: string;
+  /** How long before `generated_at` that was, spelled out; `null` when either date does not parse. */
+  readonly before: string | null;
+}
+
+/** The oldest cached repository activity the run used, and how old it was when the report was
+ *  written; `null` when the document gives no such date. */
+export function cacheAge(report: ReportModel): CacheAge | null {
+  const oldest = report.activityCacheOldestAt;
+  if (oldest === null) return null;
+  const gap = Date.parse(report.generatedAt) - Date.parse(oldest);
+  return { oldest, before: Number.isNaN(gap) ? null : spanPhrase(gap) };
+}
+
+export interface ActivityTally {
+  /** Packages whose details carry a repository-activity block. */
+  readonly total: number;
+  readonly fromCache: number;
+}
+
+/** How many of the packages this file explains carry repository activity, and how many of those
+ *  answers came from lockrot's cache (`activity.from_cache`). */
+export function activityTally(details: ReadonlyMap<string, PackageDetails>): ActivityTally {
+  let total = 0;
+  let fromCache = 0;
+  for (const entry of details.values()) {
+    if (entry.activity === null) continue;
+    total += 1;
+    if (entry.activity.fromCache) fromCache += 1;
+  }
+  return { total, fromCache };
+}
+
+/** Whether the document carries `key` (a wire key, `run.` prefixed for the run block). */
+export function carries(report: ReportModel, key: string): boolean {
+  return !report.absent.includes(key);
+}
+
+/** The reason shown for a `null` value: the document left the key out, or wrote it as null. */
+export function nullReason(report: ReportModel, key: string): string {
+  return carries(report, key) ? NOT_RECORDED : NOT_IN_DOCUMENT;
+}
+
+/** The sentence the oldest-cache row gives when the document has no date for it — always with the
+ *  reason this file shows: no key; no package explained; no package carrying repository activity;
+ *  every answer fetched during the run (with the count); or answers from the cache but no date. */
+export function cacheNullReason(model: Model): string {
+  const { report } = model;
+  if (!carries(report, "activity_cache_oldest_at")) return NOT_IN_DOCUMENT;
+  if (model.details.size === 0) return `${NOT_RECORDED} — this file explains no package`;
+  const tally = activityTally(model.details);
+  if (tally.total === 0) return "none — no package in this file carries repository activity";
+  if (tally.fromCache === 0) {
+    return tally.total === 1
+      ? "none — the one repository answer in this file was fetched during the run"
+      : `none — all ${tally.total} repository answers in this file were fetched during the run`;
+  }
+  return `${NOT_RECORDED}, though ${tally.fromCache} of the ${tally.total} repository answers here came from the cache`;
+}
+
+export interface ThresholdPair {
+  /** The part of the names before `-warn-years` / `-high-years` ("release", "push"). */
+  readonly subject: string;
+  readonly warn: number;
+  readonly high: number;
+  readonly warnName: string;
+  readonly highName: string;
+}
+
+export interface ThresholdGroups {
+  /** Each `X-warn-years` with its `X-high-years`, in the order the first of the two appears. */
+  readonly pairs: readonly ThresholdPair[];
+  /** Every threshold that is not half of a pair, as given. */
+  readonly others: readonly (readonly [name: string, years: number])[];
+  /** The right edge every pair's scale shares: `max(10, 2 × the highest high)`, as `ageAxis`. */
+  readonly max: number;
+}
+
+const WARN_SUFFIX = "-warn-years";
+const HIGH_SUFFIX = "-high-years";
+const AXIS_FLOOR_YEARS = 10;
+
+/** The run's thresholds grouped into warn/high pairs on one shared scale (`ageAxis`'s edge rule,
+ *  so a pair reads here as its guides read in the Findings column head). */
+export function thresholdGroups(thresholds: readonly (readonly [string, number])[]): ThresholdGroups {
+  const byName = new Map(thresholds);
+  const pairs: ThresholdPair[] = [];
+  const paired = new Set<string>();
+  for (const [name] of thresholds) {
+    if (paired.has(name)) continue;
+    const subject = name.endsWith(WARN_SUFFIX)
+      ? name.slice(0, -WARN_SUFFIX.length)
+      : name.endsWith(HIGH_SUFFIX)
+        ? name.slice(0, -HIGH_SUFFIX.length)
+        : null;
+    if (subject === null || subject === "") continue;
+    const warnName = subject + WARN_SUFFIX;
+    const highName = subject + HIGH_SUFFIX;
+    const warn = byName.get(warnName);
+    const high = byName.get(highName);
+    if (warn === undefined || high === undefined) continue;
+    pairs.push({ subject, warn, high, warnName, highName });
+    paired.add(warnName).add(highName);
+  }
+  const others = thresholds.filter(([name]) => !paired.has(name));
+  const highest = pairs.reduce((top, pair) => Math.max(top, pair.high, pair.warn), 0);
+  return { pairs, others, max: Math.max(AXIS_FLOOR_YEARS, 2 * highest) };
+}
+
+/** The Findings axis' guides are one picture per (warn, high): pairs that share both numbers are
+ *  drawn once, their subjects listed together, in the order they first appear. */
+export function sameScalePairs(pairs: readonly ThresholdPair[]): readonly (readonly ThresholdPair[])[] {
+  const rows: ThresholdPair[][] = [];
+  for (const pair of pairs) {
+    const row = rows.find((group) => {
+      const [first] = group;
+      return first !== undefined && first.warn === pair.warn && first.high === pair.high;
+    });
+    if (row === undefined) rows.push([pair]);
+    else row.push(pair);
+  }
+  return rows;
+}
+
+function namesReplacementInWords(finding: Finding, details: ReadonlyMap<string, PackageDetails>): boolean {
+  const s1 = finding.signals.find((signal) => signal.id === "S1")?.data["replacement"];
+  const metadata = details.get(finding.package)?.metadata?.replacement ?? null;
+  return (typeof s1 === "string" && s1 !== "") || (metadata !== null && metadata !== "");
+}
+
+/**
+ * Abandoned findings that name a replacement only in words — S1's `replacement` or the metadata's
+ * free text set, `finding.replacement` (the package lockrot resolved) not. `abandoned.with_replacement`
+ * counts only the resolved ones, so Run data says these apart from it rather than let "0 of 21" read
+ * as a contradiction of a panel that quotes "Symfony".
+ */
+export function replacementInWordsOnly(model: Model): number {
+  return model.report.findings.filter(
+    (finding) =>
+      finding.verdict === "abandoned" &&
+      finding.replacement === null &&
+      namesReplacementInWords(finding, model.details),
+  ).length;
+}

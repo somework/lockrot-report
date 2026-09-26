@@ -1,6 +1,9 @@
 import { describe, expect, test } from "vitest";
 import {
   libyearsAtZero,
+  libyearsAxisMax,
+  libyearsTally,
+  libyearsAtZeroMark,
   libyearsItems,
   libyearsReason,
   libyearsRowPhrases,
@@ -98,6 +101,22 @@ describe("libyearsReason", () => {
     // string is neither a dev branch nor a stable one, so it falls to the "no release date" reason.
     expect(reason).toBe("no release date lockrot trusts");
   }, 10_000);
+});
+
+describe("libyearsAtZeroMark", () => {
+  const meta: Pick<ExplainMetadata, "lastStableVersion"> = { lastStableVersion: "v1.2.4" };
+
+  test("says libyearsAtZero's two readings in the words a printed table has room for", () => {
+    expect(libyearsAtZeroMark({ libyears: 0, version: "v1.2.4" }, meta)).toBe("newest");
+    expect(libyearsAtZeroMark({ libyears: 0, version: "v1.2.4" }, null)).toBe("newest");
+    expect(libyearsAtZeroMark({ libyears: 0, version: "v1.1.9" }, meta)).toBe("not behind v1.2.4");
+  });
+
+  test("is null wherever libyearsAtZero is: a value that is not exactly zero, or no finding", () => {
+    expect(libyearsAtZeroMark({ libyears: 0.025, version: "v1.2.3" }, meta)).toBeNull();
+    expect(libyearsAtZeroMark({ libyears: null, version: "v1.2.3" }, meta)).toBeNull();
+    expect(libyearsAtZeroMark(null, meta)).toBeNull();
+  });
 });
 
 describe("libyearsAtZero", () => {
@@ -353,5 +372,32 @@ describe("libyearsRowPhrases", () => {
       { text: "newest v2.0.0 released ", date: "2020-01-01" },
       { text: "installed release dated by monorepo/parent, ", date: "2021-05-01" },
     ]);
+  });
+});
+
+describe("libyearsTally (PD-PACKAGES-1)", () => {
+  test("splits the listed packages into behind, not behind (exactly zero) and unmeasured", () => {
+    const tally = libyearsTally([{ libyears: 1.2 }, { libyears: 0.01 }, { libyears: 0 }, { libyears: null }]);
+    expect(tally).toEqual({ behind: 2, current: 1, unmeasured: 1 });
+  });
+
+  test("is all zeros for an empty list", () => {
+    expect(libyearsTally([])).toEqual({ behind: 0, current: 0, unmeasured: 0 });
+  });
+});
+
+describe("libyearsAxisMax (PD-PACKAGES-1)", () => {
+  test("rounds the largest measured value up to a whole year", () => {
+    expect(libyearsAxisMax([{ libyears: 5.8 }, { libyears: 0.3 }, { libyears: null }])).toBe(6);
+    expect(libyearsAxisMax([{ libyears: 4 }])).toBe(4);
+  });
+
+  test("is at least one year, so a list of small values still has a scale", () => {
+    expect(libyearsAxisMax([{ libyears: 0.2 }])).toBe(1);
+  });
+
+  test("is null when nothing is behind: no bar, no scale to caption", () => {
+    expect(libyearsAxisMax([{ libyears: 0 }, { libyears: null }])).toBeNull();
+    expect(libyearsAxisMax([])).toBeNull();
   });
 });

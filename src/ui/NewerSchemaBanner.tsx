@@ -9,12 +9,12 @@ const READS_SCHEMA = 1;
  * reader does not take an absent section for an absent problem. Deliberately not a live region:
  * it is there from the first paint and never changes.
  */
-export function NewerSchemaBanner() {
+export function NewerSchemaBanner({ inert = false }: { inert?: boolean }) {
   const { model } = useReport();
   if (!model.newerSchema) return null;
 
   return (
-    <div className="schema-banner">
+    <div className="schema-banner" inert={inert}>
       <p>
         <b>This report is newer than this page.</b> It was written with report schema{" "}
         <span className="mono">{model.schema}</span>, and this page reads schema{" "}

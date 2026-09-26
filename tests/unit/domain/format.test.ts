@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { ageText, countPhrase, day, fixed, plural } from "../../../src/domain/format";
+import { agePhrase, ageText, countPhrase, day, fixed, plural, pluralNoun } from "../../../src/domain/format";
 
 // Every case here that has a line number in its title is ported verbatim (values unchanged, only
 // the assertion syntax adapted) from tests/js/lib.test.js; the ones without are new, covering what
@@ -78,6 +78,19 @@ describe("plural", () => {
   });
 });
 
+describe("pluralNoun", () => {
+  test("the noun alone, same singular/plural choice as plural() (regression: PriorityLedger's own count stays in its own span)", () => {
+    expect(pluralNoun(1, "package", "packages")).toBe("package");
+    expect(pluralNoun(2, "package", "packages")).toBe("packages");
+    expect(pluralNoun(0, "package", "packages")).toBe("packages");
+  });
+
+  test("plural() is pluralNoun() with the count prefixed", () => {
+    expect(plural(1, "advisory", "advisories")).toBe(`1 ${pluralNoun(1, "advisory", "advisories")}`);
+    expect(plural(4, "advisory", "advisories")).toBe(`4 ${pluralNoun(4, "advisory", "advisories")}`);
+  });
+});
+
 describe("fixed", () => {
   test("formats a finite number and refuses everything else, null included (lib.test.js:251-258)", () => {
     expect(fixed(4.7123, 1)).toBe("4.7");
@@ -111,5 +124,15 @@ describe("countPhrase", () => {
 
   test("zero of zero stays plural, same as any other non-one count", () => {
     expect(countPhrase(0, 0, "flagged package", "flagged packages")).toBe("0 of 0 flagged packages");
+  });
+});
+
+describe("agePhrase", () => {
+  const now = new Date("2026-09-24T00:00:00Z");
+  test("spells out the same figure ageText gives, in years or months", () => {
+    expect(agePhrase("2018-06-25T10:20:17Z", now)).toBe("8.2 years ago");
+    expect(ageText("2018-06-25T10:20:17Z", now)).toBe("8.2 y ago");
+    expect(agePhrase("2026-09-01T00:00:00Z", now)).toBe("1 month ago");
+    expect(agePhrase(null, now)).toBe("undated");
   });
 });

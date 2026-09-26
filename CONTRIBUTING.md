@@ -10,24 +10,25 @@ Node 24 (`.nvmrc`). Everything below is an npm script:
 | `npm run test:e2e`                                          | the browser suite (Playwright); needs `build/pages/`, see below |
 | `npm run lint`, `npm run typecheck`, `npm run format:check` | what CI runs first                                              |
 
-## The browser suite runs against two pages
+## The browser suite
 
-`e2e/` describes the page's behaviour through a page object, and runs against either renderer:
+`e2e/` describes the page's behaviour through a page object, and runs against the built page:
 
 ```sh
 npx playwright install chromium
-node scripts/baseline-pages.mjs              # legacy/ filled with every fixture → build/legacy-pages/
-npm run build && node scripts/pages.mjs      # dist/report.html filled the same way → build/pages/
-RENDERER=legacy npx playwright test
-RENDERER=new npx playwright test
+npm run build && node scripts/pages.mjs      # dist/report.html filled with every fixture → build/pages/
+npx playwright test
 ```
 
-`legacy/` is lockrot's hand-written page at the commit in `legacy/SOURCE_COMMIT`. The suite was
-made green against it first, which is what shows the tests test something. A behaviour the new page
-changes on purpose is listed in DESIGN.md §5 and marked `test.fail(renderer === "legacy")`.
+The suite was written and made green against `legacy/` (lockrot's hand-written page, at the commit
+in `legacy/SOURCE_COMMIT`) first, while the renderer was being extracted — proof the tests test
+something — and ran against both pages until lockrot 0.12.0 stopped shipping the legacy one. A
+behaviour the new page changed on purpose during that extraction is listed in DESIGN.md §5, with the
+test that covers it carrying the row's id in a comment; later deliberate differences are recorded
+there the same way.
 
-When a test fails on the new page, fix the page. Change a test only when it is wrong about
-DESIGN.md, and say why in the commit.
+When a test fails, fix the page. Change a test only when it is wrong about DESIGN.md, and say why
+in the commit.
 
 `node scripts/shoot.mjs build/pages build/shots/new` screenshots every page at 320, 768, 1024 and
 1440 px in both colour schemes — a review aid, not a gate.

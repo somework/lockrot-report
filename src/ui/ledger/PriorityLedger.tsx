@@ -1,77 +1,143 @@
 import { useReport } from "../context";
-import { toneClass } from "../common/common";
+import { LegendButton, toneClass } from "../common/common";
 import { TONE } from "../../domain/vocab";
 import { population } from "../../domain/filters";
+import { plural } from "../../domain/format";
+import { RANKED_PRIORITIES, sharePhrase, waffleRuns } from "../../domain/summary";
+import { rollupClauses, scopeRollup } from "../../domain/share";
+import { CleanMark } from "./CleanMark";
+import { Waffle } from "./Waffle";
 import "./ledger.css";
 
-/** The four priorities a finding can actually carry (`none` is a package with no rot verdict at
- *  all, and legacy never gives it a bar segment or a legend button — `report.js:250-251`). */
-const SHOWN_PRIORITIES = ["critical", "high", "medium", "low"] as const;
+/** A clause with its counts set as figures: "51 in production, 18 dev-only". */
+function Clause({ text }: { text: string }) {
+  return (
+    <span className="lead-scope-part">
+      {text.split(/(\d+)/).map((piece, i) => (i % 2 === 1 ? <b key={i}>{piece}</b> : piece))}
+    </span>
+  );
+}
 
 /**
- * The report's priority distribution, over the packages the run actually flagged. Ported from
- * legacy `renderLedger()`'s priority block (`report.js:249-258`), with three deliberate differences:
+ * The flagged packages split two ways under the chips (PD-SUMMARY-9): where they are installed
+ * (`Finding.dev`) and how they get in (`Finding.direct`) — "51 in production, 18 dev-only · 20
+ * required directly, 49 pulled in". The rail's Scope counts, in one line a phone reader sees
+ * without opening Filters. Words, not a mark: the waffle beside it already draws the 69.
+ */
+function ScopeLine({ clauses }: { clauses: readonly string[] }) {
+  if (clauses.length === 0) return null;
+  return (
+    <p className="lead-scope">
+      <span className="lead-scope-parts">
+        {clauses.map((clause, i) => (
+          <span key={clause} className="lead-scope-item">
+            <span className="lead-scope-sep" aria-hidden="true">
+              {i > 0 ? "·" : ""}
+            </span>
+            <Clause text={clause} />
+            {i < clauses.length - 1 ? " " : ""}
+          </span>
+        ))}
+      </span>
+    </p>
+  );
+}
+
+/**
+ * The summary band's lead: the one answer a first-time reader needs — how many packages are
+ * flagged, out of how many — as the loudest thing on the page, with the priority chips that
+ * filter by it and a waffle of every package beside it (DESIGN.md §5 PD-SUMMARY-6). It replaced
+ * both the counts sentence above the ledger and the ledger's own priority bar, which said the same
+ * thing twice.
  *
- * - every one of the four priorities gets a legend button even at a count of zero, unlike the
- *   verdict and advisory ledgers beside it (this task's brief; the asymmetry is intentional, not
- *   an oversight — a reader scanning the row should see the whole scale, not just what fired);
- * - the eyebrow's tooltip is corrected for critic.md M29: legacy's static
- *   `title="Every verdict except ok and finished"` sits on a count (`FLAGGED.length`) that also
- *   excludes `unknown` — a package lockrot could not check is not a finding either. The text here
- *   names all three exclusions, so it matches the number it labels;
- * - a priority this renderer does not know (a future lockrot) still gets a bar segment and legend
- *   button, appended after the four known ones at a neutral tone — DESIGN.md §2's forward-
- *   compatibility contract, same reasoning as `VerdictLedger`. `"none"` is never included: it is a
- *   package with no rot verdict at all, not an unknown priority.
+ * Kept from the priority block it grew out of (legacy `renderLedger()`, `report.js:249-258`):
+ *
+ * - every one of the four priorities gets a chip even at a count of zero, unlike the verdict and
+ *   advisory chips (a reader should see the whole scale, not just what fired); a zero chip dims —
+ *   except in a lock with no packages at all, which has no scale to show and gets no chips;
+ * - the eyebrow's tooltip names all three verdicts the count excludes (critic.md M29);
+ * - a priority this renderer does not know (a future lockrot) still gets a chip, after the four
+ *   known ones, at `TONE()`'s neutral fallback (DESIGN.md §2); `none` never does.
+ *
+ * The figure is the Findings tab's own population, so the two can never disagree.
  */
 export function PriorityLedger() {
   const { model, state, dispatch } = useReport();
   const counts = model.report.priorities;
-  const flaggedCount = population(model, "findings").length;
-  const known = new Set<string>(SHOWN_PRIORITIES);
+  const flagged = population(model, "findings");
+  const total = model.report.packagesChecked ?? model.report.findings.length;
+  const known = new Set<string>(RANKED_PRIORITIES);
   const unknown = Object.keys(counts).filter((p) => !known.has(p) && p !== "none" && (counts[p] ?? 0) > 0);
-  const shown: readonly string[] = [...SHOWN_PRIORITIES, ...unknown];
-  const bars = shown.filter((p) => (counts[p] ?? 0) > 0);
+  const shown: readonly string[] = [...RANKED_PRIORITIES, ...unknown];
+  const clean = flagged.length === 0;
+  const empty = total === 0 && clean;
 
   return (
-    <div className="ledger-block">
-      <span className="eyebrow" title="Every verdict except ok, finished and unknown">
-        Priority of the <span className="ledger-figure">{flaggedCount}</span> flagged packages
-      </span>
-      <div className="bar" role="img" aria-label="Priority distribution">
-        {bars.length === 0 ? (
-          <span className={`bar-seg ${toneClass("none")}`} style={{ flexGrow: 1 }} />
+    <div className={empty ? "ledger-lead is-empty" : clean ? "ledger-lead is-clean" : "ledger-lead"}>
+      <div className="lead-answer">
+        <span className="eyebrow" title="Every verdict except ok, finished and unknown">
+          Flagged packages
+        </span>
+        {empty ? (
+          // A lock with no packages is not a clean bill of health, just nothing to judge: no tick,
+          // no green, and no "nothing flagged in 0 packages" to puzzle over.
+          <p className="lead-figure">
+            <span className="lead-clean lead-empty">No packages in this lock</span>
+          </p>
+        ) : clean ? (
+          <p className={`lead-figure ${toneClass("none")}`}>
+            <CleanMark size={30} />
+            <span className={`lead-clean ${toneClass("none")}`}>
+              Nothing flagged in {plural(total, "package", "packages")}
+            </span>
+          </p>
         ) : (
-          bars.map((p) => (
-            <span
-              key={p}
-              className={`bar-seg ${toneClass(TONE(p))}`}
-              style={{ flexGrow: counts[p] ?? 0 }}
-              title={`${p}: ${counts[p] ?? 0}`}
-            />
-          ))
+          <p className="lead-figure">
+            <span className="lead-num">{flagged.length}</span>
+            <span className="lead-of">
+              <span className="lead-of-line">of {plural(total, "package", "packages")}</span>{" "}
+              <span className="lead-of-line">
+                flagged <span className="lead-share">· {sharePhrase(flagged.length, total)} of the lock</span>
+              </span>
+            </span>
+          </p>
+        )}
+        {!clean && <ScopeLine clauses={rollupClauses(scopeRollup(flagged))} />}
+        {/* No chips for an empty lock: four disabled "0" filters there had nothing to filter. */}
+        {!empty && (
+          <div className="legend lead-chips" role="group" aria-label="Priority">
+            {shown.map((p) => (
+              <LegendButton
+                key={p}
+                tone={TONE(p)}
+                dim={(counts[p] ?? 0) === 0}
+                pressed={state.filters.prio.includes(p)}
+                label={p}
+                count={counts[p] ?? 0}
+                onToggle={() => {
+                  dispatch({ type: "toggle", group: "prio", key: p });
+                }}
+              />
+            ))}
+          </div>
         )}
       </div>
-      <div className="legend">
-        {shown.map((p) => {
-          const n = counts[p] ?? 0;
-          const on = state.filters.prio.includes(p);
-          return (
-            <button
-              key={p}
-              type="button"
-              className={`legend-btn ${toneClass(TONE(p))}`}
-              aria-pressed={on}
-              onClick={() => {
-                dispatch({ type: "toggle", group: "prio", key: p });
-              }}
-            >
-              <i className="swatch" aria-hidden="true" />
-              {p} <i className="count">{n}</i>
-            </button>
-          );
-        })}
-      </div>
+      {/* Drawn for any lock with a package in it: four packages are four squares, the same size
+          as a big lock's, so the lead never leaves its right-hand side empty for a small one. */}
+      {total > 0 && (
+        <figure className="lead-waffle">
+          <Waffle runs={waffleRuns(flagged)} total={total} />
+          <figcaption className="lead-waffle-cap">
+            One square per package
+            {!clean && (
+              <span className="lead-waffle-key">
+                <i className="waffle-cell waffle-rest" aria-hidden="true" />
+                {Math.max(0, total - flagged.length)} not flagged
+              </span>
+            )}
+          </figcaption>
+        </figure>
+      )}
     </div>
   );
 }

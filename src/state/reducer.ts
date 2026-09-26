@@ -11,8 +11,16 @@
  * equivalent (every legacy reader tests truthiness) but avoids ever-growing objects of stale
  * `false` entries.
  */
-import type { Action, Filters, State } from "./types";
+import type { Action, Filters, SortKey, State } from "./types";
 import { EMPTY_FILTERS } from "./types";
+
+/**
+ * The columns whose first click sorts largest first (PD-PACKAGES-4, DESIGN.md §5). The question a
+ * reader brings to the Libyears head is "which is furthest behind?"; ascending put the unmeasured
+ * rows and the zeros at the top, so the answer took a second tap. Every other column still opens
+ * ascending, as legacy's did (js-4.md §7a.3).
+ */
+const FIRST_DESCENDING: readonly SortKey[] = ["libyears"];
 
 /** Add `key` to `group` if absent, keeping the existing order; remove it if present. */
 function toggleFilterKey(filters: Filters, group: keyof Filters, key: string): Filters {
@@ -23,10 +31,10 @@ function toggleFilterKey(filters: Filters, group: keyof Filters, key: string): F
 }
 
 /**
- * `select(pkg)` (js-4.md §2) is the legacy chokepoint that opens/closes the detail pane and always
- * clears `pkgAuto` — every user-initiated selection makes the package explicit, so it starts
- * appearing in the address bar. The boot-time auto-open bypasses it (that is the `autoSelect`
- * action here); everything else — row click, keyboard, `data-open`, closing — is `select`.
+ * `select(pkg)` (js-4.md §2) is the one chokepoint that opens/closes the detail pane — row click,
+ * keyboard, `data-open`, closing. The legacy page also had a boot-time auto-open that bypassed it
+ * (its `pkgAuto` flag); this page never opens a package by itself (PD-ROWS-9), so every open
+ * package is the reader's and always reaches the address bar.
  */
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -39,7 +47,6 @@ export function reducer(state: State, action: Action): State {
         ...state,
         view: action.view,
         pkg: keepDetail ? state.pkg : null,
-        pkgAuto: keepDetail ? state.pkgAuto : false,
       };
     }
 
@@ -51,21 +58,29 @@ export function reducer(state: State, action: Action): State {
 
     case "clear":
       // Clear resets the search box and every filter group, and nothing else (js-4.md §7a.10):
-      // view, pkg, pkgAuto, sort and sortDesc all survive a Clear click.
+      // view, pkg, sort and sortDesc all survive a Clear click.
       return { ...state, q: "", filters: EMPTY_FILTERS };
+
+    case "focus":
+      // One press that lists a set another surface counted (the header's gate tally, a Run data
+      // stat): the Findings tab with only these filters, so the list is that set and nothing else.
+      // `sort`, `sortDesc` and `disclosure` survive, as they do a Clear.
+      return { ...state, view: "findings", q: "", pkg: null, filters: action.filters };
 
     case "sort": {
       // Clicking the already-active column flips direction; a different column becomes the sort
-      // key and always resets to ascending (js-4.md §7a.3).
+      // key and opens in its first direction — ascending (js-4.md §7a.3), except the columns in
+      // FIRST_DESCENDING.
       const sameKey = state.sort === action.key;
-      return { ...state, sort: action.key, sortDesc: sameKey ? !state.sortDesc : false };
+      const firstDesc = FIRST_DESCENDING.includes(action.key);
+      return { ...state, sort: action.key, sortDesc: sameKey ? !state.sortDesc : firstDesc };
     }
 
     case "select":
-      return { ...state, pkg: action.pkg, pkgAuto: false };
+      return { ...state, pkg: action.pkg };
 
-    case "autoSelect":
-      return { ...state, pkg: action.pkg, pkgAuto: true };
+    case "disclose":
+      return { ...state, disclosure: { ...state.disclosure, [action.key]: action.open } };
 
     case "restore":
       return action.state;

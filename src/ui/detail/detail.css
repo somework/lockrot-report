@@ -5,30 +5,12 @@
  * ever selects its own component's markup.
  */
 
+/* Geometry and scrolling belong to `.shell-detail` (`ui/app.css`, is-side/is-sheet): it is the one
+ * element that scrolls at every breakpoint (PD-DETAIL-3; DESIGN.md §8 named the 196px guess here as
+ * the bug). `.detail` only lays out its own children. */
 .detail {
-  position: sticky;
-  top: 196px;
-  max-height: calc(100vh - 220px);
-  overflow-y: auto;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-}
-@media (max-width: 1180px) {
-  .detail {
-    position: fixed;
-    inset: 0;
-    max-height: none;
-    border-radius: 0;
-    border-width: 0;
-    z-index: 40;
-    overflow-y: auto;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
 }
 
 .detail-missing {
@@ -42,41 +24,69 @@
   top: 0;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 14px 16px 12px;
+  padding: 14px 16px 11px;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .detail-head-top {
   display: flex;
   gap: 10px;
   align-items: flex-start;
 }
-.detail-head-main {
+/* The name, then the installed version beside it in quiet mono — one line when it fits, the
+   version dropping under the name when a long name takes the row. */
+.detail-head-name {
   flex: 1;
   min-width: 0;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 8px;
 }
 .detail-title {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  word-break: break-word;
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.detail-version {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+/* Pills on the left, the outbound links pushed right on the same line (PD-DETAIL-6). */
+.detail-head-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
 }
 .detail-pills {
   display: flex;
-  gap: 7px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 .detail-links {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  margin-left: auto;
 }
-.detail-replacement-text {
-  font-size: 11px;
+/* PD-DETAIL-4 (DESIGN.md §5): the factual line for a package the current search or rail filters
+   hide from its own tab's list, with a control to clear them — the deliberate "detail survives a
+   filter" behaviour (§5) stays, this only tells a reader it is happening. */
+.detail-hidden-note {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
   color: var(--muted);
-  white-space: nowrap;
 }
 .detail-close {
   background: var(--surface-2);
@@ -93,7 +103,7 @@
 
 /* ---------- body / sections ---------- */
 .detail-body {
-  padding: 4px 16px 24px;
+  padding: 18px 16px 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -117,14 +127,39 @@
   font-size: 13px;
   color: var(--ink-2);
 }
-.detail-chain {
-  margin: 0;
-  font-size: 12.5px;
-  word-break: break-word;
-}
 .detail-signal-empty {
   margin: 0;
   color: var(--muted);
+}
+
+/* ---------- reference sections: how it is reached, the lock entry, provenance ----------
+ * Closed by default (PD-DETAIL-1): the reader who opened the panel meets the answer first, these
+ * three afterward. `<summary>` keeps the section's own heading text so a reader who knew the old
+ * layout still recognises it; the marker itself is the one shared rule in `styles/base.css`, the
+ * same disclosure cue as `.detail-signal-summary` and the ledger/rail/glossary folds. */
+.detail-reference {
+  gap: 0;
+}
+.detail-reference[open] {
+  gap: 9px;
+}
+.detail-reference-summary {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+/* a11y review: the heading text moved from the <summary> itself into an <h3> inside it (Detail.tsx),
+   so a heading-navigating screen reader stops here again; these rules keep the same look, just
+   retargeted at the <h3> instead of the <summary>. */
+.detail-reference-summary h3 {
+  margin: 0;
+  font-family: var(--cond);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
 }
 
 .detail-kv {
@@ -142,50 +177,24 @@
   font-size: 12px;
   word-break: break-word;
 }
-
-/* ---------- why this priority ---------- */
-.detail-why {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  align-items: center;
-  font-size: 12px;
-  color: var(--muted);
-}
-.detail-why-result {
-  font-weight: 500;
-  color: var(--ink-2);
-}
-.detail-why-step {
-  font-family: var(--mono);
-  font-size: 11px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-}
-.detail-why-arrow {
-  margin: 0 6px;
-  color: var(--muted);
+/* regression review: "The lock entry" repository row (`Detail.tsx#lockRows`) can show the repository
+   URL itself as an `OutLink`'s own text (`safeRepository`), and `.out` (`styles/base.css`) sets
+   `white-space: nowrap` — meant for the short labels ("packagist", "advisory") its other callers
+   pass, but here it stops even this cell's own `word-break: break-word` from ever taking effect, so
+   a long URL runs past the sheet's own width instead of wrapping (measured: `.shell-detail`'s
+   `scrollWidth` past its `clientWidth` at 320/390px with the panel's own overflow-y turning that into
+   sideways scroll). Scoped to this `dl` alone, not `.out` itself: every other caller (`RunView.tsx`,
+   `AdvisoriesView.tsx`, `Glossary.tsx`, `DetailHeader.tsx`) passes short, single-word link text that
+   is meant to stay on one line. */
+.detail-kv .out {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
-/* ---------- signals ---------- */
-.detail-signal {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  column-gap: 9px;
-  align-items: baseline;
-  padding-left: 11px;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  overflow: hidden;
-  background: var(--surface-2);
-}
-.detail-signal + .detail-signal {
-  margin-top: 6px;
-}
-/* "Every advisory" under the fix ladder: the same disclosure line as a signal, with no id beside it
-   and no panel behind it. */
+/* ---------- disclosure rows shared with "Every advisory" ---------- */
+/* "Every advisory" under the fix ladder: a disclosure line with no id beside it and no panel behind
+   it. `.detail-signal-summary`/`-summary-text` are its summary's own classes (AdvisoryList.tsx),
+   named after the signal rows they were first drawn for. */
 .detail-disclosure {
   padding-left: 11px;
   border: 1px solid var(--border);
@@ -195,153 +204,472 @@
   padding: 0 11px 11px 0;
 }
 .detail-signal-summary {
-  cursor: pointer;
   padding: 8px 11px 8px 0;
   display: flex;
   gap: 9px;
   align-items: baseline;
-  list-style: none;
 }
-.detail-signal-summary::-webkit-details-marker {
-  display: none;
-}
-/* The disclosure chevron closes the line, since the signal's id link now opens it. */
-.detail-signal-summary::after {
-  content: "▸";
-  margin-left: auto;
-  color: var(--muted);
-  font-size: 10px;
-  transition: transform 0.15s ease;
-}
-.detail-signal-more[open] > .detail-signal-summary::after {
-  transform: rotate(90deg);
-}
-.detail-signal-id {
-  padding: 8px 0;
-  font-family: var(--mono);
-  font-weight: 600;
-  font-size: 12px;
-  text-decoration: none;
-  color: var(--tone);
-}
-.detail-signal-id:hover {
-  text-decoration: underline;
+/* a11y review: the page's one shared `:focus-visible` rule (`styles/base.css`) draws its ring with a
+   positive `outline-offset`; inside a bordered, rounded box that ring can be clipped on three sides.
+   Negative here draws it inward, so it always stays inside the box. */
+.detail-signal-summary:focus-visible {
+  outline-offset: -2px;
 }
 .detail-signal-summary-text {
   font-size: 12.5px;
   color: var(--ink-2);
 }
-.detail-signal-data {
-  padding: 0 11px 11px 0;
+
+/* ---------- checks (PD-DETAIL-12) ----------
+   All ten checks as one strip, the same idiom as the summary band's waffle: a fired check filled in
+   its level's tone, a quiet one outlined, one that could not run hatched, one the document does not
+   settle dotted, each cell naming its check in a word or two. Then the tally and the named
+   quiet/could-not-run lines, then the fired rows. */
+/* One column, capped like the priority ladder above it, so in a wide drawer the level word stays
+   beside the summary it qualifies and the strip keeps the rows' right edge. */
+.detail-checks {
+  gap: 7px;
+  /* An info-level check in a blue of its own: the shared --low slate sits too close to body text in
+     the dark theme for a fired id or cell to read as coloured at all. */
+  --info: #2c5d8a;
+  --info-soft: #dde8f3;
 }
-@media (prefers-reduced-motion: reduce) {
-  .detail-signal-summary::after {
-    transition: none;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .detail-checks {
+    --info: #82b4e4;
+    --info-soft: #172433;
   }
 }
-
-/* ---------- release timeline ---------- */
-.detail-timeline {
+:root[data-theme="dark"] .detail-checks {
+  --info: #82b4e4;
+  --info-soft: #172433;
+}
+.detail-checks .tone-low {
+  --tone: var(--info);
+  --tone-soft: var(--info-soft);
+}
+.detail-checks > * {
+  max-width: 560px;
+}
+/* Five by two: at the panel's usual 390-420px each cell is about 72px, room for its id and a
+   two-word name on at most two short lines, which a single row of ten (36px a cell) never had. */
+.detail-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px 6px;
+  margin: 5px 0 3px;
+}
+.detail-check {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-}
-.detail-timeline-axis {
-  position: relative;
-  height: 16px;
-  margin-left: 66px;
-  border-bottom: 1px solid var(--border);
-}
-.detail-timeline-tick {
-  position: absolute;
-  bottom: 2px;
-  transform: translateX(-50%);
-  font-family: var(--mono);
-  font-size: 10px;
+  gap: 3px;
+  min-width: 0;
   color: var(--muted);
 }
-.detail-timeline-lane {
-  display: grid;
-  grid-template-columns: 62px minmax(0, 1fr);
-  gap: 4px;
-  align-items: center;
-  min-height: 22px;
+.detail-check i {
+  display: block;
+  height: 9px;
+  margin-bottom: 2px;
+  border-radius: 2px;
+  border: 1px solid var(--border-strong);
 }
-.detail-timeline-branch {
+.detail-check-id {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1;
+}
+/* A name wraps only between its words, never inside one (no `overflow-wrap` here on purpose): the
+   longest single word, "advisories", fits the narrowest cell whole (the 320px sheet, below). Balanced
+   so a two-word name that must wrap splits evenly. */
+.detail-check-name {
+  font-size: 10.5px;
+  line-height: 1.2;
+  font-variant-caps: all-small-caps;
+  text-wrap: balance;
+}
+.detail-check.is-fired {
+  color: var(--ink);
+}
+.detail-check.is-fired .detail-check-id {
+  font-weight: 700;
+  color: var(--tone);
+}
+.detail-check.is-fired i {
+  background: var(--tone);
+  border-color: var(--tone);
+}
+.detail-check.is-blocked {
+  color: var(--ink-2);
+}
+.detail-check.is-blocked .detail-check-id {
+  font-style: italic;
+}
+.detail-check.is-blocked i {
+  border-style: dashed;
+  border-color: var(--muted);
+  background: repeating-linear-gradient(135deg, transparent 0 3px, var(--muted) 3px 4px);
+}
+.detail-check.is-unreported i {
+  border-style: dotted;
+}
+/* A quiet S3/S4 with no repository activity on file (provenance.ts#quietUnread): the quiet outline
+   broken into dashes and no fill — quiet, with nothing on file behind it. Not hatched: it ran. */
+.detail-check.is-unread i {
+  border-style: dashed;
+  border-color: var(--muted);
+}
+/* A cell with evidence in the panel (PD-RUN-5): a button that looks like its cell, the id underlined
+   so it reads as something to press. */
+button.detail-check {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.detail-check.is-linked .detail-check-id {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 2px;
+}
+.detail-check.is-linked:hover .detail-check-id {
+  text-decoration-style: solid;
+  text-decoration-color: currentColor;
+}
+.detail-check.is-linked:hover i {
+  box-shadow: 0 0 0 2px var(--surface-3);
+}
+.detail-checks-tally {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.detail-checks-tally b {
+  font-weight: 650;
+  color: var(--ink);
+}
+.detail-checks-line {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+/* "S5 ·" is one item, its separator glued to it: a line breaks only after a separator. */
+.detail-checks-item {
+  white-space: nowrap;
+}
+/* A piece of a package name, URL, id or date (SignalList.tsx#Wrapped): a line breaks around it, or
+   after its "/", never at its own hyphens ("left-/behind", "2022-/03-17") while it fits a line.
+   Only a piece wider than the whole line wraps inside, at a hyphen first. */
+.detail-token {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+/* "See Provenance": a button drawn as the page's in-page links are (detail-lead.css#detail-hop-link). */
+.detail-checks-link {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent-ink) 40%, transparent);
+  text-underline-offset: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.detail-checks-link:hover {
+  text-decoration-color: currentColor;
+}
+.detail-checks-id {
   font-family: var(--mono);
   font-size: 11px;
-  color: var(--muted);
-  text-align: right;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--ink-2);
 }
-.detail-timeline-lane-installed .detail-timeline-branch {
+.detail-fired-list {
+  margin-top: 5px;
+}
+.detail-fired {
+  border-top: 1px solid var(--border);
+}
+.detail-fired:last-child {
+  border-bottom: 1px solid var(--border);
+}
+.detail-fired-summary {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto auto;
+  column-gap: 8px;
+  align-items: baseline;
+  padding: 8px 4px 8px 2px;
+  transition: background-color 0.15s ease;
+}
+.detail-fired-summary:hover {
+  background: var(--surface-2);
+}
+.detail-fired-summary:focus-visible {
+  outline-offset: -2px;
+}
+.detail-fired-id {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--tone);
+}
+.detail-fired-text {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--ink);
+  overflow-wrap: break-word;
+}
+.detail-fired-level {
+  font-size: 11px;
+  color: var(--muted);
+}
+.detail-fired-body {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 0 4px 12px 40px;
+}
+.detail-fired-def {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+/* A check's data: each label beside its value on one line, labels 40% of the row, values in mono.
+   A thin rule under each pair keeps a long value's second line with its own label. */
+.detail-data {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 0 10px;
+  font-size: 11.5px;
+  line-height: 1.4;
+  border-top: 1px solid var(--border);
+}
+/* Long values wrap at their spaces and, in a package name or URL, after a "/" (SignalList.tsx
+   inserts the break points); inside a word only when a single segment is wider than the column.
+   `.detail-kv dd`'s `word-break: break-word` would split any word anywhere, so it is reset here. */
+.detail-data > dt,
+.detail-data > dd {
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+.detail-fired-body .detail-data > dd {
+  font-size: 11.5px;
+}
+/* A list of objects takes the row's full width under its label. */
+.detail-data > dt.is-wide {
+  grid-column: 1 / -1;
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.detail-data > dd.is-wide {
+  grid-column: 1 / -1;
+}
+/* Its objects stack, and every object's field labels share one column (subgrid), so "severity" in
+   the second advisory sits exactly under "severity" in the first. */
+.detail-data > dd.has-records {
+  display: grid;
+  grid-template-columns: fit-content(8.5em) minmax(0, 1fr);
+  gap: 6px 10px;
+  padding: 5px 0 8px;
+}
+.detail-data-null {
+  color: var(--muted);
+}
+/* S7's flagged packages (SignalList.tsx#PulledTable): one line a package where the columns allow,
+   package in ink, verdict in words, the hops between the open package and it muted. Rules between
+   rows keep a wrapped name with its own verdict. */
+.detail-pulled-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+.detail-pulled-table th {
+  padding: 4px 8px 3px 0;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 400;
+  text-align: left;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border-strong);
+}
+.detail-pulled-table td {
+  padding: 3px 8px 3px 0;
+  vertical-align: baseline;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: break-word;
+}
+.detail-pulled-table th:last-child,
+.detail-pulled-table td:last-child {
+  padding-right: 0;
+}
+.detail-pulled-table td:first-child {
   color: var(--ink);
   font-weight: 600;
 }
-.detail-timeline-track {
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-height: 22px;
-  height: 100%;
-  padding: 3px 0;
-  border-bottom: 1px dotted var(--border);
+.detail-pulled-table .detail-pulled-verdict {
+  width: 1%;
+  font-family: var(--sans);
+  font-weight: 400;
+  white-space: nowrap;
 }
-.detail-timeline-dot {
-  position: absolute;
-  top: 50%;
-  width: 9px;
-  height: 9px;
-  margin: -5px 0 0 -4.5px;
-  border-radius: 50%;
-  background: var(--border-strong);
-}
-.detail-timeline-lane-installed .detail-timeline-dot {
-  background: var(--crit);
-  box-shadow: 0 0 0 3px var(--crit-soft);
-}
-.detail-timeline-lane-newest .detail-timeline-dot {
-  background: var(--none);
-  box-shadow: 0 0 0 3px var(--none-soft);
-}
-/* In the track's flow and bounded by it, so a label never runs over the branch names or out of the
-   panel on a narrow sheet: one too long for its side wraps at its spaces, and the lane grows. */
-.detail-timeline-label {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-family: var(--mono);
-  font-size: 10px;
-  line-height: 1.35;
+.detail-pulled-table td.detail-pulled-via {
+  width: 40%;
   color: var(--muted);
-  overflow-wrap: anywhere;
 }
-.detail-timeline-label.is-flipped {
-  text-align: right;
+.detail-pulled-via-under,
+.detail-pulled-via-head {
+  display: none;
+  font-weight: 400;
+  color: var(--muted);
 }
-.detail-timeline-legend {
+/* A timestamp breaks, when it has to, only between its date and its time. */
+.detail-data-date,
+.detail-data-time {
+  white-space: nowrap;
+}
+.detail-data-time {
+  color: var(--muted);
+}
+.detail-data-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+/* One object in a signal's data (an S7 package, an S9 advisory): one line per field, a rule down
+   its left edge, its first field (the object's name) in ink. */
+.detail-data-item {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: fit-content(8.5em) minmax(0, 1fr);
+  grid-template-columns: subgrid;
+  row-gap: 1px;
+  margin: 0;
+  padding: 2px 0 2px 9px;
+  border-left: 2px solid var(--border-strong);
+}
+.detail-data-item > dt {
+  font-family: var(--sans);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.detail-data-item > dd {
+  margin: 0;
   font-size: 11.5px;
-  color: var(--muted);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
+  line-height: 1.45;
+  color: var(--ink-2);
+  word-break: normal;
+  overflow-wrap: break-word;
 }
-.detail-timeline-legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+.detail-data-item > dd:first-of-type {
+  color: var(--ink);
+  font-weight: 600;
 }
-.detail-timeline-swatch {
-  width: 9px;
-  height: 9px;
-  border-radius: 2px;
-  display: inline-block;
+/* Text for a screen reader alone, kept in the accessibility tree (a null value's word under its
+   dash). */
+.detail-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
-.detail-timeline-swatch-installed {
-  background: var(--crit);
+/* A 320px phone's sheet: the body gives its indent back to the data, and the strip's names drop
+   half a size step (never under 10px) and the gaps close so the longest single word, "abandoned",
+   fits its cell whole. Labels stay beside their values at every width; a long label wraps inside its own 40%. */
+.detail-fired-list {
+  container: fired / inline-size;
 }
-.detail-timeline-swatch-newest {
-  background: var(--none);
+/* A phone's sheet: three columns do not fit a package name, its verdict and its chain side by side,
+   so the via folds under its package as a muted second line and the table keeps two columns. */
+@container fired (max-width: 439.98px) {
+  .detail-pulled-table .detail-pulled-via {
+    display: none;
+  }
+  .detail-pulled-via-under {
+    display: block;
+  }
+  .detail-pulled-via-head {
+    display: inline;
+  }
+}
+@container fired (max-width: 299.98px) {
+  .detail-fired-body {
+    padding-left: 10px;
+  }
+  /* Labels take only what the longest needs (up to 7em, wrapping past it), so a value such as a
+     repository's "SensioFrameworkExtraBundle" keeps the rest of the line and stays whole. */
+  .detail-data {
+    grid-template-columns: fit-content(7em) minmax(0, 1fr);
+  }
+  /* "affected versions" wraps under itself rather than narrowing an advisory's title. */
+  .detail-data > dd.has-records {
+    grid-template-columns: fit-content(5.5em) minmax(0, 1fr);
+  }
+}
+.detail-checks {
+  container: checks / inline-size;
+}
+@container checks (max-width: 329.98px) {
+  .detail-strip {
+    column-gap: 3px;
+  }
+  .detail-check-name {
+    font-size: 10px;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Forced colours: system colours replace every tone, so a cell keeps its state by shape alone —
+   filled for fired, outlined for quiet, dashed and hatched for could not run, dotted for not
+   reported — drawn in CanvasText (GrayText reads maroon in Chromium's light palette; ledger.css
+   makes the same choice for its waffle). The tally and the lines under the strip say it all in
+   words either way. A fired row's summary is a control, which Chromium paints wholesale in its
+   link colour; the text goes back to CanvasText and only the id keeps a system accent. */
+@media (forced-colors: active) {
+  .detail-check i {
+    forced-color-adjust: none;
+    border-color: CanvasText;
+    background: Canvas;
+  }
+  .detail-check.is-fired i {
+    background: CanvasText;
+    border-color: CanvasText;
+  }
+  /* Without the tones, a fired cell's level is kept by its fill: high solid, warn solid with a ring
+     of Canvas inside its edge, info filled only in its lower half. */
+  .detail-check.is-fired.tone-med i {
+    box-shadow: inset 0 0 0 2px Canvas;
+  }
+  .detail-check.is-fired.tone-low i {
+    background: linear-gradient(to top, CanvasText 0 50%, Canvas 50% 100%);
+  }
+  .detail-check.is-blocked i {
+    border-color: CanvasText;
+    background: repeating-linear-gradient(135deg, Canvas 0 3px, CanvasText 3px 4px);
+  }
+  .detail-fired-summary,
+  .detail-fired-text,
+  .detail-fired-level {
+    color: CanvasText;
+  }
+  .detail-fired-id {
+    color: Highlight;
+  }
 }
 
 /* ---------- follow the upstream ---------- */
@@ -480,4 +808,86 @@
 }
 .detail-advisory-meta .mono {
   color: var(--ink-2);
+}
+
+/* ---------- provenance (PD-RUN-5) ----------
+   Each source's facts on one flowing line: the source in small caps, then "label value" pairs with
+   a middle dot between them, wrapping between pairs, never inside a short one. */
+.detail-prov {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.detail-prov-line {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scroll-margin: 16px;
+}
+.detail-prov-source {
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+}
+/* The dot between two facts sits in the gap before the second, drawn outside its box; a fact that
+   starts a line has its dot left of the list's own edge, where the clip hides it — so no line ends
+   or starts on a dot, at any width. Clipped sideways only: nothing in a fact is focusable. */
+.detail-kv.detail-prov-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 16px;
+  margin: 0;
+  overflow-x: clip;
+}
+.detail-prov-fact {
+  position: relative;
+  display: inline-flex;
+  gap: 5px;
+  align-items: baseline;
+  min-width: 0;
+}
+.detail-prov-fact + .detail-prov-fact::before {
+  content: "·";
+  position: absolute;
+  right: calc(100% + 6px);
+  color: var(--muted);
+}
+.detail-prov-fact dd {
+  overflow-wrap: anywhere;
+}
+/* Where the facts were read ("GitHub", "github.com"): as the document writes it, never in caps, so
+   a forge and a host keep their own spelling. */
+.detail-prov-where {
+  font-variant-caps: normal;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+/* Where the facts were borrowed from ("from S4’s data"): quieter than the source, never in caps. */
+.detail-prov-from {
+  font-variant-caps: normal;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+/* A source the file gives nothing for says why, in the same muted italic Run data uses. */
+.detail-prov-reason,
+.detail-prov-null {
+  font-family: var(--sans);
+  font-style: italic;
+  color: var(--muted);
+}
+.detail-prov-reason {
+  font-size: 12.5px;
+}
+/* The strip's quiet S3/S4 said from this side: the same facts, so the two never disagree. */
+.detail-prov-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+/* The strip moves focus onto the activity line; its ring sits just outside the text. */
+.detail-prov-line:focus-visible {
+  outline-offset: 3px;
+  border-radius: 3px;
 }

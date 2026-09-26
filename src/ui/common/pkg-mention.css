@@ -1,0 +1,30 @@
+/* A package named inside a sentence, as a way to open it (PkgMention.tsx, PD-PROSE-1): the
+   sentence's own type, with a dotted underline in the accent that goes solid on hover — the same
+   affordance the detail's chain hops and the summary band's "Furthest behind" name already wear. */
+.pkg-mention {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: inherit;
+  text-decoration: underline dotted;
+  text-decoration-color: color-mix(in srgb, var(--accent-ink) 55%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition:
+    color 0.12s ease,
+    text-decoration-color 0.12s ease;
+}
+.pkg-mention:hover {
+  color: var(--accent-ink);
+  text-decoration-style: solid;
+  text-decoration-color: currentColor;
+}
+@media print {
+  .pkg-mention {
+    text-decoration: none;
+  }
+}
