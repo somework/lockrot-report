@@ -1188,6 +1188,59 @@ describe("Detail", () => {
       expect(rowHeaders(container)[0]).toBe("1.x, the highest");
     });
 
+    it("names the monorepo that dated a split package's rows", () => {
+      // lockrot 0.13.0 dates illuminate/* by laravel/framework's tags (`dated_by`,
+      // `installed_release_dated_by`); here meilisearch-php's 1.x and its installed version stand in.
+      const details = KOEL.details.get("meilisearch/meilisearch-php");
+      if (details?.metadata == null) throw new Error("meilisearch-php has no metadata");
+      const branches = details.metadata.branches.map((branch) =>
+        branch.branch === "1.x" || branch.branch === "0.23.x"
+          ? { ...branch, datedBy: "laravel/framework" }
+          : branch,
+      );
+      const split: PackageDetails = {
+        ...details,
+        metadata: { ...details.metadata, branches },
+      };
+      const model: Model = {
+        ...KOEL,
+        details: new Map([...KOEL.details, ["meilisearch/meilisearch-php", split] as const]),
+      };
+      const { container } = renderDetail(model, "meilisearch/meilisearch-php");
+      const note = container.querySelector(".detail-timeline-dated-by")?.textContent ?? "";
+      expect(note).toContain("1.x");
+      expect(note).toContain("laravel/framework");
+      expect(note).not.toContain("0.24.x");
+      const row = [...container.querySelectorAll(".detail-timeline-row")].find(
+        (el) => el.querySelector('[role="rowheader"]')?.textContent.startsWith("1.x") === true,
+      );
+      expect(row?.querySelector(".detail-timeline-strip")?.textContent).toContain(
+        "dated by laravel/framework",
+      );
+    });
+
+    it("says whose tag dates the installed version when a monorepo supplied it", () => {
+      const metadata = KOEL.details.get("meilisearch/meilisearch-php")?.metadata;
+      if (metadata == null) throw new Error("meilisearch-php has no metadata");
+      const split: PackageDetails = {
+        lock: null,
+        activity: null,
+        repositoryLink: null,
+        metadata: {
+          ...metadata,
+          branches: [],
+          installedRelease: "2025-01-31T10:04:17+00:00",
+          installedReleaseDatedBy: "laravel/framework",
+        },
+      };
+      const model: Model = {
+        ...EXTRA_MODEL,
+        details: new Map([...EXTRA_MODEL.details, ["vendor/newpkg", split] as const]),
+      };
+      const { container } = renderDetail(model, "vendor/newpkg");
+      expect(container.textContent).toContain("your version, dated by laravel/framework");
+    });
+
     it("falls back to date order, and to no tone or guides, when the names or the thresholds are missing", () => {
       // vendor/edge-timeline: a "master" branch next to "1.x", and a run with no thresholds.
       const { container } = renderDetail(EXTRA_MODEL, "vendor/edge-timeline");

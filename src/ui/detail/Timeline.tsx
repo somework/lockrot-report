@@ -4,7 +4,7 @@ import { ageZone, releaseThresholds } from "../../domain/age";
 import { timelineModel, yearsSince, type TimelineLane, type TimelineTick } from "../../domain/timeline";
 import type { Tone } from "../../domain/vocab";
 import { useReport } from "../context";
-import { Answer, Key } from "./TimelineAnswer";
+import { Answer, DatedBy, Key } from "./TimelineAnswer";
 import { FoldRows, GuideCaptions, LaneRow, Sr, at, type Guide, type TopWord } from "./TimelineRows";
 import { placeYears } from "./timelineAxis";
 import "./timeline.css";
@@ -115,6 +115,7 @@ export function Timeline({
         <Axis ticks={timeline.ticks} guides={guides} />
       </div>
       <Key timeline={timeline} topWord={topWord} guides={guides.length > 0} />
+      <DatedBy timeline={timeline} />
     </section>
   );
 }

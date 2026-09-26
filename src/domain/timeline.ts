@@ -49,6 +49,9 @@ export interface TimelineLane {
   readonly snapshot: boolean;
   /** False when the label only repeats the branch name ("0.0.3" / "v0.0.3", PD-TIMELINE-3). */
   readonly showLabel: boolean;
+  /** The monorepo whose tags supplied this lane's release date (a split package's `dated_by`);
+   *  null when the date is the package's own, or a commit date. */
+  readonly datedBy: string | null;
 }
 
 export type TimelineRow =
@@ -87,6 +90,7 @@ export interface TimelineModel {
 interface DatedTag {
   readonly iso: string;
   readonly label: string;
+  readonly datedBy: string | null;
   readonly time: number;
 }
 
@@ -110,11 +114,15 @@ export function sameVersion(branch: string, label: string): boolean {
  * labelled with that tag's own version rather than `highest`'s.
  */
 function datedTag(branch: BranchRow): DatedTag | null {
-  const pick = (): { iso: string; label: string } | null => {
-    if (branch.highestReleased !== null) return { iso: branch.highestReleased, label: branch.highest };
-    if (branch.highestCommitDate !== null) return { iso: branch.highestCommitDate, label: branch.highest };
+  const pick = (): { iso: string; label: string; datedBy: string | null } | null => {
+    if (branch.highestReleased !== null) {
+      return { iso: branch.highestReleased, label: branch.highest, datedBy: branch.datedBy };
+    }
+    if (branch.highestCommitDate !== null) {
+      return { iso: branch.highestCommitDate, label: branch.highest, datedBy: null };
+    }
     if (branch.newestDatedReleased !== null && branch.newestDated !== null) {
-      return { iso: branch.newestDatedReleased, label: branch.newestDated };
+      return { iso: branch.newestDatedReleased, label: branch.newestDated, datedBy: branch.datedBy };
     }
     return null;
   };
@@ -279,6 +287,7 @@ export function timelineModel(
     php: d.row.php,
     snapshot: false,
     showLabel: !sameVersion(d.row.branch, d.tag.label),
+    datedBy: d.tag.datedBy,
   }));
   const top = lanes[0];
   if (top === undefined) return null; // unreachable: at least one dated branch above
@@ -295,6 +304,7 @@ export function timelineModel(
           php: lock.php,
           snapshot: true,
           showLabel: false,
+          datedBy: null,
         }
       : null;
 

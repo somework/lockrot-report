@@ -106,7 +106,11 @@ function Facts({ finding, details }: { finding: Finding; details: PackageDetails
   const libyears = fixed(finding.libyears, 1);
   const facts: readonly Fact[] = [
     { label: "Installed", value: finding.version, wide: finding.version.length > 16 },
-    ageFactCell(finding, details?.metadata?.installedRelease ?? lock?.released ?? null),
+    ageFactCell(
+      finding,
+      details?.metadata?.installedRelease ?? lock?.released ?? null,
+      details?.metadata?.installedRelease ? (details.metadata.installedReleaseDatedBy ?? null) : null,
+    ),
     {
       label: "Libyears",
       value: libyears ?? <Muted>not measured</Muted>,
@@ -138,7 +142,7 @@ function Facts({ finding, details }: { finding: Finding; details: PackageDetails
    *  labelled for what it is. With no such signal it falls back to the installed release's own date
    *  (the explain metadata's, then the lock's), and failing that says why: lockrot could not read
    *  it, or the document has none. */
-  function ageFactCell(f: Finding, released: string | null): Fact {
+  function ageFactCell(f: Finding, released: string | null, datedBy: string | null): Fact {
     const fact = ageFact(f, model.report.run.thresholds);
     if (fact !== null) {
       const tone = fact.contextOnly ? null : ageZone(fact.years, fact.warn, fact.high);
@@ -164,7 +168,18 @@ function Facts({ finding, details }: { finding: Finding; details: PackageDetails
     }
     // The installed version's own date is not the package's last release (a newer one may exist that
     // this document did not read), so it keeps its own label and says whose it is.
-    if (dated !== null) return { label: "Released", value: dated, note: "your version" };
+    // A split package's installed version is dated by the monorepo's tag of it; the note says whose.
+    if (dated !== null) {
+      const note =
+        datedBy !== null ? (
+          <>
+            your version, dated by <span className="mono">{datedBy}</span>
+          </>
+        ) : (
+          "your version"
+        );
+      return { label: "Released", value: dated, note };
+    }
     return { label: LAST_RELEASE, value: ageNotRead(f) ? <Muted>not read</Muted> : NOT_RECORDED };
   }
 }
