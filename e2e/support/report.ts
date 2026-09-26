@@ -224,6 +224,8 @@ export interface ReportPage {
   railRows(): Promise<{ label: string; count: number }[]>;
   /** Clicks the rail button at that position (the order `railRows()` gives), selecting or clearing it. */
   toggleRailRowAt(index: number): Promise<void>;
+  /** Clicks the rail button `railRows()` reported as `label` (PD-RAIL-2: rows come and go). */
+  toggleRailRow(label: string): Promise<void>;
   /** How many different packages the current view's rows name — `rows()` without duplicates. */
   listedPackageCount(): Promise<number>;
 

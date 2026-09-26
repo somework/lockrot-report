@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { applyFilters, hiddenByFilters, population, railGroups } from "../../../src/domain/filters";
+import {
+  activeFilters,
+  applyFilters,
+  hiddenByFilters,
+  population,
+  railGroups,
+} from "../../../src/domain/filters";
 import { EMPTY_FILTERS, INITIAL_STATE } from "../../../src/state/types";
 import type { Filters, State } from "../../../src/state/types";
 import type { Finding, Model } from "../../../src/model/types";
@@ -286,26 +292,40 @@ describe("railGroups / since", () => {
 
     // Assert
     expect(since?.title).toBe("Since baseline.json");
-    expect(since?.rows).toEqual([
-      { key: "new", label: "New", count: 0, on: false },
-      { key: "worsened", label: "Worsened", count: 0, on: false },
-      { key: "known", label: "Already accepted", count: 1, on: false },
-    ]);
+    // PD-RAIL-2: New and Worsened would list nothing, so they are left out.
+    expect(since?.rows).toEqual([{ key: "known", label: "Already accepted", count: 1, on: false }]);
   });
 });
 
 describe("railGroups / scope", () => {
-  it("always renders all four rows, even at zero count", () => {
-    // Arrange
-    const model = modelWith([]);
+  it("leaves out a row that would list nothing, and the whole group once none is left (PD-RAIL-2)", () => {
+    // Arrange: one flagged package, direct and in production — Transitive and require-dev list nothing.
+    const one = modelWith([makeFinding({ verdict: "abandoned", direct: true, dev: false })]);
 
     // Act
-    const groups = railGroups(model, stateWith({ view: "findings" }));
-    const scope = groups.find((g) => g.group === "scope");
+    const scope = railGroups(one, stateWith({ view: "findings" })).find((g) => g.group === "scope");
+    const none = railGroups(modelWith([]), stateWith({ view: "findings" }));
 
     // Assert
-    expect(scope?.rows.map((r) => r.key)).toEqual(["direct", "transitive", "prod", "dev"]);
-    expect(scope?.rows.every((r) => r.count === 0)).toBe(true);
+    expect(scope?.rows.map((r) => r.key)).toEqual(["direct", "prod"]);
+    expect(none.find((g) => g.group === "scope")).toBeUndefined();
+  });
+
+  it("keeps a selected row even when it lists nothing, so it can be turned off", () => {
+    // Arrange: Transitive is on, and the only package is direct.
+    const model = modelWith([makeFinding({ verdict: "abandoned", direct: true })]);
+    const state = stateWith({ view: "findings", filters: withFilters({ scope: ["transitive"] }) });
+
+    // Act
+    const scope = railGroups(model, state).find((g) => g.group === "scope");
+
+    // Assert
+    expect(scope?.rows.find((r) => r.key === "transitive")).toEqual({
+      key: "transitive",
+      label: "Transitive",
+      count: 0,
+      on: true,
+    });
   });
 
   it("reflects the state's current selection through `on`", () => {
@@ -524,5 +544,30 @@ describe("hiddenByFilters (PD-DETAIL-4, DESIGN.md §5)", () => {
 
     // Act + Assert
     expect(hiddenByFilters(model, state, "healthy/pkg")).toBe(false);
+  });
+});
+
+describe("activeFilters (PD-RAIL-4)", () => {
+  it("lists every selection in the fragment's group order, each with its kind and its own words", () => {
+    const filters = withFilters({
+      since: ["new"],
+      scope: ["dev"],
+      signal: ["S4"],
+      prio: ["high"],
+      fix: ["move"],
+    });
+
+    expect(activeFilters(filters)).toEqual([
+      { group: "prio", key: "high", groupLabel: "Priority", label: "high" },
+      { group: "scope", key: "dev", groupLabel: "Scope", label: "require-dev" },
+      { group: "signal", key: "S4", groupLabel: "Signal", label: "S4 no recent push" },
+      { group: "fix", key: "move", groupLabel: "Fix", label: "Moving to another branch" },
+      { group: "since", key: "new", groupLabel: "Since baseline", label: "New" },
+    ]);
+  });
+
+  it("is empty when nothing is selected, and keeps an id it has no name for as is", () => {
+    expect(activeFilters(withFilters({}))).toEqual([]);
+    expect(activeFilters(withFilters({ signal: ["S99"] }))[0]?.label).toBe("S99");
   });
 });

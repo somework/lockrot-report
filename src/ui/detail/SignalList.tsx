@@ -17,6 +17,7 @@ import {
 import { ACTIVITY_CHECKS, quietUnread } from "../../domain/provenance";
 import { annotateThresholds, DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC } from "../../domain/vocab";
 import { OutLink, toneClass } from "../common/common";
+import { PkgMention } from "../common/PkgMention";
 import { useReport } from "../context";
 import "./detail.css";
 
@@ -150,7 +151,9 @@ function PulledTable({ rows }: { rows: readonly PulledRow[] }) {
         {rows.map((row) => (
           <tr key={row.package}>
             <td>
-              <Wrapped text={row.package} />
+              <PkgMention name={row.package}>
+                <Wrapped text={row.package} />
+              </PkgMention>
               {row.via.length > 0 && (
                 <span className="detail-pulled-via-under">
                   via <Via hops={row.via} />

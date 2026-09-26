@@ -90,32 +90,43 @@ describe("Glossary / highlightTerm (PD-GLOSSARY-7, DESIGN.md §5)", () => {
   });
 });
 
-describe("PD-GLOSSARY-9 (DESIGN.md §5): the finished entry's allowlist note", () => {
-  it("lives inside finished's own <dd>, not a sibling <dd> of its own", () => {
-    // Act
-    const { container } = renderGlossary({ open: true });
-
-    // Assert: exactly one <dd> per <dt> in the verdicts deflist — a second top-level <dd> here
-    // shifts every dt/dd pair after it by one column in the deflist's CSS grid (app.css), which
-    // broke the whole grid's track sizing, not only this row's (caught by visual review).
-    const verdictDl = container.querySelectorAll(".glossary-sect")[0]?.querySelector(".deflist");
-    const dts = verdictDl?.querySelectorAll(":scope > dt") ?? [];
-    const dds = verdictDl?.querySelectorAll(":scope > dd") ?? [];
-    expect(dds.length).toBe(dts.length);
-
-    const finishedDt = container.querySelector('dt[data-term="finished"]');
-    const finishedDd = finishedDt?.nextElementSibling ?? null;
-    expect(finishedDd?.tagName).toBe("DD");
-    expect(finishedDd?.querySelector(".glossary-note")?.textContent).toContain("extra.lockrot.ignore");
-  });
-
-  it("links to lockrot.dev's configuration docs, the allowlist section", () => {
+describe("PD-GLOSSARY-10 (DESIGN.md §5): the allowlist note is a maintainer's step, out of the reading path", () => {
+  it("is not inside finished's definition any more, and the verdicts keep one <dd> per <dt>", () => {
     // Act
     const { container } = renderGlossary({ open: true });
 
     // Assert
-    const note = container.querySelector('dt[data-term="finished"]')?.nextElementSibling;
-    const link = note?.querySelector("a.out");
-    expect(link?.getAttribute("href")).toBe("https://lockrot.dev/configuration/#the-allowlist");
+    const verdictDl = container.querySelectorAll(".glossary-sect")[0]?.querySelector(".deflist");
+    const dts = verdictDl?.querySelectorAll(":scope > dt") ?? [];
+    const dds = verdictDl?.querySelectorAll(":scope > dd") ?? [];
+    expect(dds.length).toBe(dts.length);
+    expect(verdictDl?.textContent).not.toContain("extra.lockrot.ignore");
+  });
+
+  it("sits in its own last fold, closed, linking to the configuration docs' allowlist section", () => {
+    // Act
+    const { container } = renderGlossary({ open: true });
+
+    // Assert
+    const sections = container.querySelectorAll(".glossary-sect");
+    const last = sections[sections.length - 1];
+    expect(last?.tagName).toBe("DETAILS");
+    expect((last as HTMLDetailsElement).open).toBe(false);
+    expect(last?.querySelector("summary")?.textContent).toMatch(/maintainers/);
+    expect(last?.querySelector(".glossary-note")?.textContent).toContain("extra.lockrot.ignore");
+    expect(last?.querySelector("a.out")?.getAttribute("href")).toBe(
+      "https://lockrot.dev/configuration/#the-allowlist",
+    );
+  });
+
+  it("opens the libyears section from the start", () => {
+    // Act
+    const { container } = renderGlossary({ open: true });
+
+    // Assert
+    const libyears = Array.from(container.querySelectorAll("details.glossary-sect")).find((d) =>
+      d.querySelector("summary")?.textContent.includes("libyears"),
+    );
+    expect((libyears as HTMLDetailsElement | undefined)?.open).toBe(true);
   });
 });

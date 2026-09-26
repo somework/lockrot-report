@@ -1,0 +1,372 @@
+/*
+ * The All packages list (PD-PACKAGES-1/2/3, DESIGN.md §5): an answer and a key above the table, the
+ * libyears column as bars on one scale, the signals column as a row of ten dots, and — once the
+ * list is narrower than 480px — the same table's rows stacked two lines each instead of a table
+ * clipped at its second column. The layout follows the list's own width (a container query), as
+ * the Findings ledger's does (ledger-rows.css): a phone, and a list squeezed beside an open package,
+ * are the same problem.
+ */
+
+.pk {
+  container: pk / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* The libyears column's track and number, shared by the head's caption and every row. */
+  --ly-track: 64px;
+  --ly-num: 30px;
+  --sig-slot: 11px;
+}
+
+/* ---------- the answer and the key ---------- */
+.pk-lede {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 18px;
+  row-gap: 4px;
+}
+.pk-answer {
+  flex: 1 1 26em;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--serif);
+  font-size: 15.5px;
+  line-height: 1.35;
+  color: var(--ink-2);
+}
+.pk-answer b {
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.pk-key {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 14px;
+  row-gap: 2px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.pk-key-item {
+  white-space: nowrap;
+}
+.pk-key-mark {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 0 3px;
+  text-align: center;
+  font-family: var(--mono);
+  color: var(--ink-2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+}
+/* A hover has nothing to say to a touch screen; the rows' reasons are still their words. */
+@media (hover: none) {
+  .pk-key-hover {
+    display: none;
+  }
+}
+
+/* ---------- libyears: a bar on one scale ---------- */
+.ly-cell,
+.ly-mark {
+  display: inline-grid;
+  grid-template-columns: var(--ly-track) var(--ly-num);
+  column-gap: 6px;
+  align-items: center;
+  vertical-align: middle;
+}
+.ly-track {
+  position: relative;
+  height: 6px;
+}
+/* A hairline from 0 to the scale's edge, as the Findings age track draws. */
+.ly-track::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--border);
+}
+/* Neutral ink, as the summary band's libyears bar: libyears is years, not a verdict. */
+.ly-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  min-width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--ink-2);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.ly-num {
+  grid-column: 2;
+  text-align: right;
+}
+/* The dash and the question mark sit where a number would, so the column reads straight down. */
+.ly-mark {
+  color: var(--muted);
+}
+.ly-mark > [aria-hidden] {
+  grid-column: 2;
+  text-align: right;
+}
+.ly-axis {
+  display: flex;
+  justify-content: space-between;
+  width: var(--ly-track);
+  margin-top: 3px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1;
+  text-transform: none;
+  border-top: 1px solid var(--border-strong);
+  padding-top: 3px;
+}
+
+/* ---------- signals: ten dots under a 1…10 caption ---------- */
+.sig-dots {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+.sig-dots-row {
+  display: inline-grid;
+  grid-template-columns: repeat(10, var(--sig-slot));
+  align-items: center;
+  justify-items: center;
+  height: 12px;
+}
+.sig-dot {
+  display: block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+.sig-dot.is-fired {
+  width: 8px;
+  height: 8px;
+  background: var(--tone);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.sig-dot.is-blocked {
+  width: 7px;
+  height: 7px;
+  background: none;
+  border: 1px dashed var(--muted);
+}
+.sig-dot.is-unreported {
+  background: var(--border);
+}
+.sig-dots-more {
+  margin-left: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.sig-axis {
+  margin-top: 3px;
+  height: auto;
+}
+.sig-axis i {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-transform: none;
+}
+
+/* The two heads that carry a caption line up their words with the other heads' by their top. */
+.pk-table th {
+  vertical-align: bottom;
+}
+.pk-table th .sort-btn {
+  display: block;
+}
+
+/* ---------- a phone: the rows stacked ---------- */
+@container pk (max-width: 480px) {
+  .pk {
+    --ly-track: 44px;
+  }
+  .pk-table,
+  .pk-table thead,
+  .pk-table tbody {
+    display: block;
+  }
+  /* The head becomes the list's sort bar: the same buttons, in a wrapping line. */
+  .pk-table thead tr {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 14px;
+    row-gap: 2px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .pk-table th {
+    position: static;
+    display: block;
+    flex: 0 0 auto;
+    width: auto;
+    padding: 2px 0;
+    border: 0;
+    background: none;
+  }
+  /* No date column here to sort, and one repeated date is what nearly every lock carries. */
+  .pk-table th.pk-data {
+    display: none;
+  }
+  /* The dash and the question mark stand where a bar would start, clear of the way in beside. */
+  .pk-table .ly-mark > [aria-hidden] {
+    grid-column: 1;
+    text-align: left;
+  }
+  .pk-table .ly-axis,
+  .pk-table .sig-axis {
+    display: none;
+  }
+  .pk-table tbody tr {
+    position: relative;
+    display: grid;
+    /* The verdict takes a fixed width, so the libyears bars start at one x down the list. */
+    grid-template-columns: 84px minmax(0, 1fr) auto;
+    grid-template-areas:
+      "name name ver"
+      "verdict ly reach";
+    column-gap: 10px;
+    row-gap: 3px;
+    align-items: baseline;
+    padding: 8px 12px 8px 14px;
+    border-bottom: 1px solid var(--border);
+    border-left: 3px solid transparent;
+  }
+  .pk-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+  /* The priority, which has no column here, is the row's left rule in its tone; its words stay
+     in the row for a screen reader. */
+  .pk-table tbody tr.has-prio {
+    border-left-color: var(--tone);
+  }
+  .pk-table tbody tr:hover,
+  .pk-table tbody tr[aria-current="true"] {
+    background: var(--surface-2);
+  }
+  .pk-table tbody tr[aria-current="true"] {
+    background: var(--accent-soft);
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+  .pk-table tbody tr:hover td,
+  .pk-table tbody tr[aria-current="true"] td {
+    background: none;
+  }
+  .pk-table tbody tr[aria-current="true"] td:first-child {
+    box-shadow: none;
+  }
+  .pk-table td {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    white-space: normal;
+  }
+  .pk-name {
+    grid-area: name;
+    overflow-wrap: break-word;
+    font-weight: 600;
+    font-size: 13.5px;
+  }
+  .pk-ver {
+    grid-area: ver;
+    justify-self: end;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+  /* The verdict as a mark: its word in its tone, without the pill's box. */
+  .pk-verdict {
+    grid-area: verdict;
+  }
+  .pk-verdict .pill {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  .pk-ly {
+    grid-area: ly;
+    align-self: center;
+    font-size: 11.5px;
+  }
+  .pk-reach {
+    grid-area: reach;
+    justify-self: end;
+    text-align: right;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .pk-table td.pk-prio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .pk-table td.pk-sig,
+  .pk-table td.pk-data {
+    display: none;
+  }
+  /* A name after its vendor's slash moves to the next line whole when it can, as a Findings row's
+     does, rather than breaking at whichever hyphen happens to fit. */
+  .pk-unit {
+    display: inline-block;
+    max-width: 100%;
+  }
+}
+
+/* ---------- forced colours: every mark keeps its shape in the system's ink ---------- */
+@media (forced-colors: active) {
+  .ly-bar,
+  .ly-track::before,
+  .sig-dot,
+  .pk-key-mark {
+    forced-color-adjust: none;
+  }
+  .ly-bar,
+  .sig-dot.is-fired {
+    background: CanvasText;
+  }
+  /* No hairline and no GrayText here: GrayText is a dark maroon in some forced palettes, and a
+     maroon track or quiet dot read louder than the ink marks it is meant to sit under (the Findings
+     age track drops its hairline for the same reason, ledger-rows.css). Size tells a quiet point
+     from a fired dot. */
+  .ly-track::before {
+    display: none;
+  }
+  .sig-dot {
+    background: CanvasText;
+  }
+  .sig-dot.is-blocked {
+    background: Canvas;
+    border-color: CanvasText;
+  }
+  .pk-key-mark {
+    color: CanvasText;
+    background: Canvas;
+    border-color: CanvasText;
+  }
+}

@@ -11,7 +11,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { applyFilters, railGroups } from "../../../src/domain/filters";
+import { applyFilters, population, railGroups } from "../../../src/domain/filters";
 import { radiusLayout, radiusListed } from "../../../src/domain/radius";
 import { normalize } from "../../../src/model/normalize";
 import type { Model, View } from "../../../src/model/types";
@@ -50,7 +50,8 @@ describe.each(CORPORA)("rail counts on %s (PD-RAIL-1)", (corpus) => {
     const rows = groups.flatMap((g) =>
       g.rows.map((row) => ({ group: g.group, key: row.key, count: row.count })),
     );
-    expect(rows.length).toBeGreaterThan(0);
+    // A tab with nothing in it has no rail at all (koel's and mautic's Advisories); every other has rows.
+    expect(rows.length > 0).toBe(population(model, view).length > 0);
 
     const mismatches = rows
       .map(({ group, key, count }) => ({
@@ -61,6 +62,53 @@ describe.each(CORPORA)("rail counts on %s (PD-RAIL-1)", (corpus) => {
       .filter(({ shown, listed }) => shown !== listed);
 
     expect(mismatches).toEqual([]);
+  });
+});
+
+/** The state with `key` selected in `group` on top of `base`: added to Scope's ANDed buttons, in
+ *  place of whatever else its own group had selected for every other (ORed) group. */
+function adding(base: State, group: FilterGroup, key: string): State {
+  const current = base.filters[group];
+  const next = group === "scope" ? [...new Set([...current, key])] : [key];
+  return { ...base, filters: { ...base.filters, [group]: next } };
+}
+
+// PD-RAIL-2: with other filters on — a Scope button, a ledger chip, a search — every count is still
+// what the list shows once that row is selected, those filters staying on.
+const NARROWED: readonly { label: string; state: Partial<State> }[] = [
+  { label: "Direct on", state: { filters: { ...EMPTY_FILTERS, scope: ["direct"] } } },
+  { label: "high priority on", state: { filters: { ...EMPTY_FILTERS, prio: ["high"] } } },
+  {
+    label: "S4 and require-dev on",
+    state: { filters: { ...EMPTY_FILTERS, signal: ["S4"], scope: ["dev"] } },
+  },
+  { label: "a search", state: { q: "symfony" } },
+];
+
+describe.each(CORPORA)("faceted rail counts on %s (PD-RAIL-2)", (corpus) => {
+  const model = load(corpus);
+
+  it.each(NARROWED)("with $label, every row counts what selecting it lists", ({ state: extra }) => {
+    for (const view of RAIL_VIEWS) {
+      const base: State = { ...INITIAL_STATE, ...extra, view };
+      const mismatches = railGroups(model, base).flatMap((g) =>
+        g.rows
+          .map((row) => ({
+            row: `${view} ${g.group}:${row.key}`,
+            shown: row.count,
+            listed: listedPackages(model, adding(base, g.group, row.key)).size,
+          }))
+          .filter(({ shown, listed }) => shown !== listed),
+      );
+      expect(mismatches).toEqual([]);
+    }
+  });
+
+  it("never shows a row that would list nothing, unless it is on", () => {
+    const base: State = { ...INITIAL_STATE, filters: { ...EMPTY_FILTERS, scope: ["direct"] } };
+    for (const g of railGroups(model, base)) {
+      for (const row of g.rows) expect(row.count > 0 || row.on).toBe(true);
+    }
   });
 });
 

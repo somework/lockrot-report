@@ -690,6 +690,22 @@ export class NewReportPage implements ReportPage {
     await this.page.getByRole("group", { name: "Filters" }).getByRole("button").nth(index).click();
   }
 
+  /** Toggles the rail row `railRows()` reported as `label`. By label, not position: PD-RAIL-2 leaves
+   *  out a row that would list nothing, so selecting one row can move the others. */
+  async toggleRailRow(label: string): Promise<void> {
+    const buttons = this.page.getByRole("group", { name: "Filters" }).getByRole("button");
+    const index = await buttons.evaluateAll(
+      (els, wanted) =>
+        els.findIndex((el) => {
+          const count = el.querySelector(".c")?.textContent ?? "";
+          return el.textContent.replace(count, "").replace(/\s+/g, " ").trim() === wanted;
+        }),
+      label,
+    );
+    if (index < 0) throw new Error(`no rail row "${label}"`);
+    await buttons.nth(index).click();
+  }
+
   async listedPackageCount(): Promise<number> {
     // The same candidates `rows()` reads, counted in one page call: a per-row locator round trip
     // over wallabag's 271 packages, once per rail row, would take minutes.

@@ -116,11 +116,12 @@ describe("Rail", () => {
     // Act
     renderIn(<Rail />, model, INITIAL_STATE);
 
-    // Assert: both flagged findings are transitive and require (not dev).
-    expect(screen.getByRole("button", { name: /^Direct /i }).textContent).toContain("0");
+    // Assert: both flagged findings are transitive and require (not dev); Direct and require-dev
+    // would list nothing, so they are left out (PD-RAIL-2).
+    expect(screen.queryByRole("button", { name: /^Direct /i })).toBeNull();
     expect(screen.getByRole("button", { name: /^Transitive /i }).textContent).toContain("2");
     expect(screen.getByRole("button", { name: /^require /i }).textContent).toContain("2");
-    expect(screen.getByRole("button", { name: /^require-dev /i }).textContent).toContain("0");
+    expect(screen.queryByRole("button", { name: /^require-dev /i })).toBeNull();
   });
 
   it("renders a Signal group with numeric id order, and omits Since/fix groups with nothing to show", () => {
@@ -145,10 +146,10 @@ describe("Rail", () => {
     renderIn(<Rail />, model, INITIAL_STATE, dispatch);
 
     // Act
-    fireEvent.click(screen.getByRole("button", { name: /^Direct /i }));
+    fireEvent.click(screen.getByRole("button", { name: /^Transitive /i }));
 
     // Assert
-    expect(dispatch).toHaveBeenCalledWith({ type: "toggle", group: "scope", key: "direct" });
+    expect(dispatch).toHaveBeenCalledWith({ type: "toggle", group: "scope", key: "transitive" });
   });
 
   it("marks a selected scope option pressed", () => {
@@ -161,7 +162,7 @@ describe("Rail", () => {
 
     // Assert
     expect(screen.getByRole("button", { name: /^Transitive /i }).getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByRole("button", { name: /^Direct /i }).getAttribute("aria-pressed")).toBe("false");
+    expect(screen.getByRole("button", { name: /^require /i }).getAttribute("aria-pressed")).toBe("false");
   });
 
   it("renders the Since group, titled with the baseline's own path, once a baseline exists", () => {

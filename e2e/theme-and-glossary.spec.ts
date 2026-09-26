@@ -54,7 +54,7 @@ test.describe("glossary", () => {
     expect(await report.isGlossaryOpen()).toBe(false);
   });
 
-  test("PD-GLOSSARY-2: opens with the nine verdicts visible and the other sections collapsed", async ({
+  test("PD-GLOSSARY-2/10: opens with the nine verdicts and libyears visible, the other sections collapsed", async ({
     page,
   }) => {
     await report.goto(FIXTURES.mini);
@@ -66,11 +66,16 @@ test.describe("glossary", () => {
 
     // The other four sections are each a closed <details>: the <summary> is there to click and is
     // always visible, but its content is not part of what a sighted reader sees without opening it.
+    // PD-GLOSSARY-10: libyears is open from the start (the band and All packages lead with it).
+    const libyears = dialog.locator("summary", { hasText: "One number for the lock: libyears" });
+    expect(
+      await libyears.locator("xpath=ancestor::details[1]").evaluate((el) => (el as HTMLDetailsElement).open),
+    ).toBe(true);
     const titles = [
       "The signals",
-      "One number for the lock: libyears",
       "How a priority is reached",
       "Keys and search",
+      "For the lock's maintainers: accepting a package",
     ];
     for (const title of titles) {
       const summary = dialog.locator("summary", { hasText: title });
@@ -111,7 +116,7 @@ test.describe("PD-GLOSSARY-8: threshold values in definitions", () => {
   });
 });
 
-test.describe("PD-GLOSSARY-9: the finished entry names how to accept a package yourself", () => {
+test.describe("PD-GLOSSARY-9/10: how to accept a package yourself, in its own fold", () => {
   test("names extra.lockrot.ignore and links to the configuration docs' allowlist section", async ({
     page,
   }) => {
@@ -119,13 +124,16 @@ test.describe("PD-GLOSSARY-9: the finished entry names how to accept a package y
     await report.openGlossary();
     const dialog = page.getByRole("dialog", { name: /what these words mean/i });
 
+    // PD-GLOSSARY-10: a step for whoever maintains the lock, not part of what "finished" means, so
+    // it left that definition for a closed fold of its own at the end.
     const finishedTerm = dialog.locator('dt[data-term="finished"]');
-    await expect(finishedTerm).toBeVisible();
-    // The note is a second paragraph *inside* "finished"'s own <dd> (Glossary.tsx#VerdictDefs),
-    // not a sibling <dd> of its own — a second top-level <dd> per entry shifts every dt/dd pair
-    // after it by one column in the deflist's grid (app.css), breaking the whole grid's track
-    // sizing, not only this row's.
-    const note = finishedTerm.locator("xpath=following-sibling::dd[1]").locator(".glossary-note");
+    await expect(finishedTerm.locator("xpath=following-sibling::dd[1]")).not.toContainText(
+      "extra.lockrot.ignore",
+    );
+
+    await dialog.locator("summary", { hasText: /accepting a package/i }).click();
+    const note = dialog.locator(".glossary-note");
+    await expect(note).toBeVisible();
     await expect(note).toContainText("extra.lockrot.ignore");
     await expect(note).toContainText("composer.json");
 

@@ -4,6 +4,7 @@ import { priorityWhy, type PriorityStep } from "../../domain/priority";
 import { toneClass } from "../common/common";
 import { TONE, type Tone } from "../../domain/vocab";
 import "./detail-lead.css";
+import { MentionProse } from "../common/PkgMention";
 
 /** The four rungs, left to right, and the short word each column is captioned with. */
 const RUNGS: readonly (readonly [KnownPriority, string])[] = [
@@ -79,7 +80,10 @@ export function PriorityWhy({ finding }: { finding: Finding }) {
                 step.text
               ) : (
                 <>
-                  {step.text} <span className="detail-ladder-note">{step.note}</span>
+                  {step.text}{" "}
+                  <span className="detail-ladder-note">
+                    <MentionProse text={step.note} />
+                  </span>
                 </>
               )
             }

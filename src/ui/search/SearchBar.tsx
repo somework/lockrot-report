@@ -1,4 +1,4 @@
-import { Fragment, type Ref } from "preact";
+import { Fragment, type Ref, type RefObject } from "preact";
 import { useReport } from "../context";
 import { applyFilters, hiddenByFilters, population } from "../../domain/filters";
 import { allAdvisories, passesAdvisoryRail } from "../../domain/advisories";
@@ -7,6 +7,7 @@ import { radiusCountPhrase, radiusLayout } from "../../domain/radius";
 import { countPhrase, plural } from "../../domain/format";
 import { searchSplit, searchSplitPhrase } from "../../domain/searchHits";
 import { NoWrap } from "../common/common";
+import { ActiveFilters } from "./ActiveFilters";
 import { advisoryGroupsFor } from "../views/order";
 import type { Finding, Model } from "../../model/types";
 import type { State } from "../../state/types";
@@ -211,6 +212,7 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
           )}
         </p>
       )}
+      {filterable && <ActiveFilters inputRef={inputRef as RefObject<HTMLInputElement>} />}
     </>
   );
 }

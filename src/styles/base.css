@@ -81,6 +81,17 @@ code {
 .nowrap {
   white-space: nowrap;
 }
+/* Words for a screen reader only, beside a mark drawn for the eye (a dash, a row of dots). */
+.vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 .eyebrow {
   font-family: var(--cond);
   font-weight: 600;

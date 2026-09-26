@@ -44,25 +44,7 @@ function VerdictDefs() {
           // PD-GLOSSARY-8 (DESIGN.md §5): a definition that names one of the run's own config keys
           // (`silent`, `left-behind`) shows what this run set it to, beside the name it would take
           // to change it.
-          <dd key={`d-${verdict}`}>
-            {annotateThresholds(VERDICT_DEFS[verdict] ?? "", thresholds)}
-            {/* PD-GLOSSARY-9 (DESIGN.md §5): "some 'rotten' libraries are finished and work fine"
-                has an answer this page can state as a fact without making the call itself — a
-                package a reader considers complete can be accepted the same way the built-in
-                allowlist is, through the run's own config, not by the page deciding anything about
-                this package. A second paragraph *inside* this `<dd>`, not a sibling `<dd>`: the
-                `.deflist` grid (app.css) auto-places one dt/dd pair per row from a flat child list,
-                and an extra top-level `<dd>` here shifts every dt/dd pair after it by one column,
-                which broke the whole grid's track sizing, not only this entry's own row. */}
-            {verdict === "finished" && (
-              <p className="glossary-note">
-                A package you consider finished can be accepted the same way:{" "}
-                <span className="mono">extra.lockrot.ignore</span> in{" "}
-                <span className="mono">composer.json</span>, with a reason.{" "}
-                <OutLink href={`${CONFIG_DOCS_URL}#the-allowlist`}>How to configure it (lockrot.dev)</OutLink>
-              </p>
-            )}
-          </dd>,
+          <dd key={`d-${verdict}`}>{annotateThresholds(VERDICT_DEFS[verdict] ?? "", thresholds)}</dd>,
         ];
       })}
     </dl>
@@ -119,6 +101,25 @@ function LibyearsSection() {
       it is a branch snapshot, when no dated stable release is known for it, when it is not from a Composer
       repository, or when its metadata did not come; the Run tab counts each case.{" "}
       <OutLink href={`${DOCS_URL}#libyears`}>what libyears measure</OutLink>
+    </p>
+  );
+}
+
+/**
+ * PD-GLOSSARY-9/10 (DESIGN.md §5): "some 'rotten' libraries are finished and work fine" has an
+ * answer this page can state as a fact without making the call itself — a package a reader considers
+ * complete can be accepted the same way the built-in allowlist is, through the run's own config.
+ * It is a step for whoever maintains the lock, not a meaning, so it sits in its own last fold rather
+ * than inside `finished`'s definition, where every reader of the nine verdicts met a config key and
+ * a file name halfway down the list. Content only — see `LibyearsSection`.
+ */
+function AcceptSection() {
+  return (
+    <p className="prose glossary-note">
+      A package you consider finished can be accepted the same way the built-in allowlist accepts one:{" "}
+      <span className="mono">extra.lockrot.ignore</span> in <span className="mono">composer.json</span>, with
+      a reason. It then reads <span className="mono">finished</span> here and is never a finding.{" "}
+      <OutLink href={`${CONFIG_DOCS_URL}#the-allowlist`}>How to configure it (lockrot.dev)</OutLink>
     </p>
   );
 }
@@ -331,7 +332,9 @@ export function Glossary({
           </summary>
           <SignalDefs />
         </details>
-        <details className="glossary-sect">
+        {/* PD-GLOSSARY-10: open from the start — the summary band and the All packages list both
+            lead with libyears, and a reader who opens the glossary from there wants this first. */}
+        <details className="glossary-sect" open>
           <summary>
             <h3>One number for the lock: libyears</h3>
           </summary>
@@ -348,6 +351,12 @@ export function Glossary({
             <h3>Keys and search</h3>
           </summary>
           <KeysSection />
+        </details>
+        <details className="glossary-sect">
+          <summary>
+            <h3>For the lock's maintainers: accepting a package</h3>
+          </summary>
+          <AcceptSection />
         </details>
       </div>
     </dialog>

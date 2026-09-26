@@ -13,6 +13,7 @@ import { ageText, fixed, yearsAgo } from "../../domain/format";
 import { waysIn } from "../../domain/reach";
 import { timelineModel, type TimelineModel } from "../../domain/timeline";
 import { Muted, OutLink, toneClass } from "../common/common";
+import { PkgMention } from "../common/PkgMention";
 import { useReport } from "../context";
 import "./detail-lead.css";
 
@@ -57,7 +58,8 @@ function AnswerNode({ part }: { part: AnswerPart }) {
     case "text":
       return <>{part.text}</>;
     case "name":
-      return <span className="detail-answer-name">{part.text}</span>;
+      // A package the lock lists opens (PD-PROSE-1); a branch, a version or a constraint stays words.
+      return <PkgMention name={part.text} className="detail-answer-name" />;
     case "figure":
       return (
         <b
@@ -240,7 +242,7 @@ function Chain({ finding }: { finding: Finding }) {
         <span className="detail-chain-also">
           {also}{" "}
           {others.length === 1 ? (
-            <span className="mono">{others[0]}</span>
+            <PkgMention name={others[0] ?? ""} className="mono" />
           ) : (
             `${others.length} other requirements of yours`
           )}

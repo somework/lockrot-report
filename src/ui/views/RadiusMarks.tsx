@@ -6,6 +6,7 @@ import { ageNotRead, ageScale, ageZone, type AgeAxis, type Thresholds } from "..
 import { plural } from "../../domain/format";
 import { TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { toneClass } from "../common/common";
+import { PkgMention } from "../common/PkgMention";
 
 /**
  * The marks a Blast radius row draws (PD-RADIUS-1/2, DESIGN.md §5): a square per flagged package on
@@ -260,7 +261,7 @@ export function PullsSentence({ row }: { row: RadiusRow }) {
   if (only) {
     return (
       <>
-        <span className="rl-pk">{only.package}</span>, <VerdictWord verdict={only.verdict} />
+        <PkgMention name={only.package} className="rl-pk" />, <VerdictWord verdict={only.verdict} />
       </>
     );
   }

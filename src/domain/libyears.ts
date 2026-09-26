@@ -198,3 +198,43 @@ export function libyearsRowPhrases(
 
   return phrases;
 }
+
+/**
+ * How the All packages list's libyears cells split (PD-PACKAGES-1): `behind` a newer stable release
+ * (a value above zero), `current` (exactly zero — `libyearsAtZero`'s two readings), `unmeasured`
+ * (no value). Counts over whatever list it is handed, so under a filter it counts what is listed.
+ */
+export interface LibyearsTally {
+  readonly behind: number;
+  readonly current: number;
+  readonly unmeasured: number;
+}
+
+export function libyearsTally(findings: readonly Pick<Finding, "libyears">[]): LibyearsTally {
+  let behind = 0;
+  let current = 0;
+  let unmeasured = 0;
+  for (const finding of findings) {
+    const value = finding.libyears;
+    if (value === null || !Number.isFinite(value)) unmeasured += 1;
+    else if (value > 0) behind += 1;
+    else current += 1;
+  }
+  return { behind, current, unmeasured };
+}
+
+/**
+ * The one scale every libyears bar in the All packages list is drawn on (PD-PACKAGES-1): 0 to the
+ * largest measured value in the tab's whole population, rounded up to a whole year — whole, so the
+ * head's caption reads "6y" rather than "5.8", and the population's, not the filtered list's, so a
+ * bar keeps its length while the reader narrows the list. `null` when nothing is behind at all:
+ * with no bar to draw there is no scale to caption.
+ */
+export function libyearsAxisMax(findings: readonly Pick<Finding, "libyears">[]): number | null {
+  let largest = 0;
+  for (const finding of findings) {
+    const value = finding.libyears;
+    if (value !== null && Number.isFinite(value) && value > largest) largest = value;
+  }
+  return largest > 0 ? Math.max(1, Math.ceil(largest)) : null;
+}

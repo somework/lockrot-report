@@ -60,9 +60,10 @@ test.describe("rail filter groups (scope/signal) — mini.json Findings tab", ()
     expect(await report.rows()).toEqual(expect.arrayContaining(["vendor/transitive", "vendor/snapshot"]));
   });
 
-  test("scope: direct excludes both flagged findings (neither is a direct requirement)", async () => {
-    await report.railOption("scope", "direct");
-    expect(await report.rows()).toEqual([]);
+  test("scope: direct is not offered, since neither flagged finding is a direct requirement (PD-RAIL-2)", async () => {
+    // It used to be offered as "Direct 0" and select an empty list; a row that would list nothing is
+    // now left out unless it is on.
+    expect(await report.railOptionPressed("scope", "direct")).toBeNull();
   });
 
   test("signal: narrows to findings carrying that signal id", async () => {
@@ -71,9 +72,9 @@ test.describe("rail filter groups (scope/signal) — mini.json Findings tab", ()
   });
 
   test("rail options expose aria-pressed (not an M17 gap — that one was ledger-only)", async () => {
-    expect(await report.railOptionPressed("scope", "direct")).toBe(false);
-    await report.railOption("scope", "direct");
-    expect(await report.railOptionPressed("scope", "direct")).toBe(true);
+    expect(await report.railOptionPressed("scope", "transitive")).toBe(false);
+    await report.railOption("scope", "transitive");
+    expect(await report.railOptionPressed("scope", "transitive")).toBe(true);
   });
 });
 
@@ -95,8 +96,8 @@ test.describe("clear", () => {
     await report.goto(FIXTURES.mini);
     await report.tab("packages");
     await report.openPackage("vendor/snapshot");
-    await report.search("snapshot");
     await report.railOption("scope", "direct");
+    await report.search("snapshot");
     expect(await report.rows()).toEqual([]);
 
     await report.clear();
@@ -166,11 +167,11 @@ test.describe("PD-RAIL-1: every rail count is the list it selects", () => {
       expect(rows.length).toBeGreaterThan(0);
 
       const mismatches: string[] = [];
-      for (const [index, row] of rows.entries()) {
-        await report.toggleRailRowAt(index);
+      for (const row of rows) {
+        await report.toggleRailRow(row.label);
         const listed = await report.listedPackageCount();
         if (listed !== row.count) mismatches.push(`${row.label}: shows ${row.count}, lists ${listed}`);
-        await report.toggleRailRowAt(index);
+        await report.toggleRailRow(row.label);
       }
 
       expect(mismatches).toEqual([]);

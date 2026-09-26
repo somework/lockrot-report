@@ -10,6 +10,18 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Added
 
+- All packages on a phone: under 480px the rows stack — name and version, then the verdict, the
+  libyears bar and how it gets in, with the priority as the row's left rule — instead of a table
+  cut after its second column. The list opens with how many of the listed packages are behind their
+  newest stable release, how many are not, and how many could not be measured.
+- All packages draws libyears as bars on one scale captioned in the column head, a zero as a muted
+  dash and an unmeasured value as a "?", each explained once in a key above the table; the signals
+  column is ten dots per row under a 1…10 caption, filled in the level's tone where a signal fired.
+- An active-filters line under the count: every rail filter, ledger chip and the search as a chip
+  that removes only itself.
+- A package named in a sentence — the open package's answer and priority ladder, Blast radius's
+  sentences, S7's table — opens that package when the lock lists it.
+
 - Run data opens with the run in one sentence: which lockrot, how many packages of which lock,
   against which PHP, whether require-dev was in, when (UTC), whether every lookup answered, how old
   the cached repository activity was, and the gate. The thresholds are drawn on the same 3y/5y
@@ -219,6 +231,11 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Changed
 
+- Rail counts follow the other filters and the search: each is what selecting that row would list
+  now, and a row that would list nothing is hidden unless it is on. Signal names in the rail are
+  short enough to stay on one line; the full definition is still the button's tooltip.
+- The glossary opens with its libyears section unfolded; how to accept a package yourself moved out
+  of the "finished" definition into its own last section, for the lock's maintainers.
 - Run data draws threshold pairs that share both numbers on one scale; the abandoned-replacement
   count says how many more name a successor only in words (the package panel now says "in words
   only" for those); "network failures: yes" says lockrot records no count and points at the notes;

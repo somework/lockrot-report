@@ -24,23 +24,27 @@ function RailTitle({ title, path }: { title: string; path: string | undefined })
  * hands back for the current tab, each row a toggle button. Ported from legacy `renderRail()`
  * (`report.js:319-394`).
  *
- * `railGroups()` already carries the group order, the row labels and the per-tab counts —
- * DESIGN.md's "deliberately kept" non-faceted counts (M18): a count here is the tab's whole
- * population, not narrowed by whatever else is already selected. This component's only job is
- * layout, plus `aria-pressed` on each button (M17's fix, extended to the rail's own controls for
- * consistency with the ledger's).
+ * `railGroups()` already carries the group order, the row labels and the counts. A count is what
+ * the list would show with that row selected and everything else the reader chose still on
+ * (PD-RAIL-2, DESIGN.md §5 — legacy's counts ignored the other filters, M18); a row that would show
+ * nothing is left out unless it is on. This component's only job is layout, plus `aria-pressed` on
+ * each button (M17's fix, extended to the rail's own controls for consistency with the ledger's).
  *
  * Hidden entirely — no groups, no rail at all — once the current tab has nothing to filter
  * (`population(model, state.view).length === 0`), the same emptiness check the search bar and hint
- * use, and the one legacy makes before building any group (`report.js:322-327`).
+ * use, and the one legacy makes before building any group (`report.js:322-327`). When the tab has
+ * packages but the search box and the chips leave no row anything to add, the rail says so in one
+ * line rather than standing empty.
  */
 export function Rail() {
   const { model, state, dispatch } = useReport();
   if (population(model, state.view).length === 0) return null;
+  const groups = railGroups(model, state);
 
   return (
     <div className="rail" role="group" aria-label="Filters">
-      {railGroups(model, state).map((group) => (
+      {groups.length === 0 && <p className="rail-empty">Nothing here narrows the list further.</p>}
+      {groups.map((group) => (
         <div className="rail-group" key={group.group}>
           <span className="eyebrow">
             <RailTitle

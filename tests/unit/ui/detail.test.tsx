@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/preact";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/preact";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { normalize } from "../../../src/model/normalize";
@@ -666,7 +666,17 @@ describe("Detail", () => {
         "composer.json›vendor/direct›vendor/transitive",
       );
 
-      fireEvent.click(screen.getByRole("button", { name: "vendor/direct" }));
+      const chain = container.querySelector<HTMLElement>(".detail-chain");
+      if (chain === null) throw new Error("no chain");
+      fireEvent.click(within(chain).getByRole("button", { name: "vendor/direct" }));
+      expect(dispatch).toHaveBeenCalledWith({ type: "select", pkg: "vendor/direct" });
+    });
+
+    it("opens a package the answer sentence names, when the lock lists it (PD-PROSE-1)", () => {
+      const { container, dispatch } = renderDetail(MINI, "vendor/transitive");
+      const answer = container.querySelector<HTMLElement>(".detail-answer");
+      if (answer === null) throw new Error("no answer");
+      fireEvent.click(within(answer).getByRole("button", { name: "vendor/direct" }));
       expect(dispatch).toHaveBeenCalledWith({ type: "select", pkg: "vendor/direct" });
     });
 

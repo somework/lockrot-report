@@ -22,6 +22,7 @@ import {
   type RadiusRow,
 } from "../../domain/radius";
 import { useReport } from "../context";
+import { PkgMention } from "../common/PkgMention";
 import { firstRows } from "../rowCursor";
 import { useNarrow } from "../useWide";
 import { usePrinted } from "../print/printContext";
@@ -36,7 +37,7 @@ import "./radius.css";
 const FLASH_MS = 1800;
 
 function Pk({ name }: { name: string }) {
-  return <span className="rl-pk">{name}</span>;
+  return <PkgMention name={name} className="rl-pk" />;
 }
 
 /**
