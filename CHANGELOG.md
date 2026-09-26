@@ -328,7 +328,8 @@ tag or the address format, says so under **Breaking** in its entry.
 
 - A package no signal fired on no longer says "the verdict comes from what lockrot could not learn"
   unless it is `unknown`: an `ok` one says every check ran and found nothing, a `finished` one that
-  its verdict comes from the allowlist, and its answer quotes the allowlist's reason ("On the
+  its verdict comes from the allowlist, any other just that no signal fired; a `finished` package's
+  answer also quotes the allowlist's reason ("On the
   allowlist as finished, so it is not flagged: PHP-FIG interface packages are complete by design").
 - A split package lockrot dates by its monorepo's tags (lockrot 0.13.0's `dated_by` and
   `installed_release_dated_by`, `illuminate/*` by `laravel/framework`) says so: the Released fact

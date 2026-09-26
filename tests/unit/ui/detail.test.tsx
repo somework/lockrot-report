@@ -444,14 +444,14 @@ describe("Detail", () => {
       expect(dd?.querySelector(".detail-data-null .detail-sr")?.textContent).toBe("null");
     });
 
-    it("shows the no-signal-fired line for a finding with none", () => {
+    it("gives a flagged finding with no signal no reason it cannot back", () => {
+      // vendor/newpkg: abandoned, and no signal at all.
       renderDetail(EXTRA_MODEL, "vendor/newpkg");
-      expect(
-        screen.getByText("No signal fired. The verdict comes from what lockrot could not learn."),
-      ).toBeTruthy();
+      expect(screen.getByText("No signal fired.")).toBeTruthy();
+      expect(screen.queryByText(/could not learn/)).toBeNull();
     });
 
-    it("says an ok package's checks all ran, and a finished one's verdict comes from the allowlist", () => {
+    it("says an ok package's checks all ran, a finished one's verdict comes from the allowlist, and only unknown lacks data", () => {
       const quiet = (pkg: string, verdict: string) => ({
         package: pkg,
         version: "1.0.0",
@@ -470,6 +470,7 @@ describe("Detail", () => {
           findings: [
             quiet("vendor/fine", "ok"),
             { ...quiet("vendor/done", "finished"), allowlist_reason: "complete by design" },
+            quiet("vendor/gone", "unknown"),
           ],
         },
       });
@@ -481,12 +482,18 @@ describe("Detail", () => {
       expect(screen.queryByText(/could not learn/)).toBeNull();
       ok.unmount();
 
-      renderDetail(model, "vendor/done");
+      const finished = renderDetail(model, "vendor/done");
       expect(screen.getByText("No signal fired. The verdict comes from the allowlist.")).toBeTruthy();
       expect(
         screen.getByText("On the allowlist as finished, so it is not flagged: complete by design.", {
           exact: false,
         }),
+      ).toBeTruthy();
+      finished.unmount();
+
+      renderDetail(model, "vendor/gone");
+      expect(
+        screen.getByText("No signal fired. The verdict comes from what lockrot could not learn."),
       ).toBeTruthy();
     });
   });
