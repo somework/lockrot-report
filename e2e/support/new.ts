@@ -675,13 +675,13 @@ export class NewReportPage implements ReportPage {
     await this.railLocator(group, key).click();
   }
 
-  async railRows(): Promise<{ label: string; count: number }[]> {
+  async railRows(): Promise<{ label: string; count: number; pressed: boolean }[]> {
     const buttons = this.page.getByRole("group", { name: "Filters" }).getByRole("button");
     return buttons.evaluateAll((els) =>
       els.map((el) => {
         const count = el.querySelector(".c")?.textContent ?? "";
         const label = el.textContent.replace(count, "").replace(/\s+/g, " ").trim();
-        return { label, count: Number(count) };
+        return { label, count: Number(count), pressed: el.getAttribute("aria-pressed") === "true" };
       }),
     );
   }

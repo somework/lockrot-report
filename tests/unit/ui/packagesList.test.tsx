@@ -62,6 +62,25 @@ describe("PackagesView (PD-PACKAGES-1): libyears as a scale, its marks keyed onc
     expect(container.querySelector(".pk-key")?.textContent).toContain("not measured");
   });
 
+  it("keys, for the stacked rows, what a full bar is and what the left rule is (PD-PACKAGES-3)", () => {
+    const { container } = renderIn(model, packages(), <PackagesView />);
+    const narrow = [...container.querySelectorAll(".pk-key .pk-key-narrow")].map((el) =>
+      el.textContent.trim(),
+    );
+    // The scale is the population's largest value rounded up: 2.5 → 3.
+    expect(narrow).toEqual(["a full bar is 3 libyears", "left rule: priority"]);
+  });
+
+  it("marks each row with a priority by its word, for the forced-colours rule (PD-PACKAGES-3)", () => {
+    const withPrio = makeModel([
+      makeFinding({ package: "a/high", priority: "high" }),
+      makeFinding({ package: "b/none", priority: "none" }),
+    ]);
+    renderIn(withPrio, packages(), <PackagesView />);
+    expect(screen.getByRole("row", { name: "a/high" }).classList.contains("prio-high")).toBe(true);
+    expect(screen.getByRole("row", { name: "b/none" }).className).toBe("pk-row");
+  });
+
   it("draws a zero as a dash and an unmeasured value as a question mark, each keeping its reason in words", () => {
     renderIn(model, packages(), <PackagesView />);
     const zero = screen.getByRole("row", { name: "b/newest" }).querySelector(".pk-ly");

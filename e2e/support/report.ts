@@ -220,8 +220,8 @@ export interface ReportPage {
 
   railOption(group: RailGroup, key: string): Promise<void>;
   railOptionPressed(group: RailGroup, key: string): Promise<boolean | null>;
-  /** Every rail button in order, as its label and the count it shows (PD-RAIL-1). */
-  railRows(): Promise<{ label: string; count: number }[]>;
+  /** Every rail button in order, as its label, the count it shows (PD-RAIL-1) and whether it is on. */
+  railRows(): Promise<{ label: string; count: number; pressed: boolean }[]>;
   /** Clicks the rail button at that position (the order `railRows()` gives), selecting or clearing it. */
   toggleRailRowAt(index: number): Promise<void>;
   /** Clicks the rail button `railRows()` reported as `label` (PD-RAIL-2: rows come and go). */

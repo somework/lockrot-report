@@ -65,16 +65,18 @@ describe.each(CORPORA)("rail counts on %s (PD-RAIL-1)", (corpus) => {
   });
 });
 
-/** The state with `key` selected in `group` on top of `base`: added to Scope's ANDed buttons, in
- *  place of whatever else its own group had selected for every other (ORed) group. */
+/** The state with `key` on in `group` on top of `base`, as the reducer's toggle turns it on: added
+ *  to what its group already has (ANDed for Scope, ORed for the rest); a row already on changes
+ *  nothing. Written here from the reducer's rule, not from `railGroups`' own helper. */
 function adding(base: State, group: FilterGroup, key: string): State {
   const current = base.filters[group];
-  const next = group === "scope" ? [...new Set([...current, key])] : [key];
+  const next = current.includes(key) ? current : [...current, key];
   return { ...base, filters: { ...base.filters, [group]: next } };
 }
 
-// PD-RAIL-2: with other filters on — a Scope button, a ledger chip, a search — every count is still
-// what the list shows once that row is selected, those filters staying on.
+// PD-RAIL-2: with other filters on — a Scope button, a ledger chip, a search, a second row of the
+// same ORed group — every count is still what the list shows with that row on, those filters
+// staying on: for a row that is off, what a click on it lists.
 const NARROWED: readonly { label: string; state: Partial<State> }[] = [
   { label: "Direct on", state: { filters: { ...EMPTY_FILTERS, scope: ["direct"] } } },
   { label: "high priority on", state: { filters: { ...EMPTY_FILTERS, prio: ["high"] } } },
@@ -83,6 +85,13 @@ const NARROWED: readonly { label: string; state: Partial<State> }[] = [
     state: { filters: { ...EMPTY_FILTERS, signal: ["S4"], scope: ["dev"] } },
   },
   { label: "a search", state: { q: "symfony" } },
+  // The evaluator's cases: a second row picked in an ORed group lists the union, so an off row's
+  // count is the union with it, and an on row's is the list as it stands.
+  { label: "Direct and S5 on", state: { filters: { ...EMPTY_FILTERS, scope: ["direct"], signal: ["S5"] } } },
+  {
+    label: "Direct, S1 and S4 on",
+    state: { filters: { ...EMPTY_FILTERS, scope: ["direct"], signal: ["S1", "S4"] } },
+  },
 ];
 
 describe.each(CORPORA)("faceted rail counts on %s (PD-RAIL-2)", (corpus) => {
@@ -108,6 +117,21 @@ describe.each(CORPORA)("faceted rail counts on %s (PD-RAIL-2)", (corpus) => {
     const base: State = { ...INITIAL_STATE, filters: { ...EMPTY_FILTERS, scope: ["direct"] } };
     for (const g of railGroups(model, base)) {
       for (const row of g.rows) expect(row.count > 0 || row.on).toBe(true);
+    }
+  });
+
+  it("with a row of an ORed group on, shows another only when it matches a package the rest would list", () => {
+    const base: State = {
+      ...INITIAL_STATE,
+      view: "packages",
+      filters: { ...EMPTY_FILTERS, scope: ["direct"], signal: ["S5"] },
+    };
+    const signal = railGroups(model, base).find((g) => g.group === "signal");
+    const shown = new Set(signal?.rows.map((row) => row.key) ?? []);
+    const direct = population(model, "packages").filter((f) => f.direct);
+    for (const id of new Set(population(model, "packages").flatMap((f) => f.signals.map((s) => s.id)))) {
+      const own = direct.some((f) => f.signals.some((s) => s.id === id));
+      expect({ id, shown: shown.has(id) }).toEqual({ id, shown: own || id === "S5" });
     }
   });
 });

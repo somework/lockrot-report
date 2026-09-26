@@ -203,7 +203,15 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
       {line !== null && (
         <p className="count-line" role="status" aria-live="polite">
           {line}
-          {active > 0 && <span className="active-filters"> {plural(active, "filter", "filters")} on</span>}
+          {/* PD-RAIL-4: where the chips line below draws each filter, "2 filters on" beside the
+              count would say the same thing twice; it stays in the live region for a screen reader,
+              which hears a change here and not in the chips. */}
+          {active > 0 && (
+            <span className={filterable ? "vh" : "active-filters"}>
+              {" "}
+              {plural(active, "filter", "filters")} on
+            </span>
+          )}
           <SearchSplitNote model={model} state={state} />
           {/* Same fix as `SearchSplitNote`'s own comment above: a leading space, not a literal
               " · ", so this span never opens a wrapped line with a lone separator glyph. */}

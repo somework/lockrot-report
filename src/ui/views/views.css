@@ -52,6 +52,10 @@
    the same problem (DESIGN.md §8): local gradients painted in the wrap's own `--surface` cover the
    `--muted` edge shadows until there is something to scroll to on that side. */
 .tablewrap {
+  /* The containing block of every absolutely positioned thing inside the table — the screen-reader
+     words (`.vh`) in its cells above all. Without it they are placed against the page, outside the
+     wrap's own scroller, and a wide table pushed the whole page sideways from 600 to 1024px. */
+  position: relative;
   overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-m);

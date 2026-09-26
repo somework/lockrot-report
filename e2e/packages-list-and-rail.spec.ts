@@ -64,12 +64,56 @@ for (const width of [320, 390, 480] as const) {
       }
     });
 
+    test("the key says what a full bar is and what the left rule is; Libyears sorts largest first", async ({
+      page,
+    }) => {
+      await report.goto(FIXTURES.wallabag);
+      await report.tab("packages");
+      const key = page.locator(".pk-key");
+      await expect(key.getByText(/a full bar is \d+ libyears/)).toBeVisible();
+      await expect(key.getByText("left rule: priority")).toBeVisible();
+
+      // PD-PACKAGES-4: one tap answers "which is furthest behind?".
+      await page.getByRole("button", { name: /^Libyears/ }).click();
+      const first = await page.locator(".pk-table tbody tr .ly-num").first().textContent();
+      const values = await page
+        .locator(".pk-table tbody tr .ly-num")
+        .evaluateAll((els) => els.map((el) => Number(el.textContent)));
+      expect(Number(first)).toBe(Math.max(...values));
+    });
+
+    test("in forced colours the priority is a word in the row, not only a rule in one ink", async ({
+      page,
+    }) => {
+      await page.emulateMedia({ forcedColors: "active" });
+      await report.goto(FIXTURES.wallabag);
+      await report.tab("packages");
+      const prio = page.locator(".pk-table tbody tr").first().locator(".pk-prio");
+      await expect(prio).toBeVisible();
+      await expect(prio).toContainText("critical");
+      await noPageOverflow(page);
+    });
+
     test("a tap on a stacked row still opens its package", async () => {
       await report.goto(FIXTURES.wallabag);
       await report.tab("packages");
       await report.openPackage("hoa/compiler");
       expect((await report.detail()).name).toBe("hoa/compiler");
     });
+  });
+}
+
+// The regression a6f2bce did not have and 98713f1 did: the cells' screen-reader words are placed
+// absolutely, and with a static wrap they were placed against the page, outside the wrap's scroller,
+// so the whole page scrolled sideways wherever the table is wider than the list.
+for (const width of [600, 768, 900, 1024] as const) {
+  test(`${width}px: the table scrolls inside its wrap, never the page`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    for (const fixture of [FIXTURES.wallabag, FIXTURES.mautic]) {
+      await report.goto(fixture);
+      await report.tab("packages");
+      await noPageOverflow(page);
+    }
   });
 }
 
@@ -130,6 +174,37 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
     expect(await report.railOptionPressed("scope", "transitive")).toBe(false);
     // The chip that had focus is gone; focus goes to the search box, not to the page.
     expect(await page.evaluate(() => document.activeElement?.getAttribute("type"))).toBe("search");
+  });
+
+  test("with a second signal picked, every row counts what the list shows with it on", async ({ page }) => {
+    await report.goto(FIXTURES.wallabag);
+    await report.tab("packages");
+    await report.railOption("scope", "direct");
+    await report.toggleRailRow("S5 predates target PHP");
+    const listed = await report.listedPackageCount();
+    for (const row of await report.railRows()) {
+      if (row.pressed) {
+        expect(row.count, `${row.label} is on`).toBe(listed);
+        continue;
+      }
+      await report.toggleRailRow(row.label);
+      expect(await report.listedPackageCount(), row.label).toBe(row.count);
+      await report.toggleRailRow(row.label);
+    }
+    // The chips say which filters are on; the count line no longer repeats "2 filters on" on screen.
+    await expect(page.locator(".count-line .active-filters")).toHaveCount(0);
+  });
+
+  test("a search's matched-in line wraps under the name instead of pushing the table past its wrap", async ({
+    page,
+  }) => {
+    await report.goto(FIXTURES.wallabag);
+    await report.tab("packages");
+    await report.search("symfony");
+    const [scroll, client] = await page
+      .locator(".tablewrap")
+      .evaluate((el) => [el.scrollWidth, el.clientWidth]);
+    expect(scroll).toBeLessThanOrEqual(client);
   });
 
   test("a search is a chip of its own, and removing it leaves the rail's filters on", async ({ page }) => {

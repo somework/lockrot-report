@@ -219,17 +219,14 @@ function hasBaseline(model: Model): boolean {
 }
 
 /**
- * The filters a rail row's count is taken under (PD-RAIL-2, DESIGN.md §5): everything the reader
- * has already chosen — the search box, the ledger's chips, the other rail groups — with this row
- * selected in its own group. A Scope button ANDs with the Scope buttons already on, so it is added
- * to them; every other group ORs its rows, so the row stands in for the group's selection, and the
- * count is the row's own share rather than the group's union.
+ * The filters with `key` turned on in `group`, the way a click on its rail row turns it on (the
+ * reducer's `toggle`): added to what the group already has — ANDed for Scope's buttons, ORed for
+ * every other group's rows — every other filter and the search staying as they are. A row already
+ * on leaves the filters as they are.
  */
-function facetFilters(filters: Filters, group: FilterGroup, key: string): Filters {
-  if (group === "scope") {
-    return filters.scope.includes(key) ? filters : { ...filters, scope: [...filters.scope, key] };
-  }
-  return { ...filters, [group]: [key] };
+function withRowOn(filters: Filters, group: FilterGroup, key: string): Filters {
+  const current = filters[group];
+  return current.includes(key) ? filters : { ...filters, [group]: [...current, key] };
 }
 
 /** What a rail row counts over: the tab's population, with Blast radius narrowed to the flagged
@@ -240,15 +237,36 @@ interface RailScope {
   readonly terms: ReturnType<typeof parseQuery>;
 }
 
-function facetCount(scope: RailScope, group: FilterGroup, key: string): number {
-  const filters = facetFilters(scope.state.filters, group, key);
+function countUnder(scope: RailScope, filters: Filters): number {
   return scope.here.filter((f) => matchesFinding(f, scope.terms) && passesRail(filters, f)).length;
 }
 
 /**
- * One group's rows: the count each would list once selected, under every other active filter
- * (PD-RAIL-2). A row that would list nothing is left out unless it is selected — a reader must
- * always be able to turn off what is on — and a group left with no rows is left out whole.
+ * A rail row's count and whether it is shown (PD-RAIL-2). The count is the list's length with the
+ * row on: for a row that is off, what a click on it lists — in an ORed group that already has a
+ * selection, the union of that selection and this row, not the row's own share, so "S7 32" beside a
+ * list of 3 is the 32 the list becomes; for a row that is on, the list as it stands.
+ *
+ * A row that is off is shown only when some package it matches would be listed under the other
+ * filters — its own share, with its group's selection set aside. In an ORed group with a selection
+ * the count alone cannot say that: a row whose packages are all already listed and one that matches
+ * none of them both count the list as it stands.
+ */
+function rowCount(scope: RailScope, group: FilterGroup, key: string): { count: number; shown: boolean } {
+  const filters = scope.state.filters;
+  const count = countUnder(scope, withRowOn(filters, group, key));
+  if (filters[group].includes(key)) return { count, shown: true };
+  const own =
+    group === "scope" || filters[group].length === 0
+      ? count
+      : countUnder(scope, { ...filters, [group]: [key] });
+  return { count, shown: own > 0 };
+}
+
+/**
+ * One group's rows, each counting what the list shows with it on (PD-RAIL-2). A row matching
+ * nothing the other filters leave is left out unless it is selected — a reader must always be able
+ * to turn off what is on — and a group left with no rows is left out whole.
  */
 function groupOf(
   scope: RailScope,
@@ -257,9 +275,10 @@ function groupOf(
   rows: readonly (readonly [key: string, label: string])[],
 ): RailGroup | null {
   const selected = scope.state.filters[group];
-  const shown = rows
-    .map(([key, label]) => ({ key, label, count: facetCount(scope, group, key), on: selected.includes(key) }))
-    .filter((row) => row.count > 0 || row.on);
+  const shown = rows.flatMap(([key, label]) => {
+    const { count, shown: visible } = rowCount(scope, group, key);
+    return visible ? [{ key, label, count, on: selected.includes(key) }] : [];
+  });
   return shown.length === 0 ? null : { group, title, rows: shown };
 }
 
@@ -349,8 +368,9 @@ function fixRows(here: readonly Finding[]): readonly (readonly [string, string])
  * PD-RAIL-1: every count is the packages the list shows once that row is selected, so on Blast
  * radius only the flagged findings that tab has a place for count — not the flagged direct
  * requirements with no card (radius.ts#placedOnRadius). PD-RAIL-2: "once that row is selected"
- * means with everything else the reader chose still on — legacy counted the whole population
- * whatever else was selected (DESIGN.md M18), so "Direct 20" sat beside a list of 3.
+ * means with everything else the reader chose still on, the row added to its own group's selection
+ * as a click adds it — legacy counted the whole population whatever else was selected (DESIGN.md
+ * M18), so "Direct 20" sat beside a list of 3.
  */
 export function railGroups(model: Model, state: State): readonly RailGroup[] {
   const everyone = population(model, state.view);

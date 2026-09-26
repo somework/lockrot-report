@@ -147,7 +147,7 @@ describe("reducer / sort", () => {
     expect(next.sortDesc).toBe(false);
   });
 
-  it("switching to a different column always resets to ascending", () => {
+  it("switching to a different column resets to ascending", () => {
     // Arrange
     const state: State = { ...INITIAL_STATE, sort: "package", sortDesc: true };
 
@@ -157,6 +157,19 @@ describe("reducer / sort", () => {
     // Assert
     expect(next.sort).toBe("version");
     expect(next.sortDesc).toBe(false);
+  });
+
+  it("opens the Libyears column largest first (PD-PACKAGES-4)", () => {
+    // Arrange
+    const state: State = { ...INITIAL_STATE, sort: "package", sortDesc: false };
+
+    // Act
+    const first = reducer(state, { type: "sort", key: "libyears" });
+    const second = reducer(first, { type: "sort", key: "libyears" });
+
+    // Assert
+    expect(first.sortDesc).toBe(true);
+    expect(second.sortDesc).toBe(false);
   });
 });
 

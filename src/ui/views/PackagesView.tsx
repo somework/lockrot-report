@@ -184,10 +184,13 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
   const { state, dispatch, cursor } = useReport();
   const isOpen = state.pkg === finding.package;
   const hit = useSearchHit(finding);
-  // The phone layout draws the priority as the row's left rule (packages.css); a row with none has
-  // no rule to draw.
+  // The phone layout draws the priority as the row's left rule (packages.css): its tone, and in
+  // forced colours — where every tone is the one system ink — its weight, by `prio-<word>`. A row
+  // with none has no rule to draw.
   const rowClass =
-    finding.priority === "none" ? "pk-row" : `pk-row has-prio ${toneClass(TONE(finding.priority))}`;
+    finding.priority === "none"
+      ? "pk-row"
+      : `pk-row has-prio prio-${finding.priority} ${toneClass(TONE(finding.priority))}`;
 
   return (
     <tr
@@ -244,8 +247,13 @@ function Count({ n, one = "package", many = "packages" }: { n: number; one?: str
  * behind their newest stable release, how many are not, how many could not be measured — counts of
  * the libyears cells below, nothing more — then what the cells' two marks mean, said once here
  * instead of on every row. Paper keeps its own printed lede (PrintDocument), so none is drawn there.
+ *
+ * Two of the key's items are for the stacked rows only (PD-PACKAGES-3, packages.css
+ * `.pk-key-narrow`): there the table's head is a sort bar that has no room for the Libyears head's
+ * 0…Ny scale or a Priority column, so the key says what a full bar is and what the row's left rule
+ * is.
  */
-function PackagesLede({ tally, listed }: { tally: LibyearsTally; listed: number }) {
+function PackagesLede({ tally, listed, max }: { tally: LibyearsTally; listed: number; max: number | null }) {
   const { behind, current, unmeasured } = tally;
   return (
     <div className="pk-lede">
@@ -266,27 +274,38 @@ function PackagesLede({ tally, listed }: { tally: LibyearsTally; listed: number 
         )}
         .
       </p>
-      {(current > 0 || unmeasured > 0) && (
-        <p className="pk-key">
-          {current > 0 && (
-            <span className="pk-key-item">
-              <span className="pk-key-mark" aria-hidden="true">
-                —
-              </span>{" "}
-              not behind its newest stable
-            </span>
-          )}
-          {unmeasured > 0 && (
-            <span className="pk-key-item">
-              <span className="pk-key-mark" aria-hidden="true">
-                ?
-              </span>{" "}
-              not measured
-            </span>
-          )}
+      <p className="pk-key">
+        {max !== null && behind > 0 && (
+          <span className="pk-key-item pk-key-narrow">
+            <span className="pk-key-bar" aria-hidden="true">
+              <span />
+            </span>{" "}
+            a full bar is {max} libyears
+          </span>
+        )}
+        {current > 0 && (
+          <span className="pk-key-item">
+            <span className="pk-key-mark" aria-hidden="true">
+              —
+            </span>{" "}
+            not behind its newest stable
+          </span>
+        )}
+        {unmeasured > 0 && (
+          <span className="pk-key-item">
+            <span className="pk-key-mark" aria-hidden="true">
+              ?
+            </span>{" "}
+            not measured
+          </span>
+        )}
+        {(current > 0 || unmeasured > 0) && (
           <span className="pk-key-item pk-key-hover">hover either for why</span>
-        </p>
-      )}
+        )}
+        <span className="pk-key-item pk-key-narrow" aria-hidden="true">
+          <span className="pk-key-rule" /> left rule: priority
+        </span>
+      </p>
     </div>
   );
 }
@@ -335,7 +354,7 @@ export function PackagesView() {
 
   return (
     <div className="pk">
-      {!printed && <PackagesLede tally={libyearsTally(visible)} listed={visible.length} />}
+      {!printed && <PackagesLede tally={libyearsTally(visible)} listed={visible.length} max={max} />}
       <div className="tablewrap">
         <table className="pk-table">
           <thead>

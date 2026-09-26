@@ -11,8 +11,16 @@
  * equivalent (every legacy reader tests truthiness) but avoids ever-growing objects of stale
  * `false` entries.
  */
-import type { Action, Filters, State } from "./types";
+import type { Action, Filters, SortKey, State } from "./types";
 import { EMPTY_FILTERS } from "./types";
+
+/**
+ * The columns whose first click sorts largest first (PD-PACKAGES-4, DESIGN.md §5). The question a
+ * reader brings to the Libyears head is "which is furthest behind?"; ascending put the unmeasured
+ * rows and the zeros at the top, so the answer took a second tap. Every other column still opens
+ * ascending, as legacy's did (js-4.md §7a.3).
+ */
+const FIRST_DESCENDING: readonly SortKey[] = ["libyears"];
 
 /** Add `key` to `group` if absent, keeping the existing order; remove it if present. */
 function toggleFilterKey(filters: Filters, group: keyof Filters, key: string): Filters {
@@ -61,9 +69,11 @@ export function reducer(state: State, action: Action): State {
 
     case "sort": {
       // Clicking the already-active column flips direction; a different column becomes the sort
-      // key and always resets to ascending (js-4.md §7a.3).
+      // key and opens in its first direction — ascending (js-4.md §7a.3), except the columns in
+      // FIRST_DESCENDING.
       const sameKey = state.sort === action.key;
-      return { ...state, sort: action.key, sortDesc: sameKey ? !state.sortDesc : false };
+      const firstDesc = FIRST_DESCENDING.includes(action.key);
+      return { ...state, sort: action.key, sortDesc: sameKey ? !state.sortDesc : firstDesc };
     }
 
     case "select":

@@ -231,9 +231,14 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Changed
 
-- Rail counts follow the other filters and the search: each is what selecting that row would list
-  now, and a row that would list nothing is hidden unless it is on. Signal names in the rail are
-  short enough to stay on one line; the full definition is still the button's tooltip.
+- Rail counts follow the other filters and the search: each is what the list shows with that row
+  on — a click on a second signal lists the union, and its count says so — and a row matching
+  nothing the other filters leave is hidden unless it is on. Signal names in the rail are short
+  enough to stay on one line; the full definition is still the button's tooltip.
+- Sorting All packages by Libyears starts with the package furthest behind; the unmeasured and
+  zero rows no longer come first.
+- The count line no longer repeats "2 filters on" beside the chips that name them; a screen reader
+  still hears it.
 - The glossary opens with its libyears section unfolded; how to accept a package yourself moved out
   of the "finished" definition into its own last section, for the lock's maintainers.
 - Run data draws threshold pairs that share both numbers on one scale; the abandoned-replacement
@@ -317,6 +322,12 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Fixed
 
+- All packages no longer scrolls the whole page sideways between 600 and 1024px: the table scrolls
+  inside its own frame again. A search's "matched in" line wraps under the name instead of pushing
+  the last column out of view at 1440px.
+- On a phone, the key above All packages says what a full libyears bar is and what a row's left
+  rule means; in forced colours, where every rule is the same ink, each row names its priority. The
+  libyears number keeps clear of how the package gets in at 320px.
 - Printing from the dark theme printed pale text on white paper; paper now always uses the light
   colours. The All packages table no longer loses its right-hand columns at the page margin.
 - `j`, `k`, `/` and `?` work on a non-Latin keyboard layout (Russian and others) and with Caps Lock

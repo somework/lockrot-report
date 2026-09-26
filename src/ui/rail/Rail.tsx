@@ -25,9 +25,10 @@ function RailTitle({ title, path }: { title: string; path: string | undefined })
  * (`report.js:319-394`).
  *
  * `railGroups()` already carries the group order, the row labels and the counts. A count is what
- * the list would show with that row selected and everything else the reader chose still on
- * (PD-RAIL-2, DESIGN.md §5 — legacy's counts ignored the other filters, M18); a row that would show
- * nothing is left out unless it is on. This component's only job is layout, plus `aria-pressed` on
+ * the list shows with that row on and everything else the reader chose still on — for a row that is
+ * off, what a click on it lists, a second row of an ORed group counting the union it makes
+ * (PD-RAIL-2, DESIGN.md §5 — legacy's counts ignored the other filters, M18); a row matching nothing
+ * the other filters leave is left out unless it is on. This component's only job is layout, plus `aria-pressed` on
  * each button (M17's fix, extended to the rail's own controls for consistency with the ledger's).
  *
  * Hidden entirely — no groups, no rail at all — once the current tab has nothing to filter

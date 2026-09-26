@@ -16,7 +16,7 @@ interface Chip {
  * The active-filters line under the count (PD-RAIL-4, DESIGN.md §5): every selection narrowing the
  * list — the rail's rows, the ledger's verdict, priority and severity chips, the search box's text
  * — as a chip that removes just that one. The count line above still says "2 filters on" in its
- * live region; this says which, and gives each its own way off, where the only way used to be the
+ * live region, for a screen reader only (the chips say it on screen); this says which, and gives each its own way off, where the only way used to be the
  * search box's Clear, which dropped them all at once.
  *
  * Removing a chip unmounts the button that had focus; focus moves to the chip that took its place
