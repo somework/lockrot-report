@@ -326,9 +326,21 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Fixed
 
+- A package no signal fired on no longer says "the verdict comes from what lockrot could not learn"
+  unless it is `unknown`: an `ok` one says every check ran and found nothing, a `finished` one that
+  its verdict comes from the allowlist, and its answer quotes the allowlist's reason ("On the
+  allowlist as finished, so it is not flagged: PHP-FIG interface packages are complete by design").
+- A split package lockrot dates by its monorepo's tags (lockrot 0.13.0's `dated_by` and
+  `installed_release_dated_by`, `illuminate/*` by `laravel/framework`) says so: the Released fact
+  reads "your version, dated by laravel/framework", and Release branches names the rows whose dates
+  came from it.
+- Blast radius no longer says lockrot's exposure list "leaves out" a flagged direct requirement: the
+  list holds only requirements with flagged packages under them, so the count line, the answer and
+  the footnote say the others have nothing flagged counted under them.
+
 - Blast radius under a filter that ranks nothing: the answer says what the filter shows ("The
   filter matches 20 flagged direct requirements themselves, and nothing listed under any of them: 12
-  on lockrot's exposure list, below, and 8 it does not name, at the end"), and that tail is a heading
+  on lockrot's exposure list, below, and 8 with nothing flagged counted under them, at the end"), and that tail is a heading
   over rows always shown, never a fold.
 - Blast radius under a search: a requirement found only through its evidence is said to be ("1 more
   matches “hoa” only in its own evidence"), and its cell reads its counts as one statement ("Of the
