@@ -86,12 +86,11 @@ test.describe("PD-DISCLOSURE-1: one marker, every fold", () => {
 
     const closed = await settledRotation();
     await summary.click();
-    const open = await settledRotation();
-    expect(open).not.toBe(closed);
+    // Polled, not read once: on a loaded CI runner WebKit can still be mid-transition after 250ms.
+    await expect.poll(() => markerRotation(summary)).not.toBe(closed);
 
     await summary.click();
-    const closedAgain = await settledRotation();
-    expect(closedAgain).toBe(closed);
+    await expect.poll(() => markerRotation(summary)).toBe(closed);
   });
 
   test("the phone fold's own ledger and rail summaries draw the same marker shape", async ({ page }) => {

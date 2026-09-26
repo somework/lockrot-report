@@ -280,6 +280,24 @@ const STATE_WORDS: Readonly<Record<CheckState, string>> = {
   unreported: "not reported",
 };
 
+/** How many frames `settle` keeps re-aiming at the evidence after the first jump. */
+const SETTLE_FRAMES = 3;
+
+/**
+ * Scrolling the page to the evidence can bring the footer into view, and `:root.footer-in-view`
+ * (app.css, Footer.tsx) then shortens the side panel by the footer's height a frame or two later —
+ * in WebKit that left the line it had just scrolled to below the panel's new bottom edge. Aiming
+ * again for a few frames lands it inside the settled panel; `block: "nearest"` moves nothing once
+ * it already is.
+ */
+function settle(target: Element, frames: number): void {
+  if (frames <= 0 || typeof window.requestAnimationFrame !== "function") return;
+  window.requestAnimationFrame(() => {
+    target.scrollIntoView({ block: "nearest" });
+    settle(target, frames - 1);
+  });
+}
+
 /** Opens every `<details>` around the evidence (and the evidence itself when it is one), brings it
  *  into view and moves focus to it — a focusable facts line itself, otherwise its summary — so the
  *  reader lands where the strip pointed. */
@@ -290,18 +308,25 @@ function reveal(id: string): void {
   for (let d = target.parentElement?.closest("details"); d; d = d.parentElement?.closest("details")) {
     d.open = true;
   }
-  const reduce =
-    typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  target.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
-  // A plain evidence line (Provenance's activity facts) takes focus itself, so a screen reader
-  // reads the facts rather than the section's heading.
-  if (!(target instanceof HTMLDetailsElement) && target.hasAttribute("tabindex")) {
-    target.focus({ preventScroll: true });
-    return;
-  }
-  const owner = target instanceof HTMLDetailsElement ? target : target.closest("details");
-  const summary = owner?.querySelector<HTMLElement>(":scope > summary") ?? null;
-  summary?.focus({ preventScroll: true });
+  // A frame later, not in the same tick, and an instant jump rather than a smooth one: the evidence
+  // can sit below both the detail's own scroll box and the page's fold, and Firefox and WebKit each
+  // dropped one of those two smooth scrolls (the one started while the `<details>` just opened were
+  // still being laid out), leaving the evidence off screen.
+  const land = (): void => {
+    target.scrollIntoView({ block: "nearest" });
+    settle(target, SETTLE_FRAMES);
+    // A plain evidence line (Provenance's activity facts) takes focus itself, so a screen reader
+    // reads the facts rather than the section's heading.
+    if (!(target instanceof HTMLDetailsElement) && target.hasAttribute("tabindex")) {
+      target.focus({ preventScroll: true });
+      return;
+    }
+    const owner = target instanceof HTMLDetailsElement ? target : target.closest("details");
+    const summary = owner?.querySelector<HTMLElement>(":scope > summary") ?? null;
+    summary?.focus({ preventScroll: true });
+  };
+  if (typeof window.requestAnimationFrame === "function") window.requestAnimationFrame(land);
+  else land();
 }
 
 /** One cell of the strip: a bar filled in its level's tone when the check fired, outlined when it

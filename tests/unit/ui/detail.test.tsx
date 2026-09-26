@@ -11,6 +11,15 @@ import { EMPTY_FILTERS } from "../../../src/state/types";
 import { Detail } from "../../../src/ui/detail/Detail";
 import { ReportContext } from "../../../src/ui/context";
 
+/** Evidence is scrolled to and focused a frame after its `<details>` open (SignalList.tsx#reveal). */
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      resolve();
+    });
+  });
+}
+
 const FIXTURES_DIR = join(process.cwd(), "fixtures", "bundles");
 
 function loadModel(fixture: string): Model {
@@ -1173,7 +1182,7 @@ describe("Detail", () => {
 
     // Eval (auditor): a quiet S4 beside "no activity read" contradicted itself, and the cell was a
     // dead span. Now it is marked apart, counted in the tally, named in its own line, and links.
-    it("marks a quiet S3/S4 with no activity on file, and points it at Provenance's reason", () => {
+    it("marks a quiet S3/S4 with no activity on file, and points it at Provenance's reason", async () => {
       const { container } = renderDetail(loadModel("capsule-0.10-drupal.json"), "drupal/core");
       expect(container.querySelector(".detail-checks-tally")?.textContent).toBe(
         "2 fired · 8 quiet (2 with no activity on file) · every check ran.",
@@ -1198,6 +1207,7 @@ describe("Detail", () => {
         screen.getByRole("button", { name: /^S4 push age, quiet with no repository activity/ }),
       );
       expect(container.querySelector<HTMLDetailsElement>("#detail-provenance")?.open).toBe(true);
+      await nextFrame();
       expect(document.activeElement).toBe(container.querySelector("#detail-prov-activity"));
     });
 
@@ -1223,9 +1233,10 @@ describe("Detail", () => {
       expect(metadata?.textContent).toBe("not in this document — it explains no package");
     });
 
-    it("moves focus onto the activity line itself when a quiet S4 points there", () => {
+    it("moves focus onto the activity line itself when a quiet S4 points there", async () => {
       const { container } = renderDetail(KOEL, "predis/predis");
       fireEvent.click(screen.getByRole("button", { name: "S4 push age, quiet: show the evidence" }));
+      await nextFrame();
       expect(document.activeElement).toBe(container.querySelector("#detail-prov-activity"));
     });
   });

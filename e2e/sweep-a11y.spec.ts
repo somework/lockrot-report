@@ -27,7 +27,17 @@ test.describe("PD-A11Y-SWEEP-1: the selected tab stays marked in forced colours"
     }) => {
       await page.emulateMedia({ colorScheme, forcedColors: "active" });
       await load(page, FIXTURES.wallabag, "view=radius");
-      const pageBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+      // The forced palette's own page colour, read off a probe rather than `body`: WebKit's
+      // emulation keeps the page's authored background on `body` while it repaints borders in the
+      // system colours, so `body` is not what an idle underline has to match there.
+      const canvas = await page.evaluate(() => {
+        const probe = document.createElement("div");
+        probe.style.color = "Canvas";
+        document.body.append(probe);
+        const color = getComputedStyle(probe).color;
+        probe.remove();
+        return color;
+      });
       const lines = await underlines(page);
       const selected = lines.filter((line) => line.selected);
       const idle = lines.filter((line) => !line.selected);
@@ -35,8 +45,8 @@ test.describe("PD-A11Y-SWEEP-1: the selected tab stays marked in forced colours"
       expect(selected).toHaveLength(1);
       // Before the fix every tab's transparent underline was repainted in the text colour, so all
       // five wore the same rule and none read as the current one.
-      expect(idle.every((line) => line.color === pageBg)).toBe(true);
-      expect(selected[0]?.color).not.toBe(pageBg);
+      expect(idle.every((line) => line.color === canvas)).toBe(true);
+      expect(selected[0]?.color).not.toBe(canvas);
     });
   }
 });
