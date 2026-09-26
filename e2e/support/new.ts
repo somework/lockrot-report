@@ -708,13 +708,19 @@ export class NewReportPage implements ReportPage {
 
   async listedPackageCount(): Promise<number> {
     // The same candidates `rows()` reads, counted in one page call: a per-row locator round trip
-    // over wallabag's 271 packages, once per rail row, would take minutes.
+    // over wallabag's 271 packages, once per rail row, would take minutes. `getByRole` (what
+    // `rows()` uses) skips what is not rendered or is hidden from the accessibility tree, so this
+    // does too: folded Blast radius rows, the closed glossary and the print-only copy would
+    // otherwise add a constant the rail never counts (CodeRabbit on #6).
     return this.page.evaluate(() => {
       const names = new Set<string>();
       const implicit: Record<string, string> = { TR: "row", LI: "listitem" };
-      for (const el of document.querySelectorAll(
+      for (const el of document.querySelectorAll<HTMLElement>(
         '[role="row"], [role="option"], [role="listitem"], tr, li',
       )) {
+        if (el.getClientRects().length === 0) continue;
+        if (el.closest('[hidden], [aria-hidden="true"], [inert]') !== null) continue;
+        if (getComputedStyle(el).visibility === "hidden") continue;
         const role = el.getAttribute("role") ?? implicit[el.tagName] ?? "";
         if (!["row", "option", "listitem"].includes(role)) continue;
         if (el.querySelector('[role="columnheader"], th')) continue;

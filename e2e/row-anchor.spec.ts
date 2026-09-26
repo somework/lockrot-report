@@ -128,14 +128,17 @@ test.describe("1440×900 keyboard and links", () => {
     const pkg = await rowAt(page, DEEP_ROW - 1);
     await expect.poll(async () => (await place(page, pkg)).inView).toBe(true);
 
-    const clearance = await page.evaluate((name) => {
-      const row = [...document.querySelectorAll(".frow")].find(
-        (node) => node.getAttribute("data-pkg") === name,
-      );
-      if (row === undefined) throw new Error(`no row for ${name}`);
-      return innerHeight - row.getBoundingClientRect().bottom;
-    }, pkg);
-    expect(clearance).toBeGreaterThan(20);
+    // Polled: the last `j` opens the detail beside the list, and the rows it narrows can still be
+    // settling for a frame or two after the row first reads as in view (seen in Firefox under load).
+    const clearance = () =>
+      page.evaluate((name) => {
+        const row = [...document.querySelectorAll(".frow")].find(
+          (node) => node.getAttribute("data-pkg") === name,
+        );
+        if (row === undefined) throw new Error(`no row for ${name}`);
+        return innerHeight - row.getBoundingClientRect().bottom;
+      }, pkg);
+    await expect.poll(clearance).toBeGreaterThan(20);
   });
 
   test("a #pkg= link scrolls its row into view on load, so Close hands focus to a row on screen", async ({
