@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=22"
+    "node": ">=26"
   },
   "scripts": {
     "dev": "vite",
@@ -24,14 +24,14 @@
     "@playwright/test": "1.63.0",
     "@preact/preset-vite": "2.10.6",
     "@testing-library/preact": "3.2.4",
-    "@types/node": "24.13.6",
+    "@types/node": "26.6.3",
     "eslint": "10.11.0",
     "happy-dom": "20.14.5",
     "prettier": "3.9.9",
     "typescript": "6.0.3",
     "typescript-eslint": "8.70.1",
-    "vite": "8.3.0",
-    "vitest": "5.0.1"
+    "vite": "8.3.1",
+    "vitest": "5.0.2"
   },
   "dependencies": {
     "preact": "10.29.8"
