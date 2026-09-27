@@ -1,13 +1,8 @@
 /**
- * S6's facts (`domain/pinned.ts`) and every sentence the page words from them: the answer's pinned
- * clause, the key facts' release slot, a run's reason and an age cell's context reason.
- *
- * lockrot 0.13.0 tells S6's two cases apart (`reason`) and says whether the repository lists any tag
- * (`has_stable_release`, a pre-release counts; null when no repository metadata was loaded). A
- * document written before 0.13.0 carries none of it and keeps today's words, unless its lock says
- * the version is not a branch.
+ * S6's facts (`domain/pinned.ts`) and every sentence the page words from them. Every document is
+ * read one way: S6's own field first, then the explain field that states the same fact.
  */
-import { readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, test } from "vitest";
@@ -19,6 +14,9 @@ import {
   pinnedKind,
   pinnedReleaseSlot,
   pinnedRunReason,
+  readPinnedFacts,
+  snapshotOf,
+  type PinnedFacts,
   type PinnedSlot,
 } from "../../../src/domain/pinned";
 import { runFacts } from "../../../src/domain/rows";
@@ -41,6 +39,9 @@ const MAUTIC_011 = load("mautic_mautic.json");
 const EDGES = load("mini-0.13-edges.json");
 const EDGES_LOCK_ONLY = load("mini-0.13-edges-lock-only.json");
 const KOEL_013 = load("koel_koel-0.13.json");
+const KOEL_011 = load("koel_koel.json");
+const CAPSULE = load("capsule-0.10-drupal.json");
+const NO_DETAILS = load("synthetic-no-details.json");
 
 const THRESHOLDS = [
   ["release-warn-years", 3],
@@ -74,9 +75,24 @@ function sentence(model: Model, pkg: string): string {
 
 function slot(model: Model, pkg: string): PinnedSlot | null {
   const d = details(model, pkg);
-  const facts = pinnedFacts(finding(model, pkg), d);
-  if (facts === null) throw new Error(`${pkg} has no S6 facts`);
-  return pinnedReleaseSlot(facts, d?.lock ?? null);
+  const read = pinnedFacts(finding(model, pkg), d);
+  if (read === null) throw new Error(`${pkg} has no S6 facts`);
+  return pinnedReleaseSlot(read);
+}
+
+function facts(overrides: Partial<PinnedFacts> = {}): PinnedFacts {
+  return {
+    version: "1.0.0",
+    summary: null,
+    reason: null,
+    hasStableRelease: null,
+    lastStableVersion: null,
+    lastStableRelease: null,
+    lastStableDatedBy: null,
+    branchSnapshot: null,
+    snapshotTime: null,
+    ...overrides,
+  };
 }
 
 function lock(overrides: Partial<ExplainLock> = {}): ExplainLock {
@@ -110,6 +126,7 @@ describe("pinnedFacts", () => {
       lastStableVersion: "1.6.2",
       lastStableRelease: "2019-01-23T15:23:04+00:00",
       lastStableDatedBy: null,
+      branchSnapshot: true,
       snapshotTime: "2022-03-24T10:22:23+00:00",
     });
   });
@@ -148,26 +165,40 @@ describe("pinnedFacts", () => {
     expect(facts?.summary).toBe("the installed version was yanked");
   });
 
-  test("leaves every 0.13 key absent on an older document's S6 with no details to fall back to", () => {
-    const facts = pinnedFacts(
+  test("an S6 that states nothing, with no details, says nothing: every fact is null", () => {
+    const read = pinnedFacts(
       makeFinding({ verdict: "pinned", signals: [makeSignal({ id: "S6", data: { version: "dev-main" } })] }),
       null,
     );
-    expect(facts).toEqual({ version: "dev-main", summary: "example signal" });
-    expect(facts !== null && "reason" in facts).toBe(false);
-    expect(facts !== null && "hasStableRelease" in facts).toBe(false);
+    expect(read).toEqual(facts({ version: "dev-main", summary: "example signal" }));
   });
 
-  test("falls back to the explain metadata, and to the lock's time for a snapshot, when S6 does not carry them", () => {
-    const facts = pinnedFacts(
-      finding(WALLABAG_011, "friendsofsymfony/oauth-server-bundle"),
-      details(WALLABAG_011, "friendsofsymfony/oauth-server-bundle"),
-    );
-    expect(facts?.reason).toBeUndefined();
-    expect(facts?.hasStableRelease).toBe(true);
-    expect(facts?.lastStableVersion).toBe("1.6.2");
-    expect(facts?.lastStableRelease).toBe("2019-01-23T15:23:04+00:00");
-    expect(facts?.snapshotTime).toBe("2022-03-24T10:22:23+00:00");
+  test("reads the same facts from the explain data where S6 does not carry them (wallabag 0.11 against 0.13)", () => {
+    const pkg = "friendsofsymfony/oauth-server-bundle";
+    const old = pinnedFacts(finding(WALLABAG_011, pkg), details(WALLABAG_011, pkg));
+    const current = pinnedFacts(finding(WALLABAG_013, pkg), details(WALLABAG_013, pkg));
+    expect(old?.reason).toBeNull();
+    expect(old).toEqual({ ...current, reason: null });
+  });
+
+  test("the lock says whether the version is a branch when S6 names no reason, or one it does not know", () => {
+    const s6 = (data: Record<string, unknown>) =>
+      makeFinding({ verdict: "pinned", signals: [makeSignal({ id: "S6", data })] });
+    expect(readPinnedFacts(s6({}), withLock(lock({ branchSnapshot: false }))).branchSnapshot).toBe(false);
+    expect(readPinnedFacts(s6({ reason: "yanked" }), withLock(lock())).branchSnapshot).toBe(true);
+    expect(readPinnedFacts(s6({ reason: "no_stable_release" }), withLock(lock())).branchSnapshot).toBe(false);
+    expect(readPinnedFacts(s6({}), withLock(lock({ branchSnapshot: null }))).branchSnapshot).toBeNull();
+  });
+
+  test("dates a snapshot by S6's own time, else by the lock's only where the lock says it is a branch", () => {
+    const f = makeFinding({ verdict: "pinned" });
+    expect(readPinnedFacts(f, withLock(lock())).snapshotTime).toBe("2024-01-01T00:00:00+00:00");
+    expect(readPinnedFacts(f, withLock(lock({ branchSnapshot: false }))).snapshotTime).toBeNull();
+    const own = makeFinding({
+      verdict: "pinned",
+      signals: [makeSignal({ id: "S6", data: { snapshot_time: "2025-01-01T00:00:00+00:00" } })],
+    });
+    expect(readPinnedFacts(own, withLock(lock())).snapshotTime).toBe("2025-01-01T00:00:00+00:00");
   });
 
   test("prefers S6's own data over the metadata", () => {
@@ -195,7 +226,7 @@ describe("pinnedFacts", () => {
       }),
       null,
     );
-    expect(facts?.reason).toBeUndefined();
+    expect(facts?.reason).toBeNull();
     expect(facts?.hasStableRelease).toBeNull();
     expect(facts?.lastStableVersion).toBeNull();
     expect(facts?.snapshotTime).toBeNull();
@@ -206,10 +237,9 @@ describe("pinnedFacts", () => {
   });
 
   test("a pinned verdict with no S6 still has facts, the version the finding's own", () => {
-    expect(pinnedFacts(makeFinding({ verdict: "pinned", version: "dev-x" }), null)).toEqual({
-      version: "dev-x",
-      summary: null,
-    });
+    expect(pinnedFacts(makeFinding({ verdict: "pinned", version: "dev-x" }), null)).toEqual(
+      facts({ version: "dev-x" }),
+    );
   });
 });
 
@@ -217,21 +247,26 @@ describe("pinnedKind", () => {
   test("names the known reasons", () => {
     const snapshot = pinnedFacts(finding(WALLABAG_013, "wallabag/rulerz"), null);
     const untagged = pinnedFacts(finding(EDGES, "acme/untagged"), null);
-    expect(snapshot && pinnedKind(snapshot, null)).toBe("snapshot");
-    expect(untagged && pinnedKind(untagged, null)).toBe("untagged");
+    expect(snapshot && pinnedKind(snapshot)).toBe("snapshot");
+    expect(untagged && pinnedKind(untagged)).toBe("untagged");
   });
 
-  test("an older document is a snapshot unless its lock says the version is not a branch", () => {
-    const facts = { version: "1.0.0", summary: null };
-    expect(pinnedKind(facts, null)).toBe("snapshot");
-    expect(pinnedKind(facts, lock({ branchSnapshot: true }))).toBe("snapshot");
-    expect(pinnedKind(facts, lock({ branchSnapshot: null }))).toBe("snapshot");
-    expect(pinnedKind(facts, lock({ branchSnapshot: false }))).toBe("other");
+  test("without a reason, reads the fields that state the same facts", () => {
+    expect(pinnedKind(facts({ branchSnapshot: true }))).toBe("snapshot");
+    expect(pinnedKind(facts({ branchSnapshot: false, hasStableRelease: false }))).toBe("untagged");
+    expect(pinnedKind(facts({ branchSnapshot: false, hasStableRelease: true }))).toBe("other");
+    expect(pinnedKind(facts({ branchSnapshot: false, hasStableRelease: null }))).toBe("other");
+  });
+
+  test("a fact no field states is not guessed: nothing said about the branch is other", () => {
+    expect(pinnedKind(facts())).toBe("other");
+    expect(pinnedKind(facts({ hasStableRelease: false }))).toBe("other");
   });
 
   test("a reason it does not know is other, whatever the lock says", () => {
-    const facts = { version: "1.0.0", summary: "x", reason: { raw: "yanked", known: false } };
-    expect(pinnedKind(facts, lock({ branchSnapshot: true }))).toBe("other");
+    expect(pinnedKind(facts({ reason: { raw: "yanked", known: false }, branchSnapshot: true }))).toBe(
+      "other",
+    );
   });
 });
 
@@ -324,27 +359,32 @@ describe("the answer's pinned clause", () => {
     expect(text).toBe("Pinned: the installed version was yanked. You require it directly.");
   });
 
-  test("an older document keeps today's words, whatever its metadata says about tags", () => {
-    expect(sentence(WALLABAG_011, "wallabag/rulerz")).toBe(
-      "Pinned to dev-master, a branch snapshot rather than a release. You require it directly.",
-    );
-    expect(sentence(WALLABAG_011, "friendsofsymfony/oauth-server-bundle")).toMatch(
-      /^Pinned to dev-master, a branch snapshot rather than a release\. /,
-    );
-    expect(sentence(MAUTIC_011, "rector/rector")).toMatch(
-      /^Pinned to dev-main, a branch snapshot rather than a release\. /,
-    );
-  });
-
-  test("an older document whose lock says not a branch is not called a snapshot", () => {
-    const f = makeFinding({
-      verdict: "pinned",
-      signals: [makeSignal({ id: "S6", summary: "no stable release", data: { version: "1.0.0" } })],
-    });
+  test("an S6 with no reason, a lock that says not a branch and a repository with no tag is untagged", () => {
     const text = answerText(
       answerParts({
-        finding: f,
-        details: withLock(lock({ branchSnapshot: false })),
+        finding: makeFinding({
+          verdict: "pinned",
+          signals: [makeSignal({ id: "S6", summary: "no stable release", data: { version: "1.0.0" } })],
+        }),
+        details: {
+          ...withLock(lock({ branchSnapshot: false })),
+          metadata: makeMetadata({ hasStableRelease: false }),
+        },
+        metadataReplacement: null,
+        thresholds: THRESHOLDS,
+      }),
+    );
+    expect(text).toBe("Installed 1.0.0, but its repository lists no tag. You require it directly.");
+  });
+
+  test("an S6 that states no case, with nothing else that does, quotes its summary", () => {
+    const text = answerText(
+      answerParts({
+        finding: makeFinding({
+          verdict: "pinned",
+          signals: [makeSignal({ id: "S6", summary: "no stable release", data: { version: "1.0.0" } })],
+        }),
+        details: null,
         metadataReplacement: null,
         thresholds: THRESHOLDS,
       }),
@@ -368,12 +408,7 @@ describe("the answer's pinned clause", () => {
 describe("pinnedReleaseSlot: the key facts' release slot", () => {
   const NONE_SNAPSHOT = { label: "release", words: "none, a snapshot" } as const;
 
-  test("an older document: none, a snapshot, with no commit date of its own (the slot dates it as it always did)", () => {
-    expect(slot(WALLABAG_011, "wallabag/rulerz")).toEqual(NONE_SNAPSHOT);
-    expect(slot(MAUTIC_011, "rector/rector")).toEqual(NONE_SNAPSHOT);
-  });
-
-  test("0.13, never tagged: none, a snapshot, dated by S6's own snapshot time", () => {
+  test("never tagged: none, a snapshot, dated by the commit", () => {
     expect(slot(WALLABAG_013, "wallabag/rulerz")).toEqual({
       ...NONE_SNAPSHOT,
       commit: "2023-12-24T00:53:44+00:00",
@@ -384,7 +419,7 @@ describe("pinnedReleaseSlot: the key facts' release slot", () => {
     });
   });
 
-  test("0.13, a snapshot of a tagged package or of one with no metadata: a Snapshot slot, never a release", () => {
+  test("a snapshot of a tagged package or of one with no metadata: a Snapshot slot, never a release", () => {
     expect(slot(MAUTIC_013, "rector/rector")).toEqual({
       label: "snapshot",
       commit: "2026-08-04T09:29:27+00:00",
@@ -408,19 +443,23 @@ describe("pinnedReleaseSlot: the key facts' release slot", () => {
   });
 
   test("a reason it does not know: a snapshot only when the lock says so, else the slot's usual reading", () => {
-    const facts = { version: "1.0.0", summary: "x", reason: { raw: "yanked", known: false } };
-    expect(pinnedReleaseSlot(facts, lock({ branchSnapshot: true }))).toEqual({
+    const yanked = facts({ reason: { raw: "yanked", known: false } });
+    expect(pinnedReleaseSlot({ ...yanked, branchSnapshot: true })).toEqual({
       label: "snapshot",
       commit: null,
     });
     expect(
-      pinnedReleaseSlot(
-        { ...facts, snapshotTime: "2024-01-01T00:00:00+00:00" },
-        lock({ branchSnapshot: true }),
-      ),
+      pinnedReleaseSlot({ ...yanked, branchSnapshot: true, snapshotTime: "2024-01-01T00:00:00+00:00" }),
     ).toEqual({ label: "snapshot", commit: "2024-01-01T00:00:00+00:00" });
-    expect(pinnedReleaseSlot(facts, lock({ branchSnapshot: false }))).toBeNull();
-    expect(pinnedReleaseSlot(facts, null)).toBeNull();
+    expect(pinnedReleaseSlot({ ...yanked, branchSnapshot: false })).toBeNull();
+    expect(pinnedReleaseSlot(yanked)).toBeNull();
+  });
+
+  test("a never-tagged snapshot with no known commit carries a null commit", () => {
+    expect(pinnedReleaseSlot(facts({ branchSnapshot: true, hasStableRelease: false }))).toEqual({
+      ...NONE_SNAPSHOT,
+      commit: null,
+    });
   });
 });
 
@@ -463,27 +502,65 @@ describe("pinnedRunReason and pinnedContextReason", () => {
   });
 });
 
-describe("documents written before 0.13.0 keep today's words", () => {
-  const OLD = readdirSync(FIXTURES_DIR).filter((name) => name.endsWith(".json") && !name.includes("-0.13"));
-
-  test.each(OLD)("%s: every S6 or pinned finding reads as a snapshot, in the words it had", (name) => {
-    const model = load(name);
-    for (const f of model.report.findings) {
-      const d = details(model, f.package);
-      const facts = pinnedFacts(f, d);
-      if (facts === null) continue;
-      expect(facts.reason, f.package).toBeUndefined();
-      expect(pinnedKind(facts, d?.lock ?? null), f.package).toBe("snapshot");
-      expect(pinnedReleaseSlot(facts, d?.lock ?? null), f.package).toEqual({
-        label: "release",
-        words: "none, a snapshot",
-      });
-      if (f.verdict === "pinned") {
-        const version = facts.version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        expect(sentence(model, f.package), f.package).toMatch(
-          new RegExp(`^Pinned to ${version}, a branch snapshot rather than a release\\. `),
-        );
+describe("one reading for every document", () => {
+  test.each([
+    ["wallabag", WALLABAG_011, WALLABAG_013],
+    ["mautic", MAUTIC_011, MAUTIC_013],
+  ] as const)(
+    "%s: the older and the 0.13 document word every pinned package the same",
+    (_name, old, current) => {
+      const pinned = current.report.findings.filter((f) => f.verdict === "pinned");
+      expect(pinned.length).toBeGreaterThan(0);
+      for (const f of pinned) {
+        expect(sentence(old, f.package), f.package).toBe(sentence(current, f.package));
+        expect(slot(old, f.package), f.package).toEqual(slot(current, f.package));
+        const oldFacts = pinnedFacts(finding(old, f.package), details(old, f.package));
+        const newFacts = pinnedFacts(f, details(current, f.package));
+        expect(oldFacts && pinnedKind(oldFacts), f.package).toBe(newFacts && pinnedKind(newFacts));
       }
+    },
+  );
+
+  test("an older snapshot of a never-tagged package gets the words and the commit date a 0.13 one gets", () => {
+    expect(sentence(WALLABAG_011, "wallabag/rulerz")).toBe(
+      "Pinned to dev-master, a branch snapshot of a package with no tagged release. You require it directly.",
+    );
+    expect(slot(WALLABAG_011, "wallabag/rulerz")).toEqual({
+      label: "release",
+      words: "none, a snapshot",
+      commit: "2023-12-24T00:53:44+00:00",
+    });
+  });
+
+  test("an older snapshot whose metadata names a tag gets the Snapshot slot a 0.13 one gets", () => {
+    expect(slot(MAUTIC_011, "rector/rector")).toEqual({
+      label: "snapshot",
+      commit: "2026-08-04T09:29:27+00:00",
+    });
+  });
+
+  test("capsule-0.10-drupal: a snapshot with no repository metadata says nothing about tags", () => {
+    expect(slot(CAPSULE, "drupal/core")).toEqual({ label: "snapshot", commit: null });
+    expect(sentence(CAPSULE, "drupal/core")).toMatch(
+      /^Pinned to dev-main, a branch snapshot rather than a release\. /,
+    );
+  });
+
+  test("an S6 with no reason and no details states no case (koel 0.11, synthetic-no-details)", () => {
+    for (const model of [KOEL_011, NO_DETAILS]) {
+      const read = pinnedFacts(finding(model, "roave/security-advisories"), null);
+      expect(read && pinnedKind(read)).toBe("other");
+      expect(read && pinnedReleaseSlot(read)).toBeNull();
     }
+    const current = pinnedFacts(finding(KOEL_013, "roave/security-advisories"), null);
+    expect(current && pinnedKind(current)).toBe("snapshot");
+  });
+
+  test("snapshotOf gives the release-branches block the commit the slot dates", () => {
+    expect(snapshotOf(finding(MAUTIC_011, "rector/rector"), details(MAUTIC_011, "rector/rector"))).toEqual({
+      time: "2026-08-04T09:29:27+00:00",
+      php: "^7.4|^8.0",
+    });
+    expect(snapshotOf(finding(EDGES, "acme/untagged"), details(EDGES, "acme/untagged"))).toBeNull();
   });
 });

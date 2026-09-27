@@ -523,7 +523,10 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
       const finding = makeFinding({
         package: "acme/pinned-old",
         verdict: "pinned",
-        signals: [makeSignal({ id: "S2", level: "high", data: { years: 9 } })],
+        signals: [
+          makeSignal({ id: "S2", level: "high", data: { years: 9 } }),
+          makeSignal({ id: "S6", data: { reason: "branch_snapshot" } }),
+        ],
       });
       const model = modelWith([finding]);
 
@@ -537,6 +540,17 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
       expect(dot?.className).toContain("age-bar-context");
       expect(dot?.className).not.toContain("tone-crit");
       expect(scale.getAttribute("aria-label")).toContain("flagged for being pinned to a branch snapshot");
+    });
+
+    it("says only 'flagged as pinned' for a pinned row whose case no field states", () => {
+      const finding = makeFinding({
+        package: "acme/pinned-unknown",
+        verdict: "pinned",
+        signals: [makeSignal({ id: "S2", level: "high", data: { years: 9 } })],
+      });
+      renderIn(modelWith([finding]), stateWith(), <FindingsView />);
+      const row = screen.getByRole("listitem", { name: "acme/pinned-unknown" });
+      expect(within(row).getByRole("img").getAttribute("aria-label")).toMatch(/— flagged as pinned$/);
     });
 
     it("names a pinned row's own S6 case as its context reason: a repository with no tag is not a snapshot (PD-S6-1)", () => {

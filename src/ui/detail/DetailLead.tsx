@@ -10,7 +10,7 @@ import {
   type PulledEntry,
 } from "../../domain/answer";
 import { ageText, fixed, yearsAgo } from "../../domain/format";
-import { pinnedFacts, pinnedReleaseSlot, type PinnedSlot } from "../../domain/pinned";
+import { pinnedFacts, pinnedReleaseSlot, snapshotOf, type PinnedSlot } from "../../domain/pinned";
 import { waysIn } from "../../domain/reach";
 import { timelineModel, type TimelineModel } from "../../domain/timeline";
 import { Muted, OutLink, toneClass } from "../common/common";
@@ -104,7 +104,12 @@ const NOT_RECORDED = <Muted>not recorded</Muted>;
 function Facts({ finding, details }: { finding: Finding; details: PackageDetails | null }) {
   const { model, now } = useReport();
   const lock = details?.lock ?? null;
-  const timeline = timelineModel(details?.metadata?.branches ?? [], lock, finding.version, now);
+  const timeline = timelineModel(
+    details?.metadata?.branches ?? [],
+    snapshotOf(finding, details),
+    finding.version,
+    now,
+  );
   const libyears = fixed(finding.libyears, 1);
   const facts: readonly Fact[] = [
     { label: "Installed", value: finding.version, wide: finding.version.length > 16 },
@@ -136,14 +141,8 @@ function Facts({ finding, details }: { finding: Finding; details: PackageDetails
     </div>
   );
 
-  /** The age the Findings row draws for this package (`age.ts#ageFact`, S8 > S2 > S4) — the same age
-   *  the answer sentence quotes — in its zone's tone unless the verdict does not rest on age. The
-   *  slot keeps one short label, "Last release", in every case a release is what it dates, so a
-   *  reader comparing packages scans one column; whose release it is (your branch's, or a newer
-   *  branch's) goes in the note under the value. Only a push age and a 0.13 snapshot's commit, which
-   *  are not releases at all, are labelled for what they are. With no such signal it falls back to
-   *  the installed release's own date (the explain metadata's, then the lock's), and failing that
-   *  says why: lockrot could not read it, or the document has none. */
+  /** "Last release" whenever the slot dates a release, so packages compare in one column; a push
+   *  and a snapshot's commit are not releases, so they get their own labels. */
   function ageFactCell(f: Finding, released: string | null, datedBy: string | null): Fact {
     const fact = ageFact(f, model.report.run.thresholds);
     if (fact !== null) {
@@ -157,17 +156,12 @@ function Facts({ finding, details }: { finding: Finding; details: PackageDetails
       if (fact.kind === "branch") return { label: LAST_RELEASE, value, note: onYourBranch(timeline) };
       return { label: LAST_RELEASE, value, note: newerThanYours(timeline) ?? undefined };
     }
-    // A snapshot's lock date is when a branch was checked out, not a release (the release-branches
-    // answer draws the same distinction), so the slot never gives that date as a release's
-    // (`domain/pinned.ts#pinnedReleaseSlot`).
     const pinned = pinnedFacts(f, details);
-    const slot = pinned === null ? null : pinnedReleaseSlot(pinned, lock);
-    const dated = released ? ageText(released, now) : null;
-    if (slot !== null) return pinnedCell(slot, dated);
+    const slot = pinned === null ? null : pinnedReleaseSlot(pinned);
+    if (slot !== null) return pinnedCell(slot);
 
-    // The installed version's own date is not the package's last release (a newer one may exist that
-    // this document did not read), so it keeps its own label and says whose it is.
-    // A split package's installed version is dated by the monorepo's tag of it; the note says whose.
+    // The installed version's date is not the package's last release: a newer one may exist.
+    const dated = released ? ageText(released, now) : null;
     if (dated !== null) {
       const note =
         datedBy !== null ? (
@@ -182,29 +176,17 @@ function Facts({ finding, details }: { finding: Finding; details: PackageDetails
     return { label: LAST_RELEASE, value: ageNotRead(f) ? <Muted>not read</Muted> : NOT_RECORDED };
   }
 
-  /**
-   * An S6 or pinned package's slot. "Last release" says there is none: on a document written before
-   * 0.13.0 dated as it always was (`dated`, the installed version's date); on a 0.13 one by the
-   * commit the branch pointed at, said to be one, or not at all when there is none (a version that
-   * is not a branch). A snapshot of a package that lists a tag, or of one lockrot loaded no metadata
-   * for, is labelled "Snapshot" and dates that commit, so its date never reads as a last release
-   * beside the package's real one.
-   */
-  function pinnedCell(slot: PinnedSlot, dated: string | null): Fact {
-    const commit = slot.commit === undefined || slot.commit === null ? null : ageText(slot.commit, now);
+  function pinnedCell(slot: PinnedSlot): Fact {
+    const commit = slot.commit === null ? null : ageText(slot.commit, now);
     const commitAge = commit !== null && commit !== "undated" ? commit : null;
     if (slot.label === "snapshot") {
       return { label: "Snapshot", value: commitAge ?? NOT_RECORDED, note: "a branch commit, not a release" };
     }
-    const value = <Muted>{slot.words}</Muted>;
-    if (slot.commit === undefined) {
-      return {
-        label: LAST_RELEASE,
-        value,
-        note: dated !== null && dated !== "undated" ? `dated ${dated}` : undefined,
-      };
-    }
-    return { label: LAST_RELEASE, value, note: commitAge !== null ? `commit dated ${commitAge}` : undefined };
+    return {
+      label: LAST_RELEASE,
+      value: <Muted>{slot.words}</Muted>,
+      note: commitAge !== null ? `commit dated ${commitAge}` : undefined,
+    };
   }
 }
 

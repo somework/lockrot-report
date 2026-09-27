@@ -19,7 +19,7 @@ import {
   type AgeLegend,
   type Thresholds,
 } from "./age";
-import { pinnedFacts, pinnedKind } from "./pinned";
+import { pinnedKind, readPinnedFacts } from "./pinned";
 import { WAYS_NAMED, waysIn } from "./reach";
 import { hasNoFixExpected } from "./sniff";
 import { VERDICT_ORDER, type Tone } from "./vocab";
@@ -40,8 +40,6 @@ export interface AnswerInput {
   /** Packagist's own free-text replacement (`metadata.replacement`), when the explain data has one. */
   readonly metadataReplacement: string | null;
   readonly thresholds: Thresholds;
-  /** The package's explain data, when the document has it: a pinned package's clause reads its lock
-   *  and metadata through `domain/pinned.ts`. Without it the clause reads S6 alone. */
   readonly details?: PackageDetails | null;
 }
 
@@ -151,19 +149,13 @@ function verdictClause(
 }
 
 /**
- * Pinned, in S6's own case (`domain/pinned.ts`): a branch snapshot — of a package with no tagged
- * release, or with nothing said about tags otherwise (on a document written before 0.13.0 too);
- * a version in a repository that lists no tag; or, for a case this renderer has no words for, S6's
- * own summary as written. The newest dated tag is not named here: the metadata line's "last stable"
- * is its one place in the panel (plan B2), and its date may be a monorepo parent's
- * (`last_stable_dated_by`).
+ * Pinned, in S6's own case (`domain/pinned.ts`). The newest dated tag is not named: the metadata
+ * line's "last stable" is its one place in the panel, and a monorepo parent may date it.
  */
 function pinnedClause(finding: Finding, details: PackageDetails | null): AnswerPart[] {
-  // A pinned finding always has facts (`pinnedFacts` is null only for one that is neither pinned
-  // nor carries S6); the fallback is the version alone, which words as a snapshot, today's reading.
-  const facts = pinnedFacts(finding, details) ?? { version: finding.version, summary: null };
+  const facts = readPinnedFacts(finding, details);
   const lead = [text("Pinned to "), name(facts.version)];
-  switch (pinnedKind(facts, details?.lock ?? null)) {
+  switch (pinnedKind(facts)) {
     case "untagged":
       return [text("Installed "), name(facts.version), text(", but its repository lists no tag.")];
     case "other": {
@@ -171,12 +163,10 @@ function pinnedClause(finding: Finding, details: PackageDetails | null): AnswerP
       return summary === "" ? [...lead, text(".")] : [text(`Pinned: ${summary}.`)];
     }
     case "snapshot":
-      break;
+      return facts.hasStableRelease === false
+        ? [...lead, text(", a branch snapshot of a package with no tagged release.")]
+        : [...lead, text(", a branch snapshot rather than a release.")];
   }
-  if (facts.reason !== undefined && facts.hasStableRelease === false) {
-    return [...lead, text(", a branch snapshot of a package with no tagged release.")];
-  }
-  return [...lead, text(", a branch snapshot rather than a release.")];
 }
 
 /** Abandoned: S1 (the repository's own flag) and S3 (archived), then how long it has been quiet —

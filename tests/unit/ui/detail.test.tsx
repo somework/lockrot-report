@@ -217,16 +217,16 @@ const EXTRA = normalize({
     ],
   },
   details: {
-    // PD-TIMELINE-5 (DESIGN.md §5): one branch name that is not a version ("master") sends the whole
-    // list to date order; the EXTRA run records no thresholds, so no age takes a zone's tone.
+    // A branch name that is not a version keeps lockrot's order; the EXTRA run records no
+    // thresholds, so no age takes a zone's tone.
     "vendor/edge-timeline": {
       metadata: {
         branches: [
           {
-            branch: "1.x",
-            installed: true,
-            highest: "v1.0.0",
-            highest_released: "2020-12-31T00:00:00.000Z",
+            branch: "master",
+            installed: false,
+            highest: "v2.0.0",
+            highest_released: "2021-12-31T00:00:00.000Z",
             highest_commit_date: null,
             newest_dated: null,
             newest_dated_released: null,
@@ -234,10 +234,10 @@ const EXTRA = normalize({
             php: null,
           },
           {
-            branch: "master",
-            installed: false,
-            highest: "v2.0.0",
-            highest_released: "2021-12-31T00:00:00.000Z",
+            branch: "1.x",
+            installed: true,
+            highest: "v1.0.0",
+            highest_released: "2020-12-31T00:00:00.000Z",
             highest_commit_date: null,
             newest_dated: null,
             newest_dated_released: null,
@@ -805,11 +805,21 @@ describe("Detail", () => {
       expect(branch?.[2]).toMatch(/^on your \S+$/);
     });
 
-    it("says a snapshot has no release in the same slot, under the same label", () => {
-      const { container } = renderDetail(MAUTIC, "mautic/core-lib");
-      const row = factRows(container)[1];
-      expect(row?.slice(0, 2)).toEqual(["Last release", "none, a snapshot"]);
-      if (row?.[2] !== undefined) expect(row[2]).toMatch(/^dated \d/);
+    it("words a snapshot's slot the same on the older and the 0.13 document", () => {
+      for (const [model, pkg] of [
+        [MAUTIC, "mautic/core-lib"],
+        [MAUTIC_013, "mautic/core-lib"],
+        [WALLABAG, "wallabag/rulerz"],
+        [WALLABAG_013, "wallabag/rulerz"],
+      ] as const) {
+        const rows = factRows(renderDetail(model, pkg).container);
+        cleanup();
+        expect(rows[1], pkg).toEqual(
+          pkg === "mautic/core-lib"
+            ? ["Snapshot", "not recorded", "a branch commit, not a release"]
+            : ["Last release", "none, a snapshot", "commit dated 2.8 y ago"],
+        );
+      }
     });
 
     it("words a 0.13 S6 by its own case: never tagged, tagged, no metadata, and no tag at all (PD-S6-1)", () => {
@@ -1304,11 +1314,10 @@ describe("Detail", () => {
       expect(container.textContent).toContain("your version, dated by laravel/framework");
     });
 
-    it("falls back to date order, and to no tone or guides, when the names or the thresholds are missing", () => {
-      // vendor/edge-timeline: a "master" branch next to "1.x", and a run with no thresholds.
+    it("keeps lockrot's order, and draws no tone or guides, when the thresholds are missing", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/edge-timeline");
       expect(rowHeaders(container)).toEqual(["master, the newest", "1.x, yours"]);
-      expect(screen.getByRole("table", { name: "Release branches, most recent release first" })).toBeTruthy();
+      expect(screen.getByRole("table", { name: "Release branches, highest first" })).toBeTruthy();
       expect(container.querySelector(".detail-timeline-age")?.classList.contains("is-toned")).toBe(false);
       expect(container.querySelector(".detail-timeline-guide")).toBeNull();
       expect(container.querySelector(".detail-timeline-key")?.textContent).not.toContain("years ago");

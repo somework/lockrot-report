@@ -14,13 +14,10 @@ const LEAD: Readonly<Record<AgeKind, string>> = {
   push: "last push",
 };
 
-/** The reason named after "age shown for context" (PD-ROWS-3, DESIGN.md §5), for the two verdicts
- *  `AgeScale.contextOnly` can be true for — a pinned one in its own S6 case (`domain/pinned.ts`). A
- *  verdict this renderer does not expect `contextOnly` for still gets a true sentence instead of a
- *  blank. */
+/** The reason named after "age shown for context" (PD-ROWS-3, DESIGN.md §5). */
 function contextReason(verdict: Verdict, pinned: PinnedKind | null): string {
   if (verdict === "abandoned") return "flagged for being marked abandoned";
-  if (verdict === "pinned") return pinnedContextReason(pinned ?? "snapshot");
+  if (verdict === "pinned") return pinnedContextReason(pinned ?? "other");
   return "flagged for a reason other than age";
 }
 
@@ -59,7 +56,6 @@ export function AgeCell({
 }: {
   scale: AgeScaleData;
   verdict: Verdict;
-  /** A pinned row's S6 case, which its context reason names; `null` reads as a snapshot. */
   pinned?: PinnedKind | null;
 }) {
   const years = scale.years.toFixed(1);

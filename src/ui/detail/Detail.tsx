@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact";
 import type { ExplainActivity, Finding, PackageDetails } from "../../model/types";
 import { isContextOnly } from "../../domain/age";
+import { snapshotOf } from "../../domain/pinned";
 import { provenance, quietUnread, type ActivitySource, type MetadataSource } from "../../domain/provenance";
 import { agePhrase, day } from "../../domain/format";
 import { safeHref } from "../../domain/links";
@@ -70,16 +71,11 @@ export function Detail({ onClose }: DetailProps) {
         <Timeline
           key={finding.package}
           metadata={details?.metadata ?? null}
-          lock={details?.lock ?? null}
+          snapshot={snapshotOf(finding, details)}
           installedVersion={finding.version}
           ageToned={!isContextOnly(finding)}
         />
-        {/* a11y review: a bare <summary> dropped the section's own heading, so a screen-reader
-            reader moving by heading found none of these. A <summary> accepts one heading as
-            content, so the text moves into an <h3> — the layout (the flex row, the chevron) stays
-            on the <summary> itself, restyled to the same look in detail.css's
-            `.detail-reference-summary h3`. "How it is reached" used to be a third one; its chain
-            now opens the panel, in `DetailLead` (PD-DETAIL-6). */}
+        {/* The heading sits inside <summary> so a reader moving by heading still finds it. */}
         <details className="detail-section detail-reference">
           <summary className="detail-reference-summary">
             <h3>The lock entry</h3>

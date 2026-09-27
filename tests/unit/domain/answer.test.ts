@@ -137,7 +137,10 @@ describe("answerParts", () => {
   it("says a pinned package's snapshot and an old promise's constraint", () => {
     expect(
       answerText(
-        answer({ verdict: "pinned", signals: [makeSignal({ id: "S6", data: { version: "dev-master" } })] }),
+        answer({
+          verdict: "pinned",
+          signals: [makeSignal({ id: "S6", data: { version: "dev-master", reason: "branch_snapshot" } })],
+        }),
       ),
     ).toBe("Pinned to dev-master, a branch snapshot rather than a release. You require it directly.");
     expect(
