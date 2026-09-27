@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import {
   libyearsAtZero,
@@ -9,20 +11,25 @@ import {
   libyearsRowPhrases,
   libyearsSortKey,
 } from "../../../src/domain/libyears";
-import type { ExplainMetadata, Finding, LibyearsBlock } from "../../../src/model/types";
+import { normalize } from "../../../src/model/normalize";
+import type {
+  ExplainMetadata,
+  Finding,
+  LibyearsBlock,
+  Model,
+  PackageDetails,
+} from "../../../src/model/types";
+import { makeFinding, makeSignal } from "./fixtures";
 
-// Cases citing a line number are ported from tests/js/lib.test.js, adapted from the wire document's
-// snake_case shapes to Model's (e.g. `direct_requirements` -> `directRequirements`, and
-// `unmeasured` from a `{reason: count}` object to a `[reason, count][]` list). `libyearsSummary` is
-// not ported: DESIGN.md/critic.md D2 record it as dead code the legacy page never called, and
-// libyears.ts does not export it (see that file's header comment).
-//
-// A few legacy cases fed a value of the wrong runtime type into a function whose Model-typed
-// parameter no longer admits it at compile time (e.g. `libyears: "0"` where the type is
-// `number | null`). Model.normalize() is responsible for guaranteeing that shape before anything in
-// domain/ sees it, so those inputs cannot arise from a real document — but the underlying JS
-// functions are still defensive against them at runtime, so such cases are kept below with an
-// explicit cast, marked "(runtime-only)".
+// "(runtime-only)" cases feed a wrong runtime type through a cast: normalize() rules them out.
+
+function loadBundle(name: string): Model {
+  const result = normalize(
+    JSON.parse(readFileSync(join(process.cwd(), "fixtures", "bundles", `${name}.json`), "utf8")),
+  );
+  if (!result.ok) throw new Error(`${name} failed to normalize`);
+  return result.model;
+}
 
 describe("libyearsSortKey", () => {
   test("puts an unmeasured package below every measured one, zero included (lib.test.js:233-237)", () => {
@@ -37,70 +44,68 @@ describe("libyearsSortKey", () => {
 });
 
 describe("libyearsReason", () => {
-  test("names why a finding was not measured, in the block's own words (lib.test.js:240-248)", () => {
-    expect(libyearsReason({ libyears: 4.7, version: "dev-main", note: null })).toBe("");
-    expect(libyearsReason({ libyears: 0, version: "1.0.0", note: null })).toBe("");
-    expect(
-      libyearsReason({
-        libyears: null,
-        version: "dev-main",
-        note: "not from a Composer repository, not checked",
-      }),
-    ).toBe("not from a Composer repository");
-    expect(
-      libyearsReason({ libyears: null, version: "1.0.0", note: "Repository metadata unavailable: timeout" }),
-    ).toBe("metadata unavailable");
-    expect(libyearsReason({ libyears: null, version: "dev-main", note: null })).toBe("branch snapshot");
-    expect(libyearsReason({ libyears: null, version: "2.x-dev#abc123", note: null })).toBe("branch snapshot");
-    expect(libyearsReason({ libyears: null, version: "v1.37.0", note: null })).toBe(
-      "no release date lockrot trusts",
-    );
-    expect(libyearsReason(null)).toBe("");
+  const snapshotLock = (branchSnapshot: boolean | null): PackageDetails => ({
+    metadata: null,
+    lock: {
+      php: null,
+      released: null,
+      repository: null,
+      fromComposerRepository: true,
+      dev: false,
+      branchSnapshot,
+      type: null,
+    },
+    activity: null,
+    repositoryLink: null,
+  });
+  const unmeasured = (overrides: Partial<Finding> = {}): Finding =>
+    makeFinding({ verdict: "stale", libyears: null, ...overrides });
+
+  test("is empty for a measured finding, zero included", () => {
+    expect(libyearsReason(makeFinding({ libyears: 4.7 }), null)).toBe("");
+    expect(libyearsReason(makeFinding({ libyears: 0 }), null)).toBe("");
+    expect(libyearsReason(null, null)).toBe("");
   });
 
-  test("never turns a missing number into a zero (lib.test.js:260-265)", () => {
-    // zero stays measured
-    expect(libyearsReason({ libyears: 0, version: "1.0.0", note: null })).toBe("");
-  });
-
-  test("(runtime-only) a non-numeric libyears reads as 'not a number in this document' (lib.test.js:263)", () => {
-    const finding = { libyears: "4.7", version: "1.0.0", note: null } as unknown as Pick<
-      Finding,
-      "libyears" | "version" | "note"
-    >;
-    expect(libyearsReason(finding)).toBe("not a number in this document");
-  });
-
-  test("an empty (falsy) note falls through to the version-based fallback, not to 'metadata unavailable'", () => {
-    expect(libyearsReason({ libyears: null, version: "1.0.0", note: "" })).toBe(
-      "no release date lockrot trusts",
+  test("names the note's reason first", () => {
+    const note = "not from a Composer repository, not checked";
+    expect(libyearsReason(unmeasured({ note }), snapshotLock(true))).toBe("not from a Composer repository");
+    expect(libyearsReason(unmeasured({ note: "Repository metadata unavailable: timeout" }), null)).toBe(
+      "metadata unavailable",
     );
   });
 
-  test("an empty-string version with no note also falls to the version-based fallback", () => {
-    expect(libyearsReason({ libyears: null, version: "", note: null })).toBe(
+  test("reads a branch snapshot from the lock, never from the version string", () => {
+    expect(libyearsReason(unmeasured({ version: "v1.37.0" }), snapshotLock(true))).toBe("branch snapshot");
+    expect(libyearsReason(unmeasured({ version: "dev-main" }), snapshotLock(false))).toBe(
       "no release date lockrot trusts",
     );
   });
 
-  test("a -dev suffix combined with a #ref suffix still reads as a branch snapshot", () => {
-    expect(libyearsReason({ libyears: null, version: "1.0-dev#abc123", note: null })).toBe("branch snapshot");
+  test("reads it from S6's reason first", () => {
+    const s6 = (reason: string): Finding =>
+      unmeasured({ signals: [makeSignal({ id: "S6", data: { reason } })] });
+    expect(libyearsReason(s6("branch_snapshot"), null)).toBe("branch snapshot");
+    expect(libyearsReason(s6("no_stable_release"), snapshotLock(true))).toBe(
+      "no release date lockrot trusts",
+    );
   });
 
-  test("cuts the #-fragment in linear time even for a hostile, hand-crafted version string", () => {
-    // A version of N "#" characters followed by a newline makes a backtracking `/#.*$/` (no
-    // `m`/`s` flag, so `.` stops at the newline and `$` fails there) retry from every "#" —
-    // quadratic in N. 100k characters takes seconds under that regex; a linear cut is instant.
-    const hostile = "#".repeat(100_000) + "\n";
-    const start = performance.now();
-    const reason = libyearsReason({ libyears: null, version: hostile, note: null });
-    const elapsed = performance.now() - start;
+  test("says no reason when no field states one", () => {
+    expect(libyearsReason(unmeasured({ version: "dev-main" }), null)).toBe("");
+    expect(libyearsReason(unmeasured({ version: "dev-main" }), snapshotLock(null))).toBe("");
+  });
 
-    expect(elapsed).toBeLessThan(1000);
-    // Everything from the first "#" onward is cut, same as the regex's intent: an empty version
-    // string is neither a dev branch nor a stable one, so it falls to the "no release date" reason.
-    expect(reason).toBe("no release date lockrot trusts");
-  }, 10_000);
+  test.each([
+    ["wallabag_wallabag", "friendsofsymfony/oauth-server-bundle"],
+    ["wallabag_wallabag-0.13", "friendsofsymfony/oauth-server-bundle"],
+    ["mautic_mautic", "rector/rector"],
+    ["mautic_mautic-0.13", "rector/rector"],
+  ])("%s %s: a snapshot, the same on either document", (bundle, pkg) => {
+    const model = loadBundle(bundle);
+    const f = model.report.findings.find((x) => x.package === pkg) ?? null;
+    expect(libyearsReason(f, model.details.get(pkg) ?? null)).toBe("branch snapshot");
+  });
 });
 
 describe("libyearsAtZeroMark", () => {

@@ -120,7 +120,10 @@ function lockRows(finding: Finding, details: PackageDetails | null, now: Date): 
       label: "released",
       value: lock?.released ? dated(lock.released, now) : null,
     },
-    { label: "libyears behind", value: <LibyearsRow finding={finding} metadata={metadata} /> },
+    {
+      label: "libyears behind",
+      value: <LibyearsRow finding={finding} details={details} metadata={metadata} />,
+    },
     { label: "repository", value: repository },
     { label: "type", value: lock?.type || metadata?.type || null },
   ]);

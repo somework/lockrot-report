@@ -50,7 +50,12 @@ describe("PackagesView (PD-PACKAGES-1): libyears as a scale, its marks keyed onc
   const model = makeModel([
     makeFinding({ package: "a/behind", libyears: 2.5 }),
     makeFinding({ package: "b/newest", libyears: 0 }),
-    makeFinding({ package: "c/unmeasured", libyears: null, version: "dev-main" }),
+    makeFinding({
+      package: "c/unmeasured",
+      libyears: null,
+      version: "dev-main",
+      signals: [makeSignal({ id: "S6", data: { reason: "branch_snapshot" } })],
+    }),
   ]);
 
   it("answers how many listed packages are behind, not behind, and unmeasured", () => {
@@ -105,6 +110,13 @@ describe("PackagesView (PD-PACKAGES-1): libyears as a scale, its marks keyed onc
     const none = screen.getByRole("row", { name: "c/unmeasured" }).querySelector(".pk-ly");
     expect(none?.querySelector("[aria-hidden]")?.textContent).toBe("?");
     expect(none?.querySelector(".vh")?.textContent).toBe("not measured: branch snapshot");
+  });
+
+  it("names no reason for an unmeasured value when no field states one", () => {
+    const unknown = makeModel([makeFinding({ package: "d/unknown", libyears: null, version: "dev-main" })]);
+    renderIn(unknown, packages(), <PackagesView />);
+    const cell = screen.getByRole("row", { name: "d/unknown" }).querySelector(".pk-ly");
+    expect(cell?.querySelector(".vh")?.textContent).toBe("not measured");
   });
 
   it("draws a value above zero as a bar on the population's scale, captioned in the head", () => {

@@ -75,7 +75,8 @@ function LibyearsCell({ finding, max }: { finding: Finding; max: number | null }
   const value = fixed(finding.libyears, 1);
   const metadata = model.details.get(finding.package)?.metadata ?? null;
   if (value === null) {
-    const why = `not measured: ${libyearsReason(finding)}`;
+    const reason = libyearsReason(finding, model.details.get(finding.package) ?? null);
+    const why = reason === "" ? "not measured" : `not measured: ${reason}`;
     return (
       <span className="ly-mark" title={why}>
         <span aria-hidden="true">{printed ? "—" : "?"}</span>
@@ -115,12 +116,9 @@ function LibyearsCell({ finding, max }: { finding: Finding; max: number | null }
   );
 }
 
-/**
- * The Signals cell on paper: the ids that fired, in the document's order, "—" for none. One this page
- * does not know is set in code, as written; a row of known ids alone is the plain text it always was.
- */
+/** The Signals cell on paper: the fired ids in document order, one this page does not know in code. */
 function PrintedIds({ ids }: { ids: readonly string[] }) {
-  if (ids.every(isKnownSignalId)) return <>{ids.join(" ") || "—"}</>;
+  if (ids.length === 0) return <>—</>;
   return (
     <>
       {ids.map((id, index) => (
