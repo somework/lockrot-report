@@ -432,21 +432,19 @@ describe("S10's open vocabularies (0.13): a reason or a check id this page does 
     expect(strip.counts.blocked).toBe(1);
   });
 
-  it("says a reason once however many checks share it, and keeps one whose entry names no readable list", () => {
+  it("says a reason once however many checks share it, and ties none to an entry that names no check", () => {
     const strip = checkStrip(
       withS10({
         unchecked: [
           { check: "repository_activity", reason: "rate_limit", blocks: ["S3"] },
           { check: "repository_activity", reason: "rate_limit", blocks: ["S4"] },
           { check: "sbom_lookup", reason: "quota_exhausted" },
+          { check: "sbom_lookup", reason: "offline", blocks: "S3" },
         ],
         blocks: ["S3", "S4"],
       }),
     );
-    expect(strip.blockedReasons).toEqual([
-      { raw: "rate_limit", known: true },
-      { raw: "quota_exhausted", known: false },
-    ]);
+    expect(strip.blockedReasons).toEqual([{ raw: "rate_limit", known: true }]);
   });
 
   it("gives no reason, and lists no id, when nothing S10 names stayed unfired", () => {

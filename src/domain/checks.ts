@@ -41,23 +41,20 @@ export interface CheckStrip {
   readonly counts: Readonly<Record<CheckState, number>>;
   /** Fired ids beyond S1–S10, in `fired`'s order: a newer lockrot's check, or one from outside it. */
   readonly unknown: readonly string[];
-  /** Ids S10 names as could-not-run that are not one of the ten cells and did not fire, in S10's
-   *  order, as written: the could-not-run line names them after the blocked cells. */
+  /** Ids S10 names as could-not-run that have no cell and did not fire, as written. */
   readonly blockedUnknown: readonly string[];
-  /** Why the checks that could not run did not, from S10's `data.unchecked[].reason` — each check's
-   *  own reason only when it names one of them (a reason for some other id is not theirs), in S10's
-   *  order, each once. Empty when nothing could not run, or S10 gives no reason. */
+  /** S10's `unchecked[].reason` of each entry whose own `blocks` names a check that could not run,
+   *  in S10's order, each once. */
   readonly blockedReasons: readonly S10Reason[];
 }
 
 /** One of S10's `data.unchecked[].reason` values, as written. */
 export interface S10Reason {
   readonly raw: string;
-  /** Whether it is one lockrot (0.11 to 0.13) documents; any other is a newer lockrot's. */
   readonly known: boolean;
 }
 
-/** The reasons the report schema lists for S10 (`x-known-values`, unchanged from 0.11.0 to 0.13.0). */
+/** S10's `x-known-values` in the report schema. */
 const S10_REASONS: ReadonlySet<string> = new Set([
   "no_token",
   "anonymous_budget",
@@ -68,8 +65,8 @@ const S10_REASONS: ReadonlySet<string> = new Set([
   "undated_releases",
 ]);
 
-/** A reason in words: a known one with its underscores as spaces ("undated releases"), one this page
- *  does not know exactly as written (the caller sets it in code), never read as a known one. */
+/** A known reason with its underscores as spaces; an unknown one as written, for the caller to set
+ *  in code. */
 export function s10ReasonWords(reason: S10Reason): string {
   return reason.known ? reason.raw.replace(/_/g, " ") : reason.raw;
 }
@@ -101,17 +98,11 @@ export function blockedByS10(s10: Signal): readonly string[] | null {
   return [...new Set(nested.flatMap((ids) => ids ?? []))];
 }
 
-/**
- * The reasons of S10's checks that stopped one of `stopped`. An entry that carries no readable list of
- * its own counts for all of them, as it did before S10 named one per check.
- */
+/** The reasons of S10's entries whose own `blocks` names one of `stopped`. */
 function blockedReasons(s10: Signal | undefined, stopped: ReadonlySet<string>): readonly S10Reason[] {
   if (s10 === undefined || stopped.size === 0) return [];
   const raws = records(s10.data.unchecked)
-    .filter((entry) => {
-      const ids = strings(entry.blocks);
-      return ids === null || ids.some((id) => stopped.has(id));
-    })
+    .filter((entry) => strings(entry.blocks)?.some((id) => stopped.has(id)) === true)
     .map((entry) => entry.reason)
     .filter((reason): reason is string => typeof reason === "string" && reason !== "");
   return [...new Set(raws)].map((raw) => ({ raw, known: S10_REASONS.has(raw) }));
