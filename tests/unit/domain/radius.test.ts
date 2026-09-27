@@ -112,6 +112,10 @@ describe("radiusRows", () => {
     "mautic_mautic-0.13",
     "koel_koel-0.13",
     "koel_koel-all-0.13",
+    // lockrot 0.13.0 documents with an `unattributed` entry: league/config (fan_in 9) and
+    // acme/shared-util (fan_in 9) are counted under no requirement, so no row counts them either.
+    "gh_akaunting_akaunting-0.13",
+    "mini-0.13-edges",
   ])("on %s, listed + reached elsewhere is lockrot's own exposure count for every requirement", (corpus) => {
     const model = load(corpus);
 
@@ -123,23 +127,102 @@ describe("radiusRows", () => {
     );
   });
 
-  // Known RED until radius.ts takes `unattributed` out of the rows (Phase 1 radius step): lockrot
-  // counts league/config (akaunting) and acme/shared-util (mini) under no requirement, while
-  // radiusRows still lists each under its chain's first hop. When that lands, these fail as
-  // `it.fails` and move into the list above.
-  it.fails.each(["gh_akaunting_akaunting-0.13", "mini-0.13-edges"])(
-    "on %s (non-empty unattributed), listed + reached elsewhere is lockrot's own exposure count",
-    (corpus) => {
-      const model = load(corpus);
+  it("on a lock-only 0.13 document (every chain empty, exposure and unattributed empty), has no row", () => {
+    const model = load("mini-0.13-edges-lock-only");
 
-      const rows = radiusRows(model, population(model, "radius"));
+    expect(model.report.unattributed).toEqual([]);
+    expect(radiusRows(model, population(model, "radius"))).toEqual([]);
+  });
+});
 
-      expect(rows.length).toBeGreaterThan(0);
-      expect(rows.map((r) => [r.package, r.count + r.elsewhere.length])).toEqual(
-        rows.map((r) => [r.package, r.exposure]),
-      );
+describe("unattributed packages (lockrot 0.13.0 `unattributed`, `exposure_rule.max_fan_in`)", () => {
+  // acme/shared lies on acme/lib's recorded chain and is reached from acme/bundle too, but lockrot
+  // counts it under no requirement: more than max_fan_in direct requirements reach it.
+  const shared = pulled("acme/shared", ["acme/lib", "acme/mid"], {
+    directDependents: ["acme/lib", "acme/bundle"],
+  });
+  const own = pulled("acme/own", ["acme/lib"]);
+  const exposure = [
+    { package: "acme/lib", flagged: 1 },
+    { package: "acme/bundle", flagged: 0 },
+  ];
+  const before = modelWithExposure(makeModel([own, shared]), exposure);
+  const after: Model = {
+    ...before,
+    report: {
+      ...before.report,
+      exposureRule: { maxFanIn: 1 },
+      unattributed: [{ package: "acme/shared", verdict: "stale", fanIn: 2 }],
     },
-  );
+  };
+
+  it("an older document (no `unattributed` key) still lists it under its chain's first row", () => {
+    const [lib, bundle] = radiusRows(before, [own, shared]);
+
+    expect(lib?.pulled.map((f) => f.package)).toEqual(["acme/own", "acme/shared"]);
+    expect(bundle?.elsewhere.map((e) => e.finding.package)).toEqual(["acme/shared"]);
+    expect(radiusLayout(before, [own, shared]).unattributed).toEqual([]);
+  });
+
+  it("is listed under no row and reached elsewhere by none, so each row adds up to exposure[].flagged", () => {
+    const [lib, bundle] = radiusRows(after, [own, shared]);
+
+    expect(lib?.pulled.map((f) => f.package)).toEqual(["acme/own"]);
+    expect([lib?.count, lib?.unfiltered, lib?.elsewhere]).toEqual([1, 1, []]);
+    expect(bundle?.elsewhere).toEqual([]);
+    expect([lib?.count, bundle?.count]).toEqual([1, 0]);
+  });
+
+  it("stays off the receipt and the unfiltered totals, but keeps its place on the tab (PD-RAIL-1)", () => {
+    const layout = radiusLayout(after, [own, shared]);
+
+    expect(layout.receipt).toEqual([]);
+    expect(layout.throughOther).toEqual([]);
+    expect([layout.unfilteredTotal, layout.unfilteredRows]).toEqual([1, 1]);
+    expect(layout.unattributed).toEqual([shared]);
+    expect([...radiusListed(layout)].sort()).toEqual(["acme/own", "acme/shared"]);
+    expect(new Set(placedOnRadius(after, [own, shared]).map((f) => f.package))).toEqual(radiusListed(layout));
+  });
+
+  it("follows the filter: one the filter hides is not on the layout's list", () => {
+    const layout = radiusLayout(after, [own], [own, shared]);
+
+    expect(layout.unattributed).toEqual([]);
+    expect(layout.narrowed).toBe(true);
+    expect([layout.unfilteredTotal, layout.ranked.map((r) => r.unfiltered)]).toEqual([1, [1]]);
+  });
+
+  it("ignores an entry naming a package the report has no finding for", () => {
+    const stray: Model = {
+      ...after,
+      report: { ...after.report, unattributed: [{ package: "acme/ghost", verdict: "stale", fanIn: 9 }] },
+    };
+
+    expect(radiusLayout(stray, [own, shared]).unattributed).toEqual([]);
+    expect(radiusRows(stray, [own, shared])[0]?.pulled.map((f) => f.package)).toEqual([
+      "acme/own",
+      "acme/shared",
+    ]);
+  });
+
+  it.each([
+    ["gh_akaunting_akaunting-0.13", "league/config"],
+    ["mini-0.13-edges", "acme/shared-util"],
+  ])("on %s, %s is on the layout's unattributed list and nowhere in a row", (corpus, pkg) => {
+    const model = load(corpus);
+    const all = population(model, "radius");
+
+    const layout = radiusLayout(model, all, all);
+
+    expect(layout.unattributed.map((f) => f.package)).toEqual([pkg]);
+    const inRows = [...layout.ranked, ...layout.selfOnly, ...layout.throughOther].flatMap((r) => [
+      ...r.pulled.map((f) => f.package),
+      ...r.elsewhere.map((e) => e.finding.package),
+    ]);
+    expect(inRows).not.toContain(pkg);
+    expect(layout.receipt.map((r) => r.finding.package)).not.toContain(pkg);
+    expect(new Set(placedOnRadius(model, all).map((f) => f.package))).toEqual(radiusListed(layout));
+  });
 });
 
 describe("radiusLayout", () => {

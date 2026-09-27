@@ -1,8 +1,10 @@
 // PD-RAIL-1 (DESIGN.md §5): a rail row's count is the number of packages the list shows once that
 // row is selected — for every row of every group, on every tab that has a rail, over the three real
-// corpora. It catches the whole class the "What the fix costs" bug belonged to (a count taken in one
-// unit, advisories, over a filter applied in another, packages): spomky-labs/otphp's two other-branch
-// advisories read "Moving to another branch 2" over a list of one row.
+// corpora and the two 0.13 documents with an `unattributed` entry (a package counted under no
+// requirement, which Blast radius places without a row). It catches the whole class the "What the
+// fix costs" bug belonged to (a count taken in one unit, advisories, over a filter applied in
+// another, packages): spomky-labs/otphp's two other-branch advisories read "Moving to another
+// branch 2" over a list of one row.
 //
 // "The list" is read off the same functions the views render with (`ui/views/order.ts`, and
 // `radiusLayout` for the Blast radius rows, open or folded), never off `railGroups`' own arithmetic,
@@ -18,7 +20,13 @@ import type { Model, View } from "../../../src/model/types";
 import { EMPTY_FILTERS, INITIAL_STATE, type FilterGroup, type State } from "../../../src/state/types";
 import { renderedPackages } from "../../../src/ui/views/order";
 
-const CORPORA = ["wallabag_wallabag", "koel_koel", "mautic_mautic"] as const;
+const CORPORA = [
+  "wallabag_wallabag",
+  "koel_koel",
+  "mautic_mautic",
+  "gh_akaunting_akaunting-0.13",
+  "mini-0.13-edges",
+] as const;
 const RAIL_VIEWS: readonly View[] = ["findings", "advisories", "packages", "radius"];
 
 function load(name: string): Model {

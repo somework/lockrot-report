@@ -520,7 +520,8 @@ function TailLinks({ layout, go }: { layout: RadiusLayout; go: (key: string, id:
 }
 
 /** Flagged direct requirements with nothing flagged counted under them (lockrot does not count a
- *  package shared by more than eight requirements), which `exposure[]` therefore does not name:
+ *  package shared by more than `exposure_rule.max_fan_in` requirements), which `exposure[]`
+ *  therefore does not name:
  *  said once, at the end, so the tab's count never silently leaves them out. Each name opens that package's full detail, the one a
  *  Findings row opens, so the rail can count them as on this tab (PD-RAIL-1). */
 function Unlisted({ findings }: { findings: readonly Finding[] }) {

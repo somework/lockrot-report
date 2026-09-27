@@ -335,6 +335,12 @@ tag or the address format, says so under **Breaking** in its entry.
   about tags when lockrot loaded no repository metadata; or "Installed 1.0.0, but its repository
   lists no tag", which is not called a snapshot anywhere. A case the page does not know quotes S6's
   summary.
+- Blast radius on a page lockrot 0.13.0 or later writes: a flagged package lockrot counts under no
+  direct requirement, because more of them reach it than `exposure_rule.max_fan_in` allows (its
+  `unattributed` list: akaunting's `league/config`, reached from 9), is no longer listed under a
+  row or counted as reached from one ("+1 more it reaches, listed under no row"), so every row's
+  numbers add up to lockrot's own count for that requirement. The rail on that tab still counts it.
+  An older page is unchanged.
 - Blast radius on a phone: the closing note that names flagged direct requirements with no row
   wraps a long package name (`mnsami/composer-custom-directory-installer`) instead of running the
   page past 320px; each "(verdict)" stays on one line.
