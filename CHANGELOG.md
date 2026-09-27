@@ -326,34 +326,45 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Fixed
 
+- Every report renders by the same rules, whichever lockrot wrote it. The page reads the newest
+  field and falls back only to an older one that states the same fact (S6's `has_stable_release`,
+  else the metadata's; S6's `reason`, else the lock's `branch_snapshot`); a fact no field states is
+  not drawn. Regenerate a report for the fields a newer lockrot adds.
 - S6 no longer borrows S2's words: its name is "branch snapshot or never tagged" (in the rail
   "snapshot or untagged", in the check strip "snapshot/untagged"), and its definition and the
-  `pinned` verdict's say "the repository lists no tag at all" instead of "no stable release", on
-  every page, in the glossary and the hover text alike. On a page lockrot 0.13.0 or later writes, a
-  pinned package is worded by S6's own case: a snapshot of a package with no tagged release; a
-  snapshot with nothing said about tags; or "Installed 1.0.0, but its repository lists no tag",
-  which is not called a snapshot anywhere. A case the page does not know quotes S6's summary.
-- The open package's key facts no longer give a snapshot's commit date as a release on a page
-  lockrot 0.13.0 or later writes. A snapshot of a package that has a tag, or that lockrot read no
-  metadata for, reads "Snapshot" with the commit's age and "a branch commit, not a release" (mautic's
-  rector/rector: 2 months, while its newest tag, in the metadata line, is two weeks old), never
-  "Last release: a snapshot"; one that never tagged anything keeps "Last release: none, a snapshot",
-  now "commit dated …"; a version in a repository with no tag reads "none tagged" with no date, since
-  its lock time is neither a release nor a snapshot. An older page is unchanged.
-- Blast radius on a page lockrot 0.13.0 or later writes: a flagged package lockrot counts under no
-  direct requirement, because more of them reach it than `exposure_rule.max_fan_in` allows (its
-  `unattributed` list: akaunting's `league/config`, reached from 9), is no longer listed under a
-  row or counted as reached from one ("+1 more it reaches, listed under no row"), so every row's
-  numbers add up to lockrot's own count for that requirement. The tab does not show it yet, so the
-  rail on that tab does not count it either; Findings still lists it. An older page is unchanged.
+  `pinned` verdict's say "the repository lists no tag at all" instead of "no stable release", in the
+  glossary and the hover text alike. A pinned package is worded by S6's own case: a snapshot of a
+  package with no tagged release; a snapshot with nothing said about tags; or "Installed 1.0.0, but
+  its repository lists no tag", which is not called a snapshot anywhere. A case no field states
+  quotes S6's summary, and its age reads "flagged as pinned".
+- The open package's key facts no longer give a snapshot's commit date as a release. A snapshot of
+  a package that has a tag, or that lockrot read no metadata for, reads "Snapshot" with the commit's
+  age and "a branch commit, not a release" (mautic's rector/rector: 2 months, while its newest tag,
+  in the metadata line, is two weeks old), never "Last release: a snapshot"; one that never tagged
+  anything reads "Last release: none, a snapshot", "commit dated …"; a version in a repository with
+  no tag reads "none tagged" with no date, since its lock time is neither a release nor a snapshot.
+  The release-branches block dates its snapshot row by the same commit.
+- A package's libyears "not measured" reason says "branch snapshot" only where S6 or the lock says
+  so, never from the look of the version string, and names no reason when no field states one.
+- Release branches keep lockrot's order, highest first, instead of re-sorting the branch names.
+- A lock entry without `from_composer_repository`, or metadata without `has_stable_release`, no
+  longer reads as a Composer origin or as "no tagged release": nothing is said.
+- Run data names `exposure_rule`, `unattributed`, `run.root_package` and `run.project_php` among
+  the fields a report leaves out, like any other key the page reads.
+- Blast radius: a flagged package lockrot counts under no direct requirement, because more of them
+  reach it than `exposure_rule.max_fan_in` allows (its `unattributed` list: akaunting's
+  `league/config`, reached from 9), is no longer listed under a row or counted as reached from one
+  ("+1 more it reaches, listed under no row"), so every row's numbers add up to lockrot's own count
+  for that requirement. The tab does not show it yet, so the rail on that tab does not count it
+  either; Findings still lists it.
 - A signal id, S10 reason or check the page does not know (a later lockrot's `S99`, a check from
   outside lockrot such as `acme:licence`, `quota_exhausted`) is shown as written, in code, and never
   in a known one's words: the open package's tally says "also acme:licence, S99, checks this page
   does not know"; such a check's row, its id no longer drawn over its summary, says "A lockrot
   check this page does not know" and links to lockrot's docs only for lockrot's own ids; the
   glossary lists each after S10; the rail's hover and All packages (on screen and on paper) name it
-  the same way. "Could not run" now gives a check only the S10 reasons of the checks that name it,
-  and lists an unknown id S10 stopped. A rail filter a link names as `toString` or `constructor`
+  the same way. "Could not run" now gives a check only the S10 reasons of the entries whose own
+  `blocks` name it, and lists an unknown id S10 stopped. A rail filter a link names as `toString` or `constructor`
   reads as that id, not as page code.
 - Blast radius on a phone: the closing note that names flagged direct requirements with no row
   wraps a long package name (`mnsami/composer-custom-directory-installer`) instead of running the
