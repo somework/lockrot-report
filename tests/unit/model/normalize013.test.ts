@@ -1,10 +1,7 @@
 /**
- * The fields lockrot 0.13.0 added (branch-row PHP admission, `exposure_rule`, `unattributed`,
- * `run.root_package`, `run.project_php`) and the raw presence of `lock.branch_snapshot`.
- *
- * Each new field has four states the model must keep apart: true (or a value), false, null (the
- * document's own "no answer") and absent (a document written before 0.13.0). Absent is an absent
- * model property, never `null` and never `false`, so an older page draws nothing new.
+ * Branch-row PHP admission, `exposure_rule`, `unattributed`, `run.root_package`, `run.project_php`
+ * and `lock.branch_snapshot`. A key left out reads as no answer, the same as `null`: `null`, `[]`,
+ * never `false`. `report.absent` says which report keys were left out.
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -84,27 +81,20 @@ function withReport(extra: Record<string, unknown>, details: unknown = {}): Mode
 // Branch rows
 // -------------------------------------------------------------------------------------------
 
-describe("branch rows: admits_*, php_blocked_by, misses_* (0.13.0)", () => {
-  test("every wallabag_wallabag (0.11) row leaves all five properties out", () => {
+describe("branch rows: admits_*, php_blocked_by, misses_*", () => {
+  test("a row without the keys answers none of them: every wallabag_wallabag row reads null", () => {
     const rows = allRows(load("wallabag_wallabag.json"));
 
     expect(rows.length).toBeGreaterThan(0);
     for (const row of rows) {
-      expect(row.admitsTargetPhp).toBeUndefined();
       for (const key of ROW_KEYS) {
-        expect(key in row).toBe(false);
+        expect(row[key]).toBeNull();
       }
     }
   });
 
-  test("every wallabag_wallabag-0.13 row carries all five, with the census counts", () => {
+  test("wallabag_wallabag-0.13's rows, with the census counts", () => {
     const rows = allRows(load("wallabag_wallabag-0.13.json"));
-
-    for (const row of rows) {
-      for (const key of ROW_KEYS) {
-        expect(key in row).toBe(true);
-      }
-    }
     const count = (pick: (row: BranchRow) => unknown, value: unknown): number =>
       rows.filter((row) => pick(row) === value).length;
     // census.md §1, "Branch rows": 195 / 16 / 44 and 171 / 40 / 44.
@@ -177,14 +167,14 @@ describe("branch rows: admits_*, php_blocked_by, misses_* (0.13.0)", () => {
     expect(row.missesProjectPhp).toBeNull();
   });
 
-  test("a row that leaves one key out lacks that property only", () => {
+  test("a row that leaves one key out answers null for that key only", () => {
     const row = onlyRow(withRow({ admits_target_php: false, misses_target_php: "stops_before" }));
 
     expect(row.admitsTargetPhp).toBe(false);
     expect(row.missesTargetPhp).toBe("stops_before");
-    expect("admitsProjectPhp" in row).toBe(false);
-    expect("phpBlockedBy" in row).toBe(false);
-    expect("missesProjectPhp" in row).toBe(false);
+    expect(row.admitsProjectPhp).toBeNull();
+    expect(row.phpBlockedBy).toBeNull();
+    expect(row.missesProjectPhp).toBeNull();
   });
 });
 
@@ -192,12 +182,13 @@ describe("branch rows: admits_*, php_blocked_by, misses_* (0.13.0)", () => {
 // Report level: exposure_rule, unattributed
 // -------------------------------------------------------------------------------------------
 
-describe("report.exposureRule and report.unattributed (0.13.0)", () => {
-  test("an older document leaves both out", () => {
+describe("report.exposureRule and report.unattributed", () => {
+  test("a document without the keys has no rule and nothing unattributed, and says it left them out", () => {
     const report = load("wallabag_wallabag.json").report;
 
-    expect("exposureRule" in report).toBe(false);
-    expect("unattributed" in report).toBe(false);
+    expect(report.exposureRule).toBeNull();
+    expect(report.unattributed).toEqual([]);
+    expect(report.absent).toEqual(expect.arrayContaining(["exposure_rule", "unattributed"]));
   });
 
   test("wallabag_wallabag-0.13: max_fan_in 8, nothing unattributed", () => {
@@ -245,12 +236,13 @@ describe("report.exposureRule and report.unattributed (0.13.0)", () => {
 // run.root_package, run.project_php
 // -------------------------------------------------------------------------------------------
 
-describe("run.rootPackage and run.projectPhp (0.13.0)", () => {
-  test("an older document leaves both out", () => {
-    const run = load("wallabag_wallabag.json").report.run;
+describe("run.rootPackage and run.projectPhp", () => {
+  test("a document without the keys answers null, and says it left them out", () => {
+    const { run, absent } = load("wallabag_wallabag.json").report;
 
-    expect("rootPackage" in run).toBe(false);
-    expect("projectPhp" in run).toBe(false);
+    expect(run.rootPackage).toBeNull();
+    expect(run.projectPhp).toBeNull();
+    expect(absent).toEqual(expect.arrayContaining(["run.root_package", "run.project_php"]));
   });
 
   test.each([
@@ -263,8 +255,6 @@ describe("run.rootPackage and run.projectPhp (0.13.0)", () => {
     const run = load(name).report.run;
 
     expect(run.project).toBe(project);
-    expect("rootPackage" in run).toBe(true);
-    expect("projectPhp" in run).toBe(true);
     expect(run.rootPackage).toBe(rootPackage);
     expect(run.projectPhp).toBe(projectPhp);
   });
@@ -277,21 +267,17 @@ describe("run.rootPackage and run.projectPhp (0.13.0)", () => {
   });
 });
 
-// -------------------------------------------------------------------------------------------
-// What must not change
-// -------------------------------------------------------------------------------------------
-
-describe("report.absent does not grow with the 0.13 keys", () => {
+describe("report.absent names the keys a document leaves out, the 0.13 ones like any other", () => {
   test("wallabag_wallabag-0.13 and mini-0.13-edges leave out nothing the page reads", () => {
     expect(load("wallabag_wallabag-0.13.json").report.absent).toEqual([]);
     expect(load("mini-0.13-edges.json").report.absent).toEqual([]);
   });
 
-  test("a report without the 0.13 keys names none of them", () => {
+  test("a report without the keys names each of them", () => {
     const absent = withReport({}).report.absent;
 
     for (const key of ["exposure_rule", "unattributed", "run.root_package", "run.project_php"]) {
-      expect(absent).not.toContain(key);
+      expect(absent).toContain(key);
     }
   });
 });

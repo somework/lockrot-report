@@ -25,6 +25,11 @@ function makeBranch(overrides: Partial<BranchRow> = {}): BranchRow {
     newestDatedReleased: null,
     datedBy: null,
     php: null,
+    admitsTargetPhp: null,
+    admitsProjectPhp: null,
+    phpBlockedBy: null,
+    missesTargetPhp: null,
+    missesProjectPhp: null,
     ...overrides,
   };
 }

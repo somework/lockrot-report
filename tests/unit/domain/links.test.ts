@@ -101,28 +101,31 @@ describe("packagistUrl", () => {
     expect(packagistUrl(finding, details)).toBe("https://packagist.org/packages/vendor/pkg");
   });
 
-  test("only an explicit fromComposerRepository:false suppresses the link", () => {
-    const details = new Map<string, PackageDetails>([
-      [
-        "vendor/pkg",
-        {
-          metadata: null,
-          activity: null,
-          repositoryLink: null,
-          lock: {
-            php: null,
-            released: null,
-            repository: null,
-            fromComposerRepository: false,
-            dev: false,
-            branchSnapshot: false,
-            type: null,
+  test.each([false, null])(
+    "a lock entry that does not say Composer (%s) gets no link",
+    (fromComposerRepository) => {
+      const details = new Map<string, PackageDetails>([
+        [
+          "vendor/pkg",
+          {
+            metadata: null,
+            activity: null,
+            repositoryLink: null,
+            lock: {
+              php: null,
+              released: null,
+              repository: null,
+              fromComposerRepository,
+              dev: false,
+              branchSnapshot: false,
+              type: null,
+            },
           },
-        },
-      ],
-    ]);
-    expect(packagistUrl(finding, details)).toBeNull();
-  });
+        ],
+      ]);
+      expect(packagistUrl(finding, details)).toBeNull();
+    },
+  );
 });
 
 describe("cveUrl", () => {

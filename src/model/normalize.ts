@@ -1,12 +1,6 @@
 /**
- * unknown → Model, in one place.
- *
- * Every wire shape this renderer must survive lands here: the current `--format=html` bundle
- * `{report, details}`, a bare `--format=json` document handed to it directly, older lockrot
- * releases that omit fields added later, and documents a hostile or merely careless embedder
- * wrote by hand. Nothing downstream of `normalize()` checks for `undefined` or guards against the
- * wrong JSON type turning up where a string or array was expected (DESIGN.md §2) — this module is
- * the one place that does, so it never throws no matter what `unknown` turns out to be.
+ * unknown → Model, in one place, never throwing: the `{report, details}` bundle, a bare
+ * `--format=json` document, a key left out, or a wrong JSON type (DESIGN.md §2).
  */
 
 import type {
@@ -37,7 +31,7 @@ export type NormalizeResult = { ok: true; model: Model } | { ok: false; error: N
 /** The published report-1 schema URL, used when a document carries no `$schema` of its own. */
 const DEFAULT_SCHEMA_URL = "https://lockrot.dev/schema/report-1.json";
 
-/** Every libyears "why not measured" reason lockrot currently knows, in document order (contract.md §2.2). */
+/** Every libyears "why not measured" reason lockrot knows, in its order. */
 const LIBYEARS_UNMEASURED_REASONS = [
   "branch_snapshot",
   "no_stable_release_date",
@@ -46,15 +40,8 @@ const LIBYEARS_UNMEASURED_REASONS = [
 ] as const;
 
 /**
- * The keys `buildReportModel` reads, report level then `run.`, that a document may leave out
- * entirely — an older lockrot release that predates one, or a hand-built document. `absentKeys`
- * lists the ones missing from THIS document; nothing here knows which release added which key.
- * `generated_at`, `lockrot` and `findings` are not listed: a document without them is not a report.
- *
- * The keys lockrot 0.13.0 added (`exposure_rule`, `unattributed`, `run.root_package`,
- * `run.project_php`) are deliberately not listed either: this list drives the "absent fields"
- * paragraph on Run data and in print, and every page drawn from an older document would gain one.
- * Their absence is carried by the model instead, as an absent optional property.
+ * The report-level and `run.` keys the page reads that a document may leave out. `absentKeys` lists
+ * the ones missing from this document; nothing here knows which release added which key.
  */
 const ABSENT_CHECKED = [
   "packages_checked",
@@ -69,7 +56,11 @@ const ABSENT_CHECKED = [
   "counts",
   "priorities",
   "exposure",
+  "exposure_rule",
+  "unattributed",
   "run.project",
+  "run.root_package",
+  "run.project_php",
   "run.lock_file",
   "run.target_php",
   "run.fail_on",
@@ -140,12 +131,7 @@ interface ReportShape {
   detailsSource: unknown;
 }
 
-/**
- * The html bundle `{report, details}` is one shape; a bare `--format=json` document is another,
- * distinguished only by the absence of a `report` key alongside the presence of `lockrot` and
- * `findings` (which `report` itself always carries, DESIGN.md §3 / model/types.ts). Anything else
- * is not a report this renderer can read.
- */
+/** A bare `--format=json` document has no `report` key but carries `lockrot` and `findings`. */
 function pickReportShape(input: Record<string, unknown>): ReportShape | null {
   if ("report" in input) {
     return isRecord(input.report) ? { reportSource: input.report, detailsSource: input.details } : null;
@@ -183,8 +169,8 @@ function buildReportModel(source: Record<string, unknown>, generatedAt: string):
     libyears: buildLibyears(source.libyears),
     baseline: buildBaseline(source.baseline),
     notes: asStringArray(source.notes),
-    ...ifPresent(source, "exposure_rule", "exposureRule", buildExposureRule),
-    ...ifPresent(source, "unattributed", "unattributed", buildUnattributed),
+    exposureRule: buildExposureRule(source.exposure_rule),
+    unattributed: buildUnattributed(source.unattributed),
     absent: absentKeys(source),
     findings: asArray(source.findings).map(buildFinding),
   };
@@ -201,8 +187,8 @@ function buildRunSettings(raw: unknown): RunSettings {
   const rec = isRecord(raw) ? raw : {};
   return {
     project: asNullableString(rec.project),
-    ...ifPresent(rec, "root_package", "rootPackage", asNullableString),
-    ...ifPresent(rec, "project_php", "projectPhp", asNullableString),
+    rootPackage: asNullableString(rec.root_package),
+    projectPhp: asNullableString(rec.project_php),
     targetPhp: asNullableString(rec.target_php),
     lockFile: asNullableString(rec.lock_file),
     failOn: asNullableString(rec.fail_on),
@@ -225,13 +211,7 @@ function buildThresholds(raw: unknown): readonly (readonly [string, number])[] {
   return thresholds;
 }
 
-/**
- * Mirrors the legacy `RUN.flagged_verdicts || FLAGGED_VERDICTS` (critic.md K5): only a missing,
- * null or non-array value falls back — an explicit empty array is a document's own answer and is
- * kept as given, exactly like the page it replaces. The fallback is `domain/vocab`'s
- * `DEFAULT_FLAGGED` itself, not a second list hand-copied here that could drift from it (quality
- * finding: this module used to keep its own `FLAGGED_VERDICTS_FALLBACK` literal).
- */
+/** An empty list is the document's own answer; only a value that is not a list falls back. */
 function buildFlaggedVerdicts(raw: unknown): readonly Verdict[] {
   if (!isArray(raw)) {
     return DEFAULT_FLAGGED;
@@ -372,7 +352,7 @@ function buildFinding(raw: unknown): Finding {
   };
 }
 
-/** The pre-string legacy shape (critic.md K5): an array of evidence lines joined the same way the old page did. */
+/** An array of evidence lines reads as one string. */
 function buildEvidence(raw: unknown): string {
   if (typeof raw === "string") {
     return raw;
@@ -403,7 +383,7 @@ function buildSignal(raw: unknown): Signal {
   };
 }
 
-/** Every advisory of every S9 signal on this finding, flattened, in document order (DESIGN.md, task spec). */
+/** Every advisory of every S9 signal on this finding, in document order. */
 function flattenAdvisories(signals: readonly Signal[]): readonly Advisory[] {
   const advisories: Advisory[] = [];
   for (const signal of signals) {
@@ -438,7 +418,7 @@ function buildAdvisory(raw: unknown): Advisory {
 // details
 // ---------------------------------------------------------------------------------------------
 
-/** `details` arrives as `{}`, `[]` (critic.md K1 — PHP's empty array serialises the same as an empty list) or absent. */
+/** `details` arrives as `{}`, `[]` (PHP writes an empty map as a list) or absent. */
 function buildDetailsMap(raw: unknown): ReadonlyMap<string, PackageDetails> {
   if (!isRecord(raw)) {
     return new Map();
@@ -468,15 +448,8 @@ function buildLock(raw: unknown): ExplainLock | null {
     php: asNullableString(raw.php),
     released: asNullableString(raw.released),
     repository: asNullableString(raw.repository),
-    // Mirrors legacy's `lock.from_composer_repository !== false` (`links.ts`'s own doc comment,
-    // and `packagistUrl`): only an *explicit* `false` suppresses the Packagist link, so a lock
-    // object missing the key entirely — every real document has carried it since be6d91f, but a
-    // hand-built or edited one might not — still gets a link, not none.
-    fromComposerRepository: asBoolean(raw.from_composer_repository, true),
+    fromComposerRepository: asNullableBoolean(raw.from_composer_repository),
     dev: asBoolean(raw.dev, false),
-    // Raw presence: `null` when the key is missing or not a boolean. Consumers read it by
-    // truthiness, so this changes no output; it lets the pinned wording tell "the lock says not a
-    // snapshot" (`false`) from "the lock does not say".
     branchSnapshot: asNullableBoolean(raw.branch_snapshot),
     type: asNullableString(raw.type),
   };
@@ -490,7 +463,7 @@ function buildMetadata(raw: unknown): ExplainMetadata | null {
     abandoned: asBoolean(raw.abandoned, false),
     replacement: asNullableString(raw.replacement),
     releasesListed: asFiniteNumber(raw.releases_listed),
-    hasStableRelease: asBoolean(raw.has_stable_release, false),
+    hasStableRelease: asNullableBoolean(raw.has_stable_release),
     lastStableRelease: asNullableString(raw.last_stable_release),
     lastStableVersion: asNullableString(raw.last_stable_version),
     lastStableDatedBy: asNullableString(raw.last_stable_dated_by),
@@ -515,12 +488,11 @@ function buildBranchRow(raw: unknown): BranchRow {
     newestDatedReleased: asNullableString(rec.newest_dated_released),
     datedBy: asNullableString(rec.dated_by),
     php: asNullableString(rec.php),
-    // 0.13.0: each set only when the row carries the key, so an older row lacks the property.
-    ...ifPresent(rec, "admits_target_php", "admitsTargetPhp", asNullableBoolean),
-    ...ifPresent(rec, "admits_project_php", "admitsProjectPhp", asNullableBoolean),
-    ...ifPresent(rec, "php_blocked_by", "phpBlockedBy", asNullableString),
-    ...ifPresent(rec, "misses_target_php", "missesTargetPhp", asNullableString),
-    ...ifPresent(rec, "misses_project_php", "missesProjectPhp", asNullableString),
+    admitsTargetPhp: asNullableBoolean(rec.admits_target_php),
+    admitsProjectPhp: asNullableBoolean(rec.admits_project_php),
+    phpBlockedBy: asNullableString(rec.php_blocked_by),
+    missesTargetPhp: asNullableString(rec.misses_target_php),
+    missesProjectPhp: asNullableString(rec.misses_project_php),
   };
 }
 
@@ -574,30 +546,11 @@ function asNullableBoolean(value: unknown): boolean | null {
   return typeof value === "boolean" ? value : null;
 }
 
-/**
- * `{ [prop]: read(rec[key]) }` when `rec` carries `key` — `in`, not a null check, so a key written
- * as `null` is kept as the document's own answer — and `{}` when it does not, so a model built from
- * a document that predates the key lacks the property instead of holding a `null` it never wrote.
- */
-function ifPresent<K extends string, V>(
-  rec: Record<string, unknown>,
-  key: string,
-  prop: K,
-  read: (value: unknown) => V,
-): { [P in K]?: V } {
-  return key in rec ? ({ [prop]: read(rec[key]) } as { [P in K]?: V }) : {};
-}
-
 function asStringArray(value: unknown): readonly string[] {
   return asArray(value).map((item) => asCoercedString(item));
 }
 
-/**
- * Never drop a package or version silently just because a hand-written or foreign document put a
- * number, a boolean or an object where a string belongs (the task spec is explicit about this for
- * `finding.package`/`finding.version`, and the same reasoning applies anywhere else a wire string
- * turns out not to be one): coerce it to readable text instead of throwing it away.
- */
+/** A number, boolean or object where a string belongs becomes readable text, never a dropped row. */
 function asCoercedString(value: unknown): string {
   if (typeof value === "string") {
     return value;
@@ -608,9 +561,7 @@ function asCoercedString(value: unknown): string {
   if (typeof value === "number" || typeof value === "boolean") {
     return String(value);
   }
-  // Anything else reads as its JSON, so a wrong-typed field still shows what it held. JSON cannot
-  // carry functions or symbols (stringify gives undefined) and throws on cycles; neither can come
-  // out of JSON.parse, so both read as empty rather than as "[object Object]".
+  // Neither a cycle nor a function can come out of JSON.parse; both read as empty.
   try {
     const json = JSON.stringify(value) as string | undefined;
     return json ?? "";

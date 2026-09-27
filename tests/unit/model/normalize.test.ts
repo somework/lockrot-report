@@ -45,6 +45,8 @@ function minimalReport(overrides: Record<string, unknown> = {}): Record<string, 
     abandoned: { total: 0, with_replacement: 0 },
     priorities: { critical: 0, high: 0, medium: 0, low: 0, none: 1 },
     exposure: [],
+    exposure_rule: { max_fan_in: 8 },
+    unattributed: [],
     libyears: null,
     baseline: null,
     notes: [],
@@ -82,25 +84,37 @@ describe("normalize over real fixtures", () => {
 // PD-RUN-3: which keys this page reads the document leaves out — presence, not value.
 describe("report.absent", () => {
   test("names a key the document leaves out, never one it wrote as null", () => {
-    const report = minimalReport({ run: { fail_on: null, target_php: "8.4" } });
+    const report = minimalReport({ run: { fail_on: null, target_php: "8.4", project_php: null } });
     delete report.libyears;
     const result = normalize(bundle(report));
     expect(result.ok && result.model.report.absent).toEqual([
       "libyears",
       "run.project",
+      "run.root_package",
       "run.lock_file",
       "run.thresholds",
       "run.flagged_verdicts",
     ]);
   });
 
-  test("capsule-0.10-drupal leaves out abandoned and libyears; wallabag leaves out nothing", () => {
-    const capsule = normalize(loadFixture("capsule-0.10-drupal.json"));
-    expect(capsule.ok && capsule.model.report.absent).toEqual(["abandoned", "libyears"]);
-    const wallabag = normalize(loadFixture("wallabag_wallabag.json"));
-    expect(wallabag.ok && wallabag.model.report.absent).toEqual([]);
-    const noFailOn = normalize(loadFixture("mini-no-fail-on.json"));
-    expect(noFailOn.ok && noFailOn.model.report.absent).toEqual(["run.fail_on"]);
+  test("names every key a fixture leaves out, by the same list whatever lockrot wrote it", () => {
+    const LATER = ["exposure_rule", "unattributed", "run.root_package", "run.project_php"];
+    const absent = (name: string) => {
+      const result = normalize(loadFixture(name));
+      return result.ok ? result.model.report.absent : null;
+    };
+    expect(absent("capsule-0.10-drupal.json")).toEqual([
+      "abandoned",
+      "libyears",
+      "exposure_rule",
+      "unattributed",
+      "run.root_package",
+      "run.project_php",
+    ]);
+    expect(absent("wallabag_wallabag.json")).toEqual(LATER);
+    expect(absent("mini-no-fail-on.json")).toEqual([...LATER, "run.fail_on"]);
+    expect(absent("wallabag_wallabag-0.13.json")).toEqual([]);
+    expect(absent("mini-0.13-edges.json")).toEqual([]);
   });
 });
 
@@ -202,8 +216,8 @@ describe("details shapes (critic.md K1)", () => {
   });
 });
 
-describe("buildLock: from_composer_repository default (parity with legacy's `!== false`)", () => {
-  test("a lock object missing the key keeps the Packagist link, matching legacy", () => {
+describe("buildLock: from_composer_repository", () => {
+  test("a lock object missing the key does not say where the package came from", () => {
     const result = normalize(
       bundle(minimalReport(), {
         "vendor/pkg": {
@@ -224,11 +238,11 @@ describe("buildLock: from_composer_repository default (parity with legacy's `!==
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.model.details.get("vendor/pkg")?.lock?.fromComposerRepository).toBe(true);
+      expect(result.model.details.get("vendor/pkg")?.lock?.fromComposerRepository).toBeNull();
     }
   });
 
-  test("an explicit false still suppresses it", () => {
+  test("an explicit false is kept", () => {
     const result = normalize(
       bundle(minimalReport(), {
         "vendor/pkg": {
@@ -469,15 +483,15 @@ describe("non-string package/version are coerced, never dropped", () => {
 
 describe("run (contract.md §2.1 / critic.md K5)", () => {
   test("a missing run becomes nulls, with domain/vocab's DEFAULT_FLAGGED as the fallback", () => {
-    // The fallback is `DEFAULT_FLAGGED` itself, not a second list hand-copied here that could drift
-    // from it (quality finding: normalize.ts's own `FLAGGED_VERDICTS_FALLBACK` used to duplicate
-    // it). `toBe` on the array checks that identity, not just that the values still happen to match.
+    // `toBe` checks identity: the fallback is `DEFAULT_FLAGGED` itself, not a copy that could drift.
     const result = normalize(bundle(minimalReport({ run: null })));
 
     expect(result.ok).toBe(true);
     if (result.ok) {
       expect(result.model.report.run).toEqual({
         project: null,
+        rootPackage: null,
+        projectPhp: null,
         targetPhp: null,
         lockFile: null,
         failOn: null,

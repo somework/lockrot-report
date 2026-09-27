@@ -10,13 +10,8 @@
  *   whenever nothing is filtered (a unit test holds every fixture to it).
  * - rows that list nothing are sorted into two tails: requirements that are flagged themselves, and
  *   requirements that reach flagged packages only through rows above.
- * - a flagged package the document names in `unattributed` (lockrot 0.13.0: reached from more than
- *   `exposure_rule.max_fan_in` direct requirements, so `exposure` counts it under none) is listed
- *   under no row and reached elsewhere by none, which keeps `count + elsewhere.length` equal to
- *   `exposure[].flagged`; the layout keeps it apart (`unattributed`) but nothing draws it yet, so it
- *   is not placed on the tab either (`placedOnRadius`, `radiusListed`) and the rail there does not
- *   count it (PD-RAIL-1). A document written before 0.13.0 has no such list, and every package keeps
- *   its row.
+ * - a package in `unattributed` (`exposure` counts it under no requirement) is in no row and no
+ *   "elsewhere", so `count + elsewhere.length` stays `exposure[].flagged`; nothing draws it yet.
  *
  * Arrangement and counting only: every fact is a field of the document (`chain`,
  * `direct_dependents`, `exposure`, a finding's verdict and priority).
@@ -90,10 +85,7 @@ export interface RadiusLayout {
   /** With no filter: the distinct flagged packages listed under any row, and the rows listing any. */
   readonly unfilteredTotal: number;
   readonly unfilteredRows: number;
-  /** The visible flagged packages the document names in `unattributed` (lockrot 0.13.0), in that
-   *  list's order: counted under no requirement, so in no row, no "elsewhere" and no receipt. Not
-   *  drawn yet, so not placed on the tab (`placedOnRadius`, `radiusListed`) until a tail draws
-   *  them. Empty for a document without the list. */
+  /** The visible flagged packages in `unattributed`, in its order: in no row and no receipt. */
   readonly unattributed: readonly Finding[];
 }
 
@@ -106,10 +98,8 @@ function hopsOf(finding: Finding): readonly string[] {
   return last === finding.package ? finding.chain.slice(0, -1) : finding.chain;
 }
 
-/** The package names the document's `unattributed` list holds; empty for a document written before
- *  lockrot 0.13.0, which has no such list. */
 function unattributedNames(model: Model): ReadonlySet<string> {
-  return new Set((model.report.unattributed ?? []).map((entry) => entry.package));
+  return new Set(model.report.unattributed.map((entry) => entry.package));
 }
 
 /** `flagged` without the packages `exposure` counts under no requirement (`unattributedNames`). */
@@ -125,8 +115,7 @@ function listedUnder(parent: string, flagged: readonly Finding[]): readonly Find
 /**
  * One row per `exposure` entry, in document order, from `visibleFlagged` — the view's
  * already-filtered flagged findings (the query box and the rail apply before this runs) — and
- * `allFlagged`, the same list before any filter, which only `unfiltered` reads. A package in the
- * document's `unattributed` list is neither listed under a row nor reached elsewhere by one.
+ * `allFlagged`, the same list before any filter, which only `unfiltered` reads.
  */
 export function radiusRows(
   model: Model,
@@ -231,8 +220,7 @@ function receiptOf(rows: readonly RadiusRow[]): readonly RadiusReceipt[] {
 }
 
 /** The flagged packages the tab draws: every row's pulled packages, every flagged requirement that
- *  heads a row, and every one the footnote names (PD-RADIUS-5). Not `layout.unattributed`, which
- *  nothing draws yet. */
+ *  heads a row, and every one the footnote names (PD-RADIUS-5). */
 export function radiusListed(layout: RadiusLayout): ReadonlySet<string> {
   const rows = [...layout.ranked, ...layout.selfOnly];
   return new Set([
@@ -249,12 +237,9 @@ export function radiusShownCount(layout: RadiusLayout): number {
 /**
  * The status line's count for the tab: "29 of 29 direct requirements" when `exposure` names every
  * flagged direct requirement. `exposure` lists only requirements with flagged packages counted under
- * them (lockrot's docs/verdicts.md, "Transitive exposure"; a package shared by more than
- * `exposure_rule.max_fan_in` requirements is not counted), so a flagged requirement with none is not
- * on it by definition. The
- * footnote names those; the line counts them as well and says which list the first number is of —
- * "29 of 29 direct requirements on the exposure list, plus 8 of 8 flagged ones with nothing flagged
- * counted under them".
+ * them, so a flagged requirement with none is not on it by definition. The footnote names those;
+ * the line counts them too: "29 of 29 direct requirements on the exposure list, plus 8 of 8 flagged
+ * ones with nothing flagged counted under them".
  */
 export function radiusCountPhrase(layout: RadiusLayout): string {
   const head = countPhrase(
@@ -274,12 +259,9 @@ export function radiusCountPhrase(layout: RadiusLayout): string {
  * The findings among `flagged` that have a place on the Blast radius tab at all: listed under some
  * direct requirement's row, heading a row as a flagged direct requirement, or — a flagged direct
  * requirement `exposure` does not name (wallabag's lcobucci/jwt, say) — named, with a link, in the
- * footnote. A transitive package is left out when its recorded chain reaches no row, or when the
- * document counts it under no requirement (`unattributed`, lockrot 0.13.0), which no row lists and
- * nothing on the tab draws yet. Membership is per finding, so a filter applied before or after
- * this gives the same set; the rail counts over this set on that tab (PD-RAIL-1,
- * `domain/filters.ts#railGroups`), so Direct plus Transitive is the summary band's flagged count
- * whenever every chain reaches a row and nothing is unattributed.
+ * footnote. A transitive package is left out when its chain reaches no row or it is `unattributed`.
+ * Membership is per finding, so filtering before or after gives the same set; the rail counts over
+ * it on that tab (PD-RAIL-1).
  */
 export function placedOnRadius(model: Model, flagged: readonly Finding[]): readonly Finding[] {
   const parents = new Set(model.report.exposure.map((exposure) => exposure.package));

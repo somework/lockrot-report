@@ -55,7 +55,7 @@ function metadataSource(model: Model, finding: Finding): MetadataSource {
   }
   const metadata = details.metadata;
   if (metadata !== null) return { kind: "read", metadata, asOf: metadata.dataDate ?? finding.dataDate };
-  const notComposer = details.lock !== null && !details.lock.fromComposerRepository;
+  const notComposer = details.lock?.fromComposerRepository === false;
   return {
     kind: "missing",
     asOf: finding.dataDate,
@@ -91,7 +91,7 @@ function activitySource(model: Model, finding: Finding): ActivitySource {
   const signal = fromSignals(finding);
   if (signal !== null) return signal;
   if (details === undefined) return { kind: "missing", reason: noFactsReason(model) };
-  if (details.lock !== null && !details.lock.fromComposerRepository) {
+  if (details.lock?.fromComposerRepository === false) {
     return { kind: "missing", reason: NOT_FROM_COMPOSER };
   }
   const blocked = checkStrip(finding)

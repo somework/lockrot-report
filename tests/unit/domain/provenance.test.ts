@@ -59,6 +59,18 @@ describe("provenance — package metadata", () => {
     });
   });
 
+  it("claims no origin when the lock entry does not say where the package came from", () => {
+    const finding = makeFinding();
+    const model = withDetails(makeModel([finding]), {
+      [finding.package]: { lock: { ...LOCK, fromComposerRepository: null } },
+    });
+    expect(provenance(model, finding).metadata).toEqual({
+      kind: "missing",
+      asOf: null,
+      reason: "none recorded for this package",
+    });
+  });
+
   it("tells a file that explains no package from one that only skips this one", () => {
     const finding = makeFinding({ dataDate: "2026-09-24T00:00:00Z" });
     const empty = makeModel([finding]);

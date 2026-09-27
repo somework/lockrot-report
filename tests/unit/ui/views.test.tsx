@@ -1666,6 +1666,16 @@ describe("RunView", () => {
         "answered and every repository answer in this file was fetched during the run. It ran with no " +
         "gate (--fail-on=none).",
     );
+    expect(Array.from(document.querySelectorAll(".run-absent code"), (el) => el.textContent)).toEqual([
+      "exposure_rule",
+      "unattributed",
+      "run.root_package",
+      "run.project_php",
+    ]);
+  });
+
+  it("names no absent field for a document that carries every key the page reads", () => {
+    renderIn(loadModel("wallabag_wallabag-0.13.json"), stateWith({ view: "run" }), <RunView />);
     expect(document.querySelector(".run-absent")).toBeNull();
   });
 
@@ -1678,6 +1688,10 @@ describe("RunView", () => {
     expect(Array.from(absent?.querySelectorAll("code") ?? [], (el) => el.textContent)).toEqual([
       "abandoned",
       "libyears",
+      "exposure_rule",
+      "unattributed",
+      "run.root_package",
+      "run.project_php",
     ]);
     expect(absent?.textContent).toContain("lockrot 0.10.0 (report schema 1)");
     expect(screen.getByText("libyears behind").nextElementSibling?.textContent).toBe("not in this document");
