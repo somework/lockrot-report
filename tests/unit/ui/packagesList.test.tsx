@@ -47,7 +47,7 @@ const packages = (overrides: Partial<State> = {}): State => ({
 });
 
 describe("PackagesView (PD-PACKAGES-1): libyears as a scale, its marks keyed once", () => {
-  const model = makeModel([
+  const findings = makeModel([
     makeFinding({ package: "a/behind", libyears: 2.5 }),
     makeFinding({ package: "b/newest", libyears: 0 }),
     makeFinding({
@@ -57,13 +57,26 @@ describe("PackagesView (PD-PACKAGES-1): libyears as a scale, its marks keyed onc
       signals: [makeSignal({ id: "S6", data: { reason: "branch_snapshot" } })],
     }),
   ]);
+  const model: Model = {
+    ...findings,
+    report: {
+      ...findings.report,
+      libyears: {
+        total: 2.5,
+        directRequirements: 2.5,
+        measured: 2,
+        unmeasured: [["branch_snapshot", 1]],
+        furthestBehind: null,
+      },
+    },
+  };
 
   it("answers how many listed packages are behind, not behind, and unmeasured", () => {
     const { container } = renderIn(model, packages(), <PackagesView />);
     expect(container.querySelector(".pk-answer")?.textContent).toBe(
-      "1 package of the 3 listed is behind its newest stable release; 1 is not, and 1 could not be measured.",
+      "1 package of the 3 listed is behind its newest release; 1 is not, and 1 could not be measured.",
     );
-    expect(container.querySelector(".pk-key")?.textContent).toContain("not behind its newest stable");
+    expect(container.querySelector(".pk-key")?.textContent).toContain("not behind its newest release");
     expect(container.querySelector(".pk-key")?.textContent).toContain("not measured");
   });
 

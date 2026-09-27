@@ -135,7 +135,7 @@ function verdictClause(
   }
 }
 
-/** The newest dated tag is not named: the metadata line's "last stable" is its one place. */
+/** The newest dated tag is not named here: the Provenance metadata line is its one place. */
 function pinnedClause(finding: Finding, details: PackageDetails | null): AnswerPart[] {
   const facts = readPinnedFacts(finding, details);
   const lead = [text("Pinned to "), name(facts.version)];

@@ -5,6 +5,7 @@ import {
   libyearsAtZero,
   libyearsAxisMax,
   libyearsTally,
+  unmeasuredLabel,
   libyearsAtZeroMark,
   libyearsItems,
   libyearsReason,
@@ -60,40 +61,67 @@ describe("libyearsReason", () => {
   });
   const unmeasured = (overrides: Partial<Finding> = {}): Finding =>
     makeFinding({ verdict: "stale", libyears: null, ...overrides });
+  const oldS6 = makeSignal({ id: "S6", data: { version: "dev-main" } });
+  const block: LibyearsBlock = {
+    total: 1,
+    directRequirements: 1,
+    measured: 1,
+    unmeasured: [],
+    furthestBehind: null,
+  };
 
   test("is empty for a measured finding, zero included", () => {
-    expect(libyearsReason(makeFinding({ libyears: 4.7 }), null)).toBe("");
-    expect(libyearsReason(makeFinding({ libyears: 0 }), null)).toBe("");
-    expect(libyearsReason(null, null)).toBe("");
+    expect(libyearsReason(makeFinding({ libyears: 4.7 }), null, block)).toBe("");
+    expect(libyearsReason(makeFinding({ libyears: 0 }), null, block)).toBe("");
+    expect(libyearsReason(null, null, block)).toBe("");
   });
 
   test("names the note's reason first", () => {
     const note = "not from a Composer repository, not checked";
-    expect(libyearsReason(unmeasured({ note }), snapshotLock(true))).toBe("not from a Composer repository");
-    expect(libyearsReason(unmeasured({ note: "Repository metadata unavailable: timeout" }), null)).toBe(
-      "metadata unavailable",
+    expect(libyearsReason(unmeasured({ note }), snapshotLock(true), block)).toBe(
+      "not from a Composer repository",
+    );
+    expect(
+      libyearsReason(unmeasured({ note: "Repository metadata unavailable: timeout" }), null, block),
+    ).toBe("metadata unavailable");
+  });
+
+  test("a finding with no S6 and no note has no release date lockrot trusts, whatever its version", () => {
+    expect(libyearsReason(unmeasured(), null, block)).toBe("no release date lockrot trusts");
+    expect(libyearsReason(unmeasured({ version: "dev-main" }), snapshotLock(null), block)).toBe(
+      "no release date lockrot trusts",
     );
   });
 
-  test("reads a branch snapshot from the lock, never from the version string", () => {
-    expect(libyearsReason(unmeasured({ version: "v1.37.0" }), snapshotLock(true))).toBe("branch snapshot");
-    expect(libyearsReason(unmeasured({ version: "dev-main" }), snapshotLock(false))).toBe(
-      "no release date lockrot trusts",
-    );
+  test("reads a branch snapshot from the lock where S6 names no reason, never from the version string", () => {
+    expect(
+      libyearsReason(unmeasured({ version: "v1.37.0", signals: [oldS6] }), snapshotLock(true), block),
+    ).toBe("branch snapshot");
+    expect(
+      libyearsReason(unmeasured({ version: "dev-main", signals: [oldS6] }), snapshotLock(false), block),
+    ).toBe("no release date lockrot trusts");
   });
 
   test("reads it from S6's reason first", () => {
     const s6 = (reason: string): Finding =>
       unmeasured({ signals: [makeSignal({ id: "S6", data: { reason } })] });
-    expect(libyearsReason(s6("branch_snapshot"), null)).toBe("branch snapshot");
-    expect(libyearsReason(s6("no_stable_release"), snapshotLock(true))).toBe(
+    expect(libyearsReason(s6("branch_snapshot"), null, block)).toBe("branch snapshot");
+    expect(libyearsReason(s6("no_stable_release"), snapshotLock(true), block)).toBe(
       "no release date lockrot trusts",
     );
   });
 
   test("says no reason when no field states one", () => {
-    expect(libyearsReason(unmeasured({ version: "dev-main" }), null)).toBe("");
-    expect(libyearsReason(unmeasured({ version: "dev-main" }), snapshotLock(null))).toBe("");
+    expect(libyearsReason(unmeasured({ signals: [oldS6] }), null, block)).toBe("");
+    expect(libyearsReason(unmeasured({ signals: [oldS6] }), snapshotLock(null), block)).toBe("");
+  });
+
+  test("says no reason in a document without a libyears block: nothing there counts one", () => {
+    expect(libyearsReason(unmeasured(), snapshotLock(false), null)).toBe("");
+    const capsule = loadBundle("capsule-0.10-drupal");
+    for (const f of capsule.report.findings) {
+      expect(libyearsReason(f, capsule.details.get(f.package) ?? null, capsule.report.libyears)).toBe("");
+    }
   });
 
   test.each([
@@ -104,7 +132,45 @@ describe("libyearsReason", () => {
   ])("%s %s: a snapshot, the same on either document", (bundle, pkg) => {
     const model = loadBundle(bundle);
     const f = model.report.findings.find((x) => x.package === pkg) ?? null;
-    expect(libyearsReason(f, model.details.get(pkg) ?? null)).toBe("branch snapshot");
+    expect(libyearsReason(f, model.details.get(pkg) ?? null, model.report.libyears)).toBe("branch snapshot");
+  });
+
+  test("koel_koel roave/security-advisories: S6 names no reason and no explain data says, so no reason", () => {
+    const model = loadBundle("koel_koel");
+    const f = model.report.findings.find((x) => x.package === "roave/security-advisories") ?? null;
+    expect(libyearsReason(f, null, model.report.libyears)).toBe("");
+  });
+
+  test.each([
+    "mautic_mautic",
+    "mautic_mautic-0.13",
+    "koel_koel-0.13",
+    "wallabag_wallabag",
+    "wallabag_wallabag-0.13",
+    "gh_akaunting_akaunting-0.13",
+    "mini-0.13-edges",
+    "mini-0.13-edges-lock-only",
+    "mini",
+    "mini-no-fail-on",
+  ])("%s: every unmeasured row has a reason, and they add up to the unmeasured block", (bundle) => {
+    const model = loadBundle(bundle);
+    const words: Record<string, string> = {
+      branch_snapshot: "branch snapshot",
+      no_stable_release_date: "no release date lockrot trusts",
+      not_from_composer_repository: "not from a Composer repository",
+      metadata_unavailable: "metadata unavailable",
+    };
+    const counted = new Map<string, number>();
+    for (const f of model.report.findings) {
+      const why = libyearsReason(f, model.details.get(f.package) ?? null, model.report.libyears);
+      if (f.libyears !== null) continue;
+      counted.set(why, (counted.get(why) ?? 0) + 1);
+    }
+    const expected = new Map<string, number>();
+    for (const [reason, count] of model.report.libyears?.unmeasured ?? []) {
+      if (count > 0) expected.set(words[reason] ?? reason, count);
+    }
+    expect(counted).toEqual(expected);
   });
 });
 
@@ -132,10 +198,10 @@ describe("libyearsAtZero", () => {
       "the installed release is the newest",
     );
     expect(libyearsAtZero({ libyears: 0, version: "v1.3.0-beta1" }, meta)).toBe(
-      "not behind the newest stable, v1.2.4",
+      "not behind the newest release, v1.2.4",
     );
     expect(libyearsAtZero({ libyears: 0, version: "v1.1.9" }, meta)).toBe(
-      "not behind the newest stable, v1.2.4",
+      "not behind the newest release, v1.2.4",
     );
     expect(libyearsAtZero({ libyears: 0, version: "v1.2.4" }, null)).toBe(
       "the installed release is the newest",
@@ -160,7 +226,7 @@ describe("libyearsAtZero", () => {
   });
 
   test("an empty-string installed version is still comparable to a named newest", () => {
-    expect(libyearsAtZero({ libyears: 0, version: "" }, meta)).toBe("not behind the newest stable, v1.2.4");
+    expect(libyearsAtZero({ libyears: 0, version: "" }, meta)).toBe("not behind the newest release, v1.2.4");
   });
 
   test("a negative libyears is not the exact-zero sentinel either", () => {
@@ -404,5 +470,15 @@ describe("libyearsAxisMax (PD-PACKAGES-1)", () => {
   test("is null when nothing is behind: no bar, no scale to caption", () => {
     expect(libyearsAxisMax([{ libyears: 0 }, { libyears: null }])).toBeNull();
     expect(libyearsAxisMax([])).toBeNull();
+  });
+});
+
+describe("unmeasuredLabel", () => {
+  test("says a reason key in words, and 'stable' as 'dated', since a pre-release counts", () => {
+    expect(unmeasuredLabel("no_stable_release_date")).toBe("no dated release");
+    expect(unmeasuredLabel("branch_snapshot")).toBe("branch snapshot");
+    expect(unmeasuredLabel("not_from_composer_repository")).toBe("not from composer repository");
+    expect(unmeasuredLabel("a_new_reason")).toBe("a new reason");
+    expect(unmeasuredLabel("constructor")).toBe("constructor");
   });
 });

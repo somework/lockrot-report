@@ -152,7 +152,7 @@ describe("annotateThresholds (PD-GLOSSARY-8, DESIGN.md §5)", () => {
       ["release-high-years", 5],
     ]);
     expect(annotated).toBe(
-      "Time since the last stable release, against 3 years (release-warn-years) / 5 years (release-high-years).",
+      "Time since the newest dated release, pre-releases included, against 3 years (release-warn-years) / 5 years (release-high-years).",
     );
   });
 
@@ -163,7 +163,7 @@ describe("annotateThresholds (PD-GLOSSARY-8, DESIGN.md §5)", () => {
       ["push-high-years", 5],
     ]);
     expect(annotated).toBe(
-      "No stable release for at least 5 years (release-high-years) and no repository push for at least 5 years (push-high-years).",
+      "No release for at least 5 years (release-high-years), pre-releases included, and no repository push for at least 5 years (push-high-years).",
     );
   });
 
@@ -193,8 +193,19 @@ describe("isFlagged", () => {
   });
 });
 
+describe("S2's names (PD-S6-1)", () => {
+  test("never say 'stable': S2 counts every tag, a pre-release included", () => {
+    for (const name of [SIGNAL_NAMES.S2, RAIL_SIGNAL_LABELS.S2, SIGNAL_DEFS.S2, VERDICT_DEFS.silent]) {
+      expect(name).toBeTruthy();
+      expect(name).not.toMatch(/stable/i);
+    }
+    expect(SIGNAL_NAMES.S2).toBe("no recent release");
+    expect(SIGNAL_DEFS.S8).toMatch(/stable/);
+  });
+});
+
 describe("S6's names (PD-S6-1)", () => {
-  test("never reads as S2's 'no stable release', and never says 'stable'", () => {
+  test("never reads as S2, and never says 'stable'", () => {
     const names = [
       SIGNAL_NAMES.S6,
       CHECK_NAMES.S6,

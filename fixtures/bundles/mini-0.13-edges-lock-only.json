@@ -107,7 +107,7 @@
     "direct_dependents": [],
     "evidence": "no tagged release in its repository",
     "allowlist_reason": null,
-    "note": "lock-only: transitive by definition, so pinned is medium",
+    "note": null,
     "data_date": "2026-09-27T00:00:00+00:00",
     "libyears": null,
     "baseline": null
@@ -149,7 +149,7 @@
     "direct_dependents": [],
     "evidence": "branch 1.x last released 2022-02-01 (4.7 years ago); 3.x released 3.2.0 (2026-09-01)",
     "allowlist_reason": null,
-    "note": "edge (lock-only): S8 floor_source target; newest 3.x needs >=8.5 (misses_target_php needs_newer), so S8 follows 2.x; admits_project_php and misses_project_php null on every row (no require.php)",
+    "note": null,
     "data_date": "2026-09-27T00:00:00+00:00",
     "libyears": 4.6,
     "baseline": null
@@ -179,7 +179,7 @@
     "direct_dependents": [],
     "evidence": "last release 2021-08-01 (5.2 years ago)",
     "allowlist_reason": null,
-    "note": "lock-only: reached from nothing, so in neither exposure nor unattributed; stale transitive is low",
+    "note": null,
     "data_date": "2026-09-27T00:00:00+00:00",
     "libyears": 0,
     "baseline": null

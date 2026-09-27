@@ -66,7 +66,7 @@ describe("shortFact (PD-ROWS-4)", () => {
     );
     expect(shortFact(makeSignal({ id: "S1", data: {} }), f)).toBe("marked abandoned by its repository");
     expect(shortFact(makeSignal({ id: "S2", data: { last_release: "2017-11-15T13:41:13+00:00" } }), f)).toBe(
-      "no stable release since Nov 2017",
+      "no release since Nov 2017",
     );
     expect(shortFact(makeSignal({ id: "S4", data: { last_push: "2021-04-29T19:09:57+00:00" } }), f)).toBe(
       "no push since Apr 2021",
@@ -109,7 +109,7 @@ describe("shortFact (PD-ROWS-4)", () => {
 
   it("reads a date in UTC, so the month never shifts with the reader's time zone", () => {
     expect(shortFact(makeSignal({ id: "S2", data: { last_release: "2020-01-01T00:30:00+00:00" } }), f)).toBe(
-      "no stable release since Jan 2020",
+      "no release since Jan 2020",
     );
   });
 });

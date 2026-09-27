@@ -859,7 +859,7 @@ describe("Detail", () => {
     it("never calls a snapshot's commit a release, so a tagged one's panel gives one last-release date (rector/rector)", () => {
       const { container } = renderDetail(MAUTIC_013, "rector/rector");
       expect(factRows(container)[1]).toEqual(["Snapshot", "2 mo ago", "a branch commit, not a release"]);
-      // The answer names no tag and no date: the metadata's "last stable" line is the one place.
+      // The answer names no tag and no date: the Provenance "newest dated tag" line is the one place.
       const answerText = container.querySelector(".detail-answer")?.textContent ?? "";
       expect(answerText).toMatch(/^Pinned to dev-main, a branch snapshot rather than a release\. /);
       expect(answerText).not.toContain("2.6.7");
@@ -1466,7 +1466,7 @@ describe("Detail", () => {
       const provenance = sectionKeyValue(container, "Provenance");
       expect(provenance?.textContent).toContain("releases listed");
       expect(provenance?.textContent).toContain("58");
-      expect(provenance?.textContent).toContain("last stable");
+      expect(provenance?.textContent).toContain("newest dated tag");
       expect(provenance?.textContent).toContain("v3.6.1");
     });
   });

@@ -79,7 +79,7 @@ export function AgeCell({
 export function AgeCellEmpty({ axis, notRead }: { axis: AgeAxisData | null; notRead: boolean }) {
   const title = notRead
     ? "lockrot could not read this package's age (see its S10 signal)"
-    : "none of S2 (no stable release), S4 (no push) or S8 (the installed branch stopped) fired for this package";
+    : "none of S2 (no recent release), S4 (no push) or S8 (the installed branch stopped) fired for this package";
   return (
     <span className="fcell fc-age is-empty">
       <span className="age-track" aria-hidden="true">

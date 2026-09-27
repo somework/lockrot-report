@@ -1,7 +1,7 @@
 import type { ComponentChildren } from "preact";
 import type { ExplainActivity, Finding, PackageDetails } from "../../model/types";
 import { isContextOnly } from "../../domain/age";
-import { snapshotOf } from "../../domain/pinned";
+import { lockTimeLabel, snapshotOf } from "../../domain/pinned";
 import { provenance, quietUnread, type ActivitySource, type MetadataSource } from "../../domain/provenance";
 import { agePhrase, day } from "../../domain/format";
 import { safeHref } from "../../domain/links";
@@ -97,7 +97,7 @@ function lockRows(finding: Finding, details: PackageDetails | null, now: Date): 
     { label: "installed", value: finding.version },
     { label: "php constraint", value: lock?.php || null },
     {
-      label: "released",
+      label: lockTimeLabel(finding, details),
       value: lock?.released ? dated(lock.released, now) : null,
     },
     {
@@ -277,7 +277,7 @@ function metadataRows(source: MetadataSource): readonly KeyValueRow[] {
       value: metadata.releasesListed !== null ? String(metadata.releasesListed) : null,
     },
     {
-      label: "last stable",
+      label: "newest dated tag",
       value: metadata.lastStableVersion ? (
         metadata.lastStableRelease ? (
           `${metadata.lastStableVersion} · ${day(metadata.lastStableRelease)}`

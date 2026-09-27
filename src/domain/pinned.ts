@@ -56,8 +56,10 @@ function readReason(data: Data | null): S6Reason | null {
   return raw === null ? null : { raw, known: KNOWN_REASONS.includes(raw) };
 }
 
-/** A known reason says whether the version is a branch; an unknown one does not, so the lock does. */
-function branchSnapshotOf(reason: S6Reason | null, lock: ExplainLock | null): boolean | null {
+/** lockrot fires S6 on every branch snapshot, so a finding without it is not one. A known reason
+ *  says which case fired; an unknown one does not, so the lock does. */
+function branchSnapshotOf(hasS6: boolean, reason: S6Reason | null, lock: ExplainLock | null): boolean | null {
+  if (!hasS6) return false;
   if (reason?.known === true) return reason.raw === "branch_snapshot";
   return lock?.branchSnapshot ?? null;
 }
@@ -69,8 +71,9 @@ export function readPinnedFacts(finding: Finding, details: PackageDetails | null
   const meta: ExplainMetadata | null = details?.metadata ?? null;
   const lock: ExplainLock | null = details?.lock ?? null;
   const reason = readReason(data);
-  // `lock.released` is the commit's date only where the lock says the version is a branch.
-  const lockCommit = lock?.branchSnapshot === true ? lock.released : null;
+  const branchSnapshot = branchSnapshotOf(s6 !== undefined, reason, lock);
+  // `lock.released` is the commit's date only for a branch.
+  const lockCommit = branchSnapshot === true ? (lock?.released ?? null) : null;
 
   return {
     version: nullableString(data?.["version"]) ?? finding.version,
@@ -80,7 +83,7 @@ export function readPinnedFacts(finding: Finding, details: PackageDetails | null
     lastStableVersion: pick(data, "last_stable_version", nullableString, meta?.lastStableVersion ?? null),
     lastStableRelease: pick(data, "last_stable_release", nullableString, meta?.lastStableRelease ?? null),
     lastStableDatedBy: pick(data, "last_stable_dated_by", nullableString, meta?.lastStableDatedBy ?? null),
-    branchSnapshot: branchSnapshotOf(reason, lock),
+    branchSnapshot,
     snapshotTime: pick(data, "snapshot_time", nullableString, lockCommit),
   };
 }
@@ -153,6 +156,14 @@ export function pinnedContextReason(kind: PinnedKind): string {
 export function pinnedKindOf(finding: Finding, details: PackageDetails | null): PinnedKind | null {
   const facts = pinnedFacts(finding, details);
   return facts === null ? null : pinnedKind(facts);
+}
+
+/** The lock entry's label for `lock.released`: the lock's `time` is a release date only for a
+ *  tagged, non-branch version. */
+export function lockTimeLabel(finding: Finding, details: PackageDetails | null): string {
+  if (readPinnedFacts(finding, details).branchSnapshot === true) return "snapshot dated";
+  if (pinnedKindOf(finding, details) === "untagged") return "lock time";
+  return "released";
 }
 
 /** The installed branch's commit, for the release-branches block's snapshot row. */

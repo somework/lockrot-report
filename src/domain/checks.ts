@@ -7,7 +7,7 @@
 import type { Finding, KnownSignalId, Signal, SignalLevel } from "../model/types";
 import { SIGNAL_IDS } from "../model/types";
 import { sortedSignals } from "./rows";
-import { CHECK_NAMES, type Tone } from "./vocab";
+import { CHECK_NAMES, vocabTable, type Tone } from "./vocab";
 
 /** `unreported`: S10 fired without naming the checks it stopped, so quiet and could-not-run cannot
  *  be told apart. */
@@ -145,8 +145,16 @@ export function checkName(cell: Pick<CheckCell, "id" | "state">): string {
   return CHECK_NAMES[cell.id] ?? "";
 }
 
+/** lockrot's "stable" counts every tag, a pre-release included. */
+const KEY_LABELS: Readonly<Record<string, string>> = vocabTable({
+  has_stable_release: "lists a tag",
+  last_stable_version: "newest dated tag",
+  last_stable_release: "newest dated tag released",
+  last_stable_dated_by: "newest dated tag dated by",
+});
+
 export function dataLabel(key: string): string {
-  return key.replace(/_/g, " ");
+  return KEY_LABELS[key] ?? key.replace(/_/g, " ");
 }
 
 const ISO_TIMESTAMP = /^(\d{4}-\d{2}-\d{2})(T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)$/;

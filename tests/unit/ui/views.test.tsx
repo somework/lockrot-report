@@ -340,7 +340,7 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
     const row = screen.getByRole("listitem", { name: "short/pkg" });
 
     // Assert
-    const why = within(row).getByText("no stable release since Nov 2017");
+    const why = within(row).getByText("no release since Nov 2017");
     expect(why.closest(".fc-why")?.getAttribute("title")).toBe("last release 2017-11-15 (8.9 years ago)");
   });
 

@@ -59,11 +59,11 @@ export function TONE(key: string): Tone {
 
 export const SIGNAL_NAMES: Readonly<Record<string, string>> = vocabTable({
   S1: "marked abandoned",
-  S2: "no stable release",
+  S2: "no recent release",
   S3: "repository archived",
   S4: "no push to the repository",
   S5: "release predates the target PHP",
-  // PD-S6-1: S2's "no stable release" is an age; S6 is a snapshot or a repository with no tag at all.
+  // PD-S6-1: S2 is an age; S6 is a snapshot or a repository with no tag at all.
   S6: "branch snapshot or never tagged",
   S7: "pulls in flagged packages",
   S8: "the installed branch stopped",
@@ -88,7 +88,7 @@ export const CHECK_NAMES: Readonly<Record<string, string>> = vocabTable({
 
 export const SIGNAL_DEFS: Readonly<Record<string, string>> = vocabTable({
   S1: "The Composer repository marks the package abandoned, sometimes naming a replacement.",
-  S2: "Time since the last stable release, against release-warn-years / release-high-years.",
+  S2: "Time since the newest dated release, pre-releases included, against release-warn-years / release-high-years.",
   S3: "The repository is archived — on GitHub, or on GitLab when the run has credentials there.",
   S4: "Time since the last push to any branch, against push-warn-years / push-high-years.",
   S5: "The installed release predates the target PHP's GA date and require.php has no upper bound.",
@@ -103,7 +103,7 @@ export const VERDICT_DEFS: Record<string, string> = vocabTable({
   abandoned:
     "The package's Composer repository marks it abandoned, or its repository is archived on GitHub or GitLab.",
   silent:
-    "No stable release for at least release-high-years and no repository push for at least push-high-years.",
+    "No release for at least release-high-years, pre-releases included, and no repository push for at least push-high-years.",
   pinned:
     "The installed version is a branch snapshot — dev-master, a 2.x-dev alias, a #hash — or the package's repository lists no tag at all.",
   "left-behind":

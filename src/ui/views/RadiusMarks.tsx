@@ -186,7 +186,7 @@ export function AgeSpread({
     const words = notRead ? "age not read" : "not flagged for age";
     const title = notRead
       ? "age not read: lockrot could not read the age of these packages (see their S10 signal)"
-      : "not flagged for age: none of S2 (no stable release), S4 (no push) or S8 (the installed branch stopped) fired";
+      : "not flagged for age: none of S2 (no recent release), S4 (no push) or S8 (the installed branch stopped) fired";
     const some = findings.length > 0;
     return (
       <span

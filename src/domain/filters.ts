@@ -239,7 +239,7 @@ const SCOPE_ROWS: readonly (readonly [string, string])[] = [
  *  `vocabTable`, so an id such as `toString` finds nothing. */
 export const RAIL_SIGNAL_LABELS: Readonly<Record<string, string>> = vocabTable({
   S1: "marked abandoned",
-  S2: "no stable release",
+  S2: "no recent release",
   S3: "repository archived",
   S4: "no recent push",
   S5: "predates target PHP",

@@ -201,6 +201,14 @@ describe("dataLabel", () => {
     expect(dataLabel("blocks")).toBe("blocks");
     expect(dataLabel("")).toBe("");
   });
+
+  it("says lockrot's 'stable' keys in the words the page uses, since a pre-release counts as a tag", () => {
+    expect(dataLabel("has_stable_release")).toBe("lists a tag");
+    expect(dataLabel("last_stable_version")).toBe("newest dated tag");
+    expect(dataLabel("last_stable_release")).toBe("newest dated tag released");
+    expect(dataLabel("last_stable_dated_by")).toBe("newest dated tag dated by");
+    expect(dataLabel("toString")).toBe("toString");
+  });
 });
 
 describe("timestampParts", () => {

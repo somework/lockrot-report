@@ -69,9 +69,9 @@
       "measured": 4,
       "unmeasured": {
         "branch_snapshot": 1,
-        "no_stable_release_date": 0,
+        "no_stable_release_date": 1,
         "not_from_composer_repository": 0,
-        "metadata_unavailable": 1
+        "metadata_unavailable": 0
       },
       "furthest_behind": {
         "package": "acme/templating",

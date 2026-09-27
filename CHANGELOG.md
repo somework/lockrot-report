@@ -13,7 +13,7 @@ tag or the address format, says so under **Breaking** in its entry.
 - All packages on a phone: under 480px the rows stack — name and version, then the verdict, the
   libyears bar and how it gets in, with the priority as the row's left rule — instead of a table
   cut after its second column. The list opens with how many of the listed packages are behind their
-  newest stable release, how many are not, and how many could not be measured.
+  newest release, how many are not, and how many could not be measured.
 - All packages on a tablet, or beside an open package: under 1000px of list the rows stack two
   lines each — name and version, then verdict, priority, the libyears bar, the ten signal dots and
   how it gets in — instead of a table scrolled past its fourth column; the column heads become a
@@ -199,7 +199,7 @@ tag or the address format, says so under **Breaking** in its entry.
 - The glossary's `finished` entry says how to accept a package you consider complete yourself, with
   `extra.lockrot.ignore`.
 - The All packages table says, next to a libyears value of exactly `0.0`, why: the installed release
-  is the newest lockrot knows of, or it is not behind the newest stable release.
+  is the newest lockrot knows of, or it is not behind the newest release.
 - A search says where it matched when that is not only the package name: the status line splits
   the count, `16 match “hoa/”: 14 by name, 2 mention it (wallabag/rulerz, wallabag/rulerz-bundle)`,
   naming up to three packages that only mention the word, and each such row on Findings, All
@@ -345,7 +345,16 @@ tag or the address format, says so under **Breaking** in its entry.
   no tag reads "none tagged" with no date, since its lock time is neither a release nor a snapshot.
   The release-branches block dates its snapshot row by the same commit.
 - A package's libyears "not measured" reason says "branch snapshot" only where S6 or the lock says
-  so, never from the look of the version string, and names no reason when no field states one.
+  so, never from the look of the version string. A package without S6 and without a note reads "no
+  release date lockrot trusts", since lockrot flags every branch snapshot with S6 (mautic's symfony
+  polyfills, koel's, akaunting's). A document without a libyears block names no reason.
+- The page no longer says "stable" where lockrot counts every tag, pre-releases included: S2 is "no
+  recent release" ("no release since Mar 2021" on a row), the `silent` and S2 definitions say
+  "pre-releases included", libyears is measured against the "newest release", Provenance's line is
+  "newest dated tag", S6's data reads "lists a tag" and "newest dated tag …", and Run data counts
+  "no dated release". S8 keeps "stable": its branches leave pre-releases out.
+- The lock entry no longer calls a snapshot's commit date "released": it reads "snapshot dated" for a
+  branch and "lock time" for a version in a repository with no tag.
 - Release branches keep lockrot's order, highest first, instead of re-sorting the branch names.
 - A lock entry without `from_composer_repository`, or metadata without `has_stable_release`, no
   longer reads as a Composer origin or as "no tagged release": nothing is said.

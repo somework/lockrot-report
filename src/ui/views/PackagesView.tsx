@@ -39,7 +39,7 @@ const COLUMNS: readonly { key: SortKey; label: string; cell: string; title?: str
     label: "Libyears",
     cell: "pk-ly",
     title:
-      "Years between the installed release and the package's newest stable release, on one scale down the list; a dash is a package not behind its newest stable, a question mark one that could not be measured — each says why on hover",
+      "Years between the installed release and the package's newest dated release, on one scale down the list; a dash is a package not behind its newest release, a question mark one that could not be measured — each says why on hover",
   },
   { key: "verdict", label: "Verdict", cell: "pk-verdict" },
   { key: "priority", label: "Priority", cell: "pk-prio" },
@@ -66,7 +66,7 @@ function LibyearsCell({ finding, max }: { finding: Finding; max: number | null }
   const value = fixed(finding.libyears, 1);
   const metadata = model.details.get(finding.package)?.metadata ?? null;
   if (value === null) {
-    const reason = libyearsReason(finding, model.details.get(finding.package) ?? null);
+    const reason = libyearsReason(finding, model.details.get(finding.package) ?? null, model.report.libyears);
     const why = reason === "" ? "not measured" : `not measured: ${reason}`;
     return (
       <span className="ly-mark" title={why}>
@@ -269,7 +269,7 @@ function PackagesLede({ tally, listed, max }: { tally: LibyearsTally; listed: nu
     <div className="pk-lede">
       <p className="pk-answer">
         <Count n={behind} /> of the <b>{listed}</b> listed {behind === 1 ? "is" : "are"} behind{" "}
-        {behind === 1 ? "its" : "their"} newest stable release
+        {behind === 1 ? "its" : "their"} newest release
         {current > 0 && (
           <>
             {unmeasured > 0 ? "; " : " and "}
@@ -298,7 +298,7 @@ function PackagesLede({ tally, listed, max }: { tally: LibyearsTally; listed: nu
             <span className="pk-key-mark" aria-hidden="true">
               —
             </span>{" "}
-            not behind its newest stable
+            not behind its newest release
             {unmeasured === 0 && <HoverHint both={false} />}
           </span>
         )}

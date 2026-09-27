@@ -2,6 +2,7 @@ import type { ExplainMetadata, Finding, PackageDetails } from "../../model/types
 import { day, fixed } from "../../domain/format";
 import { libyearsReason, libyearsRowPhrases } from "../../domain/libyears";
 import { Muted, NoWrap } from "../common/common";
+import { useReport } from "../context";
 import "./detail.css";
 
 type MetadataSlice = Pick<
@@ -23,9 +24,10 @@ export function LibyearsRow({
   details: PackageDetails | null;
   metadata: MetadataSlice | null;
 }) {
+  const { model } = useReport();
   const value = fixed(finding.libyears, 1);
   if (value === null) {
-    const why = libyearsReason(finding, details);
+    const why = libyearsReason(finding, details, model.report.libyears);
     return <Muted>{why === "" ? "not measured" : `not measured · ${why}`}</Muted>;
   }
 

@@ -67,7 +67,7 @@ export function shortFact(signal: Signal, finding: Finding): string {
     }
     case "S2": {
       const since = monthYear(d.last_release);
-      return since ? `no stable release since ${since}` : signal.summary;
+      return since ? `no release since ${since}` : signal.summary;
     }
     case "S4": {
       const since = monthYear(d.last_push);

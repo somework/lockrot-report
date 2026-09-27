@@ -4,8 +4,18 @@
 import type { ExplainMetadata, Finding, LibyearsBlock, PackageDetails } from "../model/types";
 import { fixed } from "./format";
 import { readPinnedFacts } from "./pinned";
+import { vocabTable } from "./vocab";
 
 const NOT_FROM_COMPOSER_NOTE = "not from a Composer repository, not checked";
+
+const UNMEASURED_LABELS: Readonly<Record<string, string>> = vocabTable({
+  no_stable_release_date: "no dated release",
+});
+
+/** A key of the report's `unmeasured` block, in words. */
+export function unmeasuredLabel(reason: string): string {
+  return UNMEASURED_LABELS[reason] ?? reason.replace(/_/g, " ");
+}
 
 /** An unmeasured package sorts below every measured one, a measured `0` included. */
 export function libyearsSortKey(finding: Pick<Finding, "libyears"> | null): number {
@@ -14,10 +24,14 @@ export function libyearsSortKey(finding: Pick<Finding, "libyears"> | null): numb
   return value === null ? -1 : value;
 }
 
-/** In the words the report's `unmeasured` block counts it under; empty when measured, or when no
- *  field says which reason. */
-export function libyearsReason(finding: Finding | null, details: PackageDetails | null): string {
-  if (!finding || fixed(finding.libyears, 1) !== null) return "";
+/** In the words the report's `unmeasured` block counts it under; empty when measured, when there is
+ *  no block, or when no field says which reason. */
+export function libyearsReason(
+  finding: Finding | null,
+  details: PackageDetails | null,
+  block: LibyearsBlock | null,
+): string {
+  if (!finding || !block || fixed(finding.libyears, 1) !== null) return "";
   if (finding.note === NOT_FROM_COMPOSER_NOTE) return "not from a Composer repository";
   if (finding.note) return "metadata unavailable";
   switch (readPinnedFacts(finding, details).branchSnapshot) {
@@ -39,7 +53,7 @@ export function libyearsAtZero(
   const newest = meta?.lastStableVersion ?? null;
 
   return newest && newest !== finding.version
-    ? `not behind the newest stable, ${newest}`
+    ? `not behind the newest release, ${newest}`
     : "the installed release is the newest";
 }
 

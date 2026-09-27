@@ -9,6 +9,7 @@ import { describe, expect, test } from "vitest";
 
 import { answerParts, answerText } from "../../../src/domain/answer";
 import {
+  lockTimeLabel,
   pinnedContextReason,
   pinnedFacts,
   pinnedKind,
@@ -190,8 +191,15 @@ describe("pinnedFacts", () => {
     expect(readPinnedFacts(s6({}), withLock(lock({ branchSnapshot: null }))).branchSnapshot).toBeNull();
   });
 
+  test("a finding without S6 is not a branch: lockrot fires S6 on every snapshot", () => {
+    const none = makeFinding({ verdict: "stale", signals: [makeSignal({ id: "S2" })] });
+    expect(readPinnedFacts(none, null).branchSnapshot).toBe(false);
+    expect(readPinnedFacts(none, withLock(lock())).branchSnapshot).toBe(false);
+    expect(readPinnedFacts(none, withLock(lock())).snapshotTime).toBeNull();
+  });
+
   test("dates a snapshot by S6's own time, else by the lock's only where the lock says it is a branch", () => {
-    const f = makeFinding({ verdict: "pinned" });
+    const f = makeFinding({ verdict: "pinned", signals: [makeSignal({ id: "S6", data: {} })] });
     expect(readPinnedFacts(f, withLock(lock())).snapshotTime).toBe("2024-01-01T00:00:00+00:00");
     expect(readPinnedFacts(f, withLock(lock({ branchSnapshot: false }))).snapshotTime).toBeNull();
     const own = makeFinding({
@@ -236,9 +244,9 @@ describe("pinnedFacts", () => {
     expect(pinnedFacts(makeFinding({ verdict: "stale" }), null)).toBeNull();
   });
 
-  test("a pinned verdict with no S6 still has facts, the version the finding's own", () => {
+  test("a pinned verdict with no S6 still has facts, the version the finding's own and no branch", () => {
     expect(pinnedFacts(makeFinding({ verdict: "pinned", version: "dev-x" }), null)).toEqual(
-      facts({ version: "dev-x" }),
+      facts({ version: "dev-x", branchSnapshot: false }),
     );
   });
 });
@@ -277,9 +285,9 @@ describe("the answer's pinned clause", () => {
     );
   });
 
-  test("a snapshot of a tagged package names no tag or date: the metadata's last stable line is the one place (plan B2)", () => {
+  test("a snapshot of a tagged package names no tag or date: the Provenance 'newest dated tag' line is the one place (plan B2)", () => {
     // The newest dated tag may be dated by a monorepo parent (`last_stable_dated_by`), and the panel
-    // already names it "last stable" once; the answer does not give it a second name or date.
+    // already names it "newest dated tag" once; the answer does not give it a second name or date.
     for (const [model, pkg, version] of [
       [WALLABAG_013, "friendsofsymfony/oauth-server-bundle", "dev-master"],
       [MAUTIC_013, "rector/rector", "dev-main"],
@@ -562,5 +570,30 @@ describe("one reading for every document", () => {
       php: "^7.4|^8.0",
     });
     expect(snapshotOf(finding(EDGES, "acme/untagged"), details(EDGES, "acme/untagged"))).toBeNull();
+  });
+});
+
+describe("lockTimeLabel", () => {
+  test("a branch snapshot's lock time is its commit's date, on every document", () => {
+    for (const [model, pkg] of [
+      [MAUTIC_013, "rector/rector"],
+      [MAUTIC_011, "rector/rector"],
+      [WALLABAG_013, "wallabag/rulerz"],
+      [WALLABAG_011, "wallabag/rulerz"],
+      [EDGES, "acme/path-lib"],
+    ] as const) {
+      expect(lockTimeLabel(finding(model, pkg), details(model, pkg))).toBe("snapshot dated");
+    }
+  });
+
+  test("a version with no tag in its repository has a lock time that is neither a release nor a commit", () => {
+    expect(lockTimeLabel(finding(EDGES, "acme/untagged"), details(EDGES, "acme/untagged"))).toBe("lock time");
+  });
+
+  test("any other version was released then", () => {
+    expect(lockTimeLabel(finding(EDGES, "acme/left"), details(EDGES, "acme/left"))).toBe("released");
+    expect(lockTimeLabel(makeFinding({ verdict: "stale" }), withLock(lock({ branchSnapshot: false })))).toBe(
+      "released",
+    );
   });
 });

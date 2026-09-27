@@ -124,7 +124,7 @@
     ],
     "evidence": "no tagged release in its repository",
     "allowlist_reason": null,
-    "note": "edge: S6 reason no_stable_release; has_stable_release false; snapshot_time null; no branch rows",
+    "note": null,
     "data_date": "2026-09-27T00:00:00+00:00",
     "libyears": null,
     "baseline": null
@@ -161,7 +161,7 @@
     ],
     "evidence": "pinned to branch snapshot dev-main",
     "allowlist_reason": null,
-    "note": "edge: S6 has_stable_release null (a path repository: no metadata); details.metadata and activity null",
+    "note": "not from a Composer repository, not checked",
     "data_date": "2026-09-27T00:00:00+00:00",
     "libyears": null,
     "baseline": null
@@ -207,7 +207,7 @@
     ],
     "evidence": "branch 1.x last released 2022-02-01 (4.7 years ago); 3.x released 3.2.0 (2026-09-01)",
     "allowlist_reason": null,
-    "note": "edge: S8 floor_source \"extension\" (unknown), reachable_branch null; rows 3.x/2.x php_blocked_by \"extension\" (unknown, both admits_* true, both misses_* null); installed 1.x row php_blocked_by project, misses_project_php needs_newer (newest dated 1.9.0 needs ^8.4, lock.php ^7.4 || ^8.0); 0.x php null, admits_* and misses_* null",
+    "note": null,
     "data_date": "2026-09-27T00:00:00+00:00",
     "libyears": 4.6,
     "baseline": null
@@ -241,7 +241,7 @@
     ],
     "evidence": "last release 2021-03-01 (5.6 years ago)",
     "allowlist_reason": null,
-    "note": "edge: branch rows with every misses_* value: 6.x >=8.3.1 <8.4 misses both floors differently (target stops_before, project needs_newer; php_blocked_by names only project); 5.x ^7.4 || ^8.5 skips both; 4.x >=8.5 <8.4 unsatisfiable; 3.x >=8.5 needs_newer both; 2.x ~8.3.0 stops_before the target only (php_blocked_by target); installed 1.x ^7.4 stops_before both; 0.x misses_target_php \"straddles\" (unknown)",
+    "note": null,
     "data_date": "2026-09-27T00:00:00+00:00",
     "libyears": 1.2,
     "baseline": null
@@ -285,7 +285,7 @@
     ],
     "evidence": "last release 2021-08-01 (5.2 years ago)",
     "allowlist_reason": null,
-    "note": "edge: unattributed: fan_in 9 > exposure_rule.max_fan_in 8, so in no exposure entry and no S7; chain of 3; first hop acme/direct-a not in exposure",
+    "note": null,
     "data_date": "2026-09-27T00:00:00+00:00",
     "libyears": 0,
     "baseline": null
@@ -320,7 +320,7 @@
     ],
     "evidence": "last release 2022-01-01 (4.7 years ago)",
     "allowlist_reason": null,
-    "note": "control: an attributed transitive, counted under acme/direct-b",
+    "note": null,
     "data_date": "2026-09-27T00:00:00+00:00",
     "libyears": 0,
     "baseline": null
@@ -394,7 +394,7 @@
     ],
     "evidence": "a signal a later lockrot adds; licence changed to BUSL-1.1 in 3.1.0; not checked: sbom_lookup (quota_exhausted); release_dates (undated_releases)",
     "allowlist_reason": null,
-    "note": "edge: unknown signal ids S99 and acme:licence (data any object); S10 with an unknown check and reason beside a known pair",
+    "note": null,
     "data_date": "2026-09-27T00:00:00+00:00",
     "libyears": 0,
     "baseline": null

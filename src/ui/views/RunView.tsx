@@ -5,6 +5,7 @@ import { useReport } from "../context";
 import { baselineDelta } from "../../domain/baseline";
 import { EMPTY_FILTERS } from "../../state/types";
 import { fixed, plural } from "../../domain/format";
+import { unmeasuredLabel } from "../../domain/libyears";
 import { noteDocLink } from "../../domain/sniff";
 import {
   cacheAge,
@@ -138,7 +139,7 @@ function unmeasuredText(report: ReportModel): FieldValue {
   if (!block) return { missing: libyearsReason(report) };
   const parts = block.unmeasured
     .filter(([, count]) => count > 0)
-    .map(([reason, count]) => `${reason.replace(/_/g, " ")} ${count}`);
+    .map(([reason, count]) => `${unmeasuredLabel(reason)} ${count}`);
 
   return parts.length > 0 ? { parts } : "none";
 }
