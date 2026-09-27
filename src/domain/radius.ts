@@ -1,20 +1,8 @@
 /**
- * The Blast radius ledger (PD-RADIUS-1, DESIGN.md §5): one row per direct requirement, ranked by how
- * many flagged packages it lists underneath. Legacy's `viewRadius` (`report.js:595-625`) drew a card
- * per requirement; M24/M25 fixed its count to be the rows listed. This keeps that rule — `count` is
- * exactly `pulled.length` — and adds what the document already says about the rest:
- *
- * - `elsewhere`: flagged packages the requirement also reaches (its name is in their own
- *   `direct_dependents`) whose recorded chain starts at another requirement, so they are listed
- *   under that row instead. `count + elsewhere.length` is lockrot's own `exposure[].flagged`
- *   whenever nothing is filtered (a unit test holds every fixture to it).
- * - rows that list nothing are sorted into two tails: requirements that are flagged themselves, and
- *   requirements that reach flagged packages only through rows above.
- * - a package in `unattributed` (`exposure` counts it under no requirement) is in no row and no
- *   "elsewhere", so `count + elsewhere.length` stays `exposure[].flagged`; nothing draws it yet.
- *
- * Arrangement and counting only: every fact is a field of the document (`chain`,
- * `direct_dependents`, `exposure`, a finding's verdict and priority).
+ * The Blast radius ledger (PD-RADIUS-1): one row per direct requirement, ranked by the flagged
+ * packages listed under it (`count`). `elsewhere` holds the ones it reaches but another row lists,
+ * so `count + elsewhere.length` is lockrot's `exposure[].flagged` when nothing is filtered; an
+ * `unattributed` package is in neither.
  */
 
 import type { Finding, Model, Verdict } from "../model/types";
@@ -22,8 +10,7 @@ import { PRIORITIES } from "../model/types";
 import { countPhrase } from "./format";
 import { VERDICT_ORDER } from "./vocab";
 
-/** A flagged package a row reaches but does not list: `listedUnder` is the row that lists it (the
- *  first direct requirement on its recorded chain), or null when no row does. */
+/** `listedUnder` is the first direct requirement on its chain, or null when no row lists it. */
 export interface RadiusElsewhere {
   readonly finding: Finding;
   readonly listedUnder: string | null;
@@ -31,8 +18,6 @@ export interface RadiusElsewhere {
 
 export interface RadiusRow {
   readonly package: string;
-  /** The requirement's own installed version, from its finding (flagged or not); null when the
-   *  document has no finding for it. */
   readonly version: string | null;
   readonly dev: boolean;
   /** The requirement's own finding when it is one of the flagged findings passed in. */
@@ -44,8 +29,7 @@ export interface RadiusRow {
   readonly elsewhere: readonly RadiusElsewhere[];
   /** `exposure[].flagged`, as the document states it. */
   readonly exposure: number;
-  /** Flagged packages listed under it with no filter applied: `count` again when nothing is
-   *  filtered, more when the query box or the rail keeps some of them off the list. */
+  /** More than `count` when the search or the rail keeps some off the list. */
   readonly unfiltered: number;
 }
 
@@ -61,8 +45,6 @@ export interface RadiusLayout {
   readonly ranked: readonly RadiusRow[];
   /** The ranked rows shown one by one. */
   readonly lead: readonly RadiusRow[];
-  /** The ranked rows that list exactly one package each, folded under one head; empty when the
-   *  list is too short to need it. */
   readonly singles: readonly RadiusRow[];
   /** Flagged themselves, listing nothing. */
   readonly selfOnly: readonly RadiusRow[];
@@ -70,17 +52,12 @@ export interface RadiusLayout {
   readonly throughOther: readonly RadiusRow[];
   /** `throughOther`'s packages, one entry per flagged package. */
   readonly receipt: readonly RadiusReceipt[];
-  /** Flagged direct requirements `exposure` does not name — nothing flagged is counted under them —
-   *  so no row can. */
+  /** Flagged direct requirements `exposure` does not name, so no row can. */
   readonly unlisted: readonly Finding[];
   /** `unlisted` with no filter applied: every flagged direct requirement `exposure` does not name. */
   readonly unfilteredUnlisted: number;
-  /** How many direct requirements `exposure` names — not every direct requirement the project has:
-   *  `unfilteredUnlisted` more are flagged and missing from it, so the view always says "the N
-   *  direct requirements lockrot's exposure list names", never "your N". */
+  /** Not every direct requirement the project has, so the view never says "your N". */
   readonly exposureCount: number;
-  /** Whether the query box or the rail keeps any flagged package off the tab: every count above is
-   *  then of the packages that match, and the view says so. */
   readonly narrowed: boolean;
   /** With no filter: the distinct flagged packages listed under any row, and the rows listing any. */
   readonly unfilteredTotal: number;
@@ -112,11 +89,8 @@ function listedUnder(parent: string, flagged: readonly Finding[]): readonly Find
   return flagged.filter((f) => f.package !== parent && hopsOf(f).includes(parent));
 }
 
-/**
- * One row per `exposure` entry, in document order, from `visibleFlagged` — the view's
- * already-filtered flagged findings (the query box and the rail apply before this runs) — and
- * `allFlagged`, the same list before any filter, which only `unfiltered` reads.
- */
+/** One row per `exposure` entry, in document order; `allFlagged` (before any filter) feeds only
+ *  `unfiltered`. */
 export function radiusRows(
   model: Model,
   visibleFlagged: readonly Finding[],
@@ -158,9 +132,6 @@ export function radiusRows(
   });
 }
 
-/** Sorts the rows into the ranking, its fold and the two tails; drops rows with nothing to say.
- *  `allFlagged` is the tab's flagged findings before any filter (`population`); left out, the
- *  visible ones are all there is. */
 export function radiusLayout(
   model: Model,
   visibleFlagged: readonly Finding[],
@@ -219,8 +190,6 @@ function receiptOf(rows: readonly RadiusRow[]): readonly RadiusReceipt[] {
   );
 }
 
-/** The flagged packages the tab draws: every row's pulled packages, every flagged requirement that
- *  heads a row, and every one the footnote names (PD-RADIUS-5). */
 export function radiusListed(layout: RadiusLayout): ReadonlySet<string> {
   const rows = [...layout.ranked, ...layout.selfOnly];
   return new Set([
@@ -234,13 +203,8 @@ export function radiusShownCount(layout: RadiusLayout): number {
   return layout.ranked.length + layout.selfOnly.length + layout.throughOther.length;
 }
 
-/**
- * The status line's count for the tab: "29 of 29 direct requirements" when `exposure` names every
- * flagged direct requirement. `exposure` lists only requirements with flagged packages counted under
- * them, so a flagged requirement with none is not on it by definition. The footnote names those;
- * the line counts them too: "29 of 29 direct requirements on the exposure list, plus 8 of 8 flagged
- * ones with nothing flagged counted under them".
- */
+/** `exposure` lists only requirements with something flagged counted under them, so the line also
+ *  counts the flagged ones it leaves out. */
 export function radiusCountPhrase(layout: RadiusLayout): string {
   const head = countPhrase(
     radiusShownCount(layout),
@@ -256,12 +220,9 @@ export function radiusCountPhrase(layout: RadiusLayout): string {
 }
 
 /**
- * The findings among `flagged` that have a place on the Blast radius tab at all: listed under some
- * direct requirement's row, heading a row as a flagged direct requirement, or — a flagged direct
- * requirement `exposure` does not name (wallabag's lcobucci/jwt, say) — named, with a link, in the
- * footnote. A transitive package is left out when its chain reaches no row or it is `unattributed`.
- * Membership is per finding, so filtering before or after gives the same set; the rail counts over
- * it on that tab (PD-RAIL-1).
+ * Listed under a row, heading one, or named in the footnote; a transitive package whose chain
+ * reaches no row, or that is `unattributed`, has no place. The rail counts over this set
+ * (PD-RAIL-1).
  */
 export function placedOnRadius(model: Model, flagged: readonly Finding[]): readonly Finding[] {
   const parents = new Set(model.report.exposure.map((exposure) => exposure.package));
@@ -312,12 +273,7 @@ export interface VendorPart {
   readonly count: number;
 }
 
-/**
- * Where a row's packages come from, as few words as the list allows: one vendor ("all hoa/*"), up to
- * three parts named, or the two biggest vendors and "N from other vendors" when those two hold at
- * least half. `null` when the list is too spread out for a short phrase to be true — the verdict mix
- * then says it alone.
- */
+/** `null` when the list is too spread out for a short phrase to be true. */
 export function vendorPhrase(
   findings: readonly Finding[],
 ): { readonly parts: readonly VendorPart[]; readonly others: number; readonly all: boolean } | null {
@@ -353,16 +309,11 @@ export interface TreeNode {
   readonly via: readonly string[];
   /** Whether it is the last child of its tree parent. */
   readonly last: boolean;
-  /** For each ancestor depth 0..depth-1: whether that ancestor has a later sibling (its line runs
-   *  on past this row). */
   readonly rails: readonly boolean[];
 }
 
-/**
- * A row's pulled packages as the tree their recorded chains draw: each hangs under the nearest hop
- * of its own chain that the row also lists, and the hops in between that are not flagged are named
- * as "via". Depth-first, siblings most urgent first.
- */
+/** Each package hangs under the nearest hop of its own chain the row also lists; unflagged hops
+ *  between are named "via". */
 export function pulledTree(row: RadiusRow): readonly TreeNode[] {
   const listed = new Set(row.pulled.map((f) => f.package));
   const children = new Map<string, { finding: Finding; via: readonly string[] }[]>();
@@ -460,8 +411,7 @@ function holds(rows: readonly RadiusRow[], pkg: string | null): boolean {
 }
 
 export function isFoldOpen(layout: RadiusLayout, key: string, input: OpenInput): boolean {
-  // With nothing ranked above it (a filter left no row listing anything), this tail is the list: it
-  // is always shown, whatever the reader did to the fold while there was a ranking above it.
+  // With nothing ranked above it this tail is the list, so it is always shown.
   if (key === FOLD_SELF && layout.ranked.length === 0) return true;
   const set = input.disclosure[key];
   if (set !== undefined) return set;
@@ -470,9 +420,7 @@ export function isFoldOpen(layout: RadiusLayout, key: string, input: OpenInput):
   return layout.receipt.some((r) => r.finding.package === input.pkg);
 }
 
-/** The packages of the rows on screen, top to bottom — a row, then its packages when it is open;
- *  the "only through rows above" tail lists the flagged packages it reaches, one row each — the
- *  order `j`/`k` walk (`ui/views/order.ts`). */
+/** The order `j`/`k` walk (`ui/views/order.ts`). */
 export function radiusRowOrder(layout: RadiusLayout, input: OpenInput): readonly string[] {
   const rowsOf = (rows: readonly RadiusRow[], expandable: boolean) =>
     rows.flatMap((row) => [

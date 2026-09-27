@@ -18,13 +18,8 @@ import { PkgMention } from "../common/PkgMention";
 import { useReport } from "../context";
 import "./detail-lead.css";
 
-/**
- * The top of the open package (PD-DETAIL-6, DESIGN.md §5): one answer sentence in the serif the
- * summary band and the release-branches answer already speak in, the four facts a reader checks
- * first, then how the package gets in and what flagged packages it pulls in. Every word comes from
- * `domain/answer.ts` or from a field the rest of the panel shows in full further down; nothing here
- * is a recommendation.
- */
+/** The top of the open package (PD-DETAIL-6): the answer sentence, four key facts, how it gets in
+ *  and what flagged packages it pulls in. Nothing here is a recommendation. */
 export function DetailLead({ finding, details }: { finding: Finding; details: PackageDetails | null }) {
   const { model } = useReport();
   const parts = answerParts({
@@ -88,8 +83,9 @@ function AnswerNode({ part }: { part: AnswerPart }) {
 interface Fact {
   readonly label: string;
   readonly value: ComponentChildren;
-  /** A quieter line under the value, for when the value alone would read wrong: an age that is not
-   *  the reader's own branch's, or a 0.0 libyears that only means nothing newer came out. */
+  /**
+   * For when the value alone would read wrong: an age that is not your branch's, or a 0.0 libyears.
+   */
   readonly note?: ComponentChildren;
   readonly wide?: boolean;
 }
@@ -98,8 +94,7 @@ interface Fact {
 const NOT_RECORDED = <Muted>not recorded</Muted>;
 
 /**
- * Four facts, always the same four in the same places: a gap is said ("not recorded", "not
- * measured") rather than left out, so a reader comparing two packages never finds a column gone.
+ * Always the same four: a gap is said, never left out, so no column goes missing between packages.
  */
 function Facts({ finding, details }: { finding: Finding; details: PackageDetails | null }) {
   const { model, now } = useReport();
@@ -204,12 +199,8 @@ function onYourBranch(timeline: TimelineModel | null): ComponentChildren {
   );
 }
 
-/**
- * When the package's newest release is on a newer branch than the reader's, the S2 age is that
- * branch's, not theirs — the release-branches answer further down quotes their own branch's age,
- * which is older. The note says whose release it is so the two numbers do not read as a
- * contradiction (an evaluator found three different ages on one screen with nothing between them).
- */
+/** The S2 age is then a newer branch's, older than the one the release-branches answer quotes; the
+ *  note says whose, so the two do not read as a contradiction. */
 function newerThanYours(timeline: TimelineModel | null): ComponentChildren | null {
   const mine = timeline?.mine ?? null;
   if (timeline === null || mine === null || mine.snapshot || timeline.newerCount === 0) return null;
@@ -221,12 +212,7 @@ function newerThanYours(timeline: TimelineModel | null): ComponentChildren | nul
   );
 }
 
-/**
- * `composer.json › first hop › … › this package`. A hop that is itself a finding in this report is a
- * button that opens it, through the same `select` every row sends, so the hash and focus follow the
- * rules they already follow. `finding.chain` already ends with the package (Model's own comment);
- * a direct finding's chain is just itself.
- */
+/** A hop that is a finding here opens it through the same `select` every row sends. */
 function Chain({ finding }: { finding: Finding }) {
   const { model } = useReport();
   const hops = finding.chain.length > 0 ? finding.chain : [finding.package];
@@ -238,8 +224,8 @@ function Chain({ finding }: { finding: Finding }) {
   return (
     <>
       <span className="detail-chain">
-        {/* Each hop carries the "›" after it, and the last one its "· require-dev", as one unit: a
-            line breaks only after a separator, never before one or before the dev note alone. */}
+        {/* A hop and its "›" (the last its "require-dev") are one unit: a line breaks only
+           after a separator. */}
         {["composer.json", ...hops].map((pkg, index) => {
           const last = index === hops.length;
           return (
@@ -274,8 +260,6 @@ function Chain({ finding }: { finding: Finding }) {
   );
 }
 
-/** One hop of the chain: the open package in ink, a hop that is itself a finding here a button
- *  that opens it (the same `select` every row sends), any other in mono. */
 function Hop({ pkg, self, flagged }: { pkg: string; self: boolean; flagged: boolean }) {
   const { dispatch } = useReport();
   if (self) return <span className="detail-hop is-self">{pkg}</span>;
@@ -294,9 +278,7 @@ function Hop({ pkg, self, flagged }: { pkg: string; self: boolean; flagged: bool
   );
 }
 
-/** The most entries "What it pulls in" names one by one; past it, the line counts them by verdict
- *  instead, since a longer run of names is the bare package list a reader cannot take in — and a
- *  fold under the count names every one, by verdict, so the count is never a dead end. */
+/** Past this many, the line counts by verdict and a fold names every one. */
 const PULLS_IN_NAMED = 4;
 
 /** "a, b and c" with each item already a node. */
@@ -364,8 +346,6 @@ function PullsIn({ finding }: { finding: Finding }) {
   );
 }
 
-/** A package name that opens its own finding when it is one here, through the same `select` every
- *  row sends; plain mono otherwise. */
 function PackageName({ pkg }: { pkg: string }) {
   const { model, dispatch } = useReport();
   if (!model.report.findings.some((f) => f.package === pkg)) return <span className="mono">{pkg}</span>;

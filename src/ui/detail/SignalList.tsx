@@ -23,9 +23,7 @@ import { PkgMention } from "../common/PkgMention";
 import { useReport } from "../context";
 import "./detail.css";
 
-/** A scalar the way legacy's dump wrote it (`report.js:716`): `null` spelled out, a string as
- *  itself, a number or boolean as its JSON digits. `DataScalar` draws a single `null` or timestamp
- *  its own way. */
+/** `null` spelled out, a string as itself, a number or boolean as its JSON. */
 function scalar(value: unknown): string | null {
   if (value === null) return "null";
   if (typeof value === "string") return value;
@@ -48,12 +46,8 @@ function isScalar(value: unknown): value is string | number | boolean | null {
   return value === null || ["string", "number", "boolean"].includes(typeof value);
 }
 
-/**
- * Text that wraps between words and, inside a package name, URL, id or date, only after a "/" or
- * "::" (`domain/checks.ts#wrapParts`). Each identifier piece is an inline-block: kept whole on its
- * line while it fits one, wrapped inside only when it alone is wider than the line. `prose` keeps a
- * whole identifier as one piece, for a sentence rather than a narrow data column.
- */
+/** Each identifier piece is an inline-block, so it wraps only when it alone is wider than the line;
+ *  `prose` keeps a whole identifier as one piece. */
 function Wrapped({ text, prose = false }: { text: string; prose?: boolean }) {
   const parts = wrapParts(text, { paths: !prose });
   if (parts.length === 1 && parts[0]?.atomic !== true) return <>{text}</>;
@@ -72,9 +66,7 @@ function Wrapped({ text, prose = false }: { text: string; prose?: boolean }) {
   );
 }
 
-/** A whole identifier inside prose, its pieces each kept whole in turn: the outer `detail-token`
- *  keeps the name on one line while it fits, and only a name wider than the line breaks — after its
- *  "/" or "::", never at a hyphen ("package-versions-/deprecated") while a piece fits. */
+/** Only a name wider than the line breaks, after "/" or "::", never at a hyphen. */
 function PathPieces({ token }: { token: string }) {
   const pieces = identifierPieces(token);
   if (pieces.length === 1) return <>{token}</>;
@@ -89,15 +81,11 @@ function PathPieces({ token }: { token: string }) {
   );
 }
 
-/** How a list of scalars is joined: a dependency chain the way the panel's "How it gets in" writes
- *  one ("mautic/core-lib › doctrine/dbal"), any other list with commas ("S2, S8"). */
 function joinerFor(key: string): string {
   return key === "chain" ? " › " : ", ";
 }
 
-/** A list of scalars, each item's separator kept with it ("S2," then "S8"; "mautic/core-lib ›",
- *  glued by a no-break space that `wrapParts` keeps inside the item's last piece), so a wrapped line
- *  never starts on one. */
+/** Each separator is kept with its item, so a wrapped line never starts on one. */
 function ScalarList({ items, joiner }: { items: readonly string[]; joiner: string }) {
   const glued = joiner.trimEnd().replace(/^ /, "\u00a0");
   return (
@@ -105,9 +93,7 @@ function ScalarList({ items, joiner }: { items: readonly string[]; joiner: strin
   );
 }
 
-/** One object in a signal's data (an S7 package, an S9 advisory, an S10 unchecked check): one line
- *  per field, its label beside its value, the labels of every object in the list sharing one column
- *  (`detail.css`, subgrid). The first field, the object's name, leads in ink. */
+/** The labels of every object in the list share one column (subgrid). */
 function DataRecord({ record }: { record: Readonly<Record<string, unknown>> }) {
   return (
     <dl className="detail-data-item">
@@ -127,14 +113,8 @@ function Via({ hops }: { hops: readonly string[] }) {
   return <ScalarList items={hops} joiner=" › " />;
 }
 
-/**
- * S7's flagged packages as one compact table — package · verdict · via — instead of one bordered
- * three-line block each (21 of them ran past 2000px). "Via" is the chain between the open package
- * and the row's package (`checks.ts#pulledRows`); "direct" when there is none. On a narrow sheet the
- * via column folds under each package as a muted second line, left out for a direct one, and the
- * column head says so (`detail.css`); only one of the two is ever displayed, so a screen reader hears
- * it once.
- */
+/** S7's packages as one table: one bordered block each ran past 2000px. On a narrow sheet "via"
+ *  folds under each package; only one of the two is displayed, so a screen reader hears it once. */
 function PulledTable({ rows }: { rows: readonly PulledRow[] }) {
   return (
     <table className="detail-pulled-table">
@@ -173,8 +153,6 @@ function PulledTable({ rows }: { rows: readonly PulledRow[] }) {
   );
 }
 
-/** A top-level value: `null` as a muted dash (the word kept for a screen reader), an ISO timestamp
- *  with its date leading and its time quieter, anything else as `scalar` writes it. */
 function DataScalar({ value }: { value: string | number | boolean | null }) {
   if (value === null) {
     return (
@@ -196,8 +174,6 @@ function DataScalar({ value }: { value: string | number | boolean | null }) {
   );
 }
 
-/** Whether a value needs the row's whole width: a list of objects (S7's packages, S9's advisories,
- *  S10's unchecked checks), one object, or anything shown as JSON. */
 function isWide(value: unknown): boolean {
   return !isScalar(value) && scalarItems(value) === null;
 }
@@ -207,12 +183,7 @@ function hasRecords(value: unknown): boolean {
   return isRecord(value) || (Array.isArray(value) && value.length > 0 && value.every(isRecord));
 }
 
-/**
- * A signal's `data` value, readable rather than raw: a scalar as `DataScalar` draws it, a list of
- * scalars joined ("S2, S8" rather than `["S2","S8"]`), an object or a list of objects one bordered
- * block each, one line per field, anything deeper as JSON. Every key and value the document carries
- * is still shown; only the punctuation changes.
- */
+/** Every key and value is shown; only the punctuation changes. */
 function formatDataValue(value: unknown, key: string, openPackage: string | null = null): ComponentChildren {
   if (isScalar(value)) return <DataScalar value={value} />;
   const pulled = openPackage === null ? null : pulledRows(value, openPackage);
@@ -226,11 +197,6 @@ function formatDataValue(value: unknown, key: string, openPackage: string | null
   return JSON.stringify(value);
 }
 
-/**
- * A fired signal's data as label/value pairs, each label beside its value (a 40/60 grid) so one
- * check's data costs one line per key, not two; a list of objects takes the full width under its
- * label, at every width (`detail.css`).
- */
 function SignalData({ data, pkg }: { data: Readonly<Record<string, unknown>>; pkg: string }) {
   const entries = Object.entries(data);
   if (entries.length === 0) {
@@ -261,12 +227,7 @@ export function firedRowId(id: string): string {
 /** The Provenance section's repository-activity facts (Detail.tsx), a quiet S3's or S4's evidence. */
 export const ACTIVITY_FACTS_ID = "detail-prov-activity";
 
-/**
- * Where a cell's evidence sits in the open panel, or `null` when it has none to point at: a fired
- * check's own row; a check that could not run, S10's row (which names it); a quiet S3 (archived) or
- * S4 (push age), Provenance's repository-activity line — the facts it read, or why this file holds
- * none, which is always drawn.
- */
+/** A quiet S3 or S4 points at Provenance's activity line, which is always drawn. */
 function evidenceTarget(cell: CheckCell, s10Fired: boolean): string | null {
   if (cell.state === "fired") return firedRowId(cell.id);
   if (cell.state === "blocked") return s10Fired ? firedRowId("S10") : null;
@@ -285,13 +246,8 @@ const STATE_WORDS: Readonly<Record<CheckState, string>> = {
 /** How many frames `settle` keeps re-aiming at the evidence after the first jump. */
 const SETTLE_FRAMES = 3;
 
-/**
- * Scrolling the page to the evidence can bring the footer into view, and `:root.footer-in-view`
- * (app.css, Footer.tsx) then shortens the side panel by the footer's height a frame or two later —
- * in WebKit that left the line it had just scrolled to below the panel's new bottom edge. Aiming
- * again for a few frames lands it inside the settled panel; `block: "nearest"` moves nothing once
- * it already is.
- */
+/** Scrolling can reveal the footer, which shortens the side panel a frame later; aiming again for a
+ *  few frames lands inside the settled panel (WebKit). */
 function settle(target: Element, frames: number): void {
   if (frames <= 0 || typeof window.requestAnimationFrame !== "function") return;
   window.requestAnimationFrame(() => {
@@ -300,9 +256,6 @@ function settle(target: Element, frames: number): void {
   });
 }
 
-/** Opens every `<details>` around the evidence (and the evidence itself when it is one), brings it
- *  into view and moves focus to it — a focusable facts line itself, otherwise its summary — so the
- *  reader lands where the strip pointed. */
 function reveal(id: string): void {
   const target = document.getElementById(id);
   if (target === null) return;
@@ -310,15 +263,12 @@ function reveal(id: string): void {
   for (let d = target.parentElement?.closest("details"); d; d = d.parentElement?.closest("details")) {
     d.open = true;
   }
-  // A frame later, not in the same tick, and an instant jump rather than a smooth one: the evidence
-  // can sit below both the detail's own scroll box and the page's fold, and Firefox and WebKit each
-  // dropped one of those two smooth scrolls (the one started while the `<details>` just opened were
-  // still being laid out), leaving the evidence off screen.
+  // A frame later and an instant jump: Firefox and WebKit each dropped one of the two smooth
+  // scrolls started while the <details> were still being laid out.
   const land = (): void => {
     target.scrollIntoView({ block: "nearest" });
     settle(target, SETTLE_FRAMES);
-    // A plain evidence line (Provenance's activity facts) takes focus itself, so a screen reader
-    // reads the facts rather than the section's heading.
+    // So a screen reader reads the facts rather than the section's heading.
     if (!(target instanceof HTMLDetailsElement) && target.hasAttribute("tabindex")) {
       target.focus({ preventScroll: true });
       return;
@@ -331,8 +281,7 @@ function reveal(id: string): void {
   else land();
 }
 
-/** A check's name with a line break allowed after each "/", which a browser does not offer on its
- *  own: "snapshot/untagged" (S6, PD-S6-1) is two words that must split there to fit a 55px cell. */
+/** A browser offers no break after "/": "snapshot/untagged" must split there to fit a 55px cell. */
 function breakAfterSlash(name: string): ComponentChildren {
   const parts = name.split("/");
   return parts.map((part, index) => (
@@ -347,12 +296,8 @@ function breakAfterSlash(name: string): ComponentChildren {
   ));
 }
 
-/** One cell of the strip: a bar filled in its level's tone when the check fired, outlined when it
- *  stayed quiet (dashed when a quiet S3/S4 has no repository activity on file), hatched when it
- *  could not run, dotted when the document does not say, with the id
- *  and the check's one- or two-word name under it. A cell with evidence in the panel (PD-RUN-5) is a
- *  button that opens it and moves there; every other cell is hidden from assistive tech, since the
- *  tally and the lines under the strip say every state in words. */
+/** Only a cell with evidence in the panel is a button; the others are hidden from assistive tech,
+ *  since the lines under the strip say every state in words. */
 function Cell({ cell, target, unread }: { cell: CheckCell; target: string | null; unread: boolean }) {
   const tone = cell.signal === null ? "" : ` ${toneClass(levelTone(cell.signal.level))}`;
   const className = `detail-check is-${cell.state}${tone}${unread ? " is-unread" : ""}`;
@@ -388,13 +333,8 @@ function Cell({ cell, target, unread }: { cell: CheckCell; target: string | null
   );
 }
 
-/**
- * "Quiet: S5 · S6 · S8", one such line per state that has any cells. The ids alone are shown: the
- * strip right above already names each check, and saying every name twice doubled the block's
- * weight. The names stay in the line for a screen reader ("S5 predates PHP"), since the strip is
- * hidden from it. Each " ·" belongs to the item before it, so a wrapped line never starts on one.
- * `extra` are ids this page has no cell for, after the cells, each as written in code.
- */
+/** Ids only: the strip above names each check. The names stay for a screen reader, from which the
+ *  strip is hidden. */
 function StateLine({
   label,
   cells,
@@ -450,8 +390,6 @@ function CodeList({ ids }: { ids: readonly string[] }) {
   );
 }
 
-/** " · also acme:licence, S99, checks this page does not know" after the tally: the fired ids the
- *  strip has no cell for, as written. */
 function UnknownFired({ ids }: { ids: readonly string[] }) {
   if (ids.length === 0) return null;
   return (
@@ -463,8 +401,6 @@ function UnknownFired({ ids }: { ids: readonly string[] }) {
   );
 }
 
-/** " (undated releases, see S10)" after the could-not-run line: S10's reasons for the checks it
- *  names, a known one in words, one this page does not know as written in code. */
 function BlockedSuffix({ strip }: { strip: CheckStrip }) {
   const reasons = strip.blockedReasons;
   if (reasons.length === 0) return <> (see S10)</>;
@@ -482,21 +418,13 @@ function BlockedSuffix({ strip }: { strip: CheckStrip }) {
   );
 }
 
-/** The longest id the summary's 30px id column holds ("S10"); a longer one, which only an id this
- *  page does not know can be ("acme:licence", "S100"), widens the column instead of overrunning it. */
+/** A longer id, which only an unknown one can be, widens the column instead of overrunning it. */
 const WIDE_ID = 3;
 
-/**
- * One fired check, closed by default: its id in its level's tone, lockrot's own summary and the
- * level in words; opened, what the check looks for (the run's own thresholds filled in), the
- * signal's raw data, and its entry in lockrot's docs. The docs link sits in the body, not the
- * `<summary>`: a summary is itself a control, and a link nested in it is unreachable to assistive
- * tech and fires the disclosure on click.
- */
+/** The docs link sits in the body: a link nested in a <summary> is unreachable to assistive tech
+ *  and toggles the disclosure. */
 function FiredRow({ signal, pkg }: { signal: Signal; pkg: string }) {
   const { model } = useReport();
-  // An id that is not lockrot's has no page in lockrot's docs; one this page does not know gets
-  // only what can be said of its id (`vocab.ts#signalDef`), never a known check's words.
   const doc = signalDocUrl(signal.id);
   const def = signalDef(signal.id);
 
@@ -525,12 +453,8 @@ function FiredRow({ signal, pkg }: { signal: Signal; pkg: string }) {
   );
 }
 
-/**
- * The line in place of the fired list when no signal fired. Legacy said the verdict came from what
- * lockrot could not learn, which holds for `unknown` only: an `ok` package ran every check, an
- * allowlisted `finished` one is vouched for by the allowlist, and any other verdict (a flagged one
- * lockrot reached some other way, or one this page does not know) gets no reason it cannot back.
- */
+/** "what lockrot could not learn" holds for `unknown` only; any other verdict gets no reason it
+ *  cannot back. */
 function noSignalLine(verdict: string): string {
   if (verdict === "unknown") return "No signal fired. The verdict comes from what lockrot could not learn.";
   if (verdict === "ok") return "No signal fired: every check ran and found nothing.";
@@ -542,13 +466,8 @@ function cellsIn(cells: readonly CheckCell[], state: CheckState): readonly Check
   return cells.filter((cell) => cell.state === state);
 }
 
-/**
- * "Checks" (PD-DETAIL-12, DESIGN.md §5): a strip of all ten checks, a tally of their states, the
- * quiet and could-not-run ones listed by id in one muted line each, then only the fired ones, highest
- * level first, each expandable into its data. States come from `domain/checks.ts#checkStrip`: the
- * fired signals and S10's own list of the checks it stopped. A finding with no signal at all still
- * gets the strip, then the same explanatory line legacy showed instead of an empty list.
- */
+/** "Checks" (PD-DETAIL-12): the strip, a tally, the quiet and could-not-run ids, then the fired
+ *  checks, highest level first. */
 export function SignalList({ finding }: { finding: Finding }) {
   const { model } = useReport();
   const strip = checkStrip(finding);

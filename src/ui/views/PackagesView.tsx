@@ -29,9 +29,8 @@ import { usePrinted } from "../print/printContext";
 import "./views.css";
 import "./packages.css";
 
-/** Column headers in display order, matching the accessible names `e2e/support/new.ts` expects
- *  (`SORT_LABEL`) and legacy's own column titles (report.js:581-584). `cell` names the column's
- *  cells for the phone layout's grid (packages.css), which places each by it. */
+/** Labels match the accessible names `e2e/support/new.ts` expects; `cell` places each cell in the
+ *  phone grid. */
 const COLUMNS: readonly { key: SortKey; label: string; cell: string; title?: string }[] = [
   { key: "package", label: "Package", cell: "pk-name" },
   { key: "version", label: "Version", cell: "pk-ver" },
@@ -59,16 +58,8 @@ function pct(value: number, max: number): string {
   return `${Math.min(100, Math.max(0, (value / max) * 100))}%`;
 }
 
-/**
- * A package's libyears on the list's one scale (PD-PACKAGES-1, DESIGN.md §5). Above zero: a bar
- * from 0 to the value, with the value beside it. At zero — a clamped difference of release dates,
- * not an age (`domain/libyears.ts#libyearsAtZero`) — a muted dash: 184 rows of wallabag's lock used
- * to repeat "0.0 · the installed release is the newest" word for word, which the list's key now says
- * once; each dash keeps its own reason as its hover text and, for a screen reader, as its words.
- * Unmeasured: a muted "?", with `libyearsReason` the same way.
- *
- * On paper (PD-PRINT-4) the cell keeps its printed form: the value and the short mark beside a zero.
- */
+/** At zero a muted dash, since zero is a clamped difference, not an age; each dash keeps its reason
+ *  as hover text and screen-reader words. On paper the value and a short mark. */
 function LibyearsCell({ finding, max }: { finding: Finding; max: number | null }) {
   const { model } = useReport();
   const printed = usePrinted();
@@ -131,14 +122,8 @@ function PrintedIds({ ids }: { ids: readonly string[] }) {
   );
 }
 
-/**
- * S1 to S10 as a row of ten dots under the column head's own S1…S10 caption (PD-PACKAGES-2): filled
- * in the level's tone where the signal fired (`checks.ts#levelTone`, the detail's strip's own
- * tones), ringed where S10 says the check could not run, a faint point otherwise — so a column of
- * them reads down the list as a matrix, which "S1 S2 S3 S4" text did not. The dots are decoration;
- * the fired ids are the cell's words, and a signal newer than S10 is named after the dots. On
- * paper, the ids as text.
- */
+/** Ten dots that read down the list as a matrix; decoration only, the fired ids are the cell's
+ *  words. */
 function SignalsCell({ finding }: { finding: Finding }) {
   const printed = usePrinted();
   const ids = finding.signals.map((signal) => signal.id);
@@ -177,8 +162,7 @@ function SignalsCell({ finding }: { finding: Finding }) {
   );
 }
 
-/** "vendor/" then the name, which moves to a line of its own whole rather than breaking at a
- *  hyphen, when the stacked rows are too narrow for both (packages.css `.pk-unit`). */
+/** The name moves to its own line whole rather than breaking at a hyphen. */
 function PackageName({ name }: { name: string }) {
   const slash = name.indexOf("/");
   if (slash < 0) return <span className="pk-unit">{name}</span>;
@@ -213,9 +197,8 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
   const { state, dispatch, cursor } = useReport();
   const isOpen = state.pkg === finding.package;
   const hit = useSearchHit(finding);
-  // The phone layout draws the priority as the row's left rule (packages.css): its tone, and in
-  // forced colours — where every tone is the one system ink — its weight, by `prio-<word>`. A row
-  // with none has no rule to draw.
+  // On a phone the priority is the row's left rule; in forced colours `prio-<word>` gives its
+  // weight.
   const rowClass =
     finding.priority === "none"
       ? "pk-row"
@@ -278,18 +261,8 @@ function Count({ n, one = "package", many = "packages" }: { n: number; one?: str
   );
 }
 
-/**
- * The list's answer and key, above the table (PD-PACKAGES-1): how many of the listed packages are
- * behind their newest stable release, how many are not, how many could not be measured — counts of
- * the libyears cells below, nothing more — then what the cells' two marks mean, said once here
- * instead of on every row. Paper keeps its own printed lede (PrintDocument), so none is drawn there.
- *
- * Some of the key's items are for the stacked rows only (PD-PACKAGES-3/5, packages.css): there the
- * table's head is a sort bar with no room for the Libyears head's 0…Ny scale or the Signals head's
- * 1…10 caption, so the key says what a full bar is (`.pk-key-stacked`), what a dot is on the
- * two-line rows that keep the dots (`.pk-key-tablet`), and what the left rule is on a phone's rows,
- * which have no Priority word (`.pk-key-phone`).
- */
+/** Counts of the libyears cells below, and the marks' meaning said once. Some key items are for the
+ *  stacked rows only, whose head has no room for the axis captions (PD-PACKAGES-3/5). */
 function PackagesLede({ tally, listed, max }: { tally: LibyearsTally; listed: number; max: number | null }) {
   const { behind, current, unmeasured } = tally;
   return (
@@ -349,14 +322,12 @@ function PackagesLede({ tally, listed, max }: { tally: LibyearsTally; listed: nu
   );
 }
 
-/** Where a mark's reason is, said on the last mark's own line so it never wraps away from the marks
- *  it means; hidden where nothing can hover (packages.css). */
+/** On the last mark's line, so it never wraps away from the marks it means. */
 function HoverHint({ both }: { both: boolean }) {
   return <span className="pk-key-hover"> · hover {both ? "either" : "it"} for why</span>;
 }
 
-/** The Libyears head's scale, over the bars' track: 0 at its left end, the scale's edge at its right
- *  (PD-PACKAGES-1). A caption, so it is hidden from a screen reader; the head's own title says it. */
+/** A caption, hidden from a screen reader; the head's title says it. */
 function LibyearsAxis({ max }: { max: number }) {
   return (
     <span className="ly-axis" aria-hidden="true">
@@ -377,13 +348,8 @@ function SignalsAxis() {
   );
 }
 
-/**
- * The table itself, in its sideways scroller. At every width the page lays it out for it fits — as
- * a table from 1000px of list, as two-line rows under that (PD-PACKAGES-3/5, packages.css) — so the
- * wrap scrolls only when a lock's own names or versions are longer than any fixture's. While it
- * does, the wrap is a named region in the tab order, so a keyboard can scroll it to the cells past
- * its edge (WCAG 2.1.1; axe's `scrollable-region-focusable`); while it does not, it is neither.
- */
+/** The wrap scrolls only for names longer than any fixture's; while it does, it is a named,
+ *  focusable region, so a keyboard can scroll it (WCAG 2.1.1). */
 function PackagesTable({
   visible,
   dated,
@@ -415,8 +381,7 @@ function PackagesTable({
               const active = column.key === activeSort;
               const sort = active ? (state.sortDesc ? "descending" : "ascending") : "none";
               const arrow = active ? (state.sortDesc ? " ↓" : " ↑") : "";
-              // A heading's button is not repeated on a continuation page (Chromium prints the
-              // repeated head blank), so paper gets the words themselves.
+              // Chromium prints a repeated head's button blank, so paper gets the words.
               if (printed) {
                 return (
                   <th key={column.key} role="columnheader" aria-sort={sort}>
@@ -461,12 +426,8 @@ function PackagesTable({
   );
 }
 
-/** The All packages tab: every package in the document, sortable by column — ported from legacy
- *  `viewPackages` (report.js:558-593), fixed per DESIGN.md §5 M6: rows are focusable and mark the
- *  open package, which legacy's plain `<tr>` never did — with `aria-current`, as every other tab's
- *  rows do (PD-ROWS-12): `aria-selected` means nothing on a plain table's row. Under 1000px of list
- *  the table's rows stack, two lines each (PD-PACKAGES-3/5, packages.css): one table, restyled, so
- *  the rows, their order and their keyboard contract stay the same at every width. */
+/** Rows mark the open package with `aria-current`, as every tab's do. Under 1000px the same table
+ *  stacks, so rows, order and keys stay the same at every width. */
 export function PackagesView() {
   const { model, state } = useReport();
   const printed = usePrinted();

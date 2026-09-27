@@ -1,7 +1,5 @@
-/**
- * The libyears ledger and a package's own libyears row: how far its installed release is behind the
- * newest one, in fractional years, or why it could not be measured.
- */
+/** How far a package's installed release is behind the newest one, in fractional years, or why it
+ *  could not be measured. */
 
 import type { ExplainMetadata, Finding, LibyearsBlock, PackageDetails } from "../model/types";
 import { fixed } from "./format";
@@ -16,10 +14,8 @@ export function libyearsSortKey(finding: Pick<Finding, "libyears"> | null): numb
   return value === null ? -1 : value;
 }
 
-/**
- * Why a finding carries no libyears value, in the words the report's `unmeasured` block counts it
- * under. Empty for a measured finding, and when no field says which reason is its.
- */
+/** In the words the report's `unmeasured` block counts it under; empty when measured, or when no
+ *  field says which reason. */
 export function libyearsReason(finding: Finding | null, details: PackageDetails | null): string {
   if (!finding || fixed(finding.libyears, 1) !== null) return "";
   if (finding.note === NOT_FROM_COMPOSER_NOTE) return "not from a Composer repository";
@@ -34,10 +30,7 @@ export function libyearsReason(finding: Finding | null, details: PackageDetails 
   }
 }
 
-/**
- * What an exact zero says: the newest, or not behind it — never "ahead", since the value is a
- * difference of release dates clamped at zero. `null` for anything but an exact zero.
- */
+/** Never "ahead": the value is a difference of release dates clamped at zero. */
 export function libyearsAtZero(
   finding: Pick<Finding, "libyears" | "version"> | null,
   meta: Pick<ExplainMetadata, "lastStableVersion"> | null,
@@ -102,8 +95,6 @@ export interface LibyearsPhrase {
   date?: string;
 }
 
-/** What a measured value is measured against, or at zero whether it is the newest; `[]` for an
- *  unmeasured finding. */
 export function libyearsRowPhrases(
   finding: Pick<Finding, "libyears" | "version"> | null,
   metadata: Pick<
@@ -134,8 +125,7 @@ export function libyearsRowPhrases(
 
   const phrases: LibyearsPhrase[] = why ? [why] : [];
   if (metadata?.installedReleaseDatedBy) {
-    // A split package: the lock dates the installed version by a commit its tags share, the
-    // monorepo's tag by its own release.
+    // A split package's installed version is dated by its monorepo's tag.
     const name = metadata.installedReleaseDatedBy;
     phrases.push(
       metadata.installedRelease
@@ -147,11 +137,7 @@ export function libyearsRowPhrases(
   return phrases;
 }
 
-/**
- * How the All packages list's libyears cells split (PD-PACKAGES-1): `behind` a newer stable release
- * (a value above zero), `current` (exactly zero — `libyearsAtZero`'s two readings), `unmeasured`
- * (no value). Counts over whatever list it is handed, so under a filter it counts what is listed.
- */
+/** Counts whatever list it is handed, so under a filter it counts what is listed. */
 export interface LibyearsTally {
   readonly behind: number;
   readonly current: number;
@@ -171,13 +157,8 @@ export function libyearsTally(findings: readonly Pick<Finding, "libyears">[]): L
   return { behind, current, unmeasured };
 }
 
-/**
- * The one scale every libyears bar in the All packages list is drawn on (PD-PACKAGES-1): 0 to the
- * largest measured value in the tab's whole population, rounded up to a whole year — whole, so the
- * head's caption reads "6y" rather than "5.8", and the population's, not the filtered list's, so a
- * bar keeps its length while the reader narrows the list. `null` when nothing is behind at all:
- * with no bar to draw there is no scale to caption.
- */
+/** 0 to the population's largest value, whole years, so a bar keeps its length while the list
+ *  narrows. */
 export function libyearsAxisMax(findings: readonly Pick<Finding, "libyears">[]): number | null {
   let largest = 0;
   for (const finding of findings) {

@@ -156,7 +156,7 @@ describe("unattributed packages (lockrot 0.13.0 `unattributed`, `exposure_rule.m
     },
   };
 
-  it("an older document (no `unattributed` key) still lists it under its chain's first row", () => {
+  it("with nothing unattributed, a shared package is listed under its chain's first row", () => {
     const [lib, bundle] = radiusRows(before, [own, shared]);
 
     expect(lib?.pulled.map((f) => f.package)).toEqual(["acme/own", "acme/shared"]);
@@ -184,7 +184,7 @@ describe("unattributed packages (lockrot 0.13.0 `unattributed`, `exposure_rule.m
     // does not count it: a rail count is the packages its button lists.
     expect([...radiusListed(layout)].sort()).toEqual(["acme/own"]);
     expect(placedOnRadius(after, [own, shared]).map((f) => f.package)).toEqual(["acme/own"]);
-    // An older document places it under its chain's first row, as before.
+    // With nothing unattributed it is placed under its chain's first row.
     expect(placedOnRadius(before, [own, shared]).map((f) => f.package)).toEqual(["acme/own", "acme/shared"]);
   });
 

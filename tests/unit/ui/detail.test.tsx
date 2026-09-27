@@ -822,11 +822,11 @@ describe("Detail", () => {
       }
     });
 
-    it("words a 0.13 S6 by its own case: never tagged, tagged, no metadata, and no tag at all (PD-S6-1)", () => {
+    it("words an S6 by its own case: never tagged, tagged, no metadata, and no tag at all (PD-S6-1)", () => {
       const facts = (model: Model, pkg: string) => factRows(renderDetail(model, pkg).container)[1];
       const answer = (model: Model, pkg: string) =>
         renderDetail(model, pkg).container.querySelector(".detail-answer")?.textContent ?? "";
-      // A snapshot of a package that lists no tag: "none" is true, and the note dates the commit.
+      // "none" is true for a package that lists no tag; the note dates the commit.
       expect(facts(WALLABAG_013, "wallabag/rulerz")).toEqual([
         "Last release",
         "none, a snapshot",
@@ -836,8 +836,7 @@ describe("Detail", () => {
         /^Pinned to dev-master, a branch snapshot of a package with no tagged release\. /,
       );
       cleanup();
-      // No repository metadata: nothing said about tags either way, and a commit the lock left
-      // undated is said to be so.
+      // No repository metadata: nothing said about tags, and an undated commit is said to be so.
       expect(facts(MAUTIC_013, "mautic/core-lib")).toEqual([
         "Snapshot",
         "not recorded",
@@ -847,8 +846,7 @@ describe("Detail", () => {
         /^Pinned to 7\.0\.0-dev, a branch snapshot rather than a release\. /,
       );
       cleanup();
-      // A tagged-looking version in a repository with no tag is not a snapshot anywhere, and its
-      // lock time, which is neither a release nor a snapshot, is not given as a date.
+      // Its lock time is neither a release nor a snapshot, so no date is given.
       const untagged = renderDetail(EDGES_013, "acme/untagged").container;
       expect(factRows(untagged)[1]).toEqual(["Last release", "none tagged"]);
       expect(untagged.querySelector(".detail-answer")?.textContent).toMatch(
@@ -858,9 +856,8 @@ describe("Detail", () => {
       expect(untagged.querySelector(".detail-lead")?.textContent).not.toContain("dated");
     });
 
-    it("never calls a 0.13 snapshot's commit a release, so a tagged one's panel gives one last-release date (rector/rector)", () => {
+    it("never calls a snapshot's commit a release, so a tagged one's panel gives one last-release date (rector/rector)", () => {
       const { container } = renderDetail(MAUTIC_013, "rector/rector");
-      // The key facts date the commit the branch pointed at, labelled for what it is.
       expect(factRows(container)[1]).toEqual(["Snapshot", "2 mo ago", "a branch commit, not a release"]);
       // The answer names no tag and no date: the metadata's "last stable" line is the one place.
       const answerText = container.querySelector(".detail-answer")?.textContent ?? "";
@@ -869,7 +866,6 @@ describe("Detail", () => {
       const lead = container.querySelector(".detail-lead")?.textContent ?? "";
       expect(lead).not.toContain("Last release");
       expect(lead).not.toContain("2026-09-13");
-      // The release-branches answer dates the same commit the same way.
       expect(container.querySelector(".detail-timeline-answer")?.textContent).toContain(
         "a branch snapshot, not a release, dated 2 months ago",
       );
@@ -1607,8 +1603,7 @@ describe("open vocabularies (lockrot 0.13): a value this page does not know is s
     "misses_project_php",
   ];
 
-  /** mini-0.13-edges with the five 0.13 branch-row keys taken off every row: what an older lockrot
-   *  would have written for the same rows. */
+  /** mini-0.13-edges with the five branch-row admission keys taken off every row. */
   function edgesWithoutRowKeys(): Model {
     const raw = JSON.parse(readFileSync(join(FIXTURES_DIR, "mini-0.13-edges.json"), "utf8")) as {
       details: Record<string, { metadata: { branches: Record<string, unknown>[] } | null }>;
@@ -1730,17 +1725,16 @@ describe("open vocabularies (lockrot 0.13): a value this page does not know is s
       expect(timeline?.textContent).not.toContain(value);
     }
     cleanup();
-    // Phase 1 draws none of admits_* / php_blocked_by / misses_*: the section is the one an older
-    // document with the same rows gets, whatever those keys say (an unknown value included).
-    const older = renderDetail(edgesWithoutRowKeys(), "acme/left").container;
-    expect(older.querySelector(".detail-timeline")?.isEqualNode(timeline)).toBe(true);
+    // The page draws none of the admission keys yet: the section is the same without them.
+    const without = renderDetail(edgesWithoutRowKeys(), "acme/left").container;
+    expect(without.querySelector(".detail-timeline")?.isEqualNode(timeline)).toBe(true);
   });
 
-  it("acme/floors: every misses_* side, an unknown one included, leaves the detail as an older document's", () => {
+  it("acme/floors: every misses_* side, an unknown one included, draws the detail it has without them", () => {
     const now = renderDetail(EDGES_013, "acme/floors").container.cloneNode(true);
     cleanup();
-    const older = renderDetail(edgesWithoutRowKeys(), "acme/floors").container;
-    expect(older.isEqualNode(now)).toBe(true);
+    const without = renderDetail(edgesWithoutRowKeys(), "acme/floors").container;
+    expect(without.isEqualNode(now)).toBe(true);
     expect(now.textContent).not.toContain("straddles");
   });
 });

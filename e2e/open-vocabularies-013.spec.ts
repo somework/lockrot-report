@@ -1,10 +1,7 @@
 /**
- * lockrot 0.13.0 documents on the built page (PD-VOCAB-1, DESIGN.md §5): the hand-built edge bundle
- * carries a value this page does not know in every open vocabulary — signal ids `S99` and
- * `acme:licence`, an S10 check and reason, an S8 `floor_source`, a branch row's `php_blocked_by` and
- * a `misses_*` side — and each must render as written, in code, on every tab, in the detail, the
- * glossary and on paper, with no console error. The real 0.13 bundles then go through the same
- * forced-colors and print checks the older fixtures pass (`forced-colors.spec.ts`, `print.spec.ts`).
+ * PD-VOCAB-1: a value this page does not know, in any open vocabulary, renders as written in code
+ * on every tab, in the detail, the glossary and on paper, with no console error. The real 0.13
+ * bundles also go through forced colours and print.
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -87,8 +84,8 @@ test.describe("mini-0.13-edges: every value this page does not know, shown as wr
     await report.openPackage("acme/left");
     const left = await report.detail();
     expect(left.name).toBe("acme/left");
-    // S8's unknown floor_source is its data as written; the branch rows' unknown php_blocked_by and
-    // misses_* are not drawn at all yet (Phase 2).
+    // S8's unknown floor_source is its data as written; the branch rows' 0.13 fields are not drawn
+    // yet.
     const floor = page
       .getByRole("complementary", { name: "acme/left" })
       .locator("dl.detail-data > dt")

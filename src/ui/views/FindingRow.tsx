@@ -17,19 +17,10 @@ import "./ledger-rows.css";
 import "./baseline.css";
 
 /**
- * The click contract every list row shares — Findings, Packages, Advisories and Blast radius: a
- * click anywhere on the row opens `pkg`, and a click on the package that is already open leaves it
- * open (PD-ROWS-7, DESIGN.md §5: the row used to toggle, so a second click on the open row — the
- * most natural "yes, that one" — closed the very detail the reader was reading; Close and Escape
- * are the ways out). A click that landed on a real `<a>` (a signal id's own link), a `<button>`, or
- * inside an open popover (its content is a descendant of the row in the DOM even though the top
- * layer draws it elsewhere) is left to do its own thing, and so is a part marked `data-no-open` (a
- * Blast radius row's squares, which open its list) and a row nested inside this one. The row's own
- * verdict word is plain text, not one of those (PD-GLOSSARY-4/5), so a click on it falls through to
- * the row like any other word in it. Keyboard activation (Enter/Space, and DESIGN.md M5's fix so a focused control's own Enter
- * is left alone) is `ui/keyboard.ts`'s job, with the same open-never-close rule: it reads the same
- * `data-pkg` every row carries through one document-level listener, so a row needs no `onKeyDown`
- * of its own — adding one would just race the global handler over who dispatches first.
+ * Every list row: a click opens `pkg` and never closes the open one (PD-ROWS-7). A click on a real
+ * link, button, open popover, `data-no-open` part or nested row is left alone. Keyboard activation
+ * lives in `ui/keyboard.ts`, which reads `data-pkg` through one listener; a row `onKeyDown` would
+ * race it.
  */
 export function openInteractions(
   pkg: string,
@@ -49,9 +40,7 @@ export function openInteractions(
   };
 }
 
-/** Which of a row's values repeat the row above it in the same stretch of the list (PD-ROWS-5):
- *  those are drawn quieter, never removed — they are still what a search hit or a screen reader
- *  reads. The verdict keeps its tone when it repeats; only its weight drops. */
+/** Drawn quieter, never removed: a search hit and a screen reader still read them. */
 export interface Ditto {
   readonly verdict: boolean;
   readonly vendor: boolean;
@@ -61,9 +50,7 @@ export interface Ditto {
 
 export const NO_DITTO: Ditto = { verdict: false, vendor: false, why: false, reach: false };
 
-/** A signal id, linked to its own entry in lockrot's docs, with the signal's definition on hover.
- *  `tabIndex` is -1 on every row but the list's Tab stop (PD-ROWS-11, `rowCursor.ts`). An id that is
- *  not lockrot's (`acme:licence`) has no entry there: it is the id as written, and no link. */
+/** An id that is not lockrot's (`acme:licence`) has no docs entry, so no link. */
 function SignalId({ signal, tabIndex }: { signal: Signal; tabIndex: -1 | undefined }) {
   const doc = signalDocUrl(signal.id);
   const title = signalDef(signal.id);
@@ -91,10 +78,9 @@ function SignalLine({ signal, tabIndex }: { signal: Signal; tabIndex: -1 | undef
   );
 }
 
-/** The baseline state first (if new/worsened), as legacy ordered the row's tags. A worsened row
- *  names the verdict the baseline accepted (PD-BASELINE-2, DESIGN.md §5), so the step it took is
- *  read on the row rather than only in its detail. Both wear the baseline's accent (PD-BASELINE-7,
- *  views/baseline.css), not the critical and high tones the row's own verdict and priority use. */
+/**
+ * Both wear the baseline's accent (PD-BASELINE-7), not the row's own verdict and priority tones.
+ */
 function BaselineTag({ finding }: { finding: Finding }) {
   const { model } = useReport();
   const baseline = finding.baseline;
@@ -123,8 +109,7 @@ function BaselineTag({ finding }: { finding: Finding }) {
   );
 }
 
-/** A package name that wraps after its vendor's slash — "sensio/" over "framework-extra-bundle" —
- *  rather than at the last hyphen that happens to fit (`.fc-unit`, ledger-rows.css). */
+/** Wraps after the vendor's slash, not at whichever hyphen fits. */
 function Breakable({ name }: { name: string }) {
   const slash = name.indexOf("/");
   if (slash < 0) return <span className="fc-unit">{name}</span>;
@@ -159,8 +144,6 @@ function Reach({ finding }: { finding: Finding }) {
 
 export interface FindingRowProps {
   readonly finding: Finding;
-  /** The list's one shared age axis (`domain/age.ts#ageAxis`), or null when the run recorded no
-   *  thresholds to draw one against. */
   readonly axis: AgeAxis | null;
   /** The signal the rail filters by, when it filters by exactly one (PD-ROWS-5). */
   readonly quoted: string | null;
@@ -168,23 +151,9 @@ export interface FindingRowProps {
 }
 
 /**
- * A Findings-tab row, one line of a ledger (PD-ROWS-4, DESIGN.md §5): verdict · package · why it is
- * flagged · years since release on the list's shared axis · how it gets in. Wide, a single line
- * under the column head; beside an open package, two lines — the package and how it gets in, then
- * the verdict and the reason, the age beside both; on a phone, three. No value is ever cut to an
- * ellipsis: a cell too narrow for its words wraps them instead (`ledger-rows.css`). The package and
- * its way in share one wrapper (`.fc-line`): a flex line in the two-line layout, dissolved into the
- * row's own grid in the others. A list item rather than a listbox option,
- * because it holds a link (the signal id) and an option's children are presentational. The open row
- * is marked with `aria-current`; its accessible name is the package alone. One row of the list is
- * its Tab stop (PD-ROWS-11, `rowCursor.ts`); the others, and their signal links, are `tabindex=-1`.
- *
- * The verdict word is plain text with its definition as a `title` (PD-GLOSSARY-4/5): a click on it
- * opens the package, like a click anywhere else in the row. The quoted signal's id links to its
- * docs; the others stay mounted under a native `hidden` attribute, so they read as inaccessible on
- * screen while `print.css` un-hides that exact selector — paper has no package to open (PD-ROWS-1).
- * A row the search box found only in its evidence quotes the words around the hit under its reason
- * (PD-SEARCH-1), unless the reason already shows them.
+ * A Findings row (PD-ROWS-4). No value is cut to an ellipsis. A list item, not an option, because
+ * it holds a link. The other signals stay mounted under `hidden`, which print.css un-hides
+ * (PD-ROWS-1).
  */
 export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
   const { model, state, dispatch, cursor } = useReport();
@@ -252,8 +221,7 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
     </>
   );
 
-  // On paper (PD-PRINT-4) the row is a table row around the same grid, so the group's head repeats
-  // on every page it runs onto and a page breaks between rows; nothing on paper opens or focuses.
+  // On paper each row is a table row, so a page breaks between rows and the group head repeats.
   if (printed) {
     return (
       <li className="pf-tr" aria-label={finding.package} data-pkg={finding.package}>

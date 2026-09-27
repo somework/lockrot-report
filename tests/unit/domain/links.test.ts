@@ -2,11 +2,7 @@ import { describe, expect, test } from "vitest";
 import { cveUrl, packagistUrl, repoHost, safeHref } from "../../../src/domain/links";
 import type { PackageDetails } from "../../../src/model/types";
 
-// safeHref's cases are ported verbatim (values unchanged) from tests/js/lib.test.js:33-73 — it is
-// one of the two functions the legacy suite's own header calls "the boundary where a mistake stops
-// being a rendering bug and becomes a vulnerability". packagistUrl/cveUrl/repoHost lived in
-// report.js, not lib.js, and had no dedicated unit tests there (js-1.md §4); their cases below are
-// new, derived from that spec's documented behaviour.
+// safeHref is where a mistake becomes a vulnerability rather than a rendering bug.
 
 describe("safeHref", () => {
   test("passes the links a report really carries (lib.test.js:33-43)", () => {
@@ -57,9 +53,8 @@ describe("safeHref", () => {
   });
 
   test("does not decode percent-encoding before checking the scheme", () => {
-    // A percent-encoded "javascript:" is untested in the legacy suite (lib.md §2 "Not tested") and
-    // the regex only inspects literal characters, so it passes when it otherwise matches — ported
-    // here as a locked-in (if uncomfortable) parity fact, not an endorsement.
+    // The regex inspects literal characters only, so a percent-encoded scheme passes: pinned, not
+    // endorsed.
     expect(safeHref("https://example.test/%6A%61%76%61")).toBe("https://example.test/%6A%61%76%61");
   });
 });

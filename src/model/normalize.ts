@@ -39,10 +39,8 @@ const LIBYEARS_UNMEASURED_REASONS = [
   "metadata_unavailable",
 ] as const;
 
-/**
- * The report-level and `run.` keys the page reads that a document may leave out. `absentKeys` lists
- * the ones missing from this document; nothing here knows which release added which key.
- */
+/** The report-level and `run.` keys the page reads that a document may leave out; nothing here
+ *  knows which release added which key. */
 const ABSENT_CHECKED = [
   "packages_checked",
   "include_dev",
@@ -176,8 +174,7 @@ function buildReportModel(source: Record<string, unknown>, generatedAt: string):
   };
 }
 
-/** `ABSENT_CHECKED` keys missing from `source` — `in`, not a null check: a key lockrot wrote as
- *  `null` is present. A `run` that is not an object carries none of its keys. */
+/** `in`, not a null check: a key written as `null` is present. */
 function absentKeys(source: Record<string, unknown>): readonly string[] {
   const run = isRecord(source.run) ? source.run : {};
   return ABSENT_CHECKED.filter((key) => (key.startsWith("run.") ? !(key.slice(4) in run) : !(key in source)));

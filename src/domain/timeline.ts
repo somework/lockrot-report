@@ -10,13 +10,11 @@ import { yearsPhrase } from "./format";
 const MS_PER_DAY = 24 * 3600 * 1000;
 const MS_PER_JULIAN_YEAR = 365.25 * MS_PER_DAY;
 
-/** Newer branches shown one row each, up to this many; past it the ones between the newest and
- *  yours fold into one row, so a 21-branch package never buries the two rows that answer the
- *  question (the newest, and yours) under the ones in between. */
+/** Past this many newer branches, the ones between the newest and yours fold, so the two rows that
+ *  answer the question stay in view. */
 const BETWEEN_MAX = 4;
 
-/** The fewest branches a fold hides: a fold row costs a row itself, so folding two saves one line
- *  and hides two answers — below three, each branch keeps its own row. */
+/** Folding two would save one line and hide two answers. */
 const FOLD_MIN = 3;
 
 /** The right-hand share of the axis a year label may not sit in: the "today" label owns it. */
@@ -39,8 +37,7 @@ export interface TimelineLane {
   readonly snapshot: boolean;
   /** False when the label only repeats the branch name ("0.0.3" / "v0.0.3", PD-TIMELINE-3). */
   readonly showLabel: boolean;
-  /** The monorepo whose tags supplied this lane's release date (a split package's `dated_by`);
-   *  null when the date is the package's own, or a commit date. */
+  /** Null when the date is the package's own, or a commit date. */
   readonly datedBy: string | null;
 }
 
@@ -62,14 +59,14 @@ export interface TimelineModel {
   readonly mine: TimelineLane | null;
   /** The first lane, installed or not. */
   readonly top: TimelineLane;
-  /** Whether `top` also released last: false when a lower branch shipped after it (a maintenance
-   *  release), so the sentence calls `top` the highest rather than the newest — "the newest is 4.x,
-   *  released 2023" beside a 3.x release from 2025 would contradict itself. */
+  /** False when a lower branch shipped after it: the sentence then calls `top` the highest, not the
+   *  newest. */
   readonly topReleasedLast: boolean;
   /** How many lanes sit above the installed branch; 0 without one. */
   readonly newerCount: number;
-  /** Every lane's version is its own branch name: a package with no maintained branches, whose
-   *  "branches" are just its past releases (PD-TIMELINE-3). */
+  /**
+   * A package with no maintained branches, whose "branches" are its past releases (PD-TIMELINE-3).
+   */
   readonly releasesOnly: boolean;
   readonly ticks: readonly TimelineTick[];
   /** `x` of an instant, on the same axis every lane uses — for a threshold guide ("N years ago"). */
@@ -83,11 +80,8 @@ interface DatedTag {
   readonly time: number;
 }
 
-/**
- * Whether `branch` and `label` name the same release, modulo an optional leading `v`/`V` — so a
- * package with no maintained branches, where each release is its own "branch", never prints
- * "0.0.3 · v0.0.3" (PD-TIMELINE-3, DESIGN.md §5).
- */
+/** Modulo a leading `v`, so a release-per-branch package never prints "0.0.3 · v0.0.3"
+ *  (PD-TIMELINE-3). */
 export function sameVersion(branch: string, label: string): boolean {
   const stripV = (s: string): string => (s.startsWith("v") || s.startsWith("V") ? s.slice(1) : s);
   return stripV(branch) === stripV(label);
@@ -124,9 +118,7 @@ export function yearsSince(iso: string, now: Date): number {
   return (now.getTime() - new Date(iso).getTime()) / MS_PER_JULIAN_YEAR;
 }
 
-/** The rows drawn for a reader on the installed lane at `index`: every newer branch (the middle
- *  ones folded past BETWEEN_MAX), theirs, then the older ones folded into one row (fewer than
- *  FOLD_MIN older ones keep their own rows). */
+/** Every newer branch (the middle folded past BETWEEN_MAX), yours, then the older ones folded. */
 function rowsAround(lanes: readonly TimelineLane[], index: number): TimelineRow[] {
   const rows: TimelineRow[] = [];
   const newer = lanes.slice(0, index);

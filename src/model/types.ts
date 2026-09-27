@@ -1,18 +1,7 @@
 /**
- * The document the page renders, in two shapes.
- *
- * `Wire*` is what arrives: lockrot's `--format=html` payload `{report, details}`, where `report` is
- * exactly the `--format=json` document (resources/lockrot-report.schema.json in lockrot) and
- * `details` is a per-package extract of the `--explain` document. Everything is optional there,
- * because the page also renders documents written by older lockrot releases and documents an
- * embedder hands it.
- *
- * `Model` is what the rest of the code sees, produced by `normalize()`: every field present, older
- * shapes folded into the current one, absent values as `null` or an empty collection. Nothing
- * outside src/model/ checks for `undefined`.
- *
- * Enumerations are open on purpose. A verdict, signal id or severity this renderer does not know is
- * kept as its string and rendered neutrally — a newer lockrot must never produce a blank page.
+ * `Wire*` is what arrives, every field optional; `Model` is what `normalize()` hands the rest of
+ * the code, every field present, so nothing outside src/model/ checks for `undefined`. Enumerations
+ * are open: an unknown value is kept and rendered neutrally, never dropped.
  */
 
 export const VERDICTS = [
@@ -89,12 +78,8 @@ export interface ReportModel {
   /** Flagged packages reached from more than `maxFanIn` direct requirements: in no `exposure` entry
    *  and no S7. */
   unattributed: readonly UnattributedEntry[];
-  /**
-   * The report-level and `run.` keys this page reads that the document does not carry at all, in
-   * `ABSENT_CHECKED` order (normalize.ts) — `run.fail_on` for a document written before that field.
-   * A key present with a `null` value is not absent: that is the document's own answer. Empty for
-   * a document that carries every one.
-   */
+  /** The keys the page reads that the document leaves out entirely; a key written as `null` is the
+   *  document's own answer, not absent. */
   absent: readonly string[];
   /** In document order, which lockrot sorts: priority desc, verdict severity desc, direct first, name. */
   findings: readonly Finding[];
@@ -124,10 +109,6 @@ export interface RunSettings {
   failOn: string | null;
   /** In document key order, e.g. `release-warn-years → 2`. Empty when the run recorded none. */
   thresholds: readonly (readonly [name: string, years: number])[];
-  /**
-   * The verdicts that count as findings, as lockrot defines them. Falls back to the six flagged
-   * verdicts for documents that do not carry it.
-   */
   flaggedVerdicts: readonly Verdict[];
 }
 

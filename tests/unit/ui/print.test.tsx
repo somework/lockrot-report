@@ -156,7 +156,7 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
       "S99",
       "acme:licence",
     ]);
-    // A row with only ids it knows prints them as plain text, as before.
+    // A row with only ids it knows prints them as plain text.
     const known = printDoc(container).querySelector('.pd-packages tr[data-pkg="acme/left"]');
     expect(known?.querySelector("code")).toBeNull();
   });

@@ -16,15 +16,8 @@ import { SIGNAL_IDS, VERDICTS } from "../model/types";
 import { OutLink, toneClass } from "./common/common";
 import { useReport } from "./context";
 
-/**
- * The nine verdicts, each in its tone, with this report's count beside it when there is one.
- *
- * `data-term` and `tabIndex={-1}` are only ever read by `useHighlightTerm` below: not part of the
- * Tab order (the definition itself carries no interaction), but a place keyboard focus can be
- * *given* — landing a reader here from a verdict pill's "In the glossary" (PD-GLOSSARY-4) exactly
- * where the term it named now sits (PD-GLOSSARY-7, DESIGN.md §5), instead of on the dialog's Close
- * button, several entries away from the one they asked for.
- */
+/** `data-term` and `tabIndex={-1}` let "In the glossary" give focus to the term it named
+ *  (PD-GLOSSARY-7), outside the Tab order. */
 function VerdictDefs() {
   const { model } = useReport();
   const thresholds = model.report.run.thresholds;
@@ -43,9 +36,8 @@ function VerdictDefs() {
             {verdict}
             {count > 0 && <span className="muted"> {count}</span>}
           </dt>,
-          // PD-GLOSSARY-8 (DESIGN.md §5): a definition that names one of the run's own config keys
-          // (`silent`, `left-behind`) shows what this run set it to, beside the name it would take
-          // to change it.
+          // A definition naming a run's config key shows this run's value beside it
+          // (PD-GLOSSARY-8).
           <dd key={`d-${verdict}`}>{annotateThresholds(VERDICT_DEFS[verdict] ?? "", thresholds)}</dd>,
         ];
       })}
@@ -53,9 +45,8 @@ function VerdictDefs() {
   );
 }
 
-/** S1 to S10 in numeric order (DESIGN.md §5 M2: the legacy glossary left S10 out), then each id the
- *  report carries that this page has no name for, as written in code, with what can be said of it
- *  (`vocab.ts#signalDef`) — never a known check's words. */
+/** S1 to S10 in numeric order, then each id this page has no name for, as written, never in a known
+ *  check's words. */
 function SignalDefs() {
   const { model } = useReport();
   const thresholds = model.report.run.thresholds;
@@ -116,14 +107,8 @@ function LibyearsSection() {
   );
 }
 
-/**
- * PD-GLOSSARY-9/10 (DESIGN.md §5): "some 'rotten' libraries are finished and work fine" has an
- * answer this page can state as a fact without making the call itself — a package a reader considers
- * complete can be accepted the same way the built-in allowlist is, through the run's own config.
- * It is a step for whoever maintains the lock, not a meaning, so it sits in its own last fold rather
- * than inside `finished`'s definition, where every reader of the nine verdicts met a config key and
- * a file name halfway down the list. Content only — see `LibyearsSection`.
- */
+/** Accepting a finished package is a step for whoever maintains the lock, so it has its own last
+ *  fold (PD-GLOSSARY-9/10). */
 function AcceptSection() {
   return (
     <p className="prose glossary-note">
@@ -149,12 +134,8 @@ function PrioritySection() {
   );
 }
 
-/**
- * PD-GLOSSARY-2: what the search hint used to carry on every filterable tab (SearchBar.tsx), moved
- * here so it lives beside the rest of the reference instead of repeating itself under every list.
- * The keys and the search grammar are the legacy page's own vocabulary, unchanged; only where a
- * reader finds them moved. Content only — see `LibyearsSection`.
- */
+/** The keys and search grammar, beside the rest of the reference rather than under every list
+ *  (PD-GLOSSARY-2). */
 function KeysSection() {
   return (
     <>
@@ -179,19 +160,9 @@ function KeysSection() {
 }
 
 /**
- * Opens the dialog as a modal, or, where `showModal()` exists but throws (a sandboxed frame without
- * `allow-modals`, history.md §5), as a plain open dialog that the stylesheet pins over the page
- * (DESIGN.md §5 M28: the legacy fallback rendered below the footer). The fallback gets no native
- * focus handling, so focus is moved in and given back by hand.
- *
- * `opener` overrides what focus returns to, when the caller passed one (`context.ts#openGlossaryFrom`).
- * Reading `document.activeElement` fresh, here, is a step too late for a DocsPill's "In the glossary"
- * button: it hides its own popover (`popovertargetaction="hide"`) as part of the same click, which
- * moves focus to `<body>` before this effect ever runs, so the browser's own focus-on-close (and, for
- * the fallback path, the explicit `.focus()` below) would land on `<body>` instead of the pill (a11y
- * review). `opener.current` is read explicitly on close, in both the modal and the fallback path,
- * rather than left to `dialog.close()`'s own restore: that native behaviour uses whatever it captured
- * when `showModal()` ran, which is exactly the stale value this override exists to correct.
+ * Where `showModal()` throws (a sandboxed frame without `allow-modals`), a plain open dialog pinned
+ * over the page, with focus moved by hand. `opener` is read on close in both paths: a DocsPill's
+ * popover moves focus to <body> before this effect runs, so the native restore would land there.
  */
 function useDialog(open: boolean, opener?: RefObject<HTMLElement | null>) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -224,14 +195,11 @@ function useDialog(open: boolean, opener?: RefObject<HTMLElement | null>) {
   return { ref, closeRef, fallback };
 }
 
-/** How long the highlight stays before `useHighlightTerm` clears it itself — matched by the fade
- *  animation's own duration in app.css's `glossary-highlight-fade`, so the two never disagree about
- *  when the mark is gone. */
+/** Matches `glossary-highlight-fade`'s duration in app.css. */
 const HIGHLIGHT_MS = 1600;
 
-/** The `dt[data-term]` element naming `term`, compared attribute by attribute rather than through a
- *  built selector — the same discipline `ui/keyboard.ts#findRow` keeps for a document-supplied
- *  string that might carry a character `querySelector` would choke on. */
+/** Compared attribute by attribute: a report's string may carry a character `querySelector` would
+ *  choke on. */
 function findTerm(dialog: HTMLDialogElement, term: string): HTMLElement | null {
   for (const dt of dialog.querySelectorAll<HTMLElement>("dt[data-term]")) {
     if (dt.getAttribute("data-term") === term) return dt;
@@ -240,18 +208,9 @@ function findTerm(dialog: HTMLDialogElement, term: string): HTMLElement | null {
 }
 
 /**
- * PD-GLOSSARY-7 (DESIGN.md §5): "In the glossary", from a verdict pill's popover, used to open the
- * dialog scrolled to the top — a reader who wanted `abandoned`'s own entry still had to find it
- * among the other eight. This scrolls that entry into view, marks its `dt`/`dd` pair with a fading
- * highlight, and focuses the term itself.
- *
- * Runs after `useDialog`'s own layout effect (hooks' effects fire in call order), so its
- * `dt.focus()` — landing a keyboard user exactly on the entry they asked for — overrides that
- * effect's default focus on the Close button, rather than the other way around. `.glossary` itself
- * carries `scroll-behavior: smooth` (app.css), which the page-wide `prefers-reduced-motion` rule
- * (styles/base.css) already turns back to instant — this asks `scrollIntoView` for no behavior of
- * its own, so it inherits whichever the reader's own preference resolves to. The fade is CSS alone,
- * for the same reason: reduced motion drops the animation but not the highlight itself (app.css).
+ * Scrolls the asked-for entry into view, marks it and focuses its term (PD-GLOSSARY-7). Runs after
+ * `useDialog`'s effect, so this focus wins over the Close button; scroll behaviour and the fade
+ * follow the reader's reduced-motion preference through CSS.
  */
 function useHighlightTerm(
   dialogRef: RefObject<HTMLDialogElement | null>,
@@ -292,11 +251,8 @@ export function Glossary({
 }: {
   open: boolean;
   onClose: () => void;
-  /** Who to return focus to on close, overriding a freshly-read `document.activeElement`
-   *  (`context.ts#openGlossaryFrom`). */
   opener?: RefObject<HTMLElement | null>;
-  /** A verdict word to scroll to, mark and focus once the dialog opens — set only when a verdict
-   *  pill's "In the glossary" opened it (PD-GLOSSARY-7, `context.ts#openGlossaryFrom`). */
+  /** Set only when a verdict pill's "In the glossary" opened it. */
   highlightTerm?: string | null;
 }) {
   const titleId = useId();
@@ -312,39 +268,28 @@ export function Glossary({
     >
       <div className="glossary-head">
         <h2 id={titleId}>What these words mean</h2>
-        {/* PD-GLOSSARY-3: the old link's text ("full reference") named nothing; a reader could not
-            tell it left the page at all, let alone for where. This names the destination and the
-            anchor points at the doc's own top-level heading (`# Verdicts and priority` in
-            lockrot/docs/verdicts.md), which mkdocs slugs to "verdicts-and-priority" the same way it
-            slugs the section anchors this page already links (`#the-nine-verdicts`, `#libyears`). */}
+        {/* Names the destination (PD-GLOSSARY-3); the anchor is mkdocs' slug of verdicts.md's
+           top heading. */}
         <OutLink href={`${DOCS_URL}#verdicts-and-priority`}>How lockrot decides (lockrot.dev)</OutLink>
         <button ref={closeRef} className="icon-btn" type="button" onClick={onClose}>
           Close
         </button>
       </div>
       <div className="glossary-body">
-        {/* PD-GLOSSARY-2: the nine verdicts are what a reader opening the glossary almost always
-            wants first, so they stay in view; the signals, priority, libyears and keys sections
-            each fold behind their own <summary> instead of arriving as one long scroll (Anatoly:
-            "'What these words mean' opens a pile of text"). */}
+        {/* The verdicts stay in view; every other section folds (PD-GLOSSARY-2). */}
         <section className="glossary-sect">
           <h3>The nine verdicts</h3>
           <VerdictDefs />
           <OrderNote />
         </section>
-        {/* a11y review: a bare <summary> dropped the section's own heading, so a screen-reader
-            reader moving by heading found only one (the section headings elsewhere are <h3>). A
-            <summary> accepts one heading as content, so the text moves into an <h3> — the layout
-            (the flex row, the chevron) stays on the <summary> itself, restyled to the same look in
-            app.css's `.glossary-sect > summary h3`. */}
+        {/* The heading sits inside <summary> so a reader moving by heading still finds it. */}
         <details className="glossary-sect">
           <summary>
             <h3>The signals</h3>
           </summary>
           <SignalDefs />
         </details>
-        {/* PD-GLOSSARY-10: open from the start — the summary band and the All packages list both
-            lead with libyears, and a reader who opens the glossary from there wants this first. */}
+        {/* Open: the summary band and All packages lead with libyears (PD-GLOSSARY-10). */}
         <details className="glossary-sect" open>
           <summary>
             <h3>One number for the lock: libyears</h3>

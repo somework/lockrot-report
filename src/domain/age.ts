@@ -1,15 +1,7 @@
 /**
- * `ageScale`: the age-vs-threshold facts behind a Findings row's small scale (PD-ROWS-2/3,
- * DESIGN.md §5) — the colleague's "text, text, text, no scales" gap in the up-to-three signal
- * lines `views/FindingRow.tsx` used to draw. Pure, no DOM: reads a finding's own signals and the
- * run's own thresholds, same discipline as `domain/timeline.ts`.
- *
- * Exactly one of S8 (the installed branch stopped), S2 (no stable release) or S4 (no push) ever
- * supplies the years, in that priority: a branch-specific stall is the most precise fact a document
- * can carry, then the package's own release age, and only then the repository's activity as a
- * whole. A missing signal, a non-numeric `years`, or a threshold the run never recorded each return
- * `null` rather than guess — the row falls back to no scale at all, the same as it already falls
- * back to the evidence sentence when a finding carries no signal.
+ * The age a Findings row and the open package quote, and its zone against the run's thresholds. One
+ * of S8, S2 or S4 supplies the years, in that order: the most precise fact first. Anything missing
+ * returns `null`, never a guess.
  */
 
 import type { Finding } from "../model/types";
@@ -23,21 +15,13 @@ export interface AgeScale {
   readonly years: number;
   readonly warn: number;
   readonly high: number;
-  /** The axis' right edge, shared by every row a list draws at once (`ageAxis`) rather than
-   *  computed per row: bar lengths only compare across rows when they share one scale (PD-ROWS-3/4,
-   *  DESIGN.md §5). `years` may exceed it; the row then draws its bar to the edge, cut. */
+  /**
+   * Shared by every row a list draws, so bar lengths compare; `years` may exceed it (drawn cut).
+   */
   readonly max: number;
   /**
-   * True for a verdict whose own reason to flag is not age — `abandoned` (S1's own repository flag,
-   * or S3's archived flag) and `pinned` (S6: a branch snapshot, or a repository with no tag at all,
-   * `domain/pinned.ts`) start the priority ladder
-   * (`domain/priority.ts#PRIORITY_BASE`) without ever reading S2/S4/S8. Such a finding can still
-   * carry one of those signals — a repository can be both archived and old — and the scale drawn
-   * from it would otherwise read as the reason for a priority it did not set (PD-ROWS-3: an
-   * abandoned, CRITICAL-from-S1 finding whose S2 years sit in the warn zone drew the same olive dot
-   * as a row actually flagged for its age, contradicting the verdict beside it). The row still
-   * draws the scale — the age fact is real and worth showing for context — but in a neutral tone,
-   * and says so in its own label.
+   * True when the verdict's own reason is not age (`abandoned`, `pinned`): the scale is still drawn
+   * for context, in a neutral tone, so it never reads as the reason for a priority it did not set.
    */
   readonly contextOnly: boolean;
 }
@@ -51,16 +35,13 @@ interface Source {
   readonly highName: string;
 }
 
-/** A signal's `data.years`, or `null` when the signal is absent or its `years` is not a finite
- *  number — never coerced, so a string or missing value never silently reads as `0`. */
+/** Never coerced: a string or missing `years` is not `0`. */
 function yearsOf(finding: Finding, id: "S8" | "S2" | "S4"): number | null {
   const signal = finding.signals.find((s) => s.id === id);
   const years = signal?.data.years;
   return typeof years === "number" && Number.isFinite(years) ? years : null;
 }
 
-/** Which signal supplies the age, in the fixed S8 > S2 > S4 priority this module's own header
- *  comment explains. */
 function pickSource(finding: Finding): Source | null {
   const branch = yearsOf(finding, "S8");
   if (branch !== null) {
@@ -85,12 +66,7 @@ function pickSource(finding: Finding): Source | null {
   return null;
 }
 
-/**
- * The age every place in the open package quotes first — the same S8 > S2 > S4 pick a Findings row
- * draws — without needing the run's thresholds: the answer sentence (`domain/answer.ts`) and the
- * key-facts cell (`detail/DetailLead.tsx`) both read it, so the two never name different ages for
- * one package. `null` when none of the three carries a numeric `years`.
- */
+/** The S8 > S2 > S4 age without thresholds, so the answer and the key facts never name two ages. */
 export function ageSource(finding: Finding): { readonly kind: AgeKind; readonly years: number } | null {
   const source = pickSource(finding);
   return source === null ? null : { kind: source.kind, years: source.years };
@@ -108,9 +84,6 @@ interface Resolved extends Source {
   readonly high: number;
 }
 
-/** `pickSource` plus the two thresholds it needs, resolved against the run's own `thresholds`
- *  array. `null` for exactly the reasons `ageScale` documents: no S8/S2/S4 with a numeric `years`,
- *  or a threshold the run never recorded. */
 function resolveSource(finding: Finding, thresholds: Thresholds): Resolved | null {
   const source = pickSource(finding);
   if (source === null) return null;
@@ -122,9 +95,6 @@ function resolveSource(finding: Finding, thresholds: Thresholds): Resolved | nul
   return { ...source, warn, high };
 }
 
-/** `abandoned` and `pinned` never reach the priority ladder through S2/S4/S8 (`domain/priority.ts`)
- *  — see `AgeScale.contextOnly`'s own comment for why a scale drawn for either still needs a
- *  neutral tone rather than the zone's. */
 export function isContextOnly(finding: Finding): boolean {
   return finding.verdict === "abandoned" || finding.verdict === "pinned";
 }
@@ -139,15 +109,8 @@ export interface AgeAxis {
   readonly max: number;
 }
 
-/**
- * The one axis every Findings row's age bar is drawn against (PD-ROWS-4, DESIGN.md §5): the
- * thresholds `ageLegend` names, and a right edge fixed by the run's own `high` threshold rather than
- * by the oldest row on screen — so the column head can caption it once ("0 · 3y · 5y · 10y+") and a
- * filter never rescales every bar under the reader. `max(10, 2 × high)`: twice the point where an
- * age turns critical leaves room to see how far past it a package is, and 10 years is where
- * "very old" stops needing more resolution. A bar past the edge is drawn to it, marked as cut, with
- * its exact years beside it. `null` when the run recorded neither threshold pair.
- */
+/** One axis for every Findings row (PD-ROWS-4), fixed by the run's `high` threshold rather than the
+ *  oldest row, so a filter never rescales the bars: `max(10, 2 × high)`. */
 export function ageAxis(thresholds: Thresholds): AgeAxis | null {
   const legend = ageLegend(thresholds);
   if (legend === null) return null;
@@ -155,9 +118,7 @@ export function ageAxis(thresholds: Thresholds): AgeAxis | null {
 }
 
 /**
- * Whether lockrot said it could not read this package's age: an S10 whose `data.blocks` names one of
- * the three age signals (S2, S4, S8). A row with no age bar says "age not read" then, and "no age
- * signal" otherwise — never a guess at why none of the three fired.
+ * An S10 blocks one of S2, S4 or S8: the row says "age not read" rather than guess why none fired.
  */
 export function ageNotRead(finding: Finding): boolean {
   const s10 = finding.signals.find((s) => s.id === "S10");
@@ -170,14 +131,8 @@ export interface AgeLegend {
   readonly high: number;
 }
 
-/**
- * The thresholds the Findings list's axis is captioned with (PD-ROWS-3/4): the release pair when the run
- * recorded both of it — the pair `branch` and `release` rows, the two most common kinds, are
- * measured against — falling back to the push pair when only that one is complete. A run that sets
- * the two pairs to different values still gets a legend that matches at least one kind of row
- * rather than none; `null` when neither pair is complete, the same "never guess" fallback every row's
- * own scale already keeps.
- */
+/** The release pair when the run recorded it, else the push pair: a legend that matches at least
+ *  one kind of row. */
 export function ageLegend(thresholds: Thresholds): AgeLegend | null {
   const release = releaseThresholds(thresholds);
   if (release !== null) return release;
@@ -185,13 +140,6 @@ export function ageLegend(thresholds: Thresholds): AgeLegend | null {
   return pushThresholds(thresholds);
 }
 
-/**
- * The scale a Findings row draws beside its key-fact line, from `model.report.run.thresholds`
- * (the document's own key-order array; see `model/types.ts#RunSettings`) and `max`, the list's own
- * shared maximum (`ageAxis(…).max`, computed once by the view and passed to every row). `null` when
- * there is nothing safe to draw: no S8/S2/S4 signal with a numeric `years`, or the run never
- * recorded one of the two thresholds that signal's kind is measured against.
- */
 export function ageScale(finding: Finding, thresholds: Thresholds, max: number): AgeScale | null {
   const fact = ageFact(finding, thresholds);
   return fact === null ? null : { ...fact, max };
@@ -199,12 +147,7 @@ export function ageScale(finding: Finding, thresholds: Thresholds, max: number):
 
 export type AgeFact = Omit<AgeScale, "max">;
 
-/**
- * The same age a Findings row draws, without a shared axis: which signal supplies it (S8 > S2 > S4),
- * its years, its two thresholds, and whether the verdict made it context only. The open package's
- * key facts (`detail/DetailLead.tsx`) read it so the detail and the row never name two different
- * ages for one package. `null` for exactly the reasons `ageScale` gives.
- */
+/** The row's age without a shared axis, for the open package's key facts. */
 export function ageFact(finding: Finding, thresholds: Thresholds): AgeFact | null {
   const resolved = resolveSource(finding, thresholds);
   if (resolved === null) return null;
@@ -226,11 +169,7 @@ export function pushThresholds(thresholds: Thresholds): AgeLegend | null {
 }
 
 /**
- * The zone an age falls in against a warn/high pair, as the tone that zone is drawn in: below
- * `warn` reads as fine, `warn`..`high` as a caution, at or above `high` as the same tone a critical
- * verdict pill carries. One vocabulary for every age the page colours — a Findings row's scale dot
- * (`views/AgeScale.tsx`) and the release-branches answer (`detail/Timeline.tsx`) — so the same
- * years never read as two different verdicts in two places.
+ * One tone per zone for every age the page colours, so the same years never read as two verdicts.
  */
 export function ageZone(years: number, warn: number, high: number): Tone {
   if (years >= high) return "crit";
@@ -238,8 +177,6 @@ export function ageZone(years: number, warn: number, high: number): Tone {
   return "none";
 }
 
-/** The run's release warn/high pair, the one a release's own age is measured against; `null` when
- *  the run did not record both — the caller then draws the age in no zone's tone, never a guess. */
 export function releaseThresholds(thresholds: Thresholds): AgeLegend | null {
   const warn = thresholdYears(thresholds, "release-warn-years");
   const high = thresholdYears(thresholds, "release-high-years");

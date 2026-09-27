@@ -42,12 +42,8 @@ function Pk({ name }: { name: string }) {
   return <PkgMention name={name} className="rl-pk" />;
 }
 
-/**
- * "the 29 direct requirements lockrot's exposure list names": the one denominator the tab counts
- * against. `exposure[]` is not every direct requirement the project has — only those with flagged
- * packages under them; the footnote names the flagged ones with none — so no sentence here says
- * "your 29 direct requirements" (PD-RADIUS-1).
- */
+/** `exposure[]` is not every direct requirement the project has, so no sentence says "your 29"
+ *  (PD-RADIUS-1). */
 function ExposureList({ n, lead }: { n: number; lead: ComponentChildren }) {
   return n === 1 ? (
     <>the one direct requirement lockrot's exposure list names</>
@@ -58,14 +54,8 @@ function ExposureList({ n, lead }: { n: number; lead: ComponentChildren }) {
   );
 }
 
-/**
- * The tab's answer, first (PD-RADIUS-1): the fewest rows that hold half of what is listed, by name
- * and count, against every flagged package listed and every direct requirement `exposure` names —
- * "wallabag/rulerz (14) and phpunit/phpunit (13) pull in 27 of the 49 flagged packages that sit
- * under 17 of the 29 direct requirements lockrot's exposure list names." Counts only. Under a
- * filter every count is of the packages that match it, and the sentence says "matching"
- * (PD-RADIUS-6).
- */
+/** The fewest rows that hold half of what is listed, by name and count; under a filter every count
+ *  says "matching" (PD-RADIUS-6). */
 function AnswerSentence({ answer, id, narrowed }: { answer: Answer; id: string; narrowed: boolean }) {
   const { top, held, total, rows, exposureCount } = answer;
   const lead = top[0];
@@ -122,11 +112,6 @@ function AnswerSentence({ answer, id, narrowed }: { answer: Answer; id: string; 
   );
 }
 
-/**
- * Where the flagged direct requirements are when none lists anything: "12 on lockrot's exposure
- * list, below, and 8 with nothing flagged counted under them, at the end" — the tail fold and the footnote,
- * in that order.
- */
 function whereWords(self: number, unlisted: number): ComponentChildren {
   if (self > 0 && unlisted > 0) {
     return (
@@ -149,12 +134,7 @@ function whereWords(self: number, unlisted: number): ComponentChildren {
   );
 }
 
-/**
- * The answer when no row lists anything (a filter, or a lock whose flagged packages are all direct
- * requirements): what there is instead, never only what there is not — "The filter matches 20
- * flagged direct requirements themselves, and nothing listed under any of them: 12 on lockrot's
- * exposure list, below, and 8 with nothing flagged counted under them, at the end."
- */
+/** When no row lists anything, what there is instead, never only what there is not. */
 function NoRankAnswer({ layout, id }: { layout: RadiusLayout; id: string }) {
   const self = layout.selfOnly.length;
   const unlisted = layout.unlisted.length;
@@ -193,9 +173,6 @@ function NoRankAnswer({ layout, id }: { layout: RadiusLayout; id: string }) {
   );
 }
 
-/** Under a filter, what the counts cover and what they are without it: "Only flagged packages that
- *  match the filter are counted. Without it, 49 sit under 17 of the 29 direct requirements
- *  lockrot's exposure list names." */
 function ScopeNote({ layout }: { layout: RadiusLayout }) {
   if (!layout.narrowed) return null;
   return (
@@ -220,13 +197,8 @@ function ScopeNote({ layout }: { layout: RadiusLayout }) {
   );
 }
 
-/**
- * The key under the answer: every colour and mark a row draws. The squares are the row's one loud
- * colour, by priority as the summary band's waffle; a verdict keeps only a small dot of its own
- * colour; an age tick is ink until it passes a guide, then takes that guide's colour; a dash in the
- * age column means no age to draw. Short items, so a phone keeps it to a few lines; "one square size
- * on every row" is in each squares cell's title.
- */
+/** Short items, so a phone keeps the key to a few lines; the square size is in each squares cell's
+ *  title. */
 function Key({
   squares,
   hollow,
@@ -279,12 +251,8 @@ function Key({
   );
 }
 
-/**
- * The column head. Its age caption says whose years the column shows, since the tab draws two kinds:
- * a ranked row's are those of the packages listed under it ("Their years since release"); a row in
- * the "flagged themselves" tail lists none, so its are the requirement's own, and that tail carries
- * its own head saying so.
- */
+/** The tab draws two kinds of age: a ranked row's packages', and a "flagged themselves" row's own,
+ *  which that tail's head says. */
 function Head({
   axis,
   own = false,
@@ -324,11 +292,8 @@ function Head({
   );
 }
 
-/**
- * A fold's head: a button over its rows, its sentence the fold's whole summary. `fixed` — a tail that
- * is the whole list, nothing ranked above it — makes it a plain heading over rows always shown, never
- * a fold that could hide what the answer sentence just counted.
- */
+/** `fixed`, a tail that is the whole list, is a plain heading: never a fold that could hide what
+ *  the answer just counted. */
 function FoldHead({
   id,
   controls,
@@ -421,11 +386,8 @@ function motion(): ScrollBehavior {
   }
 }
 
-/**
- * The jump a "listed under X" button makes: X's row (and the fold holding it) opens, the page
- * brings it into view and focus moves onto it, and the packages the button named are marked there
- * for a moment — a static mark under reduced motion, an outline in forced colours.
- */
+/** The named packages are marked for a moment: a static mark under reduced motion, an outline in
+ *  forced colours. */
 function useJump(layout: RadiusLayout) {
   const { dispatch } = useReport();
   const [flash, setFlash] = useState<RowEnv["flash"]>(null);
@@ -485,8 +447,6 @@ function useFoldLink() {
   };
 }
 
-/** "Below the ranking: 5 flagged themselves · 7 reach flagged packages only through rows above" —
- *  each a link to its fold, which it opens. */
 function TailLinks({ layout, go }: { layout: RadiusLayout; go: (key: string, id: string) => void }) {
   const links = [
     layout.selfOnly.length > 0 && (
@@ -519,11 +479,8 @@ function TailLinks({ layout, go }: { layout: RadiusLayout; go: (key: string, id:
   return <p className="rl-tails">Below the ranking: {joined(links)}</p>;
 }
 
-/** Flagged direct requirements with nothing flagged counted under them (lockrot does not count a
- *  package shared by more than `exposure_rule.max_fan_in` requirements), which `exposure[]`
- *  therefore does not name:
- *  said once, at the end, so the tab's count never silently leaves them out. Each name opens that package's full detail, the one a
- *  Findings row opens, so the rail can count them as on this tab (PD-RAIL-1). */
+/** Said once, at the end, so the tab's count never silently leaves them out; each opens the
+ *  package's detail, so the rail counts them here (PD-RAIL-1). */
 function Unlisted({ findings }: { findings: readonly Finding[] }) {
   const { dispatch } = useReport();
   const printed = usePrinted();
@@ -566,13 +523,8 @@ function Unlisted({ findings }: { findings: readonly Finding[] }) {
   );
 }
 
-/**
- * The "flagged themselves" tail's head: "5 more are flagged themselves, all left-behind, with nothing
- * flagged listed under them." Under a filter that keeps what they list off the tab, what puts them
- * here is that they match it themselves — and where: "1 more matches “hoa” only in its own evidence
- * (pinned); nothing listed under it matches the filter" when the search found the words only in what
- * lockrot wrote about it (`domain/searchHits.ts`), not in its name, version or verdict.
- */
+/** Under a filter it says where the search found each: "only in its own evidence" when not in its
+ *  name, version or verdict. */
 function SelfTitle({
   lead,
   count,
@@ -632,13 +584,7 @@ function SelfTitle({
   );
 }
 
-/**
- * The Blast radius tab (PD-RADIUS-1..5, DESIGN.md §5): the answer sentence, then a ledger row per
- * direct requirement ranked by the flagged packages listed under it — squares on one scale, what it
- * pulls in, their years since release — with the one-each rows folded under one head, and at the
- * end the requirements that are flagged themselves and those that reach flagged packages only
- * through rows above. Ported from legacy `viewRadius` (report.js:595-625), fixed per M24/M25.
- */
+/** The Blast radius tab (PD-RADIUS-1..5). */
 export function RadiusView() {
   const { model, state, dispatch } = useReport();
   const narrow = useNarrow();
@@ -685,15 +631,11 @@ export function RadiusView() {
   // "12 more are…" after ranked rows; with none above, "12 direct requirements are…".
   const more = layout.ranked.length > 0;
   const selfN = layout.selfOnly.length;
-  // A row here may list packages the filter keeps off: then the tail is of requirements that match
-  // the filter themselves, with nothing listed under them that does.
   const selfFiltered = layout.selfOnly.some((r) => r.unfiltered > 0);
   const selfLead = more
     ? `${String(selfN)} more`
     : plural(selfN, "direct requirement", "direct requirements");
   const onlyVerdict = selfMix.length === 1 ? selfMix[0]?.verdict : undefined;
-  // Where the search found each tail requirement: "only in its own evidence" when no part a row
-  // shows holds the words (PD-SEARCH-1).
   const terms = parseQuery(state.q);
   const selfByEvidence = layout.selfOnly.filter(
     (r) => r.self !== null && searchHit(r.self, terms)?.field === "evidence",
@@ -752,8 +694,7 @@ export function RadiusView() {
       <ScopeNote layout={layout} />
       {more && <TailLinks layout={layout} go={go} />}
       {printed && list ? (
-        // PD-PRINT-5: on paper the key and the column head are a table's head, which the print
-        // engine repeats over every page the ranked rows run onto (print.css `.rl-ptable`).
+        // On paper the key and column head are a table head, repeated on every page (PD-PRINT-5).
         <>
           <div className="rl-ptable">
             <div className="rl-ptop">
@@ -767,9 +708,8 @@ export function RadiusView() {
       ) : (
         <>
           {key}
-          {/* The ranked rows and their one-each fold in a box of their own, so the sticky column head
-              — "Their years since release" — stops where they do and never sits over the "flagged
-              themselves" tail's own head, "Its own years since release". */}
+          {/* Their own box, so the sticky column head stops where they do and never sits over
+             the tail's head. */}
           {more ? (
             <div className="rl-ranked">
               {head}

@@ -1,8 +1,7 @@
 /**
- * S6's facts, and every word the page says about a pinned package: the answer's clause, the key
- * facts' release slot, a run's reason and an age cell's context reason all read S6 through here.
- * Each fact is S6's own field when S6 carries it, else the explain field that states the same fact.
- * lockrot says "stable" where it means any tag, a pre-release included, so the page says "tagged".
+ * Every word the page says about a pinned package reads S6 through here: S6's own field, else the
+ * explain field that states the same fact. lockrot's "stable" means any tag, so the page says
+ * "tagged".
  */
 
 import type { ExplainLock, ExplainMetadata, Finding, PackageDetails } from "../model/types";
@@ -104,19 +103,14 @@ export function pinnedKind(facts: PinnedFacts): PinnedKind {
   return "other";
 }
 
-/**
- * The key facts' second slot for an S6 or pinned package with no age signal to date it.
- * `release` keeps the "Last release" label and says there is none; `snapshot` is labelled for what
- * it dates, the branch's commit.
- */
+/** `release` keeps the "Last release" label and says there is none; `snapshot` dates the branch's
+ *  commit. */
 export type PinnedSlot =
   | { readonly label: "release"; readonly words: string; readonly commit: string | null }
   | { readonly label: "snapshot"; readonly commit: string | null };
 
-/**
- * "none, a snapshot" only when the repository lists no tag: for a tagged package, or one nothing is
- * known about, "none" would claim a missing release. `null` when the slot reads as for any package.
- */
+/** "none, a snapshot" only when the repository lists no tag; for any other package "none" would
+ *  claim a missing release. */
 export function pinnedReleaseSlot(facts: PinnedFacts): PinnedSlot | null {
   const commit = facts.snapshotTime;
   switch (pinnedKind(facts)) {
@@ -156,7 +150,6 @@ export function pinnedContextReason(kind: PinnedKind): string {
   }
 }
 
-/** `null` when the finding carries no S6 and is not pinned. */
 export function pinnedKindOf(finding: Finding, details: PackageDetails | null): PinnedKind | null {
   const facts = pinnedFacts(finding, details);
   return facts === null ? null : pinnedKind(facts);

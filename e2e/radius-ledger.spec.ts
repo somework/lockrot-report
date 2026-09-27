@@ -3,11 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
 import { FIXTURES, pageUrl } from "./support/pages";
 
-/**
- * PD-RADIUS-1..5 (DESIGN.md §5): the Blast radius tab as a ranked ledger over wallabag_wallabag —
- * 29 direct requirements, 17 listing flagged packages (wallabag/rulerz 14, phpunit/phpunit 13), 5
- * flagged themselves with nothing listed, 7 reaching flagged packages only through rows above.
- */
+/** PD-RADIUS-1..5: the Blast radius tab as a ranked ledger over wallabag_wallabag. */
 let report: ReportPage;
 
 async function open(page: Page, hash: string, width = 1440): Promise<void> {
@@ -245,8 +241,7 @@ test("axe: no serious or critical violation with rows and folds open, both schem
   }
 });
 
-/** Every package name the Blast radius tab draws — its rows and their packages, open or folded, and
- *  the footnote's names — each once. */
+/** Each name the tab draws, rows, their packages and the footnote, once. */
 function radiusNames(page: Page): Promise<string[]> {
   return page.evaluate(() => {
     const rl = document.querySelector(".rl");

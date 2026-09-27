@@ -71,9 +71,7 @@ describe("TONE", () => {
   });
 
   test("never returns an inherited Object.prototype member for a prototype-pollution id", () => {
-    // A plain `{}` literal inherits from Object.prototype, so `TABLE["constructor"]` would
-    // otherwise resolve to the Object function instead of falling back — a value that is never
-    // `undefined`/`null`, so `?? "low"` would never catch it either.
+    // `{}` inherits `constructor`, a value `?? "low"` would never catch.
     expect(TONE("constructor")).toBe("low");
     expect(TONE("__proto__")).toBe("low");
     expect(TONE("toString")).toBe("low");
@@ -97,9 +95,7 @@ describe("SIGNAL_NAMES / SIGNAL_DEFS", () => {
   });
 
   test("give no inherited Object.prototype member for a prototype-pollution id", () => {
-    // A non-literal key forces TS through the `Record<string, string>` index signature instead of a
-    // named `Object.prototype` method's own type, so `.toString` reads as a plain lookup here, the
-    // same as it does at runtime through a document-supplied id.
+    // A non-literal key reads `.toString` as a plain lookup, as a report's id does at runtime.
     for (const id of POLLUTION_IDS) {
       expect(SIGNAL_NAMES[id]).toBeUndefined();
       expect(SIGNAL_DEFS[id]).toBeUndefined();

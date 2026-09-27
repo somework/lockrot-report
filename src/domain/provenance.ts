@@ -1,10 +1,5 @@
-/**
- * Where a package's facts came from (PD-RUN-5, DESIGN.md §5), arranged for the detail's Provenance
- * block: the package metadata lockrot read and the repository activity it read from the forge — or,
- * when the file carries neither, why not, in words read off this document (the lock entry's
- * `from_composer_repository`, S10's list of checks that could not run, or simply that this file
- * holds no facts for the package). No inference beyond what a field says, no DOM, no clock.
- */
+/** Where a package's facts came from (PD-RUN-5), or why the file carries none, from what a field
+ *  says. */
 
 import type { ExplainActivity, ExplainMetadata, Finding, Model } from "../model/types";
 import { checkStrip } from "./checks";
@@ -129,12 +124,8 @@ export interface QuietUnread {
   readonly because: string;
 }
 
-/**
- * The quiet S3/S4 cells of a package this file holds no repository activity for — neither an
- * activity block nor a fired S3/S4 naming the repository. The strip marks them apart, so "quiet"
- * never reads as "the repository was looked at and found fine" beside a Provenance line that says no
- * activity is on file. `null` when activity is on file or no activity check is quiet.
- */
+/** Quiet S3/S4 cells of a package with no repository activity on file, marked apart so "quiet"
+ *  never reads as "looked at and found fine". */
 export function quietUnread(model: Model, finding: Finding): QuietUnread | null {
   const activity = activitySource(model, finding);
   if (activity.kind !== "missing") return null;

@@ -1,6 +1,4 @@
-// Shared builders for the domain/ test suite. Not a *.test.ts file itself, so vitest never treats
-// it as a suite; it only gives every test in this directory a Finding/Advisory/Model to start from
-// and override, instead of restating every required field in each test.
+// Builders every domain test starts from and overrides.
 
 import type {
   Advisory,
