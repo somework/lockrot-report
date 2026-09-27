@@ -1,7 +1,7 @@
 // PD-RAIL-1 (DESIGN.md §5): a rail row's count is the number of packages the list shows once that
 // row is selected — for every row of every group, on every tab that has a rail, over the three real
 // corpora and the two 0.13 documents with an `unattributed` entry (a package counted under no
-// requirement, which Blast radius places without a row). It catches the whole class the "What the
+// requirement, which Blast radius does not draw yet, so its rail does not count it). It catches the whole class the "What the
 // fix costs" bug belonged to (a count taken in one unit, advisories, over a filter applied in
 // another, packages): spomky-labs/otphp's two other-branch advisories read "Moving to another
 // branch 2" over a list of one row.

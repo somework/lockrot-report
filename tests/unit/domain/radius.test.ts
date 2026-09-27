@@ -173,15 +173,29 @@ describe("unattributed packages (lockrot 0.13.0 `unattributed`, `exposure_rule.m
     expect([lib?.count, bundle?.count]).toEqual([1, 0]);
   });
 
-  it("stays off the receipt and the unfiltered totals, but keeps its place on the tab (PD-RAIL-1)", () => {
+  it("stays off the receipt and the unfiltered totals, and off the tab until a tail draws it (PD-RAIL-1)", () => {
     const layout = radiusLayout(after, [own, shared]);
 
     expect(layout.receipt).toEqual([]);
     expect(layout.throughOther).toEqual([]);
     expect([layout.unfilteredTotal, layout.unfilteredRows]).toEqual([1, 1]);
     expect(layout.unattributed).toEqual([shared]);
-    expect([...radiusListed(layout)].sort()).toEqual(["acme/own", "acme/shared"]);
-    expect(new Set(placedOnRadius(after, [own, shared]).map((f) => f.package))).toEqual(radiusListed(layout));
+    // No row, tail or footnote draws it yet, so the tab has no place for it and the rail there
+    // does not count it: a rail count is the packages its button lists.
+    expect([...radiusListed(layout)].sort()).toEqual(["acme/own"]);
+    expect(placedOnRadius(after, [own, shared]).map((f) => f.package)).toEqual(["acme/own"]);
+    // An older document places it under its chain's first row, as before.
+    expect(placedOnRadius(before, [own, shared]).map((f) => f.package)).toEqual(["acme/own", "acme/shared"]);
+  });
+
+  it("keeps a flagged direct requirement placed even if the list names it (it heads a row or the footnote)", () => {
+    const direct = makeFinding({ package: "acme/lib", direct: true });
+    const odd: Model = {
+      ...after,
+      report: { ...after.report, unattributed: [{ package: "acme/lib", verdict: "stale", fanIn: 2 }] },
+    };
+
+    expect(placedOnRadius(odd, [direct]).map((f) => f.package)).toEqual(["acme/lib"]);
   });
 
   it("follows the filter: one the filter hides is not on the layout's list", () => {
@@ -221,6 +235,8 @@ describe("unattributed packages (lockrot 0.13.0 `unattributed`, `exposure_rule.m
     ]);
     expect(inRows).not.toContain(pkg);
     expect(layout.receipt.map((r) => r.finding.package)).not.toContain(pkg);
+    expect(radiusListed(layout).has(pkg)).toBe(false);
+    expect(placedOnRadius(model, all).map((f) => f.package)).not.toContain(pkg);
     expect(new Set(placedOnRadius(model, all).map((f) => f.package))).toEqual(radiusListed(layout));
   });
 });

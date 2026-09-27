@@ -10,7 +10,7 @@
  */
 
 import type { Finding, PackageDetails, Signal } from "../model/types";
-import { day, yearsPhrase } from "./format";
+import { yearsPhrase } from "./format";
 import {
   ageSource,
   ageZone,
@@ -152,10 +152,11 @@ function verdictClause(
 
 /**
  * Pinned, in S6's own case (`domain/pinned.ts`): a branch snapshot — of a package with no tagged
- * release, or beside the newest dated tag when lockrot names one, or with nothing said about tags
- * when lockrot loaded no repository metadata (and on a document written before 0.13.0, which never
- * said); a version in a repository that lists no tag; or, for a case this renderer has no words for,
- * S6's own summary as written.
+ * release, or with nothing said about tags otherwise (on a document written before 0.13.0 too);
+ * a version in a repository that lists no tag; or, for a case this renderer has no words for, S6's
+ * own summary as written. The newest dated tag is not named here: the metadata line's "last stable"
+ * is its one place in the panel (plan B2), and its date may be a monorepo parent's
+ * (`last_stable_dated_by`).
  */
 function pinnedClause(finding: Finding, details: PackageDetails | null): AnswerPart[] {
   // A pinned finding always has facts (`pinnedFacts` is null only for one that is neither pinned
@@ -172,19 +173,8 @@ function pinnedClause(finding: Finding, details: PackageDetails | null): AnswerP
     case "snapshot":
       break;
   }
-  if (facts.reason === undefined) return [...lead, text(", a branch snapshot rather than a release.")];
-  if (facts.hasStableRelease === false) {
+  if (facts.reason !== undefined && facts.hasStableRelease === false) {
     return [...lead, text(", a branch snapshot of a package with no tagged release.")];
-  }
-  const tag = facts.hasStableRelease === true ? (facts.lastStableVersion ?? null) : null;
-  const tagged = facts.lastStableRelease ?? null;
-  if (tag !== null && tagged !== null) {
-    return [
-      ...lead,
-      text(", a branch snapshot rather than a release; its newest dated tag is "),
-      name(tag),
-      text(` (${day(tagged)}).`),
-    ];
   }
   return [...lead, text(", a branch snapshot rather than a release.")];
 }

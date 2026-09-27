@@ -244,3 +244,48 @@ test("axe: no serious or critical violation with rows and folds open, both schem
     expect(serious).toEqual([]);
   }
 });
+
+/** Every package name the Blast radius tab draws — its rows and their packages, open or folded, and
+ *  the footnote's names — each once. */
+function radiusNames(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const rl = document.querySelector(".rl");
+    if (rl === null) return [];
+    const items = [...rl.querySelectorAll<HTMLElement>('[role="listitem"], li')].map(
+      (el) => el.getAttribute("data-pkg") ?? el.getAttribute("aria-label"),
+    );
+    const foot = [...rl.querySelectorAll<HTMLElement>(".rl-foot button")].map((el) => el.textContent);
+    return [...new Set([...items, ...foot].filter((name): name is string => name !== null && name !== ""))];
+  });
+}
+
+test("akaunting 0.13: a package lockrot counts under no requirement is drawn nowhere, and the rail there does not count it (PD-RADIUS-11)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  report = await createReportPage(page);
+
+  // Findings lists every flagged package, league/config (unattributed, fan_in 9) among them.
+  await page.goto(pageUrl(FIXTURES.akaunting013) + "#view=findings");
+  const flagged = new Set(
+    await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>("[data-pkg]")].map(
+        (el) => el.getAttribute("data-pkg") ?? "",
+      ),
+    ),
+  );
+  expect(flagged.has("league/config")).toBe(true);
+
+  await report.tab("radius");
+  const drawn = (await radiusNames(page)).filter((name) => flagged.has(name));
+  expect(drawn).not.toContain("league/config");
+  const scope = (await report.railRows()).filter((row) => ["Direct", "Transitive"].includes(row.label));
+  expect(scope.reduce((sum, row) => sum + row.count, 0)).toBe(drawn.length);
+
+  // Searched for, it is on no row, and the rail offers nothing the tab does not show.
+  await page.goto(pageUrl(FIXTURES.akaunting013) + "#view=radius&q=league%2Fconfig");
+  await expect(page.locator(".rl")).toContainText(
+    "No direct requirement is, or lists, a flagged package that matches the filter.",
+  );
+  expect((await report.railRows()).filter((row) => row.count > 0)).toEqual([]);
+});

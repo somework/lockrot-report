@@ -327,20 +327,25 @@ tag or the address format, says so under **Breaking** in its entry.
 ### Fixed
 
 - S6 no longer borrows S2's words: its name is "branch snapshot or never tagged" (in the rail
-  "snapshot or untagged", in the check strip "snapshot/untagged"), and its definition and `pinned`'s
-  say "the repository lists no tag at all" instead of "no stable release", on every page. On a page
-  lockrot 0.13.0 or later writes, a pinned package is worded by S6's own case: a snapshot of a
-  package with no tagged release; a snapshot beside its newest dated tag ("its newest dated tag is
-  2.6.7 (2026-09-13)", and Last release no longer reads "none" for it); a snapshot with nothing said
-  about tags when lockrot loaded no repository metadata; or "Installed 1.0.0, but its repository
-  lists no tag", which is not called a snapshot anywhere. A case the page does not know quotes S6's
-  summary.
+  "snapshot or untagged", in the check strip "snapshot/untagged"), and its definition and the
+  `pinned` verdict's say "the repository lists no tag at all" instead of "no stable release", on
+  every page, in the glossary and the hover text alike. On a page lockrot 0.13.0 or later writes, a
+  pinned package is worded by S6's own case: a snapshot of a package with no tagged release; a
+  snapshot with nothing said about tags; or "Installed 1.0.0, but its repository lists no tag",
+  which is not called a snapshot anywhere. A case the page does not know quotes S6's summary.
+- The open package's key facts no longer give a snapshot's commit date as a release on a page
+  lockrot 0.13.0 or later writes. A snapshot of a package that has a tag, or that lockrot read no
+  metadata for, reads "Snapshot" with the commit's age and "a branch commit, not a release" (mautic's
+  rector/rector: 2 months, while its newest tag, in the metadata line, is two weeks old), never
+  "Last release: a snapshot"; one that never tagged anything keeps "Last release: none, a snapshot",
+  now "commit dated …"; a version in a repository with no tag reads "none tagged" with no date, since
+  its lock time is neither a release nor a snapshot. An older page is unchanged.
 - Blast radius on a page lockrot 0.13.0 or later writes: a flagged package lockrot counts under no
   direct requirement, because more of them reach it than `exposure_rule.max_fan_in` allows (its
   `unattributed` list: akaunting's `league/config`, reached from 9), is no longer listed under a
   row or counted as reached from one ("+1 more it reaches, listed under no row"), so every row's
-  numbers add up to lockrot's own count for that requirement. The rail on that tab still counts it.
-  An older page is unchanged.
+  numbers add up to lockrot's own count for that requirement. The tab does not show it yet, so the
+  rail on that tab does not count it either; Findings still lists it. An older page is unchanged.
 - A signal id, S10 reason or check the page does not know (a later lockrot's `S99`, a check from
   outside lockrot such as `acme:licence`, `quota_exhausted`) is shown as written, in code, and never
   in a known one's words: the open package's tally says "also acme:licence, S99, checks this page

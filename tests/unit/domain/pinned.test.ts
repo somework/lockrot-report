@@ -19,6 +19,7 @@ import {
   pinnedKind,
   pinnedReleaseSlot,
   pinnedRunReason,
+  type PinnedSlot,
 } from "../../../src/domain/pinned";
 import { runFacts } from "../../../src/domain/rows";
 import { normalize } from "../../../src/model/normalize";
@@ -71,7 +72,7 @@ function sentence(model: Model, pkg: string): string {
   );
 }
 
-function slot(model: Model, pkg: string): string | null {
+function slot(model: Model, pkg: string): PinnedSlot | null {
   const d = details(model, pkg);
   const facts = pinnedFacts(finding(model, pkg), d);
   if (facts === null) throw new Error(`${pkg} has no S6 facts`);
@@ -241,12 +242,46 @@ describe("the answer's pinned clause", () => {
     );
   });
 
-  test("a snapshot beside the newest dated tag (friendsofsymfony/oauth-server-bundle, rector/rector)", () => {
-    expect(sentence(WALLABAG_013, "friendsofsymfony/oauth-server-bundle")).toMatch(
-      /^Pinned to dev-master, a branch snapshot rather than a release; its newest dated tag is 1\.6\.2 \(2019-01-23\)\./,
+  test("a snapshot of a tagged package names no tag or date: the metadata's last stable line is the one place (plan B2)", () => {
+    // The newest dated tag may be dated by a monorepo parent (`last_stable_dated_by`), and the panel
+    // already names it "last stable" once; the answer does not give it a second name or date.
+    for (const [model, pkg, version] of [
+      [WALLABAG_013, "friendsofsymfony/oauth-server-bundle", "dev-master"],
+      [MAUTIC_013, "rector/rector", "dev-main"],
+    ] as const) {
+      const text = sentence(model, pkg);
+      expect(text).toMatch(new RegExp(`^Pinned to ${version}, a branch snapshot rather than a release\\. `));
+      expect(text).not.toMatch(/tag|\d{4}-\d{2}-\d{2}/);
+    }
+  });
+
+  test("a tag another package dates is named nowhere in the answer (last_stable_dated_by)", () => {
+    const text = answerText(
+      answerParts({
+        finding: makeFinding({
+          verdict: "pinned",
+          signals: [
+            makeSignal({
+              id: "S6",
+              data: {
+                version: "dev-main",
+                reason: "branch_snapshot",
+                has_stable_release: true,
+                last_stable_version: "7.1.0",
+                last_stable_release: "2026-01-01T00:00:00+00:00",
+                last_stable_dated_by: "acme/monorepo",
+                snapshot_time: "2026-02-01T00:00:00+00:00",
+              },
+            }),
+          ],
+        }),
+        details: withLock(lock({ branchSnapshot: true })),
+        metadataReplacement: null,
+        thresholds: THRESHOLDS,
+      }),
     );
-    expect(sentence(MAUTIC_013, "rector/rector")).toMatch(
-      /^Pinned to dev-main, a branch snapshot rather than a release; its newest dated tag is 2\.6\.7 \(2026-09-13\)\./,
+    expect(text).toBe(
+      "Pinned to dev-main, a branch snapshot rather than a release. You require it directly.",
     );
   });
 
@@ -331,27 +366,59 @@ describe("the answer's pinned clause", () => {
 });
 
 describe("pinnedReleaseSlot: the key facts' release slot", () => {
-  test("never tagged, or an older document: none, a snapshot", () => {
-    expect(slot(WALLABAG_013, "wallabag/rulerz")).toBe("none, a snapshot");
-    expect(slot(WALLABAG_011, "wallabag/rulerz")).toBe("none, a snapshot");
-    expect(slot(MAUTIC_011, "rector/rector")).toBe("none, a snapshot");
-    expect(slot(KOEL_013, "roave/security-advisories")).toBe("none, a snapshot");
+  const NONE_SNAPSHOT = { label: "release", words: "none, a snapshot" } as const;
+
+  test("an older document: none, a snapshot, with no commit date of its own (the slot dates it as it always did)", () => {
+    expect(slot(WALLABAG_011, "wallabag/rulerz")).toEqual(NONE_SNAPSHOT);
+    expect(slot(MAUTIC_011, "rector/rector")).toEqual(NONE_SNAPSHOT);
   });
 
-  test("a snapshot of a tagged package, or of one with no metadata, does not say none", () => {
-    expect(slot(MAUTIC_013, "rector/rector")).toBe("a snapshot");
-    expect(slot(WALLABAG_013, "friendsofsymfony/oauth-server-bundle")).toBe("a snapshot");
-    expect(slot(EDGES, "acme/path-lib")).toBe("a snapshot");
-    expect(slot(MAUTIC_013, "mautic/core-lib")).toBe("a snapshot");
+  test("0.13, never tagged: none, a snapshot, dated by S6's own snapshot time", () => {
+    expect(slot(WALLABAG_013, "wallabag/rulerz")).toEqual({
+      ...NONE_SNAPSHOT,
+      commit: "2023-12-24T00:53:44+00:00",
+    });
+    expect(slot(KOEL_013, "roave/security-advisories")).toEqual({
+      ...NONE_SNAPSHOT,
+      commit: "2026-05-22T16:47:49+00:00",
+    });
   });
 
-  test("no tag at all, and not a snapshot: none tagged (acme/untagged)", () => {
-    expect(slot(EDGES, "acme/untagged")).toBe("none tagged");
+  test("0.13, a snapshot of a tagged package or of one with no metadata: a Snapshot slot, never a release", () => {
+    expect(slot(MAUTIC_013, "rector/rector")).toEqual({
+      label: "snapshot",
+      commit: "2026-08-04T09:29:27+00:00",
+    });
+    expect(slot(WALLABAG_013, "friendsofsymfony/oauth-server-bundle")).toEqual({
+      label: "snapshot",
+      commit: "2022-03-24T10:22:23+00:00",
+    });
+    expect(slot(EDGES, "acme/path-lib")).toEqual({ label: "snapshot", commit: "2025-06-01T12:00:00+00:00" });
+    // The lock carries no time: no date, and none borrowed from anywhere else.
+    expect(slot(MAUTIC_013, "mautic/core-lib")).toEqual({ label: "snapshot", commit: null });
+  });
+
+  test("no tag at all, and not a snapshot: none tagged, and no date (acme/untagged's lock time is no release)", () => {
+    expect(slot(EDGES, "acme/untagged")).toEqual({ label: "release", words: "none tagged", commit: null });
+    expect(slot(EDGES_LOCK_ONLY, "acme/untagged")).toEqual({
+      label: "release",
+      words: "none tagged",
+      commit: null,
+    });
   });
 
   test("a reason it does not know: a snapshot only when the lock says so, else the slot's usual reading", () => {
     const facts = { version: "1.0.0", summary: "x", reason: { raw: "yanked", known: false } };
-    expect(pinnedReleaseSlot(facts, lock({ branchSnapshot: true }))).toBe("a snapshot");
+    expect(pinnedReleaseSlot(facts, lock({ branchSnapshot: true }))).toEqual({
+      label: "snapshot",
+      commit: null,
+    });
+    expect(
+      pinnedReleaseSlot(
+        { ...facts, snapshotTime: "2024-01-01T00:00:00+00:00" },
+        lock({ branchSnapshot: true }),
+      ),
+    ).toEqual({ label: "snapshot", commit: "2024-01-01T00:00:00+00:00" });
     expect(pinnedReleaseSlot(facts, lock({ branchSnapshot: false }))).toBeNull();
     expect(pinnedReleaseSlot(facts, null)).toBeNull();
   });
@@ -407,7 +474,10 @@ describe("documents written before 0.13.0 keep today's words", () => {
       if (facts === null) continue;
       expect(facts.reason, f.package).toBeUndefined();
       expect(pinnedKind(facts, d?.lock ?? null), f.package).toBe("snapshot");
-      expect(pinnedReleaseSlot(facts, d?.lock ?? null), f.package).toBe("none, a snapshot");
+      expect(pinnedReleaseSlot(facts, d?.lock ?? null), f.package).toEqual({
+        label: "release",
+        words: "none, a snapshot",
+      });
       if (f.verdict === "pinned") {
         const version = facts.version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         expect(sentence(model, f.package), f.package).toMatch(

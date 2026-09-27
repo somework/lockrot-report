@@ -1,6 +1,6 @@
 /**
  * S6's facts, and every word the page says about a pinned package or an S6: the answer's clause
- * (`domain/answer.ts`), the key facts' release slot (`detail/DetailLead.tsx`), a run's reason
+ * (`domain/answer.ts`), the key facts' second slot (`detail/DetailLead.tsx`), a run's reason
  * (`views/LedgerNotes.tsx`) and an age cell's context reason (`views/AgeScale.tsx`). One place, so
  * no two of them read S6 two ways.
  *
@@ -166,25 +166,41 @@ export function pinnedKind(facts: PinnedFacts, lock: ExplainLock | null): Pinned
 }
 
 /**
- * The key facts' "Last release" slot for an S6 or pinned package with no age signal to date it:
- * - "none, a snapshot" — a snapshot of a package that lists no tag, or any snapshot on a document
- *   written before 0.13.0 (its words then);
- * - "a snapshot" — a snapshot of a package that lists a tag, or of one lockrot loaded no metadata for:
- *   "none" would claim a release it does not know is missing;
- * - "none tagged" — a version in a repository that lists no tag;
- * - for a reason it does not know, "a snapshot" when the lock says the version is a branch, and
+ * The key facts' second slot for an S6 or pinned package with no age signal to date it.
+ * - `release`: the slot keeps its "Last release" label and its `words` say there is none. `commit`
+ *   is absent on a document written before 0.13.0, whose slot dates the installed version as it
+ *   always did; on a 0.13 one it is S6's `snapshot_time`, the commit the branch pointed at (`null`
+ *   when there is none to give, as for a version that is not a branch).
+ * - `snapshot`: the slot is labelled for what it dates, the branch's commit, which is not a release.
+ */
+export type PinnedSlot =
+  | { readonly label: "release"; readonly words: string; readonly commit?: string | null }
+  | { readonly label: "snapshot"; readonly commit: string | null };
+
+/**
+ * Which slot fits:
+ * - "none, a snapshot" — any snapshot on a document written before 0.13.0 (its words then), or on a
+ *   0.13 one a snapshot of a package that lists no tag, dated by the commit;
+ * - a `snapshot` slot — on a 0.13 document, a snapshot of a package that lists a tag, or of one
+ *   lockrot loaded no metadata for: "none" would claim a release it does not know is missing, and
+ *   "Last release" over the commit's date would give the package a release it never made;
+ * - "none tagged", with no date — a version in a repository that lists no tag: its lock time is
+ *   neither a release nor a snapshot (lockrot's `snapshot_time` is null for it);
+ * - for a reason it does not know, a `snapshot` slot when the lock says the version is a branch, and
  *   `null` otherwise: the slot then reads as for any package, from the installed version's date.
  */
-export function pinnedReleaseSlot(facts: PinnedFacts, lock: ExplainLock | null): string | null {
+export function pinnedReleaseSlot(facts: PinnedFacts, lock: ExplainLock | null): PinnedSlot | null {
+  const commit = facts.snapshotTime ?? null;
   switch (pinnedKind(facts, lock)) {
     case "snapshot":
-      return facts.reason === undefined || facts.hasStableRelease === false
-        ? "none, a snapshot"
-        : "a snapshot";
+      if (facts.reason === undefined) return { label: "release", words: "none, a snapshot" };
+      return facts.hasStableRelease === false
+        ? { label: "release", words: "none, a snapshot", commit }
+        : { label: "snapshot", commit };
     case "untagged":
-      return "none tagged";
+      return { label: "release", words: "none tagged", commit: null };
     case "other":
-      return lock?.branchSnapshot === true ? "a snapshot" : null;
+      return lock?.branchSnapshot === true ? { label: "snapshot", commit } : null;
   }
 }
 

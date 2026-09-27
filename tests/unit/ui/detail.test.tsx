@@ -813,35 +813,56 @@ describe("Detail", () => {
     });
 
     it("words a 0.13 S6 by its own case: never tagged, tagged, no metadata, and no tag at all (PD-S6-1)", () => {
-      const slot = (model: Model, pkg: string) =>
-        factRows(renderDetail(model, pkg).container)[1]?.slice(0, 2);
+      const facts = (model: Model, pkg: string) => factRows(renderDetail(model, pkg).container)[1];
       const answer = (model: Model, pkg: string) =>
         renderDetail(model, pkg).container.querySelector(".detail-answer")?.textContent ?? "";
-      // A snapshot of a package that lists no tag: "none" is true, and the answer says why.
-      expect(slot(WALLABAG_013, "wallabag/rulerz")).toEqual(["Last release", "none, a snapshot"]);
+      // A snapshot of a package that lists no tag: "none" is true, and the note dates the commit.
+      expect(facts(WALLABAG_013, "wallabag/rulerz")).toEqual([
+        "Last release",
+        "none, a snapshot",
+        "commit dated 2.8 y ago",
+      ]);
       expect(answer(WALLABAG_013, "wallabag/rulerz")).toMatch(
         /^Pinned to dev-master, a branch snapshot of a package with no tagged release\. /,
       );
       cleanup();
-      // A snapshot of a package with a tag two weeks old: never "none"; the answer names the tag.
-      expect(slot(MAUTIC_013, "rector/rector")).toEqual(["Last release", "a snapshot"]);
-      expect(answer(MAUTIC_013, "rector/rector")).toMatch(
-        /^Pinned to dev-main, a branch snapshot rather than a release; its newest dated tag is 2\.6\.7 \(2026-09-13\)\. /,
-      );
-      cleanup();
-      // No repository metadata: nothing said about tags either way.
-      expect(slot(MAUTIC_013, "mautic/core-lib")).toEqual(["Last release", "a snapshot"]);
+      // No repository metadata: nothing said about tags either way, and a commit the lock left
+      // undated is said to be so.
+      expect(facts(MAUTIC_013, "mautic/core-lib")).toEqual([
+        "Snapshot",
+        "not recorded",
+        "a branch commit, not a release",
+      ]);
       expect(answer(MAUTIC_013, "mautic/core-lib")).toMatch(
         /^Pinned to 7\.0\.0-dev, a branch snapshot rather than a release\. /,
       );
       cleanup();
-      // A tagged-looking version in a repository with no tag is not a snapshot anywhere.
+      // A tagged-looking version in a repository with no tag is not a snapshot anywhere, and its
+      // lock time, which is neither a release nor a snapshot, is not given as a date.
       const untagged = renderDetail(EDGES_013, "acme/untagged").container;
-      expect(factRows(untagged)[1]).toEqual(["Last release", "none tagged", "dated 2.6 y ago"]);
+      expect(factRows(untagged)[1]).toEqual(["Last release", "none tagged"]);
       expect(untagged.querySelector(".detail-answer")?.textContent).toMatch(
         /^Installed 1\.0\.0, but its repository lists no tag\. /,
       );
       expect(untagged.querySelector(".detail-lead")?.textContent).not.toContain("snapshot");
+      expect(untagged.querySelector(".detail-lead")?.textContent).not.toContain("dated");
+    });
+
+    it("never calls a 0.13 snapshot's commit a release, so a tagged one's panel gives one last-release date (rector/rector)", () => {
+      const { container } = renderDetail(MAUTIC_013, "rector/rector");
+      // The key facts date the commit the branch pointed at, labelled for what it is.
+      expect(factRows(container)[1]).toEqual(["Snapshot", "2 mo ago", "a branch commit, not a release"]);
+      // The answer names no tag and no date: the metadata's "last stable" line is the one place.
+      const answerText = container.querySelector(".detail-answer")?.textContent ?? "";
+      expect(answerText).toMatch(/^Pinned to dev-main, a branch snapshot rather than a release\. /);
+      expect(answerText).not.toContain("2.6.7");
+      const lead = container.querySelector(".detail-lead")?.textContent ?? "";
+      expect(lead).not.toContain("Last release");
+      expect(lead).not.toContain("2026-09-13");
+      // The release-branches answer dates the same commit the same way.
+      expect(container.querySelector(".detail-timeline-answer")?.textContent).toContain(
+        "a branch snapshot, not a release, dated 2 months ago",
+      );
     });
 
     it("glosses a libyears of 0.0 so it does not read as good news, and keeps an abandoned age in ink everywhere", () => {

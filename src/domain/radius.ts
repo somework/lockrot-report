@@ -13,8 +13,10 @@
  * - a flagged package the document names in `unattributed` (lockrot 0.13.0: reached from more than
  *   `exposure_rule.max_fan_in` direct requirements, so `exposure` counts it under none) is listed
  *   under no row and reached elsewhere by none, which keeps `count + elsewhere.length` equal to
- *   `exposure[].flagged`; the layout keeps it apart (`unattributed`), still placed on the tab. A
- *   document written before 0.13.0 has no such list, and every package keeps its row.
+ *   `exposure[].flagged`; the layout keeps it apart (`unattributed`) but nothing draws it yet, so it
+ *   is not placed on the tab either (`placedOnRadius`, `radiusListed`) and the rail there does not
+ *   count it (PD-RAIL-1). A document written before 0.13.0 has no such list, and every package keeps
+ *   its row.
  *
  * Arrangement and counting only: every fact is a field of the document (`chain`,
  * `direct_dependents`, `exposure`, a finding's verdict and priority).
@@ -89,8 +91,9 @@ export interface RadiusLayout {
   readonly unfilteredTotal: number;
   readonly unfilteredRows: number;
   /** The visible flagged packages the document names in `unattributed` (lockrot 0.13.0), in that
-   *  list's order: counted under no requirement, so in no row, no "elsewhere" and no receipt, yet
-   *  placed on the tab (`placedOnRadius`, `radiusListed`). Empty for a document without the list. */
+   *  list's order: counted under no requirement, so in no row, no "elsewhere" and no receipt. Not
+   *  drawn yet, so not placed on the tab (`placedOnRadius`, `radiusListed`) until a tail draws
+   *  them. Empty for a document without the list. */
   readonly unattributed: readonly Finding[];
 }
 
@@ -227,15 +230,14 @@ function receiptOf(rows: readonly RadiusRow[]): readonly RadiusReceipt[] {
   );
 }
 
-/** The flagged packages the tab has a place for: every row's pulled packages, every flagged
- *  requirement that heads a row, every one the footnote names (PD-RADIUS-5), and every one the
- *  document counts under no requirement (`layout.unattributed`). */
+/** The flagged packages the tab draws: every row's pulled packages, every flagged requirement that
+ *  heads a row, and every one the footnote names (PD-RADIUS-5). Not `layout.unattributed`, which
+ *  nothing draws yet. */
 export function radiusListed(layout: RadiusLayout): ReadonlySet<string> {
   const rows = [...layout.ranked, ...layout.selfOnly];
   return new Set([
     ...rows.flatMap((r) => [...(r.self ? [r.self.package] : []), ...r.pulled.map((f) => f.package)]),
     ...layout.unlisted.map((f) => f.package),
-    ...layout.unattributed.map((f) => f.package),
   ]);
 }
 
@@ -272,12 +274,12 @@ export function radiusCountPhrase(layout: RadiusLayout): string {
  * The findings among `flagged` that have a place on the Blast radius tab at all: listed under some
  * direct requirement's row, heading a row as a flagged direct requirement, or — a flagged direct
  * requirement `exposure` does not name (wallabag's lcobucci/jwt, say) — named, with a link, in the
- * footnote — or one the document counts under no requirement (`unattributed`, lockrot 0.13.0),
- * whatever its chain. Only a transitive package whose recorded chain reaches no row, and which that
- * list does not name, is left out. Membership is per finding, so a filter applied before or after
+ * footnote. A transitive package is left out when its recorded chain reaches no row, or when the
+ * document counts it under no requirement (`unattributed`, lockrot 0.13.0), which no row lists and
+ * nothing on the tab draws yet. Membership is per finding, so a filter applied before or after
  * this gives the same set; the rail counts over this set on that tab (PD-RAIL-1,
  * `domain/filters.ts#railGroups`), so Direct plus Transitive is the summary band's flagged count
- * whenever every chain reaches a row.
+ * whenever every chain reaches a row and nothing is unattributed.
  */
 export function placedOnRadius(model: Model, flagged: readonly Finding[]): readonly Finding[] {
   const parents = new Set(model.report.exposure.map((exposure) => exposure.package));
@@ -286,8 +288,7 @@ export function placedOnRadius(model: Model, flagged: readonly Finding[]): reado
     (f) =>
       f.direct ||
       parents.has(f.package) ||
-      shared.has(f.package) ||
-      f.chain.some((hop) => hop !== f.package && parents.has(hop)),
+      (!shared.has(f.package) && f.chain.some((hop) => hop !== f.package && parents.has(hop))),
   );
 }
 
