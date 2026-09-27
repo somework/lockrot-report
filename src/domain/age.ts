@@ -29,7 +29,8 @@ export interface AgeScale {
   readonly max: number;
   /**
    * True for a verdict whose own reason to flag is not age — `abandoned` (S1's own repository flag,
-   * or S3's archived flag) and `pinned` (S6's branch snapshot) start the priority ladder
+   * or S3's archived flag) and `pinned` (S6: a branch snapshot, or a repository with no tag at all,
+   * `domain/pinned.ts`) start the priority ladder
    * (`domain/priority.ts#PRIORITY_BASE`) without ever reading S2/S4/S8. Such a finding can still
    * carry one of those signals — a repository can be both archived and old — and the scale drawn
    * from it would otherwise read as the reason for a priority it did not set (PD-ROWS-3: an

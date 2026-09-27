@@ -1,4 +1,5 @@
 import type { ComponentChildren } from "preact";
+import { pinnedRunReason } from "../../domain/pinned";
 import type { GroupCounts, RunFacts } from "../../domain/rows";
 
 /**
@@ -86,7 +87,7 @@ function runReason(facts: RunFacts): string {
           ? "archived upstream"
           : "abandoned";
     case "pinned":
-      return "pinned to a branch snapshot";
+      return pinnedRunReason(facts.pinned);
     case "left-behind":
       return "left behind on older branches";
     case "old-promise":

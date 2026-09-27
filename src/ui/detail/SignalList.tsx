@@ -329,6 +329,22 @@ function reveal(id: string): void {
   else land();
 }
 
+/** A check's name with a line break allowed after each "/", which a browser does not offer on its
+ *  own: "snapshot/untagged" (S6, PD-S6-1) is two words that must split there to fit a 55px cell. */
+function breakAfterSlash(name: string): ComponentChildren {
+  const parts = name.split("/");
+  return parts.map((part, index) => (
+    <Fragment key={index}>
+      {part}
+      {index < parts.length - 1 && (
+        <>
+          /<wbr />
+        </>
+      )}
+    </Fragment>
+  ));
+}
+
 /** One cell of the strip: a bar filled in its level's tone when the check fired, outlined when it
  *  stayed quiet (dashed when a quiet S3/S4 has no repository activity on file), hatched when it
  *  could not run, dotted when the document does not say, with the id
@@ -342,7 +358,7 @@ function Cell({ cell, target, unread }: { cell: CheckCell; target: string | null
     <>
       <i aria-hidden="true" />
       <span className="detail-check-id">{cell.id}</span>
-      <span className="detail-check-name">{checkName(cell)}</span>
+      <span className="detail-check-name">{breakAfterSlash(checkName(cell))}</span>
     </>
   );
   if (target === null) {

@@ -539,6 +539,30 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
       expect(scale.getAttribute("aria-label")).toContain("flagged for being pinned to a branch snapshot");
     });
 
+    it("names a pinned row's own S6 case as its context reason: a repository with no tag is not a snapshot (PD-S6-1)", () => {
+      // Arrange
+      const finding = makeFinding({
+        package: "acme/untagged-old",
+        verdict: "pinned",
+        signals: [
+          makeSignal({ id: "S2", level: "high", data: { years: 9 } }),
+          makeSignal({
+            id: "S6",
+            data: { version: "1.0.0", reason: "no_stable_release", has_stable_release: false },
+          }),
+        ],
+      });
+      const model = modelWith([finding]);
+
+      // Act
+      renderIn(model, stateWith(), <FindingsView />);
+      const scale = within(screen.getByRole("listitem", { name: "acme/untagged-old" })).getByRole("img");
+
+      // Assert
+      expect(scale.getAttribute("aria-label")).toContain("flagged because its repository lists no tag");
+      expect(scale.getAttribute("aria-label")).not.toContain("snapshot");
+    });
+
     it("keeps the zone's own tone for a verdict whose priority does come from age", () => {
       // Arrange: "stale" starts its priority at S2/S4's own age facts.
       const finding = makeFinding({
@@ -760,6 +784,34 @@ describe("FindingsView / the ledger's sentences and ditto (PD-ROWS-5/PD-ROWS-6, 
     // Assert: no comma splice ("…older branch, their branch last released …, and all come in…").
     expect(container.querySelector(".frun-note")?.textContent).toBe(
       "These 3 packages are all left behind on older branches and were last released 3.7–10.3 years ago. All come in through mautic/core-lib.",
+    );
+  });
+
+  it("says a run of pinned rows by the S6 case they share, and only then (PD-S6-1)", () => {
+    // Arrange: three direct pinned rows from one vendor whose repositories list no tag.
+    const pinned = (v: string, reason: string) =>
+      makeFinding({
+        package: `acme/${v}`,
+        verdict: "pinned",
+        priority: "high",
+        signals: [makeSignal({ id: "S6", level: "high", data: { version: "1.0.0", reason } })],
+      });
+    const untagged = modelWith(["a", "b", "c"].map((v) => pinned(v, "no_stable_release")));
+    const mixed = modelWith([
+      pinned("a", "no_stable_release"),
+      pinned("b", "branch_snapshot"),
+      pinned("c", "yanked"),
+    ]);
+
+    // Act / Assert
+    const { container, unmount } = renderIn(untagged, stateWith(), <FindingsView />);
+    expect(container.querySelector(".frun-note")?.textContent).toBe(
+      "These 3 acme/* packages are all without a tag in their repositories. You require each one directly.",
+    );
+    unmount();
+    const other = renderIn(mixed, stateWith(), <FindingsView />);
+    expect(other.container.querySelector(".frun-note")?.textContent).toBe(
+      "These 3 acme/* packages are all pinned. You require each one directly.",
     );
   });
 

@@ -9,8 +9,8 @@
  * a signal a clause would quote is missing, the clause falls back to fewer words, never a guess.
  */
 
-import type { Finding, Signal } from "../model/types";
-import { yearsPhrase } from "./format";
+import type { Finding, PackageDetails, Signal } from "../model/types";
+import { day, yearsPhrase } from "./format";
 import {
   ageSource,
   ageZone,
@@ -19,6 +19,7 @@ import {
   type AgeLegend,
   type Thresholds,
 } from "./age";
+import { pinnedFacts, pinnedKind } from "./pinned";
 import { WAYS_NAMED, waysIn } from "./reach";
 import { hasNoFixExpected } from "./sniff";
 import { VERDICT_ORDER, type Tone } from "./vocab";
@@ -39,6 +40,9 @@ export interface AnswerInput {
   /** Packagist's own free-text replacement (`metadata.replacement`), when the explain data has one. */
   readonly metadataReplacement: string | null;
   readonly thresholds: Thresholds;
+  /** The package's explain data, when the document has it: a pinned package's clause reads its lock
+   *  and metadata through `domain/pinned.ts`. Without it the clause reads S6 alone. */
+  readonly details?: PackageDetails | null;
 }
 
 const text = (value: string): AnswerPart => ({ kind: "text", text: value });
@@ -82,7 +86,11 @@ function hostName(host: string | null): string {
 }
 
 /** What the verdict is, in the words of the signals that set it. */
-function verdictClause(finding: Finding, thresholds: Thresholds): AnswerPart[] {
+function verdictClause(
+  finding: Finding,
+  thresholds: Thresholds,
+  details: PackageDetails | null,
+): AnswerPart[] {
   const release = releaseThresholds(thresholds);
   const push = pushThresholds(thresholds);
   const s2 = num(signal(finding, "S2")?.data, "years");
@@ -100,10 +108,8 @@ function verdictClause(finding: Finding, thresholds: Thresholds): AnswerPart[] {
       parts.push(text("."));
       return parts;
     }
-    case "pinned": {
-      const snapshot = str(signal(finding, "S6")?.data, "version") ?? finding.version;
-      return [text("Pinned to "), name(snapshot), text(", a branch snapshot rather than a release.")];
-    }
+    case "pinned":
+      return pinnedClause(finding, details);
     case "left-behind": {
       const s8 = signal(finding, "S8")?.data;
       const branch = str(s8, "branch");
@@ -142,6 +148,45 @@ function verdictClause(finding: Finding, thresholds: Thresholds): AnswerPart[] {
     default:
       return [text(`${finding.verdict.charAt(0).toUpperCase()}${finding.verdict.slice(1)}.`)];
   }
+}
+
+/**
+ * Pinned, in S6's own case (`domain/pinned.ts`): a branch snapshot — of a package with no tagged
+ * release, or beside the newest dated tag when lockrot names one, or with nothing said about tags
+ * when lockrot loaded no repository metadata (and on a document written before 0.13.0, which never
+ * said); a version in a repository that lists no tag; or, for a case this renderer has no words for,
+ * S6's own summary as written.
+ */
+function pinnedClause(finding: Finding, details: PackageDetails | null): AnswerPart[] {
+  // A pinned finding always has facts (`pinnedFacts` is null only for one that is neither pinned
+  // nor carries S6); the fallback is the version alone, which words as a snapshot, today's reading.
+  const facts = pinnedFacts(finding, details) ?? { version: finding.version, summary: null };
+  const lead = [text("Pinned to "), name(facts.version)];
+  switch (pinnedKind(facts, details?.lock ?? null)) {
+    case "untagged":
+      return [text("Installed "), name(facts.version), text(", but its repository lists no tag.")];
+    case "other": {
+      const summary = facts.summary?.trim().replace(/\.$/, "") ?? "";
+      return summary === "" ? [...lead, text(".")] : [text(`Pinned: ${summary}.`)];
+    }
+    case "snapshot":
+      break;
+  }
+  if (facts.reason === undefined) return [...lead, text(", a branch snapshot rather than a release.")];
+  if (facts.hasStableRelease === false) {
+    return [...lead, text(", a branch snapshot of a package with no tagged release.")];
+  }
+  const tag = facts.hasStableRelease === true ? (facts.lastStableVersion ?? null) : null;
+  const tagged = facts.lastStableRelease ?? null;
+  if (tag !== null && tagged !== null) {
+    return [
+      ...lead,
+      text(", a branch snapshot rather than a release; its newest dated tag is "),
+      name(tag),
+      text(` (${day(tagged)}).`),
+    ];
+  }
+  return [...lead, text(", a branch snapshot rather than a release.")];
 }
 
 /** Abandoned: S1 (the repository's own flag) and S3 (archived), then how long it has been quiet —
@@ -268,9 +313,10 @@ export function answerParts({
   finding,
   metadataReplacement,
   thresholds,
+  details = null,
 }: AnswerInput): readonly AnswerPart[] {
   return [
-    ...verdictClause(finding, thresholds),
+    ...verdictClause(finding, thresholds, details),
     ...reachClause(finding),
     ...replacementClause(finding, metadataReplacement),
     ...advisoryClause(finding),

@@ -278,8 +278,9 @@
   font-size: 10.5px;
   line-height: 1;
 }
-/* A name wraps only between its words, never inside one (no `overflow-wrap` here on purpose): the
-   longest single word, "advisories", fits the narrowest cell whole (the 320px sheet, below). Balanced
+/* A name wraps only between its words or after a "/" (SignalList.tsx#breakAfterSlash), never inside
+   one (no `overflow-wrap` here on purpose): the longest single word, "advisories", fits the narrowest
+   cell whole (the 320px sheet, below). Balanced
    so a two-word name that must wrap splits evenly. */
 .detail-check-name {
   font-size: 10.5px;

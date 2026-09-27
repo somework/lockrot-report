@@ -236,6 +236,7 @@ describe("runFacts (PD-ROWS-6)", () => {
       dev: false,
       age: { kind: "release", min: 9.1, max: 9.7 },
       abandonedBy: "S1",
+      pinned: null,
     });
   });
 

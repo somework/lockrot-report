@@ -326,6 +326,15 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Fixed
 
+- S6 no longer borrows S2's words: its name is "branch snapshot or never tagged" (in the rail
+  "snapshot or untagged", in the check strip "snapshot/untagged"), and its definition and `pinned`'s
+  say "the repository lists no tag at all" instead of "no stable release", on every page. On a page
+  lockrot 0.13.0 or later writes, a pinned package is worded by S6's own case: a snapshot of a
+  package with no tagged release; a snapshot beside its newest dated tag ("its newest dated tag is
+  2.6.7 (2026-09-13)", and Last release no longer reads "none" for it); a snapshot with nothing said
+  about tags when lockrot loaded no repository metadata; or "Installed 1.0.0, but its repository
+  lists no tag", which is not called a snapshot anywhere. A case the page does not know quotes S6's
+  summary.
 - Blast radius on a phone: the closing note that names flagged direct requirements with no row
   wraps a long package name (`mnsami/composer-custom-directory-installer`) instead of running the
   page past 320px; each "(verdict)" stays on one line.

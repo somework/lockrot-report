@@ -146,7 +146,7 @@ function Group({ priority, findings, axis, quoted }: ListProps & { priority: str
             />
           );
         }
-        const facts = runFacts(segment.findings, model.report.run.thresholds);
+        const facts = runFacts(segment.findings, model.report.run.thresholds, model.details);
         return (
           <div key={first} className={`frun ${toneClass(TONE(facts.verdict))}`}>
             <RunNote facts={facts} />
@@ -196,7 +196,7 @@ function PrintedGroup({
             </ul>
           );
         }
-        const facts = runFacts(segment.findings, thresholds);
+        const facts = runFacts(segment.findings, thresholds, model.details);
         return (
           <ul key={first} className={`frows pf-run ${toneClass(TONE(facts.verdict))}`}>
             <li className="pf-tr pf-note">

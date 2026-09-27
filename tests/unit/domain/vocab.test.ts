@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
+import { RAIL_SIGNAL_LABELS } from "../../../src/domain/filters";
 import {
+  CHECK_NAMES,
   DEFAULT_FLAGGED,
   DOCS_URL,
   SIGNAL_DEFS,
@@ -189,5 +191,24 @@ describe("isFlagged", () => {
   test("respects a run's own flaggedVerdicts list rather than the default", () => {
     expect(isFlagged("unknown", ["unknown"])).toBe(true);
     expect(isFlagged("abandoned", ["unknown"])).toBe(false);
+  });
+});
+
+describe("S6's names (PD-S6-1)", () => {
+  test("never reads as S2's 'no stable release', and never says 'stable'", () => {
+    const names = [
+      SIGNAL_NAMES.S6,
+      CHECK_NAMES.S6,
+      RAIL_SIGNAL_LABELS.S6,
+      SIGNAL_DEFS.S6,
+      VERDICT_DEFS.pinned,
+    ];
+    for (const name of names) {
+      expect(name).toBeTruthy();
+      expect(name).not.toMatch(/stable/i);
+    }
+    expect(SIGNAL_NAMES.S6).toBe("branch snapshot or never tagged");
+    expect(CHECK_NAMES.S6).toBe("snapshot/untagged");
+    expect(RAIL_SIGNAL_LABELS.S6).toBe("snapshot or untagged");
   });
 });

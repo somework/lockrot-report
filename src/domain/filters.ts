@@ -307,7 +307,7 @@ export const RAIL_SIGNAL_LABELS: Readonly<Record<string, string>> = {
   S3: "repository archived",
   S4: "no recent push",
   S5: "predates target PHP",
-  S6: "branch snapshot",
+  S6: "snapshot or untagged",
   S7: "pulls in flagged",
   S8: "branch stopped",
   S9: "security advisories",

@@ -94,7 +94,8 @@ export const SIGNAL_NAMES: Readonly<Record<string, string>> = vocabTable({
   S3: "repository archived",
   S4: "no push to the repository",
   S5: "release predates the target PHP",
-  S6: "branch snapshot, not a release",
+  // PD-S6-1: S2's "no stable release" is an age; S6 is a snapshot or a repository with no tag at all.
+  S6: "branch snapshot or never tagged",
   S7: "pulls in flagged packages",
   S8: "the installed branch stopped",
   S9: "security advisories",
@@ -107,7 +108,7 @@ export const SIGNAL_NAMES: Readonly<Record<string, string>> = vocabTable({
 /**
  * One or two words per check (PD-DETAIL-12, DESIGN.md §5): the name under each cell of the detail's
  * "Checks" strip, and in the lines that list the ones that stayed quiet or could not run ("Quiet:
- * S5 predates PHP · S6 snapshot"). A check's subject, not a verdict on it, so the same words read
+ * S5 predates PHP · S6 snapshot/untagged"). A check's subject, not a verdict on it, so the same words read
  * right under a fired cell, a quiet one and one that could not run: S10 is "check gaps", which it
  * reports when it fires and which there are none of when it stays quiet.
  */
@@ -117,7 +118,7 @@ export const CHECK_NAMES: Readonly<Record<string, string>> = vocabTable({
   S3: "archived",
   S4: "push age",
   S5: "predates PHP",
-  S6: "snapshot",
+  S6: "snapshot/untagged",
   S7: "flagged deps",
   S8: "branch stopped",
   S9: "advisories",
@@ -131,7 +132,7 @@ export const SIGNAL_DEFS: Readonly<Record<string, string>> = vocabTable({
   S3: "The repository is archived — on GitHub, or on GitLab when the run has credentials there.",
   S4: "Time since the last push to any branch, against push-warn-years / push-high-years.",
   S5: "The installed release predates the target PHP's GA date and require.php has no upper bound.",
-  S6: "The installed version is a branch snapshot, or the package has no stable release.",
+  S6: "The installed version is a branch snapshot, or the package's repository lists no tag at all (a pre-release counts as one).",
   S7: "A direct requirement pulls in flagged transitive packages. Informational, never a verdict.",
   S8: "Time since the last stable release on the installed branch, counted only when a higher branch has released since.",
   S9: "Security advisories affecting the installed version. Never a verdict; raises the priority where no fix is coming.",
@@ -145,7 +146,7 @@ export const VERDICT_DEFS: Record<string, string> = vocabTable({
   silent:
     "No stable release for at least release-high-years and no repository push for at least push-high-years.",
   pinned:
-    "The installed version is a branch snapshot — dev-master, a 2.x-dev alias, a #hash — or the package has no stable release at all.",
+    "The installed version is a branch snapshot — dev-master, a 2.x-dev alias, a #hash — or the package's repository lists no tag at all.",
   "left-behind":
     "No stable release on the installed branch for release-warn-years, while a higher branch kept releasing. The package is alive; the branch you are on is not.",
   "old-promise":

@@ -10,6 +10,7 @@ import {
   type PulledEntry,
 } from "../../domain/answer";
 import { ageText, fixed, yearsAgo } from "../../domain/format";
+import { pinnedFacts, pinnedReleaseSlot } from "../../domain/pinned";
 import { waysIn } from "../../domain/reach";
 import { timelineModel, type TimelineModel } from "../../domain/timeline";
 import { Muted, OutLink, toneClass } from "../common/common";
@@ -30,6 +31,7 @@ export function DetailLead({ finding, details }: { finding: Finding; details: Pa
     finding,
     metadataReplacement: details?.metadata?.replacement ?? null,
     thresholds: model.report.run.thresholds,
+    details,
   });
 
   return (
@@ -156,13 +158,15 @@ function Facts({ finding, details }: { finding: Finding; details: PackageDetails
       return { label: LAST_RELEASE, value, note: newerThanYours(timeline) ?? undefined };
     }
     // A snapshot's lock date is when a branch was checked out, not a release (the release-branches
-    // answer draws the same distinction), so the slot says there is none and dates the snapshot.
-    const snapshot = f.verdict === "pinned" || f.signals.some((s) => s.id === "S6");
+    // answer draws the same distinction), so the slot says what the version is, never that date, and
+    // dates it in the note; so does a version whose repository lists no tag (`domain/pinned.ts`).
+    const pinned = pinnedFacts(f, details);
+    const slot = pinned === null ? null : pinnedReleaseSlot(pinned, lock);
     const dated = released ? ageText(released, now) : null;
-    if (snapshot) {
+    if (slot !== null) {
       return {
         label: LAST_RELEASE,
-        value: <Muted>none, a snapshot</Muted>,
+        value: <Muted>{slot}</Muted>,
         note: dated !== null && dated !== "undated" ? `dated ${dated}` : undefined,
       };
     }

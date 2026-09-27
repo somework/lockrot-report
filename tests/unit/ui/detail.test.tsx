@@ -33,6 +33,9 @@ const MINI = loadModel("mini.json");
 const KOEL = loadModel("koel_koel.json");
 const WALLABAG = loadModel("wallabag_wallabag.json");
 const MAUTIC = loadModel("mautic_mautic.json");
+const WALLABAG_013 = loadModel("wallabag_wallabag-0.13.json");
+const MAUTIC_013 = loadModel("mautic_mautic-0.13.json");
+const EDGES_013 = loadModel("mini-0.13-edges.json");
 
 /**
  * The findings the real fixtures don't carry an example of: security advisories, the three
@@ -543,7 +546,7 @@ describe("Detail", () => {
       // A quiet S10 says what its silence means, never "check gaps" under "every check ran". The
       // line reads each name to a screen reader (the strip is hidden from it)…
       expect(text(container.querySelector(".detail-checks-line"))).toBe(
-        "Quiet: S5 predates PHP · S6 snapshot · S8 branch stopped · S9 advisories · S10 all checks ran",
+        "Quiet: S5 predates PHP · S6 snapshot/untagged · S8 branch stopped · S9 advisories · S10 all checks ran",
       );
       // …but shows only the ids, since the strip right above names every check already.
       const line = container.querySelector(".detail-checks-line");
@@ -556,7 +559,7 @@ describe("Detail", () => {
       ]);
       expect(Array.from(line?.querySelectorAll(".detail-sr") ?? [], text)).toEqual([
         "predates PHP",
-        "snapshot",
+        "snapshot/untagged",
         "branch stopped",
         "advisories",
         "all checks ran",
@@ -569,7 +572,7 @@ describe("Detail", () => {
       // starts on "·"; the last item has none.
       expect(Array.from(line?.querySelectorAll(".detail-checks-item") ?? [], text)).toEqual([
         "S5 predates PHP ·",
-        "S6 snapshot ·",
+        "S6 snapshot/untagged ·",
         "S8 branch stopped ·",
         "S9 advisories ·",
         "S10 all checks ran",
@@ -610,7 +613,7 @@ describe("Detail", () => {
       const lines = Array.from(container.querySelectorAll(".detail-checks-line")).map(text);
       expect(lines).toEqual([
         "Could not run: S2 release age (undated releases, see S10)",
-        "Quiet: S1 abandoned · S3 archived · S4 push age · S5 predates PHP · S6 snapshot · S9 advisories",
+        "Quiet: S1 abandoned · S3 archived · S4 push age · S5 predates PHP · S6 snapshot/untagged · S9 advisories",
       ]);
       expect(container.querySelector(".detail-check.is-blocked .detail-check-id")?.textContent).toBe("S2");
       // A fired S10 keeps its name: it is only its quiet state that reads "all checks ran".
@@ -807,6 +810,38 @@ describe("Detail", () => {
       const row = factRows(container)[1];
       expect(row?.slice(0, 2)).toEqual(["Last release", "none, a snapshot"]);
       if (row?.[2] !== undefined) expect(row[2]).toMatch(/^dated \d/);
+    });
+
+    it("words a 0.13 S6 by its own case: never tagged, tagged, no metadata, and no tag at all (PD-S6-1)", () => {
+      const slot = (model: Model, pkg: string) =>
+        factRows(renderDetail(model, pkg).container)[1]?.slice(0, 2);
+      const answer = (model: Model, pkg: string) =>
+        renderDetail(model, pkg).container.querySelector(".detail-answer")?.textContent ?? "";
+      // A snapshot of a package that lists no tag: "none" is true, and the answer says why.
+      expect(slot(WALLABAG_013, "wallabag/rulerz")).toEqual(["Last release", "none, a snapshot"]);
+      expect(answer(WALLABAG_013, "wallabag/rulerz")).toMatch(
+        /^Pinned to dev-master, a branch snapshot of a package with no tagged release\. /,
+      );
+      cleanup();
+      // A snapshot of a package with a tag two weeks old: never "none"; the answer names the tag.
+      expect(slot(MAUTIC_013, "rector/rector")).toEqual(["Last release", "a snapshot"]);
+      expect(answer(MAUTIC_013, "rector/rector")).toMatch(
+        /^Pinned to dev-main, a branch snapshot rather than a release; its newest dated tag is 2\.6\.7 \(2026-09-13\)\. /,
+      );
+      cleanup();
+      // No repository metadata: nothing said about tags either way.
+      expect(slot(MAUTIC_013, "mautic/core-lib")).toEqual(["Last release", "a snapshot"]);
+      expect(answer(MAUTIC_013, "mautic/core-lib")).toMatch(
+        /^Pinned to 7\.0\.0-dev, a branch snapshot rather than a release\. /,
+      );
+      cleanup();
+      // A tagged-looking version in a repository with no tag is not a snapshot anywhere.
+      const untagged = renderDetail(EDGES_013, "acme/untagged").container;
+      expect(factRows(untagged)[1]).toEqual(["Last release", "none tagged", "dated 2.6 y ago"]);
+      expect(untagged.querySelector(".detail-answer")?.textContent).toMatch(
+        /^Installed 1\.0\.0, but its repository lists no tag\. /,
+      );
+      expect(untagged.querySelector(".detail-lead")?.textContent).not.toContain("snapshot");
     });
 
     it("glosses a libyears of 0.0 so it does not read as good news, and keeps an abandoned age in ink everywhere", () => {

@@ -10,9 +10,10 @@
  * DOM, no clock: the same finding always gives the same words.
  */
 
-import type { Finding, Signal, Verdict } from "../model/types";
+import type { Finding, PackageDetails, Signal, Verdict } from "../model/types";
 import { ageScale, type AgeKind, type Thresholds } from "./age";
 import { signalSortKey } from "./filters";
+import { pinnedKindOf, type PinnedKind } from "./pinned";
 import { plural } from "./format";
 import { SIGNAL_NAMES, VERDICT_ORDER } from "./vocab";
 
@@ -253,6 +254,9 @@ export interface RunFacts {
   readonly age: RunAge | null;
   /** Which signal every member shares that says why it is abandoned (S1 over S3). */
   readonly abandonedBy: "S1" | "S3" | null;
+  /** For a run of pinned rows, the S6 case every member shares (`domain/pinned.ts`); `null` when
+   *  they do not share one, or the run is not pinned. */
+  readonly pinned: PinnedKind | null;
 }
 
 function sharedVendor(findings: readonly Finding[]): string | null {
@@ -268,6 +272,16 @@ function runAge(findings: readonly Finding[], thresholds: Thresholds): RunAge | 
   return { kind, min: Math.min(...years), max: Math.max(...years) };
 }
 
+function sharedPinned(
+  findings: readonly Finding[],
+  details: ReadonlyMap<string, PackageDetails>,
+): PinnedKind | null {
+  if (findings[0]?.verdict !== "pinned") return null;
+  const kinds = new Set(findings.map((f) => pinnedKindOf(f, details.get(f.package) ?? null)));
+  const [only] = [...kinds];
+  return kinds.size === 1 && only !== undefined ? only : null;
+}
+
 function everyHas(findings: readonly Finding[], id: string): boolean {
   return findings.every((f) => f.signals.some((s) => s.id === id));
 }
@@ -275,10 +289,15 @@ function everyHas(findings: readonly Finding[], id: string): boolean {
 /**
  * What a run's members share, for the sentence above it. Only facts every member carries: the
  * verdict and way in (the run's own key), a vendor when all of them have the same one, an age range
- * when all of them have an age of the same kind. Expects a run from `segmentRuns`, not an arbitrary
+ * when all of them have an age of the same kind, the S6 case when all of them are pinned for the same
+ * one (read with each member's explain data from `details`, when the document has it). Expects a run from `segmentRuns`, not an arbitrary
  * list.
  */
-export function runFacts(findings: readonly Finding[], thresholds: Thresholds): RunFacts {
+export function runFacts(
+  findings: readonly Finding[],
+  thresholds: Thresholds,
+  details: ReadonlyMap<string, PackageDetails> = new Map(),
+): RunFacts {
   const first = findings[0];
   const direct = first?.direct ?? false;
   return {
@@ -290,5 +309,6 @@ export function runFacts(findings: readonly Finding[], thresholds: Thresholds): 
     dev: first?.dev ?? false,
     age: runAge(findings, thresholds),
     abandonedBy: everyHas(findings, "S1") ? "S1" : everyHas(findings, "S3") ? "S3" : null,
+    pinned: sharedPinned(findings, details),
   };
 }

@@ -1,5 +1,6 @@
 import type { AgeAxis as AgeAxisData, AgeScale as AgeScaleData, AgeKind } from "../../domain/age";
 import { ageZone } from "../../domain/age";
+import { pinnedContextReason, type PinnedKind } from "../../domain/pinned";
 import type { Verdict } from "../../model/types";
 import { toneClass } from "../common/common";
 import "./views.css";
@@ -14,12 +15,14 @@ const LEAD: Readonly<Record<AgeKind, string>> = {
 };
 
 /** The reason named after "age shown for context" (PD-ROWS-3, DESIGN.md §5), for the two verdicts
- *  `AgeScale.contextOnly` can be true for. A verdict this renderer does not expect `contextOnly` for
- *  still gets a true sentence instead of a blank. */
-const CONTEXT_REASON: Readonly<Record<string, string>> = {
-  abandoned: "flagged for being marked abandoned",
-  pinned: "flagged for being pinned to a branch snapshot",
-};
+ *  `AgeScale.contextOnly` can be true for — a pinned one in its own S6 case (`domain/pinned.ts`). A
+ *  verdict this renderer does not expect `contextOnly` for still gets a true sentence instead of a
+ *  blank. */
+function contextReason(verdict: Verdict, pinned: PinnedKind | null): string {
+  if (verdict === "abandoned") return "flagged for being marked abandoned";
+  if (verdict === "pinned") return pinnedContextReason(pinned ?? "snapshot");
+  return "flagged for a reason other than age";
+}
 
 /** 0-100, clamped: a bar or a guide past the axis' own edge is drawn at the edge. */
 function pct(value: number, max: number): string {
@@ -49,12 +52,22 @@ function Guides({ warn, high, max }: { warn: number; high: number; max: number }
  * the high guide and the bar; then the number. Positions are CSSOM `style` objects, never a
  * `style="…"` attribute the page's CSP would refuse (DESIGN.md §1.3).
  */
-export function AgeCell({ scale, verdict }: { scale: AgeScaleData; verdict: Verdict }) {
+export function AgeCell({
+  scale,
+  verdict,
+  pinned = null,
+}: {
+  scale: AgeScaleData;
+  verdict: Verdict;
+  /** A pinned row's S6 case, which its context reason names; `null` reads as a snapshot. */
+  pinned?: PinnedKind | null;
+}) {
   const years = scale.years.toFixed(1);
   const label = scale.contextOnly
-    ? `${LEAD[scale.kind]} ${years} years ago; age shown for context, not for priority — ${
-        CONTEXT_REASON[verdict] ?? "flagged for a reason other than age"
-      }`
+    ? `${LEAD[scale.kind]} ${years} years ago; age shown for context, not for priority — ${contextReason(
+        verdict,
+        pinned,
+      )}`
     : `${LEAD[scale.kind]} ${years} years ago; warn at ${scale.warn} years, high at ${scale.high}`;
   const tone = scale.contextOnly ? null : ageZone(scale.years, scale.warn, scale.high);
   const over = scale.years > scale.max;

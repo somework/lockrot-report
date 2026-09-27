@@ -6,6 +6,7 @@ import { toneClass } from "../common/common";
 import { AdvisoryChip } from "../common/AdvisoryChip";
 import { DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC, TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { ageNotRead, ageScale, type AgeAxis } from "../../domain/age";
+import { pinnedKindOf } from "../../domain/pinned";
 import { reachText, rowSignals, shortFact, vendorOf } from "../../domain/rows";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { AgeCell, AgeCellEmpty } from "./AgeScale";
@@ -238,7 +239,11 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
         )}
       </span>
       {scale ? (
-        <AgeCell scale={scale} verdict={finding.verdict} />
+        <AgeCell
+          scale={scale}
+          verdict={finding.verdict}
+          pinned={pinnedKindOf(finding, model.details.get(finding.package) ?? null)}
+        />
       ) : (
         <AgeCellEmpty axis={axis} notRead={ageNotRead(finding)} />
       )}
