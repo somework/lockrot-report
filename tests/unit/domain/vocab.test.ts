@@ -12,6 +12,9 @@ import {
   VERDICT_ORDER,
   annotateThresholds,
   isFlagged,
+  isKnownSignalId,
+  signalDef,
+  signalDocUrl,
 } from "../../../src/domain/vocab";
 
 /** Ids a plain `{}` literal would resolve as inherited `Object.prototype` members instead of
@@ -210,5 +213,42 @@ describe("S6's names (PD-S6-1)", () => {
     expect(SIGNAL_NAMES.S6).toBe("branch snapshot or never tagged");
     expect(CHECK_NAMES.S6).toBe("snapshot/untagged");
     expect(RAIL_SIGNAL_LABELS.S6).toBe("snapshot or untagged");
+  });
+});
+
+describe("signal ids this page does not know (0.13 open vocabulary)", () => {
+  test("the rail's own labels hold no inherited key either", () => {
+    for (const id of POLLUTION_IDS) {
+      expect(RAIL_SIGNAL_LABELS[id]).toBeUndefined();
+    }
+  });
+
+  test("a known id keeps its definition; an unknown one is described by the shape of its id", () => {
+    expect(signalDef("S8")).toBe(SIGNAL_DEFS.S8);
+    // `S` and a number is lockrot's own check, newer than this page.
+    expect(signalDef("S99")).toBe("A lockrot check this page does not know.");
+    // `<vendor>:<name>` is, in the report schema's words, one that does not come from lockrot.
+    expect(signalDef("acme:licence")).toBe("A check from outside lockrot, which this page does not know.");
+    // Anything else says nothing about where it came from, and is never read as an inherited key.
+    for (const id of ["S01", "", "sbom lookup", ...POLLUTION_IDS]) {
+      expect(signalDef(id)).toBe("A check this page does not know.");
+    }
+  });
+
+  test("links lockrot's own ids to lockrot's docs, and an id that is not lockrot's nowhere", () => {
+    expect(signalDocUrl("S8")).toBe(`${DOCS_URL}#left-behind`);
+    expect(signalDocUrl("S2")).toBe(`${DOCS_URL}#the-signals`);
+    expect(signalDocUrl("S99")).toBe(`${DOCS_URL}#the-signals`);
+    expect(signalDocUrl("acme:licence")).toBeNull();
+    for (const id of ["S01", "", ...POLLUTION_IDS]) {
+      expect(signalDocUrl(id)).toBeNull();
+    }
+  });
+
+  test("knows S1 to S10 and nothing else", () => {
+    expect(["S1", "S6", "S10"].map(isKnownSignalId)).toEqual([true, true, true]);
+    expect(["S11", "S99", "acme:licence", "s1", ...POLLUTION_IDS].map(isKnownSignalId).every((k) => !k)).toBe(
+      true,
+    );
   });
 });

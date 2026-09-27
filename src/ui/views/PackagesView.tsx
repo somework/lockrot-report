@@ -1,6 +1,7 @@
 import type { Finding } from "../../model/types";
 import { SIGNAL_IDS } from "../../model/types";
 import type { SortKey } from "../../state/types";
+import { Fragment } from "preact";
 import { useRef } from "preact/hooks";
 import { useReport } from "../context";
 import { useOverflowX } from "../useOverflowX";
@@ -17,7 +18,7 @@ import {
 } from "../../domain/libyears";
 import { checkName, checkStrip, levelTone } from "../../domain/checks";
 import { sharedDataDay } from "../../domain/share";
-import { TONE } from "../../domain/vocab";
+import { isKnownSignalId, TONE } from "../../domain/vocab";
 import { Pill, Muted, toneClass } from "../common/common";
 import { AdvisoryChip } from "../common/AdvisoryChip";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
@@ -115,6 +116,24 @@ function LibyearsCell({ finding, max }: { finding: Finding; max: number | null }
 }
 
 /**
+ * The Signals cell on paper: the ids that fired, in the document's order, "—" for none. One this page
+ * does not know is set in code, as written; a row of known ids alone is the plain text it always was.
+ */
+function PrintedIds({ ids }: { ids: readonly string[] }) {
+  if (ids.every(isKnownSignalId)) return <>{ids.join(" ") || "—"}</>;
+  return (
+    <>
+      {ids.map((id, index) => (
+        <Fragment key={`${index}-${id}`}>
+          {index > 0 && " "}
+          {isKnownSignalId(id) ? id : <code>{id}</code>}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
+/**
  * S1 to S10 as a row of ten dots under the column head's own S1…S10 caption (PD-PACKAGES-2): filled
  * in the level's tone where the signal fired (`checks.ts#levelTone`, the detail's strip's own
  * tones), ringed where S10 says the check could not run, a faint point otherwise — so a column of
@@ -125,7 +144,7 @@ function LibyearsCell({ finding, max }: { finding: Finding; max: number | null }
 function SignalsCell({ finding }: { finding: Finding }) {
   const printed = usePrinted();
   const ids = finding.signals.map((signal) => signal.id);
-  if (printed) return <>{ids.join(" ") || "—"}</>;
+  if (printed) return <PrintedIds ids={ids} />;
   const strip = checkStrip(finding);
   const fired = strip.cells.filter((cell) => cell.state === "fired");
   const title =
@@ -145,7 +164,17 @@ function SignalsCell({ finding }: { finding: Finding }) {
         ))}
       </span>
       <span className="vh">{ids.length === 0 ? "none" : ids.join(" ")}</span>
-      {strip.unknown.length > 0 && <span className="sig-dots-more"> +{strip.unknown.join(" ")}</span>}
+      {strip.unknown.length > 0 && (
+        <span className="sig-dots-more">
+          {" +"}
+          {strip.unknown.map((id, index) => (
+            <Fragment key={id}>
+              {index > 0 && " "}
+              <code>{id}</code>
+            </Fragment>
+          ))}
+        </span>
+      )}
     </span>
   );
 }

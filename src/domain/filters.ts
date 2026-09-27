@@ -15,7 +15,7 @@ import { matchesFinding, parseQuery } from "./query";
 import { fixShapeOf, type FixShape } from "./advisories";
 import { placedOnRadius } from "./radius";
 // `vocab.ts` is another agent's file (DESIGN.md §3); these three names are its documented exports.
-import { isFlagged, SIGNAL_NAMES, VERDICT_ORDER } from "./vocab";
+import { isFlagged, isKnownSignalId, SIGNAL_NAMES, VERDICT_ORDER, vocabTable } from "./vocab";
 
 // -------------------------------------------------------------------------------------------
 // Population
@@ -300,8 +300,10 @@ const SCOPE_ROWS: readonly (readonly [string, string])[] = [
  * glossary's names ("release predates the target PHP", "no push to the repository", …) broke over
  * two lines there, so the list of checks read as a ragged block. Each button's `title` still gives
  * the full definition (`SIGNAL_DEFS`); an id without an entry here takes its `SIGNAL_NAMES` name.
+ * Built with `vocabTable`, as every table indexed by a document's (or a link's) id is: an id such
+ * as `toString` must find nothing here, not `Object.prototype`'s own member.
  */
-export const RAIL_SIGNAL_LABELS: Readonly<Record<string, string>> = {
+export const RAIL_SIGNAL_LABELS: Readonly<Record<string, string>> = vocabTable({
   S1: "marked abandoned",
   S2: "no stable release",
   S3: "repository archived",
@@ -312,7 +314,7 @@ export const RAIL_SIGNAL_LABELS: Readonly<Record<string, string>> = {
   S8: "branch stopped",
   S9: "security advisories",
   S10: "a check did not run",
-};
+});
 
 /** `S<n>` sorts by `n` (the M2 fix: numeric id order, so S10 lands after S9 instead of between S1
  *  and S2); any id that isn't `S<digits>` sorts after all of those, alphabetically among itself.
@@ -328,17 +330,27 @@ function signalLabel(id: string): string {
   return RAIL_SIGNAL_LABELS[id] ?? SIGNAL_NAMES[id] ?? "";
 }
 
-/** Every id that fired on the tab's population, whatever else is selected — which rows exist does
- *  not depend on the other filters; only their counts do. A signal id counts a package once,
- *  however many times it fired on it (PD-RAIL-1). */
-function signalRows(here: readonly Finding[]): readonly (readonly [string, string])[] {
-  const ids = [...new Set(here.flatMap((f) => f.signals.map((signal) => signal.id)))];
-  ids.sort((a, b) => {
+/** Every signal id the findings carry, each once, in the rail's order (`signalSortKey`). */
+function firedIds(findings: readonly Finding[]): string[] {
+  const ids = [...new Set(findings.flatMap((f) => f.signals.map((signal) => signal.id)))];
+  return ids.sort((a, b) => {
     const [an, as] = signalSortKey(a);
     const [bn, bs] = signalSortKey(b);
     return an !== bn ? an - bn : as.localeCompare(bs);
   });
-  return ids.map((id) => [id, signalLabel(id)]);
+}
+
+/** The ids the report carries that this page has no name for (not S1–S10), in the rail's order —
+ *  what the glossary lists after S10, as written. */
+export function unknownSignalIds(findings: readonly Finding[]): readonly string[] {
+  return firedIds(findings).filter((id) => !isKnownSignalId(id));
+}
+
+/** Every id that fired on the tab's population, whatever else is selected — which rows exist does
+ *  not depend on the other filters; only their counts do. A signal id counts a package once,
+ *  however many times it fired on it (PD-RAIL-1). */
+function signalRows(here: readonly Finding[]): readonly (readonly [string, string])[] {
+  return firedIds(here).map((id) => [id, signalLabel(id)]);
 }
 
 const FIX_GROUP_TEXT: readonly (readonly [FixShape, string])[] = [

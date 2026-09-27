@@ -7,9 +7,11 @@ import {
   SIGNAL_DEFS,
   SIGNAL_DOC,
   SIGNAL_NAMES,
+  signalDef,
   TONE,
   VERDICT_DEFS,
 } from "../domain/vocab";
+import { unknownSignalIds } from "../domain/filters";
 import { SIGNAL_IDS, VERDICTS } from "../model/types";
 import { OutLink, toneClass } from "./common/common";
 import { useReport } from "./context";
@@ -51,10 +53,13 @@ function VerdictDefs() {
   );
 }
 
-/** S1 to S10 in numeric order (DESIGN.md §5 M2: the legacy glossary left S10 out). */
+/** S1 to S10 in numeric order (DESIGN.md §5 M2: the legacy glossary left S10 out), then each id the
+ *  report carries that this page has no name for, as written in code, with what can be said of it
+ *  (`vocab.ts#signalDef`) — never a known check's words. */
 function SignalDefs() {
   const { model } = useReport();
   const thresholds = model.report.run.thresholds;
+  const unknown = unknownSignalIds(model.report.findings);
 
   return (
     <dl className="deflist">
@@ -74,6 +79,12 @@ function SignalDefs() {
           <dd key={`d-${id}`}>{annotateThresholds(SIGNAL_DEFS[id] ?? "", thresholds)}</dd>,
         ];
       })}
+      {unknown.map((id) => [
+        <dt key={`t-${id}`}>
+          <code>{id}</code>
+        </dt>,
+        <dd key={`d-${id}`}>{signalDef(id)}</dd>,
+      ])}
     </dl>
   );
 }

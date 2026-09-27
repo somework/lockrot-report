@@ -408,6 +408,14 @@ button.detail-check {
   padding: 8px 4px 8px 2px;
   transition: background-color 0.15s ease;
 }
+/* An id longer than "S10" (one this page does not know, `acme:licence`) sizes its own column, up
+   to 45% of the row, and wraps inside it past that: never drawn over the summary beside it. */
+.detail-fired-summary.has-wide-id {
+  grid-template-columns: fit-content(45%) minmax(0, 1fr) auto auto;
+}
+.detail-fired-summary.has-wide-id .detail-fired-id {
+  overflow-wrap: anywhere;
+}
 .detail-fired-summary:hover {
   background: var(--surface-2);
 }

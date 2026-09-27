@@ -258,3 +258,30 @@ describe("runFacts (PD-ROWS-6)", () => {
     expect(facts.via).toBeNull();
   });
 });
+
+describe("signals this page does not know (0.13 open vocabularies)", () => {
+  it("reads a level it does not know as the lowest, never as an inherited key", () => {
+    const finding = makeFinding({
+      signals: [
+        makeSignal({ id: "S7", level: "toString" }),
+        makeSignal({ id: "S2", level: "constructor" }),
+        makeSignal({ id: "S8", level: "warn" }),
+      ],
+    });
+    expect(rowSignals(finding, null).rest.map((s) => s.id)).toEqual(["S2", "S7"]);
+    expect(rowSignals(finding, null).key?.id).toBe("S8");
+  });
+
+  it("quotes an unknown signal's own summary, as written, and sorts it after every S-number", () => {
+    const finding = makeFinding({
+      signals: [
+        makeSignal({ id: "acme:licence", level: "warn", summary: "licence changed to BUSL-1.1 in 3.1.0" }),
+        makeSignal({ id: "S99", level: "warn", summary: "a signal a later lockrot adds" }),
+        makeSignal({ id: "S2", level: "warn", summary: "no stable release" }),
+      ],
+    });
+    expect(rowSignals(finding, null).rest.map((s) => s.id)).toEqual(["S99", "acme:licence"]);
+    expect(whyText(finding, "acme:licence")).toBe("licence changed to BUSL-1.1 in 3.1.0");
+    expect(whyText(finding, "S99")).toBe("a signal a later lockrot adds");
+  });
+});

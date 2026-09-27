@@ -570,4 +570,12 @@ describe("activeFilters (PD-RAIL-4)", () => {
     expect(activeFilters(withFilters({}))).toEqual([]);
     expect(activeFilters(withFilters({ signal: ["S99"] }))[0]?.label).toBe("S99");
   });
+
+  it("keeps an id a link names as is, even one an object literal would resolve as an inherited key", () => {
+    // A shared link can carry any `signal=` value; the rail's labels must not hand back
+    // Object.prototype's own members for one.
+    for (const id of ["toString", "constructor", "hasOwnProperty"]) {
+      expect(activeFilters(withFilters({ signal: [id] }))[0]?.label).toBe(id);
+    }
+  });
 });

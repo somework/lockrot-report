@@ -15,11 +15,12 @@ import { ageScale, type AgeKind, type Thresholds } from "./age";
 import { signalSortKey } from "./filters";
 import { pinnedKindOf, type PinnedKind } from "./pinned";
 import { plural } from "./format";
-import { SIGNAL_NAMES, VERDICT_ORDER } from "./vocab";
+import { SIGNAL_NAMES, VERDICT_ORDER, vocabTable } from "./vocab";
 
 /** `high` outranks `warn` outranks everything else (including the open-ended `"info"` and a level
- *  this renderer does not know) — the three-tier reading `checks.ts#levelTone` gives a signal's colour. */
-const LEVEL_RANK: Readonly<Record<string, number>> = { high: 2, warn: 1 };
+ *  this renderer does not know) — the three-tier reading `checks.ts#levelTone` gives a signal's colour.
+ *  A `vocabTable`, so a level such as `toString` ranks as the lowest, not as an inherited member. */
+const LEVEL_RANK: Readonly<Record<string, number>> = vocabTable({ high: 2, warn: 1 });
 
 /**
  * Every signal a finding carries, highest level first, ties broken in `SIGNAL_IDS` numeric order

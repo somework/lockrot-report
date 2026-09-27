@@ -341,6 +341,15 @@ tag or the address format, says so under **Breaking** in its entry.
   row or counted as reached from one ("+1 more it reaches, listed under no row"), so every row's
   numbers add up to lockrot's own count for that requirement. The rail on that tab still counts it.
   An older page is unchanged.
+- A signal id, S10 reason or check the page does not know (a later lockrot's `S99`, a check from
+  outside lockrot such as `acme:licence`, `quota_exhausted`) is shown as written, in code, and never
+  in a known one's words: the open package's tally says "also acme:licence, S99, checks this page
+  does not know"; such a check's row, its id no longer drawn over its summary, says "A lockrot
+  check this page does not know" and links to lockrot's docs only for lockrot's own ids; the
+  glossary lists each after S10; the rail's hover and All packages (on screen and on paper) name it
+  the same way. "Could not run" now gives a check only the S10 reasons of the checks that name it,
+  and lists an unknown id S10 stopped. A rail filter a link names as `toString` or `constructor`
+  reads as that id, not as page code.
 - Blast radius on a phone: the closing note that names flagged direct requirements with no row
   wraps a long package name (`mnsami/composer-custom-directory-installer`) instead of running the
   page past 320px; each "(verdict)" stays on one line.

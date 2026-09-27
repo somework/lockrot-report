@@ -1,6 +1,6 @@
 import { useReport } from "../context";
 import { population, railGroups } from "../../domain/filters";
-import { SIGNAL_DEFS } from "../../domain/vocab";
+import { signalDef } from "../../domain/vocab";
 import "./rail.css";
 
 /**
@@ -60,7 +60,7 @@ export function Rail() {
                 type="button"
                 className="opt"
                 aria-pressed={row.on}
-                title={group.group === "signal" ? SIGNAL_DEFS[row.key] : undefined}
+                title={group.group === "signal" ? signalDef(row.key) : undefined}
                 onClick={() => {
                   dispatch({ type: "toggle", group: group.group, key: row.key });
                 }}

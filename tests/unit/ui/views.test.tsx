@@ -2033,3 +2033,56 @@ describe("the baseline delta line and row tags", () => {
     expect(within(fresh).getByText("new").className).toBe("tag bl-tag");
   });
 });
+
+describe("signal ids this page does not know (0.13 open vocabulary)", () => {
+  function unknownIdsModel(): Model {
+    return flaggedModel([
+      makeFinding({
+        package: "acme/vendor-key",
+        verdict: "stale",
+        priority: "low",
+        signals: [
+          makeSignal({ id: "acme:licence", level: "high", summary: "licence changed to BUSL-1.1 in 3.1.0" }),
+          makeSignal({ id: "S2", level: "warn", summary: "no stable release" }),
+        ],
+      }),
+      makeFinding({
+        package: "acme/later-key",
+        verdict: "stale",
+        priority: "low",
+        signals: [makeSignal({ id: "S99", level: "high", summary: "a signal a later lockrot adds" })],
+      }),
+    ]);
+  }
+
+  it("a Findings row quotes it as written; only lockrot's own ids link to lockrot's docs", () => {
+    const { container } = renderIn(unknownIdsModel(), stateWith(), <FindingsView />);
+    const vendorRow = screen.getByRole("listitem", { name: "acme/vendor-key" });
+    const vendorId = vendorRow.querySelector(".fc-why > .sid");
+    expect(vendorId?.tagName).toBe("SPAN");
+    expect(vendorId?.textContent).toBe("acme:licence");
+    expect(vendorId?.getAttribute("title")).toBe(
+      "A check from outside lockrot, which this page does not know.",
+    );
+    expect(vendorRow.querySelector(".fc-why-text")?.textContent).toBe("licence changed to BUSL-1.1 in 3.1.0");
+
+    const laterRow = screen.getByRole("listitem", { name: "acme/later-key" });
+    const laterId = laterRow.querySelector(".fc-why > .sid");
+    expect(laterId?.tagName).toBe("A");
+    expect(laterId?.getAttribute("href")).toBe("https://lockrot.dev/verdicts/#the-signals");
+    expect(laterId?.getAttribute("title")).toBe("A lockrot check this page does not know.");
+    expect(container.textContent).not.toContain("undefined");
+  });
+
+  it("the Packages table names the ones it has no dot for in code (mini-0.13-edges acme/licensed)", () => {
+    const model = loadModel("mini-0.13-edges.json");
+    renderIn(model, stateWith({ view: "packages" }), <PackagesView />);
+    const row = screen.getByRole("row", { name: /acme\/licensed/ });
+    const more = row.querySelector(".sig-dots-more");
+    expect(more?.textContent).toBe(" +acme:licence S99");
+    expect(Array.from(more?.querySelectorAll("code") ?? [], (c) => c.textContent)).toEqual([
+      "acme:licence",
+      "S99",
+    ]);
+  });
+});

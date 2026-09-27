@@ -39,11 +39,39 @@ export interface CheckStrip {
   readonly fired: readonly Signal[];
   /** How many of the ten cells are in each state. */
   readonly counts: Readonly<Record<CheckState, number>>;
-  /** Fired ids beyond S1–S10, in `fired`'s order: a newer lockrot's check. */
+  /** Fired ids beyond S1–S10, in `fired`'s order: a newer lockrot's check, or one from outside it. */
   readonly unknown: readonly string[];
-  /** Why the blocked checks could not run, from S10's `data.unchecked[].reason` ("undated
-   *  releases"), or `null` when S10 gives none. */
-  readonly blockedReason: string | null;
+  /** Ids S10 names as could-not-run that are not one of the ten cells and did not fire, in S10's
+   *  order, as written: the could-not-run line names them after the blocked cells. */
+  readonly blockedUnknown: readonly string[];
+  /** Why the checks that could not run did not, from S10's `data.unchecked[].reason` — each check's
+   *  own reason only when it names one of them (a reason for some other id is not theirs), in S10's
+   *  order, each once. Empty when nothing could not run, or S10 gives no reason. */
+  readonly blockedReasons: readonly S10Reason[];
+}
+
+/** One of S10's `data.unchecked[].reason` values, as written. */
+export interface S10Reason {
+  readonly raw: string;
+  /** Whether it is one lockrot (0.11 to 0.13) documents; any other is a newer lockrot's. */
+  readonly known: boolean;
+}
+
+/** The reasons the report schema lists for S10 (`x-known-values`, unchanged from 0.11.0 to 0.13.0). */
+const S10_REASONS: ReadonlySet<string> = new Set([
+  "no_token",
+  "anonymous_budget",
+  "install_time_budget",
+  "rate_limit",
+  "fetch_failed",
+  "offline",
+  "undated_releases",
+]);
+
+/** A reason in words: a known one with its underscores as spaces ("undated releases"), one this page
+ *  does not know exactly as written (the caller sets it in code), never read as a known one. */
+export function s10ReasonWords(reason: S10Reason): string {
+  return reason.known ? reason.raw.replace(/_/g, " ") : reason.raw;
 }
 
 const KNOWN: ReadonlySet<string> = new Set(SIGNAL_IDS);
@@ -73,14 +101,20 @@ export function blockedByS10(s10: Signal): readonly string[] | null {
   return [...new Set(nested.flatMap((ids) => ids ?? []))];
 }
 
-function blockedReason(s10: Signal | undefined): string | null {
-  if (s10 === undefined) return null;
-  const reasons = records(s10.data.unchecked)
+/**
+ * The reasons of S10's checks that stopped one of `stopped`. An entry that carries no readable list of
+ * its own counts for all of them, as it did before S10 named one per check.
+ */
+function blockedReasons(s10: Signal | undefined, stopped: ReadonlySet<string>): readonly S10Reason[] {
+  if (s10 === undefined || stopped.size === 0) return [];
+  const raws = records(s10.data.unchecked)
+    .filter((entry) => {
+      const ids = strings(entry.blocks);
+      return ids === null || ids.some((id) => stopped.has(id));
+    })
     .map((entry) => entry.reason)
-    .filter((reason): reason is string => typeof reason === "string" && reason !== "")
-    .map((reason) => reason.replace(/_/g, " "));
-  const distinct = [...new Set(reasons)];
-  return distinct.length === 0 ? null : distinct.join(" and ");
+    .filter((reason): reason is string => typeof reason === "string" && reason !== "");
+  return [...new Set(raws)].map((raw) => ({ raw, known: S10_REASONS.has(raw) }));
 }
 
 /** Every one of the ten checks in its state, and the fired signals in reading order. */
@@ -101,13 +135,18 @@ export function checkStrip(finding: Finding): CheckStrip {
   for (const cell of cells) counts[cell.state] += 1;
 
   const fired = sortedSignals(finding.signals);
-  const hasBlocked = counts.blocked > 0;
+  const blockedUnknown = [...blockedSet].filter((id) => !KNOWN.has(id) && !byId.has(id));
+  const stopped = new Set([
+    ...cells.filter((cell) => cell.state === "blocked").map((cell) => cell.id),
+    ...blockedUnknown,
+  ]);
   return {
     cells,
     fired,
     counts,
     unknown: fired.filter((signal) => !KNOWN.has(signal.id)).map((signal) => signal.id),
-    blockedReason: hasBlocked ? blockedReason(s10) : null,
+    blockedUnknown,
+    blockedReasons: blockedReasons(s10, stopped),
   };
 }
 

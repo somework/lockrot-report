@@ -4,7 +4,7 @@ import { pulledTree } from "../../domain/radius";
 import type { AgeAxis } from "../../domain/age";
 import { plural } from "../../domain/format";
 import { rowSignals, shortFact } from "../../domain/rows";
-import { SIGNAL_DEFS, TONE, VERDICT_DEFS } from "../../domain/vocab";
+import { signalDef, TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { Tag, toneClass } from "../common/common";
 import { useReport } from "../context";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
@@ -275,7 +275,7 @@ function Why({ finding }: { finding: Finding }) {
   return (
     <span className="fcell fc-why rk-why" title={key?.summary ?? finding.evidence}>
       {key && (
-        <span className="sid" title={SIGNAL_DEFS[key.id] ?? ""}>
+        <span className="sid" title={signalDef(key.id)}>
           {key.id}
         </span>
       )}

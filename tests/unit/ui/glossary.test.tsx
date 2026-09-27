@@ -130,3 +130,56 @@ describe("PD-GLOSSARY-10 (DESIGN.md §5): the allowlist note is a maintainer's s
     expect((libyears as HTMLDetailsElement | undefined)?.open).toBe(true);
   });
 });
+
+describe("signal ids this page does not know (0.13 open vocabulary)", () => {
+  function renderWith(fixture: string) {
+    const raw = JSON.parse(
+      readFileSync(join(process.cwd(), "fixtures", "bundles", fixture), "utf8"),
+    ) as unknown;
+    const result = normalize(raw);
+    if (!result.ok) throw new Error(`${fixture} failed to normalize`);
+    const model = result.model;
+    const value: ReportContextValue = {
+      model,
+      state: INITIAL_STATE,
+      dispatch: vi.fn(),
+      now: new Date(model.report.generatedAt),
+      wide: true,
+      cursor: null,
+      openGlossary: vi.fn(),
+      openGlossaryFrom: vi.fn(),
+    };
+    return render(
+      <ReportContext.Provider value={value}>
+        <Glossary open onClose={vi.fn()} highlightTerm={null} />
+      </ReportContext.Provider>,
+    );
+  }
+
+  function signalTerms(container: ParentNode): string[] {
+    const list = Array.from(container.querySelectorAll("dl.deflist")).find((dl) =>
+      dl.querySelector("dt")?.textContent.startsWith("S1"),
+    );
+    return Array.from(list?.querySelectorAll("dt") ?? [], (dt) => dt.textContent.trim());
+  }
+
+  it("lists each one the report carries after S10, as written in code, with what the page can say of it", () => {
+    const { container } = renderWith("mini-0.13-edges.json");
+    const terms = signalTerms(container);
+    expect(terms.slice(10)).toEqual(["S99", "acme:licence"]);
+    const list = container.querySelector("dt code")?.closest("dl");
+    const codes = Array.from(list?.querySelectorAll("dt code") ?? [], (c) => c.textContent);
+    expect(codes).toEqual(["S99", "acme:licence"]);
+    const defs = Array.from(list?.querySelectorAll("dd") ?? [], (dd) => dd.textContent).slice(10);
+    expect(defs).toEqual([
+      "A lockrot check this page does not know.",
+      "A check from outside lockrot, which this page does not know.",
+    ]);
+  });
+
+  it("lists S1 to S10 only for a report that carries no other id", () => {
+    const { container } = renderWith("wallabag_wallabag.json");
+    expect(signalTerms(container)).toHaveLength(10);
+    expect(container.querySelector("dt code")).toBeNull();
+  });
+});

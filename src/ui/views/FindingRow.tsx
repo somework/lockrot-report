@@ -4,7 +4,7 @@ import type { Finding, Signal } from "../../model/types";
 import { useReport } from "../context";
 import { toneClass } from "../common/common";
 import { AdvisoryChip } from "../common/AdvisoryChip";
-import { DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC, TONE, VERDICT_DEFS } from "../../domain/vocab";
+import { signalDef, signalDocUrl, TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { ageNotRead, ageScale, type AgeAxis } from "../../domain/age";
 import { pinnedKindOf } from "../../domain/pinned";
 import { reachText, rowSignals, shortFact, vendorOf } from "../../domain/rows";
@@ -62,18 +62,20 @@ export interface Ditto {
 export const NO_DITTO: Ditto = { verdict: false, vendor: false, why: false, reach: false };
 
 /** A signal id, linked to its own entry in lockrot's docs, with the signal's definition on hover.
- *  `tabIndex` is -1 on every row but the list's Tab stop (PD-ROWS-11, `rowCursor.ts`). */
+ *  `tabIndex` is -1 on every row but the list's Tab stop (PD-ROWS-11, `rowCursor.ts`). An id that is
+ *  not lockrot's (`acme:licence`) has no entry there: it is the id as written, and no link. */
 function SignalId({ signal, tabIndex }: { signal: Signal; tabIndex: -1 | undefined }) {
-  const doc = SIGNAL_DOC[signal.id] ?? `${DOCS_URL}#the-signals`;
+  const doc = signalDocUrl(signal.id);
+  const title = signalDef(signal.id);
+  if (doc === null) {
+    return (
+      <span className="sid" title={title}>
+        {signal.id}
+      </span>
+    );
+  }
   return (
-    <a
-      className="sid"
-      href={doc}
-      tabIndex={tabIndex}
-      target="_blank"
-      rel="noopener noreferrer"
-      title={SIGNAL_DEFS[signal.id] ?? ""}
-    >
+    <a className="sid" href={doc} tabIndex={tabIndex} target="_blank" rel="noopener noreferrer" title={title}>
       {signal.id}
     </a>
   );

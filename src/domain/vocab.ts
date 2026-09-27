@@ -7,6 +7,7 @@
  */
 
 import type { SignalId, Verdict } from "../model/types";
+import { SIGNAL_IDS } from "../model/types";
 
 /** The five CSS tone tokens a verdict or priority pill, chip or bar segment can carry. */
 export type Tone = "crit" | "high" | "med" | "low" | "none";
@@ -207,6 +208,46 @@ export const SIGNAL_DOC: Readonly<Partial<Record<SignalId, string>>> = vocabTabl
   S8: `${DOCS_URL}#left-behind`,
   S9: `${DOCS_URL}#security-advisories`,
 });
+
+const KNOWN_SIGNAL_IDS: ReadonlySet<string> = new Set(SIGNAL_IDS);
+
+/** Whether this page has names and words for the id: S1 to S10, nothing else. */
+export function isKnownSignalId(id: string): boolean {
+  return KNOWN_SIGNAL_IDS.has(id);
+}
+
+/** lockrot's own id, `S` and a number with no leading zero (the report schema's `signalId`). */
+const LOCKROT_SIGNAL_ID = /^S[1-9][0-9]*$/;
+/** `<vendor>:<name>`, which the report schema keeps for a signal that does not come from lockrot. */
+const VENDOR_SIGNAL_ID = /^[a-z0-9][a-z0-9_.-]*:[a-z0-9][a-z0-9_.-]*$/;
+
+/**
+ * What the page can say of an id it has no entry for, read off the id's shape only (the report
+ * schema's `signalId`: an open set, "read one you do not know as other"): an S-number is one of
+ * lockrot's checks, newer than this page; `<vendor>:<name>` does not come from lockrot; anything else
+ * says nothing about where it came from. Never a known check's words.
+ */
+function unknownSignalDef(id: string): string {
+  if (LOCKROT_SIGNAL_ID.test(id)) return "A lockrot check this page does not know.";
+  if (VENDOR_SIGNAL_ID.test(id)) return "A check from outside lockrot, which this page does not know.";
+  return "A check this page does not know.";
+}
+
+/** A signal's definition: `SIGNAL_DEFS`' for S1 to S10, else what the page can say of an id it does
+ *  not know (`unknownSignalDef`). */
+export function signalDef(id: string): string {
+  return SIGNAL_DEFS[id] ?? unknownSignalDef(id);
+}
+
+/**
+ * Where lockrot's docs describe the id: its own anchor (`SIGNAL_DOC`), else the list of signals for
+ * any of lockrot's own ids, a newer one included; `null` for an id that is not lockrot's, which
+ * lockrot's docs do not describe.
+ */
+export function signalDocUrl(id: string): string | null {
+  if (!isKnownSignalId(id) && !LOCKROT_SIGNAL_ID.test(id)) return null;
+  return SIGNAL_DOC[id] ?? `${DOCS_URL}#the-signals`;
+}
 
 /**
  * Whether `verdict` is one of the run's flagged verdicts. Ported from legacy `FLAGGED`'s filter

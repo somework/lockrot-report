@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   blockedByS10,
   checkName,
@@ -7,12 +9,14 @@ import {
   dataLabel,
   levelTone,
   pulledRows,
+  s10ReasonWords,
   timestampParts,
   wrapParts,
 } from "../../../src/domain/checks";
 import { CHECK_NAMES } from "../../../src/domain/vocab";
 import { SIGNAL_IDS } from "../../../src/model/types";
 import type { Finding } from "../../../src/model/types";
+import { normalize } from "../../../src/model/normalize";
 import { makeFinding, makeSignal } from "./fixtures";
 
 function states(finding: Finding): string[] {
@@ -90,7 +94,8 @@ describe("checkStrip", () => {
       "S10:fired",
     ]);
     expect(strip.counts).toEqual({ fired: 3, quiet: 6, blocked: 1, unreported: 0 });
-    expect(strip.blockedReason).toBe("undated releases");
+    expect(strip.blockedReasons).toEqual([{ raw: "undated_releases", known: true }]);
+    expect(strip.blockedUnknown).toEqual([]);
     // S10 fired, so "every check ran" is never said, even beside a blocked count.
     expect(checkTally(strip)).toEqual(["3 fired", "6 quiet", "1 could not run"]);
   });
@@ -111,7 +116,7 @@ describe("checkStrip", () => {
       "S8",
       "S9",
     ]);
-    expect(strip.blockedReason).toBeNull();
+    expect(strip.blockedReasons).toEqual([]);
     expect(checkTally(strip)).toEqual(["1 fired", "9 not reported"]);
   });
 
@@ -339,5 +344,120 @@ describe("pulledRows", () => {
     expect(pulledRows([{ package: "a/a", verdict: "stale", chain: "a/a" }], OPEN)).toBeNull();
     expect(pulledRows([{ package: "a/a", verdict: "stale", chain: [], extra: 1 }], OPEN)).toBeNull();
     expect(pulledRows([{ id: "S2" }], OPEN)).toBeNull();
+  });
+});
+
+describe("S10's open vocabularies (0.13): a reason or a check id this page does not know", () => {
+  function edgesFinding(pkg: string): Finding {
+    const raw = JSON.parse(
+      readFileSync(join(process.cwd(), "fixtures", "bundles", "mini-0.13-edges.json"), "utf8"),
+    ) as unknown;
+    const result = normalize(raw);
+    if (!result.ok) throw new Error("mini-0.13-edges failed to normalize");
+    const finding = result.model.report.findings.find((f) => f.package === pkg);
+    if (finding === undefined) throw new Error(`${pkg} is not in mini-0.13-edges`);
+    return finding;
+  }
+
+  function withS10(data: Record<string, unknown>, others: Finding["signals"] = []): Finding {
+    return makeFinding({ signals: [...others, makeSignal({ id: "S10", level: "info", data })] });
+  }
+
+  it("gives a blocked check only the reasons of the checks that name it (mini-0.13-edges acme/licensed)", () => {
+    // S10 says sbom_lookup (quota_exhausted) stopped S99 and acme:licence, and release_dates
+    // (undated_releases) stopped S2. Only S2 is a cell here, so only its reason is said beside it.
+    const strip = checkStrip(edgesFinding("acme/licensed"));
+    expect(strip.cells.filter((c) => c.state === "blocked").map((c) => c.id)).toEqual(["S2"]);
+    expect(strip.blockedReasons).toEqual([{ raw: "undated_releases", known: true }]);
+    // Both ids it does not know fired, so none of them is also "could not run".
+    expect(strip.unknown).toEqual(["acme:licence", "S99"]);
+    expect(strip.blockedUnknown).toEqual([]);
+  });
+
+  it("keeps a reason it does not know as written, never as one it knows", () => {
+    const strip = checkStrip(
+      withS10({
+        unchecked: [{ check: "sbom_lookup", reason: "quota_exhausted", blocks: ["S2"] }],
+        blocks: ["S2"],
+      }),
+    );
+    expect(strip.blockedReasons).toEqual([{ raw: "quota_exhausted", known: false }]);
+    expect(s10ReasonWords({ raw: "quota_exhausted", known: false })).toBe("quota_exhausted");
+    expect(s10ReasonWords({ raw: "undated_releases", known: true })).toBe("undated releases");
+  });
+
+  it("knows exactly the reasons lockrot 0.11 to 0.13 write", () => {
+    const known = [
+      "no_token",
+      "anonymous_budget",
+      "install_time_budget",
+      "rate_limit",
+      "fetch_failed",
+      "offline",
+      "undated_releases",
+    ];
+    for (const reason of known) {
+      const strip = checkStrip(
+        withS10({
+          unchecked: [{ check: "repository_activity", reason, blocks: ["S3", "S4"] }],
+          blocks: ["S3", "S4"],
+        }),
+      );
+      expect(strip.blockedReasons).toEqual([{ raw: reason, known: true }]);
+    }
+    for (const reason of ["undated_release", "quota_exhausted", "constructor", "toString"]) {
+      const strip = checkStrip(
+        withS10({ unchecked: [{ check: "x", reason, blocks: ["S2"] }], blocks: ["S2"] }),
+      );
+      expect(strip.blockedReasons).toEqual([{ raw: reason, known: false }]);
+    }
+  });
+
+  it("lists an id it does not know that S10 stopped and that did not fire, with that check's reason", () => {
+    const strip = checkStrip(
+      withS10({
+        unchecked: [
+          { check: "sbom_lookup", reason: "quota_exhausted", blocks: ["acme:sbom"] },
+          { check: "release_dates", reason: "undated_releases", blocks: ["S2"] },
+        ],
+        blocks: ["acme:sbom", "S2"],
+      }),
+    );
+    expect(strip.blockedUnknown).toEqual(["acme:sbom"]);
+    expect(strip.blockedReasons).toEqual([
+      { raw: "quota_exhausted", known: false },
+      { raw: "undated_releases", known: true },
+    ]);
+    // The tally counts the ten cells only; the id is said on the could-not-run line instead.
+    expect(strip.counts.blocked).toBe(1);
+  });
+
+  it("says a reason once however many checks share it, and keeps one whose entry names no readable list", () => {
+    const strip = checkStrip(
+      withS10({
+        unchecked: [
+          { check: "repository_activity", reason: "rate_limit", blocks: ["S3"] },
+          { check: "repository_activity", reason: "rate_limit", blocks: ["S4"] },
+          { check: "sbom_lookup", reason: "quota_exhausted" },
+        ],
+        blocks: ["S3", "S4"],
+      }),
+    );
+    expect(strip.blockedReasons).toEqual([
+      { raw: "rate_limit", known: true },
+      { raw: "quota_exhausted", known: false },
+    ]);
+  });
+
+  it("gives no reason, and lists no id, when nothing S10 names stayed unfired", () => {
+    const strip = checkStrip(
+      withS10(
+        { unchecked: [{ check: "x", reason: "quota_exhausted", blocks: ["acme:x"] }], blocks: ["acme:x"] },
+        [makeSignal({ id: "acme:x", level: "warn" })],
+      ),
+    );
+    expect(strip.blockedUnknown).toEqual([]);
+    expect(strip.blockedReasons).toEqual([]);
+    expect(strip.unknown).toEqual(["acme:x"]);
   });
 });

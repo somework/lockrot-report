@@ -27,9 +27,15 @@ const AXE_FIXTURES: readonly FixtureName[] = [
   "koel_koel",
   "wallabag_wallabag",
   "wallabag_baseline",
-  // lockrot 0.13.0 documents: the real one with every new branch-row field, and both hand-built
-  // edge bundles (unknown open-vocabulary values; nulls where a lock-only run has no project).
+  // lockrot 0.13.0 documents: every real one (wallabag with every new branch-row field, koel's S6 on
+  // a finished package, koel --all, mautic with no project floor, akaunting's one unattributed
+  // package) and both hand-built edge bundles (unknown open-vocabulary values; nulls where a
+  // lock-only run has no project).
   "wallabag_wallabag-0.13",
+  "koel_koel-0.13",
+  "koel_koel-all-0.13",
+  "mautic_mautic-0.13",
+  "gh_akaunting_akaunting-0.13",
   "mini-0.13-edges",
   "mini-0.13-edges-lock-only",
 ];

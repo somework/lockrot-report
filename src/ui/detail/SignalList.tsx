@@ -8,14 +8,16 @@ import {
   identifierPieces,
   levelTone,
   pulledRows,
+  s10ReasonWords,
   timestampParts,
   wrapParts,
   type CheckCell,
   type CheckState,
+  type CheckStrip,
   type PulledRow,
 } from "../../domain/checks";
 import { ACTIVITY_CHECKS, quietUnread } from "../../domain/provenance";
-import { annotateThresholds, DOCS_URL, SIGNAL_DEFS, SIGNAL_DOC } from "../../domain/vocab";
+import { annotateThresholds, signalDef, signalDocUrl } from "../../domain/vocab";
 import { OutLink, toneClass } from "../common/common";
 import { PkgMention } from "../common/PkgMention";
 import { useReport } from "../context";
@@ -391,34 +393,98 @@ function Cell({ cell, target, unread }: { cell: CheckCell; target: string | null
  * strip right above already names each check, and saying every name twice doubled the block's
  * weight. The names stay in the line for a screen reader ("S5 predates PHP"), since the strip is
  * hidden from it. Each " ·" belongs to the item before it, so a wrapped line never starts on one.
+ * `extra` are ids this page has no cell for, after the cells, each as written in code.
  */
 function StateLine({
   label,
   cells,
+  extra = [],
   suffix = null,
 }: {
   label: string;
   cells: readonly CheckCell[];
+  extra?: readonly string[];
   suffix?: ComponentChildren;
 }) {
-  if (cells.length === 0) return null;
+  const items = [
+    ...cells.map((cell) => ({
+      key: cell.id,
+      body: (
+        <>
+          <span className="detail-checks-id">{cell.id}</span>
+          <span className="detail-sr"> {checkName(cell)}</span>
+        </>
+      ),
+    })),
+    ...extra.map((id) => ({ key: `extra-${id}`, body: <code className="detail-checks-id">{id}</code> })),
+  ];
+  if (items.length === 0) return null;
   return (
     <p className="detail-checks-line">
       {label}{" "}
-      {cells.map((cell, index) => (
-        <Fragment key={cell.id}>
+      {items.map((item, index) => (
+        <Fragment key={item.key}>
           <span className="detail-checks-item">
-            <span className="detail-checks-id">{cell.id}</span>
-            <span className="detail-sr"> {checkName(cell)}</span>
-            {index < cells.length - 1 && " ·"}
+            {item.body}
+            {index < items.length - 1 && " ·"}
           </span>
-          {index < cells.length - 1 && " "}
+          {index < items.length - 1 && " "}
         </Fragment>
       ))}
       {suffix}
     </p>
   );
 }
+
+/** Ids this page does not know, each as written in code, joined as a sentence lists them. */
+function CodeList({ ids }: { ids: readonly string[] }) {
+  return (
+    <>
+      {ids.map((id, index) => (
+        <Fragment key={id}>
+          {index > 0 && ", "}
+          <code>{id}</code>
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
+/** " · also acme:licence, S99, checks this page does not know" after the tally: the fired ids the
+ *  strip has no cell for, as written. */
+function UnknownFired({ ids }: { ids: readonly string[] }) {
+  if (ids.length === 0) return null;
+  return (
+    <>
+      {" · also "}
+      <CodeList ids={ids} />
+      {ids.length === 1 ? ", a check this page does not know" : ", checks this page does not know"}
+    </>
+  );
+}
+
+/** " (undated releases, see S10)" after the could-not-run line: S10's reasons for the checks it
+ *  names, a known one in words, one this page does not know as written in code. */
+function BlockedSuffix({ strip }: { strip: CheckStrip }) {
+  const reasons = strip.blockedReasons;
+  if (reasons.length === 0) return <> (see S10)</>;
+  return (
+    <>
+      {" ("}
+      {reasons.map((reason, index) => (
+        <Fragment key={reason.raw}>
+          {index > 0 && " and "}
+          {reason.known ? s10ReasonWords(reason) : <code>{s10ReasonWords(reason)}</code>}
+        </Fragment>
+      ))}
+      {", see S10)"}
+    </>
+  );
+}
+
+/** The longest id the summary's 30px id column holds ("S10"); a longer one, which only an id this
+ *  page does not know can be ("acme:licence", "S100"), widens the column instead of overrunning it. */
+const WIDE_ID = 3;
 
 /**
  * One fired check, closed by default: its id in its level's tone, lockrot's own summary and the
@@ -429,12 +495,14 @@ function StateLine({
  */
 function FiredRow({ signal, pkg }: { signal: Signal; pkg: string }) {
   const { model } = useReport();
-  const doc = SIGNAL_DOC[signal.id] ?? `${DOCS_URL}#the-signals`;
-  const def = SIGNAL_DEFS[signal.id];
+  // An id that is not lockrot's has no page in lockrot's docs; one this page does not know gets
+  // only what can be said of its id (`vocab.ts#signalDef`), never a known check's words.
+  const doc = signalDocUrl(signal.id);
+  const def = signalDef(signal.id);
 
   return (
     <details id={firedRowId(signal.id)} className={`detail-fired ${toneClass(levelTone(signal.level))}`}>
-      <summary className="detail-fired-summary">
+      <summary className={`detail-fired-summary${signal.id.length > WIDE_ID ? " has-wide-id" : ""}`}>
         <span className="detail-fired-id">{signal.id}</span>
         <span className="detail-fired-text">
           <Wrapped text={signal.summary} prose />
@@ -443,12 +511,13 @@ function FiredRow({ signal, pkg }: { signal: Signal; pkg: string }) {
       </summary>
       <div className="detail-fired-body">
         <p className="detail-fired-def">
-          {def !== undefined && (
+          <Wrapped text={annotateThresholds(def, model.report.run.thresholds)} prose />
+          {doc !== null && (
             <>
-              <Wrapped text={annotateThresholds(def, model.report.run.thresholds)} prose />{" "}
+              {" "}
+              <OutLink href={doc}>{signal.id} in lockrot’s docs</OutLink>
             </>
           )}
-          <OutLink href={doc}>{signal.id} in lockrot’s docs</OutLink>
         </p>
         <SignalData data={signal.data} pkg={pkg} />
       </div>
@@ -508,12 +577,13 @@ export function SignalList({ finding }: { finding: Finding }) {
       <p className="detail-checks-tally">
         <b>{tally[0]}</b>
         {tally.slice(1).map((part) => ` · ${part}`)}
-        {strip.unknown.length > 0 && ` · also ${strip.unknown.join(", ")}, a check this page does not know`}.
+        <UnknownFired ids={strip.unknown} />.
       </p>
       <StateLine
         label="Could not run:"
         cells={cellsIn(strip.cells, "blocked")}
-        suffix={strip.blockedReason === null ? " (see S10)" : ` (${strip.blockedReason}, see S10)`}
+        extra={strip.blockedUnknown}
+        suffix={<BlockedSuffix strip={strip} />}
       />
       {unreported.length > 0 && (
         <p className="detail-checks-line">

@@ -1553,3 +1553,164 @@ describe("Detail", () => {
     });
   });
 });
+
+describe("open vocabularies (lockrot 0.13): a value this page does not know is shown as written", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  function words(el: Element | null | undefined): string {
+    return (el?.textContent ?? "").replace(/\s+/g, " ").trim();
+  }
+
+  function firedRow(container: ParentNode, id: string): Element | undefined {
+    return Array.from(container.querySelectorAll("details.detail-fired")).find(
+      (row) => row.querySelector(".detail-fired-id")?.textContent === id,
+    );
+  }
+
+  const ROW_KEYS_013 = [
+    "admits_target_php",
+    "admits_project_php",
+    "php_blocked_by",
+    "misses_target_php",
+    "misses_project_php",
+  ];
+
+  /** mini-0.13-edges with the five 0.13 branch-row keys taken off every row: what an older lockrot
+   *  would have written for the same rows. */
+  function edgesWithoutRowKeys(): Model {
+    const raw = JSON.parse(readFileSync(join(FIXTURES_DIR, "mini-0.13-edges.json"), "utf8")) as {
+      details: Record<string, { metadata: { branches: Record<string, unknown>[] } | null }>;
+    };
+    for (const entry of Object.values(raw.details)) {
+      for (const row of entry.metadata?.branches ?? []) {
+        for (const key of ROW_KEYS_013) Reflect.deleteProperty(row, key);
+      }
+    }
+    const result = normalize(raw);
+    if (!result.ok) throw new Error("stripped mini-0.13-edges failed to normalize");
+    return result.model;
+  }
+
+  it("acme/licensed: names the ids it does not know in code, and gives S2 only its own check's reason", () => {
+    const { container } = renderDetail(EDGES_013, "acme/licensed", vi.fn(), { view: "packages" });
+    const tally = container.querySelector(".detail-checks-tally");
+    expect(words(tally)).toBe(
+      "1 fired · 8 quiet (2 with no activity on file) · 1 could not run · also acme:licence, S99, checks this page does not know.",
+    );
+    expect(Array.from(tally?.querySelectorAll("code") ?? [], (c) => c.textContent)).toEqual([
+      "acme:licence",
+      "S99",
+    ]);
+    const lines = Array.from(container.querySelectorAll(".detail-checks-line")).map(words);
+    // sbom_lookup's quota_exhausted stopped S99 and acme:licence, not S2: it is not S2's reason.
+    expect(lines[0]).toBe("Could not run: S2 release age (undated releases, see S10)");
+    expect(lines.join(" ")).not.toContain("quota");
+  });
+
+  it("acme/licensed: an id that is not lockrot's gets no lockrot docs link; S99, lockrot's own, keeps one", () => {
+    const { container } = renderDetail(EDGES_013, "acme/licensed", vi.fn(), { view: "packages" });
+    const vendor = firedRow(container, "acme:licence");
+    expect(words(vendor?.querySelector(".detail-fired-def"))).toBe(
+      "A check from outside lockrot, which this page does not know.",
+    );
+    expect(vendor?.querySelector(".detail-fired-body a")).toBeNull();
+    // An id longer than "S10" sizes its own column rather than running under the summary beside it.
+    expect(
+      ["acme:licence", "S99", "S10"].map((id) =>
+        firedRow(container, id)?.querySelector("summary")?.classList.contains("has-wide-id"),
+      ),
+    ).toEqual([true, false, false]);
+    // Its data, and the unknown S10 check and reason, are shown as the document wrote them.
+    const pairs = (row: Element | undefined) =>
+      Array.from(
+        row?.querySelectorAll("dl.detail-data dt") ?? [],
+        (dt) => `${words(dt)}: ${words(dt.nextElementSibling)}`,
+      );
+    expect(pairs(vendor)).toEqual(["from: MIT", "to: BUSL-1.1", "since: 3.1.0"]);
+    expect(pairs(firedRow(container, "S10"))).toEqual(
+      expect.arrayContaining(["check: sbom_lookup", "reason: quota_exhausted", "blocks: S99, acme:licence"]),
+    );
+
+    const lockrotOwn = firedRow(container, "S99");
+    expect(words(lockrotOwn?.querySelector(".detail-fired-def"))).toBe(
+      "A lockrot check this page does not know. S99 in lockrot’s docs",
+    );
+    expect(lockrotOwn?.querySelector(".detail-fired-body a")?.getAttribute("href")).toBe(
+      "https://lockrot.dev/verdicts/#the-signals",
+    );
+  });
+
+  it("says an unknown reason and an unknown stopped id as written, in code, beside the known ones", () => {
+    const result = normalize({
+      report: {
+        lockrot: { version: "0.14.0", schema: 1 },
+        generated_at: "2026-09-27T00:00:00Z",
+        findings: [
+          {
+            package: "acme/later",
+            version: "1.0.0",
+            verdict: "ok",
+            priority: "none",
+            direct: true,
+            dev: false,
+            signals: [
+              {
+                id: "S10",
+                level: "info",
+                summary: "not checked",
+                data: {
+                  unchecked: [
+                    { check: "sbom_lookup", reason: "quota_exhausted", blocks: ["acme:sbom"] },
+                    { check: "release_dates", reason: "undated_releases", blocks: ["S2"] },
+                  ],
+                  blocks: ["acme:sbom", "S2"],
+                },
+              },
+            ],
+            chain: ["acme/later"],
+            evidence: "",
+          },
+        ],
+      },
+    });
+    if (!result.ok) throw new Error("fixture failed to normalize");
+    const { container } = renderDetail(result.model, "acme/later", vi.fn(), { view: "packages" });
+    const line = container.querySelector(".detail-checks-line");
+    expect(words(line)).toBe(
+      "Could not run: S2 release age · acme:sbom (quota_exhausted and undated releases, see S10)",
+    );
+    expect(Array.from(line?.querySelectorAll("code") ?? [], (c) => c.textContent)).toEqual([
+      "acme:sbom",
+      "quota_exhausted",
+    ]);
+  });
+
+  it("acme/left: an unknown floor_source is S8 data as written, and the release branches draw no 0.13 row field", () => {
+    const { container } = renderDetail(EDGES_013, "acme/left");
+    const s8 = firedRow(container, "S8");
+    const data = Array.from(s8?.querySelectorAll("dl.detail-data > dt") ?? []);
+    const floor = data.find((dt) => dt.textContent === "floor source");
+    expect(words(floor?.nextElementSibling)).toBe("extension");
+
+    const timeline = container.querySelector(".detail-timeline")?.cloneNode(true) ?? null;
+    expect(timeline).not.toBeNull();
+    for (const value of ["extension", "needs_newer", "stops_before", "project"]) {
+      expect(timeline?.textContent).not.toContain(value);
+    }
+    cleanup();
+    // Phase 1 draws none of admits_* / php_blocked_by / misses_*: the section is the one an older
+    // document with the same rows gets, whatever those keys say (an unknown value included).
+    const older = renderDetail(edgesWithoutRowKeys(), "acme/left").container;
+    expect(older.querySelector(".detail-timeline")?.isEqualNode(timeline)).toBe(true);
+  });
+
+  it("acme/floors: every misses_* side, an unknown one included, leaves the detail as an older document's", () => {
+    const now = renderDetail(EDGES_013, "acme/floors").container.cloneNode(true);
+    cleanup();
+    const older = renderDetail(edgesWithoutRowKeys(), "acme/floors").container;
+    expect(older.isEqualNode(now)).toBe(true);
+    expect(now.textContent).not.toContain("straddles");
+  });
+});
