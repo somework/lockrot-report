@@ -712,6 +712,15 @@
   line-height: 1.5;
   color: var(--muted);
 }
+/* A name and its "(verdict)" may part here: a long name (akaunting's
+   mnsami/composer-custom-directory-installer) held on one line with it ran past a 320px page. The
+   name wraps as .rl-jump lets it; "(verdict)" stays whole, never split at a paren or its hyphen. */
+.rl-foot .fl-unit {
+  white-space: normal;
+}
+.rl-paren {
+  white-space: nowrap;
+}
 
 /* ---------- two lines: beside an open package, a tablet ---------- */
 @container rl (min-width: 600px) {

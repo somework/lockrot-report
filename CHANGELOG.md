@@ -326,6 +326,9 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Fixed
 
+- Blast radius on a phone: the closing note that names flagged direct requirements with no row
+  wraps a long package name (`mnsami/composer-custom-directory-installer`) instead of running the
+  page past 320px; each "(verdict)" stays on one line.
 - A package no signal fired on no longer says "the verdict comes from what lockrot could not learn"
   unless it is `unknown`: an `ok` one says every check ran and found nothing, a `finished` one that
   its verdict comes from the allowlist, any other just that no signal fired; a `finished` package's

@@ -554,7 +554,9 @@ function Unlisted({ findings }: { findings: readonly Finding[] }) {
             >
               {f.package}
             </button>{" "}
-            (<VerdictWord verdict={f.verdict} />)
+            <span className="rl-paren">
+              (<VerdictWord verdict={f.verdict} />)
+            </span>
           </span>
         )),
       )}
