@@ -22,7 +22,17 @@ function builtFixtures(): FixtureName[] {
     .map((file) => file.replace(/\.html$/, "") as FixtureName);
 }
 
-const AXE_FIXTURES = ["mini", "koel_koel", "wallabag_wallabag", "wallabag_baseline"] as FixtureName[];
+const AXE_FIXTURES: readonly FixtureName[] = [
+  "mini",
+  "koel_koel",
+  "wallabag_wallabag",
+  "wallabag_baseline",
+  // lockrot 0.13.0 documents: the real one with every new branch-row field, and both hand-built
+  // edge bundles (unknown open-vocabulary values; nulls where a lock-only run has no project).
+  "wallabag_wallabag-0.13",
+  "mini-0.13-edges",
+  "mini-0.13-edges-lock-only",
+];
 const SCHEMES = ["light", "dark"] as const;
 const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;
 

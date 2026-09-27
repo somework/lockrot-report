@@ -16,6 +16,7 @@ import type {
   ExplainActivity,
   ExplainLock,
   ExplainMetadata,
+  ExposureRule,
   Finding,
   LibyearsBlock,
   Model,
@@ -24,6 +25,7 @@ import type {
   ReportModel,
   RunSettings,
   Signal,
+  UnattributedEntry,
   Verdict,
 } from "./types";
 import { PRIORITIES, VERDICTS } from "./types";
@@ -48,6 +50,11 @@ const LIBYEARS_UNMEASURED_REASONS = [
  * entirely — an older lockrot release that predates one, or a hand-built document. `absentKeys`
  * lists the ones missing from THIS document; nothing here knows which release added which key.
  * `generated_at`, `lockrot` and `findings` are not listed: a document without them is not a report.
+ *
+ * The keys lockrot 0.13.0 added (`exposure_rule`, `unattributed`, `run.root_package`,
+ * `run.project_php`) are deliberately not listed either: this list drives the "absent fields"
+ * paragraph on Run data and in print, and every page drawn from an older document would gain one.
+ * Their absence is carried by the model instead, as an absent optional property.
  */
 const ABSENT_CHECKED = [
   "packages_checked",
@@ -176,6 +183,8 @@ function buildReportModel(source: Record<string, unknown>, generatedAt: string):
     libyears: buildLibyears(source.libyears),
     baseline: buildBaseline(source.baseline),
     notes: asStringArray(source.notes),
+    ...ifPresent(source, "exposure_rule", "exposureRule", buildExposureRule),
+    ...ifPresent(source, "unattributed", "unattributed", buildUnattributed),
     absent: absentKeys(source),
     findings: asArray(source.findings).map(buildFinding),
   };
@@ -192,6 +201,8 @@ function buildRunSettings(raw: unknown): RunSettings {
   const rec = isRecord(raw) ? raw : {};
   return {
     project: asNullableString(rec.project),
+    ...ifPresent(rec, "root_package", "rootPackage", asNullableString),
+    ...ifPresent(rec, "project_php", "projectPhp", asNullableString),
     targetPhp: asNullableString(rec.target_php),
     lockFile: asNullableString(rec.lock_file),
     failOn: asNullableString(rec.fail_on),
@@ -256,6 +267,26 @@ function buildExposure(raw: unknown): readonly { package: string; flagged: numbe
   return asArray(raw).map((item) => {
     const rec = isRecord(item) ? item : {};
     return { package: asCoercedString(rec.package), flagged: asFiniteNumber(rec.flagged) ?? 0 };
+  });
+}
+
+/** `null` for a rule written as null or without a readable `max_fan_in`: no rule the page can quote. */
+function buildExposureRule(raw: unknown): ExposureRule | null {
+  if (!isRecord(raw)) {
+    return null;
+  }
+  const maxFanIn = asFiniteNumber(raw.max_fan_in);
+  return maxFanIn === null ? null : { maxFanIn };
+}
+
+function buildUnattributed(raw: unknown): readonly UnattributedEntry[] {
+  return asArray(raw).map((item) => {
+    const rec = isRecord(item) ? item : {};
+    return {
+      package: asCoercedString(rec.package),
+      verdict: asCoercedString(rec.verdict),
+      fanIn: asFiniteNumber(rec.fan_in),
+    };
   });
 }
 
@@ -443,7 +474,10 @@ function buildLock(raw: unknown): ExplainLock | null {
     // hand-built or edited one might not — still gets a link, not none.
     fromComposerRepository: asBoolean(raw.from_composer_repository, true),
     dev: asBoolean(raw.dev, false),
-    branchSnapshot: asBoolean(raw.branch_snapshot, false),
+    // Raw presence: `null` when the key is missing or not a boolean. Consumers read it by
+    // truthiness, so this changes no output; it lets the pinned wording tell "the lock says not a
+    // snapshot" (`false`) from "the lock does not say".
+    branchSnapshot: asNullableBoolean(raw.branch_snapshot),
     type: asNullableString(raw.type),
   };
 }
@@ -481,6 +515,12 @@ function buildBranchRow(raw: unknown): BranchRow {
     newestDatedReleased: asNullableString(rec.newest_dated_released),
     datedBy: asNullableString(rec.dated_by),
     php: asNullableString(rec.php),
+    // 0.13.0: each set only when the row carries the key, so an older row lacks the property.
+    ...ifPresent(rec, "admits_target_php", "admitsTargetPhp", asNullableBoolean),
+    ...ifPresent(rec, "admits_project_php", "admitsProjectPhp", asNullableBoolean),
+    ...ifPresent(rec, "php_blocked_by", "phpBlockedBy", asNullableString),
+    ...ifPresent(rec, "misses_target_php", "missesTargetPhp", asNullableString),
+    ...ifPresent(rec, "misses_project_php", "missesProjectPhp", asNullableString),
   };
 }
 
@@ -532,6 +572,20 @@ function asBoolean(value: unknown, fallback: boolean): boolean {
 
 function asNullableBoolean(value: unknown): boolean | null {
   return typeof value === "boolean" ? value : null;
+}
+
+/**
+ * `{ [prop]: read(rec[key]) }` when `rec` carries `key` — `in`, not a null check, so a key written
+ * as `null` is kept as the document's own answer — and `{}` when it does not, so a model built from
+ * a document that predates the key lacks the property instead of holding a `null` it never wrote.
+ */
+function ifPresent<K extends string, V>(
+  rec: Record<string, unknown>,
+  key: string,
+  prop: K,
+  read: (value: unknown) => V,
+): { [P in K]?: V } {
+  return key in rec ? ({ [prop]: read(rec[key]) } as { [P in K]?: V }) : {};
 }
 
 function asStringArray(value: unknown): readonly string[] {

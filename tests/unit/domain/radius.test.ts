@@ -103,8 +103,32 @@ describe("radiusRows", () => {
     expect(radiusRows(model, [other])[0]?.elsewhere).toEqual([]);
   });
 
-  it.each(["wallabag_wallabag", "mautic_mautic", "koel_koel"])(
-    "on %s, listed + reached elsewhere is lockrot's own exposure count for every requirement",
+  it.each([
+    "wallabag_wallabag",
+    "mautic_mautic",
+    "koel_koel",
+    // lockrot 0.13.0 documents with nothing in `unattributed`.
+    "wallabag_wallabag-0.13",
+    "mautic_mautic-0.13",
+    "koel_koel-0.13",
+    "koel_koel-all-0.13",
+  ])("on %s, listed + reached elsewhere is lockrot's own exposure count for every requirement", (corpus) => {
+    const model = load(corpus);
+
+    const rows = radiusRows(model, population(model, "radius"));
+
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.map((r) => [r.package, r.count + r.elsewhere.length])).toEqual(
+      rows.map((r) => [r.package, r.exposure]),
+    );
+  });
+
+  // Known RED until radius.ts takes `unattributed` out of the rows (Phase 1 radius step): lockrot
+  // counts league/config (akaunting) and acme/shared-util (mini) under no requirement, while
+  // radiusRows still lists each under its chain's first hop. When that lands, these fail as
+  // `it.fails` and move into the list above.
+  it.fails.each(["gh_akaunting_akaunting-0.13", "mini-0.13-edges"])(
+    "on %s (non-empty unattributed), listed + reached elsewhere is lockrot's own exposure count",
     (corpus) => {
       const model = load(corpus);
 

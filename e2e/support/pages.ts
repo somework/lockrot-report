@@ -67,5 +67,29 @@ export const FIXTURES = {
    *  stale, symfony/web-server-bundle from left-behind), 3 stale entries no longer in the lock.
    *  The baseline surfaces' fixture (PD-BASELINE-1..4, DESIGN.md §5); no real fixture carries one. */
   wallabagBaseline: "wallabag_baseline",
+
+  // lockrot 0.13.0 bundles, next to the 0.11 ones above (which stay as the older-document
+  // regression guard). Built at lockrot `7ff0ec3`; what each holds is counted in lockrot's
+  // `.private/handoff/0.13-fixtures/census.md`.
+  /** wallabag at 0.13: branch rows with `admits_*` / `php_blocked_by` / `misses_*`, S6 with
+   *  `reason` and `has_stable_release`, `run.root_package` and `run.project_php` (`>=8.2`), S8
+   *  pointing below the newest branch 11 times (`floor_source: project`), `unattributed: []`. */
+  wallabag013: "wallabag_wallabag-0.13",
+  /** koel at 0.13: S6 on a `finished` package with no details (roave/security-advisories). */
+  koel013: "koel_koel-0.13",
+  /** koel at 0.13, `--all`: 155 packages with branch rows, the only real `php_blocked_by: target`
+   *  rows among the four projects (nette/utils 3.x); no S6 at all. */
+  koelAll013: "koel_koel-all-0.13",
+  /** mautic at 0.13: `run.project_php: null`, so `admits_project_php` is null on every row. */
+  mautic013: "mautic_mautic-0.13",
+  /** akaunting at 0.13: the only real `unattributed` entry (league/config, stale, fan_in 9). */
+  akaunting013: "gh_akaunting_akaunting-0.13",
+  /** Hand-built 0.13 edges: S6 `no_stable_release`, `has_stable_release: null`, unknown values in
+   *  every open vocabulary (S99, `acme:licence`, S10 check/reason, `floor_source`, `php_blocked_by`,
+   *  a `misses_*` side), every `misses_*` side, `root_package` differing from `project`, and an
+   *  `unattributed` entry. */
+  miniEdges013: "mini-0.13-edges",
+  /** The lock-only twin: `project`, `root_package`, `project_php` all null, every chain empty. */
+  miniEdgesLockOnly013: "mini-0.13-edges-lock-only",
 } as const;
 export type FixtureName = (typeof FIXTURES)[keyof typeof FIXTURES];
