@@ -398,8 +398,9 @@ tag or the address format, says so under **Breaking** in its entry.
   counts as not accepted only the findings nothing exempts, naming another exemption as written
   (`waiver`). An `unchecked` tally reads "173 carry S10".
 - An open package's baseline paragraph says "so it does not fail this run" when its `gate` says the
-  baseline exempts it, and "It fails this run." when its `gate` says it fails; otherwise it says
-  nothing about the build. "lockrot's --fail-on does not count it", read off the baseline status
+  baseline exempts it, "Exempt for another reason (`waiver`), so it does not fail this run." when
+  another exemption, shown as written, does, and "It fails this run." when its `gate` says it fails;
+  otherwise it says nothing about the build. "lockrot's --fail-on does not count it", read off the baseline status
   alone, is gone.
 - The note above Findings naming packages with an advisory but no rot verdict is narrowed by the
   search box and the rail, like the list under it, instead of naming every such package whatever

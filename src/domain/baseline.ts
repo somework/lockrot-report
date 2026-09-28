@@ -173,11 +173,12 @@ export function gateFocus(model: Model): Filters | null {
 }
 
 /**
- * What a finding's own gate says about this run: the baseline exempts it, or it fails the run.
- * Null for everything else — no gate, not reaching, an exemption this page does not know, or a run
- * that applies no fail-on (`fails` false with nothing exempting it).
+ * What a finding's own gate says about this run: the baseline exempts it, another exemption does
+ * (`exempt_by` as written, which the caller shows), or it fails the run. Null for everything else —
+ * no gate, not reaching, or a run that applies no fail-on (`fails` false with nothing exempting it).
  */
-export function gateOutcome(finding: Finding): "accepted" | "fails" | null {
+export function gateOutcome(finding: Finding): "accepted" | "exempt" | "fails" | null {
   if (exemptByBaseline(finding)) return "accepted";
+  if ((finding.gate?.exemptBy ?? null) !== null) return "exempt";
   return finding.gate?.fails === true ? "fails" : null;
 }

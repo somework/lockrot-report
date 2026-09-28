@@ -120,6 +120,15 @@ test.describe("PD-BASELINE-3: the detail's baseline section comes first", () => 
     const quiet = page.getByRole("complementary", { name: "sebastian/resource-operations" });
     await expect(quiet.locator(".detail-baseline")).not.toContainText("this run");
   });
+
+  test("an exemption other than the baseline is named as written, not left silent", async ({ page }) => {
+    await report.gotoWithHash(FIXTURES.miniEdges013, "pkg=acme%2Ffuture-step");
+    const detail = page.getByRole("complementary", { name: "acme/future-step" });
+    await expect(detail.locator(".detail-baseline")).toHaveText(
+      "Not in lockrot-baseline.json: new since it was written. Exempt for another reason (waiver), so it does not fail this run.",
+    );
+    await expect(detail.locator(".detail-baseline code")).toHaveText("waiver");
+  });
 });
 
 test.describe("PD-BASELINE-4: Run data's baseline stat row", () => {

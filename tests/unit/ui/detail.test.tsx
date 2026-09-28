@@ -1046,10 +1046,18 @@ describe("Detail", () => {
       ).toBe("Not in baseline.json: new since it was written. It fails this run.");
     });
 
-    it("says nothing about the build for an unknown exemption, a run that fails nothing, or no gate", () => {
-      expect(withGate("known", "stale", { reaches_fail_on: true, fails: false, exempt_by: "waiver" })).toBe(
-        "Already accepted in baseline.json as stale.",
+    it("names another exemption than the baseline as written, and says it does not fail this run", () => {
+      expect(
+        withGate("new", null, { reaches_fail_on: true, fails: false, exempt_by: "waiver" }, "abandoned"),
+      ).toBe(
+        "Not in baseline.json: new since it was written. Exempt for another reason (waiver), so it does not fail this run.",
       );
+      expect(withGate("known", "stale", { reaches_fail_on: true, fails: false, exempt_by: "waiver" })).toBe(
+        "Already accepted in baseline.json as stale. Exempt for another reason (waiver), so it does not fail this run.",
+      );
+    });
+
+    it("says nothing about the build for a run that fails nothing, or no gate", () => {
       expect(
         withGate("new", null, { reaches_fail_on: true, fails: false, exempt_by: null }, "abandoned"),
       ).toBe("Not in baseline.json: new since it was written.");

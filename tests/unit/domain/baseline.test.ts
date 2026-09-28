@@ -298,13 +298,13 @@ describe("gateFocus", () => {
 });
 
 describe("gateOutcome", () => {
-  it("reads the finding's gate: exempt by the baseline, fails, or nothing to say", () => {
+  it("reads the finding's gate: exempt by the baseline or otherwise, fails, or nothing to say", () => {
     const f = makeFinding();
     expect(gateOutcome(judged(f, true, "baseline"))).toBe("accepted");
     expect(gateOutcome(judged(f, true))).toBe("fails");
     expect(gateOutcome(judged(f, false))).toBeNull();
-    // An exemption this page does not know, a run that applies no fail-on, no gate at all.
-    expect(gateOutcome(judged(f, true, "waiver"))).toBeNull();
+    expect(gateOutcome(judged(f, true, "waiver"))).toBe("exempt");
+    // A run that applies no fail-on, no gate at all.
     expect(gateOutcome({ ...f, gate: { reachesFailOn: true, fails: false, exemptBy: null } })).toBeNull();
     expect(gateOutcome(f)).toBeNull();
   });
