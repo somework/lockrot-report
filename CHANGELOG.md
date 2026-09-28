@@ -65,8 +65,8 @@ tag or the address format, says so under **Breaking** in its entry.
   shared scale. Rows stay grouped by what the fix takes, most severe first.
 - Findings and All packages rows with advisories carry the same chip: a square per advisory in its
   severity's colour and the count; hovering it counts them by severity and quotes each fix.
-- When the run says its advisory check may not have covered every package (network failures, or a
-  note on the check), the Advisories tab says so right under its answer, with a link to Run data,
+- When the run says its advisory check may not have covered every package (lockrot's
+  `advisories_not_checked` or `advisories_unavailable` note), the Advisories tab says so right under its answer, with a link to Run data,
   instead of only when nothing was found. Each advisory row's accessible name now carries its
   severity and CVE or id, so two advisories on one package no longer sound the same.
 - Advisory ages under 45 days read in days or weeks ("2 weeks ago", "6 wk") rather than "1 mo".
