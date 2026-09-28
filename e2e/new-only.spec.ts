@@ -27,6 +27,19 @@ const AXE_FIXTURES: readonly FixtureName[] = [
   "gh_akaunting_akaunting-0.13",
   "mini-0.13-edges",
   "mini-0.13-edges-lock-only",
+  "koel_lock-only-0.13",
+  "koel_no-token-unchecked-0.13",
+  "wallabag_baseline-older-0.13",
+  "wallabag_baseline-self-0.13",
+  "wallabag_generate-baseline-0.13",
+  "wallabag_offline-strict-0.13",
+  "wallabag_offline-strict-unchecked-0.13",
+  "mini-0.13-gate-generate",
+  "mini-0.13-gate-none",
+  "mini-0.13-gate-null",
+  "mini-0.13-gate-unchecked",
+  "mini-0.13-gate-unknown",
+  "mini-0.13-gate-verdict",
 ];
 const SCHEMES = ["light", "dark"] as const;
 const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;

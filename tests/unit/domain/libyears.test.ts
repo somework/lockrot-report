@@ -76,6 +76,19 @@ describe("libyearsReason", () => {
     expect(libyearsReason(null, null, block)).toBe("");
   });
 
+  test("names the finding's own libyears_unmeasured before anything else, an unknown one as written", () => {
+    const note = "not from a Composer repository, not checked";
+    expect(
+      libyearsReason(unmeasured({ note, libyearsUnmeasured: "branch_snapshot" }), snapshotLock(false), block),
+    ).toBe("branch snapshot");
+    expect(libyearsReason(unmeasured({ libyearsUnmeasured: "metadata_unavailable" }), null, block)).toBe(
+      "metadata unavailable",
+    );
+    expect(libyearsReason(unmeasured({ libyearsUnmeasured: "yanked_release" }), null, block)).toBe(
+      "yanked_release",
+    );
+  });
+
   test("names the note's reason first", () => {
     const note = "not from a Composer repository, not checked";
     expect(libyearsReason(unmeasured({ note }), snapshotLock(true), block)).toBe(
@@ -150,6 +163,13 @@ describe("libyearsReason", () => {
     "gh_akaunting_akaunting-0.13",
     "mini-0.13-edges",
     "mini-0.13-edges-lock-only",
+    "koel_lock-only-0.13",
+    "koel_no-token-unchecked-0.13",
+    "wallabag_baseline-older-0.13",
+    "wallabag_baseline-self-0.13",
+    "wallabag_generate-baseline-0.13",
+    "wallabag_offline-strict-0.13",
+    "wallabag_offline-strict-unchecked-0.13",
     "mini",
     "mini-no-fail-on",
   ])("%s: every unmeasured row has a reason, and they add up to the unmeasured block", (bundle) => {

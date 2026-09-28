@@ -21,6 +21,7 @@ export function makeAdvisory(overrides: Partial<Advisory> = {}): Advisory {
     affectedVersions: null,
     fixedBy: null,
     fixedOnBranch: false,
+    releasesRead: null,
     ...overrides,
   };
 }
@@ -54,6 +55,11 @@ export function makeFinding(overrides: Partial<Finding> = {}): Finding {
     libyears: null,
     baseline: null,
     advisories: [],
+    fromComposerRepository: null,
+    libyearsUnmeasured: null,
+    priorityBasis: null,
+    noFixExpected: null,
+    gate: null,
     ...overrides,
   };
 }
@@ -88,6 +94,9 @@ const EMPTY_REPORT: ReportModel = {
     targetPhp: null,
     lockFile: null,
     failOn: null,
+    failOnKind: null,
+    mode: null,
+    strictNetwork: null,
     thresholds: [],
     flaggedVerdicts: [],
   },
@@ -103,6 +112,8 @@ const EMPTY_REPORT: ReportModel = {
   libyears: null,
   baseline: null,
   notes: [],
+  noteDetails: [],
+  gate: null,
   exposureRule: null,
   unattributed: [],
   absent: [],

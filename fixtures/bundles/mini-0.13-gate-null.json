@@ -12,9 +12,9 @@
    "target_php": "8.4",
    "project_php": "^8.3",
    "lock_file": "composer.lock",
-   "fail_on": "high",
-   "fail_on_kind": "priority",
-   "strict_network": true,
+   "fail_on": null,
+   "fail_on_kind": null,
+   "strict_network": false,
    "mode": "check",
    "thresholds": {
     "release-warn-years": 3,
@@ -108,14 +108,7 @@
     "acme/removed"
    ]
   },
-  "gate": {
-   "fails": true,
-   "tripped_by": [
-    "strict_network",
-    "fail_on"
-   ],
-   "fail_on_applied": true
-  },
+  "gate": null,
   "notes": [
    "offline: repository metadata served from Composer's cache",
    "Repository metadata unavailable for 5 packages: offline: not present in Composer's cache (1); not checked: install-time budget exhausted (1); repository listed the package but returned no versions (1); The \"https://repo.packagist.org/p2/acme/meta-fetch.json\" file could not be downloaded (HTTP/2 500 ) (1); mirror quarantined the package (1)",
@@ -446,11 +439,7 @@
      "status": "known",
      "previous_verdict": "pinned"
     },
-    "gate": {
-     "reaches_fail_on": true,
-     "fails": false,
-     "exempt_by": "baseline"
-    }
+    "gate": null
    },
    {
     "package": "acme/path-lib",
@@ -498,11 +487,7 @@
      "status": "worsened",
      "previous_verdict": "stale"
     },
-    "gate": {
-     "reaches_fail_on": true,
-     "fails": true,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/left",
@@ -591,11 +576,7 @@
      "status": "new",
      "previous_verdict": null
     },
-    "gate": {
-     "reaches_fail_on": true,
-     "fails": true,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/floors",
@@ -640,11 +621,7 @@
      "status": "known",
      "previous_verdict": "stale"
     },
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/shared-util",
@@ -705,11 +682,7 @@
      "status": "new",
      "previous_verdict": null
     },
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/old-dep",
@@ -761,11 +734,7 @@
      "status": "known",
      "previous_verdict": "stale"
     },
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/licensed",
@@ -847,11 +816,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/future-reason",
@@ -881,11 +846,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/abandoned-vuln",
@@ -989,11 +950,7 @@
      "status": "known",
      "previous_verdict": "abandoned"
     },
-    "gate": {
-     "reaches_fail_on": true,
-     "fails": false,
-     "exempt_by": "baseline"
-    }
+    "gate": null
    },
    {
     "package": "acme/abandoned-fixed",
@@ -1056,11 +1013,7 @@
      "status": "known",
      "previous_verdict": "abandoned"
     },
-    "gate": {
-     "reaches_fail_on": true,
-     "fails": false,
-     "exempt_by": "baseline"
-    }
+    "gate": null
    },
    {
     "package": "acme/silent-snapshot",
@@ -1157,11 +1110,7 @@
      "status": "new",
      "previous_verdict": null
     },
-    "gate": {
-     "reaches_fail_on": true,
-     "fails": true,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/dev-tool",
@@ -1238,11 +1187,7 @@
      "status": "known",
      "previous_verdict": "stale"
     },
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/dev-helper",
@@ -1299,11 +1244,7 @@
      "status": "new",
      "previous_verdict": null
     },
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/dev-vuln",
@@ -1403,11 +1344,7 @@
      "status": "new",
      "previous_verdict": null
     },
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/future-step",
@@ -1460,11 +1397,7 @@
      "status": "new",
      "previous_verdict": null
     },
-    "gate": {
-     "reaches_fail_on": true,
-     "fails": false,
-     "exempt_by": "waiver"
-    }
+    "gate": null
    },
    {
     "package": "acme/meta-offline",
@@ -1494,11 +1427,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/meta-budget",
@@ -1528,11 +1457,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/meta-no-versions",
@@ -1562,11 +1487,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/meta-fetch",
@@ -1596,11 +1517,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/meta-quarantined",
@@ -1630,11 +1547,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/mid",
@@ -1665,11 +1578,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/direct-a",
@@ -1699,11 +1608,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/direct-b",
@@ -1752,11 +1657,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/direct-c",
@@ -1805,11 +1706,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/direct-d",
@@ -1861,11 +1758,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/direct-e",
@@ -1917,11 +1810,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/direct-f",
@@ -1951,11 +1840,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/direct-g",
@@ -2007,11 +1892,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/direct-h",
@@ -2063,11 +1944,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    },
    {
     "package": "acme/direct-i",
@@ -2097,11 +1974,7 @@
     },
     "no_fix_expected": null,
     "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
+    "gate": null
    }
   ]
  },

@@ -34,6 +34,8 @@
   padding: 10px 13px;
   font-size: 13px;
   margin-bottom: var(--space-3);
+  /* A run note can quote a URL lockrot could not reach, one unbroken word wider than a phone. */
+  overflow-wrap: anywhere;
 }
 
 .empty {

@@ -112,6 +112,12 @@ describe("radiusRows", () => {
     "mautic_mautic-0.13",
     "koel_koel-0.13",
     "koel_koel-all-0.13",
+    "koel_no-token-unchecked-0.13",
+    "wallabag_baseline-older-0.13",
+    "wallabag_baseline-self-0.13",
+    "wallabag_generate-baseline-0.13",
+    "wallabag_offline-strict-0.13",
+    "wallabag_offline-strict-unchecked-0.13",
     // lockrot 0.13.0 documents with an `unattributed` entry: league/config (fan_in 9) and
     // acme/shared-util (fan_in 9) are counted under no requirement, so no row counts them either.
     "gh_akaunting_akaunting-0.13",
@@ -127,12 +133,15 @@ describe("radiusRows", () => {
     );
   });
 
-  it("on a lock-only 0.13 document (every chain empty, exposure and unattributed empty), has no row", () => {
-    const model = load("mini-0.13-edges-lock-only");
+  it.each(["mini-0.13-edges-lock-only", "koel_lock-only-0.13"])(
+    "on a lock-only 0.13 document (%s: every chain empty, exposure and unattributed empty), has no row",
+    (corpus) => {
+      const model = load(corpus);
 
-    expect(model.report.unattributed).toEqual([]);
-    expect(radiusRows(model, population(model, "radius"))).toEqual([]);
-  });
+      expect(model.report.unattributed).toEqual([]);
+      expect(radiusRows(model, population(model, "radius"))).toEqual([]);
+    },
+  );
 });
 
 describe("unattributed packages (lockrot 0.13.0 `unattributed`, `exposure_rule.max_fan_in`)", () => {

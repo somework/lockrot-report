@@ -142,6 +142,7 @@ describe("FindingsView", () => {
           affectedVersions: null,
           fixedBy: null,
           fixedOnBranch: false,
+          releasesRead: null,
         },
       ],
     });
@@ -1093,6 +1094,7 @@ describe("AdvisoriesView", () => {
           affectedVersions: null,
           fixedBy: null,
           fixedOnBranch: false,
+          releasesRead: null,
         },
         {
           id: "GHSA-2",
@@ -1105,6 +1107,7 @@ describe("AdvisoriesView", () => {
           affectedVersions: null,
           fixedBy: null,
           fixedOnBranch: false,
+          releasesRead: null,
         },
       ],
     });
@@ -1137,6 +1140,7 @@ describe("AdvisoriesView", () => {
           affectedVersions: null,
           fixedBy: null,
           fixedOnBranch: false,
+          releasesRead: null,
         },
       ],
     });
@@ -1621,6 +1625,19 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
   });
 });
 
+/** Keys a document written before lockrot 0.13.0 leaves out; the page names them like any other. */
+const LATER_KEYS = [
+  "exposure_rule",
+  "unattributed",
+  "note_details",
+  "gate",
+  "run.root_package",
+  "run.project_php",
+  "run.fail_on_kind",
+  "run.mode",
+  "run.strict_network",
+];
+
 describe("RunView", () => {
   // PD-RUN-4: a missing value says why in words — "not in this document" when the key is absent,
   // "left empty by this run" when lockrot wrote it as null — never the word "undefined" and never a bare dash.
@@ -1680,12 +1697,9 @@ describe("RunView", () => {
         "answered and every repository answer in this file was fetched during the run. It ran with no " +
         "gate (--fail-on=none).",
     );
-    expect(Array.from(document.querySelectorAll(".run-absent code"), (el) => el.textContent)).toEqual([
-      "exposure_rule",
-      "unattributed",
-      "run.root_package",
-      "run.project_php",
-    ]);
+    expect(Array.from(document.querySelectorAll(".run-absent code"), (el) => el.textContent)).toEqual(
+      LATER_KEYS,
+    );
   });
 
   it("names no absent field for a document that carries every key the page reads", () => {
@@ -1702,10 +1716,7 @@ describe("RunView", () => {
     expect(Array.from(absent?.querySelectorAll("code") ?? [], (el) => el.textContent)).toEqual([
       "abandoned",
       "libyears",
-      "exposure_rule",
-      "unattributed",
-      "run.root_package",
-      "run.project_php",
+      ...LATER_KEYS,
     ]);
     expect(absent?.textContent).toContain("lockrot 0.10.0 (report schema 1)");
     expect(screen.getByText("libyears behind").nextElementSibling?.textContent).toBe("not in this document");
@@ -1894,6 +1905,7 @@ describe("the list's one Tab stop (PD-ROWS-11)", () => {
             affectedVersions: null,
             fixedBy: null,
             fixedOnBranch: false,
+            releasesRead: null,
           },
         ],
       });
@@ -1927,6 +1939,7 @@ describe("the list's one Tab stop (PD-ROWS-11)", () => {
       affectedVersions: null,
       fixedBy: null,
       fixedOnBranch: false,
+      releasesRead: null,
     });
     const model = flaggedModel([
       makeFinding({

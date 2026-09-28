@@ -12,8 +12,8 @@
    "target_php": "8.4",
    "project_php": ">=8.2",
    "lock_file": "composer.lock",
-   "fail_on": "none",
-   "fail_on_kind": "none",
+   "fail_on": "stale",
+   "fail_on_kind": "verdict",
    "strict_network": false,
    "mode": "check",
    "thresholds": {
@@ -31,7 +31,7 @@
     "stale"
    ]
   },
-  "activity_cache_oldest_at": null,
+  "activity_cache_oldest_at": "2026-09-28T00:00:00+00:00",
   "packages_checked": 271,
   "include_dev": true,
   "not_from_composer_repository": 0,
@@ -192,7 +192,13 @@
     "libyears": 5.8
    }
   },
-  "baseline": null,
+  "baseline": {
+   "path": "/Users/kolgarn/phpstorm/personal/lockrot/.private/handoff/0.13-fixtures/baselines/wallabag.baseline.json",
+   "known": 69,
+   "new": 0,
+   "worsened": 0,
+   "stale": []
+  },
   "gate": {
    "fails": false,
    "tripped_by": [],
@@ -286,11 +292,14 @@
      "steps": []
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -356,11 +365,14 @@
      "steps": []
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "silent"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -426,11 +438,14 @@
      "steps": []
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "silent"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -506,11 +521,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -577,11 +595,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -627,11 +648,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -695,11 +719,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -778,11 +805,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -873,11 +903,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -957,11 +990,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -1040,11 +1076,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -1123,11 +1162,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -1207,11 +1249,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -1291,11 +1336,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -1374,11 +1422,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -1458,11 +1509,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -1540,11 +1594,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -1624,11 +1681,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -1709,11 +1769,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -1792,11 +1855,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -1877,11 +1943,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -1943,11 +2012,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -2021,11 +2093,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "silent"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -2098,11 +2173,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "silent"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -2176,11 +2254,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "silent"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -2253,11 +2334,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "silent"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -2330,11 +2414,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "silent"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -2407,11 +2494,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "silent"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -2494,11 +2584,14 @@
      "steps": []
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "pinned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -2687,11 +2780,14 @@
      "steps": []
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "pinned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -2901,11 +2997,14 @@
      "steps": []
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "pinned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -2978,11 +3077,14 @@
      "steps": []
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -3051,11 +3153,14 @@
      "steps": []
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -3110,11 +3215,14 @@
      "steps": []
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -3209,11 +3317,14 @@
      "steps": []
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -3290,11 +3401,14 @@
      "steps": []
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -3368,11 +3482,14 @@
      "steps": []
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -3484,11 +3601,14 @@
      "steps": []
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -3583,11 +3703,14 @@
      "steps": []
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -3641,11 +3764,14 @@
      "steps": []
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -3752,11 +3878,14 @@
       "reason": "not_on_installed_branch"
      }
     ],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -3822,11 +3951,14 @@
      "steps": []
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "old-promise"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -3878,11 +4010,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "abandoned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -3934,11 +4069,14 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "pinned"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -3999,11 +4137,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -4064,11 +4205,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -4130,11 +4274,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -4176,11 +4323,14 @@
      "steps": []
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "stale"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -4240,11 +4390,14 @@
      "steps": []
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "stale"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -4338,11 +4491,14 @@
      "steps": []
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "stale"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -4408,11 +4564,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -4491,11 +4650,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -4574,11 +4736,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -4657,11 +4822,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -4740,11 +4908,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -4824,11 +4995,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -4894,11 +5068,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -4977,11 +5154,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -5061,11 +5241,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -5131,11 +5314,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -5214,11 +5400,14 @@
      ]
     },
     "no_fix_expected": [],
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "left-behind"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -5277,11 +5466,14 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "stale"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -5335,11 +5527,14 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "stale"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -5394,11 +5589,14 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "stale"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -5447,11 +5645,14 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "stale"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -5505,11 +5706,14 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "stale"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -5565,11 +5769,14 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "stale"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -5630,11 +5837,14 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "stale"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -5694,11 +5904,14 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": null,
+    "baseline": {
+     "status": "known",
+     "previous_verdict": "stale"
+    },
     "gate": {
-     "reaches_fail_on": false,
+     "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": null
+     "exempt_by": "baseline"
     }
    },
    {
@@ -14828,7 +15041,7 @@
     "archived": true,
     "pushed_at": "2023-02-24T14:58:10+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/sensiolabs/SensioFrameworkExtraBundle"
   },
@@ -14896,7 +15109,7 @@
     "archived": false,
     "pushed_at": "2017-11-18T18:56:40+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/javibravo/simpleue"
   },
@@ -14980,7 +15193,7 @@
     "archived": false,
     "pushed_at": "2020-04-28T04:18:54+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/mnapoli/MatomoTwigExtension"
   },
@@ -15048,7 +15261,7 @@
     "archived": true,
     "pushed_at": "2022-07-29T12:26:26+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/symfony/web-server-bundle"
   },
@@ -15100,7 +15313,7 @@
     "archived": true,
     "pushed_at": "2025-05-07T16:20:04+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/Behat/Transliterator"
   },
@@ -15168,7 +15381,7 @@
     "archived": false,
     "pushed_at": "2025-12-11T07:45:03+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/doctrine/annotations"
   },
@@ -15236,7 +15449,7 @@
     "archived": false,
     "pushed_at": "2025-10-08T08:10:50+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/doctrine/cache"
   },
@@ -15320,7 +15533,7 @@
     "archived": true,
     "pushed_at": "2021-04-29T19:09:55+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Compiler"
   },
@@ -15404,7 +15617,7 @@
     "archived": true,
     "pushed_at": "2021-04-28T21:38:16+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Consistency"
   },
@@ -15488,7 +15701,7 @@
     "archived": true,
     "pushed_at": "2021-04-29T19:09:57+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Event"
   },
@@ -15572,7 +15785,7 @@
     "archived": true,
     "pushed_at": "2021-04-29T19:09:54+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Exception"
   },
@@ -15656,7 +15869,7 @@
     "archived": true,
     "pushed_at": "2018-01-23T09:51:49+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/File"
   },
@@ -15740,7 +15953,7 @@
     "archived": true,
     "pushed_at": "2021-04-29T19:09:54+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Iterator"
   },
@@ -15824,7 +16037,7 @@
     "archived": true,
     "pushed_at": "2021-04-29T19:09:54+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Math"
   },
@@ -15892,7 +16105,7 @@
     "archived": true,
     "pushed_at": "2021-04-29T19:09:54+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Protocol"
   },
@@ -15976,7 +16189,7 @@
     "archived": true,
     "pushed_at": "2018-07-20T20:56:39+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Regex"
   },
@@ -16060,7 +16273,7 @@
     "archived": true,
     "pushed_at": "2021-07-10T22:39:25+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Ruler"
   },
@@ -16144,7 +16357,7 @@
     "archived": true,
     "pushed_at": "2021-08-09T09:25:05+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Stream"
   },
@@ -16244,7 +16457,7 @@
     "archived": true,
     "pushed_at": "2021-04-29T19:09:54+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Ustring"
   },
@@ -16328,7 +16541,7 @@
     "archived": true,
     "pushed_at": "2021-04-28T21:38:17+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Visitor"
   },
@@ -16380,7 +16593,7 @@
     "archived": true,
     "pushed_at": "2018-02-12T09:28:09+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Zformat"
   },
@@ -16480,7 +16693,7 @@
     "archived": true,
     "pushed_at": "2024-10-27T12:57:05+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/symfony/security-guard"
   },
@@ -16548,7 +16761,7 @@
     "archived": false,
     "pushed_at": "2015-08-13T06:18:07+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/Grandt/PHPBinString"
   },
@@ -16600,7 +16813,7 @@
     "archived": false,
     "pushed_at": "2015-08-13T06:28:11+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/Grandt/PHPResizeGif"
   },
@@ -16652,7 +16865,7 @@
     "archived": false,
     "pushed_at": "2015-08-18T13:57:56+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/Grandt/PHPZipMerge"
   },
@@ -16704,7 +16917,7 @@
     "archived": false,
     "pushed_at": "2020-04-01T17:16:57+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/Grandt/PHPRelativePath"
   },
@@ -16756,7 +16969,7 @@
     "archived": false,
     "pushed_at": "2015-11-16T16:31:37+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/Grandt/PHPZip"
   },
@@ -16824,7 +17037,7 @@
     "archived": false,
     "pushed_at": "2017-12-18T22:17:43+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/antonioribeiro/random"
   },
@@ -16876,7 +17089,7 @@
     "archived": false,
     "pushed_at": "2024-01-12T10:27:37+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/FriendsOfSymfony/FOSOAuthServerBundle"
   },
@@ -16911,7 +17124,7 @@
     "archived": false,
     "pushed_at": "2023-12-24T00:58:48+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/wallabag/rulerz"
   },
@@ -16946,7 +17159,7 @@
     "archived": false,
     "pushed_at": "2023-12-24T22:23:53+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/wallabag/RulerZBundle"
   },
@@ -17030,7 +17243,7 @@
     "archived": false,
     "pushed_at": "2026-09-18T11:13:55+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/craue/CraueConfigBundle"
   },
@@ -17098,7 +17311,7 @@
     "archived": false,
     "pushed_at": "2026-06-12T03:54:14+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/doctrine/event-manager"
   },
@@ -17214,7 +17427,7 @@
     "archived": false,
     "pushed_at": "2026-09-27T22:36:45+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/lcobucci/jwt"
   },
@@ -17314,7 +17527,7 @@
     "archived": false,
     "pushed_at": "2026-07-10T18:36:01+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/scheb/2fa-backup-code"
   },
@@ -17414,7 +17627,7 @@
     "archived": false,
     "pushed_at": "2026-07-10T18:36:01+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/scheb/2fa-bundle"
   },
@@ -17514,7 +17727,7 @@
     "archived": false,
     "pushed_at": "2026-07-10T18:36:01+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/scheb/2fa-email"
   },
@@ -17614,7 +17827,7 @@
     "archived": false,
     "pushed_at": "2026-07-10T18:36:02+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/scheb/2fa-google-authenticator"
   },
@@ -17714,7 +17927,7 @@
     "archived": false,
     "pushed_at": "2026-07-10T18:36:01+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/scheb/2fa-trusted-device"
   },
@@ -17782,7 +17995,7 @@
     "archived": false,
     "pushed_at": "2026-09-22T19:24:13+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/symfony/webpack-encore-bundle"
   },
@@ -17994,7 +18207,7 @@
     "archived": false,
     "pushed_at": "2026-09-01T09:05:18+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/Spomky-Labs/otphp"
   },
@@ -18046,7 +18259,7 @@
     "archived": false,
     "pushed_at": "2022-08-04T08:36:20+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/matgargano/simplehtmldom"
   },
@@ -18130,7 +18343,7 @@
     "archived": true,
     "pushed_at": "2024-03-14T18:47:11+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/sebastianbergmann/resource-operations"
   },
@@ -18165,7 +18378,7 @@
     "archived": false,
     "pushed_at": "2023-12-24T01:18:29+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/wallabag/rulerz-bridge"
   },
@@ -18409,7 +18622,7 @@
     "archived": false,
     "pushed_at": "2026-09-25T08:20:59+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/smalot/pdfparser"
   },
@@ -18589,7 +18802,7 @@
     "archived": false,
     "pushed_at": "2026-08-10T19:31:55+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/symfony/psr-http-message-bridge"
   },
@@ -18689,7 +18902,7 @@
     "archived": false,
     "pushed_at": "2026-08-17T23:43:41+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/thecodingmachine/safe"
   },
@@ -18757,7 +18970,7 @@
     "archived": false,
     "pushed_at": "2024-01-02T15:04:49+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/defuse/php-encryption"
   },
@@ -18825,7 +19038,7 @@
     "archived": false,
     "pushed_at": "2024-01-18T20:13:56+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/antonioribeiro/recovery"
   },
@@ -18877,7 +19090,7 @@
     "archived": false,
     "pushed_at": "2025-12-21T17:47:38+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/wallabag/PHPePub"
   },
@@ -19025,7 +19238,7 @@
     "archived": false,
     "pushed_at": "2026-09-26T00:23:00+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/sebastianbergmann/php-file-iterator"
   },
@@ -19173,7 +19386,7 @@
     "archived": false,
     "pushed_at": "2026-09-28T00:29:25+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/sebastianbergmann/php-invoker"
   },
@@ -19305,7 +19518,7 @@
     "archived": false,
     "pushed_at": "2026-09-25T22:38:22+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/sebastianbergmann/php-text-template"
   },
@@ -19485,7 +19698,7 @@
     "archived": false,
     "pushed_at": "2026-09-26T00:28:45+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/sebastianbergmann/php-timer"
   },
@@ -19569,7 +19782,7 @@
     "archived": false,
     "pushed_at": "2025-05-25T06:37:29+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/sebastianbergmann/code-unit"
   },
@@ -19669,7 +19882,7 @@
     "archived": false,
     "pushed_at": "2025-05-25T06:37:51+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/sebastianbergmann/code-unit-reverse-lookup"
   },
@@ -19849,7 +20062,7 @@
     "archived": false,
     "pushed_at": "2026-09-28T00:25:49+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/sebastianbergmann/environment"
   },
@@ -20013,7 +20226,7 @@
     "archived": false,
     "pushed_at": "2026-09-26T00:27:57+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/sebastianbergmann/object-enumerator"
   },
@@ -20145,7 +20358,7 @@
     "archived": false,
     "pushed_at": "2026-09-26T00:26:07+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/sebastianbergmann/object-reflector"
   },
@@ -20293,7 +20506,7 @@
     "archived": false,
     "pushed_at": "2026-09-28T00:27:38+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/sebastianbergmann/type"
   },
@@ -20441,7 +20654,7 @@
     "archived": false,
     "pushed_at": "2026-09-25T22:39:55+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/sebastianbergmann/version"
   },
@@ -20557,7 +20770,7 @@
     "archived": false,
     "pushed_at": "2023-05-02T19:24:01+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/BedrockStreaming/RedisMock"
   },
@@ -20625,7 +20838,7 @@
     "archived": false,
     "pushed_at": "2026-06-29T10:50:21+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/clue/reactphp-ndjson"
   },
@@ -20725,7 +20938,7 @@
     "archived": false,
     "pushed_at": "2025-12-26T18:20:45+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/igorw/evenement"
   },
@@ -20777,7 +20990,7 @@
     "archived": false,
     "pushed_at": "2024-01-12T10:20:26+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/FriendsOfSymfony/oauth2-php"
   },
@@ -20861,7 +21074,7 @@
     "archived": false,
     "pushed_at": "2026-05-20T15:32:59+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/phar-io/version"
   },
@@ -20993,7 +21206,7 @@
     "archived": false,
     "pushed_at": "2026-07-01T10:27:59+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/reactphp/cache"
   },
@@ -21061,7 +21274,7 @@
     "archived": false,
     "pushed_at": "2023-07-29T16:52:43+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/willdurand/JsonpCallbackValidator"
   },
@@ -21273,7 +21486,7 @@
     "archived": false,
     "pushed_at": "2023-08-03T17:52:44+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": false
+    "from_cache": true
    },
    "repository_link": "https://github.com/willdurand/Negotiation"
   }

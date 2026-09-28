@@ -358,8 +358,12 @@ tag or the address format, says so under **Breaking** in its entry.
 - Release branches keep lockrot's order, highest first, instead of re-sorting the branch names.
 - A lock entry without `from_composer_repository`, or metadata without `has_stable_release`, no
   longer reads as a Composer origin or as "no tagged release": nothing is said.
-- Run data names `exposure_rule`, `unattributed`, `run.root_package` and `run.project_php` among
-  the fields a report leaves out, like any other key the page reads.
+- Run data names `exposure_rule`, `unattributed`, `note_details`, `gate`, `run.root_package`,
+  `run.project_php`, `run.fail_on_kind`, `run.mode` and `run.strict_network` among the fields a
+  report leaves out, like any other key the page reads.
+- A package's libyears "not measured" reason is the finding's own `libyears_unmeasured` where the
+  report carries it; a reason the page does not know is shown as written (`yanked_release`).
+- A run note that quotes a long URL wraps on a phone instead of widening Run data past 320px.
 - Blast radius: a flagged package lockrot counts under no direct requirement, because more of them
   reach it than `exposure_rule.max_fan_in` allows (its `unattributed` list: akaunting's
   `league/config`, reached from 9), is no longer listed under a row or counted as reached from one

@@ -17,6 +17,19 @@ const FIXTURES_013: readonly FixtureName[] = [
   FIXTURES.akaunting013,
   FIXTURES.miniEdges013,
   FIXTURES.miniEdgesLockOnly013,
+  FIXTURES.koelLockOnly013,
+  FIXTURES.koelNoTokenUnchecked013,
+  FIXTURES.wallabagBaselineOlder013,
+  FIXTURES.wallabagBaselineSelf013,
+  FIXTURES.wallabagGenerateBaseline013,
+  FIXTURES.wallabagOfflineStrict013,
+  FIXTURES.wallabagOfflineStrictUnchecked013,
+  FIXTURES.miniGateGenerate013,
+  FIXTURES.miniGateNone013,
+  FIXTURES.miniGateNull013,
+  FIXTURES.miniGateUnchecked013,
+  FIXTURES.miniGateUnknown013,
+  FIXTURES.miniGateVerdict013,
 ];
 
 const TABS = ["Advisories", "All packages", "Blast radius", "Run data", "Findings"] as const;

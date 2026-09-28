@@ -24,14 +24,23 @@ export function libyearsSortKey(finding: Pick<Finding, "libyears"> | null): numb
   return value === null ? -1 : value;
 }
 
-/** In the words the report's `unmeasured` block counts it under; empty when measured, when there is
- *  no block, or when no field says which reason. */
+const UNMEASURED_REASONS: Readonly<Record<string, string>> = vocabTable({
+  branch_snapshot: "branch snapshot",
+  no_stable_release_date: "no release date lockrot trusts",
+  not_from_composer_repository: "not from a Composer repository",
+  metadata_unavailable: "metadata unavailable",
+});
+
+/** In the words the report's `unmeasured` block counts it under, an unknown reason as written; empty
+ *  when measured, when there is no block, or when no field says which reason. */
 export function libyearsReason(
   finding: Finding | null,
   details: PackageDetails | null,
   block: LibyearsBlock | null,
 ): string {
   if (!finding || !block || fixed(finding.libyears, 1) !== null) return "";
+  const code = finding.libyearsUnmeasured;
+  if (code !== null) return UNMEASURED_REASONS[code] ?? code;
   if (finding.note === NOT_FROM_COMPOSER_NOTE) return "not from a Composer repository";
   if (finding.note) return "metadata unavailable";
   switch (readPinnedFacts(finding, details).branchSnapshot) {

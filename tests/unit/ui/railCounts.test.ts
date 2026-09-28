@@ -18,6 +18,7 @@ const CORPORA = [
   "mautic_mautic",
   "gh_akaunting_akaunting-0.13",
   "mini-0.13-edges",
+  "wallabag_baseline-older-0.13",
 ] as const;
 const RAIL_VIEWS: readonly View[] = ["findings", "advisories", "packages", "radius"];
 

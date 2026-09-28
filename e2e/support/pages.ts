@@ -59,5 +59,28 @@ export const FIXTURES = {
   miniEdges013: "mini-0.13-edges",
   /** The lock-only twin: `project`, `root_package`, `project_php` all null, every chain empty. */
   miniEdgesLockOnly013: "mini-0.13-edges-lock-only",
+  /** koel's lock without its composer.json: every transitive finding steps down as `unreached`;
+   *  fail-on `critical`, which nothing reaches. */
+  koelLockOnly013: "koel_lock-only-0.13",
+  /** No GitHub token and fail-on `unchecked`: the anonymous-cap note, and every S10 finding fails. */
+  koelNoTokenUnchecked013: "koel_no-token-unchecked-0.13",
+  /** fail-on `high` against an older baseline: known, new, worsened and stale; fails by `fail_on`. */
+  wallabagBaselineOlder013: "wallabag_baseline-older-0.13",
+  /** fail-on `stale` against its own baseline: every finding that reaches is exempt; passes. */
+  wallabagBaselineSelf013: "wallabag_baseline-self-0.13",
+  /** `--generate-baseline`: findings reach fail-on, none fails (`fail_on_applied: false`). */
+  wallabagGenerateBaseline013: "wallabag_generate-baseline-0.13",
+  /** Offline with `--strict-network`: fails by `strict_network` alone; `metadata_unavailable`. */
+  wallabagOfflineStrict013: "wallabag_offline-strict-0.13",
+  /** Offline, strict, fail-on `unchecked`: fails by both causes. */
+  wallabagOfflineStrictUnchecked013: "wallabag_offline-strict-unchecked-0.13",
+  /** The full mini under other run policies: `--generate-baseline`, fail-on `none`, no fail-on at
+   *  all (every gate null), `unchecked`, an unknown mode/kind/cause, and a verdict threshold. */
+  miniGateGenerate013: "mini-0.13-gate-generate",
+  miniGateNone013: "mini-0.13-gate-none",
+  miniGateNull013: "mini-0.13-gate-null",
+  miniGateUnchecked013: "mini-0.13-gate-unchecked",
+  miniGateUnknown013: "mini-0.13-gate-unknown",
+  miniGateVerdict013: "mini-0.13-gate-verdict",
 } as const;
 export type FixtureName = (typeof FIXTURES)[keyof typeof FIXTURES];

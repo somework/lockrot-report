@@ -7,13 +7,13 @@
   },
   "generated_at": "2026-09-28T00:00:00+00:00",
   "run": {
-   "project": "koel/koel",
-   "root_package": "koel/koel",
+   "project": null,
+   "root_package": null,
    "target_php": "8.4",
-   "project_php": ">=8.3",
+   "project_php": null,
    "lock_file": "composer.lock",
-   "fail_on": "none",
-   "fail_on_kind": "none",
+   "fail_on": "critical",
+   "fail_on_kind": "priority",
    "strict_network": false,
    "mode": "check",
    "thresholds": {
@@ -31,7 +31,7 @@
     "stale"
    ]
   },
-  "activity_cache_oldest_at": "2026-09-28T00:00:00+00:00",
+  "activity_cache_oldest_at": null,
   "packages_checked": 201,
   "include_dev": true,
   "not_from_composer_repository": 1,
@@ -53,36 +53,19 @@
   },
   "priorities": {
    "critical": 0,
-   "high": 2,
-   "medium": 1,
-   "low": 2,
+   "high": 0,
+   "medium": 2,
+   "low": 3,
    "none": 196
   },
-  "exposure": [
-   {
-    "package": "brianium/paratest",
-    "flagged": 1
-   },
-   {
-    "package": "laravel/framework",
-    "flagged": 1
-   },
-   {
-    "package": "laravel/nightwatch",
-    "flagged": 1
-   },
-   {
-    "package": "phpunit/phpunit",
-    "flagged": 1
-   }
-  ],
+  "exposure": [],
   "exposure_rule": {
    "max_fan_in": 8
   },
   "unattributed": [],
   "libyears": {
    "total": 83.88,
-   "direct_requirements": 24.5,
+   "direct_requirements": 0,
    "measured": 195,
    "unmeasured": {
     "branch_snapshot": 1,
@@ -121,8 +104,8 @@
     "package": "jwilsson/spotify-web-api-php",
     "version": "5.7.1",
     "verdict": "left-behind",
-    "priority": "high",
-    "direct": true,
+    "priority": "medium",
+    "direct": false,
     "dev": false,
     "from_composer_repository": true,
     "replacement": null,
@@ -151,13 +134,9 @@
       }
      }
     ],
-    "chain": [
-     "jwilsson/spotify-web-api-php"
-    ],
-    "direct_dependents": [
-     "jwilsson/spotify-web-api-php"
-    ],
-    "evidence": "branch 5.x last released 2023-08-01 (3.2 years ago); 7.x released 7.2.0 (2026-07-25); require ^7.2 to follow",
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "branch 5.x last released 2023-08-01 (3.2 years ago); 7.x released 7.2.0 (2026-07-25)",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
@@ -165,7 +144,13 @@
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "high",
-     "steps": []
+     "steps": [
+      {
+       "reason": "unreached",
+       "from": "high",
+       "to": "medium"
+      }
+     ]
     },
     "no_fix_expected": [],
     "baseline": null,
@@ -179,8 +164,8 @@
     "package": "predis/predis",
     "version": "v1.1.10",
     "verdict": "left-behind",
-    "priority": "high",
-    "direct": true,
+    "priority": "medium",
+    "direct": false,
     "dev": false,
     "from_composer_repository": true,
     "replacement": null,
@@ -209,13 +194,9 @@
       }
      }
     ],
-    "chain": [
-     "predis/predis"
-    ],
-    "direct_dependents": [
-     "predis/predis"
-    ],
-    "evidence": "branch 1.x last released 2022-01-05 (4.7 years ago); 3.x released v3.6.1 (2026-09-17); require ^3.6 to follow",
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "branch 1.x last released 2022-01-05 (4.7 years ago); 3.x released v3.6.1 (2026-09-17)",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
@@ -223,55 +204,15 @@
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "high",
-     "steps": []
+     "steps": [
+      {
+       "reason": "unreached",
+       "from": "high",
+       "to": "medium"
+      }
+     ]
     },
     "no_fix_expected": [],
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "tiben/crontab-manager",
-    "version": "v1.4.0",
-    "verdict": "stale",
-    "priority": "medium",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [
-     {
-      "id": "S2",
-      "level": "warn",
-      "summary": "last release 2023-05-02 (3.4 years ago)",
-      "data": {
-       "last_release": "2023-05-02T16:54:54+00:00",
-       "last_version": "v1.4.0",
-       "years": 3.4,
-       "dated_by": null
-      }
-     }
-    ],
-    "chain": [
-     "tiben/crontab-manager"
-    ],
-    "direct_dependents": [
-     "tiben/crontab-manager"
-    ],
-    "evidence": "last release 2023-05-02 (3.4 years ago)",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "medium",
-     "steps": []
-    },
-    "no_fix_expected": null,
     "baseline": null,
     "gate": {
      "reaches_fail_on": false,
@@ -301,15 +242,8 @@
       }
      }
     ],
-    "chain": [
-     "laravel/framework",
-     "league/commonmark",
-     "league/config"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "last release 2022-12-11 (3.8 years ago)",
     "allowlist_reason": null,
     "note": null,
@@ -320,7 +254,7 @@
      "base": "medium",
      "steps": [
       {
-       "reason": "transitive",
+       "reason": "unreached",
        "from": "medium",
        "to": "low"
       }
@@ -356,14 +290,8 @@
       }
      }
     ],
-    "chain": [
-     "phpunit/phpunit",
-     "phar-io/version"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "last release 2022-02-21 (4.6 years ago)",
     "allowlist_reason": null,
     "note": null,
@@ -374,7 +302,7 @@
      "base": "medium",
      "steps": [
       {
-       "reason": "transitive",
+       "reason": "unreached",
        "from": "medium",
        "to": "low"
       },
@@ -394,21 +322,65 @@
     }
    },
    {
+    "package": "tiben/crontab-manager",
+    "version": "v1.4.0",
+    "verdict": "stale",
+    "priority": "low",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [
+     {
+      "id": "S2",
+      "level": "warn",
+      "summary": "last release 2023-05-02 (3.4 years ago)",
+      "data": {
+       "last_release": "2023-05-02T16:54:54+00:00",
+       "last_version": "v1.4.0",
+       "years": 3.4,
+       "dated_by": null
+      }
+     }
+    ],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "last release 2023-05-02 (3.4 years ago)",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "medium",
+     "steps": [
+      {
+       "reason": "unreached",
+       "from": "medium",
+       "to": "low"
+      }
+     ]
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
     "package": "teamtnt/laravel-scout-tntsearch-driver",
     "version": "v15.1.1",
     "verdict": "unknown",
     "priority": "none",
-    "direct": true,
+    "direct": false,
     "dev": false,
     "from_composer_repository": false,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "teamtnt/laravel-scout-tntsearch-driver"
-    ],
-    "direct_dependents": [
-     "teamtnt/laravel-scout-tntsearch-driver"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "not from a Composer repository, not checked",
     "allowlist_reason": null,
     "note": "not from a Composer repository, not checked",
@@ -432,1702 +404,18 @@
     "version": "3.4.2",
     "verdict": "ok",
     "priority": "none",
-    "direct": true,
+    "direct": false,
     "dev": false,
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "algolia/algoliasearch-client-php"
-    ],
-    "direct_dependents": [
-     "algolia/algoliasearch-client-php"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.63,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "brianium/paratest",
-    "version": "v7.8.5",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": true,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [
-     {
-      "id": "S7",
-      "level": "info",
-      "summary": "pulls in 1 flagged package: phar-io/version (stale)",
-      "data": {
-       "flagged": 1,
-       "packages": [
-        {
-         "package": "phar-io/version",
-         "verdict": "stale",
-         "chain": [
-          "brianium/paratest",
-          "phpunit/phpunit",
-          "phar-io/version"
-         ]
-        }
-       ]
-      }
-     }
-    ],
-    "chain": [
-     "brianium/paratest"
-    ],
-    "direct_dependents": [
-     "brianium/paratest"
-    ],
-    "evidence": "pulls in 1 flagged package: phar-io/version (stale)",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.71,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "carthage-software/mago",
-    "version": "1.29.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": true,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "carthage-software/mago"
-    ],
-    "direct_dependents": [
-     "carthage-software/mago"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.33,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "enshrined/svg-sanitize",
-    "version": "0.22.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "enshrined/svg-sanitize"
-    ],
-    "direct_dependents": [
-     "enshrined/svg-sanitize"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 1.05,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "ezyang/htmlpurifier",
-    "version": "v4.19.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "ezyang/htmlpurifier"
-    ],
-    "direct_dependents": [
-     "ezyang/htmlpurifier"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.91,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "fakerphp/faker",
-    "version": "v1.24.1",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "fakerphp/faker"
-    ],
-    "direct_dependents": [
-     "fakerphp/faker"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "fileeye/mimemap",
-    "version": "2.2.5",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "fileeye/mimemap"
-    ],
-    "direct_dependents": [
-     "fileeye/mimemap"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.44,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "guzzlehttp/guzzle",
-    "version": "7.15.3",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "guzzlehttp/guzzle"
-    ],
-    "direct_dependents": [
-     "guzzlehttp/guzzle",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/socialite",
-     "league/flysystem-aws-s3-v3",
-     "phanan/poddle",
-     "pusher/pusher-php-server",
-     "saloonphp/laravel-plugin",
-     "saloonphp/saloon",
-     "spatie/flysystem-dropbox"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.09,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "http-interop/http-factory-guzzle",
-    "version": "1.2.1",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "http-interop/http-factory-guzzle"
-    ],
-    "direct_dependents": [
-     "http-interop/http-factory-guzzle"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "intervention/image",
-    "version": "4.2.1",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "intervention/image"
-    ],
-    "direct_dependents": [
-     "intervention/image"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.13,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "james-heinrich/getid3",
-    "version": "v1.9.25",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "james-heinrich/getid3"
-    ],
-    "direct_dependents": [
-     "james-heinrich/getid3"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.54,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "jaybizzle/crawler-detect",
-    "version": "v1.3.11",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "jaybizzle/crawler-detect"
-    ],
-    "direct_dependents": [
-     "jaybizzle/crawler-detect"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.17,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "larastan/larastan",
-    "version": "v3.9.6",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": true,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "larastan/larastan"
-    ],
-    "direct_dependents": [
-     "larastan/larastan"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.43,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "laravel/ai",
-    "version": "v0.7.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "laravel/ai"
-    ],
-    "direct_dependents": [
-     "laravel/ai"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.35,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "laravel/boost",
-    "version": "v2.4.8",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": true,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "laravel/boost"
-    ],
-    "direct_dependents": [
-     "laravel/boost"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.35,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "laravel/framework",
-    "version": "v13.24.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [
-     {
-      "id": "S7",
-      "level": "info",
-      "summary": "pulls in 1 flagged package: league/config (stale)",
-      "data": {
-       "flagged": 1,
-       "packages": [
-        {
-         "package": "league/config",
-         "verdict": "stale",
-         "chain": [
-          "laravel/framework",
-          "league/commonmark",
-          "league/config"
-         ]
-        }
-       ]
-      }
-     }
-    ],
-    "chain": [
-     "laravel/framework"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
-    "evidence": "pulls in 1 flagged package: league/config (stale)",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.13,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "laravel/helpers",
-    "version": "v1.8.3",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "laravel/helpers"
-    ],
-    "direct_dependents": [
-     "laravel/helpers"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "laravel/nightwatch",
-    "version": "v1.27.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [
-     {
-      "id": "S7",
-      "level": "info",
-      "summary": "pulls in 1 flagged package: league/config (stale)",
-      "data": {
-       "flagged": 1,
-       "packages": [
-        {
-         "package": "league/config",
-         "verdict": "stale",
-         "chain": [
-          "laravel/nightwatch",
-          "laravel/framework",
-          "league/commonmark",
-          "league/config"
-         ]
-        }
-       ]
-      }
-     }
-    ],
-    "chain": [
-     "laravel/nightwatch"
-    ],
-    "direct_dependents": [
-     "laravel/nightwatch"
-    ],
-    "evidence": "pulls in 1 flagged package: league/config (stale)",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.33,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "laravel/prompts",
-    "version": "v0.3.22",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "laravel/prompts"
-    ],
-    "direct_dependents": [
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/prompts"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.04,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "laravel/sanctum",
-    "version": "v4.3.2",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "laravel/sanctum"
-    ],
-    "direct_dependents": [
-     "laravel/sanctum"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.15,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "laravel/scout",
-    "version": "v11.2.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "laravel/scout"
-    ],
-    "direct_dependents": [
-     "laravel/scout",
-     "teamtnt/laravel-scout-tntsearch-driver"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.36,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "laravel/socialite",
-    "version": "v5.27.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "laravel/socialite"
-    ],
-    "direct_dependents": [
-     "laravel/socialite"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.35,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "laravel/tinker",
-    "version": "v3.0.2",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "laravel/tinker"
-    ],
-    "direct_dependents": [
-     "laravel/tinker"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "laravel/ui",
-    "version": "v4.6.3",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "laravel/ui"
-    ],
-    "direct_dependents": [
-     "laravel/ui"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "league/flysystem-aws-s3-v3",
-    "version": "3.34.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "league/flysystem-aws-s3-v3"
-    ],
-    "direct_dependents": [
-     "league/flysystem-aws-s3-v3"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.26,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "league/flysystem-sftp-v3",
-    "version": "3.33.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "league/flysystem-sftp-v3"
-    ],
-    "direct_dependents": [
-     "league/flysystem-sftp-v3"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.45,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "league/flysystem-webdav",
-    "version": "3.31.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "league/flysystem-webdav"
-    ],
-    "direct_dependents": [
-     "league/flysystem-webdav"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "meilisearch/meilisearch-php",
-    "version": "v1.17.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "meilisearch/meilisearch-php"
-    ],
-    "direct_dependents": [
-     "meilisearch/meilisearch-php"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "mlocati/ip-lib",
-    "version": "1.22.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "mlocati/ip-lib"
-    ],
-    "direct_dependents": [
-     "mlocati/ip-lib"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.92,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "mockery/mockery",
-    "version": "1.6.12",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": true,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "mockery/mockery"
-    ],
-    "direct_dependents": [
-     "mockery/mockery",
-     "php-mock/php-mock-mockery"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 2.26,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "nunomaduro/collision",
-    "version": "v8.9.4",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "nunomaduro/collision"
-    ],
-    "direct_dependents": [
-     "nunomaduro/collision"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.23,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "opcodesio/log-viewer",
-    "version": "v3.24.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": true,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "opcodesio/log-viewer"
-    ],
-    "direct_dependents": [
-     "opcodesio/log-viewer"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.24,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "owen-it/laravel-auditing",
-    "version": "v14.0.3",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "owen-it/laravel-auditing"
-    ],
-    "direct_dependents": [
-     "owen-it/laravel-auditing"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.23,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "phanan/poddle",
-    "version": "v1.2.4",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "phanan/poddle"
-    ],
-    "direct_dependents": [
-     "phanan/poddle"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "phlak/semver",
-    "version": "5.0.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": true,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "phlak/semver"
-    ],
-    "direct_dependents": [
-     "phlak/semver"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.87,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "php-mock/php-mock-mockery",
-    "version": "1.5.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": true,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "php-mock/php-mock-mockery"
-    ],
-    "direct_dependents": [
-     "php-mock/php-mock-mockery"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "phpunit/phpunit",
-    "version": "11.5.55",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": true,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [
-     {
-      "id": "S7",
-      "level": "info",
-      "summary": "pulls in 1 flagged package: phar-io/version (stale)",
-      "data": {
-       "flagged": 1,
-       "packages": [
-        {
-         "package": "phar-io/version",
-         "verdict": "stale",
-         "chain": [
-          "phpunit/phpunit",
-          "phar-io/version"
-         ]
-        }
-       ]
-      }
-     }
-    ],
-    "chain": [
-     "phpunit/phpunit"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
-    "evidence": "pulls in 1 flagged package: phar-io/version (stale)",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.6,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "pusher/pusher-php-server",
-    "version": "7.2.8",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "pusher/pusher-php-server"
-    ],
-    "direct_dependents": [
-     "pusher/pusher-php-server"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.22,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "roave/security-advisories",
-    "version": "dev-latest",
-    "verdict": "finished",
-    "priority": "none",
-    "direct": true,
-    "dev": true,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [
-     {
-      "id": "S6",
-      "level": "warn",
-      "summary": "pinned to branch snapshot dev-latest",
-      "data": {
-       "version": "dev-latest",
-       "reason": "branch_snapshot",
-       "has_stable_release": false,
-       "last_stable_release": null,
-       "last_stable_version": null,
-       "last_stable_dated_by": null,
-       "snapshot_time": "2026-05-22T16:47:49+00:00"
-      }
-     }
-    ],
-    "chain": [
-     "roave/security-advisories"
-    ],
-    "direct_dependents": [
-     "roave/security-advisories"
-    ],
-    "evidence": "pinned to branch snapshot dev-latest",
-    "allowlist_reason": "package type \"metapackage\" only lists dependencies",
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": null,
-    "libyears_unmeasured": "branch_snapshot",
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "robthree/twofactorauth",
-    "version": "v3.0.3",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "robthree/twofactorauth"
-    ],
-    "direct_dependents": [
-     "robthree/twofactorauth"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "saloonphp/laravel-plugin",
-    "version": "v4.3.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "saloonphp/laravel-plugin"
-    ],
-    "direct_dependents": [
-     "saloonphp/laravel-plugin"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.42,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "saloonphp/saloon",
-    "version": "v4.0.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "saloonphp/saloon"
-    ],
-    "direct_dependents": [
-     "saloonphp/laravel-plugin",
-     "saloonphp/saloon"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.51,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "sentry/sentry-laravel",
-    "version": "4.27.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "sentry/sentry-laravel"
-    ],
-    "direct_dependents": [
-     "sentry/sentry-laravel"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.19,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "spatie/flysystem-dropbox",
-    "version": "3.1.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "spatie/flysystem-dropbox"
-    ],
-    "direct_dependents": [
-     "spatie/flysystem-dropbox"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "spatie/laravel-permission",
-    "version": "6.25.0",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "spatie/laravel-permission"
-    ],
-    "direct_dependents": [
-     "spatie/laravel-permission"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.29,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "spatie/laravel-ray",
-    "version": "1.43.9",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "spatie/laravel-ray"
-    ],
-    "direct_dependents": [
-     "spatie/laravel-ray"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
-    "libyears_unmeasured": null,
-    "priority_basis": {
-     "base": "none",
-     "steps": []
-    },
-    "no_fix_expected": null,
-    "baseline": null,
-    "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
-     "exempt_by": null
-    }
-   },
-   {
-    "package": "webmozart/assert",
-    "version": "1.12.1",
-    "verdict": "ok",
-    "priority": "none",
-    "direct": true,
-    "dev": false,
-    "from_composer_repository": true,
-    "replacement": null,
-    "signals": [],
-    "chain": [
-     "webmozart/assert"
-    ],
-    "direct_dependents": [
-     "phanan/poddle",
-     "webmozart/assert"
-    ],
-    "evidence": "",
-    "allowlist_reason": null,
-    "note": null,
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.63,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -2151,15 +439,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "league/flysystem-aws-s3-v3",
-     "aws/aws-sdk-php",
-     "aws/aws-crt-php"
-    ],
-    "direct_dependents": [
-     "laravel/ai",
-     "league/flysystem-aws-s3-v3"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2188,19 +469,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "league/flysystem-aws-s3-v3",
-     "aws/aws-sdk-php"
-    ],
-    "direct_dependents": [
-     "laravel/ai",
-     "league/flysystem-aws-s3-v3"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.34,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "brianium/paratest",
+    "version": "v7.8.5",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": true,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.71,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -2224,15 +529,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "brick/math"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch",
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2261,20 +559,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "nesbot/carbon",
-     "carbonphp/carbon-doctrine-types"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 2.57,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "carthage-software/mago",
+    "version": "1.29.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": true,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.33,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -2298,16 +619,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "league/commonmark",
-     "league/config",
-     "dflydev/dot-access-data"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2336,14 +649,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "doctrine/inflector"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2372,15 +679,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "egulias/email-validator",
-     "doctrine/lexer"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2409,14 +709,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "dragonmantank/cron-expression"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2445,14 +739,98 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "egulias/email-validator"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "enshrined/svg-sanitize",
+    "version": "0.22.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 1.05,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "ezyang/htmlpurifier",
+    "version": "v4.19.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.91,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "fakerphp/faker",
+    "version": "v1.24.1",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2481,18 +859,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "brianium/paratest",
-     "fidry/cpu-core-counter"
-    ],
-    "direct_dependents": [
-     "brianium/paratest"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.12,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "fileeye/mimemap",
+    "version": "2.2.5",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.44,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -2516,13 +919,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "nunomaduro/collision",
-     "filp/whoops"
-    ],
-    "direct_dependents": [
-     "nunomaduro/collision"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2551,13 +949,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/socialite",
-     "firebase/php-jwt"
-    ],
-    "direct_dependents": [
-     "laravel/socialite"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2586,14 +979,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "fruitcake/php-cors"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2622,14 +1009,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "spatie/flysystem-dropbox",
-     "spatie/dropbox-api",
-     "graham-campbell/guzzle-factory"
-    ],
-    "direct_dependents": [
-     "spatie/flysystem-dropbox"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2658,20 +1039,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "vlucas/phpdotenv",
-     "graham-campbell/result-type"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.66,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "guzzlehttp/guzzle",
+    "version": "7.15.3",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.09,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -2695,24 +1099,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "guzzlehttp/promises"
-    ],
-    "direct_dependents": [
-     "guzzlehttp/guzzle",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/socialite",
-     "league/flysystem-aws-s3-v3",
-     "phanan/poddle",
-     "pusher/pusher-php-server",
-     "saloonphp/laravel-plugin",
-     "saloonphp/saloon",
-     "spatie/flysystem-dropbox"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2741,27 +1129,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "guzzlehttp/guzzle",
-     "guzzlehttp/psr7"
-    ],
-    "direct_dependents": [
-     "guzzlehttp/guzzle",
-     "http-interop/http-factory-guzzle",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/socialite",
-     "league/flysystem-aws-s3-v3",
-     "phanan/poddle",
-     "pusher/pusher-php-server",
-     "saloonphp/laravel-plugin",
-     "saloonphp/saloon",
-     "sentry/sentry-laravel",
-     "spatie/flysystem-dropbox",
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2790,14 +1159,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "guzzlehttp/uri-template"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2826,19 +1189,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "mockery/mockery",
-     "hamcrest/hamcrest-php"
-    ],
-    "direct_dependents": [
-     "mockery/mockery",
-     "php-mock/php-mock-mockery"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.88,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "http-interop/http-factory-guzzle",
+    "version": "1.2.1",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -2862,13 +1249,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "larastan/larastan",
-     "iamcal/sql-parser"
-    ],
-    "direct_dependents": [
-     "larastan/larastan"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2897,18 +1279,103 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "intervention/image",
-     "intervention/gif"
-    ],
-    "direct_dependents": [
-     "intervention/image"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "intervention/image",
+    "version": "4.2.1",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.13,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "james-heinrich/getid3",
+    "version": "v1.9.25",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.54,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "jaybizzle/crawler-detect",
+    "version": "v1.3.11",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.17,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -2932,14 +1399,158 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "brianium/paratest",
-     "jean85/pretty-package-versions"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "sentry/sentry-laravel"
-    ],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "larastan/larastan",
+    "version": "v3.9.6",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": true,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.43,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "laravel/ai",
+    "version": "v0.7.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.35,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "laravel/boost",
+    "version": "v2.4.8",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": true,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.35,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "laravel/framework",
+    "version": "v13.24.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.13,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "laravel/helpers",
+    "version": "v1.8.3",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -2968,18 +1579,73 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/boost",
-     "laravel/mcp"
-    ],
-    "direct_dependents": [
-     "laravel/boost"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.43,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "laravel/nightwatch",
+    "version": "v1.27.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.33,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "laravel/prompts",
+    "version": "v0.3.22",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.04,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -3003,18 +1669,73 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/boost",
-     "laravel/roster"
-    ],
-    "direct_dependents": [
-     "laravel/boost"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.37,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "laravel/sanctum",
+    "version": "v4.3.2",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.15,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "laravel/scout",
+    "version": "v11.2.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.36,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -3038,16 +1759,98 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "laravel/serializable-closure"
-    ],
-    "direct_dependents": [
-     "laravel/ai",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "laravel/socialite",
+    "version": "v5.27.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.35,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "laravel/tinker",
+    "version": "v3.0.2",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "laravel/ui",
+    "version": "v4.6.3",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3076,14 +1879,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "league/commonmark"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3112,23 +1909,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "league/flysystem"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch",
-     "league/flysystem-aws-s3-v3",
-     "league/flysystem-sftp-v3",
-     "league/flysystem-webdav",
-     "spatie/flysystem-dropbox"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.16,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "league/flysystem-aws-s3-v3",
+    "version": "3.34.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.26,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -3152,23 +1969,73 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "league/flysystem-local"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch",
-     "league/flysystem-aws-s3-v3",
-     "league/flysystem-sftp-v3",
-     "league/flysystem-webdav",
-     "spatie/flysystem-dropbox"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.55,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "league/flysystem-sftp-v3",
+    "version": "3.33.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.45,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "league/flysystem-webdav",
+    "version": "3.31.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -3192,18 +2059,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "league/flysystem-aws-s3-v3",
-     "league/mime-type-detection"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch",
-     "league/flysystem-aws-s3-v3",
-     "league/flysystem-sftp-v3",
-     "league/flysystem-webdav",
-     "spatie/flysystem-dropbox"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3232,13 +2089,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/socialite",
-     "league/oauth1-client"
-    ],
-    "direct_dependents": [
-     "laravel/socialite"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3267,14 +2119,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "league/uri"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3303,20 +2149,103 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "league/uri",
-     "league/uri-interfaces"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "meilisearch/meilisearch-php",
+    "version": "v1.17.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "mlocati/ip-lib",
+    "version": "1.22.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.92,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "mockery/mockery",
+    "version": "1.6.12",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": true,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 2.26,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -3340,14 +2269,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "monolog/monolog"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3376,15 +2299,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "league/flysystem-aws-s3-v3",
-     "aws/aws-sdk-php",
-     "mtdowling/jmespath.php"
-    ],
-    "direct_dependents": [
-     "laravel/ai",
-     "league/flysystem-aws-s3-v3"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3413,14 +2329,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "myclabs/deep-copy"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3449,14 +2359,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "nesbot/carbon"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3485,16 +2389,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "league/commonmark",
-     "league/config",
-     "nette/schema"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3523,17 +2419,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "league/commonmark",
-     "league/config",
-     "nette/schema",
-     "nette/utils"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3562,21 +2449,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/tinker",
-     "psy/psysh",
-     "nikic/php-parser"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "laravel/tinker",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "nunomaduro/collision",
+    "version": "v8.9.4",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.23,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -3600,15 +2509,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "nunomaduro/termwind"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch",
-     "nunomaduro/collision"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3637,18 +2539,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "sentry/sentry-laravel",
-     "nyholm/psr7"
-    ],
-    "direct_dependents": [
-     "sentry/sentry-laravel"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "opcodesio/log-viewer",
+    "version": "v3.24.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": true,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.24,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -3672,18 +2599,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "opcodesio/log-viewer",
-     "opcodesio/mail-parser"
-    ],
-    "direct_dependents": [
-     "opcodesio/log-viewer"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.28,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "owen-it/laravel-auditing",
+    "version": "v14.0.3",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.23,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -3707,15 +2659,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/socialite",
-     "phpseclib/phpseclib",
-     "paragonie/constant_time_encoding"
-    ],
-    "direct_dependents": [
-     "laravel/socialite",
-     "league/flysystem-sftp-v3"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3769,20 +2714,43 @@
       }
      }
     ],
-    "chain": [
-     "laravel/socialite",
-     "phpseclib/phpseclib",
-     "paragonie/random_compat"
-    ],
-    "direct_dependents": [
-     "laravel/socialite",
-     "league/flysystem-sftp-v3"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "last release 2022-02-16 (4.6 years ago); released 2020-10-15 for PHP 7 (php \">= 7\"), before PHP 8 existed (8.0 GA 2020-11-26); admits 8.4 untested",
     "allowlist_reason": "intentionally empty package: PHP 7+ has random_bytes() built in",
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.34,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "phanan/poddle",
+    "version": "v1.2.4",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -3806,19 +2774,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "phar-io/manifest"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "phlak/semver",
+    "version": "5.0.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": true,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.87,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -3842,15 +2834,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "spatie/laravel-ray",
-     "zbateson/mail-mime-parser",
-     "php-di/php-di",
-     "php-di/invoker"
-    ],
-    "direct_dependents": [
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3879,14 +2864,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "spatie/laravel-ray",
-     "zbateson/mail-mime-parser",
-     "php-di/php-di"
-    ],
-    "direct_dependents": [
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3915,13 +2894,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "meilisearch/meilisearch-php",
-     "php-http/discovery"
-    ],
-    "direct_dependents": [
-     "meilisearch/meilisearch-php"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3950,14 +2924,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "php-mock/php-mock-mockery",
-     "php-mock/php-mock-integration",
-     "php-mock/php-mock"
-    ],
-    "direct_dependents": [
-     "php-mock/php-mock-mockery"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -3986,13 +2954,38 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "php-mock/php-mock-mockery",
-     "php-mock/php-mock-integration"
-    ],
-    "direct_dependents": [
-     "php-mock/php-mock-mockery"
-    ],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "php-mock/php-mock-mockery",
+    "version": "1.5.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": true,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -4021,15 +3014,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phanan/poddle",
-     "saloonphp/xml-wrangler",
-     "veewee/xml",
-     "php-standard-library/php-standard-library"
-    ],
-    "direct_dependents": [
-     "phanan/poddle"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -4058,15 +3044,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "vlucas/phpdotenv",
-     "phpoption/phpoption"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -4095,14 +3074,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/socialite",
-     "phpseclib/phpseclib"
-    ],
-    "direct_dependents": [
-     "laravel/socialite",
-     "league/flysystem-sftp-v3"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -4131,13 +3104,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "larastan/larastan",
-     "phpstan/phpstan"
-    ],
-    "direct_dependents": [
-     "larastan/larastan"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -4166,14 +3134,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "phpunit/php-code-coverage"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -4202,14 +3164,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "phpunit/php-file-iterator"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -4238,14 +3194,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "phpunit/php-invoker"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -4274,15 +3224,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "phpunit/php-text-template"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "php-mock/php-mock-mockery",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -4311,19 +3254,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "phpunit/php-timer"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.6,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "phpunit/phpunit",
+    "version": "11.5.55",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": true,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.6,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -4359,15 +3326,8 @@
       }
      }
     ],
-    "chain": [
-     "laravel/framework",
-     "nesbot/carbon",
-     "psr/clock"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "last release 2022-11-25 (3.8 years ago)",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
@@ -4408,26 +3368,8 @@
       }
      }
     ],
-    "chain": [
-     "laravel/framework",
-     "psr/container"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "fakerphp/faker",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/prompts",
-     "laravel/sanctum",
-     "laravel/scout",
-     "laravel/tinker",
-     "laravel/ui",
-     "nunomaduro/collision",
-     "spatie/laravel-ray",
-     "teamtnt/laravel-scout-tntsearch-driver"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "last release 2021-11-05 (4.9 years ago)",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
@@ -4481,15 +3423,8 @@
       }
      }
     ],
-    "chain": [
-     "laravel/framework",
-     "league/commonmark",
-     "psr/event-dispatcher"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "last release 2019-01-08 (7.7 years ago); released 2019-01-08 for PHP 7 (php \">=7.2.0\"), before PHP 8 existed (8.0 GA 2020-11-26); admits 8.4 untested",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
@@ -4530,25 +3465,8 @@
       }
      }
     ],
-    "chain": [
-     "guzzlehttp/guzzle",
-     "psr/http-client"
-    ],
-    "direct_dependents": [
-     "guzzlehttp/guzzle",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/socialite",
-     "league/flysystem-aws-s3-v3",
-     "meilisearch/meilisearch-php",
-     "phanan/poddle",
-     "pusher/pusher-php-server",
-     "saloonphp/laravel-plugin",
-     "saloonphp/saloon",
-     "spatie/flysystem-dropbox"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "last release 2023-09-23 (3.0 years ago)",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
@@ -4577,27 +3495,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "http-interop/http-factory-guzzle",
-     "psr/http-factory"
-    ],
-    "direct_dependents": [
-     "guzzlehttp/guzzle",
-     "http-interop/http-factory-guzzle",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/socialite",
-     "league/flysystem-aws-s3-v3",
-     "phanan/poddle",
-     "pusher/pusher-php-server",
-     "saloonphp/laravel-plugin",
-     "saloonphp/saloon",
-     "sentry/sentry-laravel",
-     "spatie/flysystem-dropbox",
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
@@ -4638,29 +3537,8 @@
       }
      }
     ],
-    "chain": [
-     "algolia/algoliasearch-client-php",
-     "psr/http-message"
-    ],
-    "direct_dependents": [
-     "algolia/algoliasearch-client-php",
-     "guzzlehttp/guzzle",
-     "http-interop/http-factory-guzzle",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/socialite",
-     "league/flysystem-aws-s3-v3",
-     "meilisearch/meilisearch-php",
-     "phanan/poddle",
-     "pusher/pusher-php-server",
-     "saloonphp/laravel-plugin",
-     "saloonphp/saloon",
-     "sentry/sentry-laravel",
-     "spatie/flysystem-dropbox",
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "last release 2023-04-04 (3.5 years ago)",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
@@ -4689,20 +3567,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "psr/log"
-    ],
-    "direct_dependents": [
-     "algolia/algoliasearch-client-php",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "league/flysystem-webdav",
-     "nunomaduro/collision",
-     "pusher/pusher-php-server",
-     "sentry/sentry-laravel",
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
@@ -4743,15 +3609,8 @@
       }
      }
     ],
-    "chain": [
-     "laravel/framework",
-     "psr/simple-cache"
-    ],
-    "direct_dependents": [
-     "algolia/algoliasearch-client-php",
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "last release 2021-10-29 (4.9 years ago)",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
@@ -4780,18 +3639,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/tinker",
-     "psy/psysh"
-    ],
-    "direct_dependents": [
-     "laravel/tinker"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.1,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "pusher/pusher-php-server",
+    "version": "7.2.8",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.22,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -4840,28 +3724,8 @@
       }
      }
     ],
-    "chain": [
-     "guzzlehttp/guzzle",
-     "guzzlehttp/psr7",
-     "ralouphie/getallheaders"
-    ],
-    "direct_dependents": [
-     "guzzlehttp/guzzle",
-     "http-interop/http-factory-guzzle",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/socialite",
-     "league/flysystem-aws-s3-v3",
-     "phanan/poddle",
-     "pusher/pusher-php-server",
-     "saloonphp/laravel-plugin",
-     "saloonphp/saloon",
-     "sentry/sentry-laravel",
-     "spatie/flysystem-dropbox",
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "last release 2019-03-08 (7.6 years ago); released 2019-03-08 for PHP 5 (php \">=5.6\"), before PHP 8 existed (8.0 GA 2020-11-26); admits 8.4 untested",
     "allowlist_reason": "single-function polyfill for getallheaders(); complete",
     "note": null,
@@ -4890,16 +3754,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "ramsey/uuid",
-     "ramsey/collection"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch",
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -4928,15 +3784,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "ramsey/uuid"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch",
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -4965,16 +3814,83 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phanan/poddle",
-     "saloonphp/xml-wrangler",
-     "veewee/xml",
-     "php-standard-library/php-standard-library",
-     "revolt/event-loop"
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "roave/security-advisories",
+    "version": "dev-latest",
+    "verdict": "finished",
+    "priority": "none",
+    "direct": false,
+    "dev": true,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [
+     {
+      "id": "S6",
+      "level": "warn",
+      "summary": "pinned to branch snapshot dev-latest",
+      "data": {
+       "version": "dev-latest",
+       "reason": "branch_snapshot",
+       "has_stable_release": false,
+       "last_stable_release": null,
+       "last_stable_version": null,
+       "last_stable_dated_by": null,
+       "snapshot_time": "2026-05-22T16:47:49+00:00"
+      }
+     }
     ],
-    "direct_dependents": [
-     "phanan/poddle"
-    ],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "pinned to branch snapshot dev-latest",
+    "allowlist_reason": "package type \"metapackage\" only lists dependencies",
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": null,
+    "libyears_unmeasured": "branch_snapshot",
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "robthree/twofactorauth",
+    "version": "v3.0.3",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5003,13 +3919,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "league/flysystem-webdav",
-     "sabre/dav"
-    ],
-    "direct_dependents": [
-     "league/flysystem-webdav"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5038,14 +3949,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "league/flysystem-webdav",
-     "sabre/dav",
-     "sabre/event"
-    ],
-    "direct_dependents": [
-     "league/flysystem-webdav"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5074,14 +3979,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "league/flysystem-webdav",
-     "sabre/dav",
-     "sabre/http"
-    ],
-    "direct_dependents": [
-     "league/flysystem-webdav"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5110,14 +4009,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "league/flysystem-webdav",
-     "sabre/dav",
-     "sabre/uri"
-    ],
-    "direct_dependents": [
-     "league/flysystem-webdav"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5146,14 +4039,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "league/flysystem-webdav",
-     "sabre/dav",
-     "sabre/vobject"
-    ],
-    "direct_dependents": [
-     "league/flysystem-webdav"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5182,19 +4069,73 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "league/flysystem-webdav",
-     "sabre/dav",
-     "sabre/xml"
-    ],
-    "direct_dependents": [
-     "league/flysystem-webdav"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.64,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "saloonphp/laravel-plugin",
+    "version": "v4.3.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.42,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "saloonphp/saloon",
+    "version": "v4.0.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.51,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -5218,13 +4159,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phanan/poddle",
-     "saloonphp/xml-wrangler"
-    ],
-    "direct_dependents": [
-     "phanan/poddle"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5253,14 +4189,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "sebastian/cli-parser"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5289,14 +4219,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "sebastian/code-unit"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5325,15 +4249,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "phpunit/php-code-coverage",
-     "sebastian/code-unit-reverse-lookup"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5362,14 +4279,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "sebastian/comparator"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5398,15 +4309,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "phpunit/php-code-coverage",
-     "sebastian/complexity"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5435,14 +4339,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "sebastian/diff"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5471,14 +4369,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "sebastian/environment"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5507,14 +4399,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "sebastian/exporter"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5543,14 +4429,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "sebastian/global-state"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5579,15 +4459,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "phpunit/php-code-coverage",
-     "sebastian/lines-of-code"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5616,14 +4489,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "sebastian/object-enumerator"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5652,15 +4519,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "sebastian/global-state",
-     "sebastian/object-reflector"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5689,14 +4549,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "sebastian/recursion-context"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5725,14 +4579,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "sebastian/type"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5761,14 +4609,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "sebastian/version"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5797,18 +4639,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "sentry/sentry-laravel",
-     "sentry/sentry"
-    ],
-    "direct_dependents": [
-     "sentry/sentry-laravel"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.08,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "sentry/sentry-laravel",
+    "version": "4.27.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.19,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -5832,14 +4699,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phanan/poddle",
-     "saloonphp/xml-wrangler",
-     "spatie/array-to-xml"
-    ],
-    "direct_dependents": [
-     "phanan/poddle"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5868,13 +4729,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "spatie/laravel-ray",
-     "spatie/backtrace"
-    ],
-    "direct_dependents": [
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5903,18 +4759,103 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "spatie/flysystem-dropbox",
-     "spatie/dropbox-api"
-    ],
-    "direct_dependents": [
-     "spatie/flysystem-dropbox"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.42,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "spatie/flysystem-dropbox",
+    "version": "3.1.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "spatie/laravel-permission",
+    "version": "6.25.0",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.29,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "spatie/laravel-ray",
+    "version": "1.43.9",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -5938,14 +4879,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "spatie/laravel-ray",
-     "spatie/ray",
-     "spatie/macroable"
-    ],
-    "direct_dependents": [
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -5974,13 +4909,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "spatie/laravel-ray",
-     "spatie/ray"
-    ],
-    "direct_dependents": [
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6009,14 +4939,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "staabm/side-effects-detector"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6045,15 +4969,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "nesbot/carbon",
-     "symfony/clock"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6082,24 +4999,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/console"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/prompts",
-     "laravel/sanctum",
-     "laravel/scout",
-     "laravel/tinker",
-     "laravel/ui",
-     "nunomaduro/collision",
-     "teamtnt/laravel-scout-tntsearch-driver"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6128,15 +5029,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "tijsverkoyen/css-to-inline-styles",
-     "symfony/css-selector"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6165,36 +5059,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "guzzlehttp/guzzle",
-     "symfony/deprecation-contracts"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "fakerphp/faker",
-     "guzzlehttp/guzzle",
-     "http-interop/http-factory-guzzle",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/prompts",
-     "laravel/sanctum",
-     "laravel/scout",
-     "laravel/socialite",
-     "laravel/tinker",
-     "laravel/ui",
-     "league/flysystem-aws-s3-v3",
-     "nunomaduro/collision",
-     "phanan/poddle",
-     "pusher/pusher-php-server",
-     "saloonphp/laravel-plugin",
-     "saloonphp/saloon",
-     "sentry/sentry-laravel",
-     "spatie/flysystem-dropbox",
-     "spatie/laravel-ray",
-     "teamtnt/laravel-scout-tntsearch-driver"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6223,14 +5089,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/error-handler"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6259,15 +5119,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/http-kernel",
-     "symfony/event-dispatcher"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6296,16 +5149,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/http-kernel",
-     "symfony/event-dispatcher",
-     "symfony/event-dispatcher-contracts"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6334,15 +5179,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "league/flysystem-aws-s3-v3",
-     "aws/aws-sdk-php",
-     "symfony/filesystem"
-    ],
-    "direct_dependents": [
-     "laravel/ai",
-     "league/flysystem-aws-s3-v3"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6371,15 +5209,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/finder"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch",
-     "saloonphp/laravel-plugin"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6408,15 +5239,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/http-foundation"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch",
-     "sentry/sentry-laravel"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6445,14 +5269,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/http-kernel"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6481,14 +5299,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/mailer"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6517,14 +5329,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/mime"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6553,14 +5359,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "sentry/sentry-laravel",
-     "sentry/sentry",
-     "symfony/options-resolver"
-    ],
-    "direct_dependents": [
-     "sentry/sentry-laravel"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -6589,26 +5389,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/http-kernel",
-     "symfony/polyfill-ctype"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/prompts",
-     "laravel/sanctum",
-     "laravel/scout",
-     "laravel/tinker",
-     "laravel/ui",
-     "league/flysystem-aws-s3-v3",
-     "nunomaduro/collision",
-     "teamtnt/laravel-scout-tntsearch-driver"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
@@ -6637,15 +5419,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "spatie/laravel-ray",
-     "zbateson/mail-mime-parser",
-     "zbateson/mb-wrapper",
-     "symfony/polyfill-iconv"
-    ],
-    "direct_dependents": [
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
@@ -6674,26 +5449,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/console",
-     "symfony/string",
-     "symfony/polyfill-intl-grapheme"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/prompts",
-     "laravel/sanctum",
-     "laravel/scout",
-     "laravel/tinker",
-     "laravel/ui",
-     "nunomaduro/collision",
-     "teamtnt/laravel-scout-tntsearch-driver"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
@@ -6722,15 +5479,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "egulias/email-validator",
-     "symfony/polyfill-intl-idn"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
@@ -6759,26 +5509,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "egulias/email-validator",
-     "symfony/polyfill-intl-idn",
-     "symfony/polyfill-intl-normalizer"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/prompts",
-     "laravel/sanctum",
-     "laravel/scout",
-     "laravel/tinker",
-     "laravel/ui",
-     "nunomaduro/collision",
-     "teamtnt/laravel-scout-tntsearch-driver"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
@@ -6807,28 +5539,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "nesbot/carbon",
-     "symfony/polyfill-mbstring"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/prompts",
-     "laravel/sanctum",
-     "laravel/scout",
-     "laravel/tinker",
-     "laravel/ui",
-     "league/flysystem-aws-s3-v3",
-     "nunomaduro/collision",
-     "sentry/sentry-laravel",
-     "spatie/laravel-ray",
-     "teamtnt/laravel-scout-tntsearch-driver"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
@@ -6857,27 +5569,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "guzzlehttp/guzzle",
-     "symfony/polyfill-php80"
-    ],
-    "direct_dependents": [
-     "guzzlehttp/guzzle",
-     "http-interop/http-factory-guzzle",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/socialite",
-     "league/flysystem-aws-s3-v3",
-     "phanan/poddle",
-     "pusher/pusher-php-server",
-     "saloonphp/laravel-plugin",
-     "saloonphp/saloon",
-     "sentry/sentry-laravel",
-     "spatie/flysystem-dropbox",
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
@@ -6906,13 +5599,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "meilisearch/meilisearch-php",
-     "symfony/polyfill-php81"
-    ],
-    "direct_dependents": [
-     "meilisearch/meilisearch-php"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
@@ -6941,16 +5629,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "nesbot/carbon",
-     "symfony/clock",
-     "symfony/polyfill-php83"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
@@ -6979,14 +5659,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/polyfill-php84"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
@@ -7015,14 +5689,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/polyfill-php85"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
@@ -7051,14 +5719,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/polyfill-php86"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
@@ -7087,15 +5749,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/uid",
-     "symfony/polyfill-uuid"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
@@ -7124,15 +5779,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/process"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7161,13 +5809,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "sentry/sentry-laravel",
-     "symfony/psr-http-message-bridge"
-    ],
-    "direct_dependents": [
-     "sentry/sentry-laravel"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7196,14 +5839,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/routing"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7232,26 +5869,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/console",
-     "symfony/service-contracts"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/prompts",
-     "laravel/sanctum",
-     "laravel/scout",
-     "laravel/tinker",
-     "laravel/ui",
-     "nunomaduro/collision",
-     "spatie/laravel-ray",
-     "teamtnt/laravel-scout-tntsearch-driver"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7280,13 +5899,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "spatie/laravel-ray",
-     "symfony/stopwatch"
-    ],
-    "direct_dependents": [
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7315,25 +5929,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/console",
-     "symfony/string"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "laravel/ai",
-     "laravel/boost",
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/prompts",
-     "laravel/sanctum",
-     "laravel/scout",
-     "laravel/tinker",
-     "laravel/ui",
-     "nunomaduro/collision",
-     "teamtnt/laravel-scout-tntsearch-driver"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7362,15 +5959,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "nesbot/carbon",
-     "symfony/translation"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7399,16 +5989,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "nesbot/carbon",
-     "symfony/translation",
-     "symfony/translation-contracts"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7437,14 +6019,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/uid"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7473,16 +6049,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "symfony/var-dumper"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch",
-     "laravel/tinker",
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7511,14 +6079,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/boost",
-     "laravel/roster",
-     "symfony/yaml"
-    ],
-    "direct_dependents": [
-     "laravel/boost"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7547,13 +6109,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "teamtnt/laravel-scout-tntsearch-driver",
-     "teamtnt/tntsearch"
-    ],
-    "direct_dependents": [
-     "teamtnt/laravel-scout-tntsearch-driver"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7582,15 +6139,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phpunit/phpunit",
-     "phpunit/php-code-coverage",
-     "theseer/tokenizer"
-    ],
-    "direct_dependents": [
-     "brianium/paratest",
-     "phpunit/phpunit"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7619,14 +6169,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "tijsverkoyen/css-to-inline-styles"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7655,14 +6199,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "phanan/poddle",
-     "saloonphp/xml-wrangler",
-     "veewee/xml"
-    ],
-    "direct_dependents": [
-     "phanan/poddle"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7691,14 +6229,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "vlucas/phpdotenv"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7727,19 +6259,43 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "laravel/framework",
-     "voku/portable-ascii"
-    ],
-    "direct_dependents": [
-     "laravel/framework",
-     "laravel/nightwatch"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "webmozart/assert",
+    "version": "1.12.1",
+    "verdict": "ok",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "replacement": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.63,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -7763,13 +6319,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "spatie/laravel-ray",
-     "zbateson/mail-mime-parser"
-    ],
-    "direct_dependents": [
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7798,14 +6349,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "spatie/laravel-ray",
-     "zbateson/mail-mime-parser",
-     "zbateson/mb-wrapper"
-    ],
-    "direct_dependents": [
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7834,14 +6379,8 @@
     "from_composer_repository": true,
     "replacement": null,
     "signals": [],
-    "chain": [
-     "spatie/laravel-ray",
-     "zbateson/mail-mime-parser",
-     "zbateson/stream-decorators"
-    ],
-    "direct_dependents": [
-     "spatie/laravel-ray"
-    ],
+    "chain": [],
+    "direct_dependents": [],
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
@@ -7889,7 +6428,7 @@
       "dated_by": null,
       "php": "^8.3",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -7905,7 +6444,7 @@
       "dated_by": null,
       "php": "^8.1",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -7921,7 +6460,7 @@
       "dated_by": null,
       "php": "^7.3 || ^8.0",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -7937,7 +6476,7 @@
       "dated_by": null,
       "php": "^7.2 || ^8.0",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -7953,10 +6492,10 @@
       "dated_by": null,
       "php": "^7.0",
       "admits_target_php": false,
-      "admits_project_php": false,
-      "php_blocked_by": "project",
+      "admits_project_php": null,
+      "php_blocked_by": "target",
       "misses_target_php": "stops_before",
-      "misses_project_php": "stops_before"
+      "misses_project_php": null
      },
      {
       "branch": "2.x",
@@ -7969,10 +6508,10 @@
       "dated_by": null,
       "php": "^5.6 || ^7.0",
       "admits_target_php": false,
-      "admits_project_php": false,
-      "php_blocked_by": "project",
+      "admits_project_php": null,
+      "php_blocked_by": "target",
       "misses_target_php": "stops_before",
-      "misses_project_php": "stops_before"
+      "misses_project_php": null
      },
      {
       "branch": "1.x",
@@ -7985,10 +6524,10 @@
       "dated_by": null,
       "php": "^5.5 || ^7.0",
       "admits_target_php": false,
-      "admits_project_php": false,
-      "php_blocked_by": "project",
+      "admits_project_php": null,
+      "php_blocked_by": "target",
       "misses_target_php": "stops_before",
-      "misses_project_php": "stops_before"
+      "misses_project_php": null
      },
      {
       "branch": "0.10.x",
@@ -8001,7 +6540,7 @@
       "dated_by": null,
       "php": ">=5.3.3",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8017,7 +6556,7 @@
       "dated_by": null,
       "php": ">=5.3.3",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8033,7 +6572,7 @@
       "dated_by": null,
       "php": ">=5.3.3",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8049,7 +6588,7 @@
       "dated_by": null,
       "php": ">=5.3.3",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8065,7 +6604,7 @@
       "dated_by": null,
       "php": ">=5.3.3",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8081,7 +6620,7 @@
       "dated_by": null,
       "php": ">=5.3.3",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8097,7 +6636,7 @@
       "dated_by": null,
       "php": ">=5.3.3",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8113,7 +6652,7 @@
       "dated_by": null,
       "php": ">=5.3.3",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8129,7 +6668,7 @@
       "dated_by": null,
       "php": ">=5.3.3",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8145,7 +6684,7 @@
       "dated_by": null,
       "php": ">=5.3.3",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8197,7 +6736,7 @@
       "dated_by": null,
       "php": "^7.2 || ^8.0",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8213,7 +6752,7 @@
       "dated_by": null,
       "php": "^7.2 || ^8.0",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8229,7 +6768,7 @@
       "dated_by": null,
       "php": ">=5.3.9",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8245,7 +6784,7 @@
       "dated_by": null,
       "php": ">=5.3.2",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8261,7 +6800,7 @@
       "dated_by": null,
       "php": ">=5.3.0",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8283,61 +6822,9 @@
     "archived": false,
     "pushed_at": "2026-09-25T07:53:57+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": true
-   },
-   "repository_link": "https://github.com/predis/predis"
-  },
-  "tiben/crontab-manager": {
-   "metadata": {
-    "abandoned": false,
-    "replacement": null,
-    "releases_listed": 8,
-    "has_stable_release": true,
-    "last_stable_release": "2023-05-02T16:54:54+00:00",
-    "last_stable_version": "v1.4.0",
-    "last_stable_dated_by": null,
-    "installed_release": "2023-05-02T16:54:54+00:00",
-    "installed_release_dated_by": null,
-    "repository": "https://github.com/TiBeN/CrontabManager.git",
-    "type": "library",
-    "data_date": "2026-09-28T00:00:00+00:00",
-    "branches": [
-     {
-      "branch": "1.x",
-      "installed": true,
-      "highest": "v1.4.0",
-      "highest_released": "2023-05-02T16:54:54+00:00",
-      "highest_commit_date": null,
-      "newest_dated": "v1.4.0",
-      "newest_dated_released": "2023-05-02T16:54:54+00:00",
-      "dated_by": null,
-      "php": ">= 5.3",
-      "admits_target_php": true,
-      "admits_project_php": true,
-      "php_blocked_by": null,
-      "misses_target_php": null,
-      "misses_project_php": null
-     }
-    ]
-   },
-   "lock": {
-    "php": ">= 5.3",
-    "released": "2023-05-02T16:54:54+00:00",
-    "repository": "https://github.com/TiBeN/CrontabManager.git",
-    "from_composer_repository": true,
-    "dev": false,
-    "branch_snapshot": false,
-    "type": "library"
-   },
-   "activity": {
-    "forge": "GitHub",
-    "repository": "TiBeN/CrontabManager",
-    "archived": false,
-    "pushed_at": "2025-02-13T18:01:45+00:00",
-    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
-   "repository_link": "https://github.com/TiBeN/CrontabManager"
+   "repository_link": "https://github.com/predis/predis"
   },
   "league/config": {
    "metadata": {
@@ -8365,7 +6852,7 @@
       "dated_by": null,
       "php": "^7.4 || ^8.0",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8417,7 +6904,7 @@
       "dated_by": null,
       "php": "^7.2 || ^8.0",
       "admits_target_php": true,
-      "admits_project_php": true,
+      "admits_project_php": null,
       "php_blocked_by": null,
       "misses_target_php": null,
       "misses_project_php": null
@@ -8433,10 +6920,10 @@
       "dated_by": null,
       "php": "^5.6 || ^7.0",
       "admits_target_php": false,
-      "admits_project_php": false,
-      "php_blocked_by": "project",
+      "admits_project_php": null,
+      "php_blocked_by": "target",
       "misses_target_php": "stops_before",
-      "misses_project_php": "stops_before"
+      "misses_project_php": null
      },
      {
       "branch": "1.x",
@@ -8449,10 +6936,10 @@
       "dated_by": null,
       "php": "^5.6 || ^7.0",
       "admits_target_php": false,
-      "admits_project_php": false,
-      "php_blocked_by": "project",
+      "admits_project_php": null,
+      "php_blocked_by": "target",
       "misses_target_php": "stops_before",
-      "misses_project_php": "stops_before"
+      "misses_project_php": null
      }
     ]
    },
@@ -8471,9 +6958,61 @@
     "archived": false,
     "pushed_at": "2026-05-20T15:32:59+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
-    "from_cache": true
+    "from_cache": false
    },
    "repository_link": "https://github.com/phar-io/version"
+  },
+  "tiben/crontab-manager": {
+   "metadata": {
+    "abandoned": false,
+    "replacement": null,
+    "releases_listed": 8,
+    "has_stable_release": true,
+    "last_stable_release": "2023-05-02T16:54:54+00:00",
+    "last_stable_version": "v1.4.0",
+    "last_stable_dated_by": null,
+    "installed_release": "2023-05-02T16:54:54+00:00",
+    "installed_release_dated_by": null,
+    "repository": "https://github.com/TiBeN/CrontabManager.git",
+    "type": "library",
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "branches": [
+     {
+      "branch": "1.x",
+      "installed": true,
+      "highest": "v1.4.0",
+      "highest_released": "2023-05-02T16:54:54+00:00",
+      "highest_commit_date": null,
+      "newest_dated": "v1.4.0",
+      "newest_dated_released": "2023-05-02T16:54:54+00:00",
+      "dated_by": null,
+      "php": ">= 5.3",
+      "admits_target_php": true,
+      "admits_project_php": null,
+      "php_blocked_by": null,
+      "misses_target_php": null,
+      "misses_project_php": null
+     }
+    ]
+   },
+   "lock": {
+    "php": ">= 5.3",
+    "released": "2023-05-02T16:54:54+00:00",
+    "repository": "https://github.com/TiBeN/CrontabManager.git",
+    "from_composer_repository": true,
+    "dev": false,
+    "branch_snapshot": false,
+    "type": "library"
+   },
+   "activity": {
+    "forge": "GitHub",
+    "repository": "TiBeN/CrontabManager",
+    "archived": false,
+    "pushed_at": "2025-02-13T18:01:45+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
+    "from_cache": false
+   },
+   "repository_link": "https://github.com/TiBeN/CrontabManager"
   }
  }
 }

@@ -12,11 +12,16 @@ import type {
   ExplainMetadata,
   ExposureRule,
   Finding,
+  FindingGate,
   LibyearsBlock,
   Model,
+  NoFixAdvisory,
   NormalizeError,
+  NoteDetail,
   PackageDetails,
+  PriorityBasis,
   ReportModel,
+  RootGate,
   RunSettings,
   Signal,
   UnattributedEntry,
@@ -56,12 +61,17 @@ const ABSENT_CHECKED = [
   "exposure",
   "exposure_rule",
   "unattributed",
+  "note_details",
+  "gate",
   "run.project",
   "run.root_package",
   "run.project_php",
   "run.lock_file",
   "run.target_php",
   "run.fail_on",
+  "run.fail_on_kind",
+  "run.mode",
+  "run.strict_network",
   "run.thresholds",
   "run.flagged_verdicts",
 ] as const;
@@ -167,6 +177,8 @@ function buildReportModel(source: Record<string, unknown>, generatedAt: string):
     libyears: buildLibyears(source.libyears),
     baseline: buildBaseline(source.baseline),
     notes: asStringArray(source.notes),
+    noteDetails: asArray(source.note_details).map(buildNoteDetail),
+    gate: buildRootGate(source.gate),
     exposureRule: buildExposureRule(source.exposure_rule),
     unattributed: buildUnattributed(source.unattributed),
     absent: absentKeys(source),
@@ -189,6 +201,9 @@ function buildRunSettings(raw: unknown): RunSettings {
     targetPhp: asNullableString(rec.target_php),
     lockFile: asNullableString(rec.lock_file),
     failOn: asNullableString(rec.fail_on),
+    failOnKind: asNullableString(rec.fail_on_kind),
+    mode: asNullableString(rec.mode),
+    strictNetwork: asNullableBoolean(rec.strict_network),
     thresholds: buildThresholds(rec.thresholds),
     flaggedVerdicts: buildFlaggedVerdicts(rec.flagged_verdicts),
   };
@@ -265,6 +280,28 @@ function buildUnattributed(raw: unknown): readonly UnattributedEntry[] {
       fanIn: asFiniteNumber(rec.fan_in),
     };
   });
+}
+
+function buildRootGate(raw: unknown): RootGate | null {
+  if (!isRecord(raw)) {
+    return null;
+  }
+  return {
+    fails: asNullableBoolean(raw.fails),
+    trippedBy: asStringArray(raw.tripped_by),
+    failOnApplied: asNullableBoolean(raw.fail_on_applied),
+  };
+}
+
+function buildNoteDetail(raw: unknown): NoteDetail {
+  const rec = isRecord(raw) ? raw : {};
+  return {
+    code: asCoercedString(rec.code),
+    text: asCoercedString(rec.text),
+    docsUrl: asNullableString(rec.docs_url),
+    setsNetworkFailures: asNullableBoolean(rec.sets_network_failures),
+    data: isRecord(rec.data) ? rec.data : {},
+  };
 }
 
 function buildLibyears(raw: unknown): LibyearsBlock | null {
@@ -346,6 +383,45 @@ function buildFinding(raw: unknown): Finding {
     libyears: asFiniteNumber(rec.libyears),
     baseline: buildFindingBaseline(rec.baseline),
     advisories: flattenAdvisories(signals),
+    fromComposerRepository: asNullableBoolean(rec.from_composer_repository),
+    libyearsUnmeasured: asNullableString(rec.libyears_unmeasured),
+    priorityBasis: buildPriorityBasis(rec.priority_basis),
+    noFixExpected: isArray(rec.no_fix_expected) ? rec.no_fix_expected.map(buildNoFixAdvisory) : null,
+    gate: buildFindingGate(rec.gate),
+  };
+}
+
+/** No basis without a readable `base`: a ladder needs somewhere to start. */
+function buildPriorityBasis(raw: unknown): PriorityBasis | null {
+  if (!isRecord(raw) || typeof raw.base !== "string") {
+    return null;
+  }
+  return {
+    base: raw.base,
+    steps: asArray(raw.steps).map((step) => {
+      const rec = isRecord(step) ? step : {};
+      return {
+        reason: asCoercedString(rec.reason),
+        from: asCoercedString(rec.from),
+        to: asCoercedString(rec.to),
+      };
+    }),
+  };
+}
+
+function buildNoFixAdvisory(raw: unknown): NoFixAdvisory {
+  const rec = isRecord(raw) ? raw : {};
+  return { id: asCoercedString(rec.id), reason: asCoercedString(rec.reason) };
+}
+
+function buildFindingGate(raw: unknown): FindingGate | null {
+  if (!isRecord(raw)) {
+    return null;
+  }
+  return {
+    reachesFailOn: asNullableBoolean(raw.reaches_fail_on),
+    fails: asNullableBoolean(raw.fails),
+    exemptBy: asNullableString(raw.exempt_by),
   };
 }
 
@@ -387,14 +463,15 @@ function flattenAdvisories(signals: readonly Signal[]): readonly Advisory[] {
     if (signal.id !== "S9") {
       continue;
     }
+    const releasesRead = asNullableBoolean(signal.data.releases_read);
     for (const raw of asArray(signal.data.advisories)) {
-      advisories.push(buildAdvisory(raw));
+      advisories.push(buildAdvisory(raw, releasesRead));
     }
   }
   return advisories;
 }
 
-function buildAdvisory(raw: unknown): Advisory {
+function buildAdvisory(raw: unknown, releasesRead: boolean | null): Advisory {
   const rec = isRecord(raw) ? raw : {};
   const severityRaw = asNullableString(rec.severity);
   return {
@@ -408,6 +485,7 @@ function buildAdvisory(raw: unknown): Advisory {
     affectedVersions: asNullableString(rec.affected_versions),
     fixedBy: asNullableString(rec.fixed_by),
     fixedOnBranch: asBoolean(rec.fixed_on_branch, false),
+    releasesRead,
   };
 }
 

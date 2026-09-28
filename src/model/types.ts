@@ -72,6 +72,11 @@ export interface ReportModel {
   libyears: LibyearsBlock | null;
   baseline: BaselineSummary | null;
   notes: readonly string[];
+  /** One entry per `notes` string, at the same index; empty when the document types none. Identify an
+   *  entry by its index: a code repeats once per forge, repository or parent. */
+  noteDetails: readonly NoteDetail[];
+  /** Null where the run carries no `fail_on`, and where the document predates the key (`absent`). */
+  gate: RootGate | null;
   /** A flagged transitive package counts under each direct requirement that reaches it only when at
    *  most `maxFanIn` do. */
   exposureRule: ExposureRule | null;
@@ -83,6 +88,24 @@ export interface ReportModel {
   absent: readonly string[];
   /** In document order, which lockrot sorts: priority desc, verdict severity desc, direct first, name. */
   findings: readonly Finding[];
+}
+
+export interface RootGate {
+  fails: boolean | null;
+  /** Each cause once, as written; an unknown one is another condition that failed the run. */
+  trippedBy: readonly string[];
+  /** False in a run that judges no finding (`generate_baseline`). */
+  failOnApplied: boolean | null;
+}
+
+export interface NoteDetail {
+  /** Open: an unknown code is shown by its `text`, and its `data` is not read. */
+  code: string;
+  text: string;
+  /** Linked as written, never built. */
+  docsUrl: string | null;
+  setsNetworkFailures: boolean | null;
+  data: Readonly<Record<string, unknown>>;
 }
 
 export interface ExposureRule {
@@ -107,6 +130,11 @@ export interface RunSettings {
   targetPhp: string | null;
   lockFile: string | null;
   failOn: string | null;
+  /** Which kind of threshold `failOn` is, as written; null where `failOn` is. */
+  failOnKind: string | null;
+  /** As written: `check`, `generate_baseline`, or a kind of run this page does not know. */
+  mode: string | null;
+  strictNetwork: boolean | null;
   /** In document key order, e.g. `release-warn-years → 2`. Empty when the run recorded none. */
   thresholds: readonly (readonly [name: string, years: number])[];
   flaggedVerdicts: readonly Verdict[];
@@ -152,6 +180,44 @@ export interface Finding {
   baseline: { status: "known" | "new" | "worsened" | (string & {}); previousVerdict: Verdict | null } | null;
   /** Every advisory of every S9 signal, flattened, in document order. */
   advisories: readonly Advisory[];
+  /** False: no repository was asked, so no metadata, advisories, activity or libyears. */
+  fromComposerRepository: boolean | null;
+  /** Why `libyears` is null, as written; null when measured or when no field says why. */
+  libyearsUnmeasured: string | null;
+  /** How lockrot reached `priority`; null when the document does not say. */
+  priorityBasis: PriorityBasis | null;
+  /** The advisories no fix is expected for. Null: no prediction (the verdict makes none, or the
+   *  document does not say); `[]`: a prediction that every advisory is fixed within reach. */
+  noFixExpected: readonly NoFixAdvisory[] | null;
+  /** Where this finding stands against `run.fail_on`; null exactly where the report's `gate` is. */
+  gate: FindingGate | null;
+}
+
+export interface PriorityBasis {
+  base: Priority;
+  steps: readonly PriorityBasisStep[];
+}
+
+export interface PriorityBasisStep {
+  /** As written: `transitive`, `unreached`, `dev`, `no_fix_expected`, or one this page does not know. */
+  reason: string;
+  /** Equal to `to` when the step could not move the level. */
+  from: Priority;
+  to: Priority;
+}
+
+export interface NoFixAdvisory {
+  /** An S9 advisory's `id` on the same finding. */
+  id: string;
+  /** As written; `releases_unknown` means no fix was looked for, not that none will come. */
+  reason: string;
+}
+
+export interface FindingGate {
+  reachesFailOn: boolean | null;
+  fails: boolean | null;
+  /** As written: `baseline`, or an exemption this page does not know. */
+  exemptBy: string | null;
 }
 
 export interface Signal {
@@ -175,6 +241,8 @@ export interface Advisory {
   affectedVersions: string | null;
   fixedBy: string | null;
   fixedOnBranch: boolean;
+  /** Its S9's `releases_read`. False: no release was checked, so a null `fixedBy` is not "no fix". */
+  releasesRead: boolean | null;
 }
 
 export interface PackageDetails {

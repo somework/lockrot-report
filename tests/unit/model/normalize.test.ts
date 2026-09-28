@@ -50,6 +50,8 @@ function minimalReport(overrides: Record<string, unknown> = {}): Record<string, 
     libyears: null,
     baseline: null,
     notes: [],
+    note_details: [],
+    gate: null,
     findings: [],
     ...overrides,
   };
@@ -92,27 +94,33 @@ describe("report.absent", () => {
       "run.project",
       "run.root_package",
       "run.lock_file",
+      "run.fail_on_kind",
+      "run.mode",
+      "run.strict_network",
       "run.thresholds",
       "run.flagged_verdicts",
     ]);
   });
 
   test("names every key a fixture leaves out, by the same list whatever lockrot wrote it", () => {
-    const LATER = ["exposure_rule", "unattributed", "run.root_package", "run.project_php"];
+    const LATER = [
+      "exposure_rule",
+      "unattributed",
+      "note_details",
+      "gate",
+      "run.root_package",
+      "run.project_php",
+      "run.fail_on_kind",
+      "run.mode",
+      "run.strict_network",
+    ];
     const absent = (name: string) => {
       const result = normalize(loadFixture(name));
       return result.ok ? result.model.report.absent : null;
     };
-    expect(absent("capsule-0.10-drupal.json")).toEqual([
-      "abandoned",
-      "libyears",
-      "exposure_rule",
-      "unattributed",
-      "run.root_package",
-      "run.project_php",
-    ]);
+    expect(absent("capsule-0.10-drupal.json")).toEqual(["abandoned", "libyears", ...LATER]);
     expect(absent("wallabag_wallabag.json")).toEqual(LATER);
-    expect(absent("mini-no-fail-on.json")).toEqual([...LATER, "run.fail_on"]);
+    expect(absent("mini-no-fail-on.json")).toEqual([...LATER.slice(0, 6), "run.fail_on", ...LATER.slice(6)]);
     expect(absent("wallabag_wallabag-0.13.json")).toEqual([]);
     expect(absent("mini-0.13-edges.json")).toEqual([]);
   });
@@ -495,6 +503,9 @@ describe("run (contract.md §2.1 / critic.md K5)", () => {
         targetPhp: null,
         lockFile: null,
         failOn: null,
+        failOnKind: null,
+        mode: null,
+        strictNetwork: null,
         thresholds: [],
         flaggedVerdicts: DEFAULT_FLAGGED,
       });

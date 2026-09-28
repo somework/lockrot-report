@@ -15,7 +15,7 @@
    "fail_on": "high",
    "fail_on_kind": "priority",
    "strict_network": true,
-   "mode": "check",
+   "mode": "generate_baseline",
    "thresholds": {
     "release-warn-years": 3,
     "release-high-years": 5,
@@ -99,22 +99,13 @@
     "libyears": 4.6
    }
   },
-  "baseline": {
-   "path": "lockrot-baseline.json",
-   "known": 6,
-   "new": 6,
-   "worsened": 1,
-   "stale": [
-    "acme/removed"
-   ]
-  },
+  "baseline": null,
   "gate": {
    "fails": true,
    "tripped_by": [
-    "strict_network",
-    "fail_on"
+    "strict_network"
    ],
-   "fail_on_applied": true
+   "fail_on_applied": false
   },
   "notes": [
    "offline: repository metadata served from Composer's cache",
@@ -442,14 +433,11 @@
      "steps": []
     },
     "no_fix_expected": null,
-    "baseline": {
-     "status": "known",
-     "previous_verdict": "pinned"
-    },
+    "baseline": null,
     "gate": {
      "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": "baseline"
+     "exempt_by": null
     }
    },
    {
@@ -494,13 +482,10 @@
      "steps": []
     },
     "no_fix_expected": null,
-    "baseline": {
-     "status": "worsened",
-     "previous_verdict": "stale"
-    },
+    "baseline": null,
     "gate": {
      "reaches_fail_on": true,
-     "fails": true,
+     "fails": false,
      "exempt_by": null
     }
    },
@@ -587,13 +572,10 @@
       "reason": "not_on_installed_branch"
      }
     ],
-    "baseline": {
-     "status": "new",
-     "previous_verdict": null
-    },
+    "baseline": null,
     "gate": {
      "reaches_fail_on": true,
-     "fails": true,
+     "fails": false,
      "exempt_by": null
     }
    },
@@ -636,10 +618,7 @@
      "steps": []
     },
     "no_fix_expected": null,
-    "baseline": {
-     "status": "known",
-     "previous_verdict": "stale"
-    },
+    "baseline": null,
     "gate": {
      "reaches_fail_on": false,
      "fails": false,
@@ -701,10 +680,7 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": {
-     "status": "new",
-     "previous_verdict": null
-    },
+    "baseline": null,
     "gate": {
      "reaches_fail_on": false,
      "fails": false,
@@ -757,10 +733,7 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": {
-     "status": "known",
-     "previous_verdict": "stale"
-    },
+    "baseline": null,
     "gate": {
      "reaches_fail_on": false,
      "fails": false,
@@ -985,14 +958,11 @@
       "reason": "fix_withdrawn"
      }
     ],
-    "baseline": {
-     "status": "known",
-     "previous_verdict": "abandoned"
-    },
+    "baseline": null,
     "gate": {
      "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": "baseline"
+     "exempt_by": null
     }
    },
    {
@@ -1052,14 +1022,11 @@
      "steps": []
     },
     "no_fix_expected": [],
-    "baseline": {
-     "status": "known",
-     "previous_verdict": "abandoned"
-    },
+    "baseline": null,
     "gate": {
      "reaches_fail_on": true,
      "fails": false,
-     "exempt_by": "baseline"
+     "exempt_by": null
     }
    },
    {
@@ -1153,13 +1120,10 @@
       "reason": "releases_unknown"
      }
     ],
-    "baseline": {
-     "status": "new",
-     "previous_verdict": null
-    },
+    "baseline": null,
     "gate": {
      "reaches_fail_on": true,
-     "fails": true,
+     "fails": false,
      "exempt_by": null
     }
    },
@@ -1234,10 +1198,7 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": {
-     "status": "known",
-     "previous_verdict": "stale"
-    },
+    "baseline": null,
     "gate": {
      "reaches_fail_on": false,
      "fails": false,
@@ -1295,10 +1256,7 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": {
-     "status": "new",
-     "previous_verdict": null
-    },
+    "baseline": null,
     "gate": {
      "reaches_fail_on": false,
      "fails": false,
@@ -1399,10 +1357,7 @@
       "reason": "not_on_installed_branch"
      }
     ],
-    "baseline": {
-     "status": "new",
-     "previous_verdict": null
-    },
+    "baseline": null,
     "gate": {
      "reaches_fail_on": false,
      "fails": false,
@@ -1456,10 +1411,7 @@
      ]
     },
     "no_fix_expected": null,
-    "baseline": {
-     "status": "new",
-     "previous_verdict": null
-    },
+    "baseline": null,
     "gate": {
      "reaches_fail_on": true,
      "fails": false,

@@ -12,10 +12,10 @@
    "target_php": "8.4",
    "project_php": "^8.3",
    "lock_file": "composer.lock",
-   "fail_on": "high",
-   "fail_on_kind": "priority",
-   "strict_network": true,
-   "mode": "check",
+   "fail_on": "copyleft",
+   "fail_on_kind": "licence",
+   "strict_network": false,
+   "mode": "audit",
    "thresholds": {
     "release-warn-years": 3,
     "release-high-years": 5,
@@ -111,8 +111,8 @@
   "gate": {
    "fails": true,
    "tripped_by": [
-    "strict_network",
-    "fail_on"
+    "fail_on",
+    "licence_policy"
    ],
    "fail_on_applied": true
   },
@@ -447,9 +447,9 @@
      "previous_verdict": "pinned"
     },
     "gate": {
-     "reaches_fail_on": true,
+     "reaches_fail_on": false,
      "fails": false,
-     "exempt_by": "baseline"
+     "exempt_by": null
     }
    },
    {
@@ -499,8 +499,8 @@
      "previous_verdict": "stale"
     },
     "gate": {
-     "reaches_fail_on": true,
-     "fails": true,
+     "reaches_fail_on": false,
+     "fails": false,
      "exempt_by": null
     }
    },
@@ -592,8 +592,8 @@
      "previous_verdict": null
     },
     "gate": {
-     "reaches_fail_on": true,
-     "fails": true,
+     "reaches_fail_on": false,
+     "fails": false,
      "exempt_by": null
     }
    },
@@ -848,8 +848,8 @@
     "no_fix_expected": null,
     "baseline": null,
     "gate": {
-     "reaches_fail_on": false,
-     "fails": false,
+     "reaches_fail_on": true,
+     "fails": true,
      "exempt_by": null
     }
    },
@@ -990,9 +990,9 @@
      "previous_verdict": "abandoned"
     },
     "gate": {
-     "reaches_fail_on": true,
+     "reaches_fail_on": false,
      "fails": false,
-     "exempt_by": "baseline"
+     "exempt_by": null
     }
    },
    {
@@ -1057,9 +1057,9 @@
      "previous_verdict": "abandoned"
     },
     "gate": {
-     "reaches_fail_on": true,
+     "reaches_fail_on": false,
      "fails": false,
-     "exempt_by": "baseline"
+     "exempt_by": null
     }
    },
    {
@@ -1158,8 +1158,8 @@
      "previous_verdict": null
     },
     "gate": {
-     "reaches_fail_on": true,
-     "fails": true,
+     "reaches_fail_on": false,
+     "fails": false,
      "exempt_by": null
     }
    },
@@ -1461,9 +1461,9 @@
      "previous_verdict": null
     },
     "gate": {
-     "reaches_fail_on": true,
+     "reaches_fail_on": false,
      "fails": false,
-     "exempt_by": "waiver"
+     "exempt_by": null
     }
    },
    {

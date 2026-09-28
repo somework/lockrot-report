@@ -11,7 +11,17 @@ import { FIXTURES, type FixtureName } from "./support/pages";
 let report: ReportPage;
 
 /** Keys a document written before lockrot 0.13.0 leaves out; the page names them like any other. */
-const LATER_KEYS = ["exposure_rule", "unattributed", "run.root_package", "run.project_php"];
+const LATER_KEYS = [
+  "exposure_rule",
+  "unattributed",
+  "note_details",
+  "gate",
+  "run.root_package",
+  "run.project_php",
+  "run.fail_on_kind",
+  "run.mode",
+  "run.strict_network",
+];
 
 test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);

@@ -5,7 +5,7 @@
    "version": "0.13.0",
    "schema": 1
   },
-  "generated_at": "2026-09-27T00:00:00+00:00",
+  "generated_at": "2026-09-28T00:00:00+00:00",
   "run": {
    "project": "akaunting/akaunting",
    "root_package": "akaunting/akaunting",
@@ -13,6 +13,9 @@
    "project_php": "^8.1",
    "lock_file": "composer.lock",
    "fail_on": "none",
+   "fail_on_kind": "none",
+   "strict_network": false,
+   "mode": "check",
    "thresholds": {
     "release-warn-years": 3,
     "release-high-years": 5,
@@ -28,7 +31,7 @@
     "stale"
    ]
   },
-  "activity_cache_oldest_at": "2026-09-27T00:00:00+00:00",
+  "activity_cache_oldest_at": "2026-09-28T00:00:00+00:00",
   "packages_checked": 183,
   "include_dev": false,
   "not_from_composer_repository": 0,
@@ -100,7 +103,7 @@
    }
   ],
   "libyears": {
-   "total": 94.78,
+   "total": 94.85,
    "direct_requirements": 50.22,
    "measured": 180,
    "unmeasured": {
@@ -116,7 +119,13 @@
    }
   },
   "baseline": null,
+  "gate": {
+   "fails": false,
+   "tripped_by": [],
+   "fail_on_applied": true
+  },
   "notes": [],
+  "note_details": [],
   "findings": [
    {
     "package": "genealabs/laravel-model-caching",
@@ -125,6 +134,7 @@
     "priority": "critical",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": "mike-bronner/laravel-model-caching",
     "signals": [
      {
@@ -163,9 +173,20 @@
     "evidence": "marked abandoned by its repository, replacement: mike-bronner/laravel-model-caching; pulls in 1 flagged package: genealabs/laravel-pivot-events (left-behind)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 2.55,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": []
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "intervention/imagecache",
@@ -174,6 +195,7 @@
     "priority": "critical",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -214,9 +236,20 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub; last release 2023-02-25 (3.6 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": []
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "plank/laravel-mediable",
@@ -225,6 +258,7 @@
     "priority": "critical",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -267,7 +301,8 @@
          "fixed_by": "7.0.2",
          "fixed_on_branch": false
         }
-       ]
+       ],
+       "releases_read": true
       }
      }
     ],
@@ -280,9 +315,31 @@
     "evidence": "branch 5.x last released 2023-05-17 (3.4 years ago); 7.x released 7.0.2 (2026-09-15), needs php >=8.3.0 above the project's php ^8.1; no releasing branch within reach; 1 security advisory affects 5.9.1 (CVE-2026-49970); fixed by 7.0.2; no fix expected on 5.x",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 3.33,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "high",
+     "steps": [
+      {
+       "reason": "no_fix_expected",
+       "from": "high",
+       "to": "critical"
+      }
+     ]
+    },
+    "no_fix_expected": [
+     {
+      "id": "PKSA-7xqc-8t8n-q551",
+      "reason": "not_on_installed_branch"
+     }
+    ],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "hoa/compiler",
@@ -291,6 +348,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -343,9 +401,26 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub; last release 2017-08-08 (9.1 years ago); last push 2021-04-29 (5.4 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "hoa/consistency",
@@ -354,6 +429,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -420,9 +496,26 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub; last release 2017-08-29 (9.1 years ago); last push 2021-04-28 (5.4 years ago); released 2017-05-02 for PHP 5 (php \">=5.5.0\"), before PHP 8 existed (8.0 GA 2020-11-26); admits 8.4 untested",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.33,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "hoa/event",
@@ -431,6 +524,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -485,9 +579,26 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub; last release 2017-08-30 (9.1 years ago); last push 2021-04-29 (5.4 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.63,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "hoa/exception",
@@ -496,6 +607,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -549,9 +661,26 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub; last release 2017-08-30 (9.1 years ago); last push 2021-04-29 (5.4 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.62,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "hoa/file",
@@ -560,6 +689,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -613,9 +743,26 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub; last release 2017-07-11 (9.2 years ago); last push 2018-01-23 (8.7 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "hoa/iterator",
@@ -624,6 +771,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -677,9 +825,26 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub; last release 2017-01-10 (9.7 years ago); last push 2021-04-29 (5.4 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "hoa/math",
@@ -688,6 +853,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -741,9 +907,26 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub; last release 2017-05-16 (9.4 years ago); last push 2021-04-29 (5.4 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "hoa/regex",
@@ -752,6 +935,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -805,9 +989,26 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub; last release 2017-01-13 (9.7 years ago); last push 2018-07-20 (8.2 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "hoa/stream",
@@ -816,6 +1017,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -870,9 +1072,26 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub; last release 2017-02-21 (9.6 years ago); last push 2021-08-09 (5.1 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "hoa/ustring",
@@ -881,6 +1100,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -935,9 +1155,26 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub; last release 2017-01-16 (9.7 years ago); last push 2021-04-29 (5.4 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "hoa/visitor",
@@ -946,6 +1183,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -999,9 +1237,26 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub; last release 2017-01-16 (9.7 years ago); last push 2021-04-28 (5.4 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "hoa/zformat",
@@ -1010,6 +1265,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1064,9 +1320,26 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub; last release 2017-01-10 (9.7 years ago); last push 2018-02-12 (8.6 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "laravelcollective/html",
@@ -1075,6 +1348,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": "spatie/laravel-html",
     "signals": [
      {
@@ -1107,9 +1381,26 @@
     "evidence": "marked abandoned by its repository, replacement: spatie/laravel-html; last release 2023-04-25 (3.4 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "sanmai/hoa-protocol",
@@ -1118,6 +1409,7 @@
     "priority": "high",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1148,9 +1440,26 @@
     "evidence": "marked abandoned by its repository; repository archived on GitHub",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 4.56,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "critical",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "critical",
+       "to": "high"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "akaunting/laravel-language",
@@ -1159,6 +1468,7 @@
     "priority": "high",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1212,9 +1522,20 @@
     "evidence": "branch 1.x last released 2022-08-05 (4.1 years ago); 2.x released 2.0.0 (2025-12-16); require ^2.0 to follow; pulls in 1 flagged package: jenssegers/agent (old-promise)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 3.36,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "high",
+     "steps": []
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "akaunting/laravel-mutable-observer",
@@ -1223,6 +1544,7 @@
     "priority": "high",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1258,9 +1580,20 @@
     "evidence": "branch 2.x last released 2023-03-16 (3.5 years ago); 3.x released 3.0.0 (2025-12-16); require ^3.0 to follow",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 2.75,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "high",
+     "steps": []
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "intervention/image",
@@ -1269,6 +1602,7 @@
     "priority": "high",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1306,9 +1640,20 @@
     "evidence": "branch 2.x last released 2022-05-21 (4.4 years ago); 4.x released 4.3.3 (2026-09-26), needs php ^8.3 above the project's php ^8.1; 3.x released 3.11.9 (2026-09-26); require ^3.11 to follow",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 4.35,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "high",
+     "steps": []
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "laravel/slack-notification-channel",
@@ -1317,6 +1662,7 @@
     "priority": "high",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1352,9 +1698,20 @@
     "evidence": "branch 2.x last released 2023-01-12 (3.7 years ago); 3.x released v3.10.0 (2026-07-24); require ^3.10 to follow",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 3.53,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "high",
+     "steps": []
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "santigarcor/laratrust",
@@ -1363,6 +1720,7 @@
     "priority": "high",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1398,9 +1756,20 @@
     "evidence": "branch 7.x last released 2023-02-20 (3.6 years ago); 8.x released 8.5.5 (2026-03-06); require ^8.5 to follow",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 3.04,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "high",
+     "steps": []
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "mnsami/composer-custom-directory-installer",
@@ -1409,6 +1778,7 @@
     "priority": "high",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1434,9 +1804,20 @@
     "evidence": "released 2020-08-18 for PHP 5 (php \">=5.3\"), before PHP 8 existed (8.0 GA 2020-11-26); admits 8.4 untested",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 5.75,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "high",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "genealabs/laravel-pivot-events",
@@ -1445,6 +1826,7 @@
     "priority": "medium",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1481,9 +1863,26 @@
     "evidence": "branch 10.x last released 2023-03-22 (3.5 years ago); 13.x released 13.1.0 (2026-02-28), needs php ^8.2 above the project's php ^8.1; 12.x released 12.0.0 (2025-02-26)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 2.94,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "high",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "high",
+       "to": "medium"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "jenssegers/agent",
@@ -1492,6 +1891,7 @@
     "priority": "medium",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1530,9 +1930,26 @@
     "evidence": "released 2020-06-13 for PHP 5 (php \">=5.6\"), before PHP 8 existed (8.0 GA 2020-11-26); admits 8.4 untested; last release 2020-06-13 (6.3 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "high",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "high",
+       "to": "medium"
+      }
+     ]
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "akaunting/laravel-debugbar-collector",
@@ -1541,6 +1958,7 @@
     "priority": "medium",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1575,9 +1993,20 @@
     "evidence": "last release 2023-06-02 (3.3 years ago); last push 2023-06-02 (3.3 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "medium",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "akaunting/laravel-version",
@@ -1586,6 +2015,7 @@
     "priority": "medium",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1620,9 +2050,20 @@
     "evidence": "last release 2021-03-05 (5.6 years ago); last push 2023-03-04 (3.6 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "medium",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "lorisleiva/laravel-search-string",
@@ -1631,6 +2072,7 @@
     "priority": "medium",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1783,9 +2225,20 @@
     "evidence": "last release 2023-03-11 (3.5 years ago); pulls in 13 flagged packages: hoa/compiler (abandoned), hoa/consistency (abandoned), hoa/event (abandoned), hoa/exception (abandoned), hoa/file (abandoned) and 8 more",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "medium",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "riverskies/laravel-mobile-detect",
@@ -1794,6 +2247,7 @@
     "priority": "medium",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1828,9 +2282,20 @@
     "evidence": "last release 2017-09-02 (9.1 years ago); last push 2023-04-09 (3.5 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "medium",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "balping/json-raw-encoder",
@@ -1839,6 +2304,7 @@
     "priority": "low",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1874,9 +2340,26 @@
     "evidence": "last release 2023-03-27 (3.5 years ago); last commit 2023-03-27 (3.5 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "medium",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "medium",
+       "to": "low"
+      }
+     ]
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "bugsnag/bugsnag-psr-logger",
@@ -1885,6 +2368,7 @@
     "priority": "low",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1909,9 +2393,26 @@
     "evidence": "last release 2022-01-12 (4.7 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "medium",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "medium",
+       "to": "low"
+      }
+     ]
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "league/config",
@@ -1920,6 +2421,7 @@
     "priority": "low",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -1953,9 +2455,26 @@
     "evidence": "last release 2022-12-11 (3.8 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "medium",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "medium",
+       "to": "low"
+      }
+     ]
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "markbaker/complex",
@@ -1964,6 +2483,7 @@
     "priority": "low",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -2000,9 +2520,26 @@
     "evidence": "last release 2022-12-06 (3.8 years ago); last push 2022-12-06 (3.8 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "medium",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "medium",
+       "to": "low"
+      }
+     ]
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "markbaker/matrix",
@@ -2011,6 +2548,7 @@
     "priority": "low",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -2036,9 +2574,26 @@
     "evidence": "last release 2022-12-02 (3.8 years ago)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "medium",
+     "steps": [
+      {
+       "reason": "transitive",
+       "from": "medium",
+       "to": "low"
+      }
+     ]
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "akaunting/laravel-apexcharts",
@@ -2047,6 +2602,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -2077,9 +2633,20 @@
     "evidence": "pulls in 1 flagged package: balping/json-raw-encoder (stale)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.12,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "akaunting/laravel-firewall",
@@ -2088,6 +2655,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -2118,9 +2686,20 @@
     "evidence": "pulls in 1 flagged package: jenssegers/agent (old-promise)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.1,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "akaunting/laravel-menu",
@@ -2129,6 +2708,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -2159,9 +2739,20 @@
     "evidence": "pulls in 1 flagged package: laravelcollective/html (abandoned)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "akaunting/laravel-module",
@@ -2170,6 +2761,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2181,9 +2773,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "akaunting/laravel-money",
@@ -2192,6 +2795,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2203,9 +2807,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.49,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "akaunting/laravel-setting",
@@ -2214,6 +2829,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2225,9 +2841,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "akaunting/laravel-sortable",
@@ -2236,6 +2863,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2247,9 +2875,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.85,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "akaunting/module-offline-payments",
@@ -2258,6 +2897,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2269,9 +2909,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "akaunting/module-paypal-standard",
@@ -2280,6 +2931,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2291,9 +2943,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "barryvdh/laravel-debugbar",
@@ -2302,6 +2965,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2314,9 +2978,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.67,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "barryvdh/laravel-dompdf",
@@ -2325,6 +3000,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2336,9 +3012,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.83,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "barryvdh/laravel-ide-helper",
@@ -2347,6 +3034,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2358,9 +3046,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 2.08,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "bkwld/cloner",
@@ -2369,6 +3068,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2380,9 +3080,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "bugsnag/bugsnag-laravel",
@@ -2391,6 +3102,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -2421,9 +3133,20 @@
     "evidence": "pulls in 1 flagged package: bugsnag/bugsnag-psr-logger (stale)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "doctrine/dbal",
@@ -2432,6 +3155,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2444,9 +3168,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.18,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "graham-campbell/markdown",
@@ -2455,6 +3190,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2466,9 +3202,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.05,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "guzzlehttp/guzzle",
@@ -2477,6 +3224,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2495,9 +3243,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.04,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "laracasts/flash",
@@ -2506,6 +3265,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2517,9 +3277,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "laravel/framework",
@@ -2528,6 +3299,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -2558,7 +3330,8 @@
          "fixed_by": "v13.33.0",
          "fixed_on_branch": false
         }
-       ]
+       ],
+       "releases_read": true
       }
      }
     ],
@@ -2578,9 +3351,20 @@
     "evidence": "2 security advisories affect v10.50.3 (PKSA-3r5d-mb8f-1qw9, PKSA-m5cs-t1y6-qpcs); fixed by v13.33.0",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.11,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "laravel/sanctum",
@@ -2589,6 +3373,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2600,9 +3385,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 2.51,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "laravel/tinker",
@@ -2611,6 +3407,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2622,9 +3419,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.11,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "laravel/ui",
@@ -2633,6 +3441,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2644,9 +3453,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "league/flysystem-aws-s3-v3",
@@ -2655,6 +3475,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2666,9 +3487,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "league/oauth2-client",
@@ -2677,6 +3509,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2688,9 +3521,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.81,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "league/omnipay",
@@ -2699,6 +3543,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -2722,9 +3567,20 @@
     "evidence": "last release 2021-06-05 (5.3 years ago)",
     "allowlist_reason": "package type \"metapackage\" only lists dependencies",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "livewire/livewire",
@@ -2733,6 +3589,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2744,9 +3601,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.02,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "maatwebsite/excel",
@@ -2755,6 +3623,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -2795,9 +3664,20 @@
     "evidence": "pulls in 2 flagged packages: markbaker/complex (stale), markbaker/matrix (stale)",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.09,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "sentry/sentry-laravel",
@@ -2806,6 +3686,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2817,9 +3698,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.19,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "simple-icons/simple-icons",
@@ -2828,6 +3720,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2839,9 +3732,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 2.86,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "simshaun/recurr",
@@ -2850,6 +3754,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2861,9 +3766,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.81,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "staudenmeir/belongs-to-through",
@@ -2872,6 +3788,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2883,9 +3800,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 2.2,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "staudenmeir/eloquent-has-many-deep",
@@ -2894,6 +3822,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2905,9 +3834,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.46,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/http-client",
@@ -2916,6 +3856,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2927,9 +3868,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/mailgun-mailer",
@@ -2938,6 +3890,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2949,9 +3902,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/postmark-mailer",
@@ -2960,6 +3924,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2971,9 +3936,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.01,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/sendgrid-mailer",
@@ -2982,6 +3958,7 @@
     "priority": "none",
     "direct": true,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -2993,9 +3970,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "aws/aws-crt-php",
@@ -3004,6 +3992,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3017,9 +4006,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "aws/aws-sdk-php",
@@ -3028,6 +4028,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3040,9 +4041,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.03,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "barryvdh/reflection-docblock",
@@ -3051,6 +4063,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3063,9 +4076,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "brick/math",
@@ -3074,6 +4098,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3093,9 +4118,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.54,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "bugsnag/bugsnag",
@@ -3104,6 +4140,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3116,9 +4153,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "carbonphp/carbon-doctrine-types",
@@ -3127,6 +4175,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3148,9 +4197,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "clue/stream-filter",
@@ -3159,6 +4219,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3173,9 +4234,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "composer/ca-bundle",
@@ -3184,6 +4256,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3197,9 +4270,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "composer/class-map-generator",
@@ -3208,6 +4292,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3220,9 +4305,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.39,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "composer/pcre",
@@ -3231,6 +4327,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3245,9 +4342,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "composer/semver",
@@ -3256,6 +4364,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3268,9 +4377,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.09,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "dflydev/dot-access-data",
@@ -3279,6 +4399,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3301,9 +4422,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "doctrine/collections",
@@ -3312,6 +4444,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3324,9 +4457,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.29,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "doctrine/deprecations",
@@ -3335,6 +4479,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3349,9 +4494,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "doctrine/event-manager",
@@ -3360,6 +4516,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3373,9 +4530,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "doctrine/inflector",
@@ -3384,6 +4552,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3403,9 +4572,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "doctrine/lexer",
@@ -3414,6 +4594,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3437,9 +4618,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 2.36,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "dompdf/dompdf",
@@ -3448,6 +4640,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -3522,7 +4715,8 @@
          "fixed_by": "v3.1.6",
          "fixed_on_branch": false
         }
-       ]
+       ],
+       "releases_read": true
       }
      }
     ],
@@ -3536,9 +4730,20 @@
     "evidence": "6 security advisories affect v2.0.8 (CVE-2026-59943, CVE-2026-59942, CVE-2026-59941 and 3 more); fixed by v3.1.6",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 2.22,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "dragonmantank/cron-expression",
@@ -3547,6 +4752,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3566,9 +4772,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "egulias/email-validator",
@@ -3577,6 +4794,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3599,9 +4817,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "ezyang/htmlpurifier",
@@ -3610,6 +4839,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3623,9 +4853,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "fruitcake/php-cors",
@@ -3634,6 +4875,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3653,9 +4895,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "graham-campbell/result-type",
@@ -3664,6 +4917,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3685,9 +4939,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "guzzlehttp/promises",
@@ -3696,6 +4961,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3715,9 +4981,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "guzzlehttp/psr7",
@@ -3726,6 +5003,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3748,9 +5026,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "guzzlehttp/uri-template",
@@ -3759,6 +5048,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3778,9 +5068,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "jaybizzle/crawler-detect",
@@ -3789,6 +5090,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3803,9 +5105,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "jean85/pretty-package-versions",
@@ -3814,6 +5127,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3827,9 +5141,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "kkszymanowski/traitor",
@@ -3838,6 +5163,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3850,9 +5176,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "laravel/prompts",
@@ -3861,6 +5198,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3881,9 +5219,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 2.02,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "laravel/serializable-closure",
@@ -3892,6 +5241,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3911,9 +5261,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.85,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "league/commonmark",
@@ -3922,6 +5283,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3942,9 +5304,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.04,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "league/flysystem",
@@ -3953,6 +5326,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -3974,9 +5348,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "league/flysystem-local",
@@ -3985,6 +5370,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4007,9 +5393,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "league/mime-type-detection",
@@ -4018,6 +5415,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4040,9 +5438,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "maennchen/zipstream-php",
@@ -4051,6 +5460,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4064,9 +5474,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.5,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "masterminds/html5",
@@ -4075,6 +5496,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4088,9 +5510,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "mobiledetect/mobiledetectlib",
@@ -4099,6 +5532,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4113,9 +5547,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.11,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "moneyphp/money",
@@ -4124,6 +5569,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4137,9 +5583,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "monolog/monolog",
@@ -4148,6 +5605,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4168,9 +5626,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "mtdowling/jmespath.php",
@@ -4179,6 +5648,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4192,9 +5662,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "nesbot/carbon",
@@ -4203,6 +5684,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4223,9 +5705,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.72,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "nette/schema",
@@ -4234,6 +5727,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4256,9 +5750,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "nette/utils",
@@ -4267,6 +5772,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4290,9 +5796,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.62,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "nikic/php-parser",
@@ -4301,6 +5818,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4315,9 +5833,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "nunomaduro/termwind",
@@ -4326,6 +5855,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4345,9 +5875,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.24,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "nyholm/psr7",
@@ -4356,6 +5897,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4368,9 +5910,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "omnipay/common",
@@ -4379,6 +5932,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4391,9 +5945,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "opis/closure",
@@ -4402,6 +5967,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4414,9 +5980,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.66,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "phenx/php-font-lib",
@@ -4425,6 +6002,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4438,9 +6016,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.98,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "phenx/php-svg-lib",
@@ -4449,6 +6038,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4462,9 +6052,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.74,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "php-debugbar/php-debugbar",
@@ -4473,6 +6074,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4486,9 +6088,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.53,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "php-http/discovery",
@@ -4497,6 +6110,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4509,9 +6123,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "php-http/guzzle7-adapter",
@@ -4520,6 +6145,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4532,9 +6158,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "php-http/httplug",
@@ -4543,6 +6180,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4556,9 +6194,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "php-http/message",
@@ -4567,6 +6216,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4580,9 +6230,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "php-http/promise",
@@ -4591,6 +6252,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4605,9 +6267,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.65,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "phpdocumentor/reflection-common",
@@ -4616,6 +6289,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4629,9 +6303,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 5.37,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "phpdocumentor/type-resolver",
@@ -4640,6 +6325,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4652,9 +6338,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.13,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "phpoffice/phpspreadsheet",
@@ -4663,6 +6360,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4675,9 +6373,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.18,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "phpoption/phpoption",
@@ -4686,6 +6395,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4707,9 +6417,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "phpstan/phpdoc-parser",
@@ -4718,6 +6439,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4731,9 +6453,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
-    "libyears": 0,
-    "baseline": null
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.07,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "psr/cache",
@@ -4742,6 +6475,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -4767,9 +6501,20 @@
     "evidence": "last release 2021-02-03 (5.6 years ago)",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "psr/clock",
@@ -4778,6 +6523,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -4811,9 +6557,20 @@
     "evidence": "last release 2022-11-25 (3.8 years ago)",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "psr/container",
@@ -4822,6 +6579,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -4860,9 +6618,20 @@
     "evidence": "last release 2021-11-05 (4.9 years ago)",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "psr/event-dispatcher",
@@ -4871,6 +6640,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -4920,9 +6690,20 @@
     "evidence": "last release 2019-01-08 (7.7 years ago); released 2019-01-08 for PHP 7 (php \">=7.2.0\"), before PHP 8 existed (8.0 GA 2020-11-26); admits 8.4 untested",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "psr/http-client",
@@ -4931,6 +6712,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -4962,9 +6744,20 @@
     "evidence": "last release 2023-09-23 (3.0 years ago)",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "psr/http-factory",
@@ -4973,6 +6766,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -4996,9 +6790,20 @@
     "evidence": "",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "psr/http-message",
@@ -5007,6 +6812,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -5041,9 +6847,20 @@
     "evidence": "last release 2023-04-04 (3.5 years ago)",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "psr/log",
@@ -5052,6 +6869,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5082,9 +6900,20 @@
     "evidence": "",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "psr/simple-cache",
@@ -5093,6 +6922,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -5125,9 +6955,20 @@
     "evidence": "last release 2021-10-29 (4.9 years ago)",
     "allowlist_reason": "PHP-FIG interface packages are complete by design; versions change only when the interface changes",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "psy/psysh",
@@ -5136,6 +6977,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5148,9 +6990,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "ralouphie/getallheaders",
@@ -5159,6 +7012,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [
      {
@@ -5207,9 +7061,20 @@
     "evidence": "last release 2019-03-08 (7.6 years ago); released 2019-03-08 for PHP 5 (php \">=5.6\"), before PHP 8 existed (8.0 GA 2020-11-26); admits 8.4 untested",
     "allowlist_reason": "single-function polyfill for getallheaders(); complete",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "ramsey/collection",
@@ -5218,6 +7083,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5238,9 +7104,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "ramsey/uuid",
@@ -5249,6 +7126,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5268,9 +7146,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.25,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "sabberworm/php-css-parser",
@@ -5279,6 +7168,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5293,9 +7183,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 1.19,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "sentry/sentry",
@@ -5304,6 +7205,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5316,9 +7218,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.08,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "staudenmeir/eloquent-has-many-deep-contracts",
@@ -5327,6 +7240,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5339,9 +7253,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 3.11,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/console",
@@ -5350,6 +7275,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5372,9 +7298,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.01,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/css-selector",
@@ -5383,6 +7320,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5403,9 +7341,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/deprecation-contracts",
@@ -5414,6 +7363,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5453,9 +7403,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/error-handler",
@@ -5464,6 +7425,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5484,9 +7446,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/event-dispatcher",
@@ -5495,6 +7468,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5519,9 +7493,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/event-dispatcher-contracts",
@@ -5530,6 +7515,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5555,9 +7541,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/filesystem",
@@ -5566,6 +7563,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5579,9 +7577,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/finder",
@@ -5590,6 +7599,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5612,9 +7622,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/http-client-contracts",
@@ -5623,6 +7644,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5635,9 +7657,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/http-foundation",
@@ -5646,6 +7679,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5669,9 +7703,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/http-kernel",
@@ -5680,6 +7725,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5700,9 +7746,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/mailer",
@@ -5711,6 +7768,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5733,9 +7791,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/mime",
@@ -5744,6 +7813,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5766,9 +7836,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/options-resolver",
@@ -5777,6 +7858,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5790,9 +7872,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.54,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/polyfill-ctype",
@@ -5801,6 +7894,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5826,9 +7920,20 @@
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": null,
-    "baseline": null
+    "libyears_unmeasured": "no_stable_release_date",
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/polyfill-intl-grapheme",
@@ -5837,6 +7942,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5861,9 +7967,20 @@
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/polyfill-intl-idn",
@@ -5872,6 +7989,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5895,9 +8013,20 @@
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/polyfill-intl-normalizer",
@@ -5906,6 +8035,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5933,9 +8063,20 @@
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/polyfill-mbstring",
@@ -5944,6 +8085,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -5978,9 +8120,20 @@
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/polyfill-php80",
@@ -5989,6 +8142,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6020,9 +8174,20 @@
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": null,
-    "baseline": null
+    "libyears_unmeasured": "no_stable_release_date",
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/polyfill-php83",
@@ -6031,6 +8196,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6055,9 +8221,20 @@
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/polyfill-php84",
@@ -6066,6 +8243,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6079,9 +8257,20 @@
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/polyfill-uuid",
@@ -6090,6 +8279,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6110,9 +8300,20 @@
     "evidence": "",
     "allowlist_reason": "polyfills for older PHP versions; intentionally frozen once the target PHP is covered",
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": null,
-    "baseline": null
+    "libyears_unmeasured": "no_stable_release_date",
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/process",
@@ -6121,6 +8322,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6140,9 +8342,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/psr-http-message-bridge",
@@ -6151,6 +8364,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6163,9 +8377,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.4,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/routing",
@@ -6174,6 +8399,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6193,9 +8419,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/service-contracts",
@@ -6204,6 +8441,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6230,9 +8468,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/string",
@@ -6241,6 +8490,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6264,9 +8514,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/translation",
@@ -6275,6 +8536,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6296,9 +8558,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/translation-contracts",
@@ -6307,6 +8580,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6329,9 +8603,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/uid",
@@ -6340,6 +8625,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6359,9 +8645,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.63,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "symfony/var-dumper",
@@ -6370,6 +8667,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6393,9 +8691,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0.01,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "tijsverkoyen/css-to-inline-styles",
@@ -6404,6 +8713,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6423,9 +8733,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "vlucas/phpdotenv",
@@ -6434,6 +8755,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6454,9 +8776,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    },
    {
     "package": "voku/portable-ascii",
@@ -6465,6 +8798,7 @@
     "priority": "none",
     "direct": false,
     "dev": false,
+    "from_composer_repository": true,
     "replacement": null,
     "signals": [],
     "chain": [
@@ -6484,9 +8818,20 @@
     "evidence": "",
     "allowlist_reason": null,
     "note": null,
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "libyears": 0,
-    "baseline": null
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
    }
   ]
  },
@@ -6504,7 +8849,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/mike-bronner/laravel-model-caching.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "13.x",
@@ -6778,7 +9123,7 @@
     "repository": "mike-bronner/laravel-model-caching",
     "archived": false,
     "pushed_at": "2026-09-24T18:58:34+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/mike-bronner/laravel-model-caching"
@@ -6796,7 +9141,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/Intervention/imagecache.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "2.x",
@@ -6878,7 +9223,7 @@
     "repository": "Intervention/imagecache",
     "archived": true,
     "pushed_at": "2023-12-09T18:27:48+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/Intervention/imagecache"
@@ -6896,7 +9241,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/plank/laravel-mediable.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "7.x",
@@ -7074,7 +9419,7 @@
     "repository": "plank/laravel-mediable",
     "archived": false,
     "pushed_at": "2026-09-15T20:51:16+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/plank/laravel-mediable"
@@ -7092,7 +9437,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/hoaproject/Compiler.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "3.x",
@@ -7158,7 +9503,7 @@
     "repository": "hoaproject/Compiler",
     "archived": true,
     "pushed_at": "2021-04-29T19:09:55+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Compiler"
@@ -7176,7 +9521,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/hoaproject/Consistency.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "2.x",
@@ -7242,7 +9587,7 @@
     "repository": "hoaproject/Consistency",
     "archived": true,
     "pushed_at": "2021-04-28T21:38:16+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Consistency"
@@ -7260,7 +9605,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/hoaproject/Event.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "2.x",
@@ -7326,7 +9671,7 @@
     "repository": "hoaproject/Event",
     "archived": true,
     "pushed_at": "2021-04-29T19:09:57+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Event"
@@ -7344,7 +9689,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/hoaproject/Exception.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "2.x",
@@ -7410,7 +9755,7 @@
     "repository": "hoaproject/Exception",
     "archived": true,
     "pushed_at": "2021-04-29T19:09:54+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Exception"
@@ -7428,7 +9773,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/hoaproject/File.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "1.x",
@@ -7494,7 +9839,7 @@
     "repository": "hoaproject/File",
     "archived": true,
     "pushed_at": "2018-01-23T09:51:49+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/File"
@@ -7512,7 +9857,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/hoaproject/Iterator.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "2.x",
@@ -7578,7 +9923,7 @@
     "repository": "hoaproject/Iterator",
     "archived": true,
     "pushed_at": "2021-04-29T19:09:54+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Iterator"
@@ -7596,7 +9941,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/hoaproject/Math.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "1.x",
@@ -7662,7 +10007,7 @@
     "repository": "hoaproject/Math",
     "archived": true,
     "pushed_at": "2021-04-29T19:09:54+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Math"
@@ -7680,7 +10025,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/hoaproject/Regex.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "1.x",
@@ -7746,7 +10091,7 @@
     "repository": "hoaproject/Regex",
     "archived": true,
     "pushed_at": "2018-07-20T20:56:39+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Regex"
@@ -7764,7 +10109,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/hoaproject/Stream.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "1.x",
@@ -7830,7 +10175,7 @@
     "repository": "hoaproject/Stream",
     "archived": true,
     "pushed_at": "2021-08-09T09:25:05+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Stream"
@@ -7848,7 +10193,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/hoaproject/Ustring.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "4.x",
@@ -7930,7 +10275,7 @@
     "repository": "hoaproject/Ustring",
     "archived": true,
     "pushed_at": "2021-04-29T19:09:54+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Ustring"
@@ -7948,7 +10293,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/hoaproject/Visitor.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "2.x",
@@ -8014,7 +10359,7 @@
     "repository": "hoaproject/Visitor",
     "archived": true,
     "pushed_at": "2021-04-28T21:38:17+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Visitor"
@@ -8032,7 +10377,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/hoaproject/Zformat.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "1.x",
@@ -8066,7 +10411,7 @@
     "repository": "hoaproject/Zformat",
     "archived": true,
     "pushed_at": "2018-02-12T09:28:09+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/hoaproject/Zformat"
@@ -8084,7 +10429,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/LaravelCollective/html.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "6.x",
@@ -8134,7 +10479,7 @@
     "repository": "LaravelCollective/html",
     "archived": false,
     "pushed_at": "2024-07-16T12:39:50+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/LaravelCollective/html"
@@ -8152,7 +10497,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/sanmai/Protocol.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "1.x",
@@ -8186,7 +10531,7 @@
     "repository": "sanmai/Protocol",
     "archived": true,
     "pushed_at": "2025-07-26T04:06:44+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/sanmai/Protocol"
@@ -8204,7 +10549,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/akaunting/laravel-language.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "2.x",
@@ -8254,7 +10599,7 @@
     "repository": "akaunting/laravel-language",
     "archived": false,
     "pushed_at": "2025-12-16T00:35:41+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/akaunting/laravel-language"
@@ -8272,7 +10617,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/akaunting/laravel-mutable-observer.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "3.x",
@@ -8338,7 +10683,7 @@
     "repository": "akaunting/laravel-mutable-observer",
     "archived": false,
     "pushed_at": "2026-06-23T00:52:50+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/akaunting/laravel-mutable-observer"
@@ -8356,7 +10701,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/Intervention/image.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "4.x",
@@ -8438,7 +10783,7 @@
     "repository": "Intervention/image",
     "archived": false,
     "pushed_at": "2026-09-26T06:48:54+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/Intervention/image"
@@ -8456,7 +10801,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/laravel/slack-notification-channel.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "3.x",
@@ -8522,7 +10867,7 @@
     "repository": "laravel/slack-notification-channel",
     "archived": false,
     "pushed_at": "2026-08-04T19:31:01+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/laravel/slack-notification-channel"
@@ -8540,7 +10885,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/santigarcor/laratrust.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "8.x",
@@ -8686,7 +11031,7 @@
     "repository": "santigarcor/laratrust",
     "archived": false,
     "pushed_at": "2026-03-06T14:11:27+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/santigarcor/laratrust"
@@ -8704,7 +11049,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/mnsami/composer-custom-directory-installer.git",
     "type": "composer-plugin",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "2.x",
@@ -8754,7 +11099,7 @@
     "repository": "mnsami/composer-custom-directory-installer",
     "archived": false,
     "pushed_at": "2026-05-20T07:59:02+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/mnsami/composer-custom-directory-installer"
@@ -8772,7 +11117,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/mikebronner/laravel-pivot-events.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "13.x",
@@ -8934,7 +11279,7 @@
     "repository": "mikebronner/laravel-pivot-events",
     "archived": false,
     "pushed_at": "2026-02-28T19:53:09+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/mikebronner/laravel-pivot-events"
@@ -8952,7 +11297,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/jenssegers/agent.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "2.x",
@@ -9002,7 +11347,7 @@
     "repository": "jenssegers/agent",
     "archived": false,
     "pushed_at": "2024-08-05T12:34:44+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/jenssegers/agent"
@@ -9020,7 +11365,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/akaunting/laravel-debugbar-collector.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "2.x",
@@ -9070,7 +11415,7 @@
     "repository": "akaunting/laravel-debugbar-collector",
     "archived": false,
     "pushed_at": "2023-06-02T07:23:06+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/akaunting/laravel-debugbar-collector"
@@ -9088,7 +11433,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/akaunting/laravel-version.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "1.x",
@@ -9122,7 +11467,7 @@
     "repository": "akaunting/laravel-version",
     "archived": false,
     "pushed_at": "2023-03-04T09:19:52+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/akaunting/laravel-version"
@@ -9140,7 +11485,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/lorisleiva/laravel-search-string.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "1.x",
@@ -9190,7 +11535,7 @@
     "repository": "lorisleiva/laravel-search-string",
     "archived": false,
     "pushed_at": "2024-03-13T13:01:00+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/lorisleiva/laravel-search-string"
@@ -9208,7 +11553,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/riverskies/laravel-mobile-detect.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "1.x",
@@ -9242,7 +11587,7 @@
     "repository": "riverskies/laravel-mobile-detect",
     "archived": false,
     "pushed_at": "2023-04-09T11:01:16+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/riverskies/laravel-mobile-detect"
@@ -9260,7 +11605,7 @@
     "installed_release_dated_by": null,
     "repository": "git@gitlab.com:balping/json-raw-encoder.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "1.x",
@@ -9294,7 +11639,7 @@
     "repository": "balping/json-raw-encoder",
     "archived": false,
     "pushed_at": "2023-03-27T20:25:07+02:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://gitlab.com/balping/json-raw-encoder"
@@ -9312,7 +11657,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/bugsnag/bugsnag-psr-logger.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "2.x",
@@ -9362,7 +11707,7 @@
     "repository": "bugsnag/bugsnag-psr-logger",
     "archived": false,
     "pushed_at": "2026-08-10T11:16:46+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/bugsnag/bugsnag-psr-logger"
@@ -9380,7 +11725,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/thephpleague/config.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "1.x",
@@ -9414,7 +11759,7 @@
     "repository": "thephpleague/config",
     "archived": false,
     "pushed_at": "2026-09-27T03:21:32+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/thephpleague/config"
@@ -9432,7 +11777,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/MarkBaker/PHPComplex.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "3.x",
@@ -9498,7 +11843,7 @@
     "repository": "MarkBaker/PHPComplex",
     "archived": false,
     "pushed_at": "2022-12-06T16:29:17+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/MarkBaker/PHPComplex"
@@ -9516,7 +11861,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/MarkBaker/PHPMatrix.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "3.x",
@@ -9614,7 +11959,7 @@
     "repository": "MarkBaker/PHPMatrix",
     "archived": false,
     "pushed_at": "2024-04-13T08:30:14+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/MarkBaker/PHPMatrix"
@@ -9632,7 +11977,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/laravel/framework.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "13.x",
@@ -9809,8 +12154,8 @@
     "forge": "GitHub",
     "repository": "laravel/framework",
     "archived": false,
-    "pushed_at": "2026-09-27T15:19:08+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "pushed_at": "2026-09-28T01:17:24+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
    "repository_link": "https://github.com/laravel/framework"
@@ -9828,7 +12173,7 @@
     "installed_release_dated_by": null,
     "repository": "https://github.com/dompdf/dompdf.git",
     "type": "library",
-    "data_date": "2026-09-27T00:00:00+00:00",
+    "data_date": "2026-09-28T00:00:00+00:00",
     "branches": [
      {
       "branch": "3.x",
@@ -9942,7 +12287,7 @@
     "repository": "dompdf/dompdf",
     "archived": false,
     "pushed_at": "2026-08-02T14:42:25+00:00",
-    "fetched_at": "2026-09-27T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": false
    },
    "repository_link": "https://github.com/dompdf/dompdf"

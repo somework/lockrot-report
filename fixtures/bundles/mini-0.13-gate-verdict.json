@@ -12,9 +12,9 @@
    "target_php": "8.4",
    "project_php": "^8.3",
    "lock_file": "composer.lock",
-   "fail_on": "high",
-   "fail_on_kind": "priority",
-   "strict_network": true,
+   "fail_on": "pinned",
+   "fail_on_kind": "verdict",
+   "strict_network": false,
    "mode": "check",
    "thresholds": {
     "release-warn-years": 3,
@@ -111,7 +111,6 @@
   "gate": {
    "fails": true,
    "tripped_by": [
-    "strict_network",
     "fail_on"
    ],
    "fail_on_applied": true
@@ -592,8 +591,8 @@
      "previous_verdict": null
     },
     "gate": {
-     "reaches_fail_on": true,
-     "fails": true,
+     "reaches_fail_on": false,
+     "fails": false,
      "exempt_by": null
     }
    },
@@ -1461,9 +1460,9 @@
      "previous_verdict": null
     },
     "gate": {
-     "reaches_fail_on": true,
+     "reaches_fail_on": false,
      "fails": false,
-     "exempt_by": "waiver"
+     "exempt_by": null
     }
    },
    {
