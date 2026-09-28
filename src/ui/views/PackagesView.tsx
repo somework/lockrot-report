@@ -66,7 +66,7 @@ function LibyearsCell({ finding, max }: { finding: Finding; max: number | null }
   const value = fixed(finding.libyears, 1);
   const metadata = model.details.get(finding.package)?.metadata ?? null;
   if (value === null) {
-    const reason = libyearsReason(finding, model.details.get(finding.package) ?? null, model.report.libyears);
+    const reason = libyearsReason(finding);
     const why = reason === "" ? "not measured" : `not measured: ${reason}`;
     return (
       <span className="ly-mark" title={why}>

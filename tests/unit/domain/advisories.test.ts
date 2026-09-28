@@ -7,6 +7,7 @@ import {
   fixLadder,
   fixShapeOf,
   groupAdvisories,
+  noFixWords,
   passesAdvisoryRail,
   sevTone,
   sortAdvisories,
@@ -55,6 +56,14 @@ describe("sevTone", () => {
   });
 });
 
+describe("noFixWords", () => {
+  it("says no fix is listed only where the advisory's S9 read the releases, or does not say", () => {
+    expect(noFixWords(makeAdvisory({ releasesRead: true }))).toBe("no fix listed");
+    expect(noFixWords(makeAdvisory({ releasesRead: null }))).toBe("no fix listed");
+    expect(noFixWords(makeAdvisory({ releasesRead: false }))).toBe("fix not checked");
+  });
+});
+
 describe("fixLadder", () => {
   it("returns one rung per distinct fixed_by version", () => {
     // Arrange
@@ -70,8 +79,8 @@ describe("fixLadder", () => {
 
     // Assert
     expect(ladder).toEqual([
-      { version: "2.0.0", onBranch: true, n: 1 },
-      { version: "3.0.0", onBranch: false, n: 1 },
+      { version: "2.0.0", onBranch: true, n: 1, unchecked: false },
+      { version: "3.0.0", onBranch: false, n: 1, unchecked: false },
     ]);
   });
 
@@ -88,7 +97,7 @@ describe("fixLadder", () => {
     const ladder = fixLadder(finding);
 
     // Assert
-    expect(ladder).toEqual([{ version: "2.0.0", onBranch: true, n: 2 }]);
+    expect(ladder).toEqual([{ version: "2.0.0", onBranch: true, n: 2, unchecked: false }]);
   });
 
   it("buckets advisories with no fix listed together, distinct from any real version", () => {
@@ -104,7 +113,22 @@ describe("fixLadder", () => {
     const ladder = fixLadder(finding);
 
     // Assert
-    expect(ladder).toEqual([{ version: null, onBranch: false, n: 2 }]);
+    expect(ladder).toEqual([{ version: null, onBranch: false, n: 2, unchecked: false }]);
+  });
+
+  it("keeps advisories whose releases were not read apart from those no release fixes", () => {
+    const finding = makeFinding({
+      advisories: [
+        makeAdvisory({ id: "a", fixedBy: null, releasesRead: false }),
+        makeAdvisory({ id: "b", fixedBy: null, releasesRead: true }),
+        makeAdvisory({ id: "c", fixedBy: null, releasesRead: null }),
+      ],
+    });
+
+    expect(fixLadder(finding)).toEqual([
+      { version: null, onBranch: false, n: 2, unchecked: false },
+      { version: null, onBranch: false, n: 1, unchecked: true },
+    ]);
   });
 
   it("puts an on-branch rung before an off-branch rung regardless of count", () => {
@@ -121,8 +145,8 @@ describe("fixLadder", () => {
     const ladder = fixLadder(finding);
 
     // Assert
-    expect(ladder[0]).toEqual({ version: "1.5.0", onBranch: true, n: 1 });
-    expect(ladder[1]).toEqual({ version: "3.0.0", onBranch: false, n: 2 });
+    expect(ladder[0]).toEqual({ version: "1.5.0", onBranch: true, n: 1, unchecked: false });
+    expect(ladder[1]).toEqual({ version: "3.0.0", onBranch: false, n: 2, unchecked: false });
   });
 
   it("orders ties by advisory-arrival order, not JS's numeric-key-first object order (M33)", () => {
@@ -140,8 +164,8 @@ describe("fixLadder", () => {
 
     // Assert: both rungs are on-branch with n:1, a tie the sort leaves in first-seen order.
     expect(ladder).toEqual([
-      { version: "1.9.0", onBranch: true, n: 1 },
-      { version: "2", onBranch: true, n: 1 },
+      { version: "1.9.0", onBranch: true, n: 1, unchecked: false },
+      { version: "2", onBranch: true, n: 1, unchecked: false },
     ]);
   });
 
@@ -158,7 +182,7 @@ describe("fixLadder", () => {
     const ladder = fixLadder(finding);
 
     // Assert
-    expect(ladder).toEqual([{ version: "2.0.0", onBranch: true, n: 2 }]);
+    expect(ladder).toEqual([{ version: "2.0.0", onBranch: true, n: 2, unchecked: false }]);
   });
 });
 

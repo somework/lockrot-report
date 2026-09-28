@@ -158,6 +158,31 @@ describe("provenance — repository activity", () => {
   });
 });
 
+describe("provenance — the finding's own from_composer_repository", () => {
+  it("says a finding outside a Composer repository has no facts, with or without a details entry", () => {
+    const finding = makeFinding({ fromComposerRepository: false });
+    const bare = makeModel([finding]);
+    expect(provenance(bare, finding).metadata).toMatchObject({ reason: NOT_FROM_COMPOSER });
+    expect(provenance(bare, finding).activity).toEqual({ kind: "missing", reason: NOT_FROM_COMPOSER });
+
+    const lockSaysComposer = withDetails(bare, { [finding.package]: {} });
+    expect(provenance(lockSaysComposer, finding).metadata).toMatchObject({ reason: NOT_FROM_COMPOSER });
+    expect(provenance(lockSaysComposer, finding).activity).toEqual({
+      kind: "missing",
+      reason: NOT_FROM_COMPOSER,
+    });
+  });
+
+  it("reads the finding's true over a lock entry that says false", () => {
+    const finding = makeFinding({ fromComposerRepository: true });
+    const model = withDetails(makeModel([finding]), {
+      [finding.package]: { lock: { ...LOCK, fromComposerRepository: false } },
+    });
+    expect(provenance(model, finding).metadata).toMatchObject({ reason: "none recorded for this package" });
+    expect(provenance(model, finding).activity).toMatchObject({ reason: "none recorded for this package" });
+  });
+});
+
 describe("quietUnread", () => {
   it("names the quiet S3/S4 of a package the file holds no activity for, and why", () => {
     const finding = makeFinding({ signals: [makeSignal({ id: "S6", level: "warn" })] });

@@ -12,18 +12,23 @@ export function safeHref(url: unknown): string | null {
   return /^https?:\/\/[^\s<>"']+$/i.test(value) ? value : null;
 }
 
-/**
- * The Packagist page for a finding's package. A lock entry links only when it says the package came
- * from a Composer repository; a package with no lock entry (an install-time document) links.
- */
+/** Whether a repository was asked about the package: the finding's own field, else its lock entry's,
+ *  which states the same fact; null where neither says. */
+export function fromComposerRepository(
+  finding: Pick<Finding, "package" | "fromComposerRepository">,
+  details: ReadonlyMap<string, PackageDetails>,
+): boolean | null {
+  return finding.fromComposerRepository ?? details.get(finding.package)?.lock?.fromComposerRepository ?? null;
+}
+
+/** True is still the page's assumption: Private Packagist writes the same flag. */
 export function packagistUrl(
-  finding: Pick<Finding, "package">,
+  finding: Pick<Finding, "package" | "fromComposerRepository">,
   details: ReadonlyMap<string, PackageDetails>,
 ): string | null {
-  const lock = details.get(finding.package)?.lock ?? null;
-  const linked = lock === null || lock.fromComposerRepository === true;
-
-  return linked ? `https://packagist.org/packages/${finding.package}` : null;
+  return fromComposerRepository(finding, details) === true
+    ? `https://packagist.org/packages/${finding.package}`
+    : null;
 }
 
 /** The NVD page for an advisory that carries a CVE id; a GHSA-only id has nowhere to link. */

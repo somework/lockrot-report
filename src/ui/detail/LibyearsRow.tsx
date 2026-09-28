@@ -1,8 +1,7 @@
-import type { ExplainMetadata, Finding, PackageDetails } from "../../model/types";
+import type { ExplainMetadata, Finding } from "../../model/types";
 import { day, fixed } from "../../domain/format";
 import { libyearsReason, libyearsRowPhrases } from "../../domain/libyears";
 import { Muted, NoWrap } from "../common/common";
-import { useReport } from "../context";
 import "./detail.css";
 
 type MetadataSlice = Pick<
@@ -15,19 +14,10 @@ type MetadataSlice = Pick<
 >;
 
 /** The value half of the lock entry's "libyears behind" row; it always says something. */
-export function LibyearsRow({
-  finding,
-  details,
-  metadata,
-}: {
-  finding: Finding;
-  details: PackageDetails | null;
-  metadata: MetadataSlice | null;
-}) {
-  const { model } = useReport();
+export function LibyearsRow({ finding, metadata }: { finding: Finding; metadata: MetadataSlice | null }) {
   const value = fixed(finding.libyears, 1);
   if (value === null) {
-    const why = libyearsReason(finding, details, model.report.libyears);
+    const why = libyearsReason(finding);
     return <Muted>{why === "" ? "not measured" : `not measured · ${why}`}</Muted>;
   }
 

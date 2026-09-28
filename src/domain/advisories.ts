@@ -22,30 +22,30 @@ export interface FixRung {
   readonly version: string | null;
   readonly onBranch: boolean;
   readonly n: number;
+  /** No release was read for these advisories, so a null `version` is not "no fix". */
+  readonly unchecked: boolean;
 }
 
-/**
- * Distinct releases that clear a finding's advisories, cheapest move first: a release already on
- * the installed branch beats one that is not, and among ties the release that clears more
- * advisories comes first (report.js:160-171). Legacy bucketed by `fixed_by` in a plain object and
- * read it back with `Object.keys`, which visits integer-like keys (a `fixed_by` of `"2"`) in
- * numeric order ahead of insertion order — a JS engine quirk, not anything `Priority::of()` or the
- * advisory feed intends. A `Map` keeps first-seen order instead, so ties after the onBranch/n sort
- * follow the order advisories arrived in, not JS's object-key order (critic.md M33). Also per M33,
- * a bucket keeps the *first* advisory's `fixed_on_branch` flag when two advisories share a
- * `fixed_by` but disagree on it — this port keeps that same behaviour, not averaging or overwriting
- * it.
- */
+/** An advisory's null `fixedBy` in words: "no fix" only where its S9 read the releases. */
+export function noFixWords(advisory: Pick<Advisory, "releasesRead">): string {
+  return advisory.releasesRead === false ? "fix not checked" : "no fix listed";
+}
+
+/** Distinct releases that clear a finding's advisories: one on the installed branch first, then the
+ *  one clearing more. Ties keep first-seen order, and a rung keeps its first advisory's
+ *  `fixed_on_branch` where two disagree. */
 export function fixLadder(finding: Finding): readonly FixRung[] {
   const buckets = new Map<string, FixRung>();
   for (const advisory of advisoriesOf(finding)) {
-    const key = advisory.fixedBy ?? "\u0000none";
+    const unchecked = advisory.fixedBy === null && advisory.releasesRead === false;
+    const key = advisory.fixedBy ?? (unchecked ? "\u0000unchecked" : "\u0000none");
     const existing = buckets.get(key);
-    if (existing) {
-      buckets.set(key, { version: existing.version, onBranch: existing.onBranch, n: existing.n + 1 });
-    } else {
-      buckets.set(key, { version: advisory.fixedBy, onBranch: advisory.fixedOnBranch, n: 1 });
-    }
+    buckets.set(
+      key,
+      existing
+        ? { ...existing, n: existing.n + 1 }
+        : { version: advisory.fixedBy, onBranch: advisory.fixedOnBranch, n: 1, unchecked },
+    );
   }
   return Array.from(buckets.values()).sort((x, y) => {
     if (x.onBranch !== y.onBranch) return x.onBranch ? -1 : 1;

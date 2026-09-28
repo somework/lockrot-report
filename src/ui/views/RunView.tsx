@@ -6,7 +6,7 @@ import { baselineDelta } from "../../domain/baseline";
 import { EMPTY_FILTERS } from "../../state/types";
 import { fixed, plural } from "../../domain/format";
 import { unmeasuredLabel } from "../../domain/libyears";
-import { noteDocLink } from "../../domain/sniff";
+import { safeHref } from "../../domain/links";
 import {
   cacheAge,
   cacheNullReason,
@@ -62,11 +62,9 @@ function Stat({ bucket, label, count }: { bucket: StatBucket; label: string; cou
 }
 
 /**
- * PD-BASELINE-4 (DESIGN.md §5): the baseline as a stat row — the four numbers lockrot recorded in
- * its summary block, new and worsened in the baseline's accent as the rows' own tags are
- * (PD-BASELINE-7), then the stale entries by name. lockrot calls those `stale`; the label says
- * "gone from the lock" first, so it never reads as the verdict of the same name. Replaces legacy's
- * raw `JSON.stringify` dump (report.js:651), and the one-line sentence that followed it.
+ * PD-BASELINE-4 (DESIGN.md §5): the baseline as a stat row, new and worsened in the baseline's
+ * accent (PD-BASELINE-7), then the stale entries by name. The label says "gone from the lock" first,
+ * so lockrot's `stale` never reads as the verdict of the same name.
  */
 function BaselineStats({ baseline }: { baseline: BaselineSummary }) {
   const stats: readonly (readonly [bucket: StatBucket, label: string, count: number])[] = [
@@ -131,9 +129,7 @@ function orReason(report: ReportModel, key: string, value: string | null): Field
   return value ?? { missing: nullReason(report, key) };
 }
 
-/** The "libyears not measured" row: every reason with at least one package under it, as a readable
- *  `reason count · reason count` list instead of a raw object dump (legacy `Object.keys`,
- *  report.js:648-650). */
+/** The "libyears not measured" row: every reason with at least one package under it. */
 function unmeasuredText(report: ReportModel): FieldValue {
   const block = report.libyears;
   if (!block) return { missing: libyearsReason(report) };
@@ -382,7 +378,7 @@ function jumpTo(ref: RefObject<HTMLHeadingElement>): void {
 /**
  * The Run tab (PD-RUN-1..4, DESIGN.md §5): the run in a sentence, what the document leaves out, what
  * the run could not see, the baseline, the thresholds on the Findings list's own scale, then every
- * recorded field in three dense groups — ported from legacy `viewRun` (report.js:627-662).
+ * recorded field in three dense groups.
  */
 export function RunView() {
   const { model } = useReport();
@@ -401,14 +397,23 @@ export function RunView() {
           <h3 ref={notesRef} tabIndex={-1} className="run-jump-target">
             What this run could not see
           </h3>
-          {report.notes.map((note) => (
-            <div className="note" key={note}>
-              {note}{" "}
-              <NoWrap>
-                <OutLink href={noteDocLink(note)}>what this means</OutLink>
-              </NoWrap>
-            </div>
-          ))}
+          {report.notes.map((note, index) => {
+            // Entries line up with notes by place; a code repeats, and so can a text.
+            const docs = safeHref(report.noteDetails[index]?.docsUrl ?? null);
+            return (
+              <div className="note" key={index}>
+                {note}
+                {docs !== null && (
+                  <>
+                    {" "}
+                    <NoWrap>
+                      <OutLink href={docs}>what this means</OutLink>
+                    </NoWrap>
+                  </>
+                )}
+              </div>
+            );
+          })}
         </section>
       )}
 

@@ -344,10 +344,6 @@ tag or the address format, says so under **Breaking** in its entry.
   anything reads "Last release: none, a snapshot", "commit dated …"; a version in a repository with
   no tag reads "none tagged" with no date, since its lock time is neither a release nor a snapshot.
   The release-branches block dates its snapshot row by the same commit.
-- A package's libyears "not measured" reason says "branch snapshot" only where S6 or the lock says
-  so, never from the look of the version string. A package without S6 and without a note reads "no
-  release date lockrot trusts", since lockrot flags every branch snapshot with S6 (mautic's symfony
-  polyfills, koel's, akaunting's). A document without a libyears block names no reason.
 - The page no longer says "stable" where lockrot counts every tag, pre-releases included: S2 is "no
   recent release" ("no release since Mar 2021" on a row), the `silent` and S2 definitions say
   "pre-releases included", libyears is measured against the "newest release", Provenance's line is
@@ -371,8 +367,20 @@ tag or the address format, says so under **Breaking** in its entry.
   and the answer sentence says "its fix could not be looked for". "No fix is coming" now comes from
   `no_fix_expected`, never from the words "no fix expected" in the evidence, so a report without the
   field no longer says it.
-- A package's libyears "not measured" reason is the finding's own `libyears_unmeasured` where the
-  report carries it; a reason the page does not know is shown as written (`yanked_release`).
+- A package's libyears "not measured" reason is the finding's own `libyears_unmeasured` alone; a
+  reason the page does not know is shown as written (`yanked_release`). The page no longer works one
+  out of the finding's note, S6 or the lock, so a report without the field names no reason.
+- The Packagist link and Provenance's "not from a Composer repository" read the finding's own
+  `from_composer_repository`, else its lock entry's. A package lockrot did not ask a repository about
+  is no longer linked when it has no details entry (koel's `teamtnt/laravel-scout-tntsearch-driver`),
+  and one no field places is not linked either, instead of being assumed to come from Packagist.
+- A run note's "what this means" links the page lockrot names for that note (`note_details`'
+  `docs_url`, `lockrot.dev/notes/#…`) instead of one the page guessed from the note's words; a note
+  lockrot names no page for, and every note of a report without `note_details`, has no link. Two
+  notes with the same text are both listed.
+- An advisory whose releases lockrot did not read (its S9's `releases_read: false`) says "fix not
+  checked" in its row on the Advisories tab and in the open package, and its rung of the fix ladder
+  reads "not checked", instead of "no fix listed" and "no release".
 - A run note that quotes a long URL wraps on a phone instead of widening Run data past 320px.
 - Blast radius: a flagged package lockrot counts under no direct requirement, because more of them
   reach it than `exposure_rule.max_fan_in` allows (its `unattributed` list: akaunting's

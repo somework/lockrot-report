@@ -4,6 +4,7 @@ import {
   advisoryCheckIncomplete,
   allAdvisories,
   fixShapeOf,
+  noFixWords,
   sevTone,
   type AdvisoryGroup,
   type AdvisoryWithFinding,
@@ -364,10 +365,9 @@ function ColumnHead({ axis }: { axis: ReportedAxis | null }) {
   );
 }
 
-const FIX_WHERE: Readonly<Record<FixShape, string>> = {
+const FIX_WHERE: Readonly<Record<Exclude<FixShape, "none">, string>> = {
   branch: "on your branch",
   move: "on another branch",
-  none: "no fix listed",
 };
 
 /** A package name with its vendor quieter and a wrap point after the slash, as Findings rows draw
@@ -533,14 +533,14 @@ function AdvisoryRow({ finding, advisory, first, ditto, axis }: AdvisoryRowProps
         <span className="mono">{advisory.affectedVersions ?? "?"}</span>
       </span>
       <span className={`ac-fix is-${shape}`}>
-        {advisory.fixedBy ? (
+        {shape === "none" ? (
+          <span className="ac-where">{noFixWords(advisory)}</span>
+        ) : (
           <>
             <span className="ac-lbl">fixed by </span>
             <span className="ac-fixver">{advisory.fixedBy}</span>{" "}
             <span className="ac-where">{FIX_WHERE[shape]}</span>
           </>
-        ) : (
-          <span className="ac-where">{FIX_WHERE.none}</span>
         )}
       </span>
       <AgeCell years={years} axis={axis} />

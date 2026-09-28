@@ -369,8 +369,8 @@ describe("Detail", () => {
       expect(lockEntry?.textContent).toContain("installed");
       expect(lockEntry?.textContent).toContain("3.0.0");
       expect(lockEntry?.querySelectorAll("dt").length).toBe(2); // installed, libyears behind — nothing else
-      expect(lockEntry?.textContent).toContain("not measured");
-      expect(lockEntry?.textContent).toContain("not from a Composer repository");
+      // Its note says why, and no field does: the libyears row names no reason.
+      expect(lockEntry?.querySelectorAll("dd")[1]?.textContent).toBe("not measured");
 
       // PD-RUN-5: no bare dash — each source says why this file gives nothing for it.
       expect(provenance?.querySelectorAll("dt").length ?? 0).toBe(0);
@@ -1087,6 +1087,15 @@ describe("Detail", () => {
       expect(screen.getByText("fixed by 1.2.0")).toBeTruthy();
     });
 
+    it("says an advisory whose releases were not read has its fix not checked, never no fix", () => {
+      const { container } = renderDetail(EDGES_013, "acme/silent-snapshot");
+      const rungs = Array.from(container.querySelectorAll(".detail-rung"), (rung) => rung.textContent);
+      expect(rungs).toEqual(["not checked1 of 1"]);
+      fireEvent.click(screen.getByText("Every advisory"));
+      expect(screen.getByText("fix not checked")).toBeTruthy();
+      expect(screen.queryByText("no fix listed")).toBeNull();
+    });
+
     it("shows the feed's raw severity text in the chip, not the normalised bucket (DESIGN.md §5 M1)", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/raw-severity");
       fireEvent.click(screen.getByText("Every advisory"));
@@ -1423,6 +1432,29 @@ describe("Detail", () => {
       fireEvent.click(screen.getByRole("button", { name: "S4 push age, quiet: show the evidence" }));
       await nextFrame();
       expect(document.activeElement).toBe(container.querySelector("#detail-prov-activity"));
+    });
+  });
+
+  describe("the Packagist link reads where the package came from", () => {
+    it("links a 0.13 finding from a Composer repository that has no details entry", () => {
+      renderDetail(KOEL_013, "algolia/algoliasearch-client-php");
+      expect(screen.getByRole("link", { name: "packagist" }).getAttribute("href")).toBe(
+        "https://packagist.org/packages/algolia/algoliasearch-client-php",
+      );
+    });
+
+    it("does not link a finding that is not from one, and says so in Provenance", () => {
+      const { container } = renderDetail(KOEL_013, "teamtnt/laravel-scout-tntsearch-driver");
+      expect(screen.queryByRole("link", { name: "packagist" })).toBeNull();
+      const provenance = openReference(container, "Provenance");
+      expect(
+        Array.from(provenance?.querySelectorAll(".detail-prov-reason") ?? [], (el) => el.textContent),
+      ).toEqual(["none — not from a Composer repository"]);
+    });
+
+    it("does not link a finding when no field says where it came from (an older report, no lock entry)", () => {
+      renderDetail(KOEL, "algolia/algoliasearch-client-php");
+      expect(screen.queryByRole("link", { name: "packagist" })).toBeNull();
     });
   });
 

@@ -1,7 +1,7 @@
 /**
- * PD-S6-3: every document is worded from its fields in one way. An unmeasured package gives the
- * reason its libyears block counts it under, the lock entry never calls a commit date a release, and
- * S2 is not called "stable" where lockrot counts every tag.
+ * PD-S6-3: every document is worded from its fields in one way. An unmeasured package gives its own
+ * `libyears_unmeasured`, the lock entry never calls a commit date a release, and S2 is not called
+ * "stable" where lockrot counts every tag.
  */
 import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
@@ -33,7 +33,7 @@ async function lockEntry(page: Page, pkg: string): Promise<Record<string, string
   return Object.fromEntries(labels.map((label, index) => [label.trim(), (values[index] ?? "").trim()]));
 }
 
-test("mautic 0.13: a package with no S6 and no note has no release date lockrot trusts", async ({ page }) => {
+test("mautic 0.13: each unmeasured package gives its own libyears_unmeasured", async ({ page }) => {
   await report.goto(FIXTURES.mautic013);
   await report.tab("packages");
   for (const pkg of [
@@ -46,6 +46,9 @@ test("mautic 0.13: a package with no S6 and no note has no release date lockrot 
     await expect(libyearsWords(page, pkg)).toHaveText("not measured: no release date lockrot trusts");
   }
   await expect(libyearsWords(page, "rector/rector")).toHaveText("not measured: branch snapshot");
+  await expect(libyearsWords(page, "mautic/core-lib")).toHaveText(
+    "not measured: not from a Composer repository",
+  );
 
   const entry = await lockEntry(page, "symfony/polyfill-ctype");
   expect(entry["libyears behind"]).toBe("not measured · no release date lockrot trusts");
@@ -68,13 +71,22 @@ test("mini-0.13-edges: each unmeasured package's reason is the one its libyears 
   await expect(page.locator("main")).not.toContainText("no stable release date");
 });
 
-test("capsule 0.10: a document without a libyears block names no reason", async ({ page }) => {
-  await report.goto("capsule-0.10-drupal" as FixtureName);
+test("mini-0.13-edges: a reason the page does not know is shown as written", async ({ page }) => {
+  await report.goto(FIXTURES.miniEdges013);
   await report.tab("packages");
-  const words = await page.locator(".pk-table .pk-ly .vh").allInnerTexts();
-  expect(words.length).toBeGreaterThan(0);
-  expect(new Set(words)).toEqual(new Set(["not measured"]));
+  await expect(libyearsWords(page, "acme/future-reason")).toHaveText("not measured: yanked_release");
 });
+
+for (const fixture of ["capsule-0.10-drupal" as FixtureName, FIXTURES.mautic]) {
+  test(`${fixture}: a document without libyears_unmeasured names no reason`, async ({ page }) => {
+    await report.goto(fixture);
+    await report.tab("packages");
+    const words = await page.locator(".pk-table .pk-ly .vh").allInnerTexts();
+    const unmeasured = words.filter((word) => word.startsWith("not measured"));
+    expect(unmeasured.length).toBeGreaterThan(0);
+    expect(new Set(unmeasured)).toEqual(new Set(["not measured"]));
+  });
+}
 
 test("the lock entry dates a snapshot's commit and an untagged version's lock time, never as a release", async ({
   page,

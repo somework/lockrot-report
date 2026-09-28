@@ -1,12 +1,9 @@
 /** How far a package's installed release is behind the newest one, in fractional years, or why it
  *  could not be measured. */
 
-import type { ExplainMetadata, Finding, LibyearsBlock, PackageDetails } from "../model/types";
+import type { ExplainMetadata, Finding, LibyearsBlock } from "../model/types";
 import { fixed } from "./format";
-import { readPinnedFacts } from "./pinned";
 import { vocabTable } from "./vocab";
-
-const NOT_FROM_COMPOSER_NOTE = "not from a Composer repository, not checked";
 
 const UNMEASURED_LABELS: Readonly<Record<string, string>> = vocabTable({
   no_stable_release_date: "no dated release",
@@ -31,26 +28,13 @@ const UNMEASURED_REASONS: Readonly<Record<string, string>> = vocabTable({
   metadata_unavailable: "metadata unavailable",
 });
 
-/** In the words the report's `unmeasured` block counts it under, an unknown reason as written; empty
- *  when measured, when there is no block, or when no field says which reason. */
-export function libyearsReason(
-  finding: Finding | null,
-  details: PackageDetails | null,
-  block: LibyearsBlock | null,
-): string {
-  if (!finding || !block || fixed(finding.libyears, 1) !== null) return "";
+/** The finding's own `libyears_unmeasured` in words, an unknown code as written; empty when measured
+ *  or when the finding names no reason. */
+export function libyearsReason(finding: Pick<Finding, "libyears" | "libyearsUnmeasured"> | null): string {
+  if (!finding || fixed(finding.libyears, 1) !== null) return "";
   const code = finding.libyearsUnmeasured;
-  if (code !== null) return UNMEASURED_REASONS[code] ?? code;
-  if (finding.note === NOT_FROM_COMPOSER_NOTE) return "not from a Composer repository";
-  if (finding.note) return "metadata unavailable";
-  switch (readPinnedFacts(finding, details).branchSnapshot) {
-    case true:
-      return "branch snapshot";
-    case false:
-      return "no release date lockrot trusts";
-    case null:
-      return "";
-  }
+  if (code === null) return "";
+  return UNMEASURED_REASONS[code] ?? code;
 }
 
 /** Never "ahead": the value is a difference of release dates clamped at zero. */

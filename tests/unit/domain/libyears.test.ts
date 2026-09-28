@@ -13,13 +13,7 @@ import {
   libyearsSortKey,
 } from "../../../src/domain/libyears";
 import { normalize } from "../../../src/model/normalize";
-import type {
-  ExplainMetadata,
-  Finding,
-  LibyearsBlock,
-  Model,
-  PackageDetails,
-} from "../../../src/model/types";
+import type { ExplainMetadata, Finding, LibyearsBlock, Model } from "../../../src/model/types";
 import { makeFinding, makeSignal } from "./fixtures";
 
 // "(runtime-only)" cases feed a wrong runtime type through a cast: normalize() rules them out.
@@ -45,120 +39,65 @@ describe("libyearsSortKey", () => {
 });
 
 describe("libyearsReason", () => {
-  const snapshotLock = (branchSnapshot: boolean | null): PackageDetails => ({
-    metadata: null,
-    lock: {
-      php: null,
-      released: null,
-      repository: null,
-      fromComposerRepository: true,
-      dev: false,
-      branchSnapshot,
-      type: null,
-    },
-    activity: null,
-    repositoryLink: null,
-  });
   const unmeasured = (overrides: Partial<Finding> = {}): Finding =>
     makeFinding({ verdict: "stale", libyears: null, ...overrides });
-  const oldS6 = makeSignal({ id: "S6", data: { version: "dev-main" } });
-  const block: LibyearsBlock = {
-    total: 1,
-    directRequirements: 1,
-    measured: 1,
-    unmeasured: [],
-    furthestBehind: null,
-  };
 
   test("is empty for a measured finding, zero included", () => {
-    expect(libyearsReason(makeFinding({ libyears: 4.7 }), null, block)).toBe("");
-    expect(libyearsReason(makeFinding({ libyears: 0 }), null, block)).toBe("");
-    expect(libyearsReason(null, null, block)).toBe("");
+    expect(libyearsReason(makeFinding({ libyears: 4.7 }))).toBe("");
+    expect(libyearsReason(makeFinding({ libyears: 0 }))).toBe("");
+    expect(libyearsReason(null)).toBe("");
   });
 
-  test("names the finding's own libyears_unmeasured before anything else, an unknown one as written", () => {
-    const note = "not from a Composer repository, not checked";
-    expect(
-      libyearsReason(unmeasured({ note, libyearsUnmeasured: "branch_snapshot" }), snapshotLock(false), block),
-    ).toBe("branch snapshot");
-    expect(libyearsReason(unmeasured({ libyearsUnmeasured: "metadata_unavailable" }), null, block)).toBe(
-      "metadata unavailable",
+  test("words the finding's own libyears_unmeasured, an unknown code as written", () => {
+    expect(libyearsReason(unmeasured({ libyearsUnmeasured: "branch_snapshot" }))).toBe("branch snapshot");
+    expect(libyearsReason(unmeasured({ libyearsUnmeasured: "no_stable_release_date" }))).toBe(
+      "no release date lockrot trusts",
     );
-    expect(libyearsReason(unmeasured({ libyearsUnmeasured: "yanked_release" }), null, block)).toBe(
-      "yanked_release",
-    );
-  });
-
-  test("names the note's reason first", () => {
-    const note = "not from a Composer repository, not checked";
-    expect(libyearsReason(unmeasured({ note }), snapshotLock(true), block)).toBe(
+    expect(libyearsReason(unmeasured({ libyearsUnmeasured: "not_from_composer_repository" }))).toBe(
       "not from a Composer repository",
     );
-    expect(
-      libyearsReason(unmeasured({ note: "Repository metadata unavailable: timeout" }), null, block),
-    ).toBe("metadata unavailable");
-  });
-
-  test("a finding with no S6 and no note has no release date lockrot trusts, whatever its version", () => {
-    expect(libyearsReason(unmeasured(), null, block)).toBe("no release date lockrot trusts");
-    expect(libyearsReason(unmeasured({ version: "dev-main" }), snapshotLock(null), block)).toBe(
-      "no release date lockrot trusts",
+    expect(libyearsReason(unmeasured({ libyearsUnmeasured: "metadata_unavailable" }))).toBe(
+      "metadata unavailable",
     );
+    expect(libyearsReason(unmeasured({ libyearsUnmeasured: "yanked_release" }))).toBe("yanked_release");
   });
 
-  test("reads a branch snapshot from the lock where S6 names no reason, never from the version string", () => {
-    expect(
-      libyearsReason(unmeasured({ version: "v1.37.0", signals: [oldS6] }), snapshotLock(true), block),
-    ).toBe("branch snapshot");
-    expect(
-      libyearsReason(unmeasured({ version: "dev-main", signals: [oldS6] }), snapshotLock(false), block),
-    ).toBe("no release date lockrot trusts");
-  });
-
-  test("reads it from S6's reason first", () => {
-    const s6 = (reason: string): Finding =>
-      unmeasured({ signals: [makeSignal({ id: "S6", data: { reason } })] });
-    expect(libyearsReason(s6("branch_snapshot"), null, block)).toBe("branch snapshot");
-    expect(libyearsReason(s6("no_stable_release"), snapshotLock(true), block)).toBe(
-      "no release date lockrot trusts",
-    );
-  });
-
-  test("says no reason when no field states one", () => {
-    expect(libyearsReason(unmeasured({ signals: [oldS6] }), null, block)).toBe("");
-    expect(libyearsReason(unmeasured({ signals: [oldS6] }), snapshotLock(null), block)).toBe("");
-  });
-
-  test("says no reason in a document without a libyears block: nothing there counts one", () => {
-    expect(libyearsReason(unmeasured(), snapshotLock(false), null)).toBe("");
-    const capsule = loadBundle("capsule-0.10-drupal");
-    for (const f of capsule.report.findings) {
-      expect(libyearsReason(f, capsule.details.get(f.package) ?? null, capsule.report.libyears)).toBe("");
-    }
+  test("says no reason where the finding names none, whatever its note, version or S6 say", () => {
+    const s6 = makeSignal({ id: "S6", data: { reason: "branch_snapshot" } });
+    expect(libyearsReason(unmeasured())).toBe("");
+    expect(libyearsReason(unmeasured({ note: "not from a Composer repository, not checked" }))).toBe("");
+    expect(libyearsReason(unmeasured({ note: "Repository metadata unavailable: timeout" }))).toBe("");
+    expect(libyearsReason(unmeasured({ version: "dev-main", signals: [s6] }))).toBe("");
   });
 
   test.each([
-    ["wallabag_wallabag", "friendsofsymfony/oauth-server-bundle"],
-    ["wallabag_wallabag-0.13", "friendsofsymfony/oauth-server-bundle"],
-    ["mautic_mautic", "rector/rector"],
-    ["mautic_mautic-0.13", "rector/rector"],
-  ])("%s %s: a snapshot, the same on either document", (bundle, pkg) => {
+    "capsule-0.10-drupal",
+    "koel_koel",
+    "mautic_mautic",
+    "wallabag_wallabag",
+    "mini",
+    "mini-no-fail-on",
+  ])("%s: a document without libyears_unmeasured names no reason for any row", (bundle) => {
+    const model = loadBundle(bundle);
+    expect(new Set(model.report.findings.map((f) => libyearsReason(f)))).toEqual(new Set([""]));
+  });
+
+  test.each([
+    ["wallabag_wallabag-0.13", "friendsofsymfony/oauth-server-bundle", "branch snapshot"],
+    ["mautic_mautic-0.13", "rector/rector", "branch snapshot"],
+    ["mautic_mautic-0.13", "mautic/core-lib", "not from a Composer repository"],
+    ["wallabag_offline-strict-0.13", "doctrine/cache", "metadata unavailable"],
+    ["mini-0.13-edges", "acme/future-reason", "yanked_release"],
+  ])("%s %s: %s", (bundle, pkg, words) => {
     const model = loadBundle(bundle);
     const f = model.report.findings.find((x) => x.package === pkg) ?? null;
-    expect(libyearsReason(f, model.details.get(pkg) ?? null, model.report.libyears)).toBe("branch snapshot");
-  });
-
-  test("koel_koel roave/security-advisories: S6 names no reason and no explain data says, so no reason", () => {
-    const model = loadBundle("koel_koel");
-    const f = model.report.findings.find((x) => x.package === "roave/security-advisories") ?? null;
-    expect(libyearsReason(f, null, model.report.libyears)).toBe("");
+    expect(libyearsReason(f)).toBe(words);
   });
 
   test.each([
-    "mautic_mautic",
     "mautic_mautic-0.13",
     "koel_koel-0.13",
-    "wallabag_wallabag",
+    "koel_koel-all-0.13",
     "wallabag_wallabag-0.13",
     "gh_akaunting_akaunting-0.13",
     "mini-0.13-edges",
@@ -170,8 +109,6 @@ describe("libyearsReason", () => {
     "wallabag_generate-baseline-0.13",
     "wallabag_offline-strict-0.13",
     "wallabag_offline-strict-unchecked-0.13",
-    "mini",
-    "mini-no-fail-on",
   ])("%s: every unmeasured row has a reason, and they add up to the unmeasured block", (bundle) => {
     const model = loadBundle(bundle);
     const words: Record<string, string> = {
@@ -182,8 +119,8 @@ describe("libyearsReason", () => {
     };
     const counted = new Map<string, number>();
     for (const f of model.report.findings) {
-      const why = libyearsReason(f, model.details.get(f.package) ?? null, model.report.libyears);
       if (f.libyears !== null) continue;
+      const why = libyearsReason(f);
       counted.set(why, (counted.get(why) ?? 0) + 1);
     }
     const expected = new Map<string, number>();

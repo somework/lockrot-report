@@ -54,7 +54,7 @@ describe("PackagesView (PD-PACKAGES-1): libyears as a scale, its marks keyed onc
       package: "c/unmeasured",
       libyears: null,
       version: "dev-main",
-      signals: [makeSignal({ id: "S6", data: { reason: "branch_snapshot" } })],
+      libyearsUnmeasured: "branch_snapshot",
     }),
   ]);
   const model: Model = {

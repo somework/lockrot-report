@@ -3,6 +3,7 @@
 
 import type { ExplainActivity, ExplainMetadata, Finding, Model } from "../model/types";
 import { checkStrip } from "./checks";
+import { fromComposerRepository } from "./links";
 
 /** The reason a package's facts are absent because the file holds none for it. */
 export const NO_FACTS_IN_FILE = "not in this document — it explains no package";
@@ -45,17 +46,15 @@ function noFactsReason(model: Model): string {
 
 function metadataSource(model: Model, finding: Finding): MetadataSource {
   const details = model.details.get(finding.package);
-  if (details === undefined) {
-    return { kind: "missing", asOf: finding.dataDate, reason: noFactsReason(model) };
-  }
-  const metadata = details.metadata;
+  const metadata = details?.metadata ?? null;
   if (metadata !== null) return { kind: "read", metadata, asOf: metadata.dataDate ?? finding.dataDate };
-  const notComposer = details.lock?.fromComposerRepository === false;
-  return {
-    kind: "missing",
-    asOf: finding.dataDate,
-    reason: notComposer ? NOT_FROM_COMPOSER : "none recorded for this package",
-  };
+  const reason =
+    fromComposerRepository(finding, model.details) === false
+      ? NOT_FROM_COMPOSER
+      : details === undefined
+        ? noFactsReason(model)
+        : "none recorded for this package";
+  return { kind: "missing", asOf: finding.dataDate, reason };
 }
 
 /** S3's and S4's own data, when either fired and names the repository. */
@@ -85,10 +84,10 @@ function activitySource(model: Model, finding: Finding): ActivitySource {
   if (details?.activity) return { kind: "read", activity: details.activity };
   const signal = fromSignals(finding);
   if (signal !== null) return signal;
-  if (details === undefined) return { kind: "missing", reason: noFactsReason(model) };
-  if (details.lock?.fromComposerRepository === false) {
+  if (fromComposerRepository(finding, model.details) === false) {
     return { kind: "missing", reason: NOT_FROM_COMPOSER };
   }
+  if (details === undefined) return { kind: "missing", reason: noFactsReason(model) };
   const blocked = checkStrip(finding)
     .cells.filter((cell) => (cell.id === "S3" || cell.id === "S4") && cell.state === "blocked")
     .map((cell) => cell.id);

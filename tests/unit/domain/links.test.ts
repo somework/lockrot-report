@@ -60,10 +60,8 @@ describe("safeHref", () => {
 });
 
 describe("packagistUrl", () => {
-  const finding = { package: "vendor/pkg" };
-
-  test("links a package whose lock explicitly came from a Composer repository", () => {
-    const details = new Map<string, PackageDetails>([
+  const lockSaying = (fromComposerRepository: boolean | null): Map<string, PackageDetails> =>
+    new Map([
       [
         "vendor/pkg",
         {
@@ -74,7 +72,7 @@ describe("packagistUrl", () => {
             php: null,
             released: null,
             repository: null,
-            fromComposerRepository: true,
+            fromComposerRepository,
             dev: false,
             branchSnapshot: false,
             type: null,
@@ -82,45 +80,35 @@ describe("packagistUrl", () => {
         },
       ],
     ]);
-    expect(packagistUrl(finding, details)).toBe("https://packagist.org/packages/vendor/pkg");
+  const finding = (fromComposerRepository: boolean | null) => ({
+    package: "vendor/pkg",
+    fromComposerRepository,
+  });
+  const URL = "https://packagist.org/packages/vendor/pkg";
+
+  test("links a finding that came from a Composer repository, whatever its lock entry says", () => {
+    expect(packagistUrl(finding(true), new Map())).toBe(URL);
+    expect(packagistUrl(finding(true), lockSaying(false))).toBe(URL);
   });
 
-  test("assumes Packagist when the package is missing from details entirely (install-time document)", () => {
-    expect(packagistUrl(finding, new Map())).toBe("https://packagist.org/packages/vendor/pkg");
+  test("does not link a finding that did not, whatever its lock entry says", () => {
+    expect(packagistUrl(finding(false), new Map())).toBeNull();
+    expect(packagistUrl(finding(false), lockSaying(true))).toBeNull();
   });
 
-  test("assumes Packagist when the details entry has no lock at all", () => {
-    const details = new Map<string, PackageDetails>([
+  test("falls back to the lock entry's from_composer_repository, the same fact, where the finding has none", () => {
+    expect(packagistUrl(finding(null), lockSaying(true))).toBe(URL);
+    expect(packagistUrl(finding(null), lockSaying(false))).toBeNull();
+    expect(packagistUrl(finding(null), lockSaying(null))).toBeNull();
+  });
+
+  test("assumes nothing where no field says: no details entry, or one without a lock", () => {
+    expect(packagistUrl(finding(null), new Map())).toBeNull();
+    const noLock = new Map<string, PackageDetails>([
       ["vendor/pkg", { metadata: null, activity: null, repositoryLink: null, lock: null }],
     ]);
-    expect(packagistUrl(finding, details)).toBe("https://packagist.org/packages/vendor/pkg");
+    expect(packagistUrl(finding(null), noLock)).toBeNull();
   });
-
-  test.each([false, null])(
-    "a lock entry that does not say Composer (%s) gets no link",
-    (fromComposerRepository) => {
-      const details = new Map<string, PackageDetails>([
-        [
-          "vendor/pkg",
-          {
-            metadata: null,
-            activity: null,
-            repositoryLink: null,
-            lock: {
-              php: null,
-              released: null,
-              repository: null,
-              fromComposerRepository,
-              dev: false,
-              branchSnapshot: false,
-              type: null,
-            },
-          },
-        ],
-      ]);
-      expect(packagistUrl(finding, details)).toBeNull();
-    },
-  );
 });
 
 describe("cveUrl", () => {

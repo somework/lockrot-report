@@ -1258,6 +1258,12 @@ describe("AdvisoriesView as a ledger (PD-ADV-1..3)", () => {
     expect(unfixed.querySelector(".ac-num")?.textContent).toBe("2.6 y");
   });
 
+  it("says an advisory whose releases were not read has its fix not checked, in the row's fix cell", () => {
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "advisories" }), <AdvisoriesView />);
+    const row = screen.getByRole("listitem", { name: /^acme\/silent-snapshot, / });
+    expect(row.querySelector(".ac-fix")?.textContent).toBe("fix not checked");
+  });
+
   it("says under the answer when the advisory check may not have covered every package", () => {
     const { container } = renderIn(
       loadModel("mini-advisories-partial.json"),
@@ -1734,6 +1740,73 @@ describe("RunView", () => {
       "0 of 21 · ",
       "1 more named in words only",
     ]);
+  });
+
+  describe("what this run could not see", () => {
+    const withNotes = (notes: string[], noteDetails: Model["report"]["noteDetails"]): Model => {
+      const base = makeModel([]);
+      return { ...base, report: { ...base.report, notes, noteDetails } };
+    };
+    const detail = (text: string, docsUrl: string | null, code = "offline") => ({
+      code,
+      text,
+      docsUrl,
+      setsNetworkFailures: false,
+      data: {},
+    });
+    const noteRows = () => Array.from(document.querySelectorAll(".run-sections .note"));
+
+    it("links each note to its own entry's docs_url, and a note whose entry has none to nothing", () => {
+      const model = loadModel("mini-0.13-edges.json");
+      renderIn(model, stateWith({ view: "run" }), <RunView />);
+      const rows = noteRows();
+      expect(rows).toHaveLength(model.report.notes.length);
+      rows.forEach((row, index) => {
+        const entry = model.report.noteDetails[index];
+        expect(row.textContent).toContain(model.report.notes[index] ?? "");
+        const link = row.querySelector("a");
+        if (entry?.docsUrl) {
+          expect(link?.getAttribute("href")).toBe(entry.docsUrl);
+        } else {
+          expect(link).toBeNull();
+        }
+      });
+      const unknown = rows[model.report.noteDetails.findIndex((n) => n.code === "acme:licence-scan")];
+      expect(unknown?.textContent).toBe("acme licence scan skipped 2 packages");
+    });
+
+    it("keys notes by their place: two entries with the same text are both shown, each with its link", () => {
+      renderIn(
+        withNotes(
+          ["GitHub did not answer", "GitHub did not answer"],
+          [
+            detail("GitHub did not answer", "https://lockrot.dev/notes/#a", "repository_activity_not_found"),
+            detail("GitHub did not answer", "https://lockrot.dev/notes/#b", "repository_activity_not_found"),
+          ],
+        ),
+        stateWith({ view: "run" }),
+        <RunView />,
+      );
+      expect(noteRows().map((row) => row.querySelector("a")?.getAttribute("href"))).toEqual([
+        "https://lockrot.dev/notes/#a",
+        "https://lockrot.dev/notes/#b",
+      ]);
+    });
+
+    it("builds no link: a report without note_details, or an entry whose docs_url is not http(s)", () => {
+      renderIn(withNotes(["GitHub token not set"], []), stateWith({ view: "run" }), <RunView />);
+      expect(noteRows().map((row) => row.textContent)).toEqual(["GitHub token not set"]);
+      expect(document.querySelector(".run-sections .note a")).toBeNull();
+      cleanup();
+
+      renderIn(
+        withNotes(["offline"], [detail("offline", "javascript:alert(1)")]),
+        stateWith({ view: "run" }),
+        <RunView />,
+      );
+      expect(noteRows().map((row) => row.textContent)).toEqual(["offline"]);
+      expect(document.querySelector(".run-sections .note a")).toBeNull();
+    });
   });
 
   it("says a network failure has no count, and points at the run's notes", () => {
