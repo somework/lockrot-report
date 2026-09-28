@@ -47,9 +47,9 @@ export function AdvisoryLedger() {
 
   // PD-LEDGER-1 (DESIGN.md §5): "no advisory" was a finding whenever `advisories.length` was 0,
   // whether or not the check that would have found one ever ran. `advisoryCheckIncomplete` reads
-  // the same run-wide facts (`network_failures`, `notes`) the Run tab's own notes list already
-  // shows, so this line and that list can never disagree about whether the run says so. PD-ADV-7:
-  // the same holds when it did find some — a count from a partial check is said to be one.
+  // `report.noteDetails`, the same typed notes the Run tab's own notes list already shows, so this
+  // line and that list can never disagree about whether the run says so. PD-ADV-7: the same holds
+  // when it did find some — a count from a partial check is said to be one.
   const incomplete = advisoryCheckIncomplete(model);
   const totalChecked = model.report.packagesChecked ?? model.report.findings.length;
   const checkedPhrase = plural(totalChecked, "package", "packages");

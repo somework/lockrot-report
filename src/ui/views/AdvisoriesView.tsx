@@ -236,9 +236,8 @@ function RunDataLink() {
 
 /**
  * Under the answer when the run says its advisory check may not have covered every package
- * (`advisoryCheckIncomplete`: network failures, or a note naming the advisory check): the list
- * above may be partial, in PD-LEDGER-1's own words — a package with no row could not be
- * confirmed clear.
+ * (`advisoryCheckIncomplete`): the list above may be partial, in PD-LEDGER-1's own words — a
+ * package with no row could not be confirmed clear.
  */
 function PartialCheck() {
   return (

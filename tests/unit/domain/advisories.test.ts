@@ -311,73 +311,32 @@ describe("passesAdvisoryRail", () => {
 });
 
 describe("advisoryCheckIncomplete", () => {
-  // PD-LEDGER-1 (DESIGN.md §5): whether AdvisoryLedger's "no advisory" reads as a clean check or an
-  // incomplete one. Not exercised through allAdvisories()/a finding at all — this reads only the
-  // run-wide facts (`network_failures`, `notes`) the schema actually carries for a whole-lock check.
+  const withNotes = (codes: readonly string[]): Model => {
+    const base = makeModel([]);
+    const noteDetails = codes.map((code) => ({
+      code,
+      text: code,
+      docsUrl: null,
+      setsNetworkFailures: null,
+      data: {},
+    }));
+    return { ...base, report: { ...base.report, noteDetails } };
+  };
 
-  it("is false when the run recorded no network failure and no matching note", () => {
-    // Arrange
-    const model = makeModel([]);
-
-    // Act / Assert
-    expect(advisoryCheckIncomplete(model)).toBe(false);
+  it.each(["advisories_not_checked", "advisories_unavailable"])("is true for a %s note", (code) => {
+    expect(advisoryCheckIncomplete(withNotes(["offline", code]))).toBe(true);
   });
 
-  it("is true when the report says a network failure occurred", () => {
-    // Arrange
-    const base = makeModel([]);
-    const model: Model = { ...base, report: { ...base.report, networkFailures: true } };
-
-    // Act / Assert
-    expect(advisoryCheckIncomplete(model)).toBe(true);
+  it("is false for notes about other checks, even with a network failure", () => {
+    const model = withNotes(["repository_activity_unreachable", "metadata_unavailable"]);
+    expect(advisoryCheckIncomplete({ ...model, report: { ...model.report, networkFailures: true } })).toBe(
+      false,
+    );
   });
 
-  it("is true when a note names the advisory check, case-insensitively", () => {
-    // Arrange
+  it("does not read note text", () => {
     const base = makeModel([]);
-    const model: Model = {
-      ...base,
-      report: {
-        ...base.report,
-        notes: ["this run was --offline; the security ADVISORY check could not run"],
-      },
-    };
-
-    // Act / Assert
-    expect(advisoryCheckIncomplete(model)).toBe(true);
-  });
-
-  it("is true when a note names the audit check instead", () => {
-    // Arrange: verdicts.md's own wording for one way this check is skipped ("needs Composer 2.4").
-    const base = makeModel([]);
-    const model: Model = {
-      ...base,
-      report: {
-        ...base.report,
-        notes: ["composer audit needs Composer 2.4 or newer; advisories were not checked"],
-      },
-    };
-
-    // Act / Assert
-    expect(advisoryCheckIncomplete(model)).toBe(true);
-  });
-
-  it("ignores a note about something else entirely", () => {
-    // Arrange: mini.json's own notes — about repository activity and a non-Composer package, not
-    // the advisory check.
-    const base = makeModel([]);
-    const model: Model = {
-      ...base,
-      report: {
-        ...base.report,
-        notes: [
-          "GitHub did not answer for 3 repositories (private, renamed or removed); repository activity missing",
-          "1 package is not from a Composer repository and was not checked",
-        ],
-      },
-    };
-
-    // Act / Assert
+    const model: Model = { ...base, report: { ...base.report, notes: ["advisories were not checked"] } };
     expect(advisoryCheckIncomplete(model)).toBe(false);
   });
 });

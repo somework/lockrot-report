@@ -83,6 +83,18 @@
     "notes": [
       "Packagist did not answer for 2 packages; the security advisory check could not run for them and is treated as absent evidence"
     ],
+    "note_details": [
+      {
+        "code": "advisories_unavailable",
+        "text": "Packagist did not answer for 2 packages; the security advisory check could not run for them and is treated as absent evidence",
+        "docs_url": "https://lockrot.dev/notes/#advisories_unavailable",
+        "sets_network_failures": true,
+        "data": {
+          "composer_repository": "https://packagist.org",
+          "message": "did not answer for 2 packages"
+        }
+      }
+    ],
     "findings": [
       {
         "replacement": null,
