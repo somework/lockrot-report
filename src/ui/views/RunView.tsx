@@ -5,7 +5,7 @@ import { useReport } from "../context";
 import { baselineDelta } from "../../domain/baseline";
 import { EMPTY_FILTERS } from "../../state/types";
 import { fixed, plural } from "../../domain/format";
-import { unmeasuredLabel } from "../../domain/libyears";
+import { unmeasuredWords } from "../../domain/libyears";
 import { safeHref } from "../../domain/links";
 import {
   cacheAge,
@@ -118,7 +118,12 @@ interface Aside {
 interface Jump {
   readonly jump: string;
 }
-type Part = string | Missing | Aside | Jump;
+/** A code this page does not know, shown as written, then plain text ("yanked_release 1"). */
+interface Coded {
+  readonly code: string;
+  readonly then: string;
+}
+type Part = string | Missing | Aside | Jump | Coded;
 type FieldValue = string | Missing | Parts;
 
 function isMissing(value: FieldValue): value is Missing {
@@ -136,7 +141,10 @@ function unmeasuredText(report: ReportModel): FieldValue {
   if (!block) return { missing: libyearsReason(report) };
   const parts = block.unmeasured
     .filter(([, count]) => count > 0)
-    .map(([reason, count]) => `${unmeasuredLabel(reason)} ${count}`);
+    .map(([reason, count]): Part => {
+      const words = unmeasuredWords(reason);
+      return words === null ? { code: reason, then: String(count) } : `${words} ${count}`;
+    });
 
   return parts.length > 0 ? { parts } : "none";
 }
@@ -333,6 +341,14 @@ function PartText({ part, last, onJump }: { part: Part; last: boolean; onJump: (
     return (
       <span className="run-part run-null">
         {part.missing}
+        <Sep last={last} />
+      </span>
+    );
+  }
+  if ("code" in part) {
+    return (
+      <span className="run-part">
+        <code className="mono">{part.code}</code> {part.then}
         <Sep last={last} />
       </span>
     );

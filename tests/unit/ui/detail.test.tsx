@@ -360,6 +360,16 @@ describe("Detail", () => {
     expect(screen.getByRole("complementary", { name: "vendor/transitive" })).toBeTruthy();
   });
 
+  it("shows a libyears reason the page does not know as written, in code", () => {
+    const { container } = renderDetail(EDGES_013, "acme/future-reason");
+    const lockEntry = sectionKeyValue(container, "The lock entry");
+    const row = Array.from(lockEntry?.querySelectorAll("dt") ?? []).find(
+      (dt) => dt.textContent === "libyears behind",
+    )?.nextElementSibling;
+    expect(row?.textContent).toBe("not measured · yanked_release");
+    expect(row?.querySelector("code")?.textContent).toBe("yanked_release");
+  });
+
   describe("critic.md C6 — the lock entry and provenance always render", () => {
     it("shows only the guaranteed rows for a package with no details entry at all", () => {
       const { container } = renderDetail(MINI, "private/thing");

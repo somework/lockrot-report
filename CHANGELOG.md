@@ -347,8 +347,8 @@ tag or the address format, says so under **Breaking** in its entry.
 - The page no longer says "stable" where lockrot counts every tag, pre-releases included: S2 is "no
   recent release" ("no release since Mar 2021" on a row), the `silent` and S2 definitions say
   "pre-releases included", libyears is measured against the "newest release", Provenance's line is
-  "newest dated tag", S6's data reads "lists a tag" and "newest dated tag …", and Run data counts
-  "no dated release". S8 keeps "stable": its branches leave pre-releases out.
+  "newest dated tag", and S6's data reads "lists a tag" and "newest dated tag …". S8 keeps
+  "stable": its branches leave pre-releases out.
 - The lock entry no longer calls a snapshot's commit date "released": it reads "snapshot dated" for a
   branch and "lock time" for a version in a repository with no tag.
 - Release branches keep lockrot's order, highest first, instead of re-sorting the branch names.
@@ -374,7 +374,10 @@ tag or the address format, says so under **Breaking** in its entry.
   `no_fix_expected`, never from the words "no fix expected" in the evidence, so a report without the
   field no longer says it.
 - A package's libyears "not measured" reason is the finding's own `libyears_unmeasured` alone; a
-  reason the page does not know is shown as written (`yanked_release`). The page no longer works one
+  reason the page does not know is shown as written, in code (`yanked_release`). Run data's
+  "libyears not measured" row uses the same words as the open package and All packages ("not from a
+  Composer repository", "no release date lockrot trusts", which does not claim no dated release
+  exists) and an unknown key as written, instead of humanising it ("yanked release"). The page no longer works one
   out of the finding's note, S6 or the lock, so a report without the field names no reason.
 - The Packagist link and Provenance's "not from a Composer repository" read the finding's own
   `from_composer_repository`, else its lock entry's. A package lockrot did not ask a repository about

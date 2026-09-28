@@ -1751,6 +1751,15 @@ describe("RunView", () => {
     );
   });
 
+  it("libyears not measured: the detail's words for each reason, an unknown one as written in code", () => {
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "run" }), <RunView />);
+    const row = screen.getByText("libyears not measured").nextElementSibling;
+    expect(row?.textContent).toContain("not from a Composer repository 1");
+    expect(row?.textContent).toContain("no release date lockrot trusts 1");
+    expect(row?.textContent).not.toContain("no dated release");
+    expect(row?.querySelector("code")?.textContent).toBe("yanked_release");
+  });
+
   it("fail-on: words the threshold from run.fail_on_kind, an unknown kind as written", () => {
     const base = makeModel([]);
     const withKind = (failOn: string, failOnKind: string | null): Model => ({

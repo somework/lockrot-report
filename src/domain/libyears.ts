@@ -5,13 +5,18 @@ import type { ExplainMetadata, Finding, LibyearsBlock } from "../model/types";
 import { fixed } from "./format";
 import { vocabTable } from "./vocab";
 
-const UNMEASURED_LABELS: Readonly<Record<string, string>> = vocabTable({
-  no_stable_release_date: "no dated release",
+const UNMEASURED_REASONS: Readonly<Record<string, string>> = vocabTable({
+  branch_snapshot: "branch snapshot",
+  // lockrot does not say which end, the installed release or the newest, lacks a trusted date.
+  no_stable_release_date: "no release date lockrot trusts",
+  not_from_composer_repository: "not from a Composer repository",
+  metadata_unavailable: "metadata unavailable",
 });
 
-/** A key of the report's `unmeasured` block, in words. */
-export function unmeasuredLabel(reason: string): string {
-  return UNMEASURED_LABELS[reason] ?? reason.replace(/_/g, " ");
+/** A `libyears_unmeasured` code, or a key of the report's `unmeasured` block, in words; null for a
+ *  code this page does not know, which the caller shows as written. */
+export function unmeasuredWords(code: string): string | null {
+  return UNMEASURED_REASONS[code] ?? null;
 }
 
 /** An unmeasured package sorts below every measured one, a measured `0` included. */
@@ -21,20 +26,13 @@ export function libyearsSortKey(finding: Pick<Finding, "libyears"> | null): numb
   return value === null ? -1 : value;
 }
 
-const UNMEASURED_REASONS: Readonly<Record<string, string>> = vocabTable({
-  branch_snapshot: "branch snapshot",
-  no_stable_release_date: "no release date lockrot trusts",
-  not_from_composer_repository: "not from a Composer repository",
-  metadata_unavailable: "metadata unavailable",
-});
-
 /** The finding's own `libyears_unmeasured` in words, an unknown code as written; empty when measured
  *  or when the finding names no reason. */
 export function libyearsReason(finding: Pick<Finding, "libyears" | "libyearsUnmeasured"> | null): string {
   if (!finding || fixed(finding.libyears, 1) !== null) return "";
   const code = finding.libyearsUnmeasured;
   if (code === null) return "";
-  return UNMEASURED_REASONS[code] ?? code;
+  return unmeasuredWords(code) ?? code;
 }
 
 /** Never "ahead": the value is a difference of release dates clamped at zero. */

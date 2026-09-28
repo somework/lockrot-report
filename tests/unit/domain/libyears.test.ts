@@ -5,7 +5,7 @@ import {
   libyearsAtZero,
   libyearsAxisMax,
   libyearsTally,
-  unmeasuredLabel,
+  unmeasuredWords,
   libyearsAtZeroMark,
   libyearsItems,
   libyearsReason,
@@ -430,12 +430,13 @@ describe("libyearsAxisMax (PD-PACKAGES-1)", () => {
   });
 });
 
-describe("unmeasuredLabel", () => {
-  test("says a reason key in words, and 'stable' as 'dated', since a pre-release counts", () => {
-    expect(unmeasuredLabel("no_stable_release_date")).toBe("no dated release");
-    expect(unmeasuredLabel("branch_snapshot")).toBe("branch snapshot");
-    expect(unmeasuredLabel("not_from_composer_repository")).toBe("not from composer repository");
-    expect(unmeasuredLabel("a_new_reason")).toBe("a new reason");
-    expect(unmeasuredLabel("constructor")).toBe("constructor");
+describe("unmeasuredWords", () => {
+  test("says each known reason in the words the detail uses, and nothing for one it does not know", () => {
+    expect(unmeasuredWords("no_stable_release_date")).toBe("no release date lockrot trusts");
+    expect(unmeasuredWords("branch_snapshot")).toBe("branch snapshot");
+    expect(unmeasuredWords("not_from_composer_repository")).toBe("not from a Composer repository");
+    expect(unmeasuredWords("metadata_unavailable")).toBe("metadata unavailable");
+    expect(unmeasuredWords("yanked_release")).toBeNull();
+    expect(unmeasuredWords("constructor")).toBeNull();
   });
 });

@@ -100,7 +100,7 @@ function LibyearsSection() {
       For each package, the years between the release installed and the package's newest dated release,
       summed. It counts every drift, healthy patches included, so it says how far behind the lock is and
       nothing about why &mdash; it is not a verdict, and no priority reads it. A package is not measured when
-      it is a branch snapshot, when no dated release is known for it, when it is not from a Composer
+      it is a branch snapshot, when lockrot trusts no release date for it, when it is not from a Composer
       repository, or when its metadata did not come; the Run tab counts each case.{" "}
       <OutLink href={`${DOCS_URL}#libyears`}>what libyears measure</OutLink>
     </p>

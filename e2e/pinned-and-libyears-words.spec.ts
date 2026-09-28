@@ -67,7 +67,8 @@ test("mini-0.13-edges: each unmeasured package's reason is the one its libyears 
   );
 
   await report.tab("run");
-  await expect(page.getByText("no dated release 1", { exact: false })).toBeVisible();
+  await expect(page.getByText("no release date lockrot trusts 1", { exact: false })).toBeVisible();
+  await expect(page.locator("main")).not.toContainText("no dated release");
   await expect(page.locator("main")).not.toContainText("no stable release date");
 });
 
@@ -75,6 +76,14 @@ test("mini-0.13-edges: a reason the page does not know is shown as written", asy
   await report.goto(FIXTURES.miniEdges013);
   await report.tab("packages");
   await expect(libyearsWords(page, "acme/future-reason")).toHaveText("not measured: yanked_release");
+
+  await report.tab("run");
+  const row = page
+    .locator("dt", { hasText: /^libyears not measured$/ })
+    .locator("xpath=following-sibling::dd[1]");
+  await expect(row.locator("code")).toHaveText(["yanked_release"]);
+  await expect(row).toContainText("not from a Composer repository 1");
+  await expect(row).not.toContainText("yanked release");
 });
 
 for (const fixture of ["capsule-0.10-drupal" as FixtureName, FIXTURES.mautic]) {
