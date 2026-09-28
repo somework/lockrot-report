@@ -3,7 +3,7 @@
  * on every tab, in the detail, the glossary and on paper, with no console error. The real 0.13
  * bundles also go through forced colours and print.
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
@@ -113,6 +113,36 @@ test.describe("mini-0.13-edges: every value this page does not know, shown as wr
     await report.pressEscape();
 
     expect(problems).toEqual([]);
+  });
+
+  test("at 320px a long id the page does not know wraps inside its Findings row", async ({ page }) => {
+    // No bundle quotes an unknown id as a flagged row's key fact, so acme/untagged's one signal is
+    // renamed in a copy of the built page.
+    const longId = "acme:licence-change-seen-in-the-upstream-vendor-feed";
+    const source = readFileSync(join(REPO_ROOT, "build/pages", `${FIXTURES.miniEdges013}.html`), "utf8");
+    const data = /(<script id="lockrot-data" type="application\/json">)([\s\S]*?)(<\/script>)/;
+    const edited = source.replace(data, (_all, open: string, json: string, close: string) => {
+      const bundle = JSON.parse(json) as {
+        report: { findings: { package: string; signals: { id: string }[] }[] };
+      };
+      const untagged = bundle.report.findings.find((f) => f.package === "acme/untagged");
+      if (untagged?.signals[0] === undefined) throw new Error("acme/untagged has no signal");
+      untagged.signals[0].id = longId;
+      return open + JSON.stringify(bundle) + close;
+    });
+    const file = join(REPO_ROOT, "build/pages/mini-long-id.tmp.html");
+    writeFileSync(file, edited);
+    try {
+      await page.setViewportSize({ width: 320, height: 800 });
+      await page.goto("file://" + file);
+      const row = page.getByRole("listitem", { name: "acme/untagged", exact: true });
+      await expect(row.getByText(longId, { exact: true })).toBeVisible();
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth - innerWidth),
+      ).toBeLessThanOrEqual(0);
+    } finally {
+      rmSync(file, { force: true });
+    }
   });
 
   test("on paper, from All packages: the ids as written, no console error", async ({ page }) => {

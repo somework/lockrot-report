@@ -276,17 +276,20 @@ function metadataRows(source: MetadataSource): readonly KeyValueRow[] {
       label: "releases listed",
       value: metadata.releasesListed !== null ? String(metadata.releasesListed) : null,
     },
-    {
-      label: "newest dated tag",
-      value: metadata.lastStableVersion ? (
-        metadata.lastStableRelease ? (
-          `${metadata.lastStableVersion} · ${day(metadata.lastStableRelease)}`
-        ) : (
-          <>
-            {metadata.lastStableVersion} · <Unrecorded>undated</Unrecorded>
-          </>
-        )
-      ) : null,
-    },
+    metadata.lastStableRelease
+      ? {
+          label: "newest dated tag",
+          value: metadata.lastStableVersion
+            ? `${metadata.lastStableVersion} · ${day(metadata.lastStableRelease)}`
+            : null,
+        }
+      : {
+          label: "newest tag",
+          value: metadata.lastStableVersion ? (
+            <>
+              {metadata.lastStableVersion} · <Unrecorded>date not recorded</Unrecorded>
+            </>
+          ) : null,
+        },
   ]);
 }

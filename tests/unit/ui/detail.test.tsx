@@ -1428,10 +1428,23 @@ describe("Detail", () => {
       expect(container.textContent).toContain("your version, dated by laravel/framework");
     });
 
+    it("says the snapshot row comes first, and sorts by no one column, when it heads the table", () => {
+      // rector/rector (mautic_mautic.json): a dev-main snapshot above the highest dated branch.
+      const { container } = renderDetail(loadModel("mautic_mautic.json"), "rector/rector");
+      const table = container.querySelector('.detail-timeline-grid[role="table"]');
+      expect(table?.getAttribute("aria-label")).toMatch(/, snapshot first$/);
+      const header = table?.querySelector('[role="columnheader"]');
+      expect(header?.getAttribute("aria-sort")).toBe("other");
+      expect(header?.getAttribute("title")).toBe("snapshot first");
+    });
+
     it("keeps lockrot's order, and draws no tone or guides, when the thresholds are missing", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/edge-timeline");
       expect(rowHeaders(container)).toEqual(["master, the newest", "1.x, yours"]);
       expect(screen.getByRole("table", { name: "Release branches, highest first" })).toBeTruthy();
+      expect(
+        container.querySelector('.detail-timeline-grid [role="columnheader"]')?.getAttribute("aria-sort"),
+      ).toBe("descending");
       expect(container.querySelector(".detail-timeline-age")?.classList.contains("is-toned")).toBe(false);
       expect(container.querySelector(".detail-timeline-guide")).toBeNull();
       expect(container.querySelector(".detail-timeline-key")?.textContent).not.toContain("years ago");
@@ -1612,6 +1625,26 @@ describe("Detail", () => {
       expect(provenance?.textContent).toContain("58");
       expect(provenance?.textContent).toContain("newest dated tag");
       expect(provenance?.textContent).toContain("v3.6.1");
+    });
+
+    it("claims no date for the newest tag when lockrot recorded none, and never calls it stable", () => {
+      const details = KOEL.details.get("predis/predis");
+      if (details?.metadata == null) throw new Error("predis has no metadata");
+      const undated: PackageDetails = {
+        ...details,
+        metadata: { ...details.metadata, lastStableRelease: null },
+      };
+      const model: Model = {
+        ...KOEL,
+        details: new Map([...KOEL.details, ["predis/predis", undated] as const]),
+      };
+      const { container } = renderDetail(model, "predis/predis");
+      const provenance = sectionKeyValue(container, "Provenance");
+      const labels = Array.from(provenance?.querySelectorAll("dt") ?? [], (dt) => dt.textContent);
+      expect(labels).toContain("newest tag");
+      expect(labels).not.toContain("newest dated tag");
+      expect(provenance?.textContent).not.toMatch(/stable/i);
+      expect(provenance?.textContent).toContain("v3.6.1 · date not recorded");
     });
   });
 

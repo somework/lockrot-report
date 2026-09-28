@@ -56,7 +56,8 @@ export function Timeline({
   };
   const { releasesOnly } = timeline;
   const topWord: TopWord = timeline.topReleasedLast ? "newest" : "highest";
-  const order = "highest first";
+  const snapshotFirst = timeline.rows[0]?.kind === "lane" && timeline.rows[0].lane.snapshot;
+  const order = snapshotFirst ? "snapshot first" : "highest first";
 
   return (
     <section className="detail-section detail-timeline">
@@ -73,7 +74,7 @@ export function Timeline({
         aria-label={`${releasesOnly ? "Releases" : "Release branches"}, ${order}`}
       >
         <div role="row" className="detail-timeline-row detail-timeline-head">
-          <span role="columnheader" aria-sort="descending" title={order}>
+          <span role="columnheader" aria-sort={snapshotFirst ? "other" : "descending"} title={order}>
             {releasesOnly ? "release" : "branch"}
             <span className="detail-timeline-order" aria-hidden="true">
               ↓

@@ -2288,4 +2288,18 @@ describe("signal ids this page does not know (0.13 open vocabulary)", () => {
       "S99",
     ]);
   });
+
+  it("the Packages Signals cell reads each id it has no dot for once (mini-0.13-edges acme/licensed)", () => {
+    const model = loadModel("mini-0.13-edges.json");
+    renderIn(model, stateWith({ view: "packages" }), <PackagesView />);
+    const cell = screen.getByRole("row", { name: /acme\/licensed/ }).querySelector(".pk-sig");
+    if (cell === null) throw new Error("no Signals cell");
+    const spoken = cell.cloneNode(true) as Element;
+    spoken.querySelectorAll('[aria-hidden="true"]').forEach((el) => {
+      el.remove();
+    });
+    const name = spoken.textContent;
+    expect(name.match(/acme:licence/g)).toHaveLength(1);
+    expect(name.match(/S99/g)).toHaveLength(1);
+  });
 });

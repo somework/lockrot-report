@@ -377,7 +377,7 @@
   margin-right: 6px;
 }
 .fc-why .sid {
-  /* A signal id never splits, even where the cell's own `overflow-wrap: anywhere` would let it. */
+  /* A lockrot signal id never splits, even where the cell's own `overflow-wrap: anywhere` would let it. */
   overflow-wrap: normal;
   white-space: nowrap;
   margin-right: 6px;
@@ -386,6 +386,11 @@
   font-weight: 600;
   color: var(--muted);
   text-decoration: none;
+}
+/* An id from outside lockrot has no length limit; unbroken it would widen a 320px page. */
+.fc-why span.sid {
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 .fc-why a.sid:hover {
   color: var(--accent-ink);

@@ -148,7 +148,7 @@ function SignalsCell({ finding }: { finding: Finding }) {
       </span>
       <span className="vh">{ids.length === 0 ? "none" : ids.join(" ")}</span>
       {strip.unknown.length > 0 && (
-        <span className="sig-dots-more">
+        <span className="sig-dots-more" aria-hidden="true">
           {" +"}
           {strip.unknown.map((id, index) => (
             <Fragment key={id}>

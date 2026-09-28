@@ -347,11 +347,15 @@ tag or the address format, says so under **Breaking** in its entry.
 - The page no longer says "stable" where lockrot counts every tag, pre-releases included: S2 is "no
   recent release" ("no release since Mar 2021" on a row), the `silent` and S2 definitions say
   "pre-releases included", libyears is measured against the "newest release", Provenance's line is
-  "newest dated tag", and S6's data reads "lists a tag" and "newest dated tag …". S8 keeps
-  "stable": its branches leave pre-releases out.
+  "newest dated tag" ("newest tag · date not recorded" when lockrot gives no date), and S6's data
+  reads "lists a tag" and "newest dated tag …". S8 keeps "stable": its branches leave pre-releases
+  out.
 - The lock entry no longer calls a snapshot's commit date "released": it reads "snapshot dated" for a
   branch and "lock time" for a version in a repository with no tag.
-- Release branches keep lockrot's order, highest first, instead of re-sorting the branch names.
+- Release branches keep lockrot's order, highest first, instead of re-sorting the branch names; a
+  snapshot row above them makes the table "snapshot first" to a screen reader.
+- A long signal id from outside lockrot wraps inside its Findings row instead of widening a 320px
+  page, and the All packages signals cell reads such an id once, not twice.
 - A lock entry without `from_composer_repository`, or metadata without `has_stable_release`, no
   longer reads as a Composer origin or as "no tagged release": nothing is said.
 - Run data names `exposure_rule`, `unattributed`, `note_details`, `gate`, `run.root_package`,
