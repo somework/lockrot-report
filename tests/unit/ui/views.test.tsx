@@ -1280,6 +1280,31 @@ describe("AdvisoriesView as a ledger (PD-ADV-1..3)", () => {
     expect(row.querySelector(".ac-fix")?.textContent).toBe("fix not checked");
   });
 
+  it("files an advisory whose releases were not read under Fix not checked, never No fix listed", () => {
+    const { container } = renderIn(
+      loadModel("mini-0.13-edges.json"),
+      stateWith({ view: "advisories", q: "silent-snapshot" }),
+      <AdvisoriesView />,
+    );
+    const answer = container.querySelector(".al-answer")?.textContent.replace(/\s+/g, " ") ?? "";
+    expect(answer).toContain("Whether a release fixes it was not checked.");
+    expect(answer).not.toContain("No fix is listed");
+    const headings = Array.from(container.querySelectorAll("h2"), (el) => el.textContent);
+    expect(headings.some((h) => h.includes("Fix not checked"))).toBe(true);
+    expect(headings.some((h) => h.includes("No fix listed"))).toBe(false);
+    expect(container.textContent).not.toContain("Nothing published clears it");
+  });
+
+  it("counts not-checked fixes apart in the tab's sentence", () => {
+    const { container } = renderIn(
+      loadModel("mini-0.13-edges.json"),
+      stateWith({ view: "advisories" }),
+      <AdvisoriesView />,
+    );
+    const answer = container.querySelector(".al-answer")?.textContent.replace(/\s+/g, " ") ?? "";
+    expect(answer).toMatch(/3 with no fix listed and 1 with the fix not checked\./);
+  });
+
   it("says under the answer when the advisory check may not have covered every package", () => {
     const { container } = renderIn(
       loadModel("mini-advisories-partial.json"),

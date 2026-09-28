@@ -301,6 +301,7 @@ const FIX_GROUP_TEXT: readonly (readonly [FixShape, string])[] = [
   ["branch", "A release on this branch"],
   ["move", "Moving to another branch"],
   ["none", "No fix listed"],
+  ["unchecked", "Fix not checked"],
 ];
 
 /** Counts packages, not advisories: the packages a selected row keeps (PD-RAIL-1). */

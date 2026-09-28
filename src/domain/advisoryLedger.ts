@@ -67,7 +67,7 @@ function severityCounts(pairs: readonly AdvisoryWithFinding[]): readonly Severit
 export function tallyAdvisories(pairs: readonly AdvisoryWithFinding[], now: Date): AdvisoryTally {
   const packages: string[] = [];
   const fixes: string[] = [];
-  const shapes: Record<FixShape, number> = { branch: 0, move: 0, none: 0 };
+  const shapes: Record<FixShape, number> = { branch: 0, move: 0, none: 0, unchecked: 0 };
   let production = 0;
   let oldest: number | null = null;
   let newest: number | null = null;
@@ -123,6 +123,12 @@ export function advisoryChipTitle(finding: Finding): string {
   if (tally.shapes.none > 0)
     parts.push(
       tally.shapes.none === tally.total ? "no fix listed" : `${tally.shapes.none} with no fix listed`,
+    );
+  if (tally.shapes.unchecked > 0)
+    parts.push(
+      tally.shapes.unchecked === tally.total
+        ? "fix not checked"
+        : `${tally.shapes.unchecked} with the fix not checked`,
     );
   return [severities, ...parts].join(" · ");
 }

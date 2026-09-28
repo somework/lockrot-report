@@ -144,9 +144,9 @@ function FixSentence({ tally, pairs }: { tally: AdvisoryTally; pairs: readonly A
       </>
     );
   }
-  if (shapes.none === total) {
-    return <>No fix is listed for {one ? "it" : total === 2 ? "either" : "any of them"}.</>;
-  }
+  const them = one ? "it" : total === 2 ? "either" : "any of them";
+  if (shapes.none === total) return <>No fix is listed for {them}.</>;
+  if (shapes.unchecked === total) return <>Whether a release fixes {them} was not checked.</>;
   const parts: ComponentChildren[] = [];
   if (shapes.branch > 0)
     parts.push(
@@ -164,6 +164,12 @@ function FixSentence({ tally, pairs }: { tally: AdvisoryTally; pairs: readonly A
     parts.push(
       <span key="n">
         <Num n={shapes.none} /> with no fix listed
+      </span>,
+    );
+  if (shapes.unchecked > 0)
+    parts.push(
+      <span key="u">
+        <Num n={shapes.unchecked} /> with the fix not checked
       </span>,
     );
   return <>Of them, {joinAnd(parts)}.</>;
@@ -365,7 +371,7 @@ function ColumnHead({ axis }: { axis: ReportedAxis | null }) {
   );
 }
 
-const FIX_WHERE: Readonly<Record<Exclude<FixShape, "none">, string>> = {
+const FIX_WHERE: Readonly<Record<Exclude<FixShape, "none" | "unchecked">, string>> = {
   branch: "on your branch",
   move: "on another branch",
 };
@@ -533,7 +539,7 @@ function AdvisoryRow({ finding, advisory, first, ditto, axis }: AdvisoryRowProps
         <span className="mono">{advisory.affectedVersions ?? "?"}</span>
       </span>
       <span className={`ac-fix is-${shape}`}>
-        {shape === "none" ? (
+        {shape === "none" || shape === "unchecked" ? (
           <span className="ac-where">{noFixWords(advisory)}</span>
         ) : (
           <>

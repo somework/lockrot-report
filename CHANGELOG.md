@@ -386,7 +386,11 @@ tag or the address format, says so under **Breaking** in its entry.
   notes with the same text are both listed.
 - An advisory whose releases lockrot did not read (its S9's `releases_read: false`) says "fix not
   checked" in its row on the Advisories tab and in the open package, and its rung of the fix ladder
-  reads "not checked", instead of "no fix listed" and "no release".
+  reads "not checked", instead of "no fix listed" and "no release". The tab files it under its own
+  "Fix not checked" group, never under "No fix listed" and its "Nothing published clears it"; the
+  tab's sentence says "Whether a release fixes it was not checked" or counts "1 with the fix not
+  checked"; the rail's "What the fix costs" offers "Fix not checked"; the summary band's package
+  line and a row's advisory hover say "fix not checked".
 - Run data's fail-on row says what the threshold fails on, from `run.fail_on_kind`: "high · fails on
   a priority at least as high as high", "silent · fails on a verdict at least as severe as silent",
   "fails on any finding whose check did not run", "fails on nothing", and a kind the page does not

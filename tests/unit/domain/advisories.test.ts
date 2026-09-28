@@ -201,6 +201,11 @@ describe("fixShapeOf", () => {
     // Arrange / Act / Assert
     expect(fixShapeOf(makeAdvisory({ fixedBy: "3.0.0", fixedOnBranch: false }))).toBe("move");
   });
+
+  it("is unchecked, never none, when its S9 read no release", () => {
+    expect(fixShapeOf(makeAdvisory({ fixedBy: null, releasesRead: false }))).toBe("unchecked");
+    expect(fixShapeOf(makeAdvisory({ fixedBy: null, releasesRead: true }))).toBe("none");
+  });
 });
 
 describe("sortAdvisories", () => {
@@ -398,6 +403,23 @@ describe("groupAdvisories", () => {
     expect(groups[0]?.advisories).toEqual([{ advisory: branchAdvisory, finding }]);
   });
 
+  it("files an advisory whose releases were not read under its own group, after no fix listed", () => {
+    const finding = makeFinding();
+    const unread = makeAdvisory({ id: "u", fixedBy: null, releasesRead: false });
+    const none = makeAdvisory({ id: "n", fixedBy: null, releasesRead: true });
+
+    const groups = groupAdvisories([
+      { advisory: unread, finding },
+      { advisory: none, finding },
+    ]);
+
+    expect(groups.map((group) => [group.shape, group.heading])).toEqual([
+      ["none", "No fix listed"],
+      ["unchecked", "Fix not checked"],
+    ]);
+    expect(groups[1]?.hint).not.toContain("Nothing published");
+  });
+
   it("omits a group with nothing in it", () => {
     // Arrange
     const finding = makeFinding();
@@ -437,8 +459,8 @@ describe("advisoryPackages", () => {
 
     // Assert
     expect(packages).toEqual([
-      { package: "spomky-labs/otphp", fixedBy: ["11.5.0"], someUnfixed: false },
-      { package: "acme/other", fixedBy: [], someUnfixed: true },
+      { package: "spomky-labs/otphp", fixedBy: ["11.5.0"], someUnfixed: false, someUnchecked: false },
+      { package: "acme/other", fixedBy: [], someUnfixed: true, someUnchecked: false },
     ]);
   });
 
@@ -455,6 +477,19 @@ describe("advisoryPackages", () => {
     const [entry] = advisoryPackages(pairs);
 
     // Assert: never compared or ranked, just listed in the order the advisories give them.
-    expect(entry).toEqual({ package: "acme/mixed", fixedBy: ["2.0.1", "1.9.9"], someUnfixed: true });
+    expect(entry).toEqual({
+      package: "acme/mixed",
+      fixedBy: ["2.0.1", "1.9.9"],
+      someUnfixed: true,
+      someUnchecked: false,
+    });
+  });
+
+  it("tells an advisory whose releases were not read apart from one no release fixes", () => {
+    const finding = makeFinding({ package: "acme/unread" });
+    const [entry] = advisoryPackages([
+      { advisory: makeAdvisory({ id: "A", fixedBy: null, releasesRead: false }), finding },
+    ]);
+    expect(entry).toEqual({ package: "acme/unread", fixedBy: [], someUnfixed: false, someUnchecked: true });
   });
 });

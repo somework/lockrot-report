@@ -36,7 +36,12 @@ const LEDGER_LABEL = (key: string): string => key;
  *  shows a sighted user (`report.js:334-390`) — a rewrite changing the wording changes this map. */
 const RAIL_LABEL: Readonly<Record<RailGroup, Readonly<Record<string, string>>>> = {
   scope: { direct: "Direct", transitive: "Transitive", prod: "require", dev: "require-dev" },
-  fix: { branch: "A release on this branch", move: "Moving to another branch", none: "No fix listed" },
+  fix: {
+    branch: "A release on this branch",
+    move: "Moving to another branch",
+    none: "No fix listed",
+    unchecked: "Fix not checked",
+  },
   since: { new: "New", worsened: "Worsened", known: "Already accepted" },
   // Signal ids (S1..S10) have no fixed word map: the accessible name is expected to contain the id
   // itself (e.g. "S7"), same as the legacy rail's `<span class="mono">S7</span>`.

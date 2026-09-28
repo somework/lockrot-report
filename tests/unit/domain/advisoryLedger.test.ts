@@ -73,7 +73,7 @@ describe("tallyAdvisories", () => {
 
   it("counts each fix shape and quotes each distinct fix once, in list order", () => {
     const tally = tallyAdvisories(pairs, NOW);
-    expect(tally.shapes).toEqual({ branch: 2, move: 1, none: 1 });
+    expect(tally.shapes).toEqual({ branch: 2, move: 1, none: 1, unchecked: 0 });
     expect(tally.fixes).toEqual(["2.0.1", "3.0.0"]);
   });
 
@@ -198,6 +198,13 @@ describe("worstAdvisory and advisoryChipTitle", () => {
       ],
     });
     expect(advisoryChipTitle(mixed)).toBe("2 high · fixed by 1.0.1 on your branch · 1 with no fix listed");
+  });
+
+  it("says fix not checked, not no fix listed, where the releases were not read", () => {
+    const unread = makeFinding({
+      advisories: [makeAdvisory({ severity: "high", fixedBy: null, releasesRead: false })],
+    });
+    expect(advisoryChipTitle(unread)).toBe("1 high · fix not checked");
   });
 });
 

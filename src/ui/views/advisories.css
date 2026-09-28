@@ -347,7 +347,8 @@
   color: var(--none);
   font-weight: 500;
 }
-.ac-fix.is-none .ac-where {
+.ac-fix.is-none .ac-where,
+.ac-fix.is-unchecked .ac-where {
   color: var(--ink-2);
   font-style: italic;
 }

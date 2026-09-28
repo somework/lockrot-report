@@ -2,7 +2,13 @@ import { useReport } from "../context";
 import { LegendButton, toneClass } from "../common/common";
 import { plural } from "../../domain/format";
 import { population } from "../../domain/filters";
-import { advisoryCheckIncomplete, advisoryPackages, allAdvisories, sevTone } from "../../domain/advisories";
+import {
+  advisoryCheckIncomplete,
+  advisoryPackages,
+  allAdvisories,
+  sevTone,
+  type AdvisoryPackage,
+} from "../../domain/advisories";
 import { SEVERITIES } from "../../model/types";
 import { CleanMark } from "./CleanMark";
 import { CheckIncompleteTag } from "../common/CheckIncompleteTag";
@@ -10,6 +16,12 @@ import "./ledger.css";
 
 /** How many packages the block names by hand before it points at the Advisories tab instead. */
 const NAMED_PACKAGES = 3;
+
+/** A package none of whose advisories names a fix: listed as none, or not looked for. */
+function unfixedWords(entry: AdvisoryPackage): string {
+  if (!entry.someUnchecked) return "— no fix listed";
+  return entry.someUnfixed ? "— no fix listed; some not checked" : "— fix not checked";
+}
 
 /**
  * Every advisory's severity, across every package the run checked — grown out of legacy
@@ -131,9 +143,10 @@ export function AdvisoryLedger() {
               <>
                 — fixed by <span className="mono">{entry.fixedBy.join(", ")}</span>
                 {entry.someUnfixed && "; some list no fix"}
+                {entry.someUnchecked && "; some not checked"}
               </>
             ) : (
-              "— no fix listed"
+              unfixedWords(entry)
             )}
           </p>
         ))}

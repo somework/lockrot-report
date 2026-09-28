@@ -128,8 +128,10 @@ export interface AdvisoryPackage {
   readonly package: string;
   /** Distinct, in the order its advisories list them; empty when none names a fix. */
   readonly fixedBy: readonly string[];
-  /** True when at least one of its advisories names no fix at all. */
+  /** True when at least one of its advisories names no fix though its releases were read. */
   readonly someUnfixed: boolean;
+  /** True when at least one of its advisories names no fix because no release was read. */
+  readonly someUnchecked: boolean;
 }
 
 /**
@@ -138,24 +140,29 @@ export interface AdvisoryPackage {
  * Display only: the versions are the advisories' own `fixed_by` text, never compared or ranked.
  */
 export function advisoryPackages(pairs: readonly AdvisoryWithFinding[]): readonly AdvisoryPackage[] {
-  const byPackage = new Map<string, { fixedBy: string[]; someUnfixed: boolean }>();
+  const byPackage = new Map<string, { fixedBy: string[]; someUnfixed: boolean; someUnchecked: boolean }>();
   for (const { advisory, finding } of pairs) {
-    const entry = byPackage.get(finding.package) ?? { fixedBy: [], someUnfixed: false };
+    const entry = byPackage.get(finding.package) ?? { fixedBy: [], someUnfixed: false, someUnchecked: false };
     const fix = advisory.fixedBy;
+    const shape = fixShapeOf(advisory);
     const fixedBy = fix && !entry.fixedBy.includes(fix) ? [...entry.fixedBy, fix] : entry.fixedBy;
-    byPackage.set(finding.package, { fixedBy, someUnfixed: entry.someUnfixed || !fix });
+    byPackage.set(finding.package, {
+      fixedBy,
+      someUnfixed: entry.someUnfixed || shape === "none",
+      someUnchecked: entry.someUnchecked || shape === "unchecked",
+    });
   }
 
   return [...byPackage].map(([name, entry]) => ({ package: name, ...entry }));
 }
 
-/** An advisory's fix shape: a release that clears it either exists on the installed branch, exists
- *  only on another branch, or does not exist at all (report.js:508,538). Drives both the Advisories
- *  tab's three groups and the query grammar's `fix:` filter. */
-export type FixShape = "branch" | "move" | "none";
+/** An advisory's fix shape: a release that clears it exists on the installed branch, exists only on
+ *  another branch, or none is listed; or no release was read, so nobody looked (`unchecked`). Drives
+ *  the Advisories tab's groups and the rail's `fix` filter. */
+export type FixShape = "branch" | "move" | "none" | "unchecked";
 
 export function fixShapeOf(advisory: Advisory): FixShape {
-  if (!advisory.fixedBy) return "none";
+  if (!advisory.fixedBy) return advisory.releasesRead === false ? "unchecked" : "none";
   return advisory.fixedOnBranch ? "branch" : "move";
 }
 
@@ -185,8 +192,7 @@ export interface AdvisoryGroup {
   readonly advisories: readonly AdvisoryWithFinding[];
 }
 
-/** The Advisories tab's three fix-shape groups, in the fixed order and with the fixed copy
- *  report.js:530-534 declares. */
+/** The Advisories tab's fix-shape groups, in a fixed order. */
 const GROUP_TEXT: readonly { shape: FixShape; heading: string; hint: string }[] = [
   {
     shape: "branch",
@@ -203,9 +209,14 @@ const GROUP_TEXT: readonly { shape: FixShape; heading: string; hint: string }[] 
     heading: "No fix listed",
     hint: "Nothing published clears it. Replacement or mitigation.",
   },
+  {
+    shape: "unchecked",
+    heading: "Fix not checked",
+    hint: "lockrot read no release list for it, so whether a release clears it is not known.",
+  },
 ];
 
-/** Buckets already-sorted advisory/finding pairs into the Advisories tab's three fix-shape groups;
+/** Buckets already-sorted advisory/finding pairs into the Advisories tab's fix-shape groups;
  *  a group with nothing in it is omitted rather than rendered empty (report.js:540). */
 export function groupAdvisories(pairs: readonly AdvisoryWithFinding[]): readonly AdvisoryGroup[] {
   return GROUP_TEXT.map((group) => ({

@@ -67,6 +67,8 @@ test("mini-0.13-edges: an advisory whose releases were not read says its fix was
   await report.tab("advisories");
   const row = page.getByRole("listitem", { name: /^acme\/silent-snapshot, / });
   await expect(row.locator(".ac-fix")).toHaveText("fix not checked");
+  await expect(page.getByRole("list", { name: "Fix not checked" })).toContainText("silent-snapshot");
+  await expect(page.getByRole("list", { name: "No fix listed" })).not.toContainText("silent-snapshot");
 
   await report.openPackage("acme/silent-snapshot");
   const detail = page.getByRole("complementary", { name: "acme/silent-snapshot" });
