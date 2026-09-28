@@ -2,6 +2,7 @@ import type { Finding } from "../../model/types";
 import { advisoriesOf, fixLadder, noFixWords, sevTone, sortAdvisories } from "../../domain/advisories";
 import { cveUrl } from "../../domain/links";
 import { day, plural } from "../../domain/format";
+import { unknownNoFixReason } from "../../domain/priority";
 import { OutLink, toneClass } from "../common/common";
 import "./detail.css";
 
@@ -43,6 +44,7 @@ export function AdvisoryList({ finding }: { finding: Finding }) {
         <div className="detail-advisory-list">
           {sorted.map((advisory) => {
             const cve = cveUrl(advisory);
+            const reason = unknownNoFixReason(finding, advisory.id);
 
             return (
               <div key={advisory.id} className="detail-advisory">
@@ -57,6 +59,11 @@ export function AdvisoryList({ finding }: { finding: Finding }) {
                     <span className="mono">{advisory.cve ?? advisory.id}</span>
                   )}
                   <span>{advisory.fixedBy ? `fixed by ${advisory.fixedBy}` : noFixWords(advisory)}</span>
+                  {reason !== null && (
+                    <span>
+                      no fix expected: <code className="mono">{reason}</code>
+                    </span>
+                  )}
                   <span>reported {day(advisory.reportedAt)}</span>
                   {advisory.link !== null && <OutLink href={advisory.link}>advisory</OutLink>}
                 </span>

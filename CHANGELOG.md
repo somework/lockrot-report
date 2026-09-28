@@ -362,9 +362,15 @@ tag or the address format, says so under **Breaking** in its entry.
   this run knows reaches it" in a run without composer.json), a step that could not move the level
   as "stays at low" or "stays at critical", and a step the page does not know as written with its
   levels. A report without the field draws no ladder; the priority itself still shows.
-- A priority raised for an advisory lockrot could not look for a fix for (its releases were not
-  read) says so, "An advisory whose fix could not be looked for", instead of "no release will fix",
-  and the answer sentence says "its fix could not be looked for". "No fix is coming" now comes from
+- A priority raised for advisories no fix is expected for is worded from each one's own reason and
+  counted: "2 advisories no release on 10.x will fix" for a fix that exists only on a higher branch
+  (wallabag's otphp, whose advisories are fixed by 11.5.0), "no release will fix" only where no
+  release does, "An advisory whose fix could not be looked for" where its releases were not read,
+  and a mix says each part, so an unread advisory is never said to have no fix. The answer sentence
+  says "no fix is coming on your branch" for the first, "its fix could not be looked for" for the
+  third, and "for 1 of them no fix is coming, and for 1 the fix could not be looked for" for a mix.
+  A reason the page does not know is counted "for which no fix is expected" and shown as written on
+  its advisory under "Every advisory" (`fix_withdrawn`). "No fix is coming" comes from
   `no_fix_expected`, never from the words "no fix expected" in the evidence, so a report without the
   field no longer says it.
 - A package's libyears "not measured" reason is the finding's own `libyears_unmeasured` alone; a

@@ -12,7 +12,7 @@ import {
   type Thresholds,
 } from "./age";
 import { pinnedKind, readPinnedFacts } from "./pinned";
-import { noFixKind } from "./priority";
+import { installedBranch, noFixTally, type NoFixTally } from "./priority";
 import { WAYS_NAMED, waysIn } from "./reach";
 import { VERDICT_ORDER, type Tone } from "./vocab";
 
@@ -237,27 +237,39 @@ function replacementClause(finding: Finding, metadataReplacement: string | null)
   ];
 }
 
+/** Where no fix is coming, from each `no_fix_expected` reason: on the installed branch when one is
+ *  fixed only on another, and never for an advisory whose fix was not looked for. */
+function noFixClause(noFix: NoFixTally, predicted: number, n: number, branch: string | null): AnswerPart[] {
+  const where: AnswerPart[] =
+    noFix.branch === 0 ? [] : branch === null ? [text(" on your branch")] : [text(" on "), name(branch)];
+  if (predicted === 0) {
+    return [text(n === 1 ? "; its fix could not be looked for." : "; their fix could not be looked for.")];
+  }
+  if (noFix.unread === 0) {
+    return where.length === 0
+      ? [text(" and no fix is coming for it.")]
+      : [text(" and no fix is coming"), ...where, text(".")];
+  }
+  return [
+    text(`; for ${predicted} of them no fix is coming`),
+    ...where,
+    text(`, and for ${noFix.unread} the fix could not be looked for.`),
+  ];
+}
+
 /** Advisories: how many affect the installed version, then whether lockrot sees a fix to move to. */
 function advisoryClause(finding: Finding): AnswerPart[] {
   const n = finding.advisories.length;
   if (n === 0) return [];
-  const noFix = noFixKind(finding);
+  const noFix = noFixTally(finding);
+  const predicted = noFix === null ? 0 : noFix.none + noFix.branch + noFix.other;
   const parts: AnswerPart[] = [
     text(" "),
-    figure(
-      n === 1 ? "1 security advisory" : `${n} security advisories`,
-      noFix === "expected" ? "crit" : "high",
-    ),
+    figure(n === 1 ? "1 security advisory" : `${n} security advisories`, predicted > 0 ? "crit" : "high"),
     text(n === 1 ? " affects your version" : " affect your version"),
   ];
-  if (noFix === "not-looked-for") {
-    parts.push(text(n === 1 ? "; its fix could not be looked for." : "; their fix could not be looked for."));
-    return parts;
-  }
-  if (noFix === "expected") {
-    const branch = str(signal(finding, "S8")?.data, "branch");
-    if (branch !== null) parts.push(text(" and no fix is coming on "), name(branch), text("."));
-    else parts.push(text(" and no fix is coming for it."));
+  if (noFix !== null) {
+    parts.push(...noFixClause(noFix, predicted, n, installedBranch(finding)));
     return parts;
   }
   const fixes = new Set(finding.advisories.map((a) => a.fixedBy));

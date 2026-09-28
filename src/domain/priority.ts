@@ -2,6 +2,7 @@
  *  of the rules that produced it. */
 
 import type { Finding } from "../model/types";
+import { PRIORITIES } from "../model/types";
 import { WAYS_NAMED, waysIn } from "./reach";
 
 export interface PriorityRung {
@@ -16,21 +17,71 @@ export interface PriorityRung {
   readonly to: string;
 }
 
-export type NoFixKind = "expected" | "not-looked-for";
-
-/** `releases_unknown` alone is no prediction: no release was read, so no fix was looked for. */
-export function noFixKind(finding: Pick<Finding, "noFixExpected">): NoFixKind | null {
-  const items = finding.noFixExpected;
-  if (items === null || items.length === 0) return null;
-  return items.every((item) => item.reason === "releases_unknown") ? "not-looked-for" : "expected";
+/** `no_fix_expected` counted by what each reason says. `unread` (`releases_unknown`) is no prediction:
+ *  no release was read, so no fix was looked for. */
+export interface NoFixTally {
+  /** `no_release_fixes`, `affected_range_unknown`: no release fixes it. */
+  readonly none: number;
+  /** `not_on_installed_branch`: a fix exists only on a higher branch. */
+  readonly branch: number;
+  /** A reason this page does not know. */
+  readonly other: number;
+  readonly unread: number;
 }
 
-const ORDER: readonly string[] = ["critical", "high", "medium", "low"];
+const NO_FIX_CLASS: Readonly<Record<string, keyof NoFixTally>> = {
+  no_release_fixes: "none",
+  affected_range_unknown: "none",
+  not_on_installed_branch: "branch",
+  releases_unknown: "unread",
+};
+
+function noFixClass(reason: string): keyof NoFixTally {
+  return Object.hasOwn(NO_FIX_CLASS, reason) ? (NO_FIX_CLASS[reason] ?? "other") : "other";
+}
+
+export function noFixTally(finding: Pick<Finding, "noFixExpected">): NoFixTally | null {
+  const items = finding.noFixExpected;
+  if (items === null || items.length === 0) return null;
+  const tally = { none: 0, branch: 0, other: 0, unread: 0 };
+  for (const item of items) tally[noFixClass(item.reason)] += 1;
+  return tally;
+}
+
+/** The `no_fix_expected` reason lockrot gives for advisory `id` when this page does not know it. */
+export function unknownNoFixReason(finding: Pick<Finding, "noFixExpected">, id: string): string | null {
+  const item = finding.noFixExpected?.find((entry) => entry.id === id);
+  return item === undefined || noFixClass(item.reason) !== "other" ? null : item.reason;
+}
+
+/** S8's installed branch, as written. */
+export function installedBranch(finding: Pick<Finding, "signals">): string | null {
+  const branch = finding.signals.find((signal) => signal.id === "S8")?.data["branch"];
+  return typeof branch === "string" && branch !== "" ? branch : null;
+}
+
+function noFixLead(tally: NoFixTally, branch: string | null): string {
+  const parts: (readonly [number, string])[] = [
+    [tally.none, "no release will fix"],
+    [tally.branch, `no release on ${branch ?? "your branch"} will fix`],
+    [tally.other, "for which no fix is expected"],
+    [tally.unread, "whose fix could not be looked for"],
+  ];
+  const said = parts
+    .filter(([n]) => n > 0)
+    .map(([n, words], index) => {
+      if (index > 0) return `${n} ${words}`;
+      return n === 1 ? `An advisory ${words}` : `${n} advisories ${words}`;
+    });
+  const last = said.pop() ?? "";
+  return said.length === 0 ? last : `${said.join(", ")} and ${last}`;
+}
 
 function movement(from: string, to: string): string {
   if (from === to) return `stays at ${to}.`;
-  const gap = ORDER.indexOf(to) - ORDER.indexOf(from);
-  if (ORDER.includes(from) && ORDER.includes(to) && Math.abs(gap) === 1) {
+  const levels: readonly string[] = PRIORITIES;
+  const gap = levels.indexOf(to) - levels.indexOf(from);
+  if (levels.includes(from) && levels.includes(to) && Math.abs(gap) === 1) {
     return gap > 0 ? "one step down." : "one step up.";
   }
   return `${from} → ${to}.`;
@@ -56,10 +107,10 @@ function stepLead(reason: string, finding: Finding): string | null {
       return "No direct requirement this run knows reaches it";
     case "dev":
       return "Installed for development only";
-    case "no_fix_expected":
-      return noFixKind(finding) === "not-looked-for"
-        ? "An advisory whose fix could not be looked for"
-        : "An advisory no release will fix";
+    case "no_fix_expected": {
+      const tally = noFixTally(finding);
+      return tally === null ? null : noFixLead(tally, installedBranch(finding));
+    }
     default:
       return null;
   }

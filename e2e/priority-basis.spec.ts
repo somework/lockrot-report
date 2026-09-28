@@ -22,7 +22,7 @@ test("mini-0.13-edges: each step as lockrot took it, an unknown one as written",
     "Left-behind packages start at high.",
     "You don’t require it directly: one step down. It comes through acme/dev-tool.",
     "Installed for development only: one step down.",
-    "An advisory no release will fix: one step up.",
+    "An advisory no release on 2.x will fix: one step up.",
     "So: medium.",
   ]);
 
@@ -67,6 +67,19 @@ test("wallabag 0.13: otphp's advisories are fixed only on a higher branch, so no
     "2 security advisories affect your version and no fix is coming on 10.x.",
   );
   await expect(ladder(page, "spomky-labs/otphp").nth(2)).toHaveText(
-    "An advisory no release will fix: one step up.",
+    "2 advisories no release on 10.x will fix: one step up.",
   );
+});
+
+test("mini-0.13-edges: a no-fix reason the page does not know is counted apart and shown as written", async ({
+  page,
+}) => {
+  await report.goto(FIXTURES.miniEdges013);
+  await report.openPackage("acme/abandoned-vuln");
+  await expect(ladder(page, "acme/abandoned-vuln").nth(1)).toHaveText(
+    "2 advisories no release will fix and 1 for which no fix is expected: stays at critical.",
+  );
+  const detail = page.getByRole("complementary", { name: "acme/abandoned-vuln" });
+  await detail.getByText("Every advisory").click();
+  await expect(detail.locator(".detail-advisory-meta code")).toHaveText(["fix_withdrawn"]);
 });

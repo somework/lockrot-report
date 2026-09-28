@@ -3,8 +3,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { normalize } from "../../../src/model/normalize";
 import type { Finding, Model, PriorityBasis } from "../../../src/model/types";
-import { noFixKind, priorityWhy } from "../../../src/domain/priority";
-import { makeFinding } from "./fixtures";
+import { noFixTally, priorityWhy, unknownNoFixReason } from "../../../src/domain/priority";
+import { makeFinding, makeSignal } from "./fixtures";
 
 function load(name: string): Model {
   const result = normalize(
@@ -139,28 +139,37 @@ describe("priorityWhy reads priority_basis only", () => {
     ]);
   });
 
-  it("words a no-fix step from the advisories it names", () => {
+  it("words a no-fix step from each advisory's own reason, counted", () => {
     // Arrange
-    const raised = (reasons: string[]): Finding =>
+    const raised = (reasons: string[], signals: Finding["signals"] = []): Finding =>
       makeFinding({
         verdict: "left-behind",
         priority: "critical",
+        signals,
         noFixExpected: reasons.map((reason, i) => ({ id: `A-${i}`, reason })),
         priorityBasis: basis("high", ["no_fix_expected", "high", "critical"]),
       });
+    const s8 = makeSignal({ id: "S8", data: { branch: "10.x" } });
 
     // Act / Assert
     expect(priorityWhy(raised(["not_on_installed_branch"]))[1]?.text).toBe(
-      "An advisory no release will fix: one step up.",
+      "An advisory no release on your branch will fix: one step up.",
     );
-    expect(priorityWhy(raised(["releases_unknown", "no_release_fixes"]))[1]?.text).toBe(
-      "An advisory no release will fix: one step up.",
+    expect(priorityWhy(raised(["not_on_installed_branch", "not_on_installed_branch"], [s8]))[1]?.text).toBe(
+      "2 advisories no release on 10.x will fix: one step up.",
+    );
+    expect(priorityWhy(raised(["no_release_fixes", "affected_range_unknown"]))[1]?.text).toBe(
+      "2 advisories no release will fix: one step up.",
     );
     expect(priorityWhy(raised(["releases_unknown"]))[1]?.text).toBe(
       "An advisory whose fix could not be looked for: one step up.",
     );
+    // A mix says both parts: the unread one is never said to have no fix.
+    expect(priorityWhy(raised(["releases_unknown", "no_release_fixes"]))[1]?.text).toBe(
+      "An advisory no release will fix and 1 whose fix could not be looked for: one step up.",
+    );
     expect(priorityWhy(raised(["fix_withdrawn"]))[1]?.text).toBe(
-      "An advisory no release will fix: one step up.",
+      "An advisory for which no fix is expected: one step up.",
     );
   });
 
@@ -214,7 +223,7 @@ describe("priorityWhy reads priority_basis only", () => {
       ["Left-behind packages start at high.", "high"],
       ["You don’t require it directly: one step down.", "medium"],
       ["Installed for development only: one step down.", "low"],
-      ["An advisory no release will fix: one step up.", "medium"],
+      ["An advisory no release on 2.x will fix: one step up.", "medium"],
     ]);
   });
 
@@ -224,6 +233,14 @@ describe("priorityWhy reads priority_basis only", () => {
     expect(rungs.at(-1)?.text).toBe("An advisory whose fix could not be looked for: one step up.");
   });
 
+  it("mini acme/abandoned-vuln: known reasons in words, an unknown one counted apart", () => {
+    const rungs = priorityWhy(finding(load("mini-0.13-edges.json"), "acme/abandoned-vuln"));
+
+    expect(rungs.at(-1)?.text).toBe(
+      "2 advisories no release will fix and 1 for which no fix is expected: stays at critical.",
+    );
+  });
+
   it("an older report's findings draw no ladder", () => {
     for (const f of load("wallabag_wallabag.json").report.findings) {
       expect(priorityWhy(f)).toEqual([]);
@@ -231,20 +248,42 @@ describe("priorityWhy reads priority_basis only", () => {
   });
 });
 
-describe("noFixKind", () => {
+describe("noFixTally", () => {
   it("is null with nothing named: no prediction, or every advisory fixed within reach", () => {
-    expect(noFixKind(makeFinding({ noFixExpected: null }))).toBeNull();
-    expect(noFixKind(makeFinding({ noFixExpected: [] }))).toBeNull();
+    expect(noFixTally(makeFinding({ noFixExpected: null }))).toBeNull();
+    expect(noFixTally(makeFinding({ noFixExpected: [] }))).toBeNull();
   });
 
-  it("is not-looked-for only when every advisory it names is releases_unknown", () => {
-    const kind = (...reasons: string[]) =>
-      noFixKind(makeFinding({ noFixExpected: reasons.map((reason, i) => ({ id: `A-${i}`, reason })) }));
+  it("counts each reason by what it says, an unknown one as other", () => {
+    const tally = (...reasons: string[]) =>
+      noFixTally(makeFinding({ noFixExpected: reasons.map((reason, i) => ({ id: `A-${i}`, reason })) }));
 
-    expect(kind("releases_unknown")).toBe("not-looked-for");
-    expect(kind("releases_unknown", "releases_unknown")).toBe("not-looked-for");
-    expect(kind("releases_unknown", "affected_range_unknown")).toBe("expected");
-    expect(kind("not_on_installed_branch")).toBe("expected");
-    expect(kind("fix_withdrawn")).toBe("expected");
+    expect(tally("releases_unknown", "releases_unknown")).toEqual({
+      none: 0,
+      branch: 0,
+      other: 0,
+      unread: 2,
+    });
+    expect(tally("no_release_fixes", "affected_range_unknown", "fix_withdrawn")).toEqual({
+      none: 2,
+      branch: 0,
+      other: 1,
+      unread: 0,
+    });
+    expect(tally("not_on_installed_branch", "releases_unknown")).toEqual({
+      none: 0,
+      branch: 1,
+      other: 0,
+      unread: 1,
+    });
+  });
+});
+
+describe("unknownNoFixReason", () => {
+  it("is the reason as written for an advisory whose reason this page does not know", () => {
+    const f = finding(load("mini-0.13-edges.json"), "acme/abandoned-vuln");
+    expect(unknownNoFixReason(f, "PKSA-abnd-0003")).toBe("fix_withdrawn");
+    expect(unknownNoFixReason(f, "PKSA-abnd-0001")).toBeNull();
+    expect(unknownNoFixReason(f, "no-such-id")).toBeNull();
   });
 });

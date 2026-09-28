@@ -423,7 +423,7 @@ describe("Detail", () => {
         ["Left-behind packages start at high.", "applied"],
         ["You don’t require it directly: one step down. It comes through acme/dev-tool.", "applied"],
         ["Installed for development only: one step down.", "applied"],
-        ["An advisory no release will fix: one step up.", "applied"],
+        ["An advisory no release on 2.x will fix: one step up.", "applied"],
         ["So: medium.", "result"],
       ]);
       // Said in priority words, the track's own, not the verdict's.
@@ -442,6 +442,18 @@ describe("Detail", () => {
       const step = container.querySelectorAll(".detail-ladder-text")[1];
       expect(step?.textContent).toBe("An advisory no release will fix: stays at critical.");
       expect(step?.classList.contains("is-quiet")).toBe(true);
+    });
+
+    it("shows an advisory's no-fix reason this page does not know as written, in its row", () => {
+      const { container } = renderDetail(EDGES_013, "acme/abandoned-vuln");
+      const codes = Array.from(
+        container.querySelectorAll(".detail-advisory-meta code"),
+        (el) => el.textContent,
+      );
+      expect(codes).toEqual(["fix_withdrawn"]);
+      expect(container.querySelector(".detail-answer")?.textContent).toContain(
+        "3 security advisories affect your version and no fix is coming for it.",
+      );
     });
 
     it("words an advisory whose fix was not looked for apart from one no release will fix", () => {

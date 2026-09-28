@@ -147,8 +147,8 @@ describe("answerParts", () => {
     expect(one.find((p) => p.kind === "figure")).toMatchObject({ tone: "high" });
   });
 
-  it("says no fix is coming when any advisory named is a prediction", () => {
-    const parts = answer({
+  it("says no fix is coming only for the predictions, and never for an advisory not looked for", () => {
+    const mixed = answer({
       verdict: "abandoned",
       advisories: [makeAdvisory(), makeAdvisory({ id: "GHSA-2" })],
       noFixExpected: [
@@ -156,9 +156,33 @@ describe("answerParts", () => {
         { id: "GHSA-2", reason: "fix_withdrawn" },
       ],
     });
+    const predicted = answer({
+      verdict: "abandoned",
+      advisories: [makeAdvisory(), makeAdvisory({ id: "GHSA-2" })],
+      noFixExpected: [
+        { id: "GHSA-0000", reason: "no_release_fixes" },
+        { id: "GHSA-2", reason: "fix_withdrawn" },
+      ],
+    });
+
+    expect(answerText(mixed)).toMatch(
+      /2 security advisories affect your version; for 1 of them no fix is coming, and for 1 the fix could not be looked for\.$/,
+    );
+    expect(answerText(predicted)).toMatch(
+      /2 security advisories affect your version and no fix is coming for it\.$/,
+    );
+    expect(mixed.find((p) => p.kind === "figure")).toMatchObject({ tone: "crit" });
+  });
+
+  it("says no fix is coming on your branch for an advisory fixed only on another", () => {
+    const parts = answer({
+      verdict: "left-behind",
+      advisories: [makeAdvisory({ fixedBy: "3.2.0" })],
+      noFixExpected: [{ id: "GHSA-0000", reason: "not_on_installed_branch" }],
+    });
 
     expect(answerText(parts)).toMatch(
-      /2 security advisories affect your version and no fix is coming for it\.$/,
+      /1 security advisory affects your version and no fix is coming on your branch\.$/,
     );
   });
 
