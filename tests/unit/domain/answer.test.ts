@@ -89,7 +89,10 @@ describe("answerParts", () => {
       directDependents: ["scheb/2fa-google-authenticator"],
       signals: [makeSignal({ id: "S8", data: { branch: "10.x", years: 4.5, newest_branch: "11.x" } })],
       advisories: [makeAdvisory(), makeAdvisory({ id: "GHSA-2" })],
-      evidence: "branch 10.x last released …; no fix expected on 10.x",
+      noFixExpected: [
+        { id: "GHSA-0000", reason: "not_on_installed_branch" },
+        { id: "GHSA-2", reason: "not_on_installed_branch" },
+      ],
     });
 
     // Assert
@@ -100,6 +103,63 @@ describe("answerParts", () => {
       { kind: "figure", text: "4.5 years", tone: "med" },
       { kind: "figure", text: "2 security advisories", tone: "crit" },
     ]);
+  });
+
+  it("reads no fix coming from no_fix_expected alone, never from the evidence's words", () => {
+    // Arrange: a report written before lockrot 0.13.0 says no fix is expected only in prose.
+    const parts = answer({
+      verdict: "left-behind",
+      advisories: [makeAdvisory()],
+      evidence: "branch 10.x last released …; no fix expected on 10.x",
+      noFixExpected: null,
+    });
+
+    // Assert
+    expect(answerText(parts)).toBe(
+      "Left behind on an older branch while a newer one kept releasing. You require it directly. 1 security advisory affects your version.",
+    );
+    expect(parts.find((p) => p.kind === "figure")).toMatchObject({ tone: "high" });
+  });
+
+  it("says a fix could not be looked for when every advisory named is releases_unknown", () => {
+    // Arrange: mini acme/silent-snapshot, a branch snapshot whose releases were not read.
+    const one = answer({
+      verdict: "silent",
+      advisories: [makeAdvisory({ releasesRead: false })],
+      noFixExpected: [{ id: "GHSA-0000", reason: "releases_unknown" }],
+    });
+    const two = answer({
+      verdict: "silent",
+      advisories: [makeAdvisory(), makeAdvisory({ id: "GHSA-2" })],
+      noFixExpected: [
+        { id: "GHSA-0000", reason: "releases_unknown" },
+        { id: "GHSA-2", reason: "releases_unknown" },
+      ],
+    });
+
+    // Assert
+    expect(answerText(one)).toMatch(
+      /1 security advisory affects your version; its fix could not be looked for\.$/,
+    );
+    expect(answerText(two)).toMatch(
+      /2 security advisories affect your version; their fix could not be looked for\.$/,
+    );
+    expect(one.find((p) => p.kind === "figure")).toMatchObject({ tone: "high" });
+  });
+
+  it("says no fix is coming when any advisory named is a prediction", () => {
+    const parts = answer({
+      verdict: "abandoned",
+      advisories: [makeAdvisory(), makeAdvisory({ id: "GHSA-2" })],
+      noFixExpected: [
+        { id: "GHSA-0000", reason: "releases_unknown" },
+        { id: "GHSA-2", reason: "fix_withdrawn" },
+      ],
+    });
+
+    expect(answerText(parts)).toMatch(
+      /2 security advisories affect your version and no fix is coming for it\.$/,
+    );
   });
 
   it("names the one fix every advisory shares", () => {

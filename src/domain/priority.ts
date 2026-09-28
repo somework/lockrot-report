@@ -1,139 +1,45 @@
-/**
- * `priorityWhy` rebuilds the ladder `Priority::of()` walks (contract.md §2.4), purely from a
- * finding's own fields, so the page can explain why a finding landed on the priority it shows —
- * ported from legacy's `priorityWhy` (report.js:728-735), as data rather than pre-rendered HTML.
- *
- * Each step's `text` is a full sentence (PD-DETAIL/regression review: a first-time-reader walk read
- * the old form — a verdict's name, the word "starts", a bare priority, chained by arrows to more
- * chips the same shape — as "a code-style chip, then the word critical", explaining nothing. There
- * is no code here to quote; `PriorityWhy.tsx` renders each sentence plain, ending with the ladder's
- * own final value, which stays the document's own `finding.priority` rather than a recomputation
- * (critic.md M30, unchanged by this rewrite).
- */
+/** Why a finding has its priority, worded from lockrot's own `priority_basis`: the page keeps no copy
+ *  of the rules that produced it. */
 
-import type { Finding, KnownPriority } from "../model/types";
+import type { Finding } from "../model/types";
 import { WAYS_NAMED, waysIn } from "./reach";
-import { hasNoFixExpected } from "./sniff";
-import { vocabTable } from "./vocab";
 
-/**
- * `Priority::BASE` (contract.md §2.4 step 2): the priority a verdict starts at before the
- * direct/dev/advisory steps below adjust it. A verdict with no entry here (`unknown`, `finished`,
- * `ok`) never enters the ladder — its priority is always `"none"`. Built with `vocabTable` (no
- * prototype), so a document-supplied verdict of `"constructor"` or `"__proto__"` reads as absent
- * rather than as an inherited `Object.prototype` member (security finding, `domain/vocab.ts`).
- */
-export const PRIORITY_BASE: Readonly<Record<string, KnownPriority>> = vocabTable({
-  abandoned: "critical",
-  silent: "critical",
-  pinned: "high",
-  "left-behind": "high",
-  "old-promise": "high",
-  stale: "medium",
-});
-
-/** Which of `Priority::of()`'s four rules a step is, in the order it evaluates them. */
-export type PriorityRule = "verdict" | "reach" | "dev" | "advisory";
-
-export interface PriorityStep {
-  readonly rule: PriorityRule;
-  /** One plain sentence: the fact this rule read, then what it did ("no step down" when it did not
-   *  apply), so a rule that left the priority alone is still named rather than left out. */
+export interface PriorityRung {
+  /** A step reason this page does not know, as written; drawn in code ahead of `text`. */
+  readonly code: string | null;
   readonly text: string;
-  /** The fact behind the rule when a sentence alone would leave it unnamed — today only the reach
-   *  rung's ways in ("It comes through a/b and c/d.") — drawn quieter under `text`; `null` otherwise. */
+  /** Quieter, under `text`: the ways in a transitive step went through. */
   readonly note: string | null;
-  /** Whether the rule moved the ladder (the verdict's own starting rung always counts as applied).
-   *  A step up clamped at critical is still `applied`: the rule fired, there was nowhere higher. */
-  readonly applied: boolean;
-  /** The priority the ladder is at once this step is applied. */
-  readonly to: KnownPriority;
+  /** Whether the level moved; the base always counts. */
+  readonly moved: boolean;
+  /** The level once this rung is taken, as written. */
+  readonly to: string;
 }
 
-const LADDER: readonly KnownPriority[] = ["critical", "high", "medium", "low"];
+export type NoFixKind = "expected" | "not-looked-for";
 
-/** One step down: critical→high→medium→low→low (contract.md §2.4 step 3/4). `low` is the floor —
- *  stepping down from it stays at `low`; this ladder never reaches `"none"`. */
-function stepDown(p: KnownPriority): KnownPriority {
-  const index = LADDER.indexOf(p);
-  if (index === -1) return p;
-  return LADDER[Math.min(index + 1, LADDER.length - 1)] ?? p;
+/** `releases_unknown` alone is no prediction: no release was read, so no fix was looked for. */
+export function noFixKind(finding: Pick<Finding, "noFixExpected">): NoFixKind | null {
+  const items = finding.noFixExpected;
+  if (items === null || items.length === 0) return null;
+  return items.every((item) => item.reason === "releases_unknown") ? "not-looked-for" : "expected";
 }
 
-/**
- * One step up: low→medium→high→critical→critical (contract.md §2.4 step 5). `critical` is the
- * ceiling. Legacy's `priorityWhy` always prints the words "one step up" for this step, even when
- * the ladder was already at critical, because it never computed an intermediate value at all — the
- * bold priority at the end of the legacy string is `finding.priority` straight from the document,
- * not a recomputation (critic.md M30). Here each step's `to` is a real, clamped value, so "one step
- * up" from critical reports staying at critical instead of implying a level beyond it; this is a
- * deliberate deviation from legacy's unclamped wording.
- */
-function stepUp(p: KnownPriority): KnownPriority {
-  const index = LADDER.indexOf(p);
-  if (index === -1) return p;
-  return LADDER[Math.max(index - 1, 0)] ?? p;
+const ORDER: readonly string[] = ["critical", "high", "medium", "low"];
+
+function movement(from: string, to: string): string {
+  if (from === to) return `stays at ${to}.`;
+  const gap = ORDER.indexOf(to) - ORDER.indexOf(from);
+  if (ORDER.includes(from) && ORDER.includes(to) && Math.abs(gap) === 1) {
+    return gap > 0 ? "one step down." : "one step up.";
+  }
+  return `${from} → ${to}.`;
 }
 
-/** Capitalises the first letter only — good enough for the verdict word this sentence starts on
- *  (`abandoned`, `left-behind`, ...); nothing here ever has to title-case a multi-word phrase. */
 function capitalize(word: string): string {
   return word.length === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1);
 }
 
-/**
- * The steps behind `finding.priority`: every rule `Priority::of()` evaluates, in its own order —
- * the verdict's starting rung, then reach (direct or not), then dev, then the no-fix advisory —
- * each with `applied` saying whether it moved the ladder. A rule that did not apply is returned too
- * (a judge's must-fix: the ladder names what did not happen, not only what did), in the same place,
- * never merged into one "no change" row. Empty when the finding's priority is `"none"` or its
- * verdict has no entry in `PRIORITY_BASE` — for current documents that is every verdict but the six
- * flagged ones (critic.md M30 notes the `"none"` branch is otherwise unreachable today).
- *
- * The words come from here, the one place the rules are rebuilt, so the page never restates a rule
- * somewhere else in different terms.
- */
-export function priorityWhy(finding: Finding): readonly PriorityStep[] {
-  const base = PRIORITY_BASE[finding.verdict];
-  if (finding.priority === "none" || !base) return [];
-
-  const verdict: PriorityStep = {
-    rule: "verdict",
-    text: `${capitalize(finding.verdict)} packages start at ${base}.`,
-    note: null,
-    applied: true,
-    to: base,
-  };
-  const reach = reachStep(finding, verdict.to);
-  const dev = devStep(finding, reach.to);
-  const advisory = advisoryStep(finding, dev.to);
-  return [verdict, reach, dev, advisory];
-}
-
-/** Step 3 of contract.md §2.4: a package you do not require yourself steps down once. The rule is
- *  "not required directly", not "only one way in", so the note names every way in `waysIn` finds —
- *  the same list the answer sentence and the chain read. */
-function reachStep(finding: Finding, from: KnownPriority): PriorityStep {
-  if (finding.direct) {
-    return {
-      rule: "reach",
-      text: "You require it directly: no step down.",
-      note: null,
-      applied: false,
-      to: from,
-    };
-  }
-  return {
-    rule: "reach",
-    text: "You don’t require it directly: one step down.",
-    note: waysNote(waysIn(finding)),
-    applied: true,
-    to: stepDown(from),
-  };
-}
-
-/** "It comes through a/b." · "It comes through a/b and c/d." · "It comes through 3 of your
- *  requirements, a/b among them." · `null` when the document names no way in. */
 function waysNote(ways: readonly string[]): string | null {
   const [first, second] = ways;
   if (first === undefined) return null;
@@ -142,41 +48,45 @@ function waysNote(ways: readonly string[]): string | null {
   return `It comes through ${ways.length} of your requirements, ${first} among them.`;
 }
 
-/** Step 4: a package only `require-dev` installs steps down once more. */
-function devStep(finding: Finding, from: KnownPriority): PriorityStep {
-  if (!finding.dev) {
-    return { rule: "dev", text: "Needed in production: no step down.", note: null, applied: false, to: from };
+function stepLead(reason: string, finding: Finding): string | null {
+  switch (reason) {
+    case "transitive":
+      return "You don’t require it directly";
+    case "unreached":
+      return "No direct requirement this run knows reaches it";
+    case "dev":
+      return "Installed for development only";
+    case "no_fix_expected":
+      return noFixKind(finding) === "not-looked-for"
+        ? "An advisory whose fix could not be looked for"
+        : "An advisory no release will fix";
+    default:
+      return null;
   }
-  return {
-    rule: "dev",
-    text: "Installed for development only: one step down.",
-    note: null,
-    applied: true,
-    to: stepDown(from),
-  };
 }
 
-/** Step 5: an advisory lockrot expects no fix for steps up once. M31 fix: `hasNoFixExpected` reads
- *  only the finding's own evidence, excluding the S7 summary `Finding::evidence()` appends — see
- *  sniff.ts. When it did not apply, the words say whether there was an advisory at all. */
-function advisoryStep(finding: Finding, from: KnownPriority): PriorityStep {
-  if (hasNoFixExpected(finding)) {
-    return {
-      rule: "advisory",
-      text: "An advisory with no fix coming: one step up.",
-      note: null,
-      applied: true,
-      to: stepUp(from),
-    };
-  }
-  return {
-    rule: "advisory",
-    text:
-      finding.advisories.length > 0
-        ? "Its advisories have a fix: no step up."
-        : "No security advisory: no step up.",
+/** Base first, then each step in lockrot's order; empty when the finding carries no basis or is not
+ *  flagged (base `none`, no step). */
+export function priorityWhy(finding: Finding): readonly PriorityRung[] {
+  const basis = finding.priorityBasis;
+  if (basis === null || (basis.base === "none" && basis.steps.length === 0)) return [];
+
+  const base: PriorityRung = {
+    code: null,
+    text: `${capitalize(finding.verdict)} packages start at ${basis.base}.`,
     note: null,
-    applied: false,
-    to: from,
+    moved: true,
+    to: basis.base,
   };
+  const steps = basis.steps.map((step): PriorityRung => {
+    const lead = stepLead(step.reason, finding);
+    return {
+      code: lead === null ? step.reason : null,
+      text: lead === null ? `: ${step.from} → ${step.to}.` : `${lead}: ${movement(step.from, step.to)}`,
+      note: step.reason === "transitive" ? waysNote(waysIn(finding)) : null,
+      moved: step.from !== step.to,
+      to: step.to,
+    };
+  });
+  return [base, ...steps];
 }

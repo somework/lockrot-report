@@ -34,6 +34,7 @@ const KOEL = loadModel("koel_koel.json");
 const WALLABAG = loadModel("wallabag_wallabag.json");
 const MAUTIC = loadModel("mautic_mautic.json");
 const WALLABAG_013 = loadModel("wallabag_wallabag-0.13.json");
+const KOEL_013 = loadModel("koel_koel-0.13.json");
 const MAUTIC_013 = loadModel("mautic_mautic-0.13.json");
 const EDGES_013 = loadModel("mini-0.13-edges.json");
 
@@ -88,6 +89,11 @@ const EXTRA = normalize({
         ],
         chain: [],
         evidence: "no fix expected for GHSA-1",
+        no_fix_expected: [{ id: "GHSA-1", reason: "no_release_fixes" }],
+        priority_basis: {
+          base: "critical",
+          steps: [{ reason: "no_fix_expected", from: "critical", to: "critical" }],
+        },
       },
       {
         package: "vendor/newpkg",
@@ -123,6 +129,7 @@ const EXTRA = normalize({
         signals: [],
         chain: [],
         evidence: "",
+        priority_basis: { base: "medium", steps: [] },
         baseline: { status: "worsened", previous_verdict: "stale" },
       },
       {
@@ -396,9 +403,14 @@ describe("Detail", () => {
       expect(screen.queryByText(/^Why this is/)).toBeNull();
     });
 
-    it("shows every rule as a sentence, applied or not, and the document's own final priority", () => {
-      const { container } = renderDetail(MINI, "vendor/transitive");
-      screen.getByText("Why this is high", { exact: false });
+    it("omits the section for a report that does not say how the priority was reached", () => {
+      renderDetail(MINI, "vendor/transitive");
+      expect(screen.queryByText(/^Why this is/)).toBeNull();
+    });
+
+    it("words each step of priority_basis, and ends on the document's own priority", () => {
+      const { container } = renderDetail(EDGES_013, "acme/dev-vuln");
+      screen.getByText("Why this is medium", { exact: false });
       const rows = Array.from(container.querySelectorAll(".detail-ladder-text")).map((el) => [
         el.textContent,
         el.classList.contains("is-applied")
@@ -408,30 +420,40 @@ describe("Detail", () => {
             : "result",
       ]);
       expect(rows).toEqual([
-        ["Abandoned packages start at critical.", "applied"],
-        ["You don’t require it directly: one step down. It comes through vendor/direct.", "applied"],
-        ["Needed in production: no step down.", "quiet"],
-        ["No security advisory: no step up.", "quiet"],
-        ["So: high.", "result"],
+        ["Left-behind packages start at high.", "applied"],
+        ["You don’t require it directly: one step down. It comes through acme/dev-tool.", "applied"],
+        ["Installed for development only: one step down.", "applied"],
+        ["An advisory no release will fix: one step up.", "applied"],
+        ["So: medium.", "result"],
       ]);
       // Said in priority words, the track's own, not the verdict's.
       expect(container.querySelector(".detail-why-aside")?.textContent).toBe(
-        "one rule moved it down from critical",
+        "three rules moved it down from high",
       );
-      expect(container.querySelector(".detail-ladder-note")?.textContent).toBe(
-        "It comes through vendor/direct.",
-      );
-      // One dot per row, on the rung the ladder is at: critical, then high for the rest.
       const dots = Array.from(container.querySelectorAll(".detail-ladder-dot")).map((el) =>
         Array.from(el.classList).find((c) => c.startsWith("at-")),
       );
-      expect(dots).toEqual(["at-0", "at-1", "at-1", "at-1", "at-1"]);
+      expect(dots).toEqual(["at-1", "at-2", "at-3", "at-2", "at-2"]);
     });
 
-    it("clamps a step-up at critical instead of implying a level beyond it", () => {
-      renderDetail(EXTRA_MODEL, "vendor/vulnerable");
+    it("draws a step that could not move the level quiet, and says it stays", () => {
+      const { container } = renderDetail(EXTRA_MODEL, "vendor/vulnerable");
       screen.getByText("Why this is critical", { exact: false });
-      expect(screen.getByText("An advisory with no fix coming: one step up.")).toBeTruthy();
+      const step = container.querySelectorAll(".detail-ladder-text")[1];
+      expect(step?.textContent).toBe("An advisory no release will fix: stays at critical.");
+      expect(step?.classList.contains("is-quiet")).toBe(true);
+    });
+
+    it("words an advisory whose fix was not looked for apart from one no release will fix", () => {
+      renderDetail(EDGES_013, "acme/silent-snapshot");
+      expect(screen.getByText("An advisory whose fix could not be looked for: one step up.")).toBeTruthy();
+    });
+
+    it("shows a step it does not know as written, in code, with its from and to", () => {
+      const { container } = renderDetail(EDGES_013, "acme/future-step");
+      const step = container.querySelectorAll(".detail-ladder-text")[1];
+      expect(step?.textContent).toBe("licence_change: high → critical.");
+      expect(step?.querySelector("code")?.textContent).toBe("licence_change");
     });
   });
 
@@ -780,7 +802,10 @@ describe("Detail", () => {
       expect(container.querySelector(".detail-timeline-answer")?.textContent).toBe(
         "Your branch, 1.x, had its last release 9.7 years ago.",
       );
-      // The ladder's reach rung names the same two ways in, and never says "only".
+    });
+
+    it("names the same two ways in on the ladder's transitive step, never 'only'", () => {
+      const { container } = renderDetail(WALLABAG_013, "hoa/event");
       const reach = container.querySelectorAll(".detail-ladder-text")[1]?.textContent ?? "";
       expect(reach).toBe(
         "You don’t require it directly: one step down. It comes through wallabag/rulerz and wallabag/rulerz-bundle.",
@@ -1481,7 +1506,7 @@ describe("Detail", () => {
     }
 
     it("puts the answer and how it gets in first, then priority and the checks behind it, follow-the-upstream, release branches, and the two reference sections last", () => {
-      const { container } = renderDetail(KOEL, "predis/predis");
+      const { container } = renderDetail(KOEL_013, "predis/predis");
       const order = markerOrder(container, [
         "Left behind on",
         "How it gets in",

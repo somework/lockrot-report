@@ -361,6 +361,16 @@ tag or the address format, says so under **Breaking** in its entry.
 - Run data names `exposure_rule`, `unattributed`, `note_details`, `gate`, `run.root_package`,
   `run.project_php`, `run.fail_on_kind`, `run.mode` and `run.strict_network` among the fields a
   report leaves out, like any other key the page reads.
+- "Why this is <priority>" words lockrot's own `priority_basis`, step by step, instead of the page's
+  copy of lockrot's rules: where the verdict starts, then each step it took ("No direct requirement
+  this run knows reaches it" in a run without composer.json), a step that could not move the level
+  as "stays at low" or "stays at critical", and a step the page does not know as written with its
+  levels. A report without the field draws no ladder; the priority itself still shows.
+- A priority raised for an advisory lockrot could not look for a fix for (its releases were not
+  read) says so, "An advisory whose fix could not be looked for", instead of "no release will fix",
+  and the answer sentence says "its fix could not be looked for". "No fix is coming" now comes from
+  `no_fix_expected`, never from the words "no fix expected" in the evidence, so a report without the
+  field no longer says it.
 - A package's libyears "not measured" reason is the finding's own `libyears_unmeasured` where the
   report carries it; a reason the page does not know is shown as written (`yanked_release`).
 - A run note that quotes a long URL wraps on a phone instead of widening Run data past 320px.

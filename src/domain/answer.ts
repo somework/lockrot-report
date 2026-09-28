@@ -12,8 +12,8 @@ import {
   type Thresholds,
 } from "./age";
 import { pinnedKind, readPinnedFacts } from "./pinned";
+import { noFixKind } from "./priority";
 import { WAYS_NAMED, waysIn } from "./reach";
-import { hasNoFixExpected } from "./sniff";
 import { VERDICT_ORDER, type Tone } from "./vocab";
 
 export type AnswerPart =
@@ -241,13 +241,20 @@ function replacementClause(finding: Finding, metadataReplacement: string | null)
 function advisoryClause(finding: Finding): AnswerPart[] {
   const n = finding.advisories.length;
   if (n === 0) return [];
-  const noFix = hasNoFixExpected(finding);
+  const noFix = noFixKind(finding);
   const parts: AnswerPart[] = [
     text(" "),
-    figure(n === 1 ? "1 security advisory" : `${n} security advisories`, noFix ? "crit" : "high"),
+    figure(
+      n === 1 ? "1 security advisory" : `${n} security advisories`,
+      noFix === "expected" ? "crit" : "high",
+    ),
     text(n === 1 ? " affects your version" : " affect your version"),
   ];
-  if (noFix) {
+  if (noFix === "not-looked-for") {
+    parts.push(text(n === 1 ? "; its fix could not be looked for." : "; their fix could not be looked for."));
+    return parts;
+  }
+  if (noFix === "expected") {
     const branch = str(signal(finding, "S8")?.data, "branch");
     if (branch !== null) parts.push(text(" and no fix is coming on "), name(branch), text("."));
     else parts.push(text(" and no fix is coming for it."));
