@@ -172,6 +172,15 @@ test.describe("PD-SUMMARY-3: the Run tab's fail-on without the field", () => {
     expect(await report.gateFactLabel()).toBeNull();
   });
 
+  test("a 0.13 run words its threshold from run.fail_on_kind", async ({ page }) => {
+    await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "view=run");
+    const failOn = page
+      .getByRole("tabpanel")
+      .locator("dt", { hasText: /^fail-on$/ })
+      .locator("xpath=following-sibling::dd[1]");
+    await expect(failOn).toHaveText("high · fails on a priority at least as high as high");
+  });
+
   test("a document with an explicit fail-on prints the word, not an em dash (mini.json: 'silent')", async ({
     page,
   }) => {

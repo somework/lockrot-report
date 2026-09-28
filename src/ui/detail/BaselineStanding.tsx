@@ -1,6 +1,6 @@
 import type { ComponentChildren } from "preact";
 import type { Finding } from "../../model/types";
-import { baselineStep, type BaselineStep } from "../../domain/baseline";
+import { baselineStep, gateOutcome, type BaselineStep } from "../../domain/baseline";
 import { Pill } from "../common/common";
 import { useReport } from "../context";
 import "../views/baseline.css";
@@ -22,50 +22,54 @@ function Step({ step }: { step: BaselineStep }) {
   );
 }
 
-/**
- * The step in words. Only what the document records: which file, which verdict it accepted, which
- * verdict the run found. For an accepted package with a gate on the run, lockrot's own documented
- * counting rule — `--fail-on` counts only what the baseline does not accept — and never what the
- * build did, which the document does not say (the header's gate popover ends on the same caveat).
- */
-function sentence(step: BaselineStep, path: string, gated: boolean): ComponentChildren {
+type Outcome = ReturnType<typeof gateOutcome>;
+
+/** The step in words, and what the finding's own gate says about this run — nothing when it says
+ *  nothing, since the page does not read an outcome off the baseline status. */
+function sentence(step: BaselineStep, path: string, outcome: Outcome): ComponentChildren {
+  const fails = outcome === "fails" ? " It fails this run." : null;
   if (step.status === "new") {
-    return `Not in ${path}: new since it was written.`;
+    return (
+      <>
+        Not in {path}: new since it was written.{fails}
+      </>
+    );
   }
   if (step.status === "worsened") {
     // The pills and the status word above already say it got worse; the sentence says what moved.
     return step.previous === null ? (
       <>
-        {path} accepted a milder verdict; it is <span className="mono">{step.current}</span> now.
+        {path} accepted a milder verdict; it is <span className="mono">{step.current}</span> now.{fails}
       </>
     ) : (
       <>
         {path} accepted it as <span className="mono">{step.previous}</span>; it is{" "}
-        <span className="mono">{step.current}</span> now.
+        <span className="mono">{step.current}</span> now.{fails}
       </>
     );
   }
+  const accepted = outcome === "accepted" ? ", so it does not fail this run." : ".";
   if (step.status === "known") {
-    const accepted =
-      step.previous === null ? (
-        <>Already accepted in {path}.</>
-      ) : (
-        <>
-          Already accepted in {path} as <span className="mono">{step.previous}</span>.
-        </>
-      );
-    return gated ? (
+    return step.previous === null ? (
       <>
-        {accepted} lockrot&apos;s <span className="mono">--fail-on</span> does not count it.
+        Already accepted in {path}
+        {accepted}
+        {fails}
       </>
     ) : (
-      accepted
+      <>
+        Already accepted in {path} as <span className="mono">{step.previous}</span>
+        {accepted}
+        {fails}
+      </>
     );
   }
-  // A status this renderer does not know (a newer lockrot's): stated as written, nothing inferred.
+  // A status this renderer does not know (a newer lockrot's): stated as written.
   return (
     <>
       {path} says <span className="mono">{step.status}</span>.
+      {outcome === "accepted" && " Accepted by the baseline, so it does not fail this run."}
+      {fails}
     </>
   );
 }
@@ -81,8 +85,6 @@ export function BaselineStanding({ finding }: { finding: Finding }) {
   const step = baselineStep(finding);
   if (step === null) return null;
   const path = model.report.baseline?.path || "the baseline";
-  const failOn = model.report.run.failOn;
-  const gated = failOn !== null && failOn !== "none";
   // Drawn only when something moved: an accepted package still at the verdict it was accepted at
   // (most of them, on a run with a baseline) gets the sentence alone, so two identical pills never
   // sit above the priority reasoning of every package the baseline already covers.
@@ -95,7 +97,7 @@ export function BaselineStanding({ finding }: { finding: Finding }) {
     <section className="detail-section">
       <h3>Against the baseline</h3>
       {moved && <Step step={step} />}
-      <p className="detail-baseline">{sentence(step, path, gated)}</p>
+      <p className="detail-baseline">{sentence(step, path, gateOutcome(finding))}</p>
     </section>
   );
 }

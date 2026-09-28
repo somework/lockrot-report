@@ -4,6 +4,7 @@ import {
   applyFilters,
   hiddenByFilters,
   population,
+  quietAdvisoryFindings,
   railGroups,
 } from "../../../src/domain/filters";
 import { EMPTY_FILTERS, INITIAL_STATE } from "../../../src/state/types";
@@ -577,5 +578,50 @@ describe("activeFilters (PD-RAIL-4)", () => {
     for (const id of ["toString", "constructor", "hasOwnProperty"]) {
       expect(activeFilters(withFilters({ signal: [id] }))[0]?.label).toBe(id);
     }
+  });
+});
+
+describe("quietAdvisoryFindings", () => {
+  const quiet = [
+    makeFinding({
+      package: "quiet/ok",
+      verdict: "ok",
+      direct: true,
+      advisories: [makeAdvisory({ severity: "critical" })],
+    }),
+    makeFinding({
+      package: "quiet/finished",
+      verdict: "finished",
+      direct: false,
+      advisories: [makeAdvisory({ severity: "low" })],
+    }),
+  ];
+  const others = [
+    makeFinding({ package: "flagged/one", verdict: "abandoned", advisories: [makeAdvisory()] }),
+    makeFinding({ package: "ok/clean", verdict: "ok" }),
+  ];
+  const model = modelWith([...quiet, ...others]);
+
+  it("is every ok or finished finding with an advisory when nothing narrows the list", () => {
+    expect(quietAdvisoryFindings(model, stateWith()).map((f) => f.package)).toEqual([
+      "quiet/ok",
+      "quiet/finished",
+    ]);
+  });
+
+  it("honours the search box like the list below it", () => {
+    expect(quietAdvisoryFindings(model, stateWith({ q: "finished" })).map((f) => f.package)).toEqual([
+      "quiet/finished",
+    ]);
+    expect(quietAdvisoryFindings(model, stateWith({ q: "nothing-matches" }))).toEqual([]);
+  });
+
+  it("honours the rail like the list below it", () => {
+    const direct = stateWith({ filters: withFilters({ scope: ["direct"] }) });
+    expect(quietAdvisoryFindings(model, direct).map((f) => f.package)).toEqual(["quiet/ok"]);
+    const low = stateWith({ filters: withFilters({ sev: ["low"] }) });
+    expect(quietAdvisoryFindings(model, low).map((f) => f.package)).toEqual(["quiet/finished"]);
+    const verdict = stateWith({ filters: withFilters({ verdict: ["abandoned"] }) });
+    expect(quietAdvisoryFindings(model, verdict)).toEqual([]);
   });
 });

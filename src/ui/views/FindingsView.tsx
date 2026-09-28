@@ -1,6 +1,6 @@
 import type { Finding } from "../../model/types";
 import { useReport } from "../context";
-import { applyFilters, population } from "../../domain/filters";
+import { applyFilters, population, quietAdvisoryFindings } from "../../domain/filters";
 import { plural } from "../../domain/format";
 import { toneClass } from "../common/common";
 import { SIGNAL_NAMES, TONE } from "../../domain/vocab";
@@ -14,8 +14,6 @@ import { usePrinted } from "../print/printContext";
 import "./views.css";
 import "./ledger-rows.css";
 
-/** Packages with an advisory that landed on `ok` or `finished`, so never in this tab: read over
- *  every finding, whatever is filtered. */
 function QuietNote({ quiet }: { quiet: readonly Finding[] }) {
   const { dispatch } = useReport();
   const many = quiet.length > 1;
@@ -229,10 +227,7 @@ function ColumnHead({ axis, quoted, context }: ListProps & { context: boolean })
 export function FindingsView() {
   const { model, state } = useReport();
   const printed = usePrinted();
-  const quiet = model.report.findings.filter(
-    (finding) =>
-      finding.advisories.length > 0 && (finding.verdict === "ok" || finding.verdict === "finished"),
-  );
+  const quiet = quietAdvisoryFindings(model, state);
   const visible = applyFilters(model, state, "findings");
   const axis = ageAxis(model.report.run.thresholds);
   const signals = state.filters.signal;

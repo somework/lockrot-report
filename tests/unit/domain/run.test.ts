@@ -4,6 +4,7 @@ import {
   activityTally,
   cacheAge,
   cacheNullReason,
+  failOnThreshold,
   nullReason,
   replacementInWordsOnly,
   sameScalePairs,
@@ -194,5 +195,25 @@ describe("replacementInWordsOnly", () => {
       signals: [makeSignal({ id: "S1", data: { replacement: "x" } })],
     });
     expect(replacementInWordsOnly(makeModel([words, resolved, none, stale]))).toBe(1);
+  });
+});
+
+describe("failOnThreshold", () => {
+  const run = (failOn: string | null, failOnKind: string | null) => ({ failOn, failOnKind });
+
+  it("words the threshold from run.fail_on_kind", () => {
+    expect(failOnThreshold(run("none", "none"))).toBe("fails on nothing");
+    expect(failOnThreshold(run("silent", "verdict"))).toBe("fails on a verdict at least as severe as silent");
+    expect(failOnThreshold(run("high", "priority"))).toBe("fails on a priority at least as high as high");
+    expect(failOnThreshold(run("unchecked", "unchecked"))).toBe(
+      "fails on any finding whose check did not run",
+    );
+  });
+
+  it("names a kind it does not know as written, and says nothing without a kind", () => {
+    expect(failOnThreshold(run("gpl-3.0", "licence"))).toBe("another kind of threshold: licence");
+    // The page cannot tell a verdict from a priority by the value alone.
+    expect(failOnThreshold(run("high", null))).toBeNull();
+    expect(failOnThreshold(run(null, null))).toBeNull();
   });
 });

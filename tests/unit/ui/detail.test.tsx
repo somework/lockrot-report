@@ -1000,10 +1000,63 @@ describe("Detail", () => {
       );
     });
 
-    // Evaluator: "It does not fail the build." stated an outcome the report does not record (no exit
-    // code, and --strict-network can still fail a run). With a gate on the run the sentence names
-    // lockrot's own counting rule instead; with none, it adds nothing.
-    it("with a gate on the run, names --fail-on's counting rule rather than a build outcome", () => {
+    function withGate(
+      status: string,
+      previous: string | null,
+      gate: Record<string, unknown> | null,
+      verdict = "stale",
+    ) {
+      const model = normalize({
+        report: {
+          lockrot: { version: "0.13.0", schema: 1 },
+          generated_at: "2026-01-01T00:00:00Z",
+          run: { fail_on: "high", fail_on_kind: "priority" },
+          gate: { fails: true, tripped_by: ["fail_on"], fail_on_applied: true },
+          baseline: { path: "baseline.json", known: 1, new: 1, worsened: 0, stale: [] },
+          findings: [
+            {
+              package: "vendor/same",
+              version: "1.0.0",
+              verdict,
+              priority: "high",
+              baseline: { status, previous_verdict: previous },
+              gate,
+            },
+          ],
+        },
+      });
+      if (!model.ok) throw new Error(model.error.message);
+      const { container } = renderDetail(model.model, "vendor/same");
+      return container.querySelector(".detail-baseline")?.textContent ?? "";
+    }
+
+    it("says an accepted finding does not fail this run only when its gate says the baseline exempts it", () => {
+      expect(withGate("known", "stale", { reaches_fail_on: true, fails: false, exempt_by: "baseline" })).toBe(
+        "Already accepted in baseline.json as stale, so it does not fail this run.",
+      );
+      // Known, but it does not reach fail-on: nothing exempts it, and the build is not mentioned.
+      expect(withGate("known", "stale", { reaches_fail_on: false, fails: false, exempt_by: null })).toBe(
+        "Already accepted in baseline.json as stale.",
+      );
+    });
+
+    it("says a finding fails this run when its gate says so", () => {
+      expect(
+        withGate("new", null, { reaches_fail_on: true, fails: true, exempt_by: null }, "abandoned"),
+      ).toBe("Not in baseline.json: new since it was written. It fails this run.");
+    });
+
+    it("says nothing about the build for an unknown exemption, a run that fails nothing, or no gate", () => {
+      expect(withGate("known", "stale", { reaches_fail_on: true, fails: false, exempt_by: "waiver" })).toBe(
+        "Already accepted in baseline.json as stale.",
+      );
+      expect(
+        withGate("new", null, { reaches_fail_on: true, fails: false, exempt_by: null }, "abandoned"),
+      ).toBe("Not in baseline.json: new since it was written.");
+      expect(withGate("known", "stale", null)).toBe("Already accepted in baseline.json as stale.");
+    });
+
+    it("says nothing about the build for a report whose findings carry no gate, whatever its fail-on", () => {
       const model = normalize({
         report: {
           lockrot: { version: "0.11.0", schema: 1 },
@@ -1023,9 +1076,9 @@ describe("Detail", () => {
       });
       if (!model.ok) throw new Error(model.error.message);
       const { container } = renderDetail(model.model, "vendor/same");
-      const text = container.querySelector(".detail-baseline")?.textContent ?? "";
-      expect(text).toBe("Already accepted in baseline.json as stale. lockrot's --fail-on does not count it.");
-      expect(text).not.toMatch(/build|pass|fail the/);
+      expect(container.querySelector(".detail-baseline")?.textContent).toBe(
+        "Already accepted in baseline.json as stale.",
+      );
     });
   });
 

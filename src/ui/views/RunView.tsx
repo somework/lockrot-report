@@ -11,6 +11,7 @@ import {
   cacheAge,
   cacheNullReason,
   carries,
+  failOnThreshold,
   NOT_IN_DOCUMENT,
   NOT_RECORDED,
   nullReason,
@@ -199,8 +200,13 @@ function fieldGroups(model: Model): readonly FieldGroup[] {
   const { run } = report;
   const ly = report.libyears;
   const cache = cacheAge(report);
+  const threshold = failOnThreshold(run);
   const failOn: FieldValue =
-    run.failOn === null ? { missing: nullReason(report, "run.fail_on") } : run.failOn;
+    run.failOn === null
+      ? { missing: nullReason(report, "run.fail_on") }
+      : threshold === null
+        ? run.failOn
+        : { parts: [run.failOn, { aside: threshold }] };
   return [
     {
       title: "What it was told",
@@ -223,8 +229,7 @@ function fieldGroups(model: Model): readonly FieldGroup[] {
                 ? "yes"
                 : "no",
         },
-        // PD-SUMMARY-3: "none" only when the run said --fail-on=none; a document without
-        // run.fail_on says so in words.
+        // PD-SUMMARY-3: "none" only when the run said --fail-on=none.
         { label: "fail-on", value: failOn },
       ],
     },

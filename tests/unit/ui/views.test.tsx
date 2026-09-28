@@ -124,7 +124,7 @@ describe("FindingsView", () => {
     expect(screen.getByRole("button", { name: /clear/i })).toBeTruthy();
   });
 
-  it("names the packages carrying an advisory but no rot verdict, above the list, regardless of the query", () => {
+  it("names the packages carrying an advisory but no rot verdict, above the list, narrowed like it", () => {
     // Arrange
     const quiet = makeFinding({
       package: "quiet/pkg",
@@ -149,14 +149,30 @@ describe("FindingsView", () => {
     const flagged = makeFinding({ package: "flagged/pkg", verdict: "abandoned", priority: "critical" });
     const model = flaggedModel([quiet, flagged]);
 
-    // Act: a query that matches neither the quiet note's own text nor "flagged/pkg" still shows the
-    // note (M27, kept as legacy) while the row list below it goes to its own filtered empty state.
-    renderIn(model, stateWith({ q: "nothing-matches" }), <FindingsView />);
-
-    // Assert
+    // Act + Assert: with nothing narrowing the list, the note names it.
+    const { unmount } = renderIn(model, stateWith(), <FindingsView />);
     expect(screen.getByRole("button", { name: "quiet/pkg" })).toBeTruthy();
     expect(screen.getByText(/security advisory but no rot/)).toBeTruthy();
+    unmount();
+
+    // A search that matches it keeps it; the list below is empty for its own reason.
+    const { unmount: unmountHit } = renderIn(model, stateWith({ q: "quiet" }), <FindingsView />);
+    expect(screen.getByRole("button", { name: "quiet/pkg" })).toBeTruthy();
+    unmountHit();
+
+    // A search or a rail filter that leaves it out drops the note, as it drops a row.
+    const { unmount: unmountMiss } = renderIn(model, stateWith({ q: "nothing-matches" }), <FindingsView />);
+    expect(screen.queryByText(/security advisory but no rot/)).toBeNull();
     expect(screen.getByText(/nothing matches this filter/i)).toBeTruthy();
+    unmountMiss();
+
+    renderIn(
+      model,
+      stateWith({ filters: { ...INITIAL_STATE.filters, prio: ["critical"] } }),
+      <FindingsView />,
+    );
+    expect(screen.queryByText(/security advisory but no rot/)).toBeNull();
+    expect(document.querySelector('[data-pkg="flagged/pkg"]')).not.toBeNull();
   });
 
   it("toggles selection on a row click, and does nothing when the click lands on a link", () => {
@@ -1691,6 +1707,28 @@ describe("RunView", () => {
     renderIn(gated, stateWith({ view: "run" }), <RunView />);
     expect(screen.getByText("fail-on").nextElementSibling?.textContent).toBe("critical");
     expect(document.querySelector(".run-answer")?.textContent).toContain("--fail-on=critical");
+  });
+
+  it("fail-on: words the threshold from run.fail_on_kind, an unknown kind as written", () => {
+    const base = makeModel([]);
+    const withKind = (failOn: string, failOnKind: string | null): Model => ({
+      ...base,
+      report: { ...base.report, run: { ...base.report.run, failOn, failOnKind } },
+    });
+    const row = () => screen.getByText("fail-on").nextElementSibling?.textContent;
+    const cases: readonly (readonly [string, string | null, string])[] = [
+      ["none", "none", "none · fails on nothing"],
+      ["silent", "verdict", "silent · fails on a verdict at least as severe as silent"],
+      ["high", "priority", "high · fails on a priority at least as high as high"],
+      ["unchecked", "unchecked", "unchecked · fails on any finding whose check did not run"],
+      ["gpl-3.0", "licence", "gpl-3.0 · another kind of threshold: licence"],
+      ["high", null, "high"],
+    ];
+    for (const [failOn, kind, text] of cases) {
+      const { unmount } = renderIn(withKind(failOn, kind), stateWith({ view: "run" }), <RunView />);
+      expect(row()).toBe(text);
+      unmount();
+    }
   });
 
   // PD-RUN-1: the run in a sentence, from the document's own fields.

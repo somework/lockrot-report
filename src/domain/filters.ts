@@ -143,6 +143,19 @@ export function applyFilters(model: Model, state: State, view: View): readonly F
   return filtered;
 }
 
+/** Findings with an advisory whose verdict is `ok` or `finished`, so never on Findings, narrowed by
+ *  the same search and rail as the list they are named above. */
+export function quietAdvisoryFindings(model: Model, state: State): readonly Finding[] {
+  const terms = parseQuery(state.q);
+  return model.report.findings.filter(
+    (f) =>
+      f.advisories.length > 0 &&
+      (f.verdict === "ok" || f.verdict === "finished") &&
+      matchesFinding(f, terms) &&
+      passesRail(state.filters, f),
+  );
+}
+
 /** In the tab's population but kept off its list by the search or the rail (PD-DETAIL-4); false for
  *  a package the tab never lists. */
 export function hiddenByFilters(model: Model, state: State, pkg: string): boolean {

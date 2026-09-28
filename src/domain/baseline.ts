@@ -1,10 +1,7 @@
 /**
- * The baseline surfaces' arithmetic (PD-BASELINE-1..4, DESIGN.md §5): counts over what the report
- * already records — `report.baseline`, each finding's `baseline` state and `run.fail_on` — and
- * nothing else. No judgement is made here that lockrot did not already make: a finding's status
- * (new, worsened, known) and the verdict the baseline accepted it at are lockrot's own, read as
- * given; the gate tally only counts findings against lockrot's documented `--fail-on` order
- * (`FailOn::reaches()` in lockrot), and never says whether the run passed or failed.
+ * The baseline surfaces' arithmetic (PD-BASELINE-1..6, DESIGN.md §5): counts over what the report
+ * records — `report.baseline`, each finding's `baseline` state and `gate` — and nothing else. Which
+ * findings reach `run.fail_on` is each finding's own `gate.reaches_fail_on`, never the page's rank.
  */
 
 import type { Finding, Model, Verdict } from "../model/types";
@@ -79,60 +76,34 @@ export function baselineStep(finding: Finding): BaselineStep | null {
 // The gate tally
 // -------------------------------------------------------------------------------------------
 
-/** lockrot's `FailOn::UNCHECKED`: a threshold met by any finding carrying S10. */
-const UNCHECKED = "unchecked";
-
-function verdictReaches(verdict: Verdict, threshold: Verdict): boolean {
-  const at = VERDICT_ORDER.indexOf(verdict);
-  return at !== -1 && at <= VERDICT_ORDER.indexOf(threshold);
+function reachesFailOn(f: Finding): boolean {
+  return f.gate?.reachesFailOn === true;
 }
 
-function priorityReaches(priority: string, threshold: string): boolean {
-  const order: readonly string[] = PRIORITIES;
-  const at = order.indexOf(priority);
-  // `none` is a priority but no threshold; a priority this renderer does not know reaches nothing.
-  return at !== -1 && priority !== "none" && at <= order.indexOf(threshold);
-}
-
-/**
- * How `failOn` reads one finding, or `null` when `failOn` is `none` or a value this renderer does
- * not know (a newer lockrot's) — then the page counts nothing rather than guess at its order.
- */
-function reachesFn(failOn: string): ((f: Finding) => boolean) | null {
-  if (failOn === UNCHECKED) return (f) => f.signals.some((signal) => signal.id === "S10");
-  if (failOn !== "none" && (PRIORITIES as readonly string[]).includes(failOn)) {
-    return (f) => priorityReaches(f.priority, failOn);
-  }
-  if (VERDICT_ORDER.includes(failOn) && failOn !== "unknown") {
-    return (f) => verdictReaches(f.verdict, failOn);
-  }
-  return null;
+function exemptByBaseline(f: Finding): boolean {
+  return f.gate?.exemptBy === "baseline";
 }
 
 export interface GateTally {
   readonly failOn: string;
-  /** Findings at or above `failOn`, whatever the baseline says about them. */
+  /** `run.fail_on_kind` as written; null where the document does not say. */
+  readonly kind: string | null;
+  /** Findings whose gate says they reach `failOn`, whatever the baseline says about them. */
   readonly reached: number;
-  /**
-   * Of those, the ones the baseline does not already accept (new, worsened, or no entry) — the set
-   * lockrot measures `--fail-on` against when a baseline is present. `null` when the run carried
-   * no baseline, or the findings carry no per-finding state to count it from.
-   */
+  /** Of those, the ones the baseline does not exempt; `null` when the run carried no baseline. */
   readonly notAccepted: number | null;
 }
 
-/** The header's descriptive tally beside the gate fact, or `null` when there is nothing to count. */
+/** The header's descriptive tally beside the gate fact, or `null` when no gate field states it. */
 export function gateTally(model: Model): GateTally | null {
-  const failOn = model.report.run.failOn;
-  if (failOn === null) return null;
-  const reaches = reachesFn(failOn);
-  if (reaches === null) return null;
-  const reached = model.report.findings.filter(reaches);
-  const counted = model.report.baseline !== null && findingsCarryBaseline(model);
+  const { run, gate, baseline } = model.report;
+  if (run.failOn === null || run.failOn === "none" || gate === null) return null;
+  const reached = model.report.findings.filter(reachesFailOn);
   return {
-    failOn,
+    failOn: run.failOn,
+    kind: run.failOnKind,
     reached: reached.length,
-    notAccepted: counted ? reached.filter((f) => f.baseline?.status !== "known").length : null,
+    notAccepted: baseline === null ? null : reached.filter((f) => !exemptByBaseline(f)).length,
   };
 }
 
@@ -141,21 +112,41 @@ function inOrder(order: readonly string[], keys: readonly string[]): readonly st
   return order.filter((key) => keys.includes(key));
 }
 
+/** The rail group that stands for a kind of threshold, over the findings in `set`. */
+function levelFilters(kind: string | null, set: readonly Finding[]): Partial<Filters> | null {
+  switch (kind) {
+    case "unchecked":
+      return { signal: ["S10"] };
+    case "priority":
+      return {
+        prio: inOrder(
+          PRIORITIES,
+          set.map((f) => f.priority),
+        ),
+      };
+    case "verdict":
+      return {
+        verdict: inOrder(
+          VERDICT_ORDER,
+          set.map((f) => f.verdict),
+        ),
+      };
+    default:
+      return null;
+  }
+}
+
 /**
  * The rail filters that list exactly the tally's `notAccepted` findings on the Findings tab — the
- * Since buckets they sit in, ANDed with the priorities (or verdicts, or S10) that reach `failOn` —
- * or `null` when no combination of the rail's own groups lists that set and nothing else. Checked,
- * not assumed: the filters are run over the Findings population and must return the same findings,
- * so the header never offers a link whose list disagrees with the count it is drawn on. Filters
- * only; nothing here ranks, advises or says what the run's exit code was.
+ * Since buckets they sit in, ANDed with the rail group the threshold's kind stands for — or `null`
+ * when no combination of the rail's own groups lists that set and nothing else. Checked, not assumed:
+ * the filters are run over the Findings population and must return the same findings, so the header
+ * never offers a link whose list disagrees with the count it is drawn on.
  */
 export function gateFocus(model: Model): Filters | null {
-  const failOn = model.report.run.failOn;
-  const reaches = failOn === null ? null : reachesFn(failOn);
-  if (failOn === null || reaches === null || model.report.baseline === null) return null;
-  // The same set `gateTally` counts as `notAccepted` — a finding with no state included — so a
-  // finding the Since filter cannot select makes this null below rather than silently dropping out.
-  const set = model.report.findings.filter((f) => reaches(f) && f.baseline?.status !== "known");
+  const tally = gateTally(model);
+  if (tally === null || tally.notAccepted === null) return null;
+  const set = model.report.findings.filter((f) => reachesFailOn(f) && !exemptByBaseline(f));
   if (set.length === 0) return null;
 
   const buckets = set.map(sinceBucket);
@@ -164,25 +155,21 @@ export function gateFocus(model: Model): Filters | null {
     ["new", "worsened"],
     buckets.filter((b): b is "new" | "worsened" => b !== null),
   );
-  const level: Partial<Filters> =
-    failOn === UNCHECKED
-      ? { signal: ["S10"] }
-      : (PRIORITIES as readonly string[]).includes(failOn)
-        ? {
-            prio: inOrder(
-              PRIORITIES,
-              set.map((f) => f.priority),
-            ),
-          }
-        : {
-            verdict: inOrder(
-              VERDICT_ORDER,
-              set.map((f) => f.verdict),
-            ),
-          };
+  const level = levelFilters(tally.kind, set);
+  if (level === null) return null;
   const filters: Filters = { ...EMPTY_FILTERS, ...level, since };
 
   const listed = applyFilters(model, { ...INITIAL_STATE, filters }, "findings");
   const same = listed.length === set.length && listed.every((f) => set.includes(f));
   return same ? filters : null;
+}
+
+/**
+ * What a finding's own gate says about this run: the baseline exempts it, or it fails the run.
+ * Null for everything else — no gate, not reaching, an exemption this page does not know, or a run
+ * that applies no fail-on (`fails` false with nothing exempting it).
+ */
+export function gateOutcome(finding: Finding): "accepted" | "fails" | null {
+  if (exemptByBaseline(finding)) return "accepted";
+  return finding.gate?.fails === true ? "fails" : null;
 }

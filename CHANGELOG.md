@@ -381,6 +381,21 @@ tag or the address format, says so under **Breaking** in its entry.
 - An advisory whose releases lockrot did not read (its S9's `releases_read: false`) says "fix not
   checked" in its row on the Advisories tab and in the open package, and its rung of the fix ladder
   reads "not checked", instead of "no fix listed" and "no release".
+- Run data's fail-on row says what the threshold fails on, from `run.fail_on_kind`: "high · fails on
+  a priority at least as high as high", "silent · fails on a verdict at least as severe as silent",
+  "fails on any finding whose check did not run", "fails on nothing", and a kind the page does not
+  know as written. A report without the kind shows the value alone.
+- The header's gate tally counts the findings whose own `gate` says they reach fail-on and, with a
+  baseline, the ones it does not exempt, instead of ranking them by the page's copy of lockrot's
+  order; a threshold of a kind the page does not know is counted too ("1 reach it"). A report whose
+  findings carry no `gate` shows the gate fact without a tally.
+- An open package's baseline paragraph says "so it does not fail this run" when its `gate` says the
+  baseline exempts it, and "It fails this run." when its `gate` says it fails; otherwise it says
+  nothing about the build. "lockrot's --fail-on does not count it", read off the baseline status
+  alone, is gone.
+- The note above Findings naming packages with an advisory but no rot verdict is narrowed by the
+  search box and the rail, like the list under it, instead of naming every such package whatever
+  is filtered.
 - A run note that quotes a long URL wraps on a phone instead of widening Run data past 320px.
 - Blast radius: a flagged package lockrot counts under no direct requirement, because more of them
   reach it than `exposure_rule.max_fan_in` allows (its `unattributed` list: akaunting's
