@@ -241,19 +241,6 @@ test("axe: no serious or critical violation with rows and folds open, both schem
   }
 });
 
-/** Each name the tab draws, rows, their packages and the footnote, once. */
-function radiusNames(page: Page): Promise<string[]> {
-  return page.evaluate(() => {
-    const rl = document.querySelector(".rl");
-    if (rl === null) return [];
-    const items = [...rl.querySelectorAll<HTMLElement>('[role="listitem"], li')].map(
-      (el) => el.getAttribute("data-pkg") ?? el.getAttribute("aria-label"),
-    );
-    const foot = [...rl.querySelectorAll<HTMLElement>(".rl-foot button")].map((el) => el.textContent);
-    return [...new Set([...items, ...foot].filter((name): name is string => name !== null && name !== ""))];
-  });
-}
-
 test("akaunting 0.13: a package lockrot counts under no requirement is drawn nowhere, and the rail there does not count it (PD-RADIUS-11)", async ({
   page,
 }) => {
@@ -262,17 +249,11 @@ test("akaunting 0.13: a package lockrot counts under no requirement is drawn now
 
   // Findings lists every flagged package, league/config (unattributed, fan_in 9) among them.
   await page.goto(pageUrl(FIXTURES.akaunting013) + "#view=findings");
-  const flagged = new Set(
-    await page.evaluate(() =>
-      [...document.querySelectorAll<HTMLElement>("[data-pkg]")].map(
-        (el) => el.getAttribute("data-pkg") ?? "",
-      ),
-    ),
-  );
+  const flagged = new Set(await report.rows());
   expect(flagged.has("league/config")).toBe(true);
 
   await report.tab("radius");
-  const drawn = (await radiusNames(page)).filter((name) => flagged.has(name));
+  const drawn = (await report.radiusNames()).filter((name) => flagged.has(name));
   expect(drawn).not.toContain("league/config");
   const scope = (await report.railRows()).filter((row) => ["Direct", "Transitive"].includes(row.label));
   expect(scope.reduce((sum, row) => sum + row.count, 0)).toBe(drawn.length);

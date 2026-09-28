@@ -15,25 +15,19 @@ test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);
 });
 
-test("koel 0.13: a package lockrot asked no repository about is not linked to Packagist", async ({
-  page,
-}) => {
+test("koel 0.13: a package lockrot asked no repository about is not linked to Packagist", async () => {
   await report.goto(FIXTURES.koel013);
   await report.tab("packages");
-  const row = (pkg: string) => page.locator(`.pk-table tr[data-pkg="${pkg}"] .pk-name a`);
-  await expect(row("algolia/algoliasearch-client-php")).toHaveAttribute(
-    "href",
+  expect(await report.packageLinkHref("algolia/algoliasearch-client-php")).toBe(
     "https://packagist.org/packages/algolia/algoliasearch-client-php",
   );
-  await expect(row("teamtnt/laravel-scout-tntsearch-driver")).toHaveCount(0);
+  expect(await report.packageLinkHref("teamtnt/laravel-scout-tntsearch-driver")).toBeNull();
 });
 
-test("koel, an older report: a package no field places is not linked to Packagist", async ({ page }) => {
+test("koel, an older report: a package no field places is not linked to Packagist", async () => {
   await report.goto(FIXTURES.koel);
   await report.tab("packages");
-  await expect(
-    page.locator('.pk-table tr[data-pkg="algolia/algoliasearch-client-php"] .pk-name a'),
-  ).toHaveCount(0);
+  expect(await report.packageLinkHref("algolia/algoliasearch-client-php")).toBeNull();
 });
 
 test("mini-0.13-edges: each run note links the page lockrot names for it, and only that", async ({

@@ -3,7 +3,7 @@
  * `libyears_unmeasured`, the lock entry never calls a commit date a release, and S2 is not called
  * "stable" where lockrot counts every tag.
  */
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
 import { FIXTURES, type FixtureName } from "./support/pages";
 
@@ -15,25 +15,16 @@ test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);
 });
 
-function libyearsWords(page: Page, pkg: string) {
-  return page.locator(`.pk-table tr[data-pkg="${pkg}"] .pk-ly .vh`);
+function libyearsWords(pkg: string): Promise<string> {
+  return report.packageCellWords(pkg, "libyears");
 }
 
-async function lockEntry(page: Page, pkg: string): Promise<Record<string, string>> {
+async function lockEntry(pkg: string): Promise<Record<string, string>> {
   await report.openPackage(pkg);
-  const detail = page.getByRole("complementary", { name: pkg });
-  const section = detail.locator("details", { has: page.locator("summary", { hasText: "The lock entry" }) });
-  // The section may stay open from the package opened before, and a click would close it.
-  if ((await section.getAttribute("open")) === null) {
-    await section.locator("summary").click();
-  }
-  await expect(section.locator("dt").first()).toBeVisible();
-  const labels = await section.locator("dt").allInnerTexts();
-  const values = await section.locator("dd").allInnerTexts();
-  return Object.fromEntries(labels.map((label, index) => [label.trim(), (values[index] ?? "").trim()]));
+  return report.detailFacts("The lock entry");
 }
 
-test("mautic 0.13: each unmeasured package gives its own libyears_unmeasured", async ({ page }) => {
+test("mautic 0.13: each unmeasured package gives its own libyears_unmeasured", async () => {
   await report.goto(FIXTURES.mautic013);
   await report.tab("packages");
   for (const pkg of [
@@ -43,14 +34,12 @@ test("mautic 0.13: each unmeasured package gives its own libyears_unmeasured", a
     "symfony/polyfill-php80",
     "twig/string-extra",
   ]) {
-    await expect(libyearsWords(page, pkg)).toHaveText("not measured: no release date lockrot trusts");
+    expect(await libyearsWords(pkg)).toBe("not measured: no release date lockrot trusts");
   }
-  await expect(libyearsWords(page, "rector/rector")).toHaveText("not measured: branch snapshot");
-  await expect(libyearsWords(page, "mautic/core-lib")).toHaveText(
-    "not measured: not from a Composer repository",
-  );
+  expect(await libyearsWords("rector/rector")).toBe("not measured: branch snapshot");
+  expect(await libyearsWords("mautic/core-lib")).toBe("not measured: not from a Composer repository");
 
-  const entry = await lockEntry(page, "symfony/polyfill-ctype");
+  const entry = await lockEntry("symfony/polyfill-ctype");
   expect(entry["libyears behind"]).toBe("not measured · no release date lockrot trusts");
 });
 
@@ -59,12 +48,8 @@ test("mini-0.13-edges: each unmeasured package's reason is the one its libyears 
 }) => {
   await report.goto(FIXTURES.miniEdges013);
   await report.tab("packages");
-  await expect(libyearsWords(page, "acme/untagged")).toHaveText(
-    "not measured: no release date lockrot trusts",
-  );
-  await expect(libyearsWords(page, "acme/path-lib")).toHaveText(
-    "not measured: not from a Composer repository",
-  );
+  expect(await libyearsWords("acme/untagged")).toBe("not measured: no release date lockrot trusts");
+  expect(await libyearsWords("acme/path-lib")).toBe("not measured: not from a Composer repository");
 
   await report.tab("run");
   await expect(page.getByText("no release date lockrot trusts 1", { exact: false })).toBeVisible();
@@ -72,48 +57,44 @@ test("mini-0.13-edges: each unmeasured package's reason is the one its libyears 
   await expect(page.locator("main")).not.toContainText("no stable release date");
 });
 
-test("mini-0.13-edges: a reason the page does not know is shown as written", async ({ page }) => {
+test("mini-0.13-edges: a reason the page does not know is shown as written", async () => {
   await report.goto(FIXTURES.miniEdges013);
   await report.tab("packages");
-  await expect(libyearsWords(page, "acme/future-reason")).toHaveText("not measured: yanked_release");
+  expect(await libyearsWords("acme/future-reason")).toBe("not measured: yanked_release");
 
   await report.tab("run");
-  const row = page
-    .locator("dt", { hasText: /^libyears not measured$/ })
-    .locator("xpath=following-sibling::dd[1]");
+  const row = report.runField("libyears not measured");
   await expect(row.locator("code")).toHaveText(["yanked_release"]);
   await expect(row).toContainText("not from a Composer repository 1");
   await expect(row).not.toContainText("yanked release");
 });
 
 for (const fixture of ["capsule-0.10-drupal" as FixtureName, FIXTURES.mautic]) {
-  test(`${fixture}: a document without libyears_unmeasured names no reason`, async ({ page }) => {
+  test(`${fixture}: a document without libyears_unmeasured names no reason`, async () => {
     await report.goto(fixture);
     await report.tab("packages");
-    const words = await page.locator(".pk-table .pk-ly .vh").allInnerTexts();
+    const words = await report.packageColumnWords("libyears");
     const unmeasured = words.filter((word) => word.startsWith("not measured"));
     expect(unmeasured.length).toBeGreaterThan(0);
     expect(new Set(unmeasured)).toEqual(new Set(["not measured"]));
   });
 }
 
-test("the lock entry dates a snapshot's commit and an untagged version's lock time, never as a release", async ({
-  page,
-}) => {
+test("the lock entry dates a snapshot's commit and an untagged version's lock time, never as a release", async () => {
   await report.goto(FIXTURES.miniEdges013);
-  const pathLib = await lockEntry(page, "acme/path-lib");
+  const pathLib = await lockEntry("acme/path-lib");
   expect(pathLib).toHaveProperty("snapshot dated");
   expect(pathLib).not.toHaveProperty("released");
 
-  const untagged = await lockEntry(page, "acme/untagged");
+  const untagged = await lockEntry("acme/untagged");
   expect(untagged).toHaveProperty("lock time");
   expect(untagged).not.toHaveProperty("released");
 
-  const left = await lockEntry(page, "acme/left");
+  const left = await lockEntry("acme/left");
   expect(left).toHaveProperty("released");
 
   await report.goto(FIXTURES.mautic013);
-  const rector = await lockEntry(page, "rector/rector");
+  const rector = await lockEntry("rector/rector");
   expect(rector["snapshot dated"]).toMatch(/^2026-08-04 · /);
   expect(rector).not.toHaveProperty("released");
 });

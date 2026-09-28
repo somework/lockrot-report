@@ -168,17 +168,13 @@ test.describe("PD-SUMMARY-3: the Run tab's fail-on without the field", () => {
   // covered the branch directly against a synthetic model, but nothing here proved the page wired
   // it up — a regression review caught the gap.)
   // PD-RUN-4: the em dash became the reason — the field is not in the document.
-  test("a document without run.fail_on says it is not in the document, not the word 'none'", async ({
-    page,
-  }) => {
+  test("a document without run.fail_on says it is not in the document, not the word 'none'", async () => {
     await report.goto("mini-no-fail-on" as FixtureName);
     await report.tab("run");
-    const panel = page.getByRole("tabpanel");
     // Scoped to the "fail-on" row itself: the same panel's "baseline" row reads "none" for a
     // document with no baseline at all (RunView.tsx#baselineText), which a panel-wide text search
     // would also match.
-    const failOn = panel.locator("dt", { hasText: /^fail-on$/ }).locator("xpath=following-sibling::dd[1]");
-    await expect(failOn).toHaveText("not in this document");
+    await expect(report.runField("fail-on")).toHaveText("not in this document");
   });
 
   // PD-SUMMARY-2 (Header.tsx): the same document renders no gate fact at all — a run.fail_on the
@@ -189,13 +185,11 @@ test.describe("PD-SUMMARY-3: the Run tab's fail-on without the field", () => {
     expect(await report.gateFactLabel()).toBeNull();
   });
 
-  test("a 0.13 run words its threshold from run.fail_on_kind", async ({ page }) => {
+  test("a 0.13 run words its threshold from run.fail_on_kind", async () => {
     await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "view=run");
-    const failOn = page
-      .getByRole("tabpanel")
-      .locator("dt", { hasText: /^fail-on$/ })
-      .locator("xpath=following-sibling::dd[1]");
-    await expect(failOn).toHaveText("high · fails on a priority at least as high as high");
+    await expect(report.runField("fail-on")).toHaveText(
+      "high · fails on a priority at least as high as high",
+    );
   });
 
   test("a document with an explicit fail-on prints the word, not an em dash (mini.json: 'silent')", async ({

@@ -1131,6 +1131,83 @@ export class NewReportPage implements ReportPage {
       });
   }
 
+  async packageLinkHref(name: string): Promise<string | null> {
+    const link = this.pkgLocator(name).getByRole("link", { name, exact: true });
+    if ((await link.count()) === 0) return null;
+    return link.first().getAttribute("href");
+  }
+
+  async packageCellWords(name: string, column: string): Promise<string> {
+    const [words] = await this.columnWords(column, name);
+    if (words === undefined) throw new Error(`no ${column} cell for ${name}`);
+    return words;
+  }
+
+  packageColumnWords(column: string): Promise<string[]> {
+    return this.columnWords(column, null);
+  }
+
+  /** A cell is found by its column header's position, as a screen reader's table navigation does;
+   *  its words leave out `aria-hidden` marks. */
+  private columnWords(column: string, name: string | null): Promise<string[]> {
+    const label = SORT_LABEL[column] ?? column;
+    return this.page.getByRole("table", { name: "All packages", exact: true }).evaluate(
+      (table, [label, name]) => {
+        const headers = [...table.querySelectorAll('[role="columnheader"]')];
+        const at = headers.findIndex((h) => h.textContent.includes(label));
+        if (at < 0) throw new Error(`no ${label} column`);
+        return [...table.querySelectorAll('[role="row"][aria-label]')]
+          .filter((row) => name === null || row.getAttribute("aria-label") === name)
+          .map((row) => {
+            const cell = row.querySelectorAll('[role="cell"]')[at]?.cloneNode(true);
+            if (!(cell instanceof Element)) return "";
+            cell.querySelectorAll('[aria-hidden="true"]').forEach((el) => {
+              el.remove();
+            });
+            return cell.textContent.replace(/\s+/g, " ").trim();
+          });
+      },
+      [label, name] as const,
+    );
+  }
+
+  /** A `<dl>` term has no name of its own to pair it with its value, so the value is its sibling. */
+  runField(label: string): Locator {
+    return this.page
+      .getByRole("tabpanel")
+      .getByRole("term")
+      .filter({ hasText: new RegExp(`^${escapeRegExp(label)}$`) })
+      .locator("xpath=following-sibling::dd[1]");
+  }
+
+  /** Folded rows are drawn too, so hidden list items count; a footnote button is named after its
+   *  package and titled "Open <package>". */
+  async radiusNames(): Promise<string[]> {
+    const panel = this.page.getByRole("tabpanel");
+    const items = await panel
+      .getByRole("listitem", { includeHidden: true })
+      .evaluateAll((els) => els.map((el) => el.getAttribute("aria-label") ?? ""));
+    const jumps = await panel.getByRole("button", { includeHidden: true }).evaluateAll((els) =>
+      els.flatMap((el) => {
+        const text = el.textContent.trim();
+        return el.getAttribute("title") === `Open ${text}` ? [text] : [];
+      }),
+    );
+    return [...new Set([...items, ...jumps].filter((name) => name !== ""))];
+  }
+
+  async detailFacts(heading: string): Promise<Record<string, string>> {
+    const summary = this.detailRegion().first().getByText(heading, { exact: true });
+    const section = summary.locator("xpath=ancestor::details[1]");
+    // It may stay open from the package opened before, and a click would close it.
+    if ((await section.getAttribute("open")) === null) await summary.click();
+    const terms = section.getByRole("term");
+    await terms.first().waitFor();
+    const labels = await terms.allInnerTexts();
+    const values = await section.getByRole("definition").allInnerTexts();
+    return Object.fromEntries(labels.map((label, at) => [label.trim(), (values[at] ?? "").trim()]));
+  }
+
   async pressSlash(): Promise<void> {
     await this.page.keyboard.press("/");
   }
