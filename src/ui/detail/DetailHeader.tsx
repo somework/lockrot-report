@@ -1,7 +1,7 @@
 import { useRef } from "preact/hooks";
 import type { Finding } from "../../model/types";
 import { hiddenByFilters } from "../../domain/filters";
-import { packagistUrl, repoHost, safeHref } from "../../domain/links";
+import { PACKAGIST_TITLE, packagistUrl, repoHost, safeHref } from "../../domain/links";
 import { OutLink, Pill } from "../common/common";
 import { useReport } from "../context";
 import "./detail.css";
@@ -61,7 +61,11 @@ export function DetailHeader({ finding, onClose }: DetailHeaderProps) {
           {finding.priority !== "none" && <Pill word={finding.priority} />}
         </div>
         <div className="detail-links">
-          {packagist !== null && <OutLink href={packagist}>packagist</OutLink>}
+          {packagist !== null && (
+            <OutLink href={packagist} title={PACKAGIST_TITLE}>
+              packagist
+            </OutLink>
+          )}
           {repositoryLink !== null && <OutLink href={repositoryLink}>{repoHost(repositoryLink)}</OutLink>}
         </div>
       </div>

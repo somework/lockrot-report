@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { cveUrl, packagistUrl, repoHost, safeHref } from "../../../src/domain/links";
+import { PACKAGIST_TITLE, cveUrl, packagistUrl, repoHost, safeHref } from "../../../src/domain/links";
 import type { PackageDetails } from "../../../src/model/types";
 
 // safeHref is where a mistake becomes a vulnerability rather than a rendering bug.
@@ -143,5 +143,13 @@ describe("repoHost", () => {
     expect(repoHost(null)).toBe("repository");
     expect(repoHost("not-a-url")).toBe("repository");
     expect(repoHost("ftp://example.com/x")).toBe("repository");
+  });
+});
+
+describe("PACKAGIST_TITLE", () => {
+  test("says the link is the page's assumption, not lockrot's", () => {
+    expect(PACKAGIST_TITLE).toBe(
+      "packagist.org: lockrot says a Composer repository was asked about this package, which this page takes to be packagist.org",
+    );
   });
 });

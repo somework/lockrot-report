@@ -5,6 +5,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/pre
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { normalize } from "../../../src/model/normalize";
+import { PACKAGIST_TITLE } from "../../../src/domain/links";
 import type { Model, PackageDetails } from "../../../src/model/types";
 import type { Action, State } from "../../../src/state/types";
 import { EMPTY_FILTERS } from "../../../src/state/types";
@@ -1521,9 +1522,12 @@ describe("Detail", () => {
   describe("the Packagist link reads where the package came from", () => {
     it("links a 0.13 finding from a Composer repository that has no details entry", () => {
       renderDetail(KOEL_013, "algolia/algoliasearch-client-php");
-      expect(screen.getByRole("link", { name: "packagist" }).getAttribute("href")).toBe(
+      const link = screen.getByRole("link", { name: "packagist" });
+      expect(link.getAttribute("href")).toBe(
         "https://packagist.org/packages/algolia/algoliasearch-client-php",
       );
+      // from_composer_repository true does not mean packagist.org: the link says it assumes so.
+      expect(link.getAttribute("title")).toBe(PACKAGIST_TITLE);
     });
 
     it("does not link a finding that is not from one, and says so in Provenance", () => {

@@ -6,7 +6,7 @@ import { useRef } from "preact/hooks";
 import { useReport } from "../context";
 import { useOverflowX } from "../useOverflowX";
 import { applyFilters, population } from "../../domain/filters";
-import { packagistUrl } from "../../domain/links";
+import { PACKAGIST_TITLE, packagistUrl } from "../../domain/links";
 import { day, fixed } from "../../domain/format";
 import {
   libyearsAtZero,
@@ -186,6 +186,7 @@ function PackageCell({ finding }: { finding: Finding }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
+      title={PACKAGIST_TITLE}
       tabIndex={innerTabIndex(finding.package, cursor)}
     >
       <PackageName name={finding.package} />

@@ -383,6 +383,8 @@ tag or the address format, says so under **Breaking** in its entry.
   `from_composer_repository`, else its lock entry's. A package lockrot did not ask a repository about
   is no longer linked when it has no details entry (koel's `teamtnt/laravel-scout-tntsearch-driver`),
   and one no field places is not linked either, instead of being assumed to come from Packagist.
+  Since the flag is also true for Private Packagist, the link's hover says the page takes the
+  repository to be packagist.org.
 - A run note's "what this means" links the page lockrot names for that note (`note_details`'
   `docs_url`, `lockrot.dev/notes/#…`) instead of one the page guessed from the note's words; a note
   lockrot names no page for, and every note of a report without `note_details`, has no link. Two

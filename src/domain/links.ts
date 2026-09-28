@@ -21,6 +21,11 @@ export function fromComposerRepository(
   return finding.fromComposerRepository ?? details.get(finding.package)?.lock?.fromComposerRepository ?? null;
 }
 
+/** A Packagist link's hover text: `from_composer_repository` true does not mean packagist.org
+ *  (Private Packagist writes the same flag), so the link says it assumes so. */
+export const PACKAGIST_TITLE =
+  "packagist.org: lockrot says a Composer repository was asked about this package, which this page takes to be packagist.org";
+
 /** True is still the page's assumption: Private Packagist writes the same flag. */
 export function packagistUrl(
   finding: Pick<Finding, "package" | "fromComposerRepository">,
