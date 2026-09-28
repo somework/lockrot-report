@@ -157,6 +157,7 @@ describe("gateTally", () => {
       kind: "priority",
       reached: 2,
       notAccepted: null,
+      otherExemptions: [],
     });
   });
 
@@ -189,7 +190,26 @@ describe("gateTally", () => {
 
     const tally = gateTally(gatedModel(withState, { failOn: "high", kind: "priority", baseline: SUMMARY }));
 
-    expect(tally).toEqual({ failOn: "high", kind: "priority", reached: 2, notAccepted: 1 });
+    expect(tally).toEqual({
+      failOn: "high",
+      kind: "priority",
+      reached: 2,
+      notAccepted: 1,
+      otherExemptions: [],
+    });
+  });
+
+  it("counts a finding another exemption covers as exempt, and names that exemption as written", () => {
+    const withWaiver = [
+      judged(known("a/crit", { verdict: "abandoned", priority: "critical" }), true, "baseline"),
+      judged(makeFinding({ package: "w/high", verdict: "silent", priority: "high" }), true, "waiver"),
+      judged(makeFinding({ package: "n/high", verdict: "silent", priority: "high" }), true),
+    ];
+
+    const tally = gateTally(gatedModel(withWaiver, { failOn: "high", kind: "priority", baseline: SUMMARY }));
+
+    expect(tally?.notAccepted).toBe(1);
+    expect(tally?.otherExemptions).toEqual(["waiver"]);
   });
 });
 

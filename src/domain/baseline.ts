@@ -84,14 +84,20 @@ function exemptByBaseline(f: Finding): boolean {
   return f.gate?.exemptBy === "baseline";
 }
 
+function notExempt(f: Finding): boolean {
+  return reachesFailOn(f) && (f.gate?.exemptBy ?? null) === null;
+}
+
 export interface GateTally {
   readonly failOn: string;
   /** `run.fail_on_kind` as written; null where the document does not say. */
   readonly kind: string | null;
   /** Findings whose gate says they reach `failOn`, whatever the baseline says about them. */
   readonly reached: number;
-  /** Of those, the ones the baseline does not exempt; `null` when the run carried no baseline. */
+  /** Of those, the ones nothing exempts; `null` when the run carried no baseline. */
   readonly notAccepted: number | null;
+  /** Each exemption other than the baseline among those reaching, once, as written. */
+  readonly otherExemptions: readonly string[];
 }
 
 /** The header's descriptive tally beside the gate fact, or `null` when no gate field states it. */
@@ -99,11 +105,13 @@ export function gateTally(model: Model): GateTally | null {
   const { run, gate, baseline } = model.report;
   if (run.failOn === null || run.failOn === "none" || gate === null) return null;
   const reached = model.report.findings.filter(reachesFailOn);
+  const exemptions = reached.map((f) => f.gate?.exemptBy ?? "baseline").filter((by) => by !== "baseline");
   return {
     failOn: run.failOn,
     kind: run.failOnKind,
     reached: reached.length,
-    notAccepted: baseline === null ? null : reached.filter((f) => !exemptByBaseline(f)).length,
+    notAccepted: baseline === null ? null : reached.filter(notExempt).length,
+    otherExemptions: [...new Set(exemptions)],
   };
 }
 
@@ -146,7 +154,7 @@ function levelFilters(kind: string | null, set: readonly Finding[]): Partial<Fil
 export function gateFocus(model: Model): Filters | null {
   const tally = gateTally(model);
   if (tally === null || tally.notAccepted === null) return null;
-  const set = model.report.findings.filter((f) => reachesFailOn(f) && !exemptByBaseline(f));
+  const set = model.report.findings.filter(notExempt);
   if (set.length === 0) return null;
 
   const buckets = set.map(sinceBucket);

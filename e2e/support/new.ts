@@ -659,18 +659,18 @@ export class NewReportPage implements ReportPage {
       });
   }
 
-  /** The accessible name the gate fact's button always starts with (Header.tsx#gateFact) —
+  /** The accessible name the gate fact's button always starts with (domain/gate.ts#gateFact) —
    *  fixed vocabulary, same convention as VIEW_LABEL/RAIL_LABEL above. */
   private gateFactButton(): Locator {
     return this.page.getByRole("button", { name: /^(no gate|gate:)/i });
   }
 
-  /** The sentence the popover's own text always starts with (Header.tsx#gateFact) — one of the two
-   *  fixed openings the run's `fail_on` can produce; found by that text, not by the popover's
+  /** The sentence the popover's own text always starts with (domain/gate.ts#gateFact) — the one
+   *  fixed opening every `fail_on` produces; found by that text, not by the popover's
    *  plumbing (`popover="auto"`, an id relationship) which is Header.tsx's implementation detail,
    *  not this contract's. */
   private gateFactPopover(): Locator {
-    return this.page.getByText(/^(No gate on this run|This run was told to fail on)/);
+    return this.page.getByText(/^This run was told --fail-on=/);
   }
 
   async gateFactLabel(): Promise<string | null> {

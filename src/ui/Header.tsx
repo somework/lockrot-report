@@ -2,46 +2,10 @@ import type { ComponentChildren } from "preact";
 import { useId, useLayoutEffect, useRef } from "preact/hooks";
 import { gateFocus, gateTally, type GateTally } from "../domain/baseline";
 import { day, plural } from "../domain/format";
+import { gateFact, reachWords } from "../domain/gate";
 import { useReport } from "./context";
 import { CopySummary } from "./CopySummary";
 import { themeButtonLabel, type Theme } from "./useTheme";
-
-/** The gate fact's label and popover text, kept together so the two never drift apart (DESIGN.md
- *  §8). `--fail-on`'s effect on the exit code is lockrot's documented CLI contract; the popover still
- *  never says whether this run's gate fired. */
-function gateFact(failOn: string, tally: string | null): { label: string; text: string } {
-  if (failOn === "none") {
-    return {
-      label: "no gate",
-      text: "No gate on this run: it exits 0 whatever it finds, and this page lists what it saw. Pass --fail-on=<verdict or priority> in CI to make the run fail on findings at or above that level.",
-    };
-  }
-
-  // The count sits between the rule and the caveat, so the last word is still what the page cannot know.
-  const counted = tally === null ? "" : ` ${tally}`;
-  return {
-    label: `gate: ${failOn}`,
-    text: `This run was told to fail on ${failOn}: it exits 1 when a finding the baseline does not already accept reaches ${failOn}.${counted} The page does not record the run's exit code.`,
-  };
-}
-
-/** What the tally counts, in the threshold's own terms: `unchecked` is not a level anything is
- *  "above", and a kind this page does not know is only said to be reached. `short` is the header's
- *  form, beside a label that already names the level. */
-function reachWords(tally: GateTally, short = false): string {
-  if (tally.kind === "unchecked") return short ? "with S10" : "with a check that did not run (S10)";
-  if (tally.kind === "priority" || tally.kind === "verdict") {
-    return short ? "at or above" : `at or above ${tally.failOn}`;
-  }
-  return short ? "reach it" : `reaching ${tally.failOn}`;
-}
-
-/** The popover's count sentence: the same numbers as the tally beside the button, in words. */
-function tallySentence(tally: GateTally, path: string): string {
-  const reached = `${plural(tally.reached, "finding", "findings")} in this report ${tally.reached === 1 ? "is" : "are"} ${reachWords(tally)}`;
-  if (tally.notAccepted === null) return `${reached}.`;
-  return `${reached}; ${tally.notAccepted} of them ${tally.notAccepted === 1 ? "is" : "are"} not already accepted in ${path}.`;
-}
 
 /**
  * PD-BASELINE-5 (DESIGN.md §5): beside the gate fact, how many findings reach it — and, with a
@@ -55,8 +19,10 @@ function tallySentence(tally: GateTally, path: string): string {
  */
 function GateTallyText({ tally }: { tally: GateTally }) {
   const { model, dispatch } = useReport();
-  const focus = tally.notAccepted === null || tally.notAccepted === 0 ? null : gateFocus(model);
+  const n = tally.notAccepted ?? 0;
+  const focus = n === 0 ? null : gateFocus(model);
   const path = model.report.baseline?.path || "the baseline";
+  const exempt = tally.otherExemptions.length === 0 ? `${path} does not already accept` : "nothing exempts";
   const outside =
     tally.notAccepted === null ? null : (
       <>
@@ -65,7 +31,7 @@ function GateTallyText({ tally }: { tally: GateTally }) {
     );
   return (
     <span className="gate-tally">
-      <b className="mono">{tally.reached}</b> {reachWords(tally, true)}
+      <b className="mono">{tally.reached}</b> {reachWords(tally, tally.reached, true)}
       {outside !== null && (
         <>
           {" · "}
@@ -75,7 +41,7 @@ function GateTallyText({ tally }: { tally: GateTally }) {
             <button
               type="button"
               className="gate-focus"
-              title={`List the ${plural(tally.notAccepted ?? 0, "finding", "findings")} ${reachWords(tally)} that ${path} does not already accept`}
+              title={`List the ${plural(n, "finding", "findings")} that ${reachWords(tally, n)} and that ${exempt}`}
               onClick={() => {
                 dispatch({ type: "focus", filters: focus });
               }}
@@ -139,8 +105,7 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
   const project = run.project ?? run.lockFile ?? "composer.lock";
   const label = themeButtonLabel(theme);
   const tally = gateTally(model);
-  const counted = tally === null ? null : tallySentence(tally, model.report.baseline?.path || "the baseline");
-  const gate = run.failOn === null ? null : gateFact(run.failOn, counted);
+  const gate = gateFact(model);
   const popoverId = `${useId()}-gate`;
 
   return (

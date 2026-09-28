@@ -389,6 +389,14 @@ tag or the address format, says so under **Breaking** in its entry.
   baseline, the ones it does not exempt, instead of ranking them by the page's copy of lockrot's
   order; a threshold of a kind the page does not know is counted too ("1 reach it"). A report whose
   findings carry no `gate` shows the gate fact without a tally.
+- The header's gate fact and Run data's answer no longer call a `--fail-on=none` run with
+  `--strict-network` ungated or say it "exits 0 whatever it finds": the fact reads "gate: strict
+  network" and says a failed network lookup fails the run, and any other run names `--strict-network`
+  beside its fail-on. The popover words the rule as the Run row does, from `run.fail_on_kind` ("fails
+  on a priority at least as high as high", a kind it does not know as written), says a
+  `generate_baseline` run judged no finding against its fail-on instead of that it exits 1, and
+  counts as not accepted only the findings nothing exempts, naming another exemption as written
+  (`waiver`). An `unchecked` tally reads "173 carry S10".
 - An open package's baseline paragraph says "so it does not fail this run" when its `gate` says the
   baseline exempts it, and "It fails this run." when its `gate` says it fails; otherwise it says
   nothing about the build. "lockrot's --fail-on does not count it", read off the baseline status

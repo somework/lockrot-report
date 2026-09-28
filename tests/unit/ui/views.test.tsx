@@ -1701,12 +1701,29 @@ describe("RunView", () => {
 
     const { unmount: unmountNone } = renderIn(explicitNone, stateWith({ view: "run" }), <RunView />);
     expect(screen.getByText("fail-on").nextElementSibling?.textContent).toBe("none");
-    expect(document.querySelector(".run-answer")?.textContent).toContain("no gate (--fail-on=none)");
+    expect(document.querySelector(".run-answer")?.textContent).toContain(
+      "It ran with --fail-on=none, which fails on no finding.",
+    );
     unmountNone();
 
     renderIn(gated, stateWith({ view: "run" }), <RunView />);
     expect(screen.getByText("fail-on").nextElementSibling?.textContent).toBe("critical");
     expect(document.querySelector(".run-answer")?.textContent).toContain("--fail-on=critical");
+  });
+
+  it("the answer names --strict-network when the run had it, and never calls that run ungated", () => {
+    renderIn(loadModel("wallabag_offline-strict-0.13.json"), stateWith({ view: "run" }), <RunView />);
+    const none = document.querySelector(".run-answer")?.textContent.replace(/\s+/g, " ") ?? "";
+    expect(none).toContain(
+      "It ran with --fail-on=none, which fails on no finding, and with --strict-network, which fails the run when a network lookup fails.",
+    );
+    expect(none).not.toContain("no gate");
+    cleanup();
+
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "run" }), <RunView />);
+    expect(document.querySelector(".run-answer")?.textContent).toContain(
+      "It ran with --fail-on=high and --strict-network.",
+    );
   });
 
   it("fail-on: words the threshold from run.fail_on_kind, an unknown kind as written", () => {
@@ -1738,8 +1755,8 @@ describe("RunView", () => {
     expect(answer).toBe(
       "lockrot 0.11.0 checked 271 packages in wallabag/wallabag’s composer.lock against PHP 8.4, " +
         "require-dev included, and wrote this report on 2026-09-24 00:00 UTC. Every network lookup " +
-        "answered and every repository answer in this file was fetched during the run. It ran with no " +
-        "gate (--fail-on=none).",
+        "answered and every repository answer in this file was fetched during the run. It ran with " +
+        "--fail-on=none, which fails on no finding.",
     );
     expect(Array.from(document.querySelectorAll(".run-absent code"), (el) => el.textContent)).toEqual(
       LATER_KEYS,

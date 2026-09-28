@@ -121,8 +121,25 @@ test.describe("PD-SUMMARY-2: the header's gate fact", () => {
     await report.openGateFact();
     expect(await report.isGateFactOpen()).toBe(true);
     expect(await report.gateFactPopoverText()).toBe(
-      "No gate on this run: it exits 0 whatever it finds, and this page lists what it saw. Pass --fail-on=<verdict or priority> in CI to make the run fail on findings at or above that level.",
+      "This run was told --fail-on=none: it fails on no finding, and this page lists what it saw. Pass --fail-on=<verdict or priority> in CI to make the run fail on findings at or above that level.",
     );
+  });
+
+  test("fail-on none with --strict-network is never 'no gate': a failed lookup fails the run", async () => {
+    await report.goto(FIXTURES.wallabagOfflineStrict013);
+    expect(await report.gateFactLabel()).toBe("gate: strict network ⓘ");
+    await report.openGateFact();
+    expect(await report.gateFactPopoverText()).toContain(
+      "it fails on no finding, but --strict-network fails the run when a network lookup fails.",
+    );
+  });
+
+  test("a run that applies no fail-on says it judged no finding, not that one would fail it", async () => {
+    await report.goto(FIXTURES.wallabagGenerateBaseline013);
+    await report.openGateFact();
+    const text = await report.gateFactPopoverText();
+    expect(text).toContain("but as a generate_baseline run it judged no finding against it");
+    expect(text).not.toContain("exits 1");
   });
 
   test("Escape closes the popover, and — over an open detail — only the popover, not the detail underneath it", async () => {

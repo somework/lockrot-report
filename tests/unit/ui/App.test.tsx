@@ -647,7 +647,7 @@ describe("layout", () => {
   test("the header carries the run's gate as a quiet fact, mini.json's fail-on being 'silent'", () => {
     render(<App model={MINI} />);
     const button = screen.getByRole("button", { name: /^gate: silent/ });
-    expect(button.getAttribute("title")).toContain("told to fail on silent");
+    expect(button.getAttribute("title")).toContain("told --fail-on=silent");
     expect(button.getAttribute("title")).toContain("does not record the run's exit code");
   });
 
@@ -664,7 +664,17 @@ describe("layout", () => {
     render(<App model={loadModel("mini-0.13-gate-unknown")} />);
     expect(document.querySelector(".gate-tally")?.textContent).toBe("1 reach it · 1 of them not accepted");
     const button = screen.getByRole("button", { name: /^gate: copyleft/ });
-    expect(button.getAttribute("title")).toContain("1 finding in this report is reaching copyleft;");
+    expect(button.getAttribute("title")).toContain("1 finding in this report reaches copyleft;");
+  });
+
+  test("another exemption than the baseline is not counted as not accepted (mini-0.13-edges)", () => {
+    render(<App model={loadModel("mini-0.13-edges")} />);
+    expect(document.querySelector(".gate-tally")?.textContent).toBe("7 at or above · 3 of them not accepted");
+  });
+
+  test("an unchecked threshold's tally says its findings carry S10", () => {
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    expect(document.querySelector(".gate-tally")?.textContent).toBe("173 carry S10");
   });
 
   test("a report whose findings carry no gate draws no count, whatever its fail-on", () => {

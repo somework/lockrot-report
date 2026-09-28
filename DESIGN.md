@@ -486,9 +486,11 @@ shape. `e2e/forced-colors.spec.ts` emulates the mode.
 OS preference (M11). The choice persists under `lockrot-theme`; an unrecognised stored value is
 ignored rather than written onto the page.
 
-**The gate fact** is a quiet fact in the header, beside "lockrot `<version>`": "no gate" or
-"gate: `<value>`", opening a popover that says what the run's `--fail-on` means for its exit code.
-A document from before `run.fail_on` existed shows neither (PD-SUMMARY-2).
+**The gate fact** is a quiet fact in the header, beside "lockrot `<version>`": "no gate",
+"gate: strict network" (`--fail-on=none` with `run.strict_network` true) or "gate: `<value>`",
+opening a popover that words the rule from `run.fail_on_kind`, `run.strict_network`, `run.mode` and
+the root `gate.fail_on_applied`, never whether the run failed. A document from before `run.fail_on`
+existed shows neither (PD-SUMMARY-2).
 
 **Address bar.** `ui/useHashState.ts` reads the fragment once at boot and nothing else: a `pkg=` in
 it opens that package at any width and scrolls its row into view, and without one no package is
