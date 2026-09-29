@@ -143,7 +143,7 @@ const ORIGIN_KIND_WORDS: Readonly<Record<string, string>> = vocabTable({
   vcs: "a VCS repository the manifest lists",
   artifact: "an archive in an artifact repository",
   package: "an inline package definition in the manifest",
-  unknown: "a repository lockrot could not identify",
+  unknown: "lockrot could not tell which repository",
 });
 
 export type OriginFrom = { readonly words: string } | { readonly code: string };

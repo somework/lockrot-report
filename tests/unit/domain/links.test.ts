@@ -140,10 +140,16 @@ describe("registryLink", () => {
     ).toBe("registry.acme.example");
   });
 
-  test("a link with no registry named is labelled by its own host", () => {
-    expect(registryLink(origin({ packageUrl: "https://www.example.test/p/acme" }))?.label).toBe(
-      "example.test",
-    );
+  test("a link with no registry named names none: not the URL's host, whose registry no field states", () => {
+    for (const registry of [null, ""]) {
+      expect(
+        registryLink(origin({ registry, packageUrl: "https://user@www.example.test:8443/p/acme" })),
+      ).toEqual({
+        href: "https://user@www.example.test:8443/p/acme",
+        label: "registry page",
+        title: "this package's page on the registry it came from",
+      });
+    }
   });
 
   test("no link where the document does not say where the package came from, or the URL is unsafe", () => {

@@ -1130,6 +1130,28 @@ describe("Detail", () => {
       expect(screen.queryByRole("link", { name: "acme/private-next" })).toBeNull();
     });
 
+    it("links a replacement by replacement_url, not by where the package came from", () => {
+      const { container } = renderDetail(EDGES_013, "acme/moved-in");
+      expect(screen.getByRole("link", { name: "acme/new-home" }).getAttribute("href")).toBe(
+        "https://packagist.org/packages/acme/new-home",
+      );
+      const headerLinks = Array.from(container.querySelectorAll(".detail-links a"), (a) => a.textContent);
+      expect(headerLinks.filter((text) => /packagist|registry/.test(text))).toEqual([]);
+    });
+
+    it("links a replacement read from composer.lock only where replacement_url says", () => {
+      renderDetail(EDGES_013, "acme/retired-cli");
+      expect(screen.getByRole("link", { name: "acme/new-cli" }).getAttribute("href")).toBe(
+        "https://packagist.org/packages/acme/new-cli",
+      );
+      cleanup();
+      const { container } = renderDetail(EDGES_013, "acme/private-retired-lock");
+      expect(container.querySelector(".detail-answer")?.textContent).toContain(
+        "Its named replacement is acme/private-new.",
+      );
+      expect(screen.queryByRole("link", { name: "acme/private-new" })).toBeNull();
+    });
+
     it("links nothing on a report that predates replacement_url", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/replaced");
       expect(container.querySelector(".detail-answer")?.textContent).toContain(

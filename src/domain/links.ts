@@ -32,8 +32,11 @@ export interface RegistryLink {
 export function registryLink(finding: Pick<Finding, "origin">): RegistryLink | null {
   const href = safeHref(finding.origin?.packageUrl ?? null);
   if (href === null) return null;
-  const label = finding.origin?.registry ?? repoHost(href);
-  return { href, label, title: `this package's page on ${label}` };
+  const registry = finding.origin?.registry ?? "";
+  // A registry `origin.registry` does not name is not named from the URL's host either.
+  return registry === ""
+    ? { href, label: "registry page", title: "this package's page on the registry it came from" }
+    : { href, label: registry, title: `this package's page on ${registry}` };
 }
 
 /** The NVD page for an advisory that carries a CVE id; a GHSA-only id has nowhere to link. */

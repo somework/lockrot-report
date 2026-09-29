@@ -74,6 +74,14 @@
   gap: 12px;
   flex-wrap: wrap;
   margin-left: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+/* A registry name is any host the schema allows, so it breaks rather than leave the panel. */
+.detail-links .out {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 /*
  * PD-DETAIL-4: says the detail's package is hidden by the current filters, with a control to clear

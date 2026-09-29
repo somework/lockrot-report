@@ -49,6 +49,26 @@ test("mini-0.13-edges: another registry's page is linked and named after that re
   );
 });
 
+test.describe("at phone width", () => {
+  test.use({ viewport: { width: 320, height: 700 } });
+
+  test("mini-0.13-edges: a long registry name wraps inside the detail panel", async ({ page }) => {
+    await report.gotoWithHash(FIXTURES.miniEdges013, "pkg=wp-plugin%2Facme-forms");
+    const detail = page.getByRole("complementary", { name: "wp-plugin/acme-forms" });
+    const link = detail.locator(".detail-links").getByRole("link");
+    await expect(link).toHaveText(["wp-packages.org"]);
+    // The schema lets `origin.registry` be any host; lockrot names only short ones today.
+    await link.evaluate((el) => {
+      el.textContent =
+        "artifact-registry-for-internal-private-packages.engineering-platform.corp.example.com";
+    });
+    const [scroll, client] = await detail.evaluate((el) => [el.scrollWidth, el.clientWidth]);
+    expect(scroll).toBeLessThanOrEqual(client);
+    const [panel, box] = await Promise.all([detail.boundingBox(), link.boundingBox()]);
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual((panel?.x ?? 0) + (panel?.width ?? 0));
+  });
+});
+
 test("mini-0.13-edges: a replacement is linked only where replacement_url says", async ({ page }) => {
   await report.gotoWithHash(FIXTURES.miniEdges013, "pkg=acme%2Fretired-api");
   const linked = page.getByRole("complementary", { name: "acme/retired-api" });

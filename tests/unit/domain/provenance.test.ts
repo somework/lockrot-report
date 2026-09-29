@@ -234,7 +234,7 @@ describe("originFrom — where the lock entry came from, in words", () => {
     ["vcs", "a VCS repository the manifest lists"],
     ["artifact", "an archive in an artifact repository"],
     ["package", "an inline package definition in the manifest"],
-    ["unknown", "a repository lockrot could not identify"],
+    ["unknown", "lockrot could not tell which repository"],
   ])("%s", (kind, words) => {
     expect(originFrom(kind)).toEqual({ words });
   });
