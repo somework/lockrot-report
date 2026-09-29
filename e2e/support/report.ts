@@ -150,6 +150,12 @@ export interface ReportPage {
   /** Where the link named after the package in its own row points (its registry page on All
    *  packages), or null when the row does not link its name. */
   packageLinkHref(name: string): Promise<string | null>;
+  /** The registry links in an open package's header. */
+  detailRegistryLinks(name: string): Locator;
+  /** The Origin line of an open package's Provenance. */
+  provenanceOrigin(name: string): Locator;
+  /** Links in an open package's answer, or the one named after `replacement`. */
+  replacementLink(name: string, replacement?: string): Locator;
   /** The words a screen reader gets from one package's cell in an All packages column (a sort key,
    *  e.g. "libyears"), with the drawn-only marks left out. */
   packageCellWords(name: string, column: string): Promise<string>;

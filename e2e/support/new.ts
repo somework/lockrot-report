@@ -246,10 +246,10 @@ export class NewReportPage implements ReportPage {
     await this.detailRegion().getByRole("button", { name: "Close" }).click();
   }
 
-  /** `role=region` (or `complementary`, the legacy detail aside's ARIA equivalent) named after the
-   *  open package — the accessible-name contract `detail()`/`closeDetail()` rely on. */
+  /** The open package's `complementary` aside. Not `region`: the All packages table becomes one
+   *  while it scrolls sideways. */
   private detailRegion(): Locator {
-    return this.page.getByRole("region").or(this.page.getByRole("complementary"));
+    return this.page.getByRole("complementary");
   }
 
   async detail(): Promise<DetailSnapshot> {
@@ -1135,6 +1135,21 @@ export class NewReportPage implements ReportPage {
     const link = this.pkgLocator(name).getByRole("link", { name, exact: true });
     if ((await link.count()) === 0) return null;
     return link.first().getAttribute("href");
+  }
+
+  detailRegistryLinks(name: string): Locator {
+    return this.page.getByRole("complementary", { name }).locator(".detail-links").getByRole("link");
+  }
+
+  provenanceOrigin(name: string): Locator {
+    return this.page.getByRole("complementary", { name }).locator(".detail-prov-origin");
+  }
+
+  replacementLink(name: string, replacement?: string): Locator {
+    const answer = this.page.getByRole("complementary", { name }).locator(".detail-answer");
+    return replacement === undefined
+      ? answer.getByRole("link")
+      : answer.getByRole("link", { name: replacement });
   }
 
   async packageCellWords(name: string, column: string): Promise<string> {

@@ -41,10 +41,12 @@ test("mini-0.13-edges: another registry's page is linked and named after that re
   expect(await report.packageLinkHref("acme/legacy_")).toBeNull();
 
   await report.openPackage("wp-plugin/acme-forms");
-  const detail = page.getByRole("complementary", { name: "wp-plugin/acme-forms" });
-  await expect(detail.locator(".detail-links").getByRole("link")).toHaveText(["wp-packages.org"]);
-  await detail.getByText("Provenance", { exact: true }).click();
-  await expect(detail.locator(".detail-prov-origin")).toHaveText(
+  await expect(report.detailRegistryLinks("wp-plugin/acme-forms")).toHaveText(["wp-packages.org"]);
+  await page
+    .getByRole("complementary", { name: "wp-plugin/acme-forms" })
+    .getByText("Provenance", { exact: true })
+    .click();
+  await expect(report.provenanceOrigin("wp-plugin/acme-forms")).toHaveText(
     /^Origin\s*from\s*a Composer repository\s*registry\s*wp-packages\.org$/,
   );
 });
@@ -71,16 +73,16 @@ test.describe("at phone width", () => {
 
 test("mini-0.13-edges: a replacement is linked only where replacement_url says", async ({ page }) => {
   await report.gotoWithHash(FIXTURES.miniEdges013, "pkg=acme%2Fretired-api");
-  const linked = page.getByRole("complementary", { name: "acme/retired-api" });
-  await expect(linked.locator(".detail-answer").getByRole("link", { name: "acme/new-api" })).toHaveAttribute(
+  await expect(report.replacementLink("acme/retired-api", "acme/new-api")).toHaveAttribute(
     "href",
     "https://packagist.org/packages/acme/new-api",
   );
 
   await report.gotoWithHash(FIXTURES.miniEdges013, "pkg=acme%2Fmoved-out");
-  const unlinked = page.getByRole("complementary", { name: "acme/moved-out" });
-  await expect(unlinked.locator(".detail-answer")).toContainText("Its named replacement is acme/new-away.");
-  await expect(unlinked.locator(".detail-answer").getByRole("link")).toHaveCount(0);
+  await expect(page.getByRole("complementary", { name: "acme/moved-out" })).toContainText(
+    "Its named replacement is acme/new-away.",
+  );
+  await expect(report.replacementLink("acme/moved-out")).toHaveCount(0);
 });
 
 test("mini-0.13-edges: each run note links the page lockrot names for it, and only that", async ({
