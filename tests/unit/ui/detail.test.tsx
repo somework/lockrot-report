@@ -2035,7 +2035,7 @@ describe("open vocabularies (lockrot 0.13): a value this page does not know is s
     const panel = now.querySelector(".detail-timeline-floors");
     expect(panel?.textContent).toContain("does not admit PHP 8.4 (lockrot: straddles)");
     expect(panel?.textContent).toContain("admits no PHP version");
-    expect(now.querySelector(".detail-timeline-fold-words")?.textContent).toContain("4 do not admit both");
+    expect(now.querySelector(".detail-timeline-fold-words")?.textContent).toContain("4 miss one or both");
     cleanup();
     const without = renderDetail(edgesWithoutRowKeys(), "acme/floors").container;
     expect(without.querySelector(".detail-timeline-floors")).toBeNull();

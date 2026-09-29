@@ -59,6 +59,8 @@ function AnswerNode({ part }: { part: AnswerPart }) {
       return <PkgMention name={part.text} className="detail-answer-name" />;
     case "code":
       return <code className="detail-answer-code">{part.text}</code>;
+    case "phrase":
+      return <span className="nowrap">{part.text}</span>;
     case "figure":
       return (
         <b

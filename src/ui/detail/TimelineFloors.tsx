@@ -17,6 +17,10 @@ export function FloorWords({ parts }: { parts: readonly FloorPart[] }) {
       {parts.map((part, i) =>
         part.kind === "text" ? (
           <Fragment key={i}>{part.text}</Fragment>
+        ) : part.kind === "phrase" ? (
+          <span key={i} className="nowrap">
+            {part.text}
+          </span>
         ) : part.kind === "name" ? (
           <span key={i} className="mono">
             {part.text}

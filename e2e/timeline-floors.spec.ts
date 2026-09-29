@@ -19,40 +19,50 @@ const toggle = (page: Page) => page.getByRole("button", { name: "Each branch", e
 test.describe("level 0: the answer without a click", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("scheb/2fa-bundle: the lead names the branch that fits and why the newest does not", async ({
+  test("scheb/2fa-bundle: the lead says why the newest is out of reach and names the branch that admits it", async ({
     page,
   }) => {
     await open(page, FIXTURES.wallabag013, "scheb/2fa-bundle");
     await expect(page.locator(".detail-answer")).toContainText(
-      "its last release was 4.5 years ago; 7.x fits your require.php, 8.x needs a newer PHP.",
+      "its last release was 4.5 years ago; 8.x needs a newer PHP than your require.php, 7.x admits it.",
     );
     await expect(page.locator(".detail-timeline-sub")).toContainText(
-      "Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x needs a newer PHP than your require.php.",
+      "Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x admits only PHP 8.4.",
     );
   });
 
-  test("plank/laravel-mediable: none fits, and the summary counts only the newer branches and yours", async ({
+  test("plank/laravel-mediable: none admits, and the summary counts only the newer branches and yours", async ({
     page,
   }) => {
     await open(page, FIXTURES.akaunting013, "plank/laravel-mediable");
-    await expect(page.locator(".detail-answer")).toContainText("; no newer branch fits your require.php.");
+    await expect(page.locator(".detail-answer")).toContainText("; no newer branch admits your require.php.");
     const sub = page.locator(".detail-timeline-sub");
     await expect(sub).toContainText(
-      "Yours admits your require.php (^8.1) and PHP 8.4; 7.x and 6.x need a newer PHP than your require.php.",
+      "Yours admits your require.php (^8.1) and PHP 8.4; 7.x and 6.x admit only PHP 8.4.",
     );
     await expect(sub).not.toContainText("of 10");
   });
 
-  test("acme/left: an unknown floor as written, and yours at the release its php comes from", async ({
+  test("acme/left: an unknown floor keeps lockrot's word; yours at the release its php comes from", async ({
     page,
   }) => {
     await open(page, FIXTURES.miniEdges013, "acme/left");
-    await expect(page.locator(".detail-answer")).toContainText(
-      "no newer branch fits ext-sodium >=2 (extension)",
-    );
+    const lead = page.locator(".detail-answer");
+    await expect(lead).toContainText("; no newer branch is within reach.");
+    await expect(lead).not.toContainText("ext-sodium");
     await expect(page.locator(".detail-timeline-sub")).toContainText(
-      "3.x and 2.x admit both but are blocked by extension; yours, in 1.9.0, needs a newer PHP than your require.php.",
+      "Yours (newest release 1.9.0) needs a newer PHP than your require.php (^8.3); 3.x and 2.x are blocked by extension.",
     );
+  });
+
+  test("PHP 8.4 never breaks across a line", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await open(page, FIXTURES.wallabag013, "scheb/2fa-bundle");
+    const phrases = page.locator(".detail-timeline-sub .nowrap", { hasText: /^PHP 8\.4$/ });
+    await expect(phrases.first()).toBeVisible();
+    for (const phrase of await phrases.all()) {
+      expect(await phrase.evaluate((el) => el.getClientRects().length)).toBe(1);
+    }
   });
 
   test("rector/rector: no project floor is said once; a closed fold says what it hides", async ({ page }) => {
@@ -87,7 +97,7 @@ test.describe("level 1: every branch, opened by keyboard", () => {
     await expect(button).toHaveAttribute("aria-expanded", "true");
     await expect(panel).toBeVisible();
     await expect(panel.locator("li")).toHaveText([
-      "4.x (yours), 3.x and 0.22.x – 0.1.x (22) admit both",
+      "3.x and 0.1.x – 0.22.x (22) admit both",
       "2.x and 1.x stop before both",
     ]);
     await expect(panel).toContainText("lockrot does not test it");
@@ -96,7 +106,21 @@ test.describe("level 1: every branch, opened by keyboard", () => {
     await expect(button).toHaveAttribute("aria-expanded", "false");
   });
 
-  test("j keeps the reader's choice on the next package, and Escape hands focus to its row", async ({
+  test("level 1 holds only what level 0 left: scheb's newest way, none when every branch was said", async ({
+    page,
+  }) => {
+    await open(page, FIXTURES.wallabag013, "scheb/2fa-bundle");
+    await toggle(page).click();
+    await expect(page.locator(".detail-timeline-floors li")).toHaveText([
+      "8.x needs a newer PHP than your require.php",
+    ]);
+    await open(page, FIXTURES.wallabag013, "friendsofsymfony/oauth-server-bundle");
+    await expect(page.locator(".detail-timeline-sub")).toContainText("1.x stops before both.");
+    await expect(toggle(page)).toHaveCount(0);
+    await expect(page.locator(".detail-timeline-floors")).toHaveCount(0);
+  });
+
+  test("j keeps the reader's choice on the next package with a level 1, and Escape hands focus to its row", async ({
     page,
   }) => {
     await open(page, FIXTURES.wallabag013, "scheb/2fa-bundle");
@@ -104,11 +128,14 @@ test.describe("level 1: every branch, opened by keyboard", () => {
     await expect(toggle(page)).toHaveAttribute("aria-expanded", "true");
 
     await page.locator("li.frow[data-pkg='scheb/2fa-bundle']").focus();
-    await page.keyboard.press("j");
-
     const aside = page.locator("aside.detail");
-    await expect(aside).not.toHaveAttribute("aria-label", "scheb/2fa-bundle");
-    const next = (await aside.getAttribute("aria-label")) ?? "";
+    let next = "scheb/2fa-bundle";
+    for (let step = 0; step < 12; step++) {
+      await page.keyboard.press("j");
+      await expect(aside).not.toHaveAttribute("aria-label", next);
+      next = (await aside.getAttribute("aria-label")) ?? "";
+      if ((await toggle(page).count()) > 0) break;
+    }
     await expect(toggle(page)).toHaveAttribute("aria-expanded", "true");
     await page.keyboard.press("Escape");
     await expect(page.locator(`li.frow[data-pkg='${next}']`)).toBeFocused();

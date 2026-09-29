@@ -188,7 +188,7 @@ describe("answerParts", () => {
 
     // Assert
     expect(answerText(parts)).toBe(
-      "Left behind on 5.x: its last release was 4.5 years ago; 7.x fits your require.php, 8.x needs a newer PHP. You require it directly.",
+      "Left behind on 5.x: its last release was 4.5 years ago; 8.x needs a newer PHP than your require.php, 7.x admits it. You require it directly.",
     );
     expect(parts.filter((p) => p.kind === "code")).toEqual([{ kind: "code", text: "require.php" }]);
   });

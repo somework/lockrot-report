@@ -24,6 +24,8 @@ export type AnswerPart =
   | { readonly kind: "name"; readonly text: string }
   /** A key or a value as written (`require.php`, an unknown floor): mono, never a link. */
   | { readonly kind: "code"; readonly text: string }
+  /** Words that never break apart, "PHP 8.4". */
+  | { readonly kind: "phrase"; readonly text: string }
   /** `tone` is an age's zone or the advisory count's weight; `null` leaves it in ink. */
   | { readonly kind: "figure"; readonly text: string; readonly tone: Tone | null }
   /** `href` is `replacement_url`, only for a package lockrot resolved. */

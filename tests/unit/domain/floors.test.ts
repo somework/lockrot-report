@@ -4,9 +4,8 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  floorsAnswer,
   floorsDefinition,
-  floorsList,
-  floorsSentence,
   foldWords,
   plain,
   moveClause,
@@ -27,17 +26,30 @@ function load(bundle: string): Model {
   return result.model;
 }
 
-function fixture(bundle: string, pkg: string): { rows: readonly BranchRow[]; floors: Floors; model: Model } {
+function fixture(
+  bundle: string,
+  pkg: string,
+): { rows: readonly BranchRow[]; floors: Floors; model: Model; installed: string } {
   const model = load(bundle);
   const rows = model.details.get(pkg)?.metadata?.branches;
   if (rows === undefined) throw new Error(`${pkg} has no branches in ${bundle}`);
-  return { rows, floors: readFloors(model.report.run, model.report.absent), model };
+  const installed = model.report.findings.find((f) => f.package === pkg)?.version ?? "";
+  return { rows, floors: readFloors(model.report.run, model.report.absent), model, installed };
 }
 
 function sentence(bundle: string, pkg: string): string | null {
-  const { rows, floors } = fixture(bundle, pkg);
-  const parts = floorsSentence(rows, floors);
-  return parts === null ? null : plain(parts);
+  const { rows, floors, installed } = fixture(bundle, pkg);
+  const answer = floorsAnswer(rows, floors, installed);
+  return answer === null ? null : plain(answer.sentence);
+}
+
+function rest(bundle: string, pkg: string): string[] {
+  const { rows, floors, installed } = fixture(bundle, pkg);
+  return listed(floorsAnswer(rows, floors, installed)?.rest ?? []);
+}
+
+function said(rows: readonly BranchRow[], floors: Floors, installed = "1.0.0"): string {
+  return plain(floorsAnswer(rows, floors, installed)?.sentence ?? []);
 }
 
 function listed(groups: readonly FloorGroup[]): string[] {
@@ -91,15 +103,23 @@ describe("standing: four states per field", () => {
     expect(standing(row({ admitsProjectPhp: false, missesProjectPhp: "needs_newer" }), BOTH)).toEqual({
       kind: "misses",
       misses: [{ floor: "project", code: "needs_newer" }],
+      unanswered: [],
       blockedBy: null,
     });
-    expect(standing(row({ admitsTargetPhp: null }), BOTH)).toEqual({ kind: "unanswered" });
+    expect(standing(row({ admitsTargetPhp: null }), BOTH)).toEqual({
+      kind: "unanswered",
+      floors: ["target"],
+    });
     expect(standing(row({ floorFields: false }), BOTH)).toBeNull();
   });
 
-  it("a false never reads as null: one floor missed beside a null still misses", () => {
-    const st = standing(row({ admitsTargetPhp: null, admitsProjectPhp: false }), BOTH);
-    expect(st?.kind).toBe("misses");
+  it("a false never reads as null, and the null beside it is kept as no answer", () => {
+    expect(standing(row({ admitsTargetPhp: null, admitsProjectPhp: false }), BOTH)).toEqual({
+      kind: "misses",
+      misses: [{ floor: "project", code: null }],
+      unanswered: ["target"],
+      blockedBy: null,
+    });
   });
 
   it("php null records no requirement; a run naming no floor reads nothing", () => {
@@ -123,47 +143,75 @@ describe("standing: four states per field", () => {
   });
 });
 
-describe("floorsSentence: level 0, from yours up", () => {
-  it("scheb/2fa-bundle: the newest needs a newer PHP than your require.php; the rest from yours up admit both", () => {
+describe("floorsAnswer: level 0, yours first, then the newer branches", () => {
+  it("scheb/2fa-bundle: the newest admits only the target; its way is left to level 1", () => {
     expect(sentence("wallabag_wallabag-0.13", "scheb/2fa-bundle")).toBe(
-      "Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x needs a newer PHP than your require.php.",
+      "Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x admits only PHP 8.4.",
     );
+    expect(rest("wallabag_wallabag-0.13", "scheb/2fa-bundle")).toEqual([
+      "8.x: needs a newer PHP than your require.php",
+    ]);
   });
 
-  it("plank/laravel-mediable: counts only the newer branches and yours, never the older ones that admit", () => {
+  it("plank/laravel-mediable: counts only the newer branches and yours; the older ones wait at level 1", () => {
     expect(sentence("gh_akaunting_akaunting-0.13", "plank/laravel-mediable")).toBe(
-      "Yours admits your require.php (^8.1) and PHP 8.4; 7.x and 6.x need a newer PHP than your require.php.",
+      "Yours admits your require.php (^8.1) and PHP 8.4; 7.x and 6.x admit only PHP 8.4.",
     );
+    expect(rest("gh_akaunting_akaunting-0.13", "plank/laravel-mediable")).toEqual([
+      "7.x, 6.x: need a newer PHP than your require.php",
+      "0.1.x – 4.x (7): admit both",
+    ]);
   });
 
-  it("acme/left: an unknown blocker as written, apart; yours names the release its php comes from", () => {
+  it("acme/left: yours at the release its php comes from; an unknown blocker as written, apart", () => {
     expect(sentence("mini-0.13-edges", "acme/left")).toBe(
-      "Against your require.php (^8.3) and PHP 8.4: 3.x and 2.x admit both but are blocked by extension; yours, in 1.9.0, needs a newer PHP than your require.php.",
+      "Yours (newest release 1.9.0) needs a newer PHP than your require.php (^8.3); 3.x and 2.x are blocked by extension.",
     );
+    expect(rest("mini-0.13-edges", "acme/left")).toEqual([
+      "3.x, 2.x: admit both but are blocked by extension",
+      "0.x: has no php recorded, so neither could be checked",
+    ]);
   });
 
   it("sentry/sentry: yours is the newest and admits both, so older misses stay at level 1", () => {
     expect(sentence("koel_koel-all-0.13", "sentry/sentry")).toBe(
       "Yours, the newest, admits your require.php (>=8.3) and PHP 8.4.",
     );
+    expect(rest("koel_koel-all-0.13", "sentry/sentry")).toEqual([
+      "3.x, 0.1.x – 0.22.x (22): admit both",
+      "2.x, 1.x: stop before both",
+    ]);
   });
 
-  it("friendsofsymfony/oauth-server-bundle: a snapshot is no branch row, so the one branch is named", () => {
+  it("friendsofsymfony/oauth-server-bundle: a snapshot is no branch row; the one branch, fully said, leaves no level 1", () => {
     expect(sentence("wallabag_wallabag-0.13", "friendsofsymfony/oauth-server-bundle")).toBe(
       "Against your require.php (>=8.2) and PHP 8.4: 1.x stops before both.",
     );
+    expect(rest("wallabag_wallabag-0.13", "friendsofsymfony/oauth-server-bundle")).toEqual([]);
   });
 
-  it("rector/rector: no project floor, said once; every branch counted against the target", () => {
+  it("rector/rector: no project floor, said once; every branch counted, so level 1 names them all", () => {
     expect(sentence("mautic_mautic-0.13", "rector/rector")).toBe(
       "The project names no PHP floor. 14 branches admit PHP 8.4; 7 stop before it.",
     );
+    expect(rest("mautic_mautic-0.13", "rector/rector")).toEqual([
+      "0.8.x – 2.x (14): admit PHP 8.4",
+      "0.1.x – 0.7.x (7): stop before PHP 8.4",
+    ]);
   });
 
   it("acme/floors: more than two kinds of miss among the newer are counted, the one missing each differently named", () => {
     expect(sentence("mini-0.13-edges", "acme/floors")).toBe(
-      "Against your require.php (^8.3) and PHP 8.4: none of the 5 newer branches admits both, 6.x missing the two in different ways; yours, in 1.4.0, stops before both.",
+      "Yours stops before your require.php (^8.3) and PHP 8.4; no newer branch admits both, 6.x missing them differently.",
     );
+    expect(rest("mini-0.13-edges", "acme/floors")).toEqual([
+      "6.x: needs a newer PHP than your require.php and stops before PHP 8.4",
+      "5.x: skips both",
+      "4.x: admits no PHP version",
+      "3.x: needs a newer PHP than both",
+      "2.x: stops before PHP 8.4",
+      "0.x: skips your require.php and does not admit PHP 8.4 (lockrot: straddles)",
+    ]);
   });
 
   it("an older report draws nothing: its rows carry none of the fields", () => {
@@ -172,18 +220,16 @@ describe("floorsSentence: level 0, from yours up", () => {
 
   it("a miss with a way lockrot added later is shown as written, never guessed", () => {
     const rows = [row({ installed: true, admitsTargetPhp: false, missesTargetPhp: "straddles" })];
-    expect(plain(floorsSentence(rows, BOTH) ?? [])).toBe(
-      "Against your require.php (>=8.2) and PHP 8.4: yours, the newest, does not admit PHP 8.4 (lockrot: straddles).",
-    );
+    expect(said(rows, BOTH)).toBe("Yours, the newest, does not admit PHP 8.4 (lockrot: straddles).");
   });
 
-  it("a null way is 'does not admit', and two floors missed alike with no way admit neither", () => {
+  it("a null way is 'does not admit'; two floors missed alike with no way admit neither", () => {
     const rows = [
       row({ branch: "2.x", admitsTargetPhp: false }),
       row({ branch: "1.x", installed: true, admitsTargetPhp: false, admitsProjectPhp: false }),
     ];
-    expect(plain(floorsSentence(rows, BOTH) ?? [])).toBe(
-      "Against your require.php (>=8.2) and PHP 8.4: 2.x does not admit PHP 8.4; yours admits neither.",
+    expect(said(rows, BOTH)).toBe(
+      "Yours admits neither your require.php (>=8.2) nor PHP 8.4; 2.x admits only your require.php.",
     );
   });
 
@@ -197,28 +243,40 @@ describe("floorsSentence: level 0, from yours up", () => {
         missesProjectPhp: "needs_newer",
       }),
     ];
-    expect(plain(floorsSentence(rows, BOTH) ?? [])).toBe(
-      "Against your require.php (>=8.2) and PHP 8.4: yours, the newest, needs a newer PHP than your require.php and stops before PHP 8.4.",
+    expect(said(rows, BOTH)).toBe(
+      "Yours, the newest, needs a newer PHP than your require.php (>=8.2) and stops before PHP 8.4.",
     );
   });
 
-  it("never opens on a branch name: the floors lead instead", () => {
+  it("yours names the release its php comes from only when that is not the version installed", () => {
+    const rows = [
+      row({ installed: true, newestDated: "1.9.0", admitsTargetPhp: false, missesTargetPhp: "skips" }),
+    ];
+    expect(said(rows, BOTH, "1.4.0")).toBe("Yours (newest release 1.9.0) skips PHP 8.4.");
+    expect(said(rows, BOTH, "1.9.0")).toBe("Yours, the newest, skips PHP 8.4.");
+    const admitting = [row({ installed: true, newestDated: "1.9.0" })];
+    expect(said(admitting, BOTH, "1.4.0")).toBe(
+      "Yours, the newest, admits your require.php (>=8.2) and PHP 8.4.",
+    );
+  });
+
+  it("never opens on a branch name: without yours the floors lead", () => {
     const rows = [
       row({ branch: "2.x" }),
-      row({ branch: "1.x", installed: true, admitsTargetPhp: false, missesTargetPhp: "skips" }),
+      row({ branch: "1.x", admitsTargetPhp: false, missesTargetPhp: "skips" }),
     ];
-    expect(plain(floorsSentence(rows, TARGET_ONLY) ?? [])).toBe(
-      "The project names no PHP floor. Against PHP 8.4: 2.x admits it; yours skips it.",
+    expect(said(rows, TARGET_ONLY)).toBe(
+      "The project names no PHP floor. Against PHP 8.4: 2.x admits it; 1.x skips it.",
     );
   });
 
-  it("with one floor, a miss reads against it without naming it again", () => {
+  it("with one floor, later clauses say it; a newer PHP always names what it is newer than", () => {
     const rows = [
       row({ branch: "2.x", admitsTargetPhp: false, missesTargetPhp: "needs_newer" }),
-      row({ installed: true }),
+      row({ branch: "1.x", installed: true, admitsTargetPhp: false, missesTargetPhp: "skips" }),
     ];
-    expect(plain(floorsSentence(rows, TARGET_ONLY) ?? [])).toBe(
-      "The project names no PHP floor. Yours admits PHP 8.4; 2.x needs a newer PHP.",
+    expect(said(rows, TARGET_ONLY)).toBe(
+      "The project names no PHP floor. Yours skips PHP 8.4; 2.x needs a newer PHP than 8.4.",
     );
   });
 
@@ -228,45 +286,51 @@ describe("floorsSentence: level 0, from yours up", () => {
       row({ branch: "2.x", admitsProjectPhp: null }),
       row({ installed: true }),
     ];
-    expect(plain(floorsSentence(rows, BOTH) ?? [])).toBe(
-      "Yours admits your require.php (>=8.2) and PHP 8.4; 3.x records no PHP requirement; 2.x has no answer from lockrot.",
+    expect(said(rows, BOTH)).toBe(
+      "Yours admits your require.php (>=8.2) and PHP 8.4; 3.x has no php recorded, so neither could be checked; 2.x has no answer for your require.php.",
+    );
+  });
+
+  it("a floor with no answer beside a miss is named as no answer, never dropped", () => {
+    const rows = [
+      row({
+        installed: true,
+        admitsProjectPhp: null,
+        admitsTargetPhp: false,
+        missesTargetPhp: "stops_before",
+      }),
+    ];
+    expect(said(rows, BOTH)).toBe(
+      "Yours, the newest, stops before PHP 8.4 and has no answer for your require.php (>=8.2).",
+    );
+    const newer = [
+      row({ branch: "2.x", admitsProjectPhp: null, admitsTargetPhp: false, missesTargetPhp: "stops_before" }),
+      row({ installed: true }),
+    ];
+    expect(said(newer, BOTH)).toBe(
+      "Yours admits your require.php (>=8.2) and PHP 8.4; 2.x stops before PHP 8.4 and has no answer for your require.php.",
     );
   });
 });
 
-describe("floorsList: level 1, every branch named", () => {
-  it("rector/rector: contiguous runs are compressed, none cut", () => {
-    const { rows, floors } = fixture("mautic_mautic-0.13", "rector/rector");
-    expect(listed(floorsList(rows, floors))).toEqual([
-      "2.x – 0.8.x (14): admit PHP 8.4",
-      "0.7.x – 0.1.x (7): stop before PHP 8.4",
+describe("floorsAnswer: level 1, every branch the sentence left", () => {
+  it("contiguous runs are compressed oldest first, as the fold rows read, and none is cut", () => {
+    expect(rest("wallabag_wallabag-0.13", "phpunit/php-timer")).toEqual([
+      "9.x, 8.x: need a newer PHP than your require.php",
+      "4.x, 3.x, 1.x: stop before both",
+      "2.x: admits both",
     ]);
   });
 
-  it("sentry/sentry: yours breaks a run and is marked; every miss group is named in full", () => {
-    const { rows, floors } = fixture("koel_koel-all-0.13", "sentry/sentry");
-    expect(listed(floorsList(rows, floors))).toEqual([
-      "4.x (yours), 3.x, 0.22.x – 0.1.x (22): admit both",
-      "2.x, 1.x: stop before both",
-    ]);
-  });
-
-  it("acme/floors: an unknown way is quoted as written, apart from the sentence", () => {
-    const { rows, floors } = fixture("mini-0.13-edges", "acme/floors");
-    expect(listed(floorsList(rows, floors))).toEqual([
-      "6.x: needs a newer PHP than your require.php and stops before PHP 8.4",
-      "5.x: skips both",
-      "4.x: admits no PHP version",
-      "3.x: needs a newer PHP than both",
-      "2.x: stops before PHP 8.4",
-      "1.x (yours): stops before both",
-      "0.x: skips your require.php and does not admit PHP 8.4 (lockrot: straddles)",
+  it("jwilsson: a group of older branches past a gap starts a new run", () => {
+    expect(rest("koel_koel-0.13", "jwilsson/spotify-web-api-php")).toEqual([
+      "4.x, 0.1.x – 0.10.x (10): admit both",
+      "1.x – 3.x (3): stop before both",
     ]);
   });
 
   it("an older report lists nothing", () => {
-    const { rows, floors } = fixture("wallabag_wallabag", "scheb/2fa-bundle");
-    expect(floorsList(rows, floors)).toEqual([]);
+    expect(rest("wallabag_wallabag", "scheb/2fa-bundle")).toEqual([]);
   });
 });
 
@@ -278,9 +342,14 @@ describe("foldWords: a closed fold says what it hides", () => {
     expect(foldWords(rector.rows.slice(1), rector.floors)).toBe("7 stop before PHP 8.4");
   });
 
-  it("mixed misses are counted; a fold with none says nothing", () => {
+  it("rows each missing the same one of two floors admit only the other", () => {
+    const { rows, floors } = fixture("wallabag_wallabag-0.13", "phpunit/php-timer");
+    expect(foldWords(rows.slice(0, 2), floors)).toBe("2 admit only PHP 8.4");
+  });
+
+  it("mixed misses are counted as missing one or both; a fold with none says nothing", () => {
     const { rows, floors } = fixture("mini-0.13-edges", "acme/floors");
-    expect(foldWords(rows.slice(1, 5), floors)).toBe("4 do not admit both");
+    expect(foldWords(rows.slice(1, 5), floors)).toBe("4 miss one or both");
     expect(foldWords([row(), row()], BOTH)).toBeNull();
     expect(foldWords([row({ floorFields: false })], BOTH)).toBeNull();
   });
@@ -304,20 +373,27 @@ describe("moveClause: S8 quoted, the newest's reason from its own row", () => {
     return parts === null ? null : plain(parts);
   }
 
-  it("a branch within reach, and why the newest is not", () => {
+  it("why the newest is out of reach, and the branch within it", () => {
     expect(clause("wallabag_wallabag-0.13", "scheb/2fa-bundle")).toBe(
-      "; 7.x fits your require.php, 8.x needs a newer PHP",
+      "; 8.x needs a newer PHP than your require.php, 7.x admits it",
     );
   });
 
   it("none within reach", () => {
     expect(clause("gh_akaunting_akaunting-0.13", "plank/laravel-mediable")).toBe(
-      "; no newer branch fits your require.php",
+      "; no newer branch admits your require.php",
     );
   });
 
-  it("a floor this page does not know, as written", () => {
-    expect(clause("mini-0.13-edges", "acme/left")).toBe("; no newer branch fits ext-sodium >=2 (extension)");
+  it("a floor this page does not know keeps lockrot's own word and leaves the blocker to Release branches", () => {
+    expect(clause("mini-0.13-edges", "acme/left")).toBe("; no newer branch is within reach");
+    const data = {
+      newest_within_reach: false,
+      newest_branch: "3.x",
+      floor_source: "extension",
+      reachable_branch: "2.x",
+    };
+    expect(plain(moveClause(data, []) ?? [])).toBe("; 2.x is the newest within reach");
   });
 
   it("the newest within reach, or a document that does not say, keeps the older sentence", () => {
@@ -328,11 +404,11 @@ describe("moveClause: S8 quoted, the newest's reason from its own row", () => {
 
   it("an older report's S8 says the reach, its rows not the way: less said, the same sentence", () => {
     expect(clause("wallabag_wallabag", "scheb/2fa-bundle")).toBe(
-      "; 7.x fits your require.php, 8.x does not admit it",
+      "; 8.x does not admit your require.php, 7.x admits it",
     );
   });
 
-  it("a target floor names the target PHP", () => {
+  it("a target floor names the target PHP; a newest admitting no PHP names the floor again", () => {
     const data = {
       newest_within_reach: false,
       newest_branch: "9.x",
@@ -340,7 +416,11 @@ describe("moveClause: S8 quoted, the newest's reason from its own row", () => {
       floor_source: "target",
       floor_php: "8.4",
     };
-    const rows = [row({ branch: "9.x", admitsTargetPhp: false, missesTargetPhp: "stops_before" })];
-    expect(plain(moveClause(data, rows) ?? [])).toBe("; 7.x fits PHP 8.4, 9.x stops before it");
+    const stops = [row({ branch: "9.x", admitsTargetPhp: false, missesTargetPhp: "stops_before" })];
+    expect(plain(moveClause(data, stops) ?? [])).toBe("; 9.x stops before PHP 8.4, 7.x admits it");
+    const newer = [row({ branch: "9.x", admitsTargetPhp: false, missesTargetPhp: "needs_newer" })];
+    expect(plain(moveClause(data, newer) ?? [])).toBe("; 9.x needs a newer PHP than 8.4, 7.x admits it");
+    const none = [row({ branch: "9.x", admitsTargetPhp: false, missesTargetPhp: "unsatisfiable" })];
+    expect(plain(moveClause(data, none) ?? [])).toBe("; 9.x admits no PHP version, 7.x admits PHP 8.4");
   });
 });
