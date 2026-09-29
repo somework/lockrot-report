@@ -16,6 +16,7 @@
  */
 
 import type { Advisory, Finding } from "../model/types";
+import { pinnedWhy } from "./pinned";
 
 export interface Term {
   readonly field: string | null;
@@ -129,19 +130,22 @@ export function freeTextTermsVerbatim(raw: string): readonly string[] {
   return trimmed.split(/\s+/).filter((part) => part !== "" && !FIELD_PATTERN.test(part));
 }
 
-/** The four parts of a finding free text searches, in the order legacy joined them into one
- *  haystack (`report.js:207`): the package name, its version, its verdict, its evidence. */
-export type SearchField = "name" | "version" | "verdict" | "evidence";
+/** The parts of a finding free text searches, in the order legacy joined them into one haystack
+ *  (`report.js:207`): the package name, its version, its verdict, its evidence; a pinned row's S6
+ *  words go before the evidence, so what that row shows is what search finds. */
+export type SearchField = "name" | "version" | "verdict" | "why" | "evidence";
 
 /** Each searched part of a finding with its value, in haystack order. A free-text term never
  *  contains whitespace (the query is split on it), and the parts are joined with a space, so a term
  *  that is in the haystack is always inside one part — which is what lets `domain/searchHits.ts`
  *  say which part matched without searching differently from `matchesFinding`. */
 export function searchFields(f: Finding): readonly (readonly [SearchField, string])[] {
+  const why = f.verdict === "pinned" ? pinnedWhy(f) : null;
   return [
     ["name", f.package],
     ["version", f.version],
     ["verdict", f.verdict],
+    ...(why === null ? [] : [["why", why] as const]),
     ["evidence", f.evidence],
   ];
 }

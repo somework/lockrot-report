@@ -2,7 +2,7 @@
  *  the document carries, and a missing signal means fewer words, never a guess. */
 
 import type { Finding, PackageDetails, Signal } from "../model/types";
-import { yearsPhrase } from "./format";
+import { ageOld, gapPhrase, yearsPhrase } from "./format";
 import {
   ageSource,
   ageZone,
@@ -12,7 +12,7 @@ import {
   type Thresholds,
 } from "./age";
 import { moveClause } from "./floors";
-import { pinnedKind, readPinnedFacts } from "./pinned";
+import { pinnedKind, readPinnedFacts, snapshotTagGap, tagStanding } from "./pinned";
 import { safeHref } from "./links";
 import { installedBranch, noFixTally, type NoFixTally } from "./priority";
 import { WAYS_NAMED, waysIn } from "./reach";
@@ -29,7 +29,9 @@ export type AnswerPart =
   /** `tone` is an age's zone or the advisory count's weight; `null` leaves it in ink. */
   | { readonly kind: "figure"; readonly text: string; readonly tone: Tone | null }
   /** `href` is `replacement_url`, only for a package lockrot resolved. */
-  | { readonly kind: "replacement"; readonly text: string; readonly href: string | null };
+  | { readonly kind: "replacement"; readonly text: string; readonly href: string | null }
+  /** The tag words that open level 1 (`pinnedTagDetail`): `lead`, then `version` in mono. */
+  | { readonly kind: "tags"; readonly text: string; readonly lead: string; readonly version: string | null };
 
 export interface AnswerInput {
   readonly finding: Finding;
@@ -37,6 +39,8 @@ export interface AnswerInput {
   readonly metadataReplacement: string | null;
   readonly thresholds: Thresholds;
   readonly details?: PackageDetails | null;
+  /** The report's own date, which a snapshot's age is measured to; without it no age is said. */
+  readonly now?: Date | null;
 }
 
 const text = (value: string): AnswerPart => ({ kind: "text", text: value });
@@ -81,6 +85,7 @@ function verdictClause(
   finding: Finding,
   thresholds: Thresholds,
   details: PackageDetails | null,
+  now: Date | null,
 ): AnswerPart[] {
   const release = releaseThresholds(thresholds);
   const push = pushThresholds(thresholds);
@@ -100,7 +105,7 @@ function verdictClause(
       return parts;
     }
     case "pinned":
-      return pinnedClause(finding, details);
+      return pinnedClause(finding, details, now);
     case "left-behind": {
       const s8 = signal(finding, "S8")?.data;
       const branch = str(s8, "branch");
@@ -143,22 +148,60 @@ function verdictClause(
   }
 }
 
-/** The newest dated tag is not named here: the Provenance metadata line is its one place. */
-function pinnedClause(finding: Finding, details: PackageDetails | null): AnswerPart[] {
+const tags = (lead: string, version: string | null = null): AnswerPart => ({
+  kind: "tags",
+  text: `${lead}${version ?? ""}`,
+  lead,
+  version,
+});
+
+/** A tagged snapshot is anchored on its own age first, so "after its newest tag" never reads as
+ *  fresh; the gap is said only when both dates parse. Every `tags` part has a `pinnedTagDetail`. */
+function pinnedClause(finding: Finding, details: PackageDetails | null, now: Date | null): AnswerPart[] {
   const facts = readPinnedFacts(finding, details);
   const lead = [text("Pinned to "), name(facts.version)];
   switch (pinnedKind(facts)) {
     case "untagged":
-      return [text("Installed "), name(facts.version), text(", but its repository lists no tag.")];
+      return [
+        text("Installed "),
+        name(facts.version),
+        text(", but its repository "),
+        tags("lists no tag"),
+        text("."),
+      ];
     case "other": {
       const summary = facts.summary?.trim().replace(/\.$/, "") ?? "";
       return summary === "" ? [...lead, text(".")] : [text(`Pinned: ${summary}.`)];
     }
     case "snapshot":
-      return facts.hasStableRelease === false
-        ? [...lead, text(", a branch snapshot of a package with no tagged release.")]
-        : [...lead, text(", a branch snapshot rather than a release.")];
+      break;
   }
+  switch (tagStanding(facts)) {
+    case "none":
+      return [...lead, text(", a branch snapshot of a package with "), tags("no tagged release"), text(".")];
+    case "unknown":
+      return [...lead, text(", a branch snapshot; lockrot could not tell whether it has a tag.")];
+    default:
+      break;
+  }
+  const gap = snapshotTagGap(facts);
+  if (gap === null || facts.snapshotTime === null) {
+    return [...lead, text(", a branch snapshot rather than a release.")];
+  }
+  const old = now === null ? null : ageOld(facts.snapshotTime, now);
+  const way = gap === 0 ? "dated the same as" : `${gapPhrase(gap)} ${gap > 0 ? "after" : "before"}`;
+  return [
+    ...lead,
+    ...(old === null
+      ? [text(", a branch snapshot ")]
+      : [text(", a "), figure(old, null), text(" branch snapshot, ")]),
+    figure(way, null),
+    text(" "),
+    facts.lastStableVersion === null
+      ? tags("its newest tag")
+      : tags("its newest tag, ", facts.lastStableVersion),
+    text("."),
+  ];
 }
 
 /** The age is `ageSource`'s, so the sentence and the key facts never name two ages; in ink, since
@@ -295,9 +338,10 @@ export function answerParts({
   metadataReplacement,
   thresholds,
   details = null,
+  now = null,
 }: AnswerInput): readonly AnswerPart[] {
   return [
-    ...verdictClause(finding, thresholds, details),
+    ...verdictClause(finding, thresholds, details, now),
     ...reachClause(finding),
     ...replacementClause(finding, metadataReplacement),
     ...advisoryClause(finding),

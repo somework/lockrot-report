@@ -67,6 +67,90 @@
 .detail-answer-replacement a.out:hover {
   color: var(--accent-ink);
 }
+/* The tag words open level 1 (Disclosure.tsx): the sentence's own serif and size, the shared marker
+   and dotted rule the only affordance; the version sits on the serif's x-height, as a name does. */
+/* Inline-block, not the shared inline-flex: flex items are blocks to innerText, so a copied or
+   read-out sentence would break around the version. */
+.l1-btn.detail-answer-tags {
+  display: inline-block;
+  margin: 0;
+  padding: 0 1px;
+  line-height: inherit;
+}
+.l1-btn.detail-answer-tags .l1-mark {
+  margin-left: 4px;
+}
+.detail-answer-tag {
+  font-family: var(--mono);
+  font-size: 0.84em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---------- level 1 of the tag words ----------
+   Hung from the sentence as the floors' level 1 is (timeline.css). The two dates stack oldest first
+   on a three-column grid, the gap written on the rule that joins them. */
+.detail-tags {
+  margin-top: -6px;
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--border);
+  font-family: var(--sans);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.detail-tags p {
+  margin: 0;
+}
+.detail-tags .detail-tags-dates {
+  display: grid;
+  grid-template-columns: max-content minmax(0, max-content) max-content;
+  column-gap: 12px;
+  align-items: baseline;
+  margin-bottom: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.detail-tags-point {
+  display: contents;
+}
+.detail-tags-role {
+  font-family: var(--cond);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.detail-tags-version {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.detail-tags-day {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+.detail-tags-gap {
+  grid-column: 2 / -1;
+  margin: 1px 0 1px 3px;
+  padding: 0 0 0 9px;
+  border-left: 1px solid var(--border-strong);
+  font-size: 11px;
+  line-height: 18px;
+  color: var(--muted);
+}
+.detail-tags-note {
+  font-size: 12px;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.detail-tags-note .mono {
+  font-size: 11.5px;
+  color: var(--ink);
+}
 
 /* ---------- key facts ----------
    Always four, in one row — two by two when the panel itself (not the viewport) is too narrow for

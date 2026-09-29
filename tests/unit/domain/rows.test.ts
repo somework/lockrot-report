@@ -55,6 +55,33 @@ describe("rowSignals (PD-ROWS-1/PD-ROWS-5)", () => {
   it("quotes nothing for a finding with no signal", () => {
     expect(rowSignals(makeFinding({ signals: [] }), null)).toEqual({ key: null, rest: [] });
   });
+
+  it("a pinned row leads with S6, the verdict's own signal, over a higher-level S2", () => {
+    const s6 = makeSignal({
+      id: "S6",
+      level: "warn",
+      data: { reason: "branch_snapshot", has_stable_release: false },
+    });
+    const pinned = makeFinding({ verdict: "pinned", signals: [makeSignal({ id: "S2", level: "high" }), s6] });
+    expect(rowSignals(pinned, null).key?.id).toBe("S6");
+    expect(rowSignals(pinned, null).rest.map((s) => s.id)).toEqual(["S2"]);
+    expect(rowSignals(pinned, "S2").key?.id).toBe("S2");
+    expect(rowSignals({ ...pinned, verdict: "silent" }, null).key?.id).toBe("S2");
+    expect(
+      rowSignals(makeFinding({ verdict: "pinned", signals: [makeSignal({ id: "S2" })] }), null).key?.id,
+    ).toBe("S2");
+  });
+
+  it("an S6 that states no case (an older document) keeps the level order, so its row says what it said", () => {
+    const pinned = makeFinding({
+      verdict: "pinned",
+      signals: [
+        makeSignal({ id: "S2", level: "high" }),
+        makeSignal({ id: "S6", level: "warn", data: { version: "dev-master" } }),
+      ],
+    });
+    expect(rowSignals(pinned, null).key?.id).toBe("S2");
+  });
 });
 
 describe("shortFact (PD-ROWS-4)", () => {
@@ -123,6 +150,19 @@ describe("shortFact (PD-ROWS-4)", () => {
     expect(shortFact(makeSignal({ id: "S2", data: { last_release: "2020-01-01T00:30:00+00:00" } }), f)).toBe(
       "no release since Jan 2020",
     );
+  });
+});
+
+describe("shortFact: S6", () => {
+  it("words S6 from its own data, and keeps its summary where it states no case", () => {
+    const s6 = (data: Record<string, unknown>) =>
+      makeSignal({ id: "S6", summary: "pinned to branch snapshot dev-main", data });
+    const f = (signal: ReturnType<typeof s6>) => makeFinding({ verdict: "pinned", signals: [signal] });
+    const none = s6({ version: "dev-main", reason: "branch_snapshot", has_stable_release: false });
+    expect(shortFact(none, f(none))).toBe("snapshot; no tag at all");
+    const bare = s6({ version: "dev-main" });
+    expect(shortFact(bare, f(bare))).toBe("pinned to branch snapshot dev-main");
+    expect(whyText(f(none), null)).toBe("snapshot; no tag at all");
   });
 });
 

@@ -35,6 +35,15 @@ tag or the address format, says so under **Breaking** in its entry.
 - A left-behind package whose newest branch the project cannot take names the one it can, in the
   words its row uses: "its last release was 4.5 years ago; 7.x is the newest that fits", or "no
   newer branch fits"; the row says "5.x stopped; 7.x fits" instead of "8.x ships".
+- A pinned package says how its snapshot stands against its tags: "Pinned to dev-master, a
+  4.5-year-old branch snapshot, 3.2 years after its newest tag, 1.6.2", or "1 month before" where a
+  newer tag exists. Where lockrot could not tell, it says so ("lockrot could not tell whether it has
+  a tag") instead of "rather than a release". The tag's version opens both dates, oldest first
+  with the gap between them, and that a tag here can be a pre-release; "no tagged release" and
+  "lists no tag" open what they cover. The Snapshot key fact notes the tag only where the answer
+  does not.
+- A pinned row in Findings leads with its S6 in a few words, "snapshot 1 mo before tag 2.6.7",
+  "snapshot; no tag at all", "snapshot; tags unknown", and search finds them.
 - Blast radius names the flagged packages lockrot counts under no direct requirement because too
   many share them: one sentence under the table ("league/config (stale) is left out of Blast
   radius: 9 direct requirements share it, more than 8"). "Who shares it" opens a dot per

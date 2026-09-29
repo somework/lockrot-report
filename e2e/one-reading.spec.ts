@@ -1,6 +1,7 @@
 /**
  * Every report renders by the same rules: an older document and a 0.13 one of the same project give
- * a pinned package the same answer, key facts and release-branches rows.
+ * a pinned package the same answer, key facts and release-branches rows, except where only 0.13
+ * carries the field that states a fact.
  */
 import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
@@ -32,7 +33,6 @@ for (const [older, current, pkg] of [
   [FIXTURES.wallabag, FIXTURES.wallabag013, "wallabag/rulerz"],
   [FIXTURES.wallabag, FIXTURES.wallabag013, "friendsofsymfony/oauth-server-bundle"],
   [FIXTURES.mautic, FIXTURES.mautic013, "rector/rector"],
-  [FIXTURES.mautic, FIXTURES.mautic013, "mautic/core-lib"],
 ] as const) {
   test(`${pkg}: ${older} renders as ${current} does`, async ({ page }) => {
     const before = await lead(page, older, pkg);
@@ -47,8 +47,24 @@ test("wallabag/rulerz on the older page: no tagged release, dated by the commit"
   expect(slot).toMatch(/^Last release none, a snapshot commit dated /i);
 });
 
-test("rector/rector on the older page: a Snapshot slot, never a release", async ({ page }) => {
-  const { slot, timeline } = await lead(page, FIXTURES.mautic, "rector/rector");
-  expect(slot).toMatch(/^Snapshot .+ a branch commit, not a release$/i);
+test("rector/rector on the older page: a Snapshot slot, never a release, its tag said by the answer", async ({
+  page,
+}) => {
+  const { answer, slot, timeline } = await lead(page, FIXTURES.mautic, "rector/rector");
+  expect(answer).toContain("1 month before its newest tag, 2.6.7.");
+  expect(slot).toMatch(/^Snapshot 2 mo ago$/i);
   expect(timeline[0]).toBe("dev-main, yours");
+});
+
+test("mautic/core-lib: only 0.13's S6 says lockrot could not tell whether it has a tag; the older page says less", async ({
+  page,
+}) => {
+  const before = await lead(page, FIXTURES.mautic, "mautic/core-lib");
+  const after = await lead(page, FIXTURES.mautic013, "mautic/core-lib");
+  expect(before.answer).toMatch(/^Pinned to 7\.0\.0-dev, a branch snapshot rather than a release\. /);
+  expect(before.slot).toMatch(/^Snapshot not recorded a branch commit, not a release$/i);
+  expect(after.answer).toMatch(
+    /^Pinned to 7\.0\.0-dev, a branch snapshot; lockrot could not tell whether it has a tag\. /,
+  );
+  expect(after.slot).toMatch(/^Snapshot not recorded$/i);
 });

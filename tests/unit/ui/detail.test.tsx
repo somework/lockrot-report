@@ -853,20 +853,17 @@ describe("Detail", () => {
       expect(branch?.[2]).toMatch(/^on your \S+$/);
     });
 
-    it("words a snapshot's slot the same on the older and the 0.13 document", () => {
-      for (const [model, pkg] of [
-        [MAUTIC, "mautic/core-lib"],
-        [MAUTIC_013, "mautic/core-lib"],
-        [WALLABAG, "wallabag/rulerz"],
-        [WALLABAG_013, "wallabag/rulerz"],
+    it("words a snapshot's slot the same on the older and the 0.13 document, less where only 0.13 states it", () => {
+      for (const [model, pkg, slot] of [
+        [MAUTIC, "mautic/core-lib", ["Snapshot", "not recorded", "a branch commit, not a release"]],
+        // 0.13's answer says lockrot could not tell whether it has a tag, so the slot says no more.
+        [MAUTIC_013, "mautic/core-lib", ["Snapshot", "not recorded"]],
+        [WALLABAG, "wallabag/rulerz", ["Last release", "none, a snapshot", "commit dated 2.8 y ago"]],
+        [WALLABAG_013, "wallabag/rulerz", ["Last release", "none, a snapshot", "commit dated 2.8 y ago"]],
       ] as const) {
         const rows = factRows(renderDetail(model, pkg).container);
         cleanup();
-        expect(rows[1], pkg).toEqual(
-          pkg === "mautic/core-lib"
-            ? ["Snapshot", "not recorded", "a branch commit, not a release"]
-            : ["Last release", "none, a snapshot", "commit dated 2.8 y ago"],
-        );
+        expect(rows[1], pkg).toEqual(slot);
       }
     });
 
@@ -884,14 +881,10 @@ describe("Detail", () => {
         /^Pinned to dev-master, a branch snapshot of a package with no tagged release\. /,
       );
       cleanup();
-      // No repository metadata: nothing said about tags, and an undated commit is said to be so.
-      expect(facts(MAUTIC_013, "mautic/core-lib")).toEqual([
-        "Snapshot",
-        "not recorded",
-        "a branch commit, not a release",
-      ]);
+      // S6's null: lockrot could not tell, and the undated commit is said to be so.
+      expect(facts(MAUTIC_013, "mautic/core-lib")).toEqual(["Snapshot", "not recorded"]);
       expect(answer(MAUTIC_013, "mautic/core-lib")).toMatch(
-        /^Pinned to 7\.0\.0-dev, a branch snapshot rather than a release\. /,
+        /^Pinned to 7\.0\.0-dev, a branch snapshot; lockrot could not tell whether it has a tag\. /,
       );
       cleanup();
       // Its lock time is neither a release nor a snapshot, so no date is given.
@@ -906,17 +899,96 @@ describe("Detail", () => {
 
     it("never calls a snapshot's commit a release, so a tagged one's panel gives one last-release date (rector/rector)", () => {
       const { container } = renderDetail(MAUTIC_013, "rector/rector");
-      expect(factRows(container)[1]).toEqual(["Snapshot", "2 mo ago", "a branch commit, not a release"]);
-      // The answer names no tag and no date: the Provenance "newest dated tag" line is the one place.
+      // The answer words the tag, so the Snapshot slot needs no note.
+      expect(factRows(container)[1]).toEqual(["Snapshot", "2 mo ago"]);
       const answerText = container.querySelector(".detail-answer")?.textContent ?? "";
-      expect(answerText).toMatch(/^Pinned to dev-main, a branch snapshot rather than a release\. /);
-      expect(answerText).not.toContain("2.6.7");
+      expect(answerText).toMatch(
+        /^Pinned to dev-main, a 2-month-old branch snapshot, 1 month before its newest tag, 2\.6\.7\. /,
+      );
       const lead = container.querySelector(".detail-lead")?.textContent ?? "";
       expect(lead).not.toContain("Last release");
-      expect(lead).not.toContain("2026-09-13");
+      expect(lead).not.toMatch(/stable/i);
       expect(container.querySelector(".detail-timeline-answer")?.textContent).toContain(
         "a branch snapshot, not a release, dated 2 months ago",
       );
+    });
+
+    it("the answer's tag words open level 1: both dates oldest first, then the pre-release caveat", () => {
+      const { container, dispatch } = renderDetail(WALLABAG_013, "friendsofsymfony/oauth-server-bundle");
+      const button = screen.getByRole("button", { name: "its newest tag, 1.6.2" });
+      expect(button.getAttribute("aria-expanded")).toBe("false");
+      const panel = container.querySelector<HTMLElement>(`#${button.getAttribute("aria-controls") ?? ""}`);
+      expect(panel?.hidden).toBe(true);
+      expect(panel?.querySelector(".detail-tags-dates")?.textContent).toBe(
+        "tag 1.6.2 2019-01-23 3.2 years later snapshot dev-master 2022-03-24",
+      );
+      expect(panel?.textContent).toContain("A tag here can be a pre-release: lockrot counts those as tags.");
+      expect(panel?.textContent).not.toMatch(/stable/i);
+      fireEvent.click(button);
+      expect(dispatch).toHaveBeenCalledWith({ type: "disclose", key: "pinned-tags", open: true });
+      // S2 fired, so the release slot keeps its age and the answer carries the tag: no note repeats it.
+      expect(factRows(container)[1]).toEqual(["Last release", "7.7 y ago"]);
+    });
+
+    it("level 1 opens from the state, and says what 'no tag' covers (rulerz, acme/untagged)", () => {
+      const open = { disclosure: { "pinned-tags": true } };
+      const rulerz = renderDetail(WALLABAG_013, "wallabag/rulerz", vi.fn(), open).container;
+      expect(screen.getByRole("button", { name: "no tagged release" }).getAttribute("aria-expanded")).toBe(
+        "true",
+      );
+      expect(rulerz.querySelector<HTMLElement>(".detail-tags")?.hidden).toBe(false);
+      expect(rulerz.querySelector(".detail-tags")?.textContent).toBe(
+        "Its repository lists no tag at all, not even a pre-release.",
+      );
+      cleanup();
+      const untagged = renderDetail(EDGES_013, "acme/untagged", vi.fn(), open).container;
+      expect(screen.getByRole("button", { name: "lists no tag" })).toBeTruthy();
+      expect(untagged.querySelector(".detail-tags")?.textContent).toBe(
+        "1.0.0 is not a tag in its repository, which lists none, not even a pre-release.",
+      );
+    });
+
+    it("nothing opens where the answer words no tag fact (acme/path-lib's null, an older document with none)", () => {
+      for (const [model, pkg] of [
+        [EDGES_013, "acme/path-lib"],
+        [MAUTIC, "mautic/core-lib"],
+      ] as const) {
+        const { container } = renderDetail(model, pkg);
+        expect(container.querySelector(".detail-answer .l1-btn"), pkg).toBeNull();
+        expect(container.querySelector(".detail-tags"), pkg).toBeNull();
+        cleanup();
+      }
+    });
+
+    it("on paper the tag words are the sentence's own and level 1 is open", () => {
+      const { container } = render(
+        <PrintContext.Provider value={true}>
+          <ReportContext.Provider
+            value={{
+              model: WALLABAG_013,
+              state: {
+                view: "findings",
+                q: "",
+                pkg: "friendsofsymfony/oauth-server-bundle",
+                sort: "verdict",
+                sortDesc: false,
+                filters: EMPTY_FILTERS,
+                disclosure: {},
+              },
+              dispatch: vi.fn(),
+              now: new Date(WALLABAG_013.report.generatedAt),
+              wide: true,
+              cursor: null,
+              openGlossary: vi.fn(),
+              openGlossaryFrom: vi.fn(),
+            }}
+          >
+            <Detail onClose={vi.fn()} />
+          </ReportContext.Provider>
+        </PrintContext.Provider>,
+      );
+      expect(container.querySelector(".detail-answer button")).toBeNull();
+      expect(container.querySelector<HTMLElement>(".detail-tags")?.hidden).toBe(false);
     });
 
     it("glosses a libyears of 0.0 so it does not read as good news, and keeps an abandoned age in ink everywhere", () => {

@@ -18,9 +18,11 @@ export function useDisclosure(key: string): { open: boolean; toggle: () => void;
   };
 }
 
-/** `lead`: the marker opens the label, as a summary's does, where the label is the sentence's subject. */
+/** `lead`: the marker opens the label, as a summary's does, where the label is the sentence's subject.
+ *  `name`: a fuller accessible name, which must contain the visible label. */
 export function DisclosureButton({
   label,
+  name,
   open,
   controls,
   onToggle,
@@ -29,6 +31,7 @@ export function DisclosureButton({
   id,
 }: {
   label: ComponentChildren;
+  name?: string | undefined;
   open: boolean;
   controls: string;
   onToggle: () => void;
@@ -42,6 +45,7 @@ export function DisclosureButton({
       type="button"
       id={id}
       className={className === undefined ? "l1-btn" : `l1-btn ${className}`}
+      aria-label={name}
       aria-expanded={open}
       aria-controls={controls}
       onClick={onToggle}
