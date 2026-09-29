@@ -6,7 +6,7 @@ import { useRef } from "preact/hooks";
 import { useReport } from "../context";
 import { useOverflowX } from "../useOverflowX";
 import { applyFilters, population } from "../../domain/filters";
-import { PACKAGIST_TITLE, packagistUrl } from "../../domain/links";
+import { registryLink } from "../../domain/links";
 import { day, fixed } from "../../domain/format";
 import {
   libyearsAtZero,
@@ -176,17 +176,17 @@ function PackageName({ name }: { name: string }) {
 }
 
 function PackageCell({ finding }: { finding: Finding }) {
-  const { model, cursor } = useReport();
-  const url = packagistUrl(finding, model.details);
-  if (url === null) return <PackageName name={finding.package} />;
+  const { cursor } = useReport();
+  const link = registryLink(finding);
+  if (link === null) return <PackageName name={finding.package} />;
 
   return (
     <a
       className="lnk"
-      href={url}
+      href={link.href}
       target="_blank"
       rel="noopener noreferrer"
-      title={PACKAGIST_TITLE}
+      title={link.title}
       tabIndex={innerTabIndex(finding.package, cursor)}
     >
       <PackageName name={finding.package} />

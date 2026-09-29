@@ -12,6 +12,7 @@ import {
   type Thresholds,
 } from "./age";
 import { pinnedKind, readPinnedFacts } from "./pinned";
+import { safeHref } from "./links";
 import { installedBranch, noFixTally, type NoFixTally } from "./priority";
 import { WAYS_NAMED, waysIn } from "./reach";
 import { VERDICT_ORDER, type Tone } from "./vocab";
@@ -22,12 +23,12 @@ export type AnswerPart =
   | { readonly kind: "name"; readonly text: string }
   /** `tone` is an age's zone or the advisory count's weight; `null` leaves it in ink. */
   | { readonly kind: "figure"; readonly text: string; readonly tone: Tone | null }
-  /** `linked` only for a package lockrot resolved; Packagist's free text is not a package. */
-  | { readonly kind: "replacement"; readonly text: string; readonly linked: boolean };
+  /** `href` is `replacement_url`, only for a package lockrot resolved. */
+  | { readonly kind: "replacement"; readonly text: string; readonly href: string | null };
 
 export interface AnswerInput {
   readonly finding: Finding;
-  /** Packagist's own free-text replacement (`metadata.replacement`), when the explain data has one. */
+  /** The repository's own free-text replacement (`metadata.replacement`), when the explain data has one. */
   readonly metadataReplacement: string | null;
   readonly thresholds: Thresholds;
   readonly details?: PackageDetails | null;
@@ -228,12 +229,12 @@ function replacementClause(finding: Finding, metadataReplacement: string | null)
   const s1 = str(signal(finding, "S1")?.data, "replacement");
   const replacement = finding.replacement ?? metadataReplacement ?? s1;
   if (replacement === null) return [];
-  const linked = finding.replacement !== null;
+  const resolved = finding.replacement !== null;
   // Run data counts only a resolved replacement, so one named in words says so.
   return [
     text(" Its named replacement is "),
-    { kind: "replacement", text: replacement, linked },
-    text(linked ? "." : ", in words only — not a package lockrot resolved."),
+    { kind: "replacement", text: replacement, href: resolved ? safeHref(finding.replacementUrl) : null },
+    text(resolved ? "." : ", in words only — not a package lockrot resolved."),
   ];
 }
 

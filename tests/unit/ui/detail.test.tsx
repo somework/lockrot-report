@@ -5,7 +5,6 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/pre
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { normalize } from "../../../src/model/normalize";
-import { PACKAGIST_TITLE } from "../../../src/domain/links";
 import type { Model, PackageDetails } from "../../../src/model/types";
 import type { Action, State } from "../../../src/state/types";
 import { EMPTY_FILTERS } from "../../../src/state/types";
@@ -41,8 +40,8 @@ const EDGES_013 = loadModel("mini-0.13-edges.json");
 
 /**
  * The findings the real fixtures don't carry an example of: security advisories, the three
- * baseline standings, and both shapes of "replacement" (a resolved package name vs. Packagist's own
- * free text). Still run through `normalize()`, same as a document read from disk.
+ * baseline standings, and both shapes of "replacement" (a resolved package name vs. the repository's
+ * own free text). Still run through `normalize()`, same as a document read from disk.
  */
 const EXTRA = normalize({
   report: {
@@ -1114,16 +1113,33 @@ describe("Detail", () => {
   });
 
   describe("replacement", () => {
-    it("links a resolved package-name replacement to Packagist, in the answer sentence", () => {
+    it("links a resolved replacement to replacement_url as lockrot wrote it, in the answer sentence", () => {
+      const { container } = renderDetail(EDGES_013, "acme/retired-api");
+      expect(container.querySelector(".detail-answer")?.textContent).toContain(
+        "Its named replacement is acme/new-api.",
+      );
+      const link = screen.getByRole("link", { name: "acme/new-api" });
+      expect(link.getAttribute("href")).toBe("https://packagist.org/packages/acme/new-api");
+    });
+
+    it("names a resolved replacement without a link when replacement_url is null", () => {
+      const { container } = renderDetail(EDGES_013, "acme/private-retired");
+      expect(container.querySelector(".detail-answer")?.textContent).toContain(
+        "Its named replacement is acme/private-next.",
+      );
+      expect(screen.queryByRole("link", { name: "acme/private-next" })).toBeNull();
+    });
+
+    it("links nothing on a report that predates replacement_url", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/replaced");
       expect(container.querySelector(".detail-answer")?.textContent).toContain(
         "Its named replacement is vendor/successor.",
       );
-      const link = screen.getByRole("link", { name: "vendor/successor" });
-      expect(link.getAttribute("href")).toBe("https://packagist.org/packages/vendor/successor");
+      expect(screen.queryByRole("link", { name: "vendor/successor" })).toBeNull();
+      expect(container.querySelector(".detail-answer-replacement")?.textContent).toBe("vendor/successor");
     });
 
-    it("shows Packagist's own free-text replacement as plain text, not a link (critic.md M32)", () => {
+    it("shows the repository's own free-text replacement as plain text, not a link (critic.md M32)", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/freetext-replacement");
       expect(screen.queryByRole("link", { name: "some/other-package" })).toBeNull();
       expect(container.querySelector(".detail-answer-replacement")?.textContent).toBe("some/other-package");
@@ -1532,29 +1548,80 @@ describe("Detail", () => {
     });
   });
 
-  describe("the Packagist link reads where the package came from", () => {
-    it("links a 0.13 finding from a Composer repository that has no details entry", () => {
+  describe("the registry link is origin.package_url, labelled by origin.registry", () => {
+    it("links a 0.13 packagist.org entry that has no details entry", () => {
       renderDetail(KOEL_013, "algolia/algoliasearch-client-php");
-      const link = screen.getByRole("link", { name: "packagist" });
+      const link = screen.getByRole("link", { name: "packagist.org" });
       expect(link.getAttribute("href")).toBe(
         "https://packagist.org/packages/algolia/algoliasearch-client-php",
       );
-      // from_composer_repository true does not mean packagist.org: the link says it assumes so.
-      expect(link.getAttribute("title")).toBe(PACKAGIST_TITLE);
+      expect(link.getAttribute("title")).toBe("this package's page on packagist.org");
+    });
+
+    it("links another registry's page by that registry's name", () => {
+      renderDetail(EDGES_013, "wp-plugin/acme-forms");
+      expect(screen.getByRole("link", { name: "wp-packages.org" }).getAttribute("href")).toBe(
+        "https://wp-packages.org/packages/wp-plugin/acme-forms",
+      );
+      expect(screen.queryByRole("link", { name: /packagist/ })).toBeNull();
+    });
+
+    it("builds no link where lockrot wrote none: a registry without pages, a packagist entry without one", () => {
+      renderDetail(EDGES_013, "acme/private-sdk");
+      expect(screen.queryByRole("link", { name: "repo.packagist.com" })).toBeNull();
+      cleanup();
+      renderDetail(EDGES_013, "acme/legacy_");
+      expect(screen.queryByRole("link", { name: "packagist.org" })).toBeNull();
     });
 
     it("does not link a finding that is not from one, and says so in Provenance", () => {
       const { container } = renderDetail(KOEL_013, "teamtnt/laravel-scout-tntsearch-driver");
-      expect(screen.queryByRole("link", { name: "packagist" })).toBeNull();
+      expect(screen.queryByRole("link", { name: /packagist/ })).toBeNull();
       const provenance = openReference(container, "Provenance");
       expect(
         Array.from(provenance?.querySelectorAll(".detail-prov-reason") ?? [], (el) => el.textContent),
       ).toEqual(["none — not from a Composer repository"]);
     });
 
-    it("does not link a finding when no field says where it came from (an older report, no lock entry)", () => {
+    it("links no registry on a report that predates origin", () => {
       renderDetail(KOEL, "algolia/algoliasearch-client-php");
-      expect(screen.queryByRole("link", { name: "packagist" })).toBeNull();
+      expect(screen.queryByRole("link", { name: /packagist/ })).toBeNull();
+    });
+  });
+
+  describe("Provenance says where the lock entry came from", () => {
+    const originLine = (model: Model, pkg: string) => {
+      const { container } = renderDetail(model, pkg);
+      const line = openReference(container, "Provenance")?.querySelector(".detail-prov-origin");
+      return {
+        line,
+        facts: Array.from(line?.querySelectorAll(".detail-prov-fact") ?? [], (el) =>
+          [el.querySelector("dt")?.textContent, el.querySelector("dd")?.textContent].join(" "),
+        ),
+      };
+    };
+
+    it("names the kind and the registry", () => {
+      const { line, facts } = originLine(EDGES_013, "acme/private-sdk");
+      expect(line?.querySelector(".detail-prov-source")?.textContent).toBe("Origin");
+      expect(facts).toEqual(["from a Composer repository", "registry repo.packagist.com"]);
+    });
+
+    it("says a local package was installed from this machine", () => {
+      expect(originLine(MAUTIC_013, "mautic/core-lib").facts).toEqual([
+        "from a path repository of the project",
+        "installed from this machine",
+      ]);
+    });
+
+    it("keeps a kind the page does not know as written", () => {
+      const { line, facts } = originLine(EDGES_013, "acme/mirrored");
+      expect(facts).toEqual(["from acme:mirror"]);
+      expect(line?.querySelector("dd code")?.textContent).toBe("acme:mirror");
+    });
+
+    it("draws no origin line on a report that predates origin", () => {
+      expect(originLine(KOEL, "predis/predis").line).toBeNull();
     });
   });
 
@@ -1569,9 +1636,8 @@ describe("Detail", () => {
       expect(pills?.textContent).toContain("high");
       expect(pills?.querySelector(".tag")).toBeNull();
       expect(container.querySelector(".detail-version")?.textContent).toMatch(/^v?\d/);
-      expect(screen.getByRole("link", { name: "packagist" }).getAttribute("href")).toBe(
-        "https://packagist.org/packages/predis/predis",
-      );
+      // An older report says nothing of where the package came from, so no registry is linked.
+      expect(screen.queryByRole("link", { name: /packagist/ })).toBeNull();
       expect(screen.getByRole("link", { name: "github.com" }).getAttribute("href")).toBe(
         "https://github.com/predis/predis",
       );

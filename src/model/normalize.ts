@@ -19,6 +19,7 @@ import type {
   NormalizeError,
   NoteDetail,
   PackageDetails,
+  PackageOrigin,
   PriorityBasis,
   ReportModel,
   RootGate,
@@ -373,6 +374,7 @@ function buildFinding(raw: unknown): Finding {
     direct: asBoolean(rec.direct, false),
     dev: asBoolean(rec.dev, false),
     replacement: asNullableString(rec.replacement),
+    replacementUrl: asNullableString(rec.replacement_url),
     signals,
     chain: asStringArray(rec.chain),
     directDependents: asStringArray(rec.direct_dependents),
@@ -384,6 +386,7 @@ function buildFinding(raw: unknown): Finding {
     baseline: buildFindingBaseline(rec.baseline),
     advisories: flattenAdvisories(signals),
     fromComposerRepository: asNullableBoolean(rec.from_composer_repository),
+    origin: buildOrigin(rec.origin),
     libyearsUnmeasured: asNullableString(rec.libyears_unmeasured),
     priorityBasis: buildPriorityBasis(rec.priority_basis),
     noFixExpected: isArray(rec.no_fix_expected) ? rec.no_fix_expected.map(buildNoFixAdvisory) : null,
@@ -406,6 +409,18 @@ function buildPriorityBasis(raw: unknown): PriorityBasis | null {
         to: asCoercedString(rec.to),
       };
     }),
+  };
+}
+
+function buildOrigin(raw: unknown): PackageOrigin | null {
+  if (!isRecord(raw)) {
+    return null;
+  }
+  return {
+    kind: asNullableString(raw.kind),
+    registry: asNullableString(raw.registry),
+    packageUrl: asNullableString(raw.package_url),
+    local: asNullableBoolean(raw.local),
   };
 }
 

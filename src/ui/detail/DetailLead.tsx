@@ -70,9 +70,9 @@ function AnswerNode({ part }: { part: AnswerPart }) {
         </b>
       );
     case "replacement":
-      return part.linked ? (
+      return part.href !== null ? (
         <b className="detail-answer-replacement">
-          <OutLink href={`https://packagist.org/packages/${part.text}`}>{part.text}</OutLink>
+          <OutLink href={part.href}>{part.text}</OutLink>
         </b>
       ) : (
         <b className="detail-answer-replacement">{part.text}</b>

@@ -27,7 +27,7 @@ export const FIXTURES = {
   /** A real, large corpus with an S10, an S9 and a direct requirement that counts itself but does
    *  not list itself. */
   wallabag: "wallabag_wallabag",
-  /** Carries one finding with a Packagist-validated `replacement` (most fixtures have none). */
+  /** Carries one finding with a resolved `replacement` (most fixtures have none). */
   mautic: "mautic_mautic",
   /** `network_failures: true` and no advisory: the Advisories ledger's "may be incomplete" case. */
   advisoryIncomplete: "mini-advisory-incomplete",

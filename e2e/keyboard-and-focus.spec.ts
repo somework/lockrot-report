@@ -128,11 +128,11 @@ test.describe("M5: Enter on a link inside a row must not hijack the link", () =>
     // M5 (DESIGN.md §5), fixed on purpose: legacy's keydown handler checked the row before
     // anything about an anchor, so Enter on a focused in-row link toggled the detail instead of
     // following the link.
+    // acme/left's origin carries a package_url, so its Packages-tab row links out to that page.
+    await report.goto(FIXTURES.miniEdges013);
     await report.tab("packages");
     expect((await report.detail()).open).toBe(false);
-    // vendor/transitive's lock came from a Composer repository, so its Packages-tab row links out
-    // to Packagist (report.js:66-70, packagistUrl).
-    await report.focusLinkInRow("vendor/transitive");
+    await report.focusLinkInRow("acme/left");
     await report.pressEnter();
     expect((await report.detail()).open).toBe(false);
   });

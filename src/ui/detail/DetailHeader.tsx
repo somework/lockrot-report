@@ -1,7 +1,7 @@
 import { useRef } from "preact/hooks";
 import type { Finding } from "../../model/types";
 import { hiddenByFilters } from "../../domain/filters";
-import { PACKAGIST_TITLE, packagistUrl, repoHost, safeHref } from "../../domain/links";
+import { registryLink, repoHost, safeHref } from "../../domain/links";
 import { OutLink, Pill } from "../common/common";
 import { useReport } from "../context";
 import "./detail.css";
@@ -17,15 +17,11 @@ export interface DetailHeaderProps {
  * `renderDetail`'s `detail-head` (`report.js:781-796`). The direct/transitive and require-dev tags
  * and the "replacement:" link moved into the answer below (`DetailLead.tsx`), which says both in a
  * sentence; this header stays short because it is the part of the panel that sticks.
- *
- * The replacement is only ever linked when it is `finding.replacement`, a Composer package name
- * lockrot itself resolved; `metadata.replacement` is Packagist's own free text and has nowhere safe
- * to link to, so it is plain text (critic.md M32, `domain/answer.ts`).
  */
 export function DetailHeader({ finding, onClose }: DetailHeaderProps) {
   const { model, state, dispatch } = useReport();
   const details = model.details.get(finding.package) ?? null;
-  const packagist = packagistUrl(finding, model.details);
+  const registry = registryLink(finding);
   const repositoryLink = safeHref(details?.repositoryLink ?? null);
   const hidden = hiddenByFilters(model, state, finding.package);
   // a11y/regression review: "Clear filters" used to leave keyboard focus nowhere. `dispatch` makes
@@ -61,9 +57,9 @@ export function DetailHeader({ finding, onClose }: DetailHeaderProps) {
           {finding.priority !== "none" && <Pill word={finding.priority} />}
         </div>
         <div className="detail-links">
-          {packagist !== null && (
-            <OutLink href={packagist} title={PACKAGIST_TITLE}>
-              packagist
+          {registry !== null && (
+            <OutLink href={registry.href} title={registry.title}>
+              {registry.label}
             </OutLink>
           )}
           {repositoryLink !== null && <OutLink href={repositoryLink}>{repoHost(repositoryLink)}</OutLink>}

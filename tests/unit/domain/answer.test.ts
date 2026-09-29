@@ -40,7 +40,7 @@ describe("answerParts", () => {
     expect(parts.find((p) => p.kind === "replacement")).toEqual({
       kind: "replacement",
       text: "Symfony",
-      linked: false,
+      href: null,
     });
   });
 
@@ -71,13 +71,47 @@ describe("answerParts", () => {
     );
   });
 
-  it("links the replacement only when lockrot resolved it to a package name", () => {
-    const parts = answer({ verdict: "abandoned", replacement: "vendor/successor" }, "free text");
+  it("links a resolved replacement to replacement_url as written", () => {
+    const parts = answer(
+      {
+        verdict: "abandoned",
+        replacement: "vendor/successor",
+        replacementUrl: "https://packagist.org/packages/vendor/successor",
+      },
+      "free text",
+    );
     expect(parts.find((p) => p.kind === "replacement")).toEqual({
       kind: "replacement",
       text: "vendor/successor",
-      linked: true,
+      href: "https://packagist.org/packages/vendor/successor",
     });
+  });
+
+  it("names a resolved replacement without a link when replacement_url is null or absent", () => {
+    const parts = answer({ verdict: "abandoned", replacement: "acme/private-next", replacementUrl: null });
+    expect(parts.find((p) => p.kind === "replacement")).toEqual({
+      kind: "replacement",
+      text: "acme/private-next",
+      href: null,
+    });
+    expect(answerText(parts)).toContain("Its named replacement is acme/private-next.");
+  });
+
+  it("never links free text, whatever replacement_url says", () => {
+    const parts = answer(
+      { verdict: "abandoned", replacement: null, replacementUrl: "https://packagist.org/packages/x/y" },
+      "some/other-package",
+    );
+    expect(parts.find((p) => p.kind === "replacement")).toMatchObject({ href: null });
+  });
+
+  it("does not link a replacement_url the page may not put in an href", () => {
+    const parts = answer({
+      verdict: "abandoned",
+      replacement: "vendor/successor",
+      replacementUrl: "javascript:alert(1)",
+    });
+    expect(parts.find((p) => p.kind === "replacement")).toMatchObject({ href: null });
   });
 
   it("says a left-behind package's branch, age in its zone's tone, way in and unfixable advisories", () => {

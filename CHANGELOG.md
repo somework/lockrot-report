@@ -38,6 +38,11 @@ tag or the address format, says so under **Breaking** in its entry.
   a check that could not run opens S10, a quiet archived or push-age check opens the repository
   activity. Provenance lists that activity (forge, repository, archived, last push, fetched fresh
   or from the cache) as one compact line under the package metadata.
+- Provenance opens with where the lock entry came from, from `origin`: "from a path repository of
+  the project", "a VCS repository the manifest lists", "a Composer repository" with its registry
+  (`repo.packagist.com`), a kind the page does not know as written (`acme:mirror`), and "installed
+  from this machine" where Composer installed it locally (mautic's `mautic/core-lib`). A report
+  without `origin` draws no such line.
 - Provenance never ends on a dash: a package with no metadata or activity says why (not from a
   Composer repository, not in this document, S10 stopped the check, none recorded), and a document
   without per-package facts shows the forge, repository and last push a fired S3/S4 carries,
@@ -383,12 +388,20 @@ tag or the address format, says so under **Breaking** in its entry.
   Composer repository", "no release date lockrot trusts", which does not claim no dated release
   exists) and an unknown key as written, instead of humanising it ("yanked release"). The page no longer works one
   out of the finding's note, S6 or the lock, so a report without the field names no reason.
-- The Packagist link and Provenance's "not from a Composer repository" read the finding's own
-  `from_composer_repository`, else its lock entry's. A package lockrot did not ask a repository about
-  is no longer linked when it has no details entry (koel's `teamtnt/laravel-scout-tntsearch-driver`),
-  and one no field places is not linked either, instead of being assumed to come from Packagist.
-  Since the flag is also true for Private Packagist, the link's hover says the page takes the
-  repository to be packagist.org.
+- A package links the page lockrot names for it, `origin.package_url`, labelled by the registry it
+  came from (`packagist.org`, `wp-packages.org`, a registry the page does not know as written), in
+  the open package's header and on its name in All packages, instead of a packagist.org page the
+  page built from the name. A package lockrot writes no page for is not linked: Private Packagist,
+  Drupal, a private registry, a name packagist.org keeps no page for, anything not from a Composer
+  repository. A report without `origin` links no registry at all, since nothing there says which
+  registry a package came from.
+- The open package's named replacement links `replacement_url`, the page lockrot names when
+  packagist.org named the successor, instead of a packagist.org page built from the name; a
+  successor Private Packagist named, and every replacement in a report without the field, is the
+  name alone.
+- Provenance's "not from a Composer repository" reads the finding's own `from_composer_repository`,
+  else its lock entry's, so a package lockrot did not ask a repository about says so even with no
+  details entry (koel's `teamtnt/laravel-scout-tntsearch-driver`).
 - A run note's "what this means" links the page lockrot names for that note (`note_details`'
   `docs_url`, `lockrot.dev/notes/#…`) instead of one the page guessed from the note's words; a note
   lockrot names no page for, and every note of a report without `note_details`, has no link. Two

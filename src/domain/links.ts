@@ -21,19 +21,19 @@ export function fromComposerRepository(
   return finding.fromComposerRepository ?? details.get(finding.package)?.lock?.fromComposerRepository ?? null;
 }
 
-/** A Packagist link's hover text: `from_composer_repository` true does not mean packagist.org
- *  (Private Packagist writes the same flag), so the link says it assumes so. */
-export const PACKAGIST_TITLE =
-  "packagist.org: lockrot says a Composer repository was asked about this package, which this page takes to be packagist.org";
+export interface RegistryLink {
+  readonly href: string;
+  readonly label: string;
+  readonly title: string;
+}
 
-/** True is still the page's assumption: Private Packagist writes the same flag. */
-export function packagistUrl(
-  finding: Pick<Finding, "package" | "fromComposerRepository">,
-  details: ReadonlyMap<string, PackageDetails>,
-): string | null {
-  return fromComposerRepository(finding, details) === true
-    ? `https://packagist.org/packages/${finding.package}`
-    : null;
+/** The package's page on the registry it came from: `origin.package_url` as lockrot wrote it,
+ *  never built from the name, the kind or the registry. */
+export function registryLink(finding: Pick<Finding, "origin">): RegistryLink | null {
+  const href = safeHref(finding.origin?.packageUrl ?? null);
+  if (href === null) return null;
+  const label = finding.origin?.registry ?? repoHost(href);
+  return { href, label, title: `this package's page on ${label}` };
 }
 
 /** The NVD page for an advisory that carries a CVE id; a GHSA-only id has nowhere to link. */

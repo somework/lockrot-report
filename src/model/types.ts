@@ -164,8 +164,10 @@ export interface Finding {
   priority: Priority;
   direct: boolean;
   dev: boolean;
-  /** A valid Composer package name lockrot resolved as the successor; links to Packagist. */
+  /** A valid Composer package name lockrot resolved as the successor. */
   replacement: string | null;
+  /** The successor's page, as lockrot wrote it; null when it wrote none or the document predates it. */
+  replacementUrl: string | null;
   signals: readonly Signal[];
   /** Direct requirement → … → this package. Empty when unreachable from any direct requirement. */
   chain: readonly string[];
@@ -182,6 +184,8 @@ export interface Finding {
   advisories: readonly Advisory[];
   /** False: no repository was asked, so no metadata, advisories, activity or libyears. */
   fromComposerRepository: boolean | null;
+  /** Where the lock entry came from; null where the document does not say. */
+  origin: PackageOrigin | null;
   /** Why `libyears` is null, as written; null when measured or when no field says why. */
   libyearsUnmeasured: string | null;
   /** How lockrot reached `priority`; null when the document does not say. */
@@ -191,6 +195,18 @@ export interface Finding {
   noFixExpected: readonly NoFixAdvisory[] | null;
   /** Where this finding stands against `run.fail_on`; null exactly where the report's `gate` is. */
   gate: FindingGate | null;
+}
+
+export interface PackageOrigin {
+  /** As written: `packagist`, `composer`, `path`, `vcs`, `artifact`, `package`, `unknown`, or a kind
+   *  this page does not know (`<vendor>:<name>` included). */
+  kind: string | null;
+  /** A label, never a URL template. Null is "not named", never packagist.org. */
+  registry: string | null;
+  /** Linked as written, never built from the name or the registry. */
+  packageUrl: string | null;
+  /** True: Composer installed it from the machine it ran on. */
+  local: boolean | null;
 }
 
 export interface PriorityBasis {
@@ -265,7 +281,7 @@ export interface ExplainLock {
 
 export interface ExplainMetadata {
   abandoned: boolean;
-  /** Packagist's free text; not necessarily a package name (compare Finding.replacement). */
+  /** The repository's free text; not necessarily a package name (compare Finding.replacement). */
   replacement: string | null;
   releasesListed: number | null;
   hasStableRelease: boolean | null;

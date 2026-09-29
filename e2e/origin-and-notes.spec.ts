@@ -1,7 +1,8 @@
 /**
- * Where a package came from, what a run note points at and whether an advisory's fix was looked for
- * are read from lockrot's own fields (`from_composer_repository`, `note_details`, S9's
- * `releases_read`), never guessed; a report without the field draws nothing in their place.
+ * Where a package came from, where its replacement lives, what a run note points at and whether an
+ * advisory's fix was looked for are read from lockrot's own fields (`origin`, `replacement_url`,
+ * `note_details`, S9's `releases_read`), never guessed; a report without the field draws nothing in
+ * their place.
  */
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
@@ -15,7 +16,7 @@ test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);
 });
 
-test("koel 0.13: a package lockrot asked no repository about is not linked to Packagist", async () => {
+test("koel 0.13: a package links its origin's page, and one with no package_url links nothing", async () => {
   await report.goto(FIXTURES.koel013);
   await report.tab("packages");
   expect(await report.packageLinkHref("algolia/algoliasearch-client-php")).toBe(
@@ -24,10 +25,42 @@ test("koel 0.13: a package lockrot asked no repository about is not linked to Pa
   expect(await report.packageLinkHref("teamtnt/laravel-scout-tntsearch-driver")).toBeNull();
 });
 
-test("koel, an older report: a package no field places is not linked to Packagist", async () => {
+test("koel, an older report: no field places a package, so none is linked", async () => {
   await report.goto(FIXTURES.koel);
   await report.tab("packages");
   expect(await report.packageLinkHref("algolia/algoliasearch-client-php")).toBeNull();
+});
+
+test("mini-0.13-edges: another registry's page is linked and named after that registry", async ({ page }) => {
+  await report.goto(FIXTURES.miniEdges013);
+  await report.tab("packages");
+  expect(await report.packageLinkHref("wp-plugin/acme-forms")).toBe(
+    "https://wp-packages.org/packages/wp-plugin/acme-forms",
+  );
+  expect(await report.packageLinkHref("acme/private-sdk")).toBeNull();
+  expect(await report.packageLinkHref("acme/legacy_")).toBeNull();
+
+  await report.openPackage("wp-plugin/acme-forms");
+  const detail = page.getByRole("complementary", { name: "wp-plugin/acme-forms" });
+  await expect(detail.locator(".detail-links").getByRole("link")).toHaveText(["wp-packages.org"]);
+  await detail.getByText("Provenance", { exact: true }).click();
+  await expect(detail.locator(".detail-prov-origin")).toHaveText(
+    /^Origin\s*from\s*a Composer repository\s*registry\s*wp-packages\.org$/,
+  );
+});
+
+test("mini-0.13-edges: a replacement is linked only where replacement_url says", async ({ page }) => {
+  await report.gotoWithHash(FIXTURES.miniEdges013, "pkg=acme%2Fretired-api");
+  const linked = page.getByRole("complementary", { name: "acme/retired-api" });
+  await expect(linked.locator(".detail-answer").getByRole("link", { name: "acme/new-api" })).toHaveAttribute(
+    "href",
+    "https://packagist.org/packages/acme/new-api",
+  );
+
+  await report.gotoWithHash(FIXTURES.miniEdges013, "pkg=acme%2Fmoved-out");
+  const unlinked = page.getByRole("complementary", { name: "acme/moved-out" });
+  await expect(unlinked.locator(".detail-answer")).toContainText("Its named replacement is acme/new-away.");
+  await expect(unlinked.locator(".detail-answer").getByRole("link")).toHaveCount(0);
 });
 
 test("mini-0.13-edges: each run note links the page lockrot names for it, and only that", async ({

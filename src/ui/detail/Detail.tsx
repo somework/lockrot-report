@@ -1,8 +1,14 @@
 import type { ComponentChildren } from "preact";
-import type { ExplainActivity, Finding, PackageDetails } from "../../model/types";
+import type { ExplainActivity, Finding, PackageDetails, PackageOrigin } from "../../model/types";
 import { isContextOnly } from "../../domain/age";
 import { lockTimeLabel, snapshotOf } from "../../domain/pinned";
-import { provenance, quietUnread, type ActivitySource, type MetadataSource } from "../../domain/provenance";
+import {
+  originFrom,
+  provenance,
+  quietUnread,
+  type ActivitySource,
+  type MetadataSource,
+} from "../../domain/provenance";
 import { agePhrase, day } from "../../domain/format";
 import { safeHref } from "../../domain/links";
 import { OutLink } from "../common/common";
@@ -117,6 +123,7 @@ function FactsLine({
   from = null,
   note = null,
   id,
+  className,
 }: {
   source: string;
   rows: readonly KeyValueRow[];
@@ -125,11 +132,16 @@ function FactsLine({
   from?: string | null;
   note?: string | null;
   id?: string;
+  className?: string;
 }) {
   return (
     // tabIndex -1: a strip cell that points here moves focus onto the line itself (SignalList's
     // `reveal`), so a screen reader lands on the facts, not on the section's summary.
-    <div className="detail-prov-line" id={id} tabIndex={id === undefined ? undefined : -1}>
+    <div
+      className={className === undefined ? "detail-prov-line" : `detail-prov-line ${className}`}
+      id={id}
+      tabIndex={id === undefined ? undefined : -1}
+    >
       <span className="detail-prov-source">
         {source}
         {where !== null && <span className="detail-prov-where"> · {where}</span>}
@@ -204,6 +216,22 @@ function fromWords(ids: readonly string[]): string {
   return `from ${ids.map((id) => `${id}’s`).join(" and ")} data`;
 }
 
+function originRows(origin: PackageOrigin): readonly KeyValueRow[] {
+  const from = originFrom(origin.kind);
+  return presentRows([
+    { label: "from", value: from === null ? null : "words" in from ? from.words : <code>{from.code}</code> },
+    { label: "registry", value: origin.registry },
+    { label: "installed", value: origin.local === true ? "from this machine" : null },
+  ]);
+}
+
+/** Where the lock entry came from; nothing where the report does not say. */
+function OriginLine({ finding }: { finding: Finding }) {
+  const rows = finding.origin === null ? [] : originRows(finding.origin);
+  if (rows.length === 0) return null;
+  return <FactsLine className="detail-prov-origin" source="Origin" rows={rows} />;
+}
+
 /** Where the panel's facts came from (PD-RUN-5); a source the file gives nothing for says why,
  *  never a bare dash. */
 function Provenance({ finding, now }: { finding: Finding; now: Date }) {
@@ -218,6 +246,7 @@ function Provenance({ finding, now }: { finding: Finding; now: Date }) {
   if (metadata.kind === "missing" && activity.kind === "missing" && metadata.reason === activity.reason) {
     return (
       <div className="detail-prov">
+        <OriginLine finding={finding} />
         <FactsLine
           id={ACTIVITY_FACTS_ID}
           source="Package metadata · repository activity"
@@ -230,6 +259,7 @@ function Provenance({ finding, now }: { finding: Finding; now: Date }) {
   }
   return (
     <div className="detail-prov">
+      <OriginLine finding={finding} />
       <FactsLine
         source="Package metadata"
         rows={metadataRows(metadata)}

@@ -981,6 +981,26 @@ describe("PackagesView", () => {
     expect(row.hasAttribute("aria-current")).toBe(false);
   });
 
+  it("links a package's name to origin.package_url as written, and only where lockrot wrote one", () => {
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "packages" }), <PackagesView />);
+    const nameLink = (pkg: string) => screen.getByRole("row", { name: pkg }).querySelector(".pk-name > a");
+
+    expect(nameLink("wp-plugin/acme-forms")?.getAttribute("href")).toBe(
+      "https://wp-packages.org/packages/wp-plugin/acme-forms",
+    );
+    expect(nameLink("wp-plugin/acme-forms")?.getAttribute("title")).toBe(
+      "this package's page on wp-packages.org",
+    );
+    for (const pkg of ["acme/private-sdk", "acme/legacy_", "acme/internal-lib", "acme/path-lib"]) {
+      expect(nameLink(pkg)).toBeNull();
+    }
+  });
+
+  it("links no package name on a report that predates origin", () => {
+    renderIn(loadModel("mini.json"), stateWith({ view: "packages" }), <PackagesView />);
+    expect(within(screen.getByRole("table", { name: "All packages" })).queryAllByRole("link")).toEqual([]);
+  });
+
   it("marks the open package's row with aria-current, as every other tab's rows do (PD-ROWS-12)", () => {
     const model = loadModel("mini.json");
     renderIn(model, stateWith({ view: "packages", pkg: "vendor/snapshot" }), <PackagesView />);

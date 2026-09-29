@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { PACKAGIST_TITLE, cveUrl, packagistUrl, repoHost, safeHref } from "../../../src/domain/links";
-import type { PackageDetails } from "../../../src/model/types";
+import { cveUrl, fromComposerRepository, registryLink, repoHost, safeHref } from "../../../src/domain/links";
+import type { PackageDetails, PackageOrigin } from "../../../src/model/types";
 
 // safeHref is where a mistake becomes a vulnerability rather than a rendering bug.
 
@@ -59,7 +59,7 @@ describe("safeHref", () => {
   });
 });
 
-describe("packagistUrl", () => {
+describe("fromComposerRepository", () => {
   const lockSaying = (fromComposerRepository: boolean | null): Map<string, PackageDetails> =>
     new Map([
       [
@@ -84,30 +84,71 @@ describe("packagistUrl", () => {
     package: "vendor/pkg",
     fromComposerRepository,
   });
-  const URL = "https://packagist.org/packages/vendor/pkg";
 
-  test("links a finding that came from a Composer repository, whatever its lock entry says", () => {
-    expect(packagistUrl(finding(true), new Map())).toBe(URL);
-    expect(packagistUrl(finding(true), lockSaying(false))).toBe(URL);
-  });
-
-  test("does not link a finding that did not, whatever its lock entry says", () => {
-    expect(packagistUrl(finding(false), new Map())).toBeNull();
-    expect(packagistUrl(finding(false), lockSaying(true))).toBeNull();
+  test("the finding's own field wins over its lock entry's", () => {
+    expect(fromComposerRepository(finding(true), lockSaying(false))).toBe(true);
+    expect(fromComposerRepository(finding(false), lockSaying(true))).toBe(false);
   });
 
   test("falls back to the lock entry's from_composer_repository, the same fact, where the finding has none", () => {
-    expect(packagistUrl(finding(null), lockSaying(true))).toBe(URL);
-    expect(packagistUrl(finding(null), lockSaying(false))).toBeNull();
-    expect(packagistUrl(finding(null), lockSaying(null))).toBeNull();
+    expect(fromComposerRepository(finding(null), lockSaying(true))).toBe(true);
+    expect(fromComposerRepository(finding(null), lockSaying(false))).toBe(false);
+    expect(fromComposerRepository(finding(null), lockSaying(null))).toBeNull();
   });
 
   test("assumes nothing where no field says: no details entry, or one without a lock", () => {
-    expect(packagistUrl(finding(null), new Map())).toBeNull();
+    expect(fromComposerRepository(finding(null), new Map())).toBeNull();
     const noLock = new Map<string, PackageDetails>([
       ["vendor/pkg", { metadata: null, activity: null, repositoryLink: null, lock: null }],
     ]);
-    expect(packagistUrl(finding(null), noLock)).toBeNull();
+    expect(fromComposerRepository(finding(null), noLock)).toBeNull();
+  });
+});
+
+describe("registryLink", () => {
+  const origin = (overrides: Partial<PackageOrigin>): { origin: PackageOrigin } => ({
+    origin: { kind: "composer", registry: null, packageUrl: null, local: false, ...overrides },
+  });
+
+  test("links package_url as written, labelled by its registry", () => {
+    expect(
+      registryLink(
+        origin({
+          kind: "composer",
+          registry: "wp-packages.org",
+          packageUrl: "https://wp-packages.org/packages/wp-plugin/acme-forms",
+        }),
+      ),
+    ).toEqual({
+      href: "https://wp-packages.org/packages/wp-plugin/acme-forms",
+      label: "wp-packages.org",
+      title: "this package's page on wp-packages.org",
+    });
+  });
+
+  test("never builds a link: a packagist entry without package_url has none", () => {
+    expect(
+      registryLink(origin({ kind: "packagist", registry: "packagist.org", packageUrl: null })),
+    ).toBeNull();
+  });
+
+  test("a registry the page does not know is a label like any other", () => {
+    expect(
+      registryLink(
+        origin({ registry: "registry.acme.example", packageUrl: "https://registry.acme.example/p/acme" }),
+      )?.label,
+    ).toBe("registry.acme.example");
+  });
+
+  test("a link with no registry named is labelled by its own host", () => {
+    expect(registryLink(origin({ packageUrl: "https://www.example.test/p/acme" }))?.label).toBe(
+      "example.test",
+    );
+  });
+
+  test("no link where the document does not say where the package came from, or the URL is unsafe", () => {
+    expect(registryLink({ origin: null })).toBeNull();
+    expect(registryLink(origin({ registry: "packagist.org", packageUrl: "javascript:alert(1)" }))).toBeNull();
   });
 });
 
@@ -143,13 +184,5 @@ describe("repoHost", () => {
     expect(repoHost(null)).toBe("repository");
     expect(repoHost("not-a-url")).toBe("repository");
     expect(repoHost("ftp://example.com/x")).toBe("repository");
-  });
-});
-
-describe("PACKAGIST_TITLE", () => {
-  test("says the link is the page's assumption, not lockrot's", () => {
-    expect(PACKAGIST_TITLE).toBe(
-      "packagist.org: lockrot says a Composer repository was asked about this package, which this page takes to be packagist.org",
-    );
   });
 });

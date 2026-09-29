@@ -218,6 +218,75 @@ describe("finding.gate, fromComposerRepository, libyearsUnmeasured", () => {
   });
 });
 
+describe("finding.origin and replacementUrl", () => {
+  test("mini-0.13-edges: every kind as written, an unknown one and a registry the page does not know included", () => {
+    expect(finding(MINI, "wp-plugin/acme-forms").origin).toEqual({
+      kind: "composer",
+      registry: "wp-packages.org",
+      packageUrl: "https://wp-packages.org/packages/wp-plugin/acme-forms",
+      local: null,
+    });
+    expect(finding(MINI, "acme/legacy_").origin).toMatchObject({
+      kind: "packagist",
+      registry: "packagist.org",
+      packageUrl: null,
+    });
+    expect(finding(MINI, "acme/mirrored").origin).toMatchObject({ kind: "acme:mirror", registry: null });
+    expect(finding(MINI, "acme/next-registry").origin?.registry).toBe("registry.acme.example");
+  });
+
+  test("mautic 0.13: the path entry is local, a packagist one is not", () => {
+    const mautic = load("mautic_mautic-0.13.json");
+
+    expect(finding(mautic, "mautic/core-lib").origin).toEqual({
+      kind: "path",
+      registry: null,
+      packageUrl: null,
+      local: true,
+    });
+    expect(finding(mautic, "rector/type-perfect").origin?.local).toBe(false);
+  });
+
+  test("replacement_url: a link, null beside a named replacement, and null with none", () => {
+    expect(finding(MINI, "acme/retired-api")).toMatchObject({
+      replacement: "acme/new-api",
+      replacementUrl: "https://packagist.org/packages/acme/new-api",
+    });
+    expect(finding(MINI, "acme/private-retired")).toMatchObject({
+      replacement: "acme/private-next",
+      replacementUrl: null,
+    });
+    expect(finding(MINI, "acme/retired-words")).toMatchObject({ replacement: null, replacementUrl: null });
+  });
+
+  test.each([
+    ["absent", {}],
+    ["null", { origin: null }],
+    ["a list", { origin: [] }],
+    ["a string", { origin: "packagist" }],
+  ])("origin %s is no origin", (_label, extra) => {
+    expect(withFinding(extra).origin).toBeNull();
+  });
+
+  test("a wrong type is no answer, never a default", () => {
+    expect(
+      withFinding({
+        origin: { kind: 1, registry: false, package_url: {}, local: "yes" },
+        replacement_url: 5,
+      }),
+    ).toMatchObject({
+      origin: { kind: null, registry: null, packageUrl: null, local: null },
+      replacementUrl: null,
+    });
+  });
+
+  test("an older document's findings answer neither", () => {
+    for (const f of load("mautic_mautic.json").report.findings) {
+      expect([f.origin, f.replacementUrl]).toEqual([null, null]);
+    }
+  });
+});
+
 describe("run.mode, run.strictNetwork, run.failOnKind and the report's gate", () => {
   test.each([
     [

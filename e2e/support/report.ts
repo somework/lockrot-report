@@ -145,9 +145,9 @@ export interface ReportPage {
   /** Types text into whatever holds focus, one key at a time, as a reader would. */
   typeKeys(text: string): Promise<void>;
   /** Moves keyboard focus onto the first outbound link inside a package's row (e.g. a signal-id
-   *  link or the Packagist link) without clicking it, so a spec can then press Enter on it (M5). */
+   *  link or the registry link) without clicking it, so a spec can then press Enter on it (M5). */
   focusLinkInRow(name: string): Promise<void>;
-  /** Where the link named after the package in its own row points (the Packagist link on All
+  /** Where the link named after the package in its own row points (its registry page on All
    *  packages), or null when the row does not link its name. */
   packageLinkHref(name: string): Promise<string | null>;
   /** The words a screen reader gets from one package's cell in an All packages column (a sort key,

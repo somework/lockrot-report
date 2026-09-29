@@ -4,6 +4,7 @@
 import type { ExplainActivity, ExplainMetadata, Finding, Model } from "../model/types";
 import { checkStrip } from "./checks";
 import { fromComposerRepository } from "./links";
+import { vocabTable } from "./vocab";
 
 /** The reason a package's facts are absent because the file holds none for it. */
 export const NO_FACTS_IN_FILE = "not in this document — it explains no package";
@@ -133,4 +134,23 @@ export function quietUnread(model: Model, finding: Finding): QuietUnread | null 
     .map((cell) => cell.id);
   if (ids.length === 0) return null;
   return { ids, because: UNREAD_BECAUSE[activity.reason] ?? "none is recorded for this package" };
+}
+
+const ORIGIN_KIND_WORDS: Readonly<Record<string, string>> = vocabTable({
+  packagist: "a Composer repository",
+  composer: "a Composer repository",
+  path: "a path repository of the project",
+  vcs: "a VCS repository the manifest lists",
+  artifact: "an archive in an artifact repository",
+  package: "an inline package definition in the manifest",
+  unknown: "a repository lockrot could not identify",
+});
+
+export type OriginFrom = { readonly words: string } | { readonly code: string };
+
+/** `origin.kind` in words; a kind this page does not know as written. */
+export function originFrom(kind: string | null): OriginFrom | null {
+  if (kind === null || kind === "") return null;
+  const words = ORIGIN_KIND_WORDS[kind];
+  return words === undefined ? { code: kind } : { words };
 }

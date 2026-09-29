@@ -4,6 +4,7 @@ import {
   NO_FACTS_FOR_PACKAGE,
   NO_FACTS_IN_FILE,
   NOT_FROM_COMPOSER,
+  originFrom,
   provenance,
   quietUnread,
 } from "../../../src/domain/provenance";
@@ -222,5 +223,30 @@ describe("quietUnread", () => {
     const finding = makeFinding({ signals: [s10] });
     const model = withDetails(makeModel([finding]), { [finding.package]: {} });
     expect(quietUnread(model, finding)?.ids).toEqual(["S3"]);
+  });
+});
+
+describe("originFrom — where the lock entry came from, in words", () => {
+  it.each([
+    ["packagist", "a Composer repository"],
+    ["composer", "a Composer repository"],
+    ["path", "a path repository of the project"],
+    ["vcs", "a VCS repository the manifest lists"],
+    ["artifact", "an archive in an artifact repository"],
+    ["package", "an inline package definition in the manifest"],
+    ["unknown", "a repository lockrot could not identify"],
+  ])("%s", (kind, words) => {
+    expect(originFrom(kind)).toEqual({ words });
+  });
+
+  it("keeps a kind the page does not know as written, a vendor one included", () => {
+    expect(originFrom("acme:mirror")).toEqual({ code: "acme:mirror" });
+    expect(originFrom("mirror")).toEqual({ code: "mirror" });
+    expect(originFrom("constructor")).toEqual({ code: "constructor" });
+  });
+
+  it("says nothing for a kind it cannot read", () => {
+    expect(originFrom(null)).toBeNull();
+    expect(originFrom("")).toBeNull();
   });
 });

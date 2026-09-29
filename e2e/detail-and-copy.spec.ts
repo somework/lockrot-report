@@ -30,7 +30,7 @@ test.describe("detail panel — basic content", () => {
 
   test("a validated replacement is named in the detail", async () => {
     // fixtures/bundles/mautic_mautic.json: rector/type-perfect (abandoned, direct, high) carries a
-    // Packagist-validated finding.replacement, unlike Packagist's own free-text field.
+    // finding.replacement lockrot resolved, unlike the repository's own free-text field.
     await report.goto(FIXTURES.mautic);
     await report.tab("packages"); // 265 findings; search narrows the row search has to scroll to
     await report.search("rector/type-perfect");
