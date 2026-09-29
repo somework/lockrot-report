@@ -2350,8 +2350,8 @@ describe("the run's gate on Run data (PD-GATE-5)", () => {
 
   it("a run that wrote a baseline: no pass, its fail-on not applied", () => {
     renderIn(loadModel("wallabag_generate-baseline-0.13.json"), stateWith({ view: "run" }), <RunView />);
-    expect(field("mode")).toBe("generate_baseline · a baseline run, which applies no fail-on");
-    expect(field("result")).toBe("does not fail · applied no --fail-on=high");
+    expect(field("mode")).toBe("generate_baseline · a run that writes a baseline");
+    expect(field("result")).toBe("does not fail · --fail-on=high not applied");
   });
 
   it("passes only when lockrot says it applied the fail-on", () => {
@@ -2403,10 +2403,10 @@ describe("the run's gate on Run data (PD-GATE-5)", () => {
       "It failed on --fail-on=copyleft and licence_policy.",
     );
     expect(text("wallabag_generate-baseline-0.13.json")).toContain(
-      "It ran with --fail-on=high. It wrote a baseline, so it applied no --fail-on=high.",
+      "It ran with --fail-on=high. It wrote a baseline, so --fail-on=high was not applied.",
     );
     expect(text("mini-0.13-gate-generate.json")).toContain(
-      "It wrote a baseline, so it applied no --fail-on=high, and failed on --strict-network.",
+      "It wrote a baseline, so --fail-on=high was not applied, and failed on --strict-network.",
     );
     expect(text("koel_lock-only-0.13.json")).toContain("It passed.");
     expect(text("koel_koel-0.13.json")).not.toMatch(/passed|failed/);

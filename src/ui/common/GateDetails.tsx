@@ -4,6 +4,7 @@ import { failOnThreshold } from "../../domain/run";
 import { baselineExemption, exemptWords, gateFlag, networkNotes, type RunGate } from "../../domain/gate";
 import type { Model } from "../../model/types";
 import { useReport } from "../context";
+import { Flag } from "./GateFlag";
 
 const KNOWN_MODES: readonly string[] = ["check", "generate_baseline"];
 
@@ -11,10 +12,6 @@ interface Row {
   readonly key: string;
   readonly term: ComponentChildren;
   readonly text: ComponentChildren;
-}
-
-function Flag({ text }: { text: string }) {
-  return <span className="mono gate-flag">{text}</span>;
 }
 
 /** "Fails on priority high or higher.", or the kind as lockrot wrote it. */
@@ -43,7 +40,7 @@ function split(gate: RunGate): ComponentChildren {
     return (
       <>
         {" "}
-        {unflagged === 1 ? "It is" : "None of them is"} flagged ({verdicts}).
+        {unflagged === 1 ? "It is not" : "None of them is"} flagged ({verdicts}).
       </>
     );
   }
@@ -61,12 +58,11 @@ function failOnText(gate: RunGate, model: Model): ComponentChildren {
   const { meets, failing } = gate;
   const lead = threshold(failOn, model.report.run.failOnKind);
   if (gate.failOnApplied === false) {
-    const who =
-      model.report.run.mode === "generate_baseline" ? "This run wrote a baseline, so it" : "This run";
+    const why = model.report.run.mode === "generate_baseline" ? "This run wrote a baseline, so it" : "It";
     return (
       <>
         {lead}
-        {who} applied it to no package
+        {why} was not applied
         {meets > 0 && <>; {plural(meets, "package meets", "packages meet")} it</>}.
       </>
     );

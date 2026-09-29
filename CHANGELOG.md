@@ -11,14 +11,15 @@ tag or the address format, says so under **Breaking** in its entry.
 ### Added
 
 - Whether the run failed, as lockrot decided it. The header says "this run fails · --fail-on=high"
-  (or passes, or "baseline run · no fail-on applied"), the causes as the CLI's flags. The summary's
+  (or passes, or "baseline run · --fail-on not applied"), the causes as the CLI's flags. The summary's
   answer says how many packages fail, total first — "173 fail this run: 2 flagged, 171 unchecked" —
   with a baseline closing the Against sentence instead; a press on the total opens what each cause
   fails on and what exempts the rest, and prints open. The flagged count filters Findings, the rail
   gains "Fails this run" (`#gate=fails`), and the unflagged count opens All packages on exactly
   those packages.
 - Each Findings and All packages row says "fails" or "exempt: <as lockrot wrote it>" at the end of
-  a line with room, so no row grows; a screen reader hears it with the row. The open package says in
+  a line with room, so no row grows, in one place per layout so the words form a column down the
+  list; a screen reader hears it with the row. The open package says in
   one line under its pills whether it fails this run and which fail-on it meets.
 - Run data gains strict network, mode and, where lockrot decided the gate, result rows; its sentence
   says whether the run failed and on what.

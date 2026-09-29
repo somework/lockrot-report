@@ -63,8 +63,14 @@ test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
           expect(row.shown || row.at === "none", `${row.pkg} at ${width}px`).toBe(true);
         }
         // The word, not a bare tick: almost every row finds room for it.
-        const worded = rows.filter((row) => row.shown).length;
-        expect(worded / rows.length, `${width}px`).toBeGreaterThan(0.9);
+        const worded = rows.filter((row) => row.shown);
+        expect(worded.length / rows.length, `${width}px`).toBeGreaterThan(0.9);
+        // One place per layout, so the words stand in one column down the list.
+        const list = await page.locator(".fledger").evaluate((node) => node.clientWidth);
+        const slot = list < 480 ? "pkg" : list < 990 ? "age" : "reach";
+        const inSlot = worded.filter((row) => row.at === slot).length;
+        if (list >= 480) expect(inSlot, `${width}px: every word in the ${slot} place`).toBe(worded.length);
+        else expect(inSlot / worded.length, `${width}px: words in the ${slot} place`).toBeGreaterThan(0.8);
       }
     });
   }
@@ -143,13 +149,18 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
   test("the unchecked count opens All packages on exactly those, each marked, focus kept", async ({
     page,
   }) => {
-    await report.gotoWithHash(FIXTURES.koelNoTokenUnchecked013, "q=a");
+    await report.gotoWithHash(FIXTURES.koelNoTokenUnchecked013, "q=verdict%3Aok");
     const link = page.getByRole("button", { name: /^171 unchecked/ });
     await link.click();
     await expect(page.getByRole("tab", { name: /All packages/ })).toHaveAttribute("aria-selected", "true");
     expect(await report.hash()).toContain("gate=fails");
-    expect(await report.hash()).toContain("q=a");
+    expect(await report.hash()).toContain("q=verdict");
     await expect(link).toBeFocused();
+    // A search that would hide some of the 171 is dropped: the list shows the count the words said.
+    await report.gotoWithHash(FIXTURES.koelNoTokenUnchecked013, "q=spot");
+    await page.getByRole("button", { name: /^171 unchecked/ }).click();
+    expect(await report.hash()).not.toContain("q=");
+    await expect(page.locator(".count-line")).toContainText("171 of 201 packages");
     await report.gotoWithHash(FIXTURES.koelNoTokenUnchecked013, "");
     await page.getByRole("button", { name: /^171 unchecked/ }).click();
     await expect(page.locator(".count-line")).toContainText("171 of 201 packages");
@@ -179,6 +190,18 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
     const printed = page.locator(".print-doc .gate-why");
     await expect(printed).toBeVisible();
     await expect(printed).toContainText("Fails on any package whose check did not run.");
+  });
+
+  test("one failing package that is not flagged: level 1 says it is not flagged", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await report.goto(FIXTURES.miniGateUnknown013);
+    await expect(page.locator(".gate-fact")).toHaveText(
+      "this run fails · --fail-on=copyleft, licence_policy",
+    );
+    await page.getByRole("button", { name: "1 fails this run" }).click();
+    const panel = page.locator(".gate-why").first();
+    await expect(panel).toContainText("1 package meets it, and it fails. It is not flagged (ok).");
+    await expect(panel).not.toContainText("It is flagged");
   });
 
   test("the pressed filter keeps a carrier in forced colours, and the marker its shape", async ({ page }) => {

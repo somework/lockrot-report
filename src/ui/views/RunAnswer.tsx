@@ -138,8 +138,8 @@ function outcome(model: Model): ComponentChildren {
   const flag = <code className="mono">{gateFlag("fail_on", run.failOn).text}</code>;
   const wrote = (
     <>
-      {run.mode === "generate_baseline" ? "It wrote a baseline, so it applied no " : "It applied no "}
-      {flag}
+      {run.mode === "generate_baseline" ? "It wrote a baseline, so " : "Its "}
+      {flag} was not applied
     </>
   );
   if (!gate.fails) {

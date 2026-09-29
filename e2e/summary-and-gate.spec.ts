@@ -136,7 +136,7 @@ test.describe("PD-SUMMARY-2: the header's gate fact", () => {
 
   test("a run that applies no fail-on wrote a baseline; it never says passes", async ({ page }) => {
     await report.goto(FIXTURES.wallabagGenerateBaseline013);
-    await expect(page.locator(".gate-fact")).toHaveText("baseline run · no fail-on applied");
+    await expect(page.locator(".gate-fact")).toHaveText("baseline run · --fail-on not applied");
     await expect(page.locator(".lead-gate")).toHaveText("39 meet --fail-on=high, not applied.");
     await expect(page.locator(".topbar")).not.toContainText("passes");
   });

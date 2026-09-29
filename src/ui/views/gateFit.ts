@@ -15,15 +15,15 @@ const TWO_LINES_FROM = 480;
 /** ledger-rows.css puts a row on one line from this list width. */
 const ONE_LINE_FROM = 990;
 
-/** Findings: the right end of the top line first, so the words stand in one column down the list;
- *  in two lines the age column, which spans both, has room above its bar as a last resort. */
+/** Findings: one place per layout, so the words stand in one column down the list (the top line's
+ *  end, the age column's top, the Reached column); the others only for a row with no room there. */
 export const FINDINGS_FIT: GateFit = {
   rows: "li.frow.has-gate",
   order: (width) =>
     width < TWO_LINES_FROM
-      ? ["pkg", "why", "reach"]
+      ? ["pkg", "reach", "why"]
       : width < ONE_LINE_FROM
-        ? ["reach", "why", "pkg", "age"]
+        ? ["age", "reach", "why", "pkg"]
         : ["reach", "why", "pkg"],
 };
 
@@ -38,23 +38,24 @@ export const PACKAGES_FIT: GateFit = {
   table: true,
 };
 
+function inside(inner: DOMRect, outer: DOMRect): boolean {
+  return (
+    inner.left >= outer.left - 0.5 && inner.right <= outer.right + 0.5 && inner.bottom <= outer.bottom + 0.5
+  );
+}
+
 function fits(row: HTMLElement, height: number, spot: string): boolean {
   const box = row.getBoundingClientRect();
   if (box.height > height + 0.5) return false;
   const mark = row.querySelector(`.gate-at-${spot}`)?.getBoundingClientRect();
-  return (
-    mark !== undefined &&
-    mark.width > 0 &&
-    mark.left >= box.left - 0.5 &&
-    mark.right <= box.right + 0.5 &&
-    mark.bottom <= box.bottom + 0.5
-  );
+  if (mark === undefined || mark.width === 0 || !inside(mark, box)) return false;
+  // Over the age column the words must not run into the reason beside it.
+  const age = spot === "age" ? row.querySelector(".fc-age")?.getBoundingClientRect() : undefined;
+  return age === undefined || inside(mark, age);
 }
 
-/**
- * Shows each row's gate words in the first place where they add no height and stay inside the row
- * (PD-GATE-3). Writes and reads are batched: one layout per place tried, not one per row.
- */
+/** Shows each row's gate words in the first place where they add no height and stay inside the row
+ *  (PD-GATE-3): each place with its separator, then without, before the next. */
 export function fitGateMarks(list: HTMLElement, fit: GateFit): void {
   const rows = [...list.querySelectorAll<HTMLElement>(fit.rows)];
   if (rows.length === 0) return;
@@ -64,16 +65,11 @@ export function fitGateMarks(list: HTMLElement, fit: GateFit): void {
   }
   const heights = rows.map((row) => row.getBoundingClientRect().height);
   const whole = list.getBoundingClientRect().height;
-  const order = fit.order(list.clientWidth);
-  let pending = place(
-    rows,
-    heights,
-    order,
-    rows.map((_, i) => i),
-  );
-  // Without its separator the word is narrower; only a row with room nowhere else goes without it.
-  for (const i of pending) rows[i]?.setAttribute("data-gate-tight", "");
-  pending = place(rows, heights, order, pending);
+  let pending: readonly number[] = rows.map((_, i) => i);
+  for (const spot of fit.order(list.clientWidth)) {
+    pending = place(rows, heights, spot, false, pending);
+    pending = place(rows, heights, spot, true, pending);
+  }
   for (const i of pending) {
     const row = rows[i];
     if (row === undefined) continue;
@@ -99,25 +95,25 @@ function unwiden(list: HTMLElement, rows: readonly HTMLElement[], whole: number)
   }
 }
 
-/** Tries each spot in turn for the rows still pending; returns the ones that found none. */
+/** Tries one place for the rows still pending, all written before any is measured; returns the
+ *  ones it did not fit. */
 function place(
   rows: readonly HTMLElement[],
   heights: readonly number[],
-  order: readonly string[],
+  spot: string,
+  tight: boolean,
   pending: readonly number[],
 ): readonly number[] {
-  let left = pending;
-  for (const spot of order) {
-    for (const i of left) {
-      const row = rows[i];
-      if (row !== undefined) row.dataset["gateAt"] = spot;
-    }
-    left = left.filter((i) => {
-      const row = rows[i];
-      return row === undefined || !fits(row, heights[i] ?? 0, spot);
-    });
+  for (const i of pending) {
+    const row = rows[i];
+    if (row === undefined) continue;
+    row.dataset["gateAt"] = spot;
+    row.toggleAttribute("data-gate-tight", tight);
   }
-  return left;
+  return pending.filter((i) => {
+    const row = rows[i];
+    return row === undefined || !fits(row, heights[i] ?? 0, spot);
+  });
 }
 
 /** Refits after every render of the list and whenever its width changes. */

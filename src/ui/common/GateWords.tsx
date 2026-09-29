@@ -9,18 +9,16 @@ import {
   type GateClause,
   type RunGate,
 } from "../../domain/gate";
+import { applyFilters } from "../../domain/filters";
 import { filterTitle } from "./common";
 import { useReport } from "../context";
+import { Flag } from "./GateFlag";
 import { DisclosureButton, DisclosurePanel, useDisclosure } from "./Disclosure";
 import { GateDetails } from "./GateDetails";
 import "../views/baseline.css";
 import "./gate.css";
 
 const WHY_KEY = "gate-why";
-
-export function Flag({ text }: { text: string }) {
-  return <span className="mono gate-flag">{text}</span>;
-}
 
 function Sep() {
   return <span className="gate-sep"> · </span>;
@@ -30,7 +28,7 @@ function Sep() {
 export function GateHeadlineText({ gate }: { gate: RunGate }) {
   const { model } = useReport();
   const words = gateHeadline(gate, model.report.run.mode);
-  const { who, verb } = words;
+  const { who, verb, flags, unapplied } = words;
   return (
     <span className="gate-fact">
       {who}
@@ -40,18 +38,17 @@ export function GateHeadlineText({ gate }: { gate: RunGate }) {
           <b className={verb === "fails" ? "gate-word is-fails" : "gate-word"}>{verb}</b>
         </>
       )}
-      {words.flags.length > 0 && <Sep />}
-      {words.flags.map((flag, i) => (
+      {(flags.length > 0 || unapplied !== null) && <Sep />}
+      {flags.map((flag, i) => (
         <span key={flag.text}>
-          {i > 0 && " "}
+          {i > 0 && ", "}
           {flag.known ? <Flag text={flag.text} /> : <code className="mono gate-flag">{flag.text}</code>}
         </span>
       ))}
-      {words.aside !== null && (
-        <>
-          <Sep />
-          <span className="gate-quiet">{words.aside}</span>
-        </>
+      {unapplied !== null && (
+        <span className="gate-quiet">
+          <Flag text={unapplied} /> not applied
+        </span>
       )}
     </span>
   );
@@ -79,9 +76,10 @@ function FlaggedToggle({ children }: { children: ComponentChildren }) {
   );
 }
 
-/** Goes to All packages, listing exactly the failing packages Findings does not. */
-function UnflaggedLink({ children }: { children: ComponentChildren }) {
-  const { model, dispatch } = useReport();
+/** Goes to All packages, listing exactly the failing packages Findings does not: the search stays
+ *  only when it hides none of them, so the list shows the count the words said. */
+function UnflaggedLink({ count, children }: { count: number; children: ComponentChildren }) {
+  const { model, state, dispatch } = useReport();
   const filters = unflaggedFilters(model);
   if (filters === null) return <>{children}</>;
   return (
@@ -89,7 +87,8 @@ function UnflaggedLink({ children }: { children: ComponentChildren }) {
       type="button"
       className="bl-toggle gate-go"
       onClick={() => {
-        dispatch({ type: "focus", view: "packages", keepQuery: true, filters });
+        const kept = applyFilters(model, { ...state, filters }, "packages").length === count;
+        dispatch({ type: "focus", view: "packages", keepQuery: kept, filters });
       }}
     >
       {children}
@@ -114,7 +113,7 @@ function FailingSplit({ clause }: { clause: Extract<GateClause, { kind: "failing
     const words = total === 1 ? unflaggedAs : unchecked ? "all unchecked" : "none flagged";
     return (
       <>
-        , <UnflaggedLink>{words}</UnflaggedLink>
+        , <UnflaggedLink count={unflagged}>{words}</UnflaggedLink>
       </>
     );
   }
@@ -125,17 +124,15 @@ function FailingSplit({ clause }: { clause: Extract<GateClause, { kind: "failing
         <b>{flagged}</b> flagged
       </FlaggedToggle>
       ,{" "}
-      <UnflaggedLink>
+      <UnflaggedLink count={unflagged}>
         <b>{unflagged}</b> {unflaggedAs}
       </UnflaggedLink>
     </>
   );
 }
 
-/**
- * The summary's answer, in the Against sentence or on a line of its own. Its subject opens level 1
- * (`lead` wraps it); the counts after it list what they count.
- */
+/** The summary's answer, in the Against sentence or on a line of its own: its subject opens level 1
+ *  (`lead` wraps it), the counts after it list what they count. */
 export function GateClauseText({
   clause,
   opening,

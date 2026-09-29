@@ -103,28 +103,26 @@ export interface GateHeadline {
   readonly verb: string | null;
   /** The causes that failed the run, or the fail-on a run that did not fail was given. */
   readonly flags: readonly GateFlag[];
-  /** Said after the flags, quieter: a fail-on the run did not apply. */
-  readonly aside: string | null;
+  /** The flag the run did not apply; its value is the summary's to say. */
+  readonly unapplied: string | null;
 }
 
-/**
- * The header's words: "this run fails · --fail-on=high". "Passes" only when lockrot says the
- * fail-on was applied; a baseline run says so, since it applies none.
- */
+/** The header's words: "this run fails · --fail-on=high". "Passes" only when lockrot says the
+ *  fail-on was applied. */
 export function gateHeadline(gate: RunGate, mode: string | null): GateHeadline {
   const who = mode === "generate_baseline" ? "baseline run" : "this run";
   const given = gate.failOn === null ? [] : [gateFlag("fail_on", gate.failOn)];
   switch (gate.outcome) {
     case "fails": {
       const flags = gate.causes.map((cause) => gateFlag(cause, gate.failOn));
-      return { who, verb: "fails", flags, aside: null };
+      return { who, verb: "fails", flags, unapplied: null };
     }
     case "passes":
-      return { who: "this run", verb: "passes", flags: given, aside: null };
+      return { who: "this run", verb: "passes", flags: given, unapplied: null };
     case "unapplied":
-      return { who, verb: null, flags: [], aside: "no fail-on applied" };
+      return { who, verb: null, flags: [], unapplied: "--fail-on" };
     case "open":
-      return { who: "this run", verb: "does not fail", flags: given, aside: null };
+      return { who: "this run", verb: "does not fail", flags: given, unapplied: null };
   }
 }
 
@@ -192,20 +190,21 @@ export interface ExemptLine extends ExemptCount {
   readonly text: string;
 }
 
+function exemptText(by: string, n: number, gate: RunGate, tie: BaselineExemption): string {
+  const one = n === 1;
+  const they = one ? "it does" : "they do";
+  const why = by === "baseline" ? "by the baseline" : "for another reason";
+  if (gate.failOnApplied === false) return `${n} of them ${one ? "is" : "are"} also exempt ${why}`;
+  if (by !== "baseline" || tie.accepted === null || n > tie.accepted) {
+    return `${n} ${one ? "meets" : "meet"} it, but ${one ? "is" : "are"} exempt ${why}, so ${they} not fail`;
+  }
+  const whose = n === tie.accepted ? `All ${n}` : `${n} of the ${tie.accepted}`;
+  return `${whose} already accepted meet it, so ${they} not fail`;
+}
+
 /** Each exemption among the packages that meet fail-on, in words. */
 export function exemptWords(gate: RunGate, tie: BaselineExemption): readonly ExemptLine[] {
-  return gate.exempt.map(({ by, n }) => {
-    const one = n === 1;
-    if (by === "baseline") {
-      const text =
-        tie.accepted !== null && n <= tie.accepted
-          ? `${n} of the ${tie.accepted} already accepted meet it, so ${one ? "it does" : "they do"} not fail`
-          : `${n} ${one ? "meets" : "meet"} it, but the baseline exempts ${one ? "it" : "them"}, so ${one ? "it does" : "they do"} not fail`;
-      return { by, n, text };
-    }
-    const text = `${n} ${one ? "meets" : "meet"} it, but ${one ? "is" : "are"} exempt for another reason, so ${one ? "it does" : "they do"} not fail`;
-    return { by, n, text };
-  });
+  return gate.exempt.map(({ by, n }) => ({ by, n, text: exemptText(by, n, gate, tie) }));
 }
 
 /** A finding's own gate, for its row and its detail. */
@@ -256,10 +255,8 @@ export function rowGateWords(mark: FindingGateMark): string | null {
   return null;
 }
 
-/**
- * All packages' filters that list exactly the failing packages the Findings tab does not: this
- * run's failures and their verdicts. Checked, not assumed; null when no filter lists that set alone.
- */
+/** All packages' filters that list exactly the failing packages Findings does not (gate and their
+ *  verdicts), checked against the list; null when no filter lists that set alone. */
 export function unflaggedFilters(model: Model): Filters | null {
   const gate = runGate(model);
   if (gate === null || gate.failingUnflagged === 0) return null;

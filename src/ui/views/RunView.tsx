@@ -201,8 +201,7 @@ function modeText(report: ReportModel): FieldValue {
   const mode = report.run.mode;
   if (mode === null) return dashOr(report, "run.mode");
   if (mode === "check") return "check";
-  if (mode === "generate_baseline")
-    return { parts: [mode, { aside: "a baseline run, which applies no fail-on" }] };
+  if (mode === "generate_baseline") return { parts: [mode, { aside: "a run that writes a baseline" }] };
   return { parts: [{ code: mode, then: "" }, { aside: "another kind of run" }] };
 }
 
@@ -219,7 +218,7 @@ function resultText(report: ReportModel): FieldValue | null {
   if (gate === null || gate.fails === null) return null;
   const notApplied: Part[] =
     gate.failOnApplied === false && run.failOn !== null
-      ? [{ aside: `applied no ${gateFlag("fail_on", run.failOn).text}` }]
+      ? [{ aside: `${gateFlag("fail_on", run.failOn).text} not applied` }]
       : [];
   if (gate.fails) {
     const causes = [...new Set(gate.trippedBy)].map((cause): Part => {

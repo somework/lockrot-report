@@ -149,13 +149,13 @@ describe("gateHeadline", () => {
       who: "this run",
       verb: "fails",
       flags: [{ text: "--fail-on=unchecked", known: true }],
-      aside: null,
+      unapplied: null,
     });
     expect(gateHeadline(decided("koel_lock-only-0.13"), "check")).toEqual({
       who: "this run",
       verb: "passes",
       flags: [{ text: "--fail-on=critical", known: true }],
-      aside: null,
+      unapplied: null,
     });
   });
 
@@ -164,13 +164,13 @@ describe("gateHeadline", () => {
       who: "baseline run",
       verb: null,
       flags: [],
-      aside: "no fail-on applied",
+      unapplied: "--fail-on",
     });
     expect(gateHeadline(decided("mini-0.13-gate-generate"), "generate_baseline")).toEqual({
       who: "baseline run",
       verb: "fails",
       flags: [{ text: "--strict-network", known: true }],
-      aside: null,
+      unapplied: null,
     });
     expect(gateHeadline(decided("wallabag_generate-baseline-0.13"), "audit").who).toBe("this run");
   });
@@ -255,6 +255,24 @@ describe("baselineExemption and exemptWords", () => {
     ]);
   });
 
+  it("every package the baseline accepted meets it: all of them, not 'N of the N'", () => {
+    const model = loadModel("wallabag_baseline-self-0.13");
+    expect(exemptWords(decided("wallabag_baseline-self-0.13"), baselineExemption(model))).toEqual([
+      { by: "baseline", n: 69, text: "All 69 already accepted meet it, so they do not fail" },
+    ]);
+  });
+
+  it("a run that applied no fail-on gives no exemption as the reason a package does not fail", () => {
+    const model = loadModel("mini-0.13-gate-generate");
+    const words = exemptWords(decided("mini-0.13-gate-generate"), baselineExemption(model));
+    expect(words).toEqual([{ by: "waiver", n: 1, text: "1 of them is also exempt for another reason" }]);
+    const two = exemptWords(
+      { ...decided("mini-0.13-gate-generate"), exempt: [{ by: "baseline", n: 2 }] },
+      { exempt: 2, accepted: 6 },
+    );
+    expect(two.map((line) => line.text)).toEqual(["2 of them are also exempt by the baseline"]);
+  });
+
   it("never draws an accepted number that is not the summary's, or stated as a subset of it", () => {
     for (const name of [
       "wallabag_baseline-older-0.13",
@@ -268,11 +286,16 @@ describe("baselineExemption and exemptWords", () => {
       if (gate === null) continue;
       const tie = baselineExemption(model);
       for (const { text } of exemptWords(gate, tie)) {
-        const match = /(\d+) of the (\d+) already accepted/.exec(text);
         if (!text.includes("accepted")) continue;
+        const all = /^All (\d+) already accepted/.exec(text);
+        if (all !== null) {
+          expect(Number(all[1]), name).toBe(tie.accepted);
+          continue;
+        }
+        const match = /(\d+) of the (\d+) already accepted/.exec(text);
         expect(match, `${name}: ${text}`).not.toBeNull();
         expect(Number(match?.[2]), name).toBe(tie.accepted);
-        expect(Number(match?.[1]), name).toBeLessThanOrEqual(Number(match?.[2]));
+        expect(Number(match?.[1]), name).toBeLessThan(Number(match?.[2]));
       }
     }
   });
@@ -280,7 +303,7 @@ describe("baselineExemption and exemptWords", () => {
   it("without a summary count to tie to, the baseline's exemptions carry no 'accepted'", () => {
     const gate = decided("wallabag_baseline-older-0.13");
     const [words] = exemptWords(gate, { exempt: 30, accepted: null });
-    expect(words?.text).toBe("30 meet it, but the baseline exempts them, so they do not fail");
+    expect(words?.text).toBe("30 meet it, but are exempt by the baseline, so they do not fail");
   });
 });
 
