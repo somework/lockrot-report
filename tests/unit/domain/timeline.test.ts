@@ -2,16 +2,15 @@ import { ageText } from "../../../src/domain/format";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { snapshotOf } from "../../../src/domain/pinned";
 import {
   agePhrase,
-  branchVersionKey,
   sameVersion,
-  sortLanes,
   timelineModel,
   yearTicks,
   type TimelineModel,
 } from "../../../src/domain/timeline";
-import type { BranchRow, ExplainLock } from "../../../src/model/types";
+import type { BranchRow } from "../../../src/model/types";
 import { normalize } from "../../../src/model/normalize";
 
 function makeBranch(overrides: Partial<BranchRow> = {}): BranchRow {
@@ -25,26 +24,18 @@ function makeBranch(overrides: Partial<BranchRow> = {}): BranchRow {
     newestDatedReleased: null,
     datedBy: null,
     php: null,
-    ...overrides,
-  };
-}
-
-function makeLock(overrides: Partial<ExplainLock> = {}): ExplainLock {
-  return {
-    php: null,
-    released: null,
-    repository: null,
-    fromComposerRepository: true,
-    dev: false,
-    branchSnapshot: false,
-    type: null,
+    admitsTargetPhp: null,
+    admitsProjectPhp: null,
+    phpBlockedBy: null,
+    missesTargetPhp: null,
+    missesProjectPhp: null,
     ...overrides,
   };
 }
 
 const NOW = new Date("2026-09-24T00:00:00.000Z");
 
-/** A real fixture package's branches, lock and installed version, as the page normalizes them. */
+/** A real fixture package's branches, snapshot commit and installed version, as the page reads them. */
 function fixture(bundle: string, pkg: string) {
   const raw = JSON.parse(
     readFileSync(join(process.cwd(), "fixtures", "bundles", `${bundle}.json`), "utf8"),
@@ -54,12 +45,16 @@ function fixture(bundle: string, pkg: string) {
   const details = result.model.details.get(pkg);
   const finding = result.model.report.findings.find((f) => f.package === pkg);
   if (details === undefined || finding === undefined) throw new Error(`${pkg} not in ${bundle}`);
-  return { branches: details.metadata?.branches ?? [], lock: details.lock, version: finding.version };
+  return {
+    branches: details.metadata?.branches ?? [],
+    snapshot: snapshotOf(finding, details),
+    version: finding.version,
+  };
 }
 
 function model(bundle: string, pkg: string): TimelineModel {
-  const { branches, lock, version } = fixture(bundle, pkg);
-  const result = timelineModel(branches, lock, version, NOW);
+  const { branches, snapshot, version } = fixture(bundle, pkg);
+  const result = timelineModel(branches, snapshot, version, NOW);
   if (result === null) throw new Error(`${pkg} drew no timeline`);
   return result;
 }
@@ -71,82 +66,36 @@ function rowShape(timeline: TimelineModel): string[] {
   );
 }
 
-describe("branchVersionKey", () => {
-  it("reads a branch name as version parts, a wildcard above every number", () => {
-    expect(branchVersionKey("0.27.x")).toEqual([0, 27, Infinity]);
-    expect(branchVersionKey("11.x")).toEqual([11, Infinity]);
-    expect(branchVersionKey("0.0.3")).toEqual([0, 0, 3]);
-    expect(branchVersionKey("v2.1")).toEqual([2, 1]);
-  });
-
-  it("returns null for a name that is not version-shaped", () => {
-    for (const name of ["master", "dev-main", "3.x-dev", "", "release/1.0"]) {
-      expect(branchVersionKey(name)).toBeNull();
-    }
-  });
-});
-
-describe("sortLanes", () => {
-  it("orders by version, newest first, even when an older branch released last", () => {
-    // Arrange: 3.x shipped a maintenance release after 4.x's last one — date order put it on top.
-    const lanes = [
-      { branch: "3.x", time: 300 },
-      { branch: "10.x", time: 100 },
-      { branch: "4.x", time: 200 },
-      { branch: "0.9.x", time: 50 },
+describe("timelineModel / order", () => {
+  it("keeps the document's order, highest first, even when a lower branch released last", () => {
+    const branches = [
+      makeBranch({ branch: "10.x", highestReleased: "2021-01-01T00:00:00Z" }),
+      makeBranch({ branch: "4.x", highestReleased: "2020-01-01T00:00:00Z" }),
+      makeBranch({ branch: "3.x", highestReleased: "2024-01-01T00:00:00Z" }),
+      makeBranch({ branch: "master", highestReleased: "2025-01-01T00:00:00Z" }),
     ];
 
-    // Act
-    const { sorted, by } = sortLanes(lanes);
+    const timeline = timelineModel(branches, null, "v9.9.9", NOW);
 
-    // Assert: numeric, not lexical ("10.x" above "4.x"), and not by date.
-    expect(by).toBe("version");
-    expect(sorted.map((lane) => lane.branch)).toEqual(["10.x", "4.x", "3.x", "0.9.x"]);
+    expect(timeline?.lanes.map((lane) => lane.branch)).toEqual(["10.x", "4.x", "3.x", "master"]);
+    expect(timeline?.top.branch).toBe("10.x");
+    expect(timeline?.topReleasedLast).toBe(false);
   });
 
-  it("falls back to date order for every lane when any name is not version-shaped", () => {
-    // Arrange
-    const lanes = [
-      { branch: "2.x", time: 100 },
-      { branch: "master", time: 300 },
-      { branch: "1.x", time: 200 },
-    ];
+  it.each([
+    ["koel_koel", "meilisearch/meilisearch-php"],
+    ["mautic_mautic", "brick/math"],
+    ["mautic_mautic-0.13", "brick/math"],
+  ])("%s %s: the lanes are the dated rows in the document's order", (bundle, pkg) => {
+    const { branches } = fixture(bundle, pkg);
+    const dated = branches.filter(
+      (row) =>
+        row.highestReleased !== null ||
+        row.highestCommitDate !== null ||
+        (row.newestDated !== null && row.newestDatedReleased !== null),
+    );
 
-    // Act
-    const { sorted, by } = sortLanes(lanes);
-
-    // Assert
-    expect(by).toBe("date");
-    expect(sorted.map((lane) => lane.branch)).toEqual(["master", "1.x", "2.x"]);
-  });
-
-  it("breaks a version tie on date, then name, whatever the input order", () => {
-    // Arrange: "2" and "v2" are the same version.
-    const a = [
-      { branch: "v2", time: 100 },
-      { branch: "2", time: 200 },
-    ];
-
-    // Act / Assert
-    expect(sortLanes(a).sorted.map((lane) => lane.branch)).toEqual(["2", "v2"]);
-    expect(sortLanes([...a].reverse()).sorted.map((lane) => lane.branch)).toEqual(["2", "v2"]);
-  });
-
-  it("sorts the 21 meilisearch-php branches (koel_koel) highest version first", () => {
-    // Act
-    const timeline = model("koel_koel", "meilisearch/meilisearch-php");
-
-    // Assert: "0.10.x" sorts above "0.9.x", which a string sort would not do.
-    expect(timeline.sortedBy).toBe("version");
-    expect(timeline.lanes.map((lane) => lane.branch).slice(0, 6)).toEqual([
-      "1.x",
-      "0.27.x",
-      "0.26.x",
-      "0.25.x",
-      "0.24.x",
-      "0.23.x",
-    ]);
-    expect(timeline.lanes.map((lane) => lane.branch).slice(-3)).toEqual(["0.10.x", "0.9.x", "0.8.x"]);
+    expect(model(bundle, pkg).lanes.map((lane) => lane.branch)).toEqual(dated.map((row) => row.branch));
   });
 });
 
@@ -228,6 +177,22 @@ describe("timelineModel / rows and folds", () => {
     });
   });
 
+  it("rector/rector (mautic_mautic-0.13): the snapshot row is the same commit S6 dates", () => {
+    const timeline = model("mautic_mautic-0.13", "rector/rector");
+
+    expect(rowShape(timeline)[0]).toBe("dev-main");
+    expect(timeline.mine).toMatchObject({ snapshot: true, date: "2026-08-04T09:29:27+00:00" });
+  });
+
+  it("dates the snapshot row by the commit it is given, and draws none without one", () => {
+    const oneDated = [makeBranch({ branch: "1.x", highestReleased: "2020-01-01T00:00:00Z" })];
+
+    const drawn = timelineModel(oneDated, { time: "2025-06-01T00:00:00Z", php: "^8.1" }, "dev-main", NOW);
+
+    expect(drawn?.mine).toMatchObject({ branch: "dev-main", date: "2025-06-01T00:00:00Z", php: "^8.1" });
+    expect(timelineModel(oneDated, null, "dev-main", NOW)).toBeNull();
+  });
+
   it("draws a snapshot next to a single release branch (friendsofsymfony/oauth-server-bundle, wallabag)", () => {
     // Act
     const timeline = model("wallabag_wallabag", "friendsofsymfony/oauth-server-bundle");
@@ -246,8 +211,6 @@ describe("timelineModel / rows and folds", () => {
     // Act / Assert
     expect(timelineModel(oneDated, null, "1.0.0", NOW)).toBeNull();
     expect(timelineModel([], null, "1.0.0", NOW)).toBeNull();
-    // A snapshot with no date of its own adds no row either.
-    expect(timelineModel(oneDated, makeLock({ branchSnapshot: true }), "dev-main", NOW)).toBeNull();
   });
 
   it("with no installed branch and no snapshot, shows the newest and folds the rest", () => {
@@ -275,10 +238,10 @@ describe("timelineModel / topReleasedLast", () => {
   });
 
   it("is false when a maintenance branch shipped after the highest one, so it is not called newest", () => {
-    // Arrange: 3.x's last release (2025) is later than 4.x's (2023); version order still puts 4.x first.
+    // Arrange: 3.x's last release (2025) is later than 4.x's (2023).
     const branches = [
-      makeBranch({ branch: "3.x", installed: true, highestReleased: "2025-06-01T00:00:00Z" }),
       makeBranch({ branch: "4.x", highestReleased: "2023-01-01T00:00:00Z" }),
+      makeBranch({ branch: "3.x", installed: true, highestReleased: "2025-06-01T00:00:00Z" }),
     ];
 
     // Act
@@ -289,7 +252,7 @@ describe("timelineModel / topReleasedLast", () => {
     expect(timeline?.topReleasedLast).toBe(false);
   });
 
-  it("is always true in date order, where the first row is the latest release by definition", () => {
+  it("is true when the first row released last", () => {
     // Arrange
     const branches = [
       makeBranch({ branch: "master", highestReleased: "2026-01-01T00:00:00Z" }),
@@ -464,8 +427,8 @@ describe("timelineModel / label and date pairing (critic.md M26 fix)", () => {
   it("drops a branch with no usable date at all", () => {
     // Arrange
     const branches = [
-      makeBranch({ branch: "1.x", highestReleased: "2018-01-01T00:00:00.000Z" }),
       makeBranch({ branch: "2.x", highestReleased: "2020-01-01T00:00:00.000Z" }),
+      makeBranch({ branch: "1.x", highestReleased: "2018-01-01T00:00:00.000Z" }),
       makeBranch({ branch: "0.1.x", highest: "0.1.0" }),
     ];
 

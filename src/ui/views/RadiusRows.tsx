@@ -4,7 +4,7 @@ import { pulledTree } from "../../domain/radius";
 import type { AgeAxis } from "../../domain/age";
 import { plural } from "../../domain/format";
 import { rowSignals, shortFact } from "../../domain/rows";
-import { SIGNAL_DEFS, TONE, VERDICT_DEFS } from "../../domain/vocab";
+import { signalDef, TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { Tag, toneClass } from "../common/common";
 import { useReport } from "../context";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
@@ -46,8 +46,6 @@ function Chevron() {
   );
 }
 
-/** The rows a row's "elsewhere" packages are listed under, each a button that jumps there and
- *  marks the packages it lists for this row. */
 function ListingLinks({ row, tabIndex, env }: { row: RadiusRow; tabIndex: -1 | undefined; env: RowEnv }) {
   return (
     <>
@@ -90,13 +88,7 @@ function AlsoLine({ row, tabIndex, env }: { row: RadiusRow; tabIndex: -1 | undef
   );
 }
 
-/**
- * A tail row the filter left nothing under, though it lists some and reaches others that do match,
- * as one statement over lockrot's own count (`exposure[].flagged`, the number its evidence quotes):
- * "Of the 15 flagged packages it pulls in, 14 that match are listed under wallabag/rulerz; the other
- * one, listed under it, does not match." Only when the counts add up that way (`reachSplits`); else
- * the row says the two facts apart.
- */
+/** One statement over lockrot's own count, only when the counts add up that way. */
 function reachSplits(row: RadiusRow): boolean {
   return (
     row.count === 0 &&
@@ -125,8 +117,6 @@ function ReachSplit({ row, tabIndex, env }: { row: RadiusRow; tabIndex: -1 | und
   );
 }
 
-/** Why a requirement in the "flagged themselves" tail matches the search box when its name does not
- *  hold the words: the evidence words around the hit, as a Findings row quotes them (PD-SEARCH-1). */
 function SelfMatch({ finding }: { finding: Finding }) {
   const hit = useSearchHit(finding);
   if (hit === null || hit.field !== "evidence") return null;
@@ -154,12 +144,7 @@ interface ParentProps {
   readonly env: RowEnv;
 }
 
-/**
- * One direct requirement (PD-RADIUS-1): rank · the requirement, its version, "dev", "<verdict>
- * itself" · its squares · what it pulls in · their years since release · a toggle. A click anywhere
- * on it opens the requirement's own detail — the same one a Findings row opens; the toggle, and a
- * click on the squares, show the packages it lists underneath as a chain tree.
- */
+/** A click opens the requirement's own detail; the toggle and the squares open its chain tree. */
 export function ParentRow({ row, rank, expandable, open, env }: ParentProps) {
   const { model, state, dispatch, cursor } = useReport();
   const key = parentKey(row.package);
@@ -275,7 +260,7 @@ function Why({ finding }: { finding: Finding }) {
   return (
     <span className="fcell fc-why rk-why" title={key?.summary ?? finding.evidence}>
       {key && (
-        <span className="sid" title={SIGNAL_DEFS[key.id] ?? ""}>
+        <span className="sid" title={signalDef(key.id)}>
           {key.id}
         </span>
       )}
@@ -286,8 +271,7 @@ function Why({ finding }: { finding: Finding }) {
   );
 }
 
-/** The chain tree's lines for one row: a rail for every ancestor with a later sibling, and the
- *  elbow into this row — drawn, never typed, and hidden from assistive tech. */
+/** Drawn, never typed, and hidden from assistive tech. */
 function TreeLines({ node }: { node: TreeNode }) {
   return (
     <span className="rk-tree" aria-hidden="true">
@@ -299,10 +283,8 @@ function TreeLines({ node }: { node: TreeNode }) {
   );
 }
 
-/** A package a requirement lists, in its place on the chain tree: package · verdict · why · age, the
- *  Findings row's own facts. Its age is a tick on the tab's axis — the mark its parent row's range
- *  is drawn with, so the column keeps one encoding (a Findings bar from 0 under a whisker read as
- *  two scales), in the Findings age cell's words when there is none. */
+/** Its age is a tick on the tab's axis, the mark its parent's range uses, so the column keeps one
+ *  encoding. */
 function ChildRow({
   parent,
   node,
@@ -351,11 +333,6 @@ function ChildRow({
   );
 }
 
-/**
- * One flagged package the "only through rows above" tail reaches (PD-RADIUS-4): the package and its
- * verdict, the row it is listed under (a jump), and every tail requirement behind it. A click opens
- * the package, whose detail names every requirement it comes in through.
- */
 export function ReceiptRow({ entry, env }: { entry: RadiusReceipt; env: RowEnv }) {
   const { state, dispatch, cursor } = useReport();
   const { finding, listedUnder, behind } = entry;

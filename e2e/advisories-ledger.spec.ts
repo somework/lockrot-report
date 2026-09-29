@@ -188,3 +188,21 @@ for (const colorScheme of ["light", "dark"] as const) {
     expect(serious.flatMap((v) => v.nodes.map((node) => `${v.id}: ${node.target.join(" ")}`))).toEqual([]);
   });
 }
+
+test("the quiet-advisory note above Findings is narrowed by the search and the rail, like the list", async ({
+  page,
+}) => {
+  const note = page.locator(".note", { hasText: "security advisory but no rot verdict" });
+
+  await report.goto(FIXTURES.akaunting013);
+  await expect(note.locator(".pkg-link-btn")).toHaveText(["laravel/framework", "dompdf/dompdf"]);
+
+  await report.gotoWithHash(FIXTURES.akaunting013, "scope=direct");
+  await expect(note.locator(".pkg-link-btn")).toHaveText(["laravel/framework"]);
+
+  await report.gotoWithHash(FIXTURES.akaunting013, "q=dompdf");
+  await expect(note.locator(".pkg-link-btn")).toHaveText(["dompdf/dompdf"]);
+
+  await report.gotoWithHash(FIXTURES.akaunting013, "q=no-such-package");
+  await expect(note).toHaveCount(0);
+});

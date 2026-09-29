@@ -1,31 +1,20 @@
 /**
- * The "Release branches" block of a package's detail panel, as facts: which branches get a row, in
- * what order, which ones fold away, and where each one sits on one shared time axis that ends at
- * `now`. Ported from legacy's `timeline(meta, installedVersion)` (`report.js:669-709`) and since
- * redesigned answer-first (PD-TIMELINE-1..8, DESIGN.md §5); the M26 fix (label and date read off the
- * same tag) is unchanged.
- *
- * Display only: every value here is a field lockrot already wrote (BranchRow, the lock entry) or
- * arithmetic on two of them — an order, a count, the time between two dates. Nothing here reads a
- * composer constraint or decides whether a branch suits the project; lockrot owns that analysis.
- *
- * `now` is always a parameter (`report.generatedAt`, never `Date.now()`), the same discipline
- * `lib.js`'s own date helpers keep — the maths must be reproducible from the document alone.
+ * The "Release branches" block as facts: which branches get a row, which fold away, and where each
+ * sits on one time axis ending at `now` (`report.generatedAt`, so the maths is the document's own).
+ * Rows keep lockrot's order, highest first; nothing here reads a constraint.
  */
 
-import type { BranchRow, ExplainLock } from "../model/types";
+import type { BranchRow } from "../model/types";
 import { yearsPhrase } from "./format";
 
 const MS_PER_DAY = 24 * 3600 * 1000;
 const MS_PER_JULIAN_YEAR = 365.25 * MS_PER_DAY;
 
-/** Newer branches shown one row each, up to this many; past it the ones between the newest and
- *  yours fold into one row, so a 21-branch package never buries the two rows that answer the
- *  question (the newest, and yours) under the ones in between. */
+/** Past this many newer branches, the ones between the newest and yours fold, so the two rows that
+ *  answer the question stay in view. */
 const BETWEEN_MAX = 4;
 
-/** The fewest branches a fold hides: a fold row costs a row itself, so folding two saves one line
- *  and hides two answers — below three, each branch keeps its own row. */
+/** Folding two would save one line and hide two answers. */
 const FOLD_MIN = 3;
 
 /** The right-hand share of the axis a year label may not sit in: the "today" label owns it. */
@@ -36,21 +25,19 @@ export interface TimelineLane {
   readonly branch: string;
   /** 0-100 along the shared axis: 0 is 1 January of the oldest date's year, 100 is `now`. */
   readonly x: number;
-  /** The version tag the date belongs to — always the SAME tag (the M26 fix). */
+  /** The version tag the date belongs to: always the same tag. */
   readonly label: string;
   /** ISO date string; the caller formats it (`domain/format.ts`'s `day`). */
   readonly date: string;
   readonly installed: boolean;
-  /** The first row of the sort order — the newest branch — and never the installed one: a reader
-   *  already on the newest branch has nothing newer to be pointed at. */
+  /** The first row, unless it is the installed one: nothing newer to point at then. */
   readonly newest: boolean;
   readonly php: string | null;
-  /** The lock's own dev-branch snapshot, drawn as a pseudo-row; it has no BranchRow of its own. */
+  /** The installed branch's commit, drawn as a row of its own; it has no BranchRow. */
   readonly snapshot: boolean;
   /** False when the label only repeats the branch name ("0.0.3" / "v0.0.3", PD-TIMELINE-3). */
   readonly showLabel: boolean;
-  /** The monorepo whose tags supplied this lane's release date (a split package's `dated_by`);
-   *  null when the date is the package's own, or a commit date. */
+  /** Null when the date is the package's own, or a commit date. */
   readonly datedBy: string | null;
 }
 
@@ -64,23 +51,22 @@ export interface TimelineTick {
 }
 
 export interface TimelineModel {
-  /** Every dated branch, sorted (`sortedBy`); the snapshot row is not one of them. */
+  /** Every dated branch, in the document's order; the snapshot row is not one of them. */
   readonly lanes: readonly TimelineLane[];
-  /** What is drawn, top to bottom. A fold row carries the lanes it hides, in sort order. */
+  /** What is drawn, top to bottom. A fold row carries the lanes it hides, in order. */
   readonly rows: readonly TimelineRow[];
   /** The reader's own row: the installed branch, else the snapshot row, else none. */
   readonly mine: TimelineLane | null;
-  /** The first lane of the sort order (the newest branch), installed or not. */
+  /** The first lane, installed or not. */
   readonly top: TimelineLane;
-  /** Whether `top` also released last: false when a lower branch shipped after it (a maintenance
-   *  release), so the sentence calls `top` the highest rather than the newest — "the newest is 4.x,
-   *  released 2023" beside a 3.x release from 2025 would contradict itself. */
+  /** False when a lower branch shipped after it: the sentence then calls `top` the highest, not the
+   *  newest. */
   readonly topReleasedLast: boolean;
-  /** How many lanes sort above the installed branch; 0 without one. */
+  /** How many lanes sit above the installed branch; 0 without one. */
   readonly newerCount: number;
-  readonly sortedBy: "version" | "date";
-  /** Every lane's version is its own branch name: a package with no maintained branches, whose
-   *  "branches" are just its past releases (PD-TIMELINE-3). */
+  /**
+   * A package with no maintained branches, whose "branches" are its past releases (PD-TIMELINE-3).
+   */
   readonly releasesOnly: boolean;
   readonly ticks: readonly TimelineTick[];
   /** `x` of an instant, on the same axis every lane uses — for a threshold guide ("N years ago"). */
@@ -94,25 +80,15 @@ interface DatedTag {
   readonly time: number;
 }
 
-/**
- * Whether `branch` and `label` name the same release, modulo an optional leading `v`/`V` — so a
- * package with no maintained branches, where each release is its own "branch", never prints
- * "0.0.3 · v0.0.3" (PD-TIMELINE-3, DESIGN.md §5).
- */
+/** Modulo a leading `v`, so a release-per-branch package never prints "0.0.3 · v0.0.3"
+ *  (PD-TIMELINE-3). */
 export function sameVersion(branch: string, label: string): boolean {
   const stripV = (s: string): string => (s.startsWith("v") || s.startsWith("V") ? s.slice(1) : s);
   return stripV(branch) === stripV(label);
 }
 
-/**
- * The date a branch plots at, and the version label shown beside it — always read off the same
- * tag. This is the fix for critic.md M26: legacy paired the *label* of the highest tag
- * (`b.highest`) with the *date* of `b.highest_released || b.newest_dated_released`, so an undated
- * highest tag (a shared-commit release) showed its version next to a different tag's date. Here,
- * when the highest tag has no release date of its own, its commit date is used instead (still the
- * same tag); only when neither exists at all does the lane fall back to the newest *dated* tag,
- * labelled with that tag's own version rather than `highest`'s.
- */
+/** The date a branch plots at and the label beside it, always read off the same tag, so an undated
+ *  highest tag never shows its version beside another tag's date. */
 function datedTag(branch: BranchRow): DatedTag | null {
   const pick = (): { iso: string; label: string; datedBy: string | null } | null => {
     if (branch.highestReleased !== null) {
@@ -132,61 +108,7 @@ function datedTag(branch: BranchRow): DatedTag | null {
   return Number.isNaN(time) ? null : { ...tag, time };
 }
 
-/**
- * A branch name as a sortable version key: "0.27.x" → [0, 27, ∞], "11.x" → [11, ∞], "0.0.3" →
- * [0, 0, 3], "v2.1" → [2, 1]. A wildcard sorts above every number in its place, so "2.x" (every
- * 2.* release) ranks above "2.1.x". `null` for a name that is not version-shaped ("master",
- * "dev-main", "3.x-dev"), which sends the whole list to date order instead (`compareLanes`).
- */
-export function branchVersionKey(name: string): readonly number[] | null {
-  const match = /^v?(\d+(?:\.(?:\d+|x|\*))*)$/i.exec(name.trim());
-  if (match === null || match[1] === undefined) return null;
-  return match[1].split(".").map((part) => (/^\d+$/.test(part) ? Number(part) : Infinity));
-}
-
-/** Descending: the higher version first. A missing place sorts below any present one ("2" below
- *  "2.0"), so the order is total and never depends on input order. */
-function compareKeysDesc(a: readonly number[], b: readonly number[]): number {
-  const n = Math.max(a.length, b.length);
-  for (let i = 0; i < n; i++) {
-    const x = a[i] ?? -1;
-    const y = b[i] ?? -1;
-    if (x !== y) return x > y ? -1 : 1;
-  }
-  return 0;
-}
-
-interface Sortable {
-  readonly branch: string;
-  readonly time: number;
-}
-
-/**
- * The lane order, newest first. By version when every branch name is version-shaped — the order a
- * reader expects ("3.x" never above "4.x", which the old date order did whenever a maintenance
- * branch shipped after the next major's last release) — otherwise by date, since a name like
- * "master" has no place among versions. Ties break on date, then name, so the order is total.
- */
-export function sortLanes<T extends Sortable>(lanes: readonly T[]): { sorted: T[]; by: "version" | "date" } {
-  const keys = new Map(lanes.map((lane) => [lane, branchVersionKey(lane.branch)] as const));
-  const byVersion = lanes.every((lane) => keys.get(lane) !== null);
-  const sorted = [...lanes].sort((a, b) => {
-    if (byVersion) {
-      const cmp = compareKeysDesc(keys.get(a) ?? [], keys.get(b) ?? []);
-      if (cmp !== 0) return cmp;
-    }
-    if (a.time !== b.time) return b.time - a.time;
-    return a.branch < b.branch ? -1 : a.branch > b.branch ? 1 : 0;
-  });
-  return { sorted, by: byVersion ? "version" : "date" };
-}
-
-/**
- * How long ago `iso` was, spelled out for the answer sentence ("7 months", "4.1 years") in the
- * page's one age unit (`format.ts#yearsPhrase`), so it never quotes "8 weeks" beside the facts
- * row's "2 mo ago" for the same release. A date at or after `now` reads "1 month", never "0" or a
- * negative span.
- */
+/** How long ago `iso` was, in the page's one age unit, so the sentence and the facts row agree. */
 export function agePhrase(iso: string, now: Date): string {
   return yearsPhrase(yearsSince(iso, now));
 }
@@ -196,9 +118,7 @@ export function yearsSince(iso: string, now: Date): number {
   return (now.getTime() - new Date(iso).getTime()) / MS_PER_JULIAN_YEAR;
 }
 
-/** The rows drawn for a reader on the installed lane at `index`: every newer branch (the middle
- *  ones folded past BETWEEN_MAX), theirs, then the older ones folded into one row (fewer than
- *  FOLD_MIN older ones keep their own rows). */
+/** Every newer branch (the middle folded past BETWEEN_MAX), yours, then the older ones folded. */
 function rowsAround(lanes: readonly TimelineLane[], index: number): TimelineRow[] {
   const rows: TimelineRow[] = [];
   const newer = lanes.slice(0, index);
@@ -223,8 +143,7 @@ function foldOlder(older: readonly TimelineLane[]): TimelineRow[] {
 /** Year steps a reader counts in, smallest first; the axis takes the smallest that fits. */
 const YEAR_STEPS = [1, 2, 3, 5, 10, 20, 25, 50];
 
-/** The most year labels an axis carries, "today" not counted: a nine-year axis with only its first
- *  year and "today" left the scale between them to guesswork (PD-TIMELINE-11). */
+/** The most year labels an axis carries, "today" not counted (PD-TIMELINE-11). */
 const MAX_YEAR_LABELS = 3;
 
 /** Every `step` years from the left edge, none in the right-hand zone "today" owns. */
@@ -237,9 +156,8 @@ function ticksEvery(step: number, startYear: number, now: Date, x: (t: number) =
   return ticks;
 }
 
-/** Up to MAX_YEAR_LABELS year labels at the smallest step in YEAR_STEPS that keeps within it, the
- *  first on the axis's own left edge (x = 0, 1 January of the oldest year — so it can never run off
- *  the axis, the old PD-TIMELINE-1 bug). */
+/** Up to MAX_YEAR_LABELS year labels at the smallest step that keeps within it, the first on the
+ *  axis's left edge so it can never run off it. */
 export function yearTicks(startYear: number, now: Date, x: (t: number) => number): TimelineTick[] {
   for (const step of YEAR_STEPS) {
     const ticks = ticksEvery(step, startYear, now, x);
@@ -249,24 +167,25 @@ export function yearTicks(startYear: number, now: Date, x: (t: number) => number
   return ticksEvery(Math.ceil(span / (MAX_YEAR_LABELS - 1)), startYear, now, x);
 }
 
-/**
- * The block's model, or `null` when fewer than two rows would be drawn — one dot on an axis answers
- * nothing (legacy skipped the section below two dated branches, `report.js:672`). The lock's own
- * dev-branch snapshot counts as a row: a `dev-master` checkout next to its one release branch is
- * exactly the comparison a reader opened the panel for.
- */
+/** The snapshot row's source: the installed branch's commit (`pinned.ts#snapshotOf`). */
+export interface SnapshotCommit {
+  readonly time: string;
+  readonly php: string | null;
+}
+
+/** `null` when fewer than two rows would be drawn: one dot on an axis answers nothing. */
 export function timelineModel(
   branches: readonly BranchRow[],
-  lock: ExplainLock | null,
+  snapshotCommit: SnapshotCommit | null,
   installedVersion: string,
   now: Date,
 ): TimelineModel | null {
   const dated = branches.flatMap((branch) => {
     const tag = datedTag(branch);
-    return tag === null ? [] : [{ branch, tag, time: tag.time }];
+    return tag === null ? [] : [{ row: branch, tag, time: tag.time }];
   });
-  const installedDated = dated.some((d) => d.branch.installed);
-  const snapshotTime = lock?.branchSnapshot && lock.released ? new Date(lock.released).getTime() : NaN;
+  const installedDated = dated.some((d) => d.row.installed);
+  const snapshotTime = snapshotCommit === null ? NaN : new Date(snapshotCommit.time).getTime();
   const hasSnapshot = !installedDated && !Number.isNaN(snapshotTime);
   if (dated.length + (hasSnapshot ? 1 : 0) < 2) return null;
 
@@ -276,8 +195,7 @@ export function timelineModel(
   const span = Math.max(now.getTime() - t0, 1); // a document dated 1 January still draws
   const x = (t: number): number => Math.min(100, Math.max(0, ((t - t0) / span) * 100));
 
-  const { sorted, by } = sortLanes(dated.map((d) => ({ ...d, branch: d.branch.branch, row: d.branch })));
-  const lanes: TimelineLane[] = sorted.map((d, index) => ({
+  const lanes: TimelineLane[] = dated.map((d, index) => ({
     branch: d.row.branch,
     x: x(d.time),
     label: d.tag.label,
@@ -290,18 +208,18 @@ export function timelineModel(
     datedBy: d.tag.datedBy,
   }));
   const top = lanes[0];
-  if (top === undefined) return null; // unreachable: at least one dated branch above
+  if (top === undefined) return null;
 
   const snapshot: TimelineLane | null =
-    hasSnapshot && lock?.released
+    hasSnapshot && snapshotCommit !== null
       ? {
           branch: installedVersion,
           x: x(snapshotTime),
           label: installedVersion,
-          date: lock.released,
+          date: snapshotCommit.time,
           installed: true,
           newest: false,
-          php: lock.php,
+          php: snapshotCommit.php,
           snapshot: true,
           showLabel: false,
           datedBy: null,
@@ -323,9 +241,8 @@ export function timelineModel(
     rows,
     mine: installedIndex >= 0 ? (lanes[installedIndex] ?? null) : snapshot,
     top,
-    topReleasedLast: sorted.every((d) => d.time <= (sorted[0]?.time ?? d.time)),
+    topReleasedLast: dated.every((d) => d.time <= (dated[0]?.time ?? d.time)),
     newerCount: Math.max(installedIndex, 0),
-    sortedBy: by,
     releasesOnly: lanes.every((lane) => !lane.showLabel),
     ticks: yearTicks(startYear, now, x),
     xOfYearsAgo: (years) => {

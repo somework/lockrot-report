@@ -1,13 +1,7 @@
 /*
- * The Blast radius ledger (PD-RADIUS-1..5, DESIGN.md §5): the answer sentence, then one row per
- * direct requirement — rank · requirement · squares · what it pulls in · years since release ·
- * toggle — with its packages as a chain tree under it when open, one-each rows folded under one
- * head, and two tails. The shared pieces come from the Findings ledger (`ledger-rows.css`): the age
- * cell (`.fc-age`, `.age-track`, `.age-guide`, `.age-bar`), the verdict word (`.fc-verdict`), the
- * reason (`.fc-why`), the version and "dev" chip, and the column head's axis (`.fhead-age`).
- *
- * Like the Findings list, the layout follows the list's own width (a container query): stacked on
- * a phone, two lines from 600px (beside an open package, a tablet), one line from 990px.
+ * The Blast radius ledger (PD-RADIUS-1..5); the age cell, verdict, reason and axis come from
+ * ledger-rows.css. The layout follows the list's own width: stacked on a phone, two lines from
+ * 600px, one from 990px.
  */
 
 .rl {
@@ -360,9 +354,10 @@
 .rl-u.is-tally {
   margin-left: 3px;
 }
-/* Reached too, listed under another row: one hollow ring and a count, quieter than any solid
-   square and another shape from all of them (a low-priority square is hollow in forced colours),
-   so a row's length is only ever what it lists. */
+/*
+ * One hollow ring, quieter than any square and a different shape, so a row's length is only what it
+ * lists.
+ */
 .rl-else {
   display: inline-flex;
   align-items: center;
@@ -711,6 +706,15 @@
   font-size: 12.5px;
   line-height: 1.5;
   color: var(--muted);
+}
+/*
+ * A long name held on one line with its "(verdict)" ran past a 320px page; the verdict stays whole.
+ */
+.rl-foot .fl-unit {
+  white-space: normal;
+}
+.rl-paren {
+  white-space: nowrap;
 }
 
 /* ---------- two lines: beside an open package, a tablet ---------- */

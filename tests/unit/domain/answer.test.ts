@@ -40,7 +40,7 @@ describe("answerParts", () => {
     expect(parts.find((p) => p.kind === "replacement")).toEqual({
       kind: "replacement",
       text: "Symfony",
-      linked: false,
+      href: null,
     });
   });
 
@@ -71,13 +71,47 @@ describe("answerParts", () => {
     );
   });
 
-  it("links the replacement only when lockrot resolved it to a package name", () => {
-    const parts = answer({ verdict: "abandoned", replacement: "vendor/successor" }, "free text");
+  it("links a resolved replacement to replacement_url as written", () => {
+    const parts = answer(
+      {
+        verdict: "abandoned",
+        replacement: "vendor/successor",
+        replacementUrl: "https://packagist.org/packages/vendor/successor",
+      },
+      "free text",
+    );
     expect(parts.find((p) => p.kind === "replacement")).toEqual({
       kind: "replacement",
       text: "vendor/successor",
-      linked: true,
+      href: "https://packagist.org/packages/vendor/successor",
     });
+  });
+
+  it("names a resolved replacement without a link when replacement_url is null or absent", () => {
+    const parts = answer({ verdict: "abandoned", replacement: "acme/private-next", replacementUrl: null });
+    expect(parts.find((p) => p.kind === "replacement")).toEqual({
+      kind: "replacement",
+      text: "acme/private-next",
+      href: null,
+    });
+    expect(answerText(parts)).toContain("Its named replacement is acme/private-next.");
+  });
+
+  it("never links free text, whatever replacement_url says", () => {
+    const parts = answer(
+      { verdict: "abandoned", replacement: null, replacementUrl: "https://packagist.org/packages/x/y" },
+      "some/other-package",
+    );
+    expect(parts.find((p) => p.kind === "replacement")).toMatchObject({ href: null });
+  });
+
+  it("does not link a replacement_url the page may not put in an href", () => {
+    const parts = answer({
+      verdict: "abandoned",
+      replacement: "vendor/successor",
+      replacementUrl: "javascript:alert(1)",
+    });
+    expect(parts.find((p) => p.kind === "replacement")).toMatchObject({ href: null });
   });
 
   it("says a left-behind package's branch, age in its zone's tone, way in and unfixable advisories", () => {
@@ -89,7 +123,10 @@ describe("answerParts", () => {
       directDependents: ["scheb/2fa-google-authenticator"],
       signals: [makeSignal({ id: "S8", data: { branch: "10.x", years: 4.5, newest_branch: "11.x" } })],
       advisories: [makeAdvisory(), makeAdvisory({ id: "GHSA-2" })],
-      evidence: "branch 10.x last released …; no fix expected on 10.x",
+      noFixExpected: [
+        { id: "GHSA-0000", reason: "not_on_installed_branch" },
+        { id: "GHSA-2", reason: "not_on_installed_branch" },
+      ],
     });
 
     // Assert
@@ -100,6 +137,87 @@ describe("answerParts", () => {
       { kind: "figure", text: "4.5 years", tone: "med" },
       { kind: "figure", text: "2 security advisories", tone: "crit" },
     ]);
+  });
+
+  it("reads no fix coming from no_fix_expected alone, never from the evidence's words", () => {
+    // Arrange: a report written before lockrot 0.13.0 says no fix is expected only in prose.
+    const parts = answer({
+      verdict: "left-behind",
+      advisories: [makeAdvisory()],
+      evidence: "branch 10.x last released …; no fix expected on 10.x",
+      noFixExpected: null,
+    });
+
+    // Assert
+    expect(answerText(parts)).toBe(
+      "Left behind on an older branch while a newer one kept releasing. You require it directly. 1 security advisory affects your version.",
+    );
+    expect(parts.find((p) => p.kind === "figure")).toMatchObject({ tone: "high" });
+  });
+
+  it("says a fix could not be looked for when every advisory named is releases_unknown", () => {
+    // Arrange: mini acme/silent-snapshot, a branch snapshot whose releases were not read.
+    const one = answer({
+      verdict: "silent",
+      advisories: [makeAdvisory({ releasesRead: false })],
+      noFixExpected: [{ id: "GHSA-0000", reason: "releases_unknown" }],
+    });
+    const two = answer({
+      verdict: "silent",
+      advisories: [makeAdvisory(), makeAdvisory({ id: "GHSA-2" })],
+      noFixExpected: [
+        { id: "GHSA-0000", reason: "releases_unknown" },
+        { id: "GHSA-2", reason: "releases_unknown" },
+      ],
+    });
+
+    // Assert
+    expect(answerText(one)).toMatch(
+      /1 security advisory affects your version; its fix could not be looked for\.$/,
+    );
+    expect(answerText(two)).toMatch(
+      /2 security advisories affect your version; their fix could not be looked for\.$/,
+    );
+    expect(one.find((p) => p.kind === "figure")).toMatchObject({ tone: "high" });
+  });
+
+  it("says no fix is coming only for the predictions, and never for an advisory not looked for", () => {
+    const mixed = answer({
+      verdict: "abandoned",
+      advisories: [makeAdvisory(), makeAdvisory({ id: "GHSA-2" })],
+      noFixExpected: [
+        { id: "GHSA-0000", reason: "releases_unknown" },
+        { id: "GHSA-2", reason: "fix_withdrawn" },
+      ],
+    });
+    const predicted = answer({
+      verdict: "abandoned",
+      advisories: [makeAdvisory(), makeAdvisory({ id: "GHSA-2" })],
+      noFixExpected: [
+        { id: "GHSA-0000", reason: "no_release_fixes" },
+        { id: "GHSA-2", reason: "fix_withdrawn" },
+      ],
+    });
+
+    expect(answerText(mixed)).toMatch(
+      /2 security advisories affect your version; for 1 of them no fix is coming, and for 1 the fix could not be looked for\.$/,
+    );
+    expect(answerText(predicted)).toMatch(
+      /2 security advisories affect your version and no fix is coming for it\.$/,
+    );
+    expect(mixed.find((p) => p.kind === "figure")).toMatchObject({ tone: "crit" });
+  });
+
+  it("says no fix is coming on your branch for an advisory fixed only on another", () => {
+    const parts = answer({
+      verdict: "left-behind",
+      advisories: [makeAdvisory({ fixedBy: "3.2.0" })],
+      noFixExpected: [{ id: "GHSA-0000", reason: "not_on_installed_branch" }],
+    });
+
+    expect(answerText(parts)).toMatch(
+      /1 security advisory affects your version and no fix is coming on your branch\.$/,
+    );
   });
 
   it("names the one fix every advisory shares", () => {
@@ -137,7 +255,10 @@ describe("answerParts", () => {
   it("says a pinned package's snapshot and an old promise's constraint", () => {
     expect(
       answerText(
-        answer({ verdict: "pinned", signals: [makeSignal({ id: "S6", data: { version: "dev-master" } })] }),
+        answer({
+          verdict: "pinned",
+          signals: [makeSignal({ id: "S6", data: { version: "dev-master", reason: "branch_snapshot" } })],
+        }),
       ),
     ).toBe("Pinned to dev-master, a branch snapshot rather than a release. You require it directly.");
     expect(

@@ -4,6 +4,7 @@ import {
   NO_FACTS_FOR_PACKAGE,
   NO_FACTS_IN_FILE,
   NOT_FROM_COMPOSER,
+  originFrom,
   provenance,
   quietUnread,
 } from "../../../src/domain/provenance";
@@ -56,6 +57,18 @@ describe("provenance — package metadata", () => {
       kind: "missing",
       asOf: null,
       reason: NOT_FROM_COMPOSER,
+    });
+  });
+
+  it("claims no origin when the lock entry does not say where the package came from", () => {
+    const finding = makeFinding();
+    const model = withDetails(makeModel([finding]), {
+      [finding.package]: { lock: { ...LOCK, fromComposerRepository: null } },
+    });
+    expect(provenance(model, finding).metadata).toEqual({
+      kind: "missing",
+      asOf: null,
+      reason: "none recorded for this package",
     });
   });
 
@@ -146,6 +159,31 @@ describe("provenance — repository activity", () => {
   });
 });
 
+describe("provenance — the finding's own from_composer_repository", () => {
+  it("says a finding outside a Composer repository has no facts, with or without a details entry", () => {
+    const finding = makeFinding({ fromComposerRepository: false });
+    const bare = makeModel([finding]);
+    expect(provenance(bare, finding).metadata).toMatchObject({ reason: NOT_FROM_COMPOSER });
+    expect(provenance(bare, finding).activity).toEqual({ kind: "missing", reason: NOT_FROM_COMPOSER });
+
+    const lockSaysComposer = withDetails(bare, { [finding.package]: {} });
+    expect(provenance(lockSaysComposer, finding).metadata).toMatchObject({ reason: NOT_FROM_COMPOSER });
+    expect(provenance(lockSaysComposer, finding).activity).toEqual({
+      kind: "missing",
+      reason: NOT_FROM_COMPOSER,
+    });
+  });
+
+  it("reads the finding's true over a lock entry that says false", () => {
+    const finding = makeFinding({ fromComposerRepository: true });
+    const model = withDetails(makeModel([finding]), {
+      [finding.package]: { lock: { ...LOCK, fromComposerRepository: false } },
+    });
+    expect(provenance(model, finding).metadata).toMatchObject({ reason: "none recorded for this package" });
+    expect(provenance(model, finding).activity).toMatchObject({ reason: "none recorded for this package" });
+  });
+});
+
 describe("quietUnread", () => {
   it("names the quiet S3/S4 of a package the file holds no activity for, and why", () => {
     const finding = makeFinding({ signals: [makeSignal({ id: "S6", level: "warn" })] });
@@ -185,5 +223,30 @@ describe("quietUnread", () => {
     const finding = makeFinding({ signals: [s10] });
     const model = withDetails(makeModel([finding]), { [finding.package]: {} });
     expect(quietUnread(model, finding)?.ids).toEqual(["S3"]);
+  });
+});
+
+describe("originFrom — where the lock entry came from, in words", () => {
+  it.each([
+    ["packagist", "a Composer repository"],
+    ["composer", "a Composer repository"],
+    ["path", "a path repository of the project"],
+    ["vcs", "a VCS repository the manifest lists"],
+    ["artifact", "an archive in an artifact repository"],
+    ["package", "an inline package definition in the manifest"],
+    ["unknown", "lockrot could not tell which repository"],
+  ])("%s", (kind, words) => {
+    expect(originFrom(kind)).toEqual({ words });
+  });
+
+  it("keeps a kind the page does not know as written, a vendor one included", () => {
+    expect(originFrom("acme:mirror")).toEqual({ code: "acme:mirror" });
+    expect(originFrom("mirror")).toEqual({ code: "mirror" });
+    expect(originFrom("constructor")).toEqual({ code: "constructor" });
+  });
+
+  it("says nothing for a kind it cannot read", () => {
+    expect(originFrom(null)).toBeNull();
+    expect(originFrom("")).toBeNull();
   });
 });

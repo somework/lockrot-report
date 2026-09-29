@@ -1,7 +1,13 @@
 import { useState } from "preact/hooks";
-import type { ExplainLock, ExplainMetadata } from "../../model/types";
+import type { ExplainMetadata } from "../../model/types";
 import { ageZone, releaseThresholds } from "../../domain/age";
-import { timelineModel, yearsSince, type TimelineLane, type TimelineTick } from "../../domain/timeline";
+import {
+  timelineModel,
+  yearsSince,
+  type SnapshotCommit,
+  type TimelineLane,
+  type TimelineTick,
+} from "../../domain/timeline";
 import type { Tone } from "../../domain/vocab";
 import { useReport } from "../context";
 import { Answer, DatedBy, Key } from "./TimelineAnswer";
@@ -10,31 +16,23 @@ import { placeYears } from "./timelineAxis";
 import "./timeline.css";
 import "./timeline-forced.css";
 
-/**
- * "Release branches", answer first (PD-TIMELINE-1..12, DESIGN.md §5): two sentences that say where
- * the reader is and what is newer, then one row per branch that matters on one shared time axis
- * ending at a "today" rule — the line from each dot to that rule is the time since that branch's
- * last release. Rows sort newest version first; the reader's own row and the newest one carry the
- * weight, everything older than the reader's folds into one row. `domain/timeline.ts` decides all
- * of that; this only draws it. Renders nothing when fewer than two rows would be drawn.
- */
+/** "Release branches", answer first (PD-TIMELINE-1..12, DESIGN.md §5); `domain/timeline.ts`
+ *  decides the rows, this only draws them. */
 export function Timeline({
   metadata,
-  lock,
+  snapshot,
   installedVersion,
   ageToned = true,
 }: {
   metadata: ExplainMetadata | null;
-  lock: ExplainLock | null;
+  snapshot: SnapshotCommit | null;
   installedVersion: string;
-  /** False when the finding's verdict does not rest on age (`age.ts#isContextOnly`: abandoned,
-   *  pinned). The reader's own age then stays in ink here too, as it does in the answer sentence and
-   *  the key facts above — one age must not read as neutral there and as a warning here. */
+  /** False when the verdict does not rest on age: the age stays in ink here as it does above. */
   ageToned?: boolean;
 }) {
   const { model, now } = useReport();
   const [openFolds, setOpenFolds] = useState<readonly string[]>([]);
-  const timeline = timelineModel(metadata?.branches ?? [], lock, installedVersion, now);
+  const timeline = timelineModel(metadata?.branches ?? [], snapshot, installedVersion, now);
   if (timeline === null) return null;
 
   const thresholds = releaseThresholds(model.report.run.thresholds);
@@ -58,7 +56,8 @@ export function Timeline({
   };
   const { releasesOnly } = timeline;
   const topWord: TopWord = timeline.topReleasedLast ? "newest" : "highest";
-  const order = timeline.sortedBy === "version" ? "newest version first" : "most recent release first";
+  const snapshotFirst = timeline.rows[0]?.kind === "lane" && timeline.rows[0].lane.snapshot;
+  const order = snapshotFirst ? "snapshot first" : "highest first";
 
   return (
     <section className="detail-section detail-timeline">
@@ -75,7 +74,7 @@ export function Timeline({
         aria-label={`${releasesOnly ? "Releases" : "Release branches"}, ${order}`}
       >
         <div role="row" className="detail-timeline-row detail-timeline-head">
-          <span role="columnheader" aria-sort="descending" title={order}>
+          <span role="columnheader" aria-sort={snapshotFirst ? "other" : "descending"} title={order}>
             {releasesOnly ? "release" : "branch"}
             <span className="detail-timeline-order" aria-hidden="true">
               ↓
@@ -120,11 +119,8 @@ export function Timeline({
   );
 }
 
-/** The axis sits under the rows, not in the header: "today" above the rule butted into the LATEST
- *  header beside it and read as one phrase ("today LATEST"). Each year hangs from a hairline tick on
- *  its true place, its label beside the tick when a guide's line would otherwise run into it
- *  (`timelineAxis.ts`). Decorative — every row's own cell already carries its date for a screen
- *  reader. */
+/** Under the rows, not in the header, where "today" would read as one phrase with "LATEST".
+ *  Decorative: every row's own cell carries its date. */
 function Axis({ ticks, guides }: { ticks: readonly TimelineTick[]; guides: readonly Guide[] }) {
   const years = placeYears(
     ticks,

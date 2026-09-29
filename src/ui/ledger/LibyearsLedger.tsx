@@ -4,9 +4,8 @@ import { libyearsItems } from "../../domain/libyears";
 import { libyearsSplit } from "../../domain/summary";
 import "./ledger.css";
 
-/** Verbatim from legacy's eyebrow tooltip (`report.html:67`). */
 const TOOLTIP =
-  "Years between the installed release and the newest stable release, summed over the measured " +
+  "Years between the installed release and the newest dated release, summed over the measured " +
   "packages. Counts every drift, healthy patches included.";
 
 /**

@@ -124,7 +124,7 @@ describe("FindingsView", () => {
     expect(screen.getByRole("button", { name: /clear/i })).toBeTruthy();
   });
 
-  it("names the packages carrying an advisory but no rot verdict, above the list, regardless of the query", () => {
+  it("names the packages carrying an advisory but no rot verdict, above the list, narrowed like it", () => {
     // Arrange
     const quiet = makeFinding({
       package: "quiet/pkg",
@@ -142,20 +142,37 @@ describe("FindingsView", () => {
           affectedVersions: null,
           fixedBy: null,
           fixedOnBranch: false,
+          releasesRead: null,
         },
       ],
     });
     const flagged = makeFinding({ package: "flagged/pkg", verdict: "abandoned", priority: "critical" });
     const model = flaggedModel([quiet, flagged]);
 
-    // Act: a query that matches neither the quiet note's own text nor "flagged/pkg" still shows the
-    // note (M27, kept as legacy) while the row list below it goes to its own filtered empty state.
-    renderIn(model, stateWith({ q: "nothing-matches" }), <FindingsView />);
-
-    // Assert
+    // Act + Assert: with nothing narrowing the list, the note names it.
+    const { unmount } = renderIn(model, stateWith(), <FindingsView />);
     expect(screen.getByRole("button", { name: "quiet/pkg" })).toBeTruthy();
     expect(screen.getByText(/security advisory but no rot/)).toBeTruthy();
+    unmount();
+
+    // A search that matches it keeps it; the list below is empty for its own reason.
+    const { unmount: unmountHit } = renderIn(model, stateWith({ q: "quiet" }), <FindingsView />);
+    expect(screen.getByRole("button", { name: "quiet/pkg" })).toBeTruthy();
+    unmountHit();
+
+    // A search or a rail filter that leaves it out drops the note, as it drops a row.
+    const { unmount: unmountMiss } = renderIn(model, stateWith({ q: "nothing-matches" }), <FindingsView />);
+    expect(screen.queryByText(/security advisory but no rot/)).toBeNull();
     expect(screen.getByText(/nothing matches this filter/i)).toBeTruthy();
+    unmountMiss();
+
+    renderIn(
+      model,
+      stateWith({ filters: { ...INITIAL_STATE.filters, prio: ["critical"] } }),
+      <FindingsView />,
+    );
+    expect(screen.queryByText(/security advisory but no rot/)).toBeNull();
+    expect(document.querySelector('[data-pkg="flagged/pkg"]')).not.toBeNull();
   });
 
   it("toggles selection on a row click, and does nothing when the click lands on a link", () => {
@@ -340,7 +357,7 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
     const row = screen.getByRole("listitem", { name: "short/pkg" });
 
     // Assert
-    const why = within(row).getByText("no stable release since Nov 2017");
+    const why = within(row).getByText("no release since Nov 2017");
     expect(why.closest(".fc-why")?.getAttribute("title")).toBe("last release 2017-11-15 (8.9 years ago)");
   });
 
@@ -523,7 +540,10 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
       const finding = makeFinding({
         package: "acme/pinned-old",
         verdict: "pinned",
-        signals: [makeSignal({ id: "S2", level: "high", data: { years: 9 } })],
+        signals: [
+          makeSignal({ id: "S2", level: "high", data: { years: 9 } }),
+          makeSignal({ id: "S6", data: { reason: "branch_snapshot" } }),
+        ],
       });
       const model = modelWith([finding]);
 
@@ -537,6 +557,41 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
       expect(dot?.className).toContain("age-bar-context");
       expect(dot?.className).not.toContain("tone-crit");
       expect(scale.getAttribute("aria-label")).toContain("flagged for being pinned to a branch snapshot");
+    });
+
+    it("says only 'flagged as pinned' for a pinned row whose case no field states", () => {
+      const finding = makeFinding({
+        package: "acme/pinned-unknown",
+        verdict: "pinned",
+        signals: [makeSignal({ id: "S2", level: "high", data: { years: 9 } })],
+      });
+      renderIn(modelWith([finding]), stateWith(), <FindingsView />);
+      const row = screen.getByRole("listitem", { name: "acme/pinned-unknown" });
+      expect(within(row).getByRole("img").getAttribute("aria-label")).toMatch(/— flagged as pinned$/);
+    });
+
+    it("names a pinned row's own S6 case as its context reason: a repository with no tag is not a snapshot (PD-S6-1)", () => {
+      // Arrange
+      const finding = makeFinding({
+        package: "acme/untagged-old",
+        verdict: "pinned",
+        signals: [
+          makeSignal({ id: "S2", level: "high", data: { years: 9 } }),
+          makeSignal({
+            id: "S6",
+            data: { version: "1.0.0", reason: "no_stable_release", has_stable_release: false },
+          }),
+        ],
+      });
+      const model = modelWith([finding]);
+
+      // Act
+      renderIn(model, stateWith(), <FindingsView />);
+      const scale = within(screen.getByRole("listitem", { name: "acme/untagged-old" })).getByRole("img");
+
+      // Assert
+      expect(scale.getAttribute("aria-label")).toContain("flagged because its repository lists no tag");
+      expect(scale.getAttribute("aria-label")).not.toContain("snapshot");
     });
 
     it("keeps the zone's own tone for a verdict whose priority does come from age", () => {
@@ -763,6 +818,34 @@ describe("FindingsView / the ledger's sentences and ditto (PD-ROWS-5/PD-ROWS-6, 
     );
   });
 
+  it("says a run of pinned rows by the S6 case they share, and only then (PD-S6-1)", () => {
+    // Arrange: three direct pinned rows from one vendor whose repositories list no tag.
+    const pinned = (v: string, reason: string) =>
+      makeFinding({
+        package: `acme/${v}`,
+        verdict: "pinned",
+        priority: "high",
+        signals: [makeSignal({ id: "S6", level: "high", data: { version: "1.0.0", reason } })],
+      });
+    const untagged = modelWith(["a", "b", "c"].map((v) => pinned(v, "no_stable_release")));
+    const mixed = modelWith([
+      pinned("a", "no_stable_release"),
+      pinned("b", "branch_snapshot"),
+      pinned("c", "yanked"),
+    ]);
+
+    // Act / Assert
+    const { container, unmount } = renderIn(untagged, stateWith(), <FindingsView />);
+    expect(container.querySelector(".frun-note")?.textContent).toBe(
+      "These 3 acme/* packages are all without a tag in their repositories. You require each one directly.",
+    );
+    unmount();
+    const other = renderIn(mixed, stateWith(), <FindingsView />);
+    expect(other.container.querySelector(".frun-note")?.textContent).toBe(
+      "These 3 acme/* packages are all pinned. You require each one directly.",
+    );
+  });
+
   it("says a run of direct requirements is required directly, for development when it is", () => {
     // Arrange: three direct dev-only abandoned rows from one vendor, with no age signal.
     const model = modelWith(
@@ -898,6 +981,26 @@ describe("PackagesView", () => {
     expect(row.hasAttribute("aria-current")).toBe(false);
   });
 
+  it("links a package's name to origin.package_url as written, and only where lockrot wrote one", () => {
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "packages" }), <PackagesView />);
+    const nameLink = (pkg: string) => screen.getByRole("row", { name: pkg }).querySelector(".pk-name > a");
+
+    expect(nameLink("wp-plugin/acme-forms")?.getAttribute("href")).toBe(
+      "https://wp-packages.org/packages/wp-plugin/acme-forms",
+    );
+    expect(nameLink("wp-plugin/acme-forms")?.getAttribute("title")).toBe(
+      "this package's page on wp-packages.org",
+    );
+    for (const pkg of ["acme/private-sdk", "acme/legacy_", "acme/internal-lib", "acme/path-lib"]) {
+      expect(nameLink(pkg)).toBeNull();
+    }
+  });
+
+  it("links no package name on a report that predates origin", () => {
+    renderIn(loadModel("mini.json"), stateWith({ view: "packages" }), <PackagesView />);
+    expect(within(screen.getByRole("table", { name: "All packages" })).queryAllByRole("link")).toEqual([]);
+  });
+
   it("marks the open package's row with aria-current, as every other tab's rows do (PD-ROWS-12)", () => {
     const model = loadModel("mini.json");
     renderIn(model, stateWith({ view: "packages", pkg: "vendor/snapshot" }), <PackagesView />);
@@ -1027,6 +1130,7 @@ describe("AdvisoriesView", () => {
           affectedVersions: null,
           fixedBy: null,
           fixedOnBranch: false,
+          releasesRead: null,
         },
         {
           id: "GHSA-2",
@@ -1039,6 +1143,7 @@ describe("AdvisoriesView", () => {
           affectedVersions: null,
           fixedBy: null,
           fixedOnBranch: false,
+          releasesRead: null,
         },
       ],
     });
@@ -1071,6 +1176,7 @@ describe("AdvisoriesView", () => {
           affectedVersions: null,
           fixedBy: null,
           fixedOnBranch: false,
+          releasesRead: null,
         },
       ],
     });
@@ -1186,6 +1292,37 @@ describe("AdvisoriesView as a ledger (PD-ADV-1..3)", () => {
     expect(unrated.querySelector(".ac-scope")?.textContent).toBe("dev");
     expect(unfixed.querySelector(".ac-fix")?.textContent).toBe("no fix listed");
     expect(unfixed.querySelector(".ac-num")?.textContent).toBe("2.6 y");
+  });
+
+  it("says an advisory whose releases were not read has its fix not checked, in the row's fix cell", () => {
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "advisories" }), <AdvisoriesView />);
+    const row = screen.getByRole("listitem", { name: /^acme\/silent-snapshot, / });
+    expect(row.querySelector(".ac-fix")?.textContent).toBe("fix not checked");
+  });
+
+  it("files an advisory whose releases were not read under Fix not checked, never No fix listed", () => {
+    const { container } = renderIn(
+      loadModel("mini-0.13-edges.json"),
+      stateWith({ view: "advisories", q: "silent-snapshot" }),
+      <AdvisoriesView />,
+    );
+    const answer = container.querySelector(".al-answer")?.textContent.replace(/\s+/g, " ") ?? "";
+    expect(answer).toContain("Whether a release fixes it was not checked.");
+    expect(answer).not.toContain("No fix is listed");
+    const headings = Array.from(container.querySelectorAll("h2"), (el) => el.textContent);
+    expect(headings.some((h) => h.includes("Fix not checked"))).toBe(true);
+    expect(headings.some((h) => h.includes("No fix listed"))).toBe(false);
+    expect(container.textContent).not.toContain("Nothing published clears it");
+  });
+
+  it("counts not-checked fixes apart in the tab's sentence", () => {
+    const { container } = renderIn(
+      loadModel("mini-0.13-edges.json"),
+      stateWith({ view: "advisories" }),
+      <AdvisoriesView />,
+    );
+    const answer = container.querySelector(".al-answer")?.textContent.replace(/\s+/g, " ") ?? "";
+    expect(answer).toMatch(/3 with no fix listed and 1 with the fix not checked\./);
   });
 
   it("says under the answer when the advisory check may not have covered every package", () => {
@@ -1555,6 +1692,19 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
   });
 });
 
+/** Keys a document written before lockrot 0.13.0 leaves out; the page names them like any other. */
+const LATER_KEYS = [
+  "exposure_rule",
+  "unattributed",
+  "note_details",
+  "gate",
+  "run.root_package",
+  "run.project_php",
+  "run.fail_on_kind",
+  "run.mode",
+  "run.strict_network",
+];
+
 describe("RunView", () => {
   // PD-RUN-4: a missing value says why in words — "not in this document" when the key is absent,
   // "left empty by this run" when lockrot wrote it as null — never the word "undefined" and never a bare dash.
@@ -1596,12 +1746,60 @@ describe("RunView", () => {
 
     const { unmount: unmountNone } = renderIn(explicitNone, stateWith({ view: "run" }), <RunView />);
     expect(screen.getByText("fail-on").nextElementSibling?.textContent).toBe("none");
-    expect(document.querySelector(".run-answer")?.textContent).toContain("no gate (--fail-on=none)");
+    expect(document.querySelector(".run-answer")?.textContent).toContain(
+      "It ran with --fail-on=none, which fails on no finding.",
+    );
     unmountNone();
 
     renderIn(gated, stateWith({ view: "run" }), <RunView />);
     expect(screen.getByText("fail-on").nextElementSibling?.textContent).toBe("critical");
     expect(document.querySelector(".run-answer")?.textContent).toContain("--fail-on=critical");
+  });
+
+  it("the answer names --strict-network when the run had it, and never calls that run ungated", () => {
+    renderIn(loadModel("wallabag_offline-strict-0.13.json"), stateWith({ view: "run" }), <RunView />);
+    const none = document.querySelector(".run-answer")?.textContent.replace(/\s+/g, " ") ?? "";
+    expect(none).toContain(
+      "It ran with --fail-on=none, which fails on no finding, and with --strict-network, which fails the run when a network lookup fails.",
+    );
+    expect(none).not.toContain("no gate");
+    cleanup();
+
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "run" }), <RunView />);
+    expect(document.querySelector(".run-answer")?.textContent).toContain(
+      "It ran with --fail-on=high and --strict-network.",
+    );
+  });
+
+  it("libyears not measured: the detail's words for each reason, an unknown one as written in code", () => {
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "run" }), <RunView />);
+    const row = screen.getByText("libyears not measured").nextElementSibling;
+    expect(row?.textContent).toContain("not from a Composer repository 6");
+    expect(row?.textContent).toContain("no release date lockrot trusts 1");
+    expect(row?.textContent).not.toContain("no dated release");
+    expect(row?.querySelector("code")?.textContent).toBe("yanked_release");
+  });
+
+  it("fail-on: words the threshold from run.fail_on_kind, an unknown kind as written", () => {
+    const base = makeModel([]);
+    const withKind = (failOn: string, failOnKind: string | null): Model => ({
+      ...base,
+      report: { ...base.report, run: { ...base.report.run, failOn, failOnKind } },
+    });
+    const row = () => screen.getByText("fail-on").nextElementSibling?.textContent;
+    const cases: readonly (readonly [string, string | null, string])[] = [
+      ["none", "none", "none · fails on nothing"],
+      ["silent", "verdict", "silent · fails on a verdict at least as severe as silent"],
+      ["high", "priority", "high · fails on a priority at least as high as high"],
+      ["unchecked", "unchecked", "unchecked · fails on any finding whose check did not run"],
+      ["gpl-3.0", "licence", "gpl-3.0 · another kind of threshold: licence"],
+      ["high", null, "high"],
+    ];
+    for (const [failOn, kind, text] of cases) {
+      const { unmount } = renderIn(withKind(failOn, kind), stateWith({ view: "run" }), <RunView />);
+      expect(row()).toBe(text);
+      unmount();
+    }
   });
 
   // PD-RUN-1: the run in a sentence, from the document's own fields.
@@ -1611,9 +1809,16 @@ describe("RunView", () => {
     expect(answer).toBe(
       "lockrot 0.11.0 checked 271 packages in wallabag/wallabag’s composer.lock against PHP 8.4, " +
         "require-dev included, and wrote this report on 2026-09-24 00:00 UTC. Every network lookup " +
-        "answered and every repository answer in this file was fetched during the run. It ran with no " +
-        "gate (--fail-on=none).",
+        "answered and every repository answer in this file was fetched during the run. It ran with " +
+        "--fail-on=none, which fails on no finding.",
     );
+    expect(Array.from(document.querySelectorAll(".run-absent code"), (el) => el.textContent)).toEqual(
+      LATER_KEYS,
+    );
+  });
+
+  it("names no absent field for a document that carries every key the page reads", () => {
+    renderIn(loadModel("wallabag_wallabag-0.13.json"), stateWith({ view: "run" }), <RunView />);
     expect(document.querySelector(".run-absent")).toBeNull();
   });
 
@@ -1626,6 +1831,7 @@ describe("RunView", () => {
     expect(Array.from(absent?.querySelectorAll("code") ?? [], (el) => el.textContent)).toEqual([
       "abandoned",
       "libyears",
+      ...LATER_KEYS,
     ]);
     expect(absent?.textContent).toContain("lockrot 0.10.0 (report schema 1)");
     expect(screen.getByText("libyears behind").nextElementSibling?.textContent).toBe("not in this document");
@@ -1643,6 +1849,73 @@ describe("RunView", () => {
       "0 of 21 · ",
       "1 more named in words only",
     ]);
+  });
+
+  describe("what this run could not see", () => {
+    const withNotes = (notes: string[], noteDetails: Model["report"]["noteDetails"]): Model => {
+      const base = makeModel([]);
+      return { ...base, report: { ...base.report, notes, noteDetails } };
+    };
+    const detail = (text: string, docsUrl: string | null, code = "offline") => ({
+      code,
+      text,
+      docsUrl,
+      setsNetworkFailures: false,
+      data: {},
+    });
+    const noteRows = () => Array.from(document.querySelectorAll(".run-sections .note"));
+
+    it("links each note to its own entry's docs_url, and a note whose entry has none to nothing", () => {
+      const model = loadModel("mini-0.13-edges.json");
+      renderIn(model, stateWith({ view: "run" }), <RunView />);
+      const rows = noteRows();
+      expect(rows).toHaveLength(model.report.notes.length);
+      rows.forEach((row, index) => {
+        const entry = model.report.noteDetails[index];
+        expect(row.textContent).toContain(model.report.notes[index] ?? "");
+        const link = row.querySelector("a");
+        if (entry?.docsUrl) {
+          expect(link?.getAttribute("href")).toBe(entry.docsUrl);
+        } else {
+          expect(link).toBeNull();
+        }
+      });
+      const unknown = rows[model.report.noteDetails.findIndex((n) => n.code === "acme:licence-scan")];
+      expect(unknown?.textContent).toBe("acme licence scan skipped 2 packages");
+    });
+
+    it("keys notes by their place: two entries with the same text are both shown, each with its link", () => {
+      renderIn(
+        withNotes(
+          ["GitHub did not answer", "GitHub did not answer"],
+          [
+            detail("GitHub did not answer", "https://lockrot.dev/notes/#a", "repository_activity_not_found"),
+            detail("GitHub did not answer", "https://lockrot.dev/notes/#b", "repository_activity_not_found"),
+          ],
+        ),
+        stateWith({ view: "run" }),
+        <RunView />,
+      );
+      expect(noteRows().map((row) => row.querySelector("a")?.getAttribute("href"))).toEqual([
+        "https://lockrot.dev/notes/#a",
+        "https://lockrot.dev/notes/#b",
+      ]);
+    });
+
+    it("builds no link: a report without note_details, or an entry whose docs_url is not http(s)", () => {
+      renderIn(withNotes(["GitHub token not set"], []), stateWith({ view: "run" }), <RunView />);
+      expect(noteRows().map((row) => row.textContent)).toEqual(["GitHub token not set"]);
+      expect(document.querySelector(".run-sections .note a")).toBeNull();
+      cleanup();
+
+      renderIn(
+        withNotes(["offline"], [detail("offline", "javascript:alert(1)")]),
+        stateWith({ view: "run" }),
+        <RunView />,
+      );
+      expect(noteRows().map((row) => row.textContent)).toEqual(["offline"]);
+      expect(document.querySelector(".run-sections .note a")).toBeNull();
+    });
   });
 
   it("says a network failure has no count, and points at the run's notes", () => {
@@ -1814,6 +2087,7 @@ describe("the list's one Tab stop (PD-ROWS-11)", () => {
             affectedVersions: null,
             fixedBy: null,
             fixedOnBranch: false,
+            releasesRead: null,
           },
         ],
       });
@@ -1847,6 +2121,7 @@ describe("the list's one Tab stop (PD-ROWS-11)", () => {
       affectedVersions: null,
       fixedBy: null,
       fixedOnBranch: false,
+      releasesRead: null,
     });
     const model = flaggedModel([
       makeFinding({
@@ -1979,5 +2254,72 @@ describe("the baseline delta line and row tags", () => {
     // PD-BASELINE-7: the baseline's accent tag, not the critical/high tones the verdict wears.
     expect(tag.className).toBe("tag bl-tag");
     expect(within(fresh).getByText("new").className).toBe("tag bl-tag");
+  });
+});
+
+describe("signal ids this page does not know (0.13 open vocabulary)", () => {
+  function unknownIdsModel(): Model {
+    return flaggedModel([
+      makeFinding({
+        package: "acme/vendor-key",
+        verdict: "stale",
+        priority: "low",
+        signals: [
+          makeSignal({ id: "acme:licence", level: "high", summary: "licence changed to BUSL-1.1 in 3.1.0" }),
+          makeSignal({ id: "S2", level: "warn", summary: "no stable release" }),
+        ],
+      }),
+      makeFinding({
+        package: "acme/later-key",
+        verdict: "stale",
+        priority: "low",
+        signals: [makeSignal({ id: "S99", level: "high", summary: "a signal a later lockrot adds" })],
+      }),
+    ]);
+  }
+
+  it("a Findings row quotes it as written; only lockrot's own ids link to lockrot's docs", () => {
+    const { container } = renderIn(unknownIdsModel(), stateWith(), <FindingsView />);
+    const vendorRow = screen.getByRole("listitem", { name: "acme/vendor-key" });
+    const vendorId = vendorRow.querySelector(".fc-why > .sid");
+    expect(vendorId?.tagName).toBe("SPAN");
+    expect(vendorId?.textContent).toBe("acme:licence");
+    expect(vendorId?.getAttribute("title")).toBe(
+      "A check from outside lockrot, which this page does not know.",
+    );
+    expect(vendorRow.querySelector(".fc-why-text")?.textContent).toBe("licence changed to BUSL-1.1 in 3.1.0");
+
+    const laterRow = screen.getByRole("listitem", { name: "acme/later-key" });
+    const laterId = laterRow.querySelector(".fc-why > .sid");
+    expect(laterId?.tagName).toBe("A");
+    expect(laterId?.getAttribute("href")).toBe("https://lockrot.dev/verdicts/#the-signals");
+    expect(laterId?.getAttribute("title")).toBe("A lockrot check this page does not know.");
+    expect(container.textContent).not.toContain("undefined");
+  });
+
+  it("the Packages table names the ones it has no dot for in code (mini-0.13-edges acme/licensed)", () => {
+    const model = loadModel("mini-0.13-edges.json");
+    renderIn(model, stateWith({ view: "packages" }), <PackagesView />);
+    const row = screen.getByRole("row", { name: /acme\/licensed/ });
+    const more = row.querySelector(".sig-dots-more");
+    expect(more?.textContent).toBe(" +acme:licence S99");
+    expect(Array.from(more?.querySelectorAll("code") ?? [], (c) => c.textContent)).toEqual([
+      "acme:licence",
+      "S99",
+    ]);
+  });
+
+  it("the Packages Signals cell reads each id it has no dot for once (mini-0.13-edges acme/licensed)", () => {
+    const model = loadModel("mini-0.13-edges.json");
+    renderIn(model, stateWith({ view: "packages" }), <PackagesView />);
+    const cell = screen.getByRole("row", { name: /acme\/licensed/ }).querySelector(".pk-sig");
+    if (cell === null) throw new Error("no Signals cell");
+    const spoken = cell.cloneNode(true) as Element;
+    spoken.querySelectorAll('[aria-hidden="true"]').forEach((el) => {
+      el.remove();
+    });
+    const name = spoken.textContent;
+    expect(name.match(/acme:licence/g)).toHaveLength(1);
+    expect(name.match(/S99/g)).toHaveLength(1);
   });
 });

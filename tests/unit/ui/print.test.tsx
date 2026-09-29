@@ -144,6 +144,23 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     );
   });
 
+  it("prints a signal id it does not know as written, in code, in All packages (mini-0.13-edges)", () => {
+    window.location.hash = "#view=packages";
+    const { container } = render(<App model={loadFixture("mini-0.13-edges.json")} />);
+
+    window.dispatchEvent(new Event("beforeprint"));
+
+    const row = printDoc(container).querySelector('.pd-packages tr[data-pkg="acme/licensed"]');
+    expect(row?.textContent).toContain("S99 acme:licence S10");
+    expect([...(row?.querySelectorAll("code") ?? [])].map((c) => c.textContent)).toEqual([
+      "S99",
+      "acme:licence",
+    ]);
+    // A row with only ids it knows prints them as plain text.
+    const known = printDoc(container).querySelector('.pd-packages tr[data-pkg="acme/left"]');
+    expect(known?.querySelector("code")).toBeNull();
+  });
+
   it("prints an empty lock as one line per section, without a note about All packages", () => {
     const { container } = render(<App model={loadFixture("empty-lockrot-self.json")} />);
 

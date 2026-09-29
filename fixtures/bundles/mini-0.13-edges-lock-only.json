@@ -1,0 +1,633 @@
+{
+ "report": {
+  "$schema": "https://lockrot.dev/schema/report-1.json",
+  "lockrot": {
+   "version": "0.13.0",
+   "schema": 1
+  },
+  "generated_at": "2026-09-28T00:00:00+00:00",
+  "run": {
+   "project": null,
+   "root_package": null,
+   "target_php": "8.4",
+   "project_php": null,
+   "lock_file": "composer.lock",
+   "fail_on": "medium",
+   "fail_on_kind": "priority",
+   "strict_network": false,
+   "mode": "check",
+   "thresholds": {
+    "release-warn-years": 3,
+    "release-high-years": 5,
+    "push-warn-years": 3,
+    "push-high-years": 5
+   },
+   "flagged_verdicts": [
+    "abandoned",
+    "silent",
+    "pinned",
+    "left-behind",
+    "old-promise",
+    "stale"
+   ]
+  },
+  "activity_cache_oldest_at": null,
+  "packages_checked": 5,
+  "include_dev": true,
+  "not_from_composer_repository": 1,
+  "network_failures": false,
+  "counts": {
+   "abandoned": 0,
+   "silent": 0,
+   "pinned": 1,
+   "left-behind": 1,
+   "old-promise": 0,
+   "stale": 2,
+   "unknown": 1,
+   "finished": 0,
+   "ok": 0
+  },
+  "abandoned": {
+   "total": 0,
+   "with_replacement": 0
+  },
+  "priorities": {
+   "critical": 0,
+   "high": 0,
+   "medium": 2,
+   "low": 2,
+   "none": 1
+  },
+  "exposure": [],
+  "exposure_rule": {
+   "max_fan_in": 8
+  },
+  "unattributed": [],
+  "libyears": {
+   "total": 4.6,
+   "direct_requirements": 0,
+   "measured": 3,
+   "unmeasured": {
+    "branch_snapshot": 0,
+    "no_stable_release_date": 1,
+    "not_from_composer_repository": 1,
+    "metadata_unavailable": 0
+   },
+   "furthest_behind": {
+    "package": "acme/left",
+    "version": "1.4.0",
+    "libyears": 4.6
+   }
+  },
+  "baseline": null,
+  "gate": {
+   "fails": true,
+   "tripped_by": [
+    "fail_on"
+   ],
+   "fail_on_applied": true
+  },
+  "notes": [
+   "GitHub token not set: repository activity checked for 3 candidate packages, 1 packages skipped (set GITHUB_TOKEN to check all)",
+   "1 package is not from a Composer repository and was not checked"
+  ],
+  "note_details": [
+   {
+    "code": "repository_activity_anonymous_cap",
+    "text": "GitHub token not set: repository activity checked for 3 candidate packages, 1 packages skipped (set GITHUB_TOKEN to check all)",
+    "docs_url": "https://lockrot.dev/notes/#repository_activity_anonymous_cap",
+    "sets_network_failures": false,
+    "data": {
+     "forge_id": "github",
+     "checked": 3,
+     "skipped_no_token": 1,
+     "skipped_budget": 0
+    }
+   },
+   {
+    "code": "not_from_composer_repository",
+    "text": "1 package is not from a Composer repository and was not checked",
+    "docs_url": "https://lockrot.dev/notes/#not_from_composer_repository",
+    "sets_network_failures": false,
+    "data": {
+     "package_count": 1
+    }
+   }
+  ],
+  "findings": [
+   {
+    "package": "acme/untagged",
+    "version": "1.0.0",
+    "verdict": "pinned",
+    "priority": "medium",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/acme/untagged"
+    },
+    "replacement": null,
+    "replacement_url": null,
+    "signals": [
+     {
+      "id": "S6",
+      "level": "warn",
+      "summary": "no tagged release in its repository",
+      "data": {
+       "version": "1.0.0",
+       "reason": "no_stable_release",
+       "has_stable_release": false,
+       "last_stable_release": null,
+       "last_stable_version": null,
+       "last_stable_dated_by": null,
+       "snapshot_time": null
+      }
+     }
+    ],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "no tagged release in its repository",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": null,
+    "libyears_unmeasured": "no_stable_release_date",
+    "priority_basis": {
+     "base": "high",
+     "steps": [
+      {
+       "reason": "unreached",
+       "from": "high",
+       "to": "medium"
+      }
+     ]
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": true,
+     "fails": true,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "acme/left",
+    "version": "1.4.0",
+    "verdict": "left-behind",
+    "priority": "medium",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/acme/left"
+    },
+    "replacement": null,
+    "replacement_url": null,
+    "signals": [
+     {
+      "id": "S8",
+      "level": "warn",
+      "summary": "branch 1.x last released 2022-02-01 (4.7 years ago); 3.x released 3.2.0 (2026-09-01)",
+      "data": {
+       "branch": "1.x",
+       "branch_last_release": "2022-02-01T00:00:00+00:00",
+       "branch_last_version": "1.9.0",
+       "years": 4.7,
+       "newest_branch": "3.x",
+       "newest_version": "3.2.0",
+       "newest_release": "2026-09-01T00:00:00+00:00",
+       "newest_php": ">=8.5",
+       "newest_within_reach": false,
+       "floor_php": "8.4",
+       "floor_source": "target",
+       "reachable_branch": "2.x",
+       "reachable_version": "2.9.0",
+       "reachable_release": "2026-05-01T00:00:00+00:00",
+       "suggested_constraint": "^2.9",
+       "dated_by": null
+      }
+     }
+    ],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "branch 1.x last released 2022-02-01 (4.7 years ago); 3.x released 3.2.0 (2026-09-01)",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 4.6,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "high",
+     "steps": [
+      {
+       "reason": "unreached",
+       "from": "high",
+       "to": "medium"
+      }
+     ]
+    },
+    "no_fix_expected": [],
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": true,
+     "fails": true,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "acme/shared-util",
+    "version": "2.1.0",
+    "verdict": "stale",
+    "priority": "low",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/acme/shared-util"
+    },
+    "replacement": null,
+    "replacement_url": null,
+    "signals": [
+     {
+      "id": "S2",
+      "level": "high",
+      "summary": "last release 2021-08-01 (5.2 years ago)",
+      "data": {
+       "last_release": "2021-08-01T00:00:00+00:00",
+       "last_version": "2.1.0",
+       "years": 5.2,
+       "dated_by": null
+      }
+     }
+    ],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "last release 2021-08-01 (5.2 years ago)",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "medium",
+     "steps": [
+      {
+       "reason": "unreached",
+       "from": "medium",
+       "to": "low"
+      }
+     ]
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "acme/dev-helper",
+    "version": "0.5.0",
+    "verdict": "stale",
+    "priority": "low",
+    "direct": false,
+    "dev": true,
+    "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/acme/dev-helper"
+    },
+    "replacement": null,
+    "replacement_url": null,
+    "signals": [
+     {
+      "id": "S2",
+      "level": "warn",
+      "summary": "last release 2021-11-01 (4.9 years ago)",
+      "data": {
+       "last_release": "2021-11-01T00:00:00+00:00",
+       "last_version": "0.5.0",
+       "years": 4.9,
+       "dated_by": null
+      }
+     }
+    ],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "last release 2021-11-01 (4.9 years ago)",
+    "allowlist_reason": null,
+    "note": null,
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "libyears": 0.0,
+    "libyears_unmeasured": null,
+    "priority_basis": {
+     "base": "medium",
+     "steps": [
+      {
+       "reason": "unreached",
+       "from": "medium",
+       "to": "low"
+      },
+      {
+       "reason": "dev",
+       "from": "low",
+       "to": "low"
+      }
+     ]
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "acme/forked-lib",
+    "version": "2.0.1",
+    "verdict": "unknown",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": false,
+    "origin": {
+     "kind": "unknown",
+     "registry": null,
+     "package_url": null
+    },
+    "replacement": null,
+    "replacement_url": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "not from a Composer repository, not checked",
+    "allowlist_reason": null,
+    "note": "not from a Composer repository, not checked",
+    "data_date": null,
+    "libyears": null,
+    "libyears_unmeasured": "not_from_composer_repository",
+    "priority_basis": {
+     "base": "none",
+     "steps": []
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   }
+  ]
+ },
+ "details": {
+  "acme/untagged": {
+   "metadata": {
+    "abandoned": false,
+    "replacement": null,
+    "releases_listed": 0,
+    "has_stable_release": false,
+    "last_stable_release": null,
+    "last_stable_version": null,
+    "last_stable_dated_by": null,
+    "installed_release": null,
+    "installed_release_dated_by": null,
+    "repository": "https://github.com/acme/untagged.git",
+    "type": "library",
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "branches": []
+   },
+   "lock": {
+    "php": ">=8.1",
+    "released": "2024-03-01T00:00:00+00:00",
+    "repository": "https://github.com/acme/untagged.git",
+    "from_composer_repository": true,
+    "dev": false,
+    "branch_snapshot": false,
+    "type": "library"
+   },
+   "activity": {
+    "forge": "GitHub",
+    "repository": "acme/untagged",
+    "archived": false,
+    "pushed_at": "2026-06-01T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
+    "from_cache": false
+   },
+   "repository_link": "https://github.com/acme/untagged"
+  },
+  "acme/left": {
+   "metadata": {
+    "abandoned": false,
+    "replacement": null,
+    "releases_listed": 5,
+    "has_stable_release": true,
+    "last_stable_release": "2026-09-01T00:00:00+00:00",
+    "last_stable_version": "3.2.0",
+    "last_stable_dated_by": null,
+    "installed_release": "2021-06-01T00:00:00+00:00",
+    "installed_release_dated_by": null,
+    "repository": "https://github.com/acme/left.git",
+    "type": "library",
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "branches": [
+     {
+      "branch": "3.x",
+      "installed": false,
+      "highest": "3.2.0",
+      "highest_released": "2026-09-01T00:00:00+00:00",
+      "highest_commit_date": null,
+      "newest_dated": "3.2.0",
+      "newest_dated_released": "2026-09-01T00:00:00+00:00",
+      "dated_by": null,
+      "php": ">=8.5",
+      "admits_target_php": false,
+      "admits_project_php": null,
+      "php_blocked_by": "target",
+      "misses_target_php": "needs_newer",
+      "misses_project_php": null
+     },
+     {
+      "branch": "2.x",
+      "installed": false,
+      "highest": "2.9.0",
+      "highest_released": "2026-05-01T00:00:00+00:00",
+      "highest_commit_date": null,
+      "newest_dated": "2.9.0",
+      "newest_dated_released": "2026-05-01T00:00:00+00:00",
+      "dated_by": null,
+      "php": "^8.2",
+      "admits_target_php": true,
+      "admits_project_php": null,
+      "php_blocked_by": null,
+      "misses_target_php": null,
+      "misses_project_php": null
+     },
+     {
+      "branch": "1.x",
+      "installed": true,
+      "highest": "1.9.0",
+      "highest_released": "2022-02-01T00:00:00+00:00",
+      "highest_commit_date": null,
+      "newest_dated": "1.9.0",
+      "newest_dated_released": "2022-02-01T00:00:00+00:00",
+      "dated_by": null,
+      "php": "^8.4",
+      "admits_target_php": true,
+      "admits_project_php": null,
+      "php_blocked_by": null,
+      "misses_target_php": null,
+      "misses_project_php": null
+     },
+     {
+      "branch": "0.x",
+      "installed": false,
+      "highest": "0.3.0",
+      "highest_released": "2019-01-01T00:00:00+00:00",
+      "highest_commit_date": null,
+      "newest_dated": "0.3.0",
+      "newest_dated_released": "2019-01-01T00:00:00+00:00",
+      "dated_by": null,
+      "php": null,
+      "admits_target_php": null,
+      "admits_project_php": null,
+      "php_blocked_by": null,
+      "misses_target_php": null,
+      "misses_project_php": null
+     }
+    ]
+   },
+   "lock": {
+    "php": "^7.4 || ^8.0",
+    "released": "2021-06-01T00:00:00+00:00",
+    "repository": "https://github.com/acme/left.git",
+    "from_composer_repository": true,
+    "dev": false,
+    "branch_snapshot": false,
+    "type": "library"
+   },
+   "activity": {
+    "forge": "GitHub",
+    "repository": "acme/left",
+    "archived": false,
+    "pushed_at": "2026-06-01T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
+    "from_cache": false
+   },
+   "repository_link": "https://github.com/acme/left"
+  },
+  "acme/shared-util": {
+   "metadata": {
+    "abandoned": false,
+    "replacement": null,
+    "releases_listed": 1,
+    "has_stable_release": true,
+    "last_stable_release": "2021-08-01T00:00:00+00:00",
+    "last_stable_version": "2.1.0",
+    "last_stable_dated_by": null,
+    "installed_release": "2021-08-01T00:00:00+00:00",
+    "installed_release_dated_by": null,
+    "repository": "https://github.com/acme/shared-util.git",
+    "type": "library",
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "branches": [
+     {
+      "branch": "2.x",
+      "installed": true,
+      "highest": "2.1.0",
+      "highest_released": "2021-08-01T00:00:00+00:00",
+      "highest_commit_date": null,
+      "newest_dated": "2.1.0",
+      "newest_dated_released": "2021-08-01T00:00:00+00:00",
+      "dated_by": null,
+      "php": ">=7.4",
+      "admits_target_php": true,
+      "admits_project_php": null,
+      "php_blocked_by": null,
+      "misses_target_php": null,
+      "misses_project_php": null
+     }
+    ]
+   },
+   "lock": {
+    "php": ">=7.4",
+    "released": "2021-08-01T00:00:00+00:00",
+    "repository": "https://github.com/acme/shared-util.git",
+    "from_composer_repository": true,
+    "dev": false,
+    "branch_snapshot": false,
+    "type": "library"
+   },
+   "activity": {
+    "forge": "GitHub",
+    "repository": "acme/shared-util",
+    "archived": false,
+    "pushed_at": "2026-06-01T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
+    "from_cache": false
+   },
+   "repository_link": "https://github.com/acme/shared-util"
+  },
+  "acme/dev-helper": {
+   "metadata": {
+    "abandoned": false,
+    "replacement": null,
+    "releases_listed": 1,
+    "has_stable_release": true,
+    "last_stable_release": "2021-11-01T00:00:00+00:00",
+    "last_stable_version": "0.5.0",
+    "last_stable_dated_by": null,
+    "installed_release": "2021-11-01T00:00:00+00:00",
+    "installed_release_dated_by": null,
+    "repository": "https://github.com/acme/dev-helper.git",
+    "type": "library",
+    "data_date": "2026-09-28T00:00:00+00:00",
+    "branches": [
+     {
+      "branch": "0.x",
+      "installed": true,
+      "highest": "0.5.0",
+      "highest_released": "2021-11-01T00:00:00+00:00",
+      "highest_commit_date": null,
+      "newest_dated": "0.5.0",
+      "newest_dated_released": "2021-11-01T00:00:00+00:00",
+      "dated_by": null,
+      "php": ">=7.4",
+      "admits_target_php": true,
+      "admits_project_php": null,
+      "php_blocked_by": null,
+      "misses_target_php": null,
+      "misses_project_php": null
+     }
+    ]
+   },
+   "lock": {
+    "php": ">=7.4",
+    "released": "2021-11-01T00:00:00+00:00",
+    "repository": "https://github.com/acme/dev-helper.git",
+    "from_composer_repository": true,
+    "dev": true,
+    "branch_snapshot": false,
+    "type": "library"
+   },
+   "activity": {
+    "forge": "GitHub",
+    "repository": "acme/dev-helper",
+    "archived": false,
+    "pushed_at": "2026-06-01T00:00:00+00:00",
+    "fetched_at": "2026-09-28T00:00:00+00:00",
+    "from_cache": false
+   },
+   "repository_link": "https://github.com/acme/dev-helper"
+  }
+ }
+}

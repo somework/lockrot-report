@@ -1,31 +1,18 @@
-/**
- * The Findings list's ledger rows (PD-ROWS-4/5/6, DESIGN.md §5): what each one-line row says in its
- * "why it is flagged" column, and the two kinds of sentence the list reads out loud — one per
- * priority group, counting its members by verdict and by how they are reached, and one above each
- * run of three or more consecutive rows that share a verdict and a way in.
- *
- * Display only. Nothing here reorders a row or groups findings by anything but what already sits
- * next to each other in the list's own order (`filters.ts#applyFilters`): a run is found, never
- * made. Deciding what to do about a shared parent is lockrot's job, not this renderer's. Pure, no
- * DOM, no clock: the same finding always gives the same words.
- */
+/** The Findings list's rows (PD-ROWS-4/5/6): what each row says, and the sentences over a priority
+ *  group and over a run of alike rows. A run is found in the list's own order, never made. */
 
-import type { Finding, Signal, Verdict } from "../model/types";
+import type { Finding, PackageDetails, Signal, Verdict } from "../model/types";
 import { ageScale, type AgeKind, type Thresholds } from "./age";
 import { signalSortKey } from "./filters";
+import { pinnedKindOf, type PinnedKind } from "./pinned";
 import { plural } from "./format";
-import { SIGNAL_NAMES, VERDICT_ORDER } from "./vocab";
+import { SIGNAL_NAMES, VERDICT_ORDER, vocabTable } from "./vocab";
 
-/** `high` outranks `warn` outranks everything else (including the open-ended `"info"` and a level
- *  this renderer does not know) — the three-tier reading `checks.ts#levelTone` gives a signal's colour. */
-const LEVEL_RANK: Readonly<Record<string, number>> = { high: 2, warn: 1 };
+/** A `vocabTable`, so a level such as `toString` ranks lowest, not as an inherited member. */
+const LEVEL_RANK: Readonly<Record<string, number>> = vocabTable({ high: 2, warn: 1 });
 
-/**
- * Every signal a finding carries, highest level first, ties broken in `SIGNAL_IDS` numeric order
- * (`filters.ts#signalSortKey`, the order the rail and the glossary use, M2) — never the document's
- * own order, which is lockrot's rule evaluation order and carries no such guarantee. The first one
- * is the row's key fact (PD-ROWS-1); the rest are what print restores under it.
- */
+/** Highest level first, ties in numeric id order: the document's order is lockrot's evaluation
+ *  order and promises nothing. */
 export function sortedSignals(signals: readonly Signal[]): Signal[] {
   return [...signals].sort((a, b) => {
     const rank = (LEVEL_RANK[b.level] ?? 0) - (LEVEL_RANK[a.level] ?? 0);
@@ -36,12 +23,8 @@ export function sortedSignals(signals: readonly Signal[]): Signal[] {
   });
 }
 
-/**
- * The signal a row quotes, and the others it keeps for print. The key fact is the highest-level
- * signal (PD-ROWS-1) — unless the rail filters by exactly one signal and this finding carries it:
- * then the row quotes that one, so a list filtered to S5 says what S5 found on every row instead of
- * repeating each package's own top signal (PD-ROWS-5).
- */
+/** With the rail filtered to exactly one signal the finding carries, the row quotes that one
+ *  (PD-ROWS-5). */
 export function rowSignals(
   finding: Finding,
   quoted: string | null,
@@ -53,8 +36,7 @@ export function rowSignals(
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-/** "Nov 2017" from an ISO timestamp, read in UTC so the page says the same month in every time
- *  zone; `null` for anything that is not a date. */
+/** Read in UTC, so every time zone says the same month. */
 function monthYear(value: unknown): string | null {
   if (typeof value !== "string") return null;
   const date = new Date(value);
@@ -72,12 +54,8 @@ function text(value: unknown): string | null {
   return typeof value === "string" && value !== "" ? value : null;
 }
 
-/**
- * One signal, said short enough for a one-line row: "no stable release since Nov 2017", "5.x
- * stopped; 7.x ships". Built only from the signal's own `data` fields, which the row's title keeps
- * beside the document's full `summary`; any field missing or of the wrong shape falls back to that
- * summary, verbatim, rather than a guess.
- */
+/** Built only from the signal's own `data`; anything missing or misshapen falls back to its
+ *  summary, verbatim. */
 export function shortFact(signal: Signal, finding: Finding): string {
   const d = signal.data;
   switch (signal.id) {
@@ -89,7 +67,7 @@ export function shortFact(signal: Signal, finding: Finding): string {
     }
     case "S2": {
       const since = monthYear(d.last_release);
-      return since ? `no stable release since ${since}` : signal.summary;
+      return since ? `no release since ${since}` : signal.summary;
     }
     case "S4": {
       const since = monthYear(d.last_push);
@@ -124,15 +102,11 @@ export function shortFact(signal: Signal, finding: Finding): string {
   }
 }
 
-/** The words a row's "why it is flagged" column shows: its quoted signal said short, or the
- *  document's own evidence sentence for a finding that carries no signal at all. */
 export function whyText(finding: Finding, quoted: string | null): string {
   const { key } = rowSignals(finding, quoted);
   return key ? shortFact(key, finding) : finding.evidence;
 }
 
-/** The words a row's "reached" column shows: "direct", or "via" the direct requirement its chain
- *  starts at — "through another package" when the document names none. */
 export function reachText(finding: Finding): string {
   if (finding.direct) return "direct";
   const root = finding.chain[0];
@@ -145,12 +119,7 @@ export function vendorOf(pkg: string): string | null {
   return slash > 0 ? pkg.slice(0, slash) : null;
 }
 
-/**
- * How a finding gets into the project, as the run key compares it: a direct requirement by its
- * vendor (`direct:scheb`), anything else by the direct requirement that starts its chain
- * (`via:wallabag/rulerz`). `null` when neither is known — a name with no vendor, or an empty chain —
- * so such a row never joins a run on a guess.
- */
+/** `null` when neither is known, so such a row never joins a run on a guess. */
 export function wayIn(finding: Finding): string | null {
   if (finding.direct) {
     const vendor = vendorOf(finding.package);
@@ -175,9 +144,7 @@ export interface Segment {
 }
 
 /**
- * The list cut into runs and the stretches between them, in the order given — never re-sorted.
- * A stretch of rows that do not form a run is one segment, so a row's "same as the row above"
- * reading (the list's ditto) carries across it; a run starts and ends one.
+ * Never re-sorted; a stretch between runs is one segment, so the list's ditto carries across it.
  */
 export function segmentRuns(findings: readonly Finding[]): readonly Segment[] {
   const segments: Segment[] = [];
@@ -253,6 +220,8 @@ export interface RunFacts {
   readonly age: RunAge | null;
   /** Which signal every member shares that says why it is abandoned (S1 over S3). */
   readonly abandonedBy: "S1" | "S3" | null;
+  /** `null` when the members do not share one, or the run is not pinned. */
+  readonly pinned: PinnedKind | null;
 }
 
 function sharedVendor(findings: readonly Finding[]): string | null {
@@ -268,17 +237,26 @@ function runAge(findings: readonly Finding[], thresholds: Thresholds): RunAge | 
   return { kind, min: Math.min(...years), max: Math.max(...years) };
 }
 
+function sharedPinned(
+  findings: readonly Finding[],
+  details: ReadonlyMap<string, PackageDetails>,
+): PinnedKind | null {
+  if (findings[0]?.verdict !== "pinned") return null;
+  const kinds = new Set(findings.map((f) => pinnedKindOf(f, details.get(f.package) ?? null)));
+  const [only] = [...kinds];
+  return kinds.size === 1 && only !== undefined ? only : null;
+}
+
 function everyHas(findings: readonly Finding[], id: string): boolean {
   return findings.every((f) => f.signals.some((s) => s.id === id));
 }
 
-/**
- * What a run's members share, for the sentence above it. Only facts every member carries: the
- * verdict and way in (the run's own key), a vendor when all of them have the same one, an age range
- * when all of them have an age of the same kind. Expects a run from `segmentRuns`, not an arbitrary
- * list.
- */
-export function runFacts(findings: readonly Finding[], thresholds: Thresholds): RunFacts {
+/** Only facts every member of a `segmentRuns` run carries. */
+export function runFacts(
+  findings: readonly Finding[],
+  thresholds: Thresholds,
+  details: ReadonlyMap<string, PackageDetails> = new Map(),
+): RunFacts {
   const first = findings[0];
   const direct = first?.direct ?? false;
   return {
@@ -290,5 +268,6 @@ export function runFacts(findings: readonly Finding[], thresholds: Thresholds): 
     dev: first?.dev ?? false,
     age: runAge(findings, thresholds),
     abandonedBy: everyHas(findings, "S1") ? "S1" : everyHas(findings, "S3") ? "S3" : null,
+    pinned: sharedPinned(findings, details),
   };
 }

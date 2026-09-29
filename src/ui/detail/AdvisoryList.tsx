@@ -1,16 +1,12 @@
 import type { Finding } from "../../model/types";
-import { advisoriesOf, fixLadder, sevTone, sortAdvisories } from "../../domain/advisories";
+import { advisoriesOf, fixLadder, noFixWords, sevTone, sortAdvisories } from "../../domain/advisories";
 import { cveUrl } from "../../domain/links";
 import { day, plural } from "../../domain/format";
+import { unknownNoFixReason } from "../../domain/priority";
 import { OutLink, toneClass } from "../common/common";
 import "./detail.css";
 
-/**
- * "N security advisories": the fix ladder and the full advisory list, ported from legacy's advisory
- * block inside `renderDetail` (`report.js:805-831`) and `fixLadder` (`report.js:160-171`, now
- * `domain/advisories.ts`, critic.md M33). Omitted entirely for a finding with no advisory —
- * `advisoriesOf(finding).length === 0` is exactly legacy's `advisoriesOf(f).length` guard.
- */
+/** "N security advisories": the fix ladder, then every advisory; nothing for a finding with none. */
 export function AdvisoryList({ finding }: { finding: Finding }) {
   const advisories = advisoriesOf(finding);
   if (advisories.length === 0) return null;
@@ -24,22 +20,23 @@ export function AdvisoryList({ finding }: { finding: Finding }) {
       <div className="detail-ladder">
         {ladder.map((rung) => (
           <div
-            key={rung.version ?? "\u0000none"}
+            key={rung.version ?? (rung.unchecked ? "\u0000unchecked" : "\u0000none")}
             className={rung.onBranch ? "detail-rung detail-rung-here" : "detail-rung"}
           >
-            <span className="detail-rung-version">{rung.version ?? "no release"}</span>
+            <span className="detail-rung-version">
+              {rung.version ?? (rung.unchecked ? "not checked" : "no release")}
+            </span>
             <span className="detail-rung-bar">
               <i style={{ width: `${Math.round((100 * rung.n) / advisories.length)}%` }} />
             </span>
             <span className="detail-rung-count">
-              clears {rung.n} of {advisories.length}
+              {!rung.unchecked && "clears "}
+              {rung.n} of {advisories.length}
               {rung.onBranch && " · this branch"}
             </span>
           </div>
         ))}
       </div>
-      {/* A plain <details>, styled transparent, exactly as legacy nested the full list under the
-          ladder (report.js:829: `class="signal" style="background:transparent"`). */}
       <details className="detail-signal-more detail-disclosure">
         <summary className="detail-signal-summary">
           <span className="detail-signal-summary-text">Every advisory</span>
@@ -47,6 +44,7 @@ export function AdvisoryList({ finding }: { finding: Finding }) {
         <div className="detail-advisory-list">
           {sorted.map((advisory) => {
             const cve = cveUrl(advisory);
+            const reason = unknownNoFixReason(finding, advisory.id);
 
             return (
               <div key={advisory.id} className="detail-advisory">
@@ -60,7 +58,12 @@ export function AdvisoryList({ finding }: { finding: Finding }) {
                   ) : (
                     <span className="mono">{advisory.cve ?? advisory.id}</span>
                   )}
-                  <span>{advisory.fixedBy ? `fixed by ${advisory.fixedBy}` : "no fix listed"}</span>
+                  <span>{advisory.fixedBy ? `fixed by ${advisory.fixedBy}` : noFixWords(advisory)}</span>
+                  {reason !== null && (
+                    <span>
+                      no fix expected: <code className="mono">{reason}</code>
+                    </span>
+                  )}
                   <span>reported {day(advisory.reportedAt)}</span>
                   {advisory.link !== null && <OutLink href={advisory.link}>advisory</OutLink>}
                 </span>

@@ -1,7 +1,6 @@
 /**
- * PD-BASELINE-1..5 (DESIGN.md §5): the baseline surfaces, against `wallabag_baseline` — a synthetic
- * fixture (e2e/support/pages.ts): 4 new, 2 worsened, 63 already accepted, 3 entries gone from the
- * lock, `fail_on: high`.
+ * PD-BASELINE-1..6 (DESIGN.md §5): the baseline surfaces, against `wallabag_baseline` (synthetic, no
+ * gate fields) and `wallabag_baseline-older-0.13`, whose findings carry their own `gate`.
  */
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
@@ -91,12 +90,44 @@ test.describe("PD-BASELINE-3: the detail's baseline section comes first", () => 
     );
   });
 
-  test("an accepted package names --fail-on's rule, never a build outcome", async ({ page }) => {
+  test("an accepted package says nothing about the build when its finding carries no gate", async ({
+    page,
+  }) => {
     await report.gotoWithHash(FIXTURES.wallabagBaseline, "pkg=behat%2Ftransliterator");
     const detail = page.getByRole("complementary", { name: "behat/transliterator" });
     await expect(detail.locator(".detail-baseline")).toHaveText(
-      "Already accepted in lockrot-baseline.json as abandoned. lockrot's --fail-on does not count it.",
+      "Already accepted in lockrot-baseline.json as abandoned.",
     );
+  });
+
+  test("the finding's gate says whether it fails this run: exempt by the baseline, or failing", async ({
+    page,
+  }) => {
+    await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "pkg=sensio%2Fframework-extra-bundle");
+    const exempt = page.getByRole("complementary", { name: "sensio/framework-extra-bundle" });
+    await expect(exempt.locator(".detail-baseline")).toHaveText(
+      /^Already accepted in wallabag-older\.baseline\.json as abandoned, so it does not fail this run\.$/,
+    );
+
+    await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "pkg=craue%2Fconfig-bundle");
+    const fails = page.getByRole("complementary", { name: "craue/config-bundle" });
+    await expect(fails.locator(".detail-baseline")).toHaveText(
+      /^Not in wallabag-older\.baseline\.json: new since it was written\. It fails this run\.$/,
+    );
+
+    // Known, but it does not reach fail-on: nothing exempts it, and the build is not mentioned.
+    await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "pkg=sebastian%2Fresource-operations");
+    const quiet = page.getByRole("complementary", { name: "sebastian/resource-operations" });
+    await expect(quiet.locator(".detail-baseline")).not.toContainText("this run");
+  });
+
+  test("an exemption other than the baseline is named as written, not left silent", async ({ page }) => {
+    await report.gotoWithHash(FIXTURES.miniEdges013, "pkg=acme%2Ffuture-step");
+    const detail = page.getByRole("complementary", { name: "acme/future-step" });
+    await expect(detail.locator(".detail-baseline")).toHaveText(
+      "Not in lockrot-baseline.json: new since it was written. Exempt for another reason (waiver), so it does not fail this run.",
+    );
+    await expect(detail.locator(".detail-baseline code")).toHaveText("waiver");
   });
 });
 
@@ -118,28 +149,42 @@ test.describe("PD-BASELINE-4: Run data's baseline stat row", () => {
 });
 
 test.describe("PD-BASELINE-5: the gate's tally", () => {
-  test("counts the findings at or above fail-on, and those the baseline does not accept", async ({
+  test("counts the findings whose gate reaches fail-on, and those the baseline does not exempt", async ({
     page,
   }) => {
-    await report.goto(FIXTURES.wallabagBaseline);
-    await expect(page.locator(".gate-tally")).toHaveText("41 at or above · 4 of them not accepted");
+    await report.goto(FIXTURES.wallabagBaselineOlder013);
+    await expect(page.locator(".gate-tally")).toHaveText("42 at or above · 12 of them not accepted");
     await page.getByRole("button", { name: /^gate: high/ }).click();
     const pop = page.locator(".fact-pop:not(.copy-pop)");
-    await expect(pop).toContainText("41 findings in this report are at or above high");
+    await expect(pop).toContainText("42 findings in this report are at or above high");
     await expect(pop).toContainText("The page does not record the run's exit code.");
+  });
+
+  test("a report whose findings carry no gate draws no tally", async ({ page }) => {
+    await report.goto(FIXTURES.wallabagBaseline);
+    await expect(page.getByRole("button", { name: /^gate: high/ })).toBeVisible();
+    await expect(page.locator(".gate-tally")).toHaveCount(0);
   });
 
   test("PD-BASELINE-6: 'of them not accepted' lists exactly those findings, from any tab", async ({
     page,
   }) => {
-    await report.gotoWithHash(FIXTURES.wallabagBaseline, "view=advisories");
-    await page.getByRole("button", { name: "4 of them not accepted" }).click();
+    await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "view=advisories");
+    await page.getByRole("button", { name: "12 of them not accepted" }).click();
     await expect(page.getByRole("tab", { name: /Findings/ })).toHaveAttribute("aria-selected", "true");
     expect((await report.rows()).sort()).toEqual([
-      "javibravo/simpleue",
+      "craue/config-bundle",
+      "doctrine/event-manager",
+      "grandt/relativepath",
       "lcobucci/jwt",
-      "sensio/framework-extra-bundle",
-      "symfony/web-server-bundle",
+      "mnapoli/piwik-twig-extension",
+      "scheb/2fa-backup-code",
+      "scheb/2fa-bundle",
+      "scheb/2fa-email",
+      "scheb/2fa-google-authenticator",
+      "scheb/2fa-trusted-device",
+      "spomky-labs/otphp",
+      "symfony/webpack-encore-bundle",
     ]);
     expect(await report.hash()).toContain("since=new%2Cworsened");
   });

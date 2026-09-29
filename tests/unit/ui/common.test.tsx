@@ -56,7 +56,7 @@ describe("Pill", () => {
     // Assert
     const pill = screen.getByText("silent");
     expect(pill.getAttribute("title")).toBe(
-      "No stable release for at least 5 years (release-high-years) and no repository push for at least 5 years (push-high-years).",
+      "No release for at least 5 years (release-high-years), pre-releases included, and no repository push for at least 5 years (push-high-years).",
     );
   });
 

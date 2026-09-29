@@ -33,11 +33,15 @@ const MINI = loadModel("mini.json");
 const KOEL = loadModel("koel_koel.json");
 const WALLABAG = loadModel("wallabag_wallabag.json");
 const MAUTIC = loadModel("mautic_mautic.json");
+const WALLABAG_013 = loadModel("wallabag_wallabag-0.13.json");
+const KOEL_013 = loadModel("koel_koel-0.13.json");
+const MAUTIC_013 = loadModel("mautic_mautic-0.13.json");
+const EDGES_013 = loadModel("mini-0.13-edges.json");
 
 /**
  * The findings the real fixtures don't carry an example of: security advisories, the three
- * baseline standings, and both shapes of "replacement" (a resolved package name vs. Packagist's own
- * free text). Still run through `normalize()`, same as a document read from disk.
+ * baseline standings, and both shapes of "replacement" (a resolved package name vs. the repository's
+ * own free text). Still run through `normalize()`, same as a document read from disk.
  */
 const EXTRA = normalize({
   report: {
@@ -85,6 +89,11 @@ const EXTRA = normalize({
         ],
         chain: [],
         evidence: "no fix expected for GHSA-1",
+        no_fix_expected: [{ id: "GHSA-1", reason: "no_release_fixes" }],
+        priority_basis: {
+          base: "critical",
+          steps: [{ reason: "no_fix_expected", from: "critical", to: "critical" }],
+        },
       },
       {
         package: "vendor/newpkg",
@@ -120,6 +129,7 @@ const EXTRA = normalize({
         signals: [],
         chain: [],
         evidence: "",
+        priority_basis: { base: "medium", steps: [] },
         baseline: { status: "worsened", previous_verdict: "stale" },
       },
       {
@@ -214,16 +224,16 @@ const EXTRA = normalize({
     ],
   },
   details: {
-    // PD-TIMELINE-5 (DESIGN.md §5): one branch name that is not a version ("master") sends the whole
-    // list to date order; the EXTRA run records no thresholds, so no age takes a zone's tone.
+    // A branch name that is not a version keeps lockrot's order; the EXTRA run records no
+    // thresholds, so no age takes a zone's tone.
     "vendor/edge-timeline": {
       metadata: {
         branches: [
           {
-            branch: "1.x",
-            installed: true,
-            highest: "v1.0.0",
-            highest_released: "2020-12-31T00:00:00.000Z",
+            branch: "master",
+            installed: false,
+            highest: "v2.0.0",
+            highest_released: "2021-12-31T00:00:00.000Z",
             highest_commit_date: null,
             newest_dated: null,
             newest_dated_released: null,
@@ -231,10 +241,10 @@ const EXTRA = normalize({
             php: null,
           },
           {
-            branch: "master",
-            installed: false,
-            highest: "v2.0.0",
-            highest_released: "2021-12-31T00:00:00.000Z",
+            branch: "1.x",
+            installed: true,
+            highest: "v1.0.0",
+            highest_released: "2020-12-31T00:00:00.000Z",
             highest_commit_date: null,
             newest_dated: null,
             newest_dated_released: null,
@@ -350,6 +360,16 @@ describe("Detail", () => {
     expect(screen.getByRole("complementary", { name: "vendor/transitive" })).toBeTruthy();
   });
 
+  it("shows a libyears reason the page does not know as written, in code", () => {
+    const { container } = renderDetail(EDGES_013, "acme/future-reason");
+    const lockEntry = sectionKeyValue(container, "The lock entry");
+    const row = Array.from(lockEntry?.querySelectorAll("dt") ?? []).find(
+      (dt) => dt.textContent === "libyears behind",
+    )?.nextElementSibling;
+    expect(row?.textContent).toBe("not measured · yanked_release");
+    expect(row?.querySelector("code")?.textContent).toBe("yanked_release");
+  });
+
   describe("critic.md C6 — the lock entry and provenance always render", () => {
     it("shows only the guaranteed rows for a package with no details entry at all", () => {
       const { container } = renderDetail(MINI, "private/thing");
@@ -359,8 +379,8 @@ describe("Detail", () => {
       expect(lockEntry?.textContent).toContain("installed");
       expect(lockEntry?.textContent).toContain("3.0.0");
       expect(lockEntry?.querySelectorAll("dt").length).toBe(2); // installed, libyears behind — nothing else
-      expect(lockEntry?.textContent).toContain("not measured");
-      expect(lockEntry?.textContent).toContain("not from a Composer repository");
+      // Its note says why, and no field does: the libyears row names no reason.
+      expect(lockEntry?.querySelectorAll("dd")[1]?.textContent).toBe("not measured");
 
       // PD-RUN-5: no bare dash — each source says why this file gives nothing for it.
       expect(provenance?.querySelectorAll("dt").length ?? 0).toBe(0);
@@ -393,9 +413,14 @@ describe("Detail", () => {
       expect(screen.queryByText(/^Why this is/)).toBeNull();
     });
 
-    it("shows every rule as a sentence, applied or not, and the document's own final priority", () => {
-      const { container } = renderDetail(MINI, "vendor/transitive");
-      screen.getByText("Why this is high", { exact: false });
+    it("omits the section for a report that does not say how the priority was reached", () => {
+      renderDetail(MINI, "vendor/transitive");
+      expect(screen.queryByText(/^Why this is/)).toBeNull();
+    });
+
+    it("words each step of priority_basis, and ends on the document's own priority", () => {
+      const { container } = renderDetail(EDGES_013, "acme/dev-vuln");
+      screen.getByText("Why this is medium", { exact: false });
       const rows = Array.from(container.querySelectorAll(".detail-ladder-text")).map((el) => [
         el.textContent,
         el.classList.contains("is-applied")
@@ -405,30 +430,52 @@ describe("Detail", () => {
             : "result",
       ]);
       expect(rows).toEqual([
-        ["Abandoned packages start at critical.", "applied"],
-        ["You don’t require it directly: one step down. It comes through vendor/direct.", "applied"],
-        ["Needed in production: no step down.", "quiet"],
-        ["No security advisory: no step up.", "quiet"],
-        ["So: high.", "result"],
+        ["Left-behind packages start at high.", "applied"],
+        ["You don’t require it directly: one step down. It comes through acme/dev-tool.", "applied"],
+        ["Installed for development only: one step down.", "applied"],
+        ["An advisory no release on 2.x will fix: one step up.", "applied"],
+        ["So: medium.", "result"],
       ]);
       // Said in priority words, the track's own, not the verdict's.
       expect(container.querySelector(".detail-why-aside")?.textContent).toBe(
-        "one rule moved it down from critical",
+        "three rules moved it down from high",
       );
-      expect(container.querySelector(".detail-ladder-note")?.textContent).toBe(
-        "It comes through vendor/direct.",
-      );
-      // One dot per row, on the rung the ladder is at: critical, then high for the rest.
       const dots = Array.from(container.querySelectorAll(".detail-ladder-dot")).map((el) =>
         Array.from(el.classList).find((c) => c.startsWith("at-")),
       );
-      expect(dots).toEqual(["at-0", "at-1", "at-1", "at-1", "at-1"]);
+      expect(dots).toEqual(["at-1", "at-2", "at-3", "at-2", "at-2"]);
     });
 
-    it("clamps a step-up at critical instead of implying a level beyond it", () => {
-      renderDetail(EXTRA_MODEL, "vendor/vulnerable");
+    it("draws a step that could not move the level quiet, and says it stays", () => {
+      const { container } = renderDetail(EXTRA_MODEL, "vendor/vulnerable");
       screen.getByText("Why this is critical", { exact: false });
-      expect(screen.getByText("An advisory with no fix coming: one step up.")).toBeTruthy();
+      const step = container.querySelectorAll(".detail-ladder-text")[1];
+      expect(step?.textContent).toBe("An advisory no release will fix: stays at critical.");
+      expect(step?.classList.contains("is-quiet")).toBe(true);
+    });
+
+    it("shows an advisory's no-fix reason this page does not know as written, in its row", () => {
+      const { container } = renderDetail(EDGES_013, "acme/abandoned-vuln");
+      const codes = Array.from(
+        container.querySelectorAll(".detail-advisory-meta code"),
+        (el) => el.textContent,
+      );
+      expect(codes).toEqual(["fix_withdrawn"]);
+      expect(container.querySelector(".detail-answer")?.textContent).toContain(
+        "3 security advisories affect your version and no fix is coming for it.",
+      );
+    });
+
+    it("words an advisory whose fix was not looked for apart from one no release will fix", () => {
+      renderDetail(EDGES_013, "acme/silent-snapshot");
+      expect(screen.getByText("An advisory whose fix could not be looked for: one step up.")).toBeTruthy();
+    });
+
+    it("shows a step it does not know as written, in code, with its from and to", () => {
+      const { container } = renderDetail(EDGES_013, "acme/future-step");
+      const step = container.querySelectorAll(".detail-ladder-text")[1];
+      expect(step?.textContent).toBe("licence_change: high → critical.");
+      expect(step?.querySelector("code")?.textContent).toBe("licence_change");
     });
   });
 
@@ -543,7 +590,7 @@ describe("Detail", () => {
       // A quiet S10 says what its silence means, never "check gaps" under "every check ran". The
       // line reads each name to a screen reader (the strip is hidden from it)…
       expect(text(container.querySelector(".detail-checks-line"))).toBe(
-        "Quiet: S5 predates PHP · S6 snapshot · S8 branch stopped · S9 advisories · S10 all checks ran",
+        "Quiet: S5 predates PHP · S6 snapshot/untagged · S8 branch stopped · S9 advisories · S10 all checks ran",
       );
       // …but shows only the ids, since the strip right above names every check already.
       const line = container.querySelector(".detail-checks-line");
@@ -556,7 +603,7 @@ describe("Detail", () => {
       ]);
       expect(Array.from(line?.querySelectorAll(".detail-sr") ?? [], text)).toEqual([
         "predates PHP",
-        "snapshot",
+        "snapshot/untagged",
         "branch stopped",
         "advisories",
         "all checks ran",
@@ -569,7 +616,7 @@ describe("Detail", () => {
       // starts on "·"; the last item has none.
       expect(Array.from(line?.querySelectorAll(".detail-checks-item") ?? [], text)).toEqual([
         "S5 predates PHP ·",
-        "S6 snapshot ·",
+        "S6 snapshot/untagged ·",
         "S8 branch stopped ·",
         "S9 advisories ·",
         "S10 all checks ran",
@@ -610,7 +657,7 @@ describe("Detail", () => {
       const lines = Array.from(container.querySelectorAll(".detail-checks-line")).map(text);
       expect(lines).toEqual([
         "Could not run: S2 release age (undated releases, see S10)",
-        "Quiet: S1 abandoned · S3 archived · S4 push age · S5 predates PHP · S6 snapshot · S9 advisories",
+        "Quiet: S1 abandoned · S3 archived · S4 push age · S5 predates PHP · S6 snapshot/untagged · S9 advisories",
       ]);
       expect(container.querySelector(".detail-check.is-blocked .detail-check-id")?.textContent).toBe("S2");
       // A fired S10 keeps its name: it is only its quiet state that reads "all checks ran".
@@ -777,7 +824,10 @@ describe("Detail", () => {
       expect(container.querySelector(".detail-timeline-answer")?.textContent).toBe(
         "Your branch, 1.x, had its last release 9.7 years ago.",
       );
-      // The ladder's reach rung names the same two ways in, and never says "only".
+    });
+
+    it("names the same two ways in on the ladder's transitive step, never 'only'", () => {
+      const { container } = renderDetail(WALLABAG_013, "hoa/event");
       const reach = container.querySelectorAll(".detail-ladder-text")[1]?.textContent ?? "";
       expect(reach).toBe(
         "You don’t require it directly: one step down. It comes through wallabag/rulerz and wallabag/rulerz-bundle.",
@@ -802,11 +852,70 @@ describe("Detail", () => {
       expect(branch?.[2]).toMatch(/^on your \S+$/);
     });
 
-    it("says a snapshot has no release in the same slot, under the same label", () => {
-      const { container } = renderDetail(MAUTIC, "mautic/core-lib");
-      const row = factRows(container)[1];
-      expect(row?.slice(0, 2)).toEqual(["Last release", "none, a snapshot"]);
-      if (row?.[2] !== undefined) expect(row[2]).toMatch(/^dated \d/);
+    it("words a snapshot's slot the same on the older and the 0.13 document", () => {
+      for (const [model, pkg] of [
+        [MAUTIC, "mautic/core-lib"],
+        [MAUTIC_013, "mautic/core-lib"],
+        [WALLABAG, "wallabag/rulerz"],
+        [WALLABAG_013, "wallabag/rulerz"],
+      ] as const) {
+        const rows = factRows(renderDetail(model, pkg).container);
+        cleanup();
+        expect(rows[1], pkg).toEqual(
+          pkg === "mautic/core-lib"
+            ? ["Snapshot", "not recorded", "a branch commit, not a release"]
+            : ["Last release", "none, a snapshot", "commit dated 2.8 y ago"],
+        );
+      }
+    });
+
+    it("words an S6 by its own case: never tagged, tagged, no metadata, and no tag at all (PD-S6-1)", () => {
+      const facts = (model: Model, pkg: string) => factRows(renderDetail(model, pkg).container)[1];
+      const answer = (model: Model, pkg: string) =>
+        renderDetail(model, pkg).container.querySelector(".detail-answer")?.textContent ?? "";
+      // "none" is true for a package that lists no tag; the note dates the commit.
+      expect(facts(WALLABAG_013, "wallabag/rulerz")).toEqual([
+        "Last release",
+        "none, a snapshot",
+        "commit dated 2.8 y ago",
+      ]);
+      expect(answer(WALLABAG_013, "wallabag/rulerz")).toMatch(
+        /^Pinned to dev-master, a branch snapshot of a package with no tagged release\. /,
+      );
+      cleanup();
+      // No repository metadata: nothing said about tags, and an undated commit is said to be so.
+      expect(facts(MAUTIC_013, "mautic/core-lib")).toEqual([
+        "Snapshot",
+        "not recorded",
+        "a branch commit, not a release",
+      ]);
+      expect(answer(MAUTIC_013, "mautic/core-lib")).toMatch(
+        /^Pinned to 7\.0\.0-dev, a branch snapshot rather than a release\. /,
+      );
+      cleanup();
+      // Its lock time is neither a release nor a snapshot, so no date is given.
+      const untagged = renderDetail(EDGES_013, "acme/untagged").container;
+      expect(factRows(untagged)[1]).toEqual(["Last release", "none tagged"]);
+      expect(untagged.querySelector(".detail-answer")?.textContent).toMatch(
+        /^Installed 1\.0\.0, but its repository lists no tag\. /,
+      );
+      expect(untagged.querySelector(".detail-lead")?.textContent).not.toContain("snapshot");
+      expect(untagged.querySelector(".detail-lead")?.textContent).not.toContain("dated");
+    });
+
+    it("never calls a snapshot's commit a release, so a tagged one's panel gives one last-release date (rector/rector)", () => {
+      const { container } = renderDetail(MAUTIC_013, "rector/rector");
+      expect(factRows(container)[1]).toEqual(["Snapshot", "2 mo ago", "a branch commit, not a release"]);
+      // The answer names no tag and no date: the Provenance "newest dated tag" line is the one place.
+      const answerText = container.querySelector(".detail-answer")?.textContent ?? "";
+      expect(answerText).toMatch(/^Pinned to dev-main, a branch snapshot rather than a release\. /);
+      expect(answerText).not.toContain("2.6.7");
+      const lead = container.querySelector(".detail-lead")?.textContent ?? "";
+      expect(lead).not.toContain("Last release");
+      expect(lead).not.toContain("2026-09-13");
+      expect(container.querySelector(".detail-timeline-answer")?.textContent).toContain(
+        "a branch snapshot, not a release, dated 2 months ago",
+      );
     });
 
     it("glosses a libyears of 0.0 so it does not read as good news, and keeps an abandoned age in ink everywhere", () => {
@@ -913,10 +1022,71 @@ describe("Detail", () => {
       );
     });
 
-    // Evaluator: "It does not fail the build." stated an outcome the report does not record (no exit
-    // code, and --strict-network can still fail a run). With a gate on the run the sentence names
-    // lockrot's own counting rule instead; with none, it adds nothing.
-    it("with a gate on the run, names --fail-on's counting rule rather than a build outcome", () => {
+    function withGate(
+      status: string,
+      previous: string | null,
+      gate: Record<string, unknown> | null,
+      verdict = "stale",
+    ) {
+      const model = normalize({
+        report: {
+          lockrot: { version: "0.13.0", schema: 1 },
+          generated_at: "2026-01-01T00:00:00Z",
+          run: { fail_on: "high", fail_on_kind: "priority" },
+          gate: { fails: true, tripped_by: ["fail_on"], fail_on_applied: true },
+          baseline: { path: "baseline.json", known: 1, new: 1, worsened: 0, stale: [] },
+          findings: [
+            {
+              package: "vendor/same",
+              version: "1.0.0",
+              verdict,
+              priority: "high",
+              baseline: { status, previous_verdict: previous },
+              gate,
+            },
+          ],
+        },
+      });
+      if (!model.ok) throw new Error(model.error.message);
+      const { container } = renderDetail(model.model, "vendor/same");
+      return container.querySelector(".detail-baseline")?.textContent ?? "";
+    }
+
+    it("says an accepted finding does not fail this run only when its gate says the baseline exempts it", () => {
+      expect(withGate("known", "stale", { reaches_fail_on: true, fails: false, exempt_by: "baseline" })).toBe(
+        "Already accepted in baseline.json as stale, so it does not fail this run.",
+      );
+      // Known, but it does not reach fail-on: nothing exempts it, and the build is not mentioned.
+      expect(withGate("known", "stale", { reaches_fail_on: false, fails: false, exempt_by: null })).toBe(
+        "Already accepted in baseline.json as stale.",
+      );
+    });
+
+    it("says a finding fails this run when its gate says so", () => {
+      expect(
+        withGate("new", null, { reaches_fail_on: true, fails: true, exempt_by: null }, "abandoned"),
+      ).toBe("Not in baseline.json: new since it was written. It fails this run.");
+    });
+
+    it("names another exemption than the baseline as written, and says it does not fail this run", () => {
+      expect(
+        withGate("new", null, { reaches_fail_on: true, fails: false, exempt_by: "waiver" }, "abandoned"),
+      ).toBe(
+        "Not in baseline.json: new since it was written. Exempt for another reason (waiver), so it does not fail this run.",
+      );
+      expect(withGate("known", "stale", { reaches_fail_on: true, fails: false, exempt_by: "waiver" })).toBe(
+        "Already accepted in baseline.json as stale. Exempt for another reason (waiver), so it does not fail this run.",
+      );
+    });
+
+    it("says nothing about the build for a run that fails nothing, or no gate", () => {
+      expect(
+        withGate("new", null, { reaches_fail_on: true, fails: false, exempt_by: null }, "abandoned"),
+      ).toBe("Not in baseline.json: new since it was written.");
+      expect(withGate("known", "stale", null)).toBe("Already accepted in baseline.json as stale.");
+    });
+
+    it("says nothing about the build for a report whose findings carry no gate, whatever its fail-on", () => {
       const model = normalize({
         report: {
           lockrot: { version: "0.11.0", schema: 1 },
@@ -936,23 +1106,62 @@ describe("Detail", () => {
       });
       if (!model.ok) throw new Error(model.error.message);
       const { container } = renderDetail(model.model, "vendor/same");
-      const text = container.querySelector(".detail-baseline")?.textContent ?? "";
-      expect(text).toBe("Already accepted in baseline.json as stale. lockrot's --fail-on does not count it.");
-      expect(text).not.toMatch(/build|pass|fail the/);
+      expect(container.querySelector(".detail-baseline")?.textContent).toBe(
+        "Already accepted in baseline.json as stale.",
+      );
     });
   });
 
   describe("replacement", () => {
-    it("links a resolved package-name replacement to Packagist, in the answer sentence", () => {
+    it("links a resolved replacement to replacement_url as lockrot wrote it, in the answer sentence", () => {
+      const { container } = renderDetail(EDGES_013, "acme/retired-api");
+      expect(container.querySelector(".detail-answer")?.textContent).toContain(
+        "Its named replacement is acme/new-api.",
+      );
+      const link = screen.getByRole("link", { name: "acme/new-api" });
+      expect(link.getAttribute("href")).toBe("https://packagist.org/packages/acme/new-api");
+    });
+
+    it("names a resolved replacement without a link when replacement_url is null", () => {
+      const { container } = renderDetail(EDGES_013, "acme/private-retired");
+      expect(container.querySelector(".detail-answer")?.textContent).toContain(
+        "Its named replacement is acme/private-next.",
+      );
+      expect(screen.queryByRole("link", { name: "acme/private-next" })).toBeNull();
+    });
+
+    it("links a replacement by replacement_url, not by where the package came from", () => {
+      const { container } = renderDetail(EDGES_013, "acme/moved-in");
+      expect(screen.getByRole("link", { name: "acme/new-home" }).getAttribute("href")).toBe(
+        "https://packagist.org/packages/acme/new-home",
+      );
+      const headerLinks = Array.from(container.querySelectorAll(".detail-links a"), (a) => a.textContent);
+      expect(headerLinks.filter((text) => /packagist|registry/.test(text))).toEqual([]);
+    });
+
+    it("links a replacement read from composer.lock only where replacement_url says", () => {
+      renderDetail(EDGES_013, "acme/retired-cli");
+      expect(screen.getByRole("link", { name: "acme/new-cli" }).getAttribute("href")).toBe(
+        "https://packagist.org/packages/acme/new-cli",
+      );
+      cleanup();
+      const { container } = renderDetail(EDGES_013, "acme/private-retired-lock");
+      expect(container.querySelector(".detail-answer")?.textContent).toContain(
+        "Its named replacement is acme/private-new.",
+      );
+      expect(screen.queryByRole("link", { name: "acme/private-new" })).toBeNull();
+    });
+
+    it("links nothing on a report that predates replacement_url", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/replaced");
       expect(container.querySelector(".detail-answer")?.textContent).toContain(
         "Its named replacement is vendor/successor.",
       );
-      const link = screen.getByRole("link", { name: "vendor/successor" });
-      expect(link.getAttribute("href")).toBe("https://packagist.org/packages/vendor/successor");
+      expect(screen.queryByRole("link", { name: "vendor/successor" })).toBeNull();
+      expect(container.querySelector(".detail-answer-replacement")?.textContent).toBe("vendor/successor");
     });
 
-    it("shows Packagist's own free-text replacement as plain text, not a link (critic.md M32)", () => {
+    it("shows the repository's own free-text replacement as plain text, not a link (critic.md M32)", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/freetext-replacement");
       expect(screen.queryByRole("link", { name: "some/other-package" })).toBeNull();
       expect(container.querySelector(".detail-answer-replacement")?.textContent).toBe("some/other-package");
@@ -998,6 +1207,15 @@ describe("Detail", () => {
       expect(cveLink.getAttribute("href")).toBe("https://nvd.nist.gov/vuln/detail/CVE-2024-0001");
       expect(screen.getByText("no fix listed")).toBeTruthy();
       expect(screen.getByText("fixed by 1.2.0")).toBeTruthy();
+    });
+
+    it("says an advisory whose releases were not read has its fix not checked, never no fix", () => {
+      const { container } = renderDetail(EDGES_013, "acme/silent-snapshot");
+      const rungs = Array.from(container.querySelectorAll(".detail-rung"), (rung) => rung.textContent);
+      expect(rungs).toEqual(["not checked1 of 1"]);
+      fireEvent.click(screen.getByText("Every advisory"));
+      expect(screen.getByText("fix not checked")).toBeTruthy();
+      expect(screen.queryByText("no fix listed")).toBeNull();
     });
 
     it("shows the feed's raw severity text in the chip, not the normalised bucket (DESIGN.md §5 M1)", () => {
@@ -1248,11 +1466,23 @@ describe("Detail", () => {
       expect(container.textContent).toContain("your version, dated by laravel/framework");
     });
 
-    it("falls back to date order, and to no tone or guides, when the names or the thresholds are missing", () => {
-      // vendor/edge-timeline: a "master" branch next to "1.x", and a run with no thresholds.
+    it("says the snapshot row comes first, and sorts by no one column, when it heads the table", () => {
+      // rector/rector (mautic_mautic.json): a dev-main snapshot above the highest dated branch.
+      const { container } = renderDetail(loadModel("mautic_mautic.json"), "rector/rector");
+      const table = container.querySelector('.detail-timeline-grid[role="table"]');
+      expect(table?.getAttribute("aria-label")).toMatch(/, snapshot first$/);
+      const header = table?.querySelector('[role="columnheader"]');
+      expect(header?.getAttribute("aria-sort")).toBe("other");
+      expect(header?.getAttribute("title")).toBe("snapshot first");
+    });
+
+    it("keeps lockrot's order, and draws no tone or guides, when the thresholds are missing", () => {
       const { container } = renderDetail(EXTRA_MODEL, "vendor/edge-timeline");
       expect(rowHeaders(container)).toEqual(["master, the newest", "1.x, yours"]);
-      expect(screen.getByRole("table", { name: "Release branches, most recent release first" })).toBeTruthy();
+      expect(screen.getByRole("table", { name: "Release branches, highest first" })).toBeTruthy();
+      expect(
+        container.querySelector('.detail-timeline-grid [role="columnheader"]')?.getAttribute("aria-sort"),
+      ).toBe("descending");
       expect(container.querySelector(".detail-timeline-age")?.classList.contains("is-toned")).toBe(false);
       expect(container.querySelector(".detail-timeline-guide")).toBeNull();
       expect(container.querySelector(".detail-timeline-key")?.textContent).not.toContain("years ago");
@@ -1340,6 +1570,83 @@ describe("Detail", () => {
     });
   });
 
+  describe("the registry link is origin.package_url, labelled by origin.registry", () => {
+    it("links a 0.13 packagist.org entry that has no details entry", () => {
+      renderDetail(KOEL_013, "algolia/algoliasearch-client-php");
+      const link = screen.getByRole("link", { name: "packagist.org" });
+      expect(link.getAttribute("href")).toBe(
+        "https://packagist.org/packages/algolia/algoliasearch-client-php",
+      );
+      expect(link.getAttribute("title")).toBe("this package's page on packagist.org");
+    });
+
+    it("links another registry's page by that registry's name", () => {
+      renderDetail(EDGES_013, "wp-plugin/acme-forms");
+      expect(screen.getByRole("link", { name: "wp-packages.org" }).getAttribute("href")).toBe(
+        "https://wp-packages.org/packages/wp-plugin/acme-forms",
+      );
+      expect(screen.queryByRole("link", { name: /packagist/ })).toBeNull();
+    });
+
+    it("builds no link where lockrot wrote none: a registry without pages, a packagist entry without one", () => {
+      renderDetail(EDGES_013, "acme/private-sdk");
+      expect(screen.queryByRole("link", { name: "repo.packagist.com" })).toBeNull();
+      cleanup();
+      renderDetail(EDGES_013, "acme/legacy_");
+      expect(screen.queryByRole("link", { name: "packagist.org" })).toBeNull();
+    });
+
+    it("does not link a finding that is not from one, and says so in Provenance", () => {
+      const { container } = renderDetail(KOEL_013, "teamtnt/laravel-scout-tntsearch-driver");
+      expect(screen.queryByRole("link", { name: /packagist/ })).toBeNull();
+      const provenance = openReference(container, "Provenance");
+      expect(
+        Array.from(provenance?.querySelectorAll(".detail-prov-reason") ?? [], (el) => el.textContent),
+      ).toEqual(["none — not from a Composer repository"]);
+    });
+
+    it("links no registry on a report that predates origin", () => {
+      renderDetail(KOEL, "algolia/algoliasearch-client-php");
+      expect(screen.queryByRole("link", { name: /packagist/ })).toBeNull();
+    });
+  });
+
+  describe("Provenance says where the lock entry came from", () => {
+    const originLine = (model: Model, pkg: string) => {
+      const { container } = renderDetail(model, pkg);
+      const line = openReference(container, "Provenance")?.querySelector(".detail-prov-origin");
+      return {
+        line,
+        facts: Array.from(line?.querySelectorAll(".detail-prov-fact") ?? [], (el) =>
+          [el.querySelector("dt")?.textContent, el.querySelector("dd")?.textContent].join(" "),
+        ),
+      };
+    };
+
+    it("names the kind and the registry", () => {
+      const { line, facts } = originLine(EDGES_013, "acme/private-sdk");
+      expect(line?.querySelector(".detail-prov-source")?.textContent).toBe("Origin");
+      expect(facts).toEqual(["from a Composer repository", "registry repo.packagist.com"]);
+    });
+
+    it("says a local package was installed from this machine", () => {
+      expect(originLine(MAUTIC_013, "mautic/core-lib").facts).toEqual([
+        "from a path repository of the project",
+        "installed from this machine",
+      ]);
+    });
+
+    it("keeps a kind the page does not know as written", () => {
+      const { line, facts } = originLine(EDGES_013, "acme/mirrored");
+      expect(facts).toEqual(["from acme:mirror"]);
+      expect(line?.querySelector("dd code")?.textContent).toBe("acme:mirror");
+    });
+
+    it("draws no origin line on a report that predates origin", () => {
+      expect(originLine(KOEL, "predis/predis").line).toBeNull();
+    });
+  });
+
   describe("a fully-detailed real finding (predis/predis, koel_koel.json)", () => {
     it("renders the header's version, pills and outbound links", () => {
       const { container } = renderDetail(KOEL, "predis/predis");
@@ -1351,9 +1658,8 @@ describe("Detail", () => {
       expect(pills?.textContent).toContain("high");
       expect(pills?.querySelector(".tag")).toBeNull();
       expect(container.querySelector(".detail-version")?.textContent).toMatch(/^v?\d/);
-      expect(screen.getByRole("link", { name: "packagist" }).getAttribute("href")).toBe(
-        "https://packagist.org/packages/predis/predis",
-      );
+      // An older report says nothing of where the package came from, so no registry is linked.
+      expect(screen.queryByRole("link", { name: /packagist/ })).toBeNull();
       expect(screen.getByRole("link", { name: "github.com" }).getAttribute("href")).toBe(
         "https://github.com/predis/predis",
       );
@@ -1405,8 +1711,28 @@ describe("Detail", () => {
       const provenance = sectionKeyValue(container, "Provenance");
       expect(provenance?.textContent).toContain("releases listed");
       expect(provenance?.textContent).toContain("58");
-      expect(provenance?.textContent).toContain("last stable");
+      expect(provenance?.textContent).toContain("newest dated tag");
       expect(provenance?.textContent).toContain("v3.6.1");
+    });
+
+    it("claims no date for the newest tag when lockrot recorded none, and never calls it stable", () => {
+      const details = KOEL.details.get("predis/predis");
+      if (details?.metadata == null) throw new Error("predis has no metadata");
+      const undated: PackageDetails = {
+        ...details,
+        metadata: { ...details.metadata, lastStableRelease: null },
+      };
+      const model: Model = {
+        ...KOEL,
+        details: new Map([...KOEL.details, ["predis/predis", undated] as const]),
+      };
+      const { container } = renderDetail(model, "predis/predis");
+      const provenance = sectionKeyValue(container, "Provenance");
+      const labels = Array.from(provenance?.querySelectorAll("dt") ?? [], (dt) => dt.textContent);
+      expect(labels).toContain("newest tag");
+      expect(labels).not.toContain("newest dated tag");
+      expect(provenance?.textContent).not.toMatch(/stable/i);
+      expect(provenance?.textContent).toContain("v3.6.1 · date not recorded");
     });
   });
 
@@ -1420,7 +1746,7 @@ describe("Detail", () => {
     }
 
     it("puts the answer and how it gets in first, then priority and the checks behind it, follow-the-upstream, release branches, and the two reference sections last", () => {
-      const { container } = renderDetail(KOEL, "predis/predis");
+      const { container } = renderDetail(KOEL_013, "predis/predis");
       const order = markerOrder(container, [
         "Left behind on",
         "How it gets in",
@@ -1516,5 +1842,164 @@ describe("Detail", () => {
       const { container } = renderDetail(MINI, "private/thing");
       expect(container.querySelector(".detail-hidden-note")).toBeNull();
     });
+  });
+});
+
+describe("open vocabularies (lockrot 0.13): a value this page does not know is shown as written", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  function words(el: Element | null | undefined): string {
+    return (el?.textContent ?? "").replace(/\s+/g, " ").trim();
+  }
+
+  function firedRow(container: ParentNode, id: string): Element | undefined {
+    return Array.from(container.querySelectorAll("details.detail-fired")).find(
+      (row) => row.querySelector(".detail-fired-id")?.textContent === id,
+    );
+  }
+
+  const ROW_KEYS_013 = [
+    "admits_target_php",
+    "admits_project_php",
+    "php_blocked_by",
+    "misses_target_php",
+    "misses_project_php",
+  ];
+
+  /** mini-0.13-edges with the five branch-row admission keys taken off every row. */
+  function edgesWithoutRowKeys(): Model {
+    const raw = JSON.parse(readFileSync(join(FIXTURES_DIR, "mini-0.13-edges.json"), "utf8")) as {
+      details: Record<string, { metadata: { branches: Record<string, unknown>[] } | null }>;
+    };
+    for (const entry of Object.values(raw.details)) {
+      for (const row of entry.metadata?.branches ?? []) {
+        for (const key of ROW_KEYS_013) Reflect.deleteProperty(row, key);
+      }
+    }
+    const result = normalize(raw);
+    if (!result.ok) throw new Error("stripped mini-0.13-edges failed to normalize");
+    return result.model;
+  }
+
+  it("acme/licensed: names the ids it does not know in code, and gives S2 only its own check's reason", () => {
+    const { container } = renderDetail(EDGES_013, "acme/licensed", vi.fn(), { view: "packages" });
+    const tally = container.querySelector(".detail-checks-tally");
+    expect(words(tally)).toBe(
+      "1 fired · 8 quiet (2 with no activity on file) · 1 could not run · also acme:licence, S99, checks this page does not know.",
+    );
+    expect(Array.from(tally?.querySelectorAll("code") ?? [], (c) => c.textContent)).toEqual([
+      "acme:licence",
+      "S99",
+    ]);
+    const lines = Array.from(container.querySelectorAll(".detail-checks-line")).map(words);
+    // sbom_lookup's quota_exhausted stopped S99 and acme:licence, not S2: it is not S2's reason.
+    expect(lines[0]).toBe("Could not run: S2 release age (undated releases, see S10)");
+    expect(lines.join(" ")).not.toContain("quota");
+  });
+
+  it("acme/licensed: an id that is not lockrot's gets no lockrot docs link; S99, lockrot's own, keeps one", () => {
+    const { container } = renderDetail(EDGES_013, "acme/licensed", vi.fn(), { view: "packages" });
+    const vendor = firedRow(container, "acme:licence");
+    expect(words(vendor?.querySelector(".detail-fired-def"))).toBe(
+      "A check from outside lockrot, which this page does not know.",
+    );
+    expect(vendor?.querySelector(".detail-fired-body a")).toBeNull();
+    // An id longer than "S10" sizes its own column rather than running under the summary beside it.
+    expect(
+      ["acme:licence", "S99", "S10"].map((id) =>
+        firedRow(container, id)?.querySelector("summary")?.classList.contains("has-wide-id"),
+      ),
+    ).toEqual([true, false, false]);
+    // Its data, and the unknown S10 check and reason, are shown as the document wrote them.
+    const pairs = (row: Element | undefined) =>
+      Array.from(
+        row?.querySelectorAll("dl.detail-data dt") ?? [],
+        (dt) => `${words(dt)}: ${words(dt.nextElementSibling)}`,
+      );
+    expect(pairs(vendor)).toEqual(["from: MIT", "to: BUSL-1.1", "since: 3.1.0"]);
+    expect(pairs(firedRow(container, "S10"))).toEqual(
+      expect.arrayContaining(["check: sbom_lookup", "reason: quota_exhausted", "blocks: S99, acme:licence"]),
+    );
+
+    const lockrotOwn = firedRow(container, "S99");
+    expect(words(lockrotOwn?.querySelector(".detail-fired-def"))).toBe(
+      "A lockrot check this page does not know. S99 in lockrot’s docs",
+    );
+    expect(lockrotOwn?.querySelector(".detail-fired-body a")?.getAttribute("href")).toBe(
+      "https://lockrot.dev/verdicts/#the-signals",
+    );
+  });
+
+  it("says an unknown reason and an unknown stopped id as written, in code, beside the known ones", () => {
+    const result = normalize({
+      report: {
+        lockrot: { version: "0.14.0", schema: 1 },
+        generated_at: "2026-09-27T00:00:00Z",
+        findings: [
+          {
+            package: "acme/later",
+            version: "1.0.0",
+            verdict: "ok",
+            priority: "none",
+            direct: true,
+            dev: false,
+            signals: [
+              {
+                id: "S10",
+                level: "info",
+                summary: "not checked",
+                data: {
+                  unchecked: [
+                    { check: "sbom_lookup", reason: "quota_exhausted", blocks: ["acme:sbom"] },
+                    { check: "release_dates", reason: "undated_releases", blocks: ["S2"] },
+                  ],
+                  blocks: ["acme:sbom", "S2"],
+                },
+              },
+            ],
+            chain: ["acme/later"],
+            evidence: "",
+          },
+        ],
+      },
+    });
+    if (!result.ok) throw new Error("fixture failed to normalize");
+    const { container } = renderDetail(result.model, "acme/later", vi.fn(), { view: "packages" });
+    const line = container.querySelector(".detail-checks-line");
+    expect(words(line)).toBe(
+      "Could not run: S2 release age · acme:sbom (quota_exhausted and undated releases, see S10)",
+    );
+    expect(Array.from(line?.querySelectorAll("code") ?? [], (c) => c.textContent)).toEqual([
+      "acme:sbom",
+      "quota_exhausted",
+    ]);
+  });
+
+  it("acme/left: an unknown floor_source is S8 data as written, and the release branches draw no 0.13 row field", () => {
+    const { container } = renderDetail(EDGES_013, "acme/left");
+    const s8 = firedRow(container, "S8");
+    const data = Array.from(s8?.querySelectorAll("dl.detail-data > dt") ?? []);
+    const floor = data.find((dt) => dt.textContent === "floor source");
+    expect(words(floor?.nextElementSibling)).toBe("extension");
+
+    const timeline = container.querySelector(".detail-timeline")?.cloneNode(true) ?? null;
+    expect(timeline).not.toBeNull();
+    for (const value of ["extension", "needs_newer", "stops_before", "project"]) {
+      expect(timeline?.textContent).not.toContain(value);
+    }
+    cleanup();
+    // The page draws none of the admission keys yet: the section is the same without them.
+    const without = renderDetail(edgesWithoutRowKeys(), "acme/left").container;
+    expect(without.querySelector(".detail-timeline")?.isEqualNode(timeline)).toBe(true);
+  });
+
+  it("acme/floors: every misses_* side, an unknown one included, draws the detail it has without them", () => {
+    const now = renderDetail(EDGES_013, "acme/floors").container.cloneNode(true);
+    cleanup();
+    const without = renderDetail(edgesWithoutRowKeys(), "acme/floors").container;
+    expect(without.isEqualNode(now)).toBe(true);
+    expect(now.textContent).not.toContain("straddles");
   });
 });

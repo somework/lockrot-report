@@ -172,17 +172,26 @@ export function OutLink({
   href,
   children,
   tabIndex,
+  title,
 }: {
   href: string | null;
   children: ComponentChildren;
   /** -1 inside a list row that is not the list's Tab stop (PD-ROWS-11, `ui/rowCursor.ts`). */
   tabIndex?: -1 | undefined;
+  title?: string;
 }) {
   const safe = safeHref(href);
   if (safe === null) return <span className="out">{children}</span>;
 
   return (
-    <a className="out" href={safe} target="_blank" rel="noopener noreferrer" tabIndex={tabIndex}>
+    <a
+      className="out"
+      href={safe}
+      target="_blank"
+      rel="noopener noreferrer"
+      tabIndex={tabIndex}
+      title={title}
+    >
       {children}
     </a>
   );

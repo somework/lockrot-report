@@ -7,6 +7,7 @@ import {
   fixLadder,
   fixShapeOf,
   groupAdvisories,
+  noFixWords,
   passesAdvisoryRail,
   sevTone,
   sortAdvisories,
@@ -55,6 +56,14 @@ describe("sevTone", () => {
   });
 });
 
+describe("noFixWords", () => {
+  it("says no fix is listed only where the advisory's S9 read the releases, or does not say", () => {
+    expect(noFixWords(makeAdvisory({ releasesRead: true }))).toBe("no fix listed");
+    expect(noFixWords(makeAdvisory({ releasesRead: null }))).toBe("no fix listed");
+    expect(noFixWords(makeAdvisory({ releasesRead: false }))).toBe("fix not checked");
+  });
+});
+
 describe("fixLadder", () => {
   it("returns one rung per distinct fixed_by version", () => {
     // Arrange
@@ -70,8 +79,8 @@ describe("fixLadder", () => {
 
     // Assert
     expect(ladder).toEqual([
-      { version: "2.0.0", onBranch: true, n: 1 },
-      { version: "3.0.0", onBranch: false, n: 1 },
+      { version: "2.0.0", onBranch: true, n: 1, unchecked: false },
+      { version: "3.0.0", onBranch: false, n: 1, unchecked: false },
     ]);
   });
 
@@ -88,7 +97,7 @@ describe("fixLadder", () => {
     const ladder = fixLadder(finding);
 
     // Assert
-    expect(ladder).toEqual([{ version: "2.0.0", onBranch: true, n: 2 }]);
+    expect(ladder).toEqual([{ version: "2.0.0", onBranch: true, n: 2, unchecked: false }]);
   });
 
   it("buckets advisories with no fix listed together, distinct from any real version", () => {
@@ -104,7 +113,22 @@ describe("fixLadder", () => {
     const ladder = fixLadder(finding);
 
     // Assert
-    expect(ladder).toEqual([{ version: null, onBranch: false, n: 2 }]);
+    expect(ladder).toEqual([{ version: null, onBranch: false, n: 2, unchecked: false }]);
+  });
+
+  it("keeps advisories whose releases were not read apart from those no release fixes", () => {
+    const finding = makeFinding({
+      advisories: [
+        makeAdvisory({ id: "a", fixedBy: null, releasesRead: false }),
+        makeAdvisory({ id: "b", fixedBy: null, releasesRead: true }),
+        makeAdvisory({ id: "c", fixedBy: null, releasesRead: null }),
+      ],
+    });
+
+    expect(fixLadder(finding)).toEqual([
+      { version: null, onBranch: false, n: 2, unchecked: false },
+      { version: null, onBranch: false, n: 1, unchecked: true },
+    ]);
   });
 
   it("puts an on-branch rung before an off-branch rung regardless of count", () => {
@@ -121,8 +145,8 @@ describe("fixLadder", () => {
     const ladder = fixLadder(finding);
 
     // Assert
-    expect(ladder[0]).toEqual({ version: "1.5.0", onBranch: true, n: 1 });
-    expect(ladder[1]).toEqual({ version: "3.0.0", onBranch: false, n: 2 });
+    expect(ladder[0]).toEqual({ version: "1.5.0", onBranch: true, n: 1, unchecked: false });
+    expect(ladder[1]).toEqual({ version: "3.0.0", onBranch: false, n: 2, unchecked: false });
   });
 
   it("orders ties by advisory-arrival order, not JS's numeric-key-first object order (M33)", () => {
@@ -140,8 +164,8 @@ describe("fixLadder", () => {
 
     // Assert: both rungs are on-branch with n:1, a tie the sort leaves in first-seen order.
     expect(ladder).toEqual([
-      { version: "1.9.0", onBranch: true, n: 1 },
-      { version: "2", onBranch: true, n: 1 },
+      { version: "1.9.0", onBranch: true, n: 1, unchecked: false },
+      { version: "2", onBranch: true, n: 1, unchecked: false },
     ]);
   });
 
@@ -158,7 +182,7 @@ describe("fixLadder", () => {
     const ladder = fixLadder(finding);
 
     // Assert
-    expect(ladder).toEqual([{ version: "2.0.0", onBranch: true, n: 2 }]);
+    expect(ladder).toEqual([{ version: "2.0.0", onBranch: true, n: 2, unchecked: false }]);
   });
 });
 
@@ -176,6 +200,11 @@ describe("fixShapeOf", () => {
   it("is move when the fix requires a branch move", () => {
     // Arrange / Act / Assert
     expect(fixShapeOf(makeAdvisory({ fixedBy: "3.0.0", fixedOnBranch: false }))).toBe("move");
+  });
+
+  it("is unchecked, never none, when its S9 read no release", () => {
+    expect(fixShapeOf(makeAdvisory({ fixedBy: null, releasesRead: false }))).toBe("unchecked");
+    expect(fixShapeOf(makeAdvisory({ fixedBy: null, releasesRead: true }))).toBe("none");
   });
 });
 
@@ -282,73 +311,32 @@ describe("passesAdvisoryRail", () => {
 });
 
 describe("advisoryCheckIncomplete", () => {
-  // PD-LEDGER-1 (DESIGN.md §5): whether AdvisoryLedger's "no advisory" reads as a clean check or an
-  // incomplete one. Not exercised through allAdvisories()/a finding at all — this reads only the
-  // run-wide facts (`network_failures`, `notes`) the schema actually carries for a whole-lock check.
+  const withNotes = (codes: readonly string[]): Model => {
+    const base = makeModel([]);
+    const noteDetails = codes.map((code) => ({
+      code,
+      text: code,
+      docsUrl: null,
+      setsNetworkFailures: null,
+      data: {},
+    }));
+    return { ...base, report: { ...base.report, noteDetails } };
+  };
 
-  it("is false when the run recorded no network failure and no matching note", () => {
-    // Arrange
-    const model = makeModel([]);
-
-    // Act / Assert
-    expect(advisoryCheckIncomplete(model)).toBe(false);
+  it.each(["advisories_not_checked", "advisories_unavailable"])("is true for a %s note", (code) => {
+    expect(advisoryCheckIncomplete(withNotes(["offline", code]))).toBe(true);
   });
 
-  it("is true when the report says a network failure occurred", () => {
-    // Arrange
-    const base = makeModel([]);
-    const model: Model = { ...base, report: { ...base.report, networkFailures: true } };
-
-    // Act / Assert
-    expect(advisoryCheckIncomplete(model)).toBe(true);
+  it("is false for notes about other checks, even with a network failure", () => {
+    const model = withNotes(["repository_activity_unreachable", "metadata_unavailable"]);
+    expect(advisoryCheckIncomplete({ ...model, report: { ...model.report, networkFailures: true } })).toBe(
+      false,
+    );
   });
 
-  it("is true when a note names the advisory check, case-insensitively", () => {
-    // Arrange
+  it("does not read note text", () => {
     const base = makeModel([]);
-    const model: Model = {
-      ...base,
-      report: {
-        ...base.report,
-        notes: ["this run was --offline; the security ADVISORY check could not run"],
-      },
-    };
-
-    // Act / Assert
-    expect(advisoryCheckIncomplete(model)).toBe(true);
-  });
-
-  it("is true when a note names the audit check instead", () => {
-    // Arrange: verdicts.md's own wording for one way this check is skipped ("needs Composer 2.4").
-    const base = makeModel([]);
-    const model: Model = {
-      ...base,
-      report: {
-        ...base.report,
-        notes: ["composer audit needs Composer 2.4 or newer; advisories were not checked"],
-      },
-    };
-
-    // Act / Assert
-    expect(advisoryCheckIncomplete(model)).toBe(true);
-  });
-
-  it("ignores a note about something else entirely", () => {
-    // Arrange: mini.json's own notes — about repository activity and a non-Composer package, not
-    // the advisory check.
-    const base = makeModel([]);
-    const model: Model = {
-      ...base,
-      report: {
-        ...base.report,
-        notes: [
-          "GitHub did not answer for 3 repositories (private, renamed or removed); repository activity missing",
-          "1 package is not from a Composer repository and was not checked",
-        ],
-      },
-    };
-
-    // Act / Assert
+    const model: Model = { ...base, report: { ...base.report, notes: ["advisories were not checked"] } };
     expect(advisoryCheckIncomplete(model)).toBe(false);
   });
 });
@@ -372,6 +360,23 @@ describe("groupAdvisories", () => {
     // Assert
     expect(groups.map((group) => group.shape)).toEqual(["branch", "move", "none"]);
     expect(groups[0]?.advisories).toEqual([{ advisory: branchAdvisory, finding }]);
+  });
+
+  it("files an advisory whose releases were not read under its own group, after no fix listed", () => {
+    const finding = makeFinding();
+    const unread = makeAdvisory({ id: "u", fixedBy: null, releasesRead: false });
+    const none = makeAdvisory({ id: "n", fixedBy: null, releasesRead: true });
+
+    const groups = groupAdvisories([
+      { advisory: unread, finding },
+      { advisory: none, finding },
+    ]);
+
+    expect(groups.map((group) => [group.shape, group.heading])).toEqual([
+      ["none", "No fix listed"],
+      ["unchecked", "Fix not checked"],
+    ]);
+    expect(groups[1]?.hint).not.toContain("Nothing published");
   });
 
   it("omits a group with nothing in it", () => {
@@ -413,8 +418,8 @@ describe("advisoryPackages", () => {
 
     // Assert
     expect(packages).toEqual([
-      { package: "spomky-labs/otphp", fixedBy: ["11.5.0"], someUnfixed: false },
-      { package: "acme/other", fixedBy: [], someUnfixed: true },
+      { package: "spomky-labs/otphp", fixedBy: ["11.5.0"], someUnfixed: false, someUnchecked: false },
+      { package: "acme/other", fixedBy: [], someUnfixed: true, someUnchecked: false },
     ]);
   });
 
@@ -431,6 +436,19 @@ describe("advisoryPackages", () => {
     const [entry] = advisoryPackages(pairs);
 
     // Assert: never compared or ranked, just listed in the order the advisories give them.
-    expect(entry).toEqual({ package: "acme/mixed", fixedBy: ["2.0.1", "1.9.9"], someUnfixed: true });
+    expect(entry).toEqual({
+      package: "acme/mixed",
+      fixedBy: ["2.0.1", "1.9.9"],
+      someUnfixed: true,
+      someUnchecked: false,
+    });
+  });
+
+  it("tells an advisory whose releases were not read apart from one no release fixes", () => {
+    const finding = makeFinding({ package: "acme/unread" });
+    const [entry] = advisoryPackages([
+      { advisory: makeAdvisory({ id: "A", fixedBy: null, releasesRead: false }), finding },
+    ]);
+    expect(entry).toEqual({ package: "acme/unread", fixedBy: [], someUnfixed: false, someUnchecked: true });
   });
 });

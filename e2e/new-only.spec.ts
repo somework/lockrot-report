@@ -1,13 +1,5 @@
-/**
- * Page-quality checks (DESIGN.md §6): properties the built page has to hold on their own, not
- * differences against the legacy page this renderer was proven against during the extraction.
- *
- * - axe: no serious or critical violation, in both colour schemes, with a package detail open;
- * - CSP: no `securitypolicyviolation` on any fixture page, through boot and the common
- *   interactions (every tab, the theme toggle, the glossary, a detail);
- * - no console error and no uncaught exception on any fixture page;
- * - no horizontal page overflow at 320px on any fixture page and tab.
- */
+/** Page-quality checks (DESIGN.md §6) on every fixture page: axe in both colour schemes with a
+ *  detail open, no CSP violation, no console error, no page overflow at 320px. */
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -22,7 +14,33 @@ function builtFixtures(): FixtureName[] {
     .map((file) => file.replace(/\.html$/, "") as FixtureName);
 }
 
-const AXE_FIXTURES = ["mini", "koel_koel", "wallabag_wallabag", "wallabag_baseline"] as FixtureName[];
+const AXE_FIXTURES: readonly FixtureName[] = [
+  "mini",
+  "koel_koel",
+  "wallabag_wallabag",
+  "wallabag_baseline",
+  // Every real 0.13 bundle and both hand-built edge bundles.
+  "wallabag_wallabag-0.13",
+  "koel_koel-0.13",
+  "koel_koel-all-0.13",
+  "mautic_mautic-0.13",
+  "gh_akaunting_akaunting-0.13",
+  "mini-0.13-edges",
+  "mini-0.13-edges-lock-only",
+  "koel_lock-only-0.13",
+  "koel_no-token-unchecked-0.13",
+  "wallabag_baseline-older-0.13",
+  "wallabag_baseline-self-0.13",
+  "wallabag_generate-baseline-0.13",
+  "wallabag_offline-strict-0.13",
+  "wallabag_offline-strict-unchecked-0.13",
+  "mini-0.13-gate-generate",
+  "mini-0.13-gate-none",
+  "mini-0.13-gate-null",
+  "mini-0.13-gate-unchecked",
+  "mini-0.13-gate-unknown",
+  "mini-0.13-gate-verdict",
+];
 const SCHEMES = ["light", "dark"] as const;
 const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;
 
@@ -42,9 +60,8 @@ async function seriousViolations(page: Page): Promise<string[]> {
 }
 
 test.describe("axe: no serious or critical violations", () => {
-  // An axe pass over wallabag's 271-row pages takes 30-40s when the whole suite shares the machine,
-  // and over two minutes in Firefox or WebKit with all three browsers running at once; the budget
-  // is for load, not for a slow page.
+  // An axe pass over a 271-row page takes minutes in Firefox or WebKit with all three browsers
+  // running; the budget is for load.
   test.describe.configure({ timeout: 180_000 });
   test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -54,8 +71,8 @@ test.describe("axe: no serious or critical violations", () => {
         await page.emulateMedia({ colorScheme });
         await load(page, fixture);
         const report = await createReportPage(page);
-        // Nothing opens by itself (PD-ROWS-9): open the first Findings row, as the legacy boot
-        // pick did, or the first package of the full list when nothing is flagged.
+        // Nothing opens by itself (PD-ROWS-9): open the first row, or the first package when
+        // nothing is flagged.
         let first = (await report.rows())[0];
         if (first === undefined) {
           await report.tab("packages");
@@ -147,11 +164,8 @@ test.describe("no horizontal overflow at 320px", () => {
 });
 
 test.describe("no horizontal overflow inside the open detail sheet at 320px (regression review)", () => {
-  // The page itself stays at scrollWidth 320 here (the check above), but `.shell-detail` is its own
-  // scrollable region (`overflow-y: auto`, PD-DETAIL-3) and can widen sideways on its own: "The lock
-  // entry" can show a package's repository URL as its own link text (`Detail.tsx#lockRows`), and
-  // `.out`'s `white-space: nowrap` (meant for the short labels its other callers pass) used to stop
-  // it from ever wrapping, running the sheet past the viewport it is meant to fill.
+  // `.shell-detail` scrolls on its own and can widen sideways even when the page does not: a
+  // repository URL shown as link text must wrap.
   test.use({ viewport: { width: 320, height: 720 } });
 
   test("wallabag_wallabag: sensio/framework-extra-bundle's repository link wraps instead of widening the sheet", async ({
@@ -162,8 +176,6 @@ test.describe("no horizontal overflow inside the open detail sheet at 320px (reg
     await report.openPackage("sensio/framework-extra-bundle");
 
     const detail = page.getByRole("complementary", { name: "sensio/framework-extra-bundle" });
-    // The chain that used to sit in a closed "How it is reached" now opens the panel (PD-DETAIL-6),
-    // so it is already on screen here; the two reference sections that remain are opened.
     for (const title of ["The lock entry", "Provenance"]) {
       await detail.locator("summary", { hasText: title }).click();
     }
@@ -175,11 +187,8 @@ test.describe("no horizontal overflow inside the open detail sheet at 320px (reg
   });
 });
 
-/**
- * A publisher's provenance line (README, "Publishing a report"): markup another site puts after
- * <body> in a copy of the page. The page's policy refuses style attributes, so the line is styled
- * by the renderer's `.lockrot-provenance` class — and adding it must not trip the policy.
- */
+/** A publisher's provenance line (README): the page's policy refuses style attributes, so the
+ *  renderer's `.lockrot-provenance` class styles it. */
 test.describe("a publisher's provenance line", () => {
   test("is styled by the page and trips no policy", async ({ page }) => {
     const source = readFileSync(join(REPO_ROOT, "build/pages/mini.html"), "utf8");

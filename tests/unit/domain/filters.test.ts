@@ -4,6 +4,7 @@ import {
   applyFilters,
   hiddenByFilters,
   population,
+  quietAdvisoryFindings,
   railGroups,
 } from "../../../src/domain/filters";
 import { EMPTY_FILTERS, INITIAL_STATE } from "../../../src/state/types";
@@ -569,5 +570,58 @@ describe("activeFilters (PD-RAIL-4)", () => {
   it("is empty when nothing is selected, and keeps an id it has no name for as is", () => {
     expect(activeFilters(withFilters({}))).toEqual([]);
     expect(activeFilters(withFilters({ signal: ["S99"] }))[0]?.label).toBe("S99");
+  });
+
+  it("keeps an id a link names as is, even one an object literal would resolve as an inherited key", () => {
+    // A shared link can carry any `signal=` value; the rail's labels must not hand back
+    // Object.prototype's own members for one.
+    for (const id of ["toString", "constructor", "hasOwnProperty"]) {
+      expect(activeFilters(withFilters({ signal: [id] }))[0]?.label).toBe(id);
+    }
+  });
+});
+
+describe("quietAdvisoryFindings", () => {
+  const quiet = [
+    makeFinding({
+      package: "quiet/ok",
+      verdict: "ok",
+      direct: true,
+      advisories: [makeAdvisory({ severity: "critical" })],
+    }),
+    makeFinding({
+      package: "quiet/finished",
+      verdict: "finished",
+      direct: false,
+      advisories: [makeAdvisory({ severity: "low" })],
+    }),
+  ];
+  const others = [
+    makeFinding({ package: "flagged/one", verdict: "abandoned", advisories: [makeAdvisory()] }),
+    makeFinding({ package: "ok/clean", verdict: "ok" }),
+  ];
+  const model = modelWith([...quiet, ...others]);
+
+  it("is every ok or finished finding with an advisory when nothing narrows the list", () => {
+    expect(quietAdvisoryFindings(model, stateWith()).map((f) => f.package)).toEqual([
+      "quiet/ok",
+      "quiet/finished",
+    ]);
+  });
+
+  it("honours the search box like the list below it", () => {
+    expect(quietAdvisoryFindings(model, stateWith({ q: "finished" })).map((f) => f.package)).toEqual([
+      "quiet/finished",
+    ]);
+    expect(quietAdvisoryFindings(model, stateWith({ q: "nothing-matches" }))).toEqual([]);
+  });
+
+  it("honours the rail like the list below it", () => {
+    const direct = stateWith({ filters: withFilters({ scope: ["direct"] }) });
+    expect(quietAdvisoryFindings(model, direct).map((f) => f.package)).toEqual(["quiet/ok"]);
+    const low = stateWith({ filters: withFilters({ sev: ["low"] }) });
+    expect(quietAdvisoryFindings(model, low).map((f) => f.package)).toEqual(["quiet/finished"]);
+    const verdict = stateWith({ filters: withFilters({ verdict: ["abandoned"] }) });
+    expect(quietAdvisoryFindings(model, verdict)).toEqual([]);
   });
 });

@@ -10,6 +10,19 @@ import { FIXTURES, type FixtureName } from "./support/pages";
 
 let report: ReportPage;
 
+/** Keys a document written before lockrot 0.13.0 leaves out; the page names them like any other. */
+const LATER_KEYS = [
+  "exposure_rule",
+  "unattributed",
+  "note_details",
+  "gate",
+  "run.root_package",
+  "run.project_php",
+  "run.fail_on_kind",
+  "run.mode",
+  "run.strict_network",
+];
+
 test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);
 });
@@ -21,7 +34,7 @@ test("wallabag: the run in one sentence, the thresholds as scales, axe-clean in 
   await expect(page.locator(".run-answer")).toContainText(
     "lockrot 0.11.0 checked 271 packages in wallabag/wallabag’s composer.lock against PHP 8.4",
   );
-  await expect(page.locator(".run-absent")).toHaveCount(0);
+  await expect(page.locator(".run-absent code")).toHaveText(LATER_KEYS);
   // release and push share 3/5 here, so one scale carries both subjects.
   await expect(page.locator(".run-thr-row")).toHaveCount(1);
   await expect(page.locator(".run-thr-subject")).toHaveText(["release", "push"]);
@@ -42,14 +55,20 @@ test("wallabag: the run in one sentence, the thresholds as scales, axe-clean in 
   }
 });
 
-test("capsule 0.10: names the two fields it leaves out, and the rows that need them say so", async ({
+test("capsule 0.10: names every field it leaves out, and the rows that need them say so", async ({
   page,
 }) => {
   await report.gotoWithHash("capsule-0.10-drupal" as FixtureName, "view=run");
-  await expect(page.locator(".run-absent code")).toHaveText(["abandoned", "libyears"]);
+  await expect(page.locator(".run-absent code")).toHaveText(["abandoned", "libyears", ...LATER_KEYS]);
   const row = page.locator("dt", { hasText: /^libyears behind$/ }).locator("xpath=following-sibling::dd[1]");
   await expect(row).toHaveText("not in this document");
   await expect(page.locator(".run-answer")).toContainText("was 24 hours old");
+});
+
+test("wallabag 0.13: a document that carries every key names none absent", async ({ page }) => {
+  await report.gotoWithHash(FIXTURES.wallabag013, "view=run");
+  await expect(page.locator(".run-answer")).toBeVisible();
+  await expect(page.locator(".run-absent")).toHaveCount(0);
 });
 
 test("no sideways scroll on Run data at 320px", async ({ page }) => {

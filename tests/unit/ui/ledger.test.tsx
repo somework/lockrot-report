@@ -584,6 +584,39 @@ describe("AdvisoryLedger", () => {
     expect(lines).toEqual(["acme/one — fixed by 1.0.1; some list no fix", "acme/two — no fix listed"]);
   });
 
+  it("says fix not checked, not no fix listed, for a package whose releases were not read", () => {
+    const unread = normalize({
+      report: {
+        generated_at: "2026-01-01T00:00:00Z",
+        findings: [
+          {
+            package: "acme/unread",
+            version: "dev-main",
+            verdict: "pinned",
+            priority: "critical",
+            signals: [
+              {
+                id: "S9",
+                level: "high",
+                summary: "1 advisory",
+                data: {
+                  releases_read: false,
+                  advisories: [{ id: "GHSA-9", severity: "high", fixed_by: null }],
+                },
+              },
+            ],
+          },
+        ],
+      },
+    });
+    if (!unread.ok) throw new Error(unread.error.message);
+
+    const { container } = renderIn(<AdvisoryLedger />, unread.model, INITIAL_STATE);
+
+    const lines = [...container.querySelectorAll(".advisory-packages p")].map((line) => line.textContent);
+    expect(lines).toEqual(["acme/unread — fix not checked"]);
+  });
+
   it("opens a named package's detail", () => {
     // Arrange
     const model = loadWithAdvisories();

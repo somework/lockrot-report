@@ -13,7 +13,7 @@ tag or the address format, says so under **Breaking** in its entry.
 - All packages on a phone: under 480px the rows stack — name and version, then the verdict, the
   libyears bar and how it gets in, with the priority as the row's left rule — instead of a table
   cut after its second column. The list opens with how many of the listed packages are behind their
-  newest stable release, how many are not, and how many could not be measured.
+  newest release, how many are not, and how many could not be measured.
 - All packages on a tablet, or beside an open package: under 1000px of list the rows stack two
   lines each — name and version, then verdict, priority, the libyears bar, the ten signal dots and
   how it gets in — instead of a table scrolled past its fourth column; the column heads become a
@@ -38,6 +38,11 @@ tag or the address format, says so under **Breaking** in its entry.
   a check that could not run opens S10, a quiet archived or push-age check opens the repository
   activity. Provenance lists that activity (forge, repository, archived, last push, fetched fresh
   or from the cache) as one compact line under the package metadata.
+- Provenance opens with where the lock entry came from, from `origin`: "from a path repository of
+  the project", "a VCS repository the manifest lists", "a Composer repository" with its registry
+  (`repo.packagist.com`), a kind the page does not know as written (`acme:mirror`), and "installed
+  from this machine" where Composer installed it locally (mautic's `mautic/core-lib`). A report
+  without `origin` draws no such line.
 - Provenance never ends on a dash: a package with no metadata or activity says why (not from a
   Composer repository, not in this document, S10 stopped the check, none recorded), and a document
   without per-package facts shows the forge, repository and last push a fired S3/S4 carries,
@@ -65,8 +70,8 @@ tag or the address format, says so under **Breaking** in its entry.
   shared scale. Rows stay grouped by what the fix takes, most severe first.
 - Findings and All packages rows with advisories carry the same chip: a square per advisory in its
   severity's colour and the count; hovering it counts them by severity and quotes each fix.
-- When the run says its advisory check may not have covered every package (network failures, or a
-  note on the check), the Advisories tab says so right under its answer, with a link to Run data,
+- When the run says its advisory check may not have covered every package (lockrot's
+  `advisories_not_checked` or `advisories_unavailable` note), the Advisories tab says so right under its answer, with a link to Run data,
   instead of only when nothing was found. Each advisory row's accessible name now carries its
   severity and CVE or id, so two advisories on one package no longer sound the same.
 - Advisory ages under 45 days read in days or weeks ("2 weeks ago", "6 wk") rather than "1 mo".
@@ -199,7 +204,7 @@ tag or the address format, says so under **Breaking** in its entry.
 - The glossary's `finished` entry says how to accept a package you consider complete yourself, with
   `extra.lockrot.ignore`.
 - The All packages table says, next to a libyears value of exactly `0.0`, why: the installed release
-  is the newest lockrot knows of, or it is not behind the newest stable release.
+  is the newest lockrot knows of, or it is not behind the newest release.
 - A search says where it matched when that is not only the package name: the status line splits
   the count, `16 match “hoa/”: 14 by name, 2 mention it (wallabag/rulerz, wallabag/rulerz-bundle)`,
   naming up to three packages that only mention the word, and each such row on Findings, All
@@ -326,6 +331,131 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Fixed
 
+- Every report renders by the same rules, whichever lockrot wrote it. The page reads the newest
+  field and falls back only to an older one that states the same fact (S6's `has_stable_release`,
+  else the metadata's; S6's `reason`, else the lock's `branch_snapshot`); a fact no field states is
+  not drawn. Regenerate a report for the fields a newer lockrot adds.
+- S6 no longer borrows S2's words: its name is "branch snapshot or never tagged" (in the rail
+  "snapshot or untagged", in the check strip "snapshot/untagged"), and its definition and the
+  `pinned` verdict's say "the repository lists no tag at all" instead of "no stable release", in the
+  glossary and the hover text alike. A pinned package is worded by S6's own case: a snapshot of a
+  package with no tagged release; a snapshot with nothing said about tags; or "Installed 1.0.0, but
+  its repository lists no tag", which is not called a snapshot anywhere. A case no field states
+  quotes S6's summary, and its age reads "flagged as pinned".
+- The open package's key facts no longer give a snapshot's commit date as a release. A snapshot of
+  a package that has a tag, or that lockrot read no metadata for, reads "Snapshot" with the commit's
+  age and "a branch commit, not a release" (mautic's rector/rector: 2 months, while its newest tag,
+  in the metadata line, is two weeks old), never "Last release: a snapshot"; one that never tagged
+  anything reads "Last release: none, a snapshot", "commit dated …"; a version in a repository with
+  no tag reads "none tagged" with no date, since its lock time is neither a release nor a snapshot.
+  The release-branches block dates its snapshot row by the same commit.
+- The page no longer says "stable" where lockrot counts every tag, pre-releases included: S2 is "no
+  recent release" ("no release since Mar 2021" on a row), the `silent` and S2 definitions say
+  "pre-releases included", libyears is measured against the "newest release", Provenance's line is
+  "newest dated tag" ("newest tag · date not recorded" when lockrot gives no date), and S6's data
+  reads "lists a tag" and "newest dated tag …". S8 keeps "stable": its branches leave pre-releases
+  out.
+- The lock entry no longer calls a snapshot's commit date "released": it reads "snapshot dated" for a
+  branch and "lock time" for a version in a repository with no tag.
+- Release branches keep lockrot's order, highest first, instead of re-sorting the branch names; a
+  snapshot row above them makes the table "snapshot first" to a screen reader.
+- A long signal id from outside lockrot wraps inside its Findings row instead of widening a 320px
+  page, and the All packages signals cell reads such an id once, not twice.
+- A lock entry without `from_composer_repository`, or metadata without `has_stable_release`, no
+  longer reads as a Composer origin or as "no tagged release": nothing is said.
+- Run data names `exposure_rule`, `unattributed`, `note_details`, `gate`, `run.root_package`,
+  `run.project_php`, `run.fail_on_kind`, `run.mode` and `run.strict_network` among the fields a
+  report leaves out, like any other key the page reads.
+- "Why this is <priority>" words lockrot's own `priority_basis`, step by step, instead of the page's
+  copy of lockrot's rules: where the verdict starts, then each step it took ("No direct requirement
+  this run knows reaches it" in a run without composer.json), a step that could not move the level
+  as "stays at low" or "stays at critical", and a step the page does not know as written with its
+  levels. A report without the field draws no ladder; the priority itself still shows.
+- A priority raised for advisories no fix is expected for is worded from each one's own reason and
+  counted: "2 advisories no release on 10.x will fix" for a fix that exists only on a higher branch
+  (wallabag's otphp, whose advisories are fixed by 11.5.0), "no release will fix" only where no
+  release does, "An advisory whose fix could not be looked for" where its releases were not read,
+  and a mix says each part, so an unread advisory is never said to have no fix. The answer sentence
+  says "no fix is coming on your branch" for the first, "its fix could not be looked for" for the
+  third, and "for 1 of them no fix is coming, and for 1 the fix could not be looked for" for a mix.
+  A reason the page does not know is counted "for which no fix is expected" and shown as written on
+  its advisory under "Every advisory" (`fix_withdrawn`). "No fix is coming" comes from
+  `no_fix_expected`, never from the words "no fix expected" in the evidence, so a report without the
+  field no longer says it.
+- A package's libyears "not measured" reason is the finding's own `libyears_unmeasured` alone; a
+  reason the page does not know is shown as written, in code (`yanked_release`). Run data's
+  "libyears not measured" row uses the same words as the open package and All packages ("not from a
+  Composer repository", "no release date lockrot trusts", which does not claim no dated release
+  exists) and an unknown key as written, instead of humanising it ("yanked release"). The page no longer works one
+  out of the finding's note, S6 or the lock, so a report without the field names no reason.
+- A package links the page lockrot names for it, `origin.package_url`, labelled by the registry it
+  came from (`packagist.org`, `wp-packages.org`, a registry the page does not know as written), in
+  the open package's header and on its name in All packages, instead of a packagist.org page the
+  page built from the name. A package lockrot writes no page for is not linked: Private Packagist,
+  Drupal, a private registry, a name packagist.org keeps no page for, anything not from a Composer
+  repository. A report without `origin` links no registry at all, since nothing there says which
+  registry a package came from.
+- The open package's named replacement links `replacement_url`, the page lockrot names when
+  packagist.org named the successor, instead of a packagist.org page built from the name; a
+  successor Private Packagist named, and every replacement in a report without the field, is the
+  name alone.
+- Provenance's "not from a Composer repository" reads the finding's own `from_composer_repository`,
+  else its lock entry's, so a package lockrot did not ask a repository about says so even with no
+  details entry (koel's `teamtnt/laravel-scout-tntsearch-driver`).
+- A run note's "what this means" links the page lockrot names for that note (`note_details`'
+  `docs_url`, `lockrot.dev/notes/#…`) instead of one the page guessed from the note's words; a note
+  lockrot names no page for, and every note of a report without `note_details`, has no link. Two
+  notes with the same text are both listed.
+- An advisory whose releases lockrot did not read (its S9's `releases_read: false`) says "fix not
+  checked" in its row on the Advisories tab and in the open package, and its rung of the fix ladder
+  reads "not checked", instead of "no fix listed" and "no release". The tab files it under its own
+  "Fix not checked" group, never under "No fix listed" and its "Nothing published clears it"; the
+  tab's sentence says "Whether a release fixes it was not checked" or counts "1 with the fix not
+  checked"; the rail's "What the fix costs" offers "Fix not checked"; the summary band's package
+  line and a row's advisory hover say "fix not checked".
+- Run data's fail-on row says what the threshold fails on, from `run.fail_on_kind`: "high · fails on
+  a priority at least as high as high", "silent · fails on a verdict at least as severe as silent",
+  "fails on any finding whose check did not run", "fails on nothing", and a kind the page does not
+  know as written. A report without the kind shows the value alone.
+- The header's gate tally counts the findings whose own `gate` says they reach fail-on and, with a
+  baseline, the ones it does not exempt, instead of ranking them by the page's copy of lockrot's
+  order; a threshold of a kind the page does not know is counted too ("1 reach it"). A report whose
+  findings carry no `gate` shows the gate fact without a tally.
+- The header's gate fact and Run data's answer no longer call a `--fail-on=none` run with
+  `--strict-network` ungated or say it "exits 0 whatever it finds": the fact reads "gate: strict
+  network" and says a failed network lookup fails the run, and any other run names `--strict-network`
+  beside its fail-on. The popover words the rule as the Run row does, from `run.fail_on_kind` ("fails
+  on a priority at least as high as high", a kind it does not know as written), says a
+  `generate_baseline` run judged no finding against its fail-on instead of that it exits 1, and
+  counts as not accepted only the findings nothing exempts, naming another exemption as written
+  (`waiver`). An `unchecked` tally reads "173 carry S10".
+- An open package's baseline paragraph says "so it does not fail this run" when its `gate` says the
+  baseline exempts it, "Exempt for another reason (`waiver`), so it does not fail this run." when
+  another exemption, shown as written, does, and "It fails this run." when its `gate` says it fails;
+  otherwise it says nothing about the build. "lockrot's --fail-on does not count it", read off the baseline status
+  alone, is gone.
+- The note above Findings naming packages with an advisory but no rot verdict is narrowed by the
+  search box and the rail, like the list under it, instead of naming every such package whatever
+  is filtered.
+- A run note that quotes a long URL wraps on a phone instead of widening Run data past 320px.
+- Blast radius: a flagged package lockrot counts under no direct requirement, because more of them
+  reach it than `exposure_rule.max_fan_in` allows (its `unattributed` list: akaunting's
+  `league/config`, reached from 9), is no longer listed under a row or counted as reached from one
+  ("+1 more it reaches, listed under no row"), so every row's numbers add up to lockrot's own count
+  for that requirement. The tab does not show it yet, so the rail on that tab does not count it
+  either; Findings still lists it.
+- A signal id, S10 reason or check the page does not know (a later lockrot's `S99`, a check from
+  outside lockrot such as `acme:licence`, `quota_exhausted`) is shown as written, in code, and never
+  in a known one's words: the open package's tally says "also acme:licence, S99, checks this page
+  does not know"; such a check's row, its id no longer drawn over its summary, says "A lockrot
+  check this page does not know" and links to lockrot's docs only for lockrot's own ids; the
+  glossary lists each after S10; the rail's hover and All packages (on screen and on paper) name it
+  the same way. "Could not run" now gives a check only the S10 reasons of the entries whose own
+  `blocks` name it, and lists an unknown id S10 stopped. A rail filter a link names as `toString` or `constructor`
+  reads as that id, not as page code.
+- Blast radius on a phone: the closing note that names flagged direct requirements with no row
+  wraps a long package name (`mnsami/composer-custom-directory-installer`) instead of running the
+  page past 320px; each "(verdict)" stays on one line.
 - A package no signal fired on no longer says "the verdict comes from what lockrot could not learn"
   unless it is `unknown`: an `ok` one says every check ran and found nothing, a `finished` one that
   its verdict comes from the allowlist, any other just that no signal fired; a `finished` package's

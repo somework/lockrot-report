@@ -1,12 +1,6 @@
 import type { ComponentChildren } from "preact";
+import { pinnedRunReason } from "../../domain/pinned";
 import type { GroupCounts, RunFacts } from "../../domain/rows";
-
-/**
- * The two sentences the Findings list reads out loud (PD-ROWS-6, DESIGN.md §5), in the serif the
- * summary band and the release-branches answer already use for an answer. Every number in them is
- * a count over the rows directly below; every name is a field those rows already show. Never a
- * bare list of package names — the reader reads a sentence, then the rows it describes.
- */
 
 const SMALL = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
@@ -22,11 +16,8 @@ function joinAnd(items: readonly ComponentChildren[]): ComponentChildren[] {
   });
 }
 
-/**
- * "you require all three directly" or "each comes in through another package" when the group is
- * alike; counted in the filter rail's own two words — "13 direct, 25 transitive" — when it is mixed,
- * so a long group's sentence stays near one line instead of running to five (a judge's must-fix).
- */
+/** Counted in the rail's two words when the group is mixed, so a long group's sentence stays near
+ *  one line. */
 function reachPart(counts: GroupCounts): ComponentChildren {
   const { total, direct } = counts;
   const transitive = total - direct;
@@ -59,9 +50,9 @@ function devPart(counts: GroupCounts): ComponentChildren {
   );
 }
 
-/** "2 silent and 1 abandoned; you require all three directly." or "19 abandoned, 9 left-behind,
- *  6 silent, 3 pinned and 1 old-promise; 13 direct, 25 transitive, 1 dev-only." Each count and its
- *  word are one unbreakable unit, so a hyphenated verdict never splits at its hyphen ("old-/promise"). */
+/**
+ * Each count and its word are one unbreakable unit, so "old-promise" never splits at its hyphen.
+ */
 export function GroupSentence({ counts }: { counts: GroupCounts }) {
   const verdicts = counts.verdicts.map((v) => (
     <span key={v.verdict} className="fl-unit">
@@ -86,7 +77,7 @@ function runReason(facts: RunFacts): string {
           ? "archived upstream"
           : "abandoned";
     case "pinned":
-      return "pinned to a branch snapshot";
+      return pinnedRunReason(facts.pinned);
     case "left-behind":
       return "left behind on older branches";
     case "old-promise":
@@ -102,12 +93,7 @@ function yearsRange(min: number, max: number): string {
   return lo === hi ? lo : `${lo}–${hi}`;
 }
 
-/**
- * How old the run is, carried on as the same sentence's second verb ("… and were last released
- * 9.1–9.7 years ago") rather than tacked on after a comma. A left-behind run's own reason already
- * names the branches, so it takes the same verb as every other run ("left behind on older branches
- * and were last released 3.7–10.3 years ago").
- */
+/** The same sentence's second verb, not tacked on after a comma. */
 function agePart(facts: RunFacts): ComponentChildren {
   const age = facts.age;
   if (age === null) return null;
@@ -127,12 +113,7 @@ function agePart(facts: RunFacts): ComponentChildren {
   );
 }
 
-/**
- * "These 14 hoa/* packages are all marked abandoned by their repository and were last released
- * 9.1–9.7 years ago. All come in through wallabag/rulerz." Above a run of consecutive rows only;
- * says what the rows below share, so their repeated words can stay quiet. Two sentences, never a
- * comma splice: what they are and how old, then how they get in.
- */
+/** Above a run of rows only, saying what they share so their repeated words can stay quiet. */
 export function RunNote({ facts }: { facts: RunFacts }) {
   const who = facts.vendor !== null ? <span className="mono">{facts.vendor}/*</span> : null;
   return (

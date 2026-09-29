@@ -492,7 +492,7 @@
   .pd .tablewrap td:first-child {
     overflow-wrap: anywhere;
   }
-  /* A package's Packagist link has nowhere to go on paper; its underline only adds noise. */
+  /* A package's registry link has nowhere to go on paper; its underline only adds noise. */
   .pd .tablewrap .lnk {
     border-bottom: 0;
   }

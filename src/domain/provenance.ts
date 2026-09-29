@@ -1,13 +1,10 @@
-/**
- * Where a package's facts came from (PD-RUN-5, DESIGN.md §5), arranged for the detail's Provenance
- * block: the package metadata lockrot read and the repository activity it read from the forge — or,
- * when the file carries neither, why not, in words read off this document (the lock entry's
- * `from_composer_repository`, S10's list of checks that could not run, or simply that this file
- * holds no facts for the package). No inference beyond what a field says, no DOM, no clock.
- */
+/** Where a package's facts came from (PD-RUN-5), or why the file carries none, from what a field
+ *  says. */
 
 import type { ExplainActivity, ExplainMetadata, Finding, Model } from "../model/types";
 import { checkStrip } from "./checks";
+import { fromComposerRepository } from "./links";
+import { vocabTable } from "./vocab";
 
 /** The reason a package's facts are absent because the file holds none for it. */
 export const NO_FACTS_IN_FILE = "not in this document — it explains no package";
@@ -50,17 +47,15 @@ function noFactsReason(model: Model): string {
 
 function metadataSource(model: Model, finding: Finding): MetadataSource {
   const details = model.details.get(finding.package);
-  if (details === undefined) {
-    return { kind: "missing", asOf: finding.dataDate, reason: noFactsReason(model) };
-  }
-  const metadata = details.metadata;
+  const metadata = details?.metadata ?? null;
   if (metadata !== null) return { kind: "read", metadata, asOf: metadata.dataDate ?? finding.dataDate };
-  const notComposer = details.lock !== null && !details.lock.fromComposerRepository;
-  return {
-    kind: "missing",
-    asOf: finding.dataDate,
-    reason: notComposer ? NOT_FROM_COMPOSER : "none recorded for this package",
-  };
+  const reason =
+    fromComposerRepository(finding, model.details) === false
+      ? NOT_FROM_COMPOSER
+      : details === undefined
+        ? noFactsReason(model)
+        : "none recorded for this package";
+  return { kind: "missing", asOf: finding.dataDate, reason };
 }
 
 /** S3's and S4's own data, when either fired and names the repository. */
@@ -90,10 +85,10 @@ function activitySource(model: Model, finding: Finding): ActivitySource {
   if (details?.activity) return { kind: "read", activity: details.activity };
   const signal = fromSignals(finding);
   if (signal !== null) return signal;
-  if (details === undefined) return { kind: "missing", reason: noFactsReason(model) };
-  if (details.lock !== null && !details.lock.fromComposerRepository) {
+  if (fromComposerRepository(finding, model.details) === false) {
     return { kind: "missing", reason: NOT_FROM_COMPOSER };
   }
+  if (details === undefined) return { kind: "missing", reason: noFactsReason(model) };
   const blocked = checkStrip(finding)
     .cells.filter((cell) => (cell.id === "S3" || cell.id === "S4") && cell.state === "blocked")
     .map((cell) => cell.id);
@@ -129,12 +124,8 @@ export interface QuietUnread {
   readonly because: string;
 }
 
-/**
- * The quiet S3/S4 cells of a package this file holds no repository activity for — neither an
- * activity block nor a fired S3/S4 naming the repository. The strip marks them apart, so "quiet"
- * never reads as "the repository was looked at and found fine" beside a Provenance line that says no
- * activity is on file. `null` when activity is on file or no activity check is quiet.
- */
+/** Quiet S3/S4 cells of a package with no repository activity on file, marked apart so "quiet"
+ *  never reads as "looked at and found fine". */
 export function quietUnread(model: Model, finding: Finding): QuietUnread | null {
   const activity = activitySource(model, finding);
   if (activity.kind !== "missing") return null;
@@ -143,4 +134,23 @@ export function quietUnread(model: Model, finding: Finding): QuietUnread | null 
     .map((cell) => cell.id);
   if (ids.length === 0) return null;
   return { ids, because: UNREAD_BECAUSE[activity.reason] ?? "none is recorded for this package" };
+}
+
+const ORIGIN_KIND_WORDS: Readonly<Record<string, string>> = vocabTable({
+  packagist: "a Composer repository",
+  composer: "a Composer repository",
+  path: "a path repository of the project",
+  vcs: "a VCS repository the manifest lists",
+  artifact: "an archive in an artifact repository",
+  package: "an inline package definition in the manifest",
+  unknown: "lockrot could not tell which repository",
+});
+
+export type OriginFrom = { readonly words: string } | { readonly code: string };
+
+/** `origin.kind` in words; a kind this page does not know as written. */
+export function originFrom(kind: string | null): OriginFrom | null {
+  if (kind === null || kind === "") return null;
+  const words = ORIGIN_KIND_WORDS[kind];
+  return words === undefined ? { code: kind } : { words };
 }

@@ -60,6 +60,33 @@
    "this run was --offline; the security advisory check could not run and is treated as absent evidence",
    "GitHub did not answer for 1 repository (private, renamed or removed); repository activity missing"
   ],
+  "note_details": [
+   {
+    "code": "advisories_not_checked",
+    "text": "this run was --offline; the security advisory check could not run and is treated as absent evidence",
+    "docs_url": "https://lockrot.dev/notes/#advisories_not_checked",
+    "sets_network_failures": false,
+    "data": {
+     "reason": "offline",
+     "composer_repositories_checked": 0
+    }
+   },
+   {
+    "code": "repository_activity_not_found",
+    "text": "GitHub did not answer for 1 repository (private, renamed or removed); repository activity missing",
+    "docs_url": "https://lockrot.dev/notes/#repository_activity_not_found",
+    "sets_network_failures": false,
+    "data": {
+     "forge_id": "github",
+     "repositories": [
+      {
+       "host": "github.com",
+       "repo": "vendor/archived"
+      }
+     ]
+    }
+   }
+  ],
   "findings": [
    {
     "package": "vendor/archived",

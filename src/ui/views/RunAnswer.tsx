@@ -90,20 +90,35 @@ function howComplete(model: Model): ComponentChildren {
 
 /** The third sentence: the gate the run was given, when the document says. */
 function gate(model: Model): ComponentChildren {
-  const failOn = model.report.run.failOn;
+  const { failOn, strictNetwork } = model.report.run;
   if (failOn === null) return null;
+  const strict = strictNetwork === true;
   if (failOn === "none") {
     return (
       <>
         {" "}
-        It ran with no gate (<code className="mono">--fail-on=none</code>).
+        It ran with <code className="mono">--fail-on=none</code>, which fails on no finding
+        {strict && (
+          <>
+            , and with <b className="mono">--strict-network</b>, which fails the run when a network lookup
+            fails
+          </>
+        )}
+        .
       </>
     );
   }
   return (
     <>
       {" "}
-      It ran with <b className="mono">--fail-on={failOn}</b>.
+      It ran with <b className="mono">--fail-on={failOn}</b>
+      {strict && (
+        <>
+          {" "}
+          and <b className="mono">--strict-network</b>
+        </>
+      )}
+      .
     </>
   );
 }

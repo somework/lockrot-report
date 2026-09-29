@@ -1,7 +1,14 @@
 import type { ComponentChildren } from "preact";
-import type { ExplainActivity, Finding, PackageDetails } from "../../model/types";
+import type { ExplainActivity, Finding, PackageDetails, PackageOrigin } from "../../model/types";
 import { isContextOnly } from "../../domain/age";
-import { provenance, quietUnread, type ActivitySource, type MetadataSource } from "../../domain/provenance";
+import { lockTimeLabel, snapshotOf } from "../../domain/pinned";
+import {
+  originFrom,
+  provenance,
+  quietUnread,
+  type ActivitySource,
+  type MetadataSource,
+} from "../../domain/provenance";
 import { agePhrase, day } from "../../domain/format";
 import { safeHref } from "../../domain/links";
 import { OutLink } from "../common/common";
@@ -22,22 +29,8 @@ export interface DetailProps {
   readonly onClose: () => void;
 }
 
-/**
- * The package detail panel — ported section by section from legacy `renderDetail`
- * (`report.js:737-845`), reordered so the reader meets the answer before the reference (PD-DETAIL-1,
- * DESIGN.md §8; PD-DETAIL-6): the answer sentence with its key facts and how the package gets in,
- * against the baseline (PD-BASELINE-3: first, when the run had one), why this priority, then the
- * checks behind the verdict (PD-DETAIL-12: the two "why" blocks side by side), follow the upstream
- * (the action, when there is one), every advisory,
- * release branches, then two reference sections — the lock entry and
- * provenance — each a `<details>` closed by default, since a reader who opened the panel to act on
- * it rarely needs the lock's raw fields first.
- *
- * Renders nothing while no package is open (`state.pkg === null`). When `state.pkg` names no
- * finding in this report — an unknown `pkg=` in a pasted link — critic.md's M13 fix applies: a small
- * panel says so, with the same Close action, instead of legacy's narrow-screen scroll lock over a
- * blank aside (`report.js:739`, `DESIGN.md` §5 M13).
- */
+/** The package detail panel, answer before reference (PD-DETAIL-1/6); the lock entry and provenance
+ *  fold closed. An unknown `pkg=` gets a small panel that says so, with the same Close. */
 export function Detail({ onClose }: DetailProps) {
   const { model, state, now } = useReport();
   if (state.pkg === null) return null;
@@ -70,16 +63,11 @@ export function Detail({ onClose }: DetailProps) {
         <Timeline
           key={finding.package}
           metadata={details?.metadata ?? null}
-          lock={details?.lock ?? null}
+          snapshot={snapshotOf(finding, details)}
           installedVersion={finding.version}
           ageToned={!isContextOnly(finding)}
         />
-        {/* a11y review: a bare <summary> dropped the section's own heading, so a screen-reader
-            reader moving by heading found none of these. A <summary> accepts one heading as
-            content, so the text moves into an <h3> — the layout (the flex row, the chevron) stays
-            on the <summary> itself, restyled to the same look in detail.css's
-            `.detail-reference-summary h3`. "How it is reached" used to be a third one; its chain
-            now opens the panel, in `DetailLead` (PD-DETAIL-6). */}
+        {/* The heading sits inside <summary> so a reader moving by heading still finds it. */}
         <details className="detail-section detail-reference">
           <summary className="detail-reference-summary">
             <h3>The lock entry</h3>
@@ -102,14 +90,8 @@ function lockRows(finding: Finding, details: PackageDetails | null, now: Date): 
   const metadata = details?.metadata ?? null;
   const lock = details?.lock ?? null;
   const safeRepository = safeHref(details?.repositoryLink ?? null);
-  // A browsable link when the producer's own repository_link checks out again here (Model's own
-  // doc comment: "the page re-checks it before linking"); otherwise the plain repository string
-  // the lock or the metadata carries, exactly as legacy fell back (report.js:766-768) — never the
-  // unsafe link's text.
-  // `||`, not `??`, on every lock/metadata fallback below: legacy compared these by truthiness
-  // (`report.js:763, 766, 768-769`), so an empty-string lock value — not just a missing one — falls
-  // back to metadata the same way a `null`/`undefined` one does (parity fix, alongside
-  // `presentRows` dropping "" outright).
+  // A repository link only when `repository_link` checks out again here, else the plain string,
+  // never the unsafe link's text. `||`, not `??`: an empty lock string falls back to metadata too.
   const repository: ComponentChildren =
     safeRepository !== null ? (
       <OutLink href={safeRepository}>{safeRepository}</OutLink>
@@ -121,18 +103,18 @@ function lockRows(finding: Finding, details: PackageDetails | null, now: Date): 
     { label: "installed", value: finding.version },
     { label: "php constraint", value: lock?.php || null },
     {
-      label: "released",
+      label: lockTimeLabel(finding, details),
       value: lock?.released ? dated(lock.released, now) : null,
     },
-    { label: "libyears behind", value: <LibyearsRow finding={finding} metadata={metadata} /> },
+    {
+      label: "libyears behind",
+      value: <LibyearsRow finding={finding} metadata={metadata} />,
+    },
     { label: "repository", value: repository },
     { label: "type", value: lock?.type || metadata?.type || null },
   ]);
 }
 
-/** A source's facts as one flowing line: its name, where they were read ("GitHub"), and — when the
- *  facts are borrowed — from which check, then each label and value, a dot between them, then — when
- *  the file gives none — why, in words, and any note that ties the line to the strip above. */
 function FactsLine({
   source,
   rows,
@@ -141,6 +123,7 @@ function FactsLine({
   from = null,
   note = null,
   id,
+  className,
 }: {
   source: string;
   rows: readonly KeyValueRow[];
@@ -149,11 +132,16 @@ function FactsLine({
   from?: string | null;
   note?: string | null;
   id?: string;
+  className?: string;
 }) {
   return (
     // tabIndex -1: a strip cell that points here moves focus onto the line itself (SignalList's
     // `reveal`), so a screen reader lands on the facts, not on the section's summary.
-    <div className="detail-prov-line" id={id} tabIndex={id === undefined ? undefined : -1}>
+    <div
+      className={className === undefined ? "detail-prov-line" : `detail-prov-line ${className}`}
+      id={id}
+      tabIndex={id === undefined ? undefined : -1}
+    >
       <span className="detail-prov-source">
         {source}
         {where !== null && <span className="detail-prov-where"> · {where}</span>}
@@ -186,9 +174,6 @@ function dated(iso: string, now: Date): string {
   return `${day(iso)} · ${agePhrase(iso, now)}`;
 }
 
-/** The repository activity lockrot read for this package (PD-RUN-5): where, whether archived, the
- *  last push and how long before the report that was, and when it was fetched — fresh or from
- *  lockrot's cache. */
 function activityRows(activity: ExplainActivity, now: Date): readonly KeyValueRow[] {
   return presentRows([
     { label: "repository", value: activity.repository },
@@ -231,13 +216,24 @@ function fromWords(ids: readonly string[]): string {
   return `from ${ids.map((id) => `${id}’s`).join(" and ")} data`;
 }
 
-/**
- * "Provenance" (PD-RUN-5, DESIGN.md §5): where the panel's facts came from, as compact lines — the
- * package metadata (its date, releases listed, last stable) and the repository activity from the
- * forge, or the same facts as a fired S3/S4 carries them. A source the file gives nothing for says
- * why (`domain/provenance.ts`) — never a bare dash. The strip's quiet S3/S4 cells point at the
- * activity line.
- */
+function originRows(origin: PackageOrigin): readonly KeyValueRow[] {
+  const from = originFrom(origin.kind);
+  return presentRows([
+    { label: "from", value: from === null ? null : "words" in from ? from.words : <code>{from.code}</code> },
+    { label: "registry", value: origin.registry },
+    { label: "installed", value: origin.local === true ? "from this machine" : null },
+  ]);
+}
+
+/** Where the lock entry came from; nothing where the report does not say. */
+function OriginLine({ finding }: { finding: Finding }) {
+  const rows = finding.origin === null ? [] : originRows(finding.origin);
+  if (rows.length === 0) return null;
+  return <FactsLine className="detail-prov-origin" source="Origin" rows={rows} />;
+}
+
+/** Where the panel's facts came from (PD-RUN-5); a source the file gives nothing for says why,
+ *  never a bare dash. */
 function Provenance({ finding, now }: { finding: Finding; now: Date }) {
   const { model } = useReport();
   const { metadata, activity } = provenance(model, finding);
@@ -250,6 +246,7 @@ function Provenance({ finding, now }: { finding: Finding; now: Date }) {
   if (metadata.kind === "missing" && activity.kind === "missing" && metadata.reason === activity.reason) {
     return (
       <div className="detail-prov">
+        <OriginLine finding={finding} />
         <FactsLine
           id={ACTIVITY_FACTS_ID}
           source="Package metadata · repository activity"
@@ -262,6 +259,7 @@ function Provenance({ finding, now }: { finding: Finding; now: Date }) {
   }
   return (
     <div className="detail-prov">
+      <OriginLine finding={finding} />
       <FactsLine
         source="Package metadata"
         rows={metadataRows(metadata)}
@@ -297,8 +295,7 @@ function Provenance({ finding, now }: { finding: Finding; now: Date }) {
   );
 }
 
-/** The metadata line's facts: its date, releases listed and last stable when lockrot read it; none
- *  when it did not — an "as of" over absent data would date nothing (the reason says why instead). */
+/** None when lockrot read no metadata: an "as of" over absent data would date nothing. */
 function metadataRows(source: MetadataSource): readonly KeyValueRow[] {
   if (source.kind === "missing") return [];
   const asOf = { label: "as of", value: source.asOf ? day(source.asOf) : null };
@@ -309,17 +306,20 @@ function metadataRows(source: MetadataSource): readonly KeyValueRow[] {
       label: "releases listed",
       value: metadata.releasesListed !== null ? String(metadata.releasesListed) : null,
     },
-    {
-      label: "last stable",
-      value: metadata.lastStableVersion ? (
-        metadata.lastStableRelease ? (
-          `${metadata.lastStableVersion} · ${day(metadata.lastStableRelease)}`
-        ) : (
-          <>
-            {metadata.lastStableVersion} · <Unrecorded>undated</Unrecorded>
-          </>
-        )
-      ) : null,
-    },
+    metadata.lastStableRelease
+      ? {
+          label: "newest dated tag",
+          value: metadata.lastStableVersion
+            ? `${metadata.lastStableVersion} · ${day(metadata.lastStableRelease)}`
+            : null,
+        }
+      : {
+          label: "newest tag",
+          value: metadata.lastStableVersion ? (
+            <>
+              {metadata.lastStableVersion} · <Unrecorded>date not recorded</Unrecorded>
+            </>
+          ) : null,
+        },
   ]);
 }

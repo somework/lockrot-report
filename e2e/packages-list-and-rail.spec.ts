@@ -213,7 +213,7 @@ test.describe("1440px: PD-PACKAGES-1/2 on the table", () => {
     await report.tab("packages");
 
     await expect(page.locator(".pk-answer")).toContainText("could not be measured");
-    await expect(page.locator(".pk-key")).toContainText("not behind its newest stable");
+    await expect(page.locator(".pk-key")).toContainText("not behind its newest release");
     // The old repeated phrase is no longer drawn on any row: what a cell shows, its words for a
     // screen reader aside, is a number or a one-character mark.
     const drawn = await page.locator(".pk-table tbody .pk-ly").evaluateAll((cells) =>

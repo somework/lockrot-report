@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
+import { RAIL_SIGNAL_LABELS } from "../../../src/domain/filters";
 import {
+  CHECK_NAMES,
   DEFAULT_FLAGGED,
   DOCS_URL,
   SIGNAL_DEFS,
@@ -10,6 +12,9 @@ import {
   VERDICT_ORDER,
   annotateThresholds,
   isFlagged,
+  isKnownSignalId,
+  signalDef,
+  signalDocUrl,
 } from "../../../src/domain/vocab";
 
 /** Ids a plain `{}` literal would resolve as inherited `Object.prototype` members instead of
@@ -66,9 +71,7 @@ describe("TONE", () => {
   });
 
   test("never returns an inherited Object.prototype member for a prototype-pollution id", () => {
-    // A plain `{}` literal inherits from Object.prototype, so `TABLE["constructor"]` would
-    // otherwise resolve to the Object function instead of falling back — a value that is never
-    // `undefined`/`null`, so `?? "low"` would never catch it either.
+    // `{}` inherits `constructor`, a value `?? "low"` would never catch.
     expect(TONE("constructor")).toBe("low");
     expect(TONE("__proto__")).toBe("low");
     expect(TONE("toString")).toBe("low");
@@ -92,9 +95,7 @@ describe("SIGNAL_NAMES / SIGNAL_DEFS", () => {
   });
 
   test("give no inherited Object.prototype member for a prototype-pollution id", () => {
-    // A non-literal key forces TS through the `Record<string, string>` index signature instead of a
-    // named `Object.prototype` method's own type, so `.toString` reads as a plain lookup here, the
-    // same as it does at runtime through a document-supplied id.
+    // A non-literal key reads `.toString` as a plain lookup, as a report's id does at runtime.
     for (const id of POLLUTION_IDS) {
       expect(SIGNAL_NAMES[id]).toBeUndefined();
       expect(SIGNAL_DEFS[id]).toBeUndefined();
@@ -151,7 +152,7 @@ describe("annotateThresholds (PD-GLOSSARY-8, DESIGN.md §5)", () => {
       ["release-high-years", 5],
     ]);
     expect(annotated).toBe(
-      "Time since the last stable release, against 3 years (release-warn-years) / 5 years (release-high-years).",
+      "Time since the newest dated release, pre-releases included, against 3 years (release-warn-years) / 5 years (release-high-years).",
     );
   });
 
@@ -162,7 +163,7 @@ describe("annotateThresholds (PD-GLOSSARY-8, DESIGN.md §5)", () => {
       ["push-high-years", 5],
     ]);
     expect(annotated).toBe(
-      "No stable release for at least 5 years (release-high-years) and no repository push for at least 5 years (push-high-years).",
+      "No release for at least 5 years (release-high-years), pre-releases included, and no repository push for at least 5 years (push-high-years).",
     );
   });
 
@@ -189,5 +190,72 @@ describe("isFlagged", () => {
   test("respects a run's own flaggedVerdicts list rather than the default", () => {
     expect(isFlagged("unknown", ["unknown"])).toBe(true);
     expect(isFlagged("abandoned", ["unknown"])).toBe(false);
+  });
+});
+
+describe("S2's names (PD-S6-1)", () => {
+  test("never say 'stable': S2 counts every tag, a pre-release included", () => {
+    for (const name of [SIGNAL_NAMES.S2, RAIL_SIGNAL_LABELS.S2, SIGNAL_DEFS.S2, VERDICT_DEFS.silent]) {
+      expect(name).toBeTruthy();
+      expect(name).not.toMatch(/stable/i);
+    }
+    expect(SIGNAL_NAMES.S2).toBe("no recent release");
+    expect(SIGNAL_DEFS.S8).toMatch(/stable/);
+  });
+});
+
+describe("S6's names (PD-S6-1)", () => {
+  test("never reads as S2, and never says 'stable'", () => {
+    const names = [
+      SIGNAL_NAMES.S6,
+      CHECK_NAMES.S6,
+      RAIL_SIGNAL_LABELS.S6,
+      SIGNAL_DEFS.S6,
+      VERDICT_DEFS.pinned,
+    ];
+    for (const name of names) {
+      expect(name).toBeTruthy();
+      expect(name).not.toMatch(/stable/i);
+    }
+    expect(SIGNAL_NAMES.S6).toBe("branch snapshot or never tagged");
+    expect(CHECK_NAMES.S6).toBe("snapshot/untagged");
+    expect(RAIL_SIGNAL_LABELS.S6).toBe("snapshot or untagged");
+  });
+});
+
+describe("signal ids this page does not know (0.13 open vocabulary)", () => {
+  test("the rail's own labels hold no inherited key either", () => {
+    for (const id of POLLUTION_IDS) {
+      expect(RAIL_SIGNAL_LABELS[id]).toBeUndefined();
+    }
+  });
+
+  test("a known id keeps its definition; an unknown one is described by the shape of its id", () => {
+    expect(signalDef("S8")).toBe(SIGNAL_DEFS.S8);
+    // `S` and a number is lockrot's own check, newer than this page.
+    expect(signalDef("S99")).toBe("A lockrot check this page does not know.");
+    // `<vendor>:<name>` is, in the report schema's words, one that does not come from lockrot.
+    expect(signalDef("acme:licence")).toBe("A check from outside lockrot, which this page does not know.");
+    // Anything else says nothing about where it came from, and is never read as an inherited key.
+    for (const id of ["S01", "", "sbom lookup", ...POLLUTION_IDS]) {
+      expect(signalDef(id)).toBe("A check this page does not know.");
+    }
+  });
+
+  test("links lockrot's own ids to lockrot's docs, and an id that is not lockrot's nowhere", () => {
+    expect(signalDocUrl("S8")).toBe(`${DOCS_URL}#left-behind`);
+    expect(signalDocUrl("S2")).toBe(`${DOCS_URL}#the-signals`);
+    expect(signalDocUrl("S99")).toBe(`${DOCS_URL}#the-signals`);
+    expect(signalDocUrl("acme:licence")).toBeNull();
+    for (const id of ["S01", "", ...POLLUTION_IDS]) {
+      expect(signalDocUrl(id)).toBeNull();
+    }
+  });
+
+  test("knows S1 to S10 and nothing else", () => {
+    expect(["S1", "S6", "S10"].map(isKnownSignalId)).toEqual([true, true, true]);
+    expect(["S11", "S99", "acme:licence", "s1", ...POLLUTION_IDS].map(isKnownSignalId).every((k) => !k)).toBe(
+      true,
+    );
   });
 });

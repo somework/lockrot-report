@@ -136,9 +136,8 @@
 }
 
 /* ---------- the gate fact (Header.tsx) ----------
-   A quiet fact beside "lockrot <version>", not a band: most runs carry no --fail-on, and a run
-   that does still exits 0 on the page's own reading of it (the page never re-derives whether the
-   gate fired, DESIGN.md §8). The popover is native (`popover="auto"` + `popovertarget`) — Escape
+   A quiet fact beside "lockrot <version>", not a band: the page never says whether the gate fired
+   (DESIGN.md §8). The popover is native (`popover="auto"` + `popovertarget`) — Escape
    closes it as the browser's own default action, before keyboard.ts's chain ever sees the key
    (DESIGN.md §8, keyboard.ts#decideEscape). */
 .fact-btn {

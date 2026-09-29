@@ -156,7 +156,7 @@ function lede(section: PrintSection, base: ReportContextValue): ComponentChildre
           <b>{plural(all.length, "package", "packages")}</b>, in the order the table had them.
           {shared !== null && <> Every package's data is as of {shared}.</>}
           {zeroes && (
-            <> A libyears of 0.0 marked “newest” is an installed release that is the newest stable.</>
+            <> A libyears of 0.0 marked “newest” is an installed release that is the newest release.</>
           )}
         </>
       );

@@ -191,4 +191,39 @@ describe("Rail", () => {
     // Assert: the one advisory has no fixed_by at all, so it falls in "No fix listed".
     expect(screen.getByRole("button", { name: /^No fix listed /i }).textContent).toContain("1");
   });
+
+  it("offers Fix not checked, apart from No fix listed, for an advisory whose releases were not read", () => {
+    const edges = normalize(
+      JSON.parse(readFileSync(join(process.cwd(), "fixtures", "bundles", "mini-0.13-edges.json"), "utf8")),
+    );
+    if (!edges.ok) throw new Error(edges.error.message);
+
+    renderIn(<Rail />, edges.model, { ...INITIAL_STATE, view: "advisories", q: "silent-snapshot" });
+
+    expect(screen.getByRole("button", { name: /^Fix not checked /i }).textContent).toContain("1");
+    expect(screen.queryByRole("button", { name: /^No fix listed /i })).toBeNull();
+  });
+});
+
+describe("signal ids this page does not know (mini-0.13-edges, All packages)", () => {
+  it("offers each as written, in mono, with no name of a known check and what the page can say of it on hover", () => {
+    const raw = JSON.parse(
+      readFileSync(join(process.cwd(), "fixtures", "bundles", "mini-0.13-edges.json"), "utf8"),
+    ) as unknown;
+    const result = normalize(raw);
+    if (!result.ok) throw new Error("mini-0.13-edges failed to normalize");
+    const { container } = renderIn(<Rail />, result.model, { ...INITIAL_STATE, view: "packages" });
+
+    const buttons = Array.from(container.querySelectorAll("button.opt")).filter((b) =>
+      ["S99", "acme:licence"].includes(b.querySelector(".mono")?.textContent ?? ""),
+    );
+    expect(buttons.map((b) => b.textContent.replace(/\s+/g, " ").trim())).toEqual([
+      "S99 1",
+      "acme:licence 1",
+    ]);
+    expect(buttons.map((b) => b.getAttribute("title"))).toEqual([
+      "A lockrot check this page does not know.",
+      "A check from outside lockrot, which this page does not know.",
+    ]);
+  });
 });

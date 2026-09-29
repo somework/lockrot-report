@@ -7,7 +7,7 @@
  * `new.ts` directly and never queries the page with a raw selector. Anything a spec needs to know
  * about the rendered page goes through a method on this interface.
  */
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import type { FixtureName } from "./pages";
 import { NewReportPage } from "./new";
 
@@ -145,8 +145,22 @@ export interface ReportPage {
   /** Types text into whatever holds focus, one key at a time, as a reader would. */
   typeKeys(text: string): Promise<void>;
   /** Moves keyboard focus onto the first outbound link inside a package's row (e.g. a signal-id
-   *  link or the Packagist link) without clicking it, so a spec can then press Enter on it (M5). */
+   *  link or the registry link) without clicking it, so a spec can then press Enter on it (M5). */
   focusLinkInRow(name: string): Promise<void>;
+  /** Where the link named after the package in its own row points (its registry page on All
+   *  packages), or null when the row does not link its name. */
+  packageLinkHref(name: string): Promise<string | null>;
+  /** The registry links in an open package's header. */
+  detailRegistryLinks(name: string): Locator;
+  /** The Origin line of an open package's Provenance. */
+  provenanceOrigin(name: string): Locator;
+  /** Links in an open package's answer, or the one named after `replacement`. */
+  replacementLink(name: string, replacement?: string): Locator;
+  /** The words a screen reader gets from one package's cell in an All packages column (a sort key,
+   *  e.g. "libyears"), with the drawn-only marks left out. */
+  packageCellWords(name: string, column: string): Promise<string>;
+  /** The same words for every row of that column, in row order. */
+  packageColumnWords(column: string): Promise<string[]>;
   /** The accessible name (e.g. "S2") of every signal-id link inside a Findings row, in document
    *  order — a Findings row carries no other link, so this doubles as "how many signal lines this
    *  row draws" (PD-ROWS-1, DESIGN.md §5: exactly one, the row's own key fact). */
@@ -242,6 +256,9 @@ export interface ReportPage {
   /** How many different packages the current view's rows name — `rows()` without duplicates. */
   listedPackageCount(): Promise<number>;
 
+  /** The value beside one term of the Run data tab ("fail-on", "libyears not measured"). */
+  runField(label: string): Locator;
+
   /** Clicks a Packages-table column header once (toggles direction on a repeat click). */
   sortBy(key: string): Promise<void>;
   sortState(): Promise<SortState | null>;
@@ -253,6 +270,10 @@ export interface ReportPage {
    */
   radiusCard(parent: string): Promise<{ statedCount: number | null; listedCount: number } | null>;
 
+  /** Every package name the Blast radius tab draws: its rows, the packages under them (folded
+   *  or not) and the footnote's flagged requirements that have no row. */
+  radiusNames(): Promise<string[]>;
+
   openGlossary(): Promise<void>;
   closeGlossaryButton(): Promise<void>;
   isGlossaryOpen(): Promise<boolean>;
@@ -260,6 +281,10 @@ export interface ReportPage {
   /** The CSS `position` the glossary computes to — `fixed` for an always-in-view overlay, whatever
    *  the browser's UA stylesheet gives a non-modal `<dialog>` otherwise (M28). */
   glossaryPosition(): Promise<string>;
+
+  /** Opens the open package's reference section titled `heading` ("The lock entry") and returns
+   *  its terms and values. */
+  detailFacts(heading: string): Promise<Record<string, string>>;
 
   /** Clicks the verdict pill in the open package's own detail header — PD-GLOSSARY-4/5. Opens
    *  `pkg` first if it is not already the open one, then must open the pill's popover without also

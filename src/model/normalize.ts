@@ -1,12 +1,6 @@
 /**
- * unknown → Model, in one place.
- *
- * Every wire shape this renderer must survive lands here: the current `--format=html` bundle
- * `{report, details}`, a bare `--format=json` document handed to it directly, older lockrot
- * releases that omit fields added later, and documents a hostile or merely careless embedder
- * wrote by hand. Nothing downstream of `normalize()` checks for `undefined` or guards against the
- * wrong JSON type turning up where a string or array was expected (DESIGN.md §2) — this module is
- * the one place that does, so it never throws no matter what `unknown` turns out to be.
+ * unknown → Model, in one place, never throwing: the `{report, details}` bundle, a bare
+ * `--format=json` document, a key left out, or a wrong JSON type (DESIGN.md §2).
  */
 
 import type {
@@ -16,14 +10,22 @@ import type {
   ExplainActivity,
   ExplainLock,
   ExplainMetadata,
+  ExposureRule,
   Finding,
+  FindingGate,
   LibyearsBlock,
   Model,
+  NoFixAdvisory,
   NormalizeError,
+  NoteDetail,
   PackageDetails,
+  PackageOrigin,
+  PriorityBasis,
   ReportModel,
+  RootGate,
   RunSettings,
   Signal,
+  UnattributedEntry,
   Verdict,
 } from "./types";
 import { PRIORITIES, VERDICTS } from "./types";
@@ -35,7 +37,7 @@ export type NormalizeResult = { ok: true; model: Model } | { ok: false; error: N
 /** The published report-1 schema URL, used when a document carries no `$schema` of its own. */
 const DEFAULT_SCHEMA_URL = "https://lockrot.dev/schema/report-1.json";
 
-/** Every libyears "why not measured" reason lockrot currently knows, in document order (contract.md §2.2). */
+/** Every libyears "why not measured" reason lockrot knows, in its order. */
 const LIBYEARS_UNMEASURED_REASONS = [
   "branch_snapshot",
   "no_stable_release_date",
@@ -43,12 +45,8 @@ const LIBYEARS_UNMEASURED_REASONS = [
   "metadata_unavailable",
 ] as const;
 
-/**
- * The keys `buildReportModel` reads, report level then `run.`, that a document may leave out
- * entirely — an older lockrot release that predates one, or a hand-built document. `absentKeys`
- * lists the ones missing from THIS document; nothing here knows which release added which key.
- * `generated_at`, `lockrot` and `findings` are not listed: a document without them is not a report.
- */
+/** The report-level and `run.` keys the page reads that a document may leave out; nothing here
+ *  knows which release added which key. */
 const ABSENT_CHECKED = [
   "packages_checked",
   "include_dev",
@@ -62,10 +60,19 @@ const ABSENT_CHECKED = [
   "counts",
   "priorities",
   "exposure",
+  "exposure_rule",
+  "unattributed",
+  "note_details",
+  "gate",
   "run.project",
+  "run.root_package",
+  "run.project_php",
   "run.lock_file",
   "run.target_php",
   "run.fail_on",
+  "run.fail_on_kind",
+  "run.mode",
+  "run.strict_network",
   "run.thresholds",
   "run.flagged_verdicts",
 ] as const;
@@ -133,12 +140,7 @@ interface ReportShape {
   detailsSource: unknown;
 }
 
-/**
- * The html bundle `{report, details}` is one shape; a bare `--format=json` document is another,
- * distinguished only by the absence of a `report` key alongside the presence of `lockrot` and
- * `findings` (which `report` itself always carries, DESIGN.md §3 / model/types.ts). Anything else
- * is not a report this renderer can read.
- */
+/** A bare `--format=json` document has no `report` key but carries `lockrot` and `findings`. */
 function pickReportShape(input: Record<string, unknown>): ReportShape | null {
   if ("report" in input) {
     return isRecord(input.report) ? { reportSource: input.report, detailsSource: input.details } : null;
@@ -176,13 +178,16 @@ function buildReportModel(source: Record<string, unknown>, generatedAt: string):
     libyears: buildLibyears(source.libyears),
     baseline: buildBaseline(source.baseline),
     notes: asStringArray(source.notes),
+    noteDetails: asArray(source.note_details).map(buildNoteDetail),
+    gate: buildRootGate(source.gate),
+    exposureRule: buildExposureRule(source.exposure_rule),
+    unattributed: buildUnattributed(source.unattributed),
     absent: absentKeys(source),
     findings: asArray(source.findings).map(buildFinding),
   };
 }
 
-/** `ABSENT_CHECKED` keys missing from `source` — `in`, not a null check: a key lockrot wrote as
- *  `null` is present. A `run` that is not an object carries none of its keys. */
+/** `in`, not a null check: a key written as `null` is present. */
 function absentKeys(source: Record<string, unknown>): readonly string[] {
   const run = isRecord(source.run) ? source.run : {};
   return ABSENT_CHECKED.filter((key) => (key.startsWith("run.") ? !(key.slice(4) in run) : !(key in source)));
@@ -192,9 +197,14 @@ function buildRunSettings(raw: unknown): RunSettings {
   const rec = isRecord(raw) ? raw : {};
   return {
     project: asNullableString(rec.project),
+    rootPackage: asNullableString(rec.root_package),
+    projectPhp: asNullableString(rec.project_php),
     targetPhp: asNullableString(rec.target_php),
     lockFile: asNullableString(rec.lock_file),
     failOn: asNullableString(rec.fail_on),
+    failOnKind: asNullableString(rec.fail_on_kind),
+    mode: asNullableString(rec.mode),
+    strictNetwork: asNullableBoolean(rec.strict_network),
     thresholds: buildThresholds(rec.thresholds),
     flaggedVerdicts: buildFlaggedVerdicts(rec.flagged_verdicts),
   };
@@ -214,13 +224,7 @@ function buildThresholds(raw: unknown): readonly (readonly [string, number])[] {
   return thresholds;
 }
 
-/**
- * Mirrors the legacy `RUN.flagged_verdicts || FLAGGED_VERDICTS` (critic.md K5): only a missing,
- * null or non-array value falls back — an explicit empty array is a document's own answer and is
- * kept as given, exactly like the page it replaces. The fallback is `domain/vocab`'s
- * `DEFAULT_FLAGGED` itself, not a second list hand-copied here that could drift from it (quality
- * finding: this module used to keep its own `FLAGGED_VERDICTS_FALLBACK` literal).
- */
+/** An empty list is the document's own answer; only a value that is not a list falls back. */
 function buildFlaggedVerdicts(raw: unknown): readonly Verdict[] {
   if (!isArray(raw)) {
     return DEFAULT_FLAGGED;
@@ -257,6 +261,48 @@ function buildExposure(raw: unknown): readonly { package: string; flagged: numbe
     const rec = isRecord(item) ? item : {};
     return { package: asCoercedString(rec.package), flagged: asFiniteNumber(rec.flagged) ?? 0 };
   });
+}
+
+/** `null` for a rule written as null or without a readable `max_fan_in`: no rule the page can quote. */
+function buildExposureRule(raw: unknown): ExposureRule | null {
+  if (!isRecord(raw)) {
+    return null;
+  }
+  const maxFanIn = asFiniteNumber(raw.max_fan_in);
+  return maxFanIn === null ? null : { maxFanIn };
+}
+
+function buildUnattributed(raw: unknown): readonly UnattributedEntry[] {
+  return asArray(raw).map((item) => {
+    const rec = isRecord(item) ? item : {};
+    return {
+      package: asCoercedString(rec.package),
+      verdict: asCoercedString(rec.verdict),
+      fanIn: asFiniteNumber(rec.fan_in),
+    };
+  });
+}
+
+function buildRootGate(raw: unknown): RootGate | null {
+  if (!isRecord(raw)) {
+    return null;
+  }
+  return {
+    fails: asNullableBoolean(raw.fails),
+    trippedBy: asStringArray(raw.tripped_by),
+    failOnApplied: asNullableBoolean(raw.fail_on_applied),
+  };
+}
+
+function buildNoteDetail(raw: unknown): NoteDetail {
+  const rec = isRecord(raw) ? raw : {};
+  return {
+    code: asCoercedString(rec.code),
+    text: asCoercedString(rec.text),
+    docsUrl: asNullableString(rec.docs_url),
+    setsNetworkFailures: asNullableBoolean(rec.sets_network_failures),
+    data: isRecord(rec.data) ? rec.data : {},
+  };
 }
 
 function buildLibyears(raw: unknown): LibyearsBlock | null {
@@ -328,6 +374,7 @@ function buildFinding(raw: unknown): Finding {
     direct: asBoolean(rec.direct, false),
     dev: asBoolean(rec.dev, false),
     replacement: asNullableString(rec.replacement),
+    replacementUrl: asNullableString(rec.replacement_url),
     signals,
     chain: asStringArray(rec.chain),
     directDependents: asStringArray(rec.direct_dependents),
@@ -338,10 +385,62 @@ function buildFinding(raw: unknown): Finding {
     libyears: asFiniteNumber(rec.libyears),
     baseline: buildFindingBaseline(rec.baseline),
     advisories: flattenAdvisories(signals),
+    fromComposerRepository: asNullableBoolean(rec.from_composer_repository),
+    origin: buildOrigin(rec.origin),
+    libyearsUnmeasured: asNullableString(rec.libyears_unmeasured),
+    priorityBasis: buildPriorityBasis(rec.priority_basis),
+    noFixExpected: isArray(rec.no_fix_expected) ? rec.no_fix_expected.map(buildNoFixAdvisory) : null,
+    gate: buildFindingGate(rec.gate),
   };
 }
 
-/** The pre-string legacy shape (critic.md K5): an array of evidence lines joined the same way the old page did. */
+/** No basis without a readable `base`: a ladder needs somewhere to start. */
+function buildPriorityBasis(raw: unknown): PriorityBasis | null {
+  if (!isRecord(raw) || typeof raw.base !== "string") {
+    return null;
+  }
+  return {
+    base: raw.base,
+    steps: asArray(raw.steps).map((step) => {
+      const rec = isRecord(step) ? step : {};
+      return {
+        reason: asCoercedString(rec.reason),
+        from: asCoercedString(rec.from),
+        to: asCoercedString(rec.to),
+      };
+    }),
+  };
+}
+
+function buildOrigin(raw: unknown): PackageOrigin | null {
+  if (!isRecord(raw)) {
+    return null;
+  }
+  return {
+    kind: asNullableString(raw.kind),
+    registry: asNullableString(raw.registry),
+    packageUrl: asNullableString(raw.package_url),
+    local: asNullableBoolean(raw.local),
+  };
+}
+
+function buildNoFixAdvisory(raw: unknown): NoFixAdvisory {
+  const rec = isRecord(raw) ? raw : {};
+  return { id: asCoercedString(rec.id), reason: asCoercedString(rec.reason) };
+}
+
+function buildFindingGate(raw: unknown): FindingGate | null {
+  if (!isRecord(raw)) {
+    return null;
+  }
+  return {
+    reachesFailOn: asNullableBoolean(raw.reaches_fail_on),
+    fails: asNullableBoolean(raw.fails),
+    exemptBy: asNullableString(raw.exempt_by),
+  };
+}
+
+/** An array of evidence lines reads as one string. */
 function buildEvidence(raw: unknown): string {
   if (typeof raw === "string") {
     return raw;
@@ -372,21 +471,22 @@ function buildSignal(raw: unknown): Signal {
   };
 }
 
-/** Every advisory of every S9 signal on this finding, flattened, in document order (DESIGN.md, task spec). */
+/** Every advisory of every S9 signal on this finding, in document order. */
 function flattenAdvisories(signals: readonly Signal[]): readonly Advisory[] {
   const advisories: Advisory[] = [];
   for (const signal of signals) {
     if (signal.id !== "S9") {
       continue;
     }
+    const releasesRead = asNullableBoolean(signal.data.releases_read);
     for (const raw of asArray(signal.data.advisories)) {
-      advisories.push(buildAdvisory(raw));
+      advisories.push(buildAdvisory(raw, releasesRead));
     }
   }
   return advisories;
 }
 
-function buildAdvisory(raw: unknown): Advisory {
+function buildAdvisory(raw: unknown, releasesRead: boolean | null): Advisory {
   const rec = isRecord(raw) ? raw : {};
   const severityRaw = asNullableString(rec.severity);
   return {
@@ -400,6 +500,7 @@ function buildAdvisory(raw: unknown): Advisory {
     affectedVersions: asNullableString(rec.affected_versions),
     fixedBy: asNullableString(rec.fixed_by),
     fixedOnBranch: asBoolean(rec.fixed_on_branch, false),
+    releasesRead,
   };
 }
 
@@ -407,7 +508,7 @@ function buildAdvisory(raw: unknown): Advisory {
 // details
 // ---------------------------------------------------------------------------------------------
 
-/** `details` arrives as `{}`, `[]` (critic.md K1 — PHP's empty array serialises the same as an empty list) or absent. */
+/** `details` arrives as `{}`, `[]` (PHP writes an empty map as a list) or absent. */
 function buildDetailsMap(raw: unknown): ReadonlyMap<string, PackageDetails> {
   if (!isRecord(raw)) {
     return new Map();
@@ -437,13 +538,9 @@ function buildLock(raw: unknown): ExplainLock | null {
     php: asNullableString(raw.php),
     released: asNullableString(raw.released),
     repository: asNullableString(raw.repository),
-    // Mirrors legacy's `lock.from_composer_repository !== false` (`links.ts`'s own doc comment,
-    // and `packagistUrl`): only an *explicit* `false` suppresses the Packagist link, so a lock
-    // object missing the key entirely — every real document has carried it since be6d91f, but a
-    // hand-built or edited one might not — still gets a link, not none.
-    fromComposerRepository: asBoolean(raw.from_composer_repository, true),
+    fromComposerRepository: asNullableBoolean(raw.from_composer_repository),
     dev: asBoolean(raw.dev, false),
-    branchSnapshot: asBoolean(raw.branch_snapshot, false),
+    branchSnapshot: asNullableBoolean(raw.branch_snapshot),
     type: asNullableString(raw.type),
   };
 }
@@ -456,7 +553,7 @@ function buildMetadata(raw: unknown): ExplainMetadata | null {
     abandoned: asBoolean(raw.abandoned, false),
     replacement: asNullableString(raw.replacement),
     releasesListed: asFiniteNumber(raw.releases_listed),
-    hasStableRelease: asBoolean(raw.has_stable_release, false),
+    hasStableRelease: asNullableBoolean(raw.has_stable_release),
     lastStableRelease: asNullableString(raw.last_stable_release),
     lastStableVersion: asNullableString(raw.last_stable_version),
     lastStableDatedBy: asNullableString(raw.last_stable_dated_by),
@@ -481,6 +578,11 @@ function buildBranchRow(raw: unknown): BranchRow {
     newestDatedReleased: asNullableString(rec.newest_dated_released),
     datedBy: asNullableString(rec.dated_by),
     php: asNullableString(rec.php),
+    admitsTargetPhp: asNullableBoolean(rec.admits_target_php),
+    admitsProjectPhp: asNullableBoolean(rec.admits_project_php),
+    phpBlockedBy: asNullableString(rec.php_blocked_by),
+    missesTargetPhp: asNullableString(rec.misses_target_php),
+    missesProjectPhp: asNullableString(rec.misses_project_php),
   };
 }
 
@@ -538,12 +640,7 @@ function asStringArray(value: unknown): readonly string[] {
   return asArray(value).map((item) => asCoercedString(item));
 }
 
-/**
- * Never drop a package or version silently just because a hand-written or foreign document put a
- * number, a boolean or an object where a string belongs (the task spec is explicit about this for
- * `finding.package`/`finding.version`, and the same reasoning applies anywhere else a wire string
- * turns out not to be one): coerce it to readable text instead of throwing it away.
- */
+/** A number, boolean or object where a string belongs becomes readable text, never a dropped row. */
 function asCoercedString(value: unknown): string {
   if (typeof value === "string") {
     return value;
@@ -554,9 +651,7 @@ function asCoercedString(value: unknown): string {
   if (typeof value === "number" || typeof value === "boolean") {
     return String(value);
   }
-  // Anything else reads as its JSON, so a wrong-typed field still shows what it held. JSON cannot
-  // carry functions or symbols (stringify gives undefined) and throws on cycles; neither can come
-  // out of JSON.parse, so both read as empty rather than as "[object Object]".
+  // Neither a cycle nor a function can come out of JSON.parse; both read as empty.
   try {
     const json = JSON.stringify(value) as string | undefined;
     return json ?? "";

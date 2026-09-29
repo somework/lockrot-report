@@ -326,9 +326,8 @@
 }
 
 /* ---------- why this priority: the ladder ----------
-   Two columns: the rule's sentence, and a four-rung track (crit · high · med · low). Each row is one
-   rule of `domain/priority.ts#priorityWhy`, in its order; the dot sits on the rung the ladder is on
-   after that rule. Applied: filled, in that rung's tone. Not applied: hollow, where it already was. */
+   A sentence per step, then a crit · high · med · low track: a step that moved the level is a filled
+   dot in that rung's tone, one that could not is hollow where the level already was. */
 .detail-why > h3 {
   display: flex;
   flex-wrap: wrap;

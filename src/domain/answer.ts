@@ -1,15 +1,7 @@
-/**
- * The open package's answer sentence (PD-DETAIL-6, DESIGN.md §5): what it is, why it matters and
- * how it gets in, composed only from the finding's own fields — its verdict, the signals that set
- * it, its chain, its advisories and a replacement lockrot or Packagist named. Pure and DOM-free, like
- * `domain/timeline.ts`: it returns typed parts, and `detail/DetailLead.tsx` only decides how each
- * kind of part looks (a name in mono, a figure in bold and, for an age, its zone's tone).
- *
- * Every clause restates a fact the document already carries; none of it is a new judgement. Where
- * a signal a clause would quote is missing, the clause falls back to fewer words, never a guess.
- */
+/** The open package's answer sentence (PD-DETAIL-6), as typed parts: every clause restates a field
+ *  the document carries, and a missing signal means fewer words, never a guess. */
 
-import type { Finding, Signal } from "../model/types";
+import type { Finding, PackageDetails, Signal } from "../model/types";
 import { yearsPhrase } from "./format";
 import {
   ageSource,
@@ -19,26 +11,27 @@ import {
   type AgeLegend,
   type Thresholds,
 } from "./age";
+import { pinnedKind, readPinnedFacts } from "./pinned";
+import { safeHref } from "./links";
+import { installedBranch, noFixTally, type NoFixTally } from "./priority";
 import { WAYS_NAMED, waysIn } from "./reach";
-import { hasNoFixExpected } from "./sniff";
 import { VERDICT_ORDER, type Tone } from "./vocab";
 
 export type AnswerPart =
   | { readonly kind: "text"; readonly text: string }
   /** A package, branch, version or constraint — set in mono. */
   | { readonly kind: "name"; readonly text: string }
-  /** A figure the sentence turns on. `tone` is an age's zone against the run's thresholds, or the
-   *  advisory count's own weight; `null` leaves it in ink. */
+  /** `tone` is an age's zone or the advisory count's weight; `null` leaves it in ink. */
   | { readonly kind: "figure"; readonly text: string; readonly tone: Tone | null }
-  /** The replacement's name. `linked` when it is a Composer package lockrot resolved
-   *  (`finding.replacement`), so the page can link it to Packagist; Packagist's own free text is not. */
-  | { readonly kind: "replacement"; readonly text: string; readonly linked: boolean };
+  /** `href` is `replacement_url`, only for a package lockrot resolved. */
+  | { readonly kind: "replacement"; readonly text: string; readonly href: string | null };
 
 export interface AnswerInput {
   readonly finding: Finding;
-  /** Packagist's own free-text replacement (`metadata.replacement`), when the explain data has one. */
+  /** The repository's own free-text replacement (`metadata.replacement`), when the explain data has one. */
   readonly metadataReplacement: string | null;
   readonly thresholds: Thresholds;
+  readonly details?: PackageDetails | null;
 }
 
 const text = (value: string): AnswerPart => ({ kind: "text", text: value });
@@ -59,12 +52,9 @@ function num(data: Signal["data"] | undefined, key: string): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
 
-/** "3.6 years", "1 month", "7 months" — a signal's own `years`, in the page's one age unit
- *  (`format.ts#yearsPhrase`). */
 export { yearsPhrase };
 
-/** An age figure in its zone's tone, or in ink when the verdict does not rest on age
- *  (`contextOnly`) or the run never recorded the pair it is measured against. */
+/** In ink when the verdict does not rest on age or the run recorded no thresholds. */
 function age(years: number, pair: AgeLegend | null, contextOnly: boolean): AnswerPart {
   const tone = contextOnly || pair === null ? null : ageZone(years, pair.warn, pair.high);
   return figure(yearsPhrase(years), tone);
@@ -82,7 +72,11 @@ function hostName(host: string | null): string {
 }
 
 /** What the verdict is, in the words of the signals that set it. */
-function verdictClause(finding: Finding, thresholds: Thresholds): AnswerPart[] {
+function verdictClause(
+  finding: Finding,
+  thresholds: Thresholds,
+  details: PackageDetails | null,
+): AnswerPart[] {
   const release = releaseThresholds(thresholds);
   const push = pushThresholds(thresholds);
   const s2 = num(signal(finding, "S2")?.data, "years");
@@ -100,10 +94,8 @@ function verdictClause(finding: Finding, thresholds: Thresholds): AnswerPart[] {
       parts.push(text("."));
       return parts;
     }
-    case "pinned": {
-      const snapshot = str(signal(finding, "S6")?.data, "version") ?? finding.version;
-      return [text("Pinned to "), name(snapshot), text(", a branch snapshot rather than a release.")];
-    }
+    case "pinned":
+      return pinnedClause(finding, details);
     case "left-behind": {
       const s8 = signal(finding, "S8")?.data;
       const branch = str(s8, "branch");
@@ -144,10 +136,26 @@ function verdictClause(finding: Finding, thresholds: Thresholds): AnswerPart[] {
   }
 }
 
-/** Abandoned: S1 (the repository's own flag) and S3 (archived), then how long it has been quiet —
- *  the one age the key facts beside it quote (`age.ts#ageSource`, S8 > S2 > S4), so the sentence and
- *  the facts never name two different ages; in ink, since an abandoned package's priority never
- *  rests on its age (`age.ts#isContextOnly`). */
+/** The newest dated tag is not named here: the Provenance metadata line is its one place. */
+function pinnedClause(finding: Finding, details: PackageDetails | null): AnswerPart[] {
+  const facts = readPinnedFacts(finding, details);
+  const lead = [text("Pinned to "), name(facts.version)];
+  switch (pinnedKind(facts)) {
+    case "untagged":
+      return [text("Installed "), name(facts.version), text(", but its repository lists no tag.")];
+    case "other": {
+      const summary = facts.summary?.trim().replace(/\.$/, "") ?? "";
+      return summary === "" ? [...lead, text(".")] : [text(`Pinned: ${summary}.`)];
+    }
+    case "snapshot":
+      return facts.hasStableRelease === false
+        ? [...lead, text(", a branch snapshot of a package with no tagged release.")]
+        : [...lead, text(", a branch snapshot rather than a release.")];
+  }
+}
+
+/** The age is `ageSource`'s, so the sentence and the key facts never name two ages; in ink, since
+ *  abandoned never rests on age. */
 function abandonedClause(finding: Finding): AnswerPart[] {
   const marked = signal(finding, "S1") !== undefined;
   const s3 = signal(finding, "S3");
@@ -198,9 +206,7 @@ function oldPromiseClause(finding: Finding): AnswerPart[] {
   ];
 }
 
-/** How it gets in: required directly, or through every requirement of yours that reaches it
- *  (`reach.ts#waysIn`, the same list the ladder's reach rung and the chain name) — both named up to
- *  two, counted past that with the first still named. */
+/** Up to two ways in named, counted past that with the first still named. */
 function reachClause(finding: Finding): AnswerPart[] {
   const dev = finding.dev ? ", for development only" : "";
   if (finding.direct) return [text(` You require it directly${dev}.`)];
@@ -223,13 +229,32 @@ function replacementClause(finding: Finding, metadataReplacement: string | null)
   const s1 = str(signal(finding, "S1")?.data, "replacement");
   const replacement = finding.replacement ?? metadataReplacement ?? s1;
   if (replacement === null) return [];
-  const linked = finding.replacement !== null;
-  // Run data counts only a replacement lockrot resolved to a package (`abandoned.with_replacement`);
-  // one named only in words says so here, so the two never read as a contradiction.
+  const resolved = finding.replacement !== null;
+  // Run data counts only a resolved replacement, so one named in words says so.
   return [
     text(" Its named replacement is "),
-    { kind: "replacement", text: replacement, linked },
-    text(linked ? "." : ", in words only — not a package lockrot resolved."),
+    { kind: "replacement", text: replacement, href: resolved ? safeHref(finding.replacementUrl) : null },
+    text(resolved ? "." : ", in words only — not a package lockrot resolved."),
+  ];
+}
+
+/** Where no fix is coming, from each `no_fix_expected` reason: on the installed branch when one is
+ *  fixed only on another, and never for an advisory whose fix was not looked for. */
+function noFixClause(noFix: NoFixTally, predicted: number, n: number, branch: string | null): AnswerPart[] {
+  const where: AnswerPart[] =
+    noFix.branch === 0 ? [] : branch === null ? [text(" on your branch")] : [text(" on "), name(branch)];
+  if (predicted === 0) {
+    return [text(n === 1 ? "; its fix could not be looked for." : "; their fix could not be looked for.")];
+  }
+  if (noFix.unread === 0) {
+    return where.length === 0
+      ? [text(" and no fix is coming for it.")]
+      : [text(" and no fix is coming"), ...where, text(".")];
+  }
+  return [
+    text(`; for ${predicted} of them no fix is coming`),
+    ...where,
+    text(`, and for ${noFix.unread} the fix could not be looked for.`),
   ];
 }
 
@@ -237,16 +262,15 @@ function replacementClause(finding: Finding, metadataReplacement: string | null)
 function advisoryClause(finding: Finding): AnswerPart[] {
   const n = finding.advisories.length;
   if (n === 0) return [];
-  const noFix = hasNoFixExpected(finding);
+  const noFix = noFixTally(finding);
+  const predicted = noFix === null ? 0 : noFix.none + noFix.branch + noFix.other;
   const parts: AnswerPart[] = [
     text(" "),
-    figure(n === 1 ? "1 security advisory" : `${n} security advisories`, noFix ? "crit" : "high"),
+    figure(n === 1 ? "1 security advisory" : `${n} security advisories`, predicted > 0 ? "crit" : "high"),
     text(n === 1 ? " affects your version" : " affect your version"),
   ];
-  if (noFix) {
-    const branch = str(signal(finding, "S8")?.data, "branch");
-    if (branch !== null) parts.push(text(" and no fix is coming on "), name(branch), text("."));
-    else parts.push(text(" and no fix is coming for it."));
+  if (noFix !== null) {
+    parts.push(...noFixClause(noFix, predicted, n, installedBranch(finding)));
     return parts;
   }
   const fixes = new Set(finding.advisories.map((a) => a.fixedBy));
@@ -259,18 +283,14 @@ function advisoryClause(finding: Finding): AnswerPart[] {
   return parts;
 }
 
-/**
- * The whole answer, as parts in reading order: the verdict clause, then how it gets in, then the
- * named replacement and the advisories when there are any. Adjacent plain text is left unmerged;
- * the renderer draws each part as it comes.
- */
 export function answerParts({
   finding,
   metadataReplacement,
   thresholds,
+  details = null,
 }: AnswerInput): readonly AnswerPart[] {
   return [
-    ...verdictClause(finding, thresholds),
+    ...verdictClause(finding, thresholds, details),
     ...reachClause(finding),
     ...replacementClause(finding, metadataReplacement),
     ...advisoryClause(finding),
@@ -282,8 +302,7 @@ export function answerText(parts: readonly AnswerPart[]): string {
   return parts.map((part) => part.text).join("");
 }
 
-/** One entry of "What it pulls in": a single flagged package, or three or more from one vendor that
- *  share a verdict, counted in one entry ("14 hoa/* packages, abandoned") rather than listed. */
+/** Three or more from one vendor sharing a verdict are counted in one entry, not listed. */
 export interface PulledEntry {
   /** `vendor/*` when the entry counts a group; `null` for a single package. */
   readonly vendor: string | null;
@@ -300,12 +319,7 @@ export interface PulledIn {
 /** The fewest members a vendor must share a verdict with before they are counted, not listed. */
 const GROUP_AT = 3;
 
-/**
- * What the package pulls in that is itself flagged, from S7's own `packages` list, in its own order
- * (S7 lists them; this only counts). Grouping by the string before the slash is presentation: it
- * never decides anything, and every package it counts stays one click away in S7's own detail.
- * `null` when the finding has no S7 or S7 names no package.
- */
+/** S7's own `packages`, in its order; grouping by vendor is presentation only. */
 export function pulledIn(finding: Finding): PulledIn | null {
   const data = signal(finding, "S7")?.data;
   const raw = data?.["packages"];
@@ -346,10 +360,7 @@ export function pulledIn(finding: Finding): PulledIn | null {
   return { flagged: flagged ?? packages.length, entries };
 }
 
-/** What it pulls in, by verdict, worst first — `VERDICT_ORDER`, the order S7's own text lists them
- *  in, so the fold and the S7 signal below it never disagree — each verdict with its own packages in
- *  S7's order — the sentence "What it pulls in" says once there are too many entries to
- *  name, and the list its "Name all" fold opens, so the count and the names always agree. */
+/** Worst verdict first, in S7's own order, so the count, the fold and S7 agree. */
 export function pulledVerdicts(
   pulled: PulledIn,
 ): readonly { verdict: string; packages: readonly string[] }[] {
@@ -362,8 +373,6 @@ export function pulledVerdicts(
     .sort((a, b) => verdictRank(a.verdict) - verdictRank(b.verdict));
 }
 
-/** A verdict's place in `VERDICT_ORDER` (the order S7's own text lists them in, worst first); a
- *  verdict it does not list goes last, and `sort` keeps those in S7's order. */
 function verdictRank(verdict: string): number {
   const index = (VERDICT_ORDER as readonly string[]).indexOf(verdict);
   return index === -1 ? VERDICT_ORDER.length : index;

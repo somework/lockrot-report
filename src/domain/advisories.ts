@@ -22,30 +22,30 @@ export interface FixRung {
   readonly version: string | null;
   readonly onBranch: boolean;
   readonly n: number;
+  /** No release was read for these advisories, so a null `version` is not "no fix". */
+  readonly unchecked: boolean;
 }
 
-/**
- * Distinct releases that clear a finding's advisories, cheapest move first: a release already on
- * the installed branch beats one that is not, and among ties the release that clears more
- * advisories comes first (report.js:160-171). Legacy bucketed by `fixed_by` in a plain object and
- * read it back with `Object.keys`, which visits integer-like keys (a `fixed_by` of `"2"`) in
- * numeric order ahead of insertion order — a JS engine quirk, not anything `Priority::of()` or the
- * advisory feed intends. A `Map` keeps first-seen order instead, so ties after the onBranch/n sort
- * follow the order advisories arrived in, not JS's object-key order (critic.md M33). Also per M33,
- * a bucket keeps the *first* advisory's `fixed_on_branch` flag when two advisories share a
- * `fixed_by` but disagree on it — this port keeps that same behaviour, not averaging or overwriting
- * it.
- */
+/** An advisory's null `fixedBy` in words: "no fix" only where its S9 read the releases. */
+export function noFixWords(advisory: Pick<Advisory, "releasesRead">): string {
+  return advisory.releasesRead === false ? "fix not checked" : "no fix listed";
+}
+
+/** Distinct releases that clear a finding's advisories: one on the installed branch first, then the
+ *  one clearing more. Ties keep first-seen order, and a rung keeps its first advisory's
+ *  `fixed_on_branch` where two disagree. */
 export function fixLadder(finding: Finding): readonly FixRung[] {
   const buckets = new Map<string, FixRung>();
   for (const advisory of advisoriesOf(finding)) {
-    const key = advisory.fixedBy ?? "\u0000none";
+    const unchecked = advisory.fixedBy === null && advisory.releasesRead === false;
+    const key = advisory.fixedBy ?? (unchecked ? "\u0000unchecked" : "\u0000none");
     const existing = buckets.get(key);
-    if (existing) {
-      buckets.set(key, { version: existing.version, onBranch: existing.onBranch, n: existing.n + 1 });
-    } else {
-      buckets.set(key, { version: advisory.fixedBy, onBranch: advisory.fixedOnBranch, n: 1 });
-    }
+    buckets.set(
+      key,
+      existing
+        ? { ...existing, n: existing.n + 1 }
+        : { version: advisory.fixedBy, onBranch: advisory.fixedOnBranch, n: 1, unchecked },
+    );
   }
   return Array.from(buckets.values()).sort((x, y) => {
     if (x.onBranch !== y.onBranch) return x.onBranch ? -1 : 1;
@@ -90,25 +90,12 @@ export interface AdvisoryWithFinding {
   readonly finding: Finding;
 }
 
-/**
- * Whether the report's own data says the advisory check (S9) may not have run for every package —
- * PD-LEDGER-1 (DESIGN.md §5). Unlike S2/S3/S4/S8, which S10 names per finding when their own check
- * did not run, nothing in the schema flags S9 that way: advisories come from "one request to
- * Packagist for the whole lock" (lockrot docs/verdicts.md#security-advisories), so a failure there
- * is a run-wide fact, not a per-package one, and the document carries it as `network_failures` and
- * free-text `notes`, never as a signal. `network_failures` is lockrot's blanket flag for any
- * unreachable repository or forge, including an `--offline` run with nothing cached
- * (lockrot docs/ci.md); a note naming "advisor(y/ies)" or "audit" is the only place a Composer-
- * version or install-time-budget skip of this specific check would show up, since neither is a
- * network failure at all. Neither test is exact — a network failure that happened to spare the
- * advisory request still reads as incomplete here, and a note phrased some other way would be
- * missed — but the cost is asymmetric: overclaiming "incomplete" costs a reader one glance at the
- * Run tab's notes, overclaiming "clean" costs them a vulnerability nobody looked for. See
- * AdvisoryLedger.tsx, the only caller.
- */
+/** lockrot's note codes for an advisory check that stopped early or lost a repository. */
+const ADVISORY_GAP_CODES: ReadonlySet<string> = new Set(["advisories_not_checked", "advisories_unavailable"]);
+
+/** Whether the run says its advisory check did not cover every package. */
 export function advisoryCheckIncomplete(model: Model): boolean {
-  if (model.report.networkFailures) return true;
-  return model.report.notes.some((note) => /advisor|audit/i.test(note));
+  return model.report.noteDetails.some((note) => ADVISORY_GAP_CODES.has(note.code));
 }
 
 /** Every advisory of every finding in the report, paired with its finding and sorted for the
@@ -128,8 +115,10 @@ export interface AdvisoryPackage {
   readonly package: string;
   /** Distinct, in the order its advisories list them; empty when none names a fix. */
   readonly fixedBy: readonly string[];
-  /** True when at least one of its advisories names no fix at all. */
+  /** True when at least one of its advisories names no fix though its releases were read. */
   readonly someUnfixed: boolean;
+  /** True when at least one of its advisories names no fix because no release was read. */
+  readonly someUnchecked: boolean;
 }
 
 /**
@@ -138,24 +127,29 @@ export interface AdvisoryPackage {
  * Display only: the versions are the advisories' own `fixed_by` text, never compared or ranked.
  */
 export function advisoryPackages(pairs: readonly AdvisoryWithFinding[]): readonly AdvisoryPackage[] {
-  const byPackage = new Map<string, { fixedBy: string[]; someUnfixed: boolean }>();
+  const byPackage = new Map<string, { fixedBy: string[]; someUnfixed: boolean; someUnchecked: boolean }>();
   for (const { advisory, finding } of pairs) {
-    const entry = byPackage.get(finding.package) ?? { fixedBy: [], someUnfixed: false };
+    const entry = byPackage.get(finding.package) ?? { fixedBy: [], someUnfixed: false, someUnchecked: false };
     const fix = advisory.fixedBy;
+    const shape = fixShapeOf(advisory);
     const fixedBy = fix && !entry.fixedBy.includes(fix) ? [...entry.fixedBy, fix] : entry.fixedBy;
-    byPackage.set(finding.package, { fixedBy, someUnfixed: entry.someUnfixed || !fix });
+    byPackage.set(finding.package, {
+      fixedBy,
+      someUnfixed: entry.someUnfixed || shape === "none",
+      someUnchecked: entry.someUnchecked || shape === "unchecked",
+    });
   }
 
   return [...byPackage].map(([name, entry]) => ({ package: name, ...entry }));
 }
 
-/** An advisory's fix shape: a release that clears it either exists on the installed branch, exists
- *  only on another branch, or does not exist at all (report.js:508,538). Drives both the Advisories
- *  tab's three groups and the query grammar's `fix:` filter. */
-export type FixShape = "branch" | "move" | "none";
+/** An advisory's fix shape: a release that clears it exists on the installed branch, exists only on
+ *  another branch, or none is listed; or no release was read, so nobody looked (`unchecked`). Drives
+ *  the Advisories tab's groups and the rail's `fix` filter. */
+export type FixShape = "branch" | "move" | "none" | "unchecked";
 
 export function fixShapeOf(advisory: Advisory): FixShape {
-  if (!advisory.fixedBy) return "none";
+  if (!advisory.fixedBy) return advisory.releasesRead === false ? "unchecked" : "none";
   return advisory.fixedOnBranch ? "branch" : "move";
 }
 
@@ -185,8 +179,7 @@ export interface AdvisoryGroup {
   readonly advisories: readonly AdvisoryWithFinding[];
 }
 
-/** The Advisories tab's three fix-shape groups, in the fixed order and with the fixed copy
- *  report.js:530-534 declares. */
+/** The Advisories tab's fix-shape groups, in a fixed order. */
 const GROUP_TEXT: readonly { shape: FixShape; heading: string; hint: string }[] = [
   {
     shape: "branch",
@@ -203,9 +196,14 @@ const GROUP_TEXT: readonly { shape: FixShape; heading: string; hint: string }[] 
     heading: "No fix listed",
     hint: "Nothing published clears it. Replacement or mitigation.",
   },
+  {
+    shape: "unchecked",
+    heading: "Fix not checked",
+    hint: "lockrot read no release list for it, so whether a release clears it is not known.",
+  },
 ];
 
-/** Buckets already-sorted advisory/finding pairs into the Advisories tab's three fix-shape groups;
+/** Buckets already-sorted advisory/finding pairs into the Advisories tab's fix-shape groups;
  *  a group with nothing in it is omitted rather than rendered empty (report.js:540). */
 export function groupAdvisories(pairs: readonly AdvisoryWithFinding[]): readonly AdvisoryGroup[] {
   return GROUP_TEXT.map((group) => ({

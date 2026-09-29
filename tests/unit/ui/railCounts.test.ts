@@ -1,12 +1,6 @@
-// PD-RAIL-1 (DESIGN.md §5): a rail row's count is the number of packages the list shows once that
-// row is selected — for every row of every group, on every tab that has a rail, over the three real
-// corpora. It catches the whole class the "What the fix costs" bug belonged to (a count taken in one
-// unit, advisories, over a filter applied in another, packages): spomky-labs/otphp's two other-branch
-// advisories read "Moving to another branch 2" over a list of one row.
-//
-// "The list" is read off the same functions the views render with (`ui/views/order.ts`, and
-// `radiusLayout` for the Blast radius rows, open or folded), never off `railGroups`' own arithmetic,
-// so the two sides of each comparison are computed independently.
+// PD-RAIL-1/2: every rail row's count is the packages the list shows once that row is selected, for
+// every group and tab, over the real corpora and the 0.13 documents with an `unattributed` entry.
+// "The list" comes from the views' own functions, never `railGroups`' arithmetic.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -18,7 +12,14 @@ import type { Model, View } from "../../../src/model/types";
 import { EMPTY_FILTERS, INITIAL_STATE, type FilterGroup, type State } from "../../../src/state/types";
 import { renderedPackages } from "../../../src/ui/views/order";
 
-const CORPORA = ["wallabag_wallabag", "koel_koel", "mautic_mautic"] as const;
+const CORPORA = [
+  "wallabag_wallabag",
+  "koel_koel",
+  "mautic_mautic",
+  "gh_akaunting_akaunting-0.13",
+  "mini-0.13-edges",
+  "wallabag_baseline-older-0.13",
+] as const;
 const RAIL_VIEWS: readonly View[] = ["findings", "advisories", "packages", "radius"];
 
 function load(name: string): Model {
@@ -30,9 +31,8 @@ function load(name: string): Model {
   return result.model;
 }
 
-/** Every package with a place on the tab's list, each once. Blast radius lists a flagged package
- *  under a row that may be folded, and a flagged direct requirement as a row of its own, even when
- *  nothing is listed under it (radius.ts), so it is read off the tab's layout, rows open or not. */
+/** Read off the tab's layout, rows open or not: a row may be folded, and a flagged direct
+ *  requirement is a row even with nothing under it. */
 function listedPackages(model: Model, state: State): ReadonlySet<string> {
   if (state.view === "radius") return radiusListed(radiusLayout(model, applyFilters(model, state, "radius")));
   return new Set(renderedPackages(model, state, state.view));
@@ -65,18 +65,14 @@ describe.each(CORPORA)("rail counts on %s (PD-RAIL-1)", (corpus) => {
   });
 });
 
-/** The state with `key` on in `group` on top of `base`, as the reducer's toggle turns it on: added
- *  to what its group already has (ANDed for Scope, ORed for the rest); a row already on changes
- *  nothing. Written here from the reducer's rule, not from `railGroups`' own helper. */
+/** Written from the reducer's rule, not from `railGroups`' own helper. */
 function adding(base: State, group: FilterGroup, key: string): State {
   const current = base.filters[group];
   const next = current.includes(key) ? current : [...current, key];
   return { ...base, filters: { ...base.filters, [group]: next } };
 }
 
-// PD-RAIL-2: with other filters on — a Scope button, a ledger chip, a search, a second row of the
-// same ORed group — every count is still what the list shows with that row on, those filters
-// staying on: for a row that is off, what a click on it lists.
+// With other filters on, a count is still what the list shows with that row on too.
 const NARROWED: readonly { label: string; state: Partial<State> }[] = [
   { label: "Direct on", state: { filters: { ...EMPTY_FILTERS, scope: ["direct"] } } },
   { label: "high priority on", state: { filters: { ...EMPTY_FILTERS, prio: ["high"] } } },

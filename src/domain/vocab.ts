@@ -1,39 +1,20 @@
-/**
- * Verdicts, priorities and signals: the fixed vocabulary tables from the top of legacy report.js
- * (lines 1-200) and the tone map that colours every pill, chip and bar segment on the page.
- *
- * Ported from `legacy/report.js:21-63` and `legacy/report.js:96-142` (constants only — the
- * functions that read the DOM or a Finding live in other domain/ modules or in ui/).
- */
+/** Verdicts, priorities and signals: the vocabulary tables and the tone map that colours every
+ *  pill, chip and bar. */
 
 import type { SignalId, Verdict } from "../model/types";
+import { SIGNAL_IDS } from "../model/types";
 
 /** The five CSS tone tokens a verdict or priority pill, chip or bar segment can carry. */
 export type Tone = "crit" | "high" | "med" | "low" | "none";
 
-/**
- * Builds a lookup table with no prototype, so a document-supplied key such as `"constructor"`,
- * `"__proto__"` or `"toString"` can never resolve to an inherited `Object.prototype` member instead
- * of `undefined` — every vocabulary table below is indexed by a string a report chose (a verdict, a
- * signal id), so a plain `{}` literal would silently hand that value back as if it were real data
- * (security finding: prototype lookups on the vocabulary tables). One helper, used by every table
- * here and by `PRIORITY_BASE` in `./priority`, rather than a guard at each call site.
- */
+/** No prototype, so a key a report chose (`constructor`, `__proto__`, `toString`) finds nothing
+ *  rather than an inherited member. */
 export function vocabTable<T extends object>(entries: T): Readonly<T> {
   return Object.assign(Object.create(null) as T, entries);
 }
 
-/**
- * The verdicts that count as findings when a document carries no `run.flaggedVerdicts` of its own
- * (legacy `FLAGGED_VERDICTS`, `report.js:116-117`). Mirrors `Verdict::flagged()` server-side, so
- * this page and lockrot's own table always agree on the count. Deliberately excludes `unknown`: a
- * package lockrot could not check is a note, not a finding, and counting it would put the page one
- * ahead of its own headline.
- *
- * `Model.report.run.flaggedVerdicts` already carries this fallback applied (DESIGN.md §"Compatibility",
- * `model/normalize.ts`'s job) — this constant exists for the same fallback anywhere it is still
- * needed directly, and as the source of truth `normalize.ts` falls back to.
- */
+/** Mirrors lockrot's `Verdict::flagged()`, so the page and lockrot agree on the count; `unknown` is
+ *  a note, not a finding. */
 export const DEFAULT_FLAGGED: readonly Verdict[] = [
   "abandoned",
   "silent",
@@ -43,14 +24,7 @@ export const DEFAULT_FLAGGED: readonly Verdict[] = [
   "stale",
 ];
 
-/**
- * Severity order for the packages table's verdict column (legacy `SEVERITY_ORDER`, `report.js:133`).
- * Seven entries — excludes `finished` and `ok` on purpose, since neither is a "rot" verdict. A
- * verdict not in this list sorts after every entry here (DESIGN.md M1: unlike the legacy page,
- * which compared severity case-sensitively and gave `moderate`/`High` no bucket at all, the caller
- * is expected to normalise case first and only fall back to "sorts last" for a genuinely unknown
- * verdict — that normalisation is not this module's job).
- */
+/** Excludes `finished` and `ok`, which are not rot; an unknown verdict sorts after every entry. */
 export const VERDICT_ORDER: readonly Verdict[] = [
   "abandoned",
   "silent",
@@ -78,74 +52,60 @@ const TONE_TABLE: Readonly<Record<string, Tone>> = vocabTable({
   ok: "none",
 });
 
-/**
- * A priority or verdict key's tone, `"low"` for anything not in the table. Ported from legacy
- * `tone()` (`report.js:185`: `TONE[key] || "low"`) — a typo, or a future verdict this renderer does
- * not yet know, never errors; it just reads as low-severity instead of crashing the page.
- */
+/** An unknown key reads as low, never an error. */
 export function TONE(key: string): Tone {
   return TONE_TABLE[key] ?? "low";
 }
 
-/** Short labels for S1-S10, verbatim from legacy `SIGNAL_NAMES` (`report.js:28-33`) plus S10. */
 export const SIGNAL_NAMES: Readonly<Record<string, string>> = vocabTable({
   S1: "marked abandoned",
-  S2: "no stable release",
+  S2: "no recent release",
   S3: "repository archived",
   S4: "no push to the repository",
   S5: "release predates the target PHP",
-  S6: "branch snapshot, not a release",
+  // PD-S6-1: S2 is an age; S6 is a snapshot or a repository with no tag at all.
+  S6: "branch snapshot or never tagged",
   S7: "pulls in flagged packages",
   S8: "the installed branch stopped",
   S9: "security advisories",
-  // DESIGN.md §5 M2 / critic.md M2: the legacy page emits S10 (NotCheckedRule) but has no name or
-  // glossary entry for it, and a plain string .sort() puts it between S1 and S2. Fixed on purpose:
-  // named here, and a caller sorts signal ids in SIGNAL_IDS' numeric order instead of lexicographic.
   S10: "a check could not run",
 });
 
-/**
- * One or two words per check (PD-DETAIL-12, DESIGN.md §5): the name under each cell of the detail's
- * "Checks" strip, and in the lines that list the ones that stayed quiet or could not run ("Quiet:
- * S5 predates PHP · S6 snapshot"). A check's subject, not a verdict on it, so the same words read
- * right under a fired cell, a quiet one and one that could not run: S10 is "check gaps", which it
- * reports when it fires and which there are none of when it stays quiet.
- */
+/** A check's subject, not a verdict on it, so the words fit a fired, quiet or blocked cell
+ *  (PD-DETAIL-12). */
 export const CHECK_NAMES: Readonly<Record<string, string>> = vocabTable({
   S1: "abandoned",
   S2: "release age",
   S3: "archived",
   S4: "push age",
   S5: "predates PHP",
-  S6: "snapshot",
+  S6: "snapshot/untagged",
   S7: "flagged deps",
   S8: "branch stopped",
   S9: "advisories",
   S10: "check gaps",
 });
 
-/** Tooltip/glossary text for S1-S10, verbatim from legacy `SIGNAL_DEFS` (`report.js:49-59`) plus S10. */
 export const SIGNAL_DEFS: Readonly<Record<string, string>> = vocabTable({
   S1: "The Composer repository marks the package abandoned, sometimes naming a replacement.",
-  S2: "Time since the last stable release, against release-warn-years / release-high-years.",
+  S2: "Time since the newest dated release, pre-releases included, against release-warn-years / release-high-years.",
   S3: "The repository is archived — on GitHub, or on GitLab when the run has credentials there.",
   S4: "Time since the last push to any branch, against push-warn-years / push-high-years.",
   S5: "The installed release predates the target PHP's GA date and require.php has no upper bound.",
-  S6: "The installed version is a branch snapshot, or the package has no stable release.",
+  S6: "The installed version is a branch snapshot, or the package's repository lists no tag at all (a pre-release counts as one).",
   S7: "A direct requirement pulls in flagged transitive packages. Informational, never a verdict.",
   S8: "Time since the last stable release on the installed branch, counted only when a higher branch has released since.",
   S9: "Security advisories affecting the installed version. Never a verdict; raises the priority where no fix is coming.",
   S10: "A check lockrot relies on could not run for this package, so a verdict may be missing a signal; the data says which and why.",
 });
 
-/** Tooltip/glossary text per verdict, verbatim from legacy `VERDICT_DEFS` (`report.js:38-48`). */
 export const VERDICT_DEFS: Record<string, string> = vocabTable({
   abandoned:
     "The package's Composer repository marks it abandoned, or its repository is archived on GitHub or GitLab.",
   silent:
-    "No stable release for at least release-high-years and no repository push for at least push-high-years.",
+    "No release for at least release-high-years, pre-releases included, and no repository push for at least push-high-years.",
   pinned:
-    "The installed version is a branch snapshot — dev-master, a 2.x-dev alias, a #hash — or the package has no stable release at all.",
+    "The installed version is a branch snapshot — dev-master, a 2.x-dev alias, a #hash — or the package's repository lists no tag at all.",
   "left-behind":
     "No stable release on the installed branch for release-warn-years, while a higher branch kept releasing. The package is alive; the branch you are on is not.",
   "old-promise":
@@ -157,25 +117,10 @@ export const VERDICT_DEFS: Record<string, string> = vocabTable({
   ok: "None of the above.",
 });
 
-/** A run's own threshold values, in document key order — `Model.report.run.thresholds`'s own shape
- *  (`model/types.ts#RunSettings`), restated here so `annotateThresholds` does not have to import a
- *  model type into a module that otherwise only ever imports from `model/types` for the enum ids. */
 export type Thresholds = readonly (readonly [name: string, years: number])[];
 
-/**
- * A glossary definition names lockrot's own config keys (`release-warn-years`,
- * `push-high-years`, …) rather than a number, since that is what a reader would actually set
- * (`SIGNAL_DEFS.S2`, `VERDICT_DEFS.silent`, …) — but a key name alone gives no sense of where this
- * run's own gate sits. Where the run recorded a value for a name this text mentions, this replaces
- * the bare name with the fact first and the key beside it, `"5 years (release-high-years)"` — a
- * reader wants the number a sentence like "no stable release for at least …" is building toward
- * before the name of the setting that produced it, which also reads as the definition's own prose
- * continuing rather than an aside interrupting it (earlier: `"release-high-years (5 years in this
- * run)"`, the key first). The key name itself is unchanged either way, and a name the run never
- * recorded is left unannotated (PD-GLOSSARY-8, DESIGN.md §5). Every occurrence of every recorded
- * name is annotated, not just the first, since S2 and S4's own definitions each name their pair of
- * thresholds once apiece in the same sentence.
- */
+/** Each config key a definition names gets this run's value first, "5 years (release-high-years)";
+ *  a key the run never recorded is left as it is (PD-GLOSSARY-8). */
 export function annotateThresholds(text: string, thresholds: Thresholds): string {
   let annotated = text;
   for (const [name, years] of thresholds) {
@@ -185,34 +130,47 @@ export function annotateThresholds(text: string, thresholds: Thresholds): string
   return annotated;
 }
 
-/** The base of the glossary's verdict-family docs (legacy `DOCS`, `report.js:34`). */
 export const DOCS_URL = "https://lockrot.dev/verdicts/";
 
-/** The base of lockrot's configuration docs — a different page from `DOCS_URL`'s verdict family,
- *  used by the glossary's `finished` note (PD-GLOSSARY-9, DESIGN.md §5) to point at how a package a
- *  reader considers complete gets accepted the same way the built-in allowlist does. Matches the
- *  literal `domain/sniff.ts#noteDocLink` already falls back to; kept as its own constant here rather
- *  than imported from there, since that module is deliberately the one place reading PHP-rendered
- *  prose, not a shared URL table. */
+/** The configuration docs, where a reader learns to accept a finished package (PD-GLOSSARY-9). */
 export const CONFIG_DOCS_URL = "https://lockrot.dev/configuration/";
 
-/**
- * Dedicated glossary anchors for the three signals that link out instead of just naming themselves
- * (legacy `SIGNAL_DOC`, `report.js:37`). Every other signal id — including S10 — has no entry here;
- * a caller falls back to `` `${DOCS_URL}#the-signals` `` (`report.js:399`, `report.js:720`).
- */
+/** The three signals with an anchor of their own; any other id links to the list of signals. */
 export const SIGNAL_DOC: Readonly<Partial<Record<SignalId, string>>> = vocabTable({
   S7: `${DOCS_URL}#transitive-exposure`,
   S8: `${DOCS_URL}#left-behind`,
   S9: `${DOCS_URL}#security-advisories`,
 });
 
-/**
- * Whether `verdict` is one of the run's flagged verdicts. Ported from legacy `FLAGGED`'s filter
- * predicate (`report.js:118`: `FLAGGED_VERDICTS.indexOf(f.verdict) !== -1`). `flaggedVerdicts` is
- * `Model.report.run.flaggedVerdicts`, which normalize.ts has already defaulted to `DEFAULT_FLAGGED`
- * for a document that carries none of its own.
- */
+const KNOWN_SIGNAL_IDS: ReadonlySet<string> = new Set(SIGNAL_IDS);
+
+export function isKnownSignalId(id: string): boolean {
+  return KNOWN_SIGNAL_IDS.has(id);
+}
+
+/** lockrot's own id, `S` and a number with no leading zero (the report schema's `signalId`). */
+const LOCKROT_SIGNAL_ID = /^S[1-9][0-9]*$/;
+/** `<vendor>:<name>`, which the report schema keeps for a signal that does not come from lockrot. */
+const VENDOR_SIGNAL_ID = /^[a-z0-9][a-z0-9_.-]*:[a-z0-9][a-z0-9_.-]*$/;
+
+/** Read off the id's shape only, never in a known check's words: an S-number is a newer lockrot
+ *  check, `vendor:name` is not lockrot's. */
+function unknownSignalDef(id: string): string {
+  if (LOCKROT_SIGNAL_ID.test(id)) return "A lockrot check this page does not know.";
+  if (VENDOR_SIGNAL_ID.test(id)) return "A check from outside lockrot, which this page does not know.";
+  return "A check this page does not know.";
+}
+
+export function signalDef(id: string): string {
+  return SIGNAL_DEFS[id] ?? unknownSignalDef(id);
+}
+
+/** `null` for an id that is not lockrot's, which its docs do not describe. */
+export function signalDocUrl(id: string): string | null {
+  if (!isKnownSignalId(id) && !LOCKROT_SIGNAL_ID.test(id)) return null;
+  return SIGNAL_DOC[id] ?? `${DOCS_URL}#the-signals`;
+}
+
 export function isFlagged(verdict: Verdict, flaggedVerdicts: readonly Verdict[]): boolean {
   return flaggedVerdicts.includes(verdict);
 }

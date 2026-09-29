@@ -1,14 +1,10 @@
 import { useReport } from "../context";
 import { population, railGroups } from "../../domain/filters";
-import { SIGNAL_DEFS } from "../../domain/vocab";
+import { signalDef } from "../../domain/vocab";
 import "./rail.css";
 
-/**
- * A group's title. The Since group's names the baseline file ("Since lockrot-baseline.json"): set in
- * the eyebrow's capitals, a hyphenated file name broke across two lines at its hyphen. The file name
- * keeps its own case, in the mono every other file name on the page takes, on a line of its own that
- * breaks only if the name is wider than the rail.
- */
+/** The baseline file name keeps its case, on its own line: set in the eyebrow's capitals it broke
+ *  at its hyphen. */
 function RailTitle({ title, path }: { title: string; path: string | undefined }) {
   if (path === undefined || path === "" || !title.endsWith(path)) return <>{title}</>;
   return (
@@ -20,22 +16,8 @@ function RailTitle({ title, path }: { title: string; path: string | undefined })
 }
 
 /**
- * The left-hand filter rail: the since/scope/signal/fix groups `railGroups()` (domain/filters.ts)
- * hands back for the current tab, each row a toggle button. Ported from legacy `renderRail()`
- * (`report.js:319-394`).
- *
- * `railGroups()` already carries the group order, the row labels and the counts. A count is what
- * the list shows with that row on and everything else the reader chose still on — for a row that is
- * off, what a click on it lists, a second row of an ORed group counting the union it makes
- * (PD-RAIL-2, DESIGN.md §5 — legacy's counts ignored the other filters, M18); a row matching nothing
- * the other filters leave is left out unless it is on. This component's only job is layout, plus `aria-pressed` on
- * each button (M17's fix, extended to the rail's own controls for consistency with the ledger's).
- *
- * Hidden entirely — no groups, no rail at all — once the current tab has nothing to filter
- * (`population(model, state.view).length === 0`), the same emptiness check the search bar and hint
- * use, and the one legacy makes before building any group (`report.js:322-327`). When the tab has
- * packages but the search box and the chips leave no row anything to add, the rail says so in one
- * line rather than standing empty.
+ * The filter rail: layout of `railGroups()` plus `aria-pressed` on each button. Hidden once the tab
+ * has nothing to filter; when the filters leave no row anything to add, it says so in one line.
  */
 export function Rail() {
   const { model, state, dispatch } = useReport();
@@ -60,7 +42,7 @@ export function Rail() {
                 type="button"
                 className="opt"
                 aria-pressed={row.on}
-                title={group.group === "signal" ? SIGNAL_DEFS[row.key] : undefined}
+                title={group.group === "signal" ? signalDef(row.key) : undefined}
                 onClick={() => {
                   dispatch({ type: "toggle", group: group.group, key: row.key });
                 }}

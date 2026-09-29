@@ -5,7 +5,7 @@
  * `generated_at`.
  */
 
-import type { Finding, Model, PackageDetails, ReportModel } from "../model/types";
+import type { Finding, Model, PackageDetails, ReportModel, RunSettings } from "../model/types";
 import { yearsPhrase } from "./format";
 
 const MS_PER_HOUR = 3600 * 1000;
@@ -88,6 +88,25 @@ export function carries(report: ReportModel, key: string): boolean {
 /** The reason shown for a `null` value: the document left the key out, or wrote it as null. */
 export function nullReason(report: ReportModel, key: string): string {
   return carries(report, key) ? NOT_RECORDED : NOT_IN_DOCUMENT;
+}
+
+/** What `run.fail_on` fails on, worded from `run.fail_on_kind`; null without a kind, since the value
+ *  alone does not say whether it is a verdict or a priority. */
+export function failOnThreshold(run: Pick<RunSettings, "failOn" | "failOnKind">): string | null {
+  const { failOn, failOnKind } = run;
+  if (failOn === null || failOnKind === null) return null;
+  switch (failOnKind) {
+    case "none":
+      return "fails on nothing";
+    case "verdict":
+      return `fails on a verdict at least as severe as ${failOn}`;
+    case "priority":
+      return `fails on a priority at least as high as ${failOn}`;
+    case "unchecked":
+      return "fails on any finding whose check did not run";
+    default:
+      return `another kind of threshold: ${failOnKind}`;
+  }
 }
 
 /** The sentence the oldest-cache row gives when the document has no date for it — always with the

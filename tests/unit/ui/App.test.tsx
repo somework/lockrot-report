@@ -647,42 +647,67 @@ describe("layout", () => {
   test("the header carries the run's gate as a quiet fact, mini.json's fail-on being 'silent'", () => {
     render(<App model={MINI} />);
     const button = screen.getByRole("button", { name: /^gate: silent/ });
-    expect(button.getAttribute("title")).toContain("told to fail on silent");
+    expect(button.getAttribute("title")).toContain("told --fail-on=silent");
     expect(button.getAttribute("title")).toContain("does not record the run's exit code");
   });
 
-  test("beside the gate, a count of the findings at or above it (PD-BASELINE-5)", () => {
-    render(<App model={MINI} />);
-    // mini.json: one abandoned finding reaches silent; the pinned one does not.
-    expect(document.querySelector(".gate-tally")?.textContent).toBe("1 at or above");
-    const button = screen.getByRole("button", { name: /^gate: silent/ });
-    expect(button.getAttribute("title")).toContain("1 finding in this report is at or above silent.");
+  test("beside the gate, a count of the findings whose own gate says they reach it (PD-BASELINE-5)", () => {
+    render(<App model={loadModel("mini-0.13-gate-verdict")} />);
+    expect(document.querySelector(".gate-tally")?.textContent).toBe(
+      "12 at or above · 9 of them not accepted",
+    );
+    const button = screen.getByRole("button", { name: /^gate: pinned/ });
+    expect(button.getAttribute("title")).toContain(
+      "12 findings in this report are at or above pinned; 9 of them are not already accepted in lockrot-baseline.json.",
+    );
   });
 
-  test("with a baseline, the gate count also says how many the baseline does not accept (PD-BASELINE-5)", () => {
-    render(<App model={loadModel("wallabag_baseline")} />);
-    // "of them": the 4 is a subset of the 41 (2 new + 2 worsened at or above high), never the
-    // delta line's "4 new", which the evaluator found it read as.
+  test("a threshold kind the page does not know is counted, and only said to be reached", () => {
+    render(<App model={loadModel("mini-0.13-gate-unknown")} />);
+    expect(document.querySelector(".gate-tally")?.textContent).toBe("1 reach it · 1 of them not accepted");
+    const button = screen.getByRole("button", { name: /^gate: copyleft/ });
+    expect(button.getAttribute("title")).toContain("1 finding in this report reaches copyleft;");
+  });
+
+  test("another exemption than the baseline is not counted as not accepted (mini-0.13-edges)", () => {
+    render(<App model={loadModel("mini-0.13-edges")} />);
     expect(document.querySelector(".gate-tally")?.textContent).toBe(
-      "41 at or above · 4 of them not accepted",
+      "14 at or above · 10 of them not accepted",
+    );
+  });
+
+  test("an unchecked threshold's tally says its findings carry S10", () => {
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    expect(document.querySelector(".gate-tally")?.textContent).toBe("173 carry S10");
+  });
+
+  test("a report whose findings carry no gate draws no count, whatever its fail-on", () => {
+    render(<App model={MINI} />);
+    expect(screen.getByRole("button", { name: /^gate: silent/ })).toBeTruthy();
+    expect(document.querySelector(".gate-tally")).toBeNull();
+  });
+
+  test("with a baseline, the gate count also says how many the baseline does not exempt (PD-BASELINE-5)", () => {
+    render(<App model={loadModel("wallabag_baseline-older-0.13")} />);
+    // "of them": the second number is a subset of the first, never the delta line's "new" count.
+    expect(document.querySelector(".gate-tally")?.textContent).toBe(
+      "42 at or above · 12 of them not accepted",
     );
     const title = screen.getByRole("button", { name: /^gate: high/ }).getAttribute("title") ?? "";
     expect(title).toContain(
-      "41 findings in this report are at or above high; 4 of them are not already accepted in lockrot-baseline.json.",
+      "42 findings in this report are at or above high; 12 of them are not already accepted in wallabag-older.baseline.json. The page",
     );
-    // The caveat stays last, and names what it cannot know outright: "whether it did" lost its
-    // antecedent once the count sentence came between it and the rule.
     expect(title.endsWith("The page does not record the run's exit code.")).toBe(true);
   });
 
   // PD-BASELINE-6: the subset is one press from the header.
   test("the tally's 'of them not accepted' lists exactly those findings on Findings", () => {
-    render(<App model={loadModel("wallabag_baseline")} />);
+    render(<App model={loadModel("wallabag_baseline-older-0.13")} />);
     fireEvent.click(screen.getByRole("tab", { name: /Run data/ }));
-    fireEvent.click(screen.getByRole("button", { name: "4 of them not accepted" }));
+    fireEvent.click(screen.getByRole("button", { name: "12 of them not accepted" }));
     expect(screen.getByRole("tab", { name: /Findings/ }).getAttribute("aria-selected")).toBe("true");
     expect(window.location.hash).toBe("#prio=critical%2Chigh&since=new%2Cworsened");
-    // The views are mocked here; e2e/baseline.spec.ts checks the four rows themselves.
+    // The views are mocked here; e2e/baseline.spec.ts checks the rows themselves.
     const rail = screen.getByRole("group", { name: "Filters" });
     expect(within(rail).getByRole("button", { name: /^New/ }).getAttribute("aria-pressed")).toBe("true");
     expect(
@@ -697,8 +722,6 @@ describe("layout", () => {
     expect(document.querySelector(".gate-tally")).toBeNull();
   });
 
-  // regression review: neither an e2e nor a unit test asserted this branch (Header.tsx: `run.failOn
-  // === null` renders neither label) — only that a *present* fail-on renders correctly.
   test("a document that predates run.fail_on shows no gate fact at all (PD-SUMMARY-2)", () => {
     render(<App model={loadModel("mini-no-fail-on")} />);
     expect(screen.queryByRole("button", { name: /gate/i })).toBeNull();

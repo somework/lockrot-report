@@ -1,6 +1,4 @@
-// Shared builders for the domain/ test suite. Not a *.test.ts file itself, so vitest never treats
-// it as a suite; it only gives every test in this directory a Finding/Advisory/Model to start from
-// and override, instead of restating every required field in each test.
+// Builders every domain test starts from and overrides.
 
 import type {
   Advisory,
@@ -23,6 +21,7 @@ export function makeAdvisory(overrides: Partial<Advisory> = {}): Advisory {
     affectedVersions: null,
     fixedBy: null,
     fixedOnBranch: false,
+    releasesRead: null,
     ...overrides,
   };
 }
@@ -46,6 +45,7 @@ export function makeFinding(overrides: Partial<Finding> = {}): Finding {
     direct: true,
     dev: false,
     replacement: null,
+    replacementUrl: null,
     signals: [],
     chain: [],
     directDependents: [],
@@ -56,6 +56,12 @@ export function makeFinding(overrides: Partial<Finding> = {}): Finding {
     libyears: null,
     baseline: null,
     advisories: [],
+    fromComposerRepository: null,
+    origin: null,
+    libyearsUnmeasured: null,
+    priorityBasis: null,
+    noFixExpected: null,
+    gate: null,
     ...overrides,
   };
 }
@@ -83,7 +89,19 @@ const EMPTY_REPORT: ReportModel = {
   schemaUrl: "https://lockrot.dev/schema/report-1.json",
   tool: { version: "0.11.0", schema: 1 },
   generatedAt: "2026-01-01T00:00:00Z",
-  run: { project: null, targetPhp: null, lockFile: null, failOn: null, thresholds: [], flaggedVerdicts: [] },
+  run: {
+    project: null,
+    rootPackage: null,
+    projectPhp: null,
+    targetPhp: null,
+    lockFile: null,
+    failOn: null,
+    failOnKind: null,
+    mode: null,
+    strictNetwork: null,
+    thresholds: [],
+    flaggedVerdicts: [],
+  },
   activityCacheOldestAt: null,
   packagesChecked: null,
   includeDev: null,
@@ -96,6 +114,10 @@ const EMPTY_REPORT: ReportModel = {
   libyears: null,
   baseline: null,
   notes: [],
+  noteDetails: [],
+  gate: null,
+  exposureRule: null,
+  unattributed: [],
   absent: [],
   findings: [],
 };

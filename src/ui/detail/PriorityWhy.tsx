@@ -1,6 +1,6 @@
 import type { ComponentChildren } from "preact";
 import type { Finding, KnownPriority } from "../../model/types";
-import { priorityWhy, type PriorityStep } from "../../domain/priority";
+import { priorityWhy, type PriorityRung } from "../../domain/priority";
 import { toneClass } from "../common/common";
 import { TONE, type Tone } from "../../domain/vocab";
 import "./detail-lead.css";
@@ -25,14 +25,12 @@ function rungX(index: number): number {
 
 const WORDS = ["no", "one", "two", "three"];
 
-/** "no rule moved it off critical", "one rule moved it down from critical", "two rules applied and
- *  cancelled out, so it stays high" — counted from the same steps the ladder draws, and said in
- *  priority words, the ones the track is captioned with, rather than the verdict's. */
-function aside(steps: readonly PriorityStep[]): string {
+/** Counted from the rungs the ladder draws, in the track's priority words rather than the verdict's. */
+function aside(steps: readonly PriorityRung[]): string {
   const first = steps[0];
   const last = steps[steps.length - 1];
   if (first === undefined || last === undefined) return "";
-  const applied = steps.slice(1).filter((step) => step.applied).length;
+  const applied = steps.slice(1).filter((step) => step.moved).length;
   if (applied === 0) return `no rule moved it off ${first.to}`;
   const rules = `${WORDS[applied] ?? applied} rule${applied === 1 ? "" : "s"}`;
   if (last.to === first.to) return `${rules} applied and cancelled out, so it stays ${first.to}`;
@@ -40,17 +38,8 @@ function aside(steps: readonly PriorityStep[]): string {
   return `${rules} moved it ${direction} from ${first.to}`;
 }
 
-/**
- * "Why this is <priority>" as a ladder (PD-DETAIL-7, DESIGN.md §5): one row per rule
- * `domain/priority.ts#priorityWhy` evaluates, in its order, with the rule's own sentence on the left
- * and, on a CRIT · HIGH · MED · LOW track on the right, the rung the ladder is on after it. A rule
- * that applied draws a filled dot in that rung's tone; one that did not draws a hollow dot where the
- * ladder already was, so "no step down" is visible as a straight line, not an absence. The last row
- * is the document's own `finding.priority` (critic.md M30), never a recomputation of the last step.
- *
- * The track is decoration for a reader who scans; the sentences carry the whole meaning, so the
- * SVG and the dots are hidden from assistive technology and each row's text stands on its own.
- */
+/** PD-DETAIL-7. The track is hidden from assistive technology: each row's sentence carries the whole
+ *  meaning. The last row is the document's own `priority`. */
 export function PriorityWhy({ finding }: { finding: Finding }) {
   const steps = priorityWhy(finding);
   if (steps.length === 0) return null;
@@ -74,20 +63,22 @@ export function PriorityWhy({ finding }: { finding: Finding }) {
         </span>
         {steps.map((step, index) => (
           <LadderRow
-            key={step.rule}
+            key={index}
             text={
-              step.note === null ? (
-                step.text
-              ) : (
-                <>
-                  {step.text}{" "}
-                  <span className="detail-ladder-note">
-                    <MentionProse text={step.note} />
-                  </span>
-                </>
-              )
+              <>
+                {step.code !== null && <code>{step.code}</code>}
+                {step.text}
+                {step.note !== null && (
+                  <>
+                    {" "}
+                    <span className="detail-ladder-note">
+                      <MentionProse text={step.note} />
+                    </span>
+                  </>
+                )}
+              </>
             }
-            state={step.applied ? "applied" : "quiet"}
+            state={step.moved ? "applied" : "quiet"}
             tone={TONE(step.to)}
             index={rungIndex(step.to)}
             prev={index === 0 ? null : rungIndex(steps[index - 1]?.to ?? step.to)}

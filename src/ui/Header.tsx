@@ -2,64 +2,16 @@ import type { ComponentChildren } from "preact";
 import { useId, useLayoutEffect, useRef } from "preact/hooks";
 import { gateFocus, gateTally, type GateTally } from "../domain/baseline";
 import { day, plural } from "../domain/format";
+import { gateFact, reachWords } from "../domain/gate";
 import { useReport } from "./context";
 import { CopySummary } from "./CopySummary";
 import { themeButtonLabel, type Theme } from "./useTheme";
 
-/** The gate fact's two states the run can actually be in, plus its text — kept together so the
- *  button and its popover can never drift out of sync (DESIGN.md §8, "a quiet fact in the
- *  header"). `run.failOn === null` (a document older than the field) renders neither: the page
- *  must not claim a run said "no gate" when it never said anything about one at all.
- *
- *  regression review: an earlier draft restated the value the run was given ("This run was given
- *  --fail-on=none.") without saying what that means — circular, and useless to a reader who does
- *  not already know `--fail-on`. `--fail-on`'s actual effect (the exit code, what it compares
- *  against the baseline) is lockrot's own documented CLI contract, not something this page reads
- *  off the document in front of it, so stating it here is naming a known fact about the tool, not
- *  guessing at this run's own data — unlike the page's findings, which stay observations with
- *  evidence, no advice. The "none" case also names the flag a reader would pass in CI, since that
- *  is the one piece of missing information a reader with no gate would otherwise have no way to
- *  find from this page alone. Either way, the popover still says only what the run was given and
- *  what the page cannot know — never whether the gate actually fired. */
-function gateFact(failOn: string, tally: string | null): { label: string; text: string } {
-  if (failOn === "none") {
-    return {
-      label: "no gate",
-      text: "No gate on this run: it exits 0 whatever it finds, and this page lists what it saw. Pass --fail-on=<verdict or priority> in CI to make the run fail on findings at or above that level.",
-    };
-  }
-
-  // The count (PD-BASELINE-5) sits between the rule and the caveat, so the last word is still what
-  // the page cannot know — named outright ("the run's exit code") rather than as "whether it did",
-  // whose "it" pointed at the rule only while nothing came between them.
-  const counted = tally === null ? "" : ` ${tally}`;
-  return {
-    label: `gate: ${failOn}`,
-    text: `This run was told to fail on ${failOn}: it exits 1 when a finding the baseline does not already accept reaches ${failOn}.${counted} The page does not record the run's exit code.`,
-  };
-}
-
-/** What the tally counts, in the gate's own terms: `unchecked` is not a level anything is "above".
- *  `short` is the header's form, beside a label that already names the level. */
-function reachWords(failOn: string, short = false): string {
-  if (failOn === "unchecked") return short ? "with S10" : "with a check that did not run (S10)";
-  return short ? "at or above" : `at or above ${failOn}`;
-}
-
-/** The popover's count sentence: the same numbers as the tally beside the button, in words. */
-function tallySentence(tally: GateTally, path: string): string {
-  const reached = `${plural(tally.reached, "finding", "findings")} in this report ${tally.reached === 1 ? "is" : "are"} ${reachWords(tally.failOn)}`;
-  if (tally.notAccepted === null) return `${reached}.`;
-  return `${reached}; ${tally.notAccepted} of them ${tally.notAccepted === 1 ? "is" : "are"} not already accepted in ${path}.`;
-}
-
 /**
- * PD-BASELINE-5 (DESIGN.md §5): beside the gate fact, how many findings are at or above it — and,
- * with a baseline, how many *of them* the baseline does not already accept, the set lockrot measures
- * the gate against. "of them" is the point: the second number is a subset of the first, never the
- * Findings answer's "new" count, which it would otherwise be read as. A count over the findings in
- * the document, by lockrot's own `--fail-on` order (`domain/baseline.ts`); never whether the run
- * passed or failed, which the document does not say.
+ * PD-BASELINE-5 (DESIGN.md §5): beside the gate fact, how many findings reach it — and, with a
+ * baseline, how many *of them* the baseline does not exempt. "of them" is the point: the second
+ * number is a subset of the first, never the Findings answer's "new" count, which it would otherwise
+ * be read as. Both are counted from each finding's own `gate` (`domain/baseline.ts`).
  *
  * PD-BASELINE-6: when the rail's own filters can list exactly that subset (`gateFocus`), the second
  * count is a button that does — Findings, those filters, the list brought into view — so "which
@@ -67,8 +19,10 @@ function tallySentence(tally: GateTally, path: string): string {
  */
 function GateTallyText({ tally }: { tally: GateTally }) {
   const { model, dispatch } = useReport();
-  const focus = tally.notAccepted === null || tally.notAccepted === 0 ? null : gateFocus(model);
+  const n = tally.notAccepted ?? 0;
+  const focus = n === 0 ? null : gateFocus(model);
   const path = model.report.baseline?.path || "the baseline";
+  const exempt = tally.otherExemptions.length === 0 ? `${path} does not already accept` : "nothing exempts";
   const outside =
     tally.notAccepted === null ? null : (
       <>
@@ -77,7 +31,7 @@ function GateTallyText({ tally }: { tally: GateTally }) {
     );
   return (
     <span className="gate-tally">
-      <b className="mono">{tally.reached}</b> {reachWords(tally.failOn, true)}
+      <b className="mono">{tally.reached}</b> {reachWords(tally, tally.reached, true)}
       {outside !== null && (
         <>
           {" · "}
@@ -87,7 +41,7 @@ function GateTallyText({ tally }: { tally: GateTally }) {
             <button
               type="button"
               className="gate-focus"
-              title={`List the ${plural(tally.notAccepted ?? 0, "finding", "findings")} ${reachWords(tally.failOn)} that ${path} does not already accept`}
+              title={`List the ${plural(n, "finding", "findings")} that ${reachWords(tally, n)} and that ${exempt}`}
               onClick={() => {
                 dispatch({ type: "focus", filters: focus });
               }}
@@ -151,8 +105,7 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
   const project = run.project ?? run.lockFile ?? "composer.lock";
   const label = themeButtonLabel(theme);
   const tally = gateTally(model);
-  const counted = tally === null ? null : tallySentence(tally, model.report.baseline?.path || "the baseline");
-  const gate = run.failOn === null ? null : gateFact(run.failOn, counted);
+  const gate = gateFact(model);
   const popoverId = `${useId()}-gate`;
 
   return (

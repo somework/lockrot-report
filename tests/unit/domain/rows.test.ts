@@ -66,7 +66,7 @@ describe("shortFact (PD-ROWS-4)", () => {
     );
     expect(shortFact(makeSignal({ id: "S1", data: {} }), f)).toBe("marked abandoned by its repository");
     expect(shortFact(makeSignal({ id: "S2", data: { last_release: "2017-11-15T13:41:13+00:00" } }), f)).toBe(
-      "no stable release since Nov 2017",
+      "no release since Nov 2017",
     );
     expect(shortFact(makeSignal({ id: "S4", data: { last_push: "2021-04-29T19:09:57+00:00" } }), f)).toBe(
       "no push since Apr 2021",
@@ -109,7 +109,7 @@ describe("shortFact (PD-ROWS-4)", () => {
 
   it("reads a date in UTC, so the month never shifts with the reader's time zone", () => {
     expect(shortFact(makeSignal({ id: "S2", data: { last_release: "2020-01-01T00:30:00+00:00" } }), f)).toBe(
-      "no stable release since Jan 2020",
+      "no release since Jan 2020",
     );
   });
 });
@@ -236,6 +236,7 @@ describe("runFacts (PD-ROWS-6)", () => {
       dev: false,
       age: { kind: "release", min: 9.1, max: 9.7 },
       abandonedBy: "S1",
+      pinned: null,
     });
   });
 
@@ -255,5 +256,32 @@ describe("runFacts (PD-ROWS-6)", () => {
     );
     expect(facts.direct).toBe(true);
     expect(facts.via).toBeNull();
+  });
+});
+
+describe("signals this page does not know (0.13 open vocabularies)", () => {
+  it("reads a level it does not know as the lowest, never as an inherited key", () => {
+    const finding = makeFinding({
+      signals: [
+        makeSignal({ id: "S7", level: "toString" }),
+        makeSignal({ id: "S2", level: "constructor" }),
+        makeSignal({ id: "S8", level: "warn" }),
+      ],
+    });
+    expect(rowSignals(finding, null).rest.map((s) => s.id)).toEqual(["S2", "S7"]);
+    expect(rowSignals(finding, null).key?.id).toBe("S8");
+  });
+
+  it("quotes an unknown signal's own summary, as written, and sorts it after every S-number", () => {
+    const finding = makeFinding({
+      signals: [
+        makeSignal({ id: "acme:licence", level: "warn", summary: "licence changed to BUSL-1.1 in 3.1.0" }),
+        makeSignal({ id: "S99", level: "warn", summary: "a signal a later lockrot adds" }),
+        makeSignal({ id: "S2", level: "warn", summary: "no stable release" }),
+      ],
+    });
+    expect(rowSignals(finding, null).rest.map((s) => s.id)).toEqual(["S99", "acme:licence"]);
+    expect(whyText(finding, "acme:licence")).toBe("licence changed to BUSL-1.1 in 3.1.0");
+    expect(whyText(finding, "S99")).toBe("a signal a later lockrot adds");
   });
 });

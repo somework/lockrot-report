@@ -3,11 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
 import { FIXTURES, pageUrl } from "./support/pages";
 
-/**
- * PD-RADIUS-1..5 (DESIGN.md §5): the Blast radius tab as a ranked ledger over wallabag_wallabag —
- * 29 direct requirements, 17 listing flagged packages (wallabag/rulerz 14, phpunit/phpunit 13), 5
- * flagged themselves with nothing listed, 7 reaching flagged packages only through rows above.
- */
+/** PD-RADIUS-1..5: the Blast radius tab as a ranked ledger over wallabag_wallabag. */
 let report: ReportPage;
 
 async function open(page: Page, hash: string, width = 1440): Promise<void> {
@@ -243,4 +239,29 @@ test("axe: no serious or critical violation with rows and folds open, both schem
       );
     expect(serious).toEqual([]);
   }
+});
+
+test("akaunting 0.13: a package lockrot counts under no requirement is drawn nowhere, and the rail there does not count it (PD-RADIUS-11)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  report = await createReportPage(page);
+
+  // Findings lists every flagged package, league/config (unattributed, fan_in 9) among them.
+  await page.goto(pageUrl(FIXTURES.akaunting013) + "#view=findings");
+  const flagged = new Set(await report.rows());
+  expect(flagged.has("league/config")).toBe(true);
+
+  await report.tab("radius");
+  const drawn = (await report.radiusNames()).filter((name) => flagged.has(name));
+  expect(drawn).not.toContain("league/config");
+  const scope = (await report.railRows()).filter((row) => ["Direct", "Transitive"].includes(row.label));
+  expect(scope.reduce((sum, row) => sum + row.count, 0)).toBe(drawn.length);
+
+  // Searched for, it is on no row, and the rail offers nothing the tab does not show.
+  await page.goto(pageUrl(FIXTURES.akaunting013) + "#view=radius&q=league%2Fconfig");
+  await expect(page.locator(".rl")).toContainText(
+    "No direct requirement is, or lists, a flagged package that matches the filter.",
+  );
+  expect((await report.railRows()).filter((row) => row.count > 0)).toEqual([]);
 });

@@ -4,6 +4,7 @@ import {
   advisoryCheckIncomplete,
   allAdvisories,
   fixShapeOf,
+  noFixWords,
   sevTone,
   type AdvisoryGroup,
   type AdvisoryWithFinding,
@@ -143,9 +144,9 @@ function FixSentence({ tally, pairs }: { tally: AdvisoryTally; pairs: readonly A
       </>
     );
   }
-  if (shapes.none === total) {
-    return <>No fix is listed for {one ? "it" : total === 2 ? "either" : "any of them"}.</>;
-  }
+  const them = one ? "it" : total === 2 ? "either" : "any of them";
+  if (shapes.none === total) return <>No fix is listed for {them}.</>;
+  if (shapes.unchecked === total) return <>Whether a release fixes {them} was not checked.</>;
   const parts: ComponentChildren[] = [];
   if (shapes.branch > 0)
     parts.push(
@@ -163,6 +164,12 @@ function FixSentence({ tally, pairs }: { tally: AdvisoryTally; pairs: readonly A
     parts.push(
       <span key="n">
         <Num n={shapes.none} /> with no fix listed
+      </span>,
+    );
+  if (shapes.unchecked > 0)
+    parts.push(
+      <span key="u">
+        <Num n={shapes.unchecked} /> with the fix not checked
       </span>,
     );
   return <>Of them, {joinAnd(parts)}.</>;
@@ -229,9 +236,8 @@ function RunDataLink() {
 
 /**
  * Under the answer when the run says its advisory check may not have covered every package
- * (`advisoryCheckIncomplete`: network failures, or a note naming the advisory check): the list
- * above may be partial, in PD-LEDGER-1's own words — a package with no row could not be
- * confirmed clear.
+ * (`advisoryCheckIncomplete`): the list above may be partial, in PD-LEDGER-1's own words — a
+ * package with no row could not be confirmed clear.
  */
 function PartialCheck() {
   return (
@@ -364,10 +370,9 @@ function ColumnHead({ axis }: { axis: ReportedAxis | null }) {
   );
 }
 
-const FIX_WHERE: Readonly<Record<FixShape, string>> = {
+const FIX_WHERE: Readonly<Record<Exclude<FixShape, "none" | "unchecked">, string>> = {
   branch: "on your branch",
   move: "on another branch",
-  none: "no fix listed",
 };
 
 /** A package name with its vendor quieter and a wrap point after the slash, as Findings rows draw
@@ -533,14 +538,14 @@ function AdvisoryRow({ finding, advisory, first, ditto, axis }: AdvisoryRowProps
         <span className="mono">{advisory.affectedVersions ?? "?"}</span>
       </span>
       <span className={`ac-fix is-${shape}`}>
-        {advisory.fixedBy ? (
+        {shape === "none" || shape === "unchecked" ? (
+          <span className="ac-where">{noFixWords(advisory)}</span>
+        ) : (
           <>
             <span className="ac-lbl">fixed by </span>
             <span className="ac-fixver">{advisory.fixedBy}</span>{" "}
             <span className="ac-where">{FIX_WHERE[shape]}</span>
           </>
-        ) : (
-          <span className="ac-where">{FIX_WHERE.none}</span>
         )}
       </span>
       <AgeCell years={years} axis={axis} />
