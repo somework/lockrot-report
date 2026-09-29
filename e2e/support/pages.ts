@@ -82,5 +82,8 @@ export const FIXTURES = {
   miniGateUnchecked013: "mini-0.13-gate-unchecked",
   miniGateUnknown013: "mini-0.13-gate-unknown",
   miniGateVerdict013: "mini-0.13-gate-verdict",
+  /** Synthetic: mini-0.13-edges with 12 `unattributed` entries, fan_in 9 to 97, for the shared tail
+   *  at the scale of a monorepo. */
+  sharedMany: "synthetic-shared-many",
 } as const;
 export type FixtureName = (typeof FIXTURES)[keyof typeof FIXTURES];

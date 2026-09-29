@@ -241,7 +241,7 @@ test("axe: no serious or critical violation with rows and folds open, both schem
   }
 });
 
-test("akaunting 0.13: a package lockrot counts under no requirement is drawn nowhere, and the rail there does not count it (PD-RADIUS-11)", async ({
+test("akaunting 0.13: a package lockrot counts under no requirement is in no row; the shared tail names it and the rail counts it there (PD-RADIUS-11/12)", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -253,15 +253,21 @@ test("akaunting 0.13: a package lockrot counts under no requirement is drawn now
   expect(flagged.has("league/config")).toBe(true);
 
   await report.tab("radius");
+  await expect(page.locator('.rrow[data-pkg="league/config"], .rk[data-pkg="league/config"]')).toHaveCount(0);
+  await expect(page.locator(".rl-shared-line")).toContainText(
+    "league/config (stale) is left out of Blast radius",
+  );
   const drawn = (await report.radiusNames()).filter((name) => flagged.has(name));
-  expect(drawn).not.toContain("league/config");
+  expect(drawn).toContain("league/config");
   const scope = (await report.railRows()).filter((row) => ["Direct", "Transitive"].includes(row.label));
   expect(scope.reduce((sum, row) => sum + row.count, 0)).toBe(drawn.length);
 
-  // Searched for, it is on no row, and the rail offers nothing the tab does not show.
+  // Searched for, it is on no row, only in the tail, and the rail counts that one.
   await page.goto(pageUrl(FIXTURES.akaunting013) + "#view=radius&q=league%2Fconfig");
   await expect(page.locator(".rl")).toContainText(
     "No direct requirement is, or lists, a flagged package that matches the filter.",
   );
-  expect((await report.railRows()).filter((row) => row.count > 0)).toEqual([]);
+  await expect(page.locator(".rl-shared-line")).toContainText("league/config");
+  const searched = (await report.railRows()).filter((row) => ["Direct", "Transitive"].includes(row.label));
+  expect(searched.reduce((sum, row) => sum + row.count, 0)).toBe(1);
 });

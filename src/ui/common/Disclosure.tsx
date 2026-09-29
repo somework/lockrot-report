@@ -26,6 +26,7 @@ export function DisclosureButton({
   onToggle,
   lead = false,
   className,
+  id,
 }: {
   label: ComponentChildren;
   open: boolean;
@@ -33,11 +34,13 @@ export function DisclosureButton({
   onToggle: () => void;
   lead?: boolean;
   className?: string;
+  id?: string;
 }) {
   const mark = <span className="l1-mark" aria-hidden="true" />;
   return (
     <button
       type="button"
+      id={id}
       className={className === undefined ? "l1-btn" : `l1-btn ${className}`}
       aria-expanded={open}
       aria-controls={controls}
@@ -50,19 +53,28 @@ export function DisclosureButton({
   );
 }
 
+/** `labelledBy`: the button's id, so the opened panel is named by what opened it. */
 export function DisclosurePanel({
   id,
   open,
   className,
+  labelledBy,
   children,
 }: {
   id: string;
   open: boolean;
   className?: string;
+  labelledBy?: string | undefined;
   children: ComponentChildren;
 }) {
   return (
-    <div id={id} className={className === undefined ? "l1-panel" : `l1-panel ${className}`} hidden={!open}>
+    <div
+      id={id}
+      className={className === undefined ? "l1-panel" : `l1-panel ${className}`}
+      hidden={!open}
+      role={labelledBy === undefined ? undefined : "group"}
+      aria-labelledby={labelledBy}
+    >
       {children}
     </div>
   );

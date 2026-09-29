@@ -23,6 +23,11 @@ tag or the address format, says so under **Breaking** in its entry.
   one line under its pills whether it fails this run and which fail-on it meets.
 - Run data gains strict network, mode and, where lockrot decided the gate, result rows; its sentence
   says whether the run failed and on what.
+- Blast radius names the flagged packages lockrot counts under no direct requirement because too
+  many share them: one sentence under the table ("league/config (stale) is left out of Blast
+  radius: 9 direct requirements share it, more than 8"). "Who shares it" opens a dot per
+  requirement against the limit of 8 and the requirements it sits under, and prints open. Each name
+  opens its detail, and the rail on the tab counts them.
 
 - All packages on a phone: under 480px the rows stack — name and version, then the verdict, the
   libyears bar and how it gets in, with the priority as the row's left rule — instead of a table

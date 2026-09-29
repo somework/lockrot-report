@@ -1692,6 +1692,99 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
   });
 });
 
+describe("RadiusView: the shared tail (PD-RADIUS-12)", () => {
+  const shared = (pkg: string, dependents: readonly string[] = []) =>
+    makeFinding({
+      package: pkg,
+      verdict: "stale",
+      priority: "low",
+      direct: false,
+      chain: ["acme/a", pkg],
+      directDependents: dependents,
+    });
+
+  function tailModel(
+    findings: readonly ReturnType<typeof makeFinding>[],
+    unattributed: Model["report"]["unattributed"],
+    extra: Partial<Pick<Model["report"], "exposureRule" | "includeDev">> = {},
+  ): Model {
+    const model = flaggedModel([...findings]);
+    return {
+      ...model,
+      report: { ...model.report, exposureRule: { maxFanIn: 8 }, includeDev: true, unattributed, ...extra },
+    };
+  }
+
+  const sentence = () => document.querySelector(".rl-shared-line")?.textContent ?? null;
+
+  it("with an unreadable fan_in, quotes the limit alone and never a number", () => {
+    renderIn(
+      tailModel([shared("acme/s", ["acme/a"])], [{ package: "acme/s", verdict: "stale", fanIn: null }]),
+      stateWith({ view: "radius" }),
+      <RadiusView />,
+    );
+
+    expect(sentence()).toBe(
+      "acme/s (stale) is left out of Blast radius: more than 8 direct requirements share it. Who shares it",
+    );
+  });
+
+  it("with no rule and no fan_in, says only what the list means, and offers nothing to open", () => {
+    renderIn(
+      tailModel([shared("acme/s")], [{ package: "acme/s", verdict: "stale", fanIn: null }], {
+        exposureRule: null,
+      }),
+      stateWith({ view: "radius" }),
+      <RadiusView />,
+    );
+
+    expect(sentence()).toBe(
+      "acme/s (stale) is left out of Blast radius: lockrot counts it under no direct requirement.",
+    );
+    expect(screen.queryByRole("button", { name: "Who shares it" })).toBeNull();
+  });
+
+  it("keeps an unknown verdict as written", () => {
+    renderIn(
+      tailModel([shared("acme/s", ["acme/a"])], [{ package: "acme/s", verdict: "quantum-flux", fanIn: 9 }]),
+      stateWith({ view: "radius" }),
+      <RadiusView />,
+    );
+
+    expect(sentence()).toContain("acme/s (quantum-flux) is left out");
+  });
+
+  it("says 'matching' under a filter when it counts", () => {
+    const model = tailModel(
+      [shared("acme/s", ["acme/a"]), shared("acme/t", ["acme/a"]), shared("other/u", ["acme/a"])],
+      [
+        { package: "acme/s", verdict: "stale", fanIn: 9 },
+        { package: "acme/t", verdict: "stale", fanIn: 12 },
+        { package: "other/u", verdict: "stale", fanIn: 10 },
+      ],
+    );
+
+    renderIn(model, stateWith({ view: "radius", q: "acme/" }), <RadiusView />);
+
+    expect(sentence()).toBe(
+      "2 matching flagged packages are left out of Blast radius: 9 to 12 direct requirements share each, more than 8. Which 2",
+    );
+  });
+
+  it("opens and closes through the reducer, and prints nothing extra when closed", () => {
+    const model = tailModel(
+      [shared("acme/s", ["acme/a"])],
+      [{ package: "acme/s", verdict: "stale", fanIn: 9 }],
+    );
+    const { dispatch } = renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Who shares it" }));
+
+    expect(dispatch).toHaveBeenCalledWith({ type: "disclose", key: "radius-shared", open: true });
+    expect(document.querySelector(".rl-sh-panel")?.hasAttribute("hidden")).toBe(true);
+  });
+});
+
 /** Keys a document written before lockrot 0.13.0 leaves out; the page names them like any other. */
 const LATER_KEYS = [
   "exposure_rule",
