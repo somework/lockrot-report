@@ -9,6 +9,7 @@ import { describe, expect, test } from "vitest";
 
 import { answerParts, answerText } from "../../../src/domain/answer";
 import {
+  ageIsTag,
   lockTimeLabel,
   pinnedContextReason,
   pinnedFacts,
@@ -307,9 +308,9 @@ describe("pinnedKind", () => {
 });
 
 describe("the answer's pinned clause", () => {
-  test("a snapshot of a package with no tagged release (wallabag/rulerz, 0.13)", () => {
+  test("a snapshot of a package with no tag at all (wallabag/rulerz, 0.13)", () => {
     expect(sentence(WALLABAG_013, "wallabag/rulerz")).toBe(
-      "Pinned to dev-master, a branch snapshot of a package with no tagged release. You require it directly.",
+      "Pinned to dev-master, a branch snapshot; its repository lists no tag, not even a pre-release. You require it directly.",
     );
   });
 
@@ -438,10 +439,10 @@ describe("the answer's pinned clause", () => {
 
   test("a tagged-looking version in a repository with no tag is not called a snapshot (acme/untagged)", () => {
     const text = sentence(EDGES, "acme/untagged");
-    expect(text).toMatch(/^Installed 1\.0\.0, but its repository lists no tag\. /);
+    expect(text).toMatch(/^Installed 1\.0\.0, but its repository lists no tag, not even a pre-release\. /);
     expect(text).not.toContain("snapshot");
     expect(sentence(EDGES_LOCK_ONLY, "acme/untagged")).toMatch(
-      /^Installed 1\.0\.0, but its repository lists no tag\. /,
+      /^Installed 1\.0\.0, but its repository lists no tag, not even a pre-release\. /,
     );
   });
 
@@ -481,7 +482,9 @@ describe("the answer's pinned clause", () => {
         thresholds: THRESHOLDS,
       }),
     );
-    expect(text).toBe("Installed 1.0.0, but its repository lists no tag. You require it directly.");
+    expect(text).toBe(
+      "Installed 1.0.0, but its repository lists no tag, not even a pre-release. You require it directly.",
+    );
   });
 
   test("an S6 that states no case, with nothing else that does, quotes its summary", () => {
@@ -640,7 +643,7 @@ describe("one reading for every document", () => {
 
   test("an older snapshot of a never-tagged package gets the words and the commit date a 0.13 one gets", () => {
     expect(sentence(WALLABAG_011, "wallabag/rulerz")).toBe(
-      "Pinned to dev-master, a branch snapshot of a package with no tagged release. You require it directly.",
+      "Pinned to dev-master, a branch snapshot; its repository lists no tag, not even a pre-release. You require it directly.",
     );
     expect(slot(WALLABAG_011, "wallabag/rulerz")).toEqual({
       label: "release",
@@ -776,9 +779,8 @@ describe("snapshot against tag", () => {
     expect(tagNote(facts({ ...snap, hasStableRelease: undefined }), now)).toBeNull();
   });
 
-  test("pinnedTagDetail: the two dates oldest first with the gap, or the no-tag caveat, or nothing", () => {
+  test("pinnedTagDetail: the two dates oldest first with the gap, else nothing", () => {
     expect(pinnedTagDetail(read(WALLABAG_013, "friendsofsymfony/oauth-server-bundle"))).toEqual({
-      kind: "dates",
       points: [
         { role: "tag", version: "1.6.2", day: "2019-01-23" },
         { role: "snapshot", version: "dev-master", day: "2022-03-24" },
@@ -787,9 +789,10 @@ describe("snapshot against tag", () => {
       datedBy: null,
     });
     const rector = pinnedTagDetail(read(MAUTIC_013, "rector/rector"));
-    expect(rector?.kind === "dates" && rector.points.map((p) => p.role)).toEqual(["snapshot", "tag"]);
-    expect(pinnedTagDetail(read(WALLABAG_013, "wallabag/rulerz"))).toEqual({ kind: "none" });
-    expect(pinnedTagDetail(read(EDGES, "acme/untagged"))).toEqual({ kind: "not-a-tag", version: "1.0.0" });
+    expect(rector?.points.map((p) => p.role)).toEqual(["snapshot", "tag"]);
+    // No tag at all: the answer's words say all there is, so nothing opens.
+    expect(pinnedTagDetail(read(WALLABAG_013, "wallabag/rulerz"))).toBeNull();
+    expect(pinnedTagDetail(read(EDGES, "acme/untagged"))).toBeNull();
     expect(pinnedTagDetail(read(EDGES, "acme/path-lib"))).toBeNull();
     expect(pinnedTagDetail(read(MAUTIC_011, "mautic/core-lib"))).toBeNull();
   });
@@ -802,7 +805,7 @@ describe("pinnedWhy: the Findings row's S6 words", () => {
     [WALLABAG_013, "wallabag/rulerz", "snapshot; no tag at all"],
     [EDGES, "acme/path-lib", "snapshot; tags unknown"],
     [MAUTIC_013, "mautic/core-lib", "snapshot; tags unknown"],
-    [EDGES, "acme/untagged", "1.0.0 is not a tag upstream"],
+    [EDGES, "acme/untagged", "1.0.0 is not a tag in its repository"],
     [EDGES, "acme/silent-snapshot", "snapshot after tag 0.4.0"],
   ] as const)("%#: %s reads %s", (model, pkg, words) => {
     expect(pinnedWhy(finding(model, pkg))).toBe(words);
@@ -862,7 +865,7 @@ describe("pinnedWhy: the Findings row's S6 words", () => {
           ],
         }),
       ),
-    ).toBe("its version is not a tag");
+    ).toBe("not a tag in its repository");
   });
 
   test("a reason it does not know, or an S6 that states no case, keeps S6's own summary (null here)", () => {
@@ -874,14 +877,44 @@ describe("pinnedWhy: the Findings row's S6 words", () => {
     expect(pinnedWhy(makeFinding({ verdict: "stale" }))).toBeNull();
   });
 
-  test("every S6 in every bundle words within 32 characters, and never says stable", () => {
+  test("every S6 in every bundle words within 32 characters (40 naming its version), and never says stable", () => {
     for (const model of [WALLABAG_013, MAUTIC_013, EDGES, EDGES_LOCK_ONLY, KOEL_013, WALLABAG_011, CAPSULE]) {
       for (const f of model.report.findings) {
         const why = pinnedWhy(f);
         if (why === null) continue;
-        expect(why.length, `${f.package}: ${why}`).toBeLessThanOrEqual(32);
+        expect(why.length, `${f.package}: ${why}`).toBeLessThanOrEqual(
+          why.includes("is not a tag") ? 40 : 32,
+        );
         expect(why).not.toMatch(/stable/i);
       }
     }
+  });
+});
+
+describe("ageIsTag: whose a pinned row's age is", () => {
+  test("the newest tag's, where the row's why names it beside a snapshot and S2 dates it", () => {
+    expect(ageIsTag(finding(WALLABAG_013, "friendsofsymfony/oauth-server-bundle"))).toBe(true);
+  });
+
+  test.each([
+    [WALLABAG_013, "wallabag/rulerz"],
+    [EDGES, "acme/untagged"],
+    [EDGES, "acme/path-lib"],
+    [MAUTIC_013, "mautic/core-lib"],
+    [EDGES, "acme/silent-snapshot"],
+  ] as const)("%#: not %s (no tag, tags unknown, or not pinned)", (model, pkg) => {
+    expect(ageIsTag(finding(model, pkg))).toBe(false);
+  });
+
+  test("a push's age, or an older report's S6 with no tag field, is never called the tag's", () => {
+    const s6 = makeSignal({
+      id: "S6",
+      data: { version: "dev-main", reason: "branch_snapshot", has_stable_release: true },
+    });
+    const s4 = makeSignal({ id: "S4", data: { years: 3 } });
+    expect(ageIsTag(makeFinding({ verdict: "pinned", signals: [s4, s6] }))).toBe(false);
+    const bare = makeSignal({ id: "S6", data: { version: "dev-main" } });
+    const s2 = makeSignal({ id: "S2", data: { years: 3 } });
+    expect(ageIsTag(makeFinding({ verdict: "pinned", signals: [s2, bare] }))).toBe(false);
   });
 });

@@ -339,10 +339,6 @@ const NAMED_MAX = 3;
 /** More kinds of miss than this among the newer branches are counted in one clause. */
 const MISS_KINDS_MAX = 2;
 
-function differ(st: Standing): boolean {
-  return st.kind === "misses" && st.misses.length === 2 && st.misses[0]?.code !== st.misses[1]?.code;
-}
-
 function capitalise(parts: readonly FloorPart[]): FloorPart[] {
   const [first, ...rest] = parts;
   if (first?.kind !== "text") return [...parts];
@@ -397,8 +393,8 @@ export function floorsAnswer(
   };
   let headed = false;
   let spoken = speak(scene, headed);
-  // A clause opening on a mono branch name runs into the sub-sentence's own mono figures
-  // ("released 1.6.2 on 2019-01-23 (…). 1.x stops …"), so the floors lead instead.
+  // A clause opening on a mono branch name runs into the sub-sentence's own mono version and date,
+  // so the floors lead instead.
   if (spoken.parts[0]?.kind === "name") {
     headed = true;
     spoken = speak(scene, headed);
@@ -471,35 +467,26 @@ function who(
   return { parts: joinAnd([yours, ...names]), named };
 }
 
-/** "no newer branch admits both, 6.x missing them differently". */
+/** "no newer branch admits both": how each one misses is a row's own words, level 1's to say. */
 function missSummary(scene: Scene, missing: readonly Placed[], namer: Namer): FloorPart[] {
   const { considered, floors, hasMine } = scene;
   const newer = considered.filter((p) => !p.row.installed).length;
   const keys = named(floors);
   const noun = hasMine ? "newer branch" : "branch";
-  const head =
-    missing.length === newer
-      ? [
-          text(`no ${noun} admits `),
-          ...(keys.length === 2 ? namer.pair() : namer.one(keys[0] ?? "target", false)),
-        ]
-      : [
-          text(`${String(missing.length)} of the ${String(newer)} ${noun}es `),
-          ...(keys.length === 2 && namer.pairSaid()
-            ? [text("miss one or both")]
-            : [
-                text("do not admit "),
-                ...(keys.length === 2 ? namer.pair() : namer.one(keys[0] ?? "target", false)),
-              ]),
-        ];
-  const odd = missing.filter((p) => differ(p.st));
-  if (odd.length === 0) return head;
-  return [
-    ...head,
-    text(", "),
-    ...joinAnd(odd.map((p) => [name(p.row.branch)])),
-    text(" missing them differently"),
-  ];
+  return missing.length === newer
+    ? [
+        text(`no ${noun} admits `),
+        ...(keys.length === 2 ? namer.pair() : namer.one(keys[0] ?? "target", false)),
+      ]
+    : [
+        text(`${String(missing.length)} of the ${String(newer)} ${noun}es `),
+        ...(keys.length === 2 && namer.pairSaid()
+          ? [text("miss one or both")]
+          : [
+              text("do not admit "),
+              ...(keys.length === 2 ? namer.pair() : namer.one(keys[0] ?? "target", false)),
+            ]),
+      ];
 }
 
 /** Contiguous rows past this many read as one run, "0.1.x – 0.7.x (7)". */
@@ -575,8 +562,9 @@ export function plain(parts: readonly FloorPart[]): string {
   return parts.map((part) => part.text).join("");
 }
 
-/** The level-1 definitions, once: what `php` is, what "admits" claims, which PHP the project's is. */
-export function floorsDefinition(floors: Floors): FloorPart[] {
+/** The level-1 definitions, once: what `php` is, what "admits" claims, which PHP the project's is,
+ *  and S8's floor when it is neither of the run's own. */
+export function floorsDefinition(floors: Floors, other: OtherFloor | null = null): FloorPart[] {
   return [
     text(
       "Each branch’s php is the requirement of its newest dated release. It admits a PHP version when that constraint allows it; lockrot does not test it.",
@@ -588,6 +576,7 @@ export function floorsDefinition(floors: Floors): FloorPart[] {
           text(" counts from the lowest PHP it allows."),
         ]
       : []),
+    ...(other === null ? [] : otherFloorWords(other)),
   ];
 }
 
@@ -596,11 +585,31 @@ function str(data: Signal["data"] | undefined, field: string): string | null {
   return typeof value === "string" && value !== "" ? value : null;
 }
 
+/** S8's floor when it is neither of the run's two, which the sentence already names. */
+export interface OtherFloor {
+  /** `floor_source` as written. */
+  readonly source: string;
+  /** `floor_php` as written. */
+  readonly php: string;
+}
+
+export function otherFloor(data: Signal["data"] | undefined): OtherFloor | null {
+  const source = str(data, "floor_source");
+  const php = str(data, "floor_php");
+  if (source === null || php === null || source === "project" || source === "target") return null;
+  return { source, php };
+}
+
+/** Its own sentence, never tied to a row: which rows it blocks is theirs to say. */
+function otherFloorWords(other: OtherFloor): FloorPart[] {
+  return [text(" lockrot reads the "), code(other.source), text(" floor as "), code(other.php), text(".")];
+}
+
 /**
  * S8's answer when the newest branch is out of reach, after "its last release was 4.5 years ago",
  * in the ledger why's word: "; 7.x is the newest that fits", or "; no newer branch fits". Why the
- * newest does not is the Release branches sentence's to say, so the lead stays as long as it was.
- * Null keeps the older sentence: the newest within reach, or a document that does not say.
+ * newest does not fit is the Release branches sentence's to say. Null when the newest is within
+ * reach or the document does not say.
  */
 export function moveClause(data: Signal["data"] | undefined): FloorPart[] | null {
   if (data?.["newest_within_reach"] !== false || str(data, "newest_branch") === null) return null;

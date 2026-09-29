@@ -5,6 +5,7 @@ import {
   type FloorItem,
   type FloorPart,
   type Floors,
+  type OtherFloor,
 } from "../../domain/floors";
 import { DisclosurePanel } from "../common/Disclosure";
 
@@ -52,38 +53,43 @@ function Item({ item }: { item: FloorItem }) {
   );
 }
 
-/** Level 1 of the branches against the floors: what the words mean, then every branch by standing. */
+/** Level 1 of the branches against the floors: what the words mean, then every branch the sentence
+ *  left out, by standing. */
 export function FloorsPanel({
   id,
   open,
   labelledBy,
   floors,
+  heldBy,
   groups,
 }: {
   id: string;
   open: boolean;
   labelledBy: string | undefined;
   floors: Floors;
+  heldBy: OtherFloor | null;
   groups: readonly FloorGroup[];
 }) {
   return (
     <DisclosurePanel id={id} open={open} className="detail-timeline-floors" labelledBy={labelledBy}>
       <p className="floors-def">
-        <FloorWords parts={floorsDefinition(floors)} />
+        <FloorWords parts={floorsDefinition(floors, heldBy)} />
       </p>
-      <ul className="floors-groups">
-        {groups.map((group, g) => (
-          <li key={g}>
-            {group.items.map((item, i) => (
-              <Fragment key={i}>
-                {i > 0 && (i === group.items.length - 1 ? " and " : ", ")}
-                <Item item={item} />
-              </Fragment>
-            ))}{" "}
-            <FloorWords parts={group.words} />
-          </li>
-        ))}
-      </ul>
+      {groups.length > 0 && (
+        <ul className="floors-groups">
+          {groups.map((group, g) => (
+            <li key={g}>
+              {group.items.map((item, i) => (
+                <Fragment key={i}>
+                  {i > 0 && (i === group.items.length - 1 ? " and " : ", ")}
+                  <Item item={item} />
+                </Fragment>
+              ))}{" "}
+              <FloorWords parts={group.words} />
+            </li>
+          ))}
+        </ul>
+      )}
     </DisclosurePanel>
   );
 }

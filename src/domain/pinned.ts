@@ -236,23 +236,17 @@ export interface DatedPoint {
   readonly day: string;
 }
 
-/** Level 1 of the answer's tag phrase: the two dates oldest first, or what "no tag" covers. */
-export type TagDetail =
-  | {
-      readonly kind: "dates";
-      readonly points: readonly [DatedPoint, DatedPoint];
-      /** The gap, sign dropped: the points' order says which way. */
-      readonly years: number;
-      /** The package whose release dates the tag, when it is not this one. */
-      readonly datedBy: string | null;
-    }
-  | { readonly kind: "none" }
-  | { readonly kind: "not-a-tag"; readonly version: string };
+/** Level 1 of the answer's tag phrase: the snapshot and its newest tag, oldest first. */
+export interface TagDetail {
+  readonly points: readonly [DatedPoint, DatedPoint];
+  /** The gap, sign dropped: the points' order says which way. */
+  readonly years: number;
+  /** The package whose release dates the tag, when it is not this one. */
+  readonly datedBy: string | null;
+}
 
+/** Null where the answer's words say all there is: no tag at all, or dates that do not parse. */
 export function pinnedTagDetail(facts: PinnedFacts): TagDetail | null {
-  const standing = tagStanding(facts);
-  if (standing === "none") return { kind: "none" };
-  if (standing === "not-a-tag") return { kind: "not-a-tag", version: facts.version };
   const years = snapshotTagGap(facts);
   if (years === null || facts.lastStableRelease === null || facts.snapshotTime === null) return null;
   const tag: DatedPoint = {
@@ -262,19 +256,28 @@ export function pinnedTagDetail(facts: PinnedFacts): TagDetail | null {
   };
   const snapshot: DatedPoint = { role: "snapshot", version: facts.version, day: day(facts.snapshotTime) };
   return {
-    kind: "dates",
     points: years >= 0 ? [tag, snapshot] : [snapshot, tag],
     years: Math.abs(years),
     datedBy: facts.lastStableDatedBy,
   };
 }
 
+/** Whether a pinned row's age is its newest tag's: its why names that tag beside a snapshot, so the
+ *  number needs its owner said. */
+export function ageIsTag(finding: Finding): boolean {
+  if (finding.verdict !== "pinned" || ageSource(finding)?.kind !== "release") return false;
+  return tagStanding(readPinnedFacts(finding, null)) === "tagged";
+}
+
 /** A Findings row's why is as terse as every other row's ("5.x stopped; 8.x ships"). */
 const WHY_MAX = 32;
 
-function firstThatFits(candidates: readonly (string | null)[]): string | null {
+/** Room for a version before "is not a tag in its repository"; a longer one is left out. */
+const WHY_VERSION_MAX = 40;
+
+function firstThatFits(candidates: readonly (string | null)[], max = WHY_MAX): string | null {
   const kept = candidates.filter((c): c is string => c !== null);
-  return kept.find((c) => c.length <= WHY_MAX) ?? kept[kept.length - 1] ?? null;
+  return kept.find((c) => c.length <= max) ?? kept[kept.length - 1] ?? null;
 }
 
 /**
@@ -287,7 +290,10 @@ export function pinnedWhy(finding: Finding): string | null {
   const facts = readPinnedFacts(finding, null);
   switch (tagStanding(facts)) {
     case "not-a-tag":
-      return firstThatFits([`${facts.version} is not a tag upstream`, "its version is not a tag"]);
+      return firstThatFits(
+        [`${facts.version} is not a tag in its repository`, "not a tag in its repository"],
+        WHY_VERSION_MAX,
+      );
     case "none":
       return "snapshot; no tag at all";
     case "unknown":

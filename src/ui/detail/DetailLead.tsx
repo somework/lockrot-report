@@ -489,17 +489,6 @@ function Point({ point }: { point: DatedPoint }) {
 /** Level 1 of the answer's tag words: the two dates oldest first, the gap on the rule between them,
  *  then what lockrot counts as a tag. */
 function TagDetailWords({ detail }: { detail: TagDetail }) {
-  if (detail.kind === "none") {
-    return <p className="detail-tags-note">Its repository lists no tag at all, not even a pre-release.</p>;
-  }
-  if (detail.kind === "not-a-tag") {
-    return (
-      <p className="detail-tags-note">
-        <span className="mono">{detail.version}</span> is not a tag in its repository, which lists none, not
-        even a pre-release.
-      </p>
-    );
-  }
   const [first, second] = detail.points;
   const tag = detail.points.find((p) => p.role === "tag");
   return (

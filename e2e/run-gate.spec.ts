@@ -1,7 +1,8 @@
 /**
  * PD-GATE-1..5 (DESIGN.md §5): lockrot's gate merged into the page — the header's words, the
  * summary's clause and its level 1, the row mark that never grows a row, the "Fails this run"
- * filter and its address, Run data's rows — and the reports without a gate, which look as before.
+ * filter and its address, Run data's rows — and the reports without a decided gate, which say nothing
+ * of pass or fail.
  */
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
@@ -156,7 +157,7 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
     expect(await report.hash()).toContain("gate=fails");
     expect(await report.hash()).toContain("q=verdict");
     await expect(link).toBeFocused();
-    // A search that would hide some of the 171 is dropped: the list shows the count the words said.
+    // A search that would hide some of them is dropped: the list shows the count the words said.
     await report.gotoWithHash(FIXTURES.koelNoTokenUnchecked013, "q=spot");
     await page.getByRole("button", { name: /^171 unchecked/ }).click();
     expect(await report.hash()).not.toContain("q=");

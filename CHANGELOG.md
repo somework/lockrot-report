@@ -36,7 +36,8 @@ tag or the address format, says so under **Breaking** in its entry.
   which the table's PHP column still shows. "Each branch" opens what the sentence left out, yours
   in full, runs of alike branches as "0.1.x – 0.7.x (7)", and stays open from one package to the
   next; a closed fold row says what it hides ("3 stop before both"). A report that names no project
-  floor says so once.
+  floor says so once. Where lockrot held the branches to a floor of another kind, "Each branch"
+  says which, as lockrot wrote it: "lockrot reads the extension floor as ext-sodium >=2".
 - A left-behind package whose newest branch the project cannot take names the one it can, in the
   words its row uses: "its last release was 4.5 years ago; 7.x is the newest that fits", or "no
   newer branch fits"; the row says "5.x stopped; 7.x fits" instead of "8.x ships".
@@ -44,11 +45,13 @@ tag or the address format, says so under **Breaking** in its entry.
   4.5-year-old branch snapshot, 3.2 years after its newest tag, 1.6.2", or "1 month before" where a
   newer tag exists. Where lockrot could not tell, it says so ("lockrot could not tell whether it has
   a tag") instead of "rather than a release". The tag's version opens both dates, oldest first
-  with the gap between them, and that a tag here can be a pre-release; "no tagged release" and
-  "lists no tag" open what they cover. The Snapshot key fact notes the tag only where the answer
-  does not.
+  with the gap between them, and that a tag here can be a pre-release. A repository with no tag
+  says so in full, "lists no tag, not even a pre-release", with nothing to open. The Snapshot key
+  fact notes the tag only where the answer does not.
 - A pinned row in Findings leads with its S6 in a few words, "snapshot 1 mo before tag 2.6.7",
-  "snapshot; no tag at all", "snapshot; tags unknown", and search finds them.
+  "snapshot; no tag at all", "snapshot; tags unknown", "1.0.0 is not a tag in its repository", and
+  search finds them. Where the words name a tag beside the snapshot, the age column's number says
+  "tag", so its years read as the tag's.
 - Blast radius names the flagged packages lockrot counts under no direct requirement because too
   many share them: one sentence under the table ("league/config (stale) is left out of Blast
   radius: 9 direct requirements share it, more than 8"); two or more are named with their counts,

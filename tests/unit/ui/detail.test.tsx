@@ -878,7 +878,7 @@ describe("Detail", () => {
         "commit dated 2.8 y ago",
       ]);
       expect(answer(WALLABAG_013, "wallabag/rulerz")).toMatch(
-        /^Pinned to dev-master, a branch snapshot of a package with no tagged release\. /,
+        /^Pinned to dev-master, a branch snapshot; its repository lists no tag, not even a pre-release\. /,
       );
       cleanup();
       // S6's null: lockrot could not tell, and the undated commit is said to be so.
@@ -891,7 +891,7 @@ describe("Detail", () => {
       const untagged = renderDetail(EDGES_013, "acme/untagged").container;
       expect(factRows(untagged)[1]).toEqual(["Last release", "none tagged"]);
       expect(untagged.querySelector(".detail-answer")?.textContent).toMatch(
-        /^Installed 1\.0\.0, but its repository lists no tag\. /,
+        /^Installed 1\.0\.0, but its repository lists no tag, not even a pre-release\. /,
       );
       expect(untagged.querySelector(".detail-lead")?.textContent).not.toContain("snapshot");
       expect(untagged.querySelector(".detail-lead")?.textContent).not.toContain("dated");
@@ -930,22 +930,20 @@ describe("Detail", () => {
       expect(factRows(container)[1]).toEqual(["Last release", "7.7 y ago"]);
     });
 
-    it("level 1 opens from the state, and says what 'no tag' covers (rulerz, acme/untagged)", () => {
+    it("no tag at all opens nothing: the answer already says a pre-release would count (rulerz, acme/untagged)", () => {
       const open = { disclosure: { "pinned-tags": true } };
-      const rulerz = renderDetail(WALLABAG_013, "wallabag/rulerz", vi.fn(), open).container;
-      expect(screen.getByRole("button", { name: "no tagged release" }).getAttribute("aria-expanded")).toBe(
-        "true",
-      );
-      expect(rulerz.querySelector<HTMLElement>(".detail-tags")?.hidden).toBe(false);
-      expect(rulerz.querySelector(".detail-tags")?.textContent).toBe(
-        "Its repository lists no tag at all, not even a pre-release.",
-      );
-      cleanup();
-      const untagged = renderDetail(EDGES_013, "acme/untagged", vi.fn(), open).container;
-      expect(screen.getByRole("button", { name: "lists no tag" })).toBeTruthy();
-      expect(untagged.querySelector(".detail-tags")?.textContent).toBe(
-        "1.0.0 is not a tag in its repository, which lists none, not even a pre-release.",
-      );
+      for (const [model, pkg] of [
+        [WALLABAG_013, "wallabag/rulerz"],
+        [EDGES_013, "acme/untagged"],
+      ] as const) {
+        const { container } = renderDetail(model, pkg, vi.fn(), open);
+        expect(container.querySelector(".detail-answer")?.textContent, pkg).toContain(
+          "lists no tag, not even a pre-release.",
+        );
+        expect(container.querySelector(".detail-answer .l1-btn"), pkg).toBeNull();
+        expect(container.querySelector(".detail-tags"), pkg).toBeNull();
+        cleanup();
+      }
     });
 
     it("nothing opens where the answer words no tag fact (acme/path-lib's null, an older document with none)", () => {

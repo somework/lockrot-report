@@ -130,9 +130,8 @@ export function freeTextTermsVerbatim(raw: string): readonly string[] {
   return trimmed.split(/\s+/).filter((part) => part !== "" && !FIELD_PATTERN.test(part));
 }
 
-/** The parts of a finding free text searches, in the order legacy joined them into one haystack
- *  (`report.js:207`): the package name, its version, its verdict, its evidence; a pinned row's S6
- *  words go before the evidence, so what that row shows is what search finds. */
+/** The parts of a finding free text searches, in haystack order: the package name, its version, its
+ *  verdict, a pinned row's S6 words (so search finds what that row shows), its evidence. */
 export type SearchField = "name" | "version" | "verdict" | "why" | "evidence";
 
 /** Each searched part of a finding with its value, in haystack order. A free-text term never

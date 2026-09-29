@@ -559,6 +559,38 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
       expect(scale.getAttribute("aria-label")).toContain("flagged for being pinned to a branch snapshot");
     });
 
+    it("says whose the age is when the row's why names a snapshot and its tag: the tag's", () => {
+      const s6 = (hasTag: boolean | null) =>
+        makeSignal({
+          id: "S6",
+          data: {
+            version: "dev-master",
+            reason: "branch_snapshot",
+            has_stable_release: hasTag,
+            last_stable_version: "1.6.2",
+            last_stable_release: "2019-01-23T00:00:00Z",
+            snapshot_time: "2022-03-24T00:00:00Z",
+          },
+        });
+      const s2 = makeSignal({ id: "S2", level: "high", data: { years: 7.7 } });
+      const tagged = makeFinding({ package: "acme/tagged", verdict: "pinned", signals: [s2, s6(true)] });
+      const unknown = makeFinding({ package: "acme/unknown", verdict: "pinned", signals: [s2, s6(null)] });
+      renderIn(modelWith([tagged, unknown]), stateWith(), <FindingsView />);
+
+      const row = screen.getByRole("listitem", { name: "acme/tagged" });
+      expect(row.querySelector(".age-whose")?.textContent).toBe("tag");
+      expect(row.querySelector(".age-whose")?.getAttribute("aria-hidden")).toBe("true");
+      expect(within(row).getByRole("img").getAttribute("aria-label")).toMatch(
+        /^newest tag released 7\.7 years ago;/,
+      );
+      // Null is no answer: the row names no tag, so the age is not called one.
+      const other = screen.getByRole("listitem", { name: "acme/unknown" });
+      expect(other.querySelector(".age-whose")).toBeNull();
+      expect(within(other).getByRole("img").getAttribute("aria-label")).toMatch(
+        /^last release 7\.7 years ago;/,
+      );
+    });
+
     it("says only 'flagged as pinned' for a pinned row whose case no field states", () => {
       const finding = makeFinding({
         package: "acme/pinned-unknown",

@@ -45,7 +45,7 @@ test.describe("level 0: the answer without a click", () => {
     await expect(sub).not.toContainText("of 10");
   });
 
-  test("acme/left: an unknown floor reads as any other; yours at the release its php comes from", async ({
+  test("acme/left: an unknown floor reads as any other, what S8 reads it as one press away; yours at the release its php comes from", async ({
     page,
   }) => {
     await open(page, FIXTURES.miniEdges013, "acme/left");
@@ -54,6 +54,25 @@ test.describe("level 0: the answer without a click", () => {
     await expect(lead).not.toContainText("ext-sodium");
     await expect(page.locator(".detail-timeline-sub")).toContainText(
       "Yours (as of 1.9.0) needs a newer PHP than your require.php (^8.3); 3.x and 2.x are blocked by extension.",
+    );
+    await toggle(page).click();
+    await expect(page.locator(".floors-def")).toContainText(
+      "lockrot reads the extension floor as ext-sodium >=2.",
+    );
+    await expect(page.locator(".floors-def code", { hasText: "ext-sodium >=2" })).toHaveCount(1);
+  });
+
+  test("acme/floors: level 0 says only what holds for every newer branch; each one's way is level 1's", async ({
+    page,
+  }) => {
+    await open(page, FIXTURES.miniEdges013, "acme/floors");
+    await expect(page.locator(".detail-timeline-sub")).toContainText(
+      "Yours stops before your require.php (^8.3) and PHP 8.4; no newer branch admits both.",
+    );
+    await expect(page.locator(".detail-timeline-sub")).not.toContainText("differently");
+    await toggle(page).click();
+    await expect(page.locator(".detail-timeline-floors li").first()).toHaveText(
+      "6.x needs a newer PHP than your require.php and stops before PHP 8.4",
     );
   });
 

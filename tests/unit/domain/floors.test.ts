@@ -9,6 +9,7 @@ import {
   foldWords,
   plain,
   moveClause,
+  otherFloor,
   readFloors,
   standing,
   type FloorGroup,
@@ -201,9 +202,9 @@ describe("floorsAnswer: level 0, yours first, then the newer branches", () => {
     ]);
   });
 
-  it("acme/floors: more than two kinds of miss among the newer are counted, the one missing each differently named", () => {
+  it("acme/floors: more than two kinds of miss among the newer are counted; how each misses is level 1's", () => {
     expect(sentence("mini-0.13-edges", "acme/floors")).toBe(
-      "Yours stops before your require.php (^8.3) and PHP 8.4; no newer branch admits both, 6.x missing them differently.",
+      "Yours stops before your require.php (^8.3) and PHP 8.4; no newer branch admits both.",
     );
     expect(rest("mini-0.13-edges", "acme/floors")).toEqual([
       "6.x: needs a newer PHP than your require.php and stops before PHP 8.4",
@@ -396,5 +397,51 @@ describe("moveClause: S8 quoted in the words its ledger why uses", () => {
 
   it("an older report's S8 reads the same", () => {
     expect(clause("wallabag_wallabag", "scheb/2fa-bundle")).toBe("; 7.x is the newest that fits");
+  });
+});
+
+describe("otherFloor: S8's floor when it is neither of the run's own", () => {
+  function s8(bundle: string, pkg: string): Readonly<Record<string, unknown>> | undefined {
+    return load(bundle)
+      .report.findings.find((f) => f.package === pkg)
+      ?.signals.find((s) => s.id === "S8")?.data;
+  }
+
+  it("an unknown source and its floor, both as written (mini acme/left)", () => {
+    expect(otherFloor(s8("mini-0.13-edges", "acme/left"))).toEqual({
+      source: "extension",
+      php: "ext-sodium >=2",
+    });
+  });
+
+  it("the project's or the target's floor is the sentence's own, so nothing more is said", () => {
+    expect(otherFloor(s8("wallabag_wallabag-0.13", "scheb/2fa-bundle"))).toBeNull();
+    expect(otherFloor(s8("mini-0.13-edges-lock-only", "acme/left"))).toBeNull();
+  });
+
+  it("null, absent or empty source or floor says nothing, and never stands for a default", () => {
+    expect(otherFloor({ floor_source: "extension", floor_php: null })).toBeNull();
+    expect(otherFloor({ floor_source: null, floor_php: ">=2" })).toBeNull();
+    expect(otherFloor({ floor_php: ">=2" })).toBeNull();
+    expect(otherFloor({ floor_source: "extension", floor_php: "" })).toBeNull();
+    expect(otherFloor(undefined)).toBeNull();
+  });
+
+  it("is said at level 1, as its own sentence tied to no row; level 0 keeps to its two lines", () => {
+    const { rows, floors, installed, model } = fixture("mini-0.13-edges", "acme/left");
+    const data = model.report.findings
+      .find((f) => f.package === "acme/left")
+      ?.signals.find((s) => s.id === "S8")?.data;
+    const definition = floorsDefinition(floors, otherFloor(data));
+    expect(plain(definition)).toMatch(/ lockrot reads the extension floor as ext-sodium >=2\.$/);
+    expect(definition.filter((p) => p.kind === "code").map((p) => p.text)).toEqual([
+      "require.php (^8.3)",
+      "extension",
+      "ext-sodium >=2",
+    ]);
+    expect(plain(floorsAnswer(rows, floors, installed)?.sentence ?? [])).toBe(
+      "Yours (as of 1.9.0) needs a newer PHP than your require.php (^8.3); 3.x and 2.x are blocked by extension.",
+    );
+    expect(plain(floorsDefinition(floors))).not.toContain("ext-sodium");
   });
 });

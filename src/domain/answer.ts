@@ -155,6 +155,9 @@ const tags = (lead: string, version: string | null = null): AnswerPart => ({
   version,
 });
 
+/** lockrot counts a pre-release as a tag, so "no tag" says there is none of either. */
+const NO_TAG = "lists no tag, not even a pre-release";
+
 /** A tagged snapshot is anchored on its own age first, so "after its newest tag" never reads as
  *  fresh; the gap is said only when both dates parse. Every `tags` part has a `pinnedTagDetail`. */
 function pinnedClause(finding: Finding, details: PackageDetails | null, now: Date | null): AnswerPart[] {
@@ -162,13 +165,7 @@ function pinnedClause(finding: Finding, details: PackageDetails | null, now: Dat
   const lead = [text("Pinned to "), name(facts.version)];
   switch (pinnedKind(facts)) {
     case "untagged":
-      return [
-        text("Installed "),
-        name(facts.version),
-        text(", but its repository "),
-        tags("lists no tag"),
-        text("."),
-      ];
+      return [text("Installed "), name(facts.version), text(`, but its repository ${NO_TAG}.`)];
     case "other": {
       const summary = facts.summary?.trim().replace(/\.$/, "") ?? "";
       return summary === "" ? [...lead, text(".")] : [text(`Pinned: ${summary}.`)];
@@ -178,7 +175,7 @@ function pinnedClause(finding: Finding, details: PackageDetails | null, now: Dat
   }
   switch (tagStanding(facts)) {
     case "none":
-      return [...lead, text(", a branch snapshot of a package with "), tags("no tagged release"), text(".")];
+      return [...lead, text(`, a branch snapshot; its repository ${NO_TAG}.`)];
     case "unknown":
       return [...lead, text(", a branch snapshot; lockrot could not tell whether it has a tag.")];
     default:

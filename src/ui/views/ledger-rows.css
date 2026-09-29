@@ -515,6 +515,35 @@
   transition: background-color 0.12s ease;
 }
 
+/* Whose the number is, where the why names a second date: under the number, or on a phone, whose
+   row has no height to spare, over the far end of the track. */
+.age-whose {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: end;
+  align-self: center;
+  z-index: 2;
+  padding: 0 3px;
+  background: var(--row-bg);
+  font-family: var(--cond);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 10px;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: background-color 0.12s ease;
+}
+@container fledger (min-width: 480px) {
+  .age-whose {
+    grid-column: 2;
+    align-self: end;
+    margin-bottom: 3px;
+    padding: 0;
+    background: none;
+  }
+}
+
 /* The swatch in the head's grey-bar key: the context bar's own shape, end cap included. */
 .fledger-key {
   position: relative;

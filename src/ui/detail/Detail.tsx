@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact";
 import type { ExplainActivity, Finding, PackageDetails, PackageOrigin } from "../../model/types";
 import { isContextOnly } from "../../domain/age";
+import { otherFloor } from "../../domain/floors";
 import { lockTimeLabel, snapshotOf } from "../../domain/pinned";
 import {
   originFrom,
@@ -66,6 +67,7 @@ export function Detail({ onClose }: DetailProps) {
           snapshot={snapshotOf(finding, details)}
           installedVersion={finding.version}
           ageToned={!isContextOnly(finding)}
+          heldBy={otherFloor(finding.signals.find((s) => s.id === "S8")?.data)}
         />
         {/* The heading sits inside <summary> so a reader moving by heading still finds it. */}
         <details className="detail-section detail-reference">

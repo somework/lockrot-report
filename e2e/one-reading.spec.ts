@@ -41,9 +41,11 @@ for (const [older, current, pkg] of [
   });
 }
 
-test("wallabag/rulerz on the older page: no tagged release, dated by the commit", async ({ page }) => {
+test("wallabag/rulerz on the older page: no tag at all, dated by the commit", async ({ page }) => {
   const { answer, slot } = await lead(page, FIXTURES.wallabag, "wallabag/rulerz");
-  expect(answer).toMatch(/^Pinned to dev-master, a branch snapshot of a package with no tagged release\. /);
+  expect(answer).toMatch(
+    /^Pinned to dev-master, a branch snapshot; its repository lists no tag, not even a pre-release\. /,
+  );
   expect(slot).toMatch(/^Last release none, a snapshot commit dated /i);
 });
 

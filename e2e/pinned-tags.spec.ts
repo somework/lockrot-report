@@ -36,9 +36,7 @@ test.describe("level 0: the answer and the key fact", () => {
     await expect(fact(page)).toHaveText(/^Snapshot\s*2 mo ago$/);
   });
 
-  test("null is 'could not tell', false is 'no tagged release', and neither is the other", async ({
-    page,
-  }) => {
+  test("null is 'could not tell', false is 'no tag at all', and neither is the other", async ({ page }) => {
     await open(page, FIXTURES.miniEdges013, "acme/path-lib");
     await expect(answer(page)).toContainText(
       "a branch snapshot; lockrot could not tell whether it has a tag.",
@@ -46,8 +44,25 @@ test.describe("level 0: the answer and the key fact", () => {
     await expect(page.locator("aside.detail .detail-answer .l1-btn")).toHaveCount(0);
 
     await open(page, FIXTURES.wallabag013, "wallabag/rulerz");
-    await expect(answer(page)).toContainText("a branch snapshot of a package with no tagged release.");
+    await expect(answer(page)).toContainText(
+      "a branch snapshot; its repository lists no tag, not even a pre-release.",
+    );
     await expect(answer(page)).not.toContainText("could not tell");
+  });
+
+  test("no tag at all is said in full at level 0, so nothing opens (rulerz, acme/untagged)", async ({
+    page,
+  }) => {
+    await open(page, FIXTURES.wallabag013, "wallabag/rulerz");
+    await expect(page.locator("aside.detail .detail-answer .l1-btn")).toHaveCount(0);
+    await expect(panel(page)).toHaveCount(0);
+
+    await open(page, FIXTURES.miniEdges013, "acme/untagged");
+    await expect(answer(page)).toHaveText(
+      "Installed 1.0.0, but its repository lists no tag, not even a pre-release. You require it directly.",
+    );
+    await expect(page.locator("aside.detail .detail-answer .l1-btn")).toHaveCount(0);
+    await expect(panel(page)).toHaveCount(0);
   });
 
   test("an older report says only what its fields state: fos as 0.13 does, core-lib less", async ({
@@ -112,27 +127,33 @@ test.describe("level 1: the tag words open the dates and the pre-release caveat"
     expect(noOverflow).toBe(true);
   });
 
-  test("the reader's choice follows j to the next pinned package, and Escape hands focus to its row", async ({
+  test("the reader's choice follows j and k back to the package, and Escape hands focus to its row", async ({
     page,
   }) => {
-    await open(page, FIXTURES.wallabag013, "wallabag/rulerz");
-    await page.getByRole("button", { name: "no tagged release" }).click();
-    await page.locator("li.frow[data-pkg='wallabag/rulerz']").focus();
+    await open(page, FIXTURES.wallabag013, "friendsofsymfony/oauth-server-bundle");
+    const name = { name: "its newest tag, 1.6.2", exact: true } as const;
+    await page.getByRole("button", name).click();
+    await page.locator("li.frow[data-pkg='friendsofsymfony/oauth-server-bundle']").focus();
     await page.keyboard.press("j");
-    await expect(page.locator("aside.detail")).toHaveAttribute("aria-label", "wallabag/rulerz-bundle");
-    await expect(page.getByRole("button", { name: "no tagged release" })).toHaveAttribute(
-      "aria-expanded",
-      "true",
+    await expect(page.locator("aside.detail")).not.toHaveAttribute(
+      "aria-label",
+      "friendsofsymfony/oauth-server-bundle",
     );
-    await expect(panel(page)).toHaveText("Its repository lists no tag at all, not even a pre-release.");
+    await page.keyboard.press("k");
+    await expect(page.locator("aside.detail")).toHaveAttribute(
+      "aria-label",
+      "friendsofsymfony/oauth-server-bundle",
+    );
+    await expect(page.getByRole("button", name)).toHaveAttribute("aria-expanded", "true");
+    await expect(panel(page)).toBeVisible();
     await page.keyboard.press("Escape");
-    await expect(page.locator("li.frow[data-pkg='wallabag/rulerz-bundle']")).toBeFocused();
+    await expect(page.locator("li.frow[data-pkg='friendsofsymfony/oauth-server-bundle']")).toBeFocused();
   });
 
   test("in forced colours the version keeps the shared marker and link colour", async ({ page }) => {
     await page.emulateMedia({ forcedColors: "active" });
-    await open(page, FIXTURES.miniEdges013, "acme/untagged");
-    const button = page.getByRole("button", { name: "lists no tag" });
+    await open(page, FIXTURES.wallabag013, "friendsofsymfony/oauth-server-bundle");
+    const button = page.getByRole("button", { name: "its newest tag, 1.6.2", exact: true });
     const glyph = await button.locator(".l1-mark").evaluate((el) => getComputedStyle(el, "::before").content);
     expect(glyph).toBe('"▶"');
     await expect(button).toHaveCSS("border-bottom-style", "dotted");
@@ -161,9 +182,40 @@ test.describe("the Findings row", () => {
     await page.goto(`${pageUrl(FIXTURES.wallabag013)}#view=findings&q=${encodeURIComponent("after tag")}`);
     await expect(page.locator("li.frow")).toHaveCount(1);
     const fos = page.locator("li.frow[data-pkg='friendsofsymfony/oauth-server-bundle']");
-    // The age column shows 7.7 years, so the row names no second number of years.
+    // The age column shows the tag's years, so the row names no second number of years, and the
+    // column says whose its number is.
     await expect(fos.locator(".fc-why-text")).toHaveText("snapshot after tag 1.6.2");
     await expect(fos.locator(".match-note")).toHaveCount(0);
+    await expect(fos.locator(".age-whose")).toHaveText("tag");
+    await expect(fos.getByRole("img")).toHaveAttribute("aria-label", /^newest tag released /);
+  });
+
+  test("an untagged row says its version is not a tag in plain words, and no age is called a tag", async ({
+    page,
+  }) => {
+    await page.goto(`${pageUrl(FIXTURES.miniEdges013)}#view=findings`);
+    const untagged = page.locator("li.frow[data-pkg='acme/untagged']");
+    await expect(untagged.locator(".fc-why-text")).toHaveText("1.0.0 is not a tag in its repository");
+    await page.goto(`${pageUrl(FIXTURES.mautic013)}#view=findings`);
+    await expect(page.locator("li.frow[data-pkg='rector/rector'] .age-whose")).toHaveCount(0);
+    await expect(page.locator("li.frow .age-whose")).toHaveCount(0);
+  });
+
+  test("the tag word under the age stays inside its row at every width", async ({ page }) => {
+    await page.goto(`${pageUrl(FIXTURES.wallabag013)}#view=findings`);
+    for (const width of [320, 390, 768, 1024, 1440, 1920]) {
+      await page.setViewportSize({ width, height: 900 });
+      const fos = page.locator("li.frow[data-pkg='friendsofsymfony/oauth-server-bundle']");
+      const row = await fos.boundingBox();
+      const word = await fos.locator(".age-whose").boundingBox();
+      const num = await fos.locator(".age-num").boundingBox();
+      expect(row && word && num, `${String(width)}px`).toBeTruthy();
+      if (row === null || word === null || num === null) continue;
+      expect(word.y, `${String(width)}px`).toBeGreaterThanOrEqual(row.y);
+      expect(word.y + word.height, `${String(width)}px`).toBeLessThanOrEqual(row.y + row.height);
+      const apart = word.x + word.width <= num.x || word.y >= num.y + num.height - 2;
+      expect(apart, `${String(width)}px: the word clear of the number`).toBe(true);
+    }
   });
 
   for (const fixture of [

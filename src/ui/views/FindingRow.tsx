@@ -9,7 +9,7 @@ import { RowGateMark, rowGateSpoken } from "../common/GateWords";
 import { findingGateMark, rowGateWords } from "../../domain/gate";
 import { signalDef, signalDocUrl, TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { ageNotRead, ageScale, type AgeAxis } from "../../domain/age";
-import { pinnedKindOf } from "../../domain/pinned";
+import { ageIsTag, pinnedKindOf } from "../../domain/pinned";
 import { reachText, rowSignals, shortFact, vendorOf } from "../../domain/rows";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { AgeCell, AgeCellEmpty } from "./AgeScale";
@@ -237,6 +237,7 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
           scale={scale}
           verdict={finding.verdict}
           pinned={pinnedKindOf(finding, model.details.get(finding.package) ?? null)}
+          tag={ageIsTag(finding)}
         />
       ) : (
         <AgeCellEmpty axis={axis} notRead={ageNotRead(finding)} />

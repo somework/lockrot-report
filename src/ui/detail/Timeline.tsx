@@ -1,7 +1,7 @@
 import { useId, useState } from "preact/hooks";
 import type { BranchRow, ExplainMetadata } from "../../model/types";
 import { ageZone, releaseThresholds } from "../../domain/age";
-import { floorsAnswer, foldWords, readFloors } from "../../domain/floors";
+import { floorsAnswer, foldWords, readFloors, type OtherFloor } from "../../domain/floors";
 import {
   timelineModel,
   yearsSince,
@@ -26,10 +26,13 @@ export function Timeline({
   snapshot,
   installedVersion,
   ageToned = true,
+  heldBy = null,
 }: {
   metadata: ExplainMetadata | null;
   snapshot: SnapshotCommit | null;
   installedVersion: string;
+  /** S8's floor when it is not one of the run's own. */
+  heldBy?: OtherFloor | null;
   /** False when the verdict does not rest on age: the age stays in ink here as it does above. */
   ageToned?: boolean;
 }) {
@@ -46,6 +49,7 @@ export function Timeline({
   const drawn = rowsOf(timeline.lanes.map((lane) => lane.branch));
   const answer = floorsAnswer(drawn, floors, installedVersion);
   const rest = answer?.rest ?? [];
+  const levelOne = answer !== null && (rest.length > 0 || heldBy !== null);
 
   const thresholds = releaseThresholds(model.report.run.thresholds);
   // A snapshot's date is a checkout, not a release: it never takes the release-age tone.
@@ -83,7 +87,7 @@ export function Timeline({
           answer === null ? undefined : (
             <span className="detail-timeline-floors-said">
               <FloorWords parts={answer.sentence} />
-              {rest.length > 0 && !disclosure.printed && (
+              {levelOne && !disclosure.printed && (
                 <>
                   {" "}
                   <DisclosureButton
@@ -99,12 +103,13 @@ export function Timeline({
           )
         }
       />
-      {rest.length > 0 && (
+      {levelOne && (
         <FloorsPanel
           id={floorsId}
           open={disclosure.open}
           labelledBy={disclosure.printed ? undefined : `${floorsId}-btn`}
           floors={floors}
+          heldBy={heldBy}
           groups={rest}
         />
       )}
