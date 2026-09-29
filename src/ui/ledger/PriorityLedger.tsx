@@ -5,6 +5,9 @@ import { population } from "../../domain/filters";
 import { plural } from "../../domain/format";
 import { RANKED_PRIORITIES, sharePhrase, waffleRuns } from "../../domain/summary";
 import { rollupClauses, scopeRollup } from "../../domain/share";
+import { baselineDelta } from "../../domain/baseline";
+import { gateClause, runGate, type GateClause, type RunGate } from "../../domain/gate";
+import { GateClauseText, useGateWhy } from "../common/GateWords";
 import { CleanMark } from "./CleanMark";
 import { Waffle } from "./Waffle";
 import "./ledger.css";
@@ -44,6 +47,22 @@ function ScopeLine({ clauses }: { clauses: readonly string[] }) {
 }
 
 /**
+ * With lockrot's gate and no baseline sentence to carry it, the lead's answer goes on in one serif
+ * line: how many fail this run, flagged and not flagged apart (PD-GATE-2).
+ */
+function GateLine({ gate, clause }: { gate: RunGate; clause: GateClause }) {
+  const why = useGateWhy(gate);
+  return (
+    <>
+      <p className="lead-gate">
+        <GateClauseText clause={clause} opening lead={why.lead} />.
+      </p>
+      {why.panel}
+    </>
+  );
+}
+
+/**
  * The summary band's lead: the one answer a first-time reader needs — how many packages are
  * flagged, out of how many — as the loudest thing on the page, with the priority chips that
  * filter by it and a waffle of every package beside it (DESIGN.md §5 PD-SUMMARY-6). It replaced
@@ -71,6 +90,8 @@ export function PriorityLedger() {
   const shown: readonly string[] = [...RANKED_PRIORITIES, ...unknown];
   const clean = flagged.length === 0;
   const empty = total === 0 && clean;
+  const gate = baselineDelta(model) === null ? runGate(model) : null;
+  const clause = gate === null ? null : gateClause(gate);
 
   return (
     <div className={empty ? "ledger-lead is-empty" : clean ? "ledger-lead is-clean" : "ledger-lead"}>
@@ -103,6 +124,7 @@ export function PriorityLedger() {
           </p>
         )}
         {!clean && <ScopeLine clauses={rollupClauses(scopeRollup(flagged))} />}
+        {gate !== null && clause !== null && <GateLine gate={gate} clause={clause} />}
         {/* No chips for an empty lock: four disabled "0" filters there had nothing to filter. */}
         {!empty && (
           <div className="legend lead-chips" role="group" aria-label="Priority">

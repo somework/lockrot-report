@@ -2,7 +2,7 @@ import type { Finding } from "../../model/types";
 import { SIGNAL_IDS } from "../../model/types";
 import type { SortKey } from "../../state/types";
 import { Fragment } from "preact";
-import { useRef } from "preact/hooks";
+import { useId, useRef } from "preact/hooks";
 import { useReport } from "../context";
 import { useOverflowX } from "../useOverflowX";
 import { applyFilters, population } from "../../domain/filters";
@@ -21,6 +21,8 @@ import { sharedDataDay } from "../../domain/share";
 import { isKnownSignalId, TONE } from "../../domain/vocab";
 import { Pill, Muted, toneClass } from "../common/common";
 import { AdvisoryChip } from "../common/AdvisoryChip";
+import { GateMark } from "../common/GateWords";
+import { findingGateMark } from "../../domain/gate";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
@@ -195,9 +197,12 @@ function PackageCell({ finding }: { finding: Finding }) {
 }
 
 function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean; max: number | null }) {
-  const { state, dispatch, cursor } = useReport();
+  const { model, state, dispatch, cursor } = useReport();
   const isOpen = state.pkg === finding.package;
   const hit = useSearchHit(finding);
+  const mark = findingGateMark(model, finding);
+  const markId = `${useId()}-gate`;
+  const marked = mark !== null && mark.kind !== "unapplied";
   // On a phone the priority is the row's left rule; in forced colours `prio-<word>` gives its
   // weight.
   const rowClass =
@@ -212,6 +217,7 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
       tabIndex={rowTabIndex(finding.package, cursor)}
       aria-current={isOpen ? "true" : undefined}
       aria-label={finding.package}
+      aria-describedby={marked ? markId : undefined}
       data-pkg={finding.package}
       {...openInteractions(finding.package, dispatch)}
     >
@@ -221,6 +227,12 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
           <>
             {" "}
             <AdvisoryChip finding={finding} />
+          </>
+        )}
+        {marked && (
+          <>
+            {" "}
+            <GateMark finding={finding} id={markId} />
           </>
         )}
         <MatchNote hit={hit} />

@@ -10,6 +10,19 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Added
 
+- Whether the run failed, as lockrot decided it. The header says "this run fails · --fail-on=high"
+  (or passes, or wrote a baseline and did not apply its fail-on), the causes as the CLI's flags. The
+  summary's answer says how many packages fail, total first — "173 fail this run: 2 flagged, 171
+  not flagged" — with a baseline closing the Against sentence instead; a press opens what each
+  cause fails on and what exempts the rest, and prints open. The flagged count filters Findings, the
+  rail gains "Fails this run" (`#gate=fails`), and the not-flagged count opens All packages on
+  exactly those packages.
+- Each Findings row says "fails", "accepted" or "exempt: <as lockrot wrote it>" at the end of a
+  line with room, so no row grows; a screen reader hears it with the row. All packages and the open
+  package say it too.
+- Run data gains root package, strict network, mode and result rows, and its sentence says whether
+  the run failed and on what.
+
 - All packages on a phone: under 480px the rows stack — name and version, then the verdict, the
   libyears bar and how it gets in, with the priority as the row's left rule — instead of a table
   cut after its second column. The list opens with how many of the listed packages are behind their
@@ -239,6 +252,12 @@ tag or the address format, says so under **Breaking** in its entry.
   the exposure list, plus 8 of 8 flagged ones it leaves out".
 
 ### Changed
+
+- The header no longer counts findings "at or above" fail-on or lists the ones the baseline does
+  not accept; the summary's "N fail this run" replaces both. Thresholds read "fails on priority
+  high or higher".
+- "fix not checked" reads apart from "no fix listed": italic and quieter, on the Advisories card and
+  tab and in the open package, whose fix ladder hatches that rung.
 
 - Rail counts follow the other filters and the search: each is what the list shows with that row
   on — a click on a second signal lists the union, and its count says so — and a row matching

@@ -1,0 +1,6 @@
+/* "fix not checked" beside "no fix listed" (Unchecked.tsx): not looked for, so quieter and italic,
+   where "no fix listed" is an answer in upright ink. */
+.fix-unchecked {
+  font-style: italic;
+  color: var(--muted);
+}

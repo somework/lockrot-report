@@ -1,9 +1,12 @@
 import type { TargetedMouseEvent } from "preact";
+import { useId } from "preact/hooks";
 import type { Action } from "../../state/types";
 import type { Finding, Signal } from "../../model/types";
 import { useReport } from "../context";
 import { toneClass } from "../common/common";
 import { AdvisoryChip } from "../common/AdvisoryChip";
+import { RowGateMark, rowMarkWords } from "../common/GateWords";
+import { findingGateMark } from "../../domain/gate";
 import { signalDef, signalDocUrl, TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { ageNotRead, ageScale, type AgeAxis } from "../../domain/age";
 import { pinnedKindOf } from "../../domain/pinned";
@@ -167,15 +170,27 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
   const why = key ? shortFact(key, finding) : finding.evidence;
   const hit = useSearchHit(finding);
   const printed = usePrinted();
-  const rowClass = `frow ${toneClass(TONE(finding.verdict))}`;
+  const ids = useId();
+  const found = findingGateMark(model, finding);
+  const mark = found !== null && rowMarkWords(found) !== null ? found : null;
+  const gateClass = mark === null ? "" : ` has-gate gate-${mark.kind}`;
+  const rowClass = `frow ${toneClass(TONE(finding.verdict))}${gateClass}`;
+  // The row's name is its package; the verdict and this run's mark are what a screen reader hears
+  // next, as they are what the eye reads beside it.
+  const describedBy = mark === null ? `${ids}-verdict` : `${ids}-verdict ${ids}-gate`;
 
   const cells = (
     <>
-      <span className={`fcell fc-verdict${dim(ditto.verdict)}`} title={VERDICT_DEFS[finding.verdict] ?? ""}>
+      <span
+        className={`fcell fc-verdict${dim(ditto.verdict)}`}
+        id={`${ids}-verdict`}
+        title={VERDICT_DEFS[finding.verdict] ?? ""}
+      >
         {finding.verdict}
       </span>
       <span className="fc-line">
         <span className="fcell fc-pkg" title={`${finding.package} ${finding.version}`}>
+          {mark !== null && <RowGateMark mark={mark} at="pkg" />}
           {vendor !== null && (
             <>
               <span className={`fc-vendor${dim(ditto.vendor)}`}>{vendor}/</span>
@@ -193,6 +208,7 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
               : finding.chain.join(" › ") || undefined
           }
         >
+          {mark !== null && <RowGateMark mark={mark} at="reach" />}
           <Reach finding={finding} />
         </span>
       </span>
@@ -208,7 +224,13 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
             ))}
           </span>
         )}
+        {mark !== null && <RowGateMark mark={mark} at="why" />}
       </span>
+      {mark !== null && (
+        <span className="vh" id={`${ids}-gate`}>
+          {rowMarkWords(mark)?.spoken}
+        </span>
+      )}
       {scale ? (
         <AgeCell
           scale={scale}
@@ -237,6 +259,7 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
       tabIndex={rowTabIndex(finding.package, cursor)}
       aria-current={isOpen ? "true" : undefined}
       aria-label={finding.package}
+      aria-describedby={describedBy}
       data-pkg={finding.package}
       className={rowClass}
       {...openInteractions(finding.package, dispatch)}

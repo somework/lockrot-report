@@ -99,9 +99,9 @@ export function failOnThreshold(run: Pick<RunSettings, "failOn" | "failOnKind">)
     case "none":
       return "fails on nothing";
     case "verdict":
-      return `fails on a verdict at least as severe as ${failOn}`;
+      return `fails on verdict ${failOn} or a more severe one`;
     case "priority":
-      return `fails on a priority at least as high as ${failOn}`;
+      return `fails on priority ${failOn} or higher`;
     case "unchecked":
       return "fails on any finding whose check did not run";
     default:

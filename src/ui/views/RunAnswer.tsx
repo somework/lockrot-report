@@ -3,6 +3,7 @@ import { useId } from "preact/hooks";
 import type { Model } from "../../model/types";
 import { activityTally, cacheAge, carries, utcMinute } from "../../domain/run";
 import { plural } from "../../domain/format";
+import { gateFlag } from "../../domain/gate";
 import { useReport } from "../context";
 import "./run.css";
 
@@ -123,6 +124,59 @@ function gate(model: Model): ComponentChildren {
   );
 }
 
+/** The flags the gate sentence named, in its order. */
+function namedFlags(model: Model): readonly string[] {
+  return model.report.run.strictNetwork === true ? ["fail_on", "strict_network"] : ["fail_on"];
+}
+
+/** The fourth sentence: lockrot's result, from the root `gate`; nothing where it has none, or for a
+ *  quiet --fail-on=none, which the sentence before already words. */
+function outcome(model: Model): ComponentChildren {
+  const { gate, run } = model.report;
+  if (gate === null || gate.fails === null || run.failOn === null) return null;
+  const unapplied = gate.failOnApplied === false;
+  const wrote =
+    run.mode === "generate_baseline"
+      ? "It wrote a baseline, so it applied no fail-on"
+      : "It applied no fail-on";
+  if (!gate.fails) {
+    if (unapplied) return <> {wrote}.</>;
+    return run.failOn === "none" ? null : <> It passed.</>;
+  }
+  const causes = [...new Set(gate.trippedBy)];
+  const named = namedFlags(model);
+  const said = causes.every((cause) => named.includes(cause));
+  const on =
+    said && causes.length === named.length ? (
+      causes.length === 1 ? (
+        "it"
+      ) : (
+        "both"
+      )
+    ) : (
+      <>
+        {listed(
+          causes.map((cause) => {
+            const flag = gateFlag(cause, run.failOn);
+            return (
+              <code className="mono" key={cause}>
+                {flag.text}
+              </code>
+            );
+          }),
+        )}
+      </>
+    );
+  return unapplied ? (
+    <>
+      {" "}
+      {wrote}, and failed on {on}.
+    </>
+  ) : (
+    <> It failed on {on}.</>
+  );
+}
+
 /**
  * Run data's answer (PD-RUN-1, DESIGN.md §5): the run in one short serif paragraph — which lockrot,
  * how many packages of which lock, the PHP it checked against, whether require-dev was in, when it
@@ -142,6 +196,7 @@ export function RunAnswer() {
         {whoWhatWhen(model)}
         {howComplete(model)}
         {gate(model)}
+        {outcome(model)}
       </p>
       <AbsentFields />
     </section>

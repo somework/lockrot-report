@@ -203,8 +203,8 @@ describe("failOnThreshold", () => {
 
   it("words the threshold from run.fail_on_kind", () => {
     expect(failOnThreshold(run("none", "none"))).toBe("fails on nothing");
-    expect(failOnThreshold(run("silent", "verdict"))).toBe("fails on a verdict at least as severe as silent");
-    expect(failOnThreshold(run("high", "priority"))).toBe("fails on a priority at least as high as high");
+    expect(failOnThreshold(run("silent", "verdict"))).toBe("fails on verdict silent or a more severe one");
+    expect(failOnThreshold(run("high", "priority"))).toBe("fails on priority high or higher");
     expect(failOnThreshold(run("unchecked", "unchecked"))).toBe(
       "fails on any finding whose check did not run",
     );

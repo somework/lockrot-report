@@ -1,6 +1,8 @@
 import type { ComponentChildren } from "preact";
 import { baselineDelta, type BaselineDelta as Delta } from "../../domain/baseline";
+import { gateClause, runGate, type GateClause, type RunGate } from "../../domain/gate";
 import { filterTitle } from "../common/common";
+import { GateClauseText, useGateWhy } from "../common/GateWords";
 import { useReport } from "../context";
 import "../views/baseline.css";
 
@@ -116,8 +118,16 @@ export function BaselineDelta() {
   const { model } = useReport();
   const delta = baselineDelta(model);
   if (delta === null) return null;
+  const gate = runGate(model);
+  const clause = gate === null ? null : gateClause(gate);
+  return <Against delta={delta} gate={clause === null ? null : gate} clause={clause} />;
+}
+
+/** The Against sentence; with lockrot's gate, how many fail this run closes it (PD-GATE-2). */
+function Against({ delta, gate, clause }: { delta: Delta; gate: RunGate | null; clause: GateClause | null }) {
   const { filterable } = delta;
   const changed = delta.new + delta.worsened;
+  const why = useGateWhy(gate);
 
   return (
     <div className="bl-top">
@@ -141,8 +151,14 @@ export function BaselineDelta() {
         <Count bucket="known" count={delta.known} filterable={filterable}>
           already accepted
         </Count>
-        .
+        {clause !== null && (
+          <>
+            ; <GateClauseText clause={clause} opening={false} />
+          </>
+        )}
+        .{clause !== null && <> {why.button}</>}
       </p>
+      {clause !== null && why.panel}
       <Gone delta={delta} />
     </div>
   );

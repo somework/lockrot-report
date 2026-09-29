@@ -755,6 +755,10 @@ button.detail-check {
   height: 100%;
   background: var(--crit);
 }
+/* No release was read: the share of advisories nobody looked for, hatched rather than filled. */
+.detail-rung-bar.is-unchecked i {
+  background: repeating-linear-gradient(-45deg, var(--muted) 0 2px, transparent 2px 5px);
+}
 .detail-rung-count {
   font-family: var(--mono);
   font-size: 11px;

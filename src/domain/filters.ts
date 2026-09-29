@@ -65,6 +65,7 @@ function passesRail(filters: Filters, f: Finding): boolean {
   }
   const since = sinceBucket(f);
   if (filters.since.length > 0 && (since === null || !filters.since.includes(since))) return false;
+  if (filters.gate.includes("fails") && f.gate?.fails !== true) return false;
   // Scope buttons are ANDed, so both halves of a pair select nothing (DESIGN.md §5).
   if (filters.scope.includes("direct") && !f.direct) return false;
   if (filters.scope.includes("transitive") && f.direct) return false;
@@ -241,6 +242,23 @@ const SINCE_ROWS: readonly (readonly [string, string])[] = [
   ["known", "Already accepted"],
 ];
 
+const GATE_ROWS: readonly (readonly [string, string])[] = [["fails", "Fails this run"]];
+
+/** Only a run that failed has findings to list by it. */
+function runFails(model: Model): boolean {
+  return model.report.gate?.fails === true;
+}
+
+/**
+ * The filters an address may carry for this report: a `gate` key only when the run failed, and then
+ * only `fails`. A link written for a failing run, opened on a passing one, lists every row instead
+ * of none with no rail row to turn it off.
+ */
+export function filtersFor(model: Model, filters: Filters): Filters {
+  const gate = runFails(model) ? filters.gate.filter((key) => key === "fails") : [];
+  return gate.length === filters.gate.length ? filters : { ...filters, gate };
+}
+
 const SCOPE_ROWS: readonly (readonly [string, string])[] = [
   ["direct", "Direct"],
   ["transitive", "Transitive"],
@@ -310,7 +328,7 @@ function fixRows(here: readonly Finding[]): readonly (readonly [string, string])
   return FIX_GROUP_TEXT.filter(([shape]) => shapes.has(shape));
 }
 
-/** Since (with a baseline), Scope, Signal (if any fired), fix cost (with an advisory). Every count
+/** Since (with a baseline), This run (when it failed), Scope, Signal (if any fired), fix cost (with an advisory). Every count
  *  is what the list shows once that row is added to everything else selected (PD-RAIL-1/2). */
 export function railGroups(model: Model, state: State): readonly RailGroup[] {
   const everyone = population(model, state.view);
@@ -321,6 +339,7 @@ export function railGroups(model: Model, state: State): readonly RailGroup[] {
     model.report.baseline !== null && hasBaseline(model)
       ? groupOf(scope, "since", `Since ${model.report.baseline.path}`, SINCE_ROWS)
       : null,
+    runFails(model) ? groupOf(scope, "gate", "This run", GATE_ROWS) : null,
     groupOf(scope, "scope", "Scope", SCOPE_ROWS),
     groupOf(scope, "signal", "Signal", signalRows(here)),
     groupOf(scope, "fix", "What the fix costs", fixRows(here)),
@@ -349,11 +368,13 @@ const GROUP_LABELS: Readonly<Record<FilterGroup, string>> = {
   sev: "Severity",
   fix: "Fix",
   since: "Since baseline",
+  gate: "This run",
 };
 
 const SCOPE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(SCOPE_ROWS);
 const SINCE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(SINCE_ROWS);
 const FIX_LABELS: Readonly<Record<string, string>> = Object.fromEntries(FIX_GROUP_TEXT);
+const GATE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(GATE_ROWS);
 
 function activeLabel(group: FilterGroup, key: string): string {
   switch (group) {
@@ -367,6 +388,8 @@ function activeLabel(group: FilterGroup, key: string): string {
       return FIX_LABELS[key] ?? key;
     case "since":
       return SINCE_LABELS[key] ?? key;
+    case "gate":
+      return GATE_LABELS[key] ?? key;
     default:
       return key;
   }

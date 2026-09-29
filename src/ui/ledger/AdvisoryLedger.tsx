@@ -1,4 +1,6 @@
+import type { ComponentChildren } from "preact";
 import { useReport } from "../context";
+import { Unchecked } from "../common/Unchecked";
 import { LegendButton, toneClass } from "../common/common";
 import { plural } from "../../domain/format";
 import { population } from "../../domain/filters";
@@ -18,9 +20,17 @@ import "./ledger.css";
 const NAMED_PACKAGES = 3;
 
 /** A package none of whose advisories names a fix: listed as none, or not looked for. */
-function unfixedWords(entry: AdvisoryPackage): string {
+function unfixedWords(entry: AdvisoryPackage): ComponentChildren {
   if (!entry.someUnchecked) return "— no fix listed";
-  return entry.someUnfixed ? "— no fix listed; some not checked" : "— fix not checked";
+  return entry.someUnfixed ? (
+    <>
+      — no fix listed; <Unchecked>some not checked</Unchecked>
+    </>
+  ) : (
+    <>
+      — <Unchecked>fix not checked</Unchecked>
+    </>
+  );
 }
 
 /**
@@ -143,7 +153,11 @@ export function AdvisoryLedger() {
               <>
                 — fixed by <span className="mono">{entry.fixedBy.join(", ")}</span>
                 {entry.someUnfixed && "; some list no fix"}
-                {entry.someUnchecked && "; some not checked"}
+                {entry.someUnchecked && (
+                  <>
+                    ; <Unchecked>some not checked</Unchecked>
+                  </>
+                )}
               </>
             ) : (
               unfixedWords(entry)

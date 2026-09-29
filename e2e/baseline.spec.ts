@@ -148,29 +148,34 @@ test.describe("PD-BASELINE-4: Run data's baseline stat row", () => {
   });
 });
 
-test.describe("PD-BASELINE-5: the gate's tally", () => {
-  test("counts the findings whose gate reaches fail-on, and those the baseline does not exempt", async ({
+test.describe("PD-GATE-2: the Against sentence closes on how many fail this run", () => {
+  test("the count is lockrot's own gate, and Why ties the baseline's exemptions to 'already accepted'", async ({
     page,
   }) => {
     await report.goto(FIXTURES.wallabagBaselineOlder013);
-    await expect(page.locator(".gate-tally")).toHaveText("42 at or above · 12 of them not accepted");
-    await page.getByRole("button", { name: /^gate: high/ }).click();
-    const pop = page.locator(".fact-pop:not(.copy-pop)");
-    await expect(pop).toContainText("42 findings in this report are at or above high");
-    await expect(pop).toContainText("The page does not record the run's exit code.");
+    await expect(page.locator(".gate-fact")).toHaveText("this run fails · --fail-on=high");
+    const answer = page.locator(".bl-answer");
+    await expect(answer).toContainText("43 already accepted; 12 fail this run.");
+    const why = answer.getByRole("button", { name: "Why" });
+    await expect(why).toHaveAttribute("aria-expanded", "false");
+    await why.click();
+    await expect(why).toHaveAttribute("aria-expanded", "true");
+    const panel = page.locator(".gate-why");
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText("Fails on priority high or higher. 42 packages meet it: 12 fail.");
+    await expect(panel).toContainText("30 of the 43 already accepted meet it, so they do not fail.");
   });
 
-  test("a report whose findings carry no gate draws no tally", async ({ page }) => {
+  test("a report whose findings carry no gate draws no clause, whatever its fail-on", async ({ page }) => {
     await report.goto(FIXTURES.wallabagBaseline);
     await expect(page.getByRole("button", { name: /^gate: high/ })).toBeVisible();
-    await expect(page.locator(".gate-tally")).toHaveCount(0);
+    await expect(page.locator(".bl-answer")).not.toContainText("fail this run");
+    await expect(page.locator(".gate-fact")).toHaveCount(0);
   });
 
-  test("PD-BASELINE-6: 'of them not accepted' lists exactly those findings, from any tab", async ({
-    page,
-  }) => {
+  test("'12 fail this run' lists exactly those findings on Findings, from any tab", async ({ page }) => {
     await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "view=advisories");
-    await page.getByRole("button", { name: "12 of them not accepted" }).click();
+    await page.getByRole("button", { name: "12 fail this run" }).click();
     await expect(page.getByRole("tab", { name: /Findings/ })).toHaveAttribute("aria-selected", "true");
     expect((await report.rows()).sort()).toEqual([
       "craue/config-bundle",
@@ -186,7 +191,11 @@ test.describe("PD-BASELINE-5: the gate's tally", () => {
       "spomky-labs/otphp",
       "symfony/webpack-encore-bundle",
     ]);
-    expect(await report.hash()).toContain("since=new%2Cworsened");
+    expect(await report.hash()).toContain("gate=fails");
+    await expect(page.getByRole("button", { name: "12 fail this run" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
   });
 
   test("the rail's Since title keeps the file name whole, in its own case", async ({ page }) => {

@@ -239,3 +239,22 @@ describe("reducer / focus", () => {
     expect(state.view).toBe("run");
   });
 });
+
+describe("focus, onto another tab", () => {
+  it("lands on the tab it names with exactly its filters, and keeps the search when asked", () => {
+    const start = {
+      ...INITIAL_STATE,
+      q: "doctrine",
+      pkg: "a/b",
+      filters: { ...EMPTY_FILTERS, prio: ["high"] },
+    };
+    const filters = { ...EMPTY_FILTERS, gate: ["fails"], verdict: ["ok"] };
+    expect(reducer(start, { type: "focus", filters, view: "packages", keepQuery: true })).toMatchObject({
+      view: "packages",
+      q: "doctrine",
+      pkg: null,
+      filters,
+    });
+    expect(reducer(start, { type: "focus", filters })).toMatchObject({ view: "findings", q: "" });
+  });
+});

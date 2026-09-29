@@ -1,0 +1,63 @@
+/* Level 1 of a block (Disclosure.tsx): a quiet verb at the end of the sentence it explains, and a
+   marker drawn from borders, so a screen reader hears the verb alone. */
+.l1-btn {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  margin: 0 -2px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 1px dotted currentColor;
+  border-radius: var(--radius-s) var(--radius-s) 0 0;
+  background: none;
+  font: inherit;
+  color: var(--accent-ink);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.l1-btn:hover {
+  background: var(--accent-soft);
+  border-bottom-style: solid;
+}
+.l1-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.l1-mark {
+  align-self: center;
+  width: 0;
+  height: 0;
+  border-left: 4.5px solid currentColor;
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
+  transition: transform 0.15s ease;
+}
+.l1-btn[aria-expanded="true"] .l1-mark {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .l1-btn,
+  .l1-mark {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .l1-btn {
+    color: LinkText;
+    border-bottom-color: LinkText;
+  }
+  .l1-mark {
+    border-left-color: LinkText;
+  }
+}
+/* base.css hides every [hidden] with !important; paper shows level 1 whatever its state. */
+@media print {
+  .l1-btn {
+    display: none;
+  }
+  .l1-panel[hidden] {
+    display: block !important;
+  }
+}

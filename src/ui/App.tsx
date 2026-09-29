@@ -2,7 +2,7 @@ import "../styles/tokens.css";
 import "../styles/base.css";
 import type { RefObject } from "preact";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
-import { population } from "../domain/filters";
+import { filtersFor, population } from "../domain/filters";
 import type { Model } from "../model/types";
 import type { Action, State } from "../state/types";
 import { ReportContext, useReport } from "./context";
@@ -245,8 +245,8 @@ function RailSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
       </div>
     );
   }
-  const { scope, signal, fix, since } = state.filters;
-  const on = scope.length + signal.length + fix.length + since.length;
+  const { scope, signal, fix, since, gate } = state.filters;
+  const on = scope.length + signal.length + fix.length + since.length + gate.length;
 
   return (
     <details className="rail-fold" inert={inert}>
@@ -256,11 +256,21 @@ function RailSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
   );
 }
 
+/** How far down the viewport the list's top may sit and still count as in view for a revealing toggle. */
+const REVEAL_FOLD = 0.75;
+
 /** The page: state, address bar, layout, theme, keyboard (DESIGN.md §4, §5, §8). */
 export function App({ model }: { model: Model }) {
   const wide = useWide();
   const narrow = useNarrow();
-  const [state, rawDispatch] = useHashState();
+  const fit = useCallback(
+    (next: State): State => {
+      const filters = filtersFor(model, next.filters);
+      return filters === next.filters ? next : { ...next, filters };
+    },
+    [model],
+  );
+  const [state, rawDispatch] = useHashState(fit);
   const [anchoredDispatch, keepRowInPlace] = useRowAnchor(rawDispatch, state.pkg);
   // Set by every package a reader opens (click, Enter, `j`/`k`), never by the boot address or a
   // `hashchange`: only a reader's own open moves focus into a sheet (PD-ROWS-12).
@@ -347,24 +357,29 @@ export function App({ model }: { model: Model }) {
   // hashchange restore — scrolled to 0 regardless of who caused it (regression review).
   const currentView = useRef(state.view);
   currentView.current = state.view;
-  const listFocused = useRef(false);
+  const listFocused = useRef<"always" | "unseen" | null>(null);
   const dispatchTracked = useCallback(
     (action: Action) => {
       if (action.type === "view" && action.view !== currentView.current) tabChangedByReader.current = true;
-      if (action.type === "focus") listFocused.current = true;
+      if (action.type === "focus") listFocused.current = "always";
+      if (action.type === "toggle" && action.reveal === true) listFocused.current = "unseen";
       dispatch(action);
     },
     [dispatch],
   );
 
-  // A "focus" action (the header's gate tally, a Run data count) lists a set it counted somewhere
+  // A "focus" action (the summary's gate clause, a Run data count) lists a set it counted somewhere
   // else on the page, often a screen away from the list: the list's own top — the search box and
   // its "N of M" line — is brought under the sticky header so the reader sees what the press did.
+  // A revealing toggle scrolls only when that line is below the fold.
   useEffect(() => {
-    if (!listFocused.current) return;
-    listFocused.current = false;
+    const how = listFocused.current;
+    if (how === null) return;
+    listFocused.current = null;
     const panel = document.getElementById(`${idBase}-panel`);
-    if (typeof panel?.scrollIntoView === "function") panel.scrollIntoView({ block: "start" });
+    if (panel === null || typeof panel.scrollIntoView !== "function") return;
+    if (how === "unseen" && panel.getBoundingClientRect().top < window.innerHeight * REVEAL_FOLD) return;
+    panel.scrollIntoView({ block: "start" });
   }, [state]);
 
   useEffect(() => {

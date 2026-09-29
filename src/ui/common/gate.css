@@ -1,0 +1,197 @@
+/* The run's gate, merged into surfaces that already exist (GateWords.tsx): words in the header, a
+   clause in the summary's answer, a word in a row, the detail's pill line. Weight and the word itself
+   carry "fails"; red and orange already mean critical and high on every row (PD-GATE-3). */
+
+.gate-fact {
+  color: var(--muted);
+}
+.gate-word {
+  font-weight: 600;
+  color: var(--ink);
+}
+.gate-word.is-fails {
+  font-weight: 700;
+}
+.gate-flag {
+  color: var(--ink-2);
+}
+.run-meta .gate-flag {
+  font-size: 11px;
+  font-weight: 500;
+}
+.gate-sep,
+.gate-quiet {
+  color: var(--muted);
+}
+
+/* ---------- the summary's clause ---------- */
+.gate-total {
+  font-weight: 700;
+  color: var(--ink);
+}
+.gate-toggle b,
+.gate-go b {
+  font-weight: 700;
+  color: var(--ink);
+}
+.gate-go {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+.gate-go-mark {
+  font-family: var(--sans);
+  font-size: 0.8em;
+  color: var(--accent-ink);
+}
+/* The answer under the lead figure, when no baseline sentence carries it: the lead's own serif,
+   a size down, one line where it fits. */
+.lead-gate {
+  margin: -4px 0 0;
+  max-width: 40em;
+  font-family: var(--serif);
+  font-size: 15.5px;
+  line-height: 1.35;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.lead-gate .gate-flag {
+  font-size: 0.8em;
+}
+
+/* The subject that opens level 1: the answer's one emphasis, in ink, with the marker before it. */
+.l1-btn.gate-total {
+  gap: 6px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.lead-gate .l1-btn.gate-total {
+  margin-left: 0;
+  padding-left: 0;
+}
+
+/* ---------- level 1: the causes and exemptions ---------- */
+.gate-why {
+  margin: 8px 0 0;
+  max-width: 46em;
+}
+.gate-l1 {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 16px;
+  margin: 0;
+  padding: 10px 0 2px;
+  border-top: 1px solid var(--border);
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.gate-l1 > div {
+  display: contents;
+}
+.gate-l1 dt {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.gate-l1 dt .mono,
+.gate-l1 dd .mono {
+  font-size: 11.5px;
+}
+.gate-l1 dd {
+  margin: 0;
+  min-width: 0;
+}
+@media (max-width: 559px) {
+  .gate-l1 {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+  .gate-l1 dd + dt {
+    margin-top: 8px;
+  }
+  .gate-l1 > div + div dt {
+    margin-top: 8px;
+  }
+}
+
+/* ---------- a finding's mark ---------- */
+.gate-mark {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+.gate-mark.is-fails {
+  font-weight: 700;
+}
+.gate-mark.is-exempt {
+  font-style: italic;
+  color: var(--muted);
+}
+.gate-meets {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--muted);
+}
+.gate-meets .gate-flag {
+  font-size: 11px;
+}
+/* In a row it floats at the right end of whichever line gateFit.ts found room on — the package's,
+   the why's last, or the way in's — so it never adds a line (PD-GATE-3). Each row carries the three
+   copies; `data-gate-at` shows one. With room nowhere, the verdict carries it instead. */
+.frow .gate-mark {
+  display: none;
+  float: right;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+.frow[data-gate-at="pkg"] .gate-at-pkg,
+.frow[data-gate-at="why"] .gate-at-why,
+.frow[data-gate-at="reach"] .gate-at-reach {
+  display: block;
+}
+.frow.gate-fails[data-gate-at="none"] .fc-verdict {
+  text-decoration: underline 2px;
+  text-underline-offset: 3px;
+}
+.frow.gate-exempt[data-gate-at="none"] .fc-verdict {
+  text-decoration: underline dotted 1px;
+  text-underline-offset: 3px;
+}
+@container fledger (min-width: 990px) {
+  .frow[data-gate-at="reach"] .fc-reach {
+    justify-self: stretch;
+  }
+}
+.pk-name .gate-mark {
+  margin-left: 6px;
+  white-space: nowrap;
+}
+.detail-pills .gate-mark {
+  align-self: center;
+  margin-left: 2px;
+  font-size: 12px;
+}
+
+@media print {
+  .gate-go-mark {
+    display: none;
+  }
+  .pf-td .gate-at-pkg {
+    display: block;
+  }
+}
+/* A forced palette drops the pressed toggle's fill; bl-toggle's solid rule and this weight stay. */
+@media (forced-colors: active) {
+  .gate-toggle[aria-pressed="true"] {
+    font-weight: 700;
+    border-bottom-color: Highlight;
+  }
+}

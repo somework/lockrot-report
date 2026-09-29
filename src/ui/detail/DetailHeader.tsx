@@ -3,6 +3,7 @@ import type { Finding } from "../../model/types";
 import { hiddenByFilters } from "../../domain/filters";
 import { registryLink, repoHost, safeHref } from "../../domain/links";
 import { OutLink, Pill } from "../common/common";
+import { GateMark } from "../common/GateWords";
 import { useReport } from "../context";
 import "./detail.css";
 
@@ -43,6 +44,7 @@ export function DetailHeader({ finding, onClose }: DetailHeaderProps) {
               target, so a definition popover is what a reader wants from it. */}
           <Pill word={finding.verdict} docs />
           {finding.priority !== "none" && <Pill word={finding.priority} />}
+          <GateMark finding={finding} meets />
         </div>
         <div className="detail-links">
           {registry !== null && (

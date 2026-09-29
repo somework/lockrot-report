@@ -1789,8 +1789,8 @@ describe("RunView", () => {
     const row = () => screen.getByText("fail-on").nextElementSibling?.textContent;
     const cases: readonly (readonly [string, string | null, string])[] = [
       ["none", "none", "none · fails on nothing"],
-      ["silent", "verdict", "silent · fails on a verdict at least as severe as silent"],
-      ["high", "priority", "high · fails on a priority at least as high as high"],
+      ["silent", "verdict", "silent · fails on verdict silent or a more severe one"],
+      ["high", "priority", "high · fails on priority high or higher"],
       ["unchecked", "unchecked", "unchecked · fails on any finding whose check did not run"],
       ["gpl-3.0", "licence", "gpl-3.0 · another kind of threshold: licence"],
       ["high", null, "high"],
@@ -2321,5 +2321,125 @@ describe("signal ids this page does not know (0.13 open vocabulary)", () => {
     const name = spoken.textContent;
     expect(name.match(/acme:licence/g)).toHaveLength(1);
     expect(name.match(/S99/g)).toHaveLength(1);
+  });
+});
+
+describe("the run's gate on Run data (PD-GATE-5)", () => {
+  function field(label: string): string | null {
+    return screen.getByText(label, { selector: "dt" }).nextElementSibling?.textContent ?? null;
+  }
+
+  it("rows for mode, strict network, lockrot's result and the root package, each as written", () => {
+    renderIn(
+      loadModel("wallabag_offline-strict-unchecked-0.13.json"),
+      stateWith({ view: "run" }),
+      <RunView />,
+    );
+    expect(field("mode")).toBe("check");
+    expect(field("strict network")).toBe("yes · a failed network lookup fails the run");
+    expect(field("result")).toBe("fails · --strict-network · --fail-on=unchecked");
+    expect(field("root package")).toBe("wallabag/wallabag");
+  });
+
+  it("an unknown mode and cause are shown as written", () => {
+    renderIn(loadModel("mini-0.13-gate-unknown.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("mode")).toBe("audit · another kind of run");
+    expect(field("result")).toBe("fails · --fail-on=copyleft · licence_policy");
+  });
+
+  it("a run that wrote a baseline: no pass, its fail-on not applied", () => {
+    renderIn(loadModel("wallabag_generate-baseline-0.13.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("mode")).toBe("generate_baseline · wrote a baseline, applied no fail-on");
+    expect(field("result")).toBe("wrote a baseline · --fail-on=high not applied");
+  });
+
+  it("--fail-on=none fails on nothing, never 'passes' beside a header that says no gate", () => {
+    renderIn(loadModel("koel_koel-0.13.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("result")).toBe("fails on nothing · --fail-on=none");
+    expect(field("strict network")).toBe("no");
+  });
+
+  it("an older report: an em dash and why, never false or a default", () => {
+    renderIn(loadModel("wallabag_wallabag.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("strict network")).toBe("— not in this document");
+    expect(field("mode")).toBe("— not in this document");
+    expect(field("result")).toBe("— not in this document");
+    expect(field("root package")).toBe("not in this document");
+  });
+
+  it("a gate lockrot left null says so", () => {
+    renderIn(loadModel("mini-0.13-gate-null.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("result")).toBe("— left empty by this run");
+  });
+
+  it("the Run sentence states the result once, naming causes it has not already named", () => {
+    const text = (name: string): string => {
+      renderIn(loadModel(name), stateWith({ view: "run" }), <RunView />);
+      const answer = document.querySelector(".run-answer")?.textContent ?? "";
+      cleanup();
+      return answer;
+    };
+    expect(text("wallabag_baseline-older-0.13.json")).toContain(
+      "It ran with --fail-on=high. It failed on it.",
+    );
+    expect(text("wallabag_offline-strict-unchecked-0.13.json")).toContain(
+      "It ran with --fail-on=unchecked and --strict-network. It failed on both.",
+    );
+    expect(text("mini-0.13-gate-unknown.json")).toContain(
+      "It failed on --fail-on=copyleft and licence_policy.",
+    );
+    expect(text("wallabag_generate-baseline-0.13.json")).toContain(
+      "It ran with --fail-on=high. It wrote a baseline, so it applied no fail-on.",
+    );
+    expect(text("mini-0.13-gate-generate.json")).toContain(
+      "It wrote a baseline, so it applied no fail-on, and failed on --strict-network.",
+    );
+    expect(text("koel_lock-only-0.13.json")).toContain("It passed.");
+    expect(text("koel_koel-0.13.json")).not.toMatch(/passed|failed/);
+    expect(text("wallabag_wallabag.json")).not.toMatch(/passed|failed/);
+  });
+});
+
+describe("the run's gate on a row (PD-GATE-3)", () => {
+  it("a Findings row carries each place's copy, hidden from a screen reader, and describes itself once", () => {
+    const model = loadModel("mini-0.13-edges.json");
+    renderIn(model, stateWith(), <FindingsView />);
+    const row = document.querySelector<HTMLElement>('li.frow[data-pkg="acme/future-step"]');
+    expect(row?.classList.contains("has-gate")).toBe(true);
+    const copies = [...(row?.querySelectorAll(".gate-mark") ?? [])];
+    expect(copies.map((copy) => copy.textContent)).toEqual([
+      "exempt: waiver",
+      "exempt: waiver",
+      "exempt: waiver",
+    ]);
+    expect(copies.every((copy) => copy.getAttribute("aria-hidden") === "true")).toBe(true);
+    const ids = (row?.getAttribute("aria-describedby") ?? "").split(" ");
+    expect(ids.map((id) => document.getElementById(id)?.textContent)).toEqual([
+      "old-promise",
+      "meets the fail-on, exempt: waiver",
+    ]);
+    const failing = document.querySelector<HTMLElement>('li.frow[data-pkg="acme/left"]');
+    const described = (failing?.getAttribute("aria-describedby") ?? "").split(" ");
+    expect(document.getElementById(described[1] ?? "")?.textContent).toBe("fails this run");
+    const accepted = document.querySelector<HTMLElement>('li.frow[data-pkg="acme/untagged"]');
+    expect(accepted?.querySelector(".gate-mark")?.textContent).toBe("accepted");
+  });
+
+  it("no mark and only the verdict as description on a report without a gate", () => {
+    renderIn(loadModel("mini-0.13-gate-null.json"), stateWith(), <FindingsView />);
+    expect(document.querySelector(".gate-mark")).toBeNull();
+    expect(document.querySelector("li.frow.has-gate")).toBeNull();
+  });
+
+  it("an All packages row says it fails beside its name", () => {
+    renderIn(
+      loadModel("koel_no-token-unchecked-0.13.json"),
+      stateWith({ view: "packages" }),
+      <PackagesView />,
+    );
+    const row = document.querySelector('tr[data-pkg="brianium/paratest"]');
+    expect(row?.querySelector(".pk-name .gate-mark")?.textContent).toBe("fails this run");
+    const id = row?.getAttribute("aria-describedby") ?? "";
+    expect(document.getElementById(id)?.textContent).toBe("fails this run");
   });
 });
