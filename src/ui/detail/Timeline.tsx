@@ -1,6 +1,7 @@
-import { useState } from "preact/hooks";
-import type { ExplainMetadata } from "../../model/types";
+import { useId, useState } from "preact/hooks";
+import type { BranchRow, ExplainMetadata } from "../../model/types";
 import { ageZone, releaseThresholds } from "../../domain/age";
+import { floorsList, floorsSentence, foldWords, readFloors } from "../../domain/floors";
 import {
   timelineModel,
   yearsSince,
@@ -11,6 +12,8 @@ import {
 import type { Tone } from "../../domain/vocab";
 import { useReport } from "../context";
 import { Answer, DatedBy, Key } from "./TimelineAnswer";
+import { FloorsPanel, FloorWords, FLOORS_KEY } from "./TimelineFloors";
+import { DisclosureButton, useDisclosure } from "../common/Disclosure";
 import { FoldRows, GuideCaptions, LaneRow, Sr, at, type Guide, type TopWord } from "./TimelineRows";
 import { placeYears } from "./timelineAxis";
 import "./timeline.css";
@@ -32,8 +35,17 @@ export function Timeline({
 }) {
   const { model, now } = useReport();
   const [openFolds, setOpenFolds] = useState<readonly string[]>([]);
+  const floorsId = `${useId()}-floors`;
+  const disclosure = useDisclosure(FLOORS_KEY);
   const timeline = timelineModel(metadata?.branches ?? [], snapshot, installedVersion, now);
   if (timeline === null) return null;
+
+  const floors = readFloors(model.report.run, model.report.absent);
+  const rowsOf = (branches: readonly string[]): BranchRow[] =>
+    (metadata?.branches ?? []).filter((row) => branches.includes(row.branch));
+  const drawn = rowsOf(timeline.lanes.map((lane) => lane.branch));
+  const sentence = floorsSentence(drawn, floors);
+  const groups = floorsList(drawn, floors);
 
   const thresholds = releaseThresholds(model.report.run.thresholds);
   // A snapshot's date is a checkout, not a release: it never takes the release-age tone.
@@ -67,7 +79,36 @@ export function Timeline({
         installedVersion={installedVersion}
         tone={timeline.mine ? toneOf(timeline.mine) : null}
         topWord={topWord}
+        after={
+          sentence !== null && (
+            <>
+              {" "}
+              <FloorWords parts={sentence} />
+              {groups.length > 0 && !disclosure.printed && (
+                <>
+                  {" "}
+                  <DisclosureButton
+                    id={`${floorsId}-btn`}
+                    label="Each branch"
+                    open={disclosure.open}
+                    controls={floorsId}
+                    onToggle={disclosure.toggle}
+                  />
+                </>
+              )}
+            </>
+          )
+        }
       />
+      {sentence !== null && groups.length > 0 && (
+        <FloorsPanel
+          id={floorsId}
+          open={disclosure.open}
+          labelledBy={disclosure.printed ? undefined : `${floorsId}-btn`}
+          floors={floors}
+          groups={groups}
+        />
+      )}
       <div
         role="table"
         className="detail-timeline-grid"
@@ -101,6 +142,7 @@ export function Timeline({
             <FoldRows
               key={row.which}
               fold={row}
+              words={foldWords(rowsOf(row.lanes.map((lane) => lane.branch)), floors)}
               open={openFolds.includes(row.which)}
               onToggle={() => {
                 toggle(row.which);

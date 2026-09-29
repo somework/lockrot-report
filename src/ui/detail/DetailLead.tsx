@@ -57,6 +57,8 @@ function AnswerNode({ part }: { part: AnswerPart }) {
     case "name":
       // A package the lock lists opens (PD-PROSE-1); a branch, a version or a constraint stays words.
       return <PkgMention name={part.text} className="detail-answer-name" />;
+    case "code":
+      return <code className="detail-answer-code">{part.text}</code>;
     case "figure":
       return (
         <b

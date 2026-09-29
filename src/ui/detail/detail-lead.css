@@ -35,6 +35,14 @@
   font-weight: 600;
   overflow-wrap: anywhere;
 }
+/* A key or a value as written: quieter than a name, the sentence's weight, and never broken. */
+.detail-answer-code {
+  font-family: var(--mono);
+  font-size: 0.8em;
+  font-weight: 400;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
 .detail-answer-figure {
   font-weight: 600;
   white-space: nowrap;

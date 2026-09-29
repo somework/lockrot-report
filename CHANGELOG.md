@@ -23,6 +23,15 @@ tag or the address format, says so under **Breaking** in its entry.
   one line under its pills whether it fails this run and which fail-on it meets.
 - Run data gains strict network, mode and, where lockrot decided the gate, result rows; its sentence
   says whether the run failed and on what.
+- Release branches say which branches the project's PHP can take. One clause ends the sentence
+  about newer branches — "Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x needs
+  a newer PHP than your require.php" — from the branches newer than yours and yours, each way a
+  branch misses as lockrot wrote it. "Each branch" opens every branch by standing, runs of alike
+  branches as "0.7.x – 0.1.x (7)", and stays open from one package to the next; a closed fold row
+  says what it hides ("3 stop before both"). A report that names no project floor says so once.
+- A left-behind package whose newest branch the project cannot take says which one it can: "its
+  last release was 4.5 years ago; 7.x fits your require.php, 8.x needs a newer PHP", or "no newer
+  branch fits your require.php"; its row says "5.x stopped; 7.x fits" instead of "8.x ships".
 - Blast radius names the flagged packages lockrot counts under no direct requirement because too
   many share them: one sentence under the table ("league/config (stale) is left out of Blast
   radius: 9 direct requirements share it, more than 8"). "Who shares it" opens a dot per

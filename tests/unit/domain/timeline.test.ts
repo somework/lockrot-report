@@ -29,6 +29,7 @@ function makeBranch(overrides: Partial<BranchRow> = {}): BranchRow {
     phpBlockedBy: null,
     missesTargetPhp: null,
     missesProjectPhp: null,
+    floorFields: false,
     ...overrides,
   };
 }

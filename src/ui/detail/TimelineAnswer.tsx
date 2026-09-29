@@ -17,11 +17,14 @@ export function Answer({
   installedVersion,
   tone,
   topWord,
+  after,
 }: {
   timeline: TimelineModel;
   installedVersion: string;
   tone: Tone | null;
   topWord: TopWord;
+  /** More of the sub-sentence's paragraph: the branches against the run's PHP floors. */
+  after?: ComponentChildren;
 }) {
   const { now } = useReport();
   const { mine, top, releasesOnly } = timeline;
@@ -126,7 +129,10 @@ export function Answer({
   return (
     <>
       <p className="detail-timeline-answer">{lead}</p>
-      <p className="detail-timeline-sub">{sub}</p>
+      <p className="detail-timeline-sub">
+        {sub}
+        {after}
+      </p>
     </>
   );
 }

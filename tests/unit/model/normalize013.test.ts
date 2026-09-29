@@ -167,6 +167,14 @@ describe("branch rows: admits_*, php_blocked_by, misses_*", () => {
     expect(row.missesProjectPhp).toBeNull();
   });
 
+  test("floorFields: written keys, even null, are an answer; none written is a document before 0.13.0", () => {
+    expect(onlyRow(withRow({ admits_target_php: null })).floorFields).toBe(true);
+    expect(onlyRow(withRow({ misses_project_php: "skips" })).floorFields).toBe(true);
+    expect(onlyRow(withRow({})).floorFields).toBe(false);
+    expect(allRows(load("wallabag_wallabag.json")).some((r) => r.floorFields)).toBe(false);
+    expect(allRows(load("wallabag_wallabag-0.13.json")).every((r) => r.floorFields)).toBe(true);
+  });
+
   test("a row that leaves one key out answers null for that key only", () => {
     const row = onlyRow(withRow({ admits_target_php: false, misses_target_php: "stops_before" }));
 

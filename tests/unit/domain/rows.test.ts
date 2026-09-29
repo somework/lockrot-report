@@ -90,6 +90,18 @@ describe("shortFact (PD-ROWS-4)", () => {
     expect(shortFact(makeSignal({ id: "S10", summary: "a long sentence" }), f)).toBe("a check could not run");
   });
 
+  it("S8 with the newest out of reach names the branch S8 can move to, or that none fits", () => {
+    const s8 = (extra: Record<string, unknown>) =>
+      shortFact(makeSignal({ id: "S8", data: { branch: "5.x", newest_branch: "8.x", ...extra } }), f);
+    const out = { newest_within_reach: false, floor_source: "project", floor_php: ">=8.2" };
+    expect(s8({ ...out, reachable_branch: "7.x" })).toBe("5.x stopped; 7.x fits");
+    expect(s8({ ...out, reachable_branch: null })).toBe("5.x stopped; none fits");
+    expect(s8({ ...out, floor_source: "extension", reachable_branch: null })).toBe("5.x stopped; none fits");
+    expect(s8({ newest_within_reach: true, reachable_branch: "8.x" })).toBe("5.x stopped; 8.x ships");
+    expect(s8({ newest_within_reach: null })).toBe("5.x stopped; 8.x ships");
+    expect(s8({ newest_within_reach: false, floor_source: null })).toBe("5.x stopped; 8.x ships");
+  });
+
   it("prefers the finding's own resolved replacement over S1's raw one", () => {
     const replaced = makeFinding({ replacement: "acme/new" });
     expect(shortFact(makeSignal({ id: "S1", data: { replacement: "Acme" } }), replaced)).toBe(

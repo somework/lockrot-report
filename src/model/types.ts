@@ -319,6 +319,8 @@ export interface BranchRow {
   missesTargetPhp: string | null;
   /** Which side of the project's floor `php` is on when it does not admit it, as written. */
   missesProjectPhp: string | null;
+  /** False when none of the five keys above is written: a document before 0.13.0 says nothing. */
+  floorFields: boolean;
 }
 
 export interface ExplainActivity {

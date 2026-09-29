@@ -2009,29 +2009,37 @@ describe("open vocabularies (lockrot 0.13): a value this page does not know is s
     ]);
   });
 
-  it("acme/left: an unknown floor_source is S8 data as written, and the release branches draw no 0.13 row field", () => {
+  it("acme/left: an unknown floor_source and php_blocked_by are shown as written, never a raw known code", () => {
     const { container } = renderDetail(EDGES_013, "acme/left");
     const s8 = firedRow(container, "S8");
     const data = Array.from(s8?.querySelectorAll("dl.detail-data > dt") ?? []);
     const floor = data.find((dt) => dt.textContent === "floor source");
     expect(words(floor?.nextElementSibling)).toBe("extension");
 
-    const timeline = container.querySelector(".detail-timeline")?.cloneNode(true) ?? null;
-    expect(timeline).not.toBeNull();
-    for (const value of ["extension", "needs_newer", "stops_before", "project"]) {
+    const timeline = container.querySelector(".detail-timeline");
+    expect(Array.from(timeline?.querySelectorAll("code") ?? [], (c) => c.textContent)).toContain("extension");
+    for (const value of ["needs_newer", "stops_before", "project"]) {
       expect(timeline?.textContent).not.toContain(value);
     }
     cleanup();
-    // The page draws none of the admission keys yet: the section is the same without them.
+    // A document without the row keys draws less through the same code: no floors words at all.
     const without = renderDetail(edgesWithoutRowKeys(), "acme/left").container;
-    expect(without.querySelector(".detail-timeline")?.isEqualNode(timeline)).toBe(true);
+    const older = without.querySelector(".detail-timeline");
+    expect(older?.querySelector(".detail-timeline-floors")).toBeNull();
+    expect(older?.querySelector(".l1-btn")).toBeNull();
+    expect(older?.querySelector(".detail-timeline-sub")?.textContent).not.toContain("admit");
   });
 
-  it("acme/floors: every misses_* side, an unknown one included, draws the detail it has without them", () => {
-    const now = renderDetail(EDGES_013, "acme/floors").container.cloneNode(true);
+  it("acme/floors: every misses_* side is worded, an unknown one as written; without them nothing is", () => {
+    const now = renderDetail(EDGES_013, "acme/floors").container;
+    const panel = now.querySelector(".detail-timeline-floors");
+    expect(panel?.textContent).toContain("does not admit PHP 8.4 (lockrot: straddles)");
+    expect(panel?.textContent).toContain("admits no PHP version");
+    expect(now.querySelector(".detail-timeline-fold-words")?.textContent).toContain("4 do not admit both");
     cleanup();
     const without = renderDetail(edgesWithoutRowKeys(), "acme/floors").container;
-    expect(without.isEqualNode(now)).toBe(true);
-    expect(now.textContent).not.toContain("straddles");
+    expect(without.querySelector(".detail-timeline-floors")).toBeNull();
+    expect(without.querySelector(".detail-timeline-fold-words")).toBeNull();
+    expect(without.textContent).not.toContain("straddles");
   });
 });

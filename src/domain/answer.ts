@@ -11,6 +11,7 @@ import {
   type AgeLegend,
   type Thresholds,
 } from "./age";
+import { moveClause } from "./floors";
 import { pinnedKind, readPinnedFacts } from "./pinned";
 import { safeHref } from "./links";
 import { installedBranch, noFixTally, type NoFixTally } from "./priority";
@@ -21,6 +22,8 @@ export type AnswerPart =
   | { readonly kind: "text"; readonly text: string }
   /** A package, branch, version or constraint — set in mono. */
   | { readonly kind: "name"; readonly text: string }
+  /** A key or a value as written (`require.php`, an unknown floor): mono, never a link. */
+  | { readonly kind: "code"; readonly text: string }
   /** `tone` is an age's zone or the advisory count's weight; `null` leaves it in ink. */
   | { readonly kind: "figure"; readonly text: string; readonly tone: Tone | null }
   /** `href` is `replacement_url`, only for a package lockrot resolved. */
@@ -111,7 +114,9 @@ function verdictClause(
         age(years, release, false),
         text(" ago"),
       ];
-      if (newest !== null) parts.push(text(" while "), name(newest), text(" kept releasing"));
+      const move = moveClause(s8, details?.metadata?.branches ?? []);
+      if (move !== null) parts.push(...move);
+      else if (newest !== null) parts.push(text(" while "), name(newest), text(" kept releasing"));
       parts.push(text("."));
       return parts;
     }
