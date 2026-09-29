@@ -7,6 +7,8 @@ import {
   gateHeadline,
   unflaggedFilters,
   type GateClause,
+  type GateFlag,
+  type GateHeadline,
   type RunGate,
 } from "../../domain/gate";
 import { applyFilters } from "../../domain/filters";
@@ -24,13 +26,38 @@ function Sep() {
   return <span className="gate-sep"> · </span>;
 }
 
-/** The header's fact: "this run fails · --fail-on=high". Words only; the summary explains. */
+/** "--strict-network and licence_policy": a cause this page has no words for, as written. */
+function FlagList({ flags, separator }: { flags: readonly GateFlag[]; separator?: string }) {
+  return (
+    <>
+      {flags.map((flag, i) => (
+        <span key={flag.text}>
+          {i === 0 ? "" : (separator ?? (i === flags.length - 1 ? " and " : ", "))}
+          {flag.known ? <Flag text={flag.text} /> : <code className="mono gate-flag">{flag.text}</code>}
+        </span>
+      ))}
+    </>
+  );
+}
+
+/** The header's words as one line of text, for the fact's tooltip when its flags are hidden. */
+function headlineTitle({ who, verb, flags, unapplied }: GateHeadline): string {
+  const head = verb === null ? who : `${who} ${verb}`;
+  const tail = [
+    ...flags.map((flag) => flag.text),
+    ...(unapplied === null ? [] : [`${unapplied} not applied`]),
+  ];
+  return tail.length === 0 ? head : `${head} · ${tail.join(", ")}`;
+}
+
+/** The header's fact: "this run fails · --fail-on=high". Words only; the summary explains. Where the
+ *  flags would push the page's buttons onto a second row, Header.tsx hides them from sight only. */
 export function GateHeadlineText({ gate }: { gate: RunGate }) {
   const { model } = useReport();
   const words = gateHeadline(gate, model.report.run.mode);
   const { who, verb, flags, unapplied } = words;
   return (
-    <span className="gate-fact">
+    <span className="gate-fact" title={headlineTitle(words)}>
       {who}
       {verb !== null && (
         <>
@@ -38,16 +65,15 @@ export function GateHeadlineText({ gate }: { gate: RunGate }) {
           <b className={verb === "fails" ? "gate-word is-fails" : "gate-word"}>{verb}</b>
         </>
       )}
-      {(flags.length > 0 || unapplied !== null) && <Sep />}
-      {flags.map((flag, i) => (
-        <span key={flag.text}>
-          {i > 0 && ", "}
-          {flag.known ? <Flag text={flag.text} /> : <code className="mono gate-flag">{flag.text}</code>}
-        </span>
-      ))}
-      {unapplied !== null && (
-        <span className="gate-quiet">
-          <Flag text={unapplied} /> not applied
+      {(flags.length > 0 || unapplied !== null) && (
+        <span className="gate-fact-more">
+          <Sep />
+          <FlagList flags={flags} separator=", " />
+          {unapplied !== null && (
+            <span className="gate-quiet">
+              <Flag text={unapplied} /> not applied
+            </span>
+          )}
         </span>
       )}
     </span>
@@ -148,6 +174,12 @@ export function GateClauseText({
         <>
           {lead(fail(clause.total))}
           <FailingSplit clause={clause} />
+        </>
+      );
+    case "tripped":
+      return (
+        <>
+          {lead(`${opening ? "This" : "the"} run fails`)} by <FlagList flags={clause.flags} />
         </>
       );
     case "none-fail":

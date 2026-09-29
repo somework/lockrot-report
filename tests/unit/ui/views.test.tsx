@@ -1754,7 +1754,7 @@ describe("RadiusView: the shared tail (PD-RADIUS-12)", () => {
     expect(sentence()).toContain("acme/s (quantum-flux) is left out");
   });
 
-  it("says 'matching' under a filter when it counts", () => {
+  it("names the packages a filter keeps, most shared first, each with its count", () => {
     const model = tailModel(
       [shared("acme/s", ["acme/a"]), shared("acme/t", ["acme/a"]), shared("other/u", ["acme/a"])],
       [
@@ -1767,7 +1767,86 @@ describe("RadiusView: the shared tail (PD-RADIUS-12)", () => {
     renderIn(model, stateWith({ view: "radius", q: "acme/" }), <RadiusView />);
 
     expect(sentence()).toBe(
-      "2 matching flagged packages are left out of Blast radius: 9 to 12 direct requirements share each, more than 8. Which 2",
+      "acme/t (12) and acme/s (9) are left out: each is shared by more than 8 direct requirements.",
+    );
+    expect(screen.getByRole("button", { name: "direct requirements: who shares them" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "acme/t" }).title).toBe("Open acme/t");
+  });
+
+  it("names three beside a wide table and one in a narrow one, then how many more; an unreadable count is no number", () => {
+    const pkgs = ["acme/p", "acme/q", "acme/r", "acme/s", "acme/t"];
+    const model = tailModel(
+      pkgs.map((pkg) => shared(pkg, ["acme/a"])),
+      pkgs.map((pkg, i) => ({ package: pkg, verdict: "stale", fanIn: i === 1 ? null : 20 - i })),
+    );
+
+    renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    const line = document.querySelector(".rl-shared-line");
+    const read = (hidden: string): string => {
+      const copy = line?.cloneNode(true) as Element;
+      copy.querySelectorAll(hidden).forEach((el) => {
+        el.remove();
+      });
+      return copy.textContent;
+    };
+    expect(read(".rl-sh-narrow")).toBe(
+      "acme/p (20), acme/r (18), acme/s (17) and 2 more are left out: each is shared by more than 8 direct requirements.",
+    );
+    expect(read(".rl-sh-wide")).toBe(
+      "acme/p (20) and 4 more are left out: each is shared by more than 8 direct requirements.",
+    );
+  });
+
+  it("three entries: 'and' before the last beside a wide table, 'and 2 more' in a narrow one", () => {
+    const pkgs = ["acme/p", "acme/q", "acme/r"];
+    const model = tailModel(
+      pkgs.map((pkg) => shared(pkg, ["acme/a"])),
+      pkgs.map((pkg, i) => ({ package: pkg, verdict: "stale", fanIn: 12 - i })),
+    );
+
+    renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    expect([...document.querySelectorAll(".rl-sh-wide")].map((el) => el.textContent)).toEqual([
+      ", acme/q (11)",
+      " and acme/r (10)",
+    ]);
+    expect(document.querySelector(".rl-sh-narrow")?.textContent).toBe(" and 2 more");
+  });
+
+  it("with no rule, says what the list means and still opens who shares them", () => {
+    const model = tailModel(
+      [shared("acme/s", ["acme/a"]), shared("acme/t", ["acme/a"])],
+      [
+        { package: "acme/s", verdict: "stale", fanIn: 9 },
+        { package: "acme/t", verdict: "stale", fanIn: null },
+      ],
+      { exposureRule: null },
+    );
+
+    renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    expect(sentence()).toBe(
+      "acme/s (9) and acme/t are left out: lockrot counts them under no direct requirement.",
+    );
+    expect(screen.getByRole("button", { name: "direct requirement: who shares them" })).toBeTruthy();
+  });
+
+  it("the requirements each sits under stay whole names, one per unit", () => {
+    const model = tailModel(
+      [shared("acme/s", ["acme/a", "dama/doctrine-test-bundle"]), shared("acme/t", ["acme/b"])],
+      [
+        { package: "acme/s", verdict: "stale", fanIn: 9 },
+        { package: "acme/t", verdict: "stale", fanIn: 9 },
+      ],
+    );
+
+    renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    const units = [...document.querySelectorAll(".rl-sh-dep")].map((el) => el.textContent);
+    expect(units).toEqual(["acme/a,", "dama/doctrine-test-bundle", "acme/b"]);
+    expect(document.querySelector(".rl-sh-names")?.textContent).toBe(
+      "sits under acme/a, dama/doctrine-test-bundle",
     );
   });
 
@@ -2417,6 +2496,49 @@ describe("signal ids this page does not know (0.13 open vocabulary)", () => {
   });
 });
 
+describe("Run data notes: the repositories a note counts", () => {
+  it("opens the list under the note that counts them, as plain text, and nothing for other codes", () => {
+    const { dispatch } = renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "run" }), <RunView />);
+    const buttons = screen.getAllByRole("button", { name: "Which one: the repository" });
+    expect(buttons).toHaveLength(4);
+    const first = buttons[0];
+    if (first === undefined) throw new Error("no button");
+    expect(first.getAttribute("aria-expanded")).toBe("false");
+    const panel = document.getElementById(first.getAttribute("aria-controls") ?? "");
+    expect(panel?.hidden).toBe(true);
+    expect(panel?.textContent).toBe("github.com/acme/direct-d — API rate limit exceeded for 203.0.113.7.");
+    expect(panel?.querySelector("a")).toBeNull();
+    fireEvent.click(first);
+    expect(dispatch).toHaveBeenCalledWith({ type: "disclose", key: "run-note:14", open: true });
+    const note = first.closest(".note");
+    expect(note?.textContent).toContain(
+      "GitHub API rate limit reached; repository activity missing for 1 repositories",
+    );
+    const cap = screen.getByText(/GitHub token not set/).closest(".note");
+    expect(cap?.querySelector(".l1-btn")).toBeNull();
+  });
+
+  it("an open note lists every repository, a message only where lockrot wrote one", () => {
+    renderIn(
+      loadModel("mini-0.13-edges.json"),
+      stateWith({ view: "run", disclosure: { "run-note:16": true } }),
+      <RunView />,
+    );
+    const panel = document.getElementById(
+      screen
+        .getAllByRole("button", { name: "Which one: the repository" })[2]
+        ?.getAttribute("aria-controls") ?? "",
+    );
+    expect(panel?.hidden).toBe(false);
+    expect(panel?.textContent).toBe("github.com/acme/direct-f");
+  });
+
+  it("an older report's notes carry no data and draw no list", () => {
+    renderIn(loadModel("wallabag_wallabag.json"), stateWith({ view: "run" }), <RunView />);
+    expect(document.querySelector(".note-repos")).toBeNull();
+  });
+});
+
 describe("the run's gate on Run data (PD-GATE-5)", () => {
   function field(label: string): string | null {
     return screen.getByText(label, { selector: "dt" }).nextElementSibling?.textContent ?? null;
@@ -2431,8 +2553,18 @@ describe("the run's gate on Run data (PD-GATE-5)", () => {
     expect(field("mode")).toBe("check");
     expect(field("strict network")).toBe("yes · a failed network lookup fails the run");
     expect(field("result")).toBe("fails · --strict-network · --fail-on=unchecked");
-    // Out of this change's scope: Phase 3 adds it.
-    expect(screen.queryByText("root package", { selector: "dt" })).toBeNull();
+  });
+
+  it("the root package as written beside the project; an em dash and why when there is none", () => {
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("project")).toBe("Acme shop");
+    expect(field("root package")).toBe("acme/shop");
+    cleanup();
+    renderIn(loadModel("mini-0.13-edges-lock-only.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("root package")).toBe("— left empty by this run");
+    cleanup();
+    renderIn(loadModel("wallabag_wallabag.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("root package")).toBe("— not in this document");
   });
 
   it("an unknown mode and cause are shown as written", () => {

@@ -7,7 +7,6 @@ import { gateFlag } from "../../domain/gate";
 import { EMPTY_FILTERS } from "../../state/types";
 import { fixed, plural } from "../../domain/format";
 import { unmeasuredWords } from "../../domain/libyears";
-import { safeHref } from "../../domain/links";
 import {
   cacheAge,
   cacheNullReason,
@@ -21,7 +20,8 @@ import {
 } from "../../domain/run";
 import { RunAnswer } from "./RunAnswer";
 import { RunThresholds } from "./RunThresholds";
-import { OutLink, NoWrap } from "../common/common";
+import { OutLink } from "../common/common";
+import { RunNote } from "./RunNote";
 import "./views.css";
 import "./baseline.css";
 import "./run.css";
@@ -268,6 +268,10 @@ function fieldGroups(model: Model): readonly FieldGroup[] {
         },
         { label: "generated", value: utcMinute(report.generatedAt) },
         { label: "project", value: orReason(report, "run.project", run.project) },
+        {
+          label: "root package",
+          value: run.rootPackage === null ? dashOr(report, "run.root_package") : run.rootPackage,
+        },
         { label: "lock file", value: orReason(report, "run.lock_file", run.lockFile) },
         { label: "target PHP", value: orReason(report, "run.target_php", run.targetPhp) },
         {
@@ -464,23 +468,10 @@ export function RunView() {
           <h3 ref={notesRef} tabIndex={-1} className="run-jump-target">
             What this run could not see
           </h3>
-          {report.notes.map((note, index) => {
+          {report.notes.map((note, index) => (
             // Entries line up with notes by place; a code repeats, and so can a text.
-            const docs = safeHref(report.noteDetails[index]?.docsUrl ?? null);
-            return (
-              <div className="note" key={index}>
-                {note}
-                {docs !== null && (
-                  <>
-                    {" "}
-                    <NoWrap>
-                      <OutLink href={docs}>what this means</OutLink>
-                    </NoWrap>
-                  </>
-                )}
-              </div>
-            );
-          })}
+            <RunNote key={index} text={note} detail={report.noteDetails[index]} index={index} />
+          ))}
         </section>
       )}
 

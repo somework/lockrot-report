@@ -55,30 +55,57 @@ function oneShare({ fanIn }: SharedEntry, max: number | null): ComponentChildren
   return <>lockrot counts it under no direct requirement</>;
 }
 
-function manyShare({ fanIn, maxFanIn }: SharedTail): ComponentChildren {
-  if (fanIn !== null) {
-    const count =
-      fanIn.low === fanIn.high ? (
-        <b>{fanIn.low}</b>
-      ) : (
-        <>
-          <b>{fanIn.low}</b> to <b>{fanIn.high}</b>
-        </>
-      );
-    return (
-      <>
-        {count} direct requirements share each{more(maxFanIn)}
-      </>
-    );
-  }
-  if (maxFanIn !== null) {
-    return (
-      <>
-        more than <b>{maxFanIn}</b> direct requirements share each
-      </>
-    );
-  }
-  return <>lockrot counts them under no direct requirement</>;
+/** "each is shared by more than 8 direct requirements", where the requirements open level 1; each
+ *  name already carries its own count. */
+function manyShare(
+  max: number | null,
+  requirements: (words: string) => ComponentChildren,
+): ComponentChildren {
+  if (max === null) return <>lockrot counts them under no {requirements("direct requirement")}</>;
+  return (
+    <>
+      each is shared by more than <b>{max}</b> {requirements("direct requirements")}
+    </>
+  );
+}
+
+/** How many names the sentence spells out before "and N more" beside a wide table; a narrow one names
+ *  a pair in full and one of a longer list, so it keeps to two lines. The rest open with the dots. */
+const NAMES_IN_LINE = 3;
+
+function namesInNarrowLine(count: number): number {
+  return count === 2 ? 2 : 1;
+}
+
+function More({ n, className }: { n: number; className: string }) {
+  if (n <= 0) return null;
+  return (
+    <span className={className}>
+      {" "}
+      and <b>{n}</b> more
+    </span>
+  );
+}
+
+/** "doctrine/cache (11) and symfony/security-guard (9)", each name whole on its line. */
+function EntryNames({ entries }: { entries: readonly SharedEntry[] }) {
+  const named = entries.slice(0, NAMES_IN_LINE);
+  const narrow = namesInNarrowLine(entries.length);
+  return (
+    <>
+      {named.map(({ finding, fanIn }, i) => (
+        <span key={finding.package} className={i < narrow ? undefined : "rl-sh-wide"}>
+          {i === 0 ? "" : i === entries.length - 1 ? " and " : ", "}
+          <span className="fl-unit">
+            <OpenName name={finding.package} />
+            {fanIn !== null && <span className="rl-paren"> ({fanIn})</span>}
+          </span>
+        </span>
+      ))}
+      <More n={entries.length - named.length} className="rl-sh-wide" />
+      <More n={entries.length - narrow} className="rl-sh-narrow" />
+    </>
+  );
 }
 
 /** One dot per direct requirement sharing it, filled up to the limit and hollow past it; the dashed
@@ -130,7 +157,15 @@ function Names({ pkg, names, clamp }: { pkg: string; names: readonly string[]; c
     <div className="rl-sh-deps">
       <p ref={ref} id={id} className={clamped ? "rl-sh-names is-clamped" : "rl-sh-names"}>
         <span className="rl-sh-under">sits under </span>
-        {names.join(", ")}
+        {names.map((name, i) => (
+          <span key={name}>
+            {i > 0 && " "}
+            <span className="rl-sh-dep">
+              {name}
+              {i < names.length - 1 && ","}
+            </span>
+          </span>
+        ))}
       </p>
       {clamp && !printed && (open || overflows) && (
         <DisclosureButton
@@ -205,7 +240,7 @@ function hasBody(tail: SharedTail): boolean {
  * The flagged packages lockrot counts under no direct requirement (`unattributed`), under the table:
  * one sentence, and on request the dots against the limit and the requirements each sits under.
  */
-export function SharedTailNote({ findings, narrowed }: { findings: readonly Finding[]; narrowed: boolean }) {
+export function SharedTailNote({ findings }: { findings: readonly Finding[] }) {
   const { model } = useReport();
   const base = useId();
   const { open, toggle, printed } = useDisclosure(SHARED_KEY);
@@ -224,25 +259,26 @@ export function SharedTailNote({ findings, narrowed }: { findings: readonly Find
           entries.map((e) => e.fanIn),
           max,
         );
-  const button = body && !printed && (
-    <>
-      {" "}
+  const disclose = (label: string, name?: string): ComponentChildren =>
+    body && !printed ? (
       <DisclosureButton
         id={buttonId}
-        label={many ? `Which ${String(entries.length)}` : "Who shares it"}
+        label={label}
+        name={name}
         open={open}
         controls={panelId}
         onToggle={toggle}
       />
-    </>
-  );
+    ) : (
+      label
+    );
   return (
     <div className="rl-shared">
       <p className="rl-shared-line">
         {many || lone === undefined ? (
           <>
-            <b>{entries.length}</b> {narrowed ? "matching " : ""}flagged packages are left out of Blast
-            radius: {manyShare(tail)}.
+            <EntryNames entries={entries} /> are left out:{" "}
+            {manyShare(max, (words) => disclose(words, `${words}: who shares them`))}.
           </>
         ) : (
           <>
@@ -253,9 +289,9 @@ export function SharedTailNote({ findings, narrowed }: { findings: readonly Find
               </span>
             </span>{" "}
             is left out of Blast radius: {oneShare(lone, max)}.
+            {body && !printed && <> {disclose("Who shares it")}</>}
           </>
         )}
-        {button}
       </p>
       {body && (
         <DisclosurePanel

@@ -136,6 +136,8 @@ export type GateClause =
       /** What the unflagged failing packages are called: why they fail, where the fail-on says. */
       readonly unflaggedAs: string;
     }
+  /** The run fails and no finding does: only its other causes, as flags, failed it. */
+  | { readonly kind: "tripped"; readonly flags: readonly GateFlag[] }
   | { readonly kind: "none-fail"; readonly meets: number }
   | { readonly kind: "unapplied"; readonly meets: number; readonly failOn: string };
 
@@ -148,6 +150,12 @@ export function gateClause(gate: RunGate): GateClause | null {
       unflagged: gate.failingUnflagged,
       unflaggedAs: gate.failOnKind === "unchecked" ? "unchecked" : "not flagged",
     };
+  }
+  if (gate.outcome === "fails") {
+    const flags = gate.causes
+      .filter((cause) => cause !== "fail_on")
+      .map((cause) => gateFlag(cause, gate.failOn));
+    if (flags.length > 0) return { kind: "tripped", flags };
   }
   if (gate.meets === 0) return null;
   if (gate.failOnApplied === false && gate.failOn !== null) {

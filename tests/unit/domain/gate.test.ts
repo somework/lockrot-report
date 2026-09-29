@@ -215,9 +215,30 @@ describe("gateClause", () => {
     });
   });
 
-  it("nothing to add when no finding meets it or only the network failed", () => {
+  it("nothing to add when no finding meets it and the run passes", () => {
     expect(gateClause(decided("koel_lock-only-0.13"))).toBeNull();
-    expect(gateClause(decided("wallabag_offline-strict-0.13"))).toBeNull();
+  });
+
+  it("a run no finding fails, failed by its other causes, says which", () => {
+    const strict = { kind: "tripped", flags: [{ text: "--strict-network", known: true }] };
+    expect(gateClause(decided("wallabag_offline-strict-0.13"))).toEqual(strict);
+    // The fail-on it did not apply is level 1's to say; failing is the answer.
+    expect(gateClause(decided("mini-0.13-gate-generate"))).toEqual(strict);
+  });
+
+  it("an unknown cause fails the run as written, and a finding that fails still leads", () => {
+    const gate = decided("mini-0.13-gate-unknown");
+    expect(gateClause({ ...gate, failing: 0, failingFlagged: 0 })).toEqual({
+      kind: "tripped",
+      flags: [{ text: "licence_policy", known: false }],
+    });
+    expect(gateClause(gate)?.kind).toBe("failing");
+    expect(gateClause(decided("wallabag_offline-strict-unchecked-0.13"))?.kind).toBe("failing");
+  });
+
+  it("a run failed on its fail-on alone with no failing finding adds no cause", () => {
+    const gate = decided("mini-0.13-gate-verdict");
+    expect(gateClause({ ...gate, failing: 0, failingFlagged: 0, meets: 0 })).toBeNull();
   });
 });
 

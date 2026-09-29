@@ -240,6 +240,63 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
   }
 });
 
+test.describe("PD-GATE-2: a run no finding fails says what failed it", () => {
+  for (const fixture of [FIXTURES.wallabagOfflineStrict013, FIXTURES.miniGateGenerate013] as const) {
+    test(`${fixture}: 'This run fails by --strict-network', one line at 390 and 1440`, async ({ page }) => {
+      for (const width of [390, 1440]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(pageUrl(fixture));
+        const line = page.locator(".lead-gate");
+        await expect(line).toHaveText("This run fails by --strict-network.");
+        const rows = await line.evaluate(
+          (el) => el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight),
+        );
+        expect(rows, `at ${String(width)}px`).toBeLessThan(1.5);
+      }
+      await page.getByRole("button", { name: "This run fails" }).click();
+      await expect(page.locator(".gate-why")).toContainText(
+        "A network lookup failed, and this run fails when one does.",
+      );
+    });
+  }
+});
+
+test.describe("PD-GATE-1: the header keeps the page's buttons on one row", () => {
+  const rowOf = (page: Page) =>
+    page.evaluate(() => {
+      const top = (sel: string) => Math.round(document.querySelector(sel)?.getBoundingClientRect().top ?? -1);
+      const more = document.querySelector(".gate-fact-more");
+      return {
+        same: top(".run-actions:not(.share-actions)") === top(".share-actions"),
+        hidden: more === null ? null : getComputedStyle(more).clipPath !== "none",
+      };
+    });
+
+  for (const fixture of [FIXTURES.wallabagGenerateBaseline013, FIXTURES.miniGateGenerate013] as const) {
+    test(`${fixture}: at 1024 the flags leave the line to the buttons, and stay for a screen reader`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1024, height: 900 });
+      await page.goto(pageUrl(fixture));
+      expect(await rowOf(page)).toEqual({ same: true, hidden: true });
+      await expect(page.locator(".gate-fact")).toContainText(/ · --(strict-network|fail-on not applied)$/);
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await expect.poll(() => rowOf(page)).toEqual({ same: true, hidden: false });
+    });
+  }
+
+  test("on paper the header says its flags whatever the screen hid", async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 900 });
+    await page.goto(pageUrl(FIXTURES.miniGateGenerate013));
+    await page.emulateMedia({ media: "print" });
+    const hidden = await page
+      .locator(".gate-fact-more")
+      .first()
+      .evaluate((el) => getComputedStyle(el).clipPath);
+    expect(hidden).toBe("none");
+  });
+});
+
 test.describe("PD-GATE-4: the 'Fails this run' filter and its address", () => {
   test("the rail's row lists the failing findings and round-trips through the address", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -293,6 +350,18 @@ test.describe("PD-GATE-5: Run data's rows", () => {
     await expect(report.runField("mode")).toHaveText("check");
     await expect(report.runField("strict network")).toHaveText("yes · a failed network lookup fails the run");
     await expect(report.runField("result")).toHaveText("fails · --strict-network · --fail-on=unchecked");
+    await expect(report.runField("project")).toHaveText("wallabag/wallabag");
+    await expect(report.runField("root package")).toHaveText("wallabag/wallabag");
+  });
+
+  test("the root package as written, and an em dash and why where the run names none", async () => {
+    await report.gotoWithHash(FIXTURES.miniEdges013, "view=run");
+    await expect(report.runField("project")).toHaveText("Acme shop");
+    await expect(report.runField("root package")).toHaveText("acme/shop");
+    await report.gotoWithHash(FIXTURES.miniEdgesLockOnly013, "view=run");
+    await expect(report.runField("root package")).toHaveText("— left empty by this run");
+    await report.gotoWithHash(FIXTURES.wallabag, "view=run");
+    await expect(report.runField("root package")).toHaveText("— not in this document");
   });
 
   test("an older report: strict network is an em dash and why, never 'no', and no result row", async ({

@@ -596,7 +596,7 @@ export function RadiusView() {
             : "No direct requirement drags a flagged package in."}
         </p>
         <ScopeNote layout={layout} />
-        <SharedTailNote findings={layout.unattributed} narrowed={layout.narrowed} />
+        <SharedTailNote findings={layout.unattributed} />
         <Unlisted findings={layout.unlisted} />
       </div>
     );
@@ -779,7 +779,7 @@ export function RadiusView() {
           </ul>
         </div>
       )}
-      <SharedTailNote findings={layout.unattributed} narrowed={layout.narrowed} />
+      <SharedTailNote findings={layout.unattributed} />
       <Unlisted findings={layout.unlisted} />
     </div>
   );

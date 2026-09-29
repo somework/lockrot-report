@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Model, PackageDetails } from "../../../src/model/types";
 import {
+  noteRepositories,
   activityTally,
   cacheAge,
   cacheNullReason,
@@ -215,5 +216,54 @@ describe("failOnThreshold", () => {
     // The page cannot tell a verdict from a priority by the value alone.
     expect(failOnThreshold(run("high", null))).toBeNull();
     expect(failOnThreshold(run(null, null))).toBeNull();
+  });
+});
+
+describe("noteRepositories", () => {
+  const note = (code: string, data: Record<string, unknown>) => ({
+    code,
+    text: "t",
+    docsUrl: null,
+    setsNetworkFailures: true,
+    data,
+  });
+
+  it("lists each repository as host/repo, with its message when it has one", () => {
+    const data = {
+      forge_id: "github",
+      repositories: [
+        { host: "github.com", repo: "acme/direct-d", message: "API rate limit exceeded." },
+        { host: "codeberg.org", repo: "acme/direct-i" },
+      ],
+    };
+    for (const code of [
+      "repository_activity_rate_limited",
+      "repository_activity_unreachable",
+      "repository_activity_not_found",
+    ]) {
+      expect(noteRepositories(note(code, data)), code).toEqual([
+        { name: "github.com/acme/direct-d", message: "API rate limit exceeded." },
+        { name: "codeberg.org/acme/direct-i", message: null },
+      ]);
+    }
+  });
+
+  it("reads no data for another code, an unknown one or a missing entry", () => {
+    const data = { repositories: [{ host: "github.com", repo: "acme/x" }] };
+    expect(noteRepositories(note("repository_activity_anonymous_cap", data))).toEqual([]);
+    expect(noteRepositories(note("forge_outage", data))).toEqual([]);
+    expect(noteRepositories(undefined)).toEqual([]);
+  });
+
+  it("keeps what an odd entry has and drops one with neither host nor repo", () => {
+    const data = {
+      repositories: [{ repo: "acme/only-repo" }, { host: "gitlab.com", message: 7 }, null, "x", {}],
+    };
+    expect(noteRepositories(note("repository_activity_not_found", data))).toEqual([
+      { name: "acme/only-repo", message: null },
+      { name: "gitlab.com", message: null },
+    ]);
+    expect(noteRepositories(note("repository_activity_not_found", { repositories: null }))).toEqual([]);
+    expect(noteRepositories(note("repository_activity_not_found", {}))).toEqual([]);
   });
 });

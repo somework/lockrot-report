@@ -692,6 +692,30 @@ describe("layout", () => {
     expect(document.querySelector(".gate-fact")?.textContent).toBe("baseline run fails · --strict-network");
   });
 
+  test("a run that only --strict-network failed says so under the lead, and level 1 keeps the fail-on", () => {
+    render(<App model={loadModel("wallabag_offline-strict-0.13")} />);
+    expect(document.querySelector(".lead-gate")?.textContent).toBe("This run fails by --strict-network.");
+    cleanup();
+    render(<App model={loadModel("mini-0.13-gate-generate")} />);
+    expect(document.querySelector(".lead-gate")?.textContent).toBe("This run fails by --strict-network.");
+    fireEvent.click(screen.getByRole("button", { name: "This run fails" }));
+    const panel = document.querySelector(".gate-why")?.textContent ?? "";
+    expect(panel).toContain("A network lookup failed, and this run fails when one does.");
+    expect(panel).toContain("This run wrote a baseline, so it was not applied; 14 packages meet it.");
+  });
+
+  test("the header's flags sit apart from its verdict, and its tooltip says them all", () => {
+    render(<App model={loadModel("mini-0.13-gate-generate")} />);
+    const fact = document.querySelector(".gate-fact");
+    expect(fact?.getAttribute("title")).toBe("baseline run fails · --strict-network");
+    expect(fact?.querySelector(".gate-fact-more")?.textContent).toBe(" · --strict-network");
+    cleanup();
+    render(<App model={loadModel("wallabag_generate-baseline-0.13")} />);
+    expect(document.querySelector(".gate-fact")?.getAttribute("title")).toBe(
+      "baseline run · --fail-on not applied",
+    );
+  });
+
   // PD-GATE-2: every failing package first, then flagged and not flagged apart, the latter by why.
   test("without a baseline the lead goes on: the total that fails, then flagged and unchecked", () => {
     render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);

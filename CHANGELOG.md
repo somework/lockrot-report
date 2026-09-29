@@ -21,8 +21,13 @@ tag or the address format, says so under **Breaking** in its entry.
   a line with room, so no row grows, in one place per layout so the words form a column down the
   list; a screen reader hears it with the row. The open package says in
   one line under its pills whether it fails this run and which fail-on it meets.
-- Run data gains strict network, mode and, where lockrot decided the gate, result rows; its sentence
-  says whether the run failed and on what.
+- Run data gains root package, strict network, mode and, where lockrot decided the gate, result
+  rows; its sentence says whether the run failed and on what. A note that counts the repositories
+  whose activity is missing (rate limited, unreachable, not found) lists them on request, each with
+  lockrot's message, and prints them.
+- A run that fails while no package does says so under the lead: "This run fails by
+  --strict-network". Where the header's flags would push its buttons onto a second row, they leave
+  the line to the buttons; a screen reader, the tooltip and paper keep them.
 - Release branches say which branches the project's PHP can take. One clause ends the sentence
   about newer branches, yours first — "Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP
   8.4; 8.x admits only PHP 8.4" — then the branches newer than yours, each way a branch misses as
@@ -46,9 +51,11 @@ tag or the address format, says so under **Breaking** in its entry.
   "snapshot; no tag at all", "snapshot; tags unknown", and search finds them.
 - Blast radius names the flagged packages lockrot counts under no direct requirement because too
   many share them: one sentence under the table ("league/config (stale) is left out of Blast
-  radius: 9 direct requirements share it, more than 8"). "Who shares it" opens a dot per
-  requirement against the limit of 8 and the requirements it sits under, and prints open. Each name
-  opens its detail, and the rail on the tab counts them.
+  radius: 9 direct requirements share it, more than 8"); two or more are named with their counts,
+  "doctrine/cache (11) and symfony/security-guard (9) are left out: each is shared by more than 8
+  direct requirements". "Who shares it", or "direct requirements", opens a dot per requirement
+  against the limit of 8 and the requirements each sits under, whole names, and prints open. Each
+  name opens its detail, and the rail on the tab counts them.
 
 - All packages on a phone: under 480px the rows stack — name and version, then the verdict, the
   libyears bar and how it gets in, with the priority as the row's left rule — instead of a table

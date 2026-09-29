@@ -5,7 +5,7 @@
  * `generated_at`.
  */
 
-import type { Finding, Model, PackageDetails, ReportModel, RunSettings } from "../model/types";
+import type { Finding, Model, NoteDetail, PackageDetails, ReportModel, RunSettings } from "../model/types";
 import { yearsPhrase } from "./format";
 
 const MS_PER_HOUR = 3600 * 1000;
@@ -209,4 +209,35 @@ export function replacementInWordsOnly(model: Model): number {
       finding.replacement === null &&
       namesReplacementInWords(finding, model.details),
   ).length;
+}
+
+/** The notes whose `data.repositories` names what their text only counts. */
+const REPOSITORY_NOTES: readonly string[] = [
+  "repository_activity_rate_limited",
+  "repository_activity_unreachable",
+  "repository_activity_not_found",
+];
+
+export interface NoteRepository {
+  /** `host/repo` as written, or whichever of the two the entry has. */
+  readonly name: string;
+  readonly message: string | null;
+}
+
+function text(value: unknown): string | null {
+  return typeof value === "string" && value !== "" ? value : null;
+}
+
+/** The repositories a note lists and its text does not; empty for any other code, whose data this
+ *  page does not read. */
+export function noteRepositories(note: NoteDetail | undefined): readonly NoteRepository[] {
+  if (note === undefined || !REPOSITORY_NOTES.includes(note.code)) return [];
+  const listed = note.data["repositories"];
+  if (!Array.isArray(listed)) return [];
+  return listed.flatMap((entry: unknown): NoteRepository[] => {
+    if (typeof entry !== "object" || entry === null) return [];
+    const rec = entry as Record<string, unknown>;
+    const name = [text(rec["host"]), text(rec["repo"])].filter((part) => part !== null).join("/");
+    return name === "" ? [] : [{ name, message: text(rec["message"]) }];
+  });
 }

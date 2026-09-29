@@ -14,6 +14,21 @@ async function radius(page: Page, fixture: FixtureName, width = 1440): Promise<v
 }
 
 const line = (page: Page) => page.locator(".rl-shared-line");
+/** The sentence as drawn: without the variant the table's width hides. */
+const shown = async (page: Page): Promise<string> =>
+  line(page).evaluate((el) => {
+    const copy = el.cloneNode(true) as HTMLElement;
+    const all = [...el.querySelectorAll("*")];
+    [...copy.querySelectorAll("*")]
+      .filter((_, i) => {
+        const source = all[i];
+        return source !== undefined && getComputedStyle(source).display === "none";
+      })
+      .forEach((node) => {
+        node.remove();
+      });
+    return copy.textContent;
+  });
 const lines = async (page: Page): Promise<number> =>
   line(page).evaluate((el) => {
     const height = el.getBoundingClientRect().height;
@@ -46,19 +61,47 @@ test.describe("PD-RADIUS-12: the shared tail", () => {
     });
   }
 
-  test("more than one entry: counted at level 0, named with verdicts and fan_in at level 1, most shared first", async ({
+  test("more than one entry: named with fan_in at level 0, with verdicts and dots at level 1, most shared first", async ({
     page,
   }) => {
     await radius(page, FIXTURES.wallabagGenerateBaseline013);
 
     await expect(line(page)).toHaveText(
-      "2 flagged packages are left out of Blast radius: 9 to 11 direct requirements share each, more than 8. Which 2",
+      "doctrine/cache (11) and symfony/security-guard (9) are left out: each is shared by more than 8 direct requirements.",
     );
-    await page.getByRole("button", { name: "Which 2", exact: true }).click();
+    await page.getByRole("button", { name: "direct requirements: who shares them", exact: true }).click();
     const names = page.locator(".rl-sh-name");
     await expect(names).toHaveText(["doctrine/cache abandoned", "symfony/security-guard abandoned"]);
     await expect(page.locator(".rl-sh-n")).toHaveText(["11 share it", "9 share it"]);
     await expect(page.locator(".rl-sh-names").first()).toContainText("sits under craue/config-bundle");
+  });
+
+  test("a name in 'sits under' moves to the next line whole, never broken at its hyphen", async ({
+    page,
+  }) => {
+    for (const width of [320, 390]) {
+      await radius(page, FIXTURES.wallabagGenerateBaseline013, width);
+      await page.getByRole("button", { name: "direct requirements: who shares them", exact: true }).click();
+      const broken = await page.locator(".rl-sh-dep").evaluateAll((deps) =>
+        deps
+          .filter((dep) => {
+            const range = document.createRange();
+            range.selectNodeContents(dep);
+            const tops = new Set([...range.getClientRects()].map((r) => Math.round(r.top)));
+            return tops.size > 1;
+          })
+          .map((dep) => dep.textContent),
+      );
+      expect(broken, `at ${String(width)}px`).toEqual([]);
+    }
+  });
+
+  test("beside a wide table the sentence names three packages, then how many more", async ({ page }) => {
+    await radius(page, FIXTURES.sharedMany);
+
+    expect(await shown(page)).toBe(
+      "acme/polyfill-mbstring (97), acme/log (64), acme/event-contracts (40) and 9 more are left out: each is shared by more than 8 direct requirements.",
+    );
   });
 
   test("level 1 opens by keyboard, is named by its words alone, and is labelled by what opened it", async ({
@@ -117,10 +160,10 @@ test.describe("PD-RADIUS-12: the shared tail", () => {
   }) => {
     await radius(page, FIXTURES.sharedMany, 390);
 
-    await expect(line(page)).toHaveText(
-      "12 flagged packages are left out of Blast radius: 9 to 97 direct requirements share each, more than 8. Which 12",
+    expect(await shown(page)).toBe(
+      "acme/polyfill-mbstring (97) and 11 more are left out: each is shared by more than 8 direct requirements.",
     );
-    await page.getByRole("button", { name: "Which 12", exact: true }).click();
+    await page.getByRole("button", { name: "direct requirements: who shares them", exact: true }).click();
     const first = page.locator(".rl-sh-item").first();
     await expect(first.locator(".rl-sh-dot")).toHaveCount(16);
     await expect(first.locator(".rl-sh-clip")).toHaveText("…");
@@ -215,7 +258,7 @@ test.describe("PD-RADIUS-12: the shared tail", () => {
     test(`axe finds nothing serious with level 1 open, ${colorScheme}`, async ({ page }) => {
       await page.emulateMedia({ colorScheme });
       await radius(page, FIXTURES.wallabagGenerateBaseline013);
-      await page.getByRole("button", { name: "Which 2", exact: true }).click();
+      await page.getByRole("button", { name: "direct requirements: who shares them", exact: true }).click();
 
       const results = await new AxeBuilder({ page }).include(".rl-shared").analyze();
       const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");

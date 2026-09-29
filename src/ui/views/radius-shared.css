@@ -15,8 +15,23 @@
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
 }
+/* A name and its count move to the next line together; only one wider than the line breaks. */
 .rl-shared .fl-unit {
+  display: inline-block;
+  max-width: 100%;
   white-space: normal;
+}
+/* A narrow table's sentence names one package fewer (RadiusShared.tsx), so it keeps to two lines. */
+.rl-sh-wide {
+  display: none;
+}
+@container rl (min-width: 600px) {
+  .rl-sh-wide {
+    display: inline;
+  }
+  .rl-sh-narrow {
+    display: none;
+  }
 }
 /* Two footnotes about what the table leaves out, kept apart so they never read as one list. */
 .rl-shared + .rl-foot {
@@ -130,6 +145,11 @@
   color: var(--muted);
   overflow-wrap: anywhere;
 }
+/* A name moves to the next line whole; only one wider than the line breaks inside. */
+.rl-sh-dep {
+  display: inline-block;
+  max-width: 100%;
+}
 .rl-sh-names.is-clamped {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -190,6 +210,11 @@
   .rl-sh-dot {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+  }
+  /* A name moves to the next line whole; only one wider than the line breaks inside. */
+  .rl-sh-dep {
+    display: inline-block;
+    max-width: 100%;
   }
   .rl-sh-names.is-clamped {
     display: block;

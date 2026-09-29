@@ -1,4 +1,4 @@
-import type { ComponentChildren } from "preact";
+import type { ComponentChildren, RefObject } from "preact";
 import { useId, useLayoutEffect, useRef } from "preact/hooks";
 import { day } from "../domain/format";
 import { gateFact, runGate } from "../domain/gate";
@@ -34,6 +34,34 @@ function useHeaderHeight() {
   return ref;
 }
 
+/** Hides the gate fact's flags from sight where that keeps the header a line shorter, which is where
+ *  they would push the page's buttons onto a row of their own; the summary below still says them. */
+function fitGateFact(node: HTMLElement): void {
+  delete node.dataset["fact"];
+  if (node.querySelector(".gate-fact-more") === null) return;
+  const full = node.getBoundingClientRect().height;
+  node.dataset["fact"] = "short";
+  if (node.getBoundingClientRect().height >= full) delete node.dataset["fact"];
+}
+
+function useGateFactFit(ref: RefObject<HTMLElement>) {
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (node === null) return undefined;
+    let width = window.innerWidth;
+    fitGateFact(node);
+    const onResize = () => {
+      if (window.innerWidth === width) return;
+      width = window.innerWidth;
+      fitGateFact(node);
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+    };
+  }, [ref]);
+}
+
 export interface HeaderProps {
   theme: Theme;
   onToggleTheme: () => void;
@@ -53,6 +81,7 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
   const { model } = useReport();
   const { run, tool, generatedAt } = model.report;
   const ref = useHeaderHeight();
+  useGateFactFit(ref);
   // The project names itself; the lock is called composer.lock everywhere, so it is the fallback.
   const project = run.project ?? run.lockFile ?? "composer.lock";
   const label = themeButtonLabel(theme);
