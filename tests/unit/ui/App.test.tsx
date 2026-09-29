@@ -653,10 +653,12 @@ describe("layout", () => {
 
   test("beside the gate, a count of the findings whose own gate says they reach it (PD-BASELINE-5)", () => {
     render(<App model={loadModel("mini-0.13-gate-verdict")} />);
-    expect(document.querySelector(".gate-tally")?.textContent).toBe("5 at or above · 2 of them not accepted");
+    expect(document.querySelector(".gate-tally")?.textContent).toBe(
+      "12 at or above · 9 of them not accepted",
+    );
     const button = screen.getByRole("button", { name: /^gate: pinned/ });
     expect(button.getAttribute("title")).toContain(
-      "5 findings in this report are at or above pinned; 2 of them are not already accepted in lockrot-baseline.json.",
+      "12 findings in this report are at or above pinned; 9 of them are not already accepted in lockrot-baseline.json.",
     );
   });
 
@@ -669,7 +671,9 @@ describe("layout", () => {
 
   test("another exemption than the baseline is not counted as not accepted (mini-0.13-edges)", () => {
     render(<App model={loadModel("mini-0.13-edges")} />);
-    expect(document.querySelector(".gate-tally")?.textContent).toBe("7 at or above · 3 of them not accepted");
+    expect(document.querySelector(".gate-tally")?.textContent).toBe(
+      "14 at or above · 10 of them not accepted",
+    );
   });
 
   test("an unchecked threshold's tally says its findings carry S10", () => {
@@ -691,9 +695,8 @@ describe("layout", () => {
     );
     const title = screen.getByRole("button", { name: /^gate: high/ }).getAttribute("title") ?? "";
     expect(title).toContain(
-      "42 findings in this report are at or above high; 12 of them are not already accepted in /",
+      "42 findings in this report are at or above high; 12 of them are not already accepted in wallabag-older.baseline.json. The page",
     );
-    expect(title).toContain("wallabag-older.baseline.json. The page");
     expect(title.endsWith("The page does not record the run's exit code.")).toBe(true);
   });
 

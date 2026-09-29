@@ -106,13 +106,13 @@ test.describe("PD-BASELINE-3: the detail's baseline section comes first", () => 
     await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "pkg=sensio%2Fframework-extra-bundle");
     const exempt = page.getByRole("complementary", { name: "sensio/framework-extra-bundle" });
     await expect(exempt.locator(".detail-baseline")).toHaveText(
-      /^Already accepted in \S+wallabag-older\.baseline\.json as abandoned, so it does not fail this run\.$/,
+      /^Already accepted in wallabag-older\.baseline\.json as abandoned, so it does not fail this run\.$/,
     );
 
     await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "pkg=craue%2Fconfig-bundle");
     const fails = page.getByRole("complementary", { name: "craue/config-bundle" });
     await expect(fails.locator(".detail-baseline")).toHaveText(
-      /^Not in \S+wallabag-older\.baseline\.json: new since it was written\. It fails this run\.$/,
+      /^Not in wallabag-older\.baseline\.json: new since it was written\. It fails this run\.$/,
     );
 
     // Known, but it does not reach fail-on: nothing exempts it, and the build is not mentioned.

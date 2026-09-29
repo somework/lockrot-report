@@ -73,7 +73,7 @@
   },
   "unattributed": [],
   "libyears": {
-   "total": 47.49,
+   "total": 47.55,
    "direct_requirements": 18.72,
    "measured": 151,
    "unmeasured": {
@@ -117,7 +117,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/jwilsson/spotify-web-api-php",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -175,7 +182,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/predis/predis",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -233,7 +247,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/tiben/crontab-manager",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -279,7 +300,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/config",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -334,7 +362,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": false,
+    "origin": {
+     "kind": "vcs",
+     "registry": null,
+     "package_url": null,
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "teamtnt/laravel-scout-tntsearch-driver"
@@ -368,7 +403,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/algolia/algoliasearch-client-php",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "algolia/algoliasearch-client-php"
@@ -402,7 +444,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/enshrined/svg-sanitize",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "enshrined/svg-sanitize"
@@ -436,7 +485,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/ezyang/htmlpurifier",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "ezyang/htmlpurifier"
@@ -470,7 +526,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/fakerphp/faker",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "fakerphp/faker"
@@ -504,7 +567,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/fileeye/mimemap",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "fileeye/mimemap"
@@ -538,7 +608,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/guzzlehttp/guzzle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "guzzlehttp/guzzle"
@@ -582,7 +659,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/http-interop/http-factory-guzzle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "http-interop/http-factory-guzzle"
@@ -616,7 +700,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/intervention/image",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "intervention/image"
@@ -650,7 +741,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/james-heinrich/getid3",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "james-heinrich/getid3"
@@ -684,7 +782,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/jaybizzle/crawler-detect",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "jaybizzle/crawler-detect"
@@ -718,7 +823,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/laravel/ai",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/ai"
@@ -752,7 +864,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/laravel/framework",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -807,7 +926,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/laravel/helpers",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/helpers"
@@ -841,7 +967,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/laravel/nightwatch",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -896,7 +1029,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/laravel/prompts",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/prompts"
@@ -933,7 +1073,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/laravel/sanctum",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/sanctum"
@@ -967,7 +1114,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/laravel/scout",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/scout"
@@ -1002,7 +1156,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/laravel/socialite",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/socialite"
@@ -1036,7 +1197,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/laravel/tinker",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/tinker"
@@ -1070,7 +1238,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/laravel/ui",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/ui"
@@ -1104,7 +1279,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/flysystem-aws-s3-v3",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-aws-s3-v3"
@@ -1138,7 +1320,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/flysystem-sftp-v3",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-sftp-v3"
@@ -1172,7 +1361,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/flysystem-webdav",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-webdav"
@@ -1206,7 +1402,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/meilisearch/meilisearch-php",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "meilisearch/meilisearch-php"
@@ -1240,7 +1443,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/mlocati/ip-lib",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "mlocati/ip-lib"
@@ -1274,7 +1484,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/nunomaduro/collision",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "nunomaduro/collision"
@@ -1308,7 +1525,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/owen-it/laravel-auditing",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "owen-it/laravel-auditing"
@@ -1342,7 +1566,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phanan/poddle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phanan/poddle"
@@ -1376,7 +1607,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/pusher/pusher-php-server",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "pusher/pusher-php-server"
@@ -1410,7 +1648,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/robthree/twofactorauth",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "robthree/twofactorauth"
@@ -1444,7 +1689,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/saloonphp/laravel-plugin",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "saloonphp/laravel-plugin"
@@ -1478,7 +1730,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/saloonphp/saloon",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "saloonphp/saloon"
@@ -1513,7 +1772,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sentry/sentry-laravel",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "sentry/sentry-laravel"
@@ -1547,7 +1813,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/spatie/flysystem-dropbox",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/flysystem-dropbox"
@@ -1581,7 +1854,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/spatie/laravel-permission",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/laravel-permission"
@@ -1615,7 +1895,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/spatie/laravel-ray",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/laravel-ray"
@@ -1649,7 +1936,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/webmozart/assert",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "webmozart/assert"
@@ -1684,7 +1978,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/aws/aws-crt-php",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-aws-s3-v3",
@@ -1721,7 +2022,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/aws/aws-sdk-php",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-aws-s3-v3",
@@ -1735,7 +2043,7 @@
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.34,
+    "libyears": 0.35,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -1757,7 +2065,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/brick/math",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -1794,7 +2109,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/carbonphp/carbon-doctrine-types",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -1831,7 +2153,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/dflydev/dot-access-data",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -1869,7 +2198,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/inflector",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -1905,7 +2241,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/lexer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -1942,7 +2285,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/dragonmantank/cron-expression",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -1978,7 +2328,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/egulias/email-validator",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2014,7 +2371,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/filp/whoops",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "nunomaduro/collision",
@@ -2049,7 +2413,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/firebase/php-jwt",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/socialite",
@@ -2062,7 +2433,7 @@
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0.47,
+    "libyears": 0.49,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -2084,7 +2455,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/fruitcake/php-cors",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2120,7 +2498,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/graham-campbell/guzzle-factory",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/flysystem-dropbox",
@@ -2156,7 +2541,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/graham-campbell/result-type",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2193,7 +2585,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/guzzlehttp/promises",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2238,7 +2637,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/guzzlehttp/psr7",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "guzzlehttp/guzzle",
@@ -2286,7 +2692,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/guzzlehttp/uri-template",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2322,7 +2735,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/intervention/gif",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "intervention/image",
@@ -2357,7 +2777,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/jean85/pretty-package-versions",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "sentry/sentry-laravel",
@@ -2393,7 +2820,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/laravel/serializable-closure",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2431,7 +2865,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/commonmark",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2467,7 +2908,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/flysystem",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2507,7 +2955,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/flysystem-local",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2547,7 +3002,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/mime-type-detection",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-aws-s3-v3",
@@ -2587,7 +3049,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/oauth1-client",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/socialite",
@@ -2622,7 +3091,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/uri",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2658,7 +3134,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/uri-interfaces",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2695,7 +3178,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/monolog/monolog",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2731,7 +3221,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/mtdowling/jmespath.php",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-aws-s3-v3",
@@ -2768,7 +3265,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/nesbot/carbon",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2804,7 +3308,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/nette/schema",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2842,7 +3353,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/nette/utils",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2881,7 +3399,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/nikic/php-parser",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/tinker",
@@ -2917,7 +3442,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/nunomaduro/termwind",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -2954,7 +3486,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/nyholm/psr7",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "sentry/sentry-laravel",
@@ -2989,7 +3528,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/paragonie/constant_time_encoding",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/socialite",
@@ -3026,7 +3572,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/paragonie/random_compat",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -3088,7 +3641,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/php-di/invoker",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/laravel-ray",
@@ -3125,7 +3685,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/php-di/php-di",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/laravel-ray",
@@ -3161,7 +3728,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/php-http/discovery",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "meilisearch/meilisearch-php",
@@ -3196,7 +3770,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/php-standard-library/php-standard-library",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phanan/poddle",
@@ -3233,7 +3814,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpoption/phpoption",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -3270,7 +3858,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpseclib/phpseclib",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/socialite",
@@ -3306,7 +3901,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/clock",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -3355,7 +3957,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/container",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -3413,7 +4022,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/event-dispatcher",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -3475,7 +4091,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/http-client",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -3533,7 +4156,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/http-factory",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "http-interop/http-factory-guzzle",
@@ -3581,7 +4211,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/http-message",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -3643,7 +4280,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/log",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -3685,7 +4329,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/simple-cache",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -3734,7 +4385,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psy/psysh",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/tinker",
@@ -3769,7 +4427,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/ralouphie/getallheaders",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -3843,7 +4508,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/ramsey/collection",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -3881,7 +4553,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/ramsey/uuid",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -3918,7 +4597,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/revolt/event-loop",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phanan/poddle",
@@ -3956,7 +4642,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sabre/dav",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-webdav",
@@ -3991,7 +4684,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sabre/event",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-webdav",
@@ -4027,7 +4727,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sabre/http",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-webdav",
@@ -4063,7 +4770,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sabre/uri",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-webdav",
@@ -4099,7 +4813,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sabre/vobject",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-webdav",
@@ -4135,7 +4856,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sabre/xml",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-webdav",
@@ -4171,7 +4899,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/saloonphp/xml-wrangler",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phanan/poddle",
@@ -4206,7 +4941,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sentry/sentry",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "sentry/sentry-laravel",
@@ -4241,7 +4983,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/spatie/array-to-xml",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phanan/poddle",
@@ -4277,7 +5026,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/spatie/backtrace",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/laravel-ray",
@@ -4312,7 +5068,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/spatie/dropbox-api",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/flysystem-dropbox",
@@ -4347,7 +5110,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/spatie/macroable",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/laravel-ray",
@@ -4383,7 +5153,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/spatie/ray",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/laravel-ray",
@@ -4418,7 +5195,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/clock",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -4455,7 +5239,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/console",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -4499,7 +5290,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/css-selector",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -4536,7 +5334,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/deprecation-contracts",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "guzzlehttp/guzzle",
@@ -4592,7 +5397,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/error-handler",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -4628,7 +5440,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/event-dispatcher",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -4665,7 +5484,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/event-dispatcher-contracts",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -4703,7 +5529,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/filesystem",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/flysystem-aws-s3-v3",
@@ -4740,7 +5573,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/finder",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -4777,7 +5617,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/http-foundation",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -4814,7 +5661,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/http-kernel",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -4850,7 +5704,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/mailer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -4886,7 +5747,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/mime",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -4922,7 +5790,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/options-resolver",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "sentry/sentry-laravel",
@@ -4958,7 +5833,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-ctype",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5004,7 +5886,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-iconv",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/laravel-ray",
@@ -5041,7 +5930,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-intl-grapheme",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5087,7 +5983,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-intl-idn",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5124,7 +6027,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-intl-normalizer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5170,7 +6080,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-mbstring",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5218,7 +6135,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-php80",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "guzzlehttp/guzzle",
@@ -5266,7 +6190,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-php81",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "meilisearch/meilisearch-php",
@@ -5301,7 +6232,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-php83",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5339,7 +6277,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-php84",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5375,7 +6320,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-php85",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5411,7 +6363,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-php86",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5447,7 +6406,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-uuid",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5484,7 +6450,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/process",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5520,7 +6493,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/psr-http-message-bridge",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "sentry/sentry-laravel",
@@ -5555,7 +6535,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/routing",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5591,7 +6578,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/service-contracts",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5637,7 +6631,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/stopwatch",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/laravel-ray",
@@ -5672,7 +6673,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/string",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5717,7 +6725,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/translation",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5754,7 +6769,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/translation-contracts",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5792,7 +6814,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/uid",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5828,7 +6857,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/var-dumper",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5866,7 +6902,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/teamtnt/tntsearch",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "teamtnt/laravel-scout-tntsearch-driver",
@@ -5901,7 +6944,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/tijsverkoyen/css-to-inline-styles",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -5937,7 +6987,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/veewee/xml",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phanan/poddle",
@@ -5973,7 +7030,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/vlucas/phpdotenv",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -6009,7 +7073,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/voku/portable-ascii",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laravel/framework",
@@ -6045,7 +7116,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/zbateson/mail-mime-parser",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/laravel-ray",
@@ -6058,7 +7136,7 @@
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
+    "libyears": 0.04,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -6080,7 +7158,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/zbateson/mb-wrapper",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/laravel-ray",
@@ -6116,7 +7201,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/zbateson/stream-decorators",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "spatie/laravel-ray",
@@ -6669,7 +7761,7 @@
     "forge": "GitHub",
     "repository": "thephpleague/config",
     "archived": false,
-    "pushed_at": "2026-09-27T03:21:32+00:00",
+    "pushed_at": "2026-09-29T03:56:21+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -8055,7 +9147,7 @@
     "forge": "GitHub",
     "repository": "laravel/ai",
     "archived": false,
-    "pushed_at": "2026-09-25T20:21:28+00:00",
+    "pushed_at": "2026-09-29T02:00:01+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -8251,7 +9343,7 @@
     "forge": "GitHub",
     "repository": "laravel/framework",
     "archived": false,
-    "pushed_at": "2026-09-28T01:17:24+00:00",
+    "pushed_at": "2026-09-29T03:42:54+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -8571,7 +9663,7 @@
     "forge": "GitHub",
     "repository": "laravel/sanctum",
     "archived": false,
-    "pushed_at": "2026-09-17T19:26:05+00:00",
+    "pushed_at": "2026-09-28T14:58:02+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -11359,7 +12451,7 @@
     "forge": "GitHub",
     "repository": "getsentry/sentry-laravel",
     "archived": false,
-    "pushed_at": "2026-09-23T14:34:18+00:00",
+    "pushed_at": "2026-09-28T12:37:08+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -11821,10 +12913,10 @@
    "metadata": {
     "abandoned": false,
     "replacement": null,
-    "releases_listed": 2531,
+    "releases_listed": 2532,
     "has_stable_release": true,
-    "last_stable_release": "2026-09-25T18:11:40+00:00",
-    "last_stable_version": "3.398.1",
+    "last_stable_release": "2026-09-28T18:18:23+00:00",
+    "last_stable_version": "3.398.2",
     "last_stable_dated_by": null,
     "installed_release": "2026-05-22T18:09:49+00:00",
     "installed_release_dated_by": null,
@@ -11835,11 +12927,11 @@
      {
       "branch": "3.x",
       "installed": true,
-      "highest": "3.398.1",
-      "highest_released": "2026-09-25T18:11:40+00:00",
+      "highest": "3.398.2",
+      "highest_released": "2026-09-28T18:18:23+00:00",
       "highest_commit_date": null,
-      "newest_dated": "3.398.1",
-      "newest_dated_released": "2026-09-25T18:11:40+00:00",
+      "newest_dated": "3.398.2",
+      "newest_dated_released": "2026-09-28T18:18:23+00:00",
       "dated_by": null,
       "php": ">=8.1",
       "admits_target_php": true,
@@ -11879,7 +12971,7 @@
     "forge": "GitHub",
     "repository": "aws/aws-sdk-php",
     "archived": false,
-    "pushed_at": "2026-09-26T20:42:55+00:00",
+    "pushed_at": "2026-09-28T23:01:16+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -12865,10 +13957,10 @@
    "metadata": {
     "abandoned": false,
     "replacement": null,
-    "releases_listed": 43,
+    "releases_listed": 44,
     "has_stable_release": true,
-    "last_stable_release": "2026-09-21T19:29:58+00:00",
-    "last_stable_version": "v7.2.0",
+    "last_stable_release": "2026-09-28T17:51:46+00:00",
+    "last_stable_version": "v7.2.1",
     "last_stable_dated_by": null,
     "installed_release": "2026-04-01T20:38:03+00:00",
     "installed_release_dated_by": null,
@@ -12879,11 +13971,11 @@
      {
       "branch": "7.x",
       "installed": true,
-      "highest": "v7.2.0",
-      "highest_released": "2026-09-21T19:29:58+00:00",
+      "highest": "v7.2.1",
+      "highest_released": "2026-09-28T17:51:46+00:00",
       "highest_commit_date": null,
-      "newest_dated": "v7.2.0",
-      "newest_dated_released": "2026-09-21T19:29:58+00:00",
+      "newest_dated": "v7.2.1",
+      "newest_dated_released": "2026-09-28T17:51:46+00:00",
       "dated_by": null,
       "php": "^8.0",
       "admits_target_php": true,
@@ -13003,7 +14095,7 @@
     "forge": "GitHub",
     "repository": "googleapis/php-jwt",
     "archived": false,
-    "pushed_at": "2026-09-21T19:57:17+00:00",
+    "pushed_at": "2026-09-28T18:08:20+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -14179,7 +15271,7 @@
     "forge": "GitHub",
     "repository": "thephpleague/commonmark",
     "archived": false,
-    "pushed_at": "2026-09-28T00:09:22+00:00",
+    "pushed_at": "2026-09-29T00:08:57+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -15047,7 +16139,7 @@
     "forge": "GitHub",
     "repository": "CarbonPHP/carbon",
     "archived": false,
-    "pushed_at": "2026-09-27T14:46:45+00:00",
+    "pushed_at": "2026-09-28T07:49:42+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -15315,7 +16407,7 @@
     "forge": "GitHub",
     "repository": "nikic/PHP-Parser",
     "archived": false,
-    "pushed_at": "2026-09-26T19:05:51+00:00",
+    "pushed_at": "2026-09-28T19:31:45+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -16548,7 +17640,7 @@
     "forge": "GitHub",
     "repository": "phpseclib/phpseclib",
     "archived": false,
-    "pushed_at": "2026-09-24T05:52:33+00:00",
+    "pushed_at": "2026-09-29T04:30:32+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -19417,7 +20509,7 @@
     "forge": "GitHub",
     "repository": "getsentry/sentry-php",
     "archived": false,
-    "pushed_at": "2026-09-24T13:38:38+00:00",
+    "pushed_at": "2026-09-28T22:22:48+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -21177,7 +22269,7 @@
     "forge": "GitHub",
     "repository": "symfony/http-kernel",
     "archived": false,
-    "pushed_at": "2026-09-26T06:39:54+00:00",
+    "pushed_at": "2026-09-28T08:18:30+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -22618,7 +23710,7 @@
     "forge": "GitHub",
     "repository": "symfony/routing",
     "archived": false,
-    "pushed_at": "2026-09-24T19:17:19+00:00",
+    "pushed_at": "2026-09-28T19:21:55+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -23098,7 +24190,7 @@
     "forge": "GitHub",
     "repository": "symfony/translation",
     "archived": false,
-    "pushed_at": "2026-09-25T14:50:14+00:00",
+    "pushed_at": "2026-09-28T09:55:58+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -24148,10 +25240,10 @@
    "metadata": {
     "abandoned": false,
     "replacement": null,
-    "releases_listed": 76,
+    "releases_listed": 78,
     "has_stable_release": true,
-    "last_stable_release": "2026-09-15T18:09:00+00:00",
-    "last_stable_version": "4.0.5",
+    "last_stable_release": "2026-09-28T20:32:29+00:00",
+    "last_stable_version": "4.0.6",
     "last_stable_dated_by": null,
     "installed_release": "2026-09-15T18:09:00+00:00",
     "installed_release_dated_by": null,
@@ -24162,11 +25254,11 @@
      {
       "branch": "4.x",
       "installed": true,
-      "highest": "4.0.5",
-      "highest_released": "2026-09-15T18:09:00+00:00",
+      "highest": "4.0.6",
+      "highest_released": "2026-09-28T20:32:29+00:00",
       "highest_commit_date": null,
-      "newest_dated": "4.0.5",
-      "newest_dated_released": "2026-09-15T18:09:00+00:00",
+      "newest_dated": "4.0.6",
+      "newest_dated_released": "2026-09-28T20:32:29+00:00",
       "dated_by": null,
       "php": ">=8.1",
       "admits_target_php": true,
@@ -24178,11 +25270,11 @@
      {
       "branch": "3.x",
       "installed": false,
-      "highest": "3.0.8",
-      "highest_released": "2026-09-09T17:40:57+00:00",
+      "highest": "3.0.9",
+      "highest_released": "2026-09-28T20:32:29+00:00",
       "highest_commit_date": null,
-      "newest_dated": "3.0.8",
-      "newest_dated_released": "2026-09-09T17:40:57+00:00",
+      "newest_dated": "3.0.9",
+      "newest_dated_released": "2026-09-28T20:32:29+00:00",
       "dated_by": null,
       "php": ">=8.0",
       "admits_target_php": true,
@@ -24302,7 +25394,7 @@
     "forge": "GitHub",
     "repository": "zbateson/mail-mime-parser",
     "archived": false,
-    "pushed_at": "2026-09-25T14:35:57+00:00",
+    "pushed_at": "2026-09-28T20:35:06+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },

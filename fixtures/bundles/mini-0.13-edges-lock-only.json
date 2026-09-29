@@ -32,9 +32,9 @@
    ]
   },
   "activity_cache_oldest_at": null,
-  "packages_checked": 4,
+  "packages_checked": 5,
   "include_dev": true,
-  "not_from_composer_repository": 0,
+  "not_from_composer_repository": 1,
   "network_failures": false,
   "counts": {
    "abandoned": 0,
@@ -43,7 +43,7 @@
    "left-behind": 1,
    "old-promise": 0,
    "stale": 2,
-   "unknown": 0,
+   "unknown": 1,
    "finished": 0,
    "ok": 0
   },
@@ -56,7 +56,7 @@
    "high": 0,
    "medium": 2,
    "low": 2,
-   "none": 0
+   "none": 1
   },
   "exposure": [],
   "exposure_rule": {
@@ -70,7 +70,7 @@
    "unmeasured": {
     "branch_snapshot": 0,
     "no_stable_release_date": 1,
-    "not_from_composer_repository": 0,
+    "not_from_composer_repository": 1,
     "metadata_unavailable": 0
    },
    "furthest_behind": {
@@ -88,7 +88,8 @@
    "fail_on_applied": true
   },
   "notes": [
-   "GitHub token not set: repository activity checked for 3 candidate packages, 1 packages skipped (set GITHUB_TOKEN to check all)"
+   "GitHub token not set: repository activity checked for 3 candidate packages, 1 packages skipped (set GITHUB_TOKEN to check all)",
+   "1 package is not from a Composer repository and was not checked"
   ],
   "note_details": [
    {
@@ -102,6 +103,15 @@
      "skipped_no_token": 1,
      "skipped_budget": 0
     }
+   },
+   {
+    "code": "not_from_composer_repository",
+    "text": "1 package is not from a Composer repository and was not checked",
+    "docs_url": "https://lockrot.dev/notes/#not_from_composer_repository",
+    "sets_network_failures": false,
+    "data": {
+     "package_count": 1
+    }
    }
   ],
   "findings": [
@@ -113,7 +123,13 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/acme/untagged"
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S6",
@@ -164,7 +180,13 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/acme/left"
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -224,7 +246,13 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/acme/shared-util"
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -272,7 +300,13 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/acme/dev-helper"
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -308,6 +342,42 @@
        "to": "low"
       }
      ]
+    },
+    "no_fix_expected": null,
+    "baseline": null,
+    "gate": {
+     "reaches_fail_on": false,
+     "fails": false,
+     "exempt_by": null
+    }
+   },
+   {
+    "package": "acme/forked-lib",
+    "version": "2.0.1",
+    "verdict": "unknown",
+    "priority": "none",
+    "direct": false,
+    "dev": false,
+    "from_composer_repository": false,
+    "origin": {
+     "kind": "unknown",
+     "registry": null,
+     "package_url": null
+    },
+    "replacement": null,
+    "replacement_url": null,
+    "signals": [],
+    "chain": [],
+    "direct_dependents": [],
+    "evidence": "not from a Composer repository, not checked",
+    "allowlist_reason": null,
+    "note": "not from a Composer repository, not checked",
+    "data_date": null,
+    "libyears": null,
+    "libyears_unmeasured": "not_from_composer_repository",
+    "priority_basis": {
+     "base": "none",
+     "steps": []
     },
     "no_fix_expected": null,
     "baseline": null,

@@ -177,8 +177,8 @@
   },
   "unattributed": [],
   "libyears": {
-   "total": 266.46,
-   "direct_requirements": 126.8,
+   "total": 268.03,
+   "direct_requirements": 127.65,
    "measured": 265,
    "unmeasured": {
     "branch_snapshot": 4,
@@ -193,7 +193,7 @@
    }
   },
   "baseline": {
-   "path": "/Users/kolgarn/phpstorm/personal/lockrot/.private/handoff/0.13-fixtures/baselines/wallabag-older.baseline.json",
+   "path": "wallabag-older.baseline.json",
    "known": 43,
    "new": 24,
    "worsened": 2,
@@ -227,7 +227,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sensio/framework-extra-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -322,7 +329,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/javibravo/simpleue",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -395,7 +409,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/mnapoli/piwik-twig-extension",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -468,7 +489,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/web-server-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -551,7 +579,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/behat/transliterator",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -625,7 +660,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/annotations",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -678,7 +720,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/cache",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -749,7 +798,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/compiler",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -835,7 +891,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/consistency",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -933,7 +996,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/event",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -1020,7 +1090,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/exception",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -1106,7 +1183,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/file",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -1192,7 +1276,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/iterator",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -1279,7 +1370,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/math",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -1366,7 +1464,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/protocol",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -1452,7 +1557,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/regex",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -1539,7 +1651,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/ruler",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -1624,7 +1743,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/stream",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -1711,7 +1837,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/ustring",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -1799,7 +1932,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/visitor",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -1885,7 +2025,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/hoa/zformat",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -1973,7 +2120,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/security-guard",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S1",
@@ -2042,7 +2196,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/grandt/binstring",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -2123,7 +2284,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/grandt/phpresizegif",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -2203,7 +2371,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/grandt/phpzipmerge",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -2284,7 +2459,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/grandt/relativepath",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -2364,7 +2546,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpzip/phpzip",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -2444,7 +2633,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/pragmarx/random",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -2524,7 +2720,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/friendsofsymfony/oauth-server-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -2614,7 +2817,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/wallabag/rulerz",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S6",
@@ -2810,7 +3020,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/wallabag/rulerz-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S6",
@@ -3027,7 +3244,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/craue/config-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -3107,7 +3331,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/event-manager",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -3183,7 +3414,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/lcobucci/jwt",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -3245,7 +3483,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/scheb/2fa-backup-code",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -3347,7 +3592,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/scheb/2fa-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -3431,7 +3683,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/scheb/2fa-email",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -3512,7 +3771,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/scheb/2fa-google-authenticator",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -3631,7 +3897,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/scheb/2fa-trusted-device",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -3733,7 +4006,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/webpack-encore-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -3794,7 +4074,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/spomky-labs/otphp",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -3908,7 +4195,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/mgargano/simplehtmldom",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -3981,7 +4275,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/resource-operations",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S3",
@@ -4040,7 +4341,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/wallabag/rulerz-bridge",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S6",
@@ -4099,7 +4407,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/smalot/pdfparser",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -4167,7 +4482,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/psr-http-message-bridge",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -4235,7 +4557,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/thecodingmachine/safe",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -4304,7 +4633,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/defuse/php-encryption",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -4353,7 +4689,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/pragmarx/recovery",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -4420,7 +4763,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/wallabag/phpepub",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -4521,7 +4871,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpunit/php-file-iterator",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -4594,7 +4951,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpunit/php-invoker",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S5",
@@ -4680,7 +5044,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpunit/php-text-template",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S5",
@@ -4766,7 +5137,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpunit/php-timer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S5",
@@ -4852,7 +5230,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/code-unit",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S5",
@@ -4938,7 +5323,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/code-unit-reverse-lookup",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S5",
@@ -5025,7 +5417,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/environment",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -5098,7 +5497,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/object-enumerator",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S5",
@@ -5184,7 +5590,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/object-reflector",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S5",
@@ -5271,7 +5684,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/type",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -5344,7 +5764,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/version",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S5",
@@ -5430,7 +5857,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/m6web/redis-mock",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -5496,7 +5930,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/clue/ndjson-react",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -5557,7 +5998,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/evenement/evenement",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -5619,7 +6067,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/friendsofsymfony/oauth2-php",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -5675,7 +6130,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phar-io/version",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -5736,7 +6198,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/react/cache",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -5799,7 +6268,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/willdurand/jsonp-callback-validator",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -5867,7 +6343,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/willdurand/negotiation",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -5934,7 +6417,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/babdev/pagerfanta-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "babdev/pagerfanta-bundle"
@@ -5968,7 +6458,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/dama/doctrine-test-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -6022,7 +6519,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/collections",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/collections"
@@ -6061,7 +6565,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/common",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/common"
@@ -6099,7 +6610,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/data-fixtures",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/data-fixtures"
@@ -6134,7 +6652,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/dbal",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/dbal"
@@ -6177,7 +6702,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/doctrine-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -6234,7 +6766,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/doctrine-fixtures-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -6288,7 +6827,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/doctrine-migrations-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -6342,7 +6888,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/migrations",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/migrations"
@@ -6377,7 +6930,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/orm",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -6433,7 +6993,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/persistence",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/persistence"
@@ -6479,7 +7046,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/egulias/email-validator",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "egulias/email-validator"
@@ -6515,7 +7089,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/enshrined/svg-sanitize",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "enshrined/svg-sanitize"
@@ -6549,7 +7130,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/ergebnis/composer-normalize",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "ergebnis/composer-normalize"
@@ -6583,7 +7171,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/friendsofphp/php-cs-fixer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -6655,7 +7250,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/friendsofsymfony/jsrouting-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -6708,7 +7310,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/friendsofsymfony/rest-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -6769,7 +7378,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/friendsofsymfony/user-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -6823,7 +7439,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/friendsoftwig/twigcs",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsoftwig/twigcs"
@@ -6857,7 +7480,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/gregwar/captcha-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "gregwar/captcha-bundle"
@@ -6891,7 +7521,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/guzzlehttp/psr7",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "guzzlehttp/psr7"
@@ -6927,7 +7564,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/html2text/html2text",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "html2text/html2text"
@@ -6961,7 +7605,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/j0k3r/graby",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -7014,7 +7665,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/j0k3r/graby-site-config",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "j0k3r/graby-site-config"
@@ -7049,7 +7707,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/j0k3r/php-readability",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "j0k3r/php-readability"
@@ -7084,7 +7749,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/jms/serializer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "jms/serializer"
@@ -7121,7 +7793,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/jms/serializer-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "jms/serializer-bundle"
@@ -7156,7 +7835,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/laminas/laminas-code",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "laminas/laminas-code"
@@ -7191,7 +7877,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/html-to-markdown",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "league/html-to-markdown"
@@ -7225,7 +7918,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/monolog/monolog",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "monolog/monolog"
@@ -7261,7 +7961,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/nelmio/api-doc-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "nelmio/api-doc-bundle"
@@ -7295,7 +8002,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/nelmio/cors-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "nelmio/cors-bundle"
@@ -7329,7 +8043,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/pagerfanta/core",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "pagerfanta/core"
@@ -7366,7 +8087,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/pagerfanta/doctrine-orm-adapter",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -7420,7 +8148,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/pagerfanta/twig",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S10",
@@ -7476,7 +8211,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/php-amqplib/php-amqplib",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "php-amqplib/php-amqplib"
@@ -7489,7 +8231,7 @@
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 0,
+    "libyears": 0.85,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -7511,7 +8253,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/php-amqplib/rabbitmq-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "php-amqplib/rabbitmq-bundle"
@@ -7545,7 +8294,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/php-http/mock-client",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "php-http/mock-client"
@@ -7579,7 +8335,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpstan/extension-installer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpstan/extension-installer"
@@ -7613,7 +8376,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpstan/phpstan",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpstan/phpstan"
@@ -7652,7 +8422,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpstan/phpstan-doctrine",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpstan/phpstan-doctrine"
@@ -7686,7 +8463,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpstan/phpstan-phpunit",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpstan/phpstan-phpunit"
@@ -7720,7 +8504,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpstan/phpstan-symfony",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpstan/phpstan-symfony"
@@ -7754,7 +8545,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpunit/phpunit",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -7905,7 +8703,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/predis/predis",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "predis/predis"
@@ -7939,7 +8744,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/http-client",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -7987,7 +8799,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/http-factory",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "psr/http-factory"
@@ -8026,7 +8845,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/http-message",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -8080,7 +8906,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/log",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S8",
@@ -8192,7 +9025,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/rector/rector",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "rector/rector"
@@ -8226,7 +9066,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/scssphp/scssphp",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "scssphp/scssphp"
@@ -8260,7 +9107,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sentry/sentry-symfony",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -8313,7 +9167,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/shipmonk/composer-dependency-analyser",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "shipmonk/composer-dependency-analyser"
@@ -8347,7 +9208,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/spiriitlabs/form-filter-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -8401,7 +9269,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/stof/doctrine-extensions-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -8455,7 +9330,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/asset",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/asset"
@@ -8490,7 +9372,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/browser-kit",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/browser-kit"
@@ -8524,7 +9413,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/config",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/config"
@@ -8593,7 +9489,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/console",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/console"
@@ -8644,7 +9547,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/css-selector",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/css-selector"
@@ -8678,7 +9588,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/debug-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/debug-bundle"
@@ -8712,7 +9629,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/dependency-injection",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/dependency-injection"
@@ -8781,7 +9705,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/deprecation-contracts",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/deprecation-contracts"
@@ -8891,7 +9822,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/doctrine-bridge",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/doctrine-bridge"
@@ -8930,7 +9868,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/dom-crawler",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/dom-crawler"
@@ -8965,7 +9910,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/dotenv",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/dotenv"
@@ -8999,7 +9951,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/error-handler",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/error-handler"
@@ -9071,7 +10030,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/event-dispatcher",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/event-dispatcher"
@@ -9147,7 +10113,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/event-dispatcher-contracts",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/event-dispatcher-contracts"
@@ -9225,7 +10198,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/expression-language",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/expression-language"
@@ -9261,7 +10241,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/filesystem",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/filesystem"
@@ -9335,7 +10322,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/finder",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/finder"
@@ -9400,7 +10394,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/form",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/form"
@@ -9439,7 +10440,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/framework-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/framework-bundle"
@@ -9499,7 +10507,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/google-mailer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/google-mailer"
@@ -9533,7 +10548,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/http-client",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/http-client"
@@ -9567,7 +10589,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/http-client-contracts",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/http-client-contracts"
@@ -9602,7 +10631,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/http-foundation",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/http-foundation"
@@ -9674,7 +10710,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/http-kernel",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/http-kernel"
@@ -9745,7 +10788,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/intl",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/intl"
@@ -9779,7 +10829,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/mailer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/mailer"
@@ -9814,7 +10871,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/maker-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/maker-bundle"
@@ -9848,7 +10912,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/mime",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/mime"
@@ -9884,7 +10955,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/monolog-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/monolog-bundle"
@@ -9918,7 +10996,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/options-resolver",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/options-resolver"
@@ -9963,7 +11048,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/phpunit-bridge",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/phpunit-bridge"
@@ -9997,7 +11089,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/process",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/process"
@@ -10034,7 +11133,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/proxy-manager-bridge",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/proxy-manager-bridge"
@@ -10068,7 +11174,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/routing",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/routing"
@@ -10130,7 +11243,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/runtime",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/runtime"
@@ -10164,7 +11284,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/security-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S7",
@@ -10224,7 +11351,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/security-core",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/security-core"
@@ -10268,7 +11402,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/security-http",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/security-http"
@@ -10310,7 +11451,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/templating",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/templating"
@@ -10344,7 +11492,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/translation-contracts",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/translation-contracts"
@@ -10394,7 +11549,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/twig-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/twig-bundle"
@@ -10437,7 +11599,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/validator",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/validator"
@@ -10474,7 +11643,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/var-dumper",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/var-dumper"
@@ -10547,7 +11723,14 @@
     "direct": true,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/web-profiler-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/web-profiler-bundle"
@@ -10581,7 +11764,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/tecnickcom/tcpdf",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "tecnickcom/tcpdf"
@@ -10615,7 +11805,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/twig/extra-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "twig/extra-bundle"
@@ -10649,7 +11846,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/twig/string-extra",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "twig/string-extra"
@@ -10683,7 +11887,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/twig/twig",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "twig/twig"
@@ -10732,7 +11943,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/willdurand/hateoas",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "willdurand/hateoas"
@@ -10767,7 +11985,14 @@
     "direct": true,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/willdurand/hateoas-bundle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "willdurand/hateoas-bundle"
@@ -10801,7 +12026,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/beberlei/assert",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "scheb/2fa-google-authenticator",
@@ -10837,7 +12069,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/clue/stream-filter",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "j0k3r/graby",
@@ -10874,7 +12113,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/composer/pcre",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofphp/php-cs-fixer",
@@ -10910,7 +12156,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/composer/semver",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofphp/php-cs-fixer",
@@ -10945,7 +12198,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/composer/xdebug-handler",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofphp/php-cs-fixer",
@@ -10980,7 +12240,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/deprecations",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/collections",
@@ -11032,7 +12299,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/inflector",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/orm",
@@ -11071,7 +12345,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/instantiator",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/orm",
@@ -11114,7 +12395,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/lexer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/orm",
@@ -11160,7 +12448,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/doctrine/sql-formatter",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/doctrine-bundle",
@@ -11199,7 +12494,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/ergebnis/agent-detector",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofphp/php-cs-fixer",
@@ -11234,7 +12536,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/ergebnis/json",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "ergebnis/composer-normalize",
@@ -11269,7 +12578,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/ergebnis/json-normalizer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "ergebnis/composer-normalize",
@@ -11304,7 +12620,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/ergebnis/json-pointer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "ergebnis/composer-normalize",
@@ -11340,7 +12663,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/ergebnis/json-printer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "ergebnis/composer-normalize",
@@ -11375,7 +12705,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/ergebnis/json-schema-validator",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "ergebnis/composer-normalize",
@@ -11411,7 +12748,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/fidry/cpu-core-counter",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofphp/php-cs-fixer",
@@ -11446,7 +12790,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/fossar/htmlawed",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "j0k3r/graby",
@@ -11481,7 +12832,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/friendsofphp/proxy-manager-lts",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/proxy-manager-bridge",
@@ -11516,7 +12874,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/gedmo/doctrine-extensions",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "stof/doctrine-extensions-bundle",
@@ -11551,7 +12916,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/gregwar/captcha",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "gregwar/captcha-bundle",
@@ -11586,7 +12958,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/http-interop/http-factory-guzzle",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "j0k3r/graby",
@@ -11621,7 +13000,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/j0k3r/httplug-ssrf-plugin",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "j0k3r/graby",
@@ -11656,7 +13042,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/jean85/pretty-package-versions",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "sentry/sentry-symfony",
@@ -11691,7 +13084,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/jms/metadata",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "jms/serializer",
@@ -11729,7 +13129,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/justinrainbow/json-schema",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "ergebnis/composer-normalize",
@@ -11764,7 +13171,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/lcobucci/clock",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "lcobucci/jwt",
@@ -11800,7 +13214,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/uri",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "scssphp/scssphp",
@@ -11835,7 +13256,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/league/uri-interfaces",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "scssphp/scssphp",
@@ -11870,7 +13298,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/localheinz/diff",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "ergebnis/composer-normalize",
@@ -11905,7 +13340,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/marc-mabe/php-enum",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "ergebnis/composer-normalize",
@@ -11941,7 +13383,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/masterminds/html5",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "j0k3r/php-readability",
@@ -11978,7 +13427,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/myclabs/deep-copy",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpunit/phpunit",
@@ -12013,7 +13469,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/nikic/php-parser",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/maker-bundle",
@@ -12050,7 +13513,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/paragonie/constant_time_encoding",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "scheb/2fa-google-authenticator",
@@ -12087,7 +13557,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/paragonie/random_compat",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -12149,7 +13626,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phar-io/manifest",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpunit/phpunit",
@@ -12184,7 +13668,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/php-http/client-common",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "j0k3r/graby",
@@ -12220,7 +13711,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/php-http/discovery",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "j0k3r/graby",
@@ -12256,7 +13754,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/php-http/httplug",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "j0k3r/graby",
@@ -12292,7 +13797,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/php-http/message",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "j0k3r/graby",
@@ -12328,7 +13840,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/php-http/promise",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "j0k3r/graby",
@@ -12365,7 +13884,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpdocumentor/reflection-common",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "nelmio/api-doc-bundle",
@@ -12401,7 +13927,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpdocumentor/reflection-docblock",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "nelmio/api-doc-bundle",
@@ -12436,7 +13969,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpdocumentor/type-resolver",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "nelmio/api-doc-bundle",
@@ -12449,7 +13989,7 @@
     "allowlist_reason": null,
     "note": null,
     "data_date": "2026-09-28T00:00:00+00:00",
-    "libyears": 1.16,
+    "libyears": 1.88,
     "libyears_unmeasured": null,
     "priority_basis": {
      "base": "none",
@@ -12471,7 +14011,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpseclib/phpseclib",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "php-amqplib/php-amqplib",
@@ -12507,7 +14054,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpstan/phpdoc-parser",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "jms/serializer",
@@ -12546,7 +14100,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/phpunit/php-code-coverage",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpunit/phpunit",
@@ -12581,7 +14142,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/cache",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -12666,7 +14234,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/clock",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -12716,7 +14291,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/container",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -12813,7 +14395,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/event-dispatcher",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -12917,7 +14506,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/psr/simple-cache",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -12964,7 +14560,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/ralouphie/getallheaders",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [
      {
       "id": "S2",
@@ -13026,7 +14629,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/react/child-process",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofphp/php-cs-fixer",
@@ -13061,7 +14671,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/react/dns",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofphp/php-cs-fixer",
@@ -13097,7 +14714,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/react/event-loop",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofphp/php-cs-fixer",
@@ -13132,7 +14756,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/react/promise",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofphp/php-cs-fixer",
@@ -13168,7 +14799,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/react/socket",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofphp/php-cs-fixer",
@@ -13203,7 +14841,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/react/stream",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofphp/php-cs-fixer",
@@ -13238,7 +14883,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/scssphp/source-span",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "scssphp/scssphp",
@@ -13273,7 +14925,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/cli-parser",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpunit/phpunit",
@@ -13308,7 +14967,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/comparator",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpunit/phpunit",
@@ -13343,7 +15009,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/complexity",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpunit/phpunit",
@@ -13379,7 +15052,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/diff",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofphp/php-cs-fixer",
@@ -13415,7 +15095,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/exporter",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpunit/phpunit",
@@ -13450,7 +15137,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/global-state",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpunit/phpunit",
@@ -13485,7 +15179,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/lines-of-code",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpunit/phpunit",
@@ -13521,7 +15222,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sebastian/recursion-context",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpunit/phpunit",
@@ -13557,7 +15265,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/sentry/sentry",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "sentry/sentry-symfony",
@@ -13592,7 +15307,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/simplepie/simplepie",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "j0k3r/graby",
@@ -13627,7 +15349,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/cache",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "craue/config-bundle",
@@ -13691,7 +15420,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/cache-contracts",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "sentry/sentry-symfony",
@@ -13756,7 +15492,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/monolog-bridge",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/monolog-bundle",
@@ -13791,7 +15534,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/password-hasher",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/security-bundle",
@@ -13836,7 +15586,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-ctype",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/config",
@@ -13929,7 +15686,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-intl-grapheme",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/console",
@@ -13997,7 +15761,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-intl-icu",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/form",
@@ -14037,7 +15808,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-intl-idn",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "egulias/email-validator",
@@ -14076,7 +15854,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-intl-normalizer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "egulias/email-validator",
@@ -14149,7 +15934,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-mbstring",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/console",
@@ -14248,7 +16040,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/polyfill-php84",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/collections",
@@ -14289,7 +16088,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/property-access",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "babdev/pagerfanta-bundle",
@@ -14339,7 +16145,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/property-info",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "nelmio/api-doc-bundle",
@@ -14390,7 +16203,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/security-csrf",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/security-bundle",
@@ -14432,7 +16252,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/serializer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofsymfony/jsrouting-bundle",
@@ -14467,7 +16294,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/service-contracts",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/doctrine-bundle",
@@ -14552,7 +16386,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/stopwatch",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/migrations",
@@ -14589,7 +16430,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/string",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/console",
@@ -14656,7 +16504,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/translation",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "friendsofsymfony/user-bundle",
@@ -14692,7 +16547,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/twig-bridge",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "symfony/twig-bundle",
@@ -14737,7 +16599,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/var-exporter",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "doctrine/migrations",
@@ -14802,7 +16671,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/symfony/yaml",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "php-amqplib/rabbitmq-bundle",
@@ -14839,7 +16715,14 @@
     "direct": false,
     "dev": true,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/theseer/tokenizer",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "phpunit/phpunit",
@@ -14875,7 +16758,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/webmozart/assert",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "nelmio/api-doc-bundle",
@@ -14911,7 +16801,14 @@
     "direct": false,
     "dev": false,
     "from_composer_repository": true,
+    "origin": {
+     "kind": "packagist",
+     "registry": "packagist.org",
+     "package_url": "https://packagist.org/packages/zircote/swagger-php",
+     "local": false
+    },
     "replacement": null,
+    "replacement_url": null,
     "signals": [],
     "chain": [
      "nelmio/api-doc-bundle",
@@ -17437,7 +19334,7 @@
     "forge": "GitHub",
     "repository": "lcobucci/jwt",
     "archived": false,
-    "pushed_at": "2026-09-27T22:36:45+00:00",
+    "pushed_at": "2026-09-28T03:43:00+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -19248,7 +21145,7 @@
     "forge": "GitHub",
     "repository": "sebastianbergmann/php-file-iterator",
     "archived": false,
-    "pushed_at": "2026-09-26T00:23:00+00:00",
+    "pushed_at": "2026-09-28T05:40:44+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -19396,7 +21293,7 @@
     "forge": "GitHub",
     "repository": "sebastianbergmann/php-invoker",
     "archived": false,
-    "pushed_at": "2026-09-28T00:29:25+00:00",
+    "pushed_at": "2026-09-28T12:36:46+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -19528,7 +21425,7 @@
     "forge": "GitHub",
     "repository": "sebastianbergmann/php-text-template",
     "archived": false,
-    "pushed_at": "2026-09-25T22:38:22+00:00",
+    "pushed_at": "2026-09-28T05:41:12+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -19708,7 +21605,7 @@
     "forge": "GitHub",
     "repository": "sebastianbergmann/php-timer",
     "archived": false,
-    "pushed_at": "2026-09-26T00:28:45+00:00",
+    "pushed_at": "2026-09-28T05:41:34+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -20072,7 +21969,7 @@
     "forge": "GitHub",
     "repository": "sebastianbergmann/environment",
     "archived": false,
-    "pushed_at": "2026-09-28T00:25:49+00:00",
+    "pushed_at": "2026-09-28T05:59:33+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -20236,7 +22133,7 @@
     "forge": "GitHub",
     "repository": "sebastianbergmann/object-enumerator",
     "archived": false,
-    "pushed_at": "2026-09-26T00:27:57+00:00",
+    "pushed_at": "2026-09-28T05:38:51+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -20368,7 +22265,7 @@
     "forge": "GitHub",
     "repository": "sebastianbergmann/object-reflector",
     "archived": false,
-    "pushed_at": "2026-09-26T00:26:07+00:00",
+    "pushed_at": "2026-09-28T05:39:29+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -20516,7 +22413,7 @@
     "forge": "GitHub",
     "repository": "sebastianbergmann/type",
     "archived": false,
-    "pushed_at": "2026-09-28T00:27:38+00:00",
+    "pushed_at": "2026-09-28T05:46:24+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },
@@ -20664,7 +22561,7 @@
     "forge": "GitHub",
     "repository": "sebastianbergmann/version",
     "archived": false,
-    "pushed_at": "2026-09-25T22:39:55+00:00",
+    "pushed_at": "2026-09-28T05:44:19+00:00",
     "fetched_at": "2026-09-28T00:00:00+00:00",
     "from_cache": true
    },

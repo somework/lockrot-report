@@ -65,7 +65,7 @@ test("mini-0.13-edges: a reason the page does not know is shown as written", asy
   await report.tab("run");
   const row = report.runField("libyears not measured");
   await expect(row.locator("code")).toHaveText(["yanked_release"]);
-  await expect(row).toContainText("not from a Composer repository 1");
+  await expect(row).toContainText("not from a Composer repository 6");
   await expect(row).not.toContainText("yanked release");
 });
 

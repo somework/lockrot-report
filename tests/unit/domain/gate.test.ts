@@ -78,7 +78,7 @@ describe("gateFact", () => {
   it("counts as not accepted only findings nothing exempts, naming another exemption as written", () => {
     const text = gateFact(loadModel("mini-0.13-edges"))?.text ?? "";
     expect(text).toContain(
-      "7 findings in this report are at or above high; 3 of them are neither accepted in lockrot-baseline.json nor exempt for another reason (waiver).",
+      "14 findings in this report are at or above high; 10 of them are neither accepted in lockrot-baseline.json nor exempt for another reason (waiver).",
     );
   });
 });
