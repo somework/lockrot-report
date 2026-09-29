@@ -116,7 +116,7 @@ function verdictClause(
         age(years, release, false),
         text(" ago"),
       ];
-      const move = moveClause(s8, details?.metadata?.branches ?? []);
+      const move = moveClause(s8);
       if (move !== null) parts.push(...move);
       else if (newest !== null) parts.push(text(" while "), name(newest), text(" kept releasing"));
       parts.push(text("."));

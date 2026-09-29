@@ -19,23 +19,25 @@ const toggle = (page: Page) => page.getByRole("button", { name: "Each branch", e
 test.describe("level 0: the answer without a click", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("scheb/2fa-bundle: the lead says why the newest is out of reach and names the branch that admits it", async ({
+  test("scheb/2fa-bundle: the lead names the newest branch that fits, Release branches why the newest does not", async ({
     page,
   }) => {
     await open(page, FIXTURES.wallabag013, "scheb/2fa-bundle");
     await expect(page.locator(".detail-answer")).toContainText(
-      "its last release was 4.5 years ago; 8.x needs a newer PHP than your require.php, 7.x admits it.",
+      "its last release was 4.5 years ago; 7.x is the newest that fits.",
     );
-    await expect(page.locator(".detail-timeline-sub")).toContainText(
-      "Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x admits only PHP 8.4.",
+    const sub = page.locator(".detail-timeline-sub");
+    await expect(sub).toContainText(
+      "(3 months ago). Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x admits only PHP 8.4.",
     );
+    await expect(sub).not.toContainText("requires php");
   });
 
   test("plank/laravel-mediable: none admits, and the summary counts only the newer branches and yours", async ({
     page,
   }) => {
     await open(page, FIXTURES.akaunting013, "plank/laravel-mediable");
-    await expect(page.locator(".detail-answer")).toContainText("; no newer branch admits your require.php.");
+    await expect(page.locator(".detail-answer")).toContainText("; no newer branch fits.");
     const sub = page.locator(".detail-timeline-sub");
     await expect(sub).toContainText(
       "Yours admits your require.php (^8.1) and PHP 8.4; 7.x and 6.x admit only PHP 8.4.",
@@ -43,15 +45,15 @@ test.describe("level 0: the answer without a click", () => {
     await expect(sub).not.toContainText("of 10");
   });
 
-  test("acme/left: an unknown floor keeps lockrot's word; yours at the release its php comes from", async ({
+  test("acme/left: an unknown floor reads as any other; yours at the release its php comes from", async ({
     page,
   }) => {
     await open(page, FIXTURES.miniEdges013, "acme/left");
     const lead = page.locator(".detail-answer");
-    await expect(lead).toContainText("; no newer branch is within reach.");
+    await expect(lead).toContainText("; no newer branch fits.");
     await expect(lead).not.toContainText("ext-sodium");
     await expect(page.locator(".detail-timeline-sub")).toContainText(
-      "Yours (newest release 1.9.0) needs a newer PHP than your require.php (^8.3); 3.x and 2.x are blocked by extension.",
+      "Yours (as of 1.9.0) needs a newer PHP than your require.php (^8.3); 3.x and 2.x are blocked by extension.",
     );
   });
 
@@ -79,6 +81,71 @@ test.describe("level 0: the answer without a click", () => {
     await expect(toggle(page)).toHaveCount(0);
     await expect(page.locator(".detail-timeline-fold-words")).toHaveCount(0);
   });
+});
+
+test.describe("space: the lead as tall as before, Release branches at most two lines longer", () => {
+  const LEADS = [
+    [FIXTURES.wallabag013, "scheb/2fa-bundle"],
+    [FIXTURES.wallabagBaselineOlder013, "scheb/2fa-bundle"],
+    [FIXTURES.akaunting013, "plank/laravel-mediable"],
+    [FIXTURES.miniEdges013, "acme/left"],
+  ] as const;
+  const SUBS = [
+    ...LEADS,
+    [FIXTURES.wallabag013, "phpunit/php-timer"],
+    [FIXTURES.miniEdges013, "acme/floors"],
+    [FIXTURES.mautic013, "rector/rector"],
+    [FIXTURES.koelAll013, "brick/math"],
+    [FIXTURES.koelAll013, "sentry/sentry"],
+  ] as const;
+
+  for (const width of [390, 1440]) {
+    test(`${String(width)}px: S8's clause takes no more lines than "while 8.x kept releasing" did`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      for (const [fixture, pkg] of LEADS) {
+        await open(page, fixture, pkg);
+        const heights = await page.locator(".detail-answer").evaluate((answer) => {
+          const nodes = [...answer.childNodes];
+          const at = nodes.findIndex(
+            (n) => n.nodeType === Node.TEXT_NODE && (n.textContent ?? "").startsWith("; "),
+          );
+          const clause = nodes.slice(at, at + 3);
+          const said = clause.map((n) => n.textContent ?? "");
+          const now = answer.getBoundingClientRect().height;
+          const older =
+            said[0] === "; " ? [" while ", "8.x", " kept releasing"] : [" while 8.x kept releasing"];
+          clause.forEach((n, i) => (n.textContent = older[i] ?? n.textContent));
+          const before = answer.getBoundingClientRect().height;
+          clause.forEach((n, i) => (n.textContent = said[i] ?? ""));
+          return at < 0 ? null : { now, before };
+        });
+        expect(heights, `${pkg}: S8's clause`).not.toBeNull();
+        expect(heights?.now ?? Infinity, `${fixture} ${pkg}`).toBeLessThanOrEqual(heights?.before ?? 0);
+      }
+    });
+
+    test(`${String(width)}px: the floors sentence adds at most two lines to the sub`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      for (const [fixture, pkg] of SUBS) {
+        await open(page, fixture, pkg);
+        const grown = await page.locator(".detail-timeline-sub").evaluate((sub) => {
+          const said = sub.querySelector<HTMLElement>(".detail-timeline-floors-said");
+          if (said === null) return null;
+          const line = parseFloat(getComputedStyle(sub).lineHeight);
+          const now = sub.getBoundingClientRect().height;
+          said.hidden = true;
+          const without = sub.getBoundingClientRect().height;
+          said.hidden = false;
+          return { grown: now - without, twoLines: 2 * line };
+        });
+        expect(grown, `${pkg} has a floors sentence`).not.toBeNull();
+        // The button's focus box stands a pixel or two above a line of text.
+        expect(grown?.grown ?? Infinity, `${fixture} ${pkg}`).toBeLessThanOrEqual((grown?.twoLines ?? 0) + 3);
+      }
+    });
+  }
 });
 
 test.describe("level 1: every branch, opened by keyboard", () => {
@@ -112,7 +179,7 @@ test.describe("level 1: every branch, opened by keyboard", () => {
     await open(page, FIXTURES.wallabag013, "scheb/2fa-bundle");
     await toggle(page).click();
     await expect(page.locator(".detail-timeline-floors li")).toHaveText([
-      "8.x needs a newer PHP than your require.php",
+      "8.x needs a newer PHP than your require.php but admits PHP 8.4",
     ]);
     await open(page, FIXTURES.wallabag013, "friendsofsymfony/oauth-server-bundle");
     await expect(page.locator(".detail-timeline-sub")).toContainText("1.x stops before both.");

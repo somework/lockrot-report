@@ -139,7 +139,7 @@ describe("answerParts", () => {
     ]);
   });
 
-  it("with the newest out of reach, names S8's branch to move to and why the newest is not, from its row", () => {
+  it("with the newest out of reach, names the branch S8 says fits, in the ledger why's words", () => {
     // Arrange: wallabag scheb/2fa-bundle.
     const finding = makeFinding({
       verdict: "left-behind",
@@ -188,9 +188,9 @@ describe("answerParts", () => {
 
     // Assert
     expect(answerText(parts)).toBe(
-      "Left behind on 5.x: its last release was 4.5 years ago; 8.x needs a newer PHP than your require.php, 7.x admits it. You require it directly.",
+      "Left behind on 5.x: its last release was 4.5 years ago; 7.x is the newest that fits. You require it directly.",
     );
-    expect(parts.filter((p) => p.kind === "code")).toEqual([{ kind: "code", text: "require.php" }]);
+    expect(parts.filter((p) => p.kind === "code")).toEqual([]);
   });
 
   it("reads no fix coming from no_fix_expected alone, never from the evidence's words", () => {

@@ -91,8 +91,7 @@ export function shortFact(signal: Signal, finding: Finding): string {
       const newest = text(d.newest_branch);
       if (!branch || !newest) return signal.summary;
       // Out of reach, "8.x ships" would point at the one branch the project cannot take.
-      if (d.newest_within_reach !== false || text(d.floor_source) === null)
-        return `${branch} stopped; ${newest} ships`;
+      if (d.newest_within_reach !== false) return `${branch} stopped; ${newest} ships`;
       const reachable = text(d.reachable_branch);
       return `${branch} stopped; ${reachable ?? "none"} fits`;
     }

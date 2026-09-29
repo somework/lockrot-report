@@ -149,7 +149,7 @@ describe("floorsAnswer: level 0, yours first, then the newer branches", () => {
       "Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x admits only PHP 8.4.",
     );
     expect(rest("wallabag_wallabag-0.13", "scheb/2fa-bundle")).toEqual([
-      "8.x: needs a newer PHP than your require.php",
+      "8.x: needs a newer PHP than your require.php but admits PHP 8.4",
     ]);
   });
 
@@ -158,17 +158,18 @@ describe("floorsAnswer: level 0, yours first, then the newer branches", () => {
       "Yours admits your require.php (^8.1) and PHP 8.4; 7.x and 6.x admit only PHP 8.4.",
     );
     expect(rest("gh_akaunting_akaunting-0.13", "plank/laravel-mediable")).toEqual([
-      "7.x, 6.x: need a newer PHP than your require.php",
+      "7.x, 6.x: need a newer PHP than your require.php but admit PHP 8.4",
       "0.1.x – 4.x (7): admit both",
     ]);
   });
 
-  it("acme/left: yours at the release its php comes from; an unknown blocker as written, apart", () => {
+  it("acme/left: yours at the release its php comes from, its full standing at level 1; an unknown blocker as written, apart", () => {
     expect(sentence("mini-0.13-edges", "acme/left")).toBe(
-      "Yours (newest release 1.9.0) needs a newer PHP than your require.php (^8.3); 3.x and 2.x are blocked by extension.",
+      "Yours (as of 1.9.0) needs a newer PHP than your require.php (^8.3); 3.x and 2.x are blocked by extension.",
     );
     expect(rest("mini-0.13-edges", "acme/left")).toEqual([
       "3.x, 2.x: admit both but are blocked by extension",
+      "1.x (yours): needs a newer PHP than your require.php but admits PHP 8.4",
       "0.x: has no php recorded, so neither could be checked",
     ]);
   });
@@ -209,7 +210,7 @@ describe("floorsAnswer: level 0, yours first, then the newer branches", () => {
       "5.x: skips both",
       "4.x: admits no PHP version",
       "3.x: needs a newer PHP than both",
-      "2.x: stops before PHP 8.4",
+      "2.x: stops before PHP 8.4 but admits your require.php",
       "0.x: skips your require.php and does not admit PHP 8.4 (lockrot: straddles)",
     ]);
   });
@@ -252,7 +253,7 @@ describe("floorsAnswer: level 0, yours first, then the newer branches", () => {
     const rows = [
       row({ installed: true, newestDated: "1.9.0", admitsTargetPhp: false, missesTargetPhp: "skips" }),
     ];
-    expect(said(rows, BOTH, "1.4.0")).toBe("Yours (newest release 1.9.0) skips PHP 8.4.");
+    expect(said(rows, BOTH, "1.4.0")).toBe("Yours (as of 1.9.0) skips PHP 8.4.");
     expect(said(rows, BOTH, "1.9.0")).toBe("Yours, the newest, skips PHP 8.4.");
     const admitting = [row({ installed: true, newestDated: "1.9.0" })];
     expect(said(admitting, BOTH, "1.4.0")).toBe(
@@ -316,7 +317,7 @@ describe("floorsAnswer: level 0, yours first, then the newer branches", () => {
 describe("floorsAnswer: level 1, every branch the sentence left", () => {
   it("contiguous runs are compressed oldest first, as the fold rows read, and none is cut", () => {
     expect(rest("wallabag_wallabag-0.13", "phpunit/php-timer")).toEqual([
-      "9.x, 8.x: need a newer PHP than your require.php",
+      "9.x, 8.x: need a newer PHP than your require.php but admit PHP 8.4",
       "4.x, 3.x, 1.x: stop before both",
       "2.x: admits both",
     ]);
@@ -363,64 +364,37 @@ describe("floorsDefinition", () => {
   });
 });
 
-describe("moveClause: S8 quoted, the newest's reason from its own row", () => {
+describe("moveClause: S8 quoted in the words its ledger why uses", () => {
   function clause(bundle: string, pkg: string): string | null {
-    const { rows, model } = fixture(bundle, pkg);
+    const { model } = fixture(bundle, pkg);
     const data = model.report.findings
       .find((f) => f.package === pkg)
       ?.signals.find((s) => s.id === "S8")?.data;
-    const parts = moveClause(data, rows);
+    const parts = moveClause(data);
     return parts === null ? null : plain(parts);
   }
 
-  it("why the newest is out of reach, and the branch within it", () => {
-    expect(clause("wallabag_wallabag-0.13", "scheb/2fa-bundle")).toBe(
-      "; 8.x needs a newer PHP than your require.php, 7.x admits it",
-    );
+  it("names the newest branch that fits; why the newest does not is Release branches' to say", () => {
+    expect(clause("wallabag_wallabag-0.13", "scheb/2fa-bundle")).toBe("; 7.x is the newest that fits");
+    expect(clause("mini-0.13-edges-lock-only", "acme/left")).toBe("; 2.x is the newest that fits");
   });
 
-  it("none within reach", () => {
-    expect(clause("gh_akaunting_akaunting-0.13", "plank/laravel-mediable")).toBe(
-      "; no newer branch admits your require.php",
-    );
-  });
-
-  it("a floor this page does not know keeps lockrot's own word and leaves the blocker to Release branches", () => {
-    expect(clause("mini-0.13-edges", "acme/left")).toBe("; no newer branch is within reach");
-    const data = {
-      newest_within_reach: false,
-      newest_branch: "3.x",
-      floor_source: "extension",
-      reachable_branch: "2.x",
-    };
-    expect(plain(moveClause(data, []) ?? [])).toBe("; 2.x is the newest within reach");
+  it("none within reach, whatever the floor's source, known or not", () => {
+    expect(clause("gh_akaunting_akaunting-0.13", "plank/laravel-mediable")).toBe("; no newer branch fits");
+    expect(clause("mini-0.13-edges", "acme/left")).toBe("; no newer branch fits");
+    expect(
+      plain(moveClause({ newest_within_reach: false, newest_branch: "3.x", floor_source: null }) ?? []),
+    ).toBe("; no newer branch fits");
   });
 
   it("the newest within reach, or a document that does not say, keeps the older sentence", () => {
     expect(clause("koel_koel-0.13", "jwilsson/spotify-web-api-php")).toBeNull();
-    expect(moveClause({ newest_within_reach: null }, [])).toBeNull();
-    expect(moveClause({ branch: "5.x", newest_branch: "8.x" }, [])).toBeNull();
+    expect(moveClause({ newest_within_reach: null, newest_branch: "8.x" })).toBeNull();
+    expect(moveClause({ branch: "5.x", newest_branch: "8.x" })).toBeNull();
+    expect(moveClause({ newest_within_reach: false })).toBeNull();
   });
 
-  it("an older report's S8 says the reach, its rows not the way: less said, the same sentence", () => {
-    expect(clause("wallabag_wallabag", "scheb/2fa-bundle")).toBe(
-      "; 8.x does not admit your require.php, 7.x admits it",
-    );
-  });
-
-  it("a target floor names the target PHP; a newest admitting no PHP names the floor again", () => {
-    const data = {
-      newest_within_reach: false,
-      newest_branch: "9.x",
-      reachable_branch: "7.x",
-      floor_source: "target",
-      floor_php: "8.4",
-    };
-    const stops = [row({ branch: "9.x", admitsTargetPhp: false, missesTargetPhp: "stops_before" })];
-    expect(plain(moveClause(data, stops) ?? [])).toBe("; 9.x stops before PHP 8.4, 7.x admits it");
-    const newer = [row({ branch: "9.x", admitsTargetPhp: false, missesTargetPhp: "needs_newer" })];
-    expect(plain(moveClause(data, newer) ?? [])).toBe("; 9.x needs a newer PHP than 8.4, 7.x admits it");
-    const none = [row({ branch: "9.x", admitsTargetPhp: false, missesTargetPhp: "unsatisfiable" })];
-    expect(plain(moveClause(data, none) ?? [])).toBe("; 9.x admits no PHP version, 7.x admits PHP 8.4");
+  it("an older report's S8 reads the same", () => {
+    expect(clause("wallabag_wallabag", "scheb/2fa-bundle")).toBe("; 7.x is the newest that fits");
   });
 });

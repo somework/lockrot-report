@@ -79,10 +79,9 @@ export function Timeline({
         installedVersion={installedVersion}
         tone={timeline.mine ? toneOf(timeline.mine) : null}
         topWord={topWord}
-        after={
-          answer !== null && (
-            <>
-              {" "}
+        floors={
+          answer === null ? undefined : (
+            <span className="detail-timeline-floors-said">
               <FloorWords parts={answer.sentence} />
               {rest.length > 0 && !disclosure.printed && (
                 <>
@@ -96,7 +95,7 @@ export function Timeline({
                   />
                 </>
               )}
-            </>
+            </span>
           )
         }
       />

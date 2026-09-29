@@ -201,11 +201,15 @@ interface Said {
 }
 
 /**
- * What a row, or `many` rows alike, do against the floors. `brief` (level 0, a row that is not
- * yours) says a blocked row only as blocked and a row missing one of two floors as admitting the
- * other, and leaves the rest to level 1.
+ * Where the words stand: a level-1 line or a fold cell says all; level 0 says yours' misses without
+ * the floor it admits, and a newer row blocked only as blocked, missing one of two floors as
+ * admitting the other. What level 0 leaves out waits at level 1.
  */
-function standingSaid(st: Standing, namer: Namer, floors: Floors, many: boolean, brief: boolean): Said {
+type Place = "cell" | "yours" | "newer";
+
+/** What a row, or `many` rows alike, do against the floors. */
+function standingSaid(st: Standing, namer: Namer, floors: Floors, many: boolean, at: Place): Said {
+  const brief = at === "newer";
   switch (st.kind) {
     case "unrecorded":
       return {
@@ -232,7 +236,7 @@ function standingSaid(st: Standing, namer: Namer, floors: Floors, many: boolean,
       };
     }
     case "misses":
-      return missesSaid(st, namer, floors, many, brief);
+      return missesSaid(st, namer, floors, many, at);
   }
 }
 
@@ -241,7 +245,7 @@ function missesSaid(
   namer: Namer,
   floors: Floors,
   many: boolean,
-  brief: boolean,
+  at: Place,
 ): Said {
   const [first, second] = st.misses;
   let words: FloorPart[];
@@ -254,7 +258,7 @@ function missesSaid(
   } else if (
     first !== undefined &&
     second === undefined &&
-    brief &&
+    at === "newer" &&
     namer.two &&
     namer.pairSaid() &&
     st.unanswered.length === 0 &&
@@ -268,6 +272,11 @@ function missesSaid(
       ...(i > 0 ? [text(" and ")] : []),
       ...wayWords(miss.code, (than) => namer.one(miss.floor, than), many),
     ]);
+    const other = admitted(st, namer);
+    if (other !== null) {
+      if (at !== "cell") stated = false;
+      else words = [...words, text(` but ${verb("admits", "admit", many)} `), ...namer.one(other, false)];
+    }
   }
   const unanswered =
     st.unanswered.length === 0
@@ -277,9 +286,17 @@ function missesSaid(
   return { words: [...words, ...unanswered, ...blocked], stated };
 }
 
+/** The one of two floors a row missing the other admits; null when that is not all it does. */
+function admitted(st: Extract<Standing, { kind: "misses" }>, namer: Namer): FloorKey | null {
+  const [only, second] = st.misses;
+  if (!namer.two || only === undefined || second !== undefined) return null;
+  if (st.unanswered.length > 0 || only.code === "unsatisfiable") return null;
+  return only.floor === "project" ? "target" : "project";
+}
+
 /** What a row, or `many` rows alike, do against the floors, in a list line or a cell. */
 export function standingWords(st: Standing, floors: Floors, many: boolean): FloorPart[] {
-  return standingSaid(st, cellNamer(floors), floors, many, false).words;
+  return standingSaid(st, cellNamer(floors), floors, many, "cell").words;
 }
 
 function key(parts: readonly FloorPart[]): string {
@@ -380,8 +397,8 @@ export function floorsAnswer(
   };
   let headed = false;
   let spoken = speak(scene, headed);
-  // A clause opening on a mono branch name runs into the constraint that ends the sub-sentence
-  // ("requires php ^7.0. 1.x stops …"), so the floors lead instead.
+  // A clause opening on a mono branch name runs into the sub-sentence's own mono figures
+  // ("released 1.6.2 on 2019-01-23 (…). 1.x stops …"), so the floors lead instead.
   if (spoken.parts[0]?.kind === "name") {
     headed = true;
     spoken = speak(scene, headed);
@@ -419,7 +436,7 @@ function speak(scene: Scene, headed: boolean): { parts: FloorPart[]; stated: Set
     }
     const isMine = group === mine;
     const names = who(group, scene, counted);
-    const said = standingSaid(lead.st, namer, floors, group.length > 1, !isMine);
+    const said = standingSaid(lead.st, namer, floors, group.length > 1, isMine ? "yours" : "newer");
     clauses.push([...names.parts, text(" "), ...said.words]);
     if (said.stated) for (const p of names.named) stated.add(p.index);
     counted ||= group.filter((p) => !p.row.installed).length > NAMED_MAX;
@@ -447,7 +464,7 @@ function who(
   const release = mine.row.newestDated;
   const yours: FloorPart[] =
     mine.st.kind === "misses" && release !== null && release !== scene.installedVersion
-      ? [text("yours (newest release "), name(release), text(")")]
+      ? [text("yours (as of "), name(release), text(")")]
       : others.length === 0 && scene.mineIsNewest
         ? [text("yours, the newest,")]
         : [text("yours")];
@@ -580,37 +597,15 @@ function str(data: Signal["data"] | undefined, field: string): string | null {
 }
 
 /**
- * S8's answer when the newest branch is out of reach, after "its last release was 4.5 years ago":
- * "; 8.x needs a newer PHP than your require.php, 7.x admits it", or "; no newer branch admits your
- * require.php". A floor this page does not know is left to lockrot's own word, reach. Null keeps
- * the older sentence: the newest within reach, or a document that does not say.
+ * S8's answer when the newest branch is out of reach, after "its last release was 4.5 years ago",
+ * in the ledger why's word: "; 7.x is the newest that fits", or "; no newer branch fits". Why the
+ * newest does not is the Release branches sentence's to say, so the lead stays as long as it was.
+ * Null keeps the older sentence: the newest within reach, or a document that does not say.
  */
-export function moveClause(
-  data: Signal["data"] | undefined,
-  branches: readonly BranchRow[],
-): FloorPart[] | null {
-  if (data?.["newest_within_reach"] !== false) return null;
-  const newest = str(data, "newest_branch");
-  const source = str(data, "floor_source");
-  if (newest === null || source === null) return null;
+export function moveClause(data: Signal["data"] | undefined): FloorPart[] | null {
+  if (data?.["newest_within_reach"] !== false || str(data, "newest_branch") === null) return null;
   const reachable = str(data, "reachable_branch");
-  if (source !== "project" && source !== "target") {
-    return reachable === null
-      ? [text("; no newer branch is within reach")]
-      : [text("; "), name(reachable), text(" is the newest within reach")];
-  }
-  const floorPhp = str(data, "floor_php");
-  const floor = (than: boolean): FloorPart[] =>
-    source === "project"
-      ? [text("your "), code("require.php")]
-      : [floorPhp === null ? text("the target PHP") : than ? text(floorPhp) : phrase(`PHP ${floorPhp}`)];
-  if (reachable === null) return [text("; no newer branch admits "), ...floor(false)];
-  const row = branches.find((b) => b.branch === newest);
-  const missCode =
-    row === undefined ? null : source === "project" ? row.missesProjectPhp : row.missesTargetPhp;
-  const reach =
-    missCode === "unsatisfiable"
-      ? [text(", "), name(reachable), text(" admits "), ...floor(false)]
-      : [text(", "), name(reachable), text(" admits it")];
-  return [text("; "), name(newest), text(" "), ...wayWords(missCode, floor, false), ...reach];
+  return reachable === null
+    ? [text("; no newer branch fits")]
+    : [text("; "), name(reachable), text(" is the newest that fits")];
 }

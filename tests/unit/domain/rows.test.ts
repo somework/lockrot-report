@@ -99,7 +99,7 @@ describe("shortFact (PD-ROWS-4)", () => {
     expect(s8({ ...out, floor_source: "extension", reachable_branch: null })).toBe("5.x stopped; none fits");
     expect(s8({ newest_within_reach: true, reachable_branch: "8.x" })).toBe("5.x stopped; 8.x ships");
     expect(s8({ newest_within_reach: null })).toBe("5.x stopped; 8.x ships");
-    expect(s8({ newest_within_reach: false, floor_source: null })).toBe("5.x stopped; 8.x ships");
+    expect(s8({ newest_within_reach: false, floor_source: null })).toBe("5.x stopped; none fits");
   });
 
   it("prefers the finding's own resolved replacement over S1's raw one", () => {

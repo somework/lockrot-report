@@ -17,14 +17,15 @@ export function Answer({
   installedVersion,
   tone,
   topWord,
-  after,
+  floors,
 }: {
   timeline: TimelineModel;
   installedVersion: string;
   tone: Tone | null;
   topWord: TopWord;
-  /** More of the sub-sentence's paragraph: the branches against the run's PHP floors. */
-  after?: ComponentChildren;
+  /** The branches against the run's PHP floors, ending the sub. They say what the newest's php
+   *  means, so its constraint is left to the table's PHP column. */
+  floors?: ComponentChildren;
 }) {
   const { now } = useReport();
   const { mine, top, releasesOnly } = timeline;
@@ -48,7 +49,7 @@ export function Answer({
       )}
       <span className="nowrap">{day(top.date)}</span>{" "}
       <span className="nowrap">({agePhrase(top.date, now)} ago)</span>
-      {top.php !== null && (
+      {top.php !== null && floors === undefined && (
         <>
           {" "}
           and requires php{" "}
@@ -131,7 +132,7 @@ export function Answer({
       <p className="detail-timeline-answer">{lead}</p>
       <p className="detail-timeline-sub">
         {sub}
-        {after}
+        {floors !== undefined && <> {floors}</>}
       </p>
     </>
   );

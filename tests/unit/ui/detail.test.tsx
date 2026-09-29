@@ -10,6 +10,7 @@ import type { Action, State } from "../../../src/state/types";
 import { EMPTY_FILTERS } from "../../../src/state/types";
 import { Detail } from "../../../src/ui/detail/Detail";
 import { ReportContext } from "../../../src/ui/context";
+import { PrintContext } from "../../../src/ui/print/printContext";
 
 /** Evidence is scrolled to and focused a frame after its `<details>` open (SignalList.tsx#reveal). */
 function nextFrame(): Promise<void> {
@@ -2028,6 +2029,53 @@ describe("open vocabularies (lockrot 0.13): a value this page does not know is s
     expect(older?.querySelector(".detail-timeline-floors")).toBeNull();
     expect(older?.querySelector(".l1-btn")).toBeNull();
     expect(older?.querySelector(".detail-timeline-sub")?.textContent).not.toContain("admit");
+  });
+
+  it("scheb/2fa-bundle: the floors sentence takes the newest's php from the sub, which an older report keeps", () => {
+    const now = renderDetail(WALLABAG_013, "scheb/2fa-bundle").container;
+    const sub = now.querySelector(".detail-timeline-sub")?.textContent ?? "";
+    expect(sub).toContain("(3 months ago). Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4;");
+    expect(sub).not.toContain("requires php");
+    cleanup();
+    const older = renderDetail(WALLABAG, "scheb/2fa-bundle").container;
+    expect(older.querySelector(".detail-timeline-sub")?.textContent).toContain(
+      "and requires php ~8.4.0 || ~8.5.0.",
+    );
+  });
+
+  it("on paper Each branch is open and has no button", () => {
+    const { container } = render(
+      <PrintContext.Provider value={true}>
+        <ReportContext.Provider
+          value={{
+            model: EDGES_013,
+            state: {
+              view: "findings",
+              q: "",
+              pkg: "acme/left",
+              sort: "verdict",
+              sortDesc: false,
+              filters: EMPTY_FILTERS,
+              disclosure: {},
+            },
+            dispatch: vi.fn(),
+            now: new Date(EDGES_013.report.generatedAt),
+            wide: true,
+            cursor: null,
+            openGlossary: vi.fn(),
+            openGlossaryFrom: vi.fn(),
+          }}
+        >
+          <Detail onClose={vi.fn()} />
+        </ReportContext.Provider>
+      </PrintContext.Provider>,
+    );
+    const panel = container.querySelector(".detail-timeline-floors");
+    expect(panel?.hasAttribute("hidden")).toBe(false);
+    expect(panel?.textContent).toContain(
+      "1.x (yours) needs a newer PHP than your require.php but admits PHP 8.4",
+    );
+    expect(container.querySelector(".detail-timeline .l1-btn")).toBeNull();
   });
 
   it("acme/floors: every misses_* side is worded, an unknown one as written; without them nothing is", () => {
