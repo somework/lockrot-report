@@ -445,8 +445,8 @@ html {
 }
 .shell-main {
   min-width: 0;
-  /* Where a "focus" press (the summary's gate clause, a Run data count) scrolls the list to: its top just
-     clear of the header, which is sticky from 760px up and scrolls away below that. */
+  /* Where a "focus" press scrolls the list to: its top just clear of the header, which is sticky
+     from 760px up and scrolls away below that. */
   scroll-margin-top: 12px;
 }
 @media (min-width: 760px) {

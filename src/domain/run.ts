@@ -103,7 +103,7 @@ export function failOnThreshold(run: Pick<RunSettings, "failOn" | "failOnKind">)
     case "priority":
       return `fails on priority ${failOn} or higher`;
     case "unchecked":
-      return "fails on any finding whose check did not run";
+      return "fails on any package whose check did not run";
     default:
       return `another kind of threshold: ${failOnKind}`;
   }

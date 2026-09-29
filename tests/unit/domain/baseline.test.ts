@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  baselineDelta,
-  baselineStep,
-  findingsCarryBaseline,
-  gateOutcome,
-} from "../../../src/domain/baseline";
+import { baselineDelta, baselineStep, findingsCarryBaseline } from "../../../src/domain/baseline";
 import type { BaselineSummary, Finding, Model } from "../../../src/model/types";
 import { makeFinding, makeModel } from "./fixtures";
 
@@ -113,23 +108,5 @@ describe("baselineStep", () => {
 
   it("is null for a finding the baseline says nothing about", () => {
     expect(baselineStep(makeFinding())).toBeNull();
-  });
-});
-
-/** A finding lockrot judged against fail-on: `reaches` and, when it reaches, `exempt`. */
-function judged(finding: Finding, reaches: boolean, exemptBy: string | null = null): Finding {
-  return { ...finding, gate: { reachesFailOn: reaches, fails: reaches && exemptBy === null, exemptBy } };
-}
-
-describe("gateOutcome", () => {
-  it("reads the finding's gate: exempt by the baseline or otherwise, fails, or nothing to say", () => {
-    const f = makeFinding();
-    expect(gateOutcome(judged(f, true, "baseline"))).toBe("accepted");
-    expect(gateOutcome(judged(f, true))).toBe("fails");
-    expect(gateOutcome(judged(f, false))).toBeNull();
-    expect(gateOutcome(judged(f, true, "waiver"))).toBe("exempt");
-    // A run that applies no fail-on, no gate at all.
-    expect(gateOutcome({ ...f, gate: { reachesFailOn: true, fails: false, exemptBy: null } })).toBeNull();
-    expect(gateOutcome(f)).toBeNull();
   });
 });

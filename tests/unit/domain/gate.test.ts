@@ -4,12 +4,14 @@ import { applyFilters } from "../../../src/domain/filters";
 import {
   baselineExemption,
   exemptWords,
+  findingGateLine,
   findingGateMark,
   gateClause,
   gateFact,
   gateFlag,
   gateHeadline,
   networkNotes,
+  rowGateWords,
   runGate,
   unflaggedFilters,
   type RunGate,
@@ -17,6 +19,7 @@ import {
 import { normalize } from "../../../src/model/normalize";
 import type { Finding, Model } from "../../../src/model/types";
 import { INITIAL_STATE } from "../../../src/state/types";
+import { makeFinding, makeModel } from "./fixtures";
 
 function loadModel(name: string): Model {
   const result = normalize(JSON.parse(readFileSync(`fixtures/bundles/${name}.json`, "utf8")));
@@ -117,6 +120,19 @@ describe("runGate", () => {
     expect(decided("koel_lock-only-0.13")).toMatchObject({ outcome: "passes", meets: 0, failing: 0 });
     expect(decided("wallabag_baseline-self-0.13")).toMatchObject({ outcome: "passes", meets: 69 });
   });
+
+  it("never says passes when lockrot does not say whether it applied the fail-on", () => {
+    const model = loadModel("wallabag_baseline-self-0.13");
+    const open: Model = {
+      ...model,
+      report: { ...model.report, gate: { fails: false, trippedBy: [], failOnApplied: null } },
+    };
+    expect(runGate(open)).toMatchObject({ outcome: "open", failOnApplied: null });
+    expect(gateHeadline(decided("wallabag_baseline-self-0.13"), "check").verb).toBe("passes");
+    const gate = runGate(open);
+    if (gate === null) throw new Error("decided");
+    expect(gateHeadline(gate, "check").verb).toBe("does not fail");
+  });
 });
 
 describe("gateFlag", () => {
@@ -130,31 +146,33 @@ describe("gateFlag", () => {
 describe("gateHeadline", () => {
   it("says fails or passes and the causes as flags", () => {
     expect(gateHeadline(decided("koel_no-token-unchecked-0.13"), "check")).toEqual({
-      lead: "this run fails",
+      who: "this run",
+      verb: "fails",
       flags: [{ text: "--fail-on=unchecked", known: true }],
-      unapplied: null,
+      aside: null,
     });
     expect(gateHeadline(decided("koel_lock-only-0.13"), "check")).toEqual({
-      lead: "this run passes",
+      who: "this run",
+      verb: "passes",
       flags: [{ text: "--fail-on=critical", known: true }],
-      unapplied: null,
+      aside: null,
     });
   });
 
-  it("never says passes for an unapplied fail-on; a run failing on another cause names only that", () => {
+  it("a baseline run says so, and never passes on the fail-on it did not apply", () => {
     expect(gateHeadline(decided("wallabag_generate-baseline-0.13"), "generate_baseline")).toEqual({
-      lead: "this run wrote a baseline",
+      who: "baseline run",
+      verb: null,
       flags: [],
-      unapplied: "--fail-on=high",
+      aside: "no fail-on applied",
     });
     expect(gateHeadline(decided("mini-0.13-gate-generate"), "generate_baseline")).toEqual({
-      lead: "this run fails",
+      who: "baseline run",
+      verb: "fails",
       flags: [{ text: "--strict-network", known: true }],
-      unapplied: null,
+      aside: null,
     });
-    expect(gateHeadline(decided("wallabag_generate-baseline-0.13"), "audit").lead).toBe(
-      "this run applied no fail-on",
-    );
+    expect(gateHeadline(decided("wallabag_generate-baseline-0.13"), "audit").who).toBe("this run");
   });
 });
 
@@ -165,13 +183,24 @@ describe("gateClause", () => {
       total: 173,
       flagged: 2,
       unflagged: 171,
+      unflaggedAs: "unchecked",
     });
     expect(gateClause(decided("wallabag_baseline-older-0.13"))).toEqual({
       kind: "failing",
       total: 12,
       flagged: 12,
       unflagged: 0,
+      unflaggedAs: "not flagged",
     });
+  });
+
+  it("names the unflagged by the fail-on's kind only when that kind says why they fail", () => {
+    for (const name of ["mini-0.13-gate-unknown", "mini-0.13-gate-verdict"]) {
+      const clause = gateClause(decided(name));
+      if (clause?.kind === "failing") expect(clause.unflaggedAs, name).toBe("not flagged");
+    }
+    const strict = gateClause(decided("wallabag_offline-strict-unchecked-0.13"));
+    expect(strict).toMatchObject({ total: 186, flagged: 30, unflagged: 156, unflaggedAs: "unchecked" });
   });
 
   it("says none fails when some meet the threshold and nothing fails on it", () => {
@@ -194,9 +223,12 @@ describe("gateClause", () => {
 
 describe("networkNotes", () => {
   it("counts only the notes lockrot says set network failures", () => {
-    expect(networkNotes(loadModel("mini-0.13-edges").report)).toBe(6);
-    expect(networkNotes(loadModel("wallabag_offline-strict-unchecked-0.13").report)).toBe(2);
-    expect(networkNotes(loadModel("koel_no-token-unchecked-0.13").report)).toBe(0);
+    expect(networkNotes(loadModel("mini-0.13-edges").report)).toEqual({ failed: 6, of: 21 });
+    expect(networkNotes(loadModel("wallabag_offline-strict-unchecked-0.13").report)).toEqual({
+      failed: 2,
+      of: 4,
+    });
+    expect(networkNotes(loadModel("koel_no-token-unchecked-0.13").report)?.failed).toBe(0);
   });
 
   it("is null when the document types no note, so no count is drawn", () => {
@@ -274,6 +306,72 @@ describe("findingGateMark", () => {
     for (const f of nullGate.report.findings) expect(findingGateMark(nullGate, f)).toBeNull();
     const older = loadModel("wallabag_wallabag");
     for (const f of older.report.findings) expect(findingGateMark(older, f)).toBeNull();
+  });
+});
+
+describe("findingGateLine and rowGateWords", () => {
+  it("the detail says whether it fails, the fail-on it meets, and what keeps it from failing", () => {
+    const koel = loadModel("koel_no-token-unchecked-0.13");
+    expect(findingGateLine(koel, finding(koel, "jwilsson/spotify-web-api-php"))).toEqual({
+      fails: true,
+      meets: "--fail-on=unchecked",
+      apart: null,
+    });
+    const edges = loadModel("mini-0.13-edges");
+    expect(findingGateLine(edges, finding(edges, "acme/future-step"))).toEqual({
+      fails: false,
+      meets: "--fail-on=high",
+      apart: "exempt: waiver",
+    });
+    expect(findingGateLine(edges, finding(edges, "acme/untagged"))?.apart).toBe("accepted");
+    const generate = loadModel("wallabag_generate-baseline-0.13");
+    expect(findingGateLine(generate, finding(generate, "guzzlehttp/streams"))).toEqual({
+      fails: false,
+      meets: "--fail-on=high",
+      apart: "not applied",
+    });
+  });
+
+  it("reads each finding's own gate: fails, an exemption, not applied, or nothing", () => {
+    const judged = (reaches: boolean | null, fails: boolean | null, exemptBy: string | null = null) =>
+      makeFinding({ gate: { reachesFailOn: reaches, fails, exemptBy } });
+    const base = makeModel([]);
+    const model = (failOnApplied: boolean | null): Model => ({
+      ...base,
+      report: {
+        ...base.report,
+        run: { ...base.report.run, failOn: "high" },
+        gate: { fails: true, trippedBy: ["fail_on"], failOnApplied },
+      },
+    });
+    const applied = model(true);
+    expect(findingGateLine(applied, judged(true, true))).toEqual({
+      fails: true,
+      meets: "--fail-on=high",
+      apart: null,
+    });
+    expect(findingGateLine(applied, judged(true, false, "baseline"))?.apart).toBe("accepted");
+    expect(findingGateLine(applied, judged(true, false, "waiver"))?.apart).toBe("exempt: waiver");
+    expect(findingGateLine(applied, judged(false, false))).toBeNull();
+    // Null is no answer: never drawn as "does not meet" or "does not fail".
+    expect(findingGateLine(applied, judged(null, null))).toBeNull();
+    expect(findingGateLine(applied, makeFinding({ gate: null }))).toBeNull();
+    expect(findingGateLine(model(false), judged(true, false))?.apart).toBe("not applied");
+    expect(findingGateLine(model(null), judged(true, false))).toBeNull();
+  });
+
+  it("nothing for a report whose gate is null or absent", () => {
+    const nullGate = loadModel("mini-0.13-gate-null");
+    for (const f of nullGate.report.findings) expect(findingGateLine(nullGate, f)).toBeNull();
+    const older = loadModel("wallabag_wallabag");
+    for (const f of older.report.findings) expect(findingGateLine(older, f)).toBeNull();
+  });
+
+  it("a row says fails or an exemption as written; the baseline's is its tag's to say", () => {
+    expect(rowGateWords({ kind: "fails" })).toBe("fails");
+    expect(rowGateWords({ kind: "exempt", by: "waiver" })).toBe("exempt: waiver");
+    expect(rowGateWords({ kind: "exempt", by: "baseline" })).toBeNull();
+    expect(rowGateWords({ kind: "unapplied" })).toBeNull();
   });
 });
 

@@ -673,18 +673,21 @@ describe("layout", () => {
     );
   });
 
-  test("a run that wrote a baseline never passes: its fail-on is not applied", () => {
+  test("a run that wrote a baseline never passes: it says it is a baseline run and applied no fail-on", () => {
     render(<App model={loadModel("wallabag_generate-baseline-0.13")} />);
     const fact = document.querySelector(".gate-fact")?.textContent ?? "";
-    expect(fact).toBe("this run wrote a baseline · --fail-on=high not applied");
+    expect(fact).toBe("baseline run · no fail-on applied");
     expect(document.querySelector(".lead-gate")?.textContent).toBe("39 meet --fail-on=high, not applied.");
+    cleanup();
+    render(<App model={loadModel("mini-0.13-gate-generate")} />);
+    expect(document.querySelector(".gate-fact")?.textContent).toBe("baseline run fails · --strict-network");
   });
 
-  // PD-GATE-2: every failing package first, then flagged and not flagged apart.
-  test("without a baseline the lead goes on: the total that fails, then flagged and not flagged", () => {
+  // PD-GATE-2: every failing package first, then flagged and not flagged apart, the latter by why.
+  test("without a baseline the lead goes on: the total that fails, then flagged and unchecked", () => {
     render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
     expect(document.querySelector(".lead-gate")?.textContent).toBe(
-      "173 fail this run: 2 flagged, 171 not flagged, on All packages→.",
+      "173 fail this run: 2 flagged, 171 unchecked, on All packages→.",
     );
     const total = screen.getByRole("button", { name: "173 fail this run" });
     expect(total.getAttribute("aria-expanded")).toBe("false");
@@ -693,24 +696,27 @@ describe("layout", () => {
     const panel = document.getElementById(total.getAttribute("aria-controls") ?? "");
     expect(panel?.hidden).toBe(false);
     expect(panel?.textContent).toContain(
-      "Fails on any finding whose check did not run. 173 packages meet it, and all fail: 2 flagged and 171 not flagged (ok).",
+      "Fails on any package whose check did not run. 173 packages meet it, and all fail. Of those, 2 are flagged and 171 are not (ok).",
     );
   });
 
-  test("with a baseline the Against sentence closes on how many fail, and Why ties the exemptions to it", () => {
+  test("with a baseline the Against sentence closes on how many fail, which opens what ties them", () => {
     render(<App model={loadModel("wallabag_baseline-older-0.13")} />);
     const answer = document.querySelector(".bl-answer")?.textContent ?? "";
-    expect(answer).toContain("43 already accepted; 12 fail this run. Why");
-    fireEvent.click(screen.getByRole("button", { name: "Why" }));
+    expect(answer).toContain("43 already accepted; 12 fail this run.");
+    const total = screen.getByRole("button", { name: "12 fail this run" });
+    expect(total.getAttribute("aria-pressed")).toBeNull();
+    fireEvent.click(total);
+    expect(total.getAttribute("aria-expanded")).toBe("true");
     const panel = document.querySelector(".gate-why");
-    expect(panel?.textContent).toContain("exempt by the baseline30 of the 43 already accepted meet it");
+    expect(panel?.textContent).toContain("accepted30 of the 43 already accepted meet it");
     expect(panel?.textContent).toContain("42 packages meet it: 12 fail.");
   });
 
-  // PD-GATE-2/4: the count is the rail's own "Fails this run", the same key in the address.
-  test("'12 fail this run' filters Findings to the failing rows, the rail's own row pressed with it", () => {
-    render(<App model={loadModel("wallabag_baseline-older-0.13")} />);
-    const toggle = screen.getByRole("button", { name: "12 fail this run" });
+  // PD-GATE-2/4: the flagged count is the rail's own "Fails this run", the same key in the address.
+  test("'2 flagged' filters Findings to the failing rows, the rail's own row pressed with it", () => {
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    const toggle = screen.getByRole("button", { name: "2 flagged" });
     expect(toggle.getAttribute("aria-pressed")).toBe("false");
     fireEvent.click(toggle);
     expect(toggle.getAttribute("aria-pressed")).toBe("true");
@@ -723,23 +729,28 @@ describe("layout", () => {
     ).toBe("true");
   });
 
-  test("from another tab, the count lists the failing rows on Findings and keeps the search", () => {
-    window.location.hash = "#view=packages&q=doctrine";
-    render(<App model={loadModel("wallabag_baseline-older-0.13")} />);
-    fireEvent.click(screen.getByRole("button", { name: "12 fail this run" }));
+  test("from another tab, the flagged count lists the failing rows on Findings and keeps the search", () => {
+    window.location.hash = "#view=packages&q=spotify";
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    fireEvent.click(screen.getByRole("button", { name: "2 flagged" }));
     expect(screen.getByRole("tab", { name: /Findings/ }).getAttribute("aria-selected")).toBe("true");
-    expect(window.location.hash).toBe("#q=doctrine&gate=fails");
+    expect(window.location.hash).toBe("#q=spotify&gate=fails");
   });
 
-  test("the not-flagged count opens All packages on exactly those packages, keeping the search", () => {
+  test("the unchecked count opens All packages on exactly those packages", () => {
     render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
-    fireEvent.click(screen.getByRole("button", { name: /^171 not flagged\s*,?\s*on All packages$/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^171 unchecked\s*,?\s*on All packages$/ }));
     expect(screen.getByRole("tab", { name: /All packages/ }).getAttribute("aria-selected")).toBe("true");
     expect(window.location.hash).toBe("#view=packages&verdict=ok&gate=fails");
   });
 
-  test("an address asking for the failing rows of a run that did not fail lists every row", () => {
-    for (const name of ["koel_koel-0.13", "mini-0.13-gate-null", "wallabag_wallabag"]) {
+  test("an address asking for the failing rows of a run no package fails lists every row", () => {
+    for (const name of [
+      "koel_koel-0.13",
+      "mini-0.13-gate-null",
+      "wallabag_wallabag",
+      "wallabag_offline-strict-0.13",
+    ]) {
       window.location.hash = "#gate=fails";
       render(<App model={loadModel(name)} />);
       expect(window.location.hash, name).toBe("");

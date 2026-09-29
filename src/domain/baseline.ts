@@ -67,14 +67,3 @@ export function baselineStep(finding: Finding): BaselineStep | null {
   if (baseline === null) return null;
   return { status: baseline.status, previous: baseline.previousVerdict, current: finding.verdict };
 }
-
-/**
- * What a finding's own gate says about this run: the baseline exempts it, another exemption does
- * (`exempt_by` as written, which the caller shows), or it fails the run. Null for everything else —
- * no gate, not reaching, or a run that applies no fail-on (`fails` false with nothing exempting it).
- */
-export function gateOutcome(finding: Finding): "accepted" | "exempt" | "fails" | null {
-  if (finding.gate?.exemptBy === "baseline") return "accepted";
-  if ((finding.gate?.exemptBy ?? null) !== null) return "exempt";
-  return finding.gate?.fails === true ? "fails" : null;
-}

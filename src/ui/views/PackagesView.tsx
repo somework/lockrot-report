@@ -21,8 +21,9 @@ import { sharedDataDay } from "../../domain/share";
 import { isKnownSignalId, TONE } from "../../domain/vocab";
 import { Pill, Muted, toneClass } from "../common/common";
 import { AdvisoryChip } from "../common/AdvisoryChip";
-import { GateMark } from "../common/GateWords";
-import { findingGateMark } from "../../domain/gate";
+import { RowGateMark, rowGateSpoken } from "../common/GateWords";
+import { findingGateMark, rowGateWords } from "../../domain/gate";
+import { PACKAGES_FIT, useGateFit } from "./gateFit";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
@@ -200,15 +201,18 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
   const { model, state, dispatch, cursor } = useReport();
   const isOpen = state.pkg === finding.package;
   const hit = useSearchHit(finding);
-  const mark = findingGateMark(model, finding);
+  const found = findingGateMark(model, finding);
+  const words = found === null ? null : rowGateWords(found);
+  const fails = found?.kind === "fails";
   const markId = `${useId()}-gate`;
-  const marked = mark !== null && mark.kind !== "unapplied";
+  const mark = (at: string) => (words === null ? null : <RowGateMark words={words} fails={fails} at={at} />);
   // On a phone the priority is the row's left rule; in forced colours `prio-<word>` gives its
   // weight.
-  const rowClass =
+  const base =
     finding.priority === "none"
       ? "pk-row"
       : `pk-row has-prio prio-${finding.priority} ${toneClass(TONE(finding.priority))}`;
+  const rowClass = words === null ? base : `${base} has-gate`;
 
   return (
     <tr
@@ -217,7 +221,7 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
       tabIndex={rowTabIndex(finding.package, cursor)}
       aria-current={isOpen ? "true" : undefined}
       aria-label={finding.package}
-      aria-describedby={marked ? markId : undefined}
+      aria-describedby={words === null ? undefined : markId}
       data-pkg={finding.package}
       {...openInteractions(finding.package, dispatch)}
     >
@@ -229,11 +233,11 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
             <AdvisoryChip finding={finding} />
           </>
         )}
-        {marked && (
-          <>
-            {" "}
-            <GateMark finding={finding} id={markId} />
-          </>
+        {mark("name")}
+        {words !== null && (
+          <span className="vh" id={markId}>
+            {rowGateSpoken(words, fails)}
+          </span>
         )}
         <MatchNote hit={hit} />
       </td>
@@ -245,6 +249,7 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
       </td>
       <td role="cell" className="pk-verdict">
         <Pill word={finding.verdict} />
+        {mark("verdict")}
       </td>
       <td role="cell" className="pk-prio">
         {finding.priority === "none" ? <Muted>—</Muted> : <Pill word={finding.priority} />}
@@ -252,6 +257,7 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
       <td role="cell" className="pk-reach">
         {finding.direct ? "direct" : "transitive"}
         {finding.dev ? " · dev" : ""}
+        {mark("reach")}
       </td>
       <td role="cell" className="num pk-sig">
         <SignalsCell finding={finding} />
@@ -374,7 +380,7 @@ function PackagesTable({
 }) {
   const { state, dispatch } = useReport();
   const printed = usePrinted();
-  const wrap = useRef<HTMLDivElement>(null);
+  const wrap = useGateFit(PACKAGES_FIT, useRef<HTMLDivElement>(null));
   const scrolls = useOverflowX(wrap);
   const activeSort: SortKey = state.sort;
   const columns = dated ? COLUMNS : COLUMNS.filter((column) => column.key !== "data");

@@ -1052,30 +1052,62 @@ describe("Detail", () => {
       return container.querySelector(".detail-baseline")?.textContent ?? "";
     }
 
-    it("says an accepted finding does not fail this run only when its gate says the baseline exempts it", () => {
+    /** The line under the pills, where every report's detail says whether it fails this run. */
+    function gateLine(
+      status: string,
+      gate: Record<string, unknown> | null,
+      verdict = "stale",
+    ): string | null {
+      const model = normalize({
+        report: {
+          lockrot: { version: "0.13.0", schema: 1 },
+          generated_at: "2026-01-01T00:00:00Z",
+          run: { fail_on: "high", fail_on_kind: "priority" },
+          gate: { fails: true, tripped_by: ["fail_on"], fail_on_applied: true },
+          baseline: { path: "baseline.json", known: 1, new: 1, worsened: 0, stale: [] },
+          findings: [
+            {
+              package: "vendor/same",
+              version: "1.0.0",
+              verdict,
+              priority: "high",
+              baseline: { status, previous_verdict: null },
+              gate,
+            },
+          ],
+        },
+      });
+      if (!model.ok) throw new Error(model.error.message);
+      const { container } = renderDetail(model.model, "vendor/same");
+      return container.querySelector(".detail-gate")?.textContent ?? null;
+    }
+
+    it("the sentence says where it stands against the file; the line under the pills, the run", () => {
       expect(withGate("known", "stale", { reaches_fail_on: true, fails: false, exempt_by: "baseline" })).toBe(
-        "Already accepted in baseline.json as stale, so it does not fail this run.",
-      );
-      // Known, but it does not reach fail-on: nothing exempts it, and the build is not mentioned.
-      expect(withGate("known", "stale", { reaches_fail_on: false, fails: false, exempt_by: null })).toBe(
         "Already accepted in baseline.json as stale.",
       );
+      expect(gateLine("known", { reaches_fail_on: true, fails: false, exempt_by: "baseline" })).toBe(
+        "does not fail · meets --fail-on=high, accepted",
+      );
+      // Known, but it does not reach fail-on: nothing exempts it, and the run is not mentioned.
+      expect(gateLine("known", { reaches_fail_on: false, fails: false, exempt_by: null })).toBeNull();
     });
 
     it("says a finding fails this run when its gate says so", () => {
       expect(
         withGate("new", null, { reaches_fail_on: true, fails: true, exempt_by: null }, "abandoned"),
-      ).toBe("Not in baseline.json: new since it was written. It fails this run.");
+      ).toBe("Not in baseline.json: new since it was written.");
+      expect(gateLine("new", { reaches_fail_on: true, fails: true, exempt_by: null }, "abandoned")).toBe(
+        "fails this run · meets --fail-on=high",
+      );
     });
 
     it("names another exemption than the baseline as written, and says it does not fail this run", () => {
-      expect(
-        withGate("new", null, { reaches_fail_on: true, fails: false, exempt_by: "waiver" }, "abandoned"),
-      ).toBe(
-        "Not in baseline.json: new since it was written. Exempt for another reason (waiver), so it does not fail this run.",
+      expect(gateLine("new", { reaches_fail_on: true, fails: false, exempt_by: "waiver" }, "abandoned")).toBe(
+        "does not fail · meets --fail-on=high, exempt: waiver",
       );
       expect(withGate("known", "stale", { reaches_fail_on: true, fails: false, exempt_by: "waiver" })).toBe(
-        "Already accepted in baseline.json as stale. Exempt for another reason (waiver), so it does not fail this run.",
+        "Already accepted in baseline.json as stale.",
       );
     });
 

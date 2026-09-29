@@ -47,8 +47,7 @@ export interface State {
 export type Action =
   | { type: "view"; view: View; keepDetail?: boolean }
   | { type: "query"; q: string }
-  /** `reveal`: bring the list into view when it is not, as a control above it asks. */
-  | { type: "toggle"; group: FilterGroup; key: string; reveal?: boolean }
+  | { type: "toggle"; group: FilterGroup; key: string }
   | { type: "clear" }
   /** A tab (Findings unless named) listed through exactly these rail filters, no detail open; the
    *  query box emptied unless `keepQuery`. */

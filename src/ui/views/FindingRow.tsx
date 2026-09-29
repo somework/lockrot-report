@@ -5,8 +5,8 @@ import type { Finding, Signal } from "../../model/types";
 import { useReport } from "../context";
 import { toneClass } from "../common/common";
 import { AdvisoryChip } from "../common/AdvisoryChip";
-import { RowGateMark, rowMarkWords } from "../common/GateWords";
-import { findingGateMark } from "../../domain/gate";
+import { RowGateMark, rowGateSpoken } from "../common/GateWords";
+import { findingGateMark, rowGateWords } from "../../domain/gate";
 import { signalDef, signalDocUrl, TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { ageNotRead, ageScale, type AgeAxis } from "../../domain/age";
 import { pinnedKindOf } from "../../domain/pinned";
@@ -172,12 +172,13 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
   const printed = usePrinted();
   const ids = useId();
   const found = findingGateMark(model, finding);
-  const mark = found !== null && rowMarkWords(found) !== null ? found : null;
-  const gateClass = mark === null ? "" : ` has-gate gate-${mark.kind}`;
+  const words = found === null ? null : rowGateWords(found);
+  const fails = found?.kind === "fails";
+  const mark = (at: string) => (words === null ? null : <RowGateMark words={words} fails={fails} at={at} />);
+  const gateClass = words === null ? "" : ` has-gate${fails ? " gate-fails" : ""}`;
   const rowClass = `frow ${toneClass(TONE(finding.verdict))}${gateClass}`;
-  // The row's name is its package; the verdict and this run's mark are what a screen reader hears
-  // next, as they are what the eye reads beside it.
-  const describedBy = mark === null ? `${ids}-verdict` : `${ids}-verdict ${ids}-gate`;
+  // The row's name is its package; its verdict and gate words are what a screen reader hears next.
+  const describedBy = words === null ? `${ids}-verdict` : `${ids}-verdict ${ids}-gate`;
 
   const cells = (
     <>
@@ -190,7 +191,7 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
       </span>
       <span className="fc-line">
         <span className="fcell fc-pkg" title={`${finding.package} ${finding.version}`}>
-          {mark !== null && <RowGateMark mark={mark} at="pkg" />}
+          {mark("pkg")}
           {vendor !== null && (
             <>
               <span className={`fc-vendor${dim(ditto.vendor)}`}>{vendor}/</span>
@@ -208,7 +209,7 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
               : finding.chain.join(" › ") || undefined
           }
         >
-          {mark !== null && <RowGateMark mark={mark} at="reach" />}
+          {mark("reach")}
           <Reach finding={finding} />
         </span>
       </span>
@@ -224,11 +225,11 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
             ))}
           </span>
         )}
-        {mark !== null && <RowGateMark mark={mark} at="why" />}
+        {mark("why")}
       </span>
-      {mark !== null && (
+      {words !== null && (
         <span className="vh" id={`${ids}-gate`}>
-          {rowMarkWords(mark)?.spoken}
+          {rowGateSpoken(words, fails)}
         </span>
       )}
       {scale ? (
@@ -240,6 +241,7 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
       ) : (
         <AgeCellEmpty axis={axis} notRead={ageNotRead(finding)} />
       )}
+      {mark("age")}
     </>
   );
 

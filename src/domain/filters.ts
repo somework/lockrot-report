@@ -244,15 +244,14 @@ const SINCE_ROWS: readonly (readonly [string, string])[] = [
 
 const GATE_ROWS: readonly (readonly [string, string])[] = [["fails", "Fails this run"]];
 
-/** Only a run that failed has findings to list by it. */
+/** Only a run some package fails has rows to list by it; one failed by the network alone has none. */
 function runFails(model: Model): boolean {
-  return model.report.gate?.fails === true;
+  return model.report.gate?.fails === true && model.report.findings.some((f) => f.gate?.fails === true);
 }
 
 /**
- * The filters an address may carry for this report: a `gate` key only when the run failed, and then
- * only `fails`. A link written for a failing run, opened on a passing one, lists every row instead
- * of none with no rail row to turn it off.
+ * The filters an address may carry for this report: a `gate` key only when some package fails the
+ * run, and then only `fails`. Anywhere else a copied link would open on an empty list.
  */
 export function filtersFor(model: Model, filters: Filters): Filters {
   const gate = runFails(model) ? filters.gate.filter((key) => key === "fails") : [];
@@ -328,8 +327,8 @@ function fixRows(here: readonly Finding[]): readonly (readonly [string, string])
   return FIX_GROUP_TEXT.filter(([shape]) => shapes.has(shape));
 }
 
-/** Since (with a baseline), This run (when it failed), Scope, Signal (if any fired), fix cost (with an advisory). Every count
- *  is what the list shows once that row is added to everything else selected (PD-RAIL-1/2). */
+/** Since, This run, Scope, Signal, fix cost, each where it has a row. Every count is what the list
+ *  shows once that row is added to everything else selected (PD-RAIL-1/2). */
 export function railGroups(model: Model, state: State): readonly RailGroup[] {
   const everyone = population(model, state.view);
   const here = state.view === "radius" ? placedOnRadius(model, everyone) : everyone;

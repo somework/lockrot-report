@@ -3,11 +3,8 @@ import { useReport } from "../context";
 import { usePrinted } from "../print/printContext";
 import "./disclosure.css";
 
-/**
- * Level 1 of a block (round 2, DESIGN.md §5 PD-GATE-4): an inline text button that opens a panel
- * under the sentence it ends. Kept in `state.disclosure`, so it survives a re-render; always open
- * on paper, where the button has nothing to do.
- */
+/** Level 1 of a block (PD-GATE-4): kept in `state.disclosure`, so it survives a re-render; always
+ *  open on paper, where the button has nothing to do. */
 export function useDisclosure(key: string): { open: boolean; toggle: () => void; printed: boolean } {
   const { state, dispatch } = useReport();
   const printed = usePrinted();

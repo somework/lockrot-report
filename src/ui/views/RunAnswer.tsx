@@ -135,13 +135,17 @@ function outcome(model: Model): ComponentChildren {
   const { gate, run } = model.report;
   if (gate === null || gate.fails === null || run.failOn === null) return null;
   const unapplied = gate.failOnApplied === false;
-  const wrote =
-    run.mode === "generate_baseline"
-      ? "It wrote a baseline, so it applied no fail-on"
-      : "It applied no fail-on";
+  const flag = <code className="mono">{gateFlag("fail_on", run.failOn).text}</code>;
+  const wrote = (
+    <>
+      {run.mode === "generate_baseline" ? "It wrote a baseline, so it applied no " : "It applied no "}
+      {flag}
+    </>
+  );
   if (!gate.fails) {
     if (unapplied) return <> {wrote}.</>;
-    return run.failOn === "none" ? null : <> It passed.</>;
+    if (run.failOn === "none") return null;
+    return gate.failOnApplied === true ? <> It passed.</> : <> It did not fail.</>;
   }
   const causes = [...new Set(gate.trippedBy)];
   const named = namedFlags(model);
@@ -157,10 +161,9 @@ function outcome(model: Model): ComponentChildren {
       <>
         {listed(
           causes.map((cause) => {
-            const flag = gateFlag(cause, run.failOn);
             return (
               <code className="mono" key={cause}>
-                {flag.text}
+                {gateFlag(cause, run.failOn).text}
               </code>
             );
           }),

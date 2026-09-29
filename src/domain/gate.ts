@@ -1,8 +1,5 @@
-/**
- * The run's gate, read off lockrot's root `gate` and each finding's own `gate`: lockrot decides
- * what fails, the page counts and words it (PD-GATE-1..5, DESIGN.md §5). A report whose gate is
- * absent, null or a quiet `--fail-on=none` keeps the header's older fact (`gateFact`).
- */
+/** The run's gate, read off lockrot's root `gate` and each finding's own: lockrot decides what
+ *  fails, the page counts and words it (PD-GATE-1..5, DESIGN.md §5). */
 
 import type { Finding, Model, ReportModel } from "../model/types";
 import { EMPTY_FILTERS, INITIAL_STATE, type Filters } from "../state/types";
@@ -10,7 +7,8 @@ import { baselineDelta } from "./baseline";
 import { applyFilters, population, sinceBucket } from "./filters";
 import { VERDICT_ORDER } from "./vocab";
 
-export type RunOutcome = "fails" | "passes" | "unapplied";
+/** `open`: lockrot says the run did not fail but not whether it applied its fail-on. */
+export type RunOutcome = "fails" | "passes" | "unapplied" | "open";
 
 export interface ExemptCount {
   /** `exempt_by` as written. */
@@ -24,7 +22,9 @@ export interface RunGate {
   /** `tripped_by`, each once, in the document's order. */
   readonly causes: readonly string[];
   readonly failOn: string | null;
-  readonly failOnApplied: boolean;
+  /** `run.fail_on_kind` as written. */
+  readonly failOnKind: string | null;
+  readonly failOnApplied: boolean | null;
   /** Packages whose own gate meets fail-on, whatever exempts them. */
   readonly meets: number;
   readonly failing: number;
@@ -63,11 +63,18 @@ export function runGate(model: Model): RunGate | null {
   const failing = findings.filter(failsRun);
   const unflagged = failing.filter((f) => !listed.has(f));
   const meeting = findings.filter(meetsFailOn);
-  const failOnApplied = gate.failOnApplied !== false;
+  const failOnApplied = gate.failOnApplied;
   return {
-    outcome: gate.fails ? "fails" : failOnApplied ? "passes" : "unapplied",
+    outcome: gate.fails
+      ? "fails"
+      : failOnApplied === true
+        ? "passes"
+        : failOnApplied === false
+          ? "unapplied"
+          : "open",
     causes: [...new Set(gate.trippedBy)],
     failOn: run.failOn,
+    failOnKind: run.failOnKind,
     failOnApplied,
     meets: meeting.length,
     failing: failing.length,
@@ -91,35 +98,46 @@ export function gateFlag(cause: string, failOn: string | null): GateFlag {
 }
 
 export interface GateHeadline {
-  readonly lead: string;
-  /** The causes that failed the run, or the fail-on a passing run was given. */
+  readonly who: string;
+  /** "fails", "passes", "does not fail"; null when the run's outcome is not the point. */
+  readonly verb: string | null;
+  /** The causes that failed the run, or the fail-on a run that did not fail was given. */
   readonly flags: readonly GateFlag[];
-  /** The fail-on a run that did not fail was given and did not apply. */
-  readonly unapplied: string | null;
+  /** Said after the flags, quieter: a fail-on the run did not apply. */
+  readonly aside: string | null;
 }
 
 /**
- * The header's words: "this run fails · --fail-on=high". Never "passes" for an unapplied fail-on;
- * a run that failed on another cause names only its causes, and the summary says the rest.
+ * The header's words: "this run fails · --fail-on=high". "Passes" only when lockrot says the
+ * fail-on was applied; a baseline run says so, since it applies none.
  */
 export function gateHeadline(gate: RunGate, mode: string | null): GateHeadline {
-  const unapplied =
-    !gate.failOnApplied && gate.failOn !== null ? gateFlag("fail_on", gate.failOn).text : null;
-  if (gate.outcome === "fails") {
-    const flags = gate.causes.map((cause) => gateFlag(cause, gate.failOn));
-    return { lead: "this run fails", flags, unapplied: null };
+  const who = mode === "generate_baseline" ? "baseline run" : "this run";
+  const given = gate.failOn === null ? [] : [gateFlag("fail_on", gate.failOn)];
+  switch (gate.outcome) {
+    case "fails": {
+      const flags = gate.causes.map((cause) => gateFlag(cause, gate.failOn));
+      return { who, verb: "fails", flags, aside: null };
+    }
+    case "passes":
+      return { who: "this run", verb: "passes", flags: given, aside: null };
+    case "unapplied":
+      return { who, verb: null, flags: [], aside: "no fail-on applied" };
+    case "open":
+      return { who: "this run", verb: "does not fail", flags: given, aside: null };
   }
-  if (gate.outcome === "passes") {
-    const flags = gate.failOn === null ? [] : [gateFlag("fail_on", gate.failOn)];
-    return { lead: "this run passes", flags, unapplied: null };
-  }
-  const lead = mode === "generate_baseline" ? "this run wrote a baseline" : "this run applied no fail-on";
-  return { lead, flags: [], unapplied };
 }
 
 /** What the summary's answer adds, or null when it has nothing to add to the header's words. */
 export type GateClause =
-  | { readonly kind: "failing"; readonly total: number; readonly flagged: number; readonly unflagged: number }
+  | {
+      readonly kind: "failing";
+      readonly total: number;
+      readonly flagged: number;
+      readonly unflagged: number;
+      /** What the unflagged failing packages are called: why they fail, where the fail-on says. */
+      readonly unflaggedAs: string;
+    }
   | { readonly kind: "none-fail"; readonly meets: number }
   | { readonly kind: "unapplied"; readonly meets: number; readonly failOn: string };
 
@@ -130,20 +148,27 @@ export function gateClause(gate: RunGate): GateClause | null {
       total: gate.failing,
       flagged: gate.failingFlagged,
       unflagged: gate.failingUnflagged,
+      unflaggedAs: gate.failOnKind === "unchecked" ? "unchecked" : "not flagged",
     };
   }
   if (gate.meets === 0) return null;
-  if (!gate.failOnApplied && gate.failOn !== null) {
+  if (gate.failOnApplied === false && gate.failOn !== null) {
     return { kind: "unapplied", meets: gate.meets, failOn: gate.failOn };
   }
   return { kind: "none-fail", meets: gate.meets };
 }
 
-/** How many run notes set `network_failures`, what `--strict-network` fails on; null when the
- *  document types no note, so the page cannot say which. */
-export function networkNotes(report: ReportModel): number | null {
+export interface NetworkNotes {
+  /** The notes that set `network_failures`, what `--strict-network` fails on. */
+  readonly failed: number;
+  readonly of: number;
+}
+
+/** Null when the document types no note, so the page cannot say which. */
+export function networkNotes(report: ReportModel): NetworkNotes | null {
   if (report.noteDetails.length === 0) return null;
-  return report.noteDetails.filter((note) => note.setsNetworkFailures === true).length;
+  const failed = report.noteDetails.filter((note) => note.setsNetworkFailures === true).length;
+  return { failed, of: report.noteDetails.length };
 }
 
 export interface BaselineExemption {
@@ -197,6 +222,38 @@ export function findingGateMark(model: Model, f: Finding): FindingGateMark | nul
   if (own.reachesFailOn !== true) return null;
   if (own.exemptBy !== null) return { kind: "exempt", by: own.exemptBy };
   return root.failOnApplied === false ? { kind: "unapplied" } : null;
+}
+
+/** The detail's line under its pills: whether this finding fails the run, and why, in words. */
+export interface FindingGateLine {
+  readonly fails: boolean;
+  /** The fail-on it meets, as its flag; null when it meets none. */
+  readonly meets: string | null;
+  /** Why it meets the fail-on and does not fail: "accepted", "exempt: waiver", "not applied". */
+  readonly apart: string | null;
+}
+
+export function findingGateLine(model: Model, f: Finding): FindingGateLine | null {
+  const mark = findingGateMark(model, f);
+  if (mark === null) return null;
+  const { failOn } = model.report.run;
+  const meets = failOn === null || f.gate?.reachesFailOn !== true ? null : gateFlag("fail_on", failOn).text;
+  switch (mark.kind) {
+    case "fails":
+      return { fails: true, meets, apart: null };
+    case "exempt":
+      return { fails: false, meets, apart: mark.by === "baseline" ? "accepted" : `exempt: ${mark.by}` };
+    case "unapplied":
+      return { fails: false, meets, apart: "not applied" };
+  }
+}
+
+/** The words a row shows for its gate: "fails", or an exemption other than the baseline's, which
+ *  the row's new/worsened tag (or its absence) already says. */
+export function rowGateWords(mark: FindingGateMark): string | null {
+  if (mark.kind === "fails") return "fails";
+  if (mark.kind === "exempt" && mark.by !== "baseline") return `exempt: ${mark.by}`;
+  return null;
 }
 
 /**

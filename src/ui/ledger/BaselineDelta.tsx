@@ -120,14 +120,34 @@ export function BaselineDelta() {
   if (delta === null) return null;
   const gate = runGate(model);
   const clause = gate === null ? null : gateClause(gate);
-  return <Against delta={delta} gate={clause === null ? null : gate} clause={clause} />;
+  const answer = gate === null || clause === null ? null : { gate, clause };
+  return <Against delta={delta} answer={answer} />;
+}
+
+interface GateAnswer {
+  readonly gate: RunGate;
+  readonly clause: GateClause;
+}
+
+/** "; 12 fail this run", which opens what fails the run, and the panel under the sentence. */
+function useGateEnd(answer: GateAnswer | null): { end: ComponentChildren; panel: ComponentChildren } {
+  const why = useGateWhy(answer?.gate ?? null);
+  if (answer === null || why === null) return { end: null, panel: null };
+  return {
+    end: (
+      <>
+        ; <GateClauseText clause={answer.clause} opening={false} lead={why.lead} />
+      </>
+    ),
+    panel: why.panel,
+  };
 }
 
 /** The Against sentence; with lockrot's gate, how many fail this run closes it (PD-GATE-2). */
-function Against({ delta, gate, clause }: { delta: Delta; gate: RunGate | null; clause: GateClause | null }) {
+function Against({ delta, answer }: { delta: Delta; answer: GateAnswer | null }) {
   const { filterable } = delta;
   const changed = delta.new + delta.worsened;
-  const why = useGateWhy(gate);
+  const { end, panel } = useGateEnd(answer);
 
   return (
     <div className="bl-top">
@@ -151,14 +171,9 @@ function Against({ delta, gate, clause }: { delta: Delta; gate: RunGate | null; 
         <Count bucket="known" count={delta.known} filterable={filterable}>
           already accepted
         </Count>
-        {clause !== null && (
-          <>
-            ; <GateClauseText clause={clause} opening={false} />
-          </>
-        )}
-        .{clause !== null && <> {why.button}</>}
+        {end}.
       </p>
-      {clause !== null && why.panel}
+      {panel}
       <Gone delta={delta} />
     </div>
   );

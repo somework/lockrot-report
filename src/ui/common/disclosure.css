@@ -1,5 +1,5 @@
-/* Level 1 of a block (Disclosure.tsx): a quiet verb at the end of the sentence it explains, and a
-   marker drawn from borders, so a screen reader hears the verb alone. */
+/* Level 1 of a block (Disclosure.tsx). The marker is a glyph in a pseudo-element of an aria-hidden
+   span: a forced palette keeps its shape, and a screen reader hears the label alone. */
 .l1-btn {
   display: inline-flex;
   align-items: baseline;
@@ -25,13 +25,15 @@
   outline-offset: 2px;
 }
 .l1-mark {
-  align-self: center;
-  width: 0;
-  height: 0;
-  border-left: 4.5px solid currentColor;
-  border-top: 3.5px solid transparent;
-  border-bottom: 3.5px solid transparent;
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.7em;
+  font-weight: 400;
+  line-height: 1;
   transition: transform 0.15s ease;
+}
+.l1-mark::before {
+  content: "▶";
 }
 .l1-btn[aria-expanded="true"] .l1-mark {
   transform: rotate(90deg);
@@ -47,9 +49,6 @@
   .l1-btn {
     color: LinkText;
     border-bottom-color: LinkText;
-  }
-  .l1-mark {
-    border-left-color: LinkText;
   }
 }
 /* base.css hides every [hidden] with !important; paper shows level 1 whatever its state. */

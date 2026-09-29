@@ -16,9 +16,9 @@ test.beforeEach(async ({ page }) => {
 
 /** Each marked row: its height with its mark where it sits, then with none; and whether the mark is
  *  inside the row, uncut. */
-async function markedRows(page: Page) {
-  return page.evaluate(() => {
-    const rows = [...document.querySelectorAll<HTMLElement>("li.frow.has-gate")];
+async function markedRows(page: Page, selector = "li.frow.has-gate") {
+  return page.evaluate((selector) => {
+    const rows = [...document.querySelectorAll<HTMLElement>(selector)];
     const placed = rows.map((row) => {
       const box = row.getBoundingClientRect();
       const mark = [...row.querySelectorAll<HTMLElement>(".gate-mark")].find(
@@ -34,10 +34,13 @@ async function markedRows(page: Page) {
           (mark?.scrollWidth ?? 0) <= (mark?.clientWidth ?? 0) + 1);
       return { pkg: row.dataset["pkg"], at, height: box.height, inside, shown: mark !== undefined };
     });
-    for (const row of rows) row.dataset["gateAt"] = "none";
+    for (const row of rows) {
+      row.dataset["gateAt"] = "none";
+      row.removeAttribute("data-gate-tight");
+    }
     const bare = rows.map((row) => row.getBoundingClientRect().height);
     return placed.map((row, i) => ({ ...row, bare: bare[i] ?? 0 }));
-  });
+  }, selector);
 }
 
 test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
@@ -61,7 +64,31 @@ test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
         }
         // The word, not a bare tick: almost every row finds room for it.
         const worded = rows.filter((row) => row.shown).length;
-        expect(worded / rows.length, `${width}px`).toBeGreaterThan(0.85);
+        expect(worded / rows.length, `${width}px`).toBeGreaterThan(0.9);
+      }
+    });
+  }
+
+  for (const fixture of [
+    FIXTURES.wallabagOfflineStrictUnchecked013,
+    FIXTURES.koelNoTokenUnchecked013,
+  ] as const) {
+    test(`${fixture}: an All packages row keeps its height too, and its words stay inside it`, async ({
+      page,
+    }) => {
+      for (const width of [320, 390, 768, 1024, 1440, 1920]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(pageUrl(fixture) + "#view=packages");
+        const rows = await markedRows(page, "tr.pk-row.has-gate");
+        expect(rows.length, `${width}px`).toBeGreaterThan(100);
+        for (const row of rows) {
+          expect(row.height, `${row.pkg} at ${width}px`).toBe(row.bare);
+          expect(row.inside, `${row.pkg} at ${width}px`).toBe(true);
+        }
+        if (width >= 390) {
+          const worded = rows.filter((row) => row.shown).length;
+          expect(worded / rows.length, `${width}px`).toBeGreaterThan(0.95);
+        }
       }
     });
   }
@@ -90,7 +117,7 @@ test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
     await expect(row).toHaveAccessibleDescription("left-behind fails this run");
     await report.goto(FIXTURES.miniEdges013);
     await expect(page.locator('li.frow[data-pkg="acme/future-step"]')).toHaveAccessibleDescription(
-      "old-promise meets the fail-on, exempt: waiver",
+      "old-promise exempt: waiver, does not fail",
     );
   });
 });
@@ -103,28 +130,37 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
   }) => {
     await report.goto(FIXTURES.koelNoTokenUnchecked013);
     const line = page.locator(".lead-gate");
-    await expect(line).toHaveText("173 fail this run: 2 flagged, 171 not flagged, on All packages→.");
+    await expect(line).toHaveText("173 fail this run: 2 flagged, 171 unchecked, on All packages→.");
     const text = (await line.textContent()) ?? "";
     expect(text.indexOf("173")).toBeLessThan(text.indexOf("2 flagged"));
+    // Why the unflagged fail, in the fail-on's own kind: their check did not run.
+    expect(text).not.toContain("not flagged");
     // One line at a phone's width: the lead grows by one line at most.
     const box = await line.boundingBox();
     expect(box?.height ?? 99).toBeLessThan(26);
   });
 
-  test("the not-flagged count opens All packages on exactly those, each marked, focus kept", async ({
+  test("the unchecked count opens All packages on exactly those, each marked, focus kept", async ({
     page,
   }) => {
     await report.gotoWithHash(FIXTURES.koelNoTokenUnchecked013, "q=a");
-    const link = page.getByRole("button", { name: /^171 not flagged/ });
+    const link = page.getByRole("button", { name: /^171 unchecked/ });
     await link.click();
     await expect(page.getByRole("tab", { name: /All packages/ })).toHaveAttribute("aria-selected", "true");
     expect(await report.hash()).toContain("gate=fails");
     expect(await report.hash()).toContain("q=a");
     await expect(link).toBeFocused();
     await report.gotoWithHash(FIXTURES.koelNoTokenUnchecked013, "");
-    await page.getByRole("button", { name: /^171 not flagged/ }).click();
+    await page.getByRole("button", { name: /^171 unchecked/ }).click();
     await expect(page.locator(".count-line")).toContainText("171 of 201 packages");
-    await expect(page.locator("tr[data-pkg] .gate-mark")).toHaveCount(171);
+    await expect(page.locator("tr[data-pkg].has-gate")).toHaveCount(171);
+    const worded = await page.evaluate(
+      () =>
+        [...document.querySelectorAll("tr[data-pkg] .gate-mark")].filter(
+          (mark) => getComputedStyle(mark).display !== "none",
+        ).length,
+    );
+    expect(worded).toBe(171);
   });
 
   test("level 1 opens by keyboard, is named by its words alone, and prints open", async ({ page }) => {
@@ -135,21 +171,21 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
     await expect(total).toHaveAttribute("aria-expanded", "true");
     const panel = page.locator(".gate-why").first();
     await expect(panel).toContainText("--strict-network");
-    await expect(panel).toContainText("2 run notes name the failed lookups, on Run data.");
-    await expect(panel).toContainText("30 flagged and 156 not flagged (unknown)");
+    await expect(panel).toContainText("2 of the 4 run notes name them, on Run data.");
+    await expect(panel).toContainText("Of those, 30 are flagged and 156 are not (unknown).");
     await page.keyboard.press("Enter");
     await expect(total).toHaveAttribute("aria-expanded", "false");
     await page.emulateMedia({ media: "print" });
     const printed = page.locator(".print-doc .gate-why");
     await expect(printed).toBeVisible();
-    await expect(printed).toContainText("Fails on any finding whose check did not run.");
+    await expect(printed).toContainText("Fails on any package whose check did not run.");
   });
 
-  test("the pressed filter keeps a carrier in forced colours", async ({ page }) => {
+  test("the pressed filter keeps a carrier in forced colours, and the marker its shape", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.emulateMedia({ forcedColors: "active" });
-    await report.goto(FIXTURES.wallabagBaselineOlder013);
-    const toggle = page.getByRole("button", { name: "12 fail this run" });
+    await report.goto(FIXTURES.koelNoTokenUnchecked013);
+    const toggle = page.getByRole("button", { name: "2 flagged" });
     const before = await toggle.evaluate((el) => getComputedStyle(el).borderBottomStyle);
     await toggle.click();
     const after = await toggle.evaluate((el) => {
@@ -159,6 +195,10 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
     expect(before).toBe("dotted");
     expect(after.border).toBe("solid");
     expect(Number(after.weight)).toBeGreaterThanOrEqual(700);
+    const marker = await page
+      .locator(".lead-gate .l1-mark")
+      .evaluate((el) => getComputedStyle(el, "::before").content);
+    expect(marker).toContain("▶");
   });
 
   for (const fixture of [FIXTURES.koelNoTokenUnchecked013, FIXTURES.wallabagBaselineOlder013] as const) {
@@ -191,7 +231,12 @@ test.describe("PD-GATE-4: the 'Fails this run' filter and its address", () => {
     expect(await report.hash()).not.toContain("gate=");
   });
 
-  for (const fixture of [FIXTURES.koel013, FIXTURES.miniGateNull013, FIXTURES.wallabag] as const) {
+  for (const fixture of [
+    FIXTURES.koel013,
+    FIXTURES.miniGateNull013,
+    FIXTURES.wallabag,
+    FIXTURES.wallabagOfflineStrict013,
+  ] as const) {
     test(`${fixture}: a stale gate=fails lists every row and leaves the address`, async ({ page }) => {
       await report.gotoWithHash(fixture, "gate=fails");
       expect((await report.rows()).length).toBeGreaterThan(0);
@@ -220,16 +265,48 @@ test.describe("PD-GATE-1: no decided gate, nothing new", () => {
 });
 
 test.describe("PD-GATE-5: Run data's rows", () => {
-  test("mode, strict network, result and root package, rows of the existing table", async () => {
+  test("mode, strict network and result, rows of the existing table", async () => {
     await report.gotoWithHash(FIXTURES.wallabagOfflineStrictUnchecked013, "view=run");
     await expect(report.runField("mode")).toHaveText("check");
     await expect(report.runField("strict network")).toHaveText("yes · a failed network lookup fails the run");
     await expect(report.runField("result")).toHaveText("fails · --strict-network · --fail-on=unchecked");
-    await expect(report.runField("root package")).toHaveText("wallabag/wallabag");
   });
 
-  test("an older report: strict network is an em dash and why, never 'no'", async () => {
+  test("an older report: strict network is an em dash and why, never 'no', and no result row", async ({
+    page,
+  }) => {
     await report.gotoWithHash(FIXTURES.wallabag, "view=run");
     await expect(report.runField("strict network")).toHaveText("— not in this document");
+    await expect(page.locator("dt", { hasText: /^result$/ })).toHaveCount(0);
   });
+});
+
+test.describe("PD-GATE-3: the detail says it in one line under its pills", () => {
+  for (const width of [390, 1440]) {
+    test(`at ${width}px the line is one line, and the links keep the pills' row`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      for (const [fixture, pkg, text] of [
+        [
+          FIXTURES.koelNoTokenUnchecked013,
+          "jwilsson/spotify-web-api-php",
+          "fails this run · meets --fail-on=unchecked",
+        ],
+        [FIXTURES.miniEdges013, "acme/future-step", "does not fail · meets --fail-on=high, exempt: waiver"],
+        [
+          FIXTURES.wallabagGenerateBaseline013,
+          "guzzlehttp/streams",
+          "does not fail · meets --fail-on=high, not applied",
+        ],
+      ] as const) {
+        await report.gotoWithHash(fixture, `pkg=${encodeURIComponent(pkg)}`);
+        const detail = page.getByRole("complementary", { name: pkg });
+        const line = detail.locator(".detail-gate");
+        await expect(line).toHaveText(text);
+        expect((await line.boundingBox())?.height ?? 99, pkg).toBeLessThan(24);
+        const pills = await detail.locator(".detail-pills").boundingBox();
+        const links = await detail.locator(".detail-links").boundingBox();
+        expect(Math.abs((pills?.y ?? 0) - (links?.y ?? 99)), pkg).toBeLessThan(8);
+      }
+    });
+  }
 });

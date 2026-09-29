@@ -1,6 +1,6 @@
 import type { ComponentChildren } from "preact";
 import type { Finding } from "../../model/types";
-import { baselineStep, gateOutcome, type BaselineStep } from "../../domain/baseline";
+import { baselineStep, type BaselineStep } from "../../domain/baseline";
 import { Pill } from "../common/common";
 import { useReport } from "../context";
 import "../views/baseline.css";
@@ -22,59 +22,29 @@ function Step({ step }: { step: BaselineStep }) {
   );
 }
 
-/** What the finding's own gate says about this run beyond the baseline: it fails, or another
- *  exemption, shown as written, keeps it from failing. */
-function gateWords(finding: Finding): ComponentChildren {
-  const outcome = gateOutcome(finding);
-  if (outcome === "fails") return " It fails this run.";
-  if (outcome !== "exempt") return null;
-  return (
-    <>
-      {" "}
-      Exempt for another reason (<code className="mono">{finding.gate?.exemptBy}</code>), so it does not fail
-      this run.
-    </>
-  );
-}
-
-/** The step in words, and what the finding's own gate says about this run — nothing when it says
- *  nothing, since the page does not read an outcome off the baseline status. */
-function sentence(step: BaselineStep, path: string, finding: Finding): ComponentChildren {
-  const outcome = gateOutcome(finding);
-  const gate = gateWords(finding);
-  if (step.status === "new") {
-    return (
-      <>
-        Not in {path}: new since it was written.{gate}
-      </>
-    );
-  }
+/** The step in words. Whether it fails this run is the line under the pills' to say, for every
+ *  report alike (DetailGateLine). */
+function sentence(step: BaselineStep, path: string): ComponentChildren {
+  if (step.status === "new") return <>Not in {path}: new since it was written.</>;
   if (step.status === "worsened") {
     // The pills and the status word above already say it got worse; the sentence says what moved.
     return step.previous === null ? (
       <>
-        {path} accepted a milder verdict; it is <span className="mono">{step.current}</span> now.{gate}
+        {path} accepted a milder verdict; it is <span className="mono">{step.current}</span> now.
       </>
     ) : (
       <>
         {path} accepted it as <span className="mono">{step.previous}</span>; it is{" "}
-        <span className="mono">{step.current}</span> now.{gate}
+        <span className="mono">{step.current}</span> now.
       </>
     );
   }
-  const accepted = outcome === "accepted" ? ", so it does not fail this run." : ".";
   if (step.status === "known") {
     return step.previous === null ? (
-      <>
-        Already accepted in {path}
-        {accepted}
-        {gate}
-      </>
+      <>Already accepted in {path}.</>
     ) : (
       <>
-        Already accepted in {path} as <span className="mono">{step.previous}</span>
-        {accepted}
-        {gate}
+        Already accepted in {path} as <span className="mono">{step.previous}</span>.
       </>
     );
   }
@@ -82,8 +52,6 @@ function sentence(step: BaselineStep, path: string, finding: Finding): Component
   return (
     <>
       {path} says <span className="mono">{step.status}</span>.
-      {outcome === "accepted" && " Accepted by the baseline, so it does not fail this run."}
-      {gate}
     </>
   );
 }
@@ -111,7 +79,7 @@ export function BaselineStanding({ finding }: { finding: Finding }) {
     <section className="detail-section">
       <h3>Against the baseline</h3>
       {moved && <Step step={step} />}
-      <p className="detail-baseline">{sentence(step, path, finding)}</p>
+      <p className="detail-baseline">{sentence(step, path)}</p>
     </section>
   );
 }

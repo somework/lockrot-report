@@ -202,7 +202,7 @@ function modeText(report: ReportModel): FieldValue {
   if (mode === null) return dashOr(report, "run.mode");
   if (mode === "check") return "check";
   if (mode === "generate_baseline")
-    return { parts: [mode, { aside: "wrote a baseline, applied no fail-on" }] };
+    return { parts: [mode, { aside: "a baseline run, which applies no fail-on" }] };
   return { parts: [{ code: mode, then: "" }, { aside: "another kind of run" }] };
 }
 
@@ -212,14 +212,15 @@ function strictText(report: ReportModel): FieldValue {
   return strict ? { parts: ["yes", { aside: "a failed network lookup fails the run" }] } : "no";
 }
 
-/** lockrot's own result, from the root `gate`: each cause as its flag, an unknown one as written. */
-function resultText(report: ReportModel): FieldValue {
+/** lockrot's own result, from the root `gate`: each cause as its flag, an unknown one as written;
+ *  null where the document has no decided gate, so the row is not drawn. */
+function resultText(report: ReportModel): FieldValue | null {
   const { gate, run } = report;
-  if (gate === null || gate.fails === null) return dashOr(report, "gate");
-  const unapplied = gate.failOnApplied === false && run.failOn !== null;
-  const notApplied: Part[] = unapplied
-    ? [{ aside: `${gateFlag("fail_on", run.failOn).text} not applied` }]
-    : [];
+  if (gate === null || gate.fails === null) return null;
+  const notApplied: Part[] =
+    gate.failOnApplied === false && run.failOn !== null
+      ? [{ aside: `applied no ${gateFlag("fail_on", run.failOn).text}` }]
+      : [];
   if (gate.fails) {
     const causes = [...new Set(gate.trippedBy)].map((cause): Part => {
       const flag = gateFlag(cause, run.failOn);
@@ -228,12 +229,8 @@ function resultText(report: ReportModel): FieldValue {
     return { parts: ["fails", ...causes, ...notApplied] };
   }
   if (run.failOn === "none") return { parts: ["fails on nothing", { aside: "--fail-on=none" }] };
-  if (unapplied) {
-    return run.mode === "generate_baseline"
-      ? { parts: ["wrote a baseline", ...notApplied] }
-      : { parts: notApplied };
-  }
-  return "passes";
+  if (gate.failOnApplied === true) return "passes";
+  return notApplied.length > 0 ? { parts: ["does not fail", ...notApplied] } : "does not fail";
 }
 
 interface Field {
@@ -254,6 +251,7 @@ function fieldGroups(model: Model): readonly FieldGroup[] {
   const ly = report.libyears;
   const cache = cacheAge(report);
   const threshold = failOnThreshold(run);
+  const result = resultText(report);
   const failOn: FieldValue =
     run.failOn === null
       ? { missing: nullReason(report, "run.fail_on") }
@@ -271,7 +269,6 @@ function fieldGroups(model: Model): readonly FieldGroup[] {
         },
         { label: "generated", value: utcMinute(report.generatedAt) },
         { label: "project", value: orReason(report, "run.project", run.project) },
-        { label: "root package", value: orReason(report, "run.root_package", run.rootPackage) },
         { label: "lock file", value: orReason(report, "run.lock_file", run.lockFile) },
         { label: "target PHP", value: orReason(report, "run.target_php", run.targetPhp) },
         {
@@ -287,7 +284,7 @@ function fieldGroups(model: Model): readonly FieldGroup[] {
         { label: "fail-on", value: failOn },
         { label: "strict network", value: strictText(report) },
         { label: "mode", value: modeText(report) },
-        { label: "result", value: resultText(report) },
+        ...(result === null ? [] : [{ label: "result", value: result }]),
       ],
     },
     {

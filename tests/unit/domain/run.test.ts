@@ -206,7 +206,7 @@ describe("failOnThreshold", () => {
     expect(failOnThreshold(run("silent", "verdict"))).toBe("fails on verdict silent or a more severe one");
     expect(failOnThreshold(run("high", "priority"))).toBe("fails on priority high or higher");
     expect(failOnThreshold(run("unchecked", "unchecked"))).toBe(
-      "fails on any finding whose check did not run",
+      "fails on any package whose check did not run",
     );
   });
 

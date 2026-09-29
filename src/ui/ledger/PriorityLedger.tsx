@@ -52,6 +52,7 @@ function ScopeLine({ clauses }: { clauses: readonly string[] }) {
  */
 function GateLine({ gate, clause }: { gate: RunGate; clause: GateClause }) {
   const why = useGateWhy(gate);
+  if (why === null) return null;
   return (
     <>
       <p className="lead-gate">

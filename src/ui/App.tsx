@@ -256,9 +256,6 @@ function RailSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
   );
 }
 
-/** How far down the viewport the list's top may sit and still count as in view for a revealing toggle. */
-const REVEAL_FOLD = 0.75;
-
 /** The page: state, address bar, layout, theme, keyboard (DESIGN.md §4, §5, §8). */
 export function App({ model }: { model: Model }) {
   const wide = useWide();
@@ -357,29 +354,23 @@ export function App({ model }: { model: Model }) {
   // hashchange restore — scrolled to 0 regardless of who caused it (regression review).
   const currentView = useRef(state.view);
   currentView.current = state.view;
-  const listFocused = useRef<"always" | "unseen" | null>(null);
+  const listFocused = useRef(false);
   const dispatchTracked = useCallback(
     (action: Action) => {
       if (action.type === "view" && action.view !== currentView.current) tabChangedByReader.current = true;
-      if (action.type === "focus") listFocused.current = "always";
-      if (action.type === "toggle" && action.reveal === true) listFocused.current = "unseen";
+      if (action.type === "focus") listFocused.current = true;
       dispatch(action);
     },
     [dispatch],
   );
 
-  // A "focus" action (the summary's gate clause, a Run data count) lists a set it counted somewhere
-  // else on the page, often a screen away from the list: the list's own top — the search box and
-  // its "N of M" line — is brought under the sticky header so the reader sees what the press did.
-  // A revealing toggle scrolls only when that line is below the fold.
+  // A "focus" action (the summary's gate counts, a Run data stat) lists a set counted a screen away:
+  // the list's top, its search and "N of M" line, comes under the sticky header.
   useEffect(() => {
-    const how = listFocused.current;
-    if (how === null) return;
-    listFocused.current = null;
+    if (!listFocused.current) return;
+    listFocused.current = false;
     const panel = document.getElementById(`${idBase}-panel`);
-    if (panel === null || typeof panel.scrollIntoView !== "function") return;
-    if (how === "unseen" && panel.getBoundingClientRect().top < window.innerHeight * REVEAL_FOLD) return;
-    panel.scrollIntoView({ block: "start" });
+    if (typeof panel?.scrollIntoView === "function") panel.scrollIntoView({ block: "start" });
   }, [state]);
 
   useEffect(() => {

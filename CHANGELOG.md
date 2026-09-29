@@ -11,17 +11,17 @@ tag or the address format, says so under **Breaking** in its entry.
 ### Added
 
 - Whether the run failed, as lockrot decided it. The header says "this run fails · --fail-on=high"
-  (or passes, or wrote a baseline and did not apply its fail-on), the causes as the CLI's flags. The
-  summary's answer says how many packages fail, total first — "173 fail this run: 2 flagged, 171
-  not flagged" — with a baseline closing the Against sentence instead; a press opens what each
-  cause fails on and what exempts the rest, and prints open. The flagged count filters Findings, the
-  rail gains "Fails this run" (`#gate=fails`), and the not-flagged count opens All packages on
-  exactly those packages.
-- Each Findings row says "fails", "accepted" or "exempt: <as lockrot wrote it>" at the end of a
-  line with room, so no row grows; a screen reader hears it with the row. All packages and the open
-  package say it too.
-- Run data gains root package, strict network, mode and result rows, and its sentence says whether
-  the run failed and on what.
+  (or passes, or "baseline run · no fail-on applied"), the causes as the CLI's flags. The summary's
+  answer says how many packages fail, total first — "173 fail this run: 2 flagged, 171 unchecked" —
+  with a baseline closing the Against sentence instead; a press on the total opens what each cause
+  fails on and what exempts the rest, and prints open. The flagged count filters Findings, the rail
+  gains "Fails this run" (`#gate=fails`), and the unflagged count opens All packages on exactly
+  those packages.
+- Each Findings and All packages row says "fails" or "exempt: <as lockrot wrote it>" at the end of
+  a line with room, so no row grows; a screen reader hears it with the row. The open package says in
+  one line under its pills whether it fails this run and which fail-on it meets.
+- Run data gains strict network, mode and, where lockrot decided the gate, result rows; its sentence
+  says whether the run failed and on what.
 
 - All packages on a phone: under 480px the rows stack — name and version, then the verdict, the
   libyears bar and how it gets in, with the priority as the row's left rule — instead of a table
@@ -448,11 +448,9 @@ tag or the address format, says so under **Breaking** in its entry.
   `generate_baseline` run judged no finding against its fail-on instead of that it exits 1, and
   counts as not accepted only the findings nothing exempts, naming another exemption as written
   (`waiver`). An `unchecked` tally reads "173 carry S10".
-- An open package's baseline paragraph says "so it does not fail this run" when its `gate` says the
-  baseline exempts it, "Exempt for another reason (`waiver`), so it does not fail this run." when
-  another exemption, shown as written, does, and "It fails this run." when its `gate` says it fails;
-  otherwise it says nothing about the build. "lockrot's --fail-on does not count it", read off the baseline status
-  alone, is gone.
+- An open package's baseline paragraph says only where it stands against the file; whether it fails
+  this run is the line under its pills, from its own `gate`. "lockrot's --fail-on does not count
+  it", read off the baseline status alone, is gone.
 - The note above Findings naming packages with an advisory but no rot verdict is narrowed by the
   search box and the rail, like the list under it, instead of naming every such package whatever
   is filtered.
