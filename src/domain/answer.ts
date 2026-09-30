@@ -11,7 +11,7 @@ import {
   type AgeLegend,
   type Thresholds,
 } from "./age";
-import { moveClause } from "./floors";
+import { moveClause, type MoveDrop } from "./floors";
 import { pinnedKind, readPinnedFacts, snapshotTagGap, tagStanding } from "./pinned";
 import { safeHref } from "./links";
 import { installedBranch, noFixTally, type NoFixTally } from "./priority";
@@ -31,7 +31,8 @@ export type AnswerPart =
   /** `href` is `replacement_url`, only for a package lockrot resolved. */
   | { readonly kind: "replacement"; readonly text: string; readonly href: string | null }
   /** The tag words that open level 1 (`pinnedTagDetail`): `lead`, then `version` in mono. */
-  | { readonly kind: "tags"; readonly text: string; readonly lead: string; readonly version: string | null };
+  | { readonly kind: "tags"; readonly text: string; readonly lead: string; readonly version: string | null }
+  | MoveDrop;
 
 export interface AnswerInput {
   readonly finding: Finding;

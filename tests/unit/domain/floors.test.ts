@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   FLOORS_STEPS,
+  MOVE_STEPS,
   floorsAnswer,
   floorsDefinition,
   foldWords,
@@ -17,6 +18,7 @@ import {
   type FloorGroup,
   type Floors,
   type FloorsStep,
+  type MoveStep,
 } from "../../../src/domain/floors";
 import { normalize } from "../../../src/model/normalize";
 import type { BranchRow, Model } from "../../../src/model/types";
@@ -336,7 +338,7 @@ describe("floorsAnswer: the shorter steps where the full sentence would take a t
     );
   });
 
-  it("first: the first clause that says a miss, alone and unquoted; every other branch on level 1's list", () => {
+  it("first: the first clause that says a miss, a newer branch's before yours, alone and unquoted; every other branch on level 1's list", () => {
     expect(at("first", "wallabag_wallabag-0.13", "phpunit/php-timer")).toEqual({
       sentence: "9.x and 8.x need a newer PHP than your require.php allows at its lowest.",
       rest: [
@@ -346,8 +348,12 @@ describe("floorsAnswer: the shorter steps where the full sentence would take a t
       ],
     });
     expect(at("first", "mini-0.13-edges", "acme/left")).toEqual({
-      sentence: "Yours (as of 1.9.0) needs a newer PHP than your require.php allows at its lowest.",
-      rest: rest("mini-0.13-edges", "acme/left"),
+      sentence: "3.x and 2.x are blocked by extension.",
+      rest: [
+        "3.x, 2.x: admit both but are blocked by extension",
+        "1.x (yours): needs a newer PHP than your require.php allows at its lowest but admits PHP 8.4 — it fits once your require.php starts higher",
+        "0.x: has no php recorded, so neither could be checked",
+      ],
     });
     expect(at("first", "wallabag_wallabag-0.13", "scheb/2fa-bundle")).toEqual({
       sentence: "8.x needs a newer PHP than your require.php allows at its lowest.",
@@ -564,6 +570,24 @@ describe("moveClause: S8 quoted in the words its ledger why uses", () => {
     expect(
       plain(moveClause({ newest_within_reach: false, newest_branch: "3.x", floor_source: null }) ?? []),
     ).toBe("; no newer branch fits");
+  });
+
+  it('steps down by dropping words: short leaves out "is the newest that", bare also what it fits against', () => {
+    const at = (data: Record<string, unknown>, step: MoveStep): string => {
+      const hidden: readonly MoveStep[] = MOVE_STEPS.slice(0, MOVE_STEPS.indexOf(step) + 1);
+      return plain((moveClause(data) ?? []).filter((p) => p.kind !== "drop" || !hidden.includes(p.step)));
+    };
+    const reachable = {
+      newest_within_reach: false,
+      newest_branch: "8.x",
+      reachable_branch: "7.x",
+      floor_source: "project",
+    };
+    expect(at(reachable, "short")).toBe("; 7.x fits your require.php");
+    expect(at(reachable, "bare")).toBe("; 7.x fits");
+    const none = { newest_within_reach: false, newest_branch: "3.x", floor_source: "extension" };
+    expect(at(none, "short")).toBe("; no newer branch fits the extension floor");
+    expect(at(none, "bare")).toBe("; no newer branch fits");
   });
 
   it("the newest within reach, or a document that does not say, keeps the older sentence", () => {

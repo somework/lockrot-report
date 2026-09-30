@@ -61,11 +61,14 @@ tag or the address format, says so under **Breaking** in its entry.
   extension floor as ext-sodium >=2". Where the clause would add a third line in the reader's fonts,
   it leaves to "Each branch" what a miss waits for, then the clauses that admit both, so why a newer
   branch does not fit stays in sight, then require.php's constraint, and at the last keeps one
-  clause, the first that says a miss, so level 0 says why a newer branch does not fit in any fonts.
+  clause, the first that says a miss, a newer branch's before yours, so level 0 says why a newer
+  branch does not fit in any fonts.
 - A left-behind package whose newest branch the project cannot take names the one it can, in the
   words its row uses and against the floor lockrot held it to: "its last release was 4.5 years ago;
   7.x is the newest that fits your require.php", or "no newer branch fits PHP 8.4", an unknown floor
-  as written; the row says "5.x stopped; 7.x fits" instead of "8.x ships".
+  as written; the row says "5.x stopped; 7.x fits" instead of "8.x ships". Where those words would
+  cost the lead a line in the reader's fonts, it says "7.x fits your require.php", then "7.x fits" or
+  "no newer branch fits"; paper has them in full.
 - A pinned package says plainly which is newer, its snapshot or its newest tag: "Your dev-master
   snapshot (2022-03-24) is 3.2 years newer than the newest tag, 1.6.2", or "1 month older than" where
   a newer tag exists. Where lockrot could not tell, it says so ("lockrot could not tell whether it has

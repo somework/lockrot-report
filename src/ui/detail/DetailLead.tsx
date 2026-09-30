@@ -23,12 +23,14 @@ import {
   type PinnedSlot,
   type TagDetail,
 } from "../../domain/pinned";
+import { MOVE_STEPS } from "../../domain/floors";
 import { waysIn } from "../../domain/reach";
 import { timelineModel, type TimelineModel } from "../../domain/timeline";
 import { Muted, OutLink, toneClass } from "../common/common";
 import { DisclosureButton, DisclosurePanel, useDisclosure } from "../common/Disclosure";
 import { PkgMention } from "../common/PkgMention";
 import { useReport } from "../context";
+import { linesOf, useFitSteps } from "../useFit";
 import "./detail-lead.css";
 
 /** The top of the open package (PD-DETAIL-6): the answer sentence, four key facts, how it gets in
@@ -45,6 +47,7 @@ export function DetailLead({ finding, details }: { finding: Finding; details: Pa
   const tagDetail = pinned === null ? null : pinnedTagDetail(pinned);
   const tagsId = `${useId()}-tags`;
   const disclosure = useDisclosure(TAGS_KEY);
+  const answerRef = useFitSteps<HTMLParagraphElement>(MOVE_STEPS, noLineOverBare);
   const tags: TagsControl | null =
     tagDetail === null
       ? null
@@ -52,7 +55,7 @@ export function DetailLead({ finding, details }: { finding: Finding; details: Pa
 
   return (
     <div className="detail-lead">
-      <p className="detail-answer">
+      <p ref={answerRef} className="detail-answer">
         {parts.map((part, index) => (
           <AnswerNode key={index} part={part} tags={tags} />
         ))}
@@ -79,6 +82,18 @@ export function DetailLead({ finding, details }: { finding: Finding; details: Pa
       </dl>
     </div>
   );
+}
+
+/** S8's clause keeps its fullest words that take the lead no more lines than its barest. */
+function noLineOverBare(answer: HTMLElement): boolean {
+  if (answer.querySelector(".detail-answer-drop") === null) return true;
+  const at = answer.dataset["fit"];
+  const now = linesOf(answer);
+  answer.dataset["fit"] = "bare";
+  const bare = linesOf(answer);
+  if (at === undefined) delete answer.dataset["fit"];
+  else answer.dataset["fit"] = at;
+  return now <= bare;
 }
 
 /** One key for every package: j/k keeps the reader's choice from one detail to the next. */
@@ -143,6 +158,14 @@ function AnswerNode({ part, tags }: { part: AnswerPart; tags: TagsControl | null
         >
           {part.text}
         </b>
+      );
+    case "drop":
+      return (
+        <span className={`detail-answer-drop is-${part.step}`}>
+          {part.parts.map((inner, index) => (
+            <AnswerNode key={index} part={inner} tags={tags} />
+          ))}
+        </span>
       );
     case "replacement":
       return part.href !== null ? (

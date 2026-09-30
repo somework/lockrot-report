@@ -16,6 +16,41 @@ async function open(page: Page, fixture: FixtureName, pkg: string, view = "findi
 
 const toggle = (page: Page) => page.getByRole("button", { name: "Each branch", exact: true });
 
+/** The lead as the reader sees it: the words a shorter step of S8's clause hides are left out. */
+const leadShown = (page: Page): Promise<string> =>
+  page.locator(".detail-answer").evaluate((answer) => {
+    const shown = (node: Node): string =>
+      node instanceof HTMLElement && getComputedStyle(node).display === "none"
+        ? ""
+        : node.nodeType === Node.TEXT_NODE
+          ? (node.textContent ?? "")
+          : [...node.childNodes].map(shown).join("");
+    return shown(answer);
+  });
+
+/** S8's clause in the lead says the words of its step, the fullest that costs no line over the barest. */
+async function expectMove(page: Page, words: Readonly<Record<"" | "short" | "bare", string>>): Promise<void> {
+  const fit = await page.locator(".detail-answer").evaluate((answer) => {
+    const lines = () =>
+      Math.round(answer.getBoundingClientRect().height / parseFloat(getComputedStyle(answer).lineHeight));
+    const set = (step: string) => {
+      if (step === "") delete answer.dataset["fit"];
+      else answer.dataset["fit"] = step;
+    };
+    const at = answer.dataset["fit"] ?? "";
+    set("bare");
+    const bare = lines();
+    const fuller = ["", "short", "bare"].slice(0, ["", "short", "bare"].indexOf(at)).map((step) => {
+      set(step);
+      return lines();
+    });
+    set(at);
+    return { at: at as "" | "short" | "bare", bare, fuller };
+  });
+  expect(await leadShown(page)).toContain(words[fit.at]);
+  for (const taken of fit.fuller) expect(taken, `fuller than ${fit.at}`).toBeGreaterThan(fit.bare);
+}
+
 test.describe("level 0: the answer without a click", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -23,22 +58,17 @@ test.describe("level 0: the answer without a click", () => {
     page,
   }) => {
     await open(page, FIXTURES.wallabag013, "scheb/2fa-bundle");
-    await expect(page.locator(".detail-answer")).toContainText(
-      "its last release was 4.5 years ago; 7.x is the newest that fits your require.php.",
-    );
+    await expectMove(page, {
+      "": "its last release was 4.5 years ago; 7.x is the newest that fits your require.php.",
+      short: "its last release was 4.5 years ago; 7.x fits your require.php.",
+      bare: "its last release was 4.5 years ago; 7.x fits.",
+    });
     const sub = page.locator(".detail-timeline-sub");
     // Why 8.x does not fit, without a glossary. Which step of the sentence fits is the fonts' call
     // (PD-TIMELINE-16), so what level 0 leaves out is asserted at level 1.
     await expect(sub).toContainText("8.x needs a newer PHP than your require.php");
     await expect(sub).toContainText("allows at its lowest");
     await expect(sub).not.toContainText("misses");
-    if ((await sub.textContent())?.includes("— it fits once your require.php starts higher.") !== true) {
-      await toggle(page).click();
-      await expect(page.locator(".detail-timeline-floors li").first()).toHaveText(
-        "8.x needs a newer PHP than your require.php allows at its lowest but admits PHP 8.4 — it fits once your require.php starts higher",
-      );
-      await toggle(page).click();
-    }
     await expect(sub).not.toContainText("requires php");
     // Two lines at most for the floors, in this browser's own fonts (PD-TIMELINE-16).
     const added = await sub.evaluate((node) => {
@@ -58,27 +88,44 @@ test.describe("level 0: the answer without a click", () => {
     page,
   }) => {
     await open(page, FIXTURES.akaunting013, "plank/laravel-mediable");
-    await expect(page.locator(".detail-answer")).toContainText("; no newer branch fits your require.php.");
+    await expectMove(page, {
+      "": "; no newer branch fits your require.php.",
+      short: "; no newer branch fits your require.php.",
+      bare: "; no newer branch fits.",
+    });
     const sub = page.locator(".detail-timeline-sub");
+    // The constraint is quoted where the reader's fonts leave room for it, and one press away always.
     await expect(sub).toContainText(
-      "7.x and 6.x need a newer PHP than your require.php allows at its lowest",
+      /7\.x and 6\.x need a newer PHP than your require\.php( \(\^8\.1\))? allows at its lowest/,
     );
     await expect(sub).not.toContainText("of 10");
+    await toggle(page).click();
+    await expect(page.locator(".floors-def")).toBeVisible();
+    await expect(page.locator(".floors-def")).toContainText("require.php (^8.1)");
   });
 
   test("acme/left: an unknown floor reads as any other, what S8 reads it as one press away; yours at the release its php comes from", async ({
     page,
   }) => {
     await open(page, FIXTURES.miniEdges013, "acme/left");
-    const lead = page.locator(".detail-answer");
-    await expect(lead).toContainText("; no newer branch fits the extension floor.");
-    await expect(lead).not.toContainText("ext-sodium");
-    // The constraint is quoted where the reader's fonts leave room for it; the block always stays.
-    await expect(page.locator(".detail-timeline-sub")).toContainText(
-      /Yours \(as of 1\.9\.0\) needs a newer PHP than your require\.php( \(\^8\.3\))? allows at its lowest/,
-    );
-    await expect(page.locator(".detail-timeline-sub")).toContainText("3.x and 2.x are blocked by extension.");
+    await expectMove(page, {
+      "": "; no newer branch fits the extension floor.",
+      short: "; no newer branch fits the extension floor.",
+      bare: "; no newer branch fits.",
+    });
+    await expect(page.locator(".detail-answer")).not.toContainText("ext-sodium");
+    const sub = page.locator(".detail-timeline-sub");
+    // Why no newer branch fits stays in every step; yours is said beside it where the fonts leave room.
+    await expect(sub).toContainText("3.x and 2.x are blocked by extension.");
+    const yours =
+      /Yours \(as of 1\.9\.0\) needs a newer PHP than your require\.php( \(\^8\.3\))? allows at its lowest/;
+    const yoursSaid = yours.test((await sub.textContent()) ?? "");
     await toggle(page).click();
+    if (!yoursSaid) {
+      await expect(page.locator(".detail-timeline-floors")).toContainText(
+        /1\.x \(yours\):? needs a newer PHP than your require\.php allows at its lowest/,
+      );
+    }
     await expect(page.locator(".floors-def")).toContainText(
       "lockrot reads the extension floor as ext-sodium >=2.",
     );
@@ -171,23 +218,43 @@ test.describe("space: the lead as tall as before, Release branches at most two l
       await page.setViewportSize({ width, height: 900 });
       for (const [fixture, pkg] of LEADS) {
         await open(page, fixture, pkg);
-        const heights = await page.locator(".detail-answer").evaluate((answer) => {
+        const lines = await page.locator(".detail-answer").evaluate((answer) => {
+          // Lines, not pixels: a mono name on a line moves its box by a fraction of a pixel.
+          const count = () =>
+            Math.round(
+              answer.getBoundingClientRect().height / parseFloat(getComputedStyle(answer).lineHeight),
+            );
           const nodes = [...answer.childNodes];
-          const at = nodes.findIndex(
-            (n) => n.nodeType === Node.TEXT_NODE && (n.textContent ?? "").startsWith("; "),
-          );
-          const clause = nodes.slice(at, at + 3);
-          const said = clause.map((n) => n.textContent ?? "");
-          const now = answer.getBoundingClientRect().height;
-          const older =
-            said[0] === "; " ? [" while ", "8.x", " kept releasing"] : [" while 8.x kept releasing"];
-          clause.forEach((n, i) => (n.textContent = older[i] ?? n.textContent));
-          const before = answer.getBoundingClientRect().height;
-          clause.forEach((n, i) => (n.textContent = said[i] ?? ""));
-          return at < 0 ? null : { now, before };
+          const isText = (n: ChildNode | undefined, start: string) =>
+            n?.nodeType === Node.TEXT_NODE && (n.textContent ?? "").startsWith(start);
+          const at = nodes.findIndex((n) => isText(n, "; "));
+          const end = nodes.findIndex((n, i) => i > at && isText(n, "."));
+          const stop = nodes[end];
+          if (at < 0 || stop === undefined) return null;
+          const clause = nodes.slice(at, end);
+          const now = count();
+          const branch =
+            clause[0]?.textContent === "; "
+              ? (clause[1]?.cloneNode(false) as ChildNode | undefined)
+              : undefined;
+          const older: ChildNode[] =
+            branch === undefined
+              ? [document.createTextNode(" while 8.x kept releasing")]
+              : [document.createTextNode(" while "), branch, document.createTextNode(" kept releasing")];
+          if (branch !== undefined) branch.textContent = "8.x";
+          stop.before(...older);
+          clause.forEach((n) => {
+            n.remove();
+          });
+          const before = count();
+          older.forEach((n, i) => {
+            if (i === 0) n.replaceWith(...clause);
+            else n.remove();
+          });
+          return { now, before };
         });
-        expect(heights, `${pkg}: S8's clause`).not.toBeNull();
-        expect(heights?.now ?? Infinity, `${fixture} ${pkg}`).toBeLessThanOrEqual(heights?.before ?? 0);
+        expect(lines, `${pkg}: S8's clause`).not.toBeNull();
+        expect(lines?.now ?? Infinity, `${fixture} ${pkg}`).toBeLessThanOrEqual(lines?.before ?? 0);
       }
     });
 

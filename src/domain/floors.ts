@@ -406,7 +406,8 @@ export interface FloorsAnswer {
  * lines in the reader's fonts. `plain` leaves what a miss waits for ("it fits once …") to level 1's
  * list; `missing` keeps only the clauses that say a miss or a block, so why a branch does not fit outlasts the
  * ones that admit both; `unquoted` leaves `require.php`'s constraint to level 1's definitions;
- * `first` keeps one clause, the first that says a miss when one does.
+ * `first` keeps one clause, the first that says a miss when one does, a newer branch's before yours:
+ * why no newer branch fits is what the lead's move clause stands on.
  */
 export const FLOORS_STEPS = [
   "full",
@@ -475,7 +476,8 @@ export function floorsAnswer(
   const spoken = (headed: boolean, only: boolean): readonly Clause[] =>
     speak(scene, { headed, quoted, tail, only }).clauses;
   const missed = shape.clauses === "all" ? [] : spoken(false, true);
-  const missing = shape.clauses === "first" ? missed.slice(0, 1) : missed;
+  const newerFirst = missed.find((c) => c.newer) ?? missed[0];
+  const missing = shape.clauses !== "first" ? missed : newerFirst === undefined ? [] : [newerFirst];
   // Spoken without the others, so the first clause kept is the one that quotes; its few words
   // name the floors themselves.
   let headed = false;
@@ -511,6 +513,8 @@ interface Clause {
   readonly stated: readonly number[];
   /** The clause says how its rows miss a floor. */
   readonly misses: boolean;
+  /** The clause says a branch newer than yours. */
+  readonly newer: boolean;
 }
 
 interface Voice {
@@ -537,7 +541,12 @@ function speak(scene: Scene, { headed, quoted, tail, only }: Voice): { clauses: 
     if (lead === undefined) continue;
     if (summarise && newerMisses.includes(group)) {
       if (group === newerMisses[0]) {
-        clauses.push({ parts: missSummary(scene, newerMisses.flat(), namer), stated: [], misses: true });
+        clauses.push({
+          parts: missSummary(scene, newerMisses.flat(), namer),
+          stated: [],
+          misses: true,
+          newer: true,
+        });
       }
       continue;
     }
@@ -551,6 +560,7 @@ function speak(scene: Scene, { headed, quoted, tail, only }: Voice): { clauses: 
       parts: [...names.parts, text(" "), ...said.words, ...(tail ? waits : [])],
       stated: said.stated && (tail || waits.length === 0) ? names.named.map((p) => p.index) : [],
       misses: keepsOut,
+      newer: group.some((p) => !p.row.installed),
     });
     counted ||= group.filter((p) => !p.row.installed).length > NAMED_MAX;
   }
@@ -680,7 +690,7 @@ export function foldWords(rows: readonly BranchRow[], floors: Floors): string | 
   return `${n} ${verb("does", "do", many)} not admit ${plain(shortName(keys[0] ?? "target", floors, false))}`;
 }
 
-export function plain(parts: readonly FloorPart[]): string {
+export function plain(parts: readonly { readonly text: string }[]): string {
   return parts.map((part) => part.text).join("");
 }
 
@@ -728,18 +738,44 @@ function otherFloorWords(other: OtherFloor): FloorPart[] {
 }
 
 /**
+ * The lead's shorter wordings of S8's clause, fullest first: `short` drops "is the newest that",
+ * `bare` also what it fits against, which Release branches says anyway.
+ */
+export const MOVE_STEPS = ["short", "bare"] as const;
+export type MoveStep = (typeof MOVE_STEPS)[number];
+
+/** Words the lead drops from the given step on; `text` is them in full, as paper reads them. */
+export interface MoveDrop {
+  readonly kind: "drop";
+  readonly step: MoveStep;
+  readonly text: string;
+  readonly parts: readonly FloorPart[];
+}
+
+export type MovePart = FloorPart | MoveDrop;
+
+const drop = (step: MoveStep, parts: readonly FloorPart[]): MovePart[] =>
+  parts.length === 0 ? [] : [{ kind: "drop", step, text: plain(parts), parts }];
+
+/**
  * S8's answer when the newest branch is out of reach, after the lead's age clause, in the ledger
  * why's word and against S8's own floor: "; <reachable_branch> is the newest that fits your
  * `require.php`", or "; no newer branch fits PHP 8.4". Why the newest does not fit is the Release
  * branches sentence's to say. Null when the newest is within reach or the document does not say.
  */
-export function moveClause(data: Signal["data"] | undefined): FloorPart[] | null {
+export function moveClause(data: Signal["data"] | undefined): MovePart[] | null {
   if (data?.["newest_within_reach"] !== false || str(data, "newest_branch") === null) return null;
   const reachable = str(data, "reachable_branch");
-  const against = fitsWhat(data);
+  const against = drop("bare", fitsWhat(data));
   return reachable === null
     ? [text("; no newer branch fits"), ...against]
-    : [text("; "), name(reachable), text(" is the newest that fits"), ...against];
+    : [
+        text("; "),
+        name(reachable),
+        ...drop("short", [text(" is the newest that")]),
+        text(" fits"),
+        ...against,
+      ];
 }
 
 /** S8's `floor_source` in the sentence's names; one this page does not know as written; nothing

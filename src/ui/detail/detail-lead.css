@@ -86,6 +86,14 @@
   font-weight: 600;
   white-space: nowrap;
 }
+/* Where S8's full clause would cost the lead a line, DetailLead.tsx sets a shorter one. Paper has
+   the full one. */
+@media screen {
+  .detail-answer[data-fit] .detail-answer-drop.is-short,
+  .detail-answer[data-fit="bare"] .detail-answer-drop.is-bare {
+    display: none;
+  }
+}
 
 /* ---------- level 1 of the tag words ----------
    Hung from the sentence as the floors' level 1 is (timeline.css). The two dates stack oldest first
