@@ -30,6 +30,18 @@ there the same way.
 When a test fails, fix the page. Change a test only when it is wrong about DESIGN.md, and say why
 in the commit.
 
+Several tests hold the page to a space budget (lines, row heights) in the browser's own fonts, and
+CI's Linux fonts are wider than macOS's. To run the suite the way CI does, use the Playwright image
+with the font CI installs; the named volume keeps your host `node_modules` intact, so rebuild the
+pages on the host afterwards:
+
+```sh
+docker run --rm -v "$PWD":/work -v lockrot-report-nm:/work/node_modules -w /work --ipc=host \
+  mcr.microsoft.com/playwright:v1.63.0-noble bash -lc \
+  "apt-get update -qq && apt-get install -y -qq fonts-dejavu-core >/dev/null \
+   && npm ci && npm run build && node scripts/pages.mjs && CI=1 npx playwright test"
+```
+
 `node scripts/shoot.mjs build/pages build/shots/new` screenshots every page at 320, 768, 1024 and
 1440 px in both colour schemes — a review aid, not a gate.
 
