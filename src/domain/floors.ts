@@ -129,14 +129,16 @@ function cellNamer(floors: Floors): Namer {
   };
 }
 
-function sentenceNamer(floors: Floors, headed: boolean): Namer {
+function sentenceNamer(floors: Floors, headed: boolean, quoted: boolean): Namer {
   const keys = named(floors);
   const said = new Set<FloorKey>(headed ? keys : []);
   const two = keys.length === 2;
+  const first = (key: FloorKey): FloorPart[] =>
+    quoted ? fullName(key, floors) : shortName(key, floors, false);
   const one = (key: FloorKey, than: boolean): FloorPart[] => {
     const known = said.has(key);
     said.add(key);
-    if (!known) return key === "target" && than ? [text(floors.target ?? "")] : fullName(key, floors);
+    if (!known) return key === "target" && than ? [text(floors.target ?? "")] : first(key);
     return !two && !than ? [text("it")] : shortName(key, floors, than);
   };
   return {
@@ -361,6 +363,14 @@ export interface FloorsAnswer {
   readonly rest: readonly FloorGroup[];
 }
 
+/**
+ * How much level 0 says, fullest first; the page takes the first that keeps the sub within its
+ * lines in the reader's fonts. `unquoted` leaves `require.php`'s constraint to level 1's
+ * definitions, `first` also every clause after the first to level 1's list.
+ */
+export const FLOORS_STEPS = ["full", "unquoted", "first"] as const;
+export type FloorsStep = (typeof FLOORS_STEPS)[number];
+
 interface Scene {
   readonly floors: Floors;
   readonly considered: readonly Placed[];
@@ -378,6 +388,7 @@ export function floorsAnswer(
   rows: readonly BranchRow[],
   floors: Floors,
   installedVersion: string,
+  step: FloorsStep = "full",
 ): FloorsAnswer | null {
   const all = place(rows, floors);
   if (all.length === 0) return null;
@@ -390,53 +401,65 @@ export function floorsAnswer(
     mineIsNewest: mineAt === 0,
     installedVersion,
   };
+  const quoted = step === "full";
   let headed = false;
-  let spoken = speak(scene, headed);
+  let spoken = speak(scene, headed, quoted);
   // A clause opening on a mono branch name runs into the sub-sentence's own mono version and date,
   // so the floors lead instead.
-  if (spoken.parts[0]?.kind === "name") {
+  if (spoken.clauses[0]?.parts[0]?.kind === "name") {
     headed = true;
-    spoken = speak(scene, headed);
+    spoken = speak(scene, headed, quoted);
   }
+  const kept = step === "first" ? spoken.clauses.slice(0, 1) : spoken.clauses;
+  const parts = kept.flatMap((c, i) => [...(i > 0 ? [text("; ")] : []), ...c.parts]);
+  const stated = new Set(kept.flatMap((c) => c.stated));
   const prefix = floors.noProjectFloor ? [text("The project names no PHP floor. ")] : [];
-  const head = headed
-    ? [text("Against "), ...joinAnd(named(floors).map((k) => fullName(k, floors))), text(": ")]
-    : [];
+  const naming = (k: FloorKey) => (quoted ? fullName(k, floors) : shortName(k, floors, false));
+  const head = headed ? [text("Against "), ...joinAnd(named(floors).map(naming)), text(": ")] : [];
   return {
-    sentence: [...prefix, ...(headed ? [...head, ...spoken.parts] : capitalise(spoken.parts)), text(".")],
+    sentence: [...prefix, ...(headed ? [...head, ...parts] : capitalise(parts)), text(".")],
     rest: listed(
-      all.filter((p) => !spoken.stated.has(p.index)),
+      all.filter((p) => !stated.has(p.index)),
       floors,
     ),
   };
 }
 
-function speak(scene: Scene, headed: boolean): { parts: FloorPart[]; stated: Set<number> } {
+interface Clause {
+  readonly parts: FloorPart[];
+  /** The rows the clause says in full. */
+  readonly stated: readonly number[];
+}
+
+function speak(scene: Scene, headed: boolean, quoted: boolean): { clauses: Clause[] } {
   const { considered, floors } = scene;
-  const namer = sentenceNamer(floors, headed);
+  const namer = sentenceNamer(floors, headed, quoted);
   const grouped = groupBy(considered, floors);
   const mine = grouped.find((g) => g.some((p) => p.row.installed));
   const groups = mine === undefined ? grouped : [mine, ...grouped.filter((g) => g !== mine)];
   const newerMisses = groups.filter((g) => g !== mine && g[0]?.st.kind === "misses");
   const summarise = newerMisses.length > MISS_KINDS_MAX;
-  const clauses: FloorPart[][] = [];
-  const stated = new Set<number>();
+  const clauses: Clause[] = [];
   let counted = false;
   for (const group of groups) {
     const lead = group[0];
     if (lead === undefined) continue;
     if (summarise && newerMisses.includes(group)) {
-      if (group === newerMisses[0]) clauses.push(missSummary(scene, newerMisses.flat(), namer));
+      if (group === newerMisses[0]) {
+        clauses.push({ parts: missSummary(scene, newerMisses.flat(), namer), stated: [] });
+      }
       continue;
     }
     const isMine = group === mine;
     const names = who(group, scene, counted);
     const said = standingSaid(lead.st, namer, floors, group.length > 1, isMine ? "yours" : "newer");
-    clauses.push([...names.parts, text(" "), ...said.words]);
-    if (said.stated) for (const p of names.named) stated.add(p.index);
+    clauses.push({
+      parts: [...names.parts, text(" "), ...said.words],
+      stated: said.stated ? names.named.map((p) => p.index) : [],
+    });
     counted ||= group.filter((p) => !p.row.installed).length > NAMED_MAX;
   }
-  return { parts: clauses.flatMap((c, i) => [...(i > 0 ? [text("; ")] : []), ...c]), stated };
+  return { clauses };
 }
 
 /** "yours, 7.x and 6.x", or "yours and 4 newer branches"; `counted` says a count came before, so

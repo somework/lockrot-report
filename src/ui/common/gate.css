@@ -83,6 +83,15 @@
 .lead-gate .gate-flag {
   font-size: 0.8em;
 }
+/* Set by PriorityLedger.tsx where the full size would wrap in the reader's serif. */
+@media screen {
+  .lead-gate[data-fit="small"] {
+    font-size: 14px;
+  }
+  .lead-gate[data-fit="smaller"] {
+    font-size: 13px;
+  }
+}
 
 /* The subject that opens level 1: the answer's one emphasis, its marker the affordance. */
 .l1-btn.gate-total {

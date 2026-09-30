@@ -276,7 +276,7 @@ test.describe("the ledger's S8 why follows S8's reach, and no row grows", () => 
   });
 
   for (const fixture of [FIXTURES.wallabag013, FIXTURES.akaunting013, FIXTURES.miniEdges013] as const) {
-    test(`${fixture}: each S8 row is as tall as with the words it said before, 320 to 1440`, async ({
+    test(`${fixture}: no S8 row is taller than with the words it said before, 320 to 1440`, async ({
       page,
     }) => {
       for (const width of [320, 390, 768, 1024, 1440]) {
@@ -310,7 +310,10 @@ test.describe("the ledger's S8 why follows S8's reach, and no row grows", () => 
           });
         });
         expect(rows.length, `${String(width)}px`).toBeGreaterThan(0);
-        for (const row of rows) expect(row.now, `${row.pkg ?? ""} at ${String(width)}px`).toBe(row.before);
+        // The new words can be shorter than the old, which in a wide font saves the row a line.
+        for (const row of rows) {
+          expect(row.now, `${row.pkg ?? ""} at ${String(width)}px`).toBeLessThanOrEqual(row.before);
+        }
       }
     });
   }

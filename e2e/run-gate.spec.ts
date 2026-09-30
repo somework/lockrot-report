@@ -2,7 +2,8 @@
  * PD-GATE-1..5 (DESIGN.md §5): lockrot's gate merged into the page — the header's words, the
  * summary's clause and its level 1, the row mark that never grows a row, the "Fails this run"
  * filter and its address, Run data's rows — and the reports without a decided gate, which say nothing
- * of pass or fail.
+ * of pass or fail. `markedRows`, `roomAt` and `rowOf` read the renderer's classes on purpose: they
+ * measure where the words sit and what they cost the layout, which no role or name says.
  */
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
@@ -16,7 +17,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 /** Each marked row: its height with its mark where it sits, then with none; and whether the mark is
- *  inside the row, uncut. */
+ *  inside the row, uncut. The marks are put back after. */
 async function markedRows(page: Page, selector = "li.frow.has-gate") {
   return page.evaluate((selector) => {
     const rows = [...document.querySelectorAll<HTMLElement>(selector)];
@@ -40,13 +41,73 @@ async function markedRows(page: Page, selector = "li.frow.has-gate") {
         (m.left >= box.left - 0.5 && m.right <= box.right + 0.5 && m.bottom <= box.bottom + 0.5 && uncut);
       return { pkg: row.dataset["pkg"], at, height: box.height, inside, shown: mark !== undefined, carried };
     });
+    const tight = rows.map((row) => row.hasAttribute("data-gate-tight"));
     for (const row of rows) {
       row.dataset["gateAt"] = "none";
       row.removeAttribute("data-gate-tight");
     }
     const bare = rows.map((row) => row.getBoundingClientRect().height);
+    rows.forEach((row, i) => {
+      row.dataset["gateAt"] = placed[i]?.at ?? "none";
+      row.toggleAttribute("data-gate-tight", tight[i] === true);
+    });
     return placed.map((row, i) => ({ ...row, bare: bare[i] ?? 0 }));
   }, selector);
+}
+
+/** For each row, the places among `spots` where its words keep its height (and a table's, `whole`)
+ *  and stay inside it, with or without their "·"; the rows' own places are put back after. */
+async function roomAt(
+  page: Page,
+  selector: string,
+  pkgs: readonly string[],
+  spots: readonly string[],
+  whole = "body",
+) {
+  return page.evaluate(
+    ({ selector, pkgs, spots, whole }) =>
+      Object.fromEntries(
+        pkgs.map((pkg) => {
+          const row = document.querySelector<HTMLElement>(`${selector}[data-pkg="${CSS.escape(pkg)}"]`);
+          const list = document.querySelector(whole);
+          if (row === null || list === null) return [pkg, []];
+          const at = row.dataset["gateAt"] ?? "none";
+          const tight = row.hasAttribute("data-gate-tight");
+          row.dataset["gateAt"] = "none";
+          row.removeAttribute("data-gate-tight");
+          const bare = row.getBoundingClientRect().height;
+          const all = list.getBoundingClientRect().height;
+          const room = spots.filter((spot) =>
+            [false, true].some((t) => {
+              row.dataset["gateAt"] = spot;
+              row.toggleAttribute("data-gate-tight", t);
+              const box = row.getBoundingClientRect();
+              const mark = row.querySelector(`.gate-at-${spot}`)?.getBoundingClientRect();
+              // Over the age column the words must also stay clear of the reason beside it.
+              const age = spot === "age" ? row.querySelector(".fc-age")?.getBoundingClientRect() : box;
+              const inside = (outer: DOMRect | undefined) =>
+                mark !== undefined &&
+                outer !== undefined &&
+                mark.left >= outer.left - 0.5 &&
+                mark.right <= outer.right + 0.5 &&
+                mark.bottom <= outer.bottom + 0.5;
+              return (
+                Math.abs(box.height - bare) <= 0.01 &&
+                Math.abs(list.getBoundingClientRect().height - all) <= 0.01 &&
+                mark !== undefined &&
+                mark.width > 0 &&
+                inside(box) &&
+                inside(age)
+              );
+            }),
+          );
+          row.dataset["gateAt"] = at;
+          row.toggleAttribute("data-gate-tight", tight);
+          return [pkg, room];
+        }),
+      ),
+    { selector, pkgs, spots, whole },
+  );
 }
 
 test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
@@ -79,8 +140,12 @@ test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
         const list = await page.locator(".fledger").evaluate((node) => node.clientWidth);
         const slot = list < 480 ? "pkg" : list < 990 ? "age" : "reach";
         const inSlot = worded.filter((row) => row.at === slot).length;
-        if (list >= 480) expect(inSlot, `${width}px: every word in the ${slot} place`).toBe(worded.length);
-        else expect(inSlot / worded.length, `${width}px: words in the ${slot} place`).toBeGreaterThan(0.8);
+        // How much room a place has is the reader's font's to say: a row whose words stand
+        // elsewhere is one with no room left there.
+        expect(inSlot, `${width}px: words in the ${slot} place`).toBeGreaterThan(0);
+        const elsewhere = worded.flatMap((row) => (row.at === slot ? [] : [row.pkg ?? ""]));
+        const room = await roomAt(page, "li.frow", elsewhere, [slot]);
+        for (const pkg of elsewhere) expect(room[pkg], `${pkg} at ${width}px: room in ${slot}`).toEqual([]);
       }
     });
   }
@@ -92,6 +157,7 @@ test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
     test(`${fixture}: an All packages row keeps its height too, and its words stay inside it`, async ({
       page,
     }) => {
+      test.slow();
       for (const width of [320, 390, 768, 1024, 1280, 1366, 1440, 1920]) {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(pageUrl(fixture) + "#view=packages");
@@ -105,11 +171,20 @@ test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
             `${row.pkg} at ${width}px`,
           ).toBe(true);
         }
-        // A table just wide enough for its columns has less room after the name: most rows still
-        // find it, never a column that widens the table.
+        // How much room a row has is the reader's font's to say, so most rows find it and a row
+        // without words has room nowhere: stacked, each row is its own grid; in a table the words
+        // in a column that would widen it moved on together, so the others' own places are left.
         const worded = rows.filter((row) => row.shown).length;
-        const floor = width === 320 ? 0.8 : width === 1280 ? 0.85 : 0.95;
-        expect(worded / rows.length, `${width}px`).toBeGreaterThan(floor);
+        expect(worded / rows.length, `${width}px`).toBeGreaterThan(0.5);
+        const stacked = await page
+          .locator("tr.pk-row")
+          .first()
+          .evaluate((row) => getComputedStyle(row).display === "grid");
+        const used = new Set(rows.map((row) => row.at));
+        const places = stacked ? ["reach", "verdict", "name"] : ["reach", "name"].filter((p) => used.has(p));
+        const bare = rows.flatMap((row) => (row.shown ? [] : [row.pkg ?? ""]));
+        const room = await roomAt(page, "tr.pk-row", bare, places, ".pk-table");
+        for (const pkg of bare) expect(room[pkg], `${pkg} at ${width}px`).toEqual([]);
       }
     });
   }
@@ -173,13 +248,13 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
     const link = page.getByRole("button", { name: /^171 unchecked/ });
     await link.click();
     await expect(page.getByRole("tab", { name: /All packages/ })).toHaveAttribute("aria-selected", "true");
-    expect(await report.hash()).toContain("gate=fails");
-    expect(await report.hash()).toContain("q=verdict");
+    await expect.poll(() => report.hash()).toContain("gate=fails");
+    await expect.poll(() => report.hash()).toContain("q=verdict");
     await expect(link).toBeFocused();
     // A search that would hide some of them is dropped: the list shows the count the words said.
     await report.gotoWithHash(FIXTURES.koelNoTokenUnchecked013, "q=spot");
     await page.getByRole("button", { name: /^171 unchecked/ }).click();
-    expect(await report.hash()).not.toContain("q=");
+    await expect.poll(() => report.hash()).not.toContain("q=");
     await expect(page.locator(".count-line")).toContainText("171 of 201 packages");
     await report.gotoWithHash(FIXTURES.koelNoTokenUnchecked013, "");
     await page.getByRole("button", { name: /^171 unchecked/ }).click();
@@ -358,7 +433,7 @@ test.describe("PD-GATE-4: the 'Fails this run' filter and its address", () => {
     await row.click();
     await expect(row).toHaveAttribute("aria-pressed", "false");
     await expect(row).toBeFocused();
-    expect(await report.hash()).not.toContain("gate=");
+    await expect.poll(() => report.hash()).not.toContain("gate=");
   });
 
   for (const fixture of [
@@ -370,7 +445,7 @@ test.describe("PD-GATE-4: the 'Fails this run' filter and its address", () => {
     test(`${fixture}: a stale gate=fails lists every row and leaves the address`, async ({ page }) => {
       await report.gotoWithHash(fixture, "gate=fails");
       expect((await report.rows()).length).toBeGreaterThan(0);
-      expect(await report.hash()).not.toContain("gate=");
+      await expect.poll(() => report.hash()).not.toContain("gate=");
       await expect(page.getByRole("button", { name: /^Fails this run/ })).toHaveCount(0);
     });
   }
@@ -475,7 +550,7 @@ test.describe("PD-GATE-2/4: level 1 and its counts lead where they said", () => 
     await page.setViewportSize({ width: 1440, height: 900 });
     await report.gotoWithHash(FIXTURES.koelNoTokenUnchecked013, "view=packages&verdict=ok&gate=fails");
     await page.getByRole("button", { name: /^2 flagged\s*,?\s*on Findings$/ }).click();
-    expect(await report.hash()).toBe("#gate=fails");
+    await expect.poll(() => report.hash()).toBe("#gate=fails");
     await expect(page.locator("li.frow")).toHaveCount(2);
   });
 

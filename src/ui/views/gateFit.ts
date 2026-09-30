@@ -44,9 +44,13 @@ function inside(inner: DOMRect, outer: DOMRect): boolean {
   );
 }
 
+/** Below a layout unit: two measures of the same layout differ by no more. */
+const HEIGHT_NOISE = 0.01;
+
 function fits(row: HTMLElement, height: number, spot: string): boolean {
   const box = row.getBoundingClientRect();
-  if (box.height > height + 0.5) return false;
+  // A place that rewraps the row's other words can make it shorter as well as taller.
+  if (Math.abs(box.height - height) > HEIGHT_NOISE) return false;
   const mark = row.querySelector(`.gate-at-${spot}`)?.getBoundingClientRect();
   if (mark === undefined || mark.width === 0 || !inside(mark, box)) return false;
   // Over the age column the words must not run into the reason beside it.
@@ -72,7 +76,10 @@ export function fitGateMarks(list: HTMLElement, fit: GateFit): void {
     order,
     rows.map((_, i) => i),
   );
-  if (fit.table === true) unwiden(list, rows, heights, whole, order);
+  if (fit.table === true) {
+    unwiden(list, rows, heights, whole, order);
+    refill(list, rows, heights, whole, order);
+  }
 }
 
 function placeFrom(
@@ -109,6 +116,30 @@ function unwiden(
     const spot = order[k];
     const moved = rows.flatMap((row, i) => (row.dataset["gateAt"] === spot ? [i] : []));
     if (moved.length > 0) placeFrom(rows, heights, order.slice(k + 1), moved);
+  }
+}
+
+/** Words that moved on can widen the column they moved to, which makes room there for rows that had
+ *  none: those rows try the places still in use, and keep them only while the table keeps its
+ *  height. */
+function refill(
+  list: HTMLElement,
+  rows: readonly HTMLElement[],
+  heights: readonly number[],
+  whole: number,
+  order: readonly string[],
+): void {
+  const used = new Set(rows.map((row) => row.dataset["gateAt"]));
+  const spots = order.filter((spot) => used.has(spot));
+  const bare = rows.flatMap((row, i) => (row.dataset["gateAt"] === "none" ? [i] : []));
+  if (spots.length === 0 || bare.length === 0) return;
+  placeFrom(rows, heights, spots, bare);
+  if (list.getBoundingClientRect().height <= whole + 0.5) return;
+  for (const i of bare) {
+    const row = rows[i];
+    if (row === undefined) continue;
+    row.dataset["gateAt"] = "none";
+    row.removeAttribute("data-gate-tight");
   }
 }
 

@@ -13,19 +13,19 @@ tag or the address format, says so under **Breaking** in its entry.
 - Whether the run failed, as lockrot decided it. The header says "this run fails · --fail-on=high"
   (or passes, or "baseline run passes · --fail-on not applied"), the causes as the CLI's flags. The
   summary's answer says how many packages fail, total first — "173 fail this run: 2 flagged, 171
-  unchecked" — with a baseline closing the Against sentence instead; a baseline run nothing failed
-  says "This run passes: it applies no fail-on, though 39 packages meet it"; a press on the total
-  opens what each cause
-  fails on and what exempts the rest, and prints open, in the answer's width so the waffle beside it
-  stays put. Several causes read apart in the header, "--fail-on=copyleft · licence_policy". The
+  unchecked" — with a baseline closing the Against sentence instead, and a size down where the
+  reader's serif would wrap it; a baseline run nothing failed says "This run passes: it applies no
+  fail-on, though 39 packages meet it"; a press on the total opens what each cause fails on and what
+  exempts the rest, and prints open, in the answer's width so the waffle beside it stays put. Several causes read apart in the header, "--fail-on=copyleft · licence_policy". The
   flagged count filters Findings (from another tab, Findings with that filter alone), the rail
   gains "Fails this run" (`#gate=fails`), and the unflagged count opens All packages on exactly
   those packages.
 - Each Findings and All packages row says "fails" or "exempt: <as lockrot wrote it>" at the end of
-  a line with room, so no row grows, in one place per layout so the words form a column down the
-  list; where words would widen an All packages column and grow the table, that column's words move
-  to the next place together; a row with room nowhere underlines its verdict (dotted for an
-  exemption); a screen reader hears it with the row. The open package says in
+  a line with room, so no row changes height, in one place per layout so the words form a column
+  down the list; where words would widen an All packages column and grow the table, that column's
+  words move to the next place together, and a row that had no room there tries again once they
+  have widened it; a row with room nowhere underlines its verdict (dotted for an exemption); a
+  screen reader hears it with the row. The open package says in
   one line under its pills whether it fails this run and which fail-on it meets.
 - Run data gains root package, strict network, mode and, where lockrot decided the gate, result
   rows; its sentence says whether the run failed and on what. A note that makes `network_failures`
@@ -48,7 +48,8 @@ tag or the address format, says so under **Breaking** in its entry.
   (7)", and stays open from one package to the next; a closed fold row says what it hides ("3 stop
   before both"). A report that names no project floor says so once. Where lockrot held the branches
   to a floor of another kind, "Each branch" says which, as lockrot wrote it: "lockrot reads the
-  extension floor as ext-sodium >=2".
+  extension floor as ext-sodium >=2". Where the clause would add a third line in the reader's fonts,
+  it leaves require.php's constraint, then every clause after yours, to "Each branch".
 - A left-behind package whose newest branch the project cannot take names the one it can, in the
   words its row uses: "its last release was 4.5 years ago; 7.x is the newest that fits", or "no
   newer branch fits"; the row says "5.x stopped; 7.x fits" instead of "8.x ships".
@@ -68,9 +69,12 @@ tag or the address format, says so under **Breaking** in its entry.
   many share them: one sentence under the table ("league/config (stale) is left out of Blast
   radius: 9 direct requirements share it, more than 8"); two or more are named with their counts,
   "doctrine/cache (11) and symfony/security-guard (9) are left out of Blast radius, each shared by
-  more than 8 direct requirements". "Who shares it", or "direct requirements", opens a dot per requirement
-  against the limit of 8 and the requirements each sits under, whole names, and prints open. Each
-  name opens its detail, and the rail on the tab counts them.
+  more than 8 direct requirements". Where that would take a third line in the reader's fonts, it
+  names one and counts the rest ("doctrine/cache (11) and 1 more"), then only counts them ("2
+  packages"); one entry leaves "more than 8" to the dots. "Who shares it", or "direct
+  requirements", opens a dot per requirement against the limit of 8 and the requirements each sits
+  under, whole names, and prints open. Each name opens its detail, and the rail on the tab counts
+  them.
 
 - All packages on a phone: under 480px the rows stack — name and version, then the verdict, the
   libyears bar and how it gets in, with the priority as the row's left rule — instead of a table
@@ -162,11 +166,6 @@ tag or the address format, says so under **Breaking** in its entry.
   lists its findings on Findings in one press. New and worsened wear the page's accent colour
   everywhere, so red and orange keep meaning critical and high; the rail names the baseline file
   whole, in its own case.
-- Beside the header's gate fact, a count of the findings at or above the run's `--fail-on` level
-  and, with a baseline, how many "of them" it does not already accept; that second count lists
-  exactly those findings on Findings in one press, from any tab. The page still does not say
-  whether the run passed, and an accepted package's detail names `--fail-on`'s counting rule, not
-  a build outcome.
 
 - "Print / PDF" in the header prints the whole report as one document, whatever tab is open: the
   summary band, Findings with every signal, Advisories in full, the ranked rows of Blast radius and
@@ -302,9 +301,6 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Changed
 
-- The header no longer counts findings "at or above" fail-on or lists the ones the baseline does
-  not accept; the summary's "N fail this run" replaces both. Thresholds read "fails on priority
-  high or higher".
 - "fix not checked" reads apart from "no fix listed": italic and quieter, on the Advisories card and
   tab and in the open package, whose fix ladder hatches that rung.
 
@@ -501,8 +497,7 @@ tag or the address format, says so under **Breaking** in its entry.
   reach it than `exposure_rule.max_fan_in` allows (its `unattributed` list: akaunting's
   `league/config`, reached from 9), is no longer listed under a row or counted as reached from one
   ("+1 more it reaches, listed under no row"), so every row's numbers add up to lockrot's own count
-  for that requirement. The tab does not show it yet, so the rail on that tab does not count it
-  either; Findings still lists it.
+  for that requirement; the sentence under the table names it instead.
 - A signal id, S10 reason or check the page does not know (a later lockrot's `S99`, a check from
   outside lockrot such as `acme:licence`, `quota_exhausted`) is shown as written, in code, and never
   in a known one's words: the open package's tally says "also acme:licence, S99, checks this page

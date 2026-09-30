@@ -1,7 +1,14 @@
 import { useId, useState } from "preact/hooks";
 import type { BranchRow, ExplainMetadata } from "../../model/types";
 import { ageZone, releaseThresholds } from "../../domain/age";
-import { floorsAnswer, foldWords, readFloors, type OtherFloor } from "../../domain/floors";
+import {
+  FLOORS_STEPS,
+  floorsAnswer,
+  foldWords,
+  plain,
+  readFloors,
+  type OtherFloor,
+} from "../../domain/floors";
 import {
   timelineModel,
   yearsSince,
@@ -16,6 +23,7 @@ import { FloorsPanel, FloorWords, FLOORS_KEY } from "./TimelineFloors";
 import { DisclosureButton, useDisclosure } from "../common/Disclosure";
 import { FoldRows, GuideCaptions, LaneRow, Sr, at, type Guide, type TopWord } from "./TimelineRows";
 import { placeYears } from "./timelineAxis";
+import { linesOf, useFitStep } from "../useFit";
 import "./timeline.css";
 import "./timeline-forced.css";
 
@@ -41,15 +49,23 @@ export function Timeline({
   const floorsId = `${useId()}-floors`;
   const disclosure = useDisclosure(FLOORS_KEY);
   const timeline = timelineModel(metadata?.branches ?? [], snapshot, installedVersion, now);
-  if (timeline === null) return null;
-
   const floors = readFloors(model.report.run, model.report.absent);
   const rowsOf = (branches: readonly string[]): BranchRow[] =>
     (metadata?.branches ?? []).filter((row) => branches.includes(row.branch));
-  const drawn = rowsOf(timeline.lanes.map((lane) => lane.branch));
-  const answer = floorsAnswer(drawn, floors, installedVersion);
+  const drawn = timeline === null ? [] : rowsOf(timeline.lanes.map((lane) => lane.branch));
+  const full = floorsAnswer(drawn, floors, installedVersion);
+  const [subRef, fitted] = useFitStep<HTMLParagraphElement>(
+    FLOORS_STEPS.length,
+    floorsInTwoLines,
+    full === null ? "" : plain(full.sentence),
+  );
+  if (timeline === null) return null;
+
+  const step = disclosure.printed ? "full" : (FLOORS_STEPS[fitted] ?? "full");
+  const answer = step === "full" ? full : floorsAnswer(drawn, floors, installedVersion, step);
   const rest = answer?.rest ?? [];
-  const levelOne = answer !== null && (rest.length > 0 || heldBy !== null);
+  const unquoted = step !== "full" && floors.project !== null;
+  const levelOne = answer !== null && (rest.length > 0 || heldBy !== null || unquoted);
 
   const thresholds = releaseThresholds(model.report.run.thresholds);
   // A snapshot's date is a checkout, not a release: it never takes the release-age tone.
@@ -83,6 +99,7 @@ export function Timeline({
         installedVersion={installedVersion}
         tone={timeline.mine ? toneOf(timeline.mine) : null}
         topWord={topWord}
+        subRef={subRef}
         floors={
           answer === null ? undefined : (
             <span className="detail-timeline-floors-said">
@@ -163,6 +180,17 @@ export function Timeline({
       <DatedBy timeline={timeline} />
     </section>
   );
+}
+
+/** The floors sentence adds at most two lines to the sub (PD-TIMELINE-16). */
+function floorsInTwoLines(sub: HTMLElement): boolean {
+  const said = sub.querySelector<HTMLElement>(".detail-timeline-floors-said");
+  if (said === null) return true;
+  const now = linesOf(sub);
+  said.hidden = true;
+  const without = linesOf(sub);
+  said.hidden = false;
+  return now - without <= 2;
 }
 
 /** Under the rows, not in the header, where "today" would read as one phrase with "LATEST".

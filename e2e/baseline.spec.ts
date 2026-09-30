@@ -39,7 +39,7 @@ test.describe("PD-BASELINE-1/7: the delta line, in the summary band", () => {
       "smalot/pdfparser",
       "sebastian/type",
     ]);
-    expect(await report.hash()).toContain("since=new");
+    await expect.poll(() => report.hash()).toContain("since=new");
     // The rail's Since row is the same filter, so it reads pressed too.
     await expect(
       page.getByRole("group", { name: "Filters" }).getByRole("button", { name: /New/ }),
@@ -149,7 +149,7 @@ test.describe("PD-BASELINE-4: Run data's baseline stat row", () => {
     await page.locator(".bl-stat-btn", { hasText: /^2$/ }).click();
     await expect(page.getByRole("tab", { name: /Findings/ })).toHaveAttribute("aria-selected", "true");
     expect(await report.rows()).toEqual(["javibravo/simpleue", "symfony/web-server-bundle"]);
-    expect(await report.hash()).toContain("since=worsened");
+    await expect.poll(() => report.hash()).toContain("since=worsened");
   });
 });
 
@@ -202,7 +202,7 @@ test.describe("PD-GATE-2: the Against sentence closes on how many fail this run"
       "spomky-labs/otphp",
       "symfony/webpack-encore-bundle",
     ]);
-    expect(await report.hash()).toContain("gate=fails");
+    await expect.poll(() => report.hash()).toContain("gate=fails");
   });
 
   test("the rail's Since title keeps the file name whole, in its own case", async ({ page }) => {

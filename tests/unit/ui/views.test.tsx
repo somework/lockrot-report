@@ -1748,7 +1748,10 @@ describe("RadiusView: the shared tail (PD-RADIUS-12)", () => {
   }
 
   const sentence = () => document.querySelector(".rl-shared-line")?.textContent ?? null;
-  /** The sentence as one width draws it: `hidden` is the other width's variant. */
+  /** The sentence as one of radius-shared.css's steps draws it: `hidden` is what that step hides. */
+  const FULL = ".rl-sh-narrow, .rl-sh-count";
+  const ONE_NAME = ".rl-sh-wide, .rl-sh-count";
+  const COUNT = ".rl-sh-wide, .rl-sh-first, .rl-sh-narrow";
   const without = (hidden: string): string => {
     const copy = document.querySelector(".rl-shared-line")?.cloneNode(true);
     if (!(copy instanceof Element)) return "";
@@ -1785,6 +1788,19 @@ describe("RadiusView: the shared tail (PD-RADIUS-12)", () => {
     expect(screen.queryByRole("button", { name: "Who shares it" })).toBeNull();
   });
 
+  it("one entry: the limit is its own words, which the shorter step leaves to level 1", () => {
+    renderIn(
+      tailModel([shared("acme/s", ["acme/a"])], [{ package: "acme/s", verdict: "stale", fanIn: 9 }]),
+      stateWith({ view: "radius" }),
+      <RadiusView />,
+    );
+
+    expect(document.querySelector(".rl-sh-limit")?.textContent).toBe(", more than 8");
+    expect(without(".rl-sh-limit")).toBe(
+      "acme/s (stale) is left out of Blast radius: 9 direct requirements share it. Who shares it",
+    );
+  });
+
   it("keeps an unknown verdict as written", () => {
     renderIn(
       tailModel([shared("acme/s", ["acme/a"])], [{ package: "acme/s", verdict: "quantum-flux", fanIn: 9 }]),
@@ -1807,17 +1823,20 @@ describe("RadiusView: the shared tail (PD-RADIUS-12)", () => {
 
     renderIn(model, stateWith({ view: "radius", q: "acme/" }), <RadiusView />);
 
-    expect(without(".rl-sh-narrow")).toBe(
+    expect(without(FULL)).toBe(
       "acme/t (12) and acme/s (9) are left out of Blast radius, each shared by more than 8 direct requirements.",
     );
-    expect(without(".rl-sh-wide")).toBe(
+    expect(without(ONE_NAME)).toBe(
       "acme/t (12) and 1 more are left out of Blast radius, each shared by more than 8 direct requirements.",
+    );
+    expect(without(COUNT)).toBe(
+      "2 packages are left out of Blast radius, each shared by more than 8 direct requirements.",
     );
     expect(screen.getByRole("button", { name: "direct requirements: who shares them" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "acme/t" }).title).toBe("Open acme/t");
   });
 
-  it("names three beside a wide table and one in a narrow one, then how many more; an unreadable count is no number", () => {
+  it("names three, one or none, then how many more; an unreadable count is no number", () => {
     const pkgs = ["acme/p", "acme/q", "acme/r", "acme/s", "acme/t"];
     const model = tailModel(
       pkgs.map((pkg) => shared(pkg, ["acme/a"])),
@@ -1826,15 +1845,18 @@ describe("RadiusView: the shared tail (PD-RADIUS-12)", () => {
 
     renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
 
-    expect(without(".rl-sh-narrow")).toBe(
+    expect(without(FULL)).toBe(
       "acme/p (20), acme/r (18), acme/s (17) and 2 more are left out of Blast radius, each shared by more than 8 direct requirements.",
     );
-    expect(without(".rl-sh-wide")).toBe(
+    expect(without(ONE_NAME)).toBe(
       "acme/p (20) and 4 more are left out of Blast radius, each shared by more than 8 direct requirements.",
+    );
+    expect(without(COUNT)).toBe(
+      "5 packages are left out of Blast radius, each shared by more than 8 direct requirements.",
     );
   });
 
-  it("three entries: 'and' before the last beside a wide table, 'and 2 more' in a narrow one", () => {
+  it("three entries: 'and' before the last in full, 'and 2 more' after one name", () => {
     const pkgs = ["acme/p", "acme/q", "acme/r"];
     const model = tailModel(
       pkgs.map((pkg) => shared(pkg, ["acme/a"])),
@@ -1862,7 +1884,7 @@ describe("RadiusView: the shared tail (PD-RADIUS-12)", () => {
 
     renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
 
-    expect(without(".rl-sh-narrow")).toBe(
+    expect(without(FULL)).toBe(
       "acme/s (9) and acme/t are left out of Blast radius: lockrot counts them under no direct requirement.",
     );
     expect(screen.getByRole("button", { name: "direct requirement: who shares them" })).toBeTruthy();

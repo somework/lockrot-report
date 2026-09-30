@@ -7,6 +7,10 @@ const MARK_WIDTH = 30;
 interface Layout {
   /** The places where a row's words add a line to it, by package. */
   readonly grows?: Readonly<Record<string, readonly string[]>>;
+  /** The places where a row's words rewrap it a pixel shorter, by package. */
+  readonly shrinks?: Readonly<Record<string, readonly string[]>>;
+  /** The places where a row's words add a line unless another row's words there widen the column. */
+  readonly growsAlone?: Readonly<Record<string, readonly string[]>>;
   /** The places whose words widen a table column, so the whole list grows. */
   readonly widens?: readonly string[];
 }
@@ -24,8 +28,12 @@ function list(pkgs: readonly string[], spots: readonly string[], layout: Layout)
     row.dataset["pkg"] = pkg;
     row.getBoundingClientRect = () => {
       const at = row.dataset["gateAt"] ?? "none";
-      const grown = layout.grows?.[pkg]?.includes(at) === true;
-      return rect(0, i * ROW_HEIGHT, 400, grown ? ROW_HEIGHT * 2 : ROW_HEIGHT);
+      const alone = !rows.some((other) => other !== row && other.dataset["gateAt"] === at);
+      const grown =
+        layout.grows?.[pkg]?.includes(at) === true ||
+        (alone && layout.growsAlone?.[pkg]?.includes(at) === true);
+      const shrunk = layout.shrinks?.[pkg]?.includes(at) === true;
+      return rect(0, i * ROW_HEIGHT, 400, grown ? ROW_HEIGHT * 2 : shrunk ? ROW_HEIGHT - 1 : ROW_HEIGHT);
     };
     for (const spot of spots) {
       const mark = document.createElement("span");
@@ -68,6 +76,12 @@ describe("fitGateMarks", () => {
     expect(places(root)).toEqual({ "a/one": "reach", "a/two": "name" });
   });
 
+  it("a place that makes the row shorter does not keep its height either", () => {
+    const root = list(["a/one"], ["reach", "name"], { shrinks: { "a/one": ["reach"] } });
+    fitGateMarks(root, LIST);
+    expect(places(root)).toEqual({ "a/one": "name" });
+  });
+
   it("tries a place without its separator before the next place", () => {
     const root = list(["a/one"], ["reach", "name"], {});
     const row = root.querySelector<HTMLElement>(".row");
@@ -103,6 +117,16 @@ describe("fitGateMarks", () => {
     });
     fitGateMarks(root, TABLE);
     expect(places(root)).toEqual({ "a/one": "name", "a/two": "none" });
+  });
+
+  it("a row with no room until a moved column widened the next place takes it then", () => {
+    const root = list(["a/one", "a/two"], ["reach", "name"], {
+      widens: ["reach"],
+      grows: { "a/two": ["reach"] },
+      growsAlone: { "a/two": ["name"] },
+    });
+    fitGateMarks(root, TABLE);
+    expect(places(root)).toEqual({ "a/one": "name", "a/two": "name" });
   });
 
   it("when every place grows the table, no row shows words and the table keeps its height", () => {

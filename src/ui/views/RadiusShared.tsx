@@ -11,6 +11,7 @@ import {
 } from "../../domain/sharedTail";
 import { useReport } from "../context";
 import { DisclosureButton, DisclosurePanel, useDisclosure } from "../common/Disclosure";
+import { linesOf, useFitSteps } from "../useFit";
 import { VerdictWord } from "./RadiusMarks";
 import "./radius-shared.css";
 
@@ -33,8 +34,10 @@ export function OpenName({ name }: { name: string }) {
   );
 }
 
+/** ", more than 8": the limit, which the line drops for level 1's tick where it would take a third
+ *  line. */
 function more(max: number | null): ComponentChildren {
-  return max === null ? null : <>, more than {max}</>;
+  return max === null ? null : <span className="rl-sh-limit">, more than {max}</span>;
 }
 
 function oneShare({ fanIn }: SharedEntry, max: number | null): ComponentChildren {
@@ -69,10 +72,13 @@ function manyShare(
   );
 }
 
-/** How many names the sentence spells out before "and N more", beside a wide table and a narrow one,
- *  so it keeps to two lines. The rest open with the dots. */
+/** How many names the sentence spells out before "and N more": all it can up to three, then one,
+ *  then only how many, whichever keeps it to two lines in the reader's fonts (radius-shared.css
+ *  draws each). The rest open with the dots. */
 const NAMES_IN_LINE = 3;
-const NAMES_IN_NARROW_LINE = 1;
+const FIT_STEPS = { many: ["one-name", "count"], one: ["no-limit"] } as const;
+
+const twoLines = (node: HTMLElement): boolean => linesOf(node) <= 2;
 
 function More({ n, className }: { n: number; className: string }) {
   if (n <= 0) return null;
@@ -87,11 +93,13 @@ function More({ n, className }: { n: number; className: string }) {
 /** Each name with its fan-in, whole on its line. */
 function EntryNames({ entries }: { entries: readonly SharedEntry[] }) {
   const named = entries.slice(0, NAMES_IN_LINE);
-  const narrow = NAMES_IN_NARROW_LINE;
   return (
     <>
+      <span className="rl-sh-count">
+        <b>{entries.length}</b> packages
+      </span>
       {named.map(({ finding, fanIn }, i) => (
-        <span key={finding.package} className={i < narrow ? undefined : "rl-sh-wide"}>
+        <span key={finding.package} className={i === 0 ? "rl-sh-first" : "rl-sh-wide"}>
           {i === 0 ? "" : i === entries.length - 1 ? " and " : ", "}
           <span className="fl-unit">
             <OpenName name={finding.package} />
@@ -100,7 +108,7 @@ function EntryNames({ entries }: { entries: readonly SharedEntry[] }) {
         </span>
       ))}
       <More n={entries.length - named.length} className="rl-sh-wide" />
-      <More n={entries.length - narrow} className="rl-sh-narrow" />
+      <More n={entries.length - 1} className="rl-sh-narrow" />
     </>
   );
 }
@@ -243,10 +251,11 @@ export function SharedTailNote({ findings }: { findings: readonly Finding[] }) {
   const base = useId();
   const { open, toggle, printed } = useDisclosure(SHARED_KEY);
   const tail = sharedTail(model, findings);
+  const many = (tail?.entries.length ?? 0) > 1;
+  const lineRef = useFitSteps<HTMLParagraphElement>(many ? FIT_STEPS.many : FIT_STEPS.one, twoLines);
   if (tail === null) return null;
   const { entries, maxFanIn: max } = tail;
   const [lone] = entries;
-  const many = entries.length > 1;
   const panelId = `${base}-shared`;
   const buttonId = `${base}-shared-btn`;
   const body = hasBody(tail);
@@ -272,7 +281,7 @@ export function SharedTailNote({ findings }: { findings: readonly Finding[] }) {
     );
   return (
     <div className="rl-shared">
-      <p className="rl-shared-line">
+      <p ref={lineRef} className="rl-shared-line">
         {many || lone === undefined ? (
           <>
             <EntryNames entries={entries} /> are left out of Blast radius

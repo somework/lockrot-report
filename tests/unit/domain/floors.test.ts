@@ -14,6 +14,7 @@ import {
   standing,
   type FloorGroup,
   type Floors,
+  type FloorsStep,
 } from "../../../src/domain/floors";
 import { normalize } from "../../../src/model/normalize";
 import type { BranchRow, Model } from "../../../src/model/types";
@@ -311,6 +312,62 @@ describe("floorsAnswer: level 0, yours first, then the newer branches", () => {
     ];
     expect(said(newer, BOTH)).toBe(
       "Yours admits your require.php (>=8.2) and PHP 8.4; 2.x stops before PHP 8.4 and has no answer for your require.php.",
+    );
+  });
+});
+
+describe("floorsAnswer: the shorter steps where the full sentence would take a third line", () => {
+  function at(step: FloorsStep, bundle: string, pkg: string): { sentence: string; rest: string[] } {
+    const { rows, floors, installed } = fixture(bundle, pkg);
+    const answer = floorsAnswer(rows, floors, installed, step);
+    return { sentence: plain(answer?.sentence ?? []), rest: listed(answer?.rest ?? []) };
+  }
+
+  it("unquoted: require.php's constraint is left to level 1's definitions; nothing else moves", () => {
+    expect(at("unquoted", "mini-0.13-edges", "acme/left")).toEqual({
+      sentence:
+        "Yours (as of 1.9.0) needs a newer PHP than your require.php; 3.x and 2.x are blocked by extension.",
+      rest: rest("mini-0.13-edges", "acme/left"),
+    });
+    expect(at("unquoted", "wallabag_wallabag-0.13", "friendsofsymfony/oauth-server-bundle").sentence).toBe(
+      "Against your require.php and PHP 8.4: 1.x stops before both.",
+    );
+  });
+
+  it("first: only the first clause, every branch after it on level 1's list", () => {
+    expect(at("first", "wallabag_wallabag-0.13", "phpunit/php-timer")).toEqual({
+      sentence: "Yours, 7.x and 6.x admit your require.php and PHP 8.4.",
+      rest: rest("wallabag_wallabag-0.13", "phpunit/php-timer"),
+    });
+    expect(at("first", "mini-0.13-edges", "acme/left")).toEqual({
+      sentence: "Yours (as of 1.9.0) needs a newer PHP than your require.php.",
+      rest: rest("mini-0.13-edges", "acme/left"),
+    });
+    expect(at("first", "wallabag_wallabag-0.13", "scheb/2fa-bundle").rest).toEqual([
+      "8.x: needs a newer PHP than your require.php but admits PHP 8.4",
+    ]);
+  });
+
+  it("first: a newer branch the full sentence said in full moves to level 1's list", () => {
+    const rows = [
+      row({ branch: "2.x" }),
+      row({ branch: "1.x", installed: true, admitsTargetPhp: false, missesTargetPhp: "skips" }),
+    ];
+    expect(said(rows, BOTH)).toBe("Yours skips PHP 8.4; 2.x admits your require.php (>=8.2) and PHP 8.4.");
+    expect(listed(floorsAnswer(rows, BOTH, "1.0.0")?.rest ?? [])).toEqual([
+      "1.x (yours): skips PHP 8.4 but admits your require.php",
+    ]);
+    const first = floorsAnswer(rows, BOTH, "1.0.0", "first");
+    expect(plain(first?.sentence ?? [])).toBe("Yours skips PHP 8.4.");
+    expect(listed(first?.rest ?? [])).toEqual([
+      "2.x: admits both",
+      "1.x (yours): skips PHP 8.4 but admits your require.php",
+    ]);
+  });
+
+  it("a run naming no project floor has no constraint to leave", () => {
+    expect(at("unquoted", "mautic_mautic-0.13", "rector/rector").sentence).toBe(
+      sentence("mautic_mautic-0.13", "rector/rector"),
     );
   });
 });

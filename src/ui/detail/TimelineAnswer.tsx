@@ -1,4 +1,4 @@
-import { Fragment, type ComponentChildren } from "preact";
+import { Fragment, type ComponentChildren, type RefObject } from "preact";
 import { day, plural } from "../../domain/format";
 import { agePhrase, type TimelineLane, type TimelineModel } from "../../domain/timeline";
 import type { Tone } from "../../domain/vocab";
@@ -18,11 +18,13 @@ export function Answer({
   tone,
   topWord,
   floors,
+  subRef,
 }: {
   timeline: TimelineModel;
   installedVersion: string;
   tone: Tone | null;
   topWord: TopWord;
+  subRef: RefObject<HTMLParagraphElement>;
   /** The branches against the run's PHP floors, ending the sub. They say what the newest's php
    *  means, so its constraint is left to the table's PHP column. */
   floors?: ComponentChildren;
@@ -130,7 +132,7 @@ export function Answer({
   return (
     <>
       <p className="detail-timeline-answer">{lead}</p>
-      <p className="detail-timeline-sub">
+      <p ref={subRef} className="detail-timeline-sub">
         {sub}
         {floors !== undefined && <> {floors}</>}
       </p>

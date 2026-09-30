@@ -34,6 +34,22 @@ const lines = async (page: Page): Promise<number> =>
     const height = el.getBoundingClientRect().height;
     return Math.round(height / parseFloat(getComputedStyle(el).lineHeight));
   });
+/** The shorter step the line took, "" for the full sentence, and the lines each fuller step takes. */
+const fit = async (page: Page): Promise<{ at: string; fuller: number[] }> =>
+  line(page).evaluate((el) => {
+    const order = el.querySelector(".rl-sh-count") === null ? ["", "no-limit"] : ["", "one-name", "count"];
+    const at = el.dataset["fit"] ?? "";
+    const set = (step: string) => {
+      if (step === "") delete el.dataset["fit"];
+      else el.dataset["fit"] = step;
+    };
+    const fuller = order.slice(0, order.indexOf(at)).map((step) => {
+      set(step);
+      return Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight));
+    });
+    set(at);
+    return { at, fuller };
+  });
 
 test.describe("PD-RADIUS-12: the shared tail", () => {
   test("one entry: the package, its verdict, its fan_in and the limit, in one line at 1440", async ({
@@ -59,6 +75,8 @@ test.describe("PD-RADIUS-12: the shared tail", () => {
       await radius(page, fixture, 390);
 
       expect(await lines(page)).toBeLessThanOrEqual(2);
+      // The fullest words that keep to two lines in this browser's fonts, not a shorter step.
+      for (const taken of (await fit(page)).fuller) expect(taken).toBeGreaterThan(2);
       expect(await shown(page)).toContain("left out of Blast radius");
       await expect(page.locator(".rl-sh-panel")).toBeHidden();
     });
@@ -67,10 +85,14 @@ test.describe("PD-RADIUS-12: the shared tail", () => {
   test("more than one entry: named with fan_in at level 0, with verdicts and dots at level 1, most shared first", async ({
     page,
   }) => {
+    const words: Record<string, string> = {
+      "": "doctrine/cache (11) and symfony/security-guard (9) are left out of Blast radius, each shared by more than 8 direct requirements.",
+      "one-name":
+        "doctrine/cache (11) and 1 more are left out of Blast radius, each shared by more than 8 direct requirements.",
+      count: "2 packages are left out of Blast radius, each shared by more than 8 direct requirements.",
+    };
     await radius(page, FIXTURES.wallabagGenerateBaseline013, 390);
-    expect(await shown(page)).toBe(
-      "doctrine/cache (11) and 1 more are left out of Blast radius, each shared by more than 8 direct requirements.",
-    );
+    expect(await shown(page)).toBe(words[(await fit(page)).at]);
     await radius(page, FIXTURES.wallabagGenerateBaseline013);
 
     expect(await shown(page)).toBe(
@@ -198,9 +220,12 @@ test.describe("PD-RADIUS-12: the shared tail", () => {
   }) => {
     await radius(page, FIXTURES.sharedMany, 390);
 
-    expect(await shown(page)).toBe(
-      "acme/polyfill-mbstring (97) and 11 more are left out of Blast radius, each shared by more than 8 direct requirements.",
-    );
+    const words: Record<string, string> = {
+      "one-name":
+        "acme/polyfill-mbstring (97) and 11 more are left out of Blast radius, each shared by more than 8 direct requirements.",
+      count: "12 packages are left out of Blast radius, each shared by more than 8 direct requirements.",
+    };
+    expect(await shown(page)).toBe(words[(await fit(page)).at]);
     await page.getByRole("button", { name: "direct requirements: who shares them", exact: true }).click();
     const first = page.locator(".rl-sh-item").first();
     await expect(first.locator(".rl-sh-dot")).toHaveCount(16);

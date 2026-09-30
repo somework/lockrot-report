@@ -21,16 +21,21 @@
   max-width: 100%;
   white-space: normal;
 }
-/* A narrow table's sentence names one package fewer (RadiusShared.tsx), so it keeps to two lines. */
-.rl-sh-wide {
+/* Where the full sentence would take a third line, RadiusShared.tsx sets a shorter one: one name,
+   then only the count; with one entry, no limit. Paper has the full one. */
+.rl-sh-narrow,
+.rl-sh-count {
   display: none;
 }
-@container rl (min-width: 600px) {
-  .rl-sh-wide {
-    display: inline;
-  }
-  .rl-sh-narrow {
+@media screen {
+  .rl-shared-line[data-fit] .rl-sh-wide,
+  .rl-shared-line[data-fit="count"] .rl-sh-first,
+  .rl-shared-line[data-fit="no-limit"] .rl-sh-limit {
     display: none;
+  }
+  .rl-shared-line[data-fit="one-name"] .rl-sh-narrow,
+  .rl-shared-line[data-fit="count"] .rl-sh-count {
+    display: inline;
   }
 }
 /* Two footnotes about what the table leaves out, kept apart so they never read as one list. */

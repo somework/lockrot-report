@@ -164,10 +164,12 @@ function FailingSplit({ clause }: { clause: Extract<GateClause, { kind: "failing
   return (
     <>
       :{" "}
-      <FlaggedToggle count={flagged}>
-        <b>{flagged}</b> flagged
-      </FlaggedToggle>
-      ,{" "}
+      <span className="nowrap">
+        <FlaggedToggle count={flagged}>
+          <b>{flagged}</b> flagged
+        </FlaggedToggle>
+        ,
+      </span>{" "}
       <UnflaggedLink count={unflagged}>
         <b>{unflagged}</b> {unflaggedAs}
       </UnflaggedLink>
