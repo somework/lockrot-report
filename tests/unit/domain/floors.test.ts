@@ -370,6 +370,17 @@ describe("floorsAnswer: the shorter steps where the full sentence would take a t
     );
   });
 
+  it("first: the newer clause kept alone names its floor, never an 'it' only yours introduced", () => {
+    const rows = [
+      row({ branch: "2.x", admitsTargetPhp: false, missesTargetPhp: "stops_before" }),
+      row({ branch: "1.x", installed: true, admitsTargetPhp: false, missesTargetPhp: "needs_newer" }),
+    ];
+    expect(said(rows, TARGET_ONLY)).toContain("2.x stops before it");
+    const first = plain(floorsAnswer(rows, TARGET_ONLY, "1.0.0", "first")?.sentence ?? []);
+    expect(first).toContain("2.x stops before PHP 8.4");
+    expect(first).not.toMatch(/\bit\b/);
+  });
+
   it("every step keeps why the newest branch does not fit, the last resort too", () => {
     for (const step of FLOORS_STEPS) {
       expect(at(step, "wallabag_wallabag-0.13", "scheb/2fa-bundle").sentence, step).toContain(

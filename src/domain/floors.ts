@@ -473,10 +473,13 @@ export function floorsAnswer(
   };
   const shape = SHAPES[step];
   const { quoted, tail } = shape;
-  const spoken = (headed: boolean, only: boolean): readonly Clause[] =>
-    speak(scene, { headed, quoted, tail, only }).clauses;
+  const spoken = (headed: boolean, only: boolean, newerOnly = false): readonly Clause[] =>
+    speak(scene, { headed, quoted, tail, only, newerOnly }).clauses;
   const missed = shape.clauses === "all" ? [] : spoken(false, true);
-  const newerFirst = missed.find((c) => c.newer) ?? missed[0];
+  // Spoken again without yours: a newer clause said after yours may lean on yours' words ("it").
+  const pick = missed.find((c) => c.newer);
+  const newerFirst =
+    pick === undefined || pick === missed[0] ? missed[0] : (spoken(false, true, true)[0] ?? pick);
   const missing = shape.clauses !== "first" ? missed : newerFirst === undefined ? [] : [newerFirst];
   // Spoken without the others, so the first clause kept is the one that quotes; its few words
   // name the floors themselves.
@@ -524,9 +527,14 @@ interface Voice {
   readonly tail: boolean;
   /** Only the clauses that say a miss. */
   readonly only: boolean;
+  /** Leave yours out, so no kept clause leans on words only yours said. */
+  readonly newerOnly?: boolean;
 }
 
-function speak(scene: Scene, { headed, quoted, tail, only }: Voice): { clauses: Clause[] } {
+function speak(
+  scene: Scene,
+  { headed, quoted, tail, only, newerOnly = false }: Voice,
+): { clauses: Clause[] } {
   const { considered, floors } = scene;
   const namer = sentenceNamer(floors, headed, quoted);
   const grouped = groupBy(considered, floors);
@@ -552,6 +560,7 @@ function speak(scene: Scene, { headed, quoted, tail, only }: Voice): { clauses: 
     }
     const keepsOut = lead.st.kind === "misses" || (lead.st.kind === "admits" && lead.st.blockedBy !== null);
     if (only && !keepsOut) continue;
+    if (newerOnly && group === mine) continue;
     const isMine = group === mine;
     const names = who(group, scene, counted);
     const said = standingSaid(lead.st, namer, floors, group.length > 1, isMine ? "yours" : "newer");
