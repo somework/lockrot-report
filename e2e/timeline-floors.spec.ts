@@ -73,14 +73,16 @@ test.describe("level 0: the answer without a click", () => {
     const lead = page.locator(".detail-answer");
     await expect(lead).toContainText("; no newer branch fits the extension floor.");
     await expect(lead).not.toContainText("ext-sodium");
+    // The constraint is quoted where the reader's fonts leave room for it; the block always stays.
     await expect(page.locator(".detail-timeline-sub")).toContainText(
-      "Yours (as of 1.9.0) needs a newer PHP than your require.php (^8.3) allows at its lowest",
+      /Yours \(as of 1\.9\.0\) needs a newer PHP than your require\.php( \(\^8\.3\))? allows at its lowest/,
     );
     await expect(page.locator(".detail-timeline-sub")).toContainText("3.x and 2.x are blocked by extension.");
     await toggle(page).click();
     await expect(page.locator(".floors-def")).toContainText(
       "lockrot reads the extension floor as ext-sodium >=2.",
     );
+    await expect(page.locator(".detail-timeline")).toContainText("^8.3");
     await expect(page.locator(".floors-def code", { hasText: "ext-sodium >=2" })).toHaveCount(1);
   });
 

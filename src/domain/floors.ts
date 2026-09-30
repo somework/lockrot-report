@@ -404,7 +404,7 @@ export interface FloorsAnswer {
 /**
  * How much level 0 says, fullest first; the page takes the first that keeps the sub within its
  * lines in the reader's fonts. `plain` leaves what a miss waits for ("it fits once …") to level 1's
- * list; `missing` keeps only the clauses that say a miss, so why a branch does not fit outlasts the
+ * list; `missing` keeps only the clauses that say a miss or a block, so why a branch does not fit outlasts the
  * ones that admit both; `unquoted` leaves `require.php`'s constraint to level 1's definitions;
  * `first` keeps one clause, the first that says a miss when one does.
  */
@@ -541,7 +541,8 @@ function speak(scene: Scene, { headed, quoted, tail, only }: Voice): { clauses: 
       }
       continue;
     }
-    if (only && lead.st.kind !== "misses") continue;
+    const keepsOut = lead.st.kind === "misses" || (lead.st.kind === "admits" && lead.st.blockedBy !== null);
+    if (only && !keepsOut) continue;
     const isMine = group === mine;
     const names = who(group, scene, counted);
     const said = standingSaid(lead.st, namer, floors, group.length > 1, isMine ? "yours" : "newer");
@@ -549,7 +550,7 @@ function speak(scene: Scene, { headed, quoted, tail, only }: Voice): { clauses: 
     clauses.push({
       parts: [...names.parts, text(" "), ...said.words, ...(tail ? waits : [])],
       stated: said.stated && (tail || waits.length === 0) ? names.named.map((p) => p.index) : [],
-      misses: lead.st.kind === "misses",
+      misses: keepsOut,
     });
     counted ||= group.filter((p) => !p.row.installed).length > NAMED_MAX;
   }

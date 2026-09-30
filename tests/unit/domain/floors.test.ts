@@ -417,6 +417,14 @@ describe("floorsAnswer: the shorter steps where the full sentence would take a t
     });
   });
 
+  it("missing: a branch blocked by a floor this page does not know keeps its clause", () => {
+    for (const step of ["missing", "missing-plain", "missing-unquoted"] as const) {
+      expect(at(step, "mini-0.13-edges", "acme/left").sentence, step).toContain(
+        "3.x and 2.x are blocked by extension",
+      );
+    }
+  });
+
   it("missing: with no clause that misses, the first clause stands alone, quoted", () => {
     expect(at("missing", "koel_koel-all-0.13", "sentry/sentry")).toEqual({
       sentence: "Yours, the newest, admits your require.php (>=8.3) and PHP 8.4.",
