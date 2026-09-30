@@ -60,7 +60,8 @@ tag or the address format, says so under **Breaking** in its entry.
   to a floor of another kind, "Each branch" says which, as lockrot wrote it: "lockrot reads the
   extension floor as ext-sodium >=2". Where the clause would add a third line in the reader's fonts,
   it leaves to "Each branch" what a miss waits for, then the clauses that admit both, so why a newer
-  branch does not fit stays in sight, then require.php's constraint, then every clause after yours.
+  branch does not fit stays in sight, then require.php's constraint, and at the last keeps one
+  clause, the first that says a miss, so level 0 says why a newer branch does not fit in any fonts.
 - A left-behind package whose newest branch the project cannot take names the one it can, in the
   words its row uses and against the floor lockrot held it to: "its last release was 4.5 years ago;
   7.x is the newest that fits your require.php", or "no newer branch fits PHP 8.4", an unknown floor
@@ -75,8 +76,8 @@ tag or the address format, says so under **Breaking** in its entry.
 - A pinned row in Findings leads with its S6 in a few words, "snapshot 1 mo before tag 2.6.7",
   "snapshot; no tag at all", "snapshot; tags unknown", "1.0.0 is not a tag in its repository", and
   search finds them. Where the words name a tag beside the snapshot, the age column's number says
-  "tag", so its years read as the tag's; on a phone the word sits just after the number, clear of
-  the bar.
+  "tag" under it, the two centred so a one-line row holds both, and its years read as the tag's; on
+  a phone the word sits just after the number, clear of the bar.
 - Blast radius names the flagged packages lockrot counts under no direct requirement because too
   many share them: one sentence under the table ("league/config (stale) is left out of Blast
   radius: 9 direct requirements share it, more than 8"); two or more are named with their counts,

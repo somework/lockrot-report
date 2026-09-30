@@ -406,9 +406,17 @@ export interface FloorsAnswer {
  * lines in the reader's fonts. `plain` leaves what a miss waits for ("it fits once …") to level 1's
  * list; `missing` keeps only the clauses that say a miss, so why a branch does not fit outlasts the
  * ones that admit both; `unquoted` leaves `require.php`'s constraint to level 1's definitions;
- * `first` keeps the first clause alone.
+ * `first` keeps one clause, the first that says a miss when one does.
  */
-export const FLOORS_STEPS = ["full", "plain", "missing", "missing-plain", "unquoted", "first"] as const;
+export const FLOORS_STEPS = [
+  "full",
+  "plain",
+  "missing",
+  "missing-plain",
+  "unquoted",
+  "missing-unquoted",
+  "first",
+] as const;
 export type FloorsStep = (typeof FLOORS_STEPS)[number];
 
 interface StepShape {
@@ -428,6 +436,7 @@ const SHAPES: Readonly<Record<FloorsStep, StepShape>> = {
   unquoted: { clauses: "all", quoted: false, tail: false },
   missing: { clauses: "missing", quoted: true, tail: true },
   "missing-plain": { clauses: "missing", quoted: true, tail: false },
+  "missing-unquoted": { clauses: "missing", quoted: false, tail: false },
   first: { clauses: "first", quoted: false, tail: false },
 };
 
@@ -465,7 +474,8 @@ export function floorsAnswer(
   const { quoted, tail } = shape;
   const spoken = (headed: boolean, only: boolean): readonly Clause[] =>
     speak(scene, { headed, quoted, tail, only }).clauses;
-  const missing = shape.clauses === "missing" ? spoken(false, true) : [];
+  const missed = shape.clauses === "all" ? [] : spoken(false, true);
+  const missing = shape.clauses === "first" ? missed.slice(0, 1) : missed;
   // Spoken without the others, so the first clause kept is the one that quotes; its few words
   // name the floors themselves.
   let headed = false;

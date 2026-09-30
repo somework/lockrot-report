@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  FLOORS_STEPS,
   floorsAnswer,
   floorsDefinition,
   foldWords,
@@ -335,18 +336,40 @@ describe("floorsAnswer: the shorter steps where the full sentence would take a t
     );
   });
 
-  it("first: only the first clause, every branch after it on level 1's list", () => {
+  it("first: the first clause that says a miss, alone and unquoted; every other branch on level 1's list", () => {
     expect(at("first", "wallabag_wallabag-0.13", "phpunit/php-timer")).toEqual({
-      sentence: "Yours, 7.x and 6.x admit your require.php and PHP 8.4.",
-      rest: rest("wallabag_wallabag-0.13", "phpunit/php-timer"),
+      sentence: "9.x and 8.x need a newer PHP than your require.php allows at its lowest.",
+      rest: [
+        "9.x, 8.x: need a newer PHP than your require.php allows at its lowest but admit PHP 8.4 — they fit once your require.php starts higher",
+        "7.x, 6.x, 5.x (yours), 2.x: admit both",
+        "4.x, 3.x, 1.x: stop before both",
+      ],
     });
     expect(at("first", "mini-0.13-edges", "acme/left")).toEqual({
       sentence: "Yours (as of 1.9.0) needs a newer PHP than your require.php allows at its lowest.",
       rest: rest("mini-0.13-edges", "acme/left"),
     });
-    expect(at("first", "wallabag_wallabag-0.13", "scheb/2fa-bundle").rest).toEqual([
-      "8.x: needs a newer PHP than your require.php allows at its lowest but admits PHP 8.4 — it fits once your require.php starts higher",
-    ]);
+    expect(at("first", "wallabag_wallabag-0.13", "scheb/2fa-bundle")).toEqual({
+      sentence: "8.x needs a newer PHP than your require.php allows at its lowest.",
+      rest: [
+        "8.x: needs a newer PHP than your require.php allows at its lowest but admits PHP 8.4 — it fits once your require.php starts higher",
+        "7.x, 6.x, 5.x (yours): admit both",
+      ],
+    });
+  });
+
+  it("first: with no clause that misses, the first clause alone", () => {
+    expect(at("first", "koel_koel-all-0.13", "sentry/sentry").sentence).toBe(
+      "Yours, the newest, admits your require.php and PHP 8.4.",
+    );
+  });
+
+  it("every step keeps why the newest branch does not fit, the last resort too", () => {
+    for (const step of FLOORS_STEPS) {
+      expect(at(step, "wallabag_wallabag-0.13", "scheb/2fa-bundle").sentence, step).toContain(
+        "8.x needs a newer PHP than your require.php",
+      );
+    }
   });
 
   it("first: a newer branch the full sentence said in full moves to level 1's list", () => {
@@ -388,6 +411,10 @@ describe("floorsAnswer: the shorter steps where the full sentence would take a t
     expect(at("missing-plain", "wallabag_wallabag-0.13", "scheb/2fa-bundle").sentence).toBe(
       "8.x needs a newer PHP than your require.php (>=8.2) allows at its lowest.",
     );
+    expect(at("missing-unquoted", "wallabag_wallabag-0.13", "scheb/2fa-bundle")).toEqual({
+      sentence: "8.x needs a newer PHP than your require.php allows at its lowest.",
+      rest: at("missing", "wallabag_wallabag-0.13", "scheb/2fa-bundle").rest,
+    });
   });
 
   it("missing: with no clause that misses, the first clause stands alone, quoted", () => {

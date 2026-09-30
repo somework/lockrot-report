@@ -27,11 +27,18 @@ test.describe("level 0: the answer without a click", () => {
       "its last release was 4.5 years ago; 7.x is the newest that fits your require.php.",
     );
     const sub = page.locator(".detail-timeline-sub");
-    // Why 8.x does not fit, without a glossary: the lowest PHP require.php allows is older than 8.x takes.
-    await expect(sub).toContainText(
-      "8.x needs a newer PHP than your require.php (>=8.2) allows at its lowest — it fits once your require.php starts higher.",
-    );
+    // Why 8.x does not fit, without a glossary. Which step of the sentence fits is the fonts' call
+    // (PD-TIMELINE-16), so what level 0 leaves out is asserted at level 1.
+    await expect(sub).toContainText("8.x needs a newer PHP than your require.php");
+    await expect(sub).toContainText("allows at its lowest");
     await expect(sub).not.toContainText("misses");
+    if ((await sub.textContent())?.includes("— it fits once your require.php starts higher.") !== true) {
+      await toggle(page).click();
+      await expect(page.locator(".detail-timeline-floors li").first()).toHaveText(
+        "8.x needs a newer PHP than your require.php allows at its lowest but admits PHP 8.4 — it fits once your require.php starts higher",
+      );
+      await toggle(page).click();
+    }
     await expect(sub).not.toContainText("requires php");
     // Two lines at most for the floors, in this browser's own fonts (PD-TIMELINE-16).
     const added = await sub.evaluate((node) => {
@@ -132,6 +139,28 @@ test.describe("space: the lead as tall as before, Release branches at most two l
     [FIXTURES.koelAll013, "brick/math"],
     [FIXTURES.koelAll013, "sentry/sentry"],
   ] as const;
+
+  test("scheb/2fa-bundle: at every width level 0 still says why 8.x does not fit, in at most two more lines", async ({
+    page,
+  }) => {
+    for (const width of [320, 360, 390, 768, 1024, 1440, 1920]) {
+      await page.setViewportSize({ width, height: 900 });
+      await open(page, FIXTURES.wallabag013, "scheb/2fa-bundle");
+      const sub = page.locator(".detail-timeline-sub");
+      await expect(sub, `${String(width)}px`).toContainText("8.x needs a newer PHP than your require.php");
+      const grown = await sub.evaluate((node) => {
+        const said = node.querySelector<HTMLElement>(".detail-timeline-floors-said");
+        if (said === null) return Infinity;
+        const now = node.getBoundingClientRect().height;
+        said.hidden = true;
+        const without = node.getBoundingClientRect().height;
+        said.hidden = false;
+        // The button's focus box stands a pixel or two above a line of text.
+        return now - without - 2 * parseFloat(getComputedStyle(node).lineHeight) - 3;
+      });
+      expect(grown, `${String(width)}px: past two lines by`).toBeLessThanOrEqual(0);
+    }
+  });
 
   for (const width of [390, 1440]) {
     test(`${String(width)}px: S8's clause takes no more lines than "while 8.x kept releasing" did`, async ({

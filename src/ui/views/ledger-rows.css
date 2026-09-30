@@ -544,13 +544,21 @@
     max-width: calc(100% - var(--fl-whose));
   }
 }
+/* The number and its word centre as a pair, so a one-line row, as short as rows get, holds both. */
 @container fledger (min-width: 480px) {
+  .fc-age:has(.age-whose) {
+    grid-template-rows: 1fr auto auto 1fr;
+  }
+  .fc-age:has(.age-whose) > .age-track {
+    grid-row: 1 / -1;
+  }
+  .fc-age:has(.age-whose) > .age-num {
+    grid-row: 2;
+  }
   .age-whose {
     grid-column: 2;
-    grid-row: 1;
+    grid-row: 3;
     justify-self: end;
-    align-self: end;
-    margin-bottom: 3px;
   }
 }
 

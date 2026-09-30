@@ -453,13 +453,31 @@ test.describe("PD-GATE-1: the header keeps the page's buttons on one row", () =>
       };
     });
 
+  /** Whether hiding the flags from sight makes the header shorter, in this browser's own fonts. */
+  const hidingSaves = (page: Page) =>
+    page.evaluate(() => {
+      const bar = document.querySelector<HTMLElement>(".topbar");
+      if (bar === null) return null;
+      const was = bar.dataset["fact"];
+      delete bar.dataset["fact"];
+      const full = bar.getBoundingClientRect().height;
+      bar.dataset["fact"] = "short";
+      const short = bar.getBoundingClientRect().height;
+      if (was === undefined) delete bar.dataset["fact"];
+      else bar.dataset["fact"] = was;
+      return short < full;
+    });
+
   for (const fixture of [FIXTURES.wallabagGenerateBaseline013, FIXTURES.miniGateGenerate013] as const) {
-    test(`${fixture}: at 1024 the flags leave the line to the buttons, and stay for a screen reader`, async ({
+    test(`${fixture}: at 1024 the buttons keep the facts' row, the flags leaving it only where that saves a line, and stay for a screen reader`, async ({
       page,
     }) => {
       await page.setViewportSize({ width: 1024, height: 900 });
       await page.goto(pageUrl(fixture));
-      expect(await rowOf(page)).toEqual({ same: true, hidden: true });
+      // Whether the flags cost a line is the fonts' call: Linux's fit where macOS's do not.
+      const saves = await hidingSaves(page);
+      expect(saves).not.toBeNull();
+      expect(await rowOf(page)).toEqual({ same: true, hidden: saves });
       await expect(page.locator(".gate-fact")).toContainText(/ · --(strict-network|fail-on not applied)$/);
       await page.setViewportSize({ width: 1440, height: 900 });
       await expect.poll(() => rowOf(page)).toEqual({ same: true, hidden: false });
