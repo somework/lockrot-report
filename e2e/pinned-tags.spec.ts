@@ -5,6 +5,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { FIXTURES, pageUrl, type FixtureName } from "./support/pages";
+import { createReportPage } from "./support/report";
+
+const findingRow = (page: Page, pkg: string) => page.getByRole("listitem", { name: pkg, exact: true });
 
 async function open(page: Page, fixture: FixtureName, pkg: string): Promise<void> {
   await page.goto("about:blank");
@@ -133,7 +136,7 @@ test.describe("level 1: the tag words open the dates and the pre-release caveat"
     await open(page, FIXTURES.wallabag013, "friendsofsymfony/oauth-server-bundle");
     const name = { name: "the newest tag, 1.6.2", exact: true } as const;
     await page.getByRole("button", name).click();
-    await page.locator("li.frow[data-pkg='friendsofsymfony/oauth-server-bundle']").focus();
+    await findingRow(page, "friendsofsymfony/oauth-server-bundle").focus();
     await page.keyboard.press("j");
     await expect(page.locator("aside.detail")).not.toHaveAttribute(
       "aria-label",
@@ -147,7 +150,7 @@ test.describe("level 1: the tag words open the dates and the pre-release caveat"
     await expect(page.getByRole("button", name)).toHaveAttribute("aria-expanded", "true");
     await expect(panel(page)).toBeVisible();
     await page.keyboard.press("Escape");
-    await expect(page.locator("li.frow[data-pkg='friendsofsymfony/oauth-server-bundle']")).toBeFocused();
+    await expect(findingRow(page, "friendsofsymfony/oauth-server-bundle")).toBeFocused();
   });
 
   test("in forced colours the version keeps the shared marker and link colour", async ({ page }) => {
@@ -175,13 +178,13 @@ test.describe("the Findings row", () => {
   test("a pinned row leads with S6 in words the search finds too", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${pageUrl(FIXTURES.mautic013)}#view=findings`);
-    const rector = page.locator("li.frow[data-pkg='rector/rector']");
+    const rector = findingRow(page, "rector/rector");
     await expect(rector.locator(".fc-why > .sid")).toHaveText("S6");
     await expect(rector.locator(".fc-why-text")).toHaveText("snapshot 1 mo before tag 2.6.7");
 
     await page.goto(`${pageUrl(FIXTURES.wallabag013)}#view=findings&q=${encodeURIComponent("after tag")}`);
-    await expect(page.locator("li.frow")).toHaveCount(1);
-    const fos = page.locator("li.frow[data-pkg='friendsofsymfony/oauth-server-bundle']");
+    await expect.poll(async () => (await createReportPage(page)).rows()).toHaveLength(1);
+    const fos = findingRow(page, "friendsofsymfony/oauth-server-bundle");
     // The age column shows the tag's years, so the row names no second number of years, and the
     // column says whose its number is.
     await expect(fos.locator(".fc-why-text")).toHaveText("snapshot after tag 1.6.2");
@@ -194,10 +197,10 @@ test.describe("the Findings row", () => {
     page,
   }) => {
     await page.goto(`${pageUrl(FIXTURES.miniEdges013)}#view=findings`);
-    const untagged = page.locator("li.frow[data-pkg='acme/untagged']");
+    const untagged = findingRow(page, "acme/untagged");
     await expect(untagged.locator(".fc-why-text")).toHaveText("1.0.0 is not a tag in its repository");
     await page.goto(`${pageUrl(FIXTURES.mautic013)}#view=findings`);
-    await expect(page.locator("li.frow[data-pkg='rector/rector'] .age-whose")).toHaveCount(0);
+    await expect(findingRow(page, "rector/rector").locator(".age-whose")).toHaveCount(0);
     await expect(page.locator("li.frow .age-whose")).toHaveCount(0);
   });
 
@@ -207,6 +210,7 @@ test.describe("the Findings row", () => {
     await page.goto(`${pageUrl(FIXTURES.wallabag013)}#view=findings`);
     for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       await page.setViewportSize({ width, height: 900 });
+      // Measures where the age word sits in the row, which only the row's classes locate.
       const fos = page.locator("li.frow[data-pkg='friendsofsymfony/oauth-server-bundle']");
       const row = await fos.boundingBox();
       const word = await fos.locator(".age-whose").boundingBox();

@@ -267,7 +267,7 @@ test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
     page,
   }) => {
     await report.goto(FIXTURES.koelNoTokenUnchecked013);
-    const row = page.locator('li.frow[data-pkg="jwilsson/spotify-web-api-php"]');
+    const row = page.getByRole("listitem", { name: "jwilsson/spotify-web-api-php", exact: true });
     await expect(row).toHaveAccessibleName("jwilsson/spotify-web-api-php");
     // The unchecked kind: neither the verdict nor the priority says why it fails, so the words do.
     await expect(row).toHaveAccessibleDescription(
@@ -330,6 +330,7 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
     await report.gotoWithHash(FIXTURES.koelNoTokenUnchecked013, "");
     await page.getByRole("button", { name: /^171 unchecked/ }).click();
     await expect(page.locator(".count-line")).toContainText("171 of 201 packages");
+    // The gate mark is a state class on the row; no role or name carries it.
     await expect(page.locator("tr[data-pkg].has-gate")).toHaveCount(171);
     const worded = await page.evaluate(
       () =>
@@ -645,7 +646,7 @@ test.describe("PD-GATE-2/4: level 1 and its counts lead where they said", () => 
     await report.gotoWithHash(FIXTURES.koelNoTokenUnchecked013, "view=packages&verdict=ok&gate=fails");
     await page.getByRole("button", { name: /^2 flagged\s*,?\s*on Findings$/ }).click();
     await expect.poll(() => report.hash()).toBe("#gate=fails");
-    await expect(page.locator("li.frow")).toHaveCount(2);
+    await expect.poll(() => report.rows()).toHaveLength(2);
   });
 
   test("Run data marks the notes that fail --strict-network, and the cell points at those", async ({
