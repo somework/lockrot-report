@@ -249,8 +249,8 @@ test.describe("level 1: every branch, opened by keyboard", () => {
     await expect(toggle(page)).toHaveCSS(
       "color",
       await page.evaluate(() => {
-        const probe = document.createElement("a");
-        probe.href = "#";
+        const probe = document.createElement("span");
+        probe.style.color = "LinkText";
         document.body.append(probe);
         const color = getComputedStyle(probe).color;
         probe.remove();

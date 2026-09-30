@@ -29,12 +29,15 @@ async function markedRows(page: Page, selector = "li.frow.has-gate") {
       const verdict = row.querySelector(".fc-verdict, .pk-verdict .pill");
       const carried = verdict !== null && getComputedStyle(verdict).textDecorationLine.includes("underline");
       const m = mark?.getBoundingClientRect();
+      // An inline mark has no client box (clientWidth 0) yet Firefox gives it a scrollWidth: its
+      // rect alone says whether it is cut.
+      const uncut =
+        mark === undefined ||
+        getComputedStyle(mark).display === "inline" ||
+        mark.scrollWidth <= mark.clientWidth + 1;
       const inside =
         m === undefined ||
-        (m.left >= box.left - 0.5 &&
-          m.right <= box.right + 0.5 &&
-          m.bottom <= box.bottom + 0.5 &&
-          (mark?.scrollWidth ?? 0) <= (mark?.clientWidth ?? 0) + 1);
+        (m.left >= box.left - 0.5 && m.right <= box.right + 0.5 && m.bottom <= box.bottom + 0.5 && uncut);
       return { pkg: row.dataset["pkg"], at, height: box.height, inside, shown: mark !== undefined, carried };
     });
     for (const row of rows) {

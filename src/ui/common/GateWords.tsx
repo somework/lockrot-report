@@ -89,7 +89,8 @@ function FlaggedToggle({ count, children }: { count: number; children: Component
   const { model, state, dispatch } = useReport();
   const here = state.view === "findings";
   const pressed = here && state.filters.gate.includes("fails");
-  const press = () => {
+  const press = (event: { currentTarget: HTMLButtonElement }) => {
+    event.currentTarget.focus();
     if (here) {
       const gate = pressed ? [] : ["fails"];
       dispatch({ type: "focus", view: "findings", keepQuery: true, filters: { ...state.filters, gate } });
@@ -123,7 +124,8 @@ function UnflaggedLink({ count, children }: { count: number; children: Component
     <button
       type="button"
       className="bl-toggle gate-go"
-      onClick={() => {
+      onClick={(event) => {
+        event.currentTarget.focus();
         const kept = applyFilters(model, { ...state, filters }, "packages").length === count;
         dispatch({ type: "focus", view: "packages", keepQuery: kept, filters });
       }}

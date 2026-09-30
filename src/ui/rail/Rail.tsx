@@ -23,7 +23,8 @@ function Opt({ group, row }: { group: RailGroup; row: RailGroup["rows"][number] 
       className={group.group === "gate" ? "opt opt-gate" : "opt"}
       aria-pressed={row.on}
       title={group.group === "signal" ? signalDef(row.key) : undefined}
-      onClick={() => {
+      onClick={(event) => {
+        event.currentTarget.focus();
         dispatch({ type: "toggle", group: group.group, key: row.key });
       }}
     >
