@@ -34,13 +34,12 @@ import "./detail-lead.css";
 /** The top of the open package (PD-DETAIL-6): the answer sentence, four key facts, how it gets in
  *  and what flagged packages it pulls in. Nothing here is a recommendation. */
 export function DetailLead({ finding, details }: { finding: Finding; details: PackageDetails | null }) {
-  const { model, now } = useReport();
+  const { model } = useReport();
   const parts = answerParts({
     finding,
     metadataReplacement: details?.metadata?.replacement ?? null,
     thresholds: model.report.run.thresholds,
     details,
-    now,
   });
   const pinned = finding.verdict === "pinned" ? pinnedFacts(finding, details) : null;
   const tagDetail = pinned === null ? null : pinnedTagDetail(pinned);
@@ -481,7 +480,10 @@ function Point({ point }: { point: DatedPoint }) {
     <span className="detail-tags-point">
       <span className="detail-tags-role">{point.role}</span>{" "}
       <span className="detail-tags-version">{point.version ?? ""}</span>{" "}
-      <span className="detail-tags-day">{point.day}</span>
+      <span className="detail-tags-day">
+        {point.day}
+        {point.role === "snapshot" && <span className="detail-tags-yours"> · yours</span>}
+      </span>
     </span>
   );
 }

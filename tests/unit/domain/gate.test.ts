@@ -4,6 +4,7 @@ import { applyFilters } from "../../../src/domain/filters";
 import {
   baselineExemption,
   exemptWords,
+  failOnRule,
   findingGateLine,
   findingGateMark,
   gateClause,
@@ -11,6 +12,7 @@ import {
   gateFlag,
   gateHeadline,
   networkNotes,
+  rowGate,
   rowGateWords,
   runGate,
   unflaggedFilters,
@@ -524,5 +526,68 @@ describe("gateFact (a report with no decided gate)", () => {
       label: "gate: silent",
       text: "This run was told --fail-on=silent. This report does not say which findings meet it, or whether the run failed.",
     });
+  });
+});
+
+describe("rowGate: why a row fails where its verdict cannot say it", () => {
+  it("an unchecked fail-on names the kind on every failing row, flagged or not", () => {
+    const model = loadModel("koel_no-token-unchecked-0.13");
+    expect(rowGate(model, finding(model, "brianium/paratest"))).toEqual({
+      words: "fails",
+      fails: true,
+      why: "unchecked",
+    });
+    expect(rowGate(model, finding(model, "predis/predis"))?.why).toBe("unchecked");
+  });
+
+  it("a priority, verdict or unknown kind adds nothing: the row's columns, or nothing known, say it", () => {
+    for (const name of ["wallabag_baseline-older-0.13", "mini-0.13-gate-verdict", "mini-0.13-gate-unknown"]) {
+      const model = loadModel(name);
+      const failing = model.report.findings.find((f) => f.gate?.fails === true);
+      if (failing === undefined) throw new Error(`${name} has no failing package`);
+      expect(rowGate(model, failing), name).toEqual({ words: "fails", fails: true, why: null });
+    }
+  });
+
+  it("an exemption keeps its words and no reason; no gate, no words", () => {
+    const edges = loadModel("mini-0.13-edges");
+    expect(rowGate(edges, finding(edges, "acme/future-step"))).toEqual({
+      words: "exempt: waiver",
+      fails: false,
+      why: null,
+    });
+    const none = loadModel("mini-0.13-gate-null");
+    expect(none.report.findings.map((f) => rowGate(none, f)).every((g) => g === null)).toBe(true);
+  });
+});
+
+describe("failOnRule: the fail-on's rule, for a list of what fails it", () => {
+  it("words each known kind; `unchecked` names S10", () => {
+    expect(failOnRule({ failOn: "unchecked", failOnKind: "unchecked" })).toEqual({
+      flag: "--fail-on=unchecked",
+      words: "fails every package with a check that did not run (S10)",
+      unknownKind: null,
+    });
+    expect(failOnRule({ failOn: "high", failOnKind: "priority" })?.words).toBe(
+      "fails every package at priority high or higher",
+    );
+    expect(failOnRule({ failOn: "abandoned", failOnKind: "verdict" })?.words).toBe(
+      "fails every package whose verdict is abandoned or more severe",
+    );
+    expect(failOnRule({ failOn: "none", failOnKind: "none" })?.words).toBe("fails no package");
+  });
+
+  it("an unknown kind as written; a null or absent kind leaves the flag raw; no fail-on, no rule", () => {
+    expect(failOnRule({ failOn: "copyleft", failOnKind: "licence" })).toEqual({
+      flag: "--fail-on=copyleft",
+      words: null,
+      unknownKind: "licence",
+    });
+    expect(failOnRule({ failOn: "high", failOnKind: null })).toEqual({
+      flag: "--fail-on=high",
+      words: null,
+      unknownKind: null,
+    });
+    expect(failOnRule({ failOn: null, failOnKind: null })).toBeNull();
   });
 });

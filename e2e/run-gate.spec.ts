@@ -91,13 +91,20 @@ async function roomAt(
                 mark.left >= outer.left - 0.5 &&
                 mark.right <= outer.right + 0.5 &&
                 mark.bottom <= outer.bottom + 0.5;
+              // A stacked row's cell does not grow with its words: they must not run over the next.
+              const cell = row.querySelector(`.gate-at-${spot}`)?.closest("td");
+              const held =
+                cell == null ||
+                getComputedStyle(row).display !== "grid" ||
+                cell.scrollWidth <= cell.clientWidth + 1;
               return (
                 Math.abs(box.height - bare) <= 0.01 &&
                 Math.abs(list.getBoundingClientRect().height - all) <= 0.01 &&
                 mark !== undefined &&
                 mark.width > 0 &&
                 inside(box) &&
-                inside(age)
+                inside(age) &&
+                held
               );
             }),
           );
@@ -189,6 +196,58 @@ test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
     });
   }
 
+  test("under --fail-on=unchecked a row says why it fails where it has room, on every row of the list or on none", async ({
+    page,
+  }) => {
+    test.slow();
+    for (const [hash, selector] of [
+      ["", "li.frow.has-gate"],
+      ["#view=packages&gate=fails", "tr.pk-row.has-gate"],
+    ] as const) {
+      for (const width of [390, 768, 1440]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto("about:blank");
+        await page.goto(pageUrl(FIXTURES.koelNoTokenUnchecked013) + hash);
+        const shown = await page.evaluate(
+          (selector) =>
+            [...document.querySelectorAll<HTMLElement>(selector)].flatMap((row) => {
+              const mark = [...row.querySelectorAll<HTMLElement>(".gate-mark")].find(
+                (m) => m.getClientRects().length > 0,
+              );
+              return mark === undefined ? [] : [mark.textContent];
+            }),
+          selector,
+        );
+        expect(shown.length, `${selector} at ${String(width)}px`).toBeGreaterThan(0);
+        expect(
+          new Set(shown).size,
+          `${selector} at ${String(width)}px: ${[...new Set(shown)].join(" | ")}`,
+        ).toBe(1);
+        if (width === 1440) expect(shown[0]).toBe("fails · unchecked");
+      }
+    }
+    // A priority fail-on: the priority column says why, so the words stay "fails".
+    await page.goto(pageUrl(FIXTURES.wallabagBaselineOlder013) + "#view=packages&gate=fails");
+    await expect(page.locator(".gate-mark-why")).toHaveCount(0);
+  });
+
+  test("All packages filtered to the failing ones answers why they fail, in the fail-on's kind", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(pageUrl(FIXTURES.koelNoTokenUnchecked013) + "#view=packages&gate=fails");
+    await expect(page.locator(".pk-answer")).toHaveText(
+      "All 173 listed fail this run: --fail-on=unchecked fails every package with a check that did not run (S10).",
+    );
+    await expect(page.locator(".pk-answer")).not.toContainText("behind");
+    await page.goto(pageUrl(FIXTURES.wallabagBaselineOlder013) + "#view=packages&gate=fails");
+    await expect(page.locator(".pk-answer")).toHaveText(
+      "All 12 listed fail this run: --fail-on=high fails every package at priority high or higher.",
+    );
+    await page.goto(pageUrl(FIXTURES.koelNoTokenUnchecked013) + "#view=packages");
+    await expect(page.locator(".pk-answer")).toContainText("behind their newest release");
+  });
+
   test("a repeated way in dims its words, never the mark beside it", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await report.goto(FIXTURES.wallabagOfflineStrictUnchecked013);
@@ -210,7 +269,10 @@ test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
     await report.goto(FIXTURES.koelNoTokenUnchecked013);
     const row = page.locator('li.frow[data-pkg="jwilsson/spotify-web-api-php"]');
     await expect(row).toHaveAccessibleName("jwilsson/spotify-web-api-php");
-    await expect(row).toHaveAccessibleDescription("left-behind fails this run");
+    // The unchecked kind: neither the verdict nor the priority says why it fails, so the words do.
+    await expect(row).toHaveAccessibleDescription(
+      "left-behind fails this run, unchecked: a check did not run",
+    );
     await report.goto(FIXTURES.miniEdges013);
     await expect(page.locator('li.frow[data-pkg="acme/future-step"]')).toHaveAccessibleDescription(
       "old-promise exempt: waiver, does not fail",
@@ -227,7 +289,16 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
     await report.goto(FIXTURES.koelNoTokenUnchecked013);
     const line = page.locator(".lead-gate");
     await expect(line).toHaveText(
-      "173 fail this run by --fail-on=unchecked: 2 flagged, 171 unchecked, on All packages→.",
+      "173 fail this run, on All packages by --fail-on=unchecked: 2 flagged, 171 unchecked, on All packages→. why",
+    );
+    // Every number lists what it counts; the one control that opens level 1 is apart from them.
+    await expect(line.getByRole("button", { name: /^173 fail this run/ })).not.toHaveAttribute(
+      "aria-expanded",
+      /.*/,
+    );
+    await expect(line.getByRole("button", { name: "Why this run fails" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
     );
     // A phone's header keeps the flag on a row of its own, so the summary's echo of it stays hidden.
     await expect(line.locator(".gate-echo")).toBeHidden();
@@ -269,12 +340,16 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
     expect(worded).toBe(171);
   });
 
-  test("level 1 opens by keyboard, is named by its words alone, and prints open", async ({ page }) => {
+  test("level 1 opens by keyboard from its own control, apart from the count, and prints open", async ({
+    page,
+  }) => {
     await report.goto(FIXTURES.wallabagOfflineStrictUnchecked013);
-    const total = page.getByRole("button", { name: "186 fail this run" });
-    await total.focus();
+    const total = page.getByRole("button", { name: /^186 fail this run/ });
+    await expect(total).not.toHaveAttribute("aria-expanded", /.*/);
+    const why = page.getByRole("button", { name: "Why this run fails" });
+    await why.focus();
     await page.keyboard.press("Enter");
-    await expect(total).toHaveAttribute("aria-expanded", "true");
+    await expect(why).toHaveAttribute("aria-expanded", "true");
     const panel = page.locator(".gate-why").first();
     await expect(panel).toContainText("--strict-network");
     await expect(panel).toContainText(
@@ -282,7 +357,8 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
     );
     await expect(panel).toContainText("Of those, 30 are flagged and 156 are not (unknown).");
     await page.keyboard.press("Enter");
-    await expect(total).toHaveAttribute("aria-expanded", "false");
+    await expect(why).toHaveAttribute("aria-expanded", "false");
+    await expect(why).toBeFocused();
     await page.emulateMedia({ media: "print" });
     const printed = page.locator(".print-doc .gate-why");
     await expect(printed).toBeVisible();
@@ -295,7 +371,7 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
     await expect(page.locator(".gate-fact")).toHaveText(
       "this run fails · --fail-on=copyleft · licence_policy",
     );
-    await page.getByRole("button", { name: "1 fails this run" }).click();
+    await page.getByRole("button", { name: "Why this run fails" }).click();
     const panel = page.locator(".gate-why").first();
     await expect(panel).toContainText("1 package meets it, and it fails. It is not flagged (ok).");
     await expect(panel).not.toContainText("It is flagged");
@@ -326,7 +402,7 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
       for (const colorScheme of ["light", "dark"] as const) {
         await page.emulateMedia({ colorScheme });
         await report.goto(fixture);
-        await page.locator(".ledger .l1-btn").first().click();
+        await page.locator(".ledger .gate-why-btn").first().click();
         const results = await new AxeBuilder({ page }).include(".ledger").include(".topbar").analyze();
         const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
         expect(serious.flatMap((v) => v.nodes.map((node) => `${v.id}: ${node.target.join(" ")}`))).toEqual(
@@ -339,10 +415,10 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
 
 test.describe("PD-GATE-2: a run no finding fails says what failed it", () => {
   const cases = [
-    { fixture: FIXTURES.wallabagOfflineStrict013, text: "This run fails by --strict-network.", phone: 1 },
+    { fixture: FIXTURES.wallabagOfflineStrict013, text: "This run fails by --strict-network. why", phone: 1 },
     {
       fixture: FIXTURES.miniGateGenerate013,
-      text: "This run fails by --strict-network; it applies no fail-on.",
+      text: "This run fails by --strict-network; it applies no fail-on. why",
       phone: 2,
     },
   ] as const;
@@ -358,7 +434,7 @@ test.describe("PD-GATE-2: a run no finding fails says what failed it", () => {
         );
         expect(rows, `at ${String(width)}px`).toBeLessThan((width === 390 ? phone : 1) + 0.5);
       }
-      await page.getByRole("button", { name: "This run fails" }).click();
+      await page.getByRole("button", { name: "Why this run fails" }).click();
       await expect(page.locator(".gate-why")).toContainText(
         "A network lookup failed, and this run fails when one does.",
       );

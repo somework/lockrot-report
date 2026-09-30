@@ -53,7 +53,7 @@ test("rector/rector on the older page: a Snapshot slot, never a release, its tag
   page,
 }) => {
   const { answer, slot, timeline } = await lead(page, FIXTURES.mautic, "rector/rector");
-  expect(answer).toContain("1 month before its newest tag, 2.6.7.");
+  expect(answer).toContain("is 1 month older than the newest tag, 2.6.7.");
   expect(slot).toMatch(/^Snapshot 2 mo ago$/i);
   expect(timeline[0]).toBe("dev-main, yours");
 });

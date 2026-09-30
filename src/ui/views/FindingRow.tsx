@@ -6,7 +6,7 @@ import { useReport } from "../context";
 import { toneClass } from "../common/common";
 import { AdvisoryChip } from "../common/AdvisoryChip";
 import { RowGateMark, rowGateSpoken } from "../common/GateWords";
-import { findingGateMark, rowGateWords } from "../../domain/gate";
+import { rowGate } from "../../domain/gate";
 import { signalDef, signalDocUrl, TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { ageNotRead, ageScale, type AgeAxis } from "../../domain/age";
 import { ageIsTag, pinnedKindOf } from "../../domain/pinned";
@@ -171,10 +171,10 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
   const hit = useSearchHit(finding);
   const printed = usePrinted();
   const ids = useId();
-  const found = findingGateMark(model, finding);
-  const words = found === null ? null : rowGateWords(found);
-  const fails = found?.kind === "fails";
-  const mark = (at: string) => (words === null ? null : <RowGateMark words={words} fails={fails} at={at} />);
+  const gate = rowGate(model, finding);
+  const words = gate?.words ?? null;
+  const fails = gate?.fails === true;
+  const mark = (at: string) => (gate === null ? null : <RowGateMark gate={gate} at={at} />);
   const gateClass = words === null ? "" : ` has-gate ${fails ? "gate-fails" : "gate-exempt"}`;
   const rowClass = `frow ${toneClass(TONE(finding.verdict))}${gateClass}`;
   // The row's name is its package; its verdict and gate words are what a screen reader hears next.
@@ -227,9 +227,9 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
         )}
         {mark("why")}
       </span>
-      {words !== null && (
+      {gate !== null && (
         <span className="vh" id={`${ids}-gate`}>
-          {rowGateSpoken(words, fails)}
+          {rowGateSpoken(gate)}
         </span>
       )}
       {scale ? (

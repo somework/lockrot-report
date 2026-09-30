@@ -7,6 +7,7 @@ import {
   foldWords,
   plain,
   readFloors,
+  stepQuotes,
   type OtherFloor,
 } from "../../domain/floors";
 import {
@@ -64,7 +65,7 @@ export function Timeline({
   const step = disclosure.printed ? "full" : (FLOORS_STEPS[fitted] ?? "full");
   const answer = step === "full" ? full : floorsAnswer(drawn, floors, installedVersion, step);
   const rest = answer?.rest ?? [];
-  const unquoted = step !== "full" && floors.project !== null;
+  const unquoted = !stepQuotes(step) && floors.project !== null;
   const levelOne = answer !== null && (rest.length > 0 || heldBy !== null || unquoted);
 
   const thresholds = releaseThresholds(model.report.run.thresholds);

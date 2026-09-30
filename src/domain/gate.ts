@@ -1,7 +1,7 @@
 /** The run's gate, read off lockrot's root `gate` and each finding's own: lockrot decides what
  *  fails, the page counts and words it (PD-GATE-1..5, DESIGN.md §5). */
 
-import type { Finding, Model, ReportModel } from "../model/types";
+import type { Finding, Model, ReportModel, RunSettings } from "../model/types";
 import { EMPTY_FILTERS, INITIAL_STATE, type Filters } from "../state/types";
 import { baselineDelta } from "./baseline";
 import { applyFilters, population, sinceBucket } from "./filters";
@@ -274,6 +274,56 @@ export function rowGateWords(mark: FindingGateMark): string | null {
   if (mark.kind === "fails") return "fails";
   if (mark.kind === "exempt" && mark.by !== "baseline") return `exempt: ${mark.by}`;
   return null;
+}
+
+/** A row's gate words and, where its verdict and priority cannot say why it fails, the fail-on's
+ *  kind that does: a `fail_on_kind: unchecked` run fails packages its checks did not reach. */
+export interface RowGate {
+  readonly words: string;
+  readonly fails: boolean;
+  /** "unchecked", shown after the words where the row has room for it; null for every other kind. */
+  readonly why: string | null;
+}
+
+export function rowGate(model: Model, f: Finding): RowGate | null {
+  const mark = findingGateMark(model, f);
+  const words = mark === null ? null : rowGateWords(mark);
+  if (mark === null || words === null) return null;
+  const fails = mark.kind === "fails";
+  const why = fails && model.report.run.failOnKind === "unchecked" ? "unchecked" : null;
+  return { words, fails, why };
+}
+
+/** The rule the run's fail-on applies, for a list of the packages that fail it; null words when the
+ *  document names no kind, `kind` as written when this page has no words for it. */
+export interface FailOnRule {
+  readonly flag: string;
+  readonly words: string | null;
+  readonly unknownKind: string | null;
+}
+
+export function failOnRule(run: Pick<RunSettings, "failOn" | "failOnKind">): FailOnRule | null {
+  const { failOn, failOnKind } = run;
+  if (failOn === null) return null;
+  const flag = gateFlag("fail_on", failOn).text;
+  switch (failOnKind) {
+    case null:
+      return { flag, words: null, unknownKind: null };
+    case "none":
+      return { flag, words: "fails no package", unknownKind: null };
+    case "verdict":
+      return {
+        flag,
+        words: `fails every package whose verdict is ${failOn} or more severe`,
+        unknownKind: null,
+      };
+    case "priority":
+      return { flag, words: `fails every package at priority ${failOn} or higher`, unknownKind: null };
+    case "unchecked":
+      return { flag, words: "fails every package with a check that did not run (S10)", unknownKind: null };
+    default:
+      return { flag, words: null, unknownKind: failOnKind };
+  }
 }
 
 /** All packages' filters that list exactly the failing packages Findings does not (gate and their

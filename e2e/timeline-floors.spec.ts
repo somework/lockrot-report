@@ -19,28 +19,42 @@ const toggle = (page: Page) => page.getByRole("button", { name: "Each branch", e
 test.describe("level 0: the answer without a click", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("scheb/2fa-bundle: the lead names the newest branch that fits, Release branches why the newest does not", async ({
+  test("scheb/2fa-bundle: the lead names the newest branch that fits your require.php, Release branches why the newest does not", async ({
     page,
   }) => {
     await open(page, FIXTURES.wallabag013, "scheb/2fa-bundle");
     await expect(page.locator(".detail-answer")).toContainText(
-      "its last release was 4.5 years ago; 7.x is the newest that fits.",
+      "its last release was 4.5 years ago; 7.x is the newest that fits your require.php.",
     );
     const sub = page.locator(".detail-timeline-sub");
+    // Why 8.x does not fit, without a glossary: the lowest PHP require.php allows is older than 8.x takes.
     await expect(sub).toContainText(
-      "(3 months ago). Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x misses your require.php.",
+      "8.x needs a newer PHP than your require.php (>=8.2) allows at its lowest — it fits once your require.php starts higher.",
     );
+    await expect(sub).not.toContainText("misses");
     await expect(sub).not.toContainText("requires php");
+    // Two lines at most for the floors, in this browser's own fonts (PD-TIMELINE-16).
+    const added = await sub.evaluate((node) => {
+      const said = node.querySelector<HTMLElement>(".detail-timeline-floors-said");
+      const lines = () =>
+        Math.round(node.getBoundingClientRect().height / parseFloat(getComputedStyle(node).lineHeight));
+      const withIt = lines();
+      if (said !== null) said.hidden = true;
+      const without = lines();
+      if (said !== null) said.hidden = false;
+      return withIt - without;
+    });
+    expect(added).toBeLessThanOrEqual(2);
   });
 
   test("plank/laravel-mediable: none admits, and the summary counts only the newer branches and yours", async ({
     page,
   }) => {
     await open(page, FIXTURES.akaunting013, "plank/laravel-mediable");
-    await expect(page.locator(".detail-answer")).toContainText("; no newer branch fits.");
+    await expect(page.locator(".detail-answer")).toContainText("; no newer branch fits your require.php.");
     const sub = page.locator(".detail-timeline-sub");
     await expect(sub).toContainText(
-      "Yours admits your require.php (^8.1) and PHP 8.4; 7.x and 6.x miss your require.php.",
+      "7.x and 6.x need a newer PHP than your require.php allows at its lowest",
     );
     await expect(sub).not.toContainText("of 10");
   });
@@ -50,11 +64,12 @@ test.describe("level 0: the answer without a click", () => {
   }) => {
     await open(page, FIXTURES.miniEdges013, "acme/left");
     const lead = page.locator(".detail-answer");
-    await expect(lead).toContainText("; no newer branch fits.");
+    await expect(lead).toContainText("; no newer branch fits the extension floor.");
     await expect(lead).not.toContainText("ext-sodium");
     await expect(page.locator(".detail-timeline-sub")).toContainText(
-      "Yours (as of 1.9.0) needs a newer PHP than your require.php (^8.3); 3.x and 2.x are blocked by extension.",
+      "Yours (as of 1.9.0) needs a newer PHP than your require.php (^8.3) allows at its lowest",
     );
+    await expect(page.locator(".detail-timeline-sub")).toContainText("3.x and 2.x are blocked by extension.");
     await toggle(page).click();
     await expect(page.locator(".floors-def")).toContainText(
       "lockrot reads the extension floor as ext-sodium >=2.",
@@ -72,13 +87,13 @@ test.describe("level 0: the answer without a click", () => {
     await expect(page.locator(".detail-timeline-sub")).not.toContainText("differently");
     await toggle(page).click();
     await expect(page.locator(".detail-timeline-floors li").first()).toHaveText(
-      "6.x needs a newer PHP than your require.php and stops before PHP 8.4",
+      "6.x needs a newer PHP than your require.php allows at its lowest and stops before PHP 8.4",
     );
   });
 
   test("PHP 8.4 never breaks across a line", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await open(page, FIXTURES.wallabag013, "scheb/2fa-bundle");
+    await open(page, FIXTURES.miniEdges013, "acme/floors");
     const phrases = page.locator(".detail-timeline-sub .nowrap", { hasText: /^PHP 8\.4$/ });
     await expect(phrases.first()).toBeVisible();
     for (const phrase of await phrases.all()) {
@@ -192,14 +207,14 @@ test.describe("level 1: every branch, opened by keyboard", () => {
     await expect(button).toHaveAttribute("aria-expanded", "false");
   });
 
-  test("level 1 holds only what level 0 left: scheb's newest way, none when every branch was said", async ({
+  test("level 1 holds only what level 0 left: scheb's newest in full, the branches that admit both, none when every branch was said", async ({
     page,
   }) => {
     await open(page, FIXTURES.wallabag013, "scheb/2fa-bundle");
     await toggle(page).click();
-    await expect(page.locator(".detail-timeline-floors li")).toHaveText([
-      "8.x needs a newer PHP than your require.php but admits PHP 8.4",
-    ]);
+    await expect(page.locator(".detail-timeline-floors li").first()).toHaveText(
+      "8.x needs a newer PHP than your require.php allows at its lowest but admits PHP 8.4 — it fits once your require.php starts higher",
+    );
     await open(page, FIXTURES.wallabag013, "friendsofsymfony/oauth-server-bundle");
     await expect(page.locator(".detail-timeline-sub")).toContainText("1.x stops before both.");
     await expect(toggle(page)).toHaveCount(0);

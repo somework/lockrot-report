@@ -129,16 +129,22 @@ interface GateAnswer {
   readonly clause: GateClause;
 }
 
-/** "; N fail this run", which opens what fails the run, and the panel under the sentence. */
-function useGateEnd(answer: GateAnswer | null): { end: ComponentChildren; panel: ComponentChildren } {
-  const why = useGateWhy(answer?.gate ?? null);
-  if (answer === null || why === null) return { end: null, panel: null };
+/** "; N fail this run", its count a filter, and "why", which opens what fails the run under the
+ *  sentence. */
+function useGateEnd(answer: GateAnswer | null): {
+  end: ComponentChildren;
+  opener: ComponentChildren;
+  panel: ComponentChildren;
+} {
+  const why = useGateWhy(answer?.gate ?? null, answer?.clause ?? null);
+  if (answer === null || why === null) return { end: null, opener: null, panel: null };
   return {
     end: (
       <>
-        ; <GateClauseText clause={answer.clause} opening={false} lead={why.lead} />
+        ; <GateClauseText clause={answer.clause} opening={false} close="." />
       </>
     ),
+    opener: why.opener,
     panel: why.panel,
   };
 }
@@ -147,7 +153,7 @@ function useGateEnd(answer: GateAnswer | null): { end: ComponentChildren; panel:
 function Against({ delta, answer }: { delta: Delta; answer: GateAnswer | null }) {
   const { filterable } = delta;
   const changed = delta.new + delta.worsened;
-  const { end, panel } = useGateEnd(answer);
+  const { end, opener, panel } = useGateEnd(answer);
 
   return (
     <div className="bl-top">
@@ -171,7 +177,8 @@ function Against({ delta, answer }: { delta: Delta; answer: GateAnswer | null })
         <Count bucket="known" count={delta.known} filterable={filterable}>
           already accepted
         </Count>
-        {end}.
+        {end ?? "."}
+        {opener}
       </p>
       {panel}
       <Gone delta={delta} />

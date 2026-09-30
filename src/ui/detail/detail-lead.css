@@ -133,6 +133,11 @@
   font-size: 11.5px;
   color: var(--ink-2);
 }
+.detail-tags-yours {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--muted);
+}
 .detail-tags-gap {
   grid-column: 2 / -1;
   margin: 1px 0 1px 3px;

@@ -680,9 +680,9 @@ describe("layout", () => {
 
   test("one failing package that is not flagged is said to be not flagged, at both levels", () => {
     render(<App model={loadModel("mini-0.13-gate-unknown")} />);
-    expect(unechoed(".bl-answer")).toContain("1 fails this run, not flagged");
+    expect(unechoed(".bl-answer")).toContain("1 fails this run, on All packages, not flagged. why");
     expect(echoes(".bl-answer")).toEqual([" by --fail-on=copyleft", "; licence_policy fails the run too"]);
-    fireEvent.click(screen.getByRole("button", { name: "1 fails this run" }));
+    fireEvent.click(screen.getByRole("button", { name: "Why this run fails" }));
     const panel = document.querySelector(".gate-why")?.textContent ?? "";
     expect(panel).toContain("1 package meets it, and it fails. It is not flagged (ok).");
     expect(panel).not.toContain("It is flagged");
@@ -700,8 +700,9 @@ describe("layout", () => {
     const fact = document.querySelector(".gate-fact")?.textContent ?? "";
     expect(fact).toBe("baseline run passes · --fail-on not applied");
     expect(document.querySelector(".lead-gate")?.textContent).toBe(
-      "This run passes: it applies no fail-on, though 39 packages meet it.",
+      "This run passes: it applies no fail-on, though 39 packages meet it. why",
     );
+    expect(screen.getByRole("button", { name: "Why this run passes" })).toBeTruthy();
     cleanup();
     render(<App model={loadModel("mini-0.13-gate-generate")} />);
     expect(document.querySelector(".gate-fact")?.textContent).toBe("baseline run fails · --strict-network");
@@ -709,14 +710,14 @@ describe("layout", () => {
 
   test("a run that only --strict-network failed says so under the lead, and level 1 keeps the fail-on", () => {
     render(<App model={loadModel("wallabag_offline-strict-0.13")} />);
-    expect(document.querySelector(".lead-gate")?.textContent).toBe("This run fails by --strict-network.");
+    expect(document.querySelector(".lead-gate")?.textContent).toBe("This run fails by --strict-network. why");
     expect(document.querySelector(".gate-fact")?.hasAttribute("data-said")).toBe(true);
     cleanup();
     render(<App model={loadModel("mini-0.13-gate-generate")} />);
     expect(document.querySelector(".lead-gate")?.textContent).toBe(
-      "This run fails by --strict-network; it applies no fail-on.",
+      "This run fails by --strict-network; it applies no fail-on. why",
     );
-    fireEvent.click(screen.getByRole("button", { name: "This run fails" }));
+    fireEvent.click(screen.getByRole("button", { name: "Why this run fails" }));
     const panel = document.querySelector(".gate-why")?.textContent ?? "";
     expect(panel).toContain("A network lookup failed, and this run fails when one does.");
     expect(panel).toContain("This run wrote a baseline, so it was not applied; 14 packages meet it.");
@@ -737,14 +738,19 @@ describe("layout", () => {
   // PD-GATE-2: every failing package first, then flagged and not flagged apart, the latter by why.
   test("without a baseline the lead goes on: the total that fails, then flagged and unchecked", () => {
     render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
-    expect(unechoed(".lead-gate")).toBe("173 fail this run: 2 flagged, 171 unchecked, on All packages→.");
+    expect(unechoed(".lead-gate")).toBe(
+      "173 fail this run, on All packages: 2 flagged, 171 unchecked, on All packages→. why",
+    );
     expect(echoes(".lead-gate")).toEqual([" by --fail-on=unchecked"]);
     expect(document.querySelector(".gate-fact")?.hasAttribute("data-said")).toBe(false);
-    const total = screen.getByRole("button", { name: "173 fail this run" });
-    expect(total.getAttribute("aria-expanded")).toBe("false");
-    fireEvent.click(total);
-    expect(total.getAttribute("aria-expanded")).toBe("true");
-    const panel = document.getElementById(total.getAttribute("aria-controls") ?? "");
+    // The numbers list what they count; the one opener is apart from them.
+    const total = screen.getByRole("button", { name: /^173 fail this run\s?, on All packages$/ });
+    expect(total.hasAttribute("aria-expanded")).toBe(false);
+    const why = screen.getByRole("button", { name: "Why this run fails" });
+    expect(why.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(why);
+    expect(why.getAttribute("aria-expanded")).toBe("true");
+    const panel = document.getElementById(why.getAttribute("aria-controls") ?? "");
     expect(panel?.hidden).toBe(false);
     expect(panel?.textContent).toContain(
       "Fails on any package whose check did not run. 173 packages meet it, and all fail. Of those, 2 are flagged and 171 are not (ok).",
@@ -753,15 +759,40 @@ describe("layout", () => {
 
   test("with a baseline the Against sentence closes on how many fail, which opens what ties them", () => {
     render(<App model={loadModel("wallabag_baseline-older-0.13")} />);
-    expect(unechoed(".bl-answer")).toContain("43 already accepted; 12 fail this run.");
+    expect(unechoed(".bl-answer")).toContain("43 already accepted; 12 fail this run. why");
     expect(echoes(".bl-answer")).toEqual([" by --fail-on=high"]);
-    const total = screen.getByRole("button", { name: "12 fail this run" });
-    expect(total.getAttribute("aria-pressed")).toBeNull();
-    fireEvent.click(total);
-    expect(total.getAttribute("aria-expanded")).toBe("true");
+    const why = screen.getByRole("button", { name: "Why this run fails" });
+    fireEvent.click(why);
+    expect(why.getAttribute("aria-expanded")).toBe("true");
     const panel = document.querySelector(".gate-why");
     expect(panel?.textContent).toContain("accepted30 of the 43 already accepted meet it");
     expect(panel?.textContent).toContain("42 packages meet it: 12 fail.");
+  });
+
+  // PD-GATE-2: a count that is every failing package Findings lists is the rail's "Fails this run".
+  test("'12 fail this run' filters Findings to them and keeps focus, the opener apart and closed", () => {
+    render(<App model={loadModel("wallabag_baseline-older-0.13")} />);
+    const total = screen.getByRole("button", { name: "12 fail this run" });
+    expect(total.getAttribute("aria-pressed")).toBe("false");
+    expect(total.hasAttribute("aria-expanded")).toBe(false);
+    fireEvent.click(total);
+    expect(total.getAttribute("aria-pressed")).toBe("true");
+    expect(document.activeElement).toBe(total);
+    expect(window.location.hash).toBe("#gate=fails");
+    expect(screen.getByRole("button", { name: "Why this run fails" }).getAttribute("aria-expanded")).toBe(
+      "false",
+    );
+    fireEvent.click(total);
+    expect(total.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  test("a total with failing packages Findings does not list opens All packages filtered to all of them", () => {
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    const total = screen.getByRole("button", { name: /^173 fail this run\s?, on All packages$/ });
+    fireEvent.click(total);
+    expect(document.activeElement).toBe(total);
+    expect(window.location.hash).toContain("view=packages");
+    expect(window.location.hash).toContain("gate=fails");
   });
 
   // PD-GATE-2/4: the flagged count is the rail's own "Fails this run", the same key in the address.

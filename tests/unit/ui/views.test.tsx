@@ -6,7 +6,7 @@ import type { ComponentChild } from "preact";
 
 import { normalize } from "../../../src/model/normalize";
 import type { Model } from "../../../src/model/types";
-import { INITIAL_STATE } from "../../../src/state/types";
+import { EMPTY_FILTERS, INITIAL_STATE } from "../../../src/state/types";
 import type { Action, State } from "../../../src/state/types";
 import { ReportContext, type ReportContextValue } from "../../../src/ui/context";
 import { CurrentView } from "../../../src/ui/views/Views";
@@ -2789,9 +2789,73 @@ describe("the run's gate on a row (PD-GATE-3)", () => {
     const row = document.querySelector('tr[data-pkg="brianium/paratest"]');
     expect(row?.classList.contains("has-gate")).toBe(true);
     for (const cell of [".pk-name", ".pk-verdict", ".pk-reach"]) {
-      expect(row?.querySelector(`${cell} .gate-mark`)?.textContent, cell).toBe("fails");
+      expect(row?.querySelector(`${cell} .gate-mark`)?.textContent, cell).toBe("fails · unchecked");
+      expect(row?.querySelector(`${cell} .gate-mark-why`)?.textContent, cell).toBe(" · unchecked");
     }
     const id = row?.getAttribute("aria-describedby") ?? "";
+    expect(document.getElementById(id)?.textContent).toBe("fails this run, unchecked: a check did not run");
+  });
+
+  it("the reason rides only where the verdict cannot say it: an unchecked fail-on, never a priority one", () => {
+    renderIn(
+      loadModel("wallabag_baseline-older-0.13.json"),
+      stateWith({ view: "packages" }),
+      <PackagesView />,
+    );
+    const failing = document.querySelector("tr.pk-row.gate-fails");
+    expect(failing?.querySelector(".gate-mark")?.textContent).toBe("fails");
+    expect(failing?.querySelector(".gate-mark-why")).toBeNull();
+    const id = failing?.getAttribute("aria-describedby") ?? "";
     expect(document.getElementById(id)?.textContent).toBe("fails this run");
+  });
+
+  it("filtered to the packages that fail, All packages answers why, in the fail-on kind's words", () => {
+    const gate = { ...EMPTY_FILTERS, gate: ["fails"] };
+    renderIn(
+      loadModel("koel_no-token-unchecked-0.13.json"),
+      stateWith({ view: "packages", filters: gate }),
+      <PackagesView />,
+    );
+    expect(document.querySelector(".pk-answer")?.textContent).toBe(
+      "All 173 listed fail this run: --fail-on=unchecked fails every package with a check that did not run (S10).",
+    );
+    cleanup();
+    renderIn(
+      loadModel("wallabag_baseline-older-0.13.json"),
+      stateWith({ view: "packages", filters: gate }),
+      <PackagesView />,
+    );
+    expect(document.querySelector(".pk-answer")?.textContent).toBe(
+      "All 12 listed fail this run: --fail-on=high fails every package at priority high or higher.",
+    );
+    cleanup();
+    renderIn(
+      loadModel("mini-0.13-gate-unknown.json"),
+      stateWith({ view: "packages", filters: gate }),
+      <PackagesView />,
+    );
+    expect(document.querySelector(".pk-answer")?.textContent).toBe(
+      "The one listed fails this run by --fail-on=copyleft, another kind of threshold, licence, as lockrot wrote it.",
+    );
+    cleanup();
+    renderIn(
+      loadModel("mini-0.13-gate-verdict.json"),
+      stateWith({ view: "packages", filters: gate }),
+      <PackagesView />,
+    );
+    expect(document.querySelector(".pk-answer")?.textContent).toMatch(
+      /^All \d+ listed fail this run: --fail-on=pinned fails every package whose verdict is pinned or more severe\.$/,
+    );
+  });
+
+  it("without the gate filter, All packages keeps its libyears answer", () => {
+    renderIn(
+      loadModel("koel_no-token-unchecked-0.13.json"),
+      stateWith({ view: "packages" }),
+      <PackagesView />,
+    );
+    expect(document.querySelector(".pk-answer")?.textContent).toMatch(
+      /listed are behind their newest release/,
+    );
   });
 });

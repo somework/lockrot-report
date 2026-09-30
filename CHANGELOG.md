@@ -15,13 +15,21 @@ tag or the address format, says so under **Breaking** in its entry.
   summary's answer says how many packages fail, total first — "173 fail this run: 2 flagged, 171
   unchecked" — with a baseline closing the Against sentence instead, and a size down where the
   reader's serif would wrap it; a baseline run nothing failed says "This run passes: it applies no
-  fail-on, though 39 packages meet it"; a press on the total opens what each cause fails on and what
-  exempts the rest, and prints open, in the answer's width so the waffle beside it stays put. Several causes read apart in the header, "--fail-on=copyleft · licence_policy". The
-  flagged count filters Findings (from another tab, Findings with that filter alone), the rail
-  gains "Fails this run" (`#gate=fails`), and the unflagged count opens All packages on exactly
-  those packages.
+  fail-on, though 39 packages meet it". Every count lists what it counts: a total that is all on
+  Findings filters Findings to them ("12 fail this run", the rail's own filter, focus kept on the
+  count), a total with packages Findings does not list opens All packages on every failing one, the
+  flagged count filters Findings (from another tab, Findings with that filter alone), and the
+  unflagged count opens All packages on exactly those packages. A small "why" after the sentence,
+  apart from the counts, opens what each cause fails on and what exempts the rest, and prints open,
+  in the answer's width so the waffle beside it stays put. Several causes read apart in the header,
+  "--fail-on=copyleft · licence_policy". The rail gains "Fails this run" (`#gate=fails`); All
+  packages filtered by it answers why they fail instead of how far behind they are: "All 173 listed
+  fail this run: --fail-on=unchecked fails every package with a check that did not run (S10)", or
+  "at priority high or higher", "whose verdict is pinned or more severe", an unknown kind as written.
 - Each Findings and All packages row says "fails" or "exempt: <as lockrot wrote it>" at the end of
-  a line with room, so no row changes height, in one place per layout so the words form a column
+  a line with room; under `--fail-on=unchecked`, where neither verdict nor priority says why, "fails ·
+  unchecked", on every row of the list or on none (then "fails", the list's lead and each row's
+  description saying why), so no row changes height, in one place per layout so the words form a column
   down the list; where words would widen an All packages column and grow the table, that column's
   words move to the next place together, and a row that had no room there tries again once they
   have widened it; a row with room nowhere underlines its verdict (dotted for an exemption); a
@@ -40,8 +48,10 @@ tag or the address format, says so under **Breaking** in its entry.
   screen reader, the tooltip and paper keep them, and a phone keeps them on a row of their own.
 - Release branches say which branches the project's PHP can take. One clause ends the sentence about
   newer branches, yours first — "Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x
-  misses your require.php" — then the branches newer than yours by the floor they miss, the way
-  (needs a newer PHP, stops before, …) as lockrot wrote it one press away; yours names the release
+  needs a newer PHP than your require.php allows at its lowest — it fits once your require.php starts
+  higher" — then the branches newer than yours by the way they miss a floor as lockrot wrote it
+  (needs a newer PHP, stops before, …), the project's floor always as the lowest PHP its require.php
+  allows, and what else a branch admits one press away; yours names the release
   its php comes from when you run an older one ("Yours (as of 1.9.0) needs …"). The clause takes the
   place of the newest branch's "requires php …", which the table's PHP column still shows. "Each
   branch" opens what the sentence left out, yours in full, runs of alike branches as "0.1.x – 0.7.x
@@ -49,15 +59,17 @@ tag or the address format, says so under **Breaking** in its entry.
   before both"). A report that names no project floor says so once. Where lockrot held the branches
   to a floor of another kind, "Each branch" says which, as lockrot wrote it: "lockrot reads the
   extension floor as ext-sodium >=2". Where the clause would add a third line in the reader's fonts,
-  it leaves require.php's constraint, then every clause after yours, to "Each branch".
+  it leaves to "Each branch" what a miss waits for, then the clauses that admit both, so why a newer
+  branch does not fit stays in sight, then require.php's constraint, then every clause after yours.
 - A left-behind package whose newest branch the project cannot take names the one it can, in the
-  words its row uses: "its last release was 4.5 years ago; 7.x is the newest that fits", or "no
-  newer branch fits"; the row says "5.x stopped; 7.x fits" instead of "8.x ships".
-- A pinned package says how its snapshot stands against its tags: "Pinned to dev-master, a
-  4.5-year-old branch snapshot, 3.2 years after its newest tag, 1.6.2", or "1 month before" where a
-  newer tag exists. Where lockrot could not tell, it says so ("lockrot could not tell whether it has
+  words its row uses and against the floor lockrot held it to: "its last release was 4.5 years ago;
+  7.x is the newest that fits your require.php", or "no newer branch fits PHP 8.4", an unknown floor
+  as written; the row says "5.x stopped; 7.x fits" instead of "8.x ships".
+- A pinned package says plainly which is newer, its snapshot or its newest tag: "Your dev-master
+  snapshot (2022-03-24) is 3.2 years newer than the newest tag, 1.6.2", or "1 month older than" where
+  a newer tag exists. Where lockrot could not tell, it says so ("lockrot could not tell whether it has
   a tag") instead of "rather than a release". The tag's version opens both dates, oldest first
-  with the gap between them, and that a tag here can be a pre-release. A repository with no tag
+  with the gap between them, the snapshot marked "yours", and that a tag here can be a pre-release. A repository with no tag
   says so in full, "lists no tag, not even a pre-release", with nothing to open. The Snapshot key
   fact notes the tag only where the answer does not.
 - A pinned row in Findings leads with its S6 in a few words, "snapshot 1 mo before tag 2.6.7",

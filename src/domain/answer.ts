@@ -2,7 +2,7 @@
  *  the document carries, and a missing signal means fewer words, never a guess. */
 
 import type { Finding, PackageDetails, Signal } from "../model/types";
-import { ageOld, gapPhrase, yearsPhrase } from "./format";
+import { day, gapPhrase, yearsPhrase } from "./format";
 import {
   ageSource,
   ageZone,
@@ -39,8 +39,6 @@ export interface AnswerInput {
   readonly metadataReplacement: string | null;
   readonly thresholds: Thresholds;
   readonly details?: PackageDetails | null;
-  /** The report's own date, which a snapshot's age is measured to; without it no age is said. */
-  readonly now?: Date | null;
 }
 
 const text = (value: string): AnswerPart => ({ kind: "text", text: value });
@@ -85,7 +83,6 @@ function verdictClause(
   finding: Finding,
   thresholds: Thresholds,
   details: PackageDetails | null,
-  now: Date | null,
 ): AnswerPart[] {
   const release = releaseThresholds(thresholds);
   const push = pushThresholds(thresholds);
@@ -105,7 +102,7 @@ function verdictClause(
       return parts;
     }
     case "pinned":
-      return pinnedClause(finding, details, now);
+      return pinnedClause(finding, details);
     case "left-behind": {
       const s8 = signal(finding, "S8")?.data;
       const branch = str(s8, "branch");
@@ -158,9 +155,10 @@ const tags = (lead: string, version: string | null = null): AnswerPart => ({
 /** lockrot counts a pre-release as a tag, so "no tag" says there is none of either. */
 const NO_TAG = "lists no tag, not even a pre-release";
 
-/** A tagged snapshot is anchored on its own age first, so "after its newest tag" never reads as
- *  fresh; the gap is said only when both dates parse. Every `tags` part has a `pinnedTagDetail`. */
-function pinnedClause(finding: Finding, details: PackageDetails | null, now: Date | null): AnswerPart[] {
+/** A tagged snapshot says which of the two is newer, the snapshot as the reader's, its date beside
+ *  it so "newer" never reads as fresh; the gap only when both dates parse. Every `tags` part has a
+ *  `pinnedTagDetail`. */
+function pinnedClause(finding: Finding, details: PackageDetails | null): AnswerPart[] {
   const facts = readPinnedFacts(finding, details);
   const lead = [text("Pinned to "), name(facts.version)];
   switch (pinnedKind(facts)) {
@@ -185,18 +183,16 @@ function pinnedClause(finding: Finding, details: PackageDetails | null, now: Dat
   if (gap === null || facts.snapshotTime === null) {
     return [...lead, text(", a branch snapshot rather than a release.")];
   }
-  const old = now === null ? null : ageOld(facts.snapshotTime, now);
-  const way = gap === 0 ? "dated the same as" : `${gapPhrase(gap)} ${gap > 0 ? "after" : "before"}`;
+  const way = gap === 0 ? "dated the same day as" : `${gapPhrase(gap)} ${gap > 0 ? "newer" : "older"} than`;
   return [
-    ...lead,
-    ...(old === null
-      ? [text(", a branch snapshot ")]
-      : [text(", a "), figure(old, null), text(" branch snapshot, ")]),
+    text("Your "),
+    name(facts.version),
+    text(` snapshot (${day(facts.snapshotTime)}) is `),
     figure(way, null),
     text(" "),
     facts.lastStableVersion === null
-      ? tags("its newest tag")
-      : tags("its newest tag, ", facts.lastStableVersion),
+      ? tags("the newest tag")
+      : tags("the newest tag, ", facts.lastStableVersion),
     text("."),
   ];
 }
@@ -335,10 +331,9 @@ export function answerParts({
   metadataReplacement,
   thresholds,
   details = null,
-  now = null,
 }: AnswerInput): readonly AnswerPart[] {
   return [
-    ...verdictClause(finding, thresholds, details, now),
+    ...verdictClause(finding, thresholds, details),
     ...reachClause(finding),
     ...replacementClause(finding, metadataReplacement),
     ...advisoryClause(finding),

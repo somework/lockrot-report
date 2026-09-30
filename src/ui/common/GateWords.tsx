@@ -9,10 +9,11 @@ import {
   type GateClause,
   type GateFlag,
   type GateHeadline,
+  type RowGate,
   type RunGate,
 } from "../../domain/gate";
 import { applyFilters } from "../../domain/filters";
-import { EMPTY_FILTERS } from "../../state/types";
+import { EMPTY_FILTERS, type Filters } from "../../state/types";
 import { filterTitle } from "./common";
 import { useReport } from "../context";
 import { Flag } from "./GateFlag";
@@ -114,16 +115,25 @@ function FlaggedToggle({ count, children }: { count: number; children: Component
   );
 }
 
-/** Goes to All packages, listing exactly the failing packages Findings does not: the search stays
- *  only when it hides none of them, so the list shows the count the words said. */
-function UnflaggedLink({ count, children }: { count: number; children: ComponentChildren }) {
+/** Goes to All packages with `filters`, the search kept only when it hides none of the `count`, so
+ *  the list shows the count the words said. `mark`: the arrow that says it leaves this tab. */
+function PackagesLink({
+  filters,
+  count,
+  mark,
+  children,
+}: {
+  filters: Filters;
+  count: number;
+  mark: boolean;
+  children: ComponentChildren;
+}) {
   const { model, state, dispatch } = useReport();
-  const filters = unflaggedFilters(model);
-  if (filters === null) return <>{children}</>;
   return (
     <button
       type="button"
       className="bl-toggle gate-go"
+      title="List them on All packages"
       onClick={(event) => {
         event.currentTarget.focus();
         const kept = applyFilters(model, { ...state, filters }, "packages").length === count;
@@ -132,15 +142,48 @@ function UnflaggedLink({ count, children }: { count: number; children: Component
     >
       {children}
       <span className="vh">, on All packages</span>
-      <span className="gate-go-mark" aria-hidden="true">
-        →
-      </span>
+      {mark && (
+        <span className="gate-go-mark" aria-hidden="true">
+          →
+        </span>
+      )}
     </button>
   );
 }
 
+/** Exactly the failing packages Findings does not list; plain words when no filter lists them alone. */
+function UnflaggedLink({ count, children }: { count: number; children: ComponentChildren }) {
+  const { model } = useReport();
+  const filters = unflaggedFilters(model);
+  if (filters === null) return <>{children}</>;
+  return (
+    <PackagesLink filters={filters} count={count} mark>
+      {children}
+    </PackagesLink>
+  );
+}
+
+const FAILING: Filters = { ...EMPTY_FILTERS, gate: ["fails"] };
+
 function fail(n: number): string {
-  return `${n} fail${n === 1 ? "s" : ""} this run`;
+  return n === 1 ? "fails this run" : "fail this run";
+}
+
+/** "12 fail this run": the count lists them, on Findings when it lists them all, else on All
+ *  packages, where every failing package is. */
+function FailingTotal({ clause }: { clause: Extract<GateClause, { kind: "failing" }> }) {
+  const { total, unflagged } = clause;
+  const words = (
+    <>
+      <b>{total}</b> {fail(total)}
+    </>
+  );
+  if (unflagged === 0) return <FlaggedToggle count={total}>{words}</FlaggedToggle>;
+  return (
+    <PackagesLink filters={FAILING} count={total} mark={false}>
+      {words}
+    </PackagesLink>
+  );
 }
 
 /** The header's flags again, where the header hid them for room (Header.tsx); gate.css shows them. */
@@ -148,18 +191,13 @@ function Echo({ children }: { children: ComponentChildren }) {
   return <span className="gate-echo">{children}</span>;
 }
 
-/** After "N fail this run": flagged and not flagged apart, each a way to list them. */
+/** The failing clause's words after the total: flagged and not flagged apart, each a way to list
+ *  them; all of one kind in words only, since the total already lists them. */
 function FailingSplit({ clause }: { clause: Extract<GateClause, { kind: "failing" }> }) {
-  const { total, flagged, unflagged, unflaggedAs } = clause;
-  if (unflagged === 0) return null;
+  const { total, flagged, unflaggedAs } = clause;
   if (flagged === 0) {
     const unchecked = unflaggedAs === "unchecked";
-    const words = total === 1 ? unflaggedAs : unchecked ? "all unchecked" : "none flagged";
-    return (
-      <>
-        , <UnflaggedLink count={unflagged}>{words}</UnflaggedLink>
-      </>
-    );
+    return <>, {total === 1 ? unflaggedAs : unchecked ? "all unchecked" : "none flagged"}</>;
   }
   return (
     <>
@@ -170,57 +208,90 @@ function FailingSplit({ clause }: { clause: Extract<GateClause, { kind: "failing
         </FlaggedToggle>
         ,
       </span>{" "}
-      <UnflaggedLink count={unflagged}>
-        <b>{unflagged}</b> {unflaggedAs}
-      </UnflaggedLink>
     </>
   );
 }
 
-/** The summary's answer, in the Against sentence or on a line of its own: its subject opens level 1
- *  (`lead` wraps it), the counts after it list what they count. */
+/** "173 fail this run by --fail-on=unchecked: 2 flagged, 171 unchecked →." Its last control keeps
+ *  `close` on its line: a line may break after a button, which would strand the full stop. */
+function FailingText({
+  clause,
+  close,
+}: {
+  clause: Extract<GateClause, { kind: "failing" }>;
+  close: ComponentChildren;
+}) {
+  const split = clause.unflagged > 0;
+  const by = clause.echo !== null && (
+    <Echo>
+      {" "}
+      by <FlagList flags={[clause.echo]} />
+    </Echo>
+  );
+  const also = clause.also.length > 0 && (
+    <Echo>
+      {split ? "; " : ", and "}
+      <FlagList flags={clause.also} /> {clause.also.length === 1 ? "fails" : "fail"} the run too
+    </Echo>
+  );
+  if (!split) {
+    return (
+      <span className="nowrap">
+        <FailingTotal clause={clause} />
+        {by}
+        {also}
+        {close}
+      </span>
+    );
+  }
+  const last =
+    clause.flagged === 0 ? null : (
+      <UnflaggedLink count={clause.unflagged}>
+        <b>{clause.unflagged}</b> {clause.unflaggedAs}
+      </UnflaggedLink>
+    );
+  return (
+    <>
+      <FailingTotal clause={clause} />
+      {by}
+      <FailingSplit clause={clause} />
+      <span className="nowrap">
+        {last}
+        {also}
+        {close}
+      </span>
+    </>
+  );
+}
+
+/** The summary's answer, in the Against sentence or on a line of its own, then `close`, its full
+ *  stop: each count lists what it counts; what fails the run opens from its own control after the
+ *  sentence (`useGateWhy`). */
 export function GateClauseText({
   clause,
   opening,
-  lead,
+  close,
 }: {
   clause: GateClause;
   opening: boolean;
-  lead: (subject: ComponentChildren) => ComponentChildren;
+  close: ComponentChildren;
 }) {
   switch (clause.kind) {
-    case "failing": {
-      const split = clause.unflagged > 0;
-      return (
-        <>
-          {lead(fail(clause.total))}
-          {clause.echo !== null && (
-            <Echo>
-              {" "}
-              by <FlagList flags={[clause.echo]} />
-            </Echo>
-          )}
-          <FailingSplit clause={clause} />
-          {clause.also.length > 0 && (
-            <Echo>
-              {split ? "; " : ", and "}
-              <FlagList flags={clause.also} /> {clause.also.length === 1 ? "fails" : "fail"} the run too
-            </Echo>
-          )}
-        </>
-      );
-    }
+    case "failing":
+      return <FailingText clause={clause} close={close} />;
     case "tripped":
       return (
         <>
-          {lead(`${opening ? "This" : "the"} run fails`)} by <FlagList flags={clause.flags} />
+          <b className="gate-total">{opening ? "This" : "the"} run fails</b> by{" "}
+          <FlagList flags={clause.flags} />
           {clause.unapplied && "; it applies no fail-on"}
+          {close}
         </>
       );
     case "none-fail":
       return (
         <>
-          {lead(`${opening ? "None" : "none"} fails this run`)}
+          <b className="gate-total">{opening ? "None" : "none"} fails this run</b>
           {clause.echo !== null && (
             <Echo>
               {" "}
@@ -233,45 +304,60 @@ export function GateClauseText({
               {clause.exempt === 1 ? "meets the fail-on but is" : "meet the fail-on but are"} exempt
             </>
           )}
+          {close}
         </>
       );
     case "unapplied":
       return (
         <>
-          {lead(`${opening ? "This" : "this"} run passes`)}: it applies no fail-on
+          <b className="gate-total">{opening ? "This" : "this"} run passes</b>: it applies no fail-on
           {clause.meets > 0 && (
             <>
               , though <b>{clause.meets}</b> {clause.meets === 1 ? "package meets" : "packages meet"} it
             </>
           )}
+          {close}
         </>
       );
   }
 }
 
-/** The answer's subject as the button that opens level 1, and the panel it opens under the sentence. */
-export function useGateWhy(gate: RunGate | null): {
-  lead: (subject: ComponentChildren) => ComponentChildren;
-  panel: ComponentChildren;
-} | null {
+/** The opener's accessible name: what it explains, which its visible "why" is the start of. */
+function whyName(clause: GateClause): string {
+  switch (clause.kind) {
+    case "failing":
+    case "tripped":
+      return "Why this run fails";
+    case "none-fail":
+      return "Why none fails this run";
+    case "unapplied":
+      return "Why this run passes";
+  }
+}
+
+/** Level 1's own small control after the answer, apart from its counts, and the panel it opens
+ *  under the sentence; on paper the panel alone, open. */
+export function useGateWhy(
+  gate: RunGate | null,
+  clause: GateClause | null,
+): { opener: ComponentChildren; panel: ComponentChildren } | null {
   const id = `${useId()}-gate-why`;
   const { open, toggle, printed } = useDisclosure(WHY_KEY);
-  if (gate === null) return null;
-  const lead = (subject: ComponentChildren): ComponentChildren =>
-    printed ? (
-      <b className="gate-total">{subject}</b>
-    ) : (
-      <DisclosureButton
-        label={subject}
-        open={open}
-        controls={id}
-        onToggle={toggle}
-        lead
-        className="gate-total"
-      />
-    );
+  if (gate === null || clause === null) return null;
   return {
-    lead,
+    opener: printed ? null : (
+      <>
+        {" "}
+        <DisclosureButton
+          label={<span className="gate-why-label">why</span>}
+          name={whyName(clause)}
+          open={open}
+          controls={id}
+          onToggle={toggle}
+          className="gate-why-btn"
+        />
+      </>
+    ),
     panel: (
       <DisclosurePanel id={id} open={open} className="gate-why">
         <GateDetails gate={gate} />
@@ -280,19 +366,22 @@ export function useGateWhy(gate: RunGate | null): {
   };
 }
 
-/** One of a row's copies of its gate words (gateFit.ts shows the one that fits); the row's
- *  description says them once, so each copy is hidden from a screen reader. */
-export function RowGateMark({ words, fails, at }: { words: string; fails: boolean; at: string }) {
+/** One of a row's copies of its gate words (gateFit.ts shows the one that fits, and drops `why`
+ *  where it would cost the row a line); the row's description says them once, so each copy is
+ *  hidden from a screen reader. */
+export function RowGateMark({ gate, at }: { gate: RowGate; at: string }) {
   return (
-    <span className={`gate-mark ${fails ? "is-fails" : "is-exempt"} gate-at-${at}`} aria-hidden="true">
-      {words}
+    <span className={`gate-mark ${gate.fails ? "is-fails" : "is-exempt"} gate-at-${at}`} aria-hidden="true">
+      {gate.words}
+      {gate.why !== null && <span className="gate-mark-why"> · {gate.why}</span>}
     </span>
   );
 }
 
 /** What a screen reader hears after a row's name and verdict. */
-export function rowGateSpoken(words: string, fails: boolean): string {
-  return fails ? "fails this run" : `${words}, does not fail`;
+export function rowGateSpoken(gate: RowGate): string {
+  if (!gate.fails) return `${gate.words}, does not fail`;
+  return gate.why === "unchecked" ? "fails this run, unchecked: a check did not run" : "fails this run";
 }
 
 /** The detail's line under its pills: "fails this run · meets --fail-on=unchecked". */

@@ -77,7 +77,6 @@ function sentence(model: Model, pkg: string): string {
       details: d,
       metadataReplacement: null,
       thresholds: model.report.run.thresholds,
-      now: new Date(model.report.generatedAt),
     }),
   );
 }
@@ -314,12 +313,12 @@ describe("the answer's pinned clause", () => {
     );
   });
 
-  test("a snapshot of a tagged package, both dates known: the snapshot's own age, then how far and which way from its newest tag", () => {
+  test("a snapshot of a tagged package, both dates known: the reader's snapshot, dated, and which of the two is newer by how much", () => {
     expect(sentence(WALLABAG_013, "friendsofsymfony/oauth-server-bundle")).toBe(
-      "Pinned to dev-master, a 4.5-year-old branch snapshot, 3.2 years after its newest tag, 1.6.2. You require it directly.",
+      "Your dev-master snapshot (2022-03-24) is 3.2 years newer than the newest tag, 1.6.2. You require it directly.",
     );
     expect(sentence(MAUTIC_013, "rector/rector")).toBe(
-      "Pinned to dev-main, a 2-month-old branch snapshot, 1 month before its newest tag, 2.6.7. You require it directly, for development only.",
+      "Your dev-main snapshot (2026-08-04) is 1 month older than the newest tag, 2.6.7. You require it directly, for development only.",
     );
   });
 
@@ -337,18 +336,31 @@ describe("the answer's pinned clause", () => {
     }
   });
 
-  test("without the report's date the snapshot's own age is left out, never read off a clock", () => {
-    const pkg = "friendsofsymfony/oauth-server-bundle";
+  test("a snapshot dated the same day as its newest tag says so, with no gap", () => {
     const text = answerText(
       answerParts({
-        finding: finding(WALLABAG_013, pkg),
-        details: details(WALLABAG_013, pkg),
+        finding: makeFinding({
+          verdict: "pinned",
+          signals: [
+            makeSignal({
+              id: "S6",
+              data: {
+                version: "dev-main",
+                reason: "branch_snapshot",
+                has_stable_release: true,
+                last_stable_version: "2.0.0",
+                last_stable_release: "2026-01-01T00:00:00+00:00",
+                snapshot_time: "2026-01-01T00:00:00+00:00",
+              },
+            }),
+          ],
+        }),
         metadataReplacement: null,
         thresholds: THRESHOLDS,
       }),
     );
     expect(text).toMatch(
-      /^Pinned to dev-master, a branch snapshot 3\.2 years after its newest tag, 1\.6\.2\. /,
+      /^Your dev-main snapshot \(2026-01-01\) is dated the same day as the newest tag, 2\.0\.0\. /,
     );
   });
 
@@ -359,10 +371,9 @@ describe("the answer's pinned clause", () => {
       details: details(WALLABAG_013, f.package),
       metadataReplacement: null,
       thresholds: THRESHOLDS,
-      now: new Date(WALLABAG_013.report.generatedAt),
     });
     expect(parts.filter((p) => p.kind === "tags")).toEqual([
-      { kind: "tags", text: "its newest tag, 1.6.2", lead: "its newest tag, ", version: "1.6.2" },
+      { kind: "tags", text: "the newest tag, 1.6.2", lead: "the newest tag, ", version: "1.6.2" },
     ]);
   });
 
@@ -381,7 +392,6 @@ describe("the answer's pinned clause", () => {
           }),
           metadataReplacement: null,
           thresholds: THRESHOLDS,
-          now: new Date("2026-09-29T00:00:00Z"),
         }),
       );
     const expected = "Pinned to dev-main, a branch snapshot rather than a release. You require it directly.";
@@ -424,7 +434,7 @@ describe("the answer's pinned clause", () => {
       }),
     );
     expect(text).toBe(
-      "Pinned to dev-main, a branch snapshot 1 month after its newest tag, 7.1.0. You require it directly.",
+      "Your dev-main snapshot (2026-02-01) is 1 month newer than the newest tag, 7.1.0. You require it directly.",
     );
   });
 

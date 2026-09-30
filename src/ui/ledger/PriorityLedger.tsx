@@ -51,17 +51,19 @@ const oneLine = (node: HTMLElement): boolean => linesOf(node) <= 1;
 
 /**
  * With lockrot's gate and no baseline sentence to carry it, the lead's answer goes on in one serif
- * line: how many fail this run, flagged and not flagged apart (PD-GATE-2). A size or two down where
- * the reader's serif is too wide for one line at full size, never smaller when that still wraps.
+ * line: how many fail this run, flagged and not flagged apart, then "why" (PD-GATE-2). A size or two
+ * down where the reader's serif is too wide for one line at full size, then "why" down to its
+ * marker; never smaller when that still wraps.
  */
 function GateLine({ gate, clause }: { gate: RunGate; clause: GateClause }) {
-  const why = useGateWhy(gate);
-  const ref = useFitSteps<HTMLParagraphElement>(["small", "smaller"], oneLine, "full");
+  const why = useGateWhy(gate, clause);
+  const ref = useFitSteps<HTMLParagraphElement>(["small", "smaller", "bare"], oneLine, "full");
   if (why === null) return null;
   return (
     <>
       <p ref={ref} className="lead-gate">
-        <GateClauseText clause={clause} opening lead={why.lead} />.
+        <GateClauseText clause={clause} opening close="." />
+        {why.opener}
       </p>
       {why.panel}
     </>

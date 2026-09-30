@@ -154,8 +154,18 @@ function sentenceNamer(floors: Floors, headed: boolean, quoted: boolean): Namer 
 
 type Ref = (than: boolean) => FloorPart[];
 
-/** One way of missing, against a floor or a pair: "needs a newer PHP than 8.4", "stop before both". */
-function wayWords(missCode: string | null, ref: Ref, many: boolean): FloorPart[] {
+/**
+ * One way of missing, against a floor or a pair: "needs a newer PHP than 8.4", "stop before both".
+ * Against the project's floor alone the way names its lowest PHP, the one lockrot tests: "needs a
+ * newer PHP than your `require.php` allows at its lowest".
+ */
+function wayWords(
+  missCode: string | null,
+  ref: Ref,
+  many: boolean,
+  floor: FloorKey | null = null,
+): FloorPart[] {
+  if (floor === "project") return projectWayWords(missCode, ref, many);
   switch (missCode) {
     case "needs_newer":
       return [text(`${verb("needs", "need", many)} a newer PHP than `), ...ref(true)];
@@ -170,6 +180,45 @@ function wayWords(missCode: string | null, ref: Ref, many: boolean): FloorPart[]
       return missCode === null ? words : [...words, ...asWritten(missCode)];
     }
   }
+}
+
+/** `ref(true)` never reads "it": the floor is the constraint's lowest PHP, which "it" would blur. */
+function projectWayWords(missCode: string | null, ref: Ref, many: boolean): FloorPart[] {
+  const lowest = (): FloorPart[] => [text("the lowest PHP "), ...ref(true), text(" allows")];
+  switch (missCode) {
+    case "needs_newer":
+      return [
+        text(`${verb("needs", "need", many)} a newer PHP than `),
+        ...ref(true),
+        text(" allows at its lowest"),
+      ];
+    case "stops_before":
+      return [text(`${verb("stops", "stop", many)} before `), ...lowest()];
+    case "skips":
+      return [text(`${verb("skips", "skip", many)} `), ...lowest()];
+    case "unsatisfiable":
+      return [text(`${verb("admits", "admit", many)} no PHP version`)];
+    default: {
+      const words = [text(`${verb("does", "do", many)} not admit `), ...lowest()];
+      return missCode === null ? words : [...words, ...asWritten(missCode)];
+    }
+  }
+}
+
+/**
+ * What a row that needs a newer PHP than the project's lowest, and misses nothing else, waits for:
+ * "— it fits once your `require.php` starts higher". Empty for every other standing.
+ */
+export function fitsOnceWords(st: Standing, many: boolean): FloorPart[] {
+  if (st.kind !== "misses" || st.misses.length !== 1) return [];
+  const [miss] = st.misses;
+  if (miss?.floor !== "project" || miss.code !== "needs_newer") return [];
+  if (st.unanswered.length > 0 || st.blockedBy !== null) return [];
+  return [
+    text(` — ${many ? "they fit" : "it fits"} once your `),
+    code("require.php"),
+    text(" starts higher"),
+  ];
 }
 
 function blockedWords(by: string, many: boolean): FloorPart[] {
@@ -197,15 +246,15 @@ function neitherWords(namer: Namer, floors: Floors, many: boolean, way: string |
 
 interface Said {
   readonly words: FloorPart[];
-  /** False when the words leave something to level 1: the way a floor is missed, or what a
-   *  blocked row admits. */
+  /** False when the words leave something to level 1: the floor a row missing the other admits,
+   *  or what a blocked row admits. */
   readonly stated: boolean;
 }
 
 /**
- * Where the words stand: a level-1 line or a fold cell says all; level 0 says yours' misses without
- * the floor it admits, a newer row blocked only as blocked, and a newer row missing one of two floors
- * by the floor it misses. What level 0 leaves out waits at level 1.
+ * Where the words stand: a level-1 line or a fold cell says all; level 0 says a row's misses without
+ * the floor it admits, and a newer row blocked only as blocked. What level 0 leaves out waits at
+ * level 1.
  */
 type Place = "cell" | "yours" | "newer";
 
@@ -257,21 +306,10 @@ function missesSaid(
       first.code !== null && KNOWN.has(first.code)
         ? wayWords(first.code, () => namer.pair(), many)
         : neitherWords(namer, floors, many, first.code);
-  } else if (
-    first !== undefined &&
-    second === undefined &&
-    at === "newer" &&
-    namer.two &&
-    namer.pairSaid() &&
-    st.unanswered.length === 0 &&
-    first.code !== "unsatisfiable"
-  ) {
-    words = [text(`${verb("misses", "miss", many)} `), ...namer.one(first.floor, false)];
-    stated = false;
   } else {
     words = st.misses.flatMap((miss, i) => [
       ...(i > 0 ? [text(" and ")] : []),
-      ...wayWords(miss.code, (than) => namer.one(miss.floor, than), many),
+      ...wayWords(miss.code, (than) => namer.one(miss.floor, than), many, miss.floor),
     ]);
     const other = admitted(st, namer);
     if (other !== null) {
@@ -365,11 +403,33 @@ export interface FloorsAnswer {
 
 /**
  * How much level 0 says, fullest first; the page takes the first that keeps the sub within its
- * lines in the reader's fonts. `unquoted` leaves `require.php`'s constraint to level 1's
- * definitions, `first` also every clause after the first to level 1's list.
+ * lines in the reader's fonts. `plain` leaves what a miss waits for ("it fits once …") to level 1's
+ * list; `missing` keeps only the clauses that say a miss, so why a branch does not fit outlasts the
+ * ones that admit both; `unquoted` leaves `require.php`'s constraint to level 1's definitions;
+ * `first` keeps the first clause alone.
  */
-export const FLOORS_STEPS = ["full", "unquoted", "first"] as const;
+export const FLOORS_STEPS = ["full", "plain", "missing", "missing-plain", "unquoted", "first"] as const;
 export type FloorsStep = (typeof FLOORS_STEPS)[number];
+
+interface StepShape {
+  readonly clauses: "all" | "missing" | "first";
+  readonly quoted: boolean;
+  readonly tail: boolean;
+}
+
+/** Whether the step quotes `require.php`'s constraint in the sentence, or leaves it to level 1. */
+export function stepQuotes(step: FloorsStep): boolean {
+  return SHAPES[step].quoted;
+}
+
+const SHAPES: Readonly<Record<FloorsStep, StepShape>> = {
+  full: { clauses: "all", quoted: true, tail: true },
+  plain: { clauses: "all", quoted: true, tail: false },
+  unquoted: { clauses: "all", quoted: false, tail: false },
+  missing: { clauses: "missing", quoted: true, tail: true },
+  "missing-plain": { clauses: "missing", quoted: true, tail: false },
+  first: { clauses: "first", quoted: false, tail: false },
+};
 
 interface Scene {
   readonly floors: Floors;
@@ -401,16 +461,26 @@ export function floorsAnswer(
     mineIsNewest: mineAt === 0,
     installedVersion,
   };
-  const quoted = step === "full";
+  const shape = SHAPES[step];
+  const { quoted, tail } = shape;
+  const spoken = (headed: boolean, only: boolean): readonly Clause[] =>
+    speak(scene, { headed, quoted, tail, only }).clauses;
+  const missing = shape.clauses === "missing" ? spoken(false, true) : [];
+  // Spoken without the others, so the first clause kept is the one that quotes; its few words
+  // name the floors themselves.
   let headed = false;
-  let spoken = speak(scene, headed, quoted);
-  // A clause opening on a mono branch name runs into the sub-sentence's own mono version and date,
-  // so the floors lead instead.
-  if (spoken.clauses[0]?.parts[0]?.kind === "name") {
-    headed = true;
-    spoken = speak(scene, headed, quoted);
+  let kept = missing;
+  if (missing.length === 0) {
+    const first =
+      shape.clauses === "all" ? (all: readonly Clause[]) => all : (all: readonly Clause[]) => all.slice(0, 1);
+    kept = first(spoken(headed, false));
+    // A clause opening on a mono branch name runs into the sub-sentence's own mono version and
+    // date, so the floors lead instead.
+    if (kept[0]?.parts[0]?.kind === "name") {
+      headed = true;
+      kept = first(spoken(headed, false));
+    }
   }
-  const kept = step === "first" ? spoken.clauses.slice(0, 1) : spoken.clauses;
   const parts = kept.flatMap((c, i) => [...(i > 0 ? [text("; ")] : []), ...c.parts]);
   const stated = new Set(kept.flatMap((c) => c.stated));
   const prefix = floors.noProjectFloor ? [text("The project names no PHP floor. ")] : [];
@@ -429,9 +499,20 @@ interface Clause {
   readonly parts: FloorPart[];
   /** The rows the clause says in full. */
   readonly stated: readonly number[];
+  /** The clause says how its rows miss a floor. */
+  readonly misses: boolean;
 }
 
-function speak(scene: Scene, headed: boolean, quoted: boolean): { clauses: Clause[] } {
+interface Voice {
+  readonly headed: boolean;
+  readonly quoted: boolean;
+  /** Say what a miss waits for. */
+  readonly tail: boolean;
+  /** Only the clauses that say a miss. */
+  readonly only: boolean;
+}
+
+function speak(scene: Scene, { headed, quoted, tail, only }: Voice): { clauses: Clause[] } {
   const { considered, floors } = scene;
   const namer = sentenceNamer(floors, headed, quoted);
   const grouped = groupBy(considered, floors);
@@ -446,16 +527,19 @@ function speak(scene: Scene, headed: boolean, quoted: boolean): { clauses: Claus
     if (lead === undefined) continue;
     if (summarise && newerMisses.includes(group)) {
       if (group === newerMisses[0]) {
-        clauses.push({ parts: missSummary(scene, newerMisses.flat(), namer), stated: [] });
+        clauses.push({ parts: missSummary(scene, newerMisses.flat(), namer), stated: [], misses: true });
       }
       continue;
     }
+    if (only && lead.st.kind !== "misses") continue;
     const isMine = group === mine;
     const names = who(group, scene, counted);
     const said = standingSaid(lead.st, namer, floors, group.length > 1, isMine ? "yours" : "newer");
+    const waits = fitsOnceWords(lead.st, group.length > 1);
     clauses.push({
-      parts: [...names.parts, text(" "), ...said.words],
-      stated: said.stated ? names.named.map((p) => p.index) : [],
+      parts: [...names.parts, text(" "), ...said.words, ...(tail ? waits : [])],
+      stated: said.stated && (tail || waits.length === 0) ? names.named.map((p) => p.index) : [],
+      misses: lead.st.kind === "misses",
     });
     counted ||= group.filter((p) => !p.row.installed).length > NAMED_MAX;
   }
@@ -546,7 +630,13 @@ function listed(placed: readonly Placed[], floors: Floors): FloorGroup[] {
   return groupBy(placed, floors).flatMap((group) => {
     const lead = group[0];
     if (lead === undefined) return [];
-    return [{ items: runsOf(group), words: standingWords(lead.st, floors, group.length > 1) }];
+    const many = group.length > 1;
+    return [
+      {
+        items: runsOf(group),
+        words: [...standingWords(lead.st, floors, many), ...fitsOnceWords(lead.st, many)],
+      },
+    ];
   });
 }
 
@@ -628,14 +718,26 @@ function otherFloorWords(other: OtherFloor): FloorPart[] {
 
 /**
  * S8's answer when the newest branch is out of reach, after the lead's age clause, in the ledger
- * why's word: "; <reachable_branch> is the newest that fits", or "; no newer branch fits". Why the
- * newest does not fit is the Release branches sentence's to say. Null when the newest is within
- * reach or the document does not say.
+ * why's word and against S8's own floor: "; <reachable_branch> is the newest that fits your
+ * `require.php`", or "; no newer branch fits PHP 8.4". Why the newest does not fit is the Release
+ * branches sentence's to say. Null when the newest is within reach or the document does not say.
  */
 export function moveClause(data: Signal["data"] | undefined): FloorPart[] | null {
   if (data?.["newest_within_reach"] !== false || str(data, "newest_branch") === null) return null;
   const reachable = str(data, "reachable_branch");
+  const against = fitsWhat(data);
   return reachable === null
-    ? [text("; no newer branch fits")]
-    : [text("; "), name(reachable), text(" is the newest that fits")];
+    ? [text("; no newer branch fits"), ...against]
+    : [text("; "), name(reachable), text(" is the newest that fits"), ...against];
+}
+
+/** S8's `floor_source` in the sentence's names; one this page does not know as written; nothing
+ *  when S8 names none. */
+function fitsWhat(data: Signal["data"] | undefined): FloorPart[] {
+  const source = str(data, "floor_source");
+  const php = str(data, "floor_php");
+  if (source === "project") return [text(" your "), code("require.php")];
+  if (source === "target")
+    return php === null ? [text(" the target PHP")] : [text(" "), phrase(`PHP ${php}`)];
+  return source === null ? [] : [text(" the "), code(source), text(" floor")];
 }

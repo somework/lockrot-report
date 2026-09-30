@@ -187,9 +187,10 @@ describe("answerParts", () => {
 
     // Assert
     expect(answerText(parts)).toBe(
-      "Left behind on 5.x: its last release was 4.5 years ago; 7.x is the newest that fits. You require it directly.",
+      "Left behind on 5.x: its last release was 4.5 years ago; 7.x is the newest that fits your require.php. You require it directly.",
     );
-    expect(parts.filter((p) => p.kind === "code")).toEqual([]);
+    // The floor's key, never its constraint: why 8.x misses it is Release branches' to say.
+    expect(parts.filter((p) => p.kind === "code")).toEqual([{ kind: "code", text: "require.php" }]);
   });
 
   it("reads no fix coming from no_fix_expected alone, never from the evidence's words", () => {

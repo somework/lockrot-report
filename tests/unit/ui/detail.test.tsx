@@ -903,7 +903,7 @@ describe("Detail", () => {
       expect(factRows(container)[1]).toEqual(["Snapshot", "2 mo ago"]);
       const answerText = container.querySelector(".detail-answer")?.textContent ?? "";
       expect(answerText).toMatch(
-        /^Pinned to dev-main, a 2-month-old branch snapshot, 1 month before its newest tag, 2\.6\.7\. /,
+        /^Your dev-main snapshot \(2026-08-04\) is 1 month older than the newest tag, 2\.6\.7\. /,
       );
       const lead = container.querySelector(".detail-lead")?.textContent ?? "";
       expect(lead).not.toContain("Last release");
@@ -915,12 +915,15 @@ describe("Detail", () => {
 
     it("the answer's tag words open level 1: both dates oldest first, then the pre-release caveat", () => {
       const { container, dispatch } = renderDetail(WALLABAG_013, "friendsofsymfony/oauth-server-bundle");
-      const button = screen.getByRole("button", { name: "its newest tag, 1.6.2" });
+      expect(container.querySelector(".detail-answer")?.textContent).toMatch(
+        /^Your dev-master snapshot \(2022-03-24\) is 3\.2 years newer than the newest tag, 1\.6\.2\. /,
+      );
+      const button = screen.getByRole("button", { name: "the newest tag, 1.6.2" });
       expect(button.getAttribute("aria-expanded")).toBe("false");
       const panel = container.querySelector<HTMLElement>(`#${button.getAttribute("aria-controls") ?? ""}`);
       expect(panel?.hidden).toBe(true);
       expect(panel?.querySelector(".detail-tags-dates")?.textContent).toBe(
-        "tag 1.6.2 2019-01-23 3.2 years later snapshot dev-master 2022-03-24",
+        "tag 1.6.2 2019-01-23 3.2 years later snapshot dev-master 2022-03-24 · yours",
       );
       expect(panel?.textContent).toContain("A tag here can be a pre-release: lockrot counts those as tags.");
       expect(panel?.textContent).not.toMatch(/stable/i);
@@ -2143,7 +2146,7 @@ describe("open vocabularies (lockrot 0.13): a value this page does not know is s
     const panel = container.querySelector(".detail-timeline-floors");
     expect(panel?.hasAttribute("hidden")).toBe(false);
     expect(panel?.textContent).toContain(
-      "1.x (yours) needs a newer PHP than your require.php but admits PHP 8.4",
+      "1.x (yours) needs a newer PHP than your require.php allows at its lowest but admits PHP 8.4 — it fits once your require.php starts higher",
     );
     expect(container.querySelector(".detail-timeline .l1-btn")).toBeNull();
   });

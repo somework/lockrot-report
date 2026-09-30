@@ -19,19 +19,19 @@ const fact = (page: Page) => page.locator("aside.detail .detail-fact").nth(1);
 test.describe("level 0: the answer and the key fact", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("a tagged snapshot says its own age, then how far and which way from its newest tag", async ({
+  test("a tagged snapshot says plainly which is newer, the reader's snapshot dated beside it", async ({
     page,
   }) => {
     await open(page, FIXTURES.wallabag013, "friendsofsymfony/oauth-server-bundle");
     await expect(answer(page)).toHaveText(
-      "Pinned to dev-master, a 4.5-year-old branch snapshot, 3.2 years after its newest tag, 1.6.2. You require it directly.",
+      "Your dev-master snapshot (2022-03-24) is 3.2 years newer than the newest tag, 1.6.2. You require it directly.",
     );
     // S2 fired: the release slot keeps its age, and nothing repeats the tag under it.
     await expect(fact(page)).toHaveText(/^Last release\s*7\.7 y ago$/);
 
     await open(page, FIXTURES.mautic013, "rector/rector");
     await expect(answer(page)).toContainText(
-      "a 2-month-old branch snapshot, 1 month before its newest tag, 2.6.7.",
+      "Your dev-main snapshot (2026-08-04) is 1 month older than the newest tag, 2.6.7.",
     );
     await expect(fact(page)).toHaveText(/^Snapshot\s*2 mo ago$/);
   });
@@ -70,7 +70,7 @@ test.describe("level 0: the answer and the key fact", () => {
   }) => {
     await open(page, FIXTURES.wallabag, "friendsofsymfony/oauth-server-bundle");
     await expect(answer(page)).toContainText(
-      "a 4.5-year-old branch snapshot, 3.2 years after its newest tag, 1.6.2.",
+      "Your dev-master snapshot (2022-03-24) is 3.2 years newer than the newest tag, 1.6.2.",
     );
     await open(page, FIXTURES.mautic, "mautic/core-lib");
     await expect(answer(page)).toContainText("Pinned to 7.0.0-dev, a branch snapshot rather than a release.");
@@ -96,7 +96,7 @@ test.describe("level 1: the tag words open the dates and the pre-release caveat"
     page,
   }) => {
     await open(page, FIXTURES.wallabag013, "friendsofsymfony/oauth-server-bundle");
-    const button = page.getByRole("button", { name: "its newest tag, 1.6.2", exact: true });
+    const button = page.getByRole("button", { name: "the newest tag, 1.6.2", exact: true });
     await expect(button).toHaveAttribute("aria-expanded", "false");
     await expect(panel(page)).toBeHidden();
 
@@ -104,9 +104,9 @@ test.describe("level 1: the tag words open the dates and the pre-release caveat"
     await page.keyboard.press("Enter");
     await expect(button).toHaveAttribute("aria-expanded", "true");
     await expect(panel(page)).toBeVisible();
-    await expect(page.getByRole("group", { name: "its newest tag, 1.6.2" })).toBeVisible();
+    await expect(page.getByRole("group", { name: "the newest tag, 1.6.2" })).toBeVisible();
     await expect(panel(page).locator(".detail-tags-dates")).toHaveText(
-      "tag 1.6.2 2019-01-23 3.2 years later snapshot dev-master 2022-03-24",
+      "tag 1.6.2 2019-01-23 3.2 years later snapshot dev-master 2022-03-24 · yours",
     );
     await expect(panel(page)).toContainText("A tag here can be a pre-release: lockrot counts those as tags.");
 
@@ -119,7 +119,7 @@ test.describe("level 1: the tag words open the dates and the pre-release caveat"
     page,
   }) => {
     await open(page, FIXTURES.mautic013, "rector/rector");
-    await page.getByRole("button", { name: "its newest tag, 2.6.7" }).click();
+    await page.getByRole("button", { name: "the newest tag, 2.6.7" }).click();
     await expect(panel(page).locator(".detail-tags-role")).toHaveText(["snapshot", "tag"]);
     const noOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
@@ -131,7 +131,7 @@ test.describe("level 1: the tag words open the dates and the pre-release caveat"
     page,
   }) => {
     await open(page, FIXTURES.wallabag013, "friendsofsymfony/oauth-server-bundle");
-    const name = { name: "its newest tag, 1.6.2", exact: true } as const;
+    const name = { name: "the newest tag, 1.6.2", exact: true } as const;
     await page.getByRole("button", name).click();
     await page.locator("li.frow[data-pkg='friendsofsymfony/oauth-server-bundle']").focus();
     await page.keyboard.press("j");
@@ -153,7 +153,7 @@ test.describe("level 1: the tag words open the dates and the pre-release caveat"
   test("in forced colours the version keeps the shared marker and link colour", async ({ page }) => {
     await page.emulateMedia({ forcedColors: "active" });
     await open(page, FIXTURES.wallabag013, "friendsofsymfony/oauth-server-bundle");
-    const button = page.getByRole("button", { name: "its newest tag, 1.6.2", exact: true });
+    const button = page.getByRole("button", { name: "the newest tag, 1.6.2", exact: true });
     const glyph = await button.locator(".l1-mark").evaluate((el) => getComputedStyle(el, "::before").content);
     expect(glyph).toBe('"▶"');
     await expect(button).toHaveCSS("border-bottom-style", "dotted");
@@ -163,7 +163,7 @@ test.describe("level 1: the tag words open the dates and the pre-release caveat"
     test(`axe finds nothing serious in the lead with level 1 open, ${colorScheme}`, async ({ page }) => {
       await page.emulateMedia({ colorScheme });
       await open(page, FIXTURES.mautic013, "rector/rector");
-      await page.getByRole("button", { name: "its newest tag, 2.6.7" }).click();
+      await page.getByRole("button", { name: "the newest tag, 2.6.7" }).click();
       await page.mouse.move(0, 0);
       const result = await new AxeBuilder({ page }).include(".detail-lead").analyze();
       expect(result.violations.filter((v) => v.impact === "serious" || v.impact === "critical")).toEqual([]);

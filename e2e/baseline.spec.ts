@@ -160,10 +160,15 @@ test.describe("PD-GATE-2: the Against sentence closes on how many fail this run"
     await report.goto(FIXTURES.wallabagBaselineOlder013);
     await expect(page.locator(".gate-fact")).toHaveText("this run fails · --fail-on=high");
     const answer = page.locator(".bl-answer");
-    await expect(answer).toContainText("43 already accepted; 12 fail this run by --fail-on=high.");
+    await expect(answer).toContainText("43 already accepted; 12 fail this run by --fail-on=high. why");
     // The header says the flag, so the sentence's echo of it stays out of sight.
     await expect(answer.locator(".gate-echo")).toBeHidden();
-    const why = answer.getByRole("button", { name: "12 fail this run" });
+    // The count lists the 12; its own small control, apart from it, opens why.
+    await expect(answer.getByRole("button", { name: "12 fail this run" })).not.toHaveAttribute(
+      "aria-expanded",
+      /.*/,
+    );
+    const why = answer.getByRole("button", { name: "Why this run fails" });
     await expect(why).toHaveAttribute("aria-expanded", "false");
     await why.click();
     await expect(why).toHaveAttribute("aria-expanded", "true");
@@ -173,6 +178,45 @@ test.describe("PD-GATE-2: the Against sentence closes on how many fail this run"
     await expect(panel).toContainText("30 of the 43 already accepted meet it, so they do not fail.");
     // One name for the state: the summary's "accepted", never "exempt by the baseline".
     await expect(panel).not.toContainText("exempt by the baseline");
+  });
+
+  test("'12 fail this run' lists the 12: the rail's filter, pressed, focus kept on the count", async ({
+    page,
+  }) => {
+    await report.goto(FIXTURES.wallabagBaselineOlder013);
+    const total = page.locator(".bl-answer").getByRole("button", { name: "12 fail this run" });
+    await expect(total).toHaveAttribute("aria-pressed", "false");
+    await total.click();
+    await expect(total).toHaveAttribute("aria-pressed", "true");
+    await expect(total).toBeFocused();
+    await expect.poll(() => report.hash()).toContain("gate=fails");
+    expect(await report.rows()).toHaveLength(12);
+    const rail = page.getByRole("group", { name: "Filters" });
+    await expect(rail.getByRole("button", { name: /^Fails this run/ })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    // The opener stays closed: listing them and explaining them are two acts.
+    await expect(page.getByRole("button", { name: "Why this run fails" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    await page.keyboard.press("Enter");
+    await expect(total).toHaveAttribute("aria-pressed", "false");
+    await expect(total).toBeFocused();
+  });
+
+  test("the full stop never starts a line of its own at a phone's width", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await report.goto(FIXTURES.wallabagBaselineOlder013);
+    const [button, stop] = await page.locator(".bl-answer").evaluate((p) => {
+      const total = [...p.querySelectorAll("button")].find((b) => b.textContent.startsWith("12 fail"));
+      const range = document.createRange();
+      const node = total?.parentElement?.lastChild;
+      if (node && node.nodeType === Node.TEXT_NODE) range.selectNodeContents(node);
+      return [total?.getBoundingClientRect().top ?? 0, range.getBoundingClientRect().top];
+    });
+    expect(Math.abs(stop - button)).toBeLessThan(8);
   });
 
   test("a report whose findings carry no gate draws no clause, whatever its fail-on", async ({ page }) => {

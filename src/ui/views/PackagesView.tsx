@@ -22,7 +22,8 @@ import { isKnownSignalId, TONE } from "../../domain/vocab";
 import { Pill, Muted, toneClass } from "../common/common";
 import { AdvisoryChip } from "../common/AdvisoryChip";
 import { RowGateMark, rowGateSpoken } from "../common/GateWords";
-import { findingGateMark, rowGateWords } from "../../domain/gate";
+import { failOnRule, rowGate } from "../../domain/gate";
+import { Flag } from "../common/GateFlag";
 import { PACKAGES_FIT, useGateFit } from "./gateFit";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
@@ -201,11 +202,11 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
   const { model, state, dispatch, cursor } = useReport();
   const isOpen = state.pkg === finding.package;
   const hit = useSearchHit(finding);
-  const found = findingGateMark(model, finding);
-  const words = found === null ? null : rowGateWords(found);
-  const fails = found?.kind === "fails";
+  const gate = rowGate(model, finding);
+  const words = gate?.words ?? null;
+  const fails = gate?.fails === true;
   const markId = `${useId()}-gate`;
-  const mark = (at: string) => (words === null ? null : <RowGateMark words={words} fails={fails} at={at} />);
+  const mark = (at: string) => (gate === null ? null : <RowGateMark gate={gate} at={at} />);
   // On a phone the priority is the row's left rule; in forced colours `prio-<word>` gives its
   // weight.
   const base =
@@ -234,9 +235,9 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
           </>
         )}
         {mark("name")}
-        {words !== null && (
+        {gate !== null && (
           <span className="vh" id={markId}>
-            {rowGateSpoken(words, fails)}
+            {rowGateSpoken(gate)}
           </span>
         )}
         <MatchNote hit={hit} />
@@ -280,29 +281,81 @@ function Count({ n, one = "package", many = "packages" }: { n: number; one?: str
   );
 }
 
+/** How many of the listed are behind their newest release, how many are not, how many unmeasured. */
+function LibyearsAnswer({ tally, listed }: { tally: LibyearsTally; listed: number }) {
+  const { behind, current, unmeasured } = tally;
+  return (
+    <p className="pk-answer">
+      <Count n={behind} /> of the <b>{listed}</b> listed {behind === 1 ? "is" : "are"} behind{" "}
+      {behind === 1 ? "its" : "their"} newest release
+      {current > 0 && (
+        <>
+          {unmeasured > 0 ? "; " : " and "}
+          <b>{current}</b> {current === 1 ? "is" : "are"} not
+        </>
+      )}
+      {unmeasured > 0 && (
+        <>
+          {current > 0 || behind > 0 ? ", and " : "; "}
+          <b>{unmeasured}</b> could not be measured
+        </>
+      )}
+      .
+    </p>
+  );
+}
+
+/** Filtered to the packages that fail the run, the list's answer is why they fail: the fail-on's
+ *  rule in the words of lockrot's kind, an unknown kind as written. */
+function FailingAnswer({ listed }: { listed: number }) {
+  const { model } = useReport();
+  const rule = failOnRule(model.report.run);
+  const subject =
+    listed === 1 ? (
+      <>The one listed fails this run</>
+    ) : (
+      <>
+        All <b>{listed}</b> listed fail this run
+      </>
+    );
+  if (rule === null) return <p className="pk-answer">{subject}.</p>;
+  if (rule.words !== null) {
+    return (
+      <p className="pk-answer">
+        {subject}: <Flag text={rule.flag} /> {rule.words}.
+      </p>
+    );
+  }
+  return (
+    <p className="pk-answer">
+      {subject} by <Flag text={rule.flag} />
+      {rule.unknownKind !== null && (
+        <>
+          , another kind of threshold, <code className="mono">{rule.unknownKind}</code>, as lockrot wrote it
+        </>
+      )}
+      .
+    </p>
+  );
+}
+
 /** Counts of the libyears cells below, and the marks' meaning said once. Some key items are for the
  *  stacked rows only, whose head has no room for the axis captions (PD-PACKAGES-3/5). */
-function PackagesLede({ tally, listed, max }: { tally: LibyearsTally; listed: number; max: number | null }) {
+function PackagesLede({
+  tally,
+  listed,
+  max,
+  failing,
+}: {
+  tally: LibyearsTally;
+  listed: number;
+  max: number | null;
+  failing: boolean;
+}) {
   const { behind, current, unmeasured } = tally;
   return (
     <div className="pk-lede">
-      <p className="pk-answer">
-        <Count n={behind} /> of the <b>{listed}</b> listed {behind === 1 ? "is" : "are"} behind{" "}
-        {behind === 1 ? "its" : "their"} newest release
-        {current > 0 && (
-          <>
-            {unmeasured > 0 ? "; " : " and "}
-            <b>{current}</b> {current === 1 ? "is" : "are"} not
-          </>
-        )}
-        {unmeasured > 0 && (
-          <>
-            {current > 0 || behind > 0 ? ", and " : "; "}
-            <b>{unmeasured}</b> could not be measured
-          </>
-        )}
-        .
-      </p>
+      {failing ? <FailingAnswer listed={listed} /> : <LibyearsAnswer tally={tally} listed={listed} />}
       <p className="pk-key">
         {max !== null && behind > 0 && (
           <span className="pk-key-item pk-key-stacked">
@@ -461,7 +514,14 @@ export function PackagesView() {
 
   return (
     <div className="pk">
-      {!printed && <PackagesLede tally={libyearsTally(visible)} listed={visible.length} max={max} />}
+      {!printed && (
+        <PackagesLede
+          tally={libyearsTally(visible)}
+          listed={visible.length}
+          max={max}
+          failing={state.filters.gate.includes("fails")}
+        />
+      )}
       <PackagesTable visible={visible} dated={dated} max={max} />
     </div>
   );
