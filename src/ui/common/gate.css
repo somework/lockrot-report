@@ -104,6 +104,12 @@
   margin: 8px 0 0;
   max-width: 46em;
 }
+/* In the lead, level 1 opens in the answer's width instead of widening it, so the waffle beside
+   it stays where it was. */
+.lead-answer > .gate-why {
+  align-self: stretch;
+  contain: inline-size;
+}
 .gate-l1 {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
@@ -219,8 +225,16 @@
 [data-gate-tight] .gate-mark::before {
   content: none;
 }
-.frow.gate-fails[data-gate-at="none"] .fc-verdict {
+/* A row with room nowhere for its words underlines its verdict: solid when it fails, dotted when
+   an exemption's words had no room; the row's description says which. */
+.frow.gate-fails[data-gate-at="none"] .fc-verdict,
+.pk-row.gate-fails[data-gate-at="none"] .pk-verdict .pill {
   text-decoration: underline 2px;
+  text-underline-offset: 3px;
+}
+.frow.gate-exempt[data-gate-at="none"] .fc-verdict,
+.pk-row.gate-exempt[data-gate-at="none"] .pk-verdict .pill {
+  text-decoration: underline dotted 2px;
   text-underline-offset: 3px;
 }
 @container fledger (min-width: 990px) {
@@ -257,6 +271,10 @@
 }
 /* A forced palette drops the pressed toggle's fill; bl-toggle's solid rule and this weight stay. */
 @media (forced-colors: active) {
+  .l1-btn.gate-total {
+    color: LinkText;
+    border-bottom-color: LinkText;
+  }
   .gate-toggle[aria-pressed="true"] {
     font-weight: 700;
     border-bottom-color: Highlight;

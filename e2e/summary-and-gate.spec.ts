@@ -143,7 +143,7 @@ test.describe("PD-SUMMARY-2: the header's gate fact", () => {
       await page.setViewportSize({ width, height: 900 });
       await expect(page.locator(".gate-fact .gate-word"), `${String(width)}px`).toHaveText("passes");
       await expect(page.locator(".lead-gate"), `${String(width)}px`).toHaveText(
-        "This run passes: it applies no fail-on.",
+        "This run passes: it applies no fail-on, though 39 packages meet it.",
       );
       await expect(page.locator(".lead-gate"), `${String(width)}px`).toBeVisible();
     }

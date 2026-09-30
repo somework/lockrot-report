@@ -90,7 +90,7 @@ function strictText(model: Model): ComponentChildren {
     notes === null
       ? " The run notes on Run data say which."
       : notes.failed > 0
-        ? ` ${notes.failed} of the ${notes.of} run notes name ${notes.failed === 1 ? "it" : "them"}, on Run data.`
+        ? ` ${notes.failed} of the ${notes.of} run notes name ${notes.failed === 1 ? "it" : "them"}, marked “network failure” on Run data.`
         : "";
   return <>A network lookup failed, and this run fails when one does.{which}</>;
 }

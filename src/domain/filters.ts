@@ -373,7 +373,6 @@ const GROUP_LABELS: Readonly<Record<FilterGroup, string>> = {
 const SCOPE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(SCOPE_ROWS);
 const SINCE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(SINCE_ROWS);
 const FIX_LABELS: Readonly<Record<string, string>> = Object.fromEntries(FIX_GROUP_TEXT);
-const GATE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(GATE_ROWS);
 
 function activeLabel(group: FilterGroup, key: string): string {
   switch (group) {
@@ -387,8 +386,6 @@ function activeLabel(group: FilterGroup, key: string): string {
       return FIX_LABELS[key] ?? key;
     case "since":
       return SINCE_LABELS[key] ?? key;
-    case "gate":
-      return GATE_LABELS[key] ?? key;
     default:
       return key;
   }

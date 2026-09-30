@@ -29,6 +29,7 @@ export function DisclosureButton({
   lead = false,
   className,
   id,
+  describedBy,
 }: {
   label: ComponentChildren;
   name?: string | undefined;
@@ -38,6 +39,8 @@ export function DisclosureButton({
   lead?: boolean;
   className?: string;
   id?: string;
+  /** What tells this button apart from others with its name, such as the text it follows. */
+  describedBy?: string | undefined;
 }) {
   const mark = <span className="l1-mark" aria-hidden="true" />;
   return (
@@ -46,6 +49,7 @@ export function DisclosureButton({
       id={id}
       className={className === undefined ? "l1-btn" : `l1-btn ${className}`}
       aria-label={name}
+      aria-describedby={describedBy}
       aria-expanded={open}
       aria-controls={controls}
       onClick={onToggle}

@@ -2554,6 +2554,28 @@ describe("Run data notes: the repositories a note counts", () => {
     expect(cap?.querySelector(".l1-btn")).toBeNull();
   });
 
+  it("tells one note's button from another's with the same name by the note it follows", () => {
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "run" }), <RunView />);
+    const described = screen
+      .getAllByRole("button", { name: "Which one: the repository" })
+      .map(
+        (button) => document.getElementById(button.getAttribute("aria-describedby") ?? "")?.textContent ?? "",
+      );
+    expect(new Set(described).size).toBe(4);
+    for (const text of described) expect(text).not.toBe("");
+  });
+
+  it("marks the notes that set network failures, and the network cell points at those", () => {
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "run" }), <RunView />);
+    const marked = [...document.querySelectorAll(".run-sections .note")].filter(
+      (note) => note.querySelector(".note-mark")?.textContent === "network failure",
+    );
+    expect(marked).toHaveLength(6);
+    expect(screen.getByText("network failures").nextElementSibling?.textContent).toBe(
+      "yes · no count recorded · 6 of the 21 notes above",
+    );
+  });
+
   it("an open note lists every repository, a message only where lockrot wrote one", () => {
     renderIn(
       loadModel("mini-0.13-edges.json"),
@@ -2682,7 +2704,7 @@ describe("the run's gate on Run data (PD-GATE-5)", () => {
       return answer;
     };
     expect(text("wallabag_baseline-older-0.13.json")).toContain(
-      "It ran with --fail-on=high. It failed on it.",
+      "It ran with --fail-on=high. It failed on --fail-on=high.",
     );
     expect(text("wallabag_offline-strict-unchecked-0.13.json")).toContain(
       "It ran with --fail-on=unchecked and --strict-network. It failed on both.",
@@ -2694,7 +2716,7 @@ describe("the run's gate on Run data (PD-GATE-5)", () => {
       "It ran with --fail-on=high. It wrote a baseline, so --fail-on=high was not applied, and it passed.",
     );
     expect(text("mini-0.13-gate-generate.json")).toContain(
-      "It wrote a baseline, so --fail-on=high was not applied, and failed on --strict-network.",
+      "It wrote a baseline, so --fail-on=high was not applied, and it failed on --strict-network.",
     );
     expect(text("koel_lock-only-0.13.json")).toContain("It passed.");
     expect(text("koel_koel-0.13.json")).not.toMatch(/passed|failed/);

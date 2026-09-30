@@ -65,8 +65,24 @@ export function fitGateMarks(list: HTMLElement, fit: GateFit): void {
   }
   const heights = rows.map((row) => row.getBoundingClientRect().height);
   const whole = list.getBoundingClientRect().height;
-  let pending: readonly number[] = rows.map((_, i) => i);
-  for (const spot of fit.order(list.clientWidth)) {
+  const order = fit.order(list.clientWidth);
+  placeFrom(
+    rows,
+    heights,
+    order,
+    rows.map((_, i) => i),
+  );
+  if (fit.table === true) unwiden(list, rows, heights, whole, order);
+}
+
+function placeFrom(
+  rows: readonly HTMLElement[],
+  heights: readonly number[],
+  spots: readonly string[],
+  indices: readonly number[],
+): void {
+  let pending = indices;
+  for (const spot of spots) {
     pending = place(rows, heights, spot, false, pending);
     pending = place(rows, heights, spot, true, pending);
   }
@@ -76,22 +92,23 @@ export function fitGateMarks(list: HTMLElement, fit: GateFit): void {
     row.dataset["gateAt"] = "none";
     row.removeAttribute("data-gate-tight");
   }
-  if (fit.table === true) unwiden(list, rows, whole);
 }
 
-/** Takes the widest words back out of a table until it is its own height again. */
-function unwiden(list: HTMLElement, rows: readonly HTMLElement[], whole: number): void {
-  if (list.getBoundingClientRect().height <= whole + 0.5) return;
-  const placed = rows
-    .filter((row) => row.dataset["gateAt"] !== "none")
-    .map((row) => ({
-      row,
-      width: row.querySelector(`.gate-at-${row.dataset["gateAt"] ?? ""}`)?.getBoundingClientRect().width ?? 0,
-    }))
-    .sort((a, b) => b.width - a.width);
-  for (const { row } of placed) {
-    row.dataset["gateAt"] = "none";
+/** A column is as wide as its widest cell, so words that grow a table grow it for every row in
+ *  their column: while the table is taller than its own height, a whole column's words move on to
+ *  the next place together. */
+function unwiden(
+  list: HTMLElement,
+  rows: readonly HTMLElement[],
+  heights: readonly number[],
+  whole: number,
+  order: readonly string[],
+): void {
+  for (let k = 0; k < order.length; k++) {
     if (list.getBoundingClientRect().height <= whole + 0.5) return;
+    const spot = order[k];
+    const moved = rows.flatMap((row, i) => (row.dataset["gateAt"] === spot ? [i] : []));
+    if (moved.length > 0) placeFrom(rows, heights, order.slice(k + 1), moved);
   }
 }
 

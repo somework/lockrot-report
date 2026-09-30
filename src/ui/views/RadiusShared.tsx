@@ -167,6 +167,7 @@ function Names({ pkg, names, clamp }: { pkg: string; names: readonly string[]; c
       {clamp && !printed && (open || overflows) && (
         <DisclosureButton
           label={`All ${String(names.length)}`}
+          name={`All ${String(names.length)} direct requirements ${pkg} sits under`}
           open={open}
           controls={id}
           onToggle={toggle}

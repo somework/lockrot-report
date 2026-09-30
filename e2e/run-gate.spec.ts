@@ -26,6 +26,8 @@ async function markedRows(page: Page, selector = "li.frow.has-gate") {
         (m) => m.getClientRects().length > 0,
       );
       const at = row.dataset["gateAt"] ?? "";
+      const verdict = row.querySelector(".fc-verdict, .pk-verdict .pill");
+      const carried = verdict !== null && getComputedStyle(verdict).textDecorationLine.includes("underline");
       const m = mark?.getBoundingClientRect();
       const inside =
         m === undefined ||
@@ -33,7 +35,7 @@ async function markedRows(page: Page, selector = "li.frow.has-gate") {
           m.right <= box.right + 0.5 &&
           m.bottom <= box.bottom + 0.5 &&
           (mark?.scrollWidth ?? 0) <= (mark?.clientWidth ?? 0) + 1);
-      return { pkg: row.dataset["pkg"], at, height: box.height, inside, shown: mark !== undefined };
+      return { pkg: row.dataset["pkg"], at, height: box.height, inside, shown: mark !== undefined, carried };
     });
     for (const row of rows) {
       row.dataset["gateAt"] = "none";
@@ -61,7 +63,11 @@ test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
         for (const row of rows) {
           expect(row.height, `${row.pkg} at ${width}px`).toBe(row.bare);
           expect(row.inside, `${row.pkg} at ${width}px`).toBe(true);
-          expect(row.shown || row.at === "none", `${row.pkg} at ${width}px`).toBe(true);
+          // Words where the row has room, else its verdict underlined: never nothing.
+          expect(
+            row.shown ? row.at !== "none" : row.at === "none" && row.carried,
+            `${row.pkg} at ${width}px`,
+          ).toBe(true);
         }
         // The word, not a bare tick: almost every row finds room for it.
         const worded = rows.filter((row) => row.shown);
@@ -83,7 +89,7 @@ test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
     test(`${fixture}: an All packages row keeps its height too, and its words stay inside it`, async ({
       page,
     }) => {
-      for (const width of [320, 390, 768, 1024, 1440, 1920]) {
+      for (const width of [320, 390, 768, 1024, 1280, 1366, 1440, 1920]) {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(pageUrl(fixture) + "#view=packages");
         const rows = await markedRows(page, "tr.pk-row.has-gate");
@@ -91,11 +97,16 @@ test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
         for (const row of rows) {
           expect(row.height, `${row.pkg} at ${width}px`).toBe(row.bare);
           expect(row.inside, `${row.pkg} at ${width}px`).toBe(true);
+          expect(
+            row.shown ? row.at !== "none" : row.at === "none" && row.carried,
+            `${row.pkg} at ${width}px`,
+          ).toBe(true);
         }
-        if (width >= 390) {
-          const worded = rows.filter((row) => row.shown).length;
-          expect(worded / rows.length, `${width}px`).toBeGreaterThan(0.95);
-        }
+        // A table just wide enough for its columns has less room after the name: most rows still
+        // find it, never a column that widens the table.
+        const worded = rows.filter((row) => row.shown).length;
+        const floor = width === 320 ? 0.8 : width === 1280 ? 0.85 : 0.95;
+        expect(worded / rows.length, `${width}px`).toBeGreaterThan(floor);
       }
     });
   }
@@ -188,7 +199,9 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
     await expect(total).toHaveAttribute("aria-expanded", "true");
     const panel = page.locator(".gate-why").first();
     await expect(panel).toContainText("--strict-network");
-    await expect(panel).toContainText("2 of the 4 run notes name them, on Run data.");
+    await expect(panel).toContainText(
+      "2 of the 4 run notes name them, marked “network failure” on Run data.",
+    );
     await expect(panel).toContainText("Of those, 30 are flagged and 156 are not (unknown).");
     await page.keyboard.press("Enter");
     await expect(total).toHaveAttribute("aria-expanded", "false");
@@ -202,7 +215,7 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await report.goto(FIXTURES.miniGateUnknown013);
     await expect(page.locator(".gate-fact")).toHaveText(
-      "this run fails · --fail-on=copyleft, licence_policy",
+      "this run fails · --fail-on=copyleft · licence_policy",
     );
     await page.getByRole("button", { name: "1 fails this run" }).click();
     const panel = page.locator(".gate-why").first();
@@ -214,7 +227,7 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.emulateMedia({ forcedColors: "active" });
     await report.goto(FIXTURES.koelNoTokenUnchecked013);
-    const toggle = page.getByRole("button", { name: "2 flagged" });
+    const toggle = page.getByRole("button", { name: "2 flagged", exact: true });
     const before = await toggle.evaluate((el) => getComputedStyle(el).borderBottomStyle);
     await toggle.click();
     const after = await toggle.evaluate((el) => {
@@ -435,4 +448,43 @@ test.describe("PD-GATE-3: the detail says it in one line under its pills", () =>
       }
     });
   }
+});
+
+test.describe("PD-GATE-2/4: level 1 and its counts lead where they said", () => {
+  for (const fixture of [
+    FIXTURES.wallabagOfflineStrictUnchecked013,
+    FIXTURES.wallabagGenerateBaseline013,
+  ] as const) {
+    test(`${fixture}: opening level 1 leaves the waffle where it was`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await report.goto(fixture);
+      const waffle = page.locator(".lead-waffle");
+      const before = await waffle.boundingBox();
+      await page.locator(".lead-gate .l1-btn").click();
+      await expect(page.locator(".lead-answer .gate-why")).toBeVisible();
+      const after = await waffle.boundingBox();
+      expect(after?.x).toBe(before?.x);
+      expect(after?.y).toBe(before?.y);
+    });
+  }
+
+  test("from All packages, the flagged count lists exactly the flagged failing rows", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await report.gotoWithHash(FIXTURES.koelNoTokenUnchecked013, "view=packages&verdict=ok&gate=fails");
+    await page.getByRole("button", { name: /^2 flagged\s*,?\s*on Findings$/ }).click();
+    expect(await report.hash()).toBe("#gate=fails");
+    await expect(page.locator("li.frow")).toHaveCount(2);
+  });
+
+  test("Run data marks the notes that fail --strict-network, and the cell points at those", async ({
+    page,
+  }) => {
+    await report.gotoWithHash(FIXTURES.miniEdges013, "view=run");
+    const marked = page.locator(".run-sections .note").filter({ has: page.locator(".note-mark") });
+    await expect(marked).toHaveCount(6);
+    await expect(marked.first().locator(".note-mark")).toHaveText("network failure");
+    await expect(report.runField("network failures")).toHaveText(
+      "yes · no count recorded · 6 of the 21 notes above",
+    );
+  });
 });

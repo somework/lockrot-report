@@ -221,15 +221,34 @@ describe("gateClause", () => {
   it("says none fails when some meet the threshold and nothing fails on it", () => {
     expect(gateClause(decided("wallabag_baseline-self-0.13"))).toEqual({
       kind: "none-fail",
-      meets: 69,
+      exempt: 69,
       echo: { text: "--fail-on=stale", known: true },
     });
   });
 
-  it("a baseline run nothing failed passes, whatever meets the fail-on it did not apply", () => {
+  it("counts as exempt only what an exempt_by says, never every package that meets and does not fail", () => {
+    const gate = decided("wallabag_baseline-self-0.13");
+    expect(gateClause({ ...gate, exempt: [] })).toMatchObject({ kind: "none-fail", exempt: 0 });
+    expect(gateClause({ ...gate, exempt: [{ by: "baseline", n: 60 }] })).toMatchObject({ exempt: 60 });
+  });
+
+  it("a run that did not say whether it applied its fail-on claims no exemption", () => {
+    const open = decided("mini-0.13-gate-verdict");
+    const gate = {
+      ...open,
+      outcome: "open" as const,
+      failOnApplied: null,
+      failing: 0,
+      failingFlagged: 0,
+      exempt: [],
+    };
+    expect(gateClause(gate)).toMatchObject({ kind: "none-fail", exempt: 0 });
+  });
+
+  it("a baseline run nothing failed passes, and says how many meet the fail-on it did not apply", () => {
     const gate = decided("wallabag_generate-baseline-0.13");
-    expect(gateClause(gate)).toEqual({ kind: "unapplied" });
-    expect(gateClause({ ...gate, meets: 0 })).toEqual({ kind: "unapplied" });
+    expect(gateClause(gate)).toEqual({ kind: "unapplied", meets: 39 });
+    expect(gateClause({ ...gate, meets: 0 })).toEqual({ kind: "unapplied", meets: 0 });
   });
 
   it("a run failed with its fail-on unapplied and no other cause to name adds nothing", () => {
@@ -481,6 +500,22 @@ describe("gateFact (a report with no decided gate)", () => {
         "Pass --fail-on=<verdict or priority> in CI to make the run fail on findings at or above that level.",
     );
     expect(gateFact(loadModel("koel_koel-0.13"))?.label).toBe("no gate");
+  });
+
+  it("fail-on none with --strict-network, a run that did not fail, names the one flag that could fail it", () => {
+    const quiet = loadModel("koel_koel-0.13");
+    const model: Model = {
+      ...quiet,
+      report: { ...quiet.report, run: { ...quiet.report.run, strictNetwork: true } },
+    };
+    expect(runGate(model)).toBeNull();
+    expect(gateFact(model)).toEqual({
+      label: "gate: strict network",
+      text:
+        "This run was told --fail-on=none: it fails on no finding, but --strict-network fails the run when a " +
+        "network lookup fails. This page lists what it saw. " +
+        "Pass --fail-on=<verdict or priority> in CI to make the run fail on findings at or above that level.",
+    });
   });
 
   it("an older report with a fail-on says only what it was told, never which findings meet it", () => {

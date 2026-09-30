@@ -3,7 +3,7 @@ import { useRef } from "preact/hooks";
 import type { BaselineSummary, Model, ReportModel } from "../../model/types";
 import { useReport } from "../context";
 import { baselineDelta } from "../../domain/baseline";
-import { gateFlag } from "../../domain/gate";
+import { gateFlag, networkNotes } from "../../domain/gate";
 import { EMPTY_FILTERS } from "../../state/types";
 import { fixed, plural } from "../../domain/format";
 import { unmeasuredWords } from "../../domain/libyears";
@@ -170,13 +170,12 @@ function networkText(report: ReportModel): FieldValue {
   if (report.networkFailures === null) return { missing: nullReason(report, "network_failures") };
   if (!report.networkFailures) return "none";
   const notes = report.notes.length;
-  return {
-    parts: [
-      "yes",
-      { missing: "no count recorded" },
-      ...(notes > 0 ? [{ jump: `${plural(notes, "note", "notes")} above` }] : []),
-    ],
-  };
+  const marked = networkNotes(report);
+  const jump =
+    marked !== null && marked.failed > 0
+      ? `${String(marked.failed)} of the ${plural(marked.of, "note", "notes")} above`
+      : `${plural(notes, "note", "notes")} above`;
+  return { parts: ["yes", { missing: "no count recorded" }, ...(notes > 0 ? [{ jump }] : [])] };
 }
 
 /** "0 of 21", then — when some abandoned findings name a successor only in words — how many, so the

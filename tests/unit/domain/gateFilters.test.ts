@@ -41,7 +41,7 @@ describe("the gate filter (PD-GATE-4)", () => {
 
   it("names itself in the active-filters line", () => {
     expect(activeFilters(FAILS.filters)).toEqual([
-      { group: "gate", key: "fails", groupLabel: "This run", label: "Fails this run" },
+      { group: "gate", key: "fails", groupLabel: "This run", label: "fails" },
     ]);
   });
 

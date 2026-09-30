@@ -144,9 +144,10 @@ export type GateClause =
   /** The run fails and no finding does: only its other causes, as flags, failed it. `unapplied`: a
    *  baseline run, whose fail-on could not have failed it either. */
   | { readonly kind: "tripped"; readonly flags: readonly GateFlag[]; readonly unapplied: boolean }
-  | { readonly kind: "none-fail"; readonly meets: number; readonly echo: GateFlag | null }
-  /** The run passes because it applied no fail-on (a baseline run), whatever meets it. */
-  | { readonly kind: "unapplied" };
+  /** `exempt`: of those that meet the fail-on, the ones an `exempt_by` counts. */
+  | { readonly kind: "none-fail"; readonly exempt: number; readonly echo: GateFlag | null }
+  /** The run passes because it applied no fail-on (a baseline run); `meets`: how many reach it. */
+  | { readonly kind: "unapplied"; readonly meets: number };
 
 function otherCauses(gate: RunGate): readonly GateFlag[] {
   return gate.causes.filter((cause) => cause !== "fail_on").map((cause) => gateFlag(cause, gate.failOn));
@@ -165,14 +166,15 @@ export function gateClause(gate: RunGate): GateClause | null {
       also: otherCauses(gate),
     };
   }
-  if (gate.outcome === "unapplied") return { kind: "unapplied" };
+  if (gate.outcome === "unapplied") return { kind: "unapplied", meets: gate.meets };
   if (gate.outcome === "fails") {
     const flags = otherCauses(gate);
     const unapplied = gate.failOnApplied === false && gate.failOn !== null;
     if (flags.length > 0) return { kind: "tripped", flags, unapplied };
   }
   if (gate.meets === 0 || gate.failOnApplied === false) return null;
-  return { kind: "none-fail", meets: gate.meets, echo };
+  const exempt = gate.exempt.reduce((sum, { n }) => sum + n, 0);
+  return { kind: "none-fail", exempt, echo };
 }
 
 export interface NetworkNotes {

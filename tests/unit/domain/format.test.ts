@@ -43,6 +43,11 @@ describe("ageText", () => {
     expect(ageText(null, now)).toBe("undated");
   });
 
+  test("a date it cannot read is undated, never NaN", () => {
+    expect(ageText("not a date", now)).toBe("undated");
+    expect(agePhrase("2026-13-45", now)).toBe("undated");
+  });
+
   test("never rounds a fresh release down to nothing (lib.test.js:144-149)", () => {
     expect(ageText("2026-09-20T00:00:00Z", now)).toBe("1 mo ago");
     expect(ageText("2026-09-21T00:00:00Z", now)).toBe("1 mo ago");

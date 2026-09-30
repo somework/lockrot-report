@@ -12,6 +12,7 @@ import {
   type RunGate,
 } from "../../domain/gate";
 import { applyFilters } from "../../domain/filters";
+import { EMPTY_FILTERS } from "../../state/types";
 import { filterTitle } from "./common";
 import { useReport } from "../context";
 import { Flag } from "./GateFlag";
@@ -47,7 +48,7 @@ function headlineTitle({ who, verb, flags, unapplied }: GateHeadline): string {
     ...flags.map((flag) => flag.text),
     ...(unapplied === null ? [] : [`${unapplied} not applied`]),
   ];
-  return tail.length === 0 ? head : `${head} · ${tail.join(", ")}`;
+  return tail.length === 0 ? head : `${head} · ${tail.join(" · ")}`;
 }
 
 /** The header's fact: "this run fails · --fail-on=high". Words only; the summary explains. Header.tsx
@@ -69,7 +70,7 @@ export function GateHeadlineText({ gate }: { gate: RunGate }) {
       {(flags.length > 0 || unapplied !== null) && (
         <span className="gate-fact-more">
           <Sep />
-          <FlagList flags={flags} separator=", " />
+          <FlagList flags={flags} separator=" · " />
           {unapplied !== null && (
             <span className="gate-quiet">
               <Flag text={unapplied} /> not applied
@@ -81,24 +82,33 @@ export function GateHeadlineText({ gate }: { gate: RunGate }) {
   );
 }
 
-/** The flagged failing packages, as the rail's "Fails this run" filter; from another tab, Findings
- *  with that filter added to the ones already on. */
-function FlaggedToggle({ children }: { children: ComponentChildren }) {
-  const { state, dispatch } = useReport();
+/** The flagged failing packages, as the rail's "Fails this run" filter added to the ones on; from
+ *  another tab, whose filters say nothing of Findings, Findings with that filter alone, the search
+ *  kept only when it hides none of them. */
+function FlaggedToggle({ count, children }: { count: number; children: ComponentChildren }) {
+  const { model, state, dispatch } = useReport();
   const here = state.view === "findings";
   const pressed = here && state.filters.gate.includes("fails");
+  const press = () => {
+    if (here) {
+      const gate = pressed ? [] : ["fails"];
+      dispatch({ type: "focus", view: "findings", keepQuery: true, filters: { ...state.filters, gate } });
+      return;
+    }
+    const filters = { ...EMPTY_FILTERS, gate: ["fails"] };
+    const kept = applyFilters(model, { ...state, filters }, "findings").length === count;
+    dispatch({ type: "focus", view: "findings", keepQuery: kept, filters });
+  };
   return (
     <button
       type="button"
       className="bl-toggle gate-toggle"
       aria-pressed={here ? pressed : undefined}
       title={here ? filterTitle("the findings that fail this run", pressed) : "List them on Findings"}
-      onClick={() => {
-        const gate = pressed ? [] : ["fails"];
-        dispatch({ type: "focus", view: "findings", keepQuery: true, filters: { ...state.filters, gate } });
-      }}
+      onClick={press}
     >
       {children}
+      {!here && <span className="vh">, on Findings</span>}
     </button>
   );
 }
@@ -152,7 +162,7 @@ function FailingSplit({ clause }: { clause: Extract<GateClause, { kind: "failing
   return (
     <>
       :{" "}
-      <FlaggedToggle>
+      <FlaggedToggle count={flagged}>
         <b>{flagged}</b> flagged
       </FlaggedToggle>
       ,{" "}
@@ -213,16 +223,25 @@ export function GateClauseText({
               by <FlagList flags={[clause.echo]} />
             </Echo>
           )}
-          {opening && (
+          {opening && clause.exempt > 0 && (
             <>
-              ; <b>{clause.meets}</b>{" "}
-              {clause.meets === 1 ? "meets the fail-on but is" : "meet the fail-on but are"} exempt
+              ; <b>{clause.exempt}</b>{" "}
+              {clause.exempt === 1 ? "meets the fail-on but is" : "meet the fail-on but are"} exempt
             </>
           )}
         </>
       );
     case "unapplied":
-      return <>{lead(`${opening ? "This" : "this"} run passes`)}: it applies no fail-on</>;
+      return (
+        <>
+          {lead(`${opening ? "This" : "this"} run passes`)}: it applies no fail-on
+          {clause.meets > 0 && (
+            <>
+              , though <b>{clause.meets}</b> {clause.meets === 1 ? "package meets" : "packages meet"} it
+            </>
+          )}
+        </>
+      );
   }
 }
 

@@ -175,7 +175,7 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
   const words = found === null ? null : rowGateWords(found);
   const fails = found?.kind === "fails";
   const mark = (at: string) => (words === null ? null : <RowGateMark words={words} fails={fails} at={at} />);
-  const gateClass = words === null ? "" : ` has-gate${fails ? " gate-fails" : ""}`;
+  const gateClass = words === null ? "" : ` has-gate ${fails ? "gate-fails" : "gate-exempt"}`;
   const rowClass = `frow ${toneClass(TONE(finding.verdict))}${gateClass}`;
   // The row's name is its package; its verdict and gate words are what a screen reader hears next.
   const describedBy = words === null ? `${ids}-verdict` : `${ids}-verdict ${ids}-gate`;

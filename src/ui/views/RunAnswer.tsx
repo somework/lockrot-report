@@ -151,12 +151,8 @@ function outcome(model: Model): ComponentChildren {
   const named = namedFlags(model);
   const said = causes.every((cause) => named.includes(cause));
   const on =
-    said && causes.length === named.length ? (
-      causes.length === 1 ? (
-        "it"
-      ) : (
-        "both"
-      )
+    said && causes.length === named.length && causes.length > 1 ? (
+      "both"
     ) : (
       <>
         {listed(
@@ -173,7 +169,7 @@ function outcome(model: Model): ComponentChildren {
   return unapplied ? (
     <>
       {" "}
-      {wrote}, and failed on {on}.
+      {wrote}, and it failed on {on}.
     </>
   ) : (
     <> It failed on {on}.</>

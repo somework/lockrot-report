@@ -34,10 +34,13 @@ function GroupItem({ group }: { group: NoteRepositoryGroup }) {
 function Repositories({
   index,
   repos,
+  noteId,
   children,
 }: {
   index: number;
   repos: readonly NoteRepository[];
+  /** The note's text, which tells one note's button from another's with the same count. */
+  noteId: string;
   children: ComponentChildren;
 }) {
   const id = `${useId()}-repos`;
@@ -58,6 +61,7 @@ function Repositories({
               id={buttonId}
               label={n === 1 ? "Which one" : `Which ${String(n)}`}
               name={n === 1 ? "Which one: the repository" : `Which ${String(n)}: the repositories`}
+              describedBy={noteId}
               open={open}
               controls={id}
               onToggle={toggle}
@@ -100,6 +104,7 @@ export function RunNote({
   detail: NoteDetail | undefined;
   index: number;
 }) {
+  const noteId = `${useId()}-note`;
   const docs = safeHref(detail?.docsUrl ?? null);
   const repos = noteRepositories(detail);
   const link = docs !== null && (
@@ -112,9 +117,14 @@ export function RunNote({
   );
   return (
     <div className="note">
-      {text}
+      {detail?.setsNetworkFailures === true && (
+        <>
+          <span className="note-mark">network failure</span>{" "}
+        </>
+      )}
+      <span id={noteId}>{text}</span>
       {repos.length > 0 ? (
-        <Repositories index={index} repos={repos}>
+        <Repositories index={index} repos={repos} noteId={noteId}>
           {link}
         </Repositories>
       ) : (

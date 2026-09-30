@@ -213,7 +213,7 @@ test.describe("PD-RADIUS-12: the shared tail", () => {
     await expect(names).toContainText("acme/module-097");
     const clamped = await names.evaluate((el) => el.scrollHeight > el.clientHeight + 1);
     expect(clamped).toBe(true);
-    await first.getByRole("button", { name: "All 97", exact: true }).click();
+    await first.getByRole("button", { name: /^All 97 direct requirements .* sits under$/ }).click();
     expect(await names.evaluate((el) => el.scrollHeight > el.clientHeight + 1)).toBe(false);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(
       0,

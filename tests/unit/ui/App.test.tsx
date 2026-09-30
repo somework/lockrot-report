@@ -674,7 +674,7 @@ describe("layout", () => {
     cleanup();
     render(<App model={loadModel("mini-0.13-edges")} />);
     expect(document.querySelector(".gate-fact")?.textContent).toBe(
-      "this run fails · --strict-network, --fail-on=high",
+      "this run fails · --strict-network · --fail-on=high",
     );
   });
 
@@ -691,7 +691,7 @@ describe("layout", () => {
   test("an unknown cause is shown as written beside the known ones", () => {
     render(<App model={loadModel("mini-0.13-gate-unknown")} />);
     expect(document.querySelector(".gate-fact")?.textContent).toBe(
-      "this run fails · --fail-on=copyleft, licence_policy",
+      "this run fails · --fail-on=copyleft · licence_policy",
     );
   });
 
@@ -699,7 +699,9 @@ describe("layout", () => {
     render(<App model={loadModel("wallabag_generate-baseline-0.13")} />);
     const fact = document.querySelector(".gate-fact")?.textContent ?? "";
     expect(fact).toBe("baseline run passes · --fail-on not applied");
-    expect(document.querySelector(".lead-gate")?.textContent).toBe("This run passes: it applies no fail-on.");
+    expect(document.querySelector(".lead-gate")?.textContent).toBe(
+      "This run passes: it applies no fail-on, though 39 packages meet it.",
+    );
     cleanup();
     render(<App model={loadModel("mini-0.13-gate-generate")} />);
     expect(document.querySelector(".gate-fact")?.textContent).toBe("baseline run fails · --strict-network");
@@ -778,12 +780,24 @@ describe("layout", () => {
     ).toBe("true");
   });
 
-  test("from another tab, the flagged count lists the failing rows on Findings and keeps the search", () => {
+  test("from another tab, the flagged count lists exactly the flagged failing rows on Findings", () => {
+    window.location.hash = "#view=packages&verdict=ok&gate=fails";
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    fireEvent.click(screen.getByRole("button", { name: /^2 flagged\s*,?\s*on Findings$/ }));
+    expect(screen.getByRole("tab", { name: /Findings/ }).getAttribute("aria-selected")).toBe("true");
+    expect(window.location.hash).toBe("#gate=fails");
+  });
+
+  test("from another tab, the flagged count keeps a search only when it hides none of them", () => {
     window.location.hash = "#view=packages&q=spotify";
     render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
-    fireEvent.click(screen.getByRole("button", { name: "2 flagged" }));
-    expect(screen.getByRole("tab", { name: /Findings/ }).getAttribute("aria-selected")).toBe("true");
-    expect(window.location.hash).toBe("#q=spotify&gate=fails");
+    fireEvent.click(screen.getByRole("button", { name: /^2 flagged\s*,?\s*on Findings$/ }));
+    expect(window.location.hash).toBe("#gate=fails");
+    cleanup();
+    window.location.hash = "#view=packages&q=verdict:left-behind";
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    fireEvent.click(screen.getByRole("button", { name: /^2 flagged\s*,?\s*on Findings$/ }));
+    expect(window.location.hash).toContain("q=verdict");
   });
 
   test("the unchecked count opens All packages on exactly those packages", () => {

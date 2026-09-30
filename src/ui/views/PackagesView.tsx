@@ -212,7 +212,7 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
     finding.priority === "none"
       ? "pk-row"
       : `pk-row has-prio prio-${finding.priority} ${toneClass(TONE(finding.priority))}`;
-  const rowClass = words === null ? base : `${base} has-gate`;
+  const rowClass = words === null ? base : `${base} has-gate ${fails ? "gate-fails" : "gate-exempt"}`;
 
   return (
     <tr

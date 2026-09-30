@@ -29,8 +29,8 @@ export function day(iso: string | null | undefined): string {
  * Not exported — see this file's header comment. Ported from legacy `years()` (`lib.js:70-73`).
  */
 function years(iso: string | null | undefined, now: Date): number | null {
-  if (!iso) return null;
-  return (now.getTime() - new Date(iso).getTime()) / MS_PER_JULIAN_YEAR;
+  const time = iso ? Date.parse(iso) : NaN;
+  return Number.isNaN(time) ? null : (now.getTime() - time) / MS_PER_JULIAN_YEAR;
 }
 
 /**
