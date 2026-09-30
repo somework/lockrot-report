@@ -8,6 +8,10 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ## [Unreleased]
 
+## [0.13.0]
+
+The page lockrot 0.13.0 writes with `--format=html`.
+
 ### Added
 
 - Whether the run failed, as lockrot decided it. The header says "this run fails · --fail-on=high"
