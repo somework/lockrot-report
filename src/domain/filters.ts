@@ -65,6 +65,7 @@ function passesRail(filters: Filters, f: Finding): boolean {
   }
   const since = sinceBucket(f);
   if (filters.since.length > 0 && (since === null || !filters.since.includes(since))) return false;
+  if (filters.gate.includes("fails") && f.gate?.fails !== true) return false;
   // Scope buttons are ANDed, so both halves of a pair select nothing (DESIGN.md §5).
   if (filters.scope.includes("direct") && !f.direct) return false;
   if (filters.scope.includes("transitive") && f.direct) return false;
@@ -241,6 +242,22 @@ const SINCE_ROWS: readonly (readonly [string, string])[] = [
   ["known", "Already accepted"],
 ];
 
+const GATE_ROWS: readonly (readonly [string, string])[] = [["fails", "Fails this run"]];
+
+/** Only a run some package fails has rows to list by it; one failed by the network alone has none. */
+function runFails(model: Model): boolean {
+  return model.report.gate?.fails === true && model.report.findings.some((f) => f.gate?.fails === true);
+}
+
+/**
+ * The filters an address may carry for this report: a `gate` key only when some package fails the
+ * run, and then only `fails`. Anywhere else a copied link would open on an empty list.
+ */
+export function filtersFor(model: Model, filters: Filters): Filters {
+  const gate = runFails(model) ? filters.gate.filter((key) => key === "fails") : [];
+  return gate.length === filters.gate.length ? filters : { ...filters, gate };
+}
+
 const SCOPE_ROWS: readonly (readonly [string, string])[] = [
   ["direct", "Direct"],
   ["transitive", "Transitive"],
@@ -310,8 +327,8 @@ function fixRows(here: readonly Finding[]): readonly (readonly [string, string])
   return FIX_GROUP_TEXT.filter(([shape]) => shapes.has(shape));
 }
 
-/** Since (with a baseline), Scope, Signal (if any fired), fix cost (with an advisory). Every count
- *  is what the list shows once that row is added to everything else selected (PD-RAIL-1/2). */
+/** Since, This run, Scope, Signal, fix cost, each where it has a row. Every count is what the list
+ *  shows once that row is added to everything else selected (PD-RAIL-1/2). */
 export function railGroups(model: Model, state: State): readonly RailGroup[] {
   const everyone = population(model, state.view);
   const here = state.view === "radius" ? placedOnRadius(model, everyone) : everyone;
@@ -321,6 +338,7 @@ export function railGroups(model: Model, state: State): readonly RailGroup[] {
     model.report.baseline !== null && hasBaseline(model)
       ? groupOf(scope, "since", `Since ${model.report.baseline.path}`, SINCE_ROWS)
       : null,
+    runFails(model) ? groupOf(scope, "gate", "This run", GATE_ROWS) : null,
     groupOf(scope, "scope", "Scope", SCOPE_ROWS),
     groupOf(scope, "signal", "Signal", signalRows(here)),
     groupOf(scope, "fix", "What the fix costs", fixRows(here)),
@@ -349,6 +367,7 @@ const GROUP_LABELS: Readonly<Record<FilterGroup, string>> = {
   sev: "Severity",
   fix: "Fix",
   since: "Since baseline",
+  gate: "This run",
 };
 
 const SCOPE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(SCOPE_ROWS);

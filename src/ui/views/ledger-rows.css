@@ -15,6 +15,8 @@
   --fl-age-x: 50px;
   --fl-age: 132px;
   --fl-num: 28px;
+  /* Phone: what the way in leaves free beside the age for its TAG word. */
+  --fl-whose: 22px;
   --fl-pad-y: 7px;
 }
 
@@ -513,6 +515,51 @@
   text-overflow: ellipsis;
   max-width: 100%;
   transition: background-color 0.12s ease;
+}
+
+/* Whose the number is, where the why names a second date: under the number, or on a phone, whose
+   row has no height to spare, just past it, clear of the bar; the way in keeps room for it. */
+.age-whose {
+  font-family: var(--cond);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 10px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+@container fledger (max-width: 479px) {
+  .fc-age:has(.age-whose) {
+    position: relative;
+    overflow: visible;
+  }
+  .age-whose {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 5px);
+    transform: translateY(-50%);
+    white-space: nowrap;
+  }
+  .frow:has(.age-whose) .fc-reach {
+    max-width: calc(100% - var(--fl-whose));
+  }
+}
+/* The number and its word centre as a pair, so a one-line row, as short as rows get, holds both. */
+@container fledger (min-width: 480px) {
+  .fc-age:has(.age-whose) {
+    grid-template-rows: 1fr auto auto 1fr;
+  }
+  .fc-age:has(.age-whose) > .age-track {
+    grid-row: 1 / -1;
+  }
+  .fc-age:has(.age-whose) > .age-num {
+    grid-row: 2;
+  }
+  .age-whose {
+    grid-column: 2;
+    grid-row: 3;
+    justify-self: end;
+  }
 }
 
 /* The swatch in the head's grey-bar key: the context bar's own shape, end cap included. */

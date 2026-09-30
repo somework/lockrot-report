@@ -31,6 +31,7 @@ import { usePrinted } from "../print/printContext";
 import { AgeAxis as AgeAxisHead } from "./AgeScale";
 import { joined, MixWords, squaresWidth, VerdictWord } from "./RadiusMarks";
 import { childKey, parentKey, ParentRow, receiptKey, ReceiptRow, type RowEnv } from "./RadiusRows";
+import { OpenName, SharedTailNote } from "./RadiusShared";
 import "./views.css";
 import "./ledger-rows.css";
 import "./radius.css";
@@ -482,7 +483,6 @@ function TailLinks({ layout, go }: { layout: RadiusLayout; go: (key: string, id:
 /** Said once, at the end, so the tab's count never silently leaves them out; each opens the
  *  package's detail, so the rail counts them here (PD-RAIL-1). */
 function Unlisted({ findings }: { findings: readonly Finding[] }) {
-  const { dispatch } = useReport();
   const printed = usePrinted();
   if (findings.length === 0) return null;
   const many = findings.length > 1;
@@ -502,16 +502,7 @@ function Unlisted({ findings }: { findings: readonly Finding[] }) {
       {joined(
         findings.map((f) => (
           <span key={f.package} className="fl-unit">
-            <button
-              type="button"
-              className="rl-jump rl-pk"
-              title={`Open ${f.package}`}
-              onClick={() => {
-                dispatch({ type: "select", pkg: f.package });
-              }}
-            >
-              {f.package}
-            </button>{" "}
+            <OpenName name={f.package} />{" "}
             <span className="rl-paren">
               (<VerdictWord verdict={f.verdict} />)
             </span>
@@ -605,6 +596,7 @@ export function RadiusView() {
             : "No direct requirement drags a flagged package in."}
         </p>
         <ScopeNote layout={layout} />
+        <SharedTailNote findings={layout.unattributed} />
         <Unlisted findings={layout.unlisted} />
       </div>
     );
@@ -787,6 +779,7 @@ export function RadiusView() {
           </ul>
         </div>
       )}
+      <SharedTailNote findings={layout.unattributed} />
       <Unlisted findings={layout.unlisted} />
     </div>
   );

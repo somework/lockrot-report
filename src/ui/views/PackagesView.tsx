@@ -2,7 +2,7 @@ import type { Finding } from "../../model/types";
 import { SIGNAL_IDS } from "../../model/types";
 import type { SortKey } from "../../state/types";
 import { Fragment } from "preact";
-import { useRef } from "preact/hooks";
+import { useId, useRef } from "preact/hooks";
 import { useReport } from "../context";
 import { useOverflowX } from "../useOverflowX";
 import { applyFilters, population } from "../../domain/filters";
@@ -21,6 +21,10 @@ import { sharedDataDay } from "../../domain/share";
 import { isKnownSignalId, TONE } from "../../domain/vocab";
 import { Pill, Muted, toneClass } from "../common/common";
 import { AdvisoryChip } from "../common/AdvisoryChip";
+import { RowGateMark, rowGateSpoken } from "../common/GateWords";
+import { failOnRule, rowGate } from "../../domain/gate";
+import { Flag } from "../common/GateFlag";
+import { PACKAGES_FIT, useGateFit } from "./gateFit";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "./FindingRow";
 import { EmptyState } from "./EmptyState";
@@ -195,15 +199,21 @@ function PackageCell({ finding }: { finding: Finding }) {
 }
 
 function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean; max: number | null }) {
-  const { state, dispatch, cursor } = useReport();
+  const { model, state, dispatch, cursor } = useReport();
   const isOpen = state.pkg === finding.package;
   const hit = useSearchHit(finding);
+  const gate = rowGate(model, finding);
+  const words = gate?.words ?? null;
+  const fails = gate?.fails === true;
+  const markId = `${useId()}-gate`;
+  const mark = (at: string) => (gate === null ? null : <RowGateMark gate={gate} at={at} />);
   // On a phone the priority is the row's left rule; in forced colours `prio-<word>` gives its
   // weight.
-  const rowClass =
+  const base =
     finding.priority === "none"
       ? "pk-row"
       : `pk-row has-prio prio-${finding.priority} ${toneClass(TONE(finding.priority))}`;
+  const rowClass = words === null ? base : `${base} has-gate ${fails ? "gate-fails" : "gate-exempt"}`;
 
   return (
     <tr
@@ -212,6 +222,7 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
       tabIndex={rowTabIndex(finding.package, cursor)}
       aria-current={isOpen ? "true" : undefined}
       aria-label={finding.package}
+      aria-describedby={words === null ? undefined : markId}
       data-pkg={finding.package}
       {...openInteractions(finding.package, dispatch)}
     >
@@ -223,6 +234,12 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
             <AdvisoryChip finding={finding} />
           </>
         )}
+        {mark("name")}
+        {gate !== null && (
+          <span className="vh" id={markId}>
+            {rowGateSpoken(gate)}
+          </span>
+        )}
         <MatchNote hit={hit} />
       </td>
       <td role="cell" className="num pk-ver">
@@ -233,6 +250,7 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
       </td>
       <td role="cell" className="pk-verdict">
         <Pill word={finding.verdict} />
+        {mark("verdict")}
       </td>
       <td role="cell" className="pk-prio">
         {finding.priority === "none" ? <Muted>—</Muted> : <Pill word={finding.priority} />}
@@ -240,6 +258,7 @@ function PackageRow({ finding, dated, max }: { finding: Finding; dated: boolean;
       <td role="cell" className="pk-reach">
         {finding.direct ? "direct" : "transitive"}
         {finding.dev ? " · dev" : ""}
+        {mark("reach")}
       </td>
       <td role="cell" className="num pk-sig">
         <SignalsCell finding={finding} />
@@ -262,29 +281,81 @@ function Count({ n, one = "package", many = "packages" }: { n: number; one?: str
   );
 }
 
+/** How many of the listed are behind their newest release, how many are not, how many unmeasured. */
+function LibyearsAnswer({ tally, listed }: { tally: LibyearsTally; listed: number }) {
+  const { behind, current, unmeasured } = tally;
+  return (
+    <p className="pk-answer">
+      <Count n={behind} /> of the <b>{listed}</b> listed {behind === 1 ? "is" : "are"} behind{" "}
+      {behind === 1 ? "its" : "their"} newest release
+      {current > 0 && (
+        <>
+          {unmeasured > 0 ? "; " : " and "}
+          <b>{current}</b> {current === 1 ? "is" : "are"} not
+        </>
+      )}
+      {unmeasured > 0 && (
+        <>
+          {current > 0 || behind > 0 ? ", and " : "; "}
+          <b>{unmeasured}</b> could not be measured
+        </>
+      )}
+      .
+    </p>
+  );
+}
+
+/** Filtered to the packages that fail the run, the list's answer is why they fail: the fail-on's
+ *  rule in the words of lockrot's kind, an unknown kind as written. */
+function FailingAnswer({ listed }: { listed: number }) {
+  const { model } = useReport();
+  const rule = failOnRule(model.report.run);
+  const subject =
+    listed === 1 ? (
+      <>The one listed fails this run</>
+    ) : (
+      <>
+        All <b>{listed}</b> listed fail this run
+      </>
+    );
+  if (rule === null) return <p className="pk-answer">{subject}.</p>;
+  if (rule.words !== null) {
+    return (
+      <p className="pk-answer">
+        {subject}: <Flag text={rule.flag} /> {rule.words}.
+      </p>
+    );
+  }
+  return (
+    <p className="pk-answer">
+      {subject} by <Flag text={rule.flag} />
+      {rule.unknownKind !== null && (
+        <>
+          , another kind of threshold, <code className="mono">{rule.unknownKind}</code>, as lockrot wrote it
+        </>
+      )}
+      .
+    </p>
+  );
+}
+
 /** Counts of the libyears cells below, and the marks' meaning said once. Some key items are for the
  *  stacked rows only, whose head has no room for the axis captions (PD-PACKAGES-3/5). */
-function PackagesLede({ tally, listed, max }: { tally: LibyearsTally; listed: number; max: number | null }) {
+function PackagesLede({
+  tally,
+  listed,
+  max,
+  failing,
+}: {
+  tally: LibyearsTally;
+  listed: number;
+  max: number | null;
+  failing: boolean;
+}) {
   const { behind, current, unmeasured } = tally;
   return (
     <div className="pk-lede">
-      <p className="pk-answer">
-        <Count n={behind} /> of the <b>{listed}</b> listed {behind === 1 ? "is" : "are"} behind{" "}
-        {behind === 1 ? "its" : "their"} newest release
-        {current > 0 && (
-          <>
-            {unmeasured > 0 ? "; " : " and "}
-            <b>{current}</b> {current === 1 ? "is" : "are"} not
-          </>
-        )}
-        {unmeasured > 0 && (
-          <>
-            {current > 0 || behind > 0 ? ", and " : "; "}
-            <b>{unmeasured}</b> could not be measured
-          </>
-        )}
-        .
-      </p>
+      {failing ? <FailingAnswer listed={listed} /> : <LibyearsAnswer tally={tally} listed={listed} />}
       <p className="pk-key">
         {max !== null && behind > 0 && (
           <span className="pk-key-item pk-key-stacked">
@@ -362,7 +433,7 @@ function PackagesTable({
 }) {
   const { state, dispatch } = useReport();
   const printed = usePrinted();
-  const wrap = useRef<HTMLDivElement>(null);
+  const wrap = useGateFit(PACKAGES_FIT, useRef<HTMLDivElement>(null));
   const scrolls = useOverflowX(wrap);
   const activeSort: SortKey = state.sort;
   const columns = dated ? COLUMNS : COLUMNS.filter((column) => column.key !== "data");
@@ -443,7 +514,14 @@ export function PackagesView() {
 
   return (
     <div className="pk">
-      {!printed && <PackagesLede tally={libyearsTally(visible)} listed={visible.length} max={max} />}
+      {!printed && (
+        <PackagesLede
+          tally={libyearsTally(visible)}
+          listed={visible.length}
+          max={max}
+          failing={state.filters.gate.includes("fails")}
+        />
+      )}
       <PackagesTable visible={visible} dated={dated} max={max} />
     </div>
   );

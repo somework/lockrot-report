@@ -73,6 +73,8 @@ jobs:
           name: dist
           path: dist/
       - run: npx playwright install --with-deps ${{ matrix.browser }}
+      # Pinned so the layout budgets measure the same fonts locally (see CONTRIBUTING.md).
+      - run: sudo apt-get install -y --no-install-recommends fonts-dejavu-core
       - run: node scripts/pages.mjs
       - run: npx playwright test --project=${{ matrix.browser }}
         env:

@@ -29,8 +29,8 @@ export function day(iso: string | null | undefined): string {
  * Not exported — see this file's header comment. Ported from legacy `years()` (`lib.js:70-73`).
  */
 function years(iso: string | null | undefined, now: Date): number | null {
-  if (!iso) return null;
-  return (now.getTime() - new Date(iso).getTime()) / MS_PER_JULIAN_YEAR;
+  const time = iso ? Date.parse(iso) : NaN;
+  return Number.isNaN(time) ? null : (now.getTime() - time) / MS_PER_JULIAN_YEAR;
 }
 
 /**
@@ -50,6 +50,14 @@ export function agePhrase(iso: string | null | undefined, now: Date): string {
   const y = years(iso, now);
   if (y === null) return "undated";
   return `${yearsPhrase(y)} ago`;
+}
+
+/** "4.5-year-old", "2-month-old": `ageText`'s figure before a noun; `null` without a date. */
+export function ageOld(iso: string | null | undefined, now: Date): string | null {
+  const y = years(iso, now);
+  if (y === null || Number.isNaN(y)) return null;
+  const months = monthsUnderAYear(y);
+  return months !== null ? `${months}-month-old` : `${y.toFixed(1)}-year-old`;
 }
 
 /**
@@ -74,6 +82,34 @@ export function yearsPhrase(years: number): string {
   const months = monthsUnderAYear(years);
   if (months !== null) return months === 1 ? "1 month" : `${months} months`;
   return `${years.toFixed(1)} years`;
+}
+
+/** Years from `from` to `to`, negative when `to` is the earlier; `null` unless both parse. */
+export function yearsBetween(from: string | null | undefined, to: string | null | undefined): number | null {
+  if (!from || !to) return null;
+  const a = Date.parse(from);
+  const b = Date.parse(to);
+  return Number.isNaN(a) || Number.isNaN(b) ? null : (b - a) / MS_PER_JULIAN_YEAR;
+}
+
+/** Under a year, the nearest whole month; `0` is a gap `yearsAgo`'s one-month floor would overstate. */
+function gapMonths(years: number): number | null {
+  return years < 1 ? Math.round(years * 12) : null;
+}
+
+/** How far apart two dates are, sign dropped: "less than a month", "1 month", "3.2 years". */
+export function gapPhrase(years: number): string {
+  const months = gapMonths(Math.abs(years));
+  if (months === null) return yearsPhrase(Math.abs(years));
+  if (months === 0) return "less than a month";
+  return months === 1 ? "1 month" : `${months} months`;
+}
+
+/** `gapPhrase`'s terse form, for a ledger row: "<1 mo", "2 mo", "3.2 y". */
+export function gapShort(years: number): string {
+  const months = gapMonths(Math.abs(years));
+  if (months === null) return `${Math.abs(years).toFixed(1)} y`;
+  return months === 0 ? "<1 mo" : `${months} mo`;
 }
 
 /** `one` when `n` is exactly `1`, `many` otherwise — the word `plural()` prefixes with the count.

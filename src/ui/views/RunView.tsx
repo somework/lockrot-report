@@ -3,10 +3,10 @@ import { useRef } from "preact/hooks";
 import type { BaselineSummary, Model, ReportModel } from "../../model/types";
 import { useReport } from "../context";
 import { baselineDelta } from "../../domain/baseline";
+import { gateFlag, networkNotes } from "../../domain/gate";
 import { EMPTY_FILTERS } from "../../state/types";
 import { fixed, plural } from "../../domain/format";
 import { unmeasuredWords } from "../../domain/libyears";
-import { safeHref } from "../../domain/links";
 import {
   cacheAge,
   cacheNullReason,
@@ -20,7 +20,8 @@ import {
 } from "../../domain/run";
 import { RunAnswer } from "./RunAnswer";
 import { RunThresholds } from "./RunThresholds";
-import { OutLink, NoWrap } from "../common/common";
+import { OutLink } from "../common/common";
+import { RunNote } from "./RunNote";
 import "./views.css";
 import "./baseline.css";
 import "./run.css";
@@ -169,13 +170,12 @@ function networkText(report: ReportModel): FieldValue {
   if (report.networkFailures === null) return { missing: nullReason(report, "network_failures") };
   if (!report.networkFailures) return "none";
   const notes = report.notes.length;
-  return {
-    parts: [
-      "yes",
-      { missing: "no count recorded" },
-      ...(notes > 0 ? [{ jump: `${plural(notes, "note", "notes")} above` }] : []),
-    ],
-  };
+  const marked = networkNotes(report);
+  const jump =
+    marked !== null && marked.failed > 0
+      ? `${String(marked.failed)} of the ${plural(marked.of, "note", "notes")} above`
+      : `${plural(notes, "note", "notes")} above`;
+  return { parts: ["yes", { missing: "no count recorded" }, ...(notes > 0 ? [{ jump }] : [])] };
 }
 
 /** "0 of 21", then — when some abandoned findings name a successor only in words — how many, so the
@@ -189,6 +189,46 @@ function abandonedText(model: Model): FieldValue {
   return {
     parts: [count, { aside: `${inWords} more named in words only` }],
   };
+}
+
+/** A run setting the document may not carry: an em dash and why, never read as false or as a default. */
+function dashOr(report: ReportModel, key: string): FieldValue {
+  return { missing: `— ${nullReason(report, key)}` };
+}
+
+function modeText(report: ReportModel): FieldValue {
+  const mode = report.run.mode;
+  if (mode === null) return dashOr(report, "run.mode");
+  if (mode === "check") return "check";
+  if (mode === "generate_baseline") return { parts: [mode, { aside: "a run that writes a baseline" }] };
+  return { parts: [{ code: mode, then: "" }, { aside: "another kind of run" }] };
+}
+
+function strictText(report: ReportModel): FieldValue {
+  const strict = report.run.strictNetwork;
+  if (strict === null) return dashOr(report, "run.strict_network");
+  return strict ? { parts: ["yes", { aside: "a failed network lookup fails the run" }] } : "no";
+}
+
+/** lockrot's own result, from the root `gate`: each cause as its flag, an unknown one as written;
+ *  null where the document has no decided gate, so the row is not drawn. */
+function resultText(report: ReportModel): FieldValue | null {
+  const { gate, run } = report;
+  if (gate === null || gate.fails === null) return null;
+  const notApplied: Part[] =
+    gate.failOnApplied === false && run.failOn !== null
+      ? [{ aside: `${gateFlag("fail_on", run.failOn).text} not applied` }]
+      : [];
+  if (gate.fails) {
+    const causes = [...new Set(gate.trippedBy)].map((cause): Part => {
+      const flag = gateFlag(cause, run.failOn);
+      return flag.known ? flag.text : { code: flag.text, then: "" };
+    });
+    return { parts: ["fails", ...causes, ...notApplied] };
+  }
+  if (run.failOn === "none") return { parts: ["fails on nothing", { aside: "--fail-on=none" }] };
+  if (gate.failOnApplied === true) return "passes";
+  return notApplied.length > 0 ? { parts: ["passes", ...notApplied] } : "does not fail";
 }
 
 interface Field {
@@ -209,6 +249,7 @@ function fieldGroups(model: Model): readonly FieldGroup[] {
   const ly = report.libyears;
   const cache = cacheAge(report);
   const threshold = failOnThreshold(run);
+  const result = resultText(report);
   const failOn: FieldValue =
     run.failOn === null
       ? { missing: nullReason(report, "run.fail_on") }
@@ -226,6 +267,10 @@ function fieldGroups(model: Model): readonly FieldGroup[] {
         },
         { label: "generated", value: utcMinute(report.generatedAt) },
         { label: "project", value: orReason(report, "run.project", run.project) },
+        {
+          label: "root package",
+          value: run.rootPackage === null ? dashOr(report, "run.root_package") : run.rootPackage,
+        },
         { label: "lock file", value: orReason(report, "run.lock_file", run.lockFile) },
         { label: "target PHP", value: orReason(report, "run.target_php", run.targetPhp) },
         {
@@ -239,6 +284,9 @@ function fieldGroups(model: Model): readonly FieldGroup[] {
         },
         // PD-SUMMARY-3: "none" only when the run said --fail-on=none.
         { label: "fail-on", value: failOn },
+        { label: "strict network", value: strictText(report) },
+        { label: "mode", value: modeText(report) },
+        ...(result === null ? [] : [{ label: "result", value: result }]),
       ],
     },
     {
@@ -348,7 +396,8 @@ function PartText({ part, last, onJump }: { part: Part; last: boolean; onJump: (
   if ("code" in part) {
     return (
       <span className="run-part">
-        <code className="mono">{part.code}</code> {part.then}
+        <code className="mono">{part.code}</code>
+        {part.then !== "" && ` ${part.then}`}
         <Sep last={last} />
       </span>
     );
@@ -418,23 +467,10 @@ export function RunView() {
           <h3 ref={notesRef} tabIndex={-1} className="run-jump-target">
             What this run could not see
           </h3>
-          {report.notes.map((note, index) => {
+          {report.notes.map((note, index) => (
             // Entries line up with notes by place; a code repeats, and so can a text.
-            const docs = safeHref(report.noteDetails[index]?.docsUrl ?? null);
-            return (
-              <div className="note" key={index}>
-                {note}
-                {docs !== null && (
-                  <>
-                    {" "}
-                    <NoWrap>
-                      <OutLink href={docs}>what this means</OutLink>
-                    </NoWrap>
-                  </>
-                )}
-              </div>
-            );
-          })}
+            <RunNote key={index} text={note} detail={report.noteDetails[index]} index={index} />
+          ))}
         </section>
       )}
 

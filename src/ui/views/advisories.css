@@ -347,9 +347,12 @@
   color: var(--none);
   font-weight: 500;
 }
-.ac-fix.is-none .ac-where,
-.ac-fix.is-unchecked .ac-where {
+.ac-fix.is-none .ac-where {
   color: var(--ink-2);
+}
+/* Not looked for, so not an answer: quieter and italic beside "no fix listed" (Unchecked.tsx). */
+.ac-fix.is-unchecked .ac-where {
+  color: var(--muted);
   font-style: italic;
 }
 

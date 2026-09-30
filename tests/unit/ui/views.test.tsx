@@ -6,7 +6,7 @@ import type { ComponentChild } from "preact";
 
 import { normalize } from "../../../src/model/normalize";
 import type { Model } from "../../../src/model/types";
-import { INITIAL_STATE } from "../../../src/state/types";
+import { EMPTY_FILTERS, INITIAL_STATE } from "../../../src/state/types";
 import type { Action, State } from "../../../src/state/types";
 import { ReportContext, type ReportContextValue } from "../../../src/ui/context";
 import { CurrentView } from "../../../src/ui/views/Views";
@@ -557,6 +557,38 @@ describe("FindingRow / key-fact line and age scale (PD-ROWS-1/PD-ROWS-2, DESIGN.
       expect(dot?.className).toContain("age-bar-context");
       expect(dot?.className).not.toContain("tone-crit");
       expect(scale.getAttribute("aria-label")).toContain("flagged for being pinned to a branch snapshot");
+    });
+
+    it("says whose the age is when the row's why names a snapshot and its tag: the tag's", () => {
+      const s6 = (hasTag: boolean | null) =>
+        makeSignal({
+          id: "S6",
+          data: {
+            version: "dev-master",
+            reason: "branch_snapshot",
+            has_stable_release: hasTag,
+            last_stable_version: "1.6.2",
+            last_stable_release: "2019-01-23T00:00:00Z",
+            snapshot_time: "2022-03-24T00:00:00Z",
+          },
+        });
+      const s2 = makeSignal({ id: "S2", level: "high", data: { years: 7.7 } });
+      const tagged = makeFinding({ package: "acme/tagged", verdict: "pinned", signals: [s2, s6(true)] });
+      const unknown = makeFinding({ package: "acme/unknown", verdict: "pinned", signals: [s2, s6(null)] });
+      renderIn(modelWith([tagged, unknown]), stateWith(), <FindingsView />);
+
+      const row = screen.getByRole("listitem", { name: "acme/tagged" });
+      expect(row.querySelector(".age-whose")?.textContent).toBe("tag");
+      expect(row.querySelector(".age-whose")?.getAttribute("aria-hidden")).toBe("true");
+      expect(within(row).getByRole("img").getAttribute("aria-label")).toMatch(
+        /^newest tag released 7\.7 years ago;/,
+      );
+      // Null is no answer: the row names no tag, so the age is not called one.
+      const other = screen.getByRole("listitem", { name: "acme/unknown" });
+      expect(other.querySelector(".age-whose")).toBeNull();
+      expect(within(other).getByRole("img").getAttribute("aria-label")).toMatch(
+        /^last release 7\.7 years ago;/,
+      );
     });
 
     it("says only 'flagged as pinned' for a pinned row whose case no field states", () => {
@@ -1692,6 +1724,204 @@ describe("RadiusView (PD-RADIUS-1..5)", () => {
   });
 });
 
+describe("RadiusView: the shared tail (PD-RADIUS-12)", () => {
+  const shared = (pkg: string, dependents: readonly string[] = []) =>
+    makeFinding({
+      package: pkg,
+      verdict: "stale",
+      priority: "low",
+      direct: false,
+      chain: ["acme/a", pkg],
+      directDependents: dependents,
+    });
+
+  function tailModel(
+    findings: readonly ReturnType<typeof makeFinding>[],
+    unattributed: Model["report"]["unattributed"],
+    extra: Partial<Pick<Model["report"], "exposureRule" | "includeDev">> = {},
+  ): Model {
+    const model = flaggedModel([...findings]);
+    return {
+      ...model,
+      report: { ...model.report, exposureRule: { maxFanIn: 8 }, includeDev: true, unattributed, ...extra },
+    };
+  }
+
+  const sentence = () => document.querySelector(".rl-shared-line")?.textContent ?? null;
+  /** The sentence as one of radius-shared.css's steps draws it: `hidden` is what that step hides. */
+  const FULL = ".rl-sh-narrow, .rl-sh-count";
+  const ONE_NAME = ".rl-sh-wide, .rl-sh-count";
+  const COUNT = ".rl-sh-wide, .rl-sh-first, .rl-sh-narrow";
+  const without = (hidden: string): string => {
+    const copy = document.querySelector(".rl-shared-line")?.cloneNode(true);
+    if (!(copy instanceof Element)) return "";
+    copy.querySelectorAll(hidden).forEach((el) => {
+      el.remove();
+    });
+    return copy.textContent;
+  };
+
+  it("with an unreadable fan_in, quotes the limit alone and never a number", () => {
+    renderIn(
+      tailModel([shared("acme/s", ["acme/a"])], [{ package: "acme/s", verdict: "stale", fanIn: null }]),
+      stateWith({ view: "radius" }),
+      <RadiusView />,
+    );
+
+    expect(sentence()).toBe(
+      "acme/s (stale) is left out of Blast radius: more than 8 direct requirements share it. Who shares it",
+    );
+  });
+
+  it("with no rule and no fan_in, says only what the list means, and offers nothing to open", () => {
+    renderIn(
+      tailModel([shared("acme/s")], [{ package: "acme/s", verdict: "stale", fanIn: null }], {
+        exposureRule: null,
+      }),
+      stateWith({ view: "radius" }),
+      <RadiusView />,
+    );
+
+    expect(sentence()).toBe(
+      "acme/s (stale) is left out of Blast radius: lockrot counts it under no direct requirement.",
+    );
+    expect(screen.queryByRole("button", { name: "Who shares it" })).toBeNull();
+  });
+
+  it("one entry: the limit is its own words, which the shorter step leaves to level 1", () => {
+    renderIn(
+      tailModel([shared("acme/s", ["acme/a"])], [{ package: "acme/s", verdict: "stale", fanIn: 9 }]),
+      stateWith({ view: "radius" }),
+      <RadiusView />,
+    );
+
+    expect(document.querySelector(".rl-sh-limit")?.textContent).toBe(", more than 8");
+    expect(without(".rl-sh-limit")).toBe(
+      "acme/s (stale) is left out of Blast radius: 9 direct requirements share it. Who shares it",
+    );
+  });
+
+  it("keeps an unknown verdict as written", () => {
+    renderIn(
+      tailModel([shared("acme/s", ["acme/a"])], [{ package: "acme/s", verdict: "quantum-flux", fanIn: 9 }]),
+      stateWith({ view: "radius" }),
+      <RadiusView />,
+    );
+
+    expect(sentence()).toContain("acme/s (quantum-flux) is left out");
+  });
+
+  it("names the packages a filter keeps, most shared first, each with its count", () => {
+    const model = tailModel(
+      [shared("acme/s", ["acme/a"]), shared("acme/t", ["acme/a"]), shared("other/u", ["acme/a"])],
+      [
+        { package: "acme/s", verdict: "stale", fanIn: 9 },
+        { package: "acme/t", verdict: "stale", fanIn: 12 },
+        { package: "other/u", verdict: "stale", fanIn: 10 },
+      ],
+    );
+
+    renderIn(model, stateWith({ view: "radius", q: "acme/" }), <RadiusView />);
+
+    expect(without(FULL)).toBe(
+      "acme/t (12) and acme/s (9) are left out of Blast radius, each shared by more than 8 direct requirements.",
+    );
+    expect(without(ONE_NAME)).toBe(
+      "acme/t (12) and 1 more are left out of Blast radius, each shared by more than 8 direct requirements.",
+    );
+    expect(without(COUNT)).toBe(
+      "2 packages are left out of Blast radius, each shared by more than 8 direct requirements.",
+    );
+    expect(screen.getByRole("button", { name: "direct requirements: who shares them" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "acme/t" }).title).toBe("Open acme/t");
+  });
+
+  it("names three, one or none, then how many more; an unreadable count is no number", () => {
+    const pkgs = ["acme/p", "acme/q", "acme/r", "acme/s", "acme/t"];
+    const model = tailModel(
+      pkgs.map((pkg) => shared(pkg, ["acme/a"])),
+      pkgs.map((pkg, i) => ({ package: pkg, verdict: "stale", fanIn: i === 1 ? null : 20 - i })),
+    );
+
+    renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    expect(without(FULL)).toBe(
+      "acme/p (20), acme/r (18), acme/s (17) and 2 more are left out of Blast radius, each shared by more than 8 direct requirements.",
+    );
+    expect(without(ONE_NAME)).toBe(
+      "acme/p (20) and 4 more are left out of Blast radius, each shared by more than 8 direct requirements.",
+    );
+    expect(without(COUNT)).toBe(
+      "5 packages are left out of Blast radius, each shared by more than 8 direct requirements.",
+    );
+  });
+
+  it("three entries: 'and' before the last in full, 'and 2 more' after one name", () => {
+    const pkgs = ["acme/p", "acme/q", "acme/r"];
+    const model = tailModel(
+      pkgs.map((pkg) => shared(pkg, ["acme/a"])),
+      pkgs.map((pkg, i) => ({ package: pkg, verdict: "stale", fanIn: 12 - i })),
+    );
+
+    renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    expect([...document.querySelectorAll(".rl-sh-wide")].map((el) => el.textContent)).toEqual([
+      ", acme/q (11)",
+      " and acme/r (10)",
+    ]);
+    expect(document.querySelector(".rl-sh-narrow")?.textContent).toBe(" and 2 more");
+  });
+
+  it("with no rule, says what the list means and still opens who shares them", () => {
+    const model = tailModel(
+      [shared("acme/s", ["acme/a"]), shared("acme/t", ["acme/a"])],
+      [
+        { package: "acme/s", verdict: "stale", fanIn: 9 },
+        { package: "acme/t", verdict: "stale", fanIn: null },
+      ],
+      { exposureRule: null },
+    );
+
+    renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    expect(without(FULL)).toBe(
+      "acme/s (9) and acme/t are left out of Blast radius: lockrot counts them under no direct requirement.",
+    );
+    expect(screen.getByRole("button", { name: "direct requirement: who shares them" })).toBeTruthy();
+  });
+
+  it("the requirements each sits under stay whole names, one per unit", () => {
+    const model = tailModel(
+      [shared("acme/s", ["acme/a", "dama/doctrine-test-bundle"]), shared("acme/t", ["acme/b"])],
+      [
+        { package: "acme/s", verdict: "stale", fanIn: 9 },
+        { package: "acme/t", verdict: "stale", fanIn: 9 },
+      ],
+    );
+
+    renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    const units = [...document.querySelectorAll(".rl-sh-dep")].map((el) => el.textContent);
+    expect(units).toEqual(["acme/a,", "dama/doctrine-test-bundle", "acme/b"]);
+    expect(document.querySelector(".rl-sh-names")?.textContent).toBe(
+      "sits under acme/a, dama/doctrine-test-bundle",
+    );
+  });
+
+  it("opens and closes through the reducer, and prints nothing extra when closed", () => {
+    const model = tailModel(
+      [shared("acme/s", ["acme/a"])],
+      [{ package: "acme/s", verdict: "stale", fanIn: 9 }],
+    );
+    const { dispatch } = renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Who shares it" }));
+
+    expect(dispatch).toHaveBeenCalledWith({ type: "disclose", key: "radius-shared", open: true });
+    expect(document.querySelector(".rl-sh-panel")?.hasAttribute("hidden")).toBe(true);
+  });
+});
+
 /** Keys a document written before lockrot 0.13.0 leaves out; the page names them like any other. */
 const LATER_KEYS = [
   "exposure_rule",
@@ -1789,9 +2019,9 @@ describe("RunView", () => {
     const row = () => screen.getByText("fail-on").nextElementSibling?.textContent;
     const cases: readonly (readonly [string, string | null, string])[] = [
       ["none", "none", "none · fails on nothing"],
-      ["silent", "verdict", "silent · fails on a verdict at least as severe as silent"],
-      ["high", "priority", "high · fails on a priority at least as high as high"],
-      ["unchecked", "unchecked", "unchecked · fails on any finding whose check did not run"],
+      ["silent", "verdict", "silent · fails on verdict silent or a more severe one"],
+      ["high", "priority", "high · fails on priority high or higher"],
+      ["unchecked", "unchecked", "unchecked · fails on any package whose check did not run"],
       ["gpl-3.0", "licence", "gpl-3.0 · another kind of threshold: licence"],
       ["high", null, "high"],
     ];
@@ -2321,5 +2551,311 @@ describe("signal ids this page does not know (0.13 open vocabulary)", () => {
     const name = spoken.textContent;
     expect(name.match(/acme:licence/g)).toHaveLength(1);
     expect(name.match(/S99/g)).toHaveLength(1);
+  });
+});
+
+describe("Run data notes: the repositories a note counts", () => {
+  it("opens the list under the note that counts them, as plain text, and nothing for other codes", () => {
+    const { dispatch } = renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "run" }), <RunView />);
+    const buttons = screen.getAllByRole("button", { name: "Which one: the repository" });
+    expect(buttons).toHaveLength(4);
+    const first = buttons[0];
+    if (first === undefined) throw new Error("no button");
+    expect(first.getAttribute("aria-expanded")).toBe("false");
+    const panel = document.getElementById(first.getAttribute("aria-controls") ?? "");
+    expect(panel?.hidden).toBe(true);
+    expect(panel?.textContent).toBe("github.com/acme/direct-d — API rate limit exceeded for 203.0.113.7.");
+    expect(panel?.querySelector("a")).toBeNull();
+    fireEvent.click(first);
+    expect(dispatch).toHaveBeenCalledWith({ type: "disclose", key: "run-note:14", open: true });
+    const note = first.closest(".note");
+    expect(note?.textContent).toContain(
+      "GitHub API rate limit reached; repository activity missing for 1 repositories",
+    );
+    const cap = screen.getByText(/GitHub token not set/).closest(".note");
+    expect(cap?.querySelector(".l1-btn")).toBeNull();
+  });
+
+  it("tells one note's button from another's with the same name by the note it follows", () => {
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "run" }), <RunView />);
+    const described = screen
+      .getAllByRole("button", { name: "Which one: the repository" })
+      .map(
+        (button) => document.getElementById(button.getAttribute("aria-describedby") ?? "")?.textContent ?? "",
+      );
+    expect(new Set(described).size).toBe(4);
+    for (const text of described) expect(text).not.toBe("");
+  });
+
+  it("marks the notes that set network failures, and the network cell points at those", () => {
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "run" }), <RunView />);
+    const marked = [...document.querySelectorAll(".run-sections .note")].filter(
+      (note) => note.querySelector(".note-mark")?.textContent === "network failure",
+    );
+    expect(marked).toHaveLength(6);
+    expect(screen.getByText("network failures").nextElementSibling?.textContent).toBe(
+      "yes · no count recorded · 6 of the 21 notes above",
+    );
+  });
+
+  it("an open note lists every repository, a message only where lockrot wrote one", () => {
+    renderIn(
+      loadModel("mini-0.13-edges.json"),
+      stateWith({ view: "run", disclosure: { "run-note:16": true } }),
+      <RunView />,
+    );
+    const panel = document.getElementById(
+      screen
+        .getAllByRole("button", { name: "Which one: the repository" })[2]
+        ?.getAttribute("aria-controls") ?? "",
+    );
+    expect(panel?.hidden).toBe(false);
+    expect(panel?.textContent).toBe("github.com/acme/direct-f");
+  });
+
+  it("a long list opens on its first twenty, and the rest are one press away", () => {
+    const { dispatch } = renderIn(
+      loadModel("wallabag_offline-strict-0.13.json"),
+      stateWith({ view: "run", disclosure: { "run-note:3": true } }),
+      <RunView />,
+    );
+    const note = screen.getByText(/GitHub unreachable for 186 repositories/).closest(".note");
+    expect(note?.querySelectorAll(".note-repos-list li")).toHaveLength(20);
+    expect(note?.querySelector(".note-repos-more")?.textContent).toContain("166 more.");
+    const all = screen.getByRole("button", { name: "All 186 repositories" });
+    expect(all.getAttribute("aria-expanded")).toBe("false");
+    expect(all.getAttribute("aria-controls")).toBe(note?.querySelector(".note-repos-list")?.id);
+    fireEvent.click(all);
+    expect(dispatch).toHaveBeenCalledWith({ type: "disclose", key: "run-note:3:all", open: true });
+  });
+
+  it("the whole list, once asked for, says nothing is left", () => {
+    renderIn(
+      loadModel("wallabag_offline-strict-0.13.json"),
+      stateWith({ view: "run", disclosure: { "run-note:3": true, "run-note:3:all": true } }),
+      <RunView />,
+    );
+    const note = screen.getByText(/GitHub unreachable for 186 repositories/).closest(".note");
+    expect(note?.querySelectorAll(".note-repos-list li")).toHaveLength(186);
+    expect(note?.querySelector(".note-repos-more")?.textContent).not.toContain("more.");
+  });
+
+  it("an older report's notes carry no data and draw no list", () => {
+    renderIn(loadModel("wallabag_wallabag.json"), stateWith({ view: "run" }), <RunView />);
+    expect(document.querySelector(".note-repos")).toBeNull();
+  });
+});
+
+describe("the run's gate on Run data (PD-GATE-5)", () => {
+  function field(label: string): string | null {
+    return screen.getByText(label, { selector: "dt" }).nextElementSibling?.textContent ?? null;
+  }
+
+  it("rows for mode, strict network and lockrot's result, each as written", () => {
+    renderIn(
+      loadModel("wallabag_offline-strict-unchecked-0.13.json"),
+      stateWith({ view: "run" }),
+      <RunView />,
+    );
+    expect(field("mode")).toBe("check");
+    expect(field("strict network")).toBe("yes · a failed network lookup fails the run");
+    expect(field("result")).toBe("fails · --strict-network · --fail-on=unchecked");
+  });
+
+  it("the root package as written beside the project; an em dash and why when there is none", () => {
+    renderIn(loadModel("mini-0.13-edges.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("project")).toBe("Acme shop");
+    expect(field("root package")).toBe("acme/shop");
+    cleanup();
+    renderIn(loadModel("mini-0.13-edges-lock-only.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("root package")).toBe("— left empty by this run");
+    cleanup();
+    renderIn(loadModel("wallabag_wallabag.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("root package")).toBe("— not in this document");
+  });
+
+  it("an unknown mode and cause are shown as written", () => {
+    renderIn(loadModel("mini-0.13-gate-unknown.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("mode")).toBe("audit · another kind of run");
+    expect(field("result")).toBe("fails · --fail-on=copyleft · licence_policy");
+  });
+
+  it("a run that wrote a baseline and nothing failed: it passes, its fail-on not applied", () => {
+    renderIn(loadModel("wallabag_generate-baseline-0.13.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("mode")).toBe("generate_baseline · a run that writes a baseline");
+    expect(field("result")).toBe("passes · --fail-on=high not applied");
+  });
+
+  it("passes only when lockrot says it applied the fail-on", () => {
+    const model = loadModel("wallabag_baseline-self-0.13.json");
+    renderIn(model, stateWith({ view: "run" }), <RunView />);
+    expect(field("result")).toBe("passes");
+    cleanup();
+    const open: Model = {
+      ...model,
+      report: { ...model.report, gate: { fails: false, trippedBy: [], failOnApplied: null } },
+    };
+    renderIn(open, stateWith({ view: "run" }), <RunView />);
+    expect(field("result")).toBe("does not fail");
+  });
+
+  it("--fail-on=none fails on nothing, never 'passes' beside a header that says no gate", () => {
+    renderIn(loadModel("koel_koel-0.13.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("result")).toBe("fails on nothing · --fail-on=none");
+    expect(field("strict network")).toBe("no");
+  });
+
+  it("an older report: an em dash and why, never false or a default", () => {
+    renderIn(loadModel("wallabag_wallabag.json"), stateWith({ view: "run" }), <RunView />);
+    expect(field("strict network")).toBe("— not in this document");
+    expect(field("mode")).toBe("— not in this document");
+    // No gate, no result row: an older report shows less, never a result it does not state.
+    expect(screen.queryByText("result", { selector: "dt" })).toBeNull();
+  });
+
+  it("a gate lockrot left null draws no result row", () => {
+    renderIn(loadModel("mini-0.13-gate-null.json"), stateWith({ view: "run" }), <RunView />);
+    expect(screen.queryByText("result", { selector: "dt" })).toBeNull();
+  });
+
+  it("the Run sentence states the result once, naming causes it has not already named", () => {
+    const text = (name: string): string => {
+      renderIn(loadModel(name), stateWith({ view: "run" }), <RunView />);
+      const answer = document.querySelector(".run-answer")?.textContent ?? "";
+      cleanup();
+      return answer;
+    };
+    expect(text("wallabag_baseline-older-0.13.json")).toContain(
+      "It ran with --fail-on=high. It failed on --fail-on=high.",
+    );
+    expect(text("wallabag_offline-strict-unchecked-0.13.json")).toContain(
+      "It ran with --fail-on=unchecked and --strict-network. It failed on both.",
+    );
+    expect(text("mini-0.13-gate-unknown.json")).toContain(
+      "It failed on --fail-on=copyleft and licence_policy.",
+    );
+    expect(text("wallabag_generate-baseline-0.13.json")).toContain(
+      "It ran with --fail-on=high. It wrote a baseline, so --fail-on=high was not applied, and it passed.",
+    );
+    expect(text("mini-0.13-gate-generate.json")).toContain(
+      "It wrote a baseline, so --fail-on=high was not applied, and it failed on --strict-network.",
+    );
+    expect(text("koel_lock-only-0.13.json")).toContain("It passed.");
+    expect(text("koel_koel-0.13.json")).not.toMatch(/passed|failed/);
+    expect(text("wallabag_wallabag.json")).not.toMatch(/passed|failed/);
+  });
+});
+
+describe("the run's gate on a row (PD-GATE-3)", () => {
+  it("a Findings row carries each place's copy, hidden from a screen reader, and describes itself once", () => {
+    const model = loadModel("mini-0.13-edges.json");
+    renderIn(model, stateWith(), <FindingsView />);
+    const row = document.querySelector<HTMLElement>('li.frow[data-pkg="acme/future-step"]');
+    expect(row?.classList.contains("has-gate")).toBe(true);
+    const copies = [...(row?.querySelectorAll(".gate-mark") ?? [])];
+    expect(copies.map((copy) => copy.textContent)).toEqual([
+      "exempt: waiver",
+      "exempt: waiver",
+      "exempt: waiver",
+      "exempt: waiver",
+    ]);
+    expect(copies.every((copy) => copy.getAttribute("aria-hidden") === "true")).toBe(true);
+    const ids = (row?.getAttribute("aria-describedby") ?? "").split(" ");
+    expect(ids.map((id) => document.getElementById(id)?.textContent)).toEqual([
+      "old-promise",
+      "exempt: waiver, does not fail",
+    ]);
+    const failing = document.querySelector<HTMLElement>('li.frow[data-pkg="acme/left"]');
+    const described = (failing?.getAttribute("aria-describedby") ?? "").split(" ");
+    expect(document.getElementById(described[1] ?? "")?.textContent).toBe("fails this run");
+    // The baseline's exemption is the row's new/worsened tag's to say, by its absence.
+    const accepted = document.querySelector<HTMLElement>('li.frow[data-pkg="acme/untagged"]');
+    expect(accepted?.querySelector(".gate-mark")).toBeNull();
+    expect(accepted?.getAttribute("aria-describedby")?.split(" ")).toHaveLength(1);
+  });
+
+  it("no mark and only the verdict as description on a report without a gate", () => {
+    renderIn(loadModel("mini-0.13-gate-null.json"), stateWith(), <FindingsView />);
+    expect(document.querySelector(".gate-mark")).toBeNull();
+    expect(document.querySelector("li.frow.has-gate")).toBeNull();
+  });
+
+  it("an All packages row carries the same words, in its name, verdict and way-in cells", () => {
+    renderIn(
+      loadModel("koel_no-token-unchecked-0.13.json"),
+      stateWith({ view: "packages" }),
+      <PackagesView />,
+    );
+    const row = document.querySelector('tr[data-pkg="brianium/paratest"]');
+    expect(row?.classList.contains("has-gate")).toBe(true);
+    for (const cell of [".pk-name", ".pk-verdict", ".pk-reach"]) {
+      expect(row?.querySelector(`${cell} .gate-mark`)?.textContent, cell).toBe("fails · unchecked");
+      expect(row?.querySelector(`${cell} .gate-mark-why`)?.textContent, cell).toBe(" · unchecked");
+    }
+    const id = row?.getAttribute("aria-describedby") ?? "";
+    expect(document.getElementById(id)?.textContent).toBe("fails this run, unchecked: a check did not run");
+  });
+
+  it("the reason rides only where the verdict cannot say it: an unchecked fail-on, never a priority one", () => {
+    renderIn(
+      loadModel("wallabag_baseline-older-0.13.json"),
+      stateWith({ view: "packages" }),
+      <PackagesView />,
+    );
+    const failing = document.querySelector("tr.pk-row.gate-fails");
+    expect(failing?.querySelector(".gate-mark")?.textContent).toBe("fails");
+    expect(failing?.querySelector(".gate-mark-why")).toBeNull();
+    const id = failing?.getAttribute("aria-describedby") ?? "";
+    expect(document.getElementById(id)?.textContent).toBe("fails this run");
+  });
+
+  it("filtered to the packages that fail, All packages answers why, in the fail-on kind's words", () => {
+    const gate = { ...EMPTY_FILTERS, gate: ["fails"] };
+    renderIn(
+      loadModel("koel_no-token-unchecked-0.13.json"),
+      stateWith({ view: "packages", filters: gate }),
+      <PackagesView />,
+    );
+    expect(document.querySelector(".pk-answer")?.textContent).toBe(
+      "All 173 listed fail this run: --fail-on=unchecked fails every package with a check that did not run (S10).",
+    );
+    cleanup();
+    renderIn(
+      loadModel("wallabag_baseline-older-0.13.json"),
+      stateWith({ view: "packages", filters: gate }),
+      <PackagesView />,
+    );
+    expect(document.querySelector(".pk-answer")?.textContent).toBe(
+      "All 12 listed fail this run: --fail-on=high fails every package at priority high or higher.",
+    );
+    cleanup();
+    renderIn(
+      loadModel("mini-0.13-gate-unknown.json"),
+      stateWith({ view: "packages", filters: gate }),
+      <PackagesView />,
+    );
+    expect(document.querySelector(".pk-answer")?.textContent).toBe(
+      "The one listed fails this run by --fail-on=copyleft, another kind of threshold, licence, as lockrot wrote it.",
+    );
+    cleanup();
+    renderIn(
+      loadModel("mini-0.13-gate-verdict.json"),
+      stateWith({ view: "packages", filters: gate }),
+      <PackagesView />,
+    );
+    expect(document.querySelector(".pk-answer")?.textContent).toMatch(
+      /^All \d+ listed fail this run: --fail-on=pinned fails every package whose verdict is pinned or more severe\.$/,
+    );
+  });
+
+  it("without the gate filter, All packages keeps its libyears answer", () => {
+    renderIn(
+      loadModel("koel_no-token-unchecked-0.13.json"),
+      stateWith({ view: "packages" }),
+      <PackagesView />,
+    );
+    expect(document.querySelector(".pk-answer")?.textContent).toMatch(
+      /listed are behind their newest release/,
+    );
   });
 });

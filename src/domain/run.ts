@@ -5,7 +5,7 @@
  * `generated_at`.
  */
 
-import type { Finding, Model, PackageDetails, ReportModel, RunSettings } from "../model/types";
+import type { Finding, Model, NoteDetail, PackageDetails, ReportModel, RunSettings } from "../model/types";
 import { yearsPhrase } from "./format";
 
 const MS_PER_HOUR = 3600 * 1000;
@@ -99,11 +99,11 @@ export function failOnThreshold(run: Pick<RunSettings, "failOn" | "failOnKind">)
     case "none":
       return "fails on nothing";
     case "verdict":
-      return `fails on a verdict at least as severe as ${failOn}`;
+      return `fails on verdict ${failOn} or a more severe one`;
     case "priority":
-      return `fails on a priority at least as high as ${failOn}`;
+      return `fails on priority ${failOn} or higher`;
     case "unchecked":
-      return "fails on any finding whose check did not run";
+      return "fails on any package whose check did not run";
     default:
       return `another kind of threshold: ${failOnKind}`;
   }
@@ -209,4 +209,56 @@ export function replacementInWordsOnly(model: Model): number {
       finding.replacement === null &&
       namesReplacementInWords(finding, model.details),
   ).length;
+}
+
+/** The notes whose `data.repositories` names what their text only counts. */
+const REPOSITORY_NOTES: readonly string[] = [
+  "repository_activity_rate_limited",
+  "repository_activity_unreachable",
+  "repository_activity_not_found",
+];
+
+export interface NoteRepository {
+  /** `host/repo` as written, or whichever of the two the entry has. */
+  readonly name: string;
+  readonly message: string | null;
+}
+
+function text(value: unknown): string | null {
+  return typeof value === "string" && value !== "" ? value : null;
+}
+
+/** The repositories a note lists and its text does not; empty for any other code, whose data this
+ *  page does not read. */
+export function noteRepositories(note: NoteDetail | undefined): readonly NoteRepository[] {
+  if (note === undefined || !REPOSITORY_NOTES.includes(note.code)) return [];
+  const listed = note.data["repositories"];
+  if (!Array.isArray(listed)) return [];
+  return listed.flatMap((entry: unknown): NoteRepository[] => {
+    if (typeof entry !== "object" || entry === null) return [];
+    const rec = entry as Record<string, unknown>;
+    const name = [text(rec["host"]), text(rec["repo"])].filter((part) => part !== null).join("/");
+    return name === "" ? [] : [{ name, message: text(rec["message"]) }];
+  });
+}
+
+export interface NoteRepositoryGroup {
+  /** As written; null for the repositories whose entry has none. */
+  readonly message: string | null;
+  readonly names: readonly string[];
+}
+
+/** The first `cap` repositories (all when null), each message once over the repositories that share
+ *  it exactly, and how many repositories the cap left out. */
+export function repositoryGroups(
+  repos: readonly NoteRepository[],
+  cap: number | null,
+): { readonly groups: readonly NoteRepositoryGroup[]; readonly hidden: number } {
+  const shown = cap === null ? repos : repos.slice(0, cap);
+  const byMessage = new Map<string | null, string[]>();
+  for (const { name, message } of shown) byMessage.set(message, [...(byMessage.get(message) ?? []), name]);
+  return {
+    groups: [...byMessage].map(([message, names]) => ({ message, names })),
+    hidden: repos.length - shown.length,
+  };
 }

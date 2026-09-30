@@ -1,0 +1,308 @@
+/* The run's gate, in words on surfaces that already exist (GateWords.tsx). Weight and the word
+   carry "fails", never a hue: red and orange already mean critical and high on every row. */
+
+.gate-fact {
+  color: var(--muted);
+}
+.gate-word {
+  font-weight: 600;
+  color: var(--ink);
+}
+.gate-word.is-fails {
+  font-weight: 700;
+}
+.gate-flag {
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.gate-dashes {
+  letter-spacing: 0.1em;
+}
+.run-meta .gate-flag {
+  font-size: 11px;
+  font-weight: 500;
+}
+/* Out of sight, still read aloud: the header's flags where they would cost it a line (Header.tsx). */
+@media screen {
+  .topbar[data-fact="short"] .gate-fact-more {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+/* The summary says the flags again only where the header hid them. */
+.gate-echo {
+  display: none;
+}
+@media screen {
+  :root:has(.topbar[data-fact="short"]) .gate-echo {
+    display: inline;
+  }
+}
+.gate-sep,
+.gate-quiet {
+  color: var(--muted);
+}
+
+/* ---------- the summary's clause ---------- */
+.gate-total {
+  font-weight: 700;
+  color: var(--ink);
+}
+.gate-toggle b,
+.gate-go b {
+  font-weight: 700;
+  color: var(--ink);
+}
+.gate-go {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+  color: var(--ink-2);
+}
+.gate-go-mark {
+  font-family: var(--sans);
+  font-size: 0.8em;
+  color: var(--accent-ink);
+}
+/* The answer under the lead figure, when no baseline sentence carries it: the lead's own serif,
+   a size down, one line where it fits. */
+.lead-gate {
+  margin: -4px 0 0;
+  max-width: 40em;
+  font-family: var(--serif);
+  font-size: 15.5px;
+  line-height: 1.35;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.lead-gate .gate-flag {
+  font-size: 0.8em;
+}
+/* Set by PriorityLedger.tsx where the full size would wrap in the reader's serif. */
+@media screen {
+  .lead-gate[data-fit="small"] {
+    font-size: 14px;
+  }
+  .lead-gate[data-fit="smaller"] {
+    font-size: 13px;
+  }
+}
+
+/* Level 1's own opener after the answer, in the sans of a footnote, so it never reads as one of the
+   counts: they list packages, it opens why. */
+.gate-why-btn {
+  margin-left: 2px;
+  font-family: var(--sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  vertical-align: 0.1em;
+}
+/* Set by PriorityLedger.tsx where even the smaller size wraps: the marker alone, its name kept. */
+@media screen {
+  .lead-gate[data-fit="bare"] {
+    font-size: 13px;
+  }
+  .lead-gate[data-fit="bare"] .gate-why-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* ---------- level 1: the causes and exemptions ---------- */
+.gate-why {
+  margin: 8px 0 0;
+  max-width: 46em;
+}
+/* In the lead, level 1 opens in the answer's width instead of widening it, so the waffle beside
+   it stays where it was. */
+.lead-answer > .gate-why {
+  align-self: stretch;
+  contain: inline-size;
+}
+.gate-l1 {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 16px;
+  margin: 0;
+  padding: 10px 0 2px;
+  border-top: 1px solid var(--border);
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.gate-l1 > div {
+  display: contents;
+}
+.gate-l1 dt {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.gate-l1 dt .mono,
+.gate-l1 dd .mono {
+  font-size: 11.5px;
+}
+.gate-l1 dd {
+  margin: 0;
+  min-width: 0;
+}
+@media (max-width: 559px) {
+  .gate-l1 {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+  .gate-l1 dd + dt {
+    margin-top: 8px;
+  }
+  .gate-l1 > div + div dt {
+    margin-top: 8px;
+  }
+}
+
+/* ---------- a finding's words ---------- */
+.gate-mark {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: 0;
+  color: var(--ink);
+}
+.gate-mark.is-fails {
+  font-weight: 700;
+}
+.gate-mark.is-exempt {
+  font-style: italic;
+  color: var(--ink-2);
+}
+.gate-mark::before {
+  content: "·";
+  margin-right: 6px;
+  font-style: normal;
+  font-weight: 400;
+  color: var(--muted);
+}
+/* Why a row fails where its verdict cannot say it: the fail-on's kind, in the row's weight. */
+.gate-mark-why {
+  font-weight: 400;
+}
+@media screen {
+  [data-gate-short] .gate-mark-why {
+    display: none;
+  }
+}
+/* In a row, gateFit.ts shows the one copy that adds no line; a Findings row floats it to the right
+   end of its cell. */
+.frow .gate-mark,
+.pk-row .gate-mark {
+  display: none;
+  white-space: nowrap;
+}
+.frow .gate-mark {
+  float: right;
+  margin-left: 12px;
+}
+.pk-row .gate-mark {
+  margin-left: 6px;
+}
+.frow[data-gate-at="pkg"] .gate-at-pkg,
+.frow[data-gate-at="why"] .gate-at-why,
+.frow[data-gate-at="reach"] .gate-at-reach,
+.frow[data-gate-at="age"] .gate-at-age {
+  display: block;
+}
+/* Over the top of the age column, clear of its bar, which sits between the row's two lines. */
+.frow > .gate-at-age {
+  grid-area: age;
+  justify-self: end;
+  align-self: start;
+  position: relative;
+  z-index: 2;
+  float: none;
+  margin: 0;
+  padding-left: 6px;
+  background: var(--row-bg);
+  line-height: 14px;
+}
+.frow > .gate-at-age::before {
+  content: none;
+}
+.pk-row[data-gate-at="reach"] .gate-at-reach,
+.pk-row[data-gate-at="verdict"] .gate-at-verdict,
+.pk-row[data-gate-at="name"] .gate-at-name {
+  display: inline;
+}
+.frow[data-gate-tight] .gate-mark {
+  margin-left: 8px;
+}
+.pk-row[data-gate-tight] .gate-mark {
+  margin-left: 4px;
+}
+[data-gate-tight] .gate-mark::before {
+  content: none;
+}
+/* A row with room nowhere for its words underlines its verdict: solid when it fails, dotted when
+   an exemption's words had no room; the row's description says which. */
+.frow.gate-fails[data-gate-at="none"] .fc-verdict,
+.pk-row.gate-fails[data-gate-at="none"] .pk-verdict .pill {
+  text-decoration: underline 2px;
+  text-underline-offset: 3px;
+}
+.frow.gate-exempt[data-gate-at="none"] .fc-verdict,
+.pk-row.gate-exempt[data-gate-at="none"] .pk-verdict .pill {
+  text-decoration: underline dotted 2px;
+  text-underline-offset: 3px;
+}
+@container fledger (min-width: 990px) {
+  .frow[data-gate-at="reach"] .fc-reach {
+    justify-self: stretch;
+  }
+}
+
+/* The detail's line under its pills: always its own line, so the links keep the pills' row. */
+.detail-gate {
+  order: 3;
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ink-2);
+}
+.detail-gate .gate-flag {
+  font-size: 11px;
+}
+
+/* Paper has no room to measure: one copy each, after the name. */
+@media print {
+  .gate-go-mark {
+    display: none;
+  }
+  .pk-table .pk-row[data-gate-at] .gate-mark:not(.gate-at-name) {
+    display: none;
+  }
+  .pf-td .gate-at-pkg,
+  .pk-table .pk-row .gate-at-name {
+    display: inline;
+  }
+}
+/* A forced palette drops the pressed toggle's fill; bl-toggle's solid rule and this weight stay. */
+@media (forced-colors: active) {
+  .gate-toggle[aria-pressed="true"] {
+    font-weight: 700;
+    border-bottom-color: Highlight;
+  }
+}
+.pk-answer .gate-flag {
+  font-size: 0.8em;
+}

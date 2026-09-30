@@ -195,6 +195,7 @@ export function radiusListed(layout: RadiusLayout): ReadonlySet<string> {
   return new Set([
     ...rows.flatMap((r) => [...(r.self ? [r.self.package] : []), ...r.pulled.map((f) => f.package)]),
     ...layout.unlisted.map((f) => f.package),
+    ...layout.unattributed.map((f) => f.package),
   ]);
 }
 
@@ -220,8 +221,8 @@ export function radiusCountPhrase(layout: RadiusLayout): string {
 }
 
 /**
- * Listed under a row, heading one, or named in the footnote; a transitive package whose chain
- * reaches no row, or that is `unattributed`, has no place. The rail counts over this set
+ * Listed under a row, heading one, named in the footnote or in the shared tail (`unattributed`); a
+ * transitive package whose chain reaches no row has no place. The rail counts over this set
  * (PD-RAIL-1).
  */
 export function placedOnRadius(model: Model, flagged: readonly Finding[]): readonly Finding[] {
@@ -231,7 +232,8 @@ export function placedOnRadius(model: Model, flagged: readonly Finding[]): reado
     (f) =>
       f.direct ||
       parents.has(f.package) ||
-      (!shared.has(f.package) && f.chain.some((hop) => hop !== f.package && parents.has(hop))),
+      shared.has(f.package) ||
+      f.chain.some((hop) => hop !== f.package && parents.has(hop)),
   );
 }
 

@@ -1,12 +1,15 @@
 import type { TargetedMouseEvent } from "preact";
+import { useId } from "preact/hooks";
 import type { Action } from "../../state/types";
 import type { Finding, Signal } from "../../model/types";
 import { useReport } from "../context";
 import { toneClass } from "../common/common";
 import { AdvisoryChip } from "../common/AdvisoryChip";
+import { RowGateMark, rowGateSpoken } from "../common/GateWords";
+import { rowGate } from "../../domain/gate";
 import { signalDef, signalDocUrl, TONE, VERDICT_DEFS } from "../../domain/vocab";
 import { ageNotRead, ageScale, type AgeAxis } from "../../domain/age";
-import { pinnedKindOf } from "../../domain/pinned";
+import { ageIsTag, pinnedKindOf } from "../../domain/pinned";
 import { reachText, rowSignals, shortFact, vendorOf } from "../../domain/rows";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
 import { AgeCell, AgeCellEmpty } from "./AgeScale";
@@ -167,15 +170,28 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
   const why = key ? shortFact(key, finding) : finding.evidence;
   const hit = useSearchHit(finding);
   const printed = usePrinted();
-  const rowClass = `frow ${toneClass(TONE(finding.verdict))}`;
+  const ids = useId();
+  const gate = rowGate(model, finding);
+  const words = gate?.words ?? null;
+  const fails = gate?.fails === true;
+  const mark = (at: string) => (gate === null ? null : <RowGateMark gate={gate} at={at} />);
+  const gateClass = words === null ? "" : ` has-gate ${fails ? "gate-fails" : "gate-exempt"}`;
+  const rowClass = `frow ${toneClass(TONE(finding.verdict))}${gateClass}`;
+  // The row's name is its package; its verdict and gate words are what a screen reader hears next.
+  const describedBy = words === null ? `${ids}-verdict` : `${ids}-verdict ${ids}-gate`;
 
   const cells = (
     <>
-      <span className={`fcell fc-verdict${dim(ditto.verdict)}`} title={VERDICT_DEFS[finding.verdict] ?? ""}>
+      <span
+        className={`fcell fc-verdict${dim(ditto.verdict)}`}
+        id={`${ids}-verdict`}
+        title={VERDICT_DEFS[finding.verdict] ?? ""}
+      >
         {finding.verdict}
       </span>
       <span className="fc-line">
         <span className="fcell fc-pkg" title={`${finding.package} ${finding.version}`}>
+          {mark("pkg")}
           {vendor !== null && (
             <>
               <span className={`fc-vendor${dim(ditto.vendor)}`}>{vendor}/</span>
@@ -193,6 +209,7 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
               : finding.chain.join(" › ") || undefined
           }
         >
+          {mark("reach")}
           <Reach finding={finding} />
         </span>
       </span>
@@ -208,16 +225,24 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
             ))}
           </span>
         )}
+        {mark("why")}
       </span>
+      {gate !== null && (
+        <span className="vh" id={`${ids}-gate`}>
+          {rowGateSpoken(gate)}
+        </span>
+      )}
       {scale ? (
         <AgeCell
           scale={scale}
           verdict={finding.verdict}
           pinned={pinnedKindOf(finding, model.details.get(finding.package) ?? null)}
+          tag={ageIsTag(finding)}
         />
       ) : (
         <AgeCellEmpty axis={axis} notRead={ageNotRead(finding)} />
       )}
+      {mark("age")}
     </>
   );
 
@@ -237,6 +262,7 @@ export function FindingRow({ finding, axis, quoted, ditto }: FindingRowProps) {
       tabIndex={rowTabIndex(finding.package, cursor)}
       aria-current={isOpen ? "true" : undefined}
       aria-label={finding.package}
+      aria-describedby={describedBy}
       data-pkg={finding.package}
       className={rowClass}
       {...openInteractions(finding.package, dispatch)}

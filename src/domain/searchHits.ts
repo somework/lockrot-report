@@ -52,7 +52,7 @@ export interface SearchHit {
   readonly excerpt: Excerpt | null;
 }
 
-const FIELD_ORDER: readonly SearchField[] = ["name", "version", "verdict", "evidence"];
+const FIELD_ORDER: readonly SearchField[] = ["name", "version", "verdict", "why", "evidence"];
 
 /** The first part of `f`, in haystack order, that holds `term`; null when none does. */
 function fieldOf(f: Finding, term: string): SearchField | null {

@@ -1,59 +1,11 @@
-import type { ComponentChildren } from "preact";
+import type { ComponentChildren, RefObject } from "preact";
 import { useId, useLayoutEffect, useRef } from "preact/hooks";
-import { gateFocus, gateTally, type GateTally } from "../domain/baseline";
-import { day, plural } from "../domain/format";
-import { gateFact, reachWords } from "../domain/gate";
+import { day } from "../domain/format";
+import { gateFact, runGate } from "../domain/gate";
+import { GateHeadlineText } from "./common/GateWords";
 import { useReport } from "./context";
 import { CopySummary } from "./CopySummary";
 import { themeButtonLabel, type Theme } from "./useTheme";
-
-/**
- * PD-BASELINE-5 (DESIGN.md §5): beside the gate fact, how many findings reach it — and, with a
- * baseline, how many *of them* the baseline does not exempt. "of them" is the point: the second
- * number is a subset of the first, never the Findings answer's "new" count, which it would otherwise
- * be read as. Both are counted from each finding's own `gate` (`domain/baseline.ts`).
- *
- * PD-BASELINE-6: when the rail's own filters can list exactly that subset (`gateFocus`), the second
- * count is a button that does — Findings, those filters, the list brought into view — so "which
- * ones?" is one press from the header on every tab.
- */
-function GateTallyText({ tally }: { tally: GateTally }) {
-  const { model, dispatch } = useReport();
-  const n = tally.notAccepted ?? 0;
-  const focus = n === 0 ? null : gateFocus(model);
-  const path = model.report.baseline?.path || "the baseline";
-  const exempt = tally.otherExemptions.length === 0 ? `${path} does not already accept` : "nothing exempts";
-  const outside =
-    tally.notAccepted === null ? null : (
-      <>
-        <b className="mono">{tally.notAccepted}</b> of them not accepted
-      </>
-    );
-  return (
-    <span className="gate-tally">
-      <b className="mono">{tally.reached}</b> {reachWords(tally, tally.reached, true)}
-      {outside !== null && (
-        <>
-          {" · "}
-          {focus === null ? (
-            outside
-          ) : (
-            <button
-              type="button"
-              className="gate-focus"
-              title={`List the ${plural(n, "finding", "findings")} that ${reachWords(tally, n)} and that ${exempt}`}
-              onClick={() => {
-                dispatch({ type: "focus", filters: focus });
-              }}
-            >
-              {outside}
-            </button>
-          )}
-        </>
-      )}
-    </span>
-  );
-}
 
 /**
  * Publishes the header's rendered height as `--topbar-h`, which the sticky rail and detail column
@@ -82,6 +34,48 @@ function useHeaderHeight() {
   return ref;
 }
 
+/** True when every fact and button of the line sits on one row. */
+function oneRow(meta: Element): boolean {
+  const boxes = [...meta.children].map((el) => el.getBoundingClientRect()).filter((box) => box.width > 0);
+  const first = boxes[0];
+  if (first === undefined) return true;
+  const mid = (box: DOMRect) => box.top + box.height / 2;
+  return boxes.every((box) => Math.abs(mid(box) - mid(first)) < first.height / 2);
+}
+
+/** Hides the gate fact's flags from sight where the summary names them anyway and that saves a line,
+ *  or where it brings the page's buttons back onto the facts' row, the summary then saying them too
+ *  (gate.css). A phone wraps the buttons either way. */
+function fitGateFact(node: HTMLElement): void {
+  delete node.dataset["fact"];
+  const meta = node.querySelector(".run-meta");
+  if (meta === null || node.querySelector(".gate-fact-more") === null) return;
+  const said = node.querySelector(".gate-fact[data-said]") !== null;
+  const full = node.getBoundingClientRect().height;
+  if (!said && oneRow(meta)) return;
+  node.dataset["fact"] = "short";
+  const kept = said ? node.getBoundingClientRect().height < full : oneRow(meta);
+  if (!kept) delete node.dataset["fact"];
+}
+
+function useGateFactFit(ref: RefObject<HTMLElement>) {
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (node === null) return undefined;
+    let width = window.innerWidth;
+    fitGateFact(node);
+    const onResize = () => {
+      if (window.innerWidth === width) return;
+      width = window.innerWidth;
+      fitGateFact(node);
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+    };
+  }, [ref]);
+}
+
 export interface HeaderProps {
   theme: Theme;
   onToggleTheme: () => void;
@@ -101,11 +95,12 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
   const { model } = useReport();
   const { run, tool, generatedAt } = model.report;
   const ref = useHeaderHeight();
+  useGateFactFit(ref);
   // The project names itself; the lock is called composer.lock everywhere, so it is the fallback.
   const project = run.project ?? run.lockFile ?? "composer.lock";
   const label = themeButtonLabel(theme);
-  const tally = gateTally(model);
-  const gate = gateFact(model);
+  const decided = runGate(model);
+  const gate = decided === null ? gateFact(model) : null;
   const popoverId = `${useId()}-gate`;
 
   return (
@@ -130,6 +125,7 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
           <span>
             lockrot <b className="mono">{tool.version ?? "—"}</b>
           </span>
+          {decided !== null && <GateHeadlineText gate={decided} />}
           {/* A native popover: no application state opens or closes it, so it needs no JS handler
               and nothing the page's CSP would have to allow (DESIGN.md §1.3). `title` repeats the
               same text for an engine without the Popover API. */}
@@ -144,12 +140,6 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
               <div id={popoverId} popover="auto" className="fact-pop">
                 {gate.text}
               </div>
-              {tally !== null && (
-                <>
-                  {" "}
-                  <GateTallyText tally={tally} />
-                </>
-              )}
             </span>
           )}
           <span className="run-actions">

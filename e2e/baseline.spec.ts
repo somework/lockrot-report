@@ -39,7 +39,7 @@ test.describe("PD-BASELINE-1/7: the delta line, in the summary band", () => {
       "smalot/pdfparser",
       "sebastian/type",
     ]);
-    expect(await report.hash()).toContain("since=new");
+    await expect.poll(() => report.hash()).toContain("since=new");
     // The rail's Since row is the same filter, so it reads pressed too.
     await expect(
       page.getByRole("group", { name: "Filters" }).getByRole("button", { name: /New/ }),
@@ -100,34 +100,39 @@ test.describe("PD-BASELINE-3: the detail's baseline section comes first", () => 
     );
   });
 
-  test("the finding's gate says whether it fails this run: exempt by the baseline, or failing", async ({
+  test("the section says where it stands against the file; the line under the pills says the run", async ({
     page,
   }) => {
     await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "pkg=sensio%2Fframework-extra-bundle");
     const exempt = page.getByRole("complementary", { name: "sensio/framework-extra-bundle" });
     await expect(exempt.locator(".detail-baseline")).toHaveText(
-      /^Already accepted in wallabag-older\.baseline\.json as abandoned, so it does not fail this run\.$/,
+      "Already accepted in wallabag-older.baseline.json as abandoned.",
     );
+    await expect(exempt.locator(".detail-gate")).toHaveText("does not fail · meets --fail-on=high, accepted");
 
     await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "pkg=craue%2Fconfig-bundle");
     const fails = page.getByRole("complementary", { name: "craue/config-bundle" });
     await expect(fails.locator(".detail-baseline")).toHaveText(
-      /^Not in wallabag-older\.baseline\.json: new since it was written\. It fails this run\.$/,
+      "Not in wallabag-older.baseline.json: new since it was written.",
     );
+    await expect(fails.locator(".detail-gate")).toHaveText("fails this run · meets --fail-on=high");
 
-    // Known, but it does not reach fail-on: nothing exempts it, and the build is not mentioned.
+    // Known, but it does not reach fail-on: nothing exempts it, and the run is not mentioned.
     await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "pkg=sebastian%2Fresource-operations");
     const quiet = page.getByRole("complementary", { name: "sebastian/resource-operations" });
-    await expect(quiet.locator(".detail-baseline")).not.toContainText("this run");
+    await expect(quiet.locator(".detail-baseline")).toHaveText(/^Already accepted/);
+    await expect(quiet.locator(".detail-gate")).toHaveCount(0);
   });
 
   test("an exemption other than the baseline is named as written, not left silent", async ({ page }) => {
     await report.gotoWithHash(FIXTURES.miniEdges013, "pkg=acme%2Ffuture-step");
     const detail = page.getByRole("complementary", { name: "acme/future-step" });
     await expect(detail.locator(".detail-baseline")).toHaveText(
-      "Not in lockrot-baseline.json: new since it was written. Exempt for another reason (waiver), so it does not fail this run.",
+      "Not in lockrot-baseline.json: new since it was written.",
     );
-    await expect(detail.locator(".detail-baseline code")).toHaveText("waiver");
+    await expect(detail.locator(".detail-gate")).toHaveText(
+      "does not fail · meets --fail-on=high, exempt: waiver",
+    );
   });
 });
 
@@ -144,34 +149,89 @@ test.describe("PD-BASELINE-4: Run data's baseline stat row", () => {
     await page.locator(".bl-stat-btn", { hasText: /^2$/ }).click();
     await expect(page.getByRole("tab", { name: /Findings/ })).toHaveAttribute("aria-selected", "true");
     expect(await report.rows()).toEqual(["javibravo/simpleue", "symfony/web-server-bundle"]);
-    expect(await report.hash()).toContain("since=worsened");
+    await expect.poll(() => report.hash()).toContain("since=worsened");
   });
 });
 
-test.describe("PD-BASELINE-5: the gate's tally", () => {
-  test("counts the findings whose gate reaches fail-on, and those the baseline does not exempt", async ({
+test.describe("PD-GATE-2: the Against sentence closes on how many fail this run", () => {
+  test("the count is lockrot's own gate, and opens what ties the exemptions to 'already accepted'", async ({
     page,
   }) => {
     await report.goto(FIXTURES.wallabagBaselineOlder013);
-    await expect(page.locator(".gate-tally")).toHaveText("42 at or above · 12 of them not accepted");
-    await page.getByRole("button", { name: /^gate: high/ }).click();
-    const pop = page.locator(".fact-pop:not(.copy-pop)");
-    await expect(pop).toContainText("42 findings in this report are at or above high");
-    await expect(pop).toContainText("The page does not record the run's exit code.");
+    await expect(page.locator(".gate-fact")).toHaveText("this run fails · --fail-on=high");
+    const answer = page.locator(".bl-answer");
+    await expect(answer).toContainText("43 already accepted; 12 fail this run by --fail-on=high. why");
+    // The header says the flag, so the sentence's echo of it stays out of sight.
+    await expect(answer.locator(".gate-echo")).toBeHidden();
+    // The count lists the 12; its own small control, apart from it, opens why.
+    await expect(answer.getByRole("button", { name: "12 fail this run" })).not.toHaveAttribute(
+      "aria-expanded",
+      /.*/,
+    );
+    const why = answer.getByRole("button", { name: "Why this run fails" });
+    await expect(why).toHaveAttribute("aria-expanded", "false");
+    await why.click();
+    await expect(why).toHaveAttribute("aria-expanded", "true");
+    const panel = page.locator(".gate-why");
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText("Fails on priority high or higher. 42 packages meet it: 12 fail.");
+    await expect(panel).toContainText("30 of the 43 already accepted meet it, so they do not fail.");
+    // One name for the state: the summary's "accepted", never "exempt by the baseline".
+    await expect(panel).not.toContainText("exempt by the baseline");
   });
 
-  test("a report whose findings carry no gate draws no tally", async ({ page }) => {
-    await report.goto(FIXTURES.wallabagBaseline);
-    await expect(page.getByRole("button", { name: /^gate: high/ })).toBeVisible();
-    await expect(page.locator(".gate-tally")).toHaveCount(0);
-  });
-
-  test("PD-BASELINE-6: 'of them not accepted' lists exactly those findings, from any tab", async ({
+  test("'12 fail this run' lists the 12: the rail's filter, pressed, focus kept on the count", async ({
     page,
   }) => {
-    await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "view=advisories");
-    await page.getByRole("button", { name: "12 of them not accepted" }).click();
-    await expect(page.getByRole("tab", { name: /Findings/ })).toHaveAttribute("aria-selected", "true");
+    await report.goto(FIXTURES.wallabagBaselineOlder013);
+    const total = page.locator(".bl-answer").getByRole("button", { name: "12 fail this run" });
+    await expect(total).toHaveAttribute("aria-pressed", "false");
+    await total.click();
+    await expect(total).toHaveAttribute("aria-pressed", "true");
+    await expect(total).toBeFocused();
+    await expect.poll(() => report.hash()).toContain("gate=fails");
+    expect(await report.rows()).toHaveLength(12);
+    const rail = page.getByRole("group", { name: "Filters" });
+    await expect(rail.getByRole("button", { name: /^Fails this run/ })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    // The opener stays closed: listing them and explaining them are two acts.
+    await expect(page.getByRole("button", { name: "Why this run fails" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    await page.keyboard.press("Enter");
+    await expect(total).toHaveAttribute("aria-pressed", "false");
+    await expect(total).toBeFocused();
+  });
+
+  test("the full stop never starts a line of its own at a phone's width", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await report.goto(FIXTURES.wallabagBaselineOlder013);
+    const [button, stop] = await page.locator(".bl-answer").evaluate((p) => {
+      const total = [...p.querySelectorAll("button")].find((b) => b.textContent.startsWith("12 fail"));
+      const range = document.createRange();
+      const node = total?.parentElement?.lastChild;
+      if (node && node.nodeType === Node.TEXT_NODE) range.selectNodeContents(node);
+      return [total?.getBoundingClientRect().top ?? 0, range.getBoundingClientRect().top];
+    });
+    expect(Math.abs(stop - button)).toBeLessThan(8);
+  });
+
+  test("a report whose findings carry no gate draws no clause, whatever its fail-on", async ({ page }) => {
+    await report.goto(FIXTURES.wallabagBaseline);
+    await expect(page.getByRole("button", { name: /^gate: high/ })).toBeVisible();
+    await expect(page.locator(".bl-answer")).not.toContainText("fail this run");
+    await expect(page.locator(".gate-fact")).toHaveCount(0);
+  });
+
+  test("the rail's 'Fails this run' lists exactly the 12, beside the Since rows", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await report.goto(FIXTURES.wallabagBaselineOlder013);
+    const row = page.getByRole("group", { name: "Filters" }).getByRole("button", { name: /^Fails this run/ });
+    await row.click();
+    await expect(row).toHaveAttribute("aria-pressed", "true");
     expect((await report.rows()).sort()).toEqual([
       "craue/config-bundle",
       "doctrine/event-manager",
@@ -186,7 +246,7 @@ test.describe("PD-BASELINE-5: the gate's tally", () => {
       "spomky-labs/otphp",
       "symfony/webpack-encore-bundle",
     ]);
-    expect(await report.hash()).toContain("since=new%2Cworsened");
+    await expect.poll(() => report.hash()).toContain("gate=fails");
   });
 
   test("the rail's Since title keeps the file name whole, in its own case", async ({ page }) => {

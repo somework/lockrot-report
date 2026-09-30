@@ -11,6 +11,7 @@ import { FindingRow, NO_DITTO, type Ditto } from "./FindingRow";
 import { GroupSentence, RunNote } from "./LedgerNotes";
 import { EmptyState } from "./EmptyState";
 import { usePrinted } from "../print/printContext";
+import { FINDINGS_FIT, useGateFit } from "./gateFit";
 import "./views.css";
 import "./ledger-rows.css";
 
@@ -230,6 +231,7 @@ export function FindingsView() {
   const quiet = quietAdvisoryFindings(model, state);
   const visible = applyFilters(model, state, "findings");
   const axis = ageAxis(model.report.run.thresholds);
+  const fitRef = useGateFit<HTMLDivElement>(FINDINGS_FIT);
   const signals = state.filters.signal;
   const quoted = signals.length === 1 ? (signals[0] ?? null) : null;
   // The grey-bar key is shown only when a visible row actually draws a grey bar.
@@ -243,7 +245,7 @@ export function FindingsView() {
       {visible.length === 0 ? (
         <EmptyState reason={population(model, "findings").length === 0 ? "clean" : "filtered"} />
       ) : (
-        <div className={axis ? "fledger" : "fledger no-axis"}>
+        <div className={axis ? "fledger" : "fledger no-axis"} ref={fitRef}>
           {printed ? (
             groupByPriority(visible).map((group) => (
               <PrintedGroup

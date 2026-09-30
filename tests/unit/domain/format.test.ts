@@ -1,5 +1,17 @@
 import { describe, expect, test } from "vitest";
-import { agePhrase, ageText, countPhrase, day, fixed, plural, pluralNoun } from "../../../src/domain/format";
+import {
+  agePhrase,
+  ageText,
+  ageOld,
+  countPhrase,
+  day,
+  fixed,
+  gapPhrase,
+  gapShort,
+  plural,
+  pluralNoun,
+  yearsBetween,
+} from "../../../src/domain/format";
 
 // Every case here that has a line number in its title is ported verbatim (values unchanged, only
 // the assertion syntax adapted) from tests/js/lib.test.js; the ones without are new, covering what
@@ -29,6 +41,11 @@ describe("ageText", () => {
     expect(ageText("2026-06-21T00:00:00Z", now)).toBe("3 mo ago");
     expect(ageText("2023-09-21T00:00:00Z", now)).toBe("3.0 y ago");
     expect(ageText(null, now)).toBe("undated");
+  });
+
+  test("a date it cannot read is undated, never NaN", () => {
+    expect(ageText("not a date", now)).toBe("undated");
+    expect(agePhrase("2026-13-45", now)).toBe("undated");
   });
 
   test("never rounds a fresh release down to nothing (lib.test.js:144-149)", () => {
@@ -134,5 +151,59 @@ describe("agePhrase", () => {
     expect(ageText("2018-06-25T10:20:17Z", now)).toBe("8.2 y ago");
     expect(agePhrase("2026-09-01T00:00:00Z", now)).toBe("1 month ago");
     expect(agePhrase(null, now)).toBe("undated");
+  });
+});
+
+describe("yearsBetween, gapPhrase and gapShort: the distance between two dates", () => {
+  const DAY = 24 * 3600 * 1000;
+  const from = "2026-01-01T00:00:00Z";
+  const plus = (days: number): string => new Date(Date.parse(from) + days * DAY).toISOString();
+  const gap = (days: number): number => yearsBetween(from, plus(days)) ?? Number.NaN;
+
+  test("is signed: negative when the second date is the earlier", () => {
+    expect(yearsBetween("2019-01-23T15:23:04+00:00", "2022-03-24T10:22:23+00:00")).toBeCloseTo(3.16, 2);
+    expect(yearsBetween("2026-09-13T20:17:44+00:00", "2026-08-04T09:29:27+00:00")).toBeLessThan(0);
+  });
+
+  test("is null unless both dates parse", () => {
+    expect(yearsBetween(null, from)).toBeNull();
+    expect(yearsBetween(from, undefined)).toBeNull();
+    expect(yearsBetween(from, "")).toBeNull();
+    expect(yearsBetween("not a date", from)).toBeNull();
+    expect(yearsBetween(from, "2026-13-45")).toBeNull();
+  });
+
+  test.each([
+    [0, "less than a month", "<1 mo"],
+    [14, "less than a month", "<1 mo"],
+    [15, "less than a month", "<1 mo"],
+    [16, "1 month", "1 mo"],
+    [30, "1 month", "1 mo"],
+    [40, "1 month", "1 mo"],
+    [45, "1 month", "1 mo"],
+    [46, "2 months", "2 mo"],
+    [60, "2 months", "2 mo"],
+  ])("a %i-day gap rounds to the nearest month: %s", (days, phrase, short) => {
+    expect(gapPhrase(gap(days))).toBe(phrase);
+    expect(gapShort(gap(days))).toBe(short);
+    expect(gapPhrase(-gap(days))).toBe(phrase);
+    expect(gapShort(-gap(days))).toBe(short);
+  });
+
+  test("a year or more is in tenths of a year, as every other age on the page", () => {
+    expect(gapPhrase(3.17)).toBe("3.2 years");
+    expect(gapShort(-3.17)).toBe("3.2 y");
+    expect(gapPhrase(1)).toBe("1.0 years");
+  });
+});
+
+describe("ageOld", () => {
+  const now = new Date("2026-09-24T00:00:00Z");
+  test("the same figure as ageText, as an adjective", () => {
+    expect(ageOld("2022-03-24T10:22:23+00:00", now)).toBe("4.5-year-old");
+    expect(ageOld("2026-08-04T09:29:27+00:00", now)).toBe("2-month-old");
+    expect(ageOld("2026-09-20T00:00:00Z", now)).toBe("1-month-old");
+    expect(ageOld(null, now)).toBeNull();
+    expect(ageOld("not a date", now)).toBeNull();
   });
 });

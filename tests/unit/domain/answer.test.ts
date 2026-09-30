@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { answerParts, answerText, pulledIn, pulledVerdicts, yearsPhrase } from "../../../src/domain/answer";
 import { ageFact } from "../../../src/domain/age";
-import { makeAdvisory, makeFinding, makeSignal } from "./fixtures";
+import { makeAdvisory, makeFinding, makeMetadata, makeSignal } from "./fixtures";
 
 const THRESHOLDS = [
   ["release-warn-years", 3],
@@ -137,6 +137,61 @@ describe("answerParts", () => {
       { kind: "figure", text: "4.5 years", tone: "med" },
       { kind: "figure", text: "2 security advisories", tone: "crit" },
     ]);
+  });
+
+  it("with the newest out of reach, names the branch S8 says fits, in the ledger why's words", () => {
+    const finding = makeFinding({
+      verdict: "left-behind",
+      signals: [
+        makeSignal({
+          id: "S8",
+          data: {
+            branch: "5.x",
+            years: 4.5,
+            newest_branch: "8.x",
+            newest_within_reach: false,
+            floor_source: "project",
+            floor_php: ">=8.2",
+            reachable_branch: "7.x",
+          },
+        }),
+      ],
+    });
+    const branches = [
+      {
+        branch: "8.x",
+        installed: false,
+        highest: "v8.6.1",
+        highestReleased: null,
+        highestCommitDate: null,
+        newestDated: null,
+        newestDatedReleased: null,
+        datedBy: null,
+        php: "~8.4.0 || ~8.5.0",
+        admitsTargetPhp: true,
+        admitsProjectPhp: false,
+        phpBlockedBy: "project",
+        missesTargetPhp: null,
+        missesProjectPhp: "needs_newer",
+        floorFields: true,
+      },
+    ];
+
+    // Act
+    const parts = answerParts({
+      finding,
+      metadataReplacement: null,
+      thresholds: THRESHOLDS,
+      details: { lock: null, metadata: makeMetadata({ branches }), activity: null, repositoryLink: null },
+    });
+
+    // Assert
+    expect(answerText(parts)).toBe(
+      "Left behind on 5.x: its last release was 4.5 years ago; 7.x is the newest that fits your require.php. You require it directly.",
+    );
+    // The floor's key, never its constraint: why 8.x misses it is Release branches' to say.
+    const codes = parts.flatMap((p): readonly { kind: string }[] => (p.kind === "drop" ? p.parts : [p]));
+    expect(codes.filter((p) => p.kind === "code")).toEqual([{ kind: "code", text: "require.php" }]);
   });
 
   it("reads no fix coming from no_fix_expected alone, never from the evidence's words", () => {

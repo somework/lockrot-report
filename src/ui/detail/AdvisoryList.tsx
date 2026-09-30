@@ -4,6 +4,7 @@ import { cveUrl } from "../../domain/links";
 import { day, plural } from "../../domain/format";
 import { unknownNoFixReason } from "../../domain/priority";
 import { OutLink, toneClass } from "../common/common";
+import { Unchecked } from "../common/Unchecked";
 import "./detail.css";
 
 /** "N security advisories": the fix ladder, then every advisory; nothing for a finding with none. */
@@ -24,9 +25,9 @@ export function AdvisoryList({ finding }: { finding: Finding }) {
             className={rung.onBranch ? "detail-rung detail-rung-here" : "detail-rung"}
           >
             <span className="detail-rung-version">
-              {rung.version ?? (rung.unchecked ? "not checked" : "no release")}
+              {rung.version ?? (rung.unchecked ? <Unchecked>not checked</Unchecked> : "no release")}
             </span>
-            <span className="detail-rung-bar">
+            <span className={rung.unchecked ? "detail-rung-bar is-unchecked" : "detail-rung-bar"}>
               <i style={{ width: `${Math.round((100 * rung.n) / advisories.length)}%` }} />
             </span>
             <span className="detail-rung-count">
@@ -58,7 +59,15 @@ export function AdvisoryList({ finding }: { finding: Finding }) {
                   ) : (
                     <span className="mono">{advisory.cve ?? advisory.id}</span>
                   )}
-                  <span>{advisory.fixedBy ? `fixed by ${advisory.fixedBy}` : noFixWords(advisory)}</span>
+                  <span>
+                    {advisory.fixedBy ? (
+                      `fixed by ${advisory.fixedBy}`
+                    ) : advisory.releasesRead === false ? (
+                      <Unchecked>{noFixWords(advisory)}</Unchecked>
+                    ) : (
+                      noFixWords(advisory)
+                    )}
+                  </span>
                   {reason !== null && (
                     <span>
                       no fix expected: <code className="mono">{reason}</code>

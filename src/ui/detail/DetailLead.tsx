@@ -1,5 +1,6 @@
 import { Fragment } from "preact";
 import type { ComponentChildren } from "preact";
+import { useId } from "preact/hooks";
 import type { Finding, PackageDetails } from "../../model/types";
 import { ageFact, ageNotRead, ageZone } from "../../domain/age";
 import {
@@ -9,13 +10,27 @@ import {
   type AnswerPart,
   type PulledEntry,
 } from "../../domain/answer";
-import { ageText, fixed, yearsAgo } from "../../domain/format";
-import { pinnedFacts, pinnedReleaseSlot, snapshotOf, type PinnedSlot } from "../../domain/pinned";
+import { ageText, fixed, gapPhrase, yearsAgo } from "../../domain/format";
+import {
+  leadSaysTag,
+  pinnedFacts,
+  pinnedReleaseSlot,
+  pinnedTagDetail,
+  snapshotOf,
+  tagNote,
+  type DatedPoint,
+  type PinnedFacts,
+  type PinnedSlot,
+  type TagDetail,
+} from "../../domain/pinned";
+import { MOVE_STEPS } from "../../domain/floors";
 import { waysIn } from "../../domain/reach";
 import { timelineModel, type TimelineModel } from "../../domain/timeline";
 import { Muted, OutLink, toneClass } from "../common/common";
+import { DisclosureButton, DisclosurePanel, useDisclosure } from "../common/Disclosure";
 import { PkgMention } from "../common/PkgMention";
 import { useReport } from "../context";
+import { linesOf, useFitSteps } from "../useFit";
 import "./detail-lead.css";
 
 /** The top of the open package (PD-DETAIL-6): the answer sentence, four key facts, how it gets in
@@ -28,15 +43,34 @@ export function DetailLead({ finding, details }: { finding: Finding; details: Pa
     thresholds: model.report.run.thresholds,
     details,
   });
+  const pinned = finding.verdict === "pinned" ? pinnedFacts(finding, details) : null;
+  const tagDetail = pinned === null ? null : pinnedTagDetail(pinned);
+  const tagsId = `${useId()}-tags`;
+  const disclosure = useDisclosure(TAGS_KEY);
+  const answerRef = useFitSteps<HTMLParagraphElement>(MOVE_STEPS, noLineOverBare);
+  const tags: TagsControl | null =
+    tagDetail === null
+      ? null
+      : { id: tagsId, open: disclosure.open, toggle: disclosure.toggle, printed: disclosure.printed };
 
   return (
     <div className="detail-lead">
-      <p className="detail-answer">
+      <p ref={answerRef} className="detail-answer">
         {parts.map((part, index) => (
-          <AnswerNode key={index} part={part} />
+          <AnswerNode key={index} part={part} tags={tags} />
         ))}
       </p>
-      <Facts finding={finding} details={details} />
+      {tagDetail !== null && (
+        <DisclosurePanel
+          id={tagsId}
+          open={disclosure.open}
+          className="detail-tags"
+          labelledBy={disclosure.printed ? undefined : `${tagsId}-btn`}
+        >
+          <TagDetailWords detail={tagDetail} />
+        </DisclosurePanel>
+      )}
+      <Facts finding={finding} details={details} pinned={pinned} />
       <dl className="detail-paths">
         <div className="detail-path">
           <dt>How it gets in</dt>
@@ -50,13 +84,69 @@ export function DetailLead({ finding, details }: { finding: Finding; details: Pa
   );
 }
 
-function AnswerNode({ part }: { part: AnswerPart }) {
+/** S8's clause keeps its fullest words that take the lead no more lines than its barest. */
+function noLineOverBare(answer: HTMLElement): boolean {
+  if (answer.querySelector(".detail-answer-drop") === null) return true;
+  const at = answer.dataset["fit"];
+  const now = linesOf(answer);
+  answer.dataset["fit"] = "bare";
+  const bare = linesOf(answer);
+  if (at === undefined) delete answer.dataset["fit"];
+  else answer.dataset["fit"] = at;
+  return now <= bare;
+}
+
+/** One key for every package: j/k keeps the reader's choice from one detail to the next. */
+const TAGS_KEY = "pinned-tags";
+
+interface TagsControl {
+  readonly id: string;
+  readonly open: boolean;
+  readonly toggle: () => void;
+  readonly printed: boolean;
+}
+
+/** A button is one unbreakable box, so only the version is the button when there is one: the words
+ *  before it wrap with the sentence, and the whole phrase stays its name. */
+function TagsNode({ part, tags }: { part: Extract<AnswerPart, { kind: "tags" }>; tags: TagsControl | null }) {
+  const version = part.version === null ? null : <span className="detail-answer-tag">{part.version}</span>;
+  if (tags === null || tags.printed) {
+    return (
+      <>
+        {part.lead}
+        {version}
+      </>
+    );
+  }
+  return (
+    <>
+      {version !== null && part.lead}
+      <DisclosureButton
+        id={`${tags.id}-btn`}
+        label={version ?? part.lead}
+        name={version === null ? undefined : part.text}
+        open={tags.open}
+        controls={tags.id}
+        onToggle={tags.toggle}
+        className="detail-answer-tags"
+      />
+    </>
+  );
+}
+
+function AnswerNode({ part, tags }: { part: AnswerPart; tags: TagsControl | null }) {
   switch (part.kind) {
+    case "tags":
+      return <TagsNode part={part} tags={tags} />;
     case "text":
       return <>{part.text}</>;
     case "name":
       // A package the lock lists opens (PD-PROSE-1); a branch, a version or a constraint stays words.
       return <PkgMention name={part.text} className="detail-answer-name" />;
+    case "code":
+      return <code className="detail-answer-code">{part.text}</code>;
+    case "phrase":
+      return <span className="nowrap">{part.text}</span>;
     case "figure":
       return (
         <b
@@ -68,6 +158,14 @@ function AnswerNode({ part }: { part: AnswerPart }) {
         >
           {part.text}
         </b>
+      );
+    case "drop":
+      return (
+        <span className={`detail-answer-drop is-${part.step}`}>
+          {part.parts.map((inner, index) => (
+            <AnswerNode key={index} part={inner} tags={tags} />
+          ))}
+        </span>
       );
     case "replacement":
       return part.href !== null ? (
@@ -96,7 +194,16 @@ const NOT_RECORDED = <Muted>not recorded</Muted>;
 /**
  * Always the same four: a gap is said, never left out, so no column goes missing between packages.
  */
-function Facts({ finding, details }: { finding: Finding; details: PackageDetails | null }) {
+function Facts({
+  finding,
+  details,
+  pinned,
+}: {
+  finding: Finding;
+  details: PackageDetails | null;
+  /** The pinned verdict's facts, whose answer may already word the tag. */
+  pinned: PinnedFacts | null;
+}) {
   const { model, now } = useReport();
   const lock = details?.lock ?? null;
   const timeline = timelineModel(
@@ -175,7 +282,7 @@ function Facts({ finding, details }: { finding: Finding; details: PackageDetails
     const commit = slot.commit === null ? null : ageText(slot.commit, now);
     const commitAge = commit !== null && commit !== "undated" ? commit : null;
     if (slot.label === "snapshot") {
-      return { label: "Snapshot", value: commitAge ?? NOT_RECORDED, note: "a branch commit, not a release" };
+      return { label: "Snapshot", value: commitAge ?? NOT_RECORDED, note: snapshotNote() };
     }
     return {
       label: LAST_RELEASE,
@@ -183,7 +290,18 @@ function Facts({ finding, details }: { finding: Finding; details: PackageDetails
       note: commitAge !== null ? `commit dated ${commitAge}` : undefined,
     };
   }
+
+  /** The answer that words the tag leaves the note out; a document that says nothing of tags keeps
+   *  what the label cannot say alone. */
+  function snapshotNote(): string | undefined {
+    const facts = pinned ?? pinnedFacts(finding, details);
+    if (facts === null) return SNAPSHOT_NOTE;
+    if (pinned !== null && leadSaysTag(pinned)) return undefined;
+    return tagNote(facts, now) ?? SNAPSHOT_NOTE;
+  }
 }
+
+const SNAPSHOT_NOTE = "a branch commit, not a release";
 
 /** The one label the second fact carries whenever it dates a release (or says there is none). */
 const LAST_RELEASE = "Last release";
@@ -377,5 +495,42 @@ function PulledNode({ entry }: { entry: PulledEntry }) {
     <span className="detail-pulled">
       <PackageName pkg={pkg} /> <span className="detail-pulled-verdict">({entry.verdict})</span>
     </span>
+  );
+}
+
+function Point({ point }: { point: DatedPoint }) {
+  return (
+    <span className="detail-tags-point">
+      <span className="detail-tags-role">{point.role}</span>{" "}
+      <span className="detail-tags-version">{point.version ?? ""}</span>{" "}
+      <span className="detail-tags-day">
+        {point.day}
+        {point.role === "snapshot" && <span className="detail-tags-yours"> · yours</span>}
+      </span>
+    </span>
+  );
+}
+
+/** Level 1 of the answer's tag words: the two dates oldest first, the gap on the rule between them,
+ *  then what lockrot counts as a tag. */
+function TagDetailWords({ detail }: { detail: TagDetail }) {
+  const [first, second] = detail.points;
+  const tag = detail.points.find((p) => p.role === "tag");
+  return (
+    <>
+      <p className="detail-tags-dates">
+        <Point point={first} />
+        <span className="detail-tags-gap"> {gapPhrase(detail.years)} later </span>
+        <Point point={second} />
+      </p>
+      <p className="detail-tags-note">
+        {detail.datedBy !== null && (
+          <>
+            {tag?.version ?? "The tag"} is dated by <span className="mono">{detail.datedBy}</span>.{" "}
+          </>
+        )}
+        A tag here can be a pre-release: lockrot counts those as tags.
+      </p>
+    </>
   );
 }

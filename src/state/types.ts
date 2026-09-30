@@ -4,7 +4,7 @@ import type { View } from "../model/types";
  * The filter groups, in the order the fragment writes them. The order is part of the address format
  * users share (DESIGN.md §4), so it is fixed here and everything else derives from it.
  */
-export const FILTER_GROUPS = ["prio", "verdict", "scope", "signal", "sev", "fix", "since"] as const;
+export const FILTER_GROUPS = ["prio", "verdict", "scope", "signal", "sev", "fix", "since", "gate"] as const;
 export type FilterGroup = (typeof FILTER_GROUPS)[number];
 
 /** Selected keys per group, in the order they were selected (the fragment keeps that order). */
@@ -49,8 +49,9 @@ export type Action =
   | { type: "query"; q: string }
   | { type: "toggle"; group: FilterGroup; key: string }
   | { type: "clear" }
-  /** Findings, listed through exactly these rail filters: the query box emptied, no detail open. */
-  | { type: "focus"; filters: Filters }
+  /** A tab (Findings unless named) listed through exactly these rail filters, no detail open; the
+   *  query box emptied unless `keepQuery`. */
+  | { type: "focus"; filters: Filters; view?: View; keepQuery?: boolean }
   | { type: "sort"; key: SortKey }
   | { type: "select"; pkg: string | null }
   | { type: "disclose"; key: string; open: boolean }
@@ -64,6 +65,7 @@ export const EMPTY_FILTERS: Filters = {
   sev: [],
   fix: [],
   since: [],
+  gate: [],
 };
 
 export const INITIAL_STATE: State = {

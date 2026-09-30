@@ -92,6 +92,18 @@ function media({ wide = true, narrow = false, dark = false, reduce = false } = {
   })) as unknown as typeof window.matchMedia;
 }
 
+/** An element's text as read where the header keeps its gate flags: without the summary's echo. */
+function unechoed(selector: string): string {
+  const copy = document.querySelector(selector)?.cloneNode(true);
+  if (!(copy instanceof Element)) return "";
+  for (const echo of copy.querySelectorAll(".gate-echo")) echo.remove();
+  return copy.textContent;
+}
+
+function echoes(selector: string): string[] {
+  return [...document.querySelectorAll(`${selector} .gate-echo`)].map((echo) => echo.textContent);
+}
+
 function detailName(): string | null {
   return screen.queryByRole("region")?.getAttribute("aria-label") ?? null;
 }
@@ -644,82 +656,222 @@ describe("layout", () => {
     expect(summary?.parentElement?.querySelector(".ledger-tier")).not.toBeNull();
   });
 
-  test("the header carries the run's gate as a quiet fact, mini.json's fail-on being 'silent'", () => {
+  test("an older report's header says only the fail-on it was told, never which findings meet it", () => {
     render(<App model={MINI} />);
     const button = screen.getByRole("button", { name: /^gate: silent/ });
-    expect(button.getAttribute("title")).toContain("told --fail-on=silent");
-    expect(button.getAttribute("title")).toContain("does not record the run's exit code");
+    expect(button.getAttribute("title")).toBe(
+      "This run was told --fail-on=silent. This report does not say which findings meet it, or whether the run failed.",
+    );
+    expect(document.querySelector(".gate-fact")).toBeNull();
+    expect(document.querySelector(".lead-gate")).toBeNull();
   });
 
-  test("beside the gate, a count of the findings whose own gate says they reach it (PD-BASELINE-5)", () => {
+  // PD-GATE-1: lockrot's root gate, in the header's words, causes as the CLI's flags.
+  test("the header says whether the run failed and on which flags, lockrot's gate as written", () => {
     render(<App model={loadModel("mini-0.13-gate-verdict")} />);
-    expect(document.querySelector(".gate-tally")?.textContent).toBe(
-      "12 at or above · 9 of them not accepted",
-    );
-    const button = screen.getByRole("button", { name: /^gate: pinned/ });
-    expect(button.getAttribute("title")).toContain(
-      "12 findings in this report are at or above pinned; 9 of them are not already accepted in lockrot-baseline.json.",
-    );
-  });
-
-  test("a threshold kind the page does not know is counted, and only said to be reached", () => {
-    render(<App model={loadModel("mini-0.13-gate-unknown")} />);
-    expect(document.querySelector(".gate-tally")?.textContent).toBe("1 reach it · 1 of them not accepted");
-    const button = screen.getByRole("button", { name: /^gate: copyleft/ });
-    expect(button.getAttribute("title")).toContain("1 finding in this report reaches copyleft;");
-  });
-
-  test("another exemption than the baseline is not counted as not accepted (mini-0.13-edges)", () => {
+    expect(document.querySelector(".gate-fact")?.textContent).toBe("this run fails · --fail-on=pinned");
+    expect(screen.queryByRole("button", { name: /^gate:/ })).toBeNull();
+    cleanup();
     render(<App model={loadModel("mini-0.13-edges")} />);
-    expect(document.querySelector(".gate-tally")?.textContent).toBe(
-      "14 at or above · 10 of them not accepted",
+    expect(document.querySelector(".gate-fact")?.textContent).toBe(
+      "this run fails · --strict-network · --fail-on=high",
     );
   });
 
-  test("an unchecked threshold's tally says its findings carry S10", () => {
+  test("one failing package that is not flagged is said to be not flagged, at both levels", () => {
+    render(<App model={loadModel("mini-0.13-gate-unknown")} />);
+    expect(unechoed(".bl-answer")).toContain("1 fails this run, on All packages, not flagged. why");
+    expect(echoes(".bl-answer")).toEqual([" by --fail-on=copyleft", "; licence_policy fails the run too"]);
+    fireEvent.click(screen.getByRole("button", { name: "Why this run fails" }));
+    const panel = document.querySelector(".gate-why")?.textContent ?? "";
+    expect(panel).toContain("1 package meets it, and it fails. It is not flagged (ok).");
+    expect(panel).not.toContain("It is flagged");
+  });
+
+  test("an unknown cause is shown as written beside the known ones", () => {
+    render(<App model={loadModel("mini-0.13-gate-unknown")} />);
+    expect(document.querySelector(".gate-fact")?.textContent).toBe(
+      "this run fails · --fail-on=copyleft · licence_policy",
+    );
+  });
+
+  test("a baseline run nothing failed passes, and says it applies no fail-on", () => {
+    render(<App model={loadModel("wallabag_generate-baseline-0.13")} />);
+    const fact = document.querySelector(".gate-fact")?.textContent ?? "";
+    expect(fact).toBe("baseline run passes · --fail-on not applied");
+    expect(document.querySelector(".lead-gate")?.textContent).toBe(
+      "This run passes: it applies no fail-on, though 39 packages meet it. why",
+    );
+    expect(screen.getByRole("button", { name: "Why this run passes" })).toBeTruthy();
+    cleanup();
+    render(<App model={loadModel("mini-0.13-gate-generate")} />);
+    expect(document.querySelector(".gate-fact")?.textContent).toBe("baseline run fails · --strict-network");
+  });
+
+  test("a run that only --strict-network failed says so under the lead, and level 1 keeps the fail-on", () => {
+    render(<App model={loadModel("wallabag_offline-strict-0.13")} />);
+    expect(document.querySelector(".lead-gate")?.textContent).toBe("This run fails by --strict-network. why");
+    expect(document.querySelector(".gate-fact")?.hasAttribute("data-said")).toBe(true);
+    cleanup();
+    render(<App model={loadModel("mini-0.13-gate-generate")} />);
+    expect(document.querySelector(".lead-gate")?.textContent).toBe(
+      "This run fails by --strict-network; it applies no fail-on. why",
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Why this run fails" }));
+    const panel = document.querySelector(".gate-why")?.textContent ?? "";
+    expect(panel).toContain("A network lookup failed, and this run fails when one does.");
+    expect(panel).toContain("This run wrote a baseline, so it was not applied; 14 packages meet it.");
+  });
+
+  test("the header's flags sit apart from its verdict, and its tooltip says them all", () => {
+    render(<App model={loadModel("mini-0.13-gate-generate")} />);
+    const fact = document.querySelector(".gate-fact");
+    expect(fact?.getAttribute("title")).toBe("baseline run fails · --strict-network");
+    expect(fact?.querySelector(".gate-fact-more")?.textContent).toBe(" · --strict-network");
+    cleanup();
+    render(<App model={loadModel("wallabag_generate-baseline-0.13")} />);
+    expect(document.querySelector(".gate-fact")?.getAttribute("title")).toBe(
+      "baseline run passes · --fail-on not applied",
+    );
+  });
+
+  // PD-GATE-2: every failing package first, then flagged and not flagged apart, the latter by why.
+  test("without a baseline the lead goes on: the total that fails, then flagged and unchecked", () => {
     render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
-    expect(document.querySelector(".gate-tally")?.textContent).toBe("173 carry S10");
-  });
-
-  test("a report whose findings carry no gate draws no count, whatever its fail-on", () => {
-    render(<App model={MINI} />);
-    expect(screen.getByRole("button", { name: /^gate: silent/ })).toBeTruthy();
-    expect(document.querySelector(".gate-tally")).toBeNull();
-  });
-
-  test("with a baseline, the gate count also says how many the baseline does not exempt (PD-BASELINE-5)", () => {
-    render(<App model={loadModel("wallabag_baseline-older-0.13")} />);
-    // "of them": the second number is a subset of the first, never the delta line's "new" count.
-    expect(document.querySelector(".gate-tally")?.textContent).toBe(
-      "42 at or above · 12 of them not accepted",
+    expect(unechoed(".lead-gate")).toBe(
+      "173 fail this run, on All packages: 2 flagged, 171 unchecked, on All packages→. why",
     );
-    const title = screen.getByRole("button", { name: /^gate: high/ }).getAttribute("title") ?? "";
-    expect(title).toContain(
-      "42 findings in this report are at or above high; 12 of them are not already accepted in wallabag-older.baseline.json. The page",
+    expect(echoes(".lead-gate")).toEqual([" by --fail-on=unchecked"]);
+    expect(document.querySelector(".gate-fact")?.hasAttribute("data-said")).toBe(false);
+    // The numbers list what they count; the one opener is apart from them.
+    const total = screen.getByRole("button", { name: /^173 fail this run\s?, on All packages$/ });
+    expect(total.hasAttribute("aria-expanded")).toBe(false);
+    const why = screen.getByRole("button", { name: "Why this run fails" });
+    expect(why.getAttribute("aria-expanded")).toBe("false");
+    fireEvent.click(why);
+    expect(why.getAttribute("aria-expanded")).toBe("true");
+    const panel = document.getElementById(why.getAttribute("aria-controls") ?? "");
+    expect(panel?.hidden).toBe(false);
+    expect(panel?.textContent).toContain(
+      "Fails on any package whose check did not run. 173 packages meet it, and all fail. Of those, 2 are flagged and 171 are not (ok).",
     );
-    expect(title.endsWith("The page does not record the run's exit code.")).toBe(true);
   });
 
-  // PD-BASELINE-6: the subset is one press from the header.
-  test("the tally's 'of them not accepted' lists exactly those findings on Findings", () => {
+  test("with a baseline the Against sentence closes on how many fail, which opens what ties them", () => {
     render(<App model={loadModel("wallabag_baseline-older-0.13")} />);
-    fireEvent.click(screen.getByRole("tab", { name: /Run data/ }));
-    fireEvent.click(screen.getByRole("button", { name: "12 of them not accepted" }));
-    expect(screen.getByRole("tab", { name: /Findings/ }).getAttribute("aria-selected")).toBe("true");
-    expect(window.location.hash).toBe("#prio=critical%2Chigh&since=new%2Cworsened");
-    // The views are mocked here; e2e/baseline.spec.ts checks the rows themselves.
+    expect(unechoed(".bl-answer")).toContain("43 already accepted; 12 fail this run. why");
+    expect(echoes(".bl-answer")).toEqual([" by --fail-on=high"]);
+    const why = screen.getByRole("button", { name: "Why this run fails" });
+    fireEvent.click(why);
+    expect(why.getAttribute("aria-expanded")).toBe("true");
+    const panel = document.querySelector(".gate-why");
+    expect(panel?.textContent).toContain("accepted30 of the 43 already accepted meet it");
+    expect(panel?.textContent).toContain("42 packages meet it: 12 fail.");
+  });
+
+  // PD-GATE-2: a count that is every failing package Findings lists is the rail's "Fails this run".
+  test("'12 fail this run' filters Findings to them and keeps focus, the opener apart and closed", () => {
+    render(<App model={loadModel("wallabag_baseline-older-0.13")} />);
+    const total = screen.getByRole("button", { name: "12 fail this run" });
+    expect(total.getAttribute("aria-pressed")).toBe("false");
+    expect(total.hasAttribute("aria-expanded")).toBe(false);
+    fireEvent.click(total);
+    expect(total.getAttribute("aria-pressed")).toBe("true");
+    expect(document.activeElement).toBe(total);
+    expect(window.location.hash).toBe("#gate=fails");
+    expect(screen.getByRole("button", { name: "Why this run fails" }).getAttribute("aria-expanded")).toBe(
+      "false",
+    );
+    fireEvent.click(total);
+    expect(total.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  test("a total with failing packages Findings does not list opens All packages filtered to all of them", () => {
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    const total = screen.getByRole("button", { name: /^173 fail this run\s?, on All packages$/ });
+    fireEvent.click(total);
+    expect(document.activeElement).toBe(total);
+    expect(window.location.hash).toContain("view=packages");
+    expect(window.location.hash).toContain("gate=fails");
+  });
+
+  // PD-GATE-2/4: the flagged count is the rail's own "Fails this run", the same key in the address.
+  test("'2 flagged' filters Findings to the failing rows, the rail's own row pressed with it", () => {
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    const toggle = screen.getByRole("button", { name: "2 flagged" });
+    expect(toggle.getAttribute("aria-pressed")).toBe("false");
+    fireEvent.click(toggle);
+    expect(toggle.getAttribute("aria-pressed")).toBe("true");
+    expect(window.location.hash).toBe("#gate=fails");
     const rail = screen.getByRole("group", { name: "Filters" });
-    expect(within(rail).getByRole("button", { name: /^New/ }).getAttribute("aria-pressed")).toBe("true");
     expect(
       within(rail)
-        .getByRole("button", { name: /^Worsened/ })
+        .getByRole("button", { name: /^Fails this run/ })
         .getAttribute("aria-pressed"),
     ).toBe("true");
   });
 
-  test("no gate, no count", () => {
-    render(<App model={loadModel("wallabag_wallabag")} />);
-    expect(document.querySelector(".gate-tally")).toBeNull();
+  test("from another tab, the flagged count lists exactly the flagged failing rows on Findings", () => {
+    window.location.hash = "#view=packages&verdict=ok&gate=fails";
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    fireEvent.click(screen.getByRole("button", { name: /^2 flagged\s*,?\s*on Findings$/ }));
+    expect(screen.getByRole("tab", { name: /Findings/ }).getAttribute("aria-selected")).toBe("true");
+    expect(window.location.hash).toBe("#gate=fails");
+  });
+
+  test("from another tab, the flagged count keeps a search only when it hides none of them", () => {
+    window.location.hash = "#view=packages&q=spotify";
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    fireEvent.click(screen.getByRole("button", { name: /^2 flagged\s*,?\s*on Findings$/ }));
+    expect(window.location.hash).toBe("#gate=fails");
+    cleanup();
+    window.location.hash = "#view=packages&q=verdict:left-behind";
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    fireEvent.click(screen.getByRole("button", { name: /^2 flagged\s*,?\s*on Findings$/ }));
+    expect(window.location.hash).toContain("q=verdict");
+  });
+
+  test("the unchecked count opens All packages on exactly those packages", () => {
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    fireEvent.click(screen.getByRole("button", { name: /^171 unchecked\s*,?\s*on All packages$/ }));
+    expect(screen.getByRole("tab", { name: /All packages/ }).getAttribute("aria-selected")).toBe("true");
+    expect(window.location.hash).toBe("#view=packages&verdict=ok&gate=fails");
+  });
+
+  test("the unchecked count keeps a search only when the search hides none of them", () => {
+    window.location.hash = "#q=spotify";
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    fireEvent.click(screen.getByRole("button", { name: /^171 unchecked\s*,?\s*on All packages$/ }));
+    expect(window.location.hash).toBe("#view=packages&verdict=ok&gate=fails");
+    cleanup();
+    window.location.hash = "#q=verdict:ok";
+    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
+    fireEvent.click(screen.getByRole("button", { name: /^171 unchecked\s*,?\s*on All packages$/ }));
+    expect(window.location.hash).toContain("q=verdict");
+  });
+
+  test("an address asking for the failing rows of a run no package fails lists every row", () => {
+    for (const name of [
+      "koel_koel-0.13",
+      "mini-0.13-gate-null",
+      "wallabag_wallabag",
+      "wallabag_offline-strict-0.13",
+    ]) {
+      window.location.hash = "#gate=fails";
+      render(<App model={loadModel(name)} />);
+      expect(window.location.hash, name).toBe("");
+      cleanup();
+    }
+  });
+
+  test("no gate, no gate words: the older report and --fail-on=none look as they did", () => {
+    for (const name of ["wallabag_wallabag", "koel_koel-0.13", "mini-0.13-gate-null"]) {
+      render(<App model={loadModel(name)} />);
+      expect(document.querySelector(".gate-fact"), name).toBeNull();
+      expect(document.querySelector(".lead-gate"), name).toBeNull();
+      expect(screen.queryByRole("button", { name: /^Fails this run/ }), name).toBeNull();
+      cleanup();
+    }
   });
 
   test("a document that predates run.fail_on shows no gate fact at all (PD-SUMMARY-2)", () => {

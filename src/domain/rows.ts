@@ -4,7 +4,7 @@
 import type { Finding, PackageDetails, Signal, Verdict } from "../model/types";
 import { ageScale, type AgeKind, type Thresholds } from "./age";
 import { signalSortKey } from "./filters";
-import { pinnedKindOf, type PinnedKind } from "./pinned";
+import { pinnedKindOf, pinnedWhy, type PinnedKind } from "./pinned";
 import { plural } from "./format";
 import { SIGNAL_NAMES, VERDICT_ORDER, vocabTable } from "./vocab";
 
@@ -24,13 +24,18 @@ export function sortedSignals(signals: readonly Signal[]): Signal[] {
 }
 
 /** With the rail filtered to exactly one signal the finding carries, the row quotes that one
- *  (PD-ROWS-5). */
+ *  (PD-ROWS-5); else a pinned row quotes S6 where S6 states its case, the one that says why. */
 export function rowSignals(
   finding: Finding,
   quoted: string | null,
 ): { readonly key: Signal | null; readonly rest: readonly Signal[] } {
   const sorted = sortedSignals(finding.signals);
-  const pick = (quoted !== null ? sorted.find((s) => s.id === quoted) : undefined) ?? sorted[0] ?? null;
+  const own =
+    finding.verdict === "pinned" && pinnedWhy(finding) !== null
+      ? sorted.find((s) => s.id === "S6")
+      : undefined;
+  const pick =
+    (quoted !== null ? sorted.find((s) => s.id === quoted) : undefined) ?? own ?? sorted[0] ?? null;
   return { key: pick, rest: sorted.filter((s) => s !== pick) };
 }
 
@@ -82,6 +87,8 @@ export function shortFact(signal: Signal, finding: Finding): string {
       }
       return `released ${year} for PHP ${php}; admits ${target} untested`;
     }
+    case "S6":
+      return pinnedWhy(finding) ?? signal.summary;
     case "S7":
       return typeof d.flagged === "number"
         ? `pulls in ${plural(d.flagged, "flagged package", "flagged packages")}`
@@ -89,7 +96,11 @@ export function shortFact(signal: Signal, finding: Finding): string {
     case "S8": {
       const branch = text(d.branch);
       const newest = text(d.newest_branch);
-      return branch && newest ? `${branch} stopped; ${newest} ships` : signal.summary;
+      if (!branch || !newest) return signal.summary;
+      // Out of reach, "8.x ships" would point at the one branch the project cannot take.
+      if (d.newest_within_reach !== false) return `${branch} stopped; ${newest} ships`;
+      const reachable = text(d.reachable_branch);
+      return `${branch} stopped; ${reachable ?? "none"} fits`;
     }
     case "S9":
       return Array.isArray(d.advisories)

@@ -136,8 +136,8 @@
 }
 
 /* ---------- the gate fact (Header.tsx) ----------
-   A quiet fact beside "lockrot <version>", not a band: the page never says whether the gate fired
-   (DESIGN.md §8). The popover is native (`popover="auto"` + `popovertarget`) — Escape
+   A quiet fact beside "lockrot <version>", not a band. A report with no decided gate keeps it as a
+   button over a native popover (`popover="auto"` + `popovertarget`) — Escape
    closes it as the browser's own default action, before keyboard.ts's chain ever sees the key
    (DESIGN.md §8, keyboard.ts#decideEscape). */
 .fact-btn {
@@ -153,59 +153,6 @@
 .fact-btn:focus-visible {
   color: var(--ink);
   border-bottom-color: currentColor;
-}
-/* PD-BASELINE-5: the count beside the gate, as quiet as the fact it qualifies — muted words, the
-   numbers in the ink and the mono every other run-meta value takes. */
-.gate-tally {
-  color: var(--muted);
-  white-space: nowrap;
-}
-.gate-tally b {
-  color: var(--ink);
-  font-weight: 600;
-}
-/* PD-BASELINE-6: the "of them not accepted" count, when it can list its findings. It reads as the
-   fact it is, in the baseline's accent (views/baseline.css), with the dotted rule every other
-   count-that-filters on the page wears. */
-.gate-focus {
-  margin: 0 -3px;
-  padding: 0 3px;
-  border: 0;
-  border-bottom: 1px dotted currentColor;
-  border-radius: var(--radius-s) var(--radius-s) 0 0;
-  background: none;
-  font: inherit;
-  color: var(--accent-ink);
-  cursor: pointer;
-  transition: background-color 0.12s ease;
-}
-.gate-focus b {
-  color: inherit;
-}
-.gate-focus:hover {
-  background: var(--accent-soft);
-  border-bottom-style: solid;
-}
-.gate-focus:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-@media (prefers-reduced-motion: reduce) {
-  .gate-focus {
-    transition: none;
-  }
-}
-@media (forced-colors: active) {
-  .gate-focus {
-    color: LinkText;
-    border-bottom-color: LinkText;
-  }
-}
-@media print {
-  .gate-focus {
-    border-bottom: 0;
-    color: inherit;
-  }
 }
 .fact-pop {
   position: fixed;
@@ -498,8 +445,8 @@ html {
 }
 .shell-main {
   min-width: 0;
-  /* Where a "focus" press (the gate tally, a Run data count) scrolls the list to: its top just
-     clear of the header, which is sticky from 760px up and scrolls away below that. */
+  /* Where a "focus" press scrolls the list to: its top just clear of the header, which is sticky
+     from 760px up and scrolls away below that. */
   scroll-margin-top: 12px;
 }
 @media (min-width: 760px) {

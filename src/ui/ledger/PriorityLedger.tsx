@@ -5,6 +5,10 @@ import { population } from "../../domain/filters";
 import { plural } from "../../domain/format";
 import { RANKED_PRIORITIES, sharePhrase, waffleRuns } from "../../domain/summary";
 import { rollupClauses, scopeRollup } from "../../domain/share";
+import { baselineDelta } from "../../domain/baseline";
+import { gateClause, runGate, type GateClause, type RunGate } from "../../domain/gate";
+import { GateClauseText, useGateWhy } from "../common/GateWords";
+import { linesOf, useFitSteps } from "../useFit";
 import { CleanMark } from "./CleanMark";
 import { Waffle } from "./Waffle";
 import "./ledger.css";
@@ -43,6 +47,29 @@ function ScopeLine({ clauses }: { clauses: readonly string[] }) {
   );
 }
 
+const oneLine = (node: HTMLElement): boolean => linesOf(node) <= 1;
+
+/**
+ * With lockrot's gate and no baseline sentence to carry it, the lead's answer goes on in one serif
+ * line: how many fail this run, flagged and not flagged apart, then "why" (PD-GATE-2). A size or two
+ * down where the reader's serif is too wide for one line at full size, then "why" down to its
+ * marker; never smaller when that still wraps.
+ */
+function GateLine({ gate, clause }: { gate: RunGate; clause: GateClause }) {
+  const why = useGateWhy(gate, clause);
+  const ref = useFitSteps<HTMLParagraphElement>(["small", "smaller", "bare"], oneLine, "full");
+  if (why === null) return null;
+  return (
+    <>
+      <p ref={ref} className="lead-gate">
+        <GateClauseText clause={clause} opening close="." />
+        {why.opener}
+      </p>
+      {why.panel}
+    </>
+  );
+}
+
 /**
  * The summary band's lead: the one answer a first-time reader needs — how many packages are
  * flagged, out of how many — as the loudest thing on the page, with the priority chips that
@@ -71,6 +98,8 @@ export function PriorityLedger() {
   const shown: readonly string[] = [...RANKED_PRIORITIES, ...unknown];
   const clean = flagged.length === 0;
   const empty = total === 0 && clean;
+  const gate = baselineDelta(model) === null ? runGate(model) : null;
+  const clause = gate === null ? null : gateClause(gate);
 
   return (
     <div className={empty ? "ledger-lead is-empty" : clean ? "ledger-lead is-clean" : "ledger-lead"}>
@@ -103,6 +132,7 @@ export function PriorityLedger() {
           </p>
         )}
         {!clean && <ScopeLine clauses={rollupClauses(scopeRollup(flagged))} />}
+        {gate !== null && clause !== null && <GateLine gate={gate} clause={clause} />}
         {/* No chips for an empty lock: four disabled "0" filters there had nothing to filter. */}
         {!empty && (
           <div className="legend lead-chips" role="group" aria-label="Priority">

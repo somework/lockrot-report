@@ -161,6 +161,7 @@ export function LaneRow({
  */
 export function FoldRows({
   fold,
+  words,
   open,
   onToggle,
   guides,
@@ -168,6 +169,8 @@ export function FoldRows({
   topWord,
 }: {
   fold: Extract<TimelineRow, { kind: "fold" }>;
+  /** What the fold hides against the PHP floors, "2 stop before both"; null when nothing misses. */
+  words: string | null;
   open: boolean;
   onToggle: () => void;
   guides: readonly Guide[];
@@ -221,6 +224,12 @@ export function FoldRows({
         </span>
         <span role="cell" className="detail-timeline-range">
           {first?.branch} – {last?.branch}
+          {words !== null && (
+            <span className="detail-timeline-fold-words">
+              <Sr>, </Sr>
+              {words}
+            </span>
+          )}
         </span>
       </div>
       {open &&

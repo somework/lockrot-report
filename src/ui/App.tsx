@@ -2,7 +2,7 @@ import "../styles/tokens.css";
 import "../styles/base.css";
 import type { RefObject } from "preact";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
-import { population } from "../domain/filters";
+import { filtersFor, population } from "../domain/filters";
 import type { Model } from "../model/types";
 import type { Action, State } from "../state/types";
 import { ReportContext, useReport } from "./context";
@@ -245,8 +245,8 @@ function RailSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
       </div>
     );
   }
-  const { scope, signal, fix, since } = state.filters;
-  const on = scope.length + signal.length + fix.length + since.length;
+  const { scope, signal, fix, since, gate } = state.filters;
+  const on = scope.length + signal.length + fix.length + since.length + gate.length;
 
   return (
     <details className="rail-fold" inert={inert}>
@@ -260,7 +260,14 @@ function RailSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
 export function App({ model }: { model: Model }) {
   const wide = useWide();
   const narrow = useNarrow();
-  const [state, rawDispatch] = useHashState();
+  const fit = useCallback(
+    (next: State): State => {
+      const filters = filtersFor(model, next.filters);
+      return filters === next.filters ? next : { ...next, filters };
+    },
+    [model],
+  );
+  const [state, rawDispatch] = useHashState(fit);
   const [anchoredDispatch, keepRowInPlace] = useRowAnchor(rawDispatch, state.pkg);
   // Set by every package a reader opens (click, Enter, `j`/`k`), never by the boot address or a
   // `hashchange`: only a reader's own open moves focus into a sheet (PD-ROWS-12).
@@ -357,9 +364,8 @@ export function App({ model }: { model: Model }) {
     [dispatch],
   );
 
-  // A "focus" action (the header's gate tally, a Run data count) lists a set it counted somewhere
-  // else on the page, often a screen away from the list: the list's own top — the search box and
-  // its "N of M" line — is brought under the sticky header so the reader sees what the press did.
+  // A "focus" action (the summary's gate counts, a Run data stat) lists a set counted a screen away:
+  // the list's top, its search and "N of M" line, comes under the sticky header.
   useEffect(() => {
     if (!listFocused.current) return;
     listFocused.current = false;

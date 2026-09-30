@@ -1,6 +1,8 @@
 import type { ComponentChildren } from "preact";
 import { baselineDelta, type BaselineDelta as Delta } from "../../domain/baseline";
+import { gateClause, runGate, type GateClause, type RunGate } from "../../domain/gate";
 import { filterTitle } from "../common/common";
+import { GateClauseText, useGateWhy } from "../common/GateWords";
 import { useReport } from "../context";
 import "../views/baseline.css";
 
@@ -116,8 +118,42 @@ export function BaselineDelta() {
   const { model } = useReport();
   const delta = baselineDelta(model);
   if (delta === null) return null;
+  const gate = runGate(model);
+  const clause = gate === null ? null : gateClause(gate);
+  const answer = gate === null || clause === null ? null : { gate, clause };
+  return <Against delta={delta} answer={answer} />;
+}
+
+interface GateAnswer {
+  readonly gate: RunGate;
+  readonly clause: GateClause;
+}
+
+/** "; N fail this run", its count a filter, and "why", which opens what fails the run under the
+ *  sentence. */
+function useGateEnd(answer: GateAnswer | null): {
+  end: ComponentChildren;
+  opener: ComponentChildren;
+  panel: ComponentChildren;
+} {
+  const why = useGateWhy(answer?.gate ?? null, answer?.clause ?? null);
+  if (answer === null || why === null) return { end: null, opener: null, panel: null };
+  return {
+    end: (
+      <>
+        ; <GateClauseText clause={answer.clause} opening={false} close="." />
+      </>
+    ),
+    opener: why.opener,
+    panel: why.panel,
+  };
+}
+
+/** The Against sentence; with lockrot's gate, how many fail this run closes it (PD-GATE-2). */
+function Against({ delta, answer }: { delta: Delta; answer: GateAnswer | null }) {
   const { filterable } = delta;
   const changed = delta.new + delta.worsened;
+  const { end, opener, panel } = useGateEnd(answer);
 
   return (
     <div className="bl-top">
@@ -141,8 +177,10 @@ export function BaselineDelta() {
         <Count bucket="known" count={delta.known} filterable={filterable}>
           already accepted
         </Count>
-        .
+        {end ?? "."}
+        {opener}
       </p>
+      {panel}
       <Gone delta={delta} />
     </div>
   );

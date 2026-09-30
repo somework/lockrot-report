@@ -125,21 +125,28 @@ test.describe("PD-SUMMARY-2: the header's gate fact", () => {
     );
   });
 
-  test("fail-on none with --strict-network is never 'no gate': a failed lookup fails the run", async () => {
+  // PD-GATE-1: lockrot decided this run failed on --strict-network; the header says so in its words.
+  test("fail-on none with --strict-network is never 'no gate': a failed lookup fails the run", async ({
+    page,
+  }) => {
     await report.goto(FIXTURES.wallabagOfflineStrict013);
-    expect(await report.gateFactLabel()).toBe("gate: strict network ⓘ");
-    await report.openGateFact();
-    expect(await report.gateFactPopoverText()).toContain(
-      "it fails on no finding, but --strict-network fails the run when a network lookup fails.",
-    );
+    expect(await report.gateFactLabel()).toBeNull();
+    await expect(page.locator(".gate-fact")).toHaveText("this run fails · --strict-network");
   });
 
-  test("a run that applies no fail-on says it judged no finding, not that one would fail it", async () => {
+  test("a baseline run nothing failed passes, and says it applies no fail-on, at every width", async ({
+    page,
+  }) => {
     await report.goto(FIXTURES.wallabagGenerateBaseline013);
-    await report.openGateFact();
-    const text = await report.gateFactPopoverText();
-    expect(text).toContain("but as a generate_baseline run it judged no finding against it");
-    expect(text).not.toContain("exits 1");
+    await expect(page.locator(".gate-fact")).toHaveText("baseline run passes · --fail-on not applied");
+    for (const width of [320, 390, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(page.locator(".gate-fact .gate-word"), `${String(width)}px`).toHaveText("passes");
+      await expect(page.locator(".lead-gate"), `${String(width)}px`).toHaveText(
+        "This run passes: it applies no fail-on, though 39 packages meet it. why",
+      );
+      await expect(page.locator(".lead-gate"), `${String(width)}px`).toBeVisible();
+    }
   });
 
   test("Escape closes the popover, and — over an open detail — only the popover, not the detail underneath it", async () => {
@@ -187,9 +194,7 @@ test.describe("PD-SUMMARY-3: the Run tab's fail-on without the field", () => {
 
   test("a 0.13 run words its threshold from run.fail_on_kind", async () => {
     await report.gotoWithHash(FIXTURES.wallabagBaselineOlder013, "view=run");
-    await expect(report.runField("fail-on")).toHaveText(
-      "high · fails on a priority at least as high as high",
-    );
+    await expect(report.runField("fail-on")).toHaveText("high · fails on priority high or higher");
   });
 
   test("a document with an explicit fail-on prints the word, not an em dash (mini.json: 'silent')", async ({

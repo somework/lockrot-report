@@ -2,7 +2,7 @@
  *  the document carries, and a missing signal means fewer words, never a guess. */
 
 import type { Finding, PackageDetails, Signal } from "../model/types";
-import { yearsPhrase } from "./format";
+import { day, gapPhrase, yearsPhrase } from "./format";
 import {
   ageSource,
   ageZone,
@@ -11,7 +11,8 @@ import {
   type AgeLegend,
   type Thresholds,
 } from "./age";
-import { pinnedKind, readPinnedFacts } from "./pinned";
+import { moveClause, type MoveDrop } from "./floors";
+import { pinnedKind, readPinnedFacts, snapshotTagGap, tagStanding } from "./pinned";
 import { safeHref } from "./links";
 import { installedBranch, noFixTally, type NoFixTally } from "./priority";
 import { WAYS_NAMED, waysIn } from "./reach";
@@ -21,10 +22,17 @@ export type AnswerPart =
   | { readonly kind: "text"; readonly text: string }
   /** A package, branch, version or constraint — set in mono. */
   | { readonly kind: "name"; readonly text: string }
+  /** A key or a value as written (`require.php`, an unknown floor): mono, never a link. */
+  | { readonly kind: "code"; readonly text: string }
+  /** Words that never break apart, "PHP 8.4". */
+  | { readonly kind: "phrase"; readonly text: string }
   /** `tone` is an age's zone or the advisory count's weight; `null` leaves it in ink. */
   | { readonly kind: "figure"; readonly text: string; readonly tone: Tone | null }
   /** `href` is `replacement_url`, only for a package lockrot resolved. */
-  | { readonly kind: "replacement"; readonly text: string; readonly href: string | null };
+  | { readonly kind: "replacement"; readonly text: string; readonly href: string | null }
+  /** The tag words that open level 1 (`pinnedTagDetail`): `lead`, then `version` in mono. */
+  | { readonly kind: "tags"; readonly text: string; readonly lead: string; readonly version: string | null }
+  | MoveDrop;
 
 export interface AnswerInput {
   readonly finding: Finding;
@@ -111,7 +119,9 @@ function verdictClause(
         age(years, release, false),
         text(" ago"),
       ];
-      if (newest !== null) parts.push(text(" while "), name(newest), text(" kept releasing"));
+      const move = moveClause(s8);
+      if (move !== null) parts.push(...move);
+      else if (newest !== null) parts.push(text(" while "), name(newest), text(" kept releasing"));
       parts.push(text("."));
       return parts;
     }
@@ -136,22 +146,56 @@ function verdictClause(
   }
 }
 
-/** The newest dated tag is not named here: the Provenance metadata line is its one place. */
+const tags = (lead: string, version: string | null = null): AnswerPart => ({
+  kind: "tags",
+  text: `${lead}${version ?? ""}`,
+  lead,
+  version,
+});
+
+/** lockrot counts a pre-release as a tag, so "no tag" says there is none of either. */
+const NO_TAG = "lists no tag, not even a pre-release";
+
+/** A tagged snapshot says which of the two is newer, the snapshot as the reader's, its date beside
+ *  it so "newer" never reads as fresh; the gap only when both dates parse. Every `tags` part has a
+ *  `pinnedTagDetail`. */
 function pinnedClause(finding: Finding, details: PackageDetails | null): AnswerPart[] {
   const facts = readPinnedFacts(finding, details);
   const lead = [text("Pinned to "), name(facts.version)];
   switch (pinnedKind(facts)) {
     case "untagged":
-      return [text("Installed "), name(facts.version), text(", but its repository lists no tag.")];
+      return [text("Installed "), name(facts.version), text(`, but its repository ${NO_TAG}.`)];
     case "other": {
       const summary = facts.summary?.trim().replace(/\.$/, "") ?? "";
       return summary === "" ? [...lead, text(".")] : [text(`Pinned: ${summary}.`)];
     }
     case "snapshot":
-      return facts.hasStableRelease === false
-        ? [...lead, text(", a branch snapshot of a package with no tagged release.")]
-        : [...lead, text(", a branch snapshot rather than a release.")];
+      break;
   }
+  switch (tagStanding(facts)) {
+    case "none":
+      return [...lead, text(`, a branch snapshot; its repository ${NO_TAG}.`)];
+    case "unknown":
+      return [...lead, text(", a branch snapshot; lockrot could not tell whether it has a tag.")];
+    default:
+      break;
+  }
+  const gap = snapshotTagGap(facts);
+  if (gap === null || facts.snapshotTime === null) {
+    return [...lead, text(", a branch snapshot rather than a release.")];
+  }
+  const way = gap === 0 ? "dated the same day as" : `${gapPhrase(gap)} ${gap > 0 ? "newer" : "older"} than`;
+  return [
+    text("Your "),
+    name(facts.version),
+    text(` snapshot (${day(facts.snapshotTime)}) is `),
+    figure(way, null),
+    text(" "),
+    facts.lastStableVersion === null
+      ? tags("the newest tag")
+      : tags("the newest tag, ", facts.lastStableVersion),
+    text("."),
+  ];
 }
 
 /** The age is `ageSource`'s, so the sentence and the key facts never name two ages; in ink, since

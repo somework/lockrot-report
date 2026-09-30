@@ -62,10 +62,15 @@ export function reducer(state: State, action: Action): State {
       return { ...state, q: "", filters: EMPTY_FILTERS };
 
     case "focus":
-      // One press that lists a set another surface counted (the header's gate tally, a Run data
-      // stat): the Findings tab with only these filters, so the list is that set and nothing else.
-      // `sort`, `sortDesc` and `disclosure` survive, as they do a Clear.
-      return { ...state, view: "findings", q: "", pkg: null, filters: action.filters };
+      // A press that lists a set another surface counted: that set and nothing else. `sort`,
+      // `sortDesc` and `disclosure` survive, as they do a Clear.
+      return {
+        ...state,
+        view: action.view ?? "findings",
+        q: action.keepQuery === true ? state.q : "",
+        pkg: null,
+        filters: action.filters,
+      };
 
     case "sort": {
       // Clicking the already-active column flips direction; a different column becomes the sort

@@ -10,6 +10,7 @@ import type { Action, State } from "../../../src/state/types";
 import { EMPTY_FILTERS } from "../../../src/state/types";
 import { Detail } from "../../../src/ui/detail/Detail";
 import { ReportContext } from "../../../src/ui/context";
+import { PrintContext } from "../../../src/ui/print/printContext";
 
 /** Evidence is scrolled to and focused a frame after its `<details>` open (SignalList.tsx#reveal). */
 function nextFrame(): Promise<void> {
@@ -852,20 +853,17 @@ describe("Detail", () => {
       expect(branch?.[2]).toMatch(/^on your \S+$/);
     });
 
-    it("words a snapshot's slot the same on the older and the 0.13 document", () => {
-      for (const [model, pkg] of [
-        [MAUTIC, "mautic/core-lib"],
-        [MAUTIC_013, "mautic/core-lib"],
-        [WALLABAG, "wallabag/rulerz"],
-        [WALLABAG_013, "wallabag/rulerz"],
+    it("words a snapshot's slot the same on the older and the 0.13 document, less where only 0.13 states it", () => {
+      for (const [model, pkg, slot] of [
+        [MAUTIC, "mautic/core-lib", ["Snapshot", "not recorded", "a branch commit, not a release"]],
+        // 0.13's answer says lockrot could not tell whether it has a tag, so the slot says no more.
+        [MAUTIC_013, "mautic/core-lib", ["Snapshot", "not recorded"]],
+        [WALLABAG, "wallabag/rulerz", ["Last release", "none, a snapshot", "commit dated 2.8 y ago"]],
+        [WALLABAG_013, "wallabag/rulerz", ["Last release", "none, a snapshot", "commit dated 2.8 y ago"]],
       ] as const) {
         const rows = factRows(renderDetail(model, pkg).container);
         cleanup();
-        expect(rows[1], pkg).toEqual(
-          pkg === "mautic/core-lib"
-            ? ["Snapshot", "not recorded", "a branch commit, not a release"]
-            : ["Last release", "none, a snapshot", "commit dated 2.8 y ago"],
-        );
+        expect(rows[1], pkg).toEqual(slot);
       }
     });
 
@@ -880,24 +878,20 @@ describe("Detail", () => {
         "commit dated 2.8 y ago",
       ]);
       expect(answer(WALLABAG_013, "wallabag/rulerz")).toMatch(
-        /^Pinned to dev-master, a branch snapshot of a package with no tagged release\. /,
+        /^Pinned to dev-master, a branch snapshot; its repository lists no tag, not even a pre-release\. /,
       );
       cleanup();
-      // No repository metadata: nothing said about tags, and an undated commit is said to be so.
-      expect(facts(MAUTIC_013, "mautic/core-lib")).toEqual([
-        "Snapshot",
-        "not recorded",
-        "a branch commit, not a release",
-      ]);
+      // S6's null: lockrot could not tell, and the undated commit is said to be so.
+      expect(facts(MAUTIC_013, "mautic/core-lib")).toEqual(["Snapshot", "not recorded"]);
       expect(answer(MAUTIC_013, "mautic/core-lib")).toMatch(
-        /^Pinned to 7\.0\.0-dev, a branch snapshot rather than a release\. /,
+        /^Pinned to 7\.0\.0-dev, a branch snapshot; lockrot could not tell whether it has a tag\. /,
       );
       cleanup();
       // Its lock time is neither a release nor a snapshot, so no date is given.
       const untagged = renderDetail(EDGES_013, "acme/untagged").container;
       expect(factRows(untagged)[1]).toEqual(["Last release", "none tagged"]);
       expect(untagged.querySelector(".detail-answer")?.textContent).toMatch(
-        /^Installed 1\.0\.0, but its repository lists no tag\. /,
+        /^Installed 1\.0\.0, but its repository lists no tag, not even a pre-release\. /,
       );
       expect(untagged.querySelector(".detail-lead")?.textContent).not.toContain("snapshot");
       expect(untagged.querySelector(".detail-lead")?.textContent).not.toContain("dated");
@@ -905,17 +899,97 @@ describe("Detail", () => {
 
     it("never calls a snapshot's commit a release, so a tagged one's panel gives one last-release date (rector/rector)", () => {
       const { container } = renderDetail(MAUTIC_013, "rector/rector");
-      expect(factRows(container)[1]).toEqual(["Snapshot", "2 mo ago", "a branch commit, not a release"]);
-      // The answer names no tag and no date: the Provenance "newest dated tag" line is the one place.
+      // The answer words the tag, so the Snapshot slot needs no note.
+      expect(factRows(container)[1]).toEqual(["Snapshot", "2 mo ago"]);
       const answerText = container.querySelector(".detail-answer")?.textContent ?? "";
-      expect(answerText).toMatch(/^Pinned to dev-main, a branch snapshot rather than a release\. /);
-      expect(answerText).not.toContain("2.6.7");
+      expect(answerText).toMatch(
+        /^Your dev-main snapshot \(2026-08-04\) is 1 month older than the newest tag, 2\.6\.7\. /,
+      );
       const lead = container.querySelector(".detail-lead")?.textContent ?? "";
       expect(lead).not.toContain("Last release");
-      expect(lead).not.toContain("2026-09-13");
+      expect(lead).not.toMatch(/stable/i);
       expect(container.querySelector(".detail-timeline-answer")?.textContent).toContain(
         "a branch snapshot, not a release, dated 2 months ago",
       );
+    });
+
+    it("the answer's tag words open level 1: both dates oldest first, then the pre-release caveat", () => {
+      const { container, dispatch } = renderDetail(WALLABAG_013, "friendsofsymfony/oauth-server-bundle");
+      expect(container.querySelector(".detail-answer")?.textContent).toMatch(
+        /^Your dev-master snapshot \(2022-03-24\) is 3\.2 years newer than the newest tag, 1\.6\.2\. /,
+      );
+      const button = screen.getByRole("button", { name: "the newest tag, 1.6.2" });
+      expect(button.getAttribute("aria-expanded")).toBe("false");
+      const panel = container.querySelector<HTMLElement>(`#${button.getAttribute("aria-controls") ?? ""}`);
+      expect(panel?.hidden).toBe(true);
+      expect(panel?.querySelector(".detail-tags-dates")?.textContent).toBe(
+        "tag 1.6.2 2019-01-23 3.2 years later snapshot dev-master 2022-03-24 · yours",
+      );
+      expect(panel?.textContent).toContain("A tag here can be a pre-release: lockrot counts those as tags.");
+      expect(panel?.textContent).not.toMatch(/stable/i);
+      fireEvent.click(button);
+      expect(dispatch).toHaveBeenCalledWith({ type: "disclose", key: "pinned-tags", open: true });
+      // S2 fired, so the release slot keeps its age and the answer carries the tag: no note repeats it.
+      expect(factRows(container)[1]).toEqual(["Last release", "7.7 y ago"]);
+    });
+
+    it("no tag at all opens nothing: the answer already says a pre-release would count (rulerz, acme/untagged)", () => {
+      const open = { disclosure: { "pinned-tags": true } };
+      for (const [model, pkg] of [
+        [WALLABAG_013, "wallabag/rulerz"],
+        [EDGES_013, "acme/untagged"],
+      ] as const) {
+        const { container } = renderDetail(model, pkg, vi.fn(), open);
+        expect(container.querySelector(".detail-answer")?.textContent, pkg).toContain(
+          "lists no tag, not even a pre-release.",
+        );
+        expect(container.querySelector(".detail-answer .l1-btn"), pkg).toBeNull();
+        expect(container.querySelector(".detail-tags"), pkg).toBeNull();
+        cleanup();
+      }
+    });
+
+    it("nothing opens where the answer words no tag fact (acme/path-lib's null, an older document with none)", () => {
+      for (const [model, pkg] of [
+        [EDGES_013, "acme/path-lib"],
+        [MAUTIC, "mautic/core-lib"],
+      ] as const) {
+        const { container } = renderDetail(model, pkg);
+        expect(container.querySelector(".detail-answer .l1-btn"), pkg).toBeNull();
+        expect(container.querySelector(".detail-tags"), pkg).toBeNull();
+        cleanup();
+      }
+    });
+
+    it("on paper the tag words are the sentence's own and level 1 is open", () => {
+      const { container } = render(
+        <PrintContext.Provider value={true}>
+          <ReportContext.Provider
+            value={{
+              model: WALLABAG_013,
+              state: {
+                view: "findings",
+                q: "",
+                pkg: "friendsofsymfony/oauth-server-bundle",
+                sort: "verdict",
+                sortDesc: false,
+                filters: EMPTY_FILTERS,
+                disclosure: {},
+              },
+              dispatch: vi.fn(),
+              now: new Date(WALLABAG_013.report.generatedAt),
+              wide: true,
+              cursor: null,
+              openGlossary: vi.fn(),
+              openGlossaryFrom: vi.fn(),
+            }}
+          >
+            <Detail onClose={vi.fn()} />
+          </ReportContext.Provider>
+        </PrintContext.Provider>,
+      );
+      expect(container.querySelector(".detail-answer button")).toBeNull();
+      expect(container.querySelector<HTMLElement>(".detail-tags")?.hidden).toBe(false);
     });
 
     it("glosses a libyears of 0.0 so it does not read as good news, and keeps an abandoned age in ink everywhere", () => {
@@ -1052,30 +1126,62 @@ describe("Detail", () => {
       return container.querySelector(".detail-baseline")?.textContent ?? "";
     }
 
-    it("says an accepted finding does not fail this run only when its gate says the baseline exempts it", () => {
+    /** The line under the pills, where every report's detail says whether it fails this run. */
+    function gateLine(
+      status: string,
+      gate: Record<string, unknown> | null,
+      verdict = "stale",
+    ): string | null {
+      const model = normalize({
+        report: {
+          lockrot: { version: "0.13.0", schema: 1 },
+          generated_at: "2026-01-01T00:00:00Z",
+          run: { fail_on: "high", fail_on_kind: "priority" },
+          gate: { fails: true, tripped_by: ["fail_on"], fail_on_applied: true },
+          baseline: { path: "baseline.json", known: 1, new: 1, worsened: 0, stale: [] },
+          findings: [
+            {
+              package: "vendor/same",
+              version: "1.0.0",
+              verdict,
+              priority: "high",
+              baseline: { status, previous_verdict: null },
+              gate,
+            },
+          ],
+        },
+      });
+      if (!model.ok) throw new Error(model.error.message);
+      const { container } = renderDetail(model.model, "vendor/same");
+      return container.querySelector(".detail-gate")?.textContent ?? null;
+    }
+
+    it("the sentence says where it stands against the file; the line under the pills, the run", () => {
       expect(withGate("known", "stale", { reaches_fail_on: true, fails: false, exempt_by: "baseline" })).toBe(
-        "Already accepted in baseline.json as stale, so it does not fail this run.",
-      );
-      // Known, but it does not reach fail-on: nothing exempts it, and the build is not mentioned.
-      expect(withGate("known", "stale", { reaches_fail_on: false, fails: false, exempt_by: null })).toBe(
         "Already accepted in baseline.json as stale.",
       );
+      expect(gateLine("known", { reaches_fail_on: true, fails: false, exempt_by: "baseline" })).toBe(
+        "does not fail · meets --fail-on=high, accepted",
+      );
+      // Known, but it does not reach fail-on: nothing exempts it, and the run is not mentioned.
+      expect(gateLine("known", { reaches_fail_on: false, fails: false, exempt_by: null })).toBeNull();
     });
 
     it("says a finding fails this run when its gate says so", () => {
       expect(
         withGate("new", null, { reaches_fail_on: true, fails: true, exempt_by: null }, "abandoned"),
-      ).toBe("Not in baseline.json: new since it was written. It fails this run.");
+      ).toBe("Not in baseline.json: new since it was written.");
+      expect(gateLine("new", { reaches_fail_on: true, fails: true, exempt_by: null }, "abandoned")).toBe(
+        "fails this run · meets --fail-on=high",
+      );
     });
 
     it("names another exemption than the baseline as written, and says it does not fail this run", () => {
-      expect(
-        withGate("new", null, { reaches_fail_on: true, fails: false, exempt_by: "waiver" }, "abandoned"),
-      ).toBe(
-        "Not in baseline.json: new since it was written. Exempt for another reason (waiver), so it does not fail this run.",
+      expect(gateLine("new", { reaches_fail_on: true, fails: false, exempt_by: "waiver" }, "abandoned")).toBe(
+        "does not fail · meets --fail-on=high, exempt: waiver",
       );
       expect(withGate("known", "stale", { reaches_fail_on: true, fails: false, exempt_by: "waiver" })).toBe(
-        "Already accepted in baseline.json as stale. Exempt for another reason (waiver), so it does not fail this run.",
+        "Already accepted in baseline.json as stale.",
       );
     });
 
@@ -1977,29 +2083,84 @@ describe("open vocabularies (lockrot 0.13): a value this page does not know is s
     ]);
   });
 
-  it("acme/left: an unknown floor_source is S8 data as written, and the release branches draw no 0.13 row field", () => {
+  it("acme/left: an unknown floor_source and php_blocked_by are shown as written, never a raw known code", () => {
     const { container } = renderDetail(EDGES_013, "acme/left");
     const s8 = firedRow(container, "S8");
     const data = Array.from(s8?.querySelectorAll("dl.detail-data > dt") ?? []);
     const floor = data.find((dt) => dt.textContent === "floor source");
     expect(words(floor?.nextElementSibling)).toBe("extension");
 
-    const timeline = container.querySelector(".detail-timeline")?.cloneNode(true) ?? null;
-    expect(timeline).not.toBeNull();
-    for (const value of ["extension", "needs_newer", "stops_before", "project"]) {
+    const timeline = container.querySelector(".detail-timeline");
+    expect(Array.from(timeline?.querySelectorAll("code") ?? [], (c) => c.textContent)).toContain("extension");
+    for (const value of ["needs_newer", "stops_before", "project"]) {
       expect(timeline?.textContent).not.toContain(value);
     }
     cleanup();
-    // The page draws none of the admission keys yet: the section is the same without them.
+    // A document without the row keys draws less through the same code: no floors words at all.
     const without = renderDetail(edgesWithoutRowKeys(), "acme/left").container;
-    expect(without.querySelector(".detail-timeline")?.isEqualNode(timeline)).toBe(true);
+    const older = without.querySelector(".detail-timeline");
+    expect(older?.querySelector(".detail-timeline-floors")).toBeNull();
+    expect(older?.querySelector(".l1-btn")).toBeNull();
+    expect(older?.querySelector(".detail-timeline-sub")?.textContent).not.toContain("admit");
   });
 
-  it("acme/floors: every misses_* side, an unknown one included, draws the detail it has without them", () => {
-    const now = renderDetail(EDGES_013, "acme/floors").container.cloneNode(true);
+  it("scheb/2fa-bundle: the floors sentence takes the newest's php from the sub, which an older report keeps", () => {
+    const now = renderDetail(WALLABAG_013, "scheb/2fa-bundle").container;
+    const sub = now.querySelector(".detail-timeline-sub")?.textContent ?? "";
+    expect(sub).toContain("(3 months ago). Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4;");
+    expect(sub).not.toContain("requires php");
+    cleanup();
+    const older = renderDetail(WALLABAG, "scheb/2fa-bundle").container;
+    expect(older.querySelector(".detail-timeline-sub")?.textContent).toContain(
+      "and requires php ~8.4.0 || ~8.5.0.",
+    );
+  });
+
+  it("on paper Each branch is open and has no button", () => {
+    const { container } = render(
+      <PrintContext.Provider value={true}>
+        <ReportContext.Provider
+          value={{
+            model: EDGES_013,
+            state: {
+              view: "findings",
+              q: "",
+              pkg: "acme/left",
+              sort: "verdict",
+              sortDesc: false,
+              filters: EMPTY_FILTERS,
+              disclosure: {},
+            },
+            dispatch: vi.fn(),
+            now: new Date(EDGES_013.report.generatedAt),
+            wide: true,
+            cursor: null,
+            openGlossary: vi.fn(),
+            openGlossaryFrom: vi.fn(),
+          }}
+        >
+          <Detail onClose={vi.fn()} />
+        </ReportContext.Provider>
+      </PrintContext.Provider>,
+    );
+    const panel = container.querySelector(".detail-timeline-floors");
+    expect(panel?.hasAttribute("hidden")).toBe(false);
+    expect(panel?.textContent).toContain(
+      "1.x (yours) needs a newer PHP than your require.php allows at its lowest but admits PHP 8.4 — it fits once your require.php starts higher",
+    );
+    expect(container.querySelector(".detail-timeline .l1-btn")).toBeNull();
+  });
+
+  it("acme/floors: every misses_* side is worded, an unknown one as written; without them nothing is", () => {
+    const now = renderDetail(EDGES_013, "acme/floors").container;
+    const panel = now.querySelector(".detail-timeline-floors");
+    expect(panel?.textContent).toContain("does not admit PHP 8.4 (lockrot: straddles)");
+    expect(panel?.textContent).toContain("admits no PHP version");
+    expect(now.querySelector(".detail-timeline-fold-words")?.textContent).toContain("4 miss one or both");
     cleanup();
     const without = renderDetail(edgesWithoutRowKeys(), "acme/floors").container;
-    expect(without.isEqualNode(now)).toBe(true);
-    expect(now.textContent).not.toContain("straddles");
+    expect(without.querySelector(".detail-timeline-floors")).toBeNull();
+    expect(without.querySelector(".detail-timeline-fold-words")).toBeNull();
+    expect(without.textContent).not.toContain("straddles");
   });
 });

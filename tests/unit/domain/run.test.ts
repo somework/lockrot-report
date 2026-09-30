@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { Model, PackageDetails } from "../../../src/model/types";
 import {
+  noteRepositories,
+  repositoryGroups,
   activityTally,
   cacheAge,
   cacheNullReason,
@@ -203,10 +205,10 @@ describe("failOnThreshold", () => {
 
   it("words the threshold from run.fail_on_kind", () => {
     expect(failOnThreshold(run("none", "none"))).toBe("fails on nothing");
-    expect(failOnThreshold(run("silent", "verdict"))).toBe("fails on a verdict at least as severe as silent");
-    expect(failOnThreshold(run("high", "priority"))).toBe("fails on a priority at least as high as high");
+    expect(failOnThreshold(run("silent", "verdict"))).toBe("fails on verdict silent or a more severe one");
+    expect(failOnThreshold(run("high", "priority"))).toBe("fails on priority high or higher");
     expect(failOnThreshold(run("unchecked", "unchecked"))).toBe(
-      "fails on any finding whose check did not run",
+      "fails on any package whose check did not run",
     );
   });
 
@@ -215,5 +217,103 @@ describe("failOnThreshold", () => {
     // The page cannot tell a verdict from a priority by the value alone.
     expect(failOnThreshold(run("high", null))).toBeNull();
     expect(failOnThreshold(run(null, null))).toBeNull();
+  });
+});
+
+describe("noteRepositories", () => {
+  const note = (code: string, data: Record<string, unknown>) => ({
+    code,
+    text: "t",
+    docsUrl: null,
+    setsNetworkFailures: true,
+    data,
+  });
+
+  it("lists each repository as host/repo, with its message when it has one", () => {
+    const data = {
+      forge_id: "github",
+      repositories: [
+        { host: "github.com", repo: "acme/direct-d", message: "API rate limit exceeded." },
+        { host: "codeberg.org", repo: "acme/direct-i" },
+      ],
+    };
+    for (const code of [
+      "repository_activity_rate_limited",
+      "repository_activity_unreachable",
+      "repository_activity_not_found",
+    ]) {
+      expect(noteRepositories(note(code, data)), code).toEqual([
+        { name: "github.com/acme/direct-d", message: "API rate limit exceeded." },
+        { name: "codeberg.org/acme/direct-i", message: null },
+      ]);
+    }
+  });
+
+  it("reads no data for another code, an unknown one or a missing entry", () => {
+    const data = { repositories: [{ host: "github.com", repo: "acme/x" }] };
+    expect(noteRepositories(note("repository_activity_anonymous_cap", data))).toEqual([]);
+    expect(noteRepositories(note("forge_outage", data))).toEqual([]);
+    expect(noteRepositories(undefined)).toEqual([]);
+  });
+
+  it("keeps what an odd entry has and drops one with neither host nor repo", () => {
+    const data = {
+      repositories: [{ repo: "acme/only-repo" }, { host: "gitlab.com", message: 7 }, null, "x", {}],
+    };
+    expect(noteRepositories(note("repository_activity_not_found", data))).toEqual([
+      { name: "acme/only-repo", message: null },
+      { name: "gitlab.com", message: null },
+    ]);
+    expect(noteRepositories(note("repository_activity_not_found", { repositories: null }))).toEqual([]);
+    expect(noteRepositories(note("repository_activity_not_found", {}))).toEqual([]);
+  });
+});
+
+describe("repositoryGroups", () => {
+  it("says a message once for every repository that has exactly that message, in first-seen order", () => {
+    const repos = [
+      { name: "github.com/a/one", message: "offline" },
+      { name: "gitlab.com/b/two", message: "curl error 6" },
+      { name: "github.com/c/three", message: "offline" },
+      { name: "codeberg.org/d/four", message: null },
+      { name: "codeberg.org/e/five", message: null },
+    ];
+
+    expect(repositoryGroups(repos, null)).toEqual({
+      groups: [
+        { message: "offline", names: ["github.com/a/one", "github.com/c/three"] },
+        { message: "curl error 6", names: ["gitlab.com/b/two"] },
+        { message: null, names: ["codeberg.org/d/four", "codeberg.org/e/five"] },
+      ],
+      hidden: 0,
+    });
+  });
+
+  it("keeps messages apart that differ at all, the page matches no text", () => {
+    const repos = [
+      { name: "github.com/a/one", message: "offline: https://api.github.com/repos/a/one" },
+      { name: "github.com/b/two", message: "offline: https://api.github.com/repos/b/two" },
+    ];
+
+    expect(repositoryGroups(repos, null).groups).toHaveLength(2);
+  });
+
+  it("groups only the first repositories up to the cap and counts the rest", () => {
+    const repos = Array.from({ length: 25 }, (_, i) => ({
+      name: `github.com/a/r${String(i)}`,
+      message: "offline",
+    }));
+
+    const { groups, hidden } = repositoryGroups(repos, 20);
+
+    expect(groups).toEqual([{ message: "offline", names: repos.slice(0, 20).map((r) => r.name) }]);
+    expect(hidden).toBe(5);
+  });
+
+  it("hides nothing when the list is within the cap", () => {
+    const repos = [{ name: "github.com/a/one", message: null }];
+
+    expect(repositoryGroups(repos, 20).hidden).toBe(0);
+    expect(repositoryGroups([], 20)).toEqual({ groups: [], hidden: 0 });
   });
 });

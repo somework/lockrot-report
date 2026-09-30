@@ -10,6 +10,88 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Added
 
+- Whether the run failed, as lockrot decided it. The header says "this run fails · --fail-on=high"
+  (or passes, or "baseline run passes · --fail-on not applied"), the causes as the CLI's flags. The
+  summary's answer says how many packages fail, total first — "173 fail this run: 2 flagged, 171
+  unchecked" — with a baseline closing the Against sentence instead, and a size down where the
+  reader's serif would wrap it; a baseline run nothing failed says "This run passes: it applies no
+  fail-on, though 39 packages meet it". Every count lists what it counts: a total that is all on
+  Findings filters Findings to them ("12 fail this run", the rail's own filter, focus kept on the
+  count), a total with packages Findings does not list opens All packages on every failing one, the
+  flagged count filters Findings (from another tab, Findings with that filter alone), and the
+  unflagged count opens All packages on exactly those packages. A small "why" after the sentence,
+  apart from the counts, opens what each cause fails on and what exempts the rest, and prints open,
+  in the answer's width so the waffle beside it stays put. Several causes read apart in the header,
+  "--fail-on=copyleft · licence_policy". The rail gains "Fails this run" (`#gate=fails`); All
+  packages filtered by it answers why they fail instead of how far behind they are: "All 173 listed
+  fail this run: --fail-on=unchecked fails every package with a check that did not run (S10)", or
+  "at priority high or higher", "whose verdict is pinned or more severe", an unknown kind as written.
+- Each Findings and All packages row says "fails" or "exempt: <as lockrot wrote it>" at the end of
+  a line with room; under `--fail-on=unchecked`, where neither verdict nor priority says why, "fails ·
+  unchecked", on every row of the list or on none (then "fails", the list's lead and each row's
+  description saying why), so no row changes height, in one place per layout so the words form a column
+  down the list; where words would widen an All packages column and grow the table, that column's
+  words move to the next place together, and a row that had no room there tries again once they
+  have widened it; a row with room nowhere underlines its verdict (dotted for an exemption); a
+  screen reader hears it with the row. The open package says in
+  one line under its pills whether it fails this run and which fail-on it meets.
+- Run data gains root package, strict network, mode and, where lockrot decided the gate, result
+  rows; its sentence says whether the run failed and on what. A note that makes `network_failures`
+  true is marked "network failure", and the network failures row points at those ("6 of the 21
+  notes above"). A note that counts the repositories
+  whose activity is missing (rate limited, unreachable, not found) lists them on request, the first
+  20 and then "All 186", lockrot's message said once for every repository that has exactly it, and
+  prints them all.
+- A run that fails while no package does says so under the lead: "This run fails by
+  --strict-network". Where the header's flags would push its buttons onto a second row, they leave
+  the line to the buttons and the summary names them ("12 fail this run by --fail-on=high"); a
+  screen reader, the tooltip and paper keep them, and a phone keeps them on a row of their own.
+- Release branches say which branches the project's PHP can take. One clause ends the sentence about
+  newer branches, yours first — "Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x
+  needs a newer PHP than your require.php allows at its lowest — it fits once your require.php starts
+  higher" — then the branches newer than yours by the way they miss a floor as lockrot wrote it
+  (needs a newer PHP, stops before, …), the project's floor always as the lowest PHP its require.php
+  allows, and what else a branch admits one press away; yours names the release
+  its php comes from when you run an older one ("Yours (as of 1.9.0) needs …"). The clause takes the
+  place of the newest branch's "requires php …", which the table's PHP column still shows. "Each
+  branch" opens what the sentence left out, yours in full, runs of alike branches as "0.1.x – 0.7.x
+  (7)", and stays open from one package to the next; a closed fold row says what it hides ("3 stop
+  before both"). A report that names no project floor says so once. Where lockrot held the branches
+  to a floor of another kind, "Each branch" says which, as lockrot wrote it: "lockrot reads the
+  extension floor as ext-sodium >=2". Where the clause would add a third line in the reader's fonts,
+  it leaves to "Each branch" what a miss waits for, then the clauses that admit both, so why a newer
+  branch does not fit stays in sight, then require.php's constraint, and at the last keeps one
+  clause, the first that says a miss, a newer branch's before yours, so level 0 says why a newer
+  branch does not fit in any fonts.
+- A left-behind package whose newest branch the project cannot take names the one it can, in the
+  words its row uses and against the floor lockrot held it to: "its last release was 4.5 years ago;
+  7.x is the newest that fits your require.php", or "no newer branch fits PHP 8.4", an unknown floor
+  as written; the row says "5.x stopped; 7.x fits" instead of "8.x ships". Where those words would
+  cost the lead a line in the reader's fonts, it says "7.x fits your require.php", then "7.x fits" or
+  "no newer branch fits"; paper has them in full.
+- A pinned package says plainly which is newer, its snapshot or its newest tag: "Your dev-master
+  snapshot (2022-03-24) is 3.2 years newer than the newest tag, 1.6.2", or "1 month older than" where
+  a newer tag exists. Where lockrot could not tell, it says so ("lockrot could not tell whether it has
+  a tag") instead of "rather than a release". The tag's version opens both dates, oldest first
+  with the gap between them, the snapshot marked "yours", and that a tag here can be a pre-release. A repository with no tag
+  says so in full, "lists no tag, not even a pre-release", with nothing to open. The Snapshot key
+  fact notes the tag only where the answer does not.
+- A pinned row in Findings leads with its S6 in a few words, "snapshot 1 mo before tag 2.6.7",
+  "snapshot; no tag at all", "snapshot; tags unknown", "1.0.0 is not a tag in its repository", and
+  search finds them. Where the words name a tag beside the snapshot, the age column's number says
+  "tag" under it, the two centred so a one-line row holds both, and its years read as the tag's; on
+  a phone the word sits just after the number, clear of the bar.
+- Blast radius names the flagged packages lockrot counts under no direct requirement because too
+  many share them: one sentence under the table ("league/config (stale) is left out of Blast
+  radius: 9 direct requirements share it, more than 8"); two or more are named with their counts,
+  "doctrine/cache (11) and symfony/security-guard (9) are left out of Blast radius, each shared by
+  more than 8 direct requirements". Where that would take a third line in the reader's fonts, it
+  names one and counts the rest ("doctrine/cache (11) and 1 more"), then only counts them ("2
+  packages"); one entry leaves "more than 8" to the dots. "Who shares it", or "direct
+  requirements", opens a dot per requirement against the limit of 8 and the requirements each sits
+  under, whole names, and prints open. Each name opens its detail, and the rail on the tab counts
+  them.
+
 - All packages on a phone: under 480px the rows stack — name and version, then the verdict, the
   libyears bar and how it gets in, with the priority as the row's left rule — instead of a table
   cut after its second column. The list opens with how many of the listed packages are behind their
@@ -100,11 +182,6 @@ tag or the address format, says so under **Breaking** in its entry.
   lists its findings on Findings in one press. New and worsened wear the page's accent colour
   everywhere, so red and orange keep meaning critical and high; the rail names the baseline file
   whole, in its own case.
-- Beside the header's gate fact, a count of the findings at or above the run's `--fail-on` level
-  and, with a baseline, how many "of them" it does not already accept; that second count lists
-  exactly those findings on Findings in one press, from any tab. The page still does not say
-  whether the run passed, and an accepted package's detail names `--fail-on`'s counting rule, not
-  a build outcome.
 
 - "Print / PDF" in the header prints the whole report as one document, whatever tab is open: the
   summary band, Findings with every signal, Advisories in full, the ranked rows of Blast radius and
@@ -239,6 +316,9 @@ tag or the address format, says so under **Breaking** in its entry.
   the exposure list, plus 8 of 8 flagged ones it leaves out".
 
 ### Changed
+
+- "fix not checked" reads apart from "no fix listed": italic and quieter, on the Advisories card and
+  tab and in the open package, whose fix ladder hatches that rung.
 
 - Rail counts follow the other filters and the search: each is what the list shows with that row
   on — a click on a second signal lists the union, and its count says so — and a row matching
@@ -414,26 +494,17 @@ tag or the address format, says so under **Breaking** in its entry.
   checked"; the rail's "What the fix costs" offers "Fix not checked"; the summary band's package
   line and a row's advisory hover say "fix not checked".
 - Run data's fail-on row says what the threshold fails on, from `run.fail_on_kind`: "high · fails on
-  a priority at least as high as high", "silent · fails on a verdict at least as severe as silent",
-  "fails on any finding whose check did not run", "fails on nothing", and a kind the page does not
-  know as written. A report without the kind shows the value alone.
-- The header's gate tally counts the findings whose own `gate` says they reach fail-on and, with a
-  baseline, the ones it does not exempt, instead of ranking them by the page's copy of lockrot's
-  order; a threshold of a kind the page does not know is counted too ("1 reach it"). A report whose
-  findings carry no `gate` shows the gate fact without a tally.
-- The header's gate fact and Run data's answer no longer call a `--fail-on=none` run with
-  `--strict-network` ungated or say it "exits 0 whatever it finds": the fact reads "gate: strict
-  network" and says a failed network lookup fails the run, and any other run names `--strict-network`
-  beside its fail-on. The popover words the rule as the Run row does, from `run.fail_on_kind` ("fails
-  on a priority at least as high as high", a kind it does not know as written), says a
-  `generate_baseline` run judged no finding against its fail-on instead of that it exits 1, and
-  counts as not accepted only the findings nothing exempts, naming another exemption as written
-  (`waiver`). An `unchecked` tally reads "173 carry S10".
-- An open package's baseline paragraph says "so it does not fail this run" when its `gate` says the
-  baseline exempts it, "Exempt for another reason (`waiver`), so it does not fail this run." when
-  another exemption, shown as written, does, and "It fails this run." when its `gate` says it fails;
-  otherwise it says nothing about the build. "lockrot's --fail-on does not count it", read off the baseline status
-  alone, is gone.
+  priority high or higher", "silent · fails on verdict silent or a more severe one", "fails on any
+  package whose check did not run", "fails on nothing", and a kind the page does not know as
+  written. A report without the kind shows the value alone.
+- A report with no decided gate (an older one, or a `--fail-on=none` run that did not fail) keeps
+  the header's quiet fact, and no longer calls a `--fail-on=none` run with `--strict-network`
+  ungated or says it "exits 0 whatever it finds": the fact reads "gate: strict network" and its
+  popover says a failed network lookup fails the run. A decided gate is the header's words and the
+  summary's count above; the header counts no findings of its own.
+- An open package's baseline paragraph says only where it stands against the file; whether it fails
+  this run is the line under its pills, from its own `gate`. "lockrot's --fail-on does not count
+  it", read off the baseline status alone, is gone.
 - The note above Findings naming packages with an advisory but no rot verdict is narrowed by the
   search box and the rail, like the list under it, instead of naming every such package whatever
   is filtered.
@@ -442,8 +513,7 @@ tag or the address format, says so under **Breaking** in its entry.
   reach it than `exposure_rule.max_fan_in` allows (its `unattributed` list: akaunting's
   `league/config`, reached from 9), is no longer listed under a row or counted as reached from one
   ("+1 more it reaches, listed under no row"), so every row's numbers add up to lockrot's own count
-  for that requirement. The tab does not show it yet, so the rail on that tab does not count it
-  either; Findings still lists it.
+  for that requirement; the sentence under the table names it instead.
 - A signal id, S10 reason or check the page does not know (a later lockrot's `S99`, a check from
   outside lockrot such as `acme:licence`, `quota_exhausted`) is shown as written, in code, and never
   in a known one's words: the open package's tally says "also acme:licence, S99, checks this page

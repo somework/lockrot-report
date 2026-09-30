@@ -40,6 +40,7 @@ const AXE_FIXTURES: readonly FixtureName[] = [
   "mini-0.13-gate-unchecked",
   "mini-0.13-gate-unknown",
   "mini-0.13-gate-verdict",
+  "synthetic-shared-many",
 ];
 const SCHEMES = ["light", "dark"] as const;
 const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;

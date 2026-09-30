@@ -182,17 +182,17 @@ describe("unattributed packages (lockrot 0.13.0 `unattributed`, `exposure_rule.m
     expect([lib?.count, bundle?.count]).toEqual([1, 0]);
   });
 
-  it("stays off the receipt and the unfiltered totals, and off the tab until a tail draws it (PD-RAIL-1)", () => {
+  it("stays off the receipt and the unfiltered totals; the shared tail places it on the tab (PD-RAIL-1)", () => {
     const layout = radiusLayout(after, [own, shared]);
 
     expect(layout.receipt).toEqual([]);
     expect(layout.throughOther).toEqual([]);
     expect([layout.unfilteredTotal, layout.unfilteredRows]).toEqual([1, 1]);
     expect(layout.unattributed).toEqual([shared]);
-    // No row, tail or footnote draws it yet, so the tab has no place for it and the rail there
-    // does not count it: a rail count is the packages its button lists.
-    expect([...radiusListed(layout)].sort()).toEqual(["acme/own"]);
-    expect(placedOnRadius(after, [own, shared]).map((f) => f.package)).toEqual(["acme/own"]);
+    // The tail under the table names it and opens it, so the rail there counts it: a rail count is
+    // the packages its button lists.
+    expect([...radiusListed(layout)].sort()).toEqual(["acme/own", "acme/shared"]);
+    expect(placedOnRadius(after, [own, shared]).map((f) => f.package)).toEqual(["acme/own", "acme/shared"]);
     // With nothing unattributed it is placed under its chain's first row.
     expect(placedOnRadius(before, [own, shared]).map((f) => f.package)).toEqual(["acme/own", "acme/shared"]);
   });
@@ -231,7 +231,7 @@ describe("unattributed packages (lockrot 0.13.0 `unattributed`, `exposure_rule.m
   it.each([
     ["gh_akaunting_akaunting-0.13", "league/config"],
     ["mini-0.13-edges", "acme/shared-util"],
-  ])("on %s, %s is on the layout's unattributed list and nowhere in a row", (corpus, pkg) => {
+  ])("on %s, %s is on the layout's unattributed list, in no row, and placed by the tail", (corpus, pkg) => {
     const model = load(corpus);
     const all = population(model, "radius");
 
@@ -244,8 +244,8 @@ describe("unattributed packages (lockrot 0.13.0 `unattributed`, `exposure_rule.m
     ]);
     expect(inRows).not.toContain(pkg);
     expect(layout.receipt.map((r) => r.finding.package)).not.toContain(pkg);
-    expect(radiusListed(layout).has(pkg)).toBe(false);
-    expect(placedOnRadius(model, all).map((f) => f.package)).not.toContain(pkg);
+    expect(radiusListed(layout).has(pkg)).toBe(true);
+    expect(placedOnRadius(model, all).map((f) => f.package)).toContain(pkg);
     expect(new Set(placedOnRadius(model, all).map((f) => f.package))).toEqual(radiusListed(layout));
   });
 });

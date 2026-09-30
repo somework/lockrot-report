@@ -3,6 +3,7 @@ import type { Finding } from "../../model/types";
 import { hiddenByFilters } from "../../domain/filters";
 import { registryLink, repoHost, safeHref } from "../../domain/links";
 import { OutLink, Pill } from "../common/common";
+import { DetailGateLine } from "../common/GateWords";
 import { useReport } from "../context";
 import "./detail.css";
 
@@ -52,6 +53,7 @@ export function DetailHeader({ finding, onClose }: DetailHeaderProps) {
           )}
           {repositoryLink !== null && <OutLink href={repositoryLink}>{repoHost(repositoryLink)}</OutLink>}
         </div>
+        <DetailGateLine finding={finding} />
       </div>
       {hidden && (
         <p className="detail-hidden-note">

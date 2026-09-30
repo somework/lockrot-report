@@ -190,3 +190,24 @@ test.describe("PD-SUMMARY-6: the summary band's waffle stays readable in forced-
     });
   }
 });
+
+test.describe("PD-GATE-5: the advisory ladder keeps its bars in forced-colors mode", () => {
+  test("acme/silent-snapshot: the hatched 'not checked' share and the track stay painted", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.emulateMedia({ forcedColors: "active" });
+    await report.gotoWithHash(FIXTURES.miniEdges013, "pkg=acme%2Fsilent-snapshot");
+    const bar = page.locator(".detail-rung-bar.is-unchecked").first();
+    await expect(bar).toBeVisible();
+    const painted = await bar.evaluate((el) => {
+      const share = el.querySelector("i");
+      return {
+        hatch: share === null ? "" : getComputedStyle(share).backgroundImage,
+        track: getComputedStyle(el).boxShadow,
+      };
+    });
+    expect(painted.hatch).toContain("repeating-linear-gradient");
+    expect(painted.track).not.toBe("none");
+  });
+});

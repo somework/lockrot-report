@@ -102,7 +102,7 @@ test.describe("a tab switch resets scroll (a first-time-reader walk found the ol
       window.scrollTo(0, 2000);
     });
     await wallabag.setLocationHash("view=radius");
-    expect(await wallabag.activeTab()).toBe("radius");
+    await expect.poll(() => wallabag.activeTab()).toBe("radius");
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
   });
 });

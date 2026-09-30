@@ -53,13 +53,61 @@
 .detail-timeline-sub .detail-timeline-go {
   color: var(--accent-ink);
 }
+/* A key or a constraint as written: never split from its parenthesis. */
+.detail-timeline-code {
+  font-size: 12px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* Level 1 of the floors (TimelineFloors.tsx): a quiet list hung from the sentence that opens it. */
+.detail-timeline-floors {
+  margin: 6px 0 2px;
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid var(--border);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.floors-def {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.floors-def .detail-timeline-code {
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+.floors-groups {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.floors-groups li {
+  text-wrap: pretty;
+}
+.floors-groups .mono,
+.floors-groups .detail-timeline-code {
+  font-size: 11.5px;
+  color: var(--ink);
+}
+.floors-run {
+  white-space: nowrap;
+}
+.floors-count,
+.floors-yours {
+  color: var(--muted);
+}
 
 .detail-timeline-grid {
   display: grid;
   /* `auto`, not `max-content`, for the version: it grows to its full width whenever the panel has
      room, and only a phone-width panel with a long tag ("v2.0.2-stable") breaks it at its hyphen
      rather than squeezing the strip, the column that answers, below its minimum. */
-  grid-template-columns: max-content minmax(72px, 1fr) auto fit-content(13ch);
+  grid-template-columns: max-content minmax(72px, 1fr) auto fit-content(17ch);
   column-gap: 12px;
   margin-top: 4px;
   font: 11.5px/1.3 var(--mono);
@@ -352,6 +400,11 @@
   font-size: 11px;
   color: var(--muted);
   white-space: nowrap;
+}
+/* Under the range, inside the row's own min-height: a closed fold never hides a miss in silence. */
+.detail-timeline-fold-words {
+  display: block;
+  color: var(--ink-2);
 }
 
 /* The axis, under the rows: the oldest year on the left edge, "today" on the rule. */

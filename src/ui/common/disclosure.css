@@ -1,0 +1,70 @@
+/* Level 1 of a block (Disclosure.tsx). The marker is a glyph in a pseudo-element of an aria-hidden
+   span: a forced palette keeps its shape, and a screen reader hears the label alone. */
+.l1-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  margin: 0 -1px 0 1px;
+  padding: 0 1px;
+  border: 0;
+  border-bottom: 1px dotted currentColor;
+  border-radius: var(--radius-s) var(--radius-s) 0 0;
+  background: none;
+  font: inherit;
+  color: var(--accent-ink);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+/* A 24px target on a 12.5px footnote line, without growing the line. */
+.l1-btn::after {
+  content: "";
+  position: absolute;
+  inset: -4px -2px;
+}
+.l1-btn:hover {
+  background: var(--accent-soft);
+  border-bottom-style: solid;
+}
+/* Clear of the word before it, whose space the left margin widens; punctuation after it stays close. */
+.l1-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+.l1-mark {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.7em;
+  font-weight: 400;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+.l1-mark::before {
+  content: "▶";
+}
+.l1-btn[aria-expanded="true"] .l1-mark {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .l1-btn,
+  .l1-mark {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  .l1-btn {
+    color: LinkText;
+    border-bottom-color: LinkText;
+  }
+}
+/* base.css hides every [hidden] with !important; paper shows level 1 whatever its state. */
+@media print {
+  .l1-btn {
+    display: none;
+  }
+  .l1-panel[hidden] {
+    display: block !important;
+  }
+}

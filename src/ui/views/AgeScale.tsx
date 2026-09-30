@@ -43,18 +43,22 @@ export function AgeCell({
   scale,
   verdict,
   pinned = null,
+  tag = false,
 }: {
   scale: AgeScaleData;
   verdict: Verdict;
   pinned?: PinnedKind | null;
+  /** The age is the newest tag's, beside a why that names a snapshot too. */
+  tag?: boolean;
 }) {
   const years = scale.years.toFixed(1);
+  const lead = tag ? "newest tag released" : LEAD[scale.kind];
   const label = scale.contextOnly
-    ? `${LEAD[scale.kind]} ${years} years ago; age shown for context, not for priority — ${contextReason(
+    ? `${lead} ${years} years ago; age shown for context, not for priority — ${contextReason(
         verdict,
         pinned,
       )}`
-    : `${LEAD[scale.kind]} ${years} years ago; warn at ${scale.warn} years, high at ${scale.high}`;
+    : `${lead} ${years} years ago; warn at ${scale.warn} years, high at ${scale.high}`;
   const tone = scale.contextOnly ? null : ageZone(scale.years, scale.warn, scale.high);
   const over = scale.years > scale.max;
   const barClass = ["age-bar", tone === null ? "age-bar-context" : toneClass(tone), over ? "is-over" : ""]
@@ -70,6 +74,11 @@ export function AgeCell({
       <span className={tone === null ? "age-num" : `age-num is-toned ${toneClass(tone)}`} aria-hidden="true">
         {years}
       </span>
+      {tag && (
+        <span className="age-whose" aria-hidden="true">
+          tag
+        </span>
+      )}
     </span>
   );
 }

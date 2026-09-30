@@ -7,7 +7,7 @@ import {
   searchSplit,
   searchSplitPhrase,
 } from "../../../src/domain/searchHits";
-import { makeFinding } from "./fixtures";
+import { makeFinding, makeSignal } from "./fixtures";
 
 /** wallabag/rulerz's evidence, as the wallabag fixture carries it (shortened after the list). */
 const RULERZ_EVIDENCE =
@@ -42,6 +42,45 @@ describe("searchFields", () => {
       .map(([, value]) => value)
       .join(" ");
     expect(joined).toBe(`${f.package} ${f.version} ${f.verdict} ${f.evidence}`);
+  });
+});
+
+describe("searchFields: a pinned row's S6 words", () => {
+  const fos = makeFinding({
+    package: "friendsofsymfony/oauth-server-bundle",
+    verdict: "pinned",
+    version: "dev-master",
+    evidence: "pinned to branch snapshot dev-master",
+    signals: [
+      makeSignal({
+        id: "S6",
+        data: {
+          version: "dev-master",
+          reason: "branch_snapshot",
+          has_stable_release: true,
+          last_stable_version: "1.6.2",
+          last_stable_release: "2019-01-23T15:23:04+00:00",
+          snapshot_time: "2022-03-24T10:22:23+00:00",
+        },
+      }),
+    ],
+  });
+
+  it("searches the words the row shows, before the evidence", () => {
+    expect(searchFields(fos).map(([field]) => field)).toEqual([
+      "name",
+      "version",
+      "verdict",
+      "why",
+      "evidence",
+    ]);
+    expect(matchesFinding(fos, parseQuery("tag 1.6.2"))).toBe(true);
+    expect(searchHit(fos, parseQuery("1.6.2"))).toEqual({ field: "why", term: null, excerpt: null });
+  });
+
+  it("adds nothing for a row that does not lead with S6", () => {
+    expect(searchFields({ ...fos, verdict: "silent" }).map(([field]) => field)).not.toContain("why");
+    expect(matchesFinding({ ...fos, verdict: "silent" }, parseQuery("1.6.2"))).toBe(false);
   });
 });
 

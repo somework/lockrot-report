@@ -583,8 +583,17 @@ function buildBranchRow(raw: unknown): BranchRow {
     phpBlockedBy: asNullableString(rec.php_blocked_by),
     missesTargetPhp: asNullableString(rec.misses_target_php),
     missesProjectPhp: asNullableString(rec.misses_project_php),
+    floorFields: FLOOR_KEYS.some((key) => key in rec),
   };
 }
+
+const FLOOR_KEYS = [
+  "admits_target_php",
+  "admits_project_php",
+  "php_blocked_by",
+  "misses_target_php",
+  "misses_project_php",
+] as const;
 
 function buildActivity(raw: unknown): ExplainActivity | null {
   if (!isRecord(raw)) {

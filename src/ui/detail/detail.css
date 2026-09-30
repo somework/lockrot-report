@@ -755,6 +755,25 @@ button.detail-check {
   height: 100%;
   background: var(--crit);
 }
+/* No release was read: the share of advisories nobody looked for, hatched rather than filled. */
+.detail-rung-bar.is-unchecked i {
+  background: repeating-linear-gradient(-45deg, var(--muted) 0 2px, transparent 2px 5px);
+}
+/* A forced palette drops the fill and the hatch: the track outlined, the share solid or hatched in
+   system colours. */
+@media (forced-colors: active) {
+  .detail-rung-bar {
+    forced-color-adjust: none;
+    background: Canvas;
+    box-shadow: inset 0 0 0 1px CanvasText;
+  }
+  .detail-rung-bar i {
+    background: CanvasText;
+  }
+  .detail-rung-bar.is-unchecked i {
+    background: repeating-linear-gradient(-45deg, CanvasText 0 2px, Canvas 2px 5px);
+  }
+}
 .detail-rung-count {
   font-family: var(--mono);
   font-size: 11px;
