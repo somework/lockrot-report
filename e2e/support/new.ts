@@ -200,6 +200,10 @@ export class NewReportPage implements ReportPage {
     return names;
   }
 
+  packageRow(name: string): Locator {
+    return this.pkgLocator(name);
+  }
+
   private pkgLocator(name: string): Locator {
     return this.page
       .getByRole("row", { name, exact: true })

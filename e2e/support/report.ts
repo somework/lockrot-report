@@ -85,6 +85,8 @@ export interface ReportPage {
   /** Package names for the current view's rendered rows/cards, in document order. Duplicates are
    *  possible (e.g. one Advisories row per advisory, several under the same package). */
   rows(): Promise<string[]>;
+  /** The current view's row for this package, found by its role and accessible name. */
+  packageRow(name: string): Locator;
   /** A single click on the row/card/button that represents this package. Every list's row opens
    *  its package and never closes it (PD-ROWS-7); a `data-open` button always opens. */
   clickPackage(name: string): Promise<void>;

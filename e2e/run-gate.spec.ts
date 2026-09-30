@@ -267,7 +267,7 @@ test.describe("PD-GATE-3: a row's mark never grows it and is never cut", () => {
     page,
   }) => {
     await report.goto(FIXTURES.koelNoTokenUnchecked013);
-    const row = page.getByRole("listitem", { name: "jwilsson/spotify-web-api-php", exact: true });
+    const row = report.packageRow("jwilsson/spotify-web-api-php");
     await expect(row).toHaveAccessibleName("jwilsson/spotify-web-api-php");
     // The unchecked kind: neither the verdict nor the priority says why it fails, so the words do.
     await expect(row).toHaveAccessibleDescription(
