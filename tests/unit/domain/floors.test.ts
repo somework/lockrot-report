@@ -145,9 +145,9 @@ describe("standing: four states per field", () => {
 });
 
 describe("floorsAnswer: level 0, yours first, then the newer branches", () => {
-  it("scheb/2fa-bundle: the newest admits only the target; its way is left to level 1", () => {
+  it("scheb/2fa-bundle: the newest names the floor it misses; the way and what it admits are left to level 1", () => {
     expect(sentence("wallabag_wallabag-0.13", "scheb/2fa-bundle")).toBe(
-      "Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x admits only PHP 8.4.",
+      "Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x misses your require.php.",
     );
     expect(rest("wallabag_wallabag-0.13", "scheb/2fa-bundle")).toEqual([
       "8.x: needs a newer PHP than your require.php but admits PHP 8.4",
@@ -156,7 +156,7 @@ describe("floorsAnswer: level 0, yours first, then the newer branches", () => {
 
   it("plank/laravel-mediable: counts only the newer branches and yours; the older ones wait at level 1", () => {
     expect(sentence("gh_akaunting_akaunting-0.13", "plank/laravel-mediable")).toBe(
-      "Yours admits your require.php (^8.1) and PHP 8.4; 7.x and 6.x admit only PHP 8.4.",
+      "Yours admits your require.php (^8.1) and PHP 8.4; 7.x and 6.x miss your require.php.",
     );
     expect(rest("gh_akaunting_akaunting-0.13", "plank/laravel-mediable")).toEqual([
       "7.x, 6.x: need a newer PHP than your require.php but admit PHP 8.4",
@@ -231,7 +231,7 @@ describe("floorsAnswer: level 0, yours first, then the newer branches", () => {
       row({ branch: "1.x", installed: true, admitsTargetPhp: false, admitsProjectPhp: false }),
     ];
     expect(said(rows, BOTH)).toBe(
-      "Yours admits neither your require.php (>=8.2) nor PHP 8.4; 2.x admits only your require.php.",
+      "Yours admits neither your require.php (>=8.2) nor PHP 8.4; 2.x misses PHP 8.4.",
     );
   });
 
@@ -344,9 +344,9 @@ describe("foldWords: a closed fold says what it hides", () => {
     expect(foldWords(rector.rows.slice(1), rector.floors)).toBe("7 stop before PHP 8.4");
   });
 
-  it("rows each missing the same one of two floors admit only the other", () => {
+  it("rows each missing the same one of two floors say it, never that they admit only the other", () => {
     const { rows, floors } = fixture("wallabag_wallabag-0.13", "phpunit/php-timer");
-    expect(foldWords(rows.slice(0, 2), floors)).toBe("2 admit only PHP 8.4");
+    expect(foldWords(rows.slice(0, 2), floors)).toBe("2 miss your require.php");
   });
 
   it("mixed misses are counted as missing one or both; a fold with none says nothing", () => {

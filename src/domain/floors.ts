@@ -202,8 +202,8 @@ interface Said {
 
 /**
  * Where the words stand: a level-1 line or a fold cell says all; level 0 says yours' misses without
- * the floor it admits, and a newer row blocked only as blocked, missing one of two floors as
- * admitting the other. What level 0 leaves out waits at level 1.
+ * the floor it admits, a newer row blocked only as blocked, and a newer row missing one of two floors
+ * by the floor it misses. What level 0 leaves out waits at level 1.
  */
 type Place = "cell" | "yours" | "newer";
 
@@ -264,8 +264,7 @@ function missesSaid(
     st.unanswered.length === 0 &&
     first.code !== "unsatisfiable"
   ) {
-    const other: FloorKey = first.floor === "project" ? "target" : "project";
-    words = [text(`${verb("admits", "admit", many)} only `), ...namer.one(other, false)];
+    words = [text(`${verb("misses", "miss", many)} `), ...namer.one(first.floor, false)];
     stated = false;
   } else {
     words = st.misses.flatMap((miss, i) => [
@@ -547,8 +546,7 @@ export function foldWords(rows: readonly BranchRow[], floors: Floors): string | 
         st.unanswered.length === 0,
     )
   ) {
-    const other: FloorKey = only === "project" ? "target" : "project";
-    return `${n} ${verb("admits", "admit", many)} only ${plain(shortName(other, floors, false))}`;
+    return `${n} ${verb("misses", "miss", many)} ${plain(shortName(only ?? "target", floors, false))}`;
   }
   const firstKey = key(standingWords(first, floors, false));
   const alike = missing.every((st) => key(standingWords(st, floors, false)) === firstKey);

@@ -28,7 +28,7 @@ test.describe("level 0: the answer without a click", () => {
     );
     const sub = page.locator(".detail-timeline-sub");
     await expect(sub).toContainText(
-      "(3 months ago). Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x admits only PHP 8.4.",
+      "(3 months ago). Yours, 7.x and 6.x admit your require.php (>=8.2) and PHP 8.4; 8.x misses your require.php.",
     );
     await expect(sub).not.toContainText("requires php");
   });
@@ -40,7 +40,7 @@ test.describe("level 0: the answer without a click", () => {
     await expect(page.locator(".detail-answer")).toContainText("; no newer branch fits.");
     const sub = page.locator(".detail-timeline-sub");
     await expect(sub).toContainText(
-      "Yours admits your require.php (^8.1) and PHP 8.4; 7.x and 6.x admit only PHP 8.4.",
+      "Yours admits your require.php (^8.1) and PHP 8.4; 7.x and 6.x miss your require.php.",
     );
     await expect(sub).not.toContainText("of 10");
   });
