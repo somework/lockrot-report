@@ -241,3 +241,24 @@ export function noteRepositories(note: NoteDetail | undefined): readonly NoteRep
     return name === "" ? [] : [{ name, message: text(rec["message"]) }];
   });
 }
+
+export interface NoteRepositoryGroup {
+  /** As written; null for the repositories whose entry has none. */
+  readonly message: string | null;
+  readonly names: readonly string[];
+}
+
+/** The first `cap` repositories (all when null), each message once over the repositories that share
+ *  it exactly, and how many repositories the cap left out. */
+export function repositoryGroups(
+  repos: readonly NoteRepository[],
+  cap: number | null,
+): { readonly groups: readonly NoteRepositoryGroup[]; readonly hidden: number } {
+  const shown = cap === null ? repos : repos.slice(0, cap);
+  const byMessage = new Map<string | null, string[]>();
+  for (const { name, message } of shown) byMessage.set(message, [...(byMessage.get(message) ?? []), name]);
+  return {
+    groups: [...byMessage].map(([message, names]) => ({ message, names })),
+    hidden: repos.length - shown.length,
+  };
+}

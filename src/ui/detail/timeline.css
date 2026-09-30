@@ -401,7 +401,7 @@
   color: var(--muted);
   white-space: nowrap;
 }
-/* Under the range, inside the row's own 30px: a closed fold never hides a miss in silence. */
+/* Under the range, inside the row's own min-height: a closed fold never hides a miss in silence. */
 .detail-timeline-fold-words {
   display: block;
   color: var(--ink-2);

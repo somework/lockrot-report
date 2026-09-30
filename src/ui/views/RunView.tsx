@@ -229,7 +229,7 @@ function resultText(report: ReportModel): FieldValue | null {
   }
   if (run.failOn === "none") return { parts: ["fails on nothing", { aside: "--fail-on=none" }] };
   if (gate.failOnApplied === true) return "passes";
-  return notApplied.length > 0 ? { parts: ["does not fail", ...notApplied] } : "does not fail";
+  return notApplied.length > 0 ? { parts: ["passes", ...notApplied] } : "does not fail";
 }
 
 interface Field {

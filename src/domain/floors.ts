@@ -606,8 +606,8 @@ function otherFloorWords(other: OtherFloor): FloorPart[] {
 }
 
 /**
- * S8's answer when the newest branch is out of reach, after "its last release was 4.5 years ago",
- * in the ledger why's word: "; 7.x is the newest that fits", or "; no newer branch fits". Why the
+ * S8's answer when the newest branch is out of reach, after the lead's age clause, in the ledger
+ * why's word: "; <reachable_branch> is the newest that fits", or "; no newer branch fits". Why the
  * newest does not fit is the Release branches sentence's to say. Null when the newest is within
  * reach or the document does not say.
  */

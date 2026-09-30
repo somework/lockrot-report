@@ -1748,6 +1748,15 @@ describe("RadiusView: the shared tail (PD-RADIUS-12)", () => {
   }
 
   const sentence = () => document.querySelector(".rl-shared-line")?.textContent ?? null;
+  /** The sentence as one width draws it: `hidden` is the other width's variant. */
+  const without = (hidden: string): string => {
+    const copy = document.querySelector(".rl-shared-line")?.cloneNode(true);
+    if (!(copy instanceof Element)) return "";
+    copy.querySelectorAll(hidden).forEach((el) => {
+      el.remove();
+    });
+    return copy.textContent;
+  };
 
   it("with an unreadable fan_in, quotes the limit alone and never a number", () => {
     renderIn(
@@ -1798,8 +1807,11 @@ describe("RadiusView: the shared tail (PD-RADIUS-12)", () => {
 
     renderIn(model, stateWith({ view: "radius", q: "acme/" }), <RadiusView />);
 
-    expect(sentence()).toBe(
-      "acme/t (12) and acme/s (9) are left out: each is shared by more than 8 direct requirements.",
+    expect(without(".rl-sh-narrow")).toBe(
+      "acme/t (12) and acme/s (9) are left out of Blast radius, each shared by more than 8 direct requirements.",
+    );
+    expect(without(".rl-sh-wide")).toBe(
+      "acme/t (12) and 1 more are left out of Blast radius, each shared by more than 8 direct requirements.",
     );
     expect(screen.getByRole("button", { name: "direct requirements: who shares them" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "acme/t" }).title).toBe("Open acme/t");
@@ -1814,19 +1826,11 @@ describe("RadiusView: the shared tail (PD-RADIUS-12)", () => {
 
     renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
 
-    const line = document.querySelector(".rl-shared-line");
-    const read = (hidden: string): string => {
-      const copy = line?.cloneNode(true) as Element;
-      copy.querySelectorAll(hidden).forEach((el) => {
-        el.remove();
-      });
-      return copy.textContent;
-    };
-    expect(read(".rl-sh-narrow")).toBe(
-      "acme/p (20), acme/r (18), acme/s (17) and 2 more are left out: each is shared by more than 8 direct requirements.",
+    expect(without(".rl-sh-narrow")).toBe(
+      "acme/p (20), acme/r (18), acme/s (17) and 2 more are left out of Blast radius, each shared by more than 8 direct requirements.",
     );
-    expect(read(".rl-sh-wide")).toBe(
-      "acme/p (20) and 4 more are left out: each is shared by more than 8 direct requirements.",
+    expect(without(".rl-sh-wide")).toBe(
+      "acme/p (20) and 4 more are left out of Blast radius, each shared by more than 8 direct requirements.",
     );
   });
 
@@ -1858,8 +1862,8 @@ describe("RadiusView: the shared tail (PD-RADIUS-12)", () => {
 
     renderIn(model, stateWith({ view: "radius" }), <RadiusView />);
 
-    expect(sentence()).toBe(
-      "acme/s (9) and acme/t are left out: lockrot counts them under no direct requirement.",
+    expect(without(".rl-sh-narrow")).toBe(
+      "acme/s (9) and acme/t are left out of Blast radius: lockrot counts them under no direct requirement.",
     );
     expect(screen.getByRole("button", { name: "direct requirement: who shares them" })).toBeTruthy();
   });
@@ -2565,6 +2569,33 @@ describe("Run data notes: the repositories a note counts", () => {
     expect(panel?.textContent).toBe("github.com/acme/direct-f");
   });
 
+  it("a long list opens on its first twenty, and the rest are one press away", () => {
+    const { dispatch } = renderIn(
+      loadModel("wallabag_offline-strict-0.13.json"),
+      stateWith({ view: "run", disclosure: { "run-note:3": true } }),
+      <RunView />,
+    );
+    const note = screen.getByText(/GitHub unreachable for 186 repositories/).closest(".note");
+    expect(note?.querySelectorAll(".note-repos-list li")).toHaveLength(20);
+    expect(note?.querySelector(".note-repos-more")?.textContent).toContain("166 more.");
+    const all = screen.getByRole("button", { name: "All 186 repositories" });
+    expect(all.getAttribute("aria-expanded")).toBe("false");
+    expect(all.getAttribute("aria-controls")).toBe(note?.querySelector(".note-repos-list")?.id);
+    fireEvent.click(all);
+    expect(dispatch).toHaveBeenCalledWith({ type: "disclose", key: "run-note:3:all", open: true });
+  });
+
+  it("the whole list, once asked for, says nothing is left", () => {
+    renderIn(
+      loadModel("wallabag_offline-strict-0.13.json"),
+      stateWith({ view: "run", disclosure: { "run-note:3": true, "run-note:3:all": true } }),
+      <RunView />,
+    );
+    const note = screen.getByText(/GitHub unreachable for 186 repositories/).closest(".note");
+    expect(note?.querySelectorAll(".note-repos-list li")).toHaveLength(186);
+    expect(note?.querySelector(".note-repos-more")?.textContent).not.toContain("more.");
+  });
+
   it("an older report's notes carry no data and draw no list", () => {
     renderIn(loadModel("wallabag_wallabag.json"), stateWith({ view: "run" }), <RunView />);
     expect(document.querySelector(".note-repos")).toBeNull();
@@ -2605,10 +2636,10 @@ describe("the run's gate on Run data (PD-GATE-5)", () => {
     expect(field("result")).toBe("fails · --fail-on=copyleft · licence_policy");
   });
 
-  it("a run that wrote a baseline: no pass, its fail-on not applied", () => {
+  it("a run that wrote a baseline and nothing failed: it passes, its fail-on not applied", () => {
     renderIn(loadModel("wallabag_generate-baseline-0.13.json"), stateWith({ view: "run" }), <RunView />);
     expect(field("mode")).toBe("generate_baseline · a run that writes a baseline");
-    expect(field("result")).toBe("does not fail · --fail-on=high not applied");
+    expect(field("result")).toBe("passes · --fail-on=high not applied");
   });
 
   it("passes only when lockrot says it applied the fail-on", () => {
@@ -2660,7 +2691,7 @@ describe("the run's gate on Run data (PD-GATE-5)", () => {
       "It failed on --fail-on=copyleft and licence_policy.",
     );
     expect(text("wallabag_generate-baseline-0.13.json")).toContain(
-      "It ran with --fail-on=high. It wrote a baseline, so --fail-on=high was not applied.",
+      "It ran with --fail-on=high. It wrote a baseline, so --fail-on=high was not applied, and it passed.",
     );
     expect(text("mini-0.13-gate-generate.json")).toContain(
       "It wrote a baseline, so --fail-on=high was not applied, and failed on --strict-network.",

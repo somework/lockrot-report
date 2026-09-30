@@ -55,27 +55,24 @@ function oneShare({ fanIn }: SharedEntry, max: number | null): ComponentChildren
   return <>lockrot counts it under no direct requirement</>;
 }
 
-/** "each is shared by more than 8 direct requirements", where the requirements open level 1; each
+/** ", each shared by more than N direct requirements", where the requirements open level 1; each
  *  name already carries its own count. */
 function manyShare(
   max: number | null,
   requirements: (words: string) => ComponentChildren,
 ): ComponentChildren {
-  if (max === null) return <>lockrot counts them under no {requirements("direct requirement")}</>;
+  if (max === null) return <>: lockrot counts them under no {requirements("direct requirement")}</>;
   return (
     <>
-      each is shared by more than <b>{max}</b> {requirements("direct requirements")}
+      , each shared by more than <b>{max}</b> {requirements("direct requirements")}
     </>
   );
 }
 
-/** How many names the sentence spells out before "and N more" beside a wide table; a narrow one names
- *  a pair in full and one of a longer list, so it keeps to two lines. The rest open with the dots. */
+/** How many names the sentence spells out before "and N more", beside a wide table and a narrow one,
+ *  so it keeps to two lines. The rest open with the dots. */
 const NAMES_IN_LINE = 3;
-
-function namesInNarrowLine(count: number): number {
-  return count === 2 ? 2 : 1;
-}
+const NAMES_IN_NARROW_LINE = 1;
 
 function More({ n, className }: { n: number; className: string }) {
   if (n <= 0) return null;
@@ -87,10 +84,10 @@ function More({ n, className }: { n: number; className: string }) {
   );
 }
 
-/** "doctrine/cache (11) and symfony/security-guard (9)", each name whole on its line. */
+/** Each name with its fan-in, whole on its line. */
 function EntryNames({ entries }: { entries: readonly SharedEntry[] }) {
   const named = entries.slice(0, NAMES_IN_LINE);
-  const narrow = namesInNarrowLine(entries.length);
+  const narrow = NAMES_IN_NARROW_LINE;
   return (
     <>
       {named.map(({ finding, fanIn }, i) => (
@@ -277,7 +274,7 @@ export function SharedTailNote({ findings }: { findings: readonly Finding[] }) {
       <p className="rl-shared-line">
         {many || lone === undefined ? (
           <>
-            <EntryNames entries={entries} /> are left out:{" "}
+            <EntryNames entries={entries} /> are left out of Blast radius
             {manyShare(max, (words) => disclose(words, `${words}: who shares them`))}.
           </>
         ) : (

@@ -143,7 +143,7 @@ function outcome(model: Model): ComponentChildren {
     </>
   );
   if (!gate.fails) {
-    if (unapplied) return <> {wrote}.</>;
+    if (unapplied) return <> {wrote}, and it passed.</>;
     if (run.failOn === "none") return null;
     return gate.failOnApplied === true ? <> It passed.</> : <> It did not fail.</>;
   }

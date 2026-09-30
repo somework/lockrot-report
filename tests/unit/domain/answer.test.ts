@@ -140,7 +140,6 @@ describe("answerParts", () => {
   });
 
   it("with the newest out of reach, names the branch S8 says fits, in the ledger why's words", () => {
-    // Arrange: wallabag scheb/2fa-bundle.
     const finding = makeFinding({
       verdict: "left-behind",
       signals: [

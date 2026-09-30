@@ -13,6 +13,7 @@
 }
 .gate-flag {
   color: var(--ink-2);
+  white-space: nowrap;
 }
 .gate-dashes {
   letter-spacing: 0.1em;
@@ -30,6 +31,15 @@
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+}
+/* The summary says the flags again only where the header hid them. */
+.gate-echo {
+  display: none;
+}
+@media screen {
+  :root:has(.topbar[data-fact="short"]) .gate-echo {
+    display: inline;
   }
 }
 .gate-sep,

@@ -198,3 +198,8 @@
 .note-repos-list li + li {
   margin-top: 4px;
 }
+.note-repos-more {
+  margin: 6px 0 0 14px;
+  font-size: 12px;
+  color: var(--muted);
+}

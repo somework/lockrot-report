@@ -160,7 +160,9 @@ test.describe("PD-GATE-2: the Against sentence closes on how many fail this run"
     await report.goto(FIXTURES.wallabagBaselineOlder013);
     await expect(page.locator(".gate-fact")).toHaveText("this run fails · --fail-on=high");
     const answer = page.locator(".bl-answer");
-    await expect(answer).toContainText("43 already accepted; 12 fail this run.");
+    await expect(answer).toContainText("43 already accepted; 12 fail this run by --fail-on=high.");
+    // The header says the flag, so the sentence's echo of it stays out of sight.
+    await expect(answer.locator(".gate-echo")).toBeHidden();
     const why = answer.getByRole("button", { name: "12 fail this run" });
     await expect(why).toHaveAttribute("aria-expanded", "false");
     await why.click();

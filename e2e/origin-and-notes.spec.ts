@@ -102,7 +102,7 @@ test("mini-0.13-edges: each run note links the page lockrot names for it, and on
   await expect(page.locator(".run-sections .note a[href^='https://lockrot.dev/notes/#']")).toHaveCount(20);
 });
 
-test("a note that counts repositories lists them on request, as text, and prints them open", async ({
+test("a note that counts repositories lists its first twenty on request, as text, and prints them all", async ({
   page,
 }) => {
   await report.gotoWithHash(FIXTURES.wallabagOfflineStrict013, "view=run");
@@ -114,11 +114,21 @@ test("a note that counts repositories lists them on request, as text, and prints
   await toggle.focus();
   await page.keyboard.press("Enter");
   const list = page.getByRole("group", { name: "Which 186: the repositories" });
-  await expect(list.locator("li")).toHaveCount(186);
+  await expect(list.locator("li")).toHaveCount(20);
   await expect(list.locator("li").first()).toHaveText(
     "github.com/BabDev/PagerfantaBundle — offline and not cached: https://api.github.com/repos/BabDev/PagerfantaBundle",
   );
   await expect(list.locator("a")).toHaveCount(0);
+  await expect(list.locator(".note-repos-more")).toContainText("166 more.");
+  const all = list.getByRole("button", { name: "All 186 repositories" });
+  await all.focus();
+  await page.keyboard.press("Enter");
+  await expect(all).toHaveAttribute("aria-expanded", "true");
+  await expect(list.locator("li")).toHaveCount(186);
+  await expect(all).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(list.locator("li")).toHaveCount(20);
+  await toggle.focus();
   await page.keyboard.press("Enter");
   await expect(list).toBeHidden();
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
@@ -126,6 +136,7 @@ test("a note that counts repositories lists them on request, as text, and prints
   await page.emulateMedia({ media: "print" });
   const printed = page.locator(".print-doc .note-repos").first();
   await expect(printed).toBeVisible();
+  await expect(printed.locator("li")).toHaveCount(186);
   await expect(page.locator(".print-doc .note .l1-btn")).toHaveCount(0);
 });
 

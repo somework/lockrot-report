@@ -134,11 +134,19 @@ test.describe("PD-SUMMARY-2: the header's gate fact", () => {
     await expect(page.locator(".gate-fact")).toHaveText("this run fails · --strict-network");
   });
 
-  test("a run that applies no fail-on wrote a baseline; it never says passes", async ({ page }) => {
+  test("a baseline run nothing failed passes, and says it applies no fail-on, at every width", async ({
+    page,
+  }) => {
     await report.goto(FIXTURES.wallabagGenerateBaseline013);
-    await expect(page.locator(".gate-fact")).toHaveText("baseline run · --fail-on not applied");
-    await expect(page.locator(".lead-gate")).toHaveText("39 meet --fail-on=high, not applied.");
-    await expect(page.locator(".topbar")).not.toContainText("passes");
+    await expect(page.locator(".gate-fact")).toHaveText("baseline run passes · --fail-on not applied");
+    for (const width of [320, 390, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(page.locator(".gate-fact .gate-word"), `${String(width)}px`).toHaveText("passes");
+      await expect(page.locator(".lead-gate"), `${String(width)}px`).toHaveText(
+        "This run passes: it applies no fail-on.",
+      );
+      await expect(page.locator(".lead-gate"), `${String(width)}px`).toBeVisible();
+    }
   });
 
   test("Escape closes the popover, and — over an open detail — only the popover, not the detail underneath it", async () => {

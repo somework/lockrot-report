@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Model, PackageDetails } from "../../../src/model/types";
 import {
   noteRepositories,
+  repositoryGroups,
   activityTally,
   cacheAge,
   cacheNullReason,
@@ -265,5 +266,54 @@ describe("noteRepositories", () => {
     ]);
     expect(noteRepositories(note("repository_activity_not_found", { repositories: null }))).toEqual([]);
     expect(noteRepositories(note("repository_activity_not_found", {}))).toEqual([]);
+  });
+});
+
+describe("repositoryGroups", () => {
+  it("says a message once for every repository that has exactly that message, in first-seen order", () => {
+    const repos = [
+      { name: "github.com/a/one", message: "offline" },
+      { name: "gitlab.com/b/two", message: "curl error 6" },
+      { name: "github.com/c/three", message: "offline" },
+      { name: "codeberg.org/d/four", message: null },
+      { name: "codeberg.org/e/five", message: null },
+    ];
+
+    expect(repositoryGroups(repos, null)).toEqual({
+      groups: [
+        { message: "offline", names: ["github.com/a/one", "github.com/c/three"] },
+        { message: "curl error 6", names: ["gitlab.com/b/two"] },
+        { message: null, names: ["codeberg.org/d/four", "codeberg.org/e/five"] },
+      ],
+      hidden: 0,
+    });
+  });
+
+  it("keeps messages apart that differ at all, the page matches no text", () => {
+    const repos = [
+      { name: "github.com/a/one", message: "offline: https://api.github.com/repos/a/one" },
+      { name: "github.com/b/two", message: "offline: https://api.github.com/repos/b/two" },
+    ];
+
+    expect(repositoryGroups(repos, null).groups).toHaveLength(2);
+  });
+
+  it("groups only the first repositories up to the cap and counts the rest", () => {
+    const repos = Array.from({ length: 25 }, (_, i) => ({
+      name: `github.com/a/r${String(i)}`,
+      message: "offline",
+    }));
+
+    const { groups, hidden } = repositoryGroups(repos, 20);
+
+    expect(groups).toEqual([{ message: "offline", names: repos.slice(0, 20).map((r) => r.name) }]);
+    expect(hidden).toBe(5);
+  });
+
+  it("hides nothing when the list is within the cap", () => {
+    const repos = [{ name: "github.com/a/one", message: null }];
+
+    expect(repositoryGroups(repos, 20).hidden).toBe(0);
+    expect(repositoryGroups([], 20)).toEqual({ groups: [], hidden: 0 });
   });
 });

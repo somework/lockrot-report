@@ -2,9 +2,32 @@ import type { ComponentChildren } from "preact";
 import { useId } from "preact/hooks";
 import type { NoteDetail } from "../../model/types";
 import { safeHref } from "../../domain/links";
-import { noteRepositories } from "../../domain/run";
+import {
+  noteRepositories,
+  repositoryGroups,
+  type NoteRepository,
+  type NoteRepositoryGroup,
+} from "../../domain/run";
 import { DisclosureButton, DisclosurePanel, useDisclosure } from "../common/Disclosure";
 import { NoWrap, OutLink } from "../common/common";
+
+/** A long list opens on its first repositories; the rest wait for a second click, and print whole. */
+const REPOSITORIES_SHOWN = 20;
+
+/** "a, b and c — message": lockrot's message once for every repository that has exactly it. */
+function GroupItem({ group }: { group: NoteRepositoryGroup }) {
+  return (
+    <li>
+      {group.names.map((name, i) => (
+        <span key={name}>
+          {i === 0 ? "" : i === group.names.length - 1 ? " and " : ", "}
+          <span className="mono note-repo">{name}</span>
+        </span>
+      ))}
+      {group.message !== null && <span className="note-repo-msg"> — {group.message}</span>}
+    </li>
+  );
+}
 
 /** The repositories a note counts, as lockrot wrote them: text, never a link, and not matched to any
  *  package (Findings already marks the packages whose activity is missing). */
@@ -14,13 +37,17 @@ function Repositories({
   children,
 }: {
   index: number;
-  repos: ReturnType<typeof noteRepositories>;
+  repos: readonly NoteRepository[];
   children: ComponentChildren;
 }) {
   const id = `${useId()}-repos`;
   const buttonId = `${id}-btn`;
+  const listId = `${id}-list`;
   const { open, toggle, printed } = useDisclosure(`run-note:${String(index)}`);
+  const all = useDisclosure(`run-note:${String(index)}:all`);
   const n = repos.length;
+  const { groups, hidden } = repositoryGroups(repos, all.open ? null : REPOSITORIES_SHOWN);
+  const capped = n > REPOSITORIES_SHOWN && !printed;
   return (
     <>
       {!printed && (
@@ -41,14 +68,23 @@ function Repositories({
       )}
       {children}
       <DisclosurePanel id={id} open={open} className="note-repos" labelledBy={printed ? undefined : buttonId}>
-        <ul className="note-repos-list">
-          {repos.map((repo, i) => (
-            <li key={i}>
-              <span className="mono note-repo">{repo.name}</span>
-              {repo.message !== null && <span className="note-repo-msg"> — {repo.message}</span>}
-            </li>
+        <ul id={listId} className="note-repos-list">
+          {groups.map((group, i) => (
+            <GroupItem key={i} group={group} />
           ))}
         </ul>
+        {capped && (
+          <p className="note-repos-more">
+            {hidden > 0 && <>{hidden} more. </>}
+            <DisclosureButton
+              label={`All ${String(n)}`}
+              name={`All ${String(n)} repositories`}
+              open={all.open}
+              controls={listId}
+              onToggle={all.toggle}
+            />
+          </p>
+        )}
       </DisclosurePanel>
     </>
   );

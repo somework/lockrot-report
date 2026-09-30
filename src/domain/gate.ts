@@ -107,8 +107,8 @@ export interface GateHeadline {
   readonly unapplied: string | null;
 }
 
-/** The header's words: "this run fails · --fail-on=high". "Passes" only when lockrot says the
- *  fail-on was applied. */
+/** The header's words: "this run fails · --fail-on=high". "Passes" only when lockrot says the run
+ *  did not fail and whether it applied the fail-on. */
 export function gateHeadline(gate: RunGate, mode: string | null): GateHeadline {
   const who = mode === "generate_baseline" ? "baseline run" : "this run";
   const given = gate.failOn === null ? [] : [gateFlag("fail_on", gate.failOn)];
@@ -120,13 +120,14 @@ export function gateHeadline(gate: RunGate, mode: string | null): GateHeadline {
     case "passes":
       return { who: "this run", verb: "passes", flags: given, unapplied: null };
     case "unapplied":
-      return { who, verb: null, flags: [], unapplied: "--fail-on" };
+      return { who, verb: "passes", flags: [], unapplied: "--fail-on" };
     case "open":
       return { who: "this run", verb: "does not fail", flags: given, unapplied: null };
   }
 }
 
-/** What the summary's answer adds, or null when it has nothing to add to the header's words. */
+/** What the summary's answer adds, or null when it has nothing to add to the header's words.
+ *  `echo`: the header's flags, which the summary says again where the header has no room for them. */
 export type GateClause =
   | {
       readonly kind: "failing";
@@ -135,13 +136,24 @@ export type GateClause =
       readonly unflagged: number;
       /** What the unflagged failing packages are called: why they fail, where the fail-on says. */
       readonly unflaggedAs: string;
+      /** The fail-on the packages fail. */
+      readonly echo: GateFlag | null;
+      /** The run's other causes, which fail it whatever the packages do. */
+      readonly also: readonly GateFlag[];
     }
-  /** The run fails and no finding does: only its other causes, as flags, failed it. */
-  | { readonly kind: "tripped"; readonly flags: readonly GateFlag[] }
-  | { readonly kind: "none-fail"; readonly meets: number }
-  | { readonly kind: "unapplied"; readonly meets: number; readonly failOn: string };
+  /** The run fails and no finding does: only its other causes, as flags, failed it. `unapplied`: a
+   *  baseline run, whose fail-on could not have failed it either. */
+  | { readonly kind: "tripped"; readonly flags: readonly GateFlag[]; readonly unapplied: boolean }
+  | { readonly kind: "none-fail"; readonly meets: number; readonly echo: GateFlag | null }
+  /** The run passes because it applied no fail-on (a baseline run), whatever meets it. */
+  | { readonly kind: "unapplied" };
+
+function otherCauses(gate: RunGate): readonly GateFlag[] {
+  return gate.causes.filter((cause) => cause !== "fail_on").map((cause) => gateFlag(cause, gate.failOn));
+}
 
 export function gateClause(gate: RunGate): GateClause | null {
+  const echo = gate.failOn === null ? null : gateFlag("fail_on", gate.failOn);
   if (gate.failing > 0) {
     return {
       kind: "failing",
@@ -149,19 +161,18 @@ export function gateClause(gate: RunGate): GateClause | null {
       flagged: gate.failingFlagged,
       unflagged: gate.failingUnflagged,
       unflaggedAs: gate.failOnKind === "unchecked" ? "unchecked" : "not flagged",
+      echo,
+      also: otherCauses(gate),
     };
   }
+  if (gate.outcome === "unapplied") return { kind: "unapplied" };
   if (gate.outcome === "fails") {
-    const flags = gate.causes
-      .filter((cause) => cause !== "fail_on")
-      .map((cause) => gateFlag(cause, gate.failOn));
-    if (flags.length > 0) return { kind: "tripped", flags };
+    const flags = otherCauses(gate);
+    const unapplied = gate.failOnApplied === false && gate.failOn !== null;
+    if (flags.length > 0) return { kind: "tripped", flags, unapplied };
   }
-  if (gate.meets === 0) return null;
-  if (gate.failOnApplied === false && gate.failOn !== null) {
-    return { kind: "unapplied", meets: gate.meets, failOn: gate.failOn };
-  }
-  return { kind: "none-fail", meets: gate.meets };
+  if (gate.meets === 0 || gate.failOnApplied === false) return null;
+  return { kind: "none-fail", meets: gate.meets, echo };
 }
 
 export interface NetworkNotes {

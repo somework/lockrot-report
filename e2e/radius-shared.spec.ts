@@ -53,10 +53,13 @@ test.describe("PD-RADIUS-12: the shared tail", () => {
     FIXTURES.wallabagGenerateBaseline013,
     FIXTURES.sharedMany,
   ] as const) {
-    test(`${fixture}: closed, it takes two lines or fewer at 390`, async ({ page }) => {
+    test(`${fixture}: closed, it takes two lines or fewer at 390 and says what it is left out of`, async ({
+      page,
+    }) => {
       await radius(page, fixture, 390);
 
       expect(await lines(page)).toBeLessThanOrEqual(2);
+      expect(await shown(page)).toContain("left out of Blast radius");
       await expect(page.locator(".rl-sh-panel")).toBeHidden();
     });
   }
@@ -64,10 +67,14 @@ test.describe("PD-RADIUS-12: the shared tail", () => {
   test("more than one entry: named with fan_in at level 0, with verdicts and dots at level 1, most shared first", async ({
     page,
   }) => {
+    await radius(page, FIXTURES.wallabagGenerateBaseline013, 390);
+    expect(await shown(page)).toBe(
+      "doctrine/cache (11) and 1 more are left out of Blast radius, each shared by more than 8 direct requirements.",
+    );
     await radius(page, FIXTURES.wallabagGenerateBaseline013);
 
-    await expect(line(page)).toHaveText(
-      "doctrine/cache (11) and symfony/security-guard (9) are left out: each is shared by more than 8 direct requirements.",
+    expect(await shown(page)).toBe(
+      "doctrine/cache (11) and symfony/security-guard (9) are left out of Blast radius, each shared by more than 8 direct requirements.",
     );
     await page.getByRole("button", { name: "direct requirements: who shares them", exact: true }).click();
     const names = page.locator(".rl-sh-name");
@@ -100,9 +107,40 @@ test.describe("PD-RADIUS-12: the shared tail", () => {
     await radius(page, FIXTURES.sharedMany);
 
     expect(await shown(page)).toBe(
-      "acme/polyfill-mbstring (97), acme/log (64), acme/event-contracts (40) and 9 more are left out: each is shared by more than 8 direct requirements.",
+      "acme/polyfill-mbstring (97), acme/log (64), acme/event-contracts (40) and 9 more are left out of Blast radius, each shared by more than 8 direct requirements.",
     );
   });
+
+  for (const width of [320, 390]) {
+    test(`${String(width)}px: the focused toggle's ring covers none of the word before it`, async ({
+      page,
+    }) => {
+      await radius(page, FIXTURES.sharedMany, width);
+      const toggle = page.locator(".rl-shared-line .l1-btn");
+      await toggle.focus();
+      const covers = await toggle.evaluate((el) => {
+        const style = getComputedStyle(el);
+        const reach = parseFloat(style.outlineOffset) + parseFloat(style.outlineWidth);
+        const ring = el.getBoundingClientRect();
+        const walker = document.createTreeWalker(el.closest("p") ?? document.body, NodeFilter.SHOW_TEXT);
+        const before: Text[] = [];
+        while (walker.nextNode()) {
+          const node = walker.currentNode as Text;
+          if (el.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_PRECEDING) before.push(node);
+        }
+        const last = before.reverse().find((t) => t.data.trim() !== "");
+        if (last === undefined) return false;
+        const at = last.data.trimEnd().length - 1;
+        const range = document.createRange();
+        range.setStart(last, at);
+        range.setEnd(last, at + 1);
+        const glyph = range.getBoundingClientRect();
+        const sameLine = glyph.bottom > ring.top && glyph.top < ring.bottom;
+        return sameLine && glyph.right > ring.left - reach;
+      });
+      expect(covers).toBe(false);
+    });
+  }
 
   test("level 1 opens by keyboard, is named by its words alone, and is labelled by what opened it", async ({
     page,
@@ -161,7 +199,7 @@ test.describe("PD-RADIUS-12: the shared tail", () => {
     await radius(page, FIXTURES.sharedMany, 390);
 
     expect(await shown(page)).toBe(
-      "acme/polyfill-mbstring (97) and 11 more are left out: each is shared by more than 8 direct requirements.",
+      "acme/polyfill-mbstring (97) and 11 more are left out of Blast radius, each shared by more than 8 direct requirements.",
     );
     await page.getByRole("button", { name: "direct requirements: who shares them", exact: true }).click();
     const first = page.locator(".rl-sh-item").first();

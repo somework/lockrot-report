@@ -137,7 +137,12 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
   }) => {
     await report.goto(FIXTURES.koelNoTokenUnchecked013);
     const line = page.locator(".lead-gate");
-    await expect(line).toHaveText("173 fail this run: 2 flagged, 171 unchecked, on All packages→.");
+    await expect(line).toHaveText(
+      "173 fail this run by --fail-on=unchecked: 2 flagged, 171 unchecked, on All packages→.",
+    );
+    // A phone's header keeps the flag on a row of its own, so the summary's echo of it stays hidden.
+    await expect(line.locator(".gate-echo")).toBeHidden();
+    await expect(page.locator(".gate-fact-more")).toHaveCSS("clip-path", "none");
     const text = (await line.textContent()) ?? "";
     expect(text.indexOf("173")).toBeLessThan(text.indexOf("2 flagged"));
     // Why the unflagged fail, in the fail-on's own kind: their check did not run.
@@ -242,17 +247,25 @@ test.describe("PD-GATE-2: the summary leads with every failing package", () => {
 });
 
 test.describe("PD-GATE-2: a run no finding fails says what failed it", () => {
-  for (const fixture of [FIXTURES.wallabagOfflineStrict013, FIXTURES.miniGateGenerate013] as const) {
-    test(`${fixture}: 'This run fails by --strict-network', one line at 390 and 1440`, async ({ page }) => {
+  const cases = [
+    { fixture: FIXTURES.wallabagOfflineStrict013, text: "This run fails by --strict-network.", phone: 1 },
+    {
+      fixture: FIXTURES.miniGateGenerate013,
+      text: "This run fails by --strict-network; it applies no fail-on.",
+      phone: 2,
+    },
+  ] as const;
+  for (const { fixture, text, phone } of cases) {
+    test(`${fixture}: '${text}', one line at 1440, ${String(phone)} at 390`, async ({ page }) => {
       for (const width of [390, 1440]) {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(pageUrl(fixture));
         const line = page.locator(".lead-gate");
-        await expect(line).toHaveText("This run fails by --strict-network.");
+        await expect(line).toHaveText(text);
         const rows = await line.evaluate(
           (el) => el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight),
         );
-        expect(rows, `at ${String(width)}px`).toBeLessThan(1.5);
+        expect(rows, `at ${String(width)}px`).toBeLessThan((width === 390 ? phone : 1) + 0.5);
       }
       await page.getByRole("button", { name: "This run fails" }).click();
       await expect(page.locator(".gate-why")).toContainText(
@@ -285,6 +298,26 @@ test.describe("PD-GATE-1: the header keeps the page's buttons on one row", () =>
       await expect.poll(() => rowOf(page)).toEqual({ same: true, hidden: false });
     });
   }
+
+  test("a phone keeps the flags the summary does not name; the summary names them where the header hid them", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(pageUrl(FIXTURES.wallabagBaselineOlder013));
+    await expect(page.locator(".gate-fact")).toHaveText("this run fails · --fail-on=high");
+    await expect(page.locator(".gate-fact-more")).toHaveCSS("clip-path", "none");
+    await expect(page.locator(".bl-answer .gate-echo")).toBeHidden();
+
+    await page.setViewportSize({ width: 1024, height: 900 });
+    await page.goto(pageUrl(FIXTURES.miniEdges013));
+    expect(await rowOf(page)).toEqual({ same: true, hidden: true });
+    const echoes = page.locator(".bl-answer .gate-echo");
+    await expect(echoes).toHaveText([" by --fail-on=high", ", and --strict-network fails the run too"]);
+    for (const echo of await echoes.all()) await expect(echo).toBeVisible();
+
+    await page.emulateMedia({ media: "print" });
+    await expect(echoes.first()).toBeHidden();
+  });
 
   test("on paper the header says its flags whatever the screen hid", async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 900 });

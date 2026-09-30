@@ -159,10 +159,10 @@ describe("gateHeadline", () => {
     });
   });
 
-  it("a baseline run says so, and never passes on the fail-on it did not apply", () => {
+  it("a baseline run says so, passes when nothing failed it, and never names the fail-on as a cause", () => {
     expect(gateHeadline(decided("wallabag_generate-baseline-0.13"), "generate_baseline")).toEqual({
       who: "baseline run",
-      verb: null,
+      verb: "passes",
       flags: [],
       unapplied: "--fail-on",
     });
@@ -184,6 +184,8 @@ describe("gateClause", () => {
       flagged: 2,
       unflagged: 171,
       unflaggedAs: "unchecked",
+      echo: { text: "--fail-on=unchecked", known: true },
+      also: [],
     });
     expect(gateClause(decided("wallabag_baseline-older-0.13"))).toEqual({
       kind: "failing",
@@ -191,6 +193,19 @@ describe("gateClause", () => {
       flagged: 12,
       unflagged: 0,
       unflaggedAs: "not flagged",
+      echo: { text: "--fail-on=high", known: true },
+      also: [],
+    });
+  });
+
+  it("keeps the run's other causes beside the failing packages, for the summary to echo", () => {
+    expect(gateClause(decided("mini-0.13-edges"))).toMatchObject({
+      kind: "failing",
+      echo: { text: "--fail-on=high", known: true },
+      also: [{ text: "--strict-network", known: true }],
+    });
+    expect(gateClause(decided("mini-0.13-gate-unknown"))).toMatchObject({
+      also: [{ text: "licence_policy", known: false }],
     });
   });
 
@@ -204,15 +219,22 @@ describe("gateClause", () => {
   });
 
   it("says none fails when some meet the threshold and nothing fails on it", () => {
-    expect(gateClause(decided("wallabag_baseline-self-0.13"))).toEqual({ kind: "none-fail", meets: 69 });
+    expect(gateClause(decided("wallabag_baseline-self-0.13"))).toEqual({
+      kind: "none-fail",
+      meets: 69,
+      echo: { text: "--fail-on=stale", known: true },
+    });
   });
 
-  it("a baseline run: how many meet the fail-on it did not apply", () => {
-    expect(gateClause(decided("wallabag_generate-baseline-0.13"))).toEqual({
-      kind: "unapplied",
-      meets: 39,
-      failOn: "high",
-    });
+  it("a baseline run nothing failed passes, whatever meets the fail-on it did not apply", () => {
+    const gate = decided("wallabag_generate-baseline-0.13");
+    expect(gateClause(gate)).toEqual({ kind: "unapplied" });
+    expect(gateClause({ ...gate, meets: 0 })).toEqual({ kind: "unapplied" });
+  });
+
+  it("a run failed with its fail-on unapplied and no other cause to name adds nothing", () => {
+    const gate = decided("mini-0.13-gate-generate");
+    expect(gateClause({ ...gate, causes: [] })).toBeNull();
   });
 
   it("nothing to add when no finding meets it and the run passes", () => {
@@ -221,9 +243,9 @@ describe("gateClause", () => {
 
   it("a run no finding fails, failed by its other causes, says which", () => {
     const strict = { kind: "tripped", flags: [{ text: "--strict-network", known: true }] };
-    expect(gateClause(decided("wallabag_offline-strict-0.13"))).toEqual(strict);
-    // The fail-on it did not apply is level 1's to say; failing is the answer.
-    expect(gateClause(decided("mini-0.13-gate-generate"))).toEqual(strict);
+    expect(gateClause(decided("wallabag_offline-strict-0.13"))).toEqual({ ...strict, unapplied: false });
+    // A baseline run: failing is the answer, and it says its fail-on could not have failed it.
+    expect(gateClause(decided("mini-0.13-gate-generate"))).toEqual({ ...strict, unapplied: true });
   });
 
   it("an unknown cause fails the run as written, and a finding that fails still leads", () => {
@@ -231,6 +253,7 @@ describe("gateClause", () => {
     expect(gateClause({ ...gate, failing: 0, failingFlagged: 0 })).toEqual({
       kind: "tripped",
       flags: [{ text: "licence_policy", known: false }],
+      unapplied: false,
     });
     expect(gateClause(gate)?.kind).toBe("failing");
     expect(gateClause(decided("wallabag_offline-strict-unchecked-0.13"))?.kind).toBe("failing");

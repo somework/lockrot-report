@@ -3,7 +3,7 @@ import { useId } from "preact/hooks";
 import type { Finding } from "../../model/types";
 import {
   findingGateLine,
-  gateFlag,
+  gateClause,
   gateHeadline,
   unflaggedFilters,
   type GateClause,
@@ -50,14 +50,15 @@ function headlineTitle({ who, verb, flags, unapplied }: GateHeadline): string {
   return tail.length === 0 ? head : `${head} · ${tail.join(", ")}`;
 }
 
-/** The header's fact: "this run fails · --fail-on=high". Words only; the summary explains. Where the
- *  flags would push the page's buttons onto a second row, Header.tsx hides them from sight only. */
+/** The header's fact: "this run fails · --fail-on=high". Words only; the summary explains. Header.tsx
+ *  hides the flags from sight where they cost a line; `data-said`: the summary names them anyway. */
 export function GateHeadlineText({ gate }: { gate: RunGate }) {
   const { model } = useReport();
   const words = gateHeadline(gate, model.report.run.mode);
   const { who, verb, flags, unapplied } = words;
+  const said = gateClause(gate)?.kind === "tripped" && gate.causes.every((cause) => cause !== "fail_on");
   return (
-    <span className="gate-fact" title={headlineTitle(words)}>
+    <span className="gate-fact" title={headlineTitle(words)} data-said={said ? "" : undefined}>
       {who}
       {verb !== null && (
         <>
@@ -130,6 +131,11 @@ function fail(n: number): string {
   return `${n} fail${n === 1 ? "s" : ""} this run`;
 }
 
+/** The header's flags again, where the header hid them for room (Header.tsx); gate.css shows them. */
+function Echo({ children }: { children: ComponentChildren }) {
+  return <span className="gate-echo">{children}</span>;
+}
+
 /** After "N fail this run": flagged and not flagged apart, each a way to list them. */
 function FailingSplit({ clause }: { clause: Extract<GateClause, { kind: "failing" }> }) {
   const { total, flagged, unflagged, unflaggedAs } = clause;
@@ -169,23 +175,44 @@ export function GateClauseText({
   lead: (subject: ComponentChildren) => ComponentChildren;
 }) {
   switch (clause.kind) {
-    case "failing":
+    case "failing": {
+      const split = clause.unflagged > 0;
       return (
         <>
           {lead(fail(clause.total))}
+          {clause.echo !== null && (
+            <Echo>
+              {" "}
+              by <FlagList flags={[clause.echo]} />
+            </Echo>
+          )}
           <FailingSplit clause={clause} />
+          {clause.also.length > 0 && (
+            <Echo>
+              {split ? "; " : ", and "}
+              <FlagList flags={clause.also} /> {clause.also.length === 1 ? "fails" : "fail"} the run too
+            </Echo>
+          )}
         </>
       );
+    }
     case "tripped":
       return (
         <>
           {lead(`${opening ? "This" : "the"} run fails`)} by <FlagList flags={clause.flags} />
+          {clause.unapplied && "; it applies no fail-on"}
         </>
       );
     case "none-fail":
       return (
         <>
           {lead(`${opening ? "None" : "none"} fails this run`)}
+          {clause.echo !== null && (
+            <Echo>
+              {" "}
+              by <FlagList flags={[clause.echo]} />
+            </Echo>
+          )}
           {opening && (
             <>
               ; <b>{clause.meets}</b>{" "}
@@ -195,17 +222,7 @@ export function GateClauseText({
         </>
       );
     case "unapplied":
-      return (
-        <>
-          {lead(
-            <>
-              {clause.meets} {clause.meets === 1 ? "meets" : "meet"}{" "}
-              <Flag text={gateFlag("fail_on", clause.failOn).text} />
-            </>,
-          )}
-          , not applied
-        </>
-      );
+      return <>{lead(`${opening ? "This" : "this"} run passes`)}: it applies no fail-on</>;
   }
 }
 

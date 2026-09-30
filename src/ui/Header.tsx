@@ -34,14 +34,28 @@ function useHeaderHeight() {
   return ref;
 }
 
-/** Hides the gate fact's flags from sight where that keeps the header a line shorter, which is where
- *  they would push the page's buttons onto a row of their own; the summary below still says them. */
+/** True when every fact and button of the line sits on one row. */
+function oneRow(meta: Element): boolean {
+  const boxes = [...meta.children].map((el) => el.getBoundingClientRect()).filter((box) => box.width > 0);
+  const first = boxes[0];
+  if (first === undefined) return true;
+  const mid = (box: DOMRect) => box.top + box.height / 2;
+  return boxes.every((box) => Math.abs(mid(box) - mid(first)) < first.height / 2);
+}
+
+/** Hides the gate fact's flags from sight where the summary names them anyway and that saves a line,
+ *  or where it brings the page's buttons back onto the facts' row, the summary then saying them too
+ *  (gate.css). A phone wraps the buttons either way. */
 function fitGateFact(node: HTMLElement): void {
   delete node.dataset["fact"];
-  if (node.querySelector(".gate-fact-more") === null) return;
+  const meta = node.querySelector(".run-meta");
+  if (meta === null || node.querySelector(".gate-fact-more") === null) return;
+  const said = node.querySelector(".gate-fact[data-said]") !== null;
   const full = node.getBoundingClientRect().height;
+  if (!said && oneRow(meta)) return;
   node.dataset["fact"] = "short";
-  if (node.getBoundingClientRect().height >= full) delete node.dataset["fact"];
+  const kept = said ? node.getBoundingClientRect().height < full : oneRow(meta);
+  if (!kept) delete node.dataset["fact"];
 }
 
 function useGateFactFit(ref: RefObject<HTMLElement>) {

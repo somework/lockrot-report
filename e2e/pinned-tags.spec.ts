@@ -201,7 +201,9 @@ test.describe("the Findings row", () => {
     await expect(page.locator("li.frow .age-whose")).toHaveCount(0);
   });
 
-  test("the tag word under the age stays inside its row at every width", async ({ page }) => {
+  test("the tag word stays inside its row, clear of the number, the bar and the way in, at every width", async ({
+    page,
+  }) => {
     await page.goto(`${pageUrl(FIXTURES.wallabag013)}#view=findings`);
     for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       await page.setViewportSize({ width, height: 900 });
@@ -209,12 +211,20 @@ test.describe("the Findings row", () => {
       const row = await fos.boundingBox();
       const word = await fos.locator(".age-whose").boundingBox();
       const num = await fos.locator(".age-num").boundingBox();
-      expect(row && word && num, `${String(width)}px`).toBeTruthy();
-      if (row === null || word === null || num === null) continue;
+      const bar = await fos.locator(".age-bar").boundingBox();
+      const reach = await fos.locator(".fc-reach").boundingBox();
+      expect(row && word && num && bar && reach, `${String(width)}px`).toBeTruthy();
+      if (row === null || word === null || num === null || bar === null || reach === null) continue;
       expect(word.y, `${String(width)}px`).toBeGreaterThanOrEqual(row.y);
       expect(word.y + word.height, `${String(width)}px`).toBeLessThanOrEqual(row.y + row.height);
-      const apart = word.x + word.width <= num.x || word.y >= num.y + num.height - 2;
-      expect(apart, `${String(width)}px: the word clear of the number`).toBe(true);
+      const clear = (other: { x: number; y: number; width: number; height: number }) =>
+        word.x >= other.x + other.width ||
+        word.x + word.width <= other.x ||
+        word.y >= other.y + other.height - 2 ||
+        word.y + word.height <= other.y + 2;
+      expect(clear(num), `${String(width)}px: the word clear of the number`).toBe(true);
+      expect(clear(bar), `${String(width)}px: the word clear of the bar`).toBe(true);
+      expect(clear(reach), `${String(width)}px: the word clear of the way in`).toBe(true);
     }
   });
 

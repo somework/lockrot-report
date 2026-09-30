@@ -129,7 +129,7 @@ interface GateAnswer {
   readonly clause: GateClause;
 }
 
-/** "; 12 fail this run", which opens what fails the run, and the panel under the sentence. */
+/** "; N fail this run", which opens what fails the run, and the panel under the sentence. */
 function useGateEnd(answer: GateAnswer | null): { end: ComponentChildren; panel: ComponentChildren } {
   const why = useGateWhy(answer?.gate ?? null);
   if (answer === null || why === null) return { end: null, panel: null };
