@@ -83,6 +83,16 @@ jobs:
         with:
           name: dist
           path: dist/
+      # The report-2 pages are assembled from lockrot's recorded bundle (DESIGN.md §6, §7). Same
+      # cache key as the `lint, types, unit` job.
+      - name: the pinned lockrot commit
+        id: pin
+        run: echo "commit=$(jq -r .commit contract/lockrot.json)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: .lockrot
+          key: lockrot-contract-${{ steps.pin.outputs.commit }}-${{ hashFiles('scripts/contract.mjs') }}
+      - run: npm run contract:fetch
       - run: npx playwright install --with-deps ${{ matrix.browser }}
       # Pinned so the layout budgets measure the same fonts locally (see CONTRIBUTING.md).
       - run: sudo apt-get install -y --no-install-recommends fonts-dejavu-core
