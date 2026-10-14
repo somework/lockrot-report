@@ -55,7 +55,10 @@ function caseNames(dir: string): string[] {
 }
 
 function metadataOf(name: string): RepositoryMetadata | null {
-  if (!existsSync(join(CONTRACT, "explain-2", `${name}.json`))) return null;
+  if (!existsSync(join(CONTRACT, "explain-2", `${name}.json`))) {
+    // The 15 model-only documents have no explain-2: the model's own details stand in for them.
+    return modelCases().find((model) => model.name === name)?.metadata ?? null;
+  }
   return (readContractJson("explain-2", `${name}.json`) as { metadata: RepositoryMetadata | null }).metadata;
 }
 

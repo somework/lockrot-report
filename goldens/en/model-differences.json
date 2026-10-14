@@ -1,0 +1,134 @@
+{
+  "checks": {
+    "lockrot's recording and the model's input differ in abandoned_ignored": [
+      "ignored-marking-archived-dagger",
+      "ignored-marking-only-dagger",
+      "ignored-marking-partial-dagger",
+      "ignored-marking-stale-dagger"
+    ],
+    "lockrot's recording and the model's input differ in abandoned_ignored, checks_missing, checks_skipped, the fired signals": [
+      "ignored-marking-unchecked-dagger"
+    ],
+    "lockrot's recording and the model's input differ in checks_missing, the fired signals": [
+      "either-low-dev-dagger"
+    ],
+    "lockrot's recording and the model's input differ in checks_skipped": [
+      "C-offline-dagger",
+      "C-tokenless-dagger",
+      "hoa-tokenless-dagger",
+      "not-found-dagger"
+    ],
+    "lockrot's recording and the model's input differ in checks_skipped, the fired signals": [
+      "C-bitbucket-dagger",
+      "C-gitlab-hosted-dagger",
+      "gitlab-anon-dagger"
+    ],
+    "lockrot's recording and the model's input differ in the fired signals": [
+      "G",
+      "G-tag-dagger",
+      "cache-subscriber",
+      "guzzle",
+      "guzzle-5",
+      "guzzle-mixed",
+      "local-path-advisory",
+      "pagerfanta",
+      "partial",
+      "partial-op-dagger",
+      "replace-graded",
+      "replace-text",
+      "silent",
+      "tie-dagger",
+      "unknown",
+      "wp-config"
+    ]
+  },
+  "branches": {
+    "lockrot's recording and the model's input differ in metadata.branches[].released_years": ["pagerfanta"]
+  },
+  "security_row": {
+    "lockrot's recording and the model's input differ in metadata.branches[].fixes.fix_kind, metadata.branches[].fixes.lowest, security.records": [
+      "xmlseclibs"
+    ],
+    "lockrot's recording and the model's input differ in metadata.branches[].fixes.fix_kind, security.fix_kind": [
+      "B-accepted-dagger",
+      "B-baselined-dagger",
+      "B-dev-dagger",
+      "either-critical-dagger",
+      "fail-on-config-dagger",
+      "fail-on-default-dagger"
+    ],
+    "lockrot's recording and the model's input differ in metadata.branches[].fixes.fix_kind, security.fix_kind, security.records": [
+      "A-php-star-dagger",
+      "flysystem",
+      "guzzle-5",
+      "routing"
+    ],
+    "lockrot's recording and the model's input differ in metadata.branches[].fixes.fix_kind, security.records": [
+      "guzzle-mixed",
+      "partial",
+      "twig-1"
+    ],
+    "lockrot's recording and the model's input differ in metadata.branches[].fixes.held_by, metadata.branches[].fixes.lowest, security.records": [
+      "psr7"
+    ],
+    "lockrot's recording and the model's input differ in metadata.branches[].fixes.held_by, security.records": [
+      "A",
+      "A-gate-critical",
+      "A-gate-vulnerable"
+    ],
+    "lockrot's recording and the model's input differ in metadata.branches[].fixes.if_applied, metadata.branches[].fixes.lowest": [
+      "B-also-dagger"
+    ],
+    "lockrot's recording and the model's input differ in security.ignored, security.ignored_count, security.records": [
+      "E-ignored-dagger"
+    ],
+    "lockrot's recording and the model's input differ in security.records": [
+      "A-baselined-dagger",
+      "A-blocked-dagger",
+      "E",
+      "E-ignored-whole-dagger",
+      "commonmark",
+      "feeds-drupal-dagger",
+      "guzzle",
+      "ignored-marking-only-dagger",
+      "ignored-marking-partial-dagger",
+      "ignored-marking-stale-dagger",
+      "joomla-filter",
+      "policy-off-dagger",
+      "twig-dev-dagger",
+      "unknown",
+      "unrated-dagger",
+      "yaml-3.4"
+    ]
+  },
+  "age_line": {
+    "lockrot's recording and the model's input differ in activity.event, age.push, age.push_unmeasured": [
+      "C-bitbucket-dagger",
+      "C-gitlab-hosted-dagger",
+      "either-low-dev-dagger",
+      "gitlab-anon-dagger"
+    ],
+    "lockrot's recording and the model's input differ in age.branch_release, age.installed": [
+      "B",
+      "B-accepted-dagger",
+      "B-also-dagger",
+      "B-baselined-dagger",
+      "B-dev-dagger",
+      "B-gate-flag",
+      "B-gate-list",
+      "B-gate-none",
+      "B-offline-dagger",
+      "B-offline-high-dagger",
+      "fail-on-config-dagger",
+      "fail-on-default-dagger",
+      "tie-dagger"
+    ],
+    "lockrot's recording and the model's input differ in age.installed_unmeasured": [
+      "F",
+      "affected-range-unknown-dagger",
+      "ok-unchecked",
+      "replace-graded"
+    ],
+    "lockrot's recording and the model's input differ in age.release": ["wp-config"]
+  }
+}
