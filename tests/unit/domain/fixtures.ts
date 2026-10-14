@@ -128,5 +128,6 @@ export function makeModel(findings: readonly Finding[]): Model {
     details: new Map(),
     schema: 1,
     newerSchema: false,
+    report2: null,
   };
 }

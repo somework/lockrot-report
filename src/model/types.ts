@@ -4,6 +4,8 @@
  * are open: an unknown value is kept and rendered neutrally, never dropped.
  */
 
+import type { Report2Embed } from "./report2";
+
 export const VERDICTS = [
   "abandoned",
   "silent",
@@ -48,6 +50,8 @@ export interface Model {
   schema: number;
   /** True when `schema` is newer than this renderer reads; the page says so. */
   newerSchema: boolean;
+  /** The document as lockrot's report-2 contract types it; null for any other document. */
+  report2: Report2Embed | null;
 }
 
 export interface ReportModel {

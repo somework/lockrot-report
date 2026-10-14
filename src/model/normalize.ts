@@ -29,6 +29,7 @@ import type {
   Verdict,
 } from "./types";
 import { PRIORITIES, VERDICTS } from "./types";
+import { REPORT2_KEYS, type Details, type Report2, type Report2Embed } from "./report2";
 import { normalizeSeverity } from "../domain/severity";
 import { DEFAULT_FLAGGED } from "../domain/vocab";
 import { READS_SCHEMAS } from "../schema";
@@ -48,7 +49,7 @@ const LIBYEARS_UNMEASURED_REASONS = [
 
 /** The report-level and `run.` keys the page reads that a document may leave out; nothing here
  *  knows which release added which key. */
-const ABSENT_CHECKED = [
+const ABSENT_CHECKED_REPORT1 = [
   "packages_checked",
   "include_dev",
   "network_failures",
@@ -77,6 +78,10 @@ const ABSENT_CHECKED = [
   "run.thresholds",
   "run.flagged_verdicts",
 ] as const;
+
+/** report-2 replaced `run.fail_on_kind` by `run.gates` and `run.flagged_verdicts` by `run.graded_verdicts`. */
+const REMOVED_IN_REPORT2: readonly string[] = ["run.fail_on_kind", "run.flagged_verdicts"];
+const ABSENT_CHECKED_REPORT2 = ABSENT_CHECKED_REPORT1.filter((key) => !REMOVED_IN_REPORT2.includes(key));
 
 const NOT_A_REPORT_MESSAGE =
   "This does not look like a lockrot report. Expected either the html bundle " +
@@ -110,11 +115,24 @@ export function normalize(input: unknown): NormalizeResult {
   return {
     ok: true,
     model: {
-      report: buildReportModel(shape.reportSource, generatedAt),
+      report: buildReportModel(shape.reportSource, generatedAt, schema),
       details: buildDetailsMap(shape.detailsSource),
       schema,
       newerSchema: schema > Math.max(...READS_SCHEMAS),
+      report2: schema === 2 ? report2Embed(shape) : null,
     },
+  };
+}
+
+/** Typed as lockrot's contract once every root key report-2 requires is present; the page renders
+ *  only what the contract names, so a missing root key is not report-2. */
+function report2Embed(shape: ReportShape): Report2Embed | null {
+  if (!REPORT2_KEYS.every((key) => key in shape.reportSource)) {
+    return null;
+  }
+  return {
+    report: shape.reportSource as Report2,
+    details: (isRecord(shape.detailsSource) ? shape.detailsSource : {}) as Details,
   };
 }
 
@@ -156,7 +174,7 @@ function pickReportShape(input: Record<string, unknown>): ReportShape | null {
 // report
 // ---------------------------------------------------------------------------------------------
 
-function buildReportModel(source: Record<string, unknown>, generatedAt: string): ReportModel {
+function buildReportModel(source: Record<string, unknown>, generatedAt: string, schema: number): ReportModel {
   const lockrot = isRecord(source.lockrot) ? source.lockrot : {};
 
   return {
@@ -183,15 +201,15 @@ function buildReportModel(source: Record<string, unknown>, generatedAt: string):
     gate: buildRootGate(source.gate),
     exposureRule: buildExposureRule(source.exposure_rule),
     unattributed: buildUnattributed(source.unattributed),
-    absent: absentKeys(source),
+    absent: absentKeys(source, schema === 2 ? ABSENT_CHECKED_REPORT2 : ABSENT_CHECKED_REPORT1),
     findings: asArray(source.findings).map(buildFinding),
   };
 }
 
 /** `in`, not a null check: a key written as `null` is present. */
-function absentKeys(source: Record<string, unknown>): readonly string[] {
+function absentKeys(source: Record<string, unknown>, checked: readonly string[]): readonly string[] {
   const run = isRecord(source.run) ? source.run : {};
-  return ABSENT_CHECKED.filter((key) => (key.startsWith("run.") ? !(key.slice(4) in run) : !(key in source)));
+  return checked.filter((key) => (key.startsWith("run.") ? !(key.slice(4) in run) : !(key in source)));
 }
 
 function buildRunSettings(raw: unknown): RunSettings {
