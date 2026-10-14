@@ -133,7 +133,7 @@ src/
     hash.ts               parse/serialise the fragment (format unchanged, see §4)
   ui/                     Preact components, one folder per surface, CSS next to the component
   styles/                 tokens.css, base.css, print.css
-tests/unit/               vitest, mirrors src/
+tests/unit/               vitest, mirrors src/ (report-2's domain modules: tests/unit/words/, tests/unit/goldens/)
 e2e/                      Playwright; runs against the built page in build/pages/ (§6)
 legacy/                   lockrot's resources/report/ at the commit in legacy/SOURCE_COMMIT
 fixtures/bundles/         real payloads, and hand-built ones (mini*.json) for shapes no real one carries
