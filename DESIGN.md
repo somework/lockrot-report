@@ -398,8 +398,10 @@ and a key the document leaves out is named on Run data (PD-RUN-3) like any other
   lockrot's relative path. It holds every file `bundle_sha256` covers, `bundle.generated.ts`,
   `flags/cases.json` and `types/`. The script recomputes the hash as lockrot's
   `ContractBundle::sha256()` does. It fails when the hash, a grammar version or a committed
-  `contract/` file differs from lockrot's. A checkout already at the pinned commit needs no
-  network. CI caches `.lockrot/` by the pinned commit and the fetch script.
+  `contract/` file differs from lockrot's. An unchanged checkout at the pinned commit needs no
+  network. A changed, missing or extra file makes the script fetch again, because the hash does not
+  cover `bundle.generated.ts` and `flags/cases.json`. The script also fails when either is missing.
+  CI caches `.lockrot/` by the pinned commit and the fetch script.
 - What checks the contract: `types-match-schema.test.ts` validates every recorded report-2
   document, both baselined html embeds and their `details` with ajv (draft-04), and runs each type
   guard on every document. `npm run typecheck:contract` compiles `bundle.generated.ts`

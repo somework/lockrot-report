@@ -15,8 +15,8 @@ Node 26 (`.nvmrc`). Everything below is an npm script:
 
 `npm test` and `npm run typecheck:contract` read lockrot's recorded bundle at the commit
 `contract/lockrot.json` pins. Run `npm run contract:fetch` once before them, and again after the pin
-moves. It needs the network only when `.lockrot/` holds another commit. DESIGN.md §7 says how to
-re-pin.
+moves. It needs no network when `.lockrot/` holds the pinned commit unchanged. DESIGN.md §7 says
+how to re-pin.
 
 ## The browser suite
 
