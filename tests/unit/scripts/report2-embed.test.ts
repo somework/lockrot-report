@@ -1,15 +1,53 @@
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
+
 import { describe, expect, test } from "vitest";
 
-import { assembleEmbed, report2Cases, report2Pages } from "../../../scripts/report2-embed";
+import { assembleEmbed, isCorpusSlice, report2Cases, report2Pages } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
 
 describe("report2Cases", () => {
-  test("is the composite and the offline cases", () => {
-    const cases = report2Cases();
+  test("is every report-2 document of the bundle", () => {
+    const onDisk = readdirSync(join(process.cwd(), ".lockrot/tests/fixtures/contract/report-2"))
+      .filter((file) => file.endsWith(".json"))
+      .map((file) => file.slice(0, -".json".length))
+      .sort();
 
-    expect(cases).toContain("composite");
-    expect(cases.filter((name) => name !== "composite").length).toBeGreaterThan(0);
-    expect(cases.filter((name) => name !== "composite").every((name) => name.includes("offline"))).toBe(true);
+    expect(report2Cases()).toEqual(onDisk);
+    expect(report2Cases()).toEqual(
+      expect.arrayContaining([
+        "A",
+        "B",
+        "F",
+        "G",
+        "B-baselined-dagger",
+        "B-accepted-dagger",
+        "D-partial-dagger",
+      ]),
+    );
+  });
+});
+
+describe("isCorpusSlice", () => {
+  test("holds the composite, the offline cases and the baselined embeds only", () => {
+    expect(["composite", "B-offline-dagger", "baselined-wallabag-main"].every(isCorpusSlice)).toBe(true);
+    expect(["B", "B-baselined-dagger", "D-partial-dagger"].some(isCorpusSlice)).toBe(false);
+  });
+
+  test("selects the composite, the offline cases and both baselined embeds from the pages", () => {
+    const slice = report2Pages()
+      .map((page) => page.name.slice("report2-".length))
+      .filter(isCorpusSlice);
+
+    expect(slice).toEqual(
+      expect.arrayContaining([
+        "composite",
+        "B-offline-dagger",
+        "baselined-wallabag-2.6",
+        "baselined-wallabag-main",
+      ]),
+    );
+    expect(slice).toHaveLength(6);
   });
 });
 

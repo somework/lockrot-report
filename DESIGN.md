@@ -370,10 +370,10 @@ and a key the document leaves out is named on Run data (PD-RUN-3) like any other
   assembles one from the fetched bundle (`npm run contract:fetch`, DESIGN.md §7). `report` is
   `contract/report-2/<case>.json`. `details` holds the case's package from
   `contract/explain-2/<case>.json` as `{lock, metadata, repository_link: null}`, because explain-2
-  has no repository link. A case without an explain-2 document (`composite`) has no `details`. The
-  slice is `composite`, the offline cases and the two baselined embeds
-  (`baselined/*/check/report.bundle.json`), which are used as recorded. `scripts/pages.mjs` writes
-  them beside the report-1 pages as `report2-<case>.html` and `report2-baselined-<scenario>.html`.
+  has no repository link. A case without an explain-2 document (`composite`) has no `details`. Every document of `contract/report-2/` gets a page, because the detail and axe specs open single cases. The two baselined
+  embeds (`baselined/*/check/report.bundle.json`) get a page each, used as recorded. The corpus
+  slice (`isCorpusSlice`) is `composite`, the offline cases and the two baselined embeds.
+  `scripts/pages.mjs` writes them beside the report-1 pages as `report2-<case>.html` and `report2-baselined-<scenario>.html`.
   `e2e/support/pages.ts` opens them with `report2Url(<case>)`, and `tests/unit/` imports the same
   module. `e2e/report2-pages.spec.ts` checks that each loads without a console error or an uncaught
   exception.

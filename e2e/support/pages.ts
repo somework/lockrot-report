@@ -22,6 +22,8 @@ function fileUrl(page: string): string {
 
 const REPORT2_PREFIX = "report2-";
 
+export { isCorpusSlice } from "../../scripts/report2-embed.ts";
+
 /** The case name of every report-2 page `scripts/pages.mjs` wrote, such as `composite`,
  *  `B-offline-dagger` or `baselined-wallabag-2.6`. */
 export function report2Cases(): string[] {

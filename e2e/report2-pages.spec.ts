@@ -8,7 +8,7 @@ import { report2Cases, report2Url } from "./support/pages";
 const cases = report2Cases();
 
 test("the build wrote report-2 pages", () => {
-  expect(cases).toContain("composite");
+  expect(cases).toEqual(expect.arrayContaining(["composite", "A", "B", "F", "B-baselined-dagger"]));
   expect(cases.some((name) => name.startsWith("baselined-"))).toBe(true);
 });
 

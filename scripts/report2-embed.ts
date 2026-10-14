@@ -22,13 +22,17 @@ function readJson(...parts: string[]): unknown {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
-/** The composite, and every case that records an offline run. */
+/** Every report-2 document of the bundle: the detail and axe specs open single cases. */
 export function report2Cases(): string[] {
   return readdirSync(join(FIXTURES, "contract", "report-2"))
     .filter((file) => file.endsWith(".json"))
     .map((file) => file.slice(0, -".json".length))
-    .filter((name) => name === "composite" || name.includes("offline"))
     .sort();
+}
+
+/** The corpus slice: the composite, the offline cases and the baselined embeds (by page case name). */
+export function isCorpusSlice(caseName: string): boolean {
+  return caseName === "composite" || caseName.includes("offline") || caseName.startsWith("baselined-");
 }
 
 interface Explain2 {
