@@ -5,13 +5,17 @@ import { expect, test, type Page } from "@playwright/test";
 import { readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createReportPage } from "./support/report";
-import { pageUrl, REPO_ROOT, type FixtureName } from "./support/pages";
+import { isCorpusSlice, pageUrl, REPO_ROOT, report2Cases, type FixtureName } from "./support/pages";
 
-/** Every page `scripts/pages.mjs` built, one per fixture bundle. */
+/** Every page `scripts/pages.mjs` built, one per fixture bundle. The report-2 pages are the corpus
+ *  slice only: all of them add minutes per browser, and each is opened by its own spec. */
 function builtFixtures(): FixtureName[] {
+  const corpusSlice = new Set(report2Cases().filter(isCorpusSlice));
   return readdirSync(join(REPO_ROOT, "build/pages"))
     .filter((file) => file.endsWith(".html"))
-    .map((file) => file.replace(/\.html$/, "") as FixtureName);
+    .map((file) => file.replace(/\.html$/, ""))
+    .filter((name) => !name.startsWith("report2-") || corpusSlice.has(name.slice("report2-".length)))
+    .map((name) => name as FixtureName);
 }
 
 const AXE_FIXTURES: readonly FixtureName[] = [

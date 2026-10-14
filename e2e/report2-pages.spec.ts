@@ -23,6 +23,7 @@ for (const name of cases) {
     await page.goto(report2Url(name));
     await page.waitForLoadState("load");
 
+    await expect(page.getByText("This report is newer than this page.")).toBeVisible();
     expect(problems).toEqual([]);
   });
 }

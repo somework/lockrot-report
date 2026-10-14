@@ -39,15 +39,15 @@ describe("isCorpusSlice", () => {
       .map((page) => page.name.slice("report2-".length))
       .filter(isCorpusSlice);
 
-    expect(slice).toEqual(
-      expect.arrayContaining([
-        "composite",
-        "B-offline-dagger",
-        "baselined-wallabag-2.6",
-        "baselined-wallabag-main",
-      ]),
-    );
-    expect(slice).toHaveLength(6);
+    const cases = report2Cases();
+    const expected = [
+      "composite",
+      ...cases.filter((name) => name.includes("offline")),
+      "baselined-wallabag-2.6",
+      "baselined-wallabag-main",
+    ];
+
+    expect(slice.sort()).toEqual(expected.sort());
   });
 });
 
