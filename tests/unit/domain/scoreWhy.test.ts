@@ -53,4 +53,27 @@ describe("whyLines", () => {
 
     expect(whyLines(finding, report).filter((line) => line.startsWith("without "))).toEqual([]);
   });
+
+  it("names a total halving whose reason is named like an Object member by its id", () => {
+    const { finding, report } = recorded("tie‡");
+    if (!("modifiers" in finding.score)) throw new Error("tie‡ is graded");
+    finding.score.modifiers = [
+      { reason: "toString", applies_to: "total", divide_by: 2, before: 36, after: 18 },
+    ];
+
+    expect(whyLines(finding, report)).toContain("toString: total 36 ÷ 2 = 18");
+  });
+
+  it("counts as corroborating only the terms whose role says so", () => {
+    // tie‡'s maintenance part is left-behind (lead) and old-promise (corroborating).
+    const { finding, report } = recorded("tie‡");
+    if (!("terms" in finding.score)) throw new Error("tie‡ is graded");
+    const [, second] = finding.score.terms;
+    if (!second) throw new Error("tie‡ has a second term");
+    second.role = "a-later-role";
+
+    expect(whyLines(finding, report)).toContain(
+      "maintenance (left-behind) alone grades it high, the advisory alone grades it high: together critical",
+    );
+  });
 });

@@ -86,4 +86,30 @@ describe("answerText", () => {
 
     expect(answerText(finding, report.run)).toContain("It is held by joomla/filter 2.0.5 (itself unknown).");
   });
+
+  it("prints lockrot's own move text for a no-move reason named like an Object member", () => {
+    const { finding, report } = recorded("stale-only");
+    if (!finding.next_step) throw new Error("stale-only has a move");
+    finding.next_step.reason = "toString";
+    finding.next_step.text = "no move: a later reason.";
+
+    expect(answerText(finding, report.run)).toBe(
+      "Medium: nothing has been released for 3.3 years. Next step: no move: a later reason.",
+    );
+  });
+
+  it("joins the flags a partial update clears as a list", () => {
+    // partial-op‡'s partial update clears old-promise and 1 of its 2 advisories.
+    const { finding, report } = recorded("partial-op‡");
+    if (finding.security.status !== "vulnerable" || !finding.security.partial)
+      throw new Error("partial-op‡ has a partial update");
+    finding.security.partial.clears = [
+      { kind: "flag", id: "left-behind", basis: "branch_releasing" },
+      ...finding.security.partial.clears,
+    ];
+
+    expect(answerText(finding, report.run)).toContain(
+      "installs v2.13.0, which clears left-behind, old-promise and 1 of its 2 advisories (",
+    );
+  });
 });

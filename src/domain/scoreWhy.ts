@@ -11,6 +11,7 @@ import type {
 } from "../model/report2";
 import { isScoreGraded, isSecurityVulnerable, isTermSecurity } from "../model/report2";
 import { day, pluralNoun } from "./format";
+import { vocabTable } from "./vocab";
 import {
   advisoryName,
   advisoryRows,
@@ -30,7 +31,7 @@ import {
   unjudgedChecks,
 } from "./findingWords";
 
-const DEV_WORD: Readonly<Record<string, string>> = { dev: "packages-dev" };
+const DEV_WORD = vocabTable<Record<string, string>>({ dev: "packages-dev" });
 
 type WhyReport = Pick<Report2, "run" | "generated_at">;
 
@@ -131,19 +132,20 @@ function openingLine(finding: Finding, score: ScoreGraded, run: Run): string {
   const verdict = finding.verdict;
   const of = score.parts.security.of;
   const maintenanceTerms = score.terms.filter((t) => t.part === "maintenance").length;
+  const corroborating = score.terms.filter((t) => t.role === "corroborating").length;
   const reach = printedModifiers(score.modifiers).some((m) => m.applies_to === "maintenance");
   const dev = score.modifiers.some((m) => m.reason === "dev");
   const lead = finding.lead ?? "";
   const clauses = [
     lead,
-    ...(maintenanceTerms > 1 ? [`${maintenanceTerms - 1} corroborating`] : []),
+    ...(corroborating > 0 ? [`${corroborating} corroborating`] : []),
     ...(reach ? ["halved for reach"] : []),
     ...(dev ? ["halved: packages-dev"] : []),
   ];
   const whoMaintenance =
     maintenanceTerms === 0
       ? "maintenance alone grades it"
-      : clauses.length === 1
+      : maintenanceTerms === 1 && !reach && !dev
         ? `${lead} alone grades it`
         : `maintenance (${clauses.join(", ")}) alone grades it`;
   const whoSecurity = (of === 1 ? "the advisory" : "the advisories") + (dev ? " (halved: packages-dev)" : "");

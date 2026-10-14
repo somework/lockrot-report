@@ -8,11 +8,13 @@ import type {
   Move,
   Run,
   ScoreGraded,
+  SecurityVulnerable,
   Severity,
   ThroughEntry,
 } from "../model/report2";
 import { isScoreGraded, isSecurityVulnerable, isTermSecurity } from "../model/report2";
 import { pluralNoun } from "./format";
+import { vocabTable } from "./vocab";
 import {
   acceptsWholePackage,
   addsBasisWords,
@@ -35,7 +37,6 @@ import {
   metadataWords,
   namesCapped,
   oneDecimal,
-  partialClears,
   phpDisplay,
   phpShown,
   printedModifiers,
@@ -49,20 +50,20 @@ type AnyMove = Move | AlsoMove;
 /** Moves Composer resolves to a constraint or a tag. */
 const RESOLVED_KINDS: readonly string[] = ["require", "raise-php", "tag"];
 
-const NO_MOVE_WORDS: Readonly<Record<string, string>> = {
+const NO_MOVE_WORDS = vocabTable<Record<string, string>>({
   package_quiet: "It has no recent release to move to",
   no_higher_release: "No higher branch has released recently enough to move to",
   higher_undated: "lockrot could not date the releases of the higher branches, so it names no move",
   releases_unknown: "lockrot could not read its releases, so it names no fix",
   affected_range_unknown: "No advisory names the versions it affects, so lockrot names no fix",
   local_package: "It is installed from a local path, your own package, so lockrot names no move",
-};
+});
 
-const BRANCH_CLASS_CLAUSES: Readonly<Record<string, string>> = {
+const BRANCH_CLASS_CLAUSES = vocabTable<Record<string, string>>({
   "raise-php": ", by a release that needs a php floor raise",
   blocked: ", by a release your target does not run",
   update: "",
-};
+});
 
 const graded = (finding: Finding): ScoreGraded | null =>
   isScoreGraded(finding.score) ? finding.score : null;
@@ -376,6 +377,14 @@ function moveSentence(finding: Finding, move: AnyMove, run: Run): string {
   return `${sentence}.`;
 }
 
+/** What a partial update clears, judged as an `update` move: "left-behind, old-promise and 1 of its 2 advisories". */
+function partialFacts(finding: Finding, partial: NonNullable<SecurityVulnerable["partial"]>): string {
+  const of = graded(finding)?.parts.security.of ?? 0;
+  const flags = partial.clears.filter((c) => c.kind === "flag").map((c) => c.id);
+  const advisories = partial.clears.filter((c) => c.kind === "advisory").length;
+  return joinList([...flags, `${advisories} of its ${of} advisories`]);
+}
+
 function holderWords(heldBy: HeldBy): string {
   if (heldBy.source === "root") return `your composer.json (requires ${heldBy.constraint})`;
   const holder = heldBy.holder;
@@ -617,7 +626,7 @@ function gradedAnswer(finding: Finding, score: ScoreGraded, run: Run): string {
     ...moves.map((m, i) => (i === 0 ? "" : "Then: ") + moveSentence(finding, m, run)),
     ...(partial
       ? [
-          `Meanwhile, \`composer update ${finding.package}\` installs ${partial.version}, which clears ${partialClears(finding, partial)} ` +
+          `Meanwhile, \`composer update ${finding.package}\` installs ${partial.version}, which clears ${partialFacts(finding, partial)} ` +
             `(${partial.if_applied.at_most ? "at most " : ""}${partial.if_applied.total}, ${partial.if_applied.verdict} after it` +
             (partial.if_applied.assumes.includes("no_new_advisories")
               ? ", if that release carries no new advisory"
