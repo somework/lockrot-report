@@ -24,6 +24,7 @@ how to re-pin.
 
 ```sh
 npx playwright install chromium
+npm run contract:fetch                       # the report-2 pages are built from lockrot's bundle
 npm run build && node scripts/pages.mjs      # dist/report.html filled with every fixture → build/pages/
 npx playwright test
 ```

@@ -1,9 +1,13 @@
 // Fills the built `dist/report.html` (produced by `npm run build`) with every bundle under
 // `fixtures/bundles`, using the same title/description approximation and the same payload
 // escaping as `HtmlFormatter::payload()` (`</` -> `<\/`, `<!--` -> `<!--`) that lockrot's own
-// formatter uses. Writes `build/pages/`, which is what the e2e suite runs against.
+// formatter uses. Also writes one page per report-2 embed of lockrot's fetched bundle
+// (`scripts/report2-embed.ts`; needs `npm run contract:fetch`). Writes `build/pages/`, which is what
+// the e2e suite runs against.
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
+
+import { report2Pages } from "./report2-embed.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const DIST = join(ROOT, "dist");
@@ -40,6 +44,8 @@ function title(report) {
     : `lockrot: ${flagged} of ${report.packages_checked} packages flagged`;
 }
 
+const REPORT2_TITLE = "lockrot report";
+
 function main() {
   mkdirSync(OUT, { recursive: true });
   const template = read(join(DIST, "report.html"));
@@ -52,7 +58,15 @@ function main() {
       .replaceAll("{{DATA}}", () => payload(bundle));
     writeFileSync(join(OUT, basename(file, ".json") + ".html"), page);
   }
-  console.log(`${fixtureFiles.length} page(s) written to ${OUT}`);
+  const report2 = report2Pages();
+  for (const { name, embed } of report2) {
+    const page = template
+      .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))
+      .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
+      .replaceAll("{{DATA}}", () => payload(embed));
+    writeFileSync(join(OUT, name + ".html"), page);
+  }
+  console.log(`${fixtureFiles.length + report2.length} page(s) written to ${OUT}`);
 }
 
 main();

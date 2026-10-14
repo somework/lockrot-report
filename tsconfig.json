@@ -15,6 +15,7 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "types": ["node"]
   },
   "include": ["src", "tests", "e2e", "scripts", "vite.config.ts", "playwright.config.ts", "vitest.config.ts"]
