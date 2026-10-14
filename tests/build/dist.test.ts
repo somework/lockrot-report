@@ -12,6 +12,8 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
+import { READS_SCHEMA } from "../../src/schema";
+
 // `fileURLToPath` takes the raw `import.meta.url` string directly (Node accepts either a URL
 // object or a string) rather than going through `new URL(...)`: the happy-dom test environment
 // replaces the global `URL` constructor with a browser-shaped one that does not round-trip a
@@ -67,8 +69,14 @@ describe.skipIf(!distBuilt)(
       name: string;
       version: string;
       schema: { report: readonly number[] };
+      contract: { bundle_sha256: string; score_text_grammar: number; text_grammar: number };
       files: Record<string, string>;
       csp: { script: string; style: string };
+    };
+    const pin = JSON.parse(readFileSync(join(ROOT, "contract/lockrot.json"), "utf8")) as {
+      bundle_sha256: string;
+      score_text_grammar: number;
+      text_grammar: number;
     };
     const jsFile = readFileSync(join(DIST, "lockrot-report.js"), "utf8");
     const cssFile = readFileSync(join(DIST, "lockrot-report.css"), "utf8");
@@ -120,10 +128,21 @@ describe.skipIf(!distBuilt)(
       expect(manifest.files["lockrot-report.css"]).toBe(sha256Hex(cssFile));
     });
 
-    it("manifest names the report-1 schema this renderer reads (DESIGN.md §2)", () => {
-      expect(manifest.schema.report).toContain(1);
+    it("manifest names this renderer and its version", () => {
       expect(manifest.name.length).toBeGreaterThan(0);
       expect(manifest.version.length).toBeGreaterThan(0);
+    });
+
+    it("manifest.schema.report lists every report major from 1 to READS_SCHEMA (DESIGN.md §2)", () => {
+      expect(manifest.schema.report).toEqual(Array.from({ length: READS_SCHEMA }, (_, i) => i + 1));
+    });
+
+    it("manifest.contract equals the pin in contract/lockrot.json (DESIGN.md §7)", () => {
+      expect(manifest.contract).toEqual({
+        bundle_sha256: pin.bundle_sha256,
+        score_text_grammar: pin.score_text_grammar,
+        text_grammar: pin.text_grammar,
+      });
     });
 
     // Comments are prose for whoever reads the source repository; in the page they are weight, and

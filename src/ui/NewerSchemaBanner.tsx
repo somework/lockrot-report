@@ -1,7 +1,5 @@
+import { READS_SCHEMA } from "../schema";
 import { useReport } from "./context";
-
-/** The report schema major this renderer was written against (DESIGN.md §2). */
-const READS_SCHEMA = 1;
 
 /**
  * Shown when the document declares a newer report schema than this renderer reads (DESIGN.md §2).
