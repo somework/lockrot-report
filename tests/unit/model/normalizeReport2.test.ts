@@ -7,6 +7,11 @@ const documents = reportDocuments();
 const recordedEmbeds = embeds();
 
 describe("normalize keeps a report-2 document typed", () => {
+  test("the fetched bundle holds report-2 documents and html embeds", () => {
+    expect(documents.length).toBeGreaterThan(0);
+    expect(recordedEmbeds.length).toBeGreaterThan(0);
+  });
+
   test.each(documents)("$name, bare, as model.report2 with no details", ({ document }) => {
     const result = normalize(document);
 

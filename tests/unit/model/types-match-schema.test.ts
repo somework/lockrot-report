@@ -130,6 +130,11 @@ const reports: { name: string; report: Report2 }[] = [
 ];
 
 describe("every recorded report-2 document validates against the report-2 schema", () => {
+  test("the fetched bundle holds report-2 documents and html embeds", () => {
+    expect(documents.length).toBeGreaterThan(0);
+    expect(recordedEmbeds.length).toBeGreaterThan(0);
+  });
+
   test.each(reports)("$name", ({ report }) => {
     expect(validateReport(report), JSON.stringify(errorsOf(validateReport))).toBe(true);
   });
