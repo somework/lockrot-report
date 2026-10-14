@@ -31,7 +31,7 @@ jobs:
       - uses: actions/cache@v6
         with:
           path: .lockrot
-          key: lockrot-contract-${{ steps.pin.outputs.commit }}
+          key: lockrot-contract-${{ steps.pin.outputs.commit }}-${{ hashFiles('scripts/contract.mjs') }}
       - run: npm run contract:fetch
       - run: npm run format:check
       - run: npm run lint
