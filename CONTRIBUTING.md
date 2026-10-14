@@ -2,13 +2,21 @@
 
 Node 26 (`.nvmrc`). Everything below is an npm script:
 
-| command                                                     | what it does                                                    |
-| ----------------------------------------------------------- | --------------------------------------------------------------- |
-| `npm ci`                                                    | install exactly what `package-lock.json` pins                   |
-| `npm run build`                                             | typecheck, bundle, and assemble `dist/`                         |
-| `npm test`                                                  | unit and component tests (vitest)                               |
-| `npm run test:e2e`                                          | the browser suite (Playwright); needs `build/pages/`, see below |
-| `npm run lint`, `npm run typecheck`, `npm run format:check` | what CI runs first                                              |
+| command                                                     | what it does                                                     |
+| ----------------------------------------------------------- | ---------------------------------------------------------------- |
+| `npm ci`                                                    | install exactly what `package-lock.json` pins                    |
+| `npm run contract:fetch`                                    | get lockrot's recorded bundle into `.lockrot/`, before the tests |
+| `npm run build`                                             | typecheck, bundle, and assemble `dist/`                          |
+| `npm test`                                                  | unit and component tests (vitest)                                |
+| `npm run test:e2e`                                          | the browser suite (Playwright); needs `build/pages/`, see below  |
+| `npm run lint`, `npm run typecheck`, `npm run format:check` | what CI runs first                                               |
+
+## lockrot's contract
+
+`npm test` and `npm run typecheck:contract` read lockrot's recorded bundle at the commit
+`contract/lockrot.json` pins. Run `npm run contract:fetch` once before them, and again after the pin
+moves. It needs the network only when `.lockrot/` holds another commit. DESIGN.md §7 says how to
+re-pin.
 
 ## The browser suite
 
