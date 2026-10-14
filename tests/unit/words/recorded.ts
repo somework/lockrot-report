@@ -41,10 +41,10 @@ export interface ModelCase {
   golden: ModelGoldens;
 }
 
-export function readContractJson<T>(...parts: string[]): T {
+export function readContractJson(...parts: string[]): unknown {
   const path = join(CONTRACT, ...parts);
   if (!existsSync(path)) throw new Error(`${path} is missing: run \`npm run contract:fetch\` first`);
-  return JSON.parse(readFileSync(path, "utf8")) as T;
+  return JSON.parse(readFileSync(path, "utf8"));
 }
 
 function caseNames(dir: string): string[] {
@@ -56,7 +56,7 @@ function caseNames(dir: string): string[] {
 
 function metadataOf(name: string): RepositoryMetadata | null {
   if (!existsSync(join(CONTRACT, "explain-2", `${name}.json`))) return null;
-  return readContractJson<{ metadata: RepositoryMetadata | null }>("explain-2", `${name}.json`).metadata;
+  return (readContractJson("explain-2", `${name}.json`) as { metadata: RepositoryMetadata | null }).metadata;
 }
 
 /** Every recorded document of exactly one finding, with the release branches of its package when lockrot wrote them. */
@@ -67,9 +67,9 @@ export function recordedCases(): RecordedCase[] {
   ]
     .map((path) => {
       const name = path.slice(path.indexOf("/") + 1);
-      const report = readContractJson<Report2>(`${path}.json`);
+      const report = readContractJson(`${path}.json`) as Report2;
       const php = existsSync(join(CONTRACT, "goldens", `${name}.json`))
-        ? readContractJson<PhpGoldens>("goldens", `${name}.json`)
+        ? (readContractJson("goldens", `${name}.json`) as PhpGoldens)
         : null;
       return {
         name,

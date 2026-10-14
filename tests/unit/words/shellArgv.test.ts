@@ -10,7 +10,7 @@ interface Row {
   powershell: string;
 }
 
-const { rows } = readContractJson<{ rows: Row[] }>("en", "commands.json");
+const { rows } = readContractJson("en", "commands.json") as { rows: Row[] };
 
 describe("an argv in each shell", () => {
   test.each(rows)("$posix", ({ argv, posix, cmd, powershell }) => {

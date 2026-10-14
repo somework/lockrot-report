@@ -3,10 +3,9 @@ import { describe, expect, test } from "vitest";
 import { ago } from "../../../src/domain/ago";
 import { readContractJson } from "./recorded";
 
-const { pairs } = readContractJson<{ pairs: { value: number; phrase: string }[] }>(
-  "en",
-  "years-phrases.json",
-);
+const { pairs } = readContractJson("en", "years-phrases.json") as {
+  pairs: { value: number; phrase: string }[];
+};
 
 describe("ago", () => {
   test("lockrot recorded pairs to check against", () => {
