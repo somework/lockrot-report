@@ -120,12 +120,20 @@ src/
     age.ts                a Findings row's age scale: signal, thresholds, shared maximum
     radius.ts             blast-radius cards
     share.ts              print and share: scope rollup, copied summary, running line (PD-PRINT-*)
+    pageVocabulary.ts     report-2's page words keyed by ids; an id it does not know prints as written
+    ago.ts, shellArgv.ts  the years phrase; an argv in POSIX, cmd.exe and PowerShell
+    scoreLine.ts          a score's line, from its fields alone
+    scoreOrder.ts         findings in the order run.score_model.sort publishes
+    checksLine.ts, securityLine.ts, feedsLine.ts, branchesLine.ts, ageLine.ts, repositoryLine.ts,
+    baselineSuffix.ts     the detail sheet's lines of report-2 (the Checks, Security, Advisory feeds,
+                          Release branches, Age and Repository rows, and the baseline suffix)
+    joinWords.ts, phpAlternatives.ts   list and php-constraint wording the lines share
   state/
     state.ts              State, Action, reducer
     hash.ts               parse/serialise the fragment (format unchanged, see §4)
   ui/                     Preact components, one folder per surface, CSS next to the component
   styles/                 tokens.css, base.css, print.css
-tests/unit/               vitest, mirrors src/
+tests/unit/               vitest, mirrors src/ (report-2's domain modules: tests/unit/words/, tests/unit/goldens/)
 e2e/                      Playwright; runs against the built page in build/pages/ (§6)
 legacy/                   lockrot's resources/report/ at the commit in legacy/SOURCE_COMMIT
 fixtures/bundles/         real payloads, and hand-built ones (mini*.json) for shapes no real one carries
@@ -377,6 +385,13 @@ and a key the document leaves out is named on Run data (PD-RUN-3) like any other
   `e2e/support/pages.ts` opens them with `report2Url(<case>)`, and `tests/unit/` imports the same
   module. `e2e/report2-pages.spec.ts` checks that each loads without a console error or an uncaught
   exception.
+- **Goldens** (`goldens/en/`): one file per string class, an object keyed by recorded case, written by
+  `npm run goldens` and read by the tests of `tests/unit/goldens/`. The diff of a golden is reviewed
+  like a snapshot. A class that lockrot's PHP grammar owns (the Age row, the baseline suffix) is
+  also held equal to lockrot's golden. A page-owned class with a model golden (Checks, Release branches, Security) is held to it
+  from `flags/cases.json` on the model's own inputs; Repository and Advisory feeds have none and are
+  held to SPEC's examples. On lockrot's recording it may differ from the
+  model's golden only for a case that `goldens/en/model-differences.json` lists with its reason.
 - **Build checks**: the built `report.html` contains each coupling in §1.1 exactly once, none of the
   forbidden strings, and building twice gives identical bytes.
 
