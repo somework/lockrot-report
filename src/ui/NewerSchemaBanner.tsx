@@ -1,7 +1,5 @@
+import { READS_SCHEMAS } from "../schema";
 import { useReport } from "./context";
-
-/** The report schema major this renderer was written against (DESIGN.md §2). */
-const READS_SCHEMA = 1;
 
 /**
  * Shown when the document declares a newer report schema than this renderer reads (DESIGN.md §2).
@@ -18,8 +16,8 @@ export function NewerSchemaBanner({ inert = false }: { inert?: boolean }) {
       <p>
         <b>This report is newer than this page.</b> It was written with report schema{" "}
         <span className="mono">{model.schema}</span>, and this page reads schema{" "}
-        <span className="mono">{READS_SCHEMA}</span>. What it recognises is shown below; anything the newer
-        lockrot added is left out.
+        <span className="mono">{READS_SCHEMAS.join(", ")}</span>. What it recognises is shown below; anything
+        the newer lockrot added is left out.
       </p>
     </div>
   );

@@ -1,7 +1,8 @@
 name: Release
 
 # A tag vX.Y.Z builds dist/, attests every file, and attaches them to a GitHub release. lockrot
-# vendors report.html and manifest.json from that release after `gh attestation verify`.
+# vendors report.html and manifest.json from that release after `gh attestation verify`. A tag with
+# a pre-release suffix (vX.Y.Z-rc.N) publishes a pre-release that is never the Latest release.
 
 on:
   push:
@@ -29,6 +30,8 @@ jobs:
           test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
       - run: npm run build
       - run: npx vitest run tests/build
+      - name: release notes
+        run: node scripts/release-notes.mjs "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
       - uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
@@ -40,6 +43,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          channel=()
+          case "$GITHUB_REF_NAME" in
+            *-*) channel=(--prerelease --latest=false) ;;
+          esac
           gh release create "$GITHUB_REF_NAME" \
             dist/report.html dist/lockrot-report.js dist/lockrot-report.css dist/manifest.json \
-            --title "$GITHUB_REF_NAME" --notes-file <(node scripts/release-notes.mjs "$GITHUB_REF_NAME")
+            --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md" \
+            "${channel[@]}"
