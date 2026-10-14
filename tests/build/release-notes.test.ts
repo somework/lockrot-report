@@ -1,3 +1,9 @@
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, symlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { describe, expect, it } from "vitest";
 
 // @ts-expect-error -- plain .mjs script, no type declarations
@@ -54,6 +60,10 @@ describe("scripts/release-notes.mjs", () => {
     expect(() => notes("v0.14.0", CHANGELOG)).toThrow("no section for 0.14.0");
   });
 
+  it("does not take a longer version for the plain one", () => {
+    expect(() => notes("v0.14.0", "## [0.14.01]\n\nlonger.\n")).toThrow("no section for 0.14.0");
+  });
+
   it("falls back to the X.Y.Z section when no section names the rc", () => {
     expect(notes("v0.14.0-rc.3", NO_RC_SECTION)).toBe("final notes.");
   });
@@ -64,5 +74,12 @@ describe("scripts/release-notes.mjs", () => {
 
   it("fails when a plain version has no section", () => {
     expect(() => notes("v9.9.9", CHANGELOG)).toThrow("no section for 9.9.9");
+  });
+
+  it("prints the notes when run through a symlink", () => {
+    const script = join(dirname(dirname(dirname(fileURLToPath(import.meta.url)))), "scripts/release-notes.mjs");
+    const link = join(mkdtempSync(join(tmpdir(), "release-notes-")), "link.mjs");
+    symlinkSync(script, link);
+    expect(execFileSync(process.execPath, [link, "v0.13.0"], { encoding: "utf8" })).toContain("lockrot 0.13.0");
   });
 });

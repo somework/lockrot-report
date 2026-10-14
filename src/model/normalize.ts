@@ -31,6 +31,7 @@ import type {
 import { PRIORITIES, VERDICTS } from "./types";
 import { normalizeSeverity } from "../domain/severity";
 import { DEFAULT_FLAGGED } from "../domain/vocab";
+import { READS_SCHEMAS } from "../schema";
 
 export type NormalizeResult = { ok: true; model: Model } | { ok: false; error: NormalizeError };
 
@@ -112,7 +113,7 @@ export function normalize(input: unknown): NormalizeResult {
       report: buildReportModel(shape.reportSource, generatedAt),
       details: buildDetailsMap(shape.detailsSource),
       schema,
-      newerSchema: schema > 1,
+      newerSchema: schema > Math.max(...READS_SCHEMAS),
     },
   };
 }

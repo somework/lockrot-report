@@ -3,7 +3,6 @@
 // out without saying what changed. A pre-release tag (v1.2.3-rc.1) takes its own section, else the
 // section of the version it leads to.
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 
 function sectionOf(changelog, version) {
   const heading = new RegExp(`^## \\[?${version.replace(/\./g, "\\.")}(?:\\]|\\s|$).*$`, "m");
@@ -21,7 +20,7 @@ export function releaseNotes(tag, changelog) {
   return notes;
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (import.meta.main) {
   const tag = process.argv[2];
   if (!tag) throw new Error("usage: release-notes.mjs vX.Y.Z");
   const changelog = readFileSync(new URL("../CHANGELOG.md", import.meta.url), "utf8");

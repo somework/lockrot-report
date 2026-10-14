@@ -30,6 +30,8 @@ jobs:
           test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
       - run: npm run build
       - run: npx vitest run tests/build
+      - name: release notes
+        run: node scripts/release-notes.mjs "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
       - uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
@@ -47,5 +49,5 @@ jobs:
           esac
           gh release create "$GITHUB_REF_NAME" \
             dist/report.html dist/lockrot-report.js dist/lockrot-report.css dist/manifest.json \
-            --title "$GITHUB_REF_NAME" --notes-file <(node scripts/release-notes.mjs "$GITHUB_REF_NAME") \
+            --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md" \
             "${channel[@]}"
