@@ -12,7 +12,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { READS_SCHEMA } from "../../src/schema";
+import { READS_SCHEMAS } from "../../src/schema";
 
 // `fileURLToPath` takes the raw `import.meta.url` string directly (Node accepts either a URL
 // object or a string) rather than going through `new URL(...)`: the happy-dom test environment
@@ -133,8 +133,8 @@ describe.skipIf(!distBuilt)(
       expect(manifest.version.length).toBeGreaterThan(0);
     });
 
-    it("manifest.schema.report lists every report major from 1 to READS_SCHEMA (DESIGN.md §2)", () => {
-      expect(manifest.schema.report).toEqual(Array.from({ length: READS_SCHEMA }, (_, i) => i + 1));
+    it("manifest.schema.report lists READS_SCHEMAS (DESIGN.md §2)", () => {
+      expect(manifest.schema.report).toEqual([...READS_SCHEMAS]);
     });
 
     it("manifest.contract equals the pin in contract/lockrot.json (DESIGN.md §7)", () => {

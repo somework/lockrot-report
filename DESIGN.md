@@ -367,8 +367,8 @@ and a key the document leaves out is named on Run data (PD-RUN-3) like any other
   that never becomes the Latest release. Its notes are the `## [X.Y.Z-rc.N]` CHANGELOG section, else
   the `## [X.Y.Z]` one; with neither, the release fails. `package.json` carries the rc version, so
   the guard `v` + `version` = tag holds unchanged.
-- `manifest.json` holds `name`, `version`, `schema.report` (every report major from 1 to
-  `READS_SCHEMA` in `src/schema.ts`, also read by `NewerSchemaBanner`), `files`, `csp` and `contract`.
+- `manifest.json` holds `name`, `version`, `schema.report` (the list `READS_SCHEMAS` in
+  `src/schema.ts`, which `NewerSchemaBanner` also reads), `files`, `csp` and `contract`.
   `contract` is `{bundle_sha256, score_text_grammar, text_grammar}`, copied from `contract/lockrot.json`,
   the pin of the lockrot bundle this renderer was tested against. lockrot's `RendererManifestTest`
   compares the three values with its own.

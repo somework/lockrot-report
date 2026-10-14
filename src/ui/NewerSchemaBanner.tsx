@@ -1,4 +1,4 @@
-import { READS_SCHEMA } from "../schema";
+import { READS_SCHEMAS } from "../schema";
 import { useReport } from "./context";
 
 /**
@@ -16,7 +16,7 @@ export function NewerSchemaBanner({ inert = false }: { inert?: boolean }) {
       <p>
         <b>This report is newer than this page.</b> It was written with report schema{" "}
         <span className="mono">{model.schema}</span>, and this page reads schema{" "}
-        <span className="mono">{READS_SCHEMA}</span>. What it recognises is shown below; anything the newer
+        <span className="mono">{READS_SCHEMAS.join(", ")}</span>. What it recognises is shown below; anything the newer
         lockrot added is left out.
       </p>
     </div>
