@@ -19,10 +19,27 @@ function installedClause(finding: Finding, installed: ReleaseBranch | undefined)
   return `Your branch, ${installed.branch}, ${release}${unrunnable}`;
 }
 
-function phpReach(row: ReleaseBranch): string {
-  if (row.admits_target_php === false) return ", which your target does not run";
-  if (row.admits_project_php !== false) return "";
-  return row.misses_project_php === "needs_newer"
+/** What a higher branch row says about the php of its highest tag: the one place the line reads those fields. */
+interface HighestPhp {
+  requires: string | null;
+  admitsTarget: boolean | null;
+  admitsProject: boolean | null;
+  missesProject: string | null;
+}
+
+// TODO: FIX-RENDER-INPUTS - read `highest_php`, `highest_admits_target_php`, `highest_admits_project_php` and
+// `highest_misses_project_php` here: lockrot adds them beside the lowest-tag answers that are read now.
+const highestPhp = (row: ReleaseBranch): HighestPhp => ({
+  requires: row.php,
+  admitsTarget: row.admits_target_php,
+  admitsProject: row.admits_project_php,
+  missesProject: row.misses_project_php,
+});
+
+function phpReach({ admitsTarget, admitsProject, missesProject }: HighestPhp): string {
+  if (admitsTarget === false) return ", which your target does not run";
+  if (admitsProject !== false) return "";
+  return missesProject === "needs_newer"
     ? ", above your require.php"
     : ", which your require.php does not admit";
 }
@@ -32,8 +49,9 @@ function higherBranch(row: ReleaseBranch): string {
     row.released_years === null
       ? `has ${row.highest} (undated)`
       : `released ${row.highest} ${ago(row.released_years)}`;
-  // TODO: FIX-RENDER-INPUTS - read `highest_php` here once lockrot adds it to the branch rows; `php` is read until then.
-  const needs = row.php === null ? "" : ` and needs php ${phpConstraintWord(row.php)}${phpReach(row)}`;
+  const php = highestPhp(row);
+  const needs =
+    php.requires === null ? "" : ` and needs php ${phpConstraintWord(php.requires)}${phpReach(php)}`;
   return `${row.branch} ${released}${needs}`;
 }
 
