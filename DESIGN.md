@@ -363,6 +363,15 @@ and a key the document leaves out is named on Run data (PD-RUN-3) like any other
 
 - A tag `vX.Y.Z` builds `dist/`, attests it (`actions/attest-build-provenance`) and attaches the four
   files to a GitHub release.
+- A tag with a pre-release suffix (`vX.Y.Z-rc.N`) takes the same path and publishes a pre-release
+  that never becomes the Latest release. Its notes are the `## [X.Y.Z-rc.N]` CHANGELOG section, else
+  the `## [X.Y.Z]` one; with neither, the release fails. `package.json` carries the rc version, so
+  the guard `v` + `version` = tag holds unchanged.
+- `manifest.json` holds `name`, `version`, `schema.report` (the list `READS_SCHEMAS` in
+  `src/schema.ts`, which `NewerSchemaBanner` also reads), `files`, `csp` and `contract`.
+  `contract` is `{bundle_sha256, score_text_grammar, text_grammar}`, copied from `contract/lockrot.json`,
+  the pin of the lockrot bundle this renderer was tested against. lockrot's `RendererManifestTest`
+  compares the three values with its own.
 - lockrot vendors `report.html` and `manifest.json` into `resources/report/`; its `HtmlFormatter`
   fills three placeholders. An update script downloads a release, verifies the attestation with
   `gh attestation verify`, checks sha256 against the manifest and writes the files; lockrot's CI

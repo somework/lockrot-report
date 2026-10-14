@@ -10,6 +10,8 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { READS_SCHEMAS } from "../src/schema.ts";
+
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const DIST = join(ROOT, "dist");
 
@@ -69,14 +71,19 @@ function buildReportHtml(template, jsText, cssText) {
   return { html, scriptHash, styleHash };
 }
 
-function buildManifest(packageJson, html, jsText, cssText, scriptHash, styleHash) {
+function buildManifest(packageJson, pin, html, jsText, cssText, scriptHash, styleHash) {
   return {
     name: packageJson.name.split("/").pop(),
     version: packageJson.version,
-    // Major report-schema versions this renderer reads (DESIGN.md §2). A future schema 2 renderer
-    // would list `[1, 2]` here; a vendoring consumer reads this instead of guessing from a version
-    // number.
-    schema: { report: [1] },
+    // Major report-schema versions this renderer reads (DESIGN.md §2); a vendoring consumer reads
+    // this instead of guessing from a version number.
+    schema: { report: READS_SCHEMAS },
+    // What lockrot's recorded bundle pinned when this renderer was tested against it (DESIGN.md §7).
+    contract: {
+      bundle_sha256: pin.bundle_sha256,
+      score_text_grammar: pin.score_text_grammar,
+      text_grammar: pin.text_grammar,
+    },
     files: {
       "report.html": sha256Hex(html),
       "lockrot-report.js": sha256Hex(jsText),
@@ -91,12 +98,13 @@ function buildManifest(packageJson, html, jsText, cssText, scriptHash, styleHash
 
 function main() {
   const packageJson = JSON.parse(readText(join(ROOT, "package.json")));
+  const pin = JSON.parse(readText(join(ROOT, "contract/lockrot.json")));
   const template = readText(join(ROOT, "src/template.html"));
   const jsText = readText(join(DIST, "lockrot-report.js"));
   const cssText = readTextOrEmpty(join(DIST, "lockrot-report.css"));
 
   const { html, scriptHash, styleHash } = buildReportHtml(template, jsText, cssText);
-  const manifest = buildManifest(packageJson, html, jsText, cssText, scriptHash, styleHash);
+  const manifest = buildManifest(packageJson, pin, html, jsText, cssText, scriptHash, styleHash);
 
   writeFileSync(join(DIST, "report.html"), html);
   writeFileSync(join(DIST, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
