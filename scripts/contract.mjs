@@ -55,8 +55,20 @@ function checkedOutCommit() {
   }
 }
 
+function assertCommit(commit) {
+  if (typeof commit !== "string" || !/^[0-9a-f]{40}$/.test(commit)) {
+    throw new Error(`${JSON.stringify(commit)} is not a full 40-character lockrot commit`);
+  }
+}
+
+/** A tree that differs from the commit is fetched again: the hash does not cover every file it holds. */
+function isPristine(commit) {
+  return checkedOutCommit() === commit && git("status", "--porcelain", "--untracked-files=all") === "";
+}
+
 function checkout(commit) {
-  if (checkedOutCommit() === commit) return;
+  assertCommit(commit);
+  if (isPristine(commit)) return;
   rmSync(CHECKOUT, { recursive: true, force: true });
   execFileSync("git", ["init", "--quiet", CHECKOUT], { stdio: "inherit" });
   git("remote", "add", "origin", REMOTE);
@@ -100,14 +112,26 @@ function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
+const GRAMMARS = ["text_grammar", "score_text_grammar"];
+const OUTSIDE_THE_HASH = ["tests/fixtures/bundle.generated.ts", "tests/fixtures/flags/cases.json"];
+
+function grammarsOf(provenance) {
+  const missing = GRAMMARS.filter((key) => !Number.isInteger(provenance[key]));
+  if (missing.length > 0) throw new Error(`lockrot's provenance.json has no integer ${missing.join(", ")}`);
+  return Object.fromEntries(GRAMMARS.map((key) => [key, provenance[key]]));
+}
+
 function verify(pin) {
   const problems = [];
   const hash = bundleSha256(FIXTURES);
   if (hash !== pin.bundle_sha256)
     problems.push(`bundle_sha256 is ${hash}, the pin says ${pin.bundle_sha256}`);
-  const provenance = readJson(join(BUNDLE, "provenance.json"));
-  for (const key of ["text_grammar", "score_text_grammar"]) {
-    if (provenance[key] !== pin[key]) problems.push(`${key} is ${provenance[key]}, the pin says ${pin[key]}`);
+  const grammars = grammarsOf(readJson(join(BUNDLE, "provenance.json")));
+  for (const key of GRAMMARS) {
+    if (grammars[key] !== pin[key]) problems.push(`${key} is ${grammars[key]}, the pin says ${pin[key]}`);
+  }
+  for (const path of OUTSIDE_THE_HASH) {
+    if (!existsSync(join(CHECKOUT, path))) problems.push(`${path} is missing`);
   }
   for (const [name, path] of Object.entries(CONTRACT_FILES)) {
     const committed = join(ROOT, "contract", name);
@@ -128,24 +152,17 @@ function fetchPinned() {
 }
 
 function repin(commit) {
-  if (!/^[0-9a-f]{40}$/.test(commit ?? "")) throw new Error("repin takes a full 40-character lockrot commit");
   checkout(commit);
   const hash = bundleSha256(FIXTURES);
   const recorded = readFileSync(join(BUNDLE, "bundle_sha256"), "utf8").trim();
   if (hash !== recorded)
     throw new Error(`lockrot ${commit} records bundle_sha256 ${recorded}, its files hash to ${hash}`);
-  const provenance = readJson(join(BUNDLE, "provenance.json"));
-  const pin = {
-    commit,
-    bundle_sha256: hash,
-    text_grammar: provenance.text_grammar,
-    score_text_grammar: provenance.score_text_grammar,
-  };
-  writeFileSync(PIN, `${JSON.stringify(pin, null, 2)}\n`);
+  const pin = { commit, bundle_sha256: hash, ...grammarsOf(readJson(join(BUNDLE, "provenance.json"))) };
+  // The pin moves last, so a failed copy leaves it naming the commit contract/ still holds.
   for (const [name, path] of Object.entries(CONTRACT_FILES)) {
     copyFileSync(join(CHECKOUT, path), join(ROOT, "contract", name));
   }
-  verify(pin);
+  writeFileSync(PIN, `${JSON.stringify(pin, null, 2)}\n`);
   console.log(`pinned lockrot ${commit}, bundle_sha256 ${hash}`);
 }
 
