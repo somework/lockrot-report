@@ -86,6 +86,9 @@ must either keep that markup free of inline style/script or replace the meta pol
   `repositoryMetadata`, plus `repository_link`, which no schema defines. Each discriminated union
   of the contract has one type guard there (`isScoreGraded`, `isTermSecurity`,
   `isSecurityVulnerable`, `isSignal`). §7 says where the contract comes from.
+  The root-key check proves the root only. Below it the page trusts the shape lockrot wrote, and
+  the page ships no validator. The change that first renders `Model.report2` decides how a
+  malformed report-2 document fails.
 - Fixtures: `fixtures/bundles/` holds real bundles from lockrot 0.11.0 (via `--dev`, `--all`, the
   install-time path without `details`, an empty lock) and one 0.10.0 capsule. Every one of them must
   normalise and render.
@@ -396,7 +399,7 @@ and a key the document leaves out is named on Run data (PD-RUN-3) like any other
   `flags/cases.json` and `types/`. The script recomputes the hash as lockrot's
   `ContractBundle::sha256()` does. It fails when the hash, a grammar version or a committed
   `contract/` file differs from lockrot's. A checkout already at the pinned commit needs no
-  network. CI caches `.lockrot/` by the pinned commit.
+  network. CI caches `.lockrot/` by the pinned commit and the fetch script.
 - What checks the contract: `types-match-schema.test.ts` validates every recorded report-2
   document, both baselined html embeds and their `details` with ajv (draft-04), and runs each type
   guard on every document. `npm run typecheck:contract` compiles `bundle.generated.ts`
