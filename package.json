@@ -18,6 +18,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "goldens": "vitest run tests/unit/goldens -u",
     "contract:fetch": "node scripts/contract.mjs fetch",
     "contract:repin": "node scripts/contract.mjs repin"
   },
