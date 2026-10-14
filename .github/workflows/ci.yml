@@ -23,9 +23,20 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # The contract tests read lockrot's recorded bundle at the pinned commit (DESIGN.md §7). The
+      # build job never needs it: the page builds from committed files only.
+      - name: the pinned lockrot commit
+        id: pin
+        run: echo "commit=$(jq -r .commit contract/lockrot.json)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: .lockrot
+          key: lockrot-contract-${{ steps.pin.outputs.commit }}
+      - run: npm run contract:fetch
       - run: npm run format:check
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run typecheck:contract
       - run: npm test
 
   build:
