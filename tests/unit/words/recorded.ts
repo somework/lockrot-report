@@ -96,3 +96,19 @@ export function modelCases(): ModelCase[] {
     metadata: details?.metadata ?? null,
   }));
 }
+
+/** Every recorded report-2 with more than one finding: the composite and the two baselined projects. */
+export function multiFindingReports(): { name: string; report: Report2 }[] {
+  const embeds = ["wallabag-2.6", "wallabag-main"].map((scenario) => ({
+    name: `baselined/${scenario}`,
+    report: (
+      JSON.parse(
+        readFileSync(join(FIXTURES, "baselined", scenario, "check", "report.bundle.json"), "utf8"),
+      ) as { report: Report2 }
+    ).report,
+  }));
+  return [
+    { name: "composite", report: readContractJson("report-2", "composite.json") as Report2 },
+    ...embeds,
+  ];
+}
