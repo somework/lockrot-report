@@ -17,33 +17,28 @@ import { pluralNoun } from "./format";
 import { vocabTable } from "./vocab";
 import {
   acceptsWholePackage,
-  addsBasisWords,
-  advisoryRows,
-  ago,
-  allowlistByWords,
   allowlistReasonWords,
   capitalize,
   checkReasonWords,
   checksMissingBody,
   checksSkippedBody,
   countsAs,
-  fixLabel,
-  forgeWord,
-  gradeAdjective,
   isAre,
-  joinList,
   lowerFirst,
   maintenanceNotJudged,
   metadataWords,
   namesCapped,
   oneDecimal,
-  phpDisplay,
-  phpShown,
   printedModifiers,
   rerunHalving,
   signalData,
   unjudgedChecks,
 } from "./findingWords";
+import { advisoryRows } from "./advisoryRows";
+import { ago } from "./ago";
+import { joinAnd } from "./joinWords";
+import { addsBasisWord, allowlistBy, fixLabel, forgeWord, grade, phpFloorWord } from "./pageVocabulary";
+import { phpConstraintWord } from "./phpAlternatives";
 
 type AnyMove = Move | AlsoMove;
 
@@ -87,7 +82,7 @@ function installedPhpSentences(finding: Finding, run: Run): string[] {
   const php = finding.installed_php;
   if (php.target_runs !== false) return [];
   return [
-    `Its installed release, ${finding.version}, needs php ${phpShown(php.requires)}, which your target, ` +
+    `Its installed release, ${finding.version}, needs php ${phpConstraintWord(php.requires ?? "")}, which your target, ` +
       `${run.target_php}, does not run: Composer will not install it there.`,
   ];
 }
@@ -199,7 +194,7 @@ function factSentence(finding: Finding, flag: FindingFlag, run: Run): string {
       if (!s8) return "";
       const text = `Branch ${s8.branch} had its last release ${ago(s8.years)}`;
       if (s8.reachable_branch !== null) {
-        return `${text}, while ${s8.reachable_branch} released ${s8.reachable_version ?? ""} ${ago(s8.reachable_years)}`;
+        return `${text}, while ${s8.reachable_branch} released ${s8.reachable_version ?? ""} ${s8.reachable_years === null ? "" : ago(s8.reachable_years)}`;
       }
       return (
         `${text}; the newest branch, ${s8.newest_branch}, released ${s8.newest_version} ${ago(s8.newest_years)} ` +
@@ -232,7 +227,7 @@ function factsPhrase(finding: Finding, move: AnyMove): string {
           ? `all ${cleared} advisories`
           : `${cleared} of its ${all} advisories`;
   const items = cleared > 0 ? [...flags, advisories] : flags;
-  return items.length > 0 ? joinList(items) : "nothing";
+  return items.length > 0 ? joinAnd(items) : "nothing";
 }
 
 /** "; {leaves} stay(s)" and "; not checked: {ids}", once, at the end of a move that names a release. */
@@ -254,10 +249,10 @@ function moveTail(move: AnyMove): string {
 function phpClause(move: AnyMove, run: Run): string {
   const php = move.php_check;
   if (!php?.requires) return "";
-  let clause = `; ${move.to_branch ?? ""} needs php ${phpShown(php.requires)}`;
+  let clause = `; ${move.to_branch ?? ""} needs php ${phpConstraintWord(php.requires)}`;
   if (php.project_allows === true) clause += ", which your require.php allows";
   if (php.project_allows === false) {
-    clause += `, and your require.php still allows ${phpDisplay(run.project_php_lowest)} (a ${php.raise_size ?? ""} raise)`;
+    clause += `, and your require.php still allows ${phpFloorWord(run.project_php_lowest) ?? ""} (a ${php.raise_size ?? ""} raise)`;
   }
   if (php.target_runs === true) clause += `, and your target, ${run.target_php}, runs it`;
   return clause;
@@ -267,7 +262,7 @@ function addsClause(move: AnyMove): string {
   const byBasis = new Map<string, string[]>();
   for (const added of move.adds) byBasis.set(added.basis, [...(byBasis.get(added.basis) ?? []), added.id]);
   return [...byBasis]
-    .map(([basis, ids]) => `; ${addsBasisWords(basis)}, so ${ids.join(" and ")} would count`)
+    .map(([basis, ids]) => `; ${addsBasisWord(basis)}, so ${ids.join(" and ")} would count`)
     .join("");
 }
 
@@ -301,15 +296,15 @@ function blockedSentence(finding: Finding, move: AnyMove, run: Run): string {
     const installed = finding.installed_php;
     const nor =
       installed.target_runs === false
-        ? `, nor does the version you have (${finding.version}, php ${phpShown(installed.requires)})`
+        ? `, nor does the version you have (${finding.version}, php ${phpConstraintWord(installed.requires ?? "")})`
         : "";
     return requires
-      ? `Its newest tag, ${latest}, needs php ${phpShown(requires)}, which your target, ${run.target_php}, does not run${nor}: replace it`
+      ? `Its newest tag, ${latest}, needs php ${phpConstraintWord(requires)}, which your target, ${run.target_php}, does not run${nor}: replace it`
       : `Its newest tag, ${latest}, does not run on your target, ${run.target_php}${nor}: replace it`;
   }
   const branch = move.to_branch ?? "";
   return requires
-    ? `${branch} fixes it but needs php ${phpShown(requires)}, which your target, ${run.target_php}, does not run`
+    ? `${branch} fixes it but needs php ${phpConstraintWord(requires)}, which your target, ${run.target_php}, does not run`
     : `${branch} fixes it, but your target, ${run.target_php}, does not run it`;
 }
 
@@ -382,7 +377,7 @@ function partialFacts(finding: Finding, partial: NonNullable<SecurityVulnerable[
   const of = graded(finding)?.parts.security.of ?? 0;
   const flags = partial.clears.filter((c) => c.kind === "flag").map((c) => c.id);
   const advisories = partial.clears.filter((c) => c.kind === "advisory").length;
-  return joinList([...flags, `${advisories} of its ${of} advisories`]);
+  return joinAnd([...flags, `${advisories} of its ${of} advisories`]);
 }
 
 function holderWords(heldBy: HeldBy): string {
@@ -411,7 +406,7 @@ function holdersSentences(moves: readonly AnyMove[]): string[] {
 
 function throughNames(entries: readonly ThroughEntry[]): string {
   const names = entries.map((e) => `${e.package} (${e.newest_stable?.version ?? ""})`);
-  return names.length > 3 ? namesCapped(names) : joinList(names);
+  return names.length > 3 ? namesCapped(names) : joinAnd(names);
 }
 
 /** C08: the dependents whose newest release no longer requires the package, else the ones that still do. */
@@ -486,7 +481,7 @@ function composerSentences(finding: Finding, moves: readonly AnyMove[], run: Run
 }
 
 function acceptedSentences(finding: Finding): string[] {
-  const by = allowlistByWords(finding.allowlist?.by ?? "");
+  const by = allowlistBy(finding.allowlist?.by ?? "");
   return finding.score.accepted.map(({ flag, if_counted: counted }) => {
     const atLeast = counted.at_least ? "at least " : "";
     return `Counting the ${flag} flag, which ${by} accepts, would make this ${atLeast}${counted.total}, ${counted.verdict}${rerunHalving(counted.modifiers)}.`;
@@ -506,7 +501,7 @@ function zeroAnswer(finding: Finding, run: Run): string {
   }
   const allowlist = finding.allowlist;
   if (allowlist && acceptsWholePackage(finding)) {
-    first += `; its maintenance is accepted by ${allowlistByWords(allowlist.by)} (${allowlistReasonWords(allowlist)})`;
+    first += `; its maintenance is accepted by ${allowlistBy(allowlist.by)} (${allowlistReasonWords(allowlist)})`;
   } else if (allowlist?.flag_ids) {
     first += `; ${allowlist.flag_ids.join(" and ")} ${isAre(allowlist.flag_ids.length)} accepted (${allowlistReasonWords(allowlist)})`;
   }
@@ -542,8 +537,8 @@ function opening(finding: Finding, score: ScoreGraded, run: Run): string {
   switch (score.decided_by) {
     case "combination":
       return maintenance === security
-        ? `${capitalize(verdict)}: two ${gradeAdjective(maintenance ?? "")} risks at once${q}.`
-        : `${capitalize(verdict)}: a ${gradeAdjective(maintenance ?? "")} and a ${gradeAdjective(security ?? "")} risk at once${q}.`;
+        ? `${capitalize(verdict)}: two ${grade(maintenance ?? "")} risks at once${q}.`
+        : `${capitalize(verdict)}: a ${grade(maintenance ?? "")} and a ${grade(security ?? "")} risk at once${q}.`;
     case "either": {
       const advisory = score.parts.security.of === 1 ? "advisory" : "advisories";
       return `${capitalize(verdict)} twice over: its maintenance alone and its ${advisory} alone each make it ${verdict}${q}.`;
@@ -640,9 +635,7 @@ function gradedAnswer(finding: Finding, score: ScoreGraded, run: Run): string {
     ...holdersSentences(moves),
     ...composerSentences(finding, moves, run),
     ...(allowlist && acceptsWholePackage(finding)
-      ? [
-          `Its maintenance is accepted by ${allowlistByWords(allowlist.by)}: ${allowlistReasonWords(allowlist)}.`,
-        ]
+      ? [`Its maintenance is accepted by ${allowlistBy(allowlist.by)}: ${allowlistReasonWords(allowlist)}.`]
       : []),
     ...acceptedSentences(finding),
   ];

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { answerText } from "../../../src/domain/findingAnswer";
 import type { Finding, Report2 } from "../../../src/model/report2";
-import { recordedCases } from "../goldens/cases";
+import { recordedCases } from "../words/recorded";
 
 /** A recorded case's finding, copied so a test can set the open-set value it is about. */
 function recorded(id: string): { finding: Finding; report: Report2 } {
-  const found = recordedCases().find((c) => c.id === id);
+  const found = recordedCases().find((c) => c.name === id);
   if (!found) throw new Error(`no recorded case ${id}`);
   return { finding: structuredClone(found.finding), report: found.report };
 }
@@ -77,7 +77,7 @@ describe("answerText", () => {
   });
 
   it("names a holder that carries no flag by its grade alone", () => {
-    const { finding, report } = recorded("holder-vuln‡");
+    const { finding, report } = recorded("holder-vuln-dagger");
     const holder = finding.next_step?.held_by[0]?.holder;
     if (!holder) throw new Error("holder-vuln‡ is held by a package");
     holder.verdict = "unknown";
@@ -100,7 +100,7 @@ describe("answerText", () => {
 
   it("joins the flags a partial update clears as a list", () => {
     // partial-op‡'s partial update clears old-promise and 1 of its 2 advisories.
-    const { finding, report } = recorded("partial-op‡");
+    const { finding, report } = recorded("partial-op-dagger");
     if (finding.security.status !== "vulnerable" || !finding.security.partial)
       throw new Error("partial-op‡ has a partial update");
     finding.security.partial.clears = [

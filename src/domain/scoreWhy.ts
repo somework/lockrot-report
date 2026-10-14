@@ -12,24 +12,21 @@ import type {
 import { isScoreGraded, isSecurityVulnerable, isTermSecurity } from "../model/report2";
 import { day, pluralNoun } from "./format";
 import { vocabTable } from "./vocab";
+import { advisoryRows } from "./advisoryRows";
 import {
   advisoryName,
-  advisoryRows,
-  allowlistByShort,
   checksMissingBody,
   checksSkippedBody,
   countsAs,
-  fixLabel,
   maintenanceNotJudged,
   metadataWords,
   namesCapped,
   partialClears,
   printedModifiers,
   rerunHalving,
-  ruleWhyWords,
-  shareGlyph,
   unjudgedChecks,
 } from "./findingWords";
+import { allowlistByInWhy, fixLabel, ruleWhyWord, shareGlyph } from "./pageVocabulary";
 
 const DEV_WORD = vocabTable<Record<string, string>>({ dev: "packages-dev" });
 
@@ -40,7 +37,7 @@ function notJudgedLine(finding: Finding): string {
 }
 
 function acceptedLines(finding: Finding): string[] {
-  const by = allowlistByShort(finding.allowlist?.by ?? "");
+  const by = allowlistByInWhy(finding.allowlist?.by ?? "");
   return finding.score.accepted.map(({ flag, if_counted: counted }) => {
     const atLeast = counted.at_least ? "at least " : "";
     return `${flag} accepted by ${by}: counting it would make this ${atLeast}${counted.total}, ${counted.verdict}${rerunHalving(counted.modifiers)}`;
@@ -88,7 +85,7 @@ function maintenanceTermLine(finding: Finding, term: TermMaintenance, run: Run):
     return `${term.flag} ${term.points} leads: the strongest maintenance fact counts in full`;
   const rule = run.score_model.rules.find((r) => r.id === "corroborating-share");
   const glyph = rule?.share ? shareGlyph(rule.share) : "";
-  return `${term.flag} ${term.points}: ${glyph} of ${term.weight}, beside ${finding.lead ?? ""} (${ruleWhyWords(rule?.why ?? "")})`;
+  return `${term.flag} ${term.points}: ${glyph} of ${term.weight}, beside ${finding.lead ?? ""} (${ruleWhyWord(rule?.why ?? "")})`;
 }
 
 function securityTermLine(finding: Finding, score: ScoreGraded, term: TermSecurity, run: Run): string {

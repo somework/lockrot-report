@@ -18,6 +18,8 @@ export interface PhpGoldens {
 
 /** The model's strings for one case (`flags/cases.json`), the reference of the first recording only. */
 export interface ModelGoldens extends PhpGoldens {
+  answer: string;
+  why: string[];
   checks: string;
   branches: string | null;
   security_row: string;
