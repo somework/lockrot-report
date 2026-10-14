@@ -2,7 +2,7 @@ import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["legacy/", "fixtures/", "build/", "dist/", "node_modules/"] },
+  { ignores: ["legacy/", "fixtures/", "build/", "dist/", "node_modules/", "contract/", ".lockrot/"] },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   {

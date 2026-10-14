@@ -79,6 +79,16 @@ must either keep that markup free of inline style/script or replace the meta pol
   `undefined`.
 - Unknown fields are ignored; unknown enum values (a verdict, a signal id, a severity) are kept and
   rendered neutrally, never dropped and never a crash.
+- report-2 (`lockrot.schema` 2) is typed by lockrot's TypeScript contract, as lockrot writes it:
+  every key required. `normalize.ts` keeps a schema-2 document as `Model.report2` when it carries
+  every root key report-2 requires (`model/report2.ts` `REPORT2_KEYS`). The html embed's `details`
+  has no report-2 type. `model/report2.ts` types it from explain-2's `lock` and
+  `repositoryMetadata`, plus `repository_link`, which no schema defines. Each discriminated union
+  of the contract has one type guard there (`isScoreGraded`, `isTermSecurity`,
+  `isSecurityVulnerable`, `isSignal`). §7 says where the contract comes from.
+  The root-key check proves the root only. Below it the page trusts the shape lockrot wrote, and
+  the page ships no validator. The change that first renders `Model.report2` decides how a
+  malformed report-2 document fails.
 - Fixtures: `fixtures/bundles/` holds real bundles from lockrot 0.11.0 (via `--dev`, `--all`, the
   install-time path without `details`, an empty lock) and one 0.10.0 capsule. Every one of them must
   normalise and render.
@@ -378,6 +388,27 @@ and a key the document leaves out is named on Run data (PD-RUN-3) like any other
   checks the vendored bytes against the manifest.
 - lockrot.dev takes `lockrot-report.js`/`.css` for its frame and `report.html` for published
   reports from a renderer release instead of from a lockrot tag.
+- The renderer reads lockrot's rendering contract at one lockrot commit, pinned in
+  `contract/lockrot.json` with the `bundle_sha256` of lockrot's recorded bundle and the two
+  grammar versions (`text_grammar`, `score_text_grammar`). `contract/` also commits the files the
+  build needs at that commit: the report-2 and explain-2 schemas and the d.ts pair. The build reads
+  only committed files.
+- The recorded bundle is not committed. `npm run contract:fetch` (`scripts/contract.mjs`) makes
+  `.lockrot/` a shallow, sparse checkout of lockrot at the pinned commit, so every file keeps
+  lockrot's relative path. It holds every file `bundle_sha256` covers, `bundle.generated.ts`,
+  `flags/cases.json` and `types/`. The script recomputes the hash as lockrot's
+  `ContractBundle::sha256()` does. It fails when the hash, a grammar version or a committed
+  `contract/` file differs from lockrot's. An unchanged checkout at the pinned commit needs no
+  network. A changed, missing or extra file makes the script fetch again, because the hash does not
+  cover `bundle.generated.ts` and `flags/cases.json`. The script also fails when either is missing.
+  CI caches `.lockrot/` by the pinned commit and the fetch script.
+- What checks the contract: `types-match-schema.test.ts` validates every recorded report-2
+  document, both baselined html embeds and their `details` with ajv (draft-04), and runs each type
+  guard on every document. `npm run typecheck:contract` compiles `bundle.generated.ts`
+  (`<document> satisfies Report2`) and the d.ts pair with `skipLibCheck` off.
+- A contract change in lockrot moves the pin: `npm run contract:repin <lockrot commit>` checks out
+  that commit, checks its files against its own `bundle_sha256`, and rewrites
+  `contract/lockrot.json` and the `contract/` files. The diff of `contract/` is the review.
 - Order of changes across repositories: data first in lockrot (schema minor, renderer ignores
   unknown fields), rendering second here, the pin bump in lockrot's release PR.
 
