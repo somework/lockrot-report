@@ -4,7 +4,8 @@
  */
 
 import type { Finding, FindingBaseline, Run } from "../model/report2";
-import { isScoreGraded, isSignal } from "../model/report2";
+import { isScoreGraded } from "../model/report2";
+import { advisoryRows } from "./advisoryRows";
 
 type Worsened = NonNullable<FindingBaseline>["worsened_by"][number];
 
@@ -12,14 +13,7 @@ const advisories = (count: number): string => (count === 1 ? "advisory" : "advis
 
 /** An advisory the way a sentence names it: its CVE, else its id. */
 function advisoryName(finding: Finding, id: string): string {
-  const s9 = finding.signals.find((signal) => isSignal(signal, "S9"));
-  const row =
-    s9 === undefined
-      ? undefined
-      : (s9.data as { advisories: { id: string; cve: string | null }[] }).advisories.find(
-          (advisory) => advisory.id === id,
-        );
-  return row?.cve ?? id;
+  return advisoryRows(finding).find((row) => row.id === id)?.cve ?? id;
 }
 
 function advisoryItem(finding: Finding, run: Run, entry: Worsened, comparedFixes: boolean): string | null {

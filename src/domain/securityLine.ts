@@ -11,7 +11,8 @@ import type {
   RepositoryMetadata,
   SecurityVulnerable,
 } from "../model/report2";
-import { isSecurityVulnerable, isSignal } from "../model/report2";
+import { isSecurityVulnerable } from "../model/report2";
+import { advisoryRows } from "./advisoryRows";
 import { joinAnd } from "./joinWords";
 import { fixLabel, lookupWord } from "./pageVocabulary";
 
@@ -69,8 +70,7 @@ function advisoryCounts(security: SecurityVulnerable, run: Run): string {
 
 /** ` for k of n` once the fix kind is `none` or `unknown` for only k of the n counted advisories. */
 function partialFix(finding: Finding, kind: string): string {
-  const s9 = finding.signals.find((signal) => isSignal(signal, "S9"));
-  const rows = (s9?.data as { advisories: { fix: { kind: string } }[] } | undefined)?.advisories ?? [];
+  const rows = advisoryRows(finding);
   const sharing = rows.filter((row) => row.fix.kind === kind).length;
   return (kind === "none" || kind === "unknown") && sharing > 0 && sharing < rows.length
     ? ` for ${sharing} of ${rows.length}`
