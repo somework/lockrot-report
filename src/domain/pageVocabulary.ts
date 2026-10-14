@@ -151,14 +151,14 @@ export interface FeedAnswer {
   reason: string | null;
 }
 
-export function feedAnswerWord({ answer, records, reason }: FeedAnswer): string {
+export function feedAnswerWord({ answer, records, reason }: FeedAnswer, originKind = ""): string {
   switch (answer) {
     case "answered":
       return records === 0 || records === null ? "none on record" : `${records} on record`;
     case "failed":
       return "lookup failed";
     case "not_asked":
-      return reason === null ? "not asked" : `not asked (${causeWord(reason, "")})`;
+      return reason === null ? "not asked" : `not asked (${causeWord(reason, originKind)})`;
     case "no_feed":
       return "publishes no advisories";
     case "transport":

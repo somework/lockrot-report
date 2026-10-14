@@ -7,7 +7,7 @@ import { checksLine } from "../../../src/domain/checksLine";
 import { securityLine } from "../../../src/domain/securityLine";
 import { differencesFromModel, listedDifferences } from "./modelDifferences";
 import type { RecordedCase } from "./recorded";
-import { modelCases, recordedCases } from "./recorded";
+import { modelCases, modelOnlyNames, recordedCases } from "./recorded";
 
 type LineField = "checks" | "branches" | "security_row" | "age_line" | "baseline_suffix";
 
@@ -32,6 +32,12 @@ describe("each line equals the model's golden from the model's own inputs", () =
 });
 
 describe("the lines PHP owns equal lockrot's golden on lockrot's recording", () => {
+  test("only the model-only documents, which lockrot did not write, have no golden", () => {
+    const withoutGolden = recordedCases().filter(({ php }) => php === null);
+
+    expect(withoutGolden.map(({ name }) => name).sort()).toEqual(modelOnlyNames());
+  });
+
   test.each(recordedCases().filter(({ php }) => php !== null))("$name", ({ finding, run, metadata, php }) => {
     expect({ age: ageLine(finding, metadata), suffix: baselineSuffix(finding, run) }).toEqual({
       age: withoutPrefix(php?.age_line ?? null),

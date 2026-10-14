@@ -26,11 +26,13 @@ function when(reading: Reading): string {
 
 /**
  * `finding.branch`. A branch-alias snapshot (`5.4.x-dev`) has none: its line is the branch row whose
- * newest release is the branch's last release, else "its branch".
+ * newest dated release is the branch's last release, else "its branch".
  */
 function branchOf({ branch, age }: Finding, metadata: RepositoryMetadata | null): string {
   if (branch !== null) return branch;
-  const rows = (metadata?.branches ?? []).filter(({ highest }) => highest === age.branch_release?.version);
+  const rows = (metadata?.branches ?? []).filter(
+    ({ newest_dated: newestDated }) => newestDated === age.branch_release?.version,
+  );
   return rows.length === 1 ? (rows[0]?.branch ?? "its branch") : "its branch";
 }
 

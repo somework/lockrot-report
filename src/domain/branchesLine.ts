@@ -8,7 +8,8 @@ import { ago } from "./ago";
 import { phpConstraintWord } from "./phpAlternatives";
 
 function installedClause(finding: Finding, installed: ReleaseBranch | undefined): string {
-  if (installed === undefined) return `A branch snapshot, ${finding.version}, is installed`;
+  const branch = installed?.branch ?? finding.branch;
+  if (branch === null) return `A branch snapshot, ${finding.version}, is installed`;
   const last = finding.age.branch_release;
   const release = last === null ? "has no dated release" : `had its last release ${ago(last.years)}`;
   const { requires, target_runs: targetRuns } = finding.installed_php;
@@ -16,7 +17,7 @@ function installedClause(finding: Finding, installed: ReleaseBranch | undefined)
     targetRuns === false && requires !== null
       ? ` (the version you have, ${finding.version}, needs php ${phpConstraintWord(requires)}, which your target does not run)`
       : "";
-  return `Your branch, ${installed.branch}, ${release}${unrunnable}`;
+  return `Your branch, ${branch}, ${release}${unrunnable}`;
 }
 
 /** What a higher branch row says about the php of its highest tag: the one place the line reads those fields. */

@@ -6,6 +6,8 @@ export function feedsLine(finding: Finding): string | null {
   const { feeds } = finding.security;
   if (feeds.length === 0) return null;
   return feeds
-    .map((feed) => `${feed.registry ?? feed.composer_repository} (${feedAnswerWord(feed)})`)
+    .map(
+      (feed) => `${feed.registry ?? feed.composer_repository} (${feedAnswerWord(feed, finding.origin.kind)})`,
+    )
     .join(", ");
 }

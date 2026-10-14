@@ -62,6 +62,11 @@ function metadataOf(name: string): RepositoryMetadata | null {
   return (readContractJson("explain-2", `${name}.json`) as { metadata: RepositoryMetadata | null }).metadata;
 }
 
+/** The cases the hydrator cannot rebuild: the model wrote their documents, lockrot did not. */
+export function modelOnlyNames(): string[] {
+  return caseNames("model-only");
+}
+
 /** Every recorded document of exactly one finding, with the release branches of its package when lockrot wrote them. */
 export function recordedCases(): RecordedCase[] {
   return [

@@ -388,8 +388,9 @@ and a key the document leaves out is named on Run data (PD-RUN-3) like any other
 - **Goldens** (`goldens/en/`): one file per string class, an object keyed by recorded case, written by
   `npm run goldens` and read by the tests of `tests/unit/goldens/`. The diff of a golden is reviewed
   like a snapshot. A class that lockrot's PHP grammar owns (the Age row, the baseline suffix) is
-  also held equal to lockrot's golden. A page-owned class is held to the model's golden from
-  `flags/cases.json` on the model's own inputs. On lockrot's recording it may differ from the
+  also held equal to lockrot's golden. A page-owned class with a model golden (Checks, Release branches, Security) is held to it
+  from `flags/cases.json` on the model's own inputs; Repository and Advisory feeds have none and are
+  held to SPEC's examples. On lockrot's recording it may differ from the
   model's golden only for a case that `goldens/en/model-differences.json` lists with its reason.
 - **Build checks**: the built `report.html` contains each coupling in §1.1 exactly once, none of the
   forbidden strings, and building twice gives identical bytes.
