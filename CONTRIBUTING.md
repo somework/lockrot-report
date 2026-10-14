@@ -2,14 +2,14 @@
 
 Node 26 (`.nvmrc`). Everything below is an npm script:
 
-| command                                                     | what it does                                                     |
-| ----------------------------------------------------------- | ---------------------------------------------------------------- |
-| `npm ci`                                                    | install exactly what `package-lock.json` pins                    |
-| `npm run contract:fetch`                                    | get lockrot's recorded bundle into `.lockrot/`, before the tests |
-| `npm run build`                                             | typecheck, bundle, and assemble `dist/`                          |
-| `npm test`                                                  | unit and component tests (vitest)                                |
-| `npm run test:e2e`                                          | the browser suite (Playwright); needs `build/pages/`, see below  |
-| `npm run lint`, `npm run typecheck`, `npm run format:check` | what CI runs first                                               |
+| command                                                                                   | what it does                                                     |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `npm ci`                                                                                  | install exactly what `package-lock.json` pins                    |
+| `npm run contract:fetch`                                                                  | get lockrot's recorded bundle into `.lockrot/`, before the tests |
+| `npm run build`                                                                           | typecheck, bundle, and assemble `dist/`                          |
+| `npm test`                                                                                | unit and component tests (vitest)                                |
+| `npm run test:e2e`                                                                        | the browser suite (Playwright); needs `build/pages/`, see below  |
+| `npm run lint`, `npm run typecheck`, `npm run typecheck:contract`, `npm run format:check` | what CI runs before the tests, after `contract:fetch`            |
 
 ## lockrot's contract
 
