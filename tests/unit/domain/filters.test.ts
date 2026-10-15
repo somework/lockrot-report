@@ -567,11 +567,10 @@ describe("activeFilters (PD-RAIL-4)", () => {
     ]);
   });
 
-  it("names the report-2 groups and the not in composer.json chip", () => {
-    expect(activeFilters(withFilters({ scope: ["unnamed"], flag: ["stale"], accepted: ["with"] }))).toEqual([
+  it("names the report-2 groups and the not in composer.json chip, and leaves out the accepted toggle", () => {
+    expect(activeFilters(withFilters({ scope: ["unnamed"], flag: ["stale"], accepted: ["hide"] }))).toEqual([
       { group: "scope", key: "unnamed", groupLabel: "Scope", label: "not in composer.json" },
       { group: "flag", key: "stale", groupLabel: "Flag", label: "stale" },
-      { group: "accepted", key: "with", groupLabel: "Accepted flags", label: "With an accepted flag" },
     ]);
   });
 

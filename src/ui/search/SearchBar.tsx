@@ -1,6 +1,6 @@
 import { Fragment, type Ref, type RefObject } from "preact";
 import { useReport } from "../context";
-import { applyFilters, hiddenByFilters, population } from "../../domain/filters";
+import { activeFilters, applyFilters, hiddenByFilters, population } from "../../domain/filters";
 import { applyFilters2, hiddenByFilters2, population2 } from "../../domain/list2";
 import type { Report2 } from "../../model/report2";
 import { allAdvisories, passesAdvisoryRail } from "../../domain/advisories";
@@ -162,8 +162,7 @@ function SearchSplitNote({ model, state }: { model: Model; state: State }) {
  *  (`report.js:871-873`), except a whitespace-only query no longer counts (DESIGN.md §4's fix for
  *  critic.md M22: `state.q` was counted on its raw, untrimmed value). */
 function activeFilterCount(state: State): number {
-  const filterKeys = Object.values(state.filters).reduce((n, keys) => n + keys.length, 0);
-  return filterKeys + (state.q.trim() === "" ? 0 : 1);
+  return activeFilters(state.filters).length + (state.q.trim() === "" ? 0 : 1);
 }
 
 /**

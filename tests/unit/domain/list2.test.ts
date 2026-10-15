@@ -76,11 +76,10 @@ describe("applyFilters2", () => {
     );
   });
 
-  it("splits on accepted flags", () => {
-    expect(names(applyFilters2(withAccepted, state({}, { accepted: ["with"] }), "findings"))).toEqual([
-      "partial/cssmin",
-    ]);
-    expect(applyFilters2(withAccepted, state({}, { accepted: ["without"] }), "findings")).toHaveLength(7);
+  it("keeps every finding when the accepted flags are hidden: the toggle filters no package", () => {
+    expect(names(applyFilters2(withAccepted, state({}, { accepted: ["hide"] }), "findings"))).toEqual(
+      names(applyFilters2(withAccepted, state(), "findings")),
+    );
   });
 
   it("keeps the findings no line of composer.json names for the unnamed scope", () => {
@@ -191,13 +190,21 @@ describe("railGroups2", () => {
     });
   });
 
-  it("offers the accepted split only where an accepted flag exists", () => {
+  it("offers the accepted toggle only where an accepted flag exists, counting the rows it changes", () => {
     expect(railGroups2(composite, state()).map((group) => group.group)).toEqual(["gate", "flag", "scope"]);
     const accepted = railGroups2(withAccepted, state()).find((group) => group.group === "accepted");
-    expect(accepted?.rows.map((row) => [row.key, row.count])).toEqual([
-      ["with", 1],
-      ["without", 7],
-    ]);
+    expect(accepted?.rows).toEqual([{ key: "hide", label: "Hide accepted flags", count: 1, on: false }]);
+    const on = railGroups2(withAccepted, state({}, { accepted: ["hide"] })).find(
+      (group) => group.group === "accepted",
+    );
+    expect(on?.rows).toEqual([{ key: "hide", label: "Hide accepted flags", count: 1, on: true }]);
+  });
+
+  it("counts only the listed rows under the accepted toggle", () => {
+    const accepted = railGroups2(withAccepted, state({}, { flag: ["vulnerable"] })).find(
+      (group) => group.group === "accepted",
+    );
+    expect(accepted?.rows.map((row) => row.count)).toEqual([0]);
   });
 
   it("offers the not in composer.json chip in the scope group", () => {
@@ -224,6 +231,13 @@ describe("fitFilters2", () => {
   it("returns the same filters when nothing needs a change", () => {
     const filters = { ...EMPTY_FILTERS, verdict: ["high"], flag: ["stale"], gate: ["fails"] };
     expect(fitFilters2(composite, filters)).toBe(filters);
+  });
+
+  it("keeps only the hide key of the accepted toggle", () => {
+    expect(fitFilters2(composite, { ...EMPTY_FILTERS, accepted: ["with", "hide"] })).toEqual({
+      ...EMPTY_FILTERS,
+      accepted: ["hide"],
+    });
   });
 
   it("drops a gate filter on a run that nothing fails", () => {
