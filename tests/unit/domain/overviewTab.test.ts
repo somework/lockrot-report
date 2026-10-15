@@ -5,7 +5,6 @@ import {
   exposureUnit,
   libyearsTop,
   OVERVIEW_TAB_WORDS,
-  scoreStrip,
   stripFlagged,
 } from "../../../src/domain/overviewTab";
 import type { Finding, Report2 } from "../../../src/model/report";
@@ -23,72 +22,6 @@ function withFinding(report: Report2, pkg: string, edit: (f: Finding) => void): 
   edit(found);
   return report;
 }
-
-describe("the score strip", () => {
-  test("stacks equal totals, highest first, each said by its grades", () => {
-    const strip = scoreStrip(composite());
-
-    expect(strip.stacks.map(({ total, say }) => [total, say])).toEqual([
-      [36, "score 36: 2 critical"],
-      [32, "score 32: 1 critical"],
-      [18, "score 18: 2 high"],
-      [2, "score 2: 2 low"],
-    ]);
-  });
-
-  test("places a stack at its total over bar_max and keeps its marks in the Findings order", () => {
-    const top = scoreStrip(composite()).stacks[0];
-
-    expect(top?.at).toBe(36 / 64);
-    expect(top?.marks).toEqual([
-      { package: "symfony/monolog-bridge", verdict: "critical" },
-      { package: "symfony/debug", verdict: "critical" },
-    ]);
-  });
-
-  test("clips a total past bar_max at the ruler's end", () => {
-    const report = withFinding(composite(), "twig/twig", (f) => {
-      if ("total" in f.score) f.score.total = 70;
-    });
-
-    expect(scoreStrip(report).stacks[0]).toMatchObject({ total: 70, at: 1 });
-  });
-
-  test("draws each band as a zone from its floor to the next one up", () => {
-    expect(scoreStrip(composite()).zones.map(({ verdict, from, to }) => ({ verdict, from, to }))).toEqual([
-      { verdict: "low", from: 1 / 64, to: 8 / 64 },
-      { verdict: "medium", from: 8 / 64, to: 16 / 64 },
-      { verdict: "high", from: 16 / 64, to: 32 / 64 },
-      { verdict: "critical", from: 32 / 64, to: 1 },
-    ]);
-  });
-
-  test("names each zone and links it to Findings under its grade", () => {
-    const zones = scoreStrip(composite()).zones;
-
-    expect(zones.map(({ say, link }) => [say, linkHref(link)])).toEqual([
-      ["low findings", "#view=findings&verdict=low"],
-      ["medium findings", "#view=findings&verdict=medium"],
-      ["high findings", "#view=findings&verdict=high"],
-      ["critical findings", "#view=findings&verdict=critical"],
-    ]);
-  });
-
-  test("labels 0, the band floors above the lowest, and bar_max", () => {
-    expect(scoreStrip(composite()).labels.map(({ value }) => value)).toEqual([0, 8, 16, 32, 64]);
-  });
-
-  test("gives a stack no link: the zones under it are the strip's targets", () => {
-    expect(scoreStrip(composite()).stacks.every((stack) => !("link" in stack))).toBe(true);
-  });
-
-  test("has no stack when nothing is graded", () => {
-    const report = composite();
-    report.findings = [];
-
-    expect(scoreStrip(report).stacks).toEqual([]);
-  });
-});
 
 describe("the exposure bars", () => {
   test("show the rows as published, sized to the longest, with nothing more", () => {

@@ -8,9 +8,11 @@ import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
 import type { Page } from "@playwright/test";
 import {
+  figureLine,
   flagBars,
   gateLine,
   gradeChips,
+  gradeLine,
   overviewSurface,
   stripChips,
   waffleSquares,
@@ -27,11 +29,14 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("report-2: the summary band on Overview", () => {
-  test("composite: the flagged figure, the grade chips, the waffle and gate.text as written", async ({
+  test("composite: the grade line, the figure line, the grade chips, the waffle and gate.text", async ({
     page,
   }) => {
     await report.gotoReport2("composite");
-    await expect(overviewSurface(page).locator(".lead-num")).toHaveText("7");
+    await expect(gradeLine(page)).toHaveText(
+      "Project grade: critical · 3 critical findings · 5 of 7 packages high or worse",
+    );
+    await expect(figureLine(page)).toHaveText("7 of 7 packages flagged · 0 ok · 0 allowlisted");
     await expect(gradeChips(page)).toHaveText(["critical 3", "high 2", "medium 0", "low 2"]);
     await expect(waffleSquares(page)).toHaveCount(7);
     await expect(gateLine(page)).toHaveText(
@@ -39,17 +44,17 @@ test.describe("report-2: the summary band on Overview", () => {
     );
   });
 
-  test("composite: one flag bar per carried flag, split by grade, then the depth and accepted lines", async ({
+  test("composite: one flag bar per carried flag, split by grade, with its points, then the notes", async ({
     page,
   }) => {
     await report.gotoReport2("composite");
     await expect(flagBars(page)).toHaveText([
-      "abandoned 1 graded critical 1",
-      "pinned 1 graded high 1",
-      "left-behind 1 graded critical 1",
-      "old-promise 3 graded critical 2 · high 1",
-      "stale 2 graded high 2",
-      "vulnerable 4 graded critical 2 · low 2",
+      "abandoned 1 graded critical 1 32 pts",
+      "pinned 1 graded high 1 16 pts",
+      "left-behind 1 graded critical 1 16 pts",
+      "old-promise 3 graded critical 2 · high 1 24 pts",
+      "stale 2 graded high 2 4 pts",
+      "vulnerable 4 graded critical 2 · low 2 52 pts",
     ]);
     const band = overviewSurface(page);
     await expect(band).toContainText("4 carry more than one flag · score model 1");
@@ -99,7 +104,8 @@ test.describe("report-2: the summary band on Overview", () => {
 
   test("stale-accepted-dagger: nothing flagged says so, with no flag bar", async ({ page }) => {
     await report.gotoReport2("stale-accepted-dagger");
-    await expect(overviewSurface(page)).toContainText("Nothing flagged in 1 package");
+    await expect(gradeLine(page)).toHaveText(/^Project grade: nothing flagged/);
+    await expect(figureLine(page)).toHaveText(/^0 of 1 package flagged · /);
     await expect(flagBars(page)).toHaveCount(0);
   });
 
