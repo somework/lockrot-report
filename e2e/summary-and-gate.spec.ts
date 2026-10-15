@@ -278,6 +278,24 @@ test.describe("report-2: the overview band of design 3A", () => {
     await expect(flagBars(page)).toHaveCount(0);
   });
 
+  for (const width of [1024, 1440]) {
+    test(`a flag bar's split by grade keeps to two lines at ${String(width)}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      // wallabag-2.6 carries 54 left-behind packages, so its longest bar wants the whole column.
+      await report.gotoReport2("baselined-wallabag-2.6");
+      const splits = flagBars(page).locator(".overview2-split");
+      await expect(splits.first()).toBeVisible();
+      const lines = await splits.evaluateAll((items) =>
+        items.map((item) => {
+          const lineHeight = parseFloat(getComputedStyle(item).lineHeight);
+          return Math.round(item.getBoundingClientRect().height / lineHeight);
+        }),
+      );
+      expect(lines.length).toBeGreaterThan(1);
+      expect(Math.max(...lines)).toBeLessThanOrEqual(2);
+    });
+  }
+
   test("the band never overflows the page, 320px to 1920px", async ({ page }) => {
     for (const name of ["composite", "B-gate-list"]) {
       await report.gotoReport2(name);

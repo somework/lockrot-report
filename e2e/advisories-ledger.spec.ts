@@ -297,6 +297,8 @@ test.describe("report-2: the Advisories tab groups the S9 rows by fix kind and b
     await page.goto(report2Url("C") + "#view=advisories");
     await expect(advisoriesSurface(page).locator(".al-answer")).toHaveText("No advisory affects this lock.");
     await expect(advisoriesSurface(page).locator(".clean-mark")).toHaveCount(1);
+    // No "0 of 0 advisories" over the tab's own sentence.
+    await expect(page.locator(".count-line")).toHaveCount(0);
   });
 
   test("a lookup that did not run never reads clean", async ({ page }) => {

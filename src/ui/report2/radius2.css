@@ -114,6 +114,12 @@
   color: var(--tone);
   text-align: right;
 }
+.r2-grade {
+  font: 700 10px var(--cond);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tone);
+}
 .r2-via {
   font-size: 12px;
   color: var(--muted);
@@ -156,6 +162,13 @@
   }
   .r2-kid {
     margin-left: calc(min(var(--depth, 0), 4) * 10px);
+  }
+}
+
+/* The grade word carries the grade; the rule only marks the row. */
+@media (forced-colors: active) {
+  .r2-kid {
+    border-left-color: CanvasText;
   }
 }
 

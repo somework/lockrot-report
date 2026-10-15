@@ -367,6 +367,21 @@ test.describe("report-2: the Blast radius tab reads chain, direct_dependents and
     await expect(self).toHaveAttribute("aria-expanded", "true");
   });
 
+  test("an unflagged dev requirement still says dev", async ({ page }) => {
+    // wallabag-main: phpunit/phpunit is require-dev, verdict ok, and lists flagged packages.
+    await go(page, "baselined-wallabag-main");
+    await expect(radiusRow(page, "phpunit/phpunit").locator(".r2-line .fc-dev")).toHaveText("dev");
+  });
+
+  test("a listed package says its grade in words, so forced colours keep it", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    await go(page, WALLABAG, "&pkg=hoa%2Fruler");
+    const kid = radiusRow(page, "kphoen/rulerz").locator('li[data-pkg="hoa/ruler"]');
+    const verdict = wallabag?.findings.find((f) => f.package === "hoa/ruler")?.verdict ?? "";
+    expect(verdict).not.toBe("");
+    await expect(kid.locator(".r2-grade")).toHaveText(verdict);
+  });
+
   for (const width of [390, 1440]) {
     test(`no horizontal overflow at ${String(width)}px with a row open`, async ({ page }) => {
       await go(page, WALLABAG, "&pkg=hoa%2Fruler", width);

@@ -99,6 +99,8 @@ function countLine2(report: Report2, state: State): string | null {
   if (state.view === "advisories") {
     const shown = advisoryPairs2(applyFilters2(report, state, "advisories"), state.filters).length;
     const all = advisoryPairs2(population2(report, "advisories"), EMPTY_FILTERS).length;
+    // As on report-1: with no advisory at all the tab's own sentence says so (PD-LEDGER-1).
+    if (all === 0) return null;
     return countPhrase(shown, all, "advisory", "advisories");
   }
   if (state.view === "radius")

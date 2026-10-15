@@ -1,6 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { useId } from "preact/hooks";
-import type { Finding, Report2 } from "../../model/report2";
+import type { Report2 } from "../../model/report2";
 import { gradeTone } from "../../domain/findingRow2";
 import { applyFilters2, population2 } from "../../domain/list2";
 import {
@@ -34,12 +34,12 @@ import { FlagPills } from "./FlagPills";
 import { useReport2 } from "./useReport2";
 import "./radius2.css";
 
-function Name({ finding, pkg, version }: { finding: Finding | null; pkg: string; version: string | null }) {
+function Name({ dev, pkg, version }: { dev: boolean; pkg: string; version: string | null }) {
   return (
     <span className="r2-name">
       <b>{pkg}</b>
       {version !== null && <span className="fc-ver"> {version}</span>}
-      {finding?.dev === true && <span className="fc-dev">dev</span>}
+      {dev && <span className="fc-dev">dev</span>}
     </span>
   );
 }
@@ -65,7 +65,8 @@ function ChildRow2({ finding, depth, note, report, first }: ChildProps) {
       {...openInteractions(finding.package, dispatch)}
     >
       <span className="r2-score">{finding.score.total}</span>
-      <Name finding={finding} pkg={finding.package} version={finding.version} />
+      <span className="r2-grade">{finding.verdict}</span>
+      <Name dev={finding.dev} pkg={finding.package} version={finding.version} />
       {note !== null && <span className="r2-via">{note}</span>}
       <span className="r2-pills">
         <FlagPills finding={finding} run={report.run} hideAccepted={false} />
@@ -111,7 +112,7 @@ function ParentRow2({
           {rank ?? ""}
         </span>
         <span className="r2-head">
-          <Name finding={row.self} pkg={row.package} version={row.version} />
+          <Name dev={row.dev} pkg={row.package} version={row.version} />
           {row.self !== null && (
             <span className={`r2-self ${toneClass(gradeTone(row.self.verdict))}`}>
               {RADIUS_WORDS.itself(row.self.verdict)}
