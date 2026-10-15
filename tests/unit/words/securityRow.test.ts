@@ -20,7 +20,10 @@ describe("the Security row split into its summary and its rungs", () => {
     expect(rungText(row.rungs[0]!)).toBe(
       "clears 1 of 1 from v5.4.52 (upgrade; held by composer.json; after it: 0, ok, if Composer resolves it)",
     );
-    expect(row.rungs[0]).toMatchObject({ after: "after it: 0, ok, if Composer resolves it", afterVerdict: "ok" });
+    expect(row.rungs[0]).toMatchObject({
+      after: "after it: 0, ok, if Composer resolves it",
+      afterVerdict: "ok",
+    });
   });
 
   test("a rung that names no score after it has no after part", () => {

@@ -20,7 +20,10 @@ const REFUSED_BY_THE_RULE = new Set([
 ]);
 
 const inEveryShell = (argv: readonly string[]): Record<Shell, string | null> =>
-  Object.fromEntries(SHELLS.map((shell) => [shell, commandLine(argv, shell)])) as Record<Shell, string | null>;
+  Object.fromEntries(SHELLS.map((shell) => [shell, commandLine(argv, shell)])) as Record<
+    Shell,
+    string | null
+  >;
 
 const refused = { posix: null, cmd: null, powershell: null };
 
