@@ -188,12 +188,14 @@ describe("the tabs that lead without the band", () => {
     );
   });
 
-  test("Advisories under a filter counts the matching advisories and says the whole count once", () => {
+  test("Advisories under a filter keeps the matching advisories' severities, which the chips do not count", () => {
     history.replaceState(null, "", "/report.html#view=advisories&fix=upgrade");
     render(<App model={model()} />);
 
     const lead = surface("advisories").querySelector<HTMLElement>(".al-lead");
-    expect(lead?.querySelector(".al-answer")?.textContent).toBe("1 matching advisory on 1 package.");
+    expect(lead?.querySelector(".al-answer")?.textContent).toBe(
+      "1 matching advisory on 1 package, by severity: 1 high.",
+    );
     expect(lead?.textContent).toContain("without it there are 20.");
     expect(lead?.querySelector(".ledger-fig")).toBeNull();
   });

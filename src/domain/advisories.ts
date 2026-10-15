@@ -71,7 +71,7 @@ export const advisoryRowPackages = (groups: readonly AdvisoryGroup2[]): readonly
 
 export interface AdvisoryAnswer2 {
   readonly text: string;
-  /** The count alone, where the severity chips beside it say the rest. */
+  /** The count alone, for an unfiltered list whose severity chips beside it say the rest. */
   readonly head: string;
   /** Set under a filter: the count without it. */
   readonly narrowed: string | null;

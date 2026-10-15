@@ -154,7 +154,8 @@ function NoAdvisories2() {
   );
 }
 
-/** The tab's answer and lookup hedge; `counted` drops the severities the chips beside it count. */
+/** The tab's answer and lookup hedge. `counted` drops the severities, which the unfiltered chips
+ *  beside it count. */
 function Answer({ report, answer, counted }: { report: Report2; answer: AdvisoryAnswer2; counted: boolean }) {
   const hedge = advisoryLookupHedge(report);
   return (
@@ -199,7 +200,11 @@ export function AdvisoriesView2() {
         <div className="al-lead">
           <SecurityBlock
             report={report}
-            answer={listed ? <Answer report={report} answer={answer} counted /> : undefined}
+            answer={
+              listed ? (
+                <Answer report={report} answer={answer} counted={answer.narrowed === null} />
+              ) : undefined
+            }
           />
         </div>
       )}
