@@ -1,0 +1,10 @@
+.d2-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+}
+
+.d2-head .detail-close {
+  margin-left: auto;
+}

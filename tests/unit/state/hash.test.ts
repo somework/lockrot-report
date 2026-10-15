@@ -158,6 +158,25 @@ describe("serializeHash", () => {
   });
 });
 
+describe("the report-2 groups in the address", () => {
+  it("writes flag and accepted after every 0.13 group and reads them back", () => {
+    const state: State = {
+      ...INITIAL_STATE,
+      filters: {
+        ...INITIAL_STATE.filters,
+        gate: ["fails"],
+        flag: ["stale", "pinned"],
+        accepted: ["without"],
+      },
+    };
+
+    const h = serializeHash(state);
+
+    expect(h).toBe("gate=fails&flag=stale%2Cpinned&accepted=without");
+    expect(parseHash(h, INITIAL_STATE).filters).toEqual(state.filters);
+  });
+});
+
 describe("parseHash", () => {
   it("returns base unchanged for an empty fragment", () => {
     // Arrange

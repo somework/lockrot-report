@@ -112,3 +112,36 @@ test.describe("SEARCH-FALLBACK: emptying the state must not erase location.searc
     expect(report.url()).toContain("?debug=1");
   });
 });
+
+test.describe("on a report-2 page", () => {
+  const HASH =
+    "view=packages&q=symfony&verdict=critical&scope=direct&gate=fails&flag=old-promise&accepted=without&pkg=symfony%2Fdebug";
+
+  test("a fragment with every report-2 group restores exactly the same state", async () => {
+    await report.gotoReport2WithHash("composite", HASH);
+    expect(await report.activeTab()).toBe("packages");
+    expect(await report.searchValue()).toBe("symfony");
+    expect((await report.detail()).name).toBe("symfony/debug");
+    expect(await report.hash()).toBe("#" + HASH);
+  });
+
+  test("an old prio= fragment opens verdict=", async () => {
+    await report.gotoReport2WithHash("composite", "prio=low");
+    expect(await report.rows()).toEqual(["symfony/yaml", "symfony/polyfill-intl-idn"]);
+    expect(await report.hash()).toBe("#verdict=low");
+  });
+
+  test("an old verdict=<flag> fragment opens flag=", async () => {
+    await report.gotoReport2WithHash("composite", "verdict=left-behind");
+    expect(await report.rows()).toEqual(["symfony/monolog-bridge"]);
+    expect(await report.hash()).toBe("#flag=left-behind");
+  });
+
+  test("a report-1 page keeps the 0.13 meaning of the same fragments", async () => {
+    await report.gotoWithHash(FIXTURES.mini, "verdict=pinned");
+    expect(await report.rows()).toEqual(["vendor/snapshot"]);
+    expect(await report.hash()).toBe("#verdict=pinned");
+    await report.gotoWithHash(FIXTURES.mini, "prio=high");
+    expect(await report.hash()).toBe("#prio=high");
+  });
+});

@@ -25,13 +25,30 @@ describe("normalize keeps a report-2 document typed", () => {
   });
 
   test.each(documents.slice(0, 1))(
-    "$name without a root key the schema requires is not report-2",
+    "$name without root keys the schema requires fails visibly, naming them",
     ({ document }) => {
-      const { gate: _gate, ...withoutGate } = document as Record<string, unknown>;
+      const { gate: _gate, rot_depth: _depth, ...withoutTwo } = document as Record<string, unknown>;
 
-      const result = normalize(withoutGate);
+      const result = normalize(withoutTwo);
 
-      expect(result.ok && result.model.report2).toBeNull();
+      expect(result).toEqual({
+        ok: false,
+        error: {
+          kind: "malformed-report",
+          message: "This report-2 document leaves out keys lockrot always writes: gate, rot_depth.",
+        },
+      });
+    },
+  );
+
+  test.each(documents.slice(0, 1))(
+    "$name as an html embed without a root key fails the same way",
+    ({ document }) => {
+      const { findings: _findings, ...withoutFindings } = document as Record<string, unknown>;
+
+      const result = normalize({ report: withoutFindings, details: {} });
+
+      expect(result.ok ? null : result.error.kind).toBe("malformed-report");
     },
   );
 

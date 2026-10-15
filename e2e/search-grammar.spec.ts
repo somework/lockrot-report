@@ -117,3 +117,45 @@ test.describe("severity: and cve: (need a fixture with advisories)", () => {
     expect(await report.rows()).toEqual([]);
   });
 });
+
+test.describe("on a report-2 page", () => {
+  test.beforeEach(async () => {
+    await report.gotoReport2("composite");
+  });
+
+  test("a bare word matches the package name and its version", async () => {
+    await report.search("symfony yaml");
+    expect(await report.rows()).toEqual(["symfony/yaml"]);
+    await report.search("v2.16");
+    expect(await report.rows()).toEqual(["twig/twig"]);
+  });
+
+  test("flag: narrows to every flag named, and lead: to the published lead", async () => {
+    await report.search("flag:old-promise");
+    expect(await report.rows()).toEqual(["symfony/monolog-bridge", "symfony/debug", "tubalmartin/cssmin"]);
+    await report.search("flag:old-promise flag:stale");
+    expect(await report.rows()).toEqual(["tubalmartin/cssmin"]);
+    await report.search("lead:left-behind");
+    expect(await report.rows()).toEqual(["symfony/monolog-bridge"]);
+  });
+
+  test("verdict: widens on repeats, and priority: reads as verdict:", async () => {
+    await report.search("verdict:low priority:high");
+    expect(await report.rows()).toEqual([
+      "friendsofsymfony/oauth-server-bundle",
+      "tubalmartin/cssmin",
+      "symfony/yaml",
+      "symfony/polyfill-intl-idn",
+    ]);
+  });
+
+  test("score:>=N compares with the published total", async () => {
+    await report.search("score:>=32");
+    expect(await report.rows()).toEqual(["twig/twig", "symfony/monolog-bridge", "symfony/debug"]);
+  });
+
+  test("direct:no keeps the packages no requirement names directly", async () => {
+    await report.search("direct:no");
+    expect(await report.rows()).toEqual(["symfony/polyfill-intl-idn"]);
+  });
+});

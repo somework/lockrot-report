@@ -82,3 +82,30 @@ test("shows the line when a ledger filter, not the search box, is what hides it"
 // filter (an `ok`/`finished` package while on Findings) — never shows the line either: that is a
 // different fact, covered at the unit level (tests/unit/ui/detail.test.tsx), where the tab's own
 // population can be held fixed independently of a real tab switch's own keepDetail wiring.
+
+test.describe("on a report-2 page", () => {
+  test("shows the hidden line, and its control clears the filters and moves focus to Close", async () => {
+    await report.gotoReport2("composite");
+    await report.openPackage("twig/twig");
+    expect((await report.detail()).text).not.toContain("Hidden by the current filters");
+
+    await report.search("no-such-package");
+    expect(await report.rows()).toEqual([]);
+    expect((await report.detail()).text).toContain("Hidden by the current filters");
+    expect(await report.countLine()).toContain("twig/twig is hidden by the current filters");
+
+    await report.clearFiltersFromDetail();
+    expect(await report.searchValue()).toBe("");
+    expect(await report.rows()).toContain("twig/twig");
+    expect(await report.isFocusOnDetailClose()).toBe(true);
+  });
+
+  test("shows the line when a rail filter hides the open package", async () => {
+    await report.gotoReport2("composite");
+    await report.openPackage("twig/twig");
+    await report.toggleRailRow("stale");
+
+    expect(await report.rows()).not.toContain("twig/twig");
+    expect((await report.detail()).text).toContain("Hidden by the current filters");
+  });
+});

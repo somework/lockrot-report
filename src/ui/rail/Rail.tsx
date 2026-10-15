@@ -1,5 +1,6 @@
 import { useReport } from "../context";
 import { population, railGroups, type RailGroup } from "../../domain/filters";
+import { population2, railGroups2 } from "../../domain/list2";
 import { signalDef } from "../../domain/vocab";
 import "./rail.css";
 
@@ -50,8 +51,11 @@ function placed(groups: readonly RailGroup[]): readonly (readonly [RailGroup, Ra
  */
 export function Rail() {
   const { model, state } = useReport();
-  if (population(model, state.view).length === 0) return null;
-  const groups = railGroups(model, state);
+  const report2 = model.report2?.report ?? null;
+  const everyone = report2 === null ? population(model, state.view) : population2(report2, state.view);
+  if (everyone.length === 0) return null;
+  const groups = report2 === null ? railGroups(model, state) : railGroups2(report2, state);
+  const baselinePath = report2 === null ? model.report.baseline?.path : (report2.baseline?.path ?? undefined);
 
   return (
     <div className="rail" role="group" aria-label="Filters">
@@ -59,10 +63,7 @@ export function Rail() {
       {placed(groups).map(([group, extra]) => (
         <div className="rail-group" key={group.group}>
           <span className="eyebrow">
-            <RailTitle
-              title={group.title}
-              path={group.group === "since" ? model.report.baseline?.path : undefined}
-            />
+            <RailTitle title={group.title} path={group.group === "since" ? baselinePath : undefined} />
           </span>
           <div className="opts">
             {group.rows.map((row) => (

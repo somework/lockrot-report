@@ -115,6 +115,10 @@ function sortKeyValue(f: Finding, key: SortKey): string | number {
       return -f.signals.length;
     case "data":
       return f.dataDate ?? "";
+    case "score":
+    case "flags":
+    case "age":
+      return 0;
   }
 }
 
@@ -251,11 +255,15 @@ function runFails(model: Model): boolean {
 
 /**
  * The filters an address may carry for this report: a `gate` key only when some package fails the
- * run, and then only `fails`. Anywhere else a copied link would open on an empty list.
+ * run, and then only `fails`. Anywhere else a copied link would open on an empty list. `flag` and
+ * `accepted` are report-2 groups, so a report-1 document keeps neither (SPEC §7.9.7).
  */
 export function filtersFor(model: Model, filters: Filters): Filters {
   const gate = runFails(model) ? filters.gate.filter((key) => key === "fails") : [];
-  return gate.length === filters.gate.length ? filters : { ...filters, gate };
+  const report2Only = filters.flag.length + filters.accepted.length > 0;
+  return gate.length === filters.gate.length && !report2Only
+    ? filters
+    : { ...filters, gate, flag: [], accepted: [] };
 }
 
 const SCOPE_ROWS: readonly (readonly [string, string])[] = [
@@ -368,9 +376,18 @@ const GROUP_LABELS: Readonly<Record<FilterGroup, string>> = {
   fix: "Fix",
   since: "Since baseline",
   gate: "This run",
+  flag: "Flag",
+  accepted: "Accepted flags",
 };
 
-const SCOPE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(SCOPE_ROWS);
+const SCOPE_LABELS: Readonly<Record<string, string>> = {
+  ...Object.fromEntries(SCOPE_ROWS),
+  unnamed: "not in composer.json",
+};
+const ACCEPTED_LABELS: Readonly<Record<string, string>> = {
+  with: "With an accepted flag",
+  without: "Without one",
+};
 const SINCE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(SINCE_ROWS);
 const FIX_LABELS: Readonly<Record<string, string>> = Object.fromEntries(FIX_GROUP_TEXT);
 
@@ -386,6 +403,8 @@ function activeLabel(group: FilterGroup, key: string): string {
       return FIX_LABELS[key] ?? key;
     case "since":
       return SINCE_LABELS[key] ?? key;
+    case "accepted":
+      return ACCEPTED_LABELS[key] ?? key;
     default:
       return key;
   }

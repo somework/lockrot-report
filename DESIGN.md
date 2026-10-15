@@ -70,8 +70,9 @@ must either keep that markup free of inline style/script or replace the meta pol
 
 ## 2. Compatibility
 
-- The renderer reads **report schema major 1** (`report.lockrot.schema`, and documents that predate
-  the field). A higher major renders with a banner saying the document is newer than the renderer.
+- The renderer reads **report schema majors 1 and 2** (`READS_SCHEMAS` in `src/schema.ts`). It
+  reads `report.lockrot.schema`, and a document that predates the field reads as 1. A higher major
+  renders with a banner saying the document is newer than the renderer.
 - Every field is optional on read. `model/normalize.ts` is the only place that knows about older
   shapes: `details` as `[]` or `{}`, `evidence` as an array, a missing `run`, `libyears`,
   `abandoned`, `finding.libyears`, `finding.replacement`, `metadata.installed_release`,
@@ -80,15 +81,19 @@ must either keep that markup free of inline style/script or replace the meta pol
 - Unknown fields are ignored; unknown enum values (a verdict, a signal id, a severity) are kept and
   rendered neutrally, never dropped and never a crash.
 - report-2 (`lockrot.schema` 2) is typed by lockrot's TypeScript contract, as lockrot writes it:
-  every key required. `normalize.ts` keeps a schema-2 document as `Model.report2` when it carries
-  every root key report-2 requires (`model/report2.ts` `REPORT2_KEYS`). The html embed's `details`
+  every key required. `normalize.ts` keeps a schema-2 document as `Model.report2`. A schema-2
+  document without a root key report-2 requires (`model/report2.ts` `REPORT2_KEYS`) is a
+  `malformed-report` error that names the keys. The html embed's `details`
   has no report-2 type. `model/report2.ts` types it from explain-2's `lock` and
   `repositoryMetadata`, plus `repository_link`, which no schema defines. Each discriminated union
   of the contract has one type guard there (`isScoreGraded`, `isTermSecurity`,
   `isSecurityVulnerable`, `isSignal`). §7 says where the contract comes from.
   The root-key check proves the root only. Below it the page trusts the shape lockrot wrote, and
-  the page ships no validator. The change that first renders `Model.report2` decides how a
-  malformed report-2 document fails.
+  the page ships no validator. A shape that breaks a surface while it renders shows the error
+  screen (`ui/RenderGuard.tsx`), never a blank or half-drawn page.
+- On a report-2 document each surface slot (the Findings list, the detail sheet, the overview
+  band, the Run tab, All packages, Advisories, Blast radius) renders its `ui/report2/` component.
+  The shell stays one: `App`, the keyboard, the address, the rail, search, print, theme and tabs.
 - Fixtures: `fixtures/bundles/` holds real bundles from lockrot 0.11.0 (via `--dev`, `--all`, the
   install-time path without `details`, an empty lock) and one 0.10.0 capsule. Every one of them must
   normalise and render.
@@ -113,6 +118,9 @@ src/
     advisories.ts         advisoriesOf, fixLadder, noFixWords, advisory sort and match
     advisoryLedger.ts     the Advisories tab's counts, reported-ago axis, a row chip's title (PD-ADV-*)
     filters.ts            filter groups, population per view, matches(), rail facet counts
+    list2.ts, query2.ts   the same for report-2: population, rail, rank order, column sorts,
+                          the report-2 search keys, and the address aliases of SPEC §7.9.7
+    countedFlags.ts       a report-2 finding's counted and accepted flags (the join on score terms)
     priority.ts           priorityWhy — a finding's priority_basis in words; noFixKind
     answer.ts             the open package's answer sentence and what it pulls in (S7)
     libyears.ts           ledger items, sort key, reason, row phrases
@@ -132,6 +140,7 @@ src/
     state.ts              State, Action, reducer
     hash.ts               parse/serialise the fragment (format unchanged, see §4)
   ui/                     Preact components, one folder per surface, CSS next to the component
+    report2/              one component and one stylesheet per report-2 surface slot
   styles/                 tokens.css, base.css, print.css
 tests/unit/               vitest, mirrors src/ (report-2's domain modules: tests/unit/words/, tests/unit/goldens/)
 e2e/                      Playwright; runs against the built page in build/pages/ (§6)
@@ -148,7 +157,7 @@ Rules the lint config enforces: no `innerHTML`/`outerHTML`/`insertAdjacentHTML`,
 State is one object owned by a reducer in `App`:
 
 ```ts
-{ view, q, pkg, sort, sortDesc, filters: { prio, verdict, scope, signal, sev, fix, since }, disclosure }
+{ view, q, pkg, sort, sortDesc, filters: { prio, verdict, scope, signal, sev, fix, since, gate, flag, accepted }, disclosure }
 ```
 
 `disclosure` holds the Blast radius rows and folds the reader opened or closed; like `sort` it is not
@@ -160,6 +169,12 @@ groups in that order, `view` omitted when `findings`, `pkg` omitted while no pac
 legacy page also left out the package it opened by itself; this page opens none, PD-ROWS-9), empty
 state → no fragment. Always `history.replaceState`, never `pushState`; a `SecurityError` (an
 opaque-origin frame) switches writing off for the page's life.
+
+report-2 appends two groups after `gate`: `flag` (the counted flags, any of) and `accepted` (`with`
+or `without` an accepted flag). `scope=unnamed` is the "not in composer.json" chip. On a report-2
+document a 0.13 link opens on report-2 terms: `prio=` as `verdict=`, and a flag in `verdict=` as
+`flag=`. On a report-1 document every 0.13 fragment keeps its 0.13 meaning, and `flag` and
+`accepted` are dropped (SPEC §7.9.7).
 
 Changes from the legacy page, each a fix:
 

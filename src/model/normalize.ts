@@ -111,6 +111,16 @@ export function normalize(input: unknown): NormalizeResult {
 
   const lockrot = shape.reportSource.lockrot;
   const schema = asFiniteNumber(isRecord(lockrot) ? lockrot.schema : undefined) ?? 1;
+  const missing = schema === 2 ? REPORT2_KEYS.filter((key) => !(key in shape.reportSource)) : [];
+  if (missing.length > 0) {
+    return {
+      ok: false,
+      error: {
+        kind: "malformed-report",
+        message: `This report-2 document leaves out keys lockrot always writes: ${missing.join(", ")}.`,
+      },
+    };
+  }
 
   return {
     ok: true,
@@ -124,12 +134,9 @@ export function normalize(input: unknown): NormalizeResult {
   };
 }
 
-/** Typed as lockrot's contract once every root key report-2 requires is present; the page renders
- *  only what the contract names, so a missing root key is not report-2. */
-function report2Embed(shape: ReportShape): Report2Embed | null {
-  if (!REPORT2_KEYS.every((key) => key in shape.reportSource)) {
-    return null;
-  }
+/** Typed as lockrot's contract: `normalize` has checked that every root key report-2 requires is
+ *  present. */
+function report2Embed(shape: ReportShape): Report2Embed {
   return {
     report: shape.reportSource as Report2,
     details: (isRecord(shape.detailsSource) ? shape.detailsSource : {}) as Details,

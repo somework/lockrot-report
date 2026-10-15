@@ -5,15 +5,18 @@
 import { h, render } from "preact";
 
 import { normalize, parseBundle } from "./model/normalize";
-import { App } from "./ui/App";
 import { ErrorScreen } from "./ui/ErrorScreen";
+import { RenderGuard } from "./ui/RenderGuard";
 
 // Inferred from `parseBundle`'s own return type rather than redeclared here, so this file stays in
 // sync with whatever `model/normalize.ts` actually exports instead of a second, hand-copied shape.
 type ParseResult = ReturnType<typeof parseBundle>;
 
 function renderResult(target: Element, result: ParseResult): void {
-  render(result.ok ? h(App, { model: result.model }) : h(ErrorScreen, { error: result.error }), target);
+  render(
+    result.ok ? h(RenderGuard, { model: result.model }) : h(ErrorScreen, { error: result.error }),
+    target,
+  );
 }
 
 export interface MountHandle {
