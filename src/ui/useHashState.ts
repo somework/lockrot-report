@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef } from "preact/hooks";
+import { useLayoutEffect, useReducer, useRef } from "preact/hooks";
 import { HashSync, parseHash } from "../state/hash";
 import { reducer } from "../state/reducer";
 import { INITIAL_STATE, type Action, type State } from "../state/types";
@@ -49,12 +49,14 @@ export function useHashState(fit: StateFit = AS_IS): [State, (action: Action) =>
   const latest = useRef(state);
   latest.current = state;
 
-  useEffect(() => {
+  // Layout effects, written and heard in the render's own task: a boot write that waited for the
+  // next frame could replace a link applied in between.
+  useLayoutEffect(() => {
     sync.current ??= new HashSync();
     sync.current.writeHash(state, window);
   }, [state]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const onHashChange = () => {
       dispatch({
         type: "restore",

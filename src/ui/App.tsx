@@ -201,12 +201,13 @@ function useRowAnchor(
   return [anchored, keepInPlace];
 }
 
-/** One document keydown listener that reads the latest page state through a ref. */
+/** One document keydown listener that reads the latest page state through a ref. A layout effect,
+ *  so a key pressed as soon as the page has loaded already reaches it. */
 function useShortcuts(deps: ShortcutDeps) {
   const latest = useRef(deps);
   latest.current = deps;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const current = latest.current;
       const { model, state } = current;
