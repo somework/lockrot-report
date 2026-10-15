@@ -22,8 +22,8 @@ function load(caseName: string): Model {
  *  exposure entry and 6 flagged direct requirements outside it. */
 const composite = () => load("composite");
 
-/** One package, verdict `ok`: nothing flagged, no advisory. */
-const clean = () => load("pagerfanta");
+/** One package, verdict `finished`: nothing flagged, no advisory. */
+const clean = () => load("stale-accepted-dagger");
 
 function renderIn(
   ui: ComponentChild,
@@ -179,8 +179,8 @@ describe("the open package and the count line", () => {
   });
 
   it("says nothing extra for an open package the tab never lists at all", () => {
-    // pagerfanta/twig is `ok`: never in the Findings population, filters or not.
-    renderBar(clean(), { ...INITIAL_STATE, pkg: "pagerfanta/twig", q: "no-such-package" });
+    // A `finished` package is never in the Findings population, filters or not.
+    renderBar(clean(), { ...INITIAL_STATE, pkg: "akaunting/laravel-version", q: "no-such-package" });
 
     expect(countLine()).not.toContain("hidden by the current filters");
   });

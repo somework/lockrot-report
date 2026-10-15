@@ -90,7 +90,7 @@ describe("The lock entry reference", () => {
     expect(reference(sheet, "The lock entry")).toEqual({
       installed: "v2.6.13",
       "php constraint": ">=5.3.3",
-      released: "2016-01-14",
+      released: "2015-06-25",
       repository: "https://github.com/symfony/monolog-bridge.git",
       type: "library",
     });
@@ -130,7 +130,7 @@ describe("The lock entry reference", () => {
     }));
 
     const rows = reference(sheet, "The lock entry");
-    expect(rows["snapshot dated"]).toBe("2016-01-14");
+    expect(rows["snapshot dated"]).toBe("2015-06-25");
     expect(rows["branch snapshot"]).toBe("yes");
     expect(rows).not.toHaveProperty("released");
   });
@@ -176,7 +176,7 @@ describe("The provenance reference", () => {
       registry: "packagist.org",
       "package metadata": "read",
       "metadata as of": "2026-10-01",
-      "releases listed": "11",
+      "releases listed": "15",
       "repository activity": "read",
       fetched: "2026-09-14",
     });

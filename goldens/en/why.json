@@ -35,7 +35,7 @@
   ],
   "A-php-star-dagger": [
     "32 · critical from 32 · ages as of 2026-10-01",
-    "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (composer update on 3.x) is reachable: no × 2",
+    "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (upgrade on 3.x) is reachable: no × 2",
     "the advisories alone make it critical",
     "without CVE-2026-46633: 16, high",
     "after the move: 0, ok (if Composer resolves it)"
@@ -52,7 +52,7 @@
   ],
   "B-accepted-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
-    "vulnerable 16: high advisory CVE-2026-45077; its own fix (composer update on 5.x) is reachable: no × 2",
+    "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable: no × 2",
     "the advisory alone makes it high",
     "after the move: 0, ok (if Composer resolves it)",
     "left-behind accepted by your ignore list: counting it would make this 32, critical",
@@ -72,7 +72,7 @@
     "36 · critical from 32 · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "old-promise 4: ¼ of 16, beside left-behind (correlated evidence)",
-    "vulnerable 16: high advisory CVE-2026-45077; its own fix (composer update on 5.x) is reachable: no × 2",
+    "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
     "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high",
@@ -82,7 +82,7 @@
     "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "old-promise 4: ¼ of 16, beside left-behind (correlated evidence)",
-    "vulnerable 16: high advisory CVE-2026-45077; its own fix (composer update on 5.x) is reachable: no × 2",
+    "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable: no × 2",
     "packages-dev: total 36 ÷ 2 = 18",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating, halved: packages-dev) alone grades it medium, the advisory (halved: packages-dev) alone grades it medium: together high",
@@ -126,7 +126,7 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it high",
     "without left-behind: 16, high (old-promise would lead) · without old-promise: 16, high",
-    "after the move: 0, ok (if Composer resolves it; advisories on its new versions not checked)",
+    "after the move: at most, from the facts it checked, 16, high (if Composer resolves it; advisories on its new versions not checked)",
     "checks missing: advisories (S9) not checked (offline)"
   ],
   "B-offline-high-dagger": [
@@ -136,7 +136,7 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it high",
     "without left-behind: 16, high (old-promise would lead) · without old-promise: 16, high",
-    "after the move: 0, ok (if Composer resolves it; advisories on its new versions not checked)",
+    "after the move: at most, from the facts it checked, 16, high (if Composer resolves it; advisories on its new versions not checked)",
     "checks missing: advisories (S9) not checked (offline)"
   ],
   "C": [
@@ -161,8 +161,7 @@
     "old-promise 4: ¼ of 16, beside abandoned (correlated evidence)",
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it critical",
-    "without abandoned: 18, high (stale would show) · without old-promise: 32, critical",
-    "checks not run: its repository activity (no token)"
+    "without abandoned: 18, high (stale would show) · without old-promise: 32, critical"
   ],
   "C-gitlab-hosted-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -170,8 +169,7 @@
     "old-promise 4: ¼ of 16, beside abandoned (correlated evidence)",
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it critical",
-    "without abandoned: 18, high (stale would show) · without old-promise: 32, critical",
-    "checks not run: its repository activity (host not supported: lockrot cannot ask gitlab.example.com)"
+    "without abandoned: 18, high (stale would show) · without old-promise: 32, critical"
   ],
   "C-offline-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -181,7 +179,7 @@
     "maintenance alone makes it critical",
     "without abandoned: 18, high (stale would show) · without old-promise: 32, critical",
     "checks missing: advisories (S9) not checked (offline)",
-    "checks not run: its repository activity (no repository found)"
+    "checks not run: its repository activity (offline)"
   ],
   "C-tokenless-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -190,7 +188,7 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it critical",
     "without abandoned: 18, high (stale would show) · without old-promise: 32, critical",
-    "checks not run: its repository activity (no repository found)"
+    "checks not run: its repository activity (no token)"
   ],
   "D": [
     "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
@@ -297,7 +295,7 @@
     "68 · critical from 32 · ages as of 2026-10-01",
     "abandoned 32 leads: the strongest maintenance fact counts in full",
     "old-promise 4: ¼ of 16, beside abandoned (correlated evidence)",
-    "vulnerable 32: critical advisory CVE-2026-00003; its own fix (composer update on 4.x) is reachable: no × 2",
+    "vulnerable 32: critical advisory CVE-2026-00003; its own fix (upgrade on 4.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "critical twice over: each part alone makes it critical",
     "without abandoned: 50, critical (stale would show) · without old-promise: 64, critical · without the advisory: 36, critical"
@@ -309,14 +307,13 @@
     "transitive: maintenance 8 ÷ 2 = 4",
     "packages-dev: total 8 ÷ 2 = 4",
     "low twice over: each part alone makes it low",
-    "without stale: 2, low · without the advisory: 2, low",
-    "checks missing: archived repository (S3) and repository activity (S4) not checked (request failed)"
+    "without stale: 2, low · without the advisory: 2, low"
   ],
   "fail-on-config-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "old-promise 4: ¼ of 16, beside left-behind (correlated evidence)",
-    "vulnerable 16: high advisory CVE-2026-45077; its own fix (composer update on 5.x) is reachable: no × 2",
+    "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
     "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high",
@@ -326,7 +323,7 @@
     "36 · critical from 32 · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "old-promise 4: ¼ of 16, beside left-behind (correlated evidence)",
-    "vulnerable 16: high advisory CVE-2026-45077; its own fix (composer update on 5.x) is reachable: no × 2",
+    "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
     "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high",
@@ -342,7 +339,7 @@
   "flysystem": [
     "10 · medium from 8 · 6 points short of high · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
-    "vulnerable 2: low advisory CVE-2026-102601; its own fix (composer update on 3.x) is reachable: no × 2",
+    "vulnerable 2: low advisory CVE-2026-102601; its own fix (upgrade on 3.x) is reachable: no × 2",
     "transitive: maintenance 16 ÷ 2 = 8",
     "maintenance alone makes it medium",
     "without left-behind: 2, low · without the advisory: 8, medium",
@@ -354,8 +351,8 @@
     "old-promise 4: ¼ of 16, beside abandoned (correlated evidence)",
     "transitive: maintenance 36 ÷ 2 = 18",
     "maintenance alone makes it high",
-    "without abandoned: at least 9, medium (stale would show) · without old-promise: 16, high",
-    "checks not run: its repository activity (request failed)"
+    "without abandoned: 18, high (silent would show) · without old-promise: 16, high",
+    "checks not run: its archived flag (no token)"
   ],
   "guzzle": [
     "32 · critical from 32 · ages as of 2026-10-01",
@@ -370,7 +367,7 @@
     "36 · critical from 32 · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "old-promise 4: ¼ of 16, beside left-behind (correlated evidence)",
-    "vulnerable 16: high advisory CVE-2022-31043, the worst of 14 (tied with CVE-2022-29248, CVE-2022-31042, CVE-2026-69246 and 2 more); its own fix (composer update on 6.x) is reachable: no × 2",
+    "vulnerable 16: high advisory CVE-2022-31043, the worst of 14 (tied with CVE-2022-29248, CVE-2022-31042, CVE-2026-69246 and 2 more); its own fix (upgrade on 6.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisories alone grade it high: together critical",
     "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisories: 20, high · without CVE-2022-31043: 36, critical (tied: the others weigh the same)",
@@ -380,7 +377,7 @@
     "36 · critical from 32 · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "old-promise 4: ¼ of 16, beside left-behind (correlated evidence)",
-    "vulnerable 16: high advisory CVE-2022-31043, the worst of 14 (tied with CVE-2022-29248, CVE-2022-31042, CVE-2026-69246 and 2 more); its own fix (composer update on 6.x) is reachable: no × 2",
+    "vulnerable 16: high advisory CVE-2022-31043, the worst of 14 (tied with CVE-2022-29248, CVE-2022-31042, CVE-2026-69246 and 2 more); its own fix (upgrade on 6.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisories alone grade it high: together critical",
     "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisories: 20, high · without CVE-2022-31043: 36, critical (tied: the others weigh the same)",
@@ -401,7 +398,7 @@
     "transitive: maintenance 36 ÷ 2 = 18",
     "maintenance alone makes it high",
     "without abandoned: at least 9, medium (stale would show) · without old-promise: 16, high",
-    "checks not run: its repository activity (no repository found)"
+    "checks not run: its repository activity (no token)"
   ],
   "holder-vuln-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
@@ -443,7 +440,7 @@
     "maintenance alone makes it high",
     "without old-promise: 8, medium (stale would lead) · without stale: 16, high",
     "after the move: 8, medium (if Composer resolves it)",
-    "checks not run: its repository activity (no repository found)",
+    "checks missing: archived repository (S3) and repository activity (S4) not checked (rate limited)",
     "abandoned marking ignored (policy.abandoned: symfony/debug): removed in the 7.x upgrade"
   ],
   "installed-php-halved": [
@@ -491,7 +488,7 @@
     "transitive: maintenance 36 ÷ 2 = 18",
     "maintenance alone makes it high",
     "without abandoned: at least 9, medium (stale would show) · without old-promise: 16, high",
-    "checks not run: its repository activity (no repository found)"
+    "checks not run: its repository activity (repository not found)"
   ],
   "ok-unchecked": [
     "0 · ok · ages as of 2026-10-01",
@@ -505,8 +502,12 @@
     "after the move: 0, ok"
   ],
   "pagerfanta": [
-    "0 · ok · ages as of 2026-10-01",
-    "checks missing: release age (S2) and release branch (S8) not checked (undated releases)"
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "after the move: 0, ok (if Composer resolves it)",
+    "checks missing: release age (S2) not checked (undated releases); release branch (S8) incomplete (undated releases)"
   ],
   "partial": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
@@ -589,7 +590,7 @@
   "routing": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
-    "vulnerable 8: medium advisory CVE-2026-48784, the worst of 2 (tied with CVE-2026-45065); its own fix (composer update on 5.x) is reachable: no × 2",
+    "vulnerable 8: medium advisory CVE-2026-48784, the worst of 2 (tied with CVE-2026-45065); its own fix (upgrade on 5.x) is reachable: no × 2",
     "transitive: maintenance 16 ÷ 2 = 8",
     "maintenance (left-behind, halved for reach) alone grades it medium, the advisories alone grade it medium: together high",
     "without left-behind: 8, medium · without the advisories: 8, medium · without CVE-2026-48784: 16, high (tied: the others weigh the same)",
@@ -642,7 +643,7 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
     "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high",
-    "after the move: 16, high (if Composer resolves it)"
+    "after the move: at most 32, critical (if Composer resolves it)"
   ],
   "twig-1": [
     "48 · critical from 32 · ages as of 2026-10-01",
@@ -697,15 +698,13 @@
     "unreached: maintenance 20 ÷ 2 = 10",
     "maintenance alone makes it medium",
     "without left-behind: 8, medium (old-promise would lead) · without old-promise: 8, medium",
-    "after the move: 0, ok (if Composer resolves it)"
+    "after the move: at most 8, medium (if Composer resolves it)"
   ],
   "wp-config": [
-    "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "old-promise 16 leads: the strongest maintenance fact counts in full",
-    "stale 2: ¼ of 8, beside old-promise (correlated evidence)",
     "direct requirement: maintenance not halved for reach",
-    "maintenance alone makes it high",
-    "without old-promise: 8, medium (stale would lead) · without stale: 16, high"
+    "maintenance alone makes it high"
   ],
   "xmlseclibs": [
     "24 · high from 16 · 8 points short of critical · ages as of 2026-10-01",

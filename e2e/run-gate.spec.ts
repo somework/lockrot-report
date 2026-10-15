@@ -20,7 +20,7 @@ test.describe("report-2: the gate view prints gate.text as written", () => {
       "gate: fails · --fail-on=left-behind,vulnerable-high · 1 finding fails it (left-behind 1, vulnerable-high 1) · target php 8.4 (--target-php)",
     ],
     ["B-gate-none", "gate: off · --fail-on=none · target php 8.4 (--target-php)"],
-    ["pagerfanta", "gate: passes · --fail-on=high · no finding fails it · target php 8.4 (--target-php)"],
+    ["stale-accepted-dagger", "gate: passes · --fail-on=high · no finding fails it · target php 8.4 (--target-php)"],
   ] as const) {
     test(`${name}: in the overview lead and on the Run tab`, async ({ page }) => {
       await report.gotoReport2(name);

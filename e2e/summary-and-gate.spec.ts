@@ -75,8 +75,8 @@ test.describe("report-2: the overview band of design 3A", () => {
     await expect.poll(() => report.hash()).toContain("flag=stale");
   });
 
-  test("pagerfanta: nothing flagged says so, with no flag bar", async ({ page }) => {
-    await report.gotoReport2("pagerfanta");
+  test("stale-accepted-dagger: nothing flagged says so, with no flag bar", async ({ page }) => {
+    await report.gotoReport2("stale-accepted-dagger");
     await expect(overviewSurface(page)).toContainText("Nothing flagged in 1 package");
     await expect(flagBars(page)).toHaveCount(0);
   });

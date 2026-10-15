@@ -60,7 +60,7 @@
   "not-found-dagger": "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago; 2.x released 2.17.08.29 9.1 years ago and needs php >=7.1.",
   "ok-unchecked": "Your branch, 8.x, has no dated release; no higher branch.",
   "op-update": "Your branch, 2.x, had its last release, 2.0.3, 0.5 years ago; no higher branch.",
-  "pagerfanta": "Your branch, 3.x, had its last release, v3.8.0, 3.5 years ago; 4.x has v4.9.0 (undated) and needs php ^8.1, above your require.php.",
+  "pagerfanta": "Your branch, 3.x, had its last release, v3.8.0, 3.5 years ago; 4.x released v4.9.0 1.6 years ago and needs php ^8.1, above your require.php.",
   "partial": "Your branch, 9.x, had its last release, v9.52.22, 0.1 years ago; 10.x released v10.50.3 0.1 years ago and needs php ^8.1; 11.x released v11.57.0 less than three weeks ago and needs php ^8.2, above your require.php; 12.x released v12.69.3 less than three weeks ago and needs php ^8.2, above your require.php; 13.x released v13.34.0 less than three weeks ago and needs php ^8.3, above your require.php.",
   "partial-op-dagger": "Your branch, 2.x, had its last release, v2.13.0, 4.2 years ago; 3.x released v3.4.0 0.2 years ago and needs php >=8.1, above your require.php.",
   "php-null": "Your branch, 10.x, had its last release, 10.0.1, 3.5 years ago; 11.x released 11.0.0 2.5 years ago; 12.x released 12.0.0 1.6 years ago; 13.x released 13.1.0 0.6 years ago and needs php ^8.2, above your require.php.",
