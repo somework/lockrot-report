@@ -126,11 +126,6 @@
     grid-area: flags;
     min-width: 0;
   }
-  /* A pill wider than a phone's flags cell wraps inside its own border rather than push the row. */
-  .p2-flags .fp {
-    max-width: 100%;
-    white-space: normal;
-  }
   .p2-ly {
     grid-area: ly;
   }

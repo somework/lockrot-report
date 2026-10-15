@@ -1,18 +1,25 @@
 /* Flag pills (PD-ROWS-15..17): the word takes the band's tone, the qualifier stays in ink, so no
    qualifier depends on its colour. The accepted pill is dashed and grey and carries its word. */
+/* A pill wider than its cell (a phone, a mark) wraps inside its own border; its words never break. */
 .fp {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 5px;
+  max-width: 100%;
+  gap: 0 5px;
   padding: 0 6px;
   border: 1px solid color-mix(in srgb, var(--tone) 60%, transparent);
   border-radius: var(--radius-s);
   background: var(--tone-soft);
   color: var(--ink);
   font: 500 11.5px/18px var(--sans);
-  white-space: nowrap;
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
+}
+.fp-word,
+.fp-q,
+.fp-mark {
+  white-space: nowrap;
 }
 .fp-word {
   color: var(--tone);

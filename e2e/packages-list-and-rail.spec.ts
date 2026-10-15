@@ -369,7 +369,7 @@ test.describe("report-2: the All packages table", () => {
       await wrapFits(page);
       await noPageOverflow(page);
       await packagesRow(page, "symfony/yaml").click();
-      expect(await report.hash()).toContain("pkg=symfony%2Fyaml");
+      await expect(page).toHaveURL(/pkg=symfony%2Fyaml/);
     });
   }
 

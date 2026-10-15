@@ -122,7 +122,7 @@ test.describe("report-2: free text finds what the row shows", () => {
     ]);
     await expect(page.locator('[data-surface="findings"] .match-note')).toHaveCount(0);
     await expect(page.locator(".match-split")).toHaveCount(0);
-    expect(await report.hash()).toContain("q=Symfony%2F");
+    await expect(page).toHaveURL(/q=Symfony%2F/);
   });
 
   test("a #q= link loads with the list already narrowed, on All packages too", async () => {

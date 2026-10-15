@@ -24,9 +24,9 @@ export async function findingsRowCells(page: Page, pkg: string): Promise<string[
   return Promise.all(cells.map((cell) => findingsRowCell(page, pkg, cell)));
 }
 
-/** Each flag pill's text, in row order. */
-export async function rowPills(page: Page, pkg: string): Promise<string[]> {
-  return findingsRow(page, pkg).locator(".fp").allTextContents();
+/** The row's flag pills, in row order, for a web-first `toHaveText([...])`. */
+export function rowPills(page: Page, pkg: string): Locator {
+  return findingsRow(page, pkg).locator(".fp");
 }
 
 /** The age cell: its accessible name and its tooltip; null when the row draws no age. */

@@ -187,7 +187,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
     await report.toggleRailRow("stale");
 
     expect(await report.rows()).toEqual(["friendsofsymfony/oauth-server-bundle", "tubalmartin/cssmin"]);
-    expect(await report.hash()).toContain("flag=stale");
+    await expect(page).toHaveURL(/flag=stale/);
     await expect(page.getByRole("button", { name: /^stale \d+$/ })).toHaveAttribute("aria-pressed", "true");
   });
 
@@ -203,7 +203,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
   }) => {
     await report.gotoReport2("B-accepted-dagger");
     const before = await report.rows();
-    expect(await rowPills(page, "symfony/monolog-bridge")).toEqual([
+    await expect(rowPills(page, "symfony/monolog-bridge")).toHaveText([
       "vulnerable·1",
       "left-behind·accepted",
       "old-promise·accepted",
@@ -212,22 +212,22 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
     await report.toggleRailRow("Hide accepted flags");
 
     expect(await report.rows()).toEqual(before);
-    expect(await rowPills(page, "symfony/monolog-bridge")).toEqual(["vulnerable·1"]);
-    expect(await report.hash()).toContain("accepted=hide");
+    await expect(rowPills(page, "symfony/monolog-bridge")).toHaveText(["vulnerable·1"]);
+    await expect(page).toHaveURL(/accepted=hide/);
     await expect(page.locator("button.af-chip")).toHaveCount(0);
 
     await report.toggleRailRow("Hide accepted flags");
-    expect(await rowPills(page, "symfony/monolog-bridge")).toHaveLength(3);
+    await expect(rowPills(page, "symfony/monolog-bridge")).toHaveCount(3);
   });
 
   test("clear resets the flag filter and the accepted toggle", async ({ page }) => {
     await report.gotoReport2WithHash("B-accepted-dagger", "flag=vulnerable&accepted=hide");
-    expect(await rowPills(page, "symfony/monolog-bridge")).toEqual(["vulnerable·1"]);
+    await expect(rowPills(page, "symfony/monolog-bridge")).toHaveText(["vulnerable·1"]);
 
     await report.clear();
 
-    expect(await report.hash()).not.toContain("flag=");
-    expect(await rowPills(page, "symfony/monolog-bridge")).toHaveLength(3);
+    await expect(page).not.toHaveURL(/flag=/);
+    await expect(rowPills(page, "symfony/monolog-bridge")).toHaveCount(3);
   });
 
   test("sort: All packages opens in rank order; Score sorts highest first, then reverses", async ({
