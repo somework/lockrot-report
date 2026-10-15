@@ -240,3 +240,124 @@ export const ruleWhyWord = (id: string): string =>
 export function phpFloorWord(projectPhpLowest: string | null): string | null {
   return projectPhpLowest?.replace(/\.0$/, "") ?? null;
 }
+
+const ZERO_VERDICT_REASONS: Words = { allowlisted: "accepted by an allowlist", no_metadata: "no metadata" };
+
+/** Why a score of 0 earns a verdict; `null` for `otherwise`, which says nothing. */
+export function zeroVerdictReason(when: string): string | null {
+  if (when === "otherwise") return null;
+  return Object.hasOwn(ZERO_VERDICT_REASONS, when)
+    ? wordFor(ZERO_VERDICT_REASONS, when)
+    : readAsWords(when, "_");
+}
+
+/** The fixed words of the "How the score works" panel (SPEC §7.9.12). `{slot}` takes a value of `run.score_model`. */
+export const PANEL_WORDS = {
+  title: "How the score works · score model {id}",
+  bands: "Bands: {ruler}",
+  bandsCaption: "from {ratio_from} up, each band starts at {ratio} × the one below",
+  zero: "score 0: {zero}",
+  weights: "Weights: {weights}",
+  afterLead: "after the lead, {share}: {shares}",
+  anchor: "the previous release's bands: {bands}",
+  corroboration: "with corroboration at most {limits}",
+  advisories: "Advisories: {points}",
+  counts_as: "{id} {points} (counts as {counts_as})",
+  noReachableFix: "when no reachable fix: {points}",
+  factor: "× {factor}",
+  doubled: "doubled",
+  fixes: "Fixes: {fixes}",
+  floorsBelow: "{verdict} from {floor}",
+  none: "—",
+  sortJoin: ", then ",
+} as const;
+
+/**
+ * A rule's label, its caption and the example that follows the caption, keyed by rule id. A
+ * `{slot}` is a parameter or an `illustration` value of the rule; a template with an unfilled slot
+ * is left out, never printed with the slot.
+ */
+export const RULE_WORDS: Readonly<Record<string, { label: string; caption: string; example?: string }>> = {
+  counted: {
+    label: "counted",
+    caption:
+      "accepted facts are shown, never counted; an ignore[] entry's {accept_group} word also accepts the words below it",
+  },
+  "lead-first": { label: "lead in full", caption: "the strongest maintenance fact counts in full" },
+  "corroborating-share": {
+    label: "{share} for the rest",
+    caption: "correlated evidence",
+    example: "{lead} {weight} + {flag} {points}",
+  },
+  "advisory-points": { label: "advisory points", caption: "{basis}" },
+  "no-reachable-fix-multiplier": {
+    label: "× {factor}",
+    caption: "no reachable fix",
+    example: "{severity} {before} → {after}, {band_before} → {band_after}",
+  },
+  "security-max": {
+    label: "highest-scoring advisory",
+    caption: "one number per part",
+    example: "a second advisory adds nothing unless it scores more; ties by {tie_break}",
+  },
+  "divide-reach": {
+    label: "÷ {by} reach",
+    caption: "maintenance of a {when} package",
+    example: "{flag} {before} → {after}",
+  },
+  "security-exempt-from-reach": {
+    label: "not for security",
+    caption: "reach never halves security",
+    example: "a {reach} {severity} stays {total}",
+  },
+  sum: {
+    label: "sum",
+    caption: "parts add",
+    example:
+      "{maintenance} + {security} = {total}, {band}; {low_maintenance} + {low_security} = {low_total}, {low_band}",
+  },
+  "divide-dev": {
+    label: "÷ {by} dev",
+    caption: "packages-dev halves the whole score",
+    example: "{before} → {after}",
+  },
+  "floor-once": { label: "floor once", caption: "", example: "{exact} → {total}" },
+  "band-floors": {
+    label: "band floors",
+    caption: "from {ratio_from} up each floor is {ratio} × the one below",
+    example: "{floors}",
+  },
+  "zero-verdicts": { label: "zero verdicts", caption: "score 0 says why", example: "{zero}" },
+  sort: { label: "sort", caption: "{sort}" },
+  "gate-bounded-new": {
+    label: "gate",
+    caption: "with a baseline: min(score, {cap_multiplier} × new)",
+    example: "score {score}, new {new} → {gate}",
+  },
+  "baseline-cover": {
+    label: "cover",
+    caption: "a recorded flag covers itself and every flag after it in the {order}",
+  },
+};
+
+/** What an unknown rule id shows beside itself: the arithmetic its `kind` and parameters imply. */
+export const RULE_KIND_WORDS: Readonly<Record<string, string>> = {
+  share: "× {share}",
+  multiply: "× {factor}",
+  divide: "÷ {by} ({when})",
+  combine: "{op}",
+  band: "floors × {ratio} from {ratio_from}",
+  gate: "min(score, {cap_multiplier} × new)",
+  cover: "covers {covers}",
+  floor: "floor",
+  max: "max",
+};
+
+/** How a severity's points are read (`severities[].basis.points`), for the caption of the advisory-points rule. */
+export const SEVERITY_BASIS_WORDS: Readonly<Record<string, string>> = {
+  band_floor: "{ids} at their band floor",
+  counts_as: "{id} counts as {counts_as}",
+  share: "{id} {share} of {of}",
+};
+
+export const RULE_NOT_FOR_SECURITY_DEV = "packages-dev still halves it";
