@@ -1,61 +1,11 @@
 /**
- * The Why block's stacked bar and its band ruler (SPEC §7.9.8, §7.9.10) as layout: each segment's
- * share of `score_model.bar_max`, its band by lookup, and the band ticks. The page counts and lays
- * out here; every number comes from the score and its model.
+ * The Why block's band ruler (SPEC §7.9.8, §7.9.10) as layout: a tick at each band floor and a zone
+ * of each band's tone up to the next floor. The bar itself is `scoreBar()`'s, shared with the
+ * Findings rows.
  */
 
-import type { Run, ScoreGraded, Term } from "../model/report2";
-import { isTermSecurity } from "../model/report2";
-
-export interface BarSegment {
-  readonly flag: string;
-  readonly role: string;
-  readonly contribution: number;
-  /** The grade that tones the segment, by lookup in the model; null for a flag the model does not band. */
-  readonly band: string | null;
-  /** Percent of the track the segment fills, after the clip at `bar_max`. */
-  readonly width: number;
-  /** The segment crosses `bar_max` and is cut there. */
-  readonly cut: boolean;
-}
-
-export interface WhyBar {
-  readonly segments: readonly BarSegment[];
-  /** The score runs past `bar_max`: the bar shows its overflow mark. */
-  readonly over: boolean;
-}
-
-/** A maintenance term takes its flag's band; a security term its severity's band, or the no-fix band at × 2. */
-export function termBand(term: Term, run: Pick<Run, "score_model">): string | null {
-  const model = run.score_model;
-  if (isTermSecurity(term)) {
-    const severity = model.severities.find((s) => s.id === term.severity);
-    if (severity === undefined) return null;
-    return term.multiplier === 2 ? severity.band_no_reachable_fix : severity.band;
-  }
-  return model.flags.find((f) => f.id === term.flag)?.band ?? null;
-}
-
-export function whyBar(score: ScoreGraded, run: Pick<Run, "score_model">): WhyBar {
-  const max = run.score_model.bar_max;
-  let start = 0;
-  const segments: BarSegment[] = [];
-  for (const term of score.terms) {
-    const visible = Math.max(0, Math.min(term.contribution, max - start));
-    if (visible > 0) {
-      segments.push({
-        flag: term.flag,
-        role: term.role,
-        contribution: term.contribution,
-        band: termBand(term, run),
-        width: (visible / max) * 100,
-        cut: start + term.contribution > max,
-      });
-    }
-    start += term.contribution;
-  }
-  return { segments, over: start > max };
-}
+import type { Run } from "../model/report2";
+import type { ScoreBarLayout } from "./scoreBar";
 
 export interface RulerTick {
   readonly floor: number;
@@ -93,5 +43,5 @@ export function bandRuler(run: Pick<Run, "score_model">): BandRuler {
 }
 
 /** The legend lane as one line of text, for a reader who cannot see the bar: "left-behind 16, old-promise 4". */
-export const legendText = (bar: WhyBar): string =>
+export const legendText = (bar: ScoreBarLayout): string =>
   bar.segments.map((segment) => `${segment.flag} ${segment.contribution}`).join(", ");

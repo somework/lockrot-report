@@ -1,7 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { useId, useRef } from "preact/hooks";
-import type { DetailsEntry, Finding, Report2, Term } from "../../model/report2";
-import { isScoreGraded, isTermSecurity } from "../../model/report2";
+import type { DetailsEntry, Finding } from "../../model/report2";
 import { ageLine, ageNotRead } from "../../domain/ageLine";
 import { answerText } from "../../domain/findingAnswer";
 import { baselineSuffix } from "../../domain/baselineSuffix";
@@ -12,48 +11,20 @@ import { agesAsOf, DETAIL_WORDS, detailReach, REFERENCE_WORDS } from "../../doma
 import { feedsLine } from "../../domain/feedsLine";
 import { day } from "../../domain/format";
 import { safeHref } from "../../domain/links";
-import { hiddenByFilters2 } from "../../domain/list2";
+import { HIDE_ACCEPTED, hiddenByFilters2 } from "../../domain/list2";
 import { repositoryLine } from "../../domain/repositoryLine";
 import { TONE } from "../../domain/vocab";
-import { termBand } from "../../domain/whyBar";
 import { OutLink, toneClass } from "../common/common";
 import { useReport } from "../context";
 import { KeyValue, presentRows, type KeyValueRow } from "../detail/KeyValue";
 import { BranchTimeline2 } from "./BranchTimeline2";
 import { CopyMove } from "./CopyMove";
+import { FlagPills } from "./FlagPills";
 import { ScoreWhy } from "./ScoreWhy";
 import { SecurityRow2 } from "./SecurityRow2";
 import { useReport2 } from "./useReport2";
 import "../detail/detail.css";
 import "./detail2.css";
-
-// shortcut: a stand-in for the Findings PR's FlagPills.tsx (flag id in its band's tone, "accepted"
-// by its role id), until that PR merges and this slot switches to it.
-function FlagPillsPlaceholder({ finding, report }: { finding: Finding; report: Report2 }) {
-  const terms: readonly Term[] = isScoreGraded(finding.score) ? finding.score.terms : [];
-  const band = (id: string): string | null => {
-    const term = terms.find((t) => t.flag === id && (id !== "vulnerable" || isTermSecurity(t)));
-    return term === undefined ? null : termBand(term, report.run);
-  };
-  return (
-    <span className="d2-pills">
-      {finding.flags.map((flag) => (
-        <span
-          key={flag.id}
-          className={
-            flag.role === "accepted"
-              ? "d2-pill is-accepted"
-              : `d2-pill ${toneClass(TONE(band(flag.id) ?? ""))}`
-          }
-          title={flag.summary}
-        >
-          {flag.id}
-          {flag.role === "accepted" && <span className="d2-pill-q"> · {flag.role}</span>}
-        </span>
-      ))}
-    </span>
-  );
-}
 
 function Row({ label, children, id }: { label: string; children: ComponentChildren; id?: string }) {
   return (
@@ -146,7 +117,13 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
           </button>
         </div>
         <div className="detail-head-line">
-          <FlagPillsPlaceholder finding={finding} report={report} />
+          <span className="d2-pills">
+            <FlagPills
+              finding={finding}
+              run={run}
+              hideAccepted={state.filters.accepted.includes(HIDE_ACCEPTED)}
+            />
+          </span>
           <span className="d2-reach">{detailReach(finding)}</span>
         </div>
         {hiddenByFilters2(report, state, finding.package) && (

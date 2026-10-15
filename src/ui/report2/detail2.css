@@ -13,23 +13,6 @@
   flex-wrap: wrap;
   gap: 4px 5px;
 }
-.d2-pill {
-  display: inline-flex;
-  align-items: center;
-  font: 500 11.5px/18px var(--sans);
-  padding: 0 6px;
-  border-radius: var(--radius-s);
-  border: 1px solid color-mix(in srgb, var(--tone) 60%, transparent);
-  background: var(--tone-soft);
-  color: var(--tone);
-  white-space: nowrap;
-  print-color-adjust: exact;
-}
-.d2-pill.is-accepted {
-  background: transparent;
-  border: 1px dashed var(--border-strong);
-  color: var(--muted);
-}
 .d2-reach {
   margin-left: auto;
   font-size: 12px;
@@ -221,27 +204,14 @@
   font: 700 14px/18px var(--mono);
   color: var(--ink-2);
 }
-.d2-seg {
-  flex: none;
-  height: 100%;
-  /* Q7: a segment is at least 4 px wide, so its pattern still reads beside the 1 px separator. */
+/* The segments are ScoreBar's `.sbar-seg` (fill by role, forced-colours borders), at the sheet's width. */
+.d2-why-bar {
+  --row-bg: var(--surface);
+}
+.d2-why-bar .sbar-seg {
+  /* Q7: a segment is at least 4 px wide, so its pattern still reads beside the separator. */
   width: max(4px, var(--w));
-  background: var(--tone);
-  border-right: 1.5px solid var(--surface);
-  print-color-adjust: exact;
-}
-.d2-seg:last-child {
-  border-right: 0;
-}
-.d2-seg.is-corroborating {
-  background: repeating-linear-gradient(-45deg, var(--tone) 0 1.5px, var(--tone-soft) 1.5px 3.5px);
-  box-shadow: inset 0 0 0 1px var(--tone);
-}
-.d2-seg.is-security {
-  background:
-    radial-gradient(circle, var(--tone) 0 1px, transparent 1.3px) 0 0 / 4px 4px,
-    var(--tone-soft);
-  box-shadow: inset 0 0 0 1px var(--tone);
+  border-right-width: 1.5px;
 }
 .d2-why-legend {
   display: flex;
@@ -260,7 +230,7 @@
   font: 600 12px var(--mono);
   color: var(--ink);
 }
-.d2-swatch.d2-seg {
+.d2-swatch.sbar-seg {
   width: 16px;
   height: 10px;
   border: 0;
@@ -445,20 +415,6 @@
 
 /* ---------- forced colours: borders by role, no colour-only state ---------- */
 @media (forced-colors: active) {
-  .d2-seg,
-  .d2-seg.is-corroborating,
-  .d2-seg.is-security {
-    background: Canvas;
-    box-shadow: none;
-    border: 1px solid CanvasText;
-  }
-  .d2-seg.is-corroborating {
-    border-style: dashed;
-  }
-  .d2-seg.is-security {
-    border-style: dotted;
-    border-width: 2px;
-  }
   .d2-ruler-zones {
     display: none;
   }
@@ -467,12 +423,8 @@
     border-color: CanvasText;
   }
   .d2-why,
-  .d2-pill,
   .d2-after {
     border-color: CanvasText;
-  }
-  .d2-pill.is-accepted {
-    border-style: dashed;
   }
 }
 

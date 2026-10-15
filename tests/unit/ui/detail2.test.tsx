@@ -72,10 +72,10 @@ describe("the sheet in SPEC §7.9.8's order", () => {
     expect(sheet.querySelector(".d2-answer")?.textContent).toBe(golden("answer", "B"));
     expect(sheet.querySelector(".d2-reach")?.textContent).toBe("direct requirement");
     expect(sheet.querySelector(".pill")?.textContent).toBe("critical");
-    expect([...sheet.querySelectorAll(".d2-pill")].map((p) => p.textContent)).toEqual([
-      "left-behind",
-      "old-promise",
-      "vulnerable",
+    expect([...sheet.querySelectorAll(".d2-pills .fp")].map((p) => p.textContent)).toEqual([
+      "left-behind·6.9 y",
+      "old-promise·PHP 5",
+      "vulnerable·1",
     ]);
     expect(sheet.querySelectorAll("details.detail-reference:not([open])")).toHaveLength(2);
   });
@@ -133,10 +133,10 @@ describe("the Why block of design 2A", () => {
     expect(sheet.querySelector(".d2-why > p.vh")?.textContent).toBe(
       "left-behind 16, old-promise 4, vulnerable 16",
     );
-    expect([...figure.querySelectorAll(".d2-why-bar .d2-seg")].map((s) => s.className)).toEqual([
-      "d2-seg is-lead tone-high",
-      "d2-seg is-corroborating tone-high",
-      "d2-seg is-security tone-high",
+    expect([...figure.querySelectorAll(".d2-why-bar .sbar-seg")].map((s) => s.className)).toEqual([
+      "sbar-seg is-lead tone-high",
+      "sbar-seg is-corroborating tone-high",
+      "sbar-seg is-security tone-high",
     ]);
     expect([...figure.querySelectorAll(".d2-why-legend-item")].map((i) => i.textContent)).toEqual([
       "left-behind 16",

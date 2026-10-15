@@ -58,7 +58,7 @@ test("segment widths follow contribution over bar_max, with a 4 px floor", async
   const bar = why(sheet).locator(".d2-why-bar");
   const track = (await bar.boundingBox())?.width ?? 0;
   const widths = await bar
-    .locator(".d2-seg")
+    .locator(".sbar-seg")
     .evaluateAll((segs) => segs.map((s) => s.getBoundingClientRect().width));
 
   expect(widths).toHaveLength(3);
@@ -90,7 +90,7 @@ for (const colorScheme of ["light", "dark"] as const) {
     const sheet = await openDetail2(page, "B", B);
 
     const styles = await why(sheet)
-      .locator(".d2-why-bar .d2-seg")
+      .locator(".d2-why-bar .sbar-seg")
       .evaluateAll((segs) => segs.map((s) => getComputedStyle(s).borderTopStyle));
 
     expect(styles).toEqual(["solid", "dashed", "dotted"]);

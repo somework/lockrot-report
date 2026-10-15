@@ -3,11 +3,14 @@ import type { Finding, Report2 } from "../../model/report2";
 import { isScoreGraded } from "../../model/report2";
 import { DETAIL_WORDS, whyTitle } from "../../domain/detailWords";
 import { whyBlock, type WhyLineKind } from "../../domain/scoreWhy";
-import { bandRuler, legendText, whyBar, type BarSegment } from "../../domain/whyBar";
+import { gradeTone } from "../../domain/findingRow2";
+import { scoreBar } from "../../domain/scoreBar";
+import { bandRuler, legendText } from "../../domain/whyBar";
 import { TONE } from "../../domain/vocab";
 import { toneClass } from "../common/common";
 import { DisclosureButton, useDisclosure } from "../common/Disclosure";
 import { ScoreModelLink } from "./ScoreModelLink";
+import { segmentClass } from "./ScoreBar";
 
 export const WHY_KEY = "why-arithmetic";
 
@@ -16,15 +19,10 @@ const LEVEL_0: ReadonlySet<WhyLineKind> = new Set(["opening", "after-the-move"])
 
 const at = (name: string, x: number): Record<string, string> => ({ [name]: `${x}%` });
 
-function segmentClass(segment: BarSegment): string {
-  const tone = toneClass(TONE(segment.band ?? ""));
-  return `d2-seg is-${segment.role} ${tone}${segment.cut ? " is-cut" : ""}`;
-}
-
 function Bar({ finding, report }: { finding: Finding; report: Report2 }) {
   const { score } = finding;
   if (!isScoreGraded(score)) return null;
-  const bar = whyBar(score, report.run);
+  const bar = scoreBar(score, report.run);
   const ruler = bandRuler(report.run);
   return (
     <>
@@ -32,7 +30,11 @@ function Bar({ finding, report }: { finding: Finding; report: Report2 }) {
       <div className="d2-why-figure" aria-hidden="true">
         <div className={`d2-why-bar${bar.over ? " is-over" : ""}`} title={score.text}>
           {bar.segments.map((segment, i) => (
-            <span key={i} className={segmentClass(segment)} style={at("--w", segment.width)} />
+            <span
+              key={i}
+              className={segment.cut ? `${segmentClass(segment)} is-cut` : segmentClass(segment)}
+              style={at("--w", segment.width * 100)}
+            />
           ))}
         </div>
         <div className="d2-why-legend">
@@ -48,7 +50,7 @@ function Bar({ finding, report }: { finding: Finding; report: Report2 }) {
             {ruler.zones.map((zone) => (
               <i
                 key={zone.verdict}
-                className={toneClass(TONE(zone.verdict))}
+                className={toneClass(gradeTone(zone.verdict))}
                 style={{ ...at("--from", zone.from), ...at("--w", zone.width) }}
               />
             ))}
@@ -57,7 +59,7 @@ function Bar({ finding, report }: { finding: Finding; report: Report2 }) {
           {ruler.ticks.map((tick) => (
             <span
               key={tick.floor}
-              className={`d2-ruler-tick ${toneClass(TONE(tick.verdict))}`}
+              className={`d2-ruler-tick ${toneClass(gradeTone(tick.verdict))}`}
               style={at("--at", tick.at)}
             >
               {tick.floor} <em>{tick.verdict}</em>
