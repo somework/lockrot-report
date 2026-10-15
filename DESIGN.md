@@ -523,7 +523,9 @@ too narrow for its value wraps it, never an ellipsis.
 Opening a package there switches the list to three lines a row, and closing it back, so every row
 above the one acted on changes height. `ui/rowAnchor.ts` measures that row before a `select` is
 dispatched (a click, Enter, `j`/`k`, Close, Escape) and `App` scrolls the page by however far it
-moved before the browser paints, so it stays where the reader saw it (PD-ROWS-10). `html`'s
+moved before the browser paints, so it stays where the reader saw it (PD-ROWS-10). Near the end of
+a short page that scroll would pass the page's end, so `App` adds the missing height below the list
+(`--anchor-room`) until the next state change. `html`'s
 `scroll-padding-top` keeps a row brought into view clear of the sticky header and column head.
 
 **The summary band's lead** is the first five seconds: how many packages are flagged, out of how
@@ -541,7 +543,10 @@ Both columns are at most `--sticky-room` tall (`ui/app.css`): the viewport less 
 16px gap on each side. At the page's end the footer takes the bottom of the viewport, so while the
 footer is on screen `--sticky-room` also subtracts `--footer-h`, never below 50vh; `Footer.tsx`
 measures it and toggles `:root.footer-in-view` from an IntersectionObserver. Subtracting it only
-while the footer is visible keeps a usable column on a short viewport. Where the 50vh floor wins,
+while the footer is visible keeps a usable column on a short viewport. The columns' row is never
+shorter than the full `--sticky-room`, so a column that gives up the footer's height never shortens
+the page: on a short list the rail set the page's height, and reaching the footer shortened the page
+by the footer's height and slid every row down by as much (PD-ROWS-10). Where the 50vh floor wins,
 the panel's top slides under the header at the page's end, an accepted limitation (PD-DETAIL-5).
 
 `.shell-detail` (`is-side`/`is-sheet`) alone owns the detail's geometry and scrolling; `Detail`

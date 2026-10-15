@@ -387,6 +387,8 @@ html {
   max-width: var(--page-max);
   margin: 0 auto;
   padding: var(--gutter);
+  /* Set by `App.tsx#useRowAnchor` until the next state change (PD-ROWS-10). */
+  padding-bottom: calc(var(--gutter) + var(--anchor-room, 0px));
   display: grid;
   grid-template-columns: 210px minmax(0, 1fr) minmax(0, 420px);
   gap: 20px;
@@ -396,7 +398,8 @@ html {
      scroll the row ends exactly `--footer-h` above the viewport's bottom, so a column that tall would
      be dragged up under the topbar there; the rule below gives the footer's height back only while
      the footer is on screen (DESIGN.md §8, PD-DETAIL-5, `e2e/detail-scroll.spec.ts`). */
-  --sticky-room: calc(100vh - var(--topbar-h) - 32px);
+  --sticky-room-full: calc(100vh - var(--topbar-h) - 32px);
+  --sticky-room: var(--sticky-room-full);
 }
 /* ...but only once the footer is actually on screen (`Footer.tsx` sets the class from an
    IntersectionObserver). Subtracting it at every scroll position shrank both columns by 170-190px on
@@ -404,6 +407,14 @@ html {
    end of the page, at the cost of the panel's top sliding under the header there. */
 :root.footer-in-view .shell {
   --sticky-room: max(calc(100vh - var(--topbar-h) - var(--footer-h) - 32px), 50vh);
+}
+/* Never shorter than a full-height sticky column, so `footer-in-view` never shortens the page: that
+   clamped the scroll at the page's end and slid every row down with no action of the reader's
+   (PD-ROWS-10). */
+@media (min-width: 760px) {
+  .shell {
+    grid-template-rows: minmax(var(--sticky-room-full), auto);
+  }
 }
 /* Run data has nothing to filter, so the rail goes, and its column with it, or the list would
    inherit the rail's 210px and every value would wrap one character at a time. */
