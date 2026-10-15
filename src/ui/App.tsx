@@ -14,7 +14,7 @@ import { Header } from "./Header";
 import { decideKey, findRow, keyInputFrom, prevents, rowAt, rowPosition, type KeyDecision } from "./keyboard";
 import { NewerSchemaBanner } from "./NewerSchemaBanner";
 import { Rail } from "./rail/Rail";
-import { anchorShift, measureRow, type RowAnchor } from "./rowAnchor";
+import { anchorShift, measureRow, roomBelow, type RowAnchor } from "./rowAnchor";
 import { usePrintDocument } from "./print/usePrintDocument";
 import { pickCursor } from "./rowCursor";
 import { SearchBar } from "./search/SearchBar";
@@ -184,9 +184,14 @@ function useRowAnchor(
     [dispatch],
   );
   const keepInPlace = useCallback(() => {
+    const root = document.documentElement;
+    root.style.removeProperty("--anchor-room");
     const shift = anchorShift(document, anchor.current);
     anchor.current = null;
-    if (shift !== 0) window.scrollBy(0, shift);
+    if (shift === 0) return;
+    const room = roomBelow(shift, window.scrollY, root.scrollHeight - window.innerHeight);
+    if (room > 0) root.style.setProperty("--anchor-room", `${Math.ceil(room)}px`);
+    window.scrollBy(0, shift);
   }, []);
 
   return [anchored, keepInPlace];
