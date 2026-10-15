@@ -1,0 +1,17 @@
+/* A published range can list every minor line: two lines here, the whole range in the detail sheet. */
+.advisories2 .ac2-range {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+@media print {
+  .advisories2 .ac2-range {
+    display: inline;
+    -webkit-line-clamp: none;
+    line-clamp: none;
+  }
+}

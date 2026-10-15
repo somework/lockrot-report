@@ -247,13 +247,18 @@ describe("fitFilters2", () => {
 });
 
 describe("renderedPackages2", () => {
-  it("walks the Findings and All packages rows and no other tab", () => {
+  it("walks the Findings, All packages and Advisories rows", () => {
     expect(renderedPackages2(composite, state({}, { verdict: ["low"] }), "findings")).toEqual([
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
     ]);
     expect(renderedPackages2(composite, state(), "packages")).toEqual(BY_RANK);
-    expect(renderedPackages2(composite, state(), "advisories")).toEqual([]);
+    expect(renderedPackages2(composite, state(), "advisories")).toEqual([
+      "symfony/polyfill-intl-idn",
+      ...Array<string>(3).fill("symfony/yaml"),
+      "symfony/monolog-bridge",
+      ...Array<string>(15).fill("twig/twig"),
+    ]);
     expect(renderedPackages2(composite, state(), "radius")).toEqual([]);
   });
 });
