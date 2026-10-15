@@ -106,7 +106,8 @@ describe("the overview band's grade chips and waffle", () => {
     render(<App model={composite()} />);
 
     // composite grades 3 critical, 2 high, 0 medium, 2 low.
-    const grades = within(screen.getByRole("group", { name: "Grade" }));
+    const band = within(screen.getByRole("region", { name: "Overview" }));
+    const grades = within(band.getByRole("group", { name: "Grade" }));
     expect(grades.getByRole("button", { name: "medium 0" }).className).toContain("legend-btn-dim");
     expect(grades.getByRole("button", { name: "high 2" }).className).not.toContain("legend-btn-dim");
   });
