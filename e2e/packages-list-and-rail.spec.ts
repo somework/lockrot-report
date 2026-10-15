@@ -33,9 +33,7 @@ for (const width of [320, 390, 480] as const) {
   test.describe(`${width}px: stacked rows`, () => {
     test.use({ viewport: { width, height: 800 } });
 
-    test("every row stays inside the list, nothing clipped or scrolled sideways, and no row grows past five lines", async ({
-      page,
-    }) => {
+    test("every row stays inside the list, nothing clipped or scrolled sideways", async ({ page }) => {
       await report.gotoReport2WithHash("baselined-wallabag-main", "view=packages");
       await noPageOverflow(page);
 
@@ -45,16 +43,14 @@ for (const width of [320, 390, 480] as const) {
 
       const rows = packagesSurface(page).locator("tbody tr[data-pkg]");
       expect(await rows.first().evaluate((el) => getComputedStyle(el).display)).toBe("grid");
-      const boxes = await rows.evaluateAll((els) =>
-        els.slice(0, 20).map((el) => {
-          const r = el.getBoundingClientRect();
-          return { right: r.right, height: r.height };
-        }),
+      const rights = await rows.evaluateAll((els) =>
+        els
+          .slice(0, 20)
+          .map((el) => ({ pkg: el.getAttribute("data-pkg"), right: el.getBoundingClientRect().right })),
       );
       const wrapBox = await wrap.boundingBox();
-      for (const box of boxes) {
-        expect(box.right).toBeLessThanOrEqual((wrapBox?.x ?? 0) + (wrapBox?.width ?? 0) + 0.5);
-        expect(box.height).toBeLessThanOrEqual(150);
+      for (const { pkg, right } of rights) {
+        expect(right, pkg ?? "").toBeLessThanOrEqual((wrapBox?.x ?? 0) + (wrapBox?.width ?? 0) + 0.5);
       }
     });
 

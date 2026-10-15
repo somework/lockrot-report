@@ -204,7 +204,9 @@ test.describe("PD-ROWS-11: keyboard focus follows the selection", () => {
     expect(await report.isSearchFocused()).toBe(true);
   });
 
-  test("Tab reaches one row of the list, then its own links, then leaves the list for the detail", async () => {
+  test("Tab reaches one row of the list, then its own links, then leaves the list for the detail", async ({
+    page,
+  }) => {
     // Every row, and each Findings row's signal link, used to be a Tab stop of its own.
     const rows = await report.rows();
     expect(rows.length).toBeGreaterThan(1);
@@ -214,12 +216,14 @@ test.describe("PD-ROWS-11: keyboard focus follows the selection", () => {
     const stops = await report.listTabStops();
     expect(new Set(stops)).toEqual(new Set([rows[1]]));
 
+    // Firefox gives the detail's scroll container a Tab stop of its own once its content scrolls.
+    const inDetail = () => page.evaluate(() => document.activeElement?.closest(".shell-detail") != null);
     let tabs = 0;
-    while (!(await report.isFocusInDetail()) && tabs < stops.length + 1) {
+    while (!(await inDetail()) && tabs < stops.length + 1) {
       await report.pressTab();
       tabs += 1;
     }
-    expect(await report.isFocusInDetail()).toBe(true);
+    expect(await inDetail()).toBe(true);
     expect(tabs).toBeLessThanOrEqual(stops.length);
   });
 });
