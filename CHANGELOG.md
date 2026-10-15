@@ -8,6 +8,121 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ## [Unreleased]
 
+## [0.14.0-rc.1]
+
+The page lockrot 0.14.0 writes with `--format=html`, first release candidate. lockrot 0.14 grades
+each package by a score built from the flags that fired on it, and this page draws that score.
+
+### Breaking
+
+- The page reads lockrot 0.14 reports (report schema 2) only. A report from an older lockrot, or a
+  document that names no schema, no longer renders. A screen takes the report's place. It says
+  "This report is older than this page", names the lockrot that wrote it, and gives two ways out.
+  "Rerun lockrot 0.14" shows `composer require --dev somework/lockrot` and `composer lockrot`.
+  "Open it with lockrot-report 0.13" links the v0.13.0 release, which reads the report as written.
+  `manifest.json` lists `schema.report` as `[2]`, so a vendoring tool sees the change first.
+
+### Added
+
+- Each Findings row leads with its score and a score bar. The bar has one segment per term of the
+  score, as wide as the term's share of the scale. A segment is solid for the flag that decides,
+  hatched for a flag that corroborates and dotted for an advisory. Its tone is the band lockrot
+  gives it. A score past the scale ends in "›", and the number beside the bar is the total. The
+  bar's tooltip is lockrot's own score sentence. The grade is the group's head and the score's
+  tone, so the row has no verdict column. From 990px of list a row is one line, below it three.
+- Band ticks: the floor of each grade runs down every bar as a dashed guide, and the column head
+  captions them ("Score 0 8 16 32"). In an open package the ruler draws every floor with its
+  grade's word under it.
+- Flag pills: one pill per flag that fired, the flag in its tone, then what it rests on ("6.9 y",
+  "PHP 5", "archived", "snapshot", the advisory count). A vulnerable package with no fixing release,
+  or none that runs on the target PHP, says so on its pill. It names the advisory that decides.
+- A flag the allowlist accepts is a grey dashed pill, last, that reads "accepted". Its tooltip
+  gives the reason and the expiry. A package whose every maintenance flag is accepted says
+  "maintenance accepted" after its pills.
+- Against a baseline each pill ends with its mark: a tick for known or covered, and a dot with the
+  word for "new", "re-rated" and "fix lost".
+- The flag ledger in the summary band: one bar per flag that fired, in lockrot's flag order. Each
+  bar splits by the grades of its packages ("graded critical 2 · low 2") and filters the list.
+  Under the ledger the band says how many packages carry more than one flag, how deep the flagged
+  packages sit, and what the allowlist accepts.
+- The lead counts the packages by grade, with a chip per grade beside the waffle. Under them it
+  prints lockrot's own gate sentence, marked "✓" or "✕".
+- The Security block counts the advisories and the packages they sit on. It draws a square per
+  advisory in its severity's tone under "Advisories by severity", and counts the packages by what
+  the fix takes. It closes with "Update now", the command lockrot publishes for the advisories, in
+  the copy control.
+- The open package explains its score in "Why <grade>". The heading gives the score, the grade's
+  floor and the date the ages are counted from. The bar follows at full width with each segment
+  named, then the ruler. The block says first what decides the grade and where the move would
+  leave it.
+- "Show the arithmetic" opens the rest of the Why block: every term, the halvings, what each flag
+  would change if it were gone, and the checks that did not run. A score of 0 shows every line. The
+  lines are the bar's text, and a screen reader reads them in the bar's place.
+- A copy control under the open package's answer. "Copy" puts the move's commands on the
+  clipboard. The shell button opens a menu of POSIX, cmd.exe and PowerShell, and each item previews
+  the command quoted for that shell. The page keeps the choice for the next visit. A screen reader
+  hears "Copied" once.
+- The advisory line of an open package lists every branch that fixes it, lowest first. The branch
+  of the move is marked, and each branch says what the package grades after it. Level 0 shows the
+  first branch and "3 more ways out: 6.x, 7.x and 8.x".
+- "How the score works" opens the Run tab, from the run's score model. It shows the ruler with the
+  grade words, the weights, the advisory table and the fix kinds. "The N rules" lists each rule
+  with a link to its lockrot.dev page, muted where no package used it.
+- A live example under "How the score works" gives a package's score in words and with its bar.
+  It takes the package that was open when you changed tab, else the highest ranked one. With
+  nothing flagged it says "No package is flagged in this report.". "How the score works ›" leads
+  there from an open package and from the glossary.
+- The rail gains "Severity" and "Fix" groups, each row counting the packages it lists. It also
+  gains "Accepted flags", a toggle that hides the accepted pills and filters no package
+  (`#accepted=hide`). Flags filter the list too (`#flag=stale`).
+- Search reads `flag:`, `lead:`, `verdict:` (`priority:` alike) and `score:>=16` (also `>`, `<=`,
+  `<` and `=`).
+- A report the page cannot read, or one that breaks the page as it draws, shows a screen that says
+  so instead of a blank page.
+
+### Changed
+
+- Release branches are drawn from what lockrot publishes for each branch: its newest release, how
+  long ago it released, and the PHP it needs. The sentence above the timeline is lockrot's. The
+  page no longer works out which branch your PHP can take.
+- All packages also sorts by score, flags or age. It shows a lower bound as "≥", read as "at
+  least", and an unmeasured value as "—" with the reason.
+- The Advisories tab groups advisories by what the fix takes and to which branch. Each fix says
+  the PHP it needs and what holds it. A row gives the date the advisory was reported.
+- "No advisory affects this lock." shows only after a complete lookup. Otherwise the tab says what
+  the lookup missed under a "Check incomplete" tag. The Advisories tab then marks its count with a
+  ring and adds ", check incomplete" to its name.
+- Blast radius places each flagged package under every direct requirement its chain runs through.
+  An open row's tree shows each package's flags and score. One sentence names the flagged packages
+  that too many requirements share to list under one.
+- Libyears reads as one line: the total, the direct requirements' share, the furthest behind, and
+  one "N not measured" per cause. Every number has two decimals. With no package measured it says
+  so.
+- The glossary lists the grades and the flags of the run. Each grade reads "A score from" its
+  floor. Each flag names the signals that raise it and this run's thresholds.
+- The header, the footer and paper read the lockrot version, the date and the target PHP of the
+  report. The header's gate fact reads lockrot's gate.
+- Printing renders every section as on screen, the score bars included. Each printed Findings group
+  opens with the score scale.
+- In forced colours each score segment keeps a border that says its role. A wide segment prints its
+  number. The ticks and the overflow mark stay visible.
+- A link from the 0.13 page opens on the new terms: `#prio=` as `#verdict=`, and a flag in
+  `#verdict=` as `#flag=`.
+- Numbers round a tie to the even digit, as lockrot does (2.25 reads 2.2).
+
+### Security
+
+- The copy control and "Update now" print a command only when every argument passes lockrot's
+  command argument rule. The rule takes `composer` with `update`, `require` or `why-not`, and
+  each argument from a fixed set of characters. `--no-update` is the only argument that starts with
+  a dash.
+- A report file can be edited. So a command that fails the rule shows "This command holds
+  characters the page does not print." in place of every step, on every shell. The menu previews
+  nothing, and the Copy button is hidden. PowerShell always reads `composer --%` and the cmd.exe
+  form of the rest.
+- A package name goes into a command in the open package's answer only when it passes the same
+  rule. Otherwise the answer keeps its words and names no command.
+
 ## [0.13.0]
 
 The page lockrot 0.13.0 writes with `--format=html`.
