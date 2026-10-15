@@ -106,6 +106,11 @@ describe("the copy summary at its edges", () => {
 });
 
 describe("the Libyears panel at its edges", () => {
+  const none = (report: Report2): Report2["libyears"]["unmeasured"] =>
+    Object.fromEntries(
+      Object.keys(report.libyears.unmeasured).map((key) => [key, 0]),
+    ) as Report2["libyears"]["unmeasured"];
+
   test("says at least when a package is only bounded from below", () => {
     const report = composite();
     report.libyears = {
@@ -117,8 +122,8 @@ describe("the Libyears panel at its edges", () => {
       },
     };
 
-    expect(libyearsPanel(report)).toBe(
-      "at least 17.85 libyears over 5 packages · furthest behind: symfony/monolog-bridge v2.6.13, at least 10.62",
+    expect(libyearsPanel(report)).toMatch(
+      /^at least 17\.85 libyears over 5 packages · 17\.85 from direct requirements · furthest behind: symfony\/monolog-bridge v2\.6\.13, 10\.62 or more · /,
     );
   });
 
@@ -126,7 +131,36 @@ describe("the Libyears panel at its edges", () => {
     const report = composite();
     report.libyears = { ...report.libyears, furthest_behind: null };
 
-    expect(libyearsPanel(report)).toBe("17.85 libyears over 5 packages");
+    expect(libyearsPanel(report)).not.toContain("furthest behind");
+  });
+
+  test("writes one clause per unmeasured key above zero, in the document's key order, with two decimals", () => {
+    const report = composite();
+    report.libyears = {
+      ...report.libyears,
+      total: 2.125,
+      direct_requirements: 0,
+      furthest_behind: null,
+      unmeasured: { ...none(report), undated: 2, not_found: 1 },
+    };
+
+    expect(libyearsPanel(report)).toBe(
+      "2.12 libyears over 5 packages · 0.00 from direct requirements · 1 not measured (not in the repository) · 2 not measured (no date)",
+    );
+  });
+
+  test("says no package measured, and keeps the unmeasured clauses, when nothing was measured", () => {
+    const report = composite();
+    report.libyears = {
+      ...report.libyears,
+      total: null,
+      direct_requirements: null,
+      measured: 0,
+      furthest_behind: null,
+      unmeasured: { ...none(report), undated: 3 },
+    };
+
+    expect(libyearsPanel(report)).toBe("no package measured · 3 not measured (no date)");
   });
 });
 
