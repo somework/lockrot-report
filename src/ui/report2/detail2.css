@@ -1,10 +1,441 @@
-.d2-head {
+/*
+ * The report-2 detail sheet (SPEC §7.9.8). Layout and scrolling are `.detail`'s (detail.css); every
+ * class here is prefixed `d2-`. Colour comes from the tone pairs and the surface tokens only, so
+ * both themes follow tokens.css.
+ */
+
+/* ---------- header ---------- */
+.d2 .detail-head-top > .pill {
+  align-self: center;
+}
+.d2-pills {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 12px;
-  align-items: baseline;
+  gap: 4px 5px;
+}
+.d2-reach {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--ink-2);
 }
 
-.d2-head .detail-close {
+/* ---------- lead: the as-of line, the answer, the copy control ---------- */
+.d2-body {
+  gap: 18px;
+}
+.d2-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.d2-asof {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.d2-answer {
+  margin: 0;
+  font: 16px/1.45 var(--serif);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.d2-copy {
+  position: relative;
+  margin-top: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-m);
+  background: var(--bg);
+}
+.d2-copy-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.d2-copy-bar .eyebrow {
+  margin-right: auto;
+  font-size: 10px;
+}
+.d2-btn {
+  font: 500 12px var(--sans);
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-s);
+  padding: 3px 9px;
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+.d2-btn:hover {
+  border-color: var(--border-strong);
+  color: var(--ink);
+}
+.d2-btn:active {
+  background: var(--surface-3);
+}
+.d2-shell-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+}
+.d2-shell-btn::after {
+  content: "";
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  transition: transform 0.15s ease;
+}
+.d2-shell-btn[aria-expanded="true"]::after {
+  transform: rotate(180deg);
+}
+.d2-shell-menu {
+  position: absolute;
+  right: 6px;
+  top: 34px;
+  z-index: 5;
+  width: min(300px, calc(100% - 12px));
+  display: grid;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow);
+}
+.d2-shell-menu[hidden] {
+  display: none;
+}
+.d2-shell-opt {
+  position: relative;
+  display: grid;
+  gap: 1px;
+  text-align: left;
+  border: 0;
+  background: none;
+  padding: 6px 8px 6px 26px;
+  border-radius: 5px;
+  font: 500 12.5px var(--sans);
+  color: var(--ink);
+  cursor: pointer;
+}
+.d2-shell-opt small {
+  font: 11px var(--mono);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.d2-shell-opt:hover,
+.d2-shell-opt:focus-visible {
+  background: var(--surface-2);
+}
+.d2-shell-opt[aria-checked="true"]::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 11px;
+  width: 8px;
+  height: 4px;
+  border-left: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+  transform: rotate(-45deg);
+}
+.d2-copy-cmd {
+  margin: 0;
+  padding: 8px 10px;
+  font: 12px/1.55 var(--mono);
+  color: var(--ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.d2-copy-line {
+  display: block;
+}
+.d2-copy-line.is-refused {
+  font-family: var(--sans);
+  color: var(--crit);
+}
+
+/* ---------- Why <verdict> ---------- */
+.d2-why {
+  gap: 8px;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--tone);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+}
+.d2-why-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2px 12px;
+}
+.d2-why-head > h3 {
+  margin: 0;
+  font: 600 11px var(--cond);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.d2-why-header {
+  font: 12.5px var(--sans);
+  color: var(--ink-2);
+}
+.d2-why-figure {
+  display: grid;
+  gap: 6px;
+}
+.d2-why-bar {
+  position: relative;
+  display: flex;
+  height: 18px;
+  overflow: hidden;
+}
+.d2-why-bar.is-over::after {
+  content: "›";
+  position: absolute;
+  right: 0;
+  top: 0;
+  font: 700 14px/18px var(--mono);
+  color: var(--ink-2);
+}
+/* The segments are ScoreBar's `.sbar-seg` (fill by role, forced-colours borders), at the sheet's width. */
+.d2-why-bar {
+  --row-bg: var(--surface);
+}
+.d2-why-bar .sbar-seg {
+  /* Q7: a segment is at least 4 px wide, so its pattern still reads beside the separator. */
+  width: max(4px, var(--w));
+  border-right-width: 1.5px;
+}
+.d2-why-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 14px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.d2-why-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.d2-why-legend-item b {
+  font: 600 12px var(--mono);
+  color: var(--ink);
+}
+.d2-swatch.sbar-seg {
+  width: 16px;
+  height: 10px;
+  border: 0;
+}
+
+.d2-ruler {
+  position: relative;
+  height: 36px;
+  print-color-adjust: exact;
+}
+.d2-ruler-zones i {
+  position: absolute;
+  top: 0;
+  height: 4px;
+  left: var(--from);
+  width: var(--w);
+  background: var(--tone-soft);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--tone) 45%, transparent);
+}
+.d2-ruler-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--at);
+  padding: 6px 0 0 3px;
+  border-left: 1px solid var(--border-strong);
+  font: 10.5px/1.1 var(--mono);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.d2-ruler-tick em {
+  display: block;
+  font: normal 10.5px/1.3 var(--sans);
+  color: var(--tone);
+}
+.d2-ruler-tick.is-start {
+  left: 0;
+}
+.d2-ruler-tick.is-end {
+  left: auto;
+  right: 0;
+  border-left: 0;
+  border-right: 1px solid var(--border-strong);
+  padding: 6px 3px 0 0;
+}
+
+.d2-why-lines {
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 3px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.d2-why-line {
+  position: relative;
+  padding-left: 12px;
+}
+.d2-why-line::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 5px;
+  height: 1px;
+  background: var(--border-strong);
+}
+.d2-why-line.is-opening,
+.d2-why-line.is-after-the-move {
+  color: var(--ink);
+}
+.d2-why-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px 14px;
+  font-size: 12px;
+}
+.d2-why-foot .score-model-link {
   margin-left: auto;
+}
+
+/* ---------- the rows: a label column beside the golden line ---------- */
+.d2-rows {
+  display: grid;
+  border-top: 1px solid var(--border);
+}
+.d2-row {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 4px 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.d2-row-label {
+  margin: 0;
+  font: 600 10.5px/19px var(--cond);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.d2-row-value {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+.d2-row-text {
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.d2-row-note {
+  font-size: 12px;
+  color: var(--muted);
+}
+@media (max-width: 480px) {
+  .d2-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .d2-ruler-tick,
+  .d2-ruler-tick em {
+    font-size: 9.5px;
+  }
+}
+
+/* ---------- the Security ladder ---------- */
+.d2-ignored {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.d2-ladder {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.d2-rung {
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-s);
+  background: var(--bg);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.d2-rung.is-move {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.d2-rung-branch {
+  font: 600 12.5px var(--mono);
+  color: var(--ink);
+}
+.d2-after {
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0 5px;
+  border-radius: 3px;
+  background: var(--tone-soft);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 50%, transparent);
+  print-color-adjust: exact;
+}
+.d2-more {
+  justify-self: start;
+  white-space: normal;
+  text-align: left;
+  font-size: 12.5px;
+}
+
+.d2-timeline {
+  margin-top: 2px;
+}
+
+/* ---------- forced colours: borders by role, no colour-only state ---------- */
+@media (forced-colors: active) {
+  .d2-ruler-zones {
+    display: none;
+  }
+  .d2-ruler-tick,
+  .d2-ruler-tick.is-end {
+    border-color: CanvasText;
+  }
+  .d2-why,
+  .d2-after {
+    border-color: CanvasText;
+  }
+}
+
+/* ---------- print: everything open, the patterns kept ---------- */
+@media print {
+  .d2-copy-bar .d2-btn,
+  .d2-shell-menu {
+    display: none;
+  }
+  .d2-why-bar,
+  .d2-why-legend {
+    print-color-adjust: exact;
+  }
 }

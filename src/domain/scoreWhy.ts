@@ -225,43 +225,75 @@ function partialLines(finding: Finding): string[] {
   ];
 }
 
-function gradedLines(finding: Finding, score: ScoreGraded, report: WhyReport): string[] {
+/** What a Why line says, so the sheet can show the opening and the move at once and the arithmetic on click. */
+export type WhyLineKind =
+  | "header"
+  | "rounding"
+  | "term"
+  | "halving"
+  | "not-judged"
+  | "opening"
+  | "counterfactuals"
+  | "after-the-move"
+  | "partial"
+  | "checks-missing"
+  | "checks-skipped"
+  | "accepted"
+  | "abandoned-marking";
+
+export interface WhyLine {
+  readonly kind: WhyLineKind;
+  readonly text: string;
+}
+
+const tagged = (kind: WhyLineKind, texts: readonly string[]): WhyLine[] =>
+  texts.map((text) => ({ kind, text }));
+
+function gradedLines(finding: Finding, score: ScoreGraded, report: WhyReport): WhyLine[] {
   const run = report.run;
   const notJudged = maintenanceNotJudged(finding);
   const counterfactuals = score.without.map((row) => withoutRow(finding, score, row));
   return [
-    header(finding, score, report),
-    ...(score.rounded_down ? [`${score.exact}, rounded down to ${score.total}`] : []),
-    ...score.terms.map((t) =>
-      isTermSecurity(t) ? securityTermLine(finding, score, t, run) : maintenanceTermLine(finding, t, run),
+    ...tagged("header", [header(finding, score, report)]),
+    ...tagged("rounding", score.rounded_down ? [`${score.exact}, rounded down to ${score.total}`] : []),
+    ...tagged(
+      "term",
+      score.terms.map((t) =>
+        isTermSecurity(t) ? securityTermLine(finding, score, t, run) : maintenanceTermLine(finding, t, run),
+      ),
     ),
-    ...modifierLines(finding, score),
-    ...(notJudged ? [notJudgedLine(finding)] : []),
-    openingLine(finding, score, run),
-    ...(counterfactuals.length > 0 ? [counterfactuals.join(" · ")] : []),
-    ...afterMoveLines(finding, score),
-    ...partialLines(finding),
-    ...checksMissingLines(finding, run),
-    ...checksSkippedLines(finding, { metadataSaid: notJudged }),
-    ...acceptedLines(finding),
-    ...abandonedMarkingLines(finding),
+    ...tagged("halving", modifierLines(finding, score)),
+    ...tagged("not-judged", notJudged ? [notJudgedLine(finding)] : []),
+    ...tagged("opening", [openingLine(finding, score, run)]),
+    ...tagged("counterfactuals", counterfactuals.length > 0 ? [counterfactuals.join(" · ")] : []),
+    ...tagged("after-the-move", afterMoveLines(finding, score)),
+    ...tagged("partial", partialLines(finding)),
+    ...tagged("checks-missing", checksMissingLines(finding, run)),
+    ...tagged("checks-skipped", checksSkippedLines(finding, { metadataSaid: notJudged })),
+    ...tagged("accepted", acceptedLines(finding)),
+    ...tagged("abandoned-marking", abandonedMarkingLines(finding)),
   ];
 }
 
-function zeroLines(finding: Finding, report: WhyReport): string[] {
+function zeroLines(finding: Finding, report: WhyReport): WhyLine[] {
   return [
-    header(finding, null, report),
-    ...(finding.verdict === "unknown" ? [notJudgedLine(finding)] : []),
-    ...acceptedLines(finding),
-    ...checksMissingLines(finding, report.run),
-    ...checksSkippedLines(finding, { acceptedOnly: true }),
-    ...abandonedMarkingLines(finding),
+    ...tagged("header", [header(finding, null, report)]),
+    ...tagged("not-judged", finding.verdict === "unknown" ? [notJudgedLine(finding)] : []),
+    ...tagged("accepted", acceptedLines(finding)),
+    ...tagged("checks-missing", checksMissingLines(finding, report.run)),
+    ...tagged("checks-skipped", checksSkippedLines(finding, { acceptedOnly: true })),
+    ...tagged("abandoned-marking", abandonedMarkingLines(finding)),
   ];
 }
 
-/** The lines of the "Why <verdict>" block (SPEC §7.9.8), header first; the bar and its ruler are drawn apart. */
-export function whyLines(finding: Finding, report: WhyReport): string[] {
+/** The lines of the "Why <verdict>" block (SPEC §7.9.8) with their kinds, header first; the bar and its ruler are drawn apart. */
+export function whyBlock(finding: Finding, report: WhyReport): WhyLine[] {
   return isScoreGraded(finding.score)
     ? gradedLines(finding, finding.score, report)
     : zeroLines(finding, report);
+}
+
+/** The lines of the "Why <verdict>" block as text, header first. */
+export function whyLines(finding: Finding, report: WhyReport): string[] {
+  return whyBlock(finding, report).map((line) => line.text);
 }

@@ -4,7 +4,8 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { FIXTURES } from "./support/pages";
+import { FIXTURES, report2Url } from "./support/pages";
+import { openDetail2 } from "./support/report2/detail";
 
 /** fixtures/bundles/wallabag_wallabag.json: two advisories plus two signals — the fix ladder, the
  *  advisory list, the signal rows and the three reference sections make the panel taller than the
@@ -238,5 +239,48 @@ test.describe("switching the open package resets the detail's scroll", () => {
     // stands between this and the old package's scroll position carrying over.
     await report.openPackage(OTHER_PACKAGE);
     expect(await container.evaluate((el) => el.scrollTop)).toBe(0);
+  });
+});
+
+test.describe("report-2: the sheet scrolls alone", () => {
+  for (const { label, width, height } of SHEET_BREAKPOINTS) {
+    test.describe(label, () => {
+      test.use({ viewport: { width, height } });
+
+      test("wheel over B's sheet scrolls it alone, never the page", async ({ page }) => {
+        await openDetail2(page, "B", "symfony/monolog-bridge");
+        const container = scrollContainer(page);
+        await expect(container).toBeVisible();
+        const scrollable = await container.evaluate((el) => el.scrollHeight - el.clientHeight);
+        expect(scrollable).toBeGreaterThan(0);
+
+        const before = await scrollYAfterHover(page, container);
+        // Firefox spends one wheel event's delta in steps, so the gesture is a few events, capped.
+        for (let i = 0; i < 10 && (await container.evaluate((el) => el.scrollTop)) < scrollable; i++) {
+          await page.mouse.wheel(0, 1500);
+          await page.waitForTimeout(150);
+        }
+
+        await expect.poll(() => container.evaluate((el) => el.scrollTop)).toBe(scrollable);
+        expect(await page.evaluate(() => window.scrollY)).toBe(before);
+      });
+    });
+  }
+
+  test.describe("1440×900 (side)", () => {
+    test.use({ viewport: { width: 1440, height: 900 } });
+
+    test("opening another composite row returns .shell-detail to the top", async ({ page }) => {
+      await page.goto(`${report2Url("composite")}#pkg=${encodeURIComponent("symfony/monolog-bridge")}`);
+      const container = scrollContainer(page);
+      await container.hover();
+      await page.mouse.wheel(0, 400);
+      await expect.poll(() => container.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+
+      await page.getByRole("listitem", { name: "twig/twig", exact: true }).click();
+
+      await expect(page.getByRole("complementary", { name: "twig/twig" })).toBeVisible();
+      await expect.poll(() => container.evaluate((el) => el.scrollTop)).toBe(0);
+    });
   });
 });
