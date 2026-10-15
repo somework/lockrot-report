@@ -50,7 +50,7 @@ test("the link of a Why block shows that finding's score", async ({ page }) => {
 test("a report that grades nothing says so, draws no bar, and keeps the rules' own illustrations", async ({
   page,
 }) => {
-  await page.goto(report2Url("pagerfanta") + "#view=run");
+  await page.goto(report2Url("stale-accepted-dagger") + "#view=run");
 
   await expect(example(page)).toHaveText("No package is flagged in this report.");
   await expect(example(page).locator(".sbar")).toHaveCount(0);
