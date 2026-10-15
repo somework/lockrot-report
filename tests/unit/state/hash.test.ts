@@ -166,13 +166,13 @@ describe("the report-2 groups in the address", () => {
         ...INITIAL_STATE.filters,
         gate: ["fails"],
         flag: ["stale", "pinned"],
-        accepted: ["without"],
+        accepted: ["hide"],
       },
     };
 
     const h = serializeHash(state);
 
-    expect(h).toBe("gate=fails&flag=stale%2Cpinned&accepted=without");
+    expect(h).toBe("gate=fails&flag=stale%2Cpinned&accepted=hide");
     expect(parseHash(h, INITIAL_STATE).filters).toEqual(state.filters);
   });
 });

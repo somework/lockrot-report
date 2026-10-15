@@ -31,7 +31,7 @@ import {
 } from "./pageVocabulary";
 
 /** The reach of every list of names a sentence prints before "and {n} more". */
-const NAMES_SHOWN = 3;
+export const NAMES_SHOWN = 3;
 
 export const capitalize = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
 export const lowerFirst = (text: string): string => text.charAt(0).toLowerCase() + text.slice(1);
