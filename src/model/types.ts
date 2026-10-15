@@ -342,6 +342,6 @@ export interface ExplainActivity {
 
 /** Why a payload cannot be rendered at all. `message` is shown to the reader as is. */
 export interface NormalizeError {
-  kind: "not-json" | "not-a-report";
+  kind: "not-json" | "not-a-report" | "malformed-report" | "render-failed";
   message: string;
 }

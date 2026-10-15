@@ -1,6 +1,8 @@
 import { Fragment, type Ref, type RefObject } from "preact";
 import { useReport } from "../context";
 import { applyFilters, hiddenByFilters, population } from "../../domain/filters";
+import { applyFilters2, hiddenByFilters2, population2 } from "../../domain/list2";
+import type { Report2 } from "../../model/report2";
 import { allAdvisories, passesAdvisoryRail } from "../../domain/advisories";
 import { matchesAdvisory, parseQuery } from "../../domain/query";
 import { radiusCountPhrase, radiusLayout } from "../../domain/radius";
@@ -15,6 +17,7 @@ import "./search.css";
 
 /** Verbatim from legacy's search box (`report.html:79`). */
 const PLACEHOLDER = "Filter: guzzle, verdict:left-behind, severity:critical, cve:CVE-2022-31090";
+const PLACEHOLDER2 = "Filter: guzzle, flag:left-behind, verdict:critical, score:>=16";
 
 /**
  * "N of M …", read off the same domain functions the four filterable views use to decide what they
@@ -27,6 +30,7 @@ const PLACEHOLDER = "Filter: guzzle, verdict:left-behind, severity:critical, cve
  * `countPhrase` singularises at exactly one, where legacy always said "1 of 1 flagged packages".
  */
 function countLine(model: Model, state: State): string | null {
+  if (model.report2 !== null) return countLine2(model.report2.report, state);
   if (state.view === "findings") {
     return countPhrase(
       applyFilters(model, state, "findings").length,
@@ -72,12 +76,34 @@ function countLine(model: Model, state: State): string | null {
   return null;
 }
 
+/** The Findings and All packages counts of a report-2 document; the other tabs' surfaces own theirs. */
+function countLine2(report: Report2, state: State): string | null {
+  if (state.view === "findings") {
+    return countPhrase(
+      applyFilters2(report, state, "findings").length,
+      population2(report, "findings").length,
+      "flagged package",
+      "flagged packages",
+    );
+  }
+  if (state.view === "packages") {
+    return countPhrase(
+      applyFilters2(report, state, "packages").length,
+      population2(report, "packages").length,
+      "package",
+      "packages",
+    );
+  }
+  return null;
+}
+
 /**
  * The packages a tab lists, each once, in list order — what the status line's search split counts
  * (PD-SEARCH-1). The Advisories tab lists a package once per advisory; Blast radius lists pulled
  * packages under direct requirements, not the findings free text matched, so it has no split.
  */
 function listedPackages(model: Model, state: State): readonly Finding[] | null {
+  if (model.report2 !== null) return null;
   if (state.view === "findings" || state.view === "packages") return applyFilters(model, state, state.view);
   if (state.view !== "advisories") return null;
   const seen = new Set<string>();
@@ -152,7 +178,9 @@ function activeFilterCount(state: State): number {
  */
 export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
   const { model, state, dispatch } = useReport();
-  const filterable = population(model, state.view).length > 0;
+  const report2 = model.report2?.report ?? null;
+  const filterable =
+    (report2 === null ? population(model, state.view) : population2(report2, state.view)).length > 0;
   const line = countLine(model, state);
   const active = activeFilterCount(state);
   // a11y review: `DetailHeader`'s own "Hidden by the current filters." note has no live region of
@@ -160,7 +188,11 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
   // the list — only this line's own count is announced. It shares `domain/filters.ts#hiddenByFilters`
   // with that note rather than duplicating the check, so the two can never disagree about when it
   // applies.
-  const openPkgHidden = state.pkg !== null && hiddenByFilters(model, state, state.pkg);
+  const openPkgHidden =
+    state.pkg !== null &&
+    (report2 === null
+      ? hiddenByFilters(model, state, state.pkg)
+      : hiddenByFilters2(report2, state, state.pkg));
 
   return (
     <>
@@ -171,7 +203,7 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
             type="search"
             className="search-input"
             aria-label="Filter packages"
-            placeholder={PLACEHOLDER}
+            placeholder={report2 === null ? PLACEHOLDER : PLACEHOLDER2}
             value={state.q}
             onInput={(event) => {
               dispatch({ type: "query", q: event.currentTarget.value });

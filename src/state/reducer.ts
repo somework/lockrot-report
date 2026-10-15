@@ -16,11 +16,11 @@ import { EMPTY_FILTERS } from "./types";
 
 /**
  * The columns whose first click sorts largest first (PD-PACKAGES-4, DESIGN.md §5). The question a
- * reader brings to the Libyears head is "which is furthest behind?"; ascending put the unmeasured
- * rows and the zeros at the top, so the answer took a second tap. Every other column still opens
- * ascending, as legacy's did (js-4.md §7a.3).
+ * reader brings to the Libyears head is "which is furthest behind?", and to the Score head "which
+ * scores highest?"; ascending put the unmeasured rows and the zeros at the top, so the answer took a
+ * second tap. Every other column still opens ascending, as legacy's did (js-4.md §7a.3).
  */
-const FIRST_DESCENDING: readonly SortKey[] = ["libyears"];
+const FIRST_DESCENDING: readonly SortKey[] = ["libyears", "score"];
 
 /** Add `key` to `group` if absent, keeping the existing order; remove it if present. */
 function toggleFilterKey(filters: Filters, group: keyof Filters, key: string): Filters {

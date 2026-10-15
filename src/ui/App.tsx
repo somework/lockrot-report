@@ -3,10 +3,13 @@ import "../styles/base.css";
 import type { RefObject } from "preact";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { filtersFor, population } from "../domain/filters";
+import { fitFilters2, population2 } from "../domain/list2";
 import type { Model } from "../model/types";
 import type { Action, State } from "../state/types";
 import { ReportContext, useReport } from "./context";
 import { Detail } from "./detail/Detail";
+import { Detail2 } from "./report2/Detail2";
+import { Overview2 } from "./report2/Overview2";
 import { Footer } from "./Footer";
 import { Glossary } from "./Glossary";
 import { Header } from "./Header";
@@ -228,9 +231,10 @@ function useShortcuts(deps: ShortcutDeps) {
  * answer without a tap and the list still starts right under it.
  */
 function LedgerSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
+  const { model } = useReport();
   return (
     <div className="ledger-band" inert={inert}>
-      <Ledger narrow={narrow} />
+      {model.report2 === null ? <Ledger narrow={narrow} /> : <Overview2 />}
     </div>
   );
 }
@@ -245,8 +249,9 @@ function RailSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
       </div>
     );
   }
-  const { scope, signal, fix, since, gate } = state.filters;
-  const on = scope.length + signal.length + fix.length + since.length + gate.length;
+  const { scope, signal, fix, since, gate, flag, accepted } = state.filters;
+  const on =
+    scope.length + signal.length + fix.length + since.length + gate.length + flag.length + accepted.length;
 
   return (
     <details className="rail-fold" inert={inert}>
@@ -262,7 +267,10 @@ export function App({ model }: { model: Model }) {
   const narrow = useNarrow();
   const fit = useCallback(
     (next: State): State => {
-      const filters = filtersFor(model, next.filters);
+      const filters =
+        model.report2 === null
+          ? filtersFor(model, next.filters)
+          : fitFilters2(model.report2.report, next.filters);
       return filters === next.filters ? next : { ...next, filters };
     },
     [model],
@@ -453,7 +461,9 @@ export function App({ model }: { model: Model }) {
   // The printed report (print/PrintDocument.tsx): mounted into `printHost` only while the page prints.
   const printHost = useRef<HTMLDivElement>(null);
   usePrintDocument(printHost, value);
-  const filterable = population(model, state.view).length > 0;
+  const filterable =
+    (model.report2 === null ? population(model, state.view) : population2(model.report2.report, state.view))
+      .length > 0;
   const panelId = `${idBase}-panel`;
   // The detail's own grid column (`.shell`, ui/app.css) is static CSS and can't see that
   // `.shell-detail` below is unmounted while `state.pkg` is null — left alone, the wide layout kept
@@ -497,7 +507,7 @@ export function App({ model }: { model: Model }) {
           </div>
           {state.pkg !== null && (
             <div ref={detailScrollRef} className={wide ? "shell-detail is-side" : "shell-detail is-sheet"}>
-              <Detail onClose={closeDetail} />
+              {model.report2 === null ? <Detail onClose={closeDetail} /> : <Detail2 onClose={closeDetail} />}
             </div>
           )}
         </div>

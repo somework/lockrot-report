@@ -1,0 +1,19 @@
+.p2-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.p2-row {
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.p2-row[aria-current="true"] {
+  background: var(--accent-soft);
+}
+
+.p2-version {
+  color: var(--muted);
+}

@@ -4,7 +4,18 @@ import type { View } from "../model/types";
  * The filter groups, in the order the fragment writes them. The order is part of the address format
  * users share (DESIGN.md §4), so it is fixed here and everything else derives from it.
  */
-export const FILTER_GROUPS = ["prio", "verdict", "scope", "signal", "sev", "fix", "since", "gate"] as const;
+export const FILTER_GROUPS = [
+  "prio",
+  "verdict",
+  "scope",
+  "signal",
+  "sev",
+  "fix",
+  "since",
+  "gate",
+  "flag",
+  "accepted",
+] as const;
 export type FilterGroup = (typeof FILTER_GROUPS)[number];
 
 /** Selected keys per group, in the order they were selected (the fragment keeps that order). */
@@ -20,6 +31,9 @@ export const SORT_KEYS = [
   "reached",
   "signals",
   "data",
+  "score",
+  "flags",
+  "age",
 ] as const;
 export type SortKey = (typeof SORT_KEYS)[number];
 
@@ -66,6 +80,8 @@ export const EMPTY_FILTERS: Filters = {
   fix: [],
   since: [],
   gate: [],
+  flag: [],
+  accepted: [],
 };
 
 export const INITIAL_STATE: State = {

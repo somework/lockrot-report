@@ -2,12 +2,12 @@
 // `fixtures/bundles`, using the same title/description approximation and the same payload
 // escaping as `HtmlFormatter::payload()` (`</` -> `<\/`, `<!--` -> `<!--`) that lockrot's own
 // formatter uses. Also writes one page per report-2 embed of lockrot's fetched bundle
-// (`scripts/report2-embed.ts`; needs `npm run contract:fetch`). Writes `build/pages/`, which is what
-// the e2e suite runs against.
+// (`scripts/report2-embed.ts`; needs `npm run contract:fetch`), and one planted malformed report-2
+// page under `planted/`. Writes `build/pages/`, which is what the e2e suite runs against.
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 
-import { report2Pages } from "./report2-embed.ts";
+import { assembleEmbed, report2Pages } from "./report2-embed.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const DIST = join(ROOT, "dist");
@@ -66,7 +66,16 @@ function main() {
       .replaceAll("{{DATA}}", () => payload(embed));
     writeFileSync(join(OUT, name + ".html"), page);
   }
-  console.log(`${fixtureFiles.length + report2.length} page(s) written to ${OUT}`);
+  // Planted under its own folder, which the page sweeps do not list: a report-2 document without
+  // a root key, for the error screen.
+  const { rot_depth: _dropped, ...malformed } = assembleEmbed("composite").report;
+  const planted = template
+    .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DATA}}", () => payload({ report: malformed, details: {} }));
+  mkdirSync(join(OUT, "planted"), { recursive: true });
+  writeFileSync(join(OUT, "planted", "report2-malformed.html"), planted);
+  console.log(`${fixtureFiles.length + report2.length + 1} page(s) written to ${OUT}`);
 }
 
 main();

@@ -108,5 +108,8 @@ export const FIXTURES = {
   /** Synthetic: mini-0.13-edges with many `unattributed` entries, for the shared tail at the scale
    *  of a monorepo. */
   sharedMany: "synthetic-shared-many",
+  /** Planted: the composite report-2 embed without its `rot_depth` key. Kept out of the page sweeps,
+   *  which expect a report. */
+  malformedReport2: "planted/report2-malformed",
 } as const;
 export type FixtureName = (typeof FIXTURES)[keyof typeof FIXTURES];

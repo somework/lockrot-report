@@ -4,6 +4,11 @@ import { AdvisoriesView } from "./AdvisoriesView";
 import { PackagesView } from "./PackagesView";
 import { RadiusView } from "./RadiusView";
 import { RunView } from "./RunView";
+import { AdvisoriesView2 } from "../report2/AdvisoriesView2";
+import { FindingsView2 } from "../report2/FindingsView2";
+import { PackagesView2 } from "../report2/PackagesView2";
+import { RadiusView2 } from "../report2/RadiusView2";
+import { RunView2 } from "../report2/RunView2";
 
 /**
  * The current tab's body. `state.view` is typed as one of the five known views end to end (parsing
@@ -11,7 +16,8 @@ import { RunView } from "./RunView";
  * back to `"findings"` there), so every case below is reachable and the switch needs no default.
  */
 export function CurrentView() {
-  const { state } = useReport();
+  const { model, state } = useReport();
+  if (model.report2 !== null) return <CurrentView2 />;
 
   switch (state.view) {
     case "findings":
@@ -24,5 +30,23 @@ export function CurrentView() {
       return <RadiusView />;
     case "run":
       return <RunView />;
+  }
+}
+
+/** The same tabs on a report-2 document, each its own report-2 surface. */
+function CurrentView2() {
+  const { state } = useReport();
+
+  switch (state.view) {
+    case "findings":
+      return <FindingsView2 />;
+    case "advisories":
+      return <AdvisoriesView2 />;
+    case "packages":
+      return <PackagesView2 />;
+    case "radius":
+      return <RadiusView2 />;
+    case "run":
+      return <RunView2 />;
   }
 }

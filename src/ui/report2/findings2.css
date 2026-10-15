@@ -1,0 +1,35 @@
+.f2-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.f2-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 12px;
+  align-items: baseline;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.f2-row[aria-current="true"] {
+  background: var(--accent-soft);
+}
+
+.f2-score {
+  min-width: 3ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.f2-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.f2-version,
+.f2-reach {
+  color: var(--muted);
+}
