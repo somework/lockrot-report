@@ -15,7 +15,7 @@ import type {
 } from "../model/report";
 import { isScoreGraded, isSecurityVulnerable, isTermSecurity } from "../model/report";
 import { pluralNoun } from "./format";
-import { commandLine } from "./shellArgv";
+import { isPrintableName, posixArgument } from "./shellArgv";
 import { vocabTable } from "./vocab";
 import {
   acceptsWholePackage,
@@ -324,9 +324,10 @@ function unknownMoveSentence(move: AnyMove): string {
 }
 
 /** A report file can be edited: a package name prints inside a command only when it passes SPEC
- *  §5.6's argument rule, else the phrase names the package in words. */
+ *  §5.6's name rule, else the phrase names the package in words. The page writes the subcommand, so
+ *  only the name is checked. */
 const composerCommand = (subcommand: "update" | "why", pkg: string): string | null =>
-  commandLine(["composer", subcommand, pkg], "posix");
+  isPrintableName(pkg) ? `composer ${subcommand} ${posixArgument(pkg)}` : null;
 
 function updatePhrase(pkg: string): string {
   const command = composerCommand("update", pkg);

