@@ -231,6 +231,14 @@
   background: var(--accent);
   border-color: var(--accent);
 }
+/* A closed fold's rows still size the columns, so opening it never moves the strip or a dot. */
+.detail-timeline-row.is-collapsed {
+  visibility: hidden;
+  min-height: 0;
+  height: 0;
+  overflow: hidden;
+  border-top: 0;
+}
 .detail-timeline-row.is-folded .detail-timeline-branch,
 .detail-timeline-row.is-folded .detail-timeline-latest {
   color: var(--muted);

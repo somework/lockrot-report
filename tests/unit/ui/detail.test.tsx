@@ -91,9 +91,19 @@ describe("the sheet in SPEC §7.9.8's order", () => {
 
     expect(rowText("Checks")).toEqual([golden("checks", "B")]);
     expect(rowText("Advisory feeds")).toEqual([golden("feeds", "B")]);
-    expect(rowText("Release branches")).toEqual([golden("branches", "B")]);
     expect(rowText("Age")).toEqual([(golden("age", "B") as { line: string }).line]);
     expect(rowText("Repository")).toEqual([golden("repository", "B")]);
+  });
+
+  test("Release branches is a section across the sheet, its golden line under the eyebrow", () => {
+    const sheet = openCase("B");
+    const section = within(sheet).getByRole("region", { name: "Release branches" });
+
+    expect(section.closest(".d2-row")).toBeNull();
+    expect([...section.querySelectorAll(":scope > p")].map((p) => p.textContent)).toEqual([
+      golden("branches", "B"),
+    ]);
+    expect(within(section).getByRole("table")).toBeTruthy();
   });
 
   test("a baselined finding adds the Baseline row with its suffix", () => {

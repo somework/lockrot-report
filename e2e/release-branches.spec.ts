@@ -263,3 +263,74 @@ test.describe("phone widths: nothing clipped, wrapped mid-word or ellipsised", (
     });
   }
 });
+
+test.describe("the section spans the sheet, and nothing in it overflows (variant 6B)", () => {
+  const WALLABAG = "baselined-wallabag-2.6";
+  const section = (sheet: Locator): Locator => sheet.getByRole("region", { name: "Release branches" });
+
+  for (const { width, height } of [
+    { width: 1440, height: 900 },
+    { width: 1024, height: 900 },
+    { width: 390, height: 844 },
+    { width: 320, height: 844 },
+  ]) {
+    for (const pkg of ["spomky-labs/otphp", "guzzlehttp/guzzle"]) {
+      for (const folds of ["open", "closed"] as const) {
+        test(`${pkg}, ${String(width)}px, folds ${folds}`, async ({ page }) => {
+          await page.setViewportSize({ width, height });
+          const sheet = await openDetail2(page, WALLABAG, pkg);
+          await expect(section(sheet).getByRole("table")).toBeVisible();
+          if (folds === "open") await openFolds(page, sheet);
+
+          const problems = await section(sheet).evaluate((block) => {
+            const found: string[] = [];
+            const sheetBox = block.closest(".detail-body")?.getBoundingClientRect();
+            const box = block.getBoundingClientRect();
+            if (sheetBox === undefined) return ["no sheet body"];
+            if (box.left < sheetBox.left - 1 || box.right > sheetBox.right + 1)
+              found.push("section past the sheet");
+            const scrollers = [
+              block,
+              ...block.querySelectorAll<HTMLElement>(
+                "[role='table'], [role='row'], [role='cell'], [role='rowheader'], [role='columnheader'], p",
+              ),
+            ];
+            for (const element of scrollers) {
+              if (element.matches(".detail-timeline-strip, .detail-timeline-strip-head")) continue;
+              if (element.scrollWidth > element.clientWidth + 1 && element.clientWidth > 0) {
+                found.push(
+                  `overflow ${String(element.scrollWidth - element.clientWidth)}px: ${element.getAttribute("class") ?? ""}`,
+                );
+              }
+            }
+            return found;
+          });
+
+          expect(problems).toEqual([]);
+          expect(await sheet.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+        });
+      }
+    }
+  }
+
+  test("at 1440 the timeline takes the sheet's full width, under the eyebrow and the line", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const sheet = await openDetail2(page, WALLABAG, "spomky-labs/otphp");
+    const block = section(sheet);
+
+    await expect(block.getByRole("heading", { name: "Release branches" })).toBeVisible();
+    const line = block.locator("p").first();
+    await expect(line).toHaveText(/^Your branch, /);
+    expect(await block.getByRole("table").getAttribute("aria-describedby")).toBe(
+      await line.getAttribute("id"),
+    );
+    const widths = await block.evaluate((el) => ({
+      body: (el.closest(".detail-body") as HTMLElement).clientWidth,
+      table: el.querySelector("[role='table']")?.getBoundingClientRect().width ?? 0,
+    }));
+    // The body's own padding, 16 px a side, is all that the table does not take.
+    expect(widths.table).toBeGreaterThanOrEqual(widths.body - 32 - 1);
+  });
+});
