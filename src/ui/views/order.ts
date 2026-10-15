@@ -14,6 +14,7 @@
 import type { Model, View } from "../../model/types";
 import type { State } from "../../state/types";
 import { applyFilters } from "../../domain/filters";
+import { renderedPackages2 } from "../../domain/list2";
 import {
   allAdvisories,
   groupAdvisories,
@@ -69,6 +70,7 @@ function radiusOrder(model: Model, state: State, narrow: boolean): readonly stri
  * where Blast radius folds its one-each rows by default.
  */
 export function renderedPackages(model: Model, state: State, view: View, narrow = false): readonly string[] {
+  if (model.report2 !== null) return renderedPackages2(model.report2.report, state, view);
   switch (view) {
     case "findings":
     case "packages":

@@ -614,11 +614,11 @@ describe("schema / newerSchema", () => {
   });
 
   test("a higher schema number is flagged as newer", () => {
-    const result = normalize(bundle(minimalReport({ lockrot: { version: "9.9.9", schema: 2 } })));
+    const result = normalize(bundle(minimalReport({ lockrot: { version: "9.9.9", schema: 3 } })));
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.model.schema).toBe(2);
+      expect(result.model.schema).toBe(3);
       expect(result.model.newerSchema).toBe(true);
     }
   });
