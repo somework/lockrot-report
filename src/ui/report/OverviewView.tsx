@@ -63,14 +63,14 @@ function WeighsMostBlock({ report }: { report: Report2 }) {
       </p>
       <p className="wm-load">{load}</p>
       {chart.legend.length > 0 && (
-        <p className="wm-legend" aria-label={WEIGHS_WORDS.legend}>
+        <ul className="wm-legend" aria-label={WEIGHS_WORDS.legend}>
           {chart.legend.map((flag) => (
-            <span key={flag} className="wm-key">
+            <li key={flag} className="wm-key">
               <i className="wm-swatch" data-flag={flag} aria-hidden="true" />
               {flag}
-            </span>
+            </li>
           ))}
-        </p>
+        </ul>
       )}
       {chart.rows.length > 0 && (
         <ol className="wm-list">
@@ -171,8 +171,8 @@ function LibyearsTable({ report }: { report: Report2 }) {
 
 /**
  * The Overview tab, the default view (PD-OVERVIEW-1, PD-OVERVIEW-2): the lead, then the flags,
- * Security, Weighs most, exposure and Libyears in that reading order. From 760px a grid puts
- * Libyears beside Security. Paper prints the same content as its summary section.
+ * Security, Weighs most, exposure and Libyears in that reading order. From 760px a grid sets them
+ * in columns (overview-tab.css). Paper prints the same content as its summary section.
  */
 export function OverviewView2() {
   const { report } = useReport2();

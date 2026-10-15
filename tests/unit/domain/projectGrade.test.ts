@@ -368,7 +368,10 @@ describe("Weighs most", () => {
     expect(weighsMost(report)?.rest).toBe(`1 more flagged package holds 16 points`);
   });
 
-  test("names its block and its order", () => {
-    expect(WEIGHS_WORDS.head).toBe("Weighs most");
+  test("names its block and its order, with no count that a short list would belie", () => {
+    expect([WEIGHS_WORDS.head, WEIGHS_WORDS.note]).toEqual([
+      "Weighs most",
+      "highest score first, one segment per flag",
+    ]);
   });
 });

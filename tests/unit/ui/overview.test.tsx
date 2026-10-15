@@ -5,6 +5,7 @@ import { normalize } from "../../../src/model/normalize";
 import type { Report2 } from "../../../src/model/report";
 import type { Model } from "../../../src/model/types";
 import { App } from "../../../src/ui/App";
+import { pageGoldens } from "../words/recorded";
 
 function model(edit: (report: Report2) => void = () => undefined): Model {
   const embed = assembleEmbed("composite");
@@ -303,6 +304,21 @@ describe("the Overview tab of a report-2 document", () => {
     render(<App model={model()} />);
 
     expect(document.querySelector('[data-surface="overview"]')).toBeNull();
+  });
+});
+
+describe("the Overview's three lines equal lockrot's page goldens on the page", () => {
+  test.each(pageGoldens())("$id", ({ golden, report }) => {
+    const result = normalize(report);
+    if (!result.ok) throw new Error(result.error.message);
+    render(<App model={result.model} />);
+
+    const text = (selector: string) => band().querySelector(selector)?.textContent ?? null;
+    expect([text(".ov-grade"), text(".ov-figure"), text(".wm-load")]).toEqual([
+      golden.grade_line,
+      golden.figure_line,
+      golden.load_line,
+    ]);
   });
 });
 

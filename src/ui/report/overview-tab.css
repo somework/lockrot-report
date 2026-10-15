@@ -102,6 +102,8 @@ a.legend-btn,
   flex-wrap: wrap;
   gap: 4px 14px;
   margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
   font-size: 12px;
   color: var(--ink-2);
 }
@@ -322,8 +324,10 @@ a.legend-btn,
     forced-color-adjust: none;
     background: CanvasText;
   }
-  /* Colour is gone, so each flag keeps its own pattern, the legend's key to the bars. */
+  /* Colour is gone, so each flag keeps its own pattern, the legend's key to the bars. Inside its
+     two 1px borders a 6px segment keeps 4px of pattern (SPEC §7.9.10). */
   .wm-bar {
+    --wm-seg-min: 6px;
     forced-color-adjust: none;
     background: Canvas;
     border: 1px solid CanvasText;

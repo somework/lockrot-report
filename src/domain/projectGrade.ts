@@ -16,7 +16,7 @@ export const WEIGHS_SHOWN = 10;
 
 export const WEIGHS_WORDS = {
   head: "Weighs most",
-  note: `the ${String(WEIGHS_SHOWN)} highest scores, one segment per flag`,
+  note: "highest score first, one segment per flag",
   legend: "Flags in the bars",
   transitive: "transitive",
   dev: "dev",
