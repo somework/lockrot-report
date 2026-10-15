@@ -47,20 +47,22 @@ interface LaneProps {
   guides: readonly AgeGuide[];
   level: "warn" | "high" | null;
   folded?: boolean;
+  collapsed?: boolean;
 }
 
-function LaneRow({ lane, span, guides, level, folded = false }: LaneProps) {
+function LaneRow({ lane, span, guides, level, folded = false, collapsed = false }: LaneProps) {
   const tone = lane.installed && level !== null ? LEVEL_TONE[level] : null;
   const classes = [
     "detail-timeline-row",
     ...(lane.installed ? ["is-mine"] : []),
     ...(lane.newest ? ["is-newest"] : []),
     ...(folded ? ["is-folded"] : []),
+    ...(collapsed ? ["is-collapsed"] : []),
     ...(tone === null ? [] : ["is-toned", toneClass(tone)]),
   ].join(" ");
   const words = laneWords(lane);
   return (
-    <div role="row" className={classes} data-branch={lane.branch}>
+    <div role="row" className={classes} data-branch={lane.branch} aria-hidden={collapsed || undefined}>
       <span role="rowheader" className="detail-timeline-branch">
         {lane.branch}
         {lane.installed && <Sr>{TIMELINE_WORDS.yours}</Sr>}
@@ -147,10 +149,17 @@ function FoldRows({
           {first?.branch} – {last?.branch}
         </span>
       </div>
-      {open &&
-        fold.lanes.map((lane) => (
-          <LaneRow key={lane.branch} lane={lane} span={span} guides={guides} level={null} folded />
-        ))}
+      {fold.lanes.map((lane) => (
+        <LaneRow
+          key={lane.branch}
+          lane={lane}
+          span={span}
+          guides={guides}
+          level={null}
+          folded
+          collapsed={!open}
+        />
+      ))}
     </>
   );
 }
