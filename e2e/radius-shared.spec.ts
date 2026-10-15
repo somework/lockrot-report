@@ -5,7 +5,9 @@
  */
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { FIXTURES, pageUrl, type FixtureName } from "./support/pages";
+import { FIXTURES, pageUrl, report2Url, type FixtureName } from "./support/pages";
+import { radiusSurface } from "./support/report2/radius";
+import { report2Pages } from "../scripts/report2-embed.ts";
 
 async function radius(page: Page, fixture: FixtureName, width = 1440): Promise<void> {
   await page.setViewportSize({ width, height: 900 });
@@ -328,4 +330,22 @@ test.describe("PD-RADIUS-12: the shared tail", () => {
       expect(serious.flatMap((v) => v.nodes.map((node) => `${v.id}: ${node.target.join(" ")}`))).toEqual([]);
     });
   }
+});
+
+test.describe("report-2: the packages lockrot counts under no requirement", () => {
+  test("are named in one note under the rows, each once, in unattributed order", async ({ page }) => {
+    const embed = report2Pages().find((p) => p.name === "report2-baselined-wallabag-2.6")?.embed;
+    const names = (embed?.report.unattributed ?? []).map((entry) => entry.package);
+    expect(names.length).toBeGreaterThan(0);
+    await page.goto(report2Url("baselined-wallabag-2.6") + "#view=radius");
+    await expect(radiusSurface(page).locator(".r2-note", { hasText: "shared by too many" })).toHaveText(
+      `${String(names.length)} flagged packages shared by too many requirements to list under one: ${names.join(", ")}.`,
+    );
+  });
+
+  test("draw nothing when the run has none", async ({ page }) => {
+    await page.goto(report2Url("composite") + "#view=radius");
+    await expect(radiusSurface(page).locator(".r2-answer")).toBeVisible();
+    await expect(radiusSurface(page).locator(".r2-note", { hasText: "shared by too many" })).toHaveCount(0);
+  });
 });

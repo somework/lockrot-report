@@ -292,3 +292,85 @@ test.describe("M28: the glossary must stay reachable when showModal() is not all
     expect(await report.isGlossaryOpen()).toBe(false);
   });
 });
+
+test.describe("report-2: the theme and the glossary", () => {
+  test("the theme toggle flips and persists on a report-2 page", async () => {
+    await report.gotoReport2("composite");
+    const before = await report.theme();
+    await report.toggleTheme();
+    const after = await report.theme();
+    expect(after).not.toBe(before);
+    await report.reload();
+    expect(await report.theme()).toBe(after);
+  });
+
+  test("opens with the seven verdicts in view and the seven flags open, the rest folded", async ({
+    page,
+  }) => {
+    await report.gotoReport2("composite");
+    await report.openGlossary();
+    const dialog = page.getByRole("dialog", { name: /what these words mean/i });
+    await expect(dialog.getByRole("heading", { name: "The seven verdicts" })).toBeVisible();
+    await expect(dialog.locator("dt[data-term]")).toHaveText(
+      // run.verdicts, then run.flag_ids, each with its count when it has one.
+      [
+        "critical 3",
+        "high 2",
+        "medium",
+        "low 2",
+        "unknown",
+        "finished",
+        "ok",
+        "abandoned 1",
+        "silent",
+        "pinned 1",
+        "left-behind 1",
+        "old-promise 3",
+        "stale 2",
+        "vulnerable 4",
+      ],
+    );
+    const folded = ["The signals", "One number for the lock: libyears", "Keys and search"];
+    for (const title of folded) {
+      const details = dialog.locator("summary", { hasText: title }).locator("xpath=ancestor::details[1]");
+      expect(await details.evaluate((el) => (el as HTMLDetailsElement).open)).toBe(false);
+    }
+  });
+
+  test("a grade's words take its floor from the model and the flags this run's thresholds", async ({
+    page,
+  }) => {
+    await report.gotoReport2("composite");
+    await report.openGlossary();
+    const dialog = page.getByRole("dialog", { name: /what these words mean/i });
+    await expect(dialog.locator('dt[data-term="critical"] + dd')).toHaveText(
+      "A score from 32: a critical finding.",
+    );
+    await expect(dialog.locator('dt[data-term="silent"] + dd')).toContainText("5 years (release-high-years)");
+  });
+
+  test("links the verdicts' anchor on lockrot.dev, and S9 says it raises vulnerable", async ({ page }) => {
+    await report.gotoReport2("composite");
+    await report.openGlossary();
+    const dialog = page.getByRole("dialog", { name: /what these words mean/i });
+    await expect(dialog.getByRole("link", { name: /The verdicts on lockrot.dev/ })).toHaveAttribute(
+      "href",
+      "https://lockrot.dev/verdicts/#the-nine-verdicts",
+    );
+    await dialog.locator("summary", { hasText: "The signals" }).click();
+    await expect(
+      dialog.locator("dt", { hasText: "S9" }).locator("xpath=following-sibling::dd[1]"),
+    ).toHaveText("Advisories on the installed version; raises the vulnerable flag.");
+  });
+
+  test("'How the score works' closes the glossary on the Run tab's section", async ({ page }) => {
+    await report.gotoReport2("composite");
+    await report.openGlossary();
+    await page
+      .getByRole("dialog", { name: /what these words mean/i })
+      .getByRole("link", { name: /How the score works/ })
+      .click();
+    expect(await report.isGlossaryOpen()).toBe(false);
+    await expect.poll(() => report.hash()).toContain("view=run");
+  });
+});
