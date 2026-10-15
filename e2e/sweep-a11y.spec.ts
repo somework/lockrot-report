@@ -51,9 +51,33 @@ test.describe("report-2: the sweep over every tab", () => {
     await expect(
       band.getByRole("group", { name: "Grade" }).getByRole("button", { name: /^high 2$/ }),
     ).toBeVisible();
+    await band.locator("details.ledger-fold > summary").click();
     await expect(
       band.getByRole("group", { name: "Advisories by severity" }).getByRole("button", { name: /^high 4$/ }),
     ).toBeVisible();
+    await page.getByRole("tab", { name: /^Advisories/ }).click();
+    await expect(
+      page
+        .locator('[data-surface="advisories"]')
+        .getByRole("group", { name: "Advisories by severity" })
+        .getByRole("button", { name: /^high 4$/ }),
+    ).toBeVisible();
+  });
+
+  test("the rail's Grade group and the band's grade chips sit in groups of their own landmarks", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(report2Url(CASE));
+    const rail = page.getByRole("group", { name: "Filters" });
+    await expect(rail.getByRole("group", { name: "Grade" }).getByRole("button")).toHaveText([
+      /^\s*critical 3$/,
+      /^\s*high 2$/,
+      /^\s*low 2$/,
+    ]);
+    await expect(
+      page.getByRole("region", { name: "Overview" }).getByRole("group", { name: "Grade" }),
+    ).toHaveCount(1);
   });
 
   test("the All packages table has a name, and a sort button's name carries no arrow", async ({ page }) => {
@@ -72,6 +96,8 @@ test.describe("report-2: the sweep over every tab", () => {
     test(`axe finds no violation on ${view}`, async ({ page }) => {
       await page.goto(`${report2Url(CASE)}#view=${view}`);
       await expect(page.locator(`[data-surface="${view}"]`)).toBeVisible();
+      if (view === "findings")
+        await page.locator('[data-surface="overview"] details.ledger-fold > summary').click();
       const results = await new AxeBuilder({ page }).include(`[data-surface="${view}"]`).analyze();
       expect(
         results.violations.flatMap((v) => v.nodes.map((node) => `${v.id}: ${node.target.join(" ")}`)),

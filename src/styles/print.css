@@ -186,8 +186,8 @@
     -webkit-print-color-adjust: exact;
   }
 
-  /* The summary band's tier folds on a phone (ledger/Ledger.tsx); paper has no tap to open it, so
-   * a print from a phone shows it open. `::details-content` is the closed <details>' hidden slot. */
+  /* The summary band's tier folds on screen (report/Overview.tsx); paper has no tap to open it, so
+   * a fold that reaches paper shows it open. `::details-content` is the closed <details>' hidden slot. */
   .ledger-fold > summary {
     display: none;
   }

@@ -168,6 +168,36 @@ describe("hiddenByFilters2", () => {
 });
 
 describe("railGroups2", () => {
+  it("offers each graded verdict with a package under the title Grade, in run.graded_verdicts order", () => {
+    const grade = railGroups2(composite, state()).find((group) => group.group === "verdict");
+    const graded = (id: string): number =>
+      population2(composite, "findings").filter((f) => f.verdict === id).length;
+    const listed = composite.run.graded_verdicts.filter((id) => graded(id) > 0);
+
+    expect(grade?.title).toBe("Grade");
+    expect(grade?.rows.map((row) => [row.key, row.label, row.count, row.on])).toEqual(
+      listed.map((id) => [id, id, graded(id), false]),
+    );
+    expect(listed.length).toBeGreaterThan(1);
+  });
+
+  it("counts the union within the Grade group, and keeps a pressed grade", () => {
+    const grade = railGroups2(composite, state({}, { verdict: ["critical"] })).find(
+      (group) => group.group === "verdict",
+    );
+    const graded = (ids: readonly string[]): number =>
+      population2(composite, "findings").filter((f) => ids.includes(f.verdict)).length;
+
+    expect(grade?.rows.find((row) => row.key === "critical")).toMatchObject({
+      count: graded(["critical"]),
+      on: true,
+    });
+    expect(grade?.rows.find((row) => row.key === "high")).toMatchObject({
+      count: graded(["critical", "high"]),
+      on: false,
+    });
+  });
+
   it("counts each counted flag in run.flag_ids order, leaving out a flag nothing carries", () => {
     const flag = railGroups2(composite, state()).find((group) => group.group === "flag");
     expect(flag?.rows.map((row) => [row.key, row.count])).toEqual([
@@ -227,6 +257,7 @@ describe("railGroups2", () => {
   it("offers the accepted toggle only where an accepted flag exists, counting the rows it changes", () => {
     expect(railGroups2(composite, state()).map((group) => group.group)).toEqual([
       "gate",
+      "verdict",
       "flag",
       "sev",
       "fix",

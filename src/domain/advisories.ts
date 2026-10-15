@@ -71,6 +71,8 @@ export const advisoryRowPackages = (groups: readonly AdvisoryGroup2[]): readonly
 
 export interface AdvisoryAnswer2 {
   readonly text: string;
+  /** The count alone, for an unfiltered list whose severity chips beside it say the rest. */
+  readonly head: string;
   /** Set under a filter: the count without it. */
   readonly narrowed: string | null;
 }
@@ -91,8 +93,10 @@ export function advisoryAnswer2(
     (id) => `${pairs.filter((pair) => pair.row.severity === id).length} ${id}`,
   );
   const noun = isNarrowed ? ["matching advisory", "matching advisories"] : ["advisory", "advisories"];
+  const count = `${plural(pairs.length, noun[0] as string, noun[1] as string)} on ${plural(packages, "package", "packages")}`;
   return {
-    text: `${plural(pairs.length, noun[0] as string, noun[1] as string)} on ${plural(packages, "package", "packages")}, by severity: ${[...severities, ...others].join(", ")}.`,
+    text: `${count}, by severity: ${[...severities, ...others].join(", ")}.`,
+    head: `${count}.`,
     narrowed: isNarrowed
       ? `Only advisories that match the filter are counted; without it there ${unfiltered === 1 ? "is" : "are"} ${unfiltered}.`
       : null,

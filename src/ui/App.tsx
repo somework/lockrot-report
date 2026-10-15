@@ -227,14 +227,13 @@ function useShortcuts(deps: ShortcutDeps) {
 }
 
 /**
- * The summary band (DESIGN.md §8): the lead — how many packages are flagged — at every width; on a
- * phone only the supporting tier under it folds (`Ledger`'s `narrow`), so a phone reader gets the
- * answer without a tap and the list still starts right under it.
+ * The summary band (DESIGN.md §8), on Findings only: the lead — how many packages are flagged — at
+ * every width, and the supporting tier folded under it, so the list starts on the first screen.
  */
-function LedgerSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
+function LedgerSlot({ inert }: { inert: boolean }) {
   return (
     <div className="ledger-band" inert={inert}>
-      <Overview2 narrow={narrow} />
+      <Overview2 folded />
     </div>
   );
 }
@@ -249,9 +248,17 @@ function RailSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
       </div>
     );
   }
-  const { scope, signal, fix, since, gate, flag, accepted } = state.filters;
+  const { verdict, scope, signal, sev, fix, since, gate, flag, accepted } = state.filters;
   const on =
-    scope.length + signal.length + fix.length + since.length + gate.length + flag.length + accepted.length;
+    verdict.length +
+    scope.length +
+    signal.length +
+    sev.length +
+    fix.length +
+    since.length +
+    gate.length +
+    flag.length +
+    accepted.length;
 
   return (
     <details className="rail-fold" inert={inert}>
@@ -470,7 +477,7 @@ export function App({ model }: { model: Model }) {
       {/* Empty on screen; print.css hides `<main>` while it holds the printed report. */}
       <div className="print-doc" ref={printHost} />
       <main>
-        {state.view !== "run" && <LedgerSlot narrow={narrow} inert={sheet} />}
+        {state.view === "findings" && <LedgerSlot inert={sheet} />}
         <div className={shellClass}>
           {filterable && <RailSlot narrow={narrow} inert={sheet} />}
           <div

@@ -551,28 +551,33 @@ export class NewReportPage implements ReportPage {
     await this.railLocator(group, key).click();
   }
 
-  async railRows(): Promise<{ label: string; count: number; pressed: boolean }[]> {
+  async railRows(): Promise<{ group: string; label: string; count: number; pressed: boolean }[]> {
     const buttons = this.page.getByRole("group", { name: "Filters" }).getByRole("button");
     return buttons.evaluateAll((els) =>
       els.map((el) => {
         const count = el.querySelector(".c")?.textContent ?? "";
         const label = el.textContent.replace(count, "").replace(/\s+/g, " ").trim();
-        return { label, count: Number(count), pressed: el.getAttribute("aria-pressed") === "true" };
+        const group = el.closest(".rail-group")?.getAttribute("aria-label") ?? "";
+        return { group, label, count: Number(count), pressed: el.getAttribute("aria-pressed") === "true" };
       }),
     );
   }
 
-  /** Toggles the rail row `railRows()` reported as `label`. By label, not position: PD-RAIL-2 leaves
-   *  out a row that would list nothing, so selecting one row can move the others. */
-  async toggleRailRow(label: string): Promise<void> {
+  /** Toggles the rail row `railRows()` reported as `label`, in `group` when given ("critical" is a
+   *  Grade row and a Severity row). By label, not position: PD-RAIL-2 leaves out a row that would
+   *  list nothing, so selecting one row can move the others. */
+  async toggleRailRow(label: string, group?: string): Promise<void> {
     const buttons = this.page.getByRole("group", { name: "Filters" }).getByRole("button");
     const index = await buttons.evaluateAll(
-      (els, wanted) =>
+      (els, [wanted, inGroup]) =>
         els.findIndex((el) => {
           const count = el.querySelector(".c")?.textContent ?? "";
-          return el.textContent.replace(count, "").replace(/\s+/g, " ").trim() === wanted;
+          const named = el.textContent.replace(count, "").replace(/\s+/g, " ").trim() === wanted;
+          return (
+            named && (inGroup === null || el.closest(".rail-group")?.getAttribute("aria-label") === inGroup)
+          );
         }),
-      label,
+      [label, group ?? null] as const,
     );
     if (index < 0) throw new Error(`no rail row "${label}"`);
     await buttons.nth(index).click();

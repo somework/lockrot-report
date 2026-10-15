@@ -68,15 +68,18 @@ describe("Rail", () => {
     expect(container.textContent).toBe("");
   });
 
-  it("offers This run, Flag, Severity, Fix and Scope in that order, each row with the packages it would list", () => {
+  it("offers This run, Grade, Flag, Severity, Fix and Scope in that order, each row with the packages it would list", () => {
     renderIn(<Rail />, composite(), INITIAL_STATE);
 
-    // Gate: `gate.failing` is 5. Flags: the document's carriers, `silent` carried by none so left out.
+    // Gate: `gate.failing` is 5. Grade: `counts`, medium held by none so left out. Flags: the document's carriers, `silent` carried by none so left out.
     // Severity and Fix count packages, not advisories: SPEC §7.9.4's "By fix (packages)" reads
     // composer update 2, upgrade 1, php floor raise 1.
     // Scope: `rot_depth` has 6 direct, 1 transitive, 7 production, 0 development, 1 not in composer.json.
     expect(buttonTexts()).toEqual([
       "Fails this run 5",
+      "critical 3",
+      "high 2",
+      "low 2",
       "abandoned 1",
       "pinned 1",
       "left-behind 1",

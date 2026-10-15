@@ -1,4 +1,4 @@
-import { Fragment } from "preact";
+import { Fragment, type ComponentChildren } from "preact";
 import { libyearsPanel } from "../../domain/libyearsPanel";
 import {
   acceptedLine,
@@ -94,7 +94,7 @@ export function GateLine({ report, className }: { report: Report2; className: st
   );
 }
 
-function Lead({ report }: { report: Report2 }) {
+export function Lead({ report }: { report: Report2 }) {
   const lead = leadFigure(report);
   const chips = gradeChips(report);
   const scope = lead.kind === "flagged" ? leadScope(report) : [];
@@ -166,7 +166,7 @@ function FlagBarButton({ bar, longest, model }: { bar: FlagBar; longest: number;
   );
 }
 
-function FlagsBlock({ report }: { report: Report2 }) {
+export function FlagsBlock({ report }: { report: Report2 }) {
   if (report.packages_flagged === 0) return null;
   const bars = flagBars(report);
   const multi = multiFlagLine(report);
@@ -197,7 +197,8 @@ function FlagsBlock({ report }: { report: Report2 }) {
 const severityTone = (model: ScoreModel, { band, outlined }: SeverityCount): string =>
   `${toneClass(verdictTone(model, band))}${outlined ? " is-outlined" : ""}`;
 
-function SecurityBlock({ report }: { report: Report2 }) {
+/** `answer`, when given, takes the place of the block's own count and hedge. */
+export function SecurityBlock({ report, answer }: { report: Report2; answer?: ComponentChildren }) {
   const block = securityBlock(report);
   const severities = useToggle("sev");
   const updateNow = updateNowArgv(report);
@@ -205,15 +206,21 @@ function SecurityBlock({ report }: { report: Report2 }) {
   return (
     <div className="ledger-block ledger-advisories">
       <span className="eyebrow ledger-head">{OVERVIEW_WORDS.security}</span>
-      <p className="ledger-fig">
-        {block.figure !== null && (
-          <>
-            <span className="ledger-fig-num">{block.figure}</span>{" "}
-          </>
-        )}
-        <span className={block.figure === null ? "ledger-fig-text" : "ledger-fig-unit"}>{block.unit}</span>
-      </p>
-      {block.note !== null && <p className="ledger-note">{block.note}</p>}
+      {answer ?? (
+        <>
+          <p className="ledger-fig">
+            {block.figure !== null && (
+              <>
+                <span className="ledger-fig-num">{block.figure}</span>{" "}
+              </>
+            )}
+            <span className={block.figure === null ? "ledger-fig-text" : "ledger-fig-unit"}>
+              {block.unit}
+            </span>
+          </p>
+          {block.note !== null && <p className="ledger-note">{block.note}</p>}
+        </>
+      )}
       {block.severities.length > 0 && (
         <>
           <div className="advisory-squares" aria-hidden="true">
@@ -269,7 +276,7 @@ function SecurityBlock({ report }: { report: Report2 }) {
   );
 }
 
-function LibyearsBlock({ report }: { report: Report2 }) {
+export function LibyearsBlock({ report }: { report: Report2 }) {
   return (
     <div className="ledger-block ledger-libyears">
       <span className="eyebrow ledger-head">{OVERVIEW_WORDS.libyears}</span>
@@ -288,8 +295,9 @@ function Tier({ report }: { report: Report2 }) {
   );
 }
 
-/** The overview band of a report-2 document (SPEC §7.9.4). It counts nothing a filter changes. */
-export function Overview2({ narrow = false }: { narrow?: boolean }) {
+/** The overview band of a report-2 document (SPEC §7.9.4). It counts nothing a filter changes.
+ *  On screen the tier is `folded`, closed on load; paper has no tap to open it. */
+export function Overview2({ folded = false }: { folded?: boolean }) {
   const { state } = useReport();
   const { report } = useReport2();
   if (state.view === "run") return null;
@@ -299,7 +307,7 @@ export function Overview2({ narrow = false }: { narrow?: boolean }) {
     <section className="ledger overview2" data-surface="overview" aria-label={OVERVIEW_WORDS.band}>
       <Lead report={report} />
       {!empty &&
-        (narrow ? (
+        (folded ? (
           <details className="ledger-fold">
             <summary>
               <span className="ledger-fold-summary">
