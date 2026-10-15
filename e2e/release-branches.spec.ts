@@ -3,7 +3,7 @@
  * accessible summary, and the 0.13 timeline under it is drawn from published years only.
  */
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Locator } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { golden, openDetail2 } from "./support/report2/detail";
 
 const B = "symfony/monolog-bridge";
@@ -108,4 +108,158 @@ test.describe("390×844", () => {
 
     expect(overflow).toBeLessThanOrEqual(0);
   });
+});
+
+/** Opens every fold and waits until the page is still: a phone-width sheet slides in, and an axe
+ *  colour-contrast pass taken mid-slide reads half-faded text. */
+async function openFolds(page: Page, sheet: Locator): Promise<void> {
+  const buttons = sheet.locator(".detail-timeline-fold-btn");
+  const count = await buttons.count();
+  for (let index = 0; index < count; index++) {
+    const button = buttons.nth(index);
+    await button.click();
+    await expect(button).toHaveAttribute("aria-expanded", "true");
+  }
+  await page.mouse.move(0, 0);
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+        .map((animation) => animation.finished),
+    ),
+  );
+}
+
+test.describe("1440×900: the axis and the rows hold their geometry", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("'today' sits under the rule, clear of the latest header", async ({ page }) => {
+    const sheet = await openDetail2(page, "B", B);
+    const today = await table(sheet).locator(".detail-timeline-today").boundingBox();
+    const latest = await table(sheet)
+      .getByRole("columnheader", { name: /latest/i })
+      .boundingBox();
+    if (today === null || latest === null) throw new Error("today or latest has no box");
+
+    expect(today.y).toBeGreaterThan(latest.y + latest.height);
+  });
+
+  test("opening the fold never rescales the axis: your dot stays put", async ({ page }) => {
+    const sheet = await openDetail2(page, "B", B);
+    const dot = table(sheet).locator(".detail-timeline-row.is-mine .detail-timeline-dot");
+    const before = await dot.boundingBox();
+
+    await table(sheet)
+      .getByRole("button", { name: /5 between/ })
+      .click();
+
+    expect((await dot.boundingBox())?.x).toBeCloseTo(before?.x ?? -1, 1);
+  });
+
+  test("the guides' captions sit above their own lines, clear of the latest header", async ({ page }) => {
+    const sheet = await openDetail2(page, "B", B);
+    const latest = await table(sheet)
+      .getByRole("columnheader", { name: /latest/i })
+      .boundingBox();
+    for (const level of ["warn", "high"]) {
+      const caption = await table(sheet).locator(`.detail-timeline-guide-cap.is-${level}`).boundingBox();
+      const guide = await table(sheet)
+        .locator(`.detail-timeline-row.is-mine .detail-timeline-guide.is-${level}`)
+        .boundingBox();
+      if (caption === null || guide === null || latest === null) throw new Error(`no ${level} box`);
+
+      const lineX = level === "high" ? caption.x + caption.width : caption.x;
+      expect(Math.abs(lineX - (level === "high" ? guide.x + guide.width : guide.x))).toBeLessThanOrEqual(1);
+      expect(caption.x + caption.width).toBeLessThan(latest.x);
+    }
+  });
+
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`forced colours, ${colorScheme}: your ring, the newest disc and the lines differ from the page`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ colorScheme, forcedColors: "active" });
+      const sheet = await openDetail2(page, "B", B);
+      await openFolds(page, sheet);
+
+      const colours = await table(sheet).evaluate((grid) => {
+        const style = (selector: string): CSSStyleDeclaration => {
+          const element = grid.querySelector(selector);
+          if (element === null) throw new Error(`no ${selector}`);
+          return getComputedStyle(element);
+        };
+        return {
+          canvas: getComputedStyle(document.body).backgroundColor,
+          mineRing: style(".is-mine .detail-timeline-dot").borderTopColor,
+          mineLine: style(".is-mine .detail-timeline-tail").backgroundColor,
+          newestDisc: style(".is-newest .detail-timeline-dot").backgroundColor,
+          otherLine: style(
+            ".detail-timeline-row.is-folded:not(.is-mine):not(.is-newest) .detail-timeline-tail",
+          ).backgroundColor,
+          warnGuide: style(".detail-timeline-guide.is-warn").borderLeftStyle,
+          highGuide: style(".detail-timeline-guide.is-high").borderLeftStyle,
+        };
+      });
+
+      // Both guides are GrayText here, so their patterns alone tell warn from high.
+      expect(colours.warnGuide).not.toBe(colours.highGuide);
+      expect(colours.mineRing).not.toBe(colours.canvas);
+      expect(colours.mineLine).not.toBe(colours.canvas);
+      expect(colours.newestDisc).not.toBe(colours.canvas);
+      expect(colours.otherLine).not.toBe(colours.canvas);
+    });
+  }
+});
+
+test.describe("phone widths: nothing clipped, wrapped mid-word or ellipsised", () => {
+  for (const width of [320, 390]) {
+    test(`${String(width)}px, folds open`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 });
+      const sheet = await openDetail2(page, "B", B);
+      await openFolds(page, sheet);
+
+      const problems = await table(sheet).evaluate((grid) => {
+        const found: string[] = [];
+        if (grid.scrollWidth > grid.clientWidth + 1) found.push("table scrolls sideways");
+        const cells = grid.querySelectorAll<HTMLElement>(
+          "[role='cell'], [role='rowheader'], [role='columnheader']",
+        );
+        for (const cell of cells) {
+          if (getComputedStyle(cell).textOverflow === "ellipsis") found.push(`ellipsis: ${cell.className}`);
+          // A strip's dot may overhang its today rule on purpose, so a strip is checked against its
+          // neighbour instead.
+          if (cell.matches(".detail-timeline-strip, .detail-timeline-strip-head")) continue;
+          if (cell.scrollWidth > cell.clientWidth + 1 && cell.clientWidth > 0) {
+            found.push(`overflow: ${cell.className} "${cell.textContent}"`);
+          }
+        }
+        for (const caption of grid.querySelectorAll(".detail-timeline-guide-cap")) {
+          // One fixed pattern at every width: "5y", "3y", never "5y ago" at one width only.
+          if (!/^\d+y$/.test(caption.textContent)) found.push(`caption "${caption.textContent}"`);
+        }
+        for (const dot of grid.querySelectorAll(".detail-timeline-dot")) {
+          const next = dot.closest("[role='cell']")?.nextElementSibling;
+          if (next != null && dot.getBoundingClientRect().right > next.getBoundingClientRect().left)
+            found.push(`a dot runs into "${next.textContent}"`);
+        }
+        return found;
+      });
+
+      expect(problems).toEqual([]);
+    });
+  }
+
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`320px, folds open: no axe violation in the timeline, ${colorScheme}`, async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 900 });
+      await page.emulateMedia({ colorScheme, reducedMotion: "reduce" });
+      const sheet = await openDetail2(page, "B", B);
+      await openFolds(page, sheet);
+
+      const results = await new AxeBuilder({ page }).include(".d2-timeline").analyze();
+
+      expect(results.violations.map((v) => v.id)).toEqual([]);
+    });
+  }
 });

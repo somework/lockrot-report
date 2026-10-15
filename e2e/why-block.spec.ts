@@ -96,3 +96,29 @@ for (const colorScheme of ["light", "dark"] as const) {
     expect(styles).toEqual(["solid", "dashed", "dotted"]);
   });
 }
+
+test("the arithmetic button is toggled by Enter and by Space", async ({ page }) => {
+  const sheet = await openDetail2(page, "B", B);
+  const button = why(sheet).getByRole("button", { name: "Show the arithmetic" });
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+
+  await button.focus();
+  await page.keyboard.press("Enter");
+  await expect(button).toHaveAttribute("aria-expanded", "true");
+  await page.keyboard.press("Space");
+
+  await expect(button).toHaveAttribute("aria-expanded", "false");
+});
+
+test("in forced colours the arithmetic button keeps the shared marker and link underline", async ({
+  page,
+}) => {
+  await page.emulateMedia({ forcedColors: "active" });
+  const sheet = await openDetail2(page, "B", B);
+  const button = why(sheet).getByRole("button", { name: "Show the arithmetic" });
+
+  const glyph = await button.locator(".l1-mark").evaluate((el) => getComputedStyle(el, "::before").content);
+
+  expect(glyph).toBe('"▶"');
+  await expect(button).toHaveCSS("border-bottom-style", "dotted");
+});

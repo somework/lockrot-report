@@ -8,9 +8,12 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage, type RowGeometry } from "./support/report";
-import { FIXTURES, report2Url } from "./support/pages";
+import { report2Url } from "./support/pages";
 
-/** The wallabag list's 31st row: deep enough that thirty rows above it reflow. */
+/** A recorded lock with enough flagged rows to scroll at every width here. */
+const LONG_CASE = "baselined-wallabag-2.6";
+
+/** The list's 31st row: deep enough that thirty rows above it reflow. */
 const DEEP_ROW = 30;
 
 /** The name of the list's row at `index`, in document order. */
@@ -41,7 +44,7 @@ for (const [width, height] of [
       page,
     }) => {
       const report = await createReportPage(page);
-      await report.goto(FIXTURES.wallabag);
+      await report.gotoReport2(LONG_CASE);
       const pkg = await rowAt(report, DEEP_ROW);
       await report.centerRow(pkg);
       const before = await place(report, pkg);
@@ -68,7 +71,7 @@ test.describe("1440×900 keyboard and links", () => {
 
   test("j opens the first row and puts focus on it, not only once Escape closes it", async ({ page }) => {
     const report = await createReportPage(page);
-    await report.goto(FIXTURES.wallabag);
+    await report.gotoReport2(LONG_CASE);
     const first = await rowAt(report, 0);
 
     await report.pressJ();
@@ -87,7 +90,7 @@ test.describe("1440×900 keyboard and links", () => {
     }) => {
       await page.emulateMedia({ reducedMotion });
       const report = await createReportPage(page);
-      await report.goto(FIXTURES.wallabag);
+      await report.gotoReport2(LONG_CASE);
 
       for (let i = 0; i < DEEP_ROW; i++) await report.pressJ();
       const pkg = await rowAt(report, DEEP_ROW - 1);
@@ -109,7 +112,7 @@ test.describe("1440×900 keyboard and links", () => {
     page,
   }) => {
     const report = await createReportPage(page);
-    await report.goto(FIXTURES.wallabag);
+    await report.gotoReport2(LONG_CASE);
 
     for (let i = 0; i < DEEP_ROW; i++) await report.pressJ();
     const pkg = await rowAt(report, DEEP_ROW - 1);
@@ -124,8 +127,8 @@ test.describe("1440×900 keyboard and links", () => {
     page,
   }) => {
     const report = await createReportPage(page);
-    // spomky-labs/otphp sits about 2900px down wallabag's list.
-    await report.gotoWithHash(FIXTURES.wallabag, "view=findings&pkg=spomky-labs%2Fotphp");
+    // spomky-labs/otphp sits far down the list.
+    await report.gotoReport2WithHash(LONG_CASE, "view=findings&pkg=spomky-labs%2Fotphp");
     expect((await report.detail()).name).toBe("spomky-labs/otphp");
     expect((await place(report, "spomky-labs/otphp")).inView).toBe(true);
 

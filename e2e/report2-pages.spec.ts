@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { report2Cases, report2Url } from "./support/pages";
+import { FIXTURES, pageUrl, report2Cases, report2Url } from "./support/pages";
 import { findingsRowCells, findingsSurface } from "./support/report2/findings";
 import { overviewSurface } from "./support/report2/overview";
 
 /**
- * Every report-2 page built from lockrot's recorded bundle opens clean, on the report-2 surfaces
- * and with no newer-schema banner.
+ * Every report-2 page built from lockrot's recorded bundle opens clean, on the report-2 surfaces.
+ * A report-1 document gets the report-1 screen, through the page's own boot.
  */
 const cases = report2Cases();
 
@@ -42,7 +42,18 @@ for (const name of cases) {
 
     await expect(findingsSurface(page)).toBeAttached();
     await expect(overviewSurface(page)).toBeAttached();
-    await expect(page.locator(".schema-banner")).toHaveCount(0);
     expect(problems).toEqual([]);
   });
 }
+
+test("a report-1 document gets the report-1 screen: what to do, and no report", async ({ page }) => {
+  await page.goto(pageUrl(FIXTURES.report1));
+
+  await expect(
+    page.getByRole("heading", { name: "This page reads lockrot 0.14 reports only" }),
+  ).toBeVisible();
+  await expect(page.getByText("This report is older than this page.")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Rerun lockrot 0.14" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Open it with lockrot-report 0.13" })).toBeVisible();
+  await expect(page.getByRole("tab")).toHaveCount(0);
+});

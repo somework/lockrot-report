@@ -1,5 +1,5 @@
 /**
- * PD-TABS-1 (DESIGN.md §5): the tab row at phone widths. wallabag_wallabag's five labels with their
+ * PD-TABS-1 (DESIGN.md §5): the tab row at phone widths. The wallabag lock's five labels with their
  * real badge counts take 582px, so from 320px to 390px "Blast radius" was cut mid-word and
  * "Run data" sat off-screen with nothing to say either was there. The row now fades out on the side
  * with tabs out of sight, under a chevron that scrolls it, and scrolls the selected tab into full
@@ -8,8 +8,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { FIXTURES } from "./support/pages";
 
+/** A recorded lock whose five labels with their real badge counts take 582px. */
+const CASE = "baselined-wallabag-2.6";
 const NARROW = [320, 360, 390] as const;
 const WIDE = [768, 1024, 1440, 1920] as const;
 /** More chevron clicks than the widest overflow could ever need: a hard cap, not a wait. */
@@ -28,7 +29,7 @@ for (const width of NARROW) {
 
       test("the row says it scrolls, and the chevrons walk it end to end", async ({ page }) => {
         const report = await createReportPage(page);
-        await report.goto(FIXTURES.wallabag);
+        await report.gotoReport2(CASE);
 
         expect(await report.tabsOverflow()).toBe(true);
         expect(await report.tabInFullView("findings")).toBe(true);
@@ -52,7 +53,7 @@ for (const width of NARROW) {
 
       test("a shared link to the last tab opens with that tab in full view", async ({ page }) => {
         const report = await createReportPage(page);
-        await report.gotoWithHash(FIXTURES.wallabag, "view=run");
+        await report.gotoReport2WithHash(CASE, "view=run");
 
         expect(await report.activeTab()).toBe("run");
         expect(await report.tabInFullView("run")).toBe(true);
@@ -69,7 +70,7 @@ test.describe("390px, keyboard", () => {
     page,
   }) => {
     const report = await createReportPage(page);
-    await report.goto(FIXTURES.wallabag);
+    await report.gotoReport2(CASE);
 
     await report.focusTab("findings");
     await report.pressKey("ArrowLeft");
@@ -96,7 +97,7 @@ test.describe("390px, keyboard", () => {
   test("with reduced motion, a switch lands the tab in view without a glide", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     const report = await createReportPage(page);
-    await report.goto(FIXTURES.wallabag);
+    await report.gotoReport2(CASE);
 
     // A pasted link switches tabs without focusing any: only the row's own reveal can bring it in.
     await report.setLocationHash("view=radius");
@@ -111,7 +112,7 @@ test.describe("390px, forced colours", () => {
   test("the chevron stays visible in the system's colours", async ({ page }) => {
     await page.emulateMedia({ forcedColors: "active" });
     const report = await createReportPage(page);
-    await report.goto(FIXTURES.wallabag);
+    await report.gotoReport2(CASE);
 
     expect(await report.tabsOverflowCue()).toEqual({ prev: false, next: true });
   });
@@ -125,7 +126,7 @@ for (const colorScheme of ["light", "dark"] as const) {
 
     test("both chevrons shown, no serious or critical violation in the header", async ({ page }) => {
       const report = await createReportPage(page);
-      await report.goto(FIXTURES.wallabag);
+      await report.gotoReport2(CASE);
       await report.scrollTabs("next");
       expect(await report.tabsOverflowCue()).toEqual({ prev: true, next: true });
 
@@ -144,7 +145,7 @@ for (const width of WIDE) {
 
     test("the row fits: no fade, no chevron, every tab in view", async ({ page }) => {
       const report = await createReportPage(page);
-      await report.goto(FIXTURES.wallabag);
+      await report.gotoReport2(CASE);
 
       expect(await report.tabsOverflow()).toBe(false);
       expect(await report.tabsOverflowCue()).toEqual({ prev: false, next: false });
@@ -156,8 +157,6 @@ for (const width of WIDE) {
 }
 
 test.describe("report-2: the tab row of the baselined wallabag page", () => {
-  const CASE = "baselined-wallabag-2.6";
-
   for (const width of NARROW) {
     test(`${String(width)}px: the chevrons walk the row end to end, and the page never scrolls sideways`, async ({
       page,
