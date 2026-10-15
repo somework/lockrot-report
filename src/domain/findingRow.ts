@@ -15,7 +15,7 @@ import {
 } from "./findingWords";
 import { plural, pluralNoun } from "./format";
 import { allowlistByInWhy, allowlistReason, headlineReasonWord } from "./pageVocabulary";
-import type { Tone } from "./vocab";
+import { vocabTable, type Tone } from "./vocab";
 
 export interface BaselineMark {
   /** A tick for a state the baseline already holds; an outlined dot and a visible word otherwise. */
@@ -373,17 +373,23 @@ export function uncheckedNote(report: Report2): PackagesNote | null {
 /** The group head's count. */
 export const packagesCount = (n: number): string => plural(n, "package", "packages");
 
-const GRADE_TONES: Readonly<Record<string, Tone>> = {
+const GRADE_TONES: Readonly<Record<string, Tone>> = vocabTable({
   critical: "crit",
   high: "high",
   medium: "med",
   low: "low",
-};
+});
 
-/** The tone token of a band or a grade; `low` is the fallback for one the page does not know, as
- *  `TONE()` has it. */
+/** The tone token of a band or a grade; `low` is the fallback for one the page does not know. */
 export const gradeTone = (band: string | null): Tone =>
   band === null ? "low" : (GRADE_TONES[band] ?? "low");
+
+/** A verdict's tone, by the table of `score_model` that lists it: a band's own tone, none for a
+ *  score-0 verdict, and `low` for an id the model lists in neither. */
+export function verdictTone(model: Run["score_model"], verdict: string): Tone {
+  if (model.zero_verdicts.some((zero) => zero.verdict === verdict)) return "none";
+  return model.bands.some((band) => band.verdict === verdict) ? gradeTone(verdict) : "low";
+}
 
 /** What a screen reader hears after the package's name: the bar is hidden from it. */
 export const rowSpoken = (f: Finding): string => `score ${f.score.total}, ${f.verdict}`;

@@ -1,7 +1,7 @@
 import { useId } from "preact/hooks";
 import { acceptedUnchecked, advisoryLookup, noteRows, RUN_WORDS, thresholdRows } from "../../domain/runTab";
 import { bandRuler, scorePanelParts, scoreTables, type ScoreTable } from "../../domain/scorePanel";
-import { TONE } from "../../domain/vocab";
+import { verdictTone } from "../../domain/findingRow";
 import type { Report2 } from "../../model/report";
 import { OutLink, toneClass } from "../common/common";
 import "../views/views.css";
@@ -20,7 +20,7 @@ function Ruler({ model }: { model: Report2["run"]["score_model"] }) {
         {zones.map(({ verdict, from, to }) => (
           <i
             key={verdict}
-            className={toneClass(TONE(verdict))}
+            className={toneClass(verdictTone(model, verdict))}
             style={{ left: pct(from), width: pct(Math.max(0, to - from)) }}
           >
             {verdict}
@@ -42,7 +42,7 @@ function Ruler({ model }: { model: Report2["run"]["score_model"] }) {
   );
 }
 
-function Table({ table }: { table: ScoreTable }) {
+function Table({ table, model }: { table: ScoreTable; model: Report2["run"]["score_model"] }) {
   const id = useId();
   return (
     <div className="run2-table-wrap" role="region" aria-labelledby={id} tabIndex={0}>
@@ -69,7 +69,9 @@ function Table({ table }: { table: ScoreTable }) {
                   <td
                     key={index}
                     className={
-                      cell.band === undefined ? undefined : `run2-band ${toneClass(TONE(cell.band))}`
+                      cell.band === undefined
+                        ? undefined
+                        : `run2-band ${toneClass(verdictTone(model, cell.band))}`
                     }
                   >
                     {cell.text}
@@ -93,8 +95,8 @@ function ScoreWorks({ run }: { run: Report2["run"] }) {
       <Ruler model={run.score_model} />
       <p className="run2-caption">{parts.bands}</p>
       <p className="run2-caption">{parts.zero}</p>
-      <Table table={tables.weights} />
-      <Table table={tables.advisories} />
+      <Table table={tables.weights} model={run.score_model} />
+      <Table table={tables.advisories} model={run.score_model} />
       <p className="run2-caption">{parts.fixes}</p>
       <details className="run2-rules">
         <summary>{RUN_WORDS.rules(parts.rules.length)}</summary>

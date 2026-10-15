@@ -13,22 +13,6 @@ export function vocabTable<T extends object>(entries: T): Readonly<T> {
   return Object.assign(Object.create(null) as T, entries);
 }
 
-const TONE_TABLE: Readonly<Record<string, Tone>> = vocabTable({
-  critical: "crit",
-  high: "high",
-  medium: "med",
-  low: "low",
-  none: "none",
-  unknown: "low",
-  finished: "none",
-  ok: "none",
-});
-
-/** An unknown key reads as low, never an error. */
-export function TONE(key: string): Tone {
-  return TONE_TABLE[key] ?? "low";
-}
-
 export const SIGNAL_NAMES: Readonly<Record<string, string>> = vocabTable({
   S1: "marked abandoned",
   S2: "no recent release",

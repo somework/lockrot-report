@@ -5,6 +5,7 @@ import { ageLine, ageNotRead } from "../../domain/ageLine";
 import { answerText } from "../../domain/findingAnswer";
 import { baselineSuffix } from "../../domain/baselineSuffix";
 import { branchesLine } from "../../domain/branchesLine";
+import { verdictTone } from "../../domain/findingRow";
 import { checkReasonWords } from "../../domain/findingWords";
 import { checksLine } from "../../domain/checksLine";
 import { agesAsOf, DETAIL_WORDS, detailReach, REFERENCE_WORDS } from "../../domain/detailWords";
@@ -13,7 +14,6 @@ import { day } from "../../domain/format";
 import { safeHref } from "../../domain/links";
 import { HIDE_ACCEPTED, hiddenByFilters2 } from "../../domain/list";
 import { repositoryLine } from "../../domain/repositoryLine";
-import { TONE } from "../../domain/vocab";
 import { OutLink, toneClass } from "../common/common";
 import { useReport } from "../context";
 import { KeyValue, presentRows, type KeyValueRow } from "../detail/KeyValue";
@@ -115,7 +115,9 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
             </h2>
             <span className="detail-version">{finding.version}</span>
           </div>
-          <span className={`pill ${toneClass(TONE(finding.verdict))}`}>{finding.verdict}</span>
+          <span className={`pill ${toneClass(verdictTone(run.score_model, finding.verdict))}`}>
+            {finding.verdict}
+          </span>
           <button type="button" ref={closeRef} className="detail-close" onClick={onClose}>
             {DETAIL_WORDS.close}
           </button>

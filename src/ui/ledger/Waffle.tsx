@@ -1,5 +1,4 @@
 import { toneClass } from "../common/common";
-import { TONE } from "../../domain/vocab";
 import { waffleRows, type WaffleRun } from "../../domain/summary";
 
 /**
@@ -28,7 +27,7 @@ const BUDGETS = Object.keys(COLUMNS) as Budget[];
 export function Waffle({ runs, total }: { runs: readonly WaffleRun[]; total: number }) {
   const flagged = runs.reduce((sum, run) => sum + run.count, 0);
   const squares = Math.max(total, flagged);
-  const tones = runs.flatMap((run) => Array.from({ length: run.count }, () => toneClass(TONE(run.priority))));
+  const tones = runs.flatMap((run) => Array.from({ length: run.count }, () => toneClass(run.tone)));
   const rows = Object.fromEntries(BUDGETS.map((b) => [b, waffleRows(squares, COLUMNS[b])])) as Record<
     Budget,
     number

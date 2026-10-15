@@ -3,7 +3,6 @@ import {
   DOCS_URL,
   SIGNAL_DEFS,
   SIGNAL_NAMES,
-  TONE,
   annotateThresholds,
   signalDef,
   signalDocUrl,
@@ -12,35 +11,6 @@ import {
 /** Ids a plain `{}` literal would resolve as inherited `Object.prototype` members instead of
  *  `undefined` — the vocabTable() prototype-pollution regression this file guards against. */
 const POLLUTION_IDS: readonly string[] = ["constructor", "__proto__", "toString", "hasOwnProperty"];
-
-describe("TONE", () => {
-  test("maps every grade key", () => {
-    expect(TONE("critical")).toBe("crit");
-    expect(TONE("high")).toBe("high");
-    expect(TONE("medium")).toBe("med");
-    expect(TONE("low")).toBe("low");
-    expect(TONE("none")).toBe("none");
-  });
-
-  test("maps every score-0 verdict key", () => {
-    expect(TONE("unknown")).toBe("low");
-    expect(TONE("finished")).toBe("none");
-    expect(TONE("ok")).toBe("none");
-  });
-
-  test("falls back to 'low' for a key it does not know, rather than throwing", () => {
-    expect(TONE("moderate")).toBe("low");
-    expect(TONE("")).toBe("low");
-  });
-
-  test("never returns an inherited Object.prototype member for a prototype-pollution id", () => {
-    // `{}` inherits `constructor`, a value `?? "low"` would never catch.
-    expect(TONE("constructor")).toBe("low");
-    expect(TONE("__proto__")).toBe("low");
-    expect(TONE("toString")).toBe("low");
-    expect(TONE("hasOwnProperty")).toBe("low");
-  });
-});
 
 describe("SIGNAL_NAMES / SIGNAL_DEFS", () => {
   test("cover S1 through S10", () => {

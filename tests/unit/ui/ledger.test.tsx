@@ -4,6 +4,7 @@ import { assembleEmbed } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
 import { App } from "../../../src/ui/App";
 import { CleanMark } from "../../../src/ui/ledger/CleanMark";
+import type { WaffleRun } from "../../../src/domain/summary";
 import { Waffle } from "../../../src/ui/ledger/Waffle";
 
 afterEach(cleanup);
@@ -13,14 +14,14 @@ function squares(waffle: Element | null): string[] {
 }
 
 describe("Waffle", () => {
-  const runs = [
-    { priority: "critical", count: 1 },
-    { priority: "high", count: 3 },
-    { priority: "medium", count: 1 },
-    { priority: "low", count: 2 },
+  const runs: readonly WaffleRun[] = [
+    { tone: "crit", count: 1 },
+    { tone: "high", count: 3 },
+    { tone: "med", count: 1 },
+    { tone: "low", count: 2 },
   ];
 
-  it("draws one square per package, the flagged ones first in their grade's tone, then the rest quiet", () => {
+  it("draws one square per package, the flagged ones first in their run's tone, then the rest quiet", () => {
     const { container } = render(<Waffle runs={runs} total={202} />);
 
     const cells = squares(container.querySelector(".waffle"));
@@ -68,7 +69,7 @@ describe("Waffle", () => {
   });
 
   it("never draws fewer squares than the flagged runs add up to", () => {
-    const { container } = render(<Waffle runs={[{ priority: "high", count: 5 }]} total={3} />);
+    const { container } = render(<Waffle runs={[{ tone: "high", count: 5 }]} total={3} />);
 
     expect(container.querySelectorAll(".waffle-cell")).toHaveLength(5);
   });
