@@ -27,7 +27,7 @@ export function normalize(input: unknown): NormalizeResult {
 
   const lockrot = isRecord(shape.reportSource.lockrot) ? shape.reportSource.lockrot : {};
   const schema = typeof lockrot.schema === "number" && Number.isFinite(lockrot.schema) ? lockrot.schema : 1;
-  if (schema < 2) {
+  if (schema < Math.min(...READS_SCHEMAS)) {
     const version = typeof lockrot.version === "string" ? lockrot.version : null;
     return { ok: false, error: { kind: "report-1", message: REPORT1_MESSAGE, version } };
   }

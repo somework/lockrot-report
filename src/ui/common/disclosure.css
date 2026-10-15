@@ -64,7 +64,4 @@
   .l1-btn {
     display: none;
   }
-  .l1-panel[hidden] {
-    display: block !important;
-  }
 }

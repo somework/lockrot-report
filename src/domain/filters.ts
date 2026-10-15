@@ -32,15 +32,6 @@ const RAIL_SIGNAL_LABELS: Readonly<Record<string, string>> = vocabTable({
   S10: "a check did not run",
 });
 
-/**
- * Numeric id order (S10 after S9); anything that is not `S<digits>` sorts after, alphabetically.
- */
-export function signalSortKey(id: string): readonly [number, string] {
-  const match = /^S(\d+)$/.exec(id);
-  const digits = match?.[1];
-  return digits !== undefined ? [Number(digits), ""] : [Number.MAX_SAFE_INTEGER, id];
-}
-
 function signalLabel(id: string): string {
   return RAIL_SIGNAL_LABELS[id] ?? SIGNAL_NAMES[id] ?? "";
 }

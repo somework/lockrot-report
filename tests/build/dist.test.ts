@@ -133,7 +133,8 @@ describe.skipIf(!distBuilt)(
       expect(manifest.version.length).toBeGreaterThan(0);
     });
 
-    it("manifest.schema.report lists READS_SCHEMAS (DESIGN.md §2)", () => {
+    it("manifest.schema.report lists READS_SCHEMAS, which is report-2 only (DESIGN.md §2)", () => {
+      expect(READS_SCHEMAS).toEqual([2]);
       expect(manifest.schema.report).toEqual([...READS_SCHEMAS]);
     });
 

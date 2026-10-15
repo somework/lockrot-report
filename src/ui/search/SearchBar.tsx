@@ -71,11 +71,8 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
   const filterable = population2(report, state.view).length > 0;
   const line = countLine(report, state);
   const active = activeFilterCount(state);
-  // a11y review: `DetailHeader`'s own "Hidden by the current filters." note has no live region of
-  // its own, so a reader typing a search term never heard that the package they had open just left
-  // the list — only this line's own count is announced. It shares `domain/filters.ts#hiddenByFilters`
-  // with that note rather than duplicating the check, so the two can never disagree about when it
-  // applies.
+  // a11y review: the detail sheet's own "hidden by the current filters" note has no live region, so
+  // this line says it too. Both read `list.ts#hiddenByFilters2`, so they never disagree.
   const openPkgHidden = state.pkg !== null && hiddenByFilters2(report, state, state.pkg);
 
   return (

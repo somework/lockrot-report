@@ -88,8 +88,7 @@ export interface HeaderProps {
 
 /**
  * The top band: what was checked, against which PHP, as of when, by which lockrot, and the two
- * page-wide controls (legacy report.html:26-42). Every value falls back to an em dash rather than a
- * guess: the page must not name a PHP target the run may not have had.
+ * page-wide controls (legacy report.html:26-42).
  */
 export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert = false }: HeaderProps) {
   const { model } = useReport();

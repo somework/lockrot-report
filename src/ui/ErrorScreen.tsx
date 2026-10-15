@@ -15,7 +15,7 @@ const EXPLANATIONS: Readonly<Record<ScreenError["kind"], string>> = {
     "The data parsed, but it is not shaped like a lockrot report: it has none of the fields " +
     '(a "report" object with its findings) this page expects.',
   "malformed-report":
-    "The data names report schema 2, but it is not a whole report-2 document, so the page cannot " +
+    "The data names report schema 2 or newer, but it is not a whole report-2 document, so the page cannot " +
     "trust what it would draw from it.",
   "render-failed":
     "The report was read, but part of it broke while the page drew it, so the page shows this " +
