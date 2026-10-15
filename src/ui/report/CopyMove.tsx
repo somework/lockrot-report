@@ -1,6 +1,13 @@
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import { DETAIL_WORDS } from "../../domain/detailWords";
-import { commandLine, REFUSED_COMMAND, SHELL_NAMES, SHELLS, type Shell } from "../../domain/shellArgv";
+import {
+  commandLine,
+  isPrintableArgv,
+  REFUSED_COMMAND,
+  SHELL_NAMES,
+  SHELLS,
+  type Shell,
+} from "../../domain/shellArgv";
 
 /** Beside `lockrot-theme`: one viewer's choice, kept in their own browser only. */
 export const SHELL_KEY = "lockrot-shell";
@@ -50,15 +57,15 @@ const LABELS: Readonly<Record<Status, string>> = {
   manual: DETAIL_WORDS.copyByHand,
 };
 
-/** The move's commands for one shell; `null` stands for a command the page refuses to print. */
-const linesFor = (argvs: readonly (readonly string[])[], shell: Shell): (string | null)[] =>
-  argvs.map((argv) => commandLine(argv, shell));
+/** The move's commands for one shell. */
+const linesFor = (argvs: readonly (readonly string[])[], shell: Shell): string[] =>
+  argvs.map((argv) => commandLine(argv, shell) ?? REFUSED_COMMAND);
 
 /**
  * The copy control of design 5C: a Copy button and a shell menu, POSIX first. It renders `argvs`
- * as written (a move's `next_step.commands[]`, the overview's `update_now_command`), and for an argv
- * the argument rule refuses it prints why in place of the command and offers no copy, so a reader
- * never runs part of a move. `label` replaces the move's own eyebrow.
+ * as written (a move's `next_step.commands[]`, the overview's `update_now_command`). When the
+ * argument rule refuses one argv, it prints why in place of every step, on every shell, and offers no
+ * copy, so a reader never runs part of a move. `label` replaces the move's own eyebrow.
  */
 export function CopyMove({ argvs, label }: { argvs: readonly (readonly string[])[]; label?: string }) {
   const [shell, setShell] = useState<Shell>(readShell);
@@ -82,8 +89,8 @@ export function CopyMove({ argvs, label }: { argvs: readonly (readonly string[])
   }, [menuOpen]);
 
   if (argvs.length === 0) return null;
-  const lines = linesFor(argvs, shell);
-  const printable = lines.every((line) => line !== null);
+  const printable = argvs.every(isPrintableArgv);
+  const lines = printable ? linesFor(argvs, shell) : [REFUSED_COMMAND];
 
   const closeMenu = (): void => {
     setMenuOpen(false);
@@ -180,14 +187,14 @@ export function CopyMove({ argvs, label }: { argvs: readonly (readonly string[])
             }}
           >
             {SHELL_NAMES[option]}
-            <small>{linesFor(argvs.slice(0, 1), option)[0] ?? REFUSED_COMMAND}</small>
+            {printable && <small>{linesFor(argvs.slice(0, 1), option)[0]}</small>}
           </button>
         ))}
       </div>
       <pre className="d2-copy-cmd">
         {lines.map((line, i) => (
-          <span key={i} className={line === null ? "d2-copy-line is-refused" : "d2-copy-line"}>
-            {line ?? REFUSED_COMMAND}
+          <span key={i} className={printable ? "d2-copy-line" : "d2-copy-line is-refused"}>
+            {line}
           </span>
         ))}
       </pre>

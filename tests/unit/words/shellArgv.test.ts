@@ -12,45 +12,12 @@ import { readContractJson, recordedCases } from "./recorded";
 
 interface Row {
   argv: string[];
-  posix: string;
-  cmd: string;
-  powershell: string;
+  posix: string | null;
+  cmd: string | null;
+  powershell: string | null;
 }
 
 const { rows } = readContractJson("en", "commands.json") as { rows: Row[] };
-
-// The pinned golden predates SPEC §5.6's argument rule. These rows hold an argument outside the
-// rule's set, so the page refuses them on every shell until lockrot's re-pin rewrites them.
-const REFUSED_BY_THE_RULE = new Set([
-  "composer config extra.lockrot.reason 'the team'\\''s fork'",
-  "composer require 'vendor/package:~1.4,!=1.4.2'",
-]);
-
-// The pinned golden single-quotes for PowerShell. SPEC §5.6 now writes argv[0], `--%`, then the
-// cmd.exe rendering of the rest, because PowerShell hands a .bat target to cmd.exe. Keyed by the
-// row's POSIX line; the re-pin rewrites these rows.
-const POWERSHELL_BY_THE_NEW_RULE: Readonly<Record<string, string>> = {
-  "composer require 'friendsofsymfony/oauth-server-bundle:^1.6.2'":
-    'composer --% require "friendsofsymfony/oauth-server-bundle:^1.6.2"',
-  "composer require 'geoip2/geoip2:^3.4'": 'composer --% require "geoip2/geoip2:^3.4"',
-  "composer require 'guzzlehttp/guzzle:^7.15.2'": 'composer --% require "guzzlehttp/guzzle:^7.15.2"',
-  "composer require 'guzzlehttp/guzzle:^8.2'": 'composer --% require "guzzlehttp/guzzle:^8.2"',
-  "composer require 'joomla/filter:^3.0.5'": 'composer --% require "joomla/filter:^3.0.5"',
-  "composer require 'joomla/string:^3.0'": 'composer --% require "joomla/string:^3.0"',
-  "composer require 'laravel/framework:^12.69.0'": 'composer --% require "laravel/framework:^12.69.0"',
-  "composer require 'php:>=7.2.5' --no-update": 'composer --% require "php:>=7.2.5" --no-update',
-  "composer require 'php:>=8.1' --no-update": 'composer --% require "php:>=8.1" --no-update',
-  "composer require 'php:>=8.2' --no-update": 'composer --% require "php:>=8.2" --no-update',
-  "composer require 'symfony/debug:^4.4.0'": 'composer --% require "symfony/debug:^4.4.0"',
-  "composer require 'symfony/debug:^4.4.44'": 'composer --% require "symfony/debug:^4.4.44"',
-  "composer require 'symfony/monolog-bridge:^5.4'": 'composer --% require "symfony/monolog-bridge:^5.4"',
-  "composer require 'symfony/monolog-bridge:^5.4.52'":
-    'composer --% require "symfony/monolog-bridge:^5.4.52"',
-  "composer require 'symfony/yaml:^5.4.52'": 'composer --% require "symfony/yaml:^5.4.52"',
-  "composer require 'twig/twig:^3.27.0'": 'composer --% require "twig/twig:^3.27.0"',
-  "composer require 'vendor/package:>=1.2 <2.0'": 'composer --% require "vendor/package:>=1.2 <2.0"',
-  "composer require 'vendor/package:^2.0 || ^3.0'": 'composer --% require "vendor/package:^2.0 || ^3.0"',
-};
 
 const inEveryShell = (argv: readonly string[]): Record<Shell, string | null> =>
   Object.fromEntries(SHELLS.map((shell) => [shell, commandLine(argv, shell)])) as Record<
@@ -61,26 +28,21 @@ const inEveryShell = (argv: readonly string[]): Record<Shell, string | null> =>
 const refused = { posix: null, cmd: null, powershell: null };
 
 describe("an argv in each shell", () => {
-  test.each(rows)("$posix", ({ argv, posix, cmd, powershell }) => {
-    expect(inEveryShell(argv)).toEqual(
-      REFUSED_BY_THE_RULE.has(posix)
-        ? refused
-        : { posix, cmd, powershell: POWERSHELL_BY_THE_NEW_RULE[posix] ?? powershell },
-    );
+  test("the golden holds rows the rule refuses and rows it passes", () => {
+    expect(rows.filter((row) => row.posix === null).length).toBeGreaterThan(0);
+    expect(rows.filter((row) => row.posix !== null).length).toBeGreaterThan(0);
   });
 
-  test("every row the new rules change is still in the golden", () => {
-    const changed = [...REFUSED_BY_THE_RULE, ...Object.keys(POWERSHELL_BY_THE_NEW_RULE)];
-
-    expect(rows.filter((row) => changed.includes(row.posix))).toHaveLength(changed.length);
+  test.each(rows.map((row) => [JSON.stringify(row.argv), row] as const))("%s", (_, row) => {
+    expect(inEveryShell(row.argv)).toEqual({ posix: row.posix, cmd: row.cmd, powershell: row.powershell });
   });
 
-  test("PowerShell keeps the bare form only when every argument is inside its bare set", () => {
+  test("PowerShell always writes composer, then --%, then the cmd.exe form of the rest", () => {
     expect(commandLine(["composer", "update", "symfony/yaml"], "powershell")).toBe(
-      "composer update symfony/yaml",
+      "composer --% update symfony/yaml",
     );
-    expect(commandLine(["composer", "require", "a/b:1.0,@dev", "x+y=z"], "powershell")).toBe(
-      "composer --% require a/b:1.0,@dev x+y=z",
+    expect(commandLine(["composer", "why-not", "a/b", "1.10"], "powershell")).toBe(
+      "composer --% why-not a/b 1.10",
     );
   });
 
@@ -120,6 +82,7 @@ describe("the command argument rule (SPEC §5.6)", () => {
     ["parentheses", "(a)"],
     ["a character outside ASCII", "ü"],
     ["the empty argument", ""],
+    ["an argument of spaces only", "   "],
     ["a bare --%", "--%"],
     ["an option from the data", "--working-dir=x"],
     ["a short option from the data", "-d"],
@@ -128,8 +91,14 @@ describe("the command argument rule (SPEC §5.6)", () => {
     expect(inEveryShell(["composer", "require", argument])).toEqual(refused);
   });
 
-  test("allows lockrot's own --no-update option", () => {
+  test("allows an argument with spaces between other characters", () => {
+    expect(isPrintableArgv(["composer", "require", "a/b:>=1.2 <2.0"])).toBe(true);
+  });
+
+  test("allows lockrot's own --no-update option in a require step only", () => {
     expect(isPrintableArgv(["composer", "require", "php:>=8.1", "--no-update"])).toBe(true);
+    expect(inEveryShell(["composer", "update", "a/b", "--no-update"])).toEqual(refused);
+    expect(inEveryShell(["composer", "why-not", "a/b", "--no-update"])).toEqual(refused);
   });
 
   test("allows @name, a,b and a/b|c, which PowerShell writes after --%", () => {
@@ -138,14 +107,20 @@ describe("the command argument rule (SPEC §5.6)", () => {
     );
   });
 
-  test("refuses a command name outside PowerShell's bare set on every shell, which --% would leave unquoted", () => {
-    expect(isPrintableArgv(["a|calc", "require", "a/b:^1.0"])).toBe(false);
-    expect(inEveryShell(["a|calc", "require", "a/b:^1.0"])).toEqual(refused);
-    expect(inEveryShell(["comp oser", "update", "a/b"])).toEqual(refused);
+  test.each([
+    ["another program", ["iex", "calc"]],
+    ["a program that passes the set", ["a,b", "update", "a/b"]],
+    ["an option as the program", ["-x", "update", "a/b"]],
+    ["another subcommand", ["composer", "exec", "calc"]],
+    ["the subcommand missing", ["composer"]],
+    ["an empty argv", []],
+  ])("refuses %s on every shell", (_, argv) => {
+    expect(isPrintableArgv(argv)).toBe(false);
+    expect(inEveryShell(argv)).toEqual(refused);
   });
 
-  test("refuses an empty argv", () => {
-    expect(isPrintableArgv([])).toBe(false);
+  test.each(["update", "require", "why-not"])("allows the subcommand %s", (subcommand) => {
+    expect(isPrintableArgv(["composer", subcommand, "a/b"])).toBe(true);
   });
 });
 

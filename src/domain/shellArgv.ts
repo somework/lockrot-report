@@ -18,44 +18,43 @@ export const REFUSED_COMMAND = "This command holds characters the page does not 
 
 // `CommandArgument`: inside cmd.exe's double quotes `%` and `!` still expand, PowerShell closes a
 // single-quoted string at U+2018 to U+201B, and a CR or LF splits a pasted line.
-const COMMAND_ARGUMENT = /^[A-Za-z0-9/._:@+=,^~*<>| -]+$/;
-const LOCKROT_OPTIONS: ReadonlySet<string> = new Set(["--no-update"]);
+const COMMAND_ARGUMENT = /^(?! +$)[A-Za-z0-9/._:@+=,^~*<>| -]+$/;
+// Any other program or subcommand runs what the data names (`composer exec calc`, `iex calc`).
+const SUBCOMMANDS: ReadonlySet<string> = new Set(["update", "require", "why-not"]);
+// Anywhere else, a leading `-` came from data and would pass an option to Composer.
+const LOCKROT_OPTIONS: Readonly<Record<string, string>> = { require: "--no-update" };
 
 const POSIX_BARE = /^[A-Za-z0-9/._:@%+=,-]+$/;
-const CMD_SPECIAL = /[ ^&|<>()"]/;
-const POWERSHELL_BARE = /^[A-Za-z0-9/._:-]+$/;
-
-const isArgument = (argument: string): boolean =>
-  COMMAND_ARGUMENT.test(argument) && (!argument.startsWith("-") || LOCKROT_OPTIONS.has(argument));
+const CMD_SPECIAL = /[ ^|<>]/;
 
 /** A package name inside a command the page writes itself: the argument set and no leading `-`,
  *  with no option allowed (SPEC §5.6). */
 export const isPrintableName = (name: string): boolean =>
   COMMAND_ARGUMENT.test(name) && !name.startsWith("-");
 
-// The command name stays bare before PowerShell's `--%`, so it gets the strictest set.
+/** lockrot's `CommandArgument::allPass`. */
 export function isPrintableArgv(argv: readonly string[]): boolean {
-  const [target] = argv;
-  return target !== undefined && POWERSHELL_BARE.test(target) && argv.every(isArgument);
+  const [program, subcommand = ""] = argv;
+  if (program !== "composer" || !SUBCOMMANDS.has(subcommand)) return false;
+  return argv.every(
+    (argument) =>
+      COMMAND_ARGUMENT.test(argument) &&
+      (!argument.startsWith("-") || LOCKROT_OPTIONS[subcommand] === argument),
+  );
 }
 
 // The rule leaves no quote, `%` or `!` inside an argument, so no quoting below escapes one.
 export const posixArgument = (argument: string): string =>
   POSIX_BARE.test(argument) && !argument.startsWith("=") ? argument : `'${argument}'`;
-const cmdWord = (argument: string): string => (CMD_SPECIAL.test(argument) ? `"${argument}"` : argument);
+const cmdLine = (words: readonly string[]): string =>
+  words.map((word) => (CMD_SPECIAL.test(word) ? `"${word}"` : word)).join(" ");
 
 // `composer` is often composer.bat, and PowerShell hands a .bat target's arguments to cmd.exe,
-// which re-parses single quotes. After `--%` PowerShell passes the rest verbatim.
-function powershellLine(argv: readonly string[]): string {
-  if (argv.every((argument) => POWERSHELL_BARE.test(argument))) return argv.join(" ");
-  const [target, ...rest] = argv;
-  return [target, "--%", ...rest.map(cmdWord)].join(" ");
-}
-
+// which parses `|`, `<`, `>` and `^` again. After `--%` PowerShell passes the rest verbatim.
 const LINE: Readonly<Record<Shell, (argv: readonly string[]) => string>> = {
   posix: (argv) => argv.map(posixArgument).join(" "),
-  cmd: (argv) => argv.map(cmdWord).join(" "),
-  powershell: powershellLine,
+  cmd: cmdLine,
+  powershell: ([program, ...rest]) => `${program} --% ${cmdLine(rest)}`,
 };
 
 /** `null` when the argv fails the argument rule: no shell gets a line then. */
