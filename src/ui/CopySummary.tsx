@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from "preact/hooks";
 import { advisoryCheckIncomplete, allAdvisories } from "../domain/advisories";
+import { copySummary } from "../domain/copySummary";
 import { population } from "../domain/filters";
 import { day } from "../domain/format";
 import { summaryText } from "../domain/share";
@@ -38,7 +39,10 @@ type Status = "idle" | "copied" | "manual";
  */
 export function CopySummary() {
   const { model } = useReport();
-  const text = useMemo(() => summaryFor(model), [model]);
+  const text = useMemo(
+    () => (model.report2 === null ? summaryFor(model) : copySummary(model.report2.report).join("\n")),
+    [model],
+  );
   const [status, setStatus] = useState<Status>("idle");
   const popover = useRef<HTMLDivElement>(null);
   const area = useRef<HTMLTextAreaElement>(null);

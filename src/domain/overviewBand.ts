@@ -22,6 +22,8 @@ export const OVERVIEW_WORDS = {
   byFix: "By fix (packages)",
   libyears: "Libyears",
   more: "More about this lock",
+  gateFails: "✕",
+  gatePasses: "✓",
 } as const;
 
 export type Lead =
