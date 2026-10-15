@@ -134,7 +134,7 @@ describe("the Libyears panel at its edges", () => {
     expect(libyearsPanel(report)).not.toContain("furthest behind");
   });
 
-  test("writes one clause per unmeasured key above zero, in the document's key order, with two decimals", () => {
+  test("writes one clause per unmeasured key above zero, in the schema's key order, with two decimals", () => {
     const report = composite();
     report.libyears = {
       ...report.libyears,
@@ -146,6 +146,20 @@ describe("the Libyears panel at its edges", () => {
 
     expect(libyearsPanel(report)).toBe(
       "2.12 libyears over 5 packages · 0.00 from direct requirements · 1 not measured (not in the repository) · 2 not measured (no date)",
+    );
+  });
+
+  test("keeps the schema's key order when the document holds the keys in another, and prints an unknown key last", () => {
+    const report = composite();
+    const { undated: _undated, not_found: _notFound, ...rest } = none(report);
+    report.libyears = {
+      ...report.libyears,
+      furthest_behind: null,
+      unmeasured: { later_cause: 4, undated: 2, ...rest, not_found: 1 } as Report2["libyears"]["unmeasured"],
+    };
+
+    expect(libyearsPanel(report)).toMatch(
+      / · 1 not measured \(not in the repository\) · 2 not measured \(no date\) · 4 not measured \(later cause\)$/,
     );
   });
 
