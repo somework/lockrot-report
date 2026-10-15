@@ -255,7 +255,11 @@ test.describe("report-2: the sheet scrolls alone", () => {
         expect(scrollable).toBeGreaterThan(0);
 
         const before = await scrollYAfterHover(page, container);
-        await page.mouse.wheel(0, 5000);
+        // Firefox spends one wheel event's delta in steps, so the gesture is a few events, capped.
+        for (let i = 0; i < 10 && (await container.evaluate((el) => el.scrollTop)) < scrollable; i++) {
+          await page.mouse.wheel(0, 1500);
+          await page.waitForTimeout(150);
+        }
 
         await expect.poll(() => container.evaluate((el) => el.scrollTop)).toBe(scrollable);
         expect(await page.evaluate(() => window.scrollY)).toBe(before);
