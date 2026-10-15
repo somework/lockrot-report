@@ -52,7 +52,7 @@ function source(
 const CLOSED = { disclosure: {}, pkg: null, narrow: false } as const;
 
 describe("radiusRows", () => {
-  it("counts only the rows it lists, the parent's own flag kept apart", () => {
+  it("counts only the rows it lists, the parent's own flag kept apart (M24/M25)", () => {
     // Arrange: acme/parent is itself flagged and pulls in one child.
     const parent = finding("acme/parent", { chain: ["acme/parent"] });
     const child = pulled("acme/child", ["acme/parent"]);

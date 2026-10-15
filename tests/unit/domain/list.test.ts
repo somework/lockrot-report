@@ -262,3 +262,17 @@ describe("renderedPackages2", () => {
     expect(renderedPackages2(composite, state(), "radius")).toEqual(["guzzlehttp/guzzle"]);
   });
 });
+
+describe("the Since filter (M19)", () => {
+  it("keeps a state only for a finding the baseline records, never one with no baseline entry", () => {
+    const baselined = readContractJson("report-2", "B-baselined-dagger.json") as Report2;
+    const recorded = only(baselined.findings);
+    const unrecorded = { ...recorded, package: "acme/unrecorded", rank: recorded.rank + 1, baseline: null };
+    const report: Report2 = { ...baselined, findings: [recorded, unrecorded] };
+
+    for (const since of ["new", "worsened", "known"]) {
+      const kept = names(applyFilters2(report, state({}, { since: [since] }), "findings"));
+      expect(kept, since).toEqual(since === recorded.baseline?.status ? [recorded.package] : []);
+    }
+  });
+});

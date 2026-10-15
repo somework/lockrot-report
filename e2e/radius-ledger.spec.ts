@@ -26,7 +26,7 @@ test.describe("report-2: the Blast radius tab reads chain, direct_dependents and
     );
   });
 
-  test("the toggle states as many packages as the row then lists", async ({ page }) => {
+  test("M25: the toggle states as many packages as the row then lists", async ({ page }) => {
     await go(page, WALLABAG);
     const toggle = radiusRow(page, "kphoen/rulerz").getByRole("button", { name: /Show the \d+ packages/ });
     const stated = Number(
