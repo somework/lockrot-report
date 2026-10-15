@@ -7,7 +7,6 @@ import {
   GATE_GLYPHS,
   gateState,
   gradeChips,
-  leadFigure,
   leadScope,
   multiFlagLine,
   OVERVIEW_WORDS,
@@ -15,9 +14,9 @@ import {
   updateNowArgv,
   type FlagBar,
   type GateState,
-  type Lead,
   type SeverityCount,
 } from "../../domain/overviewBand";
+import { figureLine, GRADE_HEAD, gradeLine, gradeLineHead } from "../../domain/projectGrade";
 import { verdictTone } from "../../domain/findingRow";
 import { findingsLink } from "../../domain/overviewTab";
 import type { Tone } from "../../domain/vocab";
@@ -44,31 +43,33 @@ function useToggle(group: FilterGroup) {
   };
 }
 
-function Figure({ lead }: { lead: Lead }) {
-  if (lead.kind === "empty") {
-    return (
-      <p className="lead-figure">
-        <span className="lead-clean lead-empty">{lead.text}</span>
-      </p>
-    );
-  }
-  if (lead.kind === "clean") {
-    return (
-      <p className={`lead-figure ${toneClass("none")}`}>
-        <CleanMark size={30} />
-        <span className={`lead-clean ${toneClass("none")}`}>{lead.text}</span>
-      </p>
-    );
-  }
+/** The grade line, in the largest type: a screen reader meets it before the waffle. */
+function GradeLineView({ report }: { report: Report2 }) {
+  const line = gradeLine(report);
+  if (line === null) return null;
+  const clean = line.grade === null;
   return (
-    <p className="lead-figure">
-      <span className="lead-num">{lead.figure}</span>
-      <span className="lead-of">
-        <span className="lead-of-line">{lead.of}</span>{" "}
-        <span className="lead-of-line">
-          {lead.flagged} <span className="lead-share">{lead.share}</span>
-        </span>
-      </span>
+    <p className={`ov-grade${clean ? ` ${toneClass("none")}` : ""}`}>
+      {clean && <CleanMark size={26} />}
+      {line.grade === null || line.link === null ? (
+        gradeLineHead(line)
+      ) : (
+        <>
+          {GRADE_HEAD}{" "}
+          <TabLink
+            target={line.link}
+            className={`ov-grade-chip ${toneClass(verdictTone(report.run.score_model, line.grade))}`}
+          >
+            {line.grade}
+          </TabLink>
+        </>
+      )}
+      {line.clauses.map((clause, index) => (
+        <Fragment key={index}>
+          <span className="ov-grade-sep"> · </span>
+          {clause}
+        </Fragment>
+      ))}
     </p>
   );
 }
@@ -94,17 +95,24 @@ export function GateLine({ report, className }: { report: Report2; className: st
   );
 }
 
-/** The lead of Overview: each grade chip links to Findings under that grade (PD-OVERVIEW-7). */
+/** The lead of Overview: the grade line, the figure line, the grade chips, the waffle and the gate.
+ *  Each chip links to Findings under its grade (PD-OVERVIEW-7). */
 export function Lead({ report }: { report: Report2 }) {
-  const lead = leadFigure(report);
   const chips = gradeChips(report);
-  const scope = lead.kind === "flagged" ? leadScope(report) : [];
+  const figure = figureLine(report);
+  const scope = leadScope(report);
 
   return (
-    <div className={`ledger-lead${lead.kind === "flagged" ? "" : ` is-${lead.kind}`}`}>
+    <div className="ledger-lead">
       <div className="lead-answer">
-        <span className="eyebrow">{OVERVIEW_WORDS.flagged}</span>
-        <Figure lead={lead} />
+        {figure === null ? (
+          <p className="ov-empty">{OVERVIEW_WORDS.emptyLock}</p>
+        ) : (
+          <>
+            <GradeLineView report={report} />
+            <p className="ov-figure">{figure}</p>
+          </>
+        )}
         {scope.length > 0 && <p className="lead-scope">{scope.join(" · ")}</p>}
         {chips.length > 0 && (
           <div className="legend lead-chips" role="group" aria-label={OVERVIEW_WORDS.grades}>
@@ -152,7 +160,8 @@ function FlagBarLink({ bar, longest, model }: { bar: FlagBar; longest: number; m
           ))}
         </span>
       </span>
-      <i className="count">{bar.carrying}</i> <span className="overview2-split">{bar.split}</span>
+      <i className="count">{bar.carrying}</i> <span className="overview2-split">{bar.split}</span>{" "}
+      <span className="overview2-points">{bar.points}</span>
     </TabLink>
   );
 }

@@ -5,6 +5,7 @@ import { normalize } from "../../../src/model/normalize";
 import type { Report2 } from "../../../src/model/report";
 import type { Model } from "../../../src/model/types";
 import { App } from "../../../src/ui/App";
+import { pageGoldens } from "../words/recorded";
 
 function model(edit: (report: Report2) => void = () => undefined): Model {
   const embed = assembleEmbed("composite");
@@ -38,11 +39,16 @@ afterEach(() => {
 });
 
 describe("the Overview tab of a report-2 document", () => {
-  test("leads with the flagged figure, the grade chips and gate.text as written", () => {
+  test("leads with the grade line, the figure line, the grade chips and gate.text as written", () => {
     render(<App model={model()} />);
 
     const lead = within(band());
-    expect(band().querySelector(".lead-num")?.textContent).toBe("7");
+    expect(band().querySelector(".ov-grade")?.textContent).toBe(
+      "Project grade: critical · 3 critical findings · 5 of 7 packages high or worse",
+    );
+    expect(band().querySelector(".ov-figure")?.textContent).toBe(
+      "7 of 7 packages flagged · 0 ok · 0 allowlisted",
+    );
     expect(lead.getByRole("link", { name: "critical 3" })).toBeTruthy();
     expect(lead.getByRole("link", { name: "medium 0" })).toBeTruthy();
     expect(
@@ -50,17 +56,34 @@ describe("the Overview tab of a report-2 document", () => {
     ).toBeTruthy();
   });
 
+  test("links the grade of the grade line to Findings under it, and reads the line before the waffle", () => {
+    render(<App model={model()} />);
+
+    const line = band().querySelector<HTMLElement>(".ov-grade");
+    const chip = within(line as HTMLElement).getByRole("link", { name: "critical" });
+    expect(chip.getAttribute("href")).toBe("#view=findings&verdict=critical");
+    expect(line?.compareDocumentPosition(band().querySelector(".waffle") as Node)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
+  test("never shows a share of the lock", () => {
+    render(<App model={model()} />);
+
+    expect(band().querySelector(".ov-lead")?.textContent).not.toContain("%");
+  });
+
   test("draws one flag bar per carried flag, each with its split by grade", () => {
     render(<App model={model()} />);
 
     const bars = [...band().querySelectorAll(".overview2-flag-bars > a")].map((bar) => bar.textContent);
     expect(bars).toEqual([
-      "abandoned 1 graded critical 1",
-      "pinned 1 graded high 1",
-      "left-behind 1 graded critical 1",
-      "old-promise 3 graded critical 2 · high 1",
-      "stale 2 graded high 2",
-      "vulnerable 4 graded critical 2 · low 2",
+      "abandoned 1 graded critical 1 32 pts",
+      "pinned 1 graded high 1 16 pts",
+      "left-behind 1 graded critical 1 16 pts",
+      "old-promise 3 graded critical 2 · high 1 24 pts",
+      "stale 2 graded high 2 4 pts",
+      "vulnerable 4 graded critical 2 · low 2 52 pts",
     ]);
   });
 
@@ -118,37 +141,60 @@ describe("the Overview tab of a report-2 document", () => {
     );
   });
 
-  test("draws the score stacks only, and says each one in a list for a screen reader", () => {
+  test("heads Weighs most with the load line and draws each score as an ordered list", () => {
     render(<App model={model()} />);
 
-    const plot = band().querySelector(".ss-plot");
-    expect(plot?.getAttribute("aria-hidden")).toBe("true");
-    expect(plot?.querySelectorAll("a, button, [tabindex]")).toHaveLength(0);
-    const said = within(within(band()).getByRole("list", { name: "Scores" })).getAllByRole("listitem");
-    expect(said.map((item) => item.textContent)).toEqual([
-      "score 36: 2 critical",
-      "score 32: 1 critical",
-      "score 18: 2 high",
-      "score 2: 2 low",
-    ]);
-  });
-
-  test("makes each band zone of the ruler a link to Findings under its grade", () => {
-    render(<App model={model()} />);
-
-    const zones = within(band().querySelector<HTMLElement>(".ss-rule") as HTMLElement).getAllByRole("link");
-    expect(zones.map((zone) => [zone.getAttribute("aria-label"), zone.getAttribute("href")])).toEqual([
-      ["low findings", "#view=findings&verdict=low"],
-      ["medium findings", "#view=findings&verdict=medium"],
-      ["high findings", "#view=findings&verdict=high"],
-      ["critical findings", "#view=findings&verdict=critical"],
-    ]);
-    fireEvent.click(within(band()).getByRole("link", { name: "high findings" }));
-
-    expect([...document.querySelectorAll("[data-pkg]")].map((row) => row.getAttribute("data-pkg"))).toEqual([
+    const block = band().querySelector<HTMLElement>(".ov-weighs");
+    expect(block?.querySelector(".wm-load")?.textContent).toBe(
+      "144 points on 7 flagged packages · 140 (97 %) from high or worse · score model 1",
+    );
+    const items = [...(block?.querySelectorAll("ol > li") ?? [])];
+    expect(items.map((item) => item.querySelector("a")?.textContent)).toEqual([
+      "symfony/monolog-bridge",
+      "symfony/debug",
+      "twig/twig",
       "friendsofsymfony/oauth-server-bundle",
       "tubalmartin/cssmin",
+      "symfony/yaml",
+      "symfony/polyfill-intl-idn",
     ]);
+    expect(items[6]?.querySelector(".wm-label")?.textContent).toBe(
+      "symfony/polyfill-intl-idn low 2 points transitive",
+    );
+    expect(items[6]?.querySelector(".wm-total")?.getAttribute("aria-hidden")).toBe("true");
+    expect(items[6]?.querySelector(".wm-text")?.textContent).toBe("2 = vulnerable 2 [low advisory]");
+  });
+
+  test("hides each Weighs most bar and its legend swatches from a screen reader", () => {
+    render(<App model={model()} />);
+
+    const block = band().querySelector<HTMLElement>(".ov-weighs") as HTMLElement;
+    const bars = [...block.querySelectorAll(".wm-bar")];
+    expect(bars).toHaveLength(7);
+    expect(bars.every((bar) => bar.getAttribute("aria-hidden") === "true")).toBe(true);
+    expect(block.querySelector(".wm-legend")?.textContent).toBe(
+      "abandonedpinnedleft-behindold-promisestalevulnerable",
+    );
+    expect(
+      [...block.querySelectorAll(".wm-swatch")].every(
+        (swatch) => swatch.getAttribute("aria-hidden") === "true",
+      ),
+    ).toBe(true);
+    expect(
+      [...(bars[0]?.querySelectorAll(".wm-seg") ?? [])].map((seg) => seg.getAttribute("data-flag")),
+    ).toEqual(["left-behind", "old-promise", "vulnerable"]);
+  });
+
+  test("links a Weighs most row to its package on Findings", () => {
+    render(<App model={model()} />);
+
+    const row = within(band().querySelector<HTMLElement>(".ov-weighs") as HTMLElement).getByRole("link", {
+      name: "symfony/debug",
+    });
+    expect(row.getAttribute("href")).toBe("#view=findings&pkg=symfony%2Fdebug");
+    fireEvent.click(row);
+
+    expect(location.hash).toBe("#view=findings&pkg=symfony%2Fdebug");
   });
 
   test("draws the exposure rows as links to Blast radius", () => {
@@ -179,14 +225,14 @@ describe("the Overview tab of a report-2 document", () => {
     expect(document.querySelector(".shell-detail")).not.toBeNull();
   });
 
-  test("lays its parts out in reading order: lead, flags, Security, scores, exposure, Libyears", () => {
+  test("lays its parts out in reading order: lead, flags, Security, Weighs most, exposure, Libyears", () => {
     render(<App model={model()} />);
 
     expect([...band().children].map((part) => part.className)).toEqual([
       "ov-lead",
       "ov-flags",
       "ov-security",
-      "ov-score",
+      "ov-weighs",
       "ov-expo",
       "ov-libyears",
     ]);
@@ -209,13 +255,18 @@ describe("the Overview tab of a report-2 document", () => {
       <App
         model={model((report) => {
           report.packages_flagged = 0;
+          report.counts = { ...report.counts, critical: 0, high: 0, low: 0, ok: 7 };
+          report.findings = report.findings.map((f) => ({ ...f, verdict: "ok" }));
           report.rot_depth = { ...report.rot_depth, flagged: 0 };
           for (const flag of Object.values(report.flags)) flag.carrying = 0;
         })}
       />,
     );
 
-    expect(band().textContent).toContain("Nothing flagged in 7 packages");
+    expect(band().querySelector(".ov-grade")?.textContent).toBe("Project grade: nothing flagged");
+    expect(within(band().querySelector(".ov-grade") as HTMLElement).queryByRole("link")).toBeNull();
+    expect(band().querySelector(".ov-weighs")?.textContent).toContain("0 points: nothing flagged");
+    expect(band().querySelector(".ov-weighs ol")).toBeNull();
     expect(band().querySelector(".overview2-flag-bars")).toBeNull();
     expect(band().querySelector(".ledger-verdicts")).toBeNull();
     expect(band().textContent).not.toContain("Accepted by the allowlist");
@@ -232,6 +283,9 @@ describe("the Overview tab of a report-2 document", () => {
     );
 
     expect(band().textContent).toContain("No packages in this lock");
+    expect(band().querySelector(".ov-grade")).toBeNull();
+    expect(band().querySelector(".ov-figure")).toBeNull();
+    expect(band().querySelector(".ov-weighs")).toBeNull();
     expect(within(band()).queryAllByRole("link")).toEqual([]);
     expect(band().querySelector(".waffle")).toBeNull();
     expect(band().querySelector(".ov-security")).toBeNull();
@@ -250,6 +304,21 @@ describe("the Overview tab of a report-2 document", () => {
     render(<App model={model()} />);
 
     expect(document.querySelector('[data-surface="overview"]')).toBeNull();
+  });
+});
+
+describe("the Overview's three lines equal lockrot's page goldens on the page", () => {
+  test.each(pageGoldens())("$id", ({ golden, report }) => {
+    const result = normalize(report);
+    if (!result.ok) throw new Error(result.error.message);
+    render(<App model={result.model} />);
+
+    const text = (selector: string) => band().querySelector(selector)?.textContent ?? null;
+    expect([text(".ov-grade"), text(".ov-figure"), text(".wm-load")]).toEqual([
+      golden.grade_line,
+      golden.figure_line,
+      golden.load_line,
+    ]);
   });
 });
 

@@ -6,7 +6,6 @@ import {
   flagBars,
   gateState,
   gradeChips,
-  leadFigure,
   leadScope,
   multiFlagLine,
   securityBlock,
@@ -22,27 +21,6 @@ function golden(id: string): Report2 {
 }
 
 describe("the lead of the overview band", () => {
-  test("states the flagged figure out of the packages checked, with the share of the lock", () => {
-    expect(leadFigure(golden("composite"))).toEqual({
-      kind: "flagged",
-      figure: "7",
-      of: "of 7 packages",
-      flagged: "flagged",
-      share: "· 100% of the lock",
-    });
-  });
-
-  test("says nothing is flagged with one singular package word", () => {
-    expect(leadFigure(golden("new-symfony"))).toEqual({
-      kind: "clean",
-      text: "Nothing flagged in 1 package",
-    });
-  });
-
-  test("says an empty lock holds no package", () => {
-    expect(leadFigure(golden("empty-lock"))).toEqual({ kind: "empty", text: "No packages in this lock" });
-  });
-
   test("words the scope rollup from rot_depth", () => {
     expect(leadScope(golden("composite"))).toEqual([
       "all 7 in production",
@@ -84,6 +62,7 @@ describe("the flag ledger", () => {
         { grade: "low", count: 2 },
       ],
       split: "graded critical 2 · low 2",
+      points: "52 pts",
     });
   });
 

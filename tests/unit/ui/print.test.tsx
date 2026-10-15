@@ -186,7 +186,7 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     );
   });
 
-  it("prints the score strip as its text, and Overview once when printed from Overview", () => {
+  it("prints the grade line, the figure line and Weighs most as text, and Overview once from Overview", () => {
     window.location.hash = "";
     const { container } = render(<App model={composite()} />);
 
@@ -194,9 +194,20 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
 
     const doc = printDoc(container);
     expect(doc.querySelectorAll('[data-surface="overview"]')).toHaveLength(1);
-    expect(doc.querySelector(".pd-summary .ss-plot")).toBeNull();
-    expect(doc.querySelector(".pd-summary .ov-scores .ledger-note")?.textContent).toBe(
-      "score 36: 2 critical · score 32: 1 critical · score 18: 2 high · score 2: 2 low",
+    expect(doc.querySelector(".pd-summary .ov-grade")?.textContent).toBe(
+      "Project grade: critical · 3 critical findings · 5 of 7 packages high or worse",
+    );
+    expect(doc.querySelector(".pd-summary .ov-figure")?.textContent).toBe(
+      "7 of 7 packages flagged · 0 ok · 0 allowlisted",
+    );
+    expect(doc.querySelector(".pd-summary .wm-load")?.textContent).toBe(
+      "144 points on 7 flagged packages · 140 (97 %) from high or worse · score model 1",
+    );
+    expect(
+      [...doc.querySelectorAll(".pd-summary .wm-list .wm-text")].map((text) => text.textContent),
+    ).toHaveLength(7);
+    expect(doc.querySelector(".pd-summary .wm-list .wm-text")?.textContent).toBe(
+      "36 = left-behind 16 + old-promise 4 [¼ of 16] + vulnerable 16 [high advisory]",
     );
   });
 

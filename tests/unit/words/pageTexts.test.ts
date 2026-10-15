@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { copySummary } from "../../../src/domain/copySummary";
 import { libyearsPanel } from "../../../src/domain/libyearsPanel";
+import { figureLine, gradeLine, gradeLineText, loadLine } from "../../../src/domain/projectGrade";
 import { scorePanel } from "../../../src/domain/scorePanel";
 import type { Report2 } from "../../../src/model/report";
 import { pageGoldens } from "./recorded";
@@ -21,6 +22,19 @@ describe("the page texts equal lockrot's page goldens", () => {
   test.each(pageGoldens())("$id: the Libyears panel", ({ golden, report }) => {
     expect(libyearsPanel(report)).toBe(golden.libyears_panel);
   });
+
+  test.each(pageGoldens())(
+    "$id: the Overview's grade line, figure line and load line",
+    ({ golden, report }) => {
+      const grade = gradeLine(report);
+
+      expect([grade === null ? null : gradeLineText(grade), figureLine(report), loadLine(report)]).toEqual([
+        golden.grade_line,
+        golden.figure_line,
+        golden.load_line,
+      ]);
+    },
+  );
 
   test.each(pageGoldens().filter(({ golden }) => golden.panel !== null))(
     "$id: the How the score works panel",

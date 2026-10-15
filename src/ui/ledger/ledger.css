@@ -46,29 +46,50 @@
   min-width: 0;
 }
 
-.lead-figure {
+/* The grade line answers "how bad is this project overall", so it takes the lead's largest type.
+   The serif sets the answer apart from the UI text around it (tokens.css `--serif`). */
+.ov-grade {
   margin: 0;
-  display: flex;
-  align-items: flex-end;
-  gap: 14px;
-}
-.lead-num {
-  font: 600 76px/0.8 var(--sans);
-  letter-spacing: -0.035em;
-  font-variant-numeric: tabular-nums;
+  font: 26px/1.35 var(--serif);
   color: var(--ink);
+  text-wrap: balance;
 }
-/* The one serif on the band, besides the tier's units: the answer's own sentence, set apart from
-   the UI text around it (tokens.css `--serif`, a system stack). */
-.lead-of {
-  display: flex;
-  flex-direction: column;
-  font: 20px/1.2 var(--serif);
-  color: var(--ink-2);
-  padding-bottom: 1px;
-}
-.lead-share {
+.ov-grade-sep {
   color: var(--muted);
+}
+.ov-grade .clean-mark {
+  margin-right: 10px;
+  vertical-align: -5px;
+}
+.ov-grade-chip {
+  display: inline-block;
+  padding: 0 9px 2px;
+  border: 1px solid var(--tone);
+  border-radius: var(--radius-m);
+  background: var(--tone-soft);
+  color: var(--tone);
+  font-weight: 600;
+  text-decoration: none;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+  transition: background-color 0.12s ease;
+}
+.ov-grade-chip:hover {
+  background: color-mix(in srgb, var(--tone) 18%, var(--tone-soft));
+}
+.ov-grade.tone-none {
+  color: var(--tone);
+}
+.ov-figure {
+  margin: -4px 0 0;
+  font: 18px/1.3 var(--serif);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.ov-empty {
+  margin: 0;
+  font: 26px/1.15 var(--serif);
+  color: var(--ink-2);
 }
 /* PD-SUMMARY-9: the flagged packages split by install scope and by reach, one quiet line that
    hangs off the figure (a pulled-up gap) rather than a fourth block in the band. Each clause wraps
@@ -86,23 +107,9 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* A clean report reads as good at a glance: a tick and the sentence in the "none" tone, and the
-   waffle's squares washed the same green (below), instead of a grey 0 beside an empty chart. */
-.ledger-lead.is-clean .lead-figure {
-  align-items: center;
-  gap: 12px;
-}
 .clean-mark {
   flex: none;
   color: var(--tone);
-}
-.lead-clean {
-  font: 26px/1.15 var(--serif);
-  color: var(--tone);
-  text-wrap: balance;
-}
-.lead-empty {
-  color: var(--ink-2);
 }
 
 /* The priority chips are the lead's controls, so a size up from the tier's. Counts take their
@@ -170,11 +177,11 @@
   }
 }
 @media (max-width: 759px) {
-  .lead-num {
-    font-size: 60px;
+  .ov-grade {
+    font-size: 22px;
   }
-  .lead-of {
-    font-size: 17px;
+  .ov-figure {
+    font-size: 16px;
   }
   .lead-chips .legend-btn {
     font-size: 13px;

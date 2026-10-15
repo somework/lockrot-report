@@ -36,6 +36,15 @@
   --low-soft: #dfe9ee;
   --none: #366b4b;
   --none-soft: #dcebe1;
+  /* One fill per flag for the "Weighs most" bars, a categorical set apart from the band tones:
+     two flags of one band never share a fill. Validated for colour-vision deficiency on --surface. */
+  --flag-abandoned: #2a78d6;
+  --flag-silent: #eb6834;
+  --flag-pinned: #1baf7a;
+  --flag-left-behind: #eda100;
+  --flag-old-promise: #e87ba4;
+  --flag-stale: #008300;
+  --flag-vulnerable: #6250d6;
   --shadow: 0 1px 2px rgba(15, 26, 25, 0.06), 0 8px 24px -12px rgba(15, 26, 25, 0.18);
   --backdrop: rgba(4, 12, 11, 0.55);
   /* Nothing is fetched: a report about dependency risk does not phone home, and it has to
@@ -98,6 +107,13 @@
     --low-soft: #1b2830;
     --none: #71b98a;
     --none-soft: #16291d;
+    --flag-abandoned: #3987e5;
+    --flag-silent: #d95926;
+    --flag-pinned: #199e70;
+    --flag-left-behind: #c98500;
+    --flag-old-promise: #d55181;
+    --flag-stale: #008300;
+    --flag-vulnerable: #9085e9;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.8);
     color-scheme: dark;
   }
@@ -125,6 +141,13 @@
   --low-soft: #1b2830;
   --none: #71b98a;
   --none-soft: #16291d;
+  --flag-abandoned: #3987e5;
+  --flag-silent: #d95926;
+  --flag-pinned: #199e70;
+  --flag-left-behind: #c98500;
+  --flag-old-promise: #d55181;
+  --flag-stale: #008300;
+  --flag-vulnerable: #9085e9;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.8);
   color-scheme: dark;
 }

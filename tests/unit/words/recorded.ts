@@ -130,6 +130,10 @@ export interface PageGolden {
   copy_summary: string[];
   libyears_panel: string | null;
   panel: string[] | null;
+  /** The Overview's three lines; null where the page shows no such line. */
+  grade_line: string | null;
+  figure_line: string | null;
+  load_line: string | null;
 }
 
 /** The model's report-2 of a golden's document, where lockrot's `PageGoldensTest` reads it. */
