@@ -15,7 +15,6 @@ import {
 } from "./findingWords";
 import { plural, pluralNoun } from "./format";
 import { allowlistByInWhy, allowlistReason, headlineReasonWord } from "./pageVocabulary";
-import { RUN_MIN } from "./rows";
 import type { Tone } from "./vocab";
 
 export interface BaselineMark {
@@ -185,6 +184,13 @@ export interface AgeReading {
 
 const AGE_KINDS = ["branch_release", "release", "push"] as const;
 
+/** Anything but `high` or `warn`, `info` included, reads as low. */
+export function levelTone(level: string): Tone {
+  if (level === "high") return "crit";
+  if (level === "warn") return "med";
+  return "low";
+}
+
 /** The reading a fired S8, S2 or S4 judged: the first with a `level`. */
 export function ageReading(f: Finding, run: Run): AgeReading | null {
   const thresholds = run.thresholds;
@@ -309,6 +315,9 @@ function runKey(f: Finding): string | null {
   if (!isScoreGraded(f.score)) return null;
   return f.score.decided_by === "security" || f.lead === null ? "vulnerable" : f.lead;
 }
+
+/** The fewest consecutive rows a run note is written for; two alike read fine without one. */
+const RUN_MIN = 3;
 
 /** Never re-sorted: a stretch between runs is one plain segment. */
 export function runSegments(findings: readonly Finding[]): readonly RunSegment[] {

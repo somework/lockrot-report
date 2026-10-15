@@ -59,7 +59,7 @@ export function flagEntries(report: Report2): readonly GlossaryEntry[] {
   });
 }
 
-/** S9 raises a flag in report-2, where report-1 said it never decided a verdict. */
+/** S9 raises the `vulnerable` flag (SPEC §8.7.1). */
 const SIGNAL_DEFS_2: Readonly<Record<string, string>> = {
   S9: "Advisories on the installed version; raises the vulnerable flag.",
 };

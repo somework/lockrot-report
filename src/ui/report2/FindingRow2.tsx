@@ -1,11 +1,11 @@
 import { useId } from "preact/hooks";
 import type { Finding, Run } from "../../model/report2";
-import { levelTone } from "../../domain/checks";
 import {
   ageReading,
   ageScaleLabel,
   gradeTone,
   HELD_WORD,
+  levelTone,
   maintenanceAccepted,
   nextStepWords,
   reachWord,
@@ -16,7 +16,7 @@ import type { AgeAxis } from "../../domain/age";
 import { useReport } from "../context";
 import { toneClass } from "../common/common";
 import { innerTabIndex, rowTabIndex } from "../rowCursor";
-import { openInteractions } from "../views/FindingRow";
+import { openInteractions } from "../rowOpen";
 import { FlagPills } from "./FlagPills";
 import { ScoreBar } from "./ScoreBar";
 

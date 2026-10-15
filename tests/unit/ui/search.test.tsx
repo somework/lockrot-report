@@ -1,9 +1,8 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { createRef } from "preact";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/preact";
 import type { ComponentChild } from "preact";
+import { assembleEmbed } from "../../../scripts/report2-embed";
 import type { Action, State } from "../../../src/state/types";
 import { INITIAL_STATE } from "../../../src/state/types";
 import type { Model } from "../../../src/model/types";
@@ -13,24 +12,18 @@ import { SearchBar } from "../../../src/ui/search/SearchBar";
 
 afterEach(cleanup);
 
-function loadFixture(name: string): Model {
-  const raw = JSON.parse(readFileSync(join(process.cwd(), "fixtures", "bundles", name), "utf8")) as unknown;
-  const result = normalize(raw);
-  if (!result.ok) throw new Error(`${name} fixture failed to normalize`);
+function load(caseName: string): Model {
+  const result = normalize(assembleEmbed(caseName));
+  if (!result.ok) throw new Error(result.error.message);
   return result.model;
 }
 
-/** mini.json: 4 findings, 2 flagged (abandoned + pinned), no advisories, exposure has one direct
- *  requirement (vendor/direct) that the abandoned transitive package's chain runs through. */
-function loadMini(): Model {
-  return loadFixture("mini.json");
-}
+/** 7 graded findings (3 critical, 2 high, 2 low), 20 counted advisories on 4 packages, one
+ *  exposure entry and 6 flagged direct requirements outside it. */
+const composite = () => load("composite");
 
-/** A report with zero findings at all — the M20 "clean report" case: every filterable view's
- *  population is empty, so the search box and hint hide, but the count line still reads "0 of 0". */
-function loadEmpty(): Model {
-  return loadFixture("empty-lockrot-self.json");
-}
+/** One package, verdict `ok`: nothing flagged, no advisory. */
+const clean = () => load("pagerfanta");
 
 function renderIn(
   ui: ComponentChild,
@@ -44,11 +37,10 @@ function renderIn(
         model,
         state,
         dispatch,
-        now: new Date(model.report.generatedAt),
+        now: new Date(model.report.generated_at),
         wide: true,
         cursor: null,
         openGlossary: vi.fn(),
-        openGlossaryFrom: vi.fn(),
       }}
     >
       {ui}
@@ -56,205 +48,166 @@ function renderIn(
   );
 }
 
+function renderBar(model: Model, state: State, dispatch?: (action: Action) => void) {
+  return renderIn(<SearchBar inputRef={createRef<HTMLInputElement>()} />, model, state, dispatch);
+}
+
+function countLine(): string {
+  return screen.getByRole("status").textContent;
+}
+
 describe("SearchBar", () => {
-  it("renders the search box with the legacy placeholder and an accessible label", () => {
-    // Arrange
-    const model = loadMini();
-    const ref = createRef<HTMLInputElement>();
+  it("renders the search box with an accessible label and a placeholder that names the report-2 keys", () => {
+    renderBar(composite(), INITIAL_STATE);
 
-    // Act
-    renderIn(<SearchBar inputRef={ref} />, model, INITIAL_STATE);
-
-    // Assert
     const input = screen.getByRole("searchbox", { name: "Filter packages" });
-    expect(input.getAttribute("placeholder")).toBe(
-      "Filter: guzzle, verdict:left-behind, severity:critical, cve:CVE-2022-31090",
-    );
+    const placeholder = input.getAttribute("placeholder") ?? "";
+    expect(placeholder).toContain("flag:");
+    expect(placeholder).toContain("score:");
   });
 
   it("dispatches a query action as the reader types", () => {
-    // Arrange
-    const model = loadMini();
     const dispatch = vi.fn();
-    const ref = createRef<HTMLInputElement>();
-    renderIn(<SearchBar inputRef={ref} />, model, INITIAL_STATE, dispatch);
+    renderBar(composite(), INITIAL_STATE, dispatch);
 
-    // Act
     fireEvent.input(screen.getByRole("searchbox"), { target: { value: "guzzle" } });
 
-    // Assert
     expect(dispatch).toHaveBeenCalledWith({ type: "query", q: "guzzle" });
   });
 
-  it("disables Clear with no query and no filter, and enables it once the query is non-blank", () => {
-    // Arrange
-    const model = loadMini();
-    const ref = createRef<HTMLInputElement>();
+  it("enables Clear once the query is non-blank, and dispatches clear when it is clicked", () => {
+    const dispatch = vi.fn();
+    renderBar(composite(), { ...INITIAL_STATE, q: "guzzle" }, dispatch);
 
-    // Act
-    renderIn(<SearchBar inputRef={ref} />, model, { ...INITIAL_STATE, q: "guzzle" });
+    const clear = screen.getByRole("button", { name: /clear/i });
+    expect(clear.hasAttribute("disabled")).toBe(false);
+    fireEvent.click(clear);
 
-    // Assert
-    expect(screen.getByRole("button", { name: /clear/i }).hasAttribute("disabled")).toBe(false);
+    expect(dispatch).toHaveBeenCalledWith({ type: "clear" });
   });
 
-  it("keeps Clear disabled for a whitespace-only query (critic.md M22's fix)", () => {
-    // Arrange
-    const model = loadMini();
-    const ref = createRef<HTMLInputElement>();
+  it("disables Clear with no query and no filter", () => {
+    renderBar(composite(), INITIAL_STATE);
 
-    // Act
-    renderIn(<SearchBar inputRef={ref} />, model, { ...INITIAL_STATE, q: "   " });
+    expect(screen.getByRole("button", { name: /clear/i }).hasAttribute("disabled")).toBe(true);
+  });
 
-    // Assert
+  it("keeps Clear disabled for a whitespace-only query and counts no filter on", () => {
+    renderBar(composite(), { ...INITIAL_STATE, q: "   " });
+
     expect(screen.getByRole("button", { name: /clear/i }).hasAttribute("disabled")).toBe(true);
     expect(screen.queryByText(/filters? on/)).toBeNull();
   });
 
-  it("dispatches clear when the Clear button is clicked", () => {
-    // Arrange
-    const model = loadMini();
-    const dispatch = vi.fn();
-    const ref = createRef<HTMLInputElement>();
-    renderIn(<SearchBar inputRef={ref} />, model, { ...INITIAL_STATE, q: "guzzle" }, dispatch);
+  it("counts the Findings tab against the graded findings", () => {
+    renderBar(composite(), INITIAL_STATE);
 
-    // Act
-    fireEvent.click(screen.getByRole("button", { name: /clear/i }));
-
-    // Assert
-    expect(dispatch).toHaveBeenCalledWith({ type: "clear" });
+    expect(countLine()).toBe("7 of 7 flagged packages");
   });
 
-  it("counts the findings tab the same way applyFilters would, singularising at one (M21)", () => {
-    // Arrange
-    const model = loadMini();
-    const ref = createRef<HTMLInputElement>();
+  it("singularises the noun at one", () => {
+    renderBar(load("B"), INITIAL_STATE);
 
-    // Act
-    renderIn(<SearchBar inputRef={ref} />, model, INITIAL_STATE);
-
-    // Assert: mini.json has 2 flagged findings and no active filter.
-    expect(screen.getByRole("status").textContent).toContain("2 of 2 flagged packages");
+    expect(countLine()).toBe("1 of 1 flagged package");
   });
 
-  it("narrows the count and shows the active-filter suffix once a rail filter is selected", () => {
-    // Arrange
-    const model = loadMini();
-    const ref = createRef<HTMLInputElement>();
-    const state: State = { ...INITIAL_STATE, filters: { ...INITIAL_STATE.filters, prio: ["critical"] } };
+  it("narrows the count and shows the active-filter suffix once a filter is selected", () => {
+    const state: State = { ...INITIAL_STATE, filters: { ...INITIAL_STATE.filters, verdict: ["critical"] } };
 
-    // Act
-    renderIn(<SearchBar inputRef={ref} />, model, state);
+    renderBar(composite(), state);
 
-    // Assert: no flagged finding has priority "critical" in mini.json.
-    const line = screen.getByRole("status").textContent;
-    expect(line).toContain("0 of 2 flagged packages");
-    expect(line).toContain("1 filter on");
+    // `counts.critical` of the document is 3.
+    expect(countLine()).toContain("3 of 7 flagged packages");
+    expect(countLine()).toContain("1 filter on");
   });
 
-  it("counts the packages tab against every package, not just the flagged ones", () => {
-    // Arrange
-    const model = loadMini();
-    const ref = createRef<HTMLInputElement>();
+  it("counts the All packages tab against every finding, not just the flagged ones", () => {
+    const state: State = { ...INITIAL_STATE, view: "packages" };
 
-    // Act
-    renderIn(<SearchBar inputRef={ref} />, model, { ...INITIAL_STATE, view: "packages" });
+    renderBar(composite(), state);
 
-    // Assert: mini.json has 4 findings total.
-    expect(screen.getByRole("status").textContent).toContain("4 of 4 packages");
+    expect(countLine()).toBe("7 of 7 packages");
   });
 
-  it("counts the radius tab against the document's own direct-requirement count", () => {
-    // Arrange
-    const model = loadMini();
-    const ref = createRef<HTMLInputElement>();
+  it("counts the Advisories tab in advisories, against the document's counted total", () => {
+    renderBar(composite(), { ...INITIAL_STATE, view: "advisories" });
 
-    // Act
-    renderIn(<SearchBar inputRef={ref} />, model, { ...INITIAL_STATE, view: "radius" });
-
-    // Assert: mini.json's one exposure entry (vendor/direct) pulls in the abandoned transitive
-    // package, so it earns a card — singular, per M21.
-    expect(screen.getByRole("status").textContent).toContain("1 of 1 direct requirement");
+    expect(countLine()).toBe("20 of 20 advisories");
   });
 
-  it("hides the search box and hint, but keeps the count line, on a clean report (critic.md M20)", () => {
-    // Arrange
-    const model = loadEmpty();
-    const ref = createRef<HTMLInputElement>();
+  it("counts the Blast radius tab in direct requirements, and the flagged ones the exposure list leaves out", () => {
+    renderBar(composite(), { ...INITIAL_STATE, view: "radius" });
 
-    // Act
-    renderIn(<SearchBar inputRef={ref} />, model, INITIAL_STATE);
+    expect(countLine()).toBe(
+      "1 of 1 direct requirement on the exposure list, plus 6 of 6 flagged ones with nothing flagged counted under them",
+    );
+  });
 
-    // Assert
+  it("hides the search box and hint, but keeps the count line, on a report with nothing flagged", () => {
+    renderBar(clean(), INITIAL_STATE);
+
     expect(screen.queryByRole("searchbox")).toBeNull();
     expect(screen.queryByRole("button", { name: /clear/i })).toBeNull();
-    expect(screen.getByRole("status").textContent).toContain("0 of 0 flagged packages");
+    expect(countLine()).toBe("0 of 0 flagged packages");
   });
 
-  it("draws no count line on Advisories when the document holds no advisory at all (PD-LEDGER-1)", () => {
-    // Arrange: the empty state's own sentence answers; "0 of 0 advisories" above it only undercut it.
-    const model = loadEmpty();
-    const ref = createRef<HTMLInputElement>();
+  it("draws no count line on Advisories when the document holds no advisory at all", () => {
+    renderBar(clean(), { ...INITIAL_STATE, view: "advisories" });
 
-    // Act
-    renderIn(<SearchBar inputRef={ref} />, model, { ...INITIAL_STATE, view: "advisories" });
-
-    // Assert
     expect(screen.queryByRole("status")).toBeNull();
   });
 
-  // a11y review: `DetailHeader`'s own "Hidden by the current filters." note has no live region of
-  // its own, so a reader typing a search term never heard the open package had left the list. This
-  // line already is one (`role="status" aria-live="polite"`); it now names the fact too.
-  it("says nothing extra while the open package still matches the current filters", () => {
-    // Arrange
-    const model = loadMini();
-    const ref = createRef<HTMLInputElement>();
-
-    // Act
-    renderIn(<SearchBar inputRef={ref} />, model, { ...INITIAL_STATE, pkg: "vendor/transitive" });
-
-    // Assert
-    expect(screen.getByRole("status").textContent).not.toContain("hidden by the current filters");
-  });
-
-  it("names the open package once a search term hides it from the tab it still belongs to", () => {
-    // Arrange
-    const model = loadMini();
-    const ref = createRef<HTMLInputElement>();
-    const state = { ...INITIAL_STATE, pkg: "vendor/transitive", q: "no-such-package" };
-
-    // Act
-    renderIn(<SearchBar inputRef={ref} />, model, state);
-
-    // Assert
-    const line = screen.getByRole("status").textContent;
-    expect(line).toContain("0 of 2 flagged packages");
-    expect(line).toContain("vendor/transitive is hidden by the current filters");
-  });
-
-  it("says nothing extra for an open package the tab never lists at all (a different fact)", () => {
-    // Arrange: private/thing is "finished", never in the Findings population, filters or not.
-    const model = loadMini();
-    const ref = createRef<HTMLInputElement>();
-    const state = { ...INITIAL_STATE, pkg: "private/thing", q: "no-such-package" };
-
-    // Act
-    renderIn(<SearchBar inputRef={ref} />, model, state);
-
-    // Assert
-    expect(screen.getByRole("status").textContent).not.toContain("hidden by the current filters");
-  });
-
   it("shows nothing at all on the Run tab, which has no count to give", () => {
-    // Arrange
-    const model = loadMini();
-    const ref = createRef<HTMLInputElement>();
+    const { container } = renderBar(composite(), { ...INITIAL_STATE, view: "run" });
 
-    // Act
-    const { container } = renderIn(<SearchBar inputRef={ref} />, model, { ...INITIAL_STATE, view: "run" });
-
-    // Assert
     expect(container.textContent).toBe("");
+  });
+});
+
+describe("the open package and the count line", () => {
+  it("says nothing extra while the open package still matches the current filters", () => {
+    renderBar(composite(), { ...INITIAL_STATE, pkg: "twig/twig" });
+
+    expect(countLine()).not.toContain("hidden by the current filters");
+  });
+
+  it("names the open package once a search term hides it from the tab it belongs to", () => {
+    renderBar(composite(), { ...INITIAL_STATE, pkg: "twig/twig", q: "no-such-package" });
+
+    expect(countLine()).toContain("0 of 7 flagged packages");
+    expect(countLine()).toContain("twig/twig is hidden by the current filters");
+  });
+
+  it("says nothing extra for an open package the tab never lists at all", () => {
+    // pagerfanta/twig is `ok`: never in the Findings population, filters or not.
+    renderBar(clean(), { ...INITIAL_STATE, pkg: "pagerfanta/twig", q: "no-such-package" });
+
+    expect(countLine()).not.toContain("hidden by the current filters");
+  });
+});
+
+describe("the active-filters line", () => {
+  it("draws one removable chip per selected filter and one for the search", () => {
+    const dispatch = vi.fn();
+    const state: State = {
+      ...INITIAL_STATE,
+      q: "symfony",
+      filters: { ...INITIAL_STATE.filters, flag: ["stale"], scope: ["direct"] },
+    };
+    renderBar(composite(), state, dispatch);
+
+    fireEvent.click(screen.getByRole("button", { name: "Remove filter: Flag stale" }));
+    expect(dispatch).toHaveBeenLastCalledWith({ type: "toggle", group: "flag", key: "stale" });
+    fireEvent.click(screen.getByRole("button", { name: "Remove filter: Scope Direct" }));
+    expect(dispatch).toHaveBeenLastCalledWith({ type: "toggle", group: "scope", key: "direct" });
+    fireEvent.click(screen.getByRole("button", { name: /^Remove filter: Search/ }));
+    expect(dispatch).toHaveBeenLastCalledWith({ type: "query", q: "" });
+  });
+
+  it("draws no chip when nothing narrows the list, and none for the accepted toggle", () => {
+    const state: State = { ...INITIAL_STATE, filters: { ...INITIAL_STATE.filters, accepted: ["hide"] } };
+    renderBar(composite(), state);
+
+    expect(screen.queryByText("Filtered by")).toBeNull();
   });
 });

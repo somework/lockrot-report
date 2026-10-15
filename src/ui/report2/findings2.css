@@ -1,6 +1,6 @@
-/* The report-2 Findings list (PD-ROWS-14): the report-1 ledger's group heads, runs, row frame and age
-   cell, with its own row grid. One line from 990px of list, the pills wrapping; three lines below:
-   package and reach, then score and pills, then age and the next step. */
+/* The report-2 Findings list (PD-ROWS-14): ledger-rows.css draws the group heads, runs, row frame
+   and age cell; this file adds the row grid. One line from 990px of list, the pills wrapping; three
+   lines below: package and reach, then score and pills, then age and the next step. */
 /* Set on the head and the rows, not the list: a container query never styles its own container. */
 .f2-ledger .f2-head,
 .f2-ledger .f2-row {

@@ -29,7 +29,7 @@ import { useReport } from "../context";
 import { toneClass } from "../common/common";
 import { useNarrow } from "../useWide";
 import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
-import { openInteractions } from "../views/FindingRow";
+import { openInteractions } from "../rowOpen";
 import { FlagPills } from "./FlagPills";
 import { useReport2 } from "./useReport2";
 import "./radius2.css";

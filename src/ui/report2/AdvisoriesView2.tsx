@@ -24,7 +24,7 @@ import { toneClass } from "../common/common";
 import { CheckIncompleteTag } from "../common/CheckIncompleteTag";
 import { CleanMark } from "../ledger/CleanMark";
 import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
-import { openInteractions } from "../views/FindingRow";
+import { openInteractions } from "../rowOpen";
 import { EmptyState } from "../views/EmptyState";
 import { useReport2 } from "./useReport2";
 import "../views/views.css";

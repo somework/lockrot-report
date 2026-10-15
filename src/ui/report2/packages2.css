@@ -1,4 +1,4 @@
-/* The report-2 All packages table: the report-1 table's wrap, heads and row states. The grade is the
+/* The report-2 All packages table: views.css draws the wrap, heads and row states. The grade is the
    verdict's word in its tone; the flags are the Findings pills. Under 1100px of list each row stacks:
    name and version, then verdict, score and flags, then libyears, age and the way in. */
 @media screen {

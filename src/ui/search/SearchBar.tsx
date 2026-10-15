@@ -1,85 +1,23 @@
-import { Fragment, type Ref, type RefObject } from "preact";
+import type { Ref, RefObject } from "preact";
 import { useReport } from "../context";
-import { activeFilters, applyFilters, hiddenByFilters, population } from "../../domain/filters";
+import { activeFilters } from "../../domain/filters";
 import { applyFilters2, hiddenByFilters2, population2 } from "../../domain/list2";
 import type { Report2 } from "../../model/report2";
-import { allAdvisories, passesAdvisoryRail } from "../../domain/advisories";
-import { matchesAdvisory, parseQuery } from "../../domain/query";
-import { radiusCountPhrase, radiusLayout } from "../../domain/radius";
+import { radiusCountPhrase } from "../../domain/radius";
 import { radiusLayout2 } from "../../domain/radius2";
 import { advisoryPairs2 } from "../../domain/advisories2";
 import { countPhrase, plural } from "../../domain/format";
-import { searchSplit, searchSplitPhrase } from "../../domain/searchHits";
-import { NoWrap } from "../common/common";
 import { ActiveFilters } from "./ActiveFilters";
-import { advisoryGroupsFor } from "../views/order";
-import type { Finding, Model } from "../../model/types";
 import { EMPTY_FILTERS, type State } from "../../state/types";
 import "./search.css";
 
-/** Verbatim from legacy's search box (`report.html:79`). */
-const PLACEHOLDER = "Filter: guzzle, verdict:left-behind, severity:critical, cve:CVE-2022-31090";
-const PLACEHOLDER2 = "Filter: guzzle, flag:left-behind, verdict:critical, score:>=16";
+const PLACEHOLDER = "Filter: guzzle, flag:left-behind, verdict:critical, score:>=16";
 
 /**
- * "N of M …", read off the same domain functions the four filterable views use to decide what they
- * list — `applyFilters` for Findings/Packages, `allAdvisories` plus `matchesAdvisory` (and the
- * advisory-level rail check above) for Advisories, `radiusLayout` for Blast radius — so this line
- * can never disagree with the rows underneath it (this task's brief). `null` on the Run tab, which
- * has nothing to count; legacy leaves `countLine` empty there too (`report.js:855,879`).
- *
- * Ported from legacy `render()`'s count-line assembly (`report.js:874-878`), with the M21 fix:
- * `countPhrase` singularises at exactly one, where legacy always said "1 of 1 flagged packages".
+ * "N of M …", read off the same domain functions each tab uses to decide what it lists, so this line
+ * can never disagree with the rows underneath it. `null` on the Run tab, which has nothing to count.
  */
-function countLine(model: Model, state: State): string | null {
-  if (model.report2 !== null) return countLine2(model.report2.report, state);
-  if (state.view === "findings") {
-    return countPhrase(
-      applyFilters(model, state, "findings").length,
-      population(model, "findings").length,
-      "flagged package",
-      "flagged packages",
-    );
-  }
-
-  if (state.view === "packages") {
-    return countPhrase(
-      applyFilters(model, state, "packages").length,
-      population(model, "packages").length,
-      "package",
-      "packages",
-    );
-  }
-
-  if (state.view === "advisories") {
-    const terms = parseQuery(state.q);
-    const kept = new Set(applyFilters(model, state, "advisories").map((f) => f.package));
-    const rows = allAdvisories(model).filter(
-      ({ advisory, finding }) =>
-        kept.has(finding.package) &&
-        passesAdvisoryRail(state.filters, advisory) &&
-        matchesAdvisory(advisory, finding, terms),
-    );
-    // No advisory in the document at all: the tab's own sentence says so (PD-LEDGER-1), and a
-    // "0 of 0 advisories" above it would only undercut it.
-    const total = allAdvisories(model).length;
-    if (total === 0) return null;
-    return countPhrase(rows.length, total, "advisory", "advisories");
-  }
-
-  if (state.view === "radius") {
-    // Every requirement the tab names: a ranked row, a row in the "flagged themselves" tail, a
-    // name in the "only through rows above" tail — against `exposure`'s own count — and, when
-    // `exposure` leaves flagged direct requirements out, the ones the footnote names.
-    const layout = radiusLayout(model, applyFilters(model, state, "radius"), population(model, "radius"));
-    return radiusCountPhrase(layout);
-  }
-
-  return null;
-}
-
-/** The Findings and All packages counts of a report-2 document; the other tabs' surfaces own theirs. */
-function countLine2(report: Report2, state: State): string | null {
+function countLine(report: Report2, state: State): string | null {
   if (state.view === "findings") {
     return countPhrase(
       applyFilters2(report, state, "findings").length,
@@ -99,7 +37,7 @@ function countLine2(report: Report2, state: State): string | null {
   if (state.view === "advisories") {
     const shown = advisoryPairs2(applyFilters2(report, state, "advisories"), state.filters).length;
     const all = advisoryPairs2(population2(report, "advisories"), EMPTY_FILTERS).length;
-    // As on report-1: with no advisory at all the tab's own sentence says so (PD-LEDGER-1).
+    // No advisory in the document at all: the tab's own sentence says so (PD-LEDGER-1).
     if (all === 0) return null;
     return countPhrase(shown, all, "advisory", "advisories");
   }
@@ -108,67 +46,6 @@ function countLine2(report: Report2, state: State): string | null {
       radiusLayout2(report, applyFilters2(report, state, "radius"), population2(report, "radius")),
     );
   return null;
-}
-
-/**
- * The packages a tab lists, each once, in list order — what the status line's search split counts
- * (PD-SEARCH-1). The Advisories tab lists a package once per advisory; Blast radius lists pulled
- * packages under direct requirements, not the findings free text matched, so it has no split.
- */
-function listedPackages(model: Model, state: State): readonly Finding[] | null {
-  if (model.report2 !== null) return null;
-  if (state.view === "findings" || state.view === "packages") return applyFilters(model, state, state.view);
-  if (state.view !== "advisories") return null;
-  const seen = new Set<string>();
-  const listed: Finding[] = [];
-  for (const group of advisoryGroupsFor(model, state)) {
-    for (const { finding } of group.advisories) {
-      if (seen.has(finding.package)) continue;
-      seen.add(finding.package);
-      listed.push(finding);
-    }
-  }
-  return listed;
-}
-
-/** The status line's "14 on the row, 2 mention “hoa/” (a, b)" — null when free text found every
- *  listed package on its own row, or there is no free text (PD-SEARCH-1).
- *
- * No literal " · " separator of its own (PD-SEARCH-1 polish item 1): that text used to open this
- * span, so at 320/390 — where `.count-line`'s flex-wrap drops the whole span to a line of its own —
- * a lone "· 14 on the row …" opened the line, and at 1440 it sat right after the row's own 12px flex
- * `gap`, doubling up on the same separation. A single leading space instead (the same convention
- * `.active-filters` already uses) keeps a screen reader from running the line before it straight
- * into this one, without ever being the one visible character to open a wrapped line. */
-function SearchSplitNote({ model, state }: { model: Model; state: State }) {
-  const listed = listedPackages(model, state);
-  if (listed === null) return null;
-  const unit = state.view === "advisories" ? { one: "package", many: "packages" } : null;
-  const phrase = searchSplitPhrase(searchSplit(listed, state.q), unit);
-  if (phrase === null) return null;
-  return (
-    <span className="match-split">
-      {" "}
-      {phrase.text}
-      {phrase.names.length > 0 && (
-        // a11y review (PD-SEARCH-1 polish item 6): `.count-line` is a live region that re-announces
-        // its whole text on every keystroke — up to three package names read out loud each time was
-        // more than the line's own short counts needed. The names stay on screen (still what a
-        // sighted reader wants beside the counts) but `aria-hidden` takes them out of what gets
-        // announced; the counts alone are.
-        <span aria-hidden="true">
-          {" ("}
-          {phrase.names.map((name, i) => (
-            <Fragment key={name}>
-              {i > 0 && ", "}
-              <NoWrap>{name}</NoWrap>
-            </Fragment>
-          ))}
-          {")"}
-        </span>
-      )}
-    </span>
-  );
 }
 
 /** Selected filter keys plus a non-blank query — the same "active" sum legacy's `render()` totals
@@ -190,21 +67,16 @@ function activeFilterCount(state: State): number {
  */
 export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
   const { model, state, dispatch } = useReport();
-  const report2 = model.report2?.report ?? null;
-  const filterable =
-    (report2 === null ? population(model, state.view) : population2(report2, state.view)).length > 0;
-  const line = countLine(model, state);
+  const { report } = model;
+  const filterable = population2(report, state.view).length > 0;
+  const line = countLine(report, state);
   const active = activeFilterCount(state);
   // a11y review: `DetailHeader`'s own "Hidden by the current filters." note has no live region of
   // its own, so a reader typing a search term never heard that the package they had open just left
   // the list — only this line's own count is announced. It shares `domain/filters.ts#hiddenByFilters`
   // with that note rather than duplicating the check, so the two can never disagree about when it
   // applies.
-  const openPkgHidden =
-    state.pkg !== null &&
-    (report2 === null
-      ? hiddenByFilters(model, state, state.pkg)
-      : hiddenByFilters2(report2, state, state.pkg));
+  const openPkgHidden = state.pkg !== null && hiddenByFilters2(report, state, state.pkg);
 
   return (
     <>
@@ -215,7 +87,7 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
             type="search"
             className="search-input"
             aria-label="Filter packages"
-            placeholder={report2 === null ? PLACEHOLDER : PLACEHOLDER2}
+            placeholder={PLACEHOLDER}
             value={state.q}
             onInput={(event) => {
               dispatch({ type: "query", q: event.currentTarget.value });
@@ -256,9 +128,8 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
               {plural(active, "filter", "filters")} on
             </span>
           )}
-          <SearchSplitNote model={model} state={state} />
-          {/* Same fix as `SearchSplitNote`'s own comment above: a leading space, not a literal
-              " · ", so this span never opens a wrapped line with a lone separator glyph. */}
+          {/* A leading space, not a literal " · ", so this span never opens a wrapped line with a
+              lone separator glyph. */}
           {openPkgHidden && (
             <span className="hidden-pkg-note"> {state.pkg} is hidden by the current filters</span>
           )}

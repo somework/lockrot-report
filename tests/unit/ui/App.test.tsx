@@ -1,78 +1,33 @@
-import { readFileSync } from "node:fs";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/preact";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { assembleEmbed } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
+import type { Report2Embed } from "../../../src/model/report2";
 import type { Model } from "../../../src/model/types";
+import { INITIAL_STATE } from "../../../src/state/types";
 import { App } from "../../../src/ui/App";
 import { bootState, stateFromHashChange } from "../../../src/ui/useHashState";
-import { INITIAL_STATE } from "../../../src/state/types";
 
-// The list views and the detail pane are other surfaces with their own tests. Here they are
-// stand-ins that expose exactly what the shell relies on: rows carrying `data-pkg` in the order
-// `renderedPackages` reports, and a detail region with a Close button.
-vi.mock("../../../src/ui/views/order", async () => {
-  const { population } = await import("../../../src/domain/filters");
-  return {
-    renderedPackages: (model: Model, _state: unknown, view: "findings" | "packages" | "run") =>
-      population(model, view).map((f) => f.package),
-  };
-});
-
-vi.mock("../../../src/ui/views/Views", async () => {
-  const { useReport } = await import("../../../src/ui/context");
-  const { renderedPackages } = await import("../../../src/ui/views/order");
-  return {
-    CurrentView: () => {
-      const { model, state, dispatch } = useReport();
-      return (
-        <div>
-          {renderedPackages(model, state, state.view).map((pkg) => (
-            <div
-              key={pkg}
-              role="option"
-              aria-label={pkg}
-              aria-selected={state.pkg === pkg}
-              tabIndex={0}
-              data-pkg={pkg}
-              onClick={() => {
-                dispatch({ type: "select", pkg: state.pkg === pkg ? null : pkg });
-              }}
-            >
-              {pkg} <a href="https://packagist.org/">packagist</a>
-            </div>
-          ))}
-        </div>
-      );
-    },
-  };
-});
-
-vi.mock("../../../src/ui/detail/Detail", async () => {
-  const { useReport } = await import("../../../src/ui/context");
-  return {
-    Detail: ({ onClose }: { onClose: () => void }) => {
-      const { state } = useReport();
-      return (
-        <section aria-label={state.pkg ?? ""}>
-          <h2 tabIndex={-1} data-detail-focus="">
-            {state.pkg}
-          </h2>
-          <button type="button" onClick={onClose}>
-            Close
-          </button>
-        </section>
-      );
-    },
-  };
-});
-
-function loadModel(name: string): Model {
-  const result = normalize(JSON.parse(readFileSync(`fixtures/bundles/${name}.json`, "utf8")));
+/** Seven graded findings, none dev: 6 direct requirements and 1 transitive package. No project name
+ *  and no baseline; the gate fails on `--fail-on=high`. */
+function load(caseName = "composite", edit: (embed: Report2Embed) => void = () => undefined): Model {
+  const embed = assembleEmbed(caseName);
+  edit(embed);
+  const result = normalize(embed);
   if (!result.ok) throw new Error(result.error.message);
   return result.model;
 }
 
-const MINI = loadModel("mini");
+/** The Findings rows in rank order, which is also the order All packages opens in. */
+const BY_RANK = [
+  "twig/twig",
+  "symfony/monolog-bridge",
+  "symfony/debug",
+  "friendsofsymfony/oauth-server-bundle",
+  "tubalmartin/cssmin",
+  "symfony/yaml",
+  "symfony/polyfill-intl-idn",
+];
 
 /** Stubs matchMedia: the layout, the OS colour preference and reduced motion, per test. */
 function media({ wide = true, narrow = false, dark = false, reduce = false } = {}) {
@@ -92,24 +47,28 @@ function media({ wide = true, narrow = false, dark = false, reduce = false } = {
   })) as unknown as typeof window.matchMedia;
 }
 
-/** An element's text as read where the header keeps its gate flags: without the summary's echo. */
-function unechoed(selector: string): string {
-  const copy = document.querySelector(selector)?.cloneNode(true);
-  if (!(copy instanceof Element)) return "";
-  for (const echo of copy.querySelectorAll(".gate-echo")) echo.remove();
-  return copy.textContent;
-}
-
-function echoes(selector: string): string[] {
-  return [...document.querySelectorAll(`${selector} .gate-echo`)].map((echo) => echo.textContent);
-}
-
 function detailName(): string | null {
-  return screen.queryByRole("region")?.getAttribute("aria-label") ?? null;
+  return screen.queryByRole("complementary")?.getAttribute("aria-label") ?? null;
+}
+
+function row(pkg: string): HTMLElement {
+  return screen.getByRole("listitem", { name: pkg });
 }
 
 function key(k: string, target: Element = document.body) {
   fireEvent.keyDown(target, { key: k });
+}
+
+function selectedTab(): string {
+  return screen.getByRole("tab", { selected: true }).textContent;
+}
+
+function shellClasses(): string[] {
+  return Array.from(document.querySelector(".shell")?.classList ?? []);
+}
+
+function openPackages() {
+  fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
 }
 
 beforeEach(() => {
@@ -120,18 +79,13 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
 });
 
-function shellClasses(): string[] {
-  return Array.from(document.querySelector(".shell")?.classList ?? []);
-}
-
 describe("boot", () => {
-  // PD-ROWS-9: the legacy page (and this one until the ledger rows) opened the first flagged
-  // package by itself on a wide screen. Now the list takes the full width until the reader opens a
-  // row, so the dense one-line rows are what a wide screen shows first.
   test("opens no package on a wide screen: the list keeps the full width and the address stays bare", async () => {
-    render(<App model={MINI} />);
+    render(<App model={load()} />);
+
     expect(detailName()).toBeNull();
     expect(shellClasses()).toContain("no-detail");
     expect(document.querySelector(".shell-detail")).toBeNull();
@@ -140,27 +94,29 @@ describe("boot", () => {
     });
   });
 
-  test("a deep link still opens its package on load, beside the list on a wide screen", async () => {
-    history.replaceState(null, "", "/report.html#pkg=vendor%2Ftransitive");
-    render(<App model={MINI} />);
-    expect(detailName()).toBe("vendor/transitive");
+  test("a deep link opens its package on load, beside the list on a wide screen", async () => {
+    history.replaceState(null, "", "/report.html#pkg=symfony%2Fdebug");
+
+    render(<App model={load()} />);
+
+    expect(detailName()).toBe("symfony/debug");
     expect(shellClasses()).not.toContain("no-detail");
     expect(document.querySelector(".shell-detail")?.classList.contains("is-side")).toBe(true);
     await waitFor(() => {
-      expect(location.hash).toBe("#pkg=vendor%2Ftransitive");
+      expect(location.hash).toBe("#pkg=symfony%2Fdebug");
     });
   });
 
   test("a row opened on a wide screen reaches the address, and closing it gives the list its width back", async () => {
-    render(<App model={MINI} />);
-    fireEvent.click(screen.getByRole("option", { name: "vendor/snapshot" }));
-    expect(detailName()).toBe("vendor/snapshot");
+    render(<App model={load()} />);
+    fireEvent.click(row("symfony/yaml"));
+    expect(detailName()).toBe("symfony/yaml");
     expect(shellClasses()).not.toContain("no-detail");
     await waitFor(() => {
-      expect(location.hash).toBe("#pkg=vendor%2Fsnapshot");
+      expect(location.hash).toBe("#pkg=symfony%2Fyaml");
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    fireEvent.click(within(screen.getByRole("complementary")).getByRole("button", { name: "Close" }));
 
     expect(detailName()).toBeNull();
     expect(shellClasses()).toContain("no-detail");
@@ -171,16 +127,32 @@ describe("boot", () => {
 
   test("opens nothing on a narrow screen", () => {
     media({ wide: false, narrow: true });
-    render(<App model={MINI} />);
+
+    render(<App model={load()} />);
+
     expect(detailName()).toBeNull();
     expect(document.body.classList.contains("detail-open")).toBe(false);
   });
 
   test("restores the view and the package from the address", () => {
-    history.replaceState(null, "", "/report.html#view=packages&pkg=vendor%2Fsnapshot");
-    render(<App model={MINI} />);
-    expect(screen.getByRole("tab", { selected: true }).textContent).toContain("All packages");
-    expect(detailName()).toBe("vendor/snapshot");
+    history.replaceState(null, "", "/report.html#view=packages&pkg=symfony%2Fdebug");
+
+    render(<App model={load()} />);
+
+    expect(selectedTab()).toContain("All packages");
+    expect(detailName()).toBe("symfony/debug");
+  });
+
+  test("an address asking for the failing rows of a run that nothing fails lists every row", async () => {
+    history.replaceState(null, "", "/report.html#gate=fails");
+
+    render(<App model={load("B-gate-none")} />);
+
+    expect(screen.queryByRole("button", { name: /^Fails this run/ })).toBeNull();
+    await waitFor(() => {
+      expect(location.hash).toBe("");
+    });
+    expect(document.querySelectorAll("li[data-pkg]")).toHaveLength(1);
   });
 
   test("bootState is the address alone: a named package opens, an unnamed one never does", () => {
@@ -189,82 +161,96 @@ describe("boot", () => {
     expect(bootState("#view=packages")).toMatchObject({ view: "packages", pkg: null });
   });
 
-  test("a pasted link replaces the state but keeps the table's sort", () => {
-    const current = { ...INITIAL_STATE, sort: "libyears" as const, q: "old", pkg: "a" };
+  test("a pasted link replaces the state but keeps the table's sort and the Blast radius folds", () => {
+    const current = {
+      ...INITIAL_STATE,
+      sort: "libyears" as const,
+      q: "old",
+      pkg: "a",
+      disclosure: { "fold:singles": true },
+    };
+
     expect(stateFromHashChange("#view=radius", current)).toMatchObject({
       view: "radius",
       q: "",
       pkg: null,
       sort: "libyears",
+      disclosure: { "fold:singles": true },
     });
   });
 });
 
 describe("tabs", () => {
   test("show whole-report counts and switch views, closing the detail", () => {
-    render(<App model={MINI} />);
-    const packages = screen.getByRole("tab", { name: /All packages/ });
-    expect(packages.textContent).toBe("All packages4");
-    expect(screen.getByRole("tab", { name: /Run data/ }).textContent).toBe("Run data2");
+    render(<App model={load()} />);
+    fireEvent.click(row("symfony/yaml"));
+    expect(detailName()).toBe("symfony/yaml");
+
+    const packages = screen.getByRole("tab", { name: "All packages 7" });
+    expect(screen.getByRole("tab", { name: "Run data" })).toBeTruthy();
     fireEvent.click(packages);
+
     expect(packages.getAttribute("aria-selected")).toBe("true");
     expect(detailName()).toBeNull();
   });
 
-  test("arrow keys move between tabs", () => {
-    render(<App model={MINI} />);
-    fireEvent.keyDown(screen.getByRole("tab", { name: /Findings/ }), { key: "ArrowLeft" });
-    expect(screen.getByRole("tab", { selected: true }).textContent).toContain("Run data");
+  test("arrow keys move between tabs, wrapping at both ends, and Home and End jump to them", () => {
+    render(<App model={load()} />);
+
+    fireEvent.keyDown(screen.getByRole("tab", { name: /^Findings/ }), { key: "ArrowLeft" });
+    expect(selectedTab()).toContain("Run data");
+    fireEvent.keyDown(screen.getByRole("tab", { name: /^Run data/ }), { key: "ArrowRight" });
+    expect(selectedTab()).toContain("Findings");
+    fireEvent.keyDown(screen.getByRole("tab", { name: /^Findings/ }), { key: "End" });
+    expect(selectedTab()).toContain("Run data");
+    fireEvent.keyDown(screen.getByRole("tab", { name: /^Run data/ }), { key: "Home" });
+    expect(selectedTab()).toContain("Findings");
   });
 
   test("a hashchange applies the new address", async () => {
-    render(<App model={MINI} />);
+    render(<App model={load()} />);
+
     history.replaceState(null, "", "/report.html#view=radius");
     window.dispatchEvent(new HashChangeEvent("hashchange"));
+
     await waitFor(() => {
-      expect(screen.getByRole("tab", { selected: true }).textContent).toContain("Blast radius");
+      expect(selectedTab()).toContain("Blast radius");
     });
   });
 
-  // A first-time-reader walk: scrolled deep into Findings, then switched tabs and landed mid-list
-  // in a shorter tab, with nothing on screen explaining why.
   test("a clicked tab scrolls the page back to the top", () => {
     const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
-    render(<App model={MINI} />);
+    render(<App model={load()} />);
 
-    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    openPackages();
 
     expect(scrollTo).toHaveBeenCalledWith(0, 0);
   });
 
   test("a hashchange restore does not fight a reader's own scroll position", async () => {
     const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
-    render(<App model={MINI} />);
+    render(<App model={load()} />);
 
     history.replaceState(null, "", "/report.html#view=radius");
     window.dispatchEvent(new HashChangeEvent("hashchange"));
     await waitFor(() => {
-      expect(screen.getByRole("tab", { selected: true }).textContent).toContain("Blast radius");
+      expect(selectedTab()).toContain("Blast radius");
     });
 
     expect(scrollTo).not.toHaveBeenCalled();
   });
 
-  // Regression: Tabs.tsx dispatches "view" even for the tab already selected (it closes the open
-  // detail), which used to latch the "a reader changed tabs" flag without the effect that clears it
-  // ever running (the effect depends on `state.view`, which did not change). The flag then stayed
-  // set for the *next* view change for any reason, including this hashchange restore.
   test("clicking the already-selected tab first does not make a later hashchange restore scroll", async () => {
     const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
-    render(<App model={MINI} />);
+    render(<App model={load()} />);
 
-    fireEvent.click(screen.getByRole("tab", { name: /Findings/ }));
+    fireEvent.click(screen.getByRole("tab", { name: /^Findings/ }));
     expect(scrollTo).not.toHaveBeenCalled();
 
     history.replaceState(null, "", "/report.html#view=packages");
     window.dispatchEvent(new HashChangeEvent("hashchange"));
     await waitFor(() => {
-      expect(screen.getByRole("tab", { selected: true }).textContent).toContain("All packages");
+      expect(selectedTab()).toContain("All packages");
     });
 
     expect(scrollTo).not.toHaveBeenCalled();
@@ -272,102 +258,123 @@ describe("tabs", () => {
 });
 
 describe("keyboard", () => {
-  test("j and k walk the rows on screen and open each one", () => {
-    render(<App model={MINI} />);
-    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+  test.each([
+    ["Findings", ""],
+    ["All packages", "#view=packages"],
+  ])("j and k walk the %s rows on screen and open each one", (_tab, hash) => {
+    history.replaceState(null, "", `/report.html${hash}`);
+    render(<App model={load()} />);
+
     key("j");
-    expect(detailName()).toBe("vendor/transitive");
+    expect(detailName()).toBe(BY_RANK[0]);
     key("j");
-    expect(detailName()).toBe("vendor/snapshot");
+    expect(detailName()).toBe(BY_RANK[1]);
     key("k");
-    expect(detailName()).toBe("vendor/transitive");
+    expect(detailName()).toBe(BY_RANK[0]);
   });
 
-  // PD-ROWS-10: focus used to stay wherever it was while `j` opened a row, and reached the row only
-  // once Escape closed it again, so a keyboard reader saw no ring on the package `j` had opened.
   test("j and k put focus on the row they open", () => {
-    render(<App model={MINI} />);
-    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    render(<App model={load()} />);
+
     key("j");
-    expect(document.activeElement?.getAttribute("data-pkg")).toBe("vendor/transitive");
+    expect(document.activeElement?.getAttribute("data-pkg")).toBe(BY_RANK[0]);
     key("j");
-    expect(document.activeElement?.getAttribute("data-pkg")).toBe("vendor/snapshot");
+    expect(document.activeElement?.getAttribute("data-pkg")).toBe(BY_RANK[1]);
     key("k");
-    expect(document.activeElement?.getAttribute("data-pkg")).toBe("vendor/transitive");
+    expect(document.activeElement?.getAttribute("data-pkg")).toBe(BY_RANK[0]);
+  });
+
+  test("j walks the Advisories rows one by one, a package listed under three advisories included", () => {
+    history.replaceState(null, "", "/report.html#view=advisories");
+    render(<App model={load()} />);
+
+    const walked: (string | null)[] = [];
+    for (let step = 0; step < 6; step += 1) {
+      key("j", document.activeElement ?? document.body);
+      walked.push(document.activeElement?.getAttribute("data-pkg") ?? null);
+    }
+
+    // One row for polyfill-intl-idn, three for yaml, one for monolog-bridge, then twig/twig's.
+    expect(walked).toEqual([
+      "symfony/polyfill-intl-idn",
+      "symfony/yaml",
+      "symfony/yaml",
+      "symfony/yaml",
+      "symfony/monolog-bridge",
+      "twig/twig",
+    ]);
   });
 
   test("Escape closes the detail and gives focus back to its row", async () => {
-    render(<App model={MINI} />);
-    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    render(<App model={load()} />);
     key("j");
+
     key("Escape");
+
     expect(detailName()).toBeNull();
     await waitFor(() => {
-      expect(document.activeElement?.getAttribute("data-pkg")).toBe("vendor/transitive");
+      expect(document.activeElement?.getAttribute("data-pkg")).toBe(BY_RANK[0]);
     });
   });
 
-  test("Enter on a row opens it and a second Enter keeps it open (PD-ROWS-7); Enter on a link inside the row does not (M5)", () => {
-    render(<App model={MINI} />);
-    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
-    const row = screen.getByRole("option", { name: "vendor/snapshot" });
-    key("Enter", row);
-    expect(detailName()).toBe("vendor/snapshot");
-    key("Enter", row);
-    expect(detailName()).toBe("vendor/snapshot");
+  test("Enter on a row opens it and a second Enter keeps it open; Enter on a link inside a row does not", () => {
+    history.replaceState(null, "", "/report.html#view=advisories");
+    render(<App model={load()} />);
+    const first = document.querySelector<HTMLElement>("li[data-pkg]");
+    if (first === null) throw new Error("the Advisories tab lists a row");
+    const pkg = first.getAttribute("data-pkg");
+
+    key("Enter", first);
+    expect(detailName()).toBe(pkg);
+    key("Enter", first);
+    expect(detailName()).toBe(pkg);
     key("Escape");
     expect(detailName()).toBeNull();
-    const link = row.querySelector("a");
-    if (link === null) throw new Error("the stand-in row has a link");
+    const link = first.querySelector("a");
+    if (link === null) throw new Error("an Advisories row links its advisory");
     key("Enter", link);
     expect(detailName()).toBeNull();
   });
 
-  // PD-ROWS-11 (M5's mismatch): a click left focus on the clicked row while `j` moved the open
-  // package on, so the Enter after the walk opened the clicked row again, not the one `j` reached.
   test("after a click, j moves focus with the open package, so Enter opens the row j reached", () => {
-    render(<App model={MINI} />);
-    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
-    const first = screen.getByRole("option", { name: "vendor/transitive" });
+    render(<App model={load()} />);
+    const first = row(BY_RANK[0] ?? "");
     first.focus();
     fireEvent.click(first);
-    expect(detailName()).toBe("vendor/transitive");
+    expect(detailName()).toBe(BY_RANK[0]);
 
     key("j", first);
-    expect(detailName()).toBe("vendor/snapshot");
+    expect(detailName()).toBe(BY_RANK[1]);
     const focused = document.activeElement;
-    expect(focused?.getAttribute("data-pkg")).toBe("vendor/snapshot");
+    expect(focused?.getAttribute("data-pkg")).toBe(BY_RANK[1]);
 
     key("Enter", focused ?? document.body);
-    expect(detailName()).toBe("vendor/snapshot");
+    expect(detailName()).toBe(BY_RANK[1]);
   });
 
   test("after Escape hands focus back to a row, j continues below it, not from the top", () => {
-    render(<App model={MINI} />);
-    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    render(<App model={load()} />);
     key("j");
     key("j");
-    expect(detailName()).toBe("vendor/snapshot");
+    expect(detailName()).toBe(BY_RANK[1]);
     key("Escape");
     expect(detailName()).toBeNull();
-    const row = document.activeElement;
-    expect(row?.getAttribute("data-pkg")).toBe("vendor/snapshot");
-    const third = screen.getAllByRole("option")[2]?.getAttribute("data-pkg");
+    const focused = document.activeElement;
+    expect(focused?.getAttribute("data-pkg")).toBe(BY_RANK[1]);
 
-    // The legacy cursor started again at -1 with nothing open, so this `j` opened the first row.
-    key("j", row ?? document.body);
-    expect(detailName()).toBe(third);
-    expect(third).not.toBe("vendor/transitive");
+    key("j", focused ?? document.body);
+
+    expect(detailName()).toBe(BY_RANK[2]);
   });
 
   test("Escape typed in the search box closes the detail and leaves focus in the box", () => {
-    render(<App model={MINI} />);
-    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    render(<App model={load()} />);
     key("j");
     const search = screen.getByRole("searchbox");
     search.focus();
 
     key("Escape", search);
+
     expect(detailName()).toBeNull();
     expect(document.activeElement).toBe(search);
   });
@@ -381,20 +388,16 @@ describe("keyboard", () => {
     );
     for (const reduce of [false, true]) {
       media({ reduce });
-      render(<App model={MINI} />);
-      fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+      render(<App model={load()} />);
       key("j");
       cleanup();
     }
 
     expect(behaviours).toEqual(["smooth", "auto"]);
-    vi.restoreAllMocks();
   });
 
-  // PD-ROWS-12: a second Escape used to blur the box to the page, so Tab started again at the top.
   test("Escape from the search box with nothing open hands focus to the list's Tab stop", () => {
-    render(<App model={MINI} />);
-    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    render(<App model={load()} />);
     key("j");
     key("j");
     key("Escape");
@@ -402,96 +405,126 @@ describe("keyboard", () => {
     search.focus();
 
     key("Escape", search);
+
     expect(detailName()).toBeNull();
-    expect(document.activeElement?.getAttribute("data-pkg")).toBe("vendor/snapshot");
+    expect(document.activeElement?.getAttribute("data-pkg")).toBe(BY_RANK[1]);
+  });
+
+  test("the open package's row is the list's one Tab stop", () => {
+    render(<App model={load()} />);
+    key("j");
+    key("j");
+
+    const stops = [...document.querySelectorAll("li[data-pkg]")]
+      .filter((item) => item.getAttribute("tabindex") === "0")
+      .map((item) => item.getAttribute("data-pkg"));
+
+    expect(stops).toEqual([BY_RANK[1]]);
   });
 
   test("/ focuses the search box; j typed there is text", () => {
-    render(<App model={MINI} />);
+    render(<App model={load()} />);
+
     key("/");
+
     const search = screen.getByRole("searchbox");
     expect(document.activeElement).toBe(search);
     key("j", search);
-    expect(detailName()).toBeNull(); // j typed as text never opened the first row
+    expect(detailName()).toBeNull();
   });
 });
 
-// PD-ROWS-12: below the wide layout the detail is a sheet over the whole page, so the row that holds
-// focus is under it and its ring out of sight (WCAG 2.4.11). Focus goes into the sheet instead, and
-// everything the sheet covers is inert until it closes.
-describe("a sheet over the page takes focus (PD-ROWS-12)", () => {
+// Below the wide layout the detail is a sheet over the whole page, so the row that holds focus is
+// under it and its ring out of sight (WCAG 2.4.11). Focus goes into the sheet instead, and everything
+// the sheet covers is inert until it closes.
+describe("a sheet over the page takes focus", () => {
   function sheetHeading(): Element | null {
     return document.querySelector(".shell-detail [data-detail-focus]");
   }
 
   test("a clicked row opens the sheet with focus on its heading, and the page under it inert", () => {
     media({ wide: false });
-    render(<App model={MINI} />);
-    const row = screen.getByRole("option", { name: "vendor/snapshot" });
-    row.focus();
-    fireEvent.click(row);
+    render(<App model={load()} />);
+    const target = row("symfony/yaml");
+    target.focus();
+    fireEvent.click(target);
 
-    expect(detailName()).toBe("vendor/snapshot");
+    expect(detailName()).toBe("symfony/yaml");
     expect(document.activeElement).toBe(sheetHeading());
     expect(document.querySelector(".shell-main")?.hasAttribute("inert")).toBe(true);
-    expect(screen.getByRole("banner").hasAttribute("inert")).toBe(true);
-    expect(screen.getByRole("contentinfo").hasAttribute("inert")).toBe(true);
+    expect(document.querySelector(".topbar")?.hasAttribute("inert")).toBe(true);
+    expect(document.querySelector(".colophon")?.hasAttribute("inert")).toBe(true);
     expect(document.querySelector(".ledger-band")?.hasAttribute("inert")).toBe(true);
     expect(document.querySelector(".shell-detail")?.closest("[inert]")).toBeNull();
   });
 
   test("j and k keep focus in the sheet, and Escape hands it to the row they reached", () => {
     media({ wide: false });
-    render(<App model={MINI} />);
-    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    render(<App model={load()} />);
     key("j");
-    expect(detailName()).toBe("vendor/transitive");
+    expect(detailName()).toBe(BY_RANK[0]);
     expect(document.activeElement).toBe(sheetHeading());
     key("j", document.activeElement ?? document.body);
-    expect(detailName()).toBe("vendor/snapshot");
+    expect(detailName()).toBe(BY_RANK[1]);
     expect(document.activeElement).toBe(sheetHeading());
-    expect(sheetHeading()?.textContent).toBe("vendor/snapshot");
+    expect(sheetHeading()?.textContent).toBe(BY_RANK[1]);
 
     key("Escape", document.activeElement ?? document.body);
+
     expect(detailName()).toBeNull();
-    expect(document.activeElement?.getAttribute("data-pkg")).toBe("vendor/snapshot");
+    expect(document.activeElement?.getAttribute("data-pkg")).toBe(BY_RANK[1]);
     expect(document.querySelector("[inert]")).toBeNull();
   });
 
   test("/ closes the sheet and focuses the search box it covered", () => {
     media({ wide: false });
-    render(<App model={MINI} />);
+    render(<App model={load()} />);
     key("j");
     expect(detailName()).not.toBeNull();
 
     key("/", document.activeElement ?? document.body);
+
     expect(detailName()).toBeNull();
     expect(document.activeElement).toBe(screen.getByRole("searchbox"));
   });
 
   test("a sheet the address opened on load leaves focus alone", () => {
     media({ wide: false });
-    history.replaceState(null, "", "/report.html#pkg=vendor%2Fsnapshot");
-    render(<App model={MINI} />);
-    expect(detailName()).toBe("vendor/snapshot");
+    history.replaceState(null, "", "/report.html#pkg=symfony%2Fyaml");
+
+    render(<App model={load()} />);
+
+    expect(detailName()).toBe("symfony/yaml");
     expect(document.activeElement).toBe(document.body);
   });
 
   test("a detail beside the list takes nothing inert and leaves focus on the row", () => {
-    render(<App model={MINI} />);
-    const row = screen.getByRole("option", { name: "vendor/snapshot" });
-    row.focus();
-    fireEvent.click(row);
-    expect(document.activeElement).toBe(row);
+    render(<App model={load()} />);
+    const target = row("symfony/yaml");
+    target.focus();
+
+    fireEvent.click(target);
+
+    expect(document.activeElement).toBe(target);
     expect(document.querySelector("[inert]")).toBeNull();
+  });
+
+  test("an address naming a package the report does not list opens a panel with a Close that takes focus", () => {
+    media({ wide: false });
+    history.replaceState(null, "", "/report.html#pkg=not%2Flisted");
+
+    render(<App model={load()} />);
+
+    expect(detailName()).toBe("not/listed");
+    expect(screen.getByText("not/listed is not in this report.")).toBeTruthy();
   });
 });
 
-// PD-ROWS-10: from 1181px up, opening a package narrows the list and closing it widens it again, and
-// the Findings rows change height with the list's width, so the clicked row slid off the screen.
-// happy-dom lays nothing out, so the stand-in rows report the top a real row would: one place with
-// the list at full width, another with the detail beside it.
-describe("the row a reader acts on keeps its place (PD-ROWS-10)", () => {
+// From 1181px up, opening a package narrows the list and closing it widens it again, and the
+// Findings rows change height with the list's width, so the clicked row would slide off the screen.
+// happy-dom lays nothing out, so rows report the top a real row would: one place with the list at
+// full width, another with the detail beside it.
+describe("the row a reader acts on keeps its place", () => {
   function rowsSitAt(closed: number, open: number) {
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(() => {
       const top = document.querySelector(".shell-detail") === null ? closed : open;
@@ -500,27 +533,22 @@ describe("the row a reader acts on keeps its place (PD-ROWS-10)", () => {
     return vi.spyOn(window, "scrollBy").mockImplementation(() => undefined);
   }
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   test("opening a row scrolls the page by however far the row moved, and closing it scrolls back", () => {
     const scrollBy = rowsSitAt(480, 869);
-    render(<App model={MINI} />);
+    render(<App model={load()} />);
 
-    fireEvent.click(screen.getByRole("option", { name: "vendor/snapshot" }));
+    fireEvent.click(row("symfony/yaml"));
     expect(scrollBy).toHaveBeenCalledTimes(1);
     expect(scrollBy).toHaveBeenLastCalledWith(0, 389);
 
-    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    fireEvent.click(within(screen.getByRole("complementary")).getByRole("button", { name: "Close" }));
     expect(scrollBy).toHaveBeenCalledTimes(2);
     expect(scrollBy).toHaveBeenLastCalledWith(0, -389);
   });
 
   test("Escape and j keep their row in place the same way", () => {
     const scrollBy = rowsSitAt(300, 420);
-    render(<App model={MINI} />);
-    fireEvent.click(screen.getByRole("tab", { name: /All packages/ }));
+    render(<App model={load()} />);
 
     key("j");
     expect(scrollBy).toHaveBeenLastCalledWith(0, 120);
@@ -530,9 +558,11 @@ describe("the row a reader acts on keeps its place (PD-ROWS-10)", () => {
 
   test("a row that did not move scrolls nothing: a sheet over the page, or a detail already open", () => {
     const scrollBy = rowsSitAt(480, 480);
-    render(<App model={MINI} />);
-    fireEvent.click(screen.getByRole("option", { name: "vendor/snapshot" }));
-    fireEvent.click(screen.getByRole("option", { name: "vendor/transitive" }));
+    render(<App model={load()} />);
+
+    fireEvent.click(row("symfony/yaml"));
+    fireEvent.click(row("symfony/debug"));
+
     expect(scrollBy).not.toHaveBeenCalled();
   });
 
@@ -546,25 +576,28 @@ describe("the row a reader acts on keeps its place (PD-ROWS-10)", () => {
         scrolled.push(this.getAttribute("data-pkg"));
     });
 
-    render(<App model={MINI} />);
+    render(<App model={load()} />);
     expect(scrolled).toEqual([]);
     cleanup();
 
-    history.replaceState(null, "", "/report.html#pkg=vendor%2Fsnapshot");
-    render(<App model={MINI} />);
-    expect(scrolled).toEqual(["vendor/snapshot"]);
+    history.replaceState(null, "", "/report.html#pkg=symfony%2Fyaml");
+    render(<App model={load()} />);
+    expect(scrolled).toEqual(["symfony/yaml"]);
   });
 });
 
 describe("glossary", () => {
-  test("? opens it, it lists S10, and j does nothing behind it (M10)", async () => {
-    render(<App model={MINI} />);
+  test("? opens it, it lists S10, and j does nothing behind it", async () => {
+    render(<App model={load()} />);
+
     key("?");
+
     const dialog = await screen.findByRole("dialog", { name: "What these words mean" });
+    expect((dialog as HTMLDialogElement).open).toBe(true);
     expect(dialog.textContent).toContain("S10");
-    expect(dialog.textContent).toContain("a check could not run");
+    expect(dialog.textContent).toContain("could not run for this package");
     key("j");
-    expect(detailName()).toBeNull(); // j behind the dialog did not open the first row
+    expect(detailName()).toBeNull();
     key("Escape");
     await waitFor(() => {
       expect((dialog as HTMLDialogElement).open).toBe(false);
@@ -572,12 +605,45 @@ describe("glossary", () => {
     expect(detailName()).toBeNull();
   });
 
-  test("falls back to a pinned open dialog when showModal() throws (M28)", async () => {
+  test("closing it hands focus back to the button that opened it", async () => {
+    render(<App model={load()} />);
+    const opener = screen.getByRole("button", { name: "What these words mean" });
+    opener.focus();
+    fireEvent.click(opener);
+    const dialog = await screen.findByRole("dialog", { name: "What these words mean" });
+    expect(document.activeElement?.textContent).toBe("Close");
+
+    key("Escape");
+
+    await waitFor(() => {
+      expect((dialog as HTMLDialogElement).open).toBe(false);
+    });
+    expect(document.activeElement).toBe(opener);
+  });
+
+  test("closes before an open detail does", async () => {
+    render(<App model={load()} />);
+    key("j");
+    expect(detailName()).toBe(BY_RANK[0]);
+    key("?");
+    const dialog = await screen.findByRole("dialog", { name: "What these words mean" });
+
+    key("Escape");
+
+    await waitFor(() => {
+      expect((dialog as HTMLDialogElement).open).toBe(false);
+    });
+    expect(detailName()).toBe(BY_RANK[0]);
+  });
+
+  test("falls back to a pinned open dialog when showModal() throws", async () => {
     const spy = vi.spyOn(HTMLDialogElement.prototype, "showModal").mockImplementation(() => {
       throw new Error("modals are not allowed here");
     });
-    render(<App model={MINI} />);
+    render(<App model={load()} />);
+
     fireEvent.click(screen.getByRole("button", { name: "What these words mean" }));
+
     const dialog = await screen.findByRole("dialog", { name: "What these words mean" });
     await waitFor(() => {
       expect(dialog.className).toContain("is-fallback");
@@ -592,24 +658,30 @@ describe("glossary", () => {
 
 describe("theme", () => {
   test("the button names the other theme and persists the choice", () => {
-    render(<App model={MINI} />);
+    render(<App model={load()} />);
     const button = screen.getByRole("button", { name: "Dark" });
+
     fireEvent.click(button);
+
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
     expect(localStorage.getItem("lockrot-theme")).toBe("dark");
     expect(button.textContent).toBe("Light");
   });
 
-  test("under an OS dark preference the first click goes light (M11)", () => {
+  test("under an OS dark preference the first click goes light", () => {
     media({ dark: true });
-    render(<App model={MINI} />);
+    render(<App model={load()} />);
+
     fireEvent.click(screen.getByRole("button", { name: "Light" }));
+
     expect(document.documentElement.getAttribute("data-theme")).toBe("light");
   });
 
   test("restores a saved theme", () => {
     localStorage.setItem("lockrot-theme", "dark");
-    render(<App model={MINI} />);
+
+    render(<App model={load()} />);
+
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
     expect(screen.getByRole("button", { name: "Light" })).toBeTruthy();
   });
@@ -618,269 +690,122 @@ describe("theme", () => {
 describe("layout", () => {
   test("a narrow screen folds the rail into a Filters disclosure and locks scroll under a sheet", () => {
     media({ wide: false, narrow: true });
-    render(<App model={MINI} />);
+    render(<App model={load()} />);
     expect(screen.getByText("Filters").closest("details")).not.toBeNull();
-    fireEvent.click(screen.getByRole("option", { name: "vendor/snapshot" }));
+
+    fireEvent.click(row("symfony/yaml"));
+
     expect(document.body.classList.contains("detail-open")).toBe(true);
   });
 
-  test("the header names the project, target and data date; the footer names the version", () => {
-    render(<App model={MINI} />);
-    const banner = screen.getByRole("banner");
-    expect(banner.textContent).toContain("acme/app");
-    expect(banner.textContent).toContain("target PHP 8.4");
-    expect(screen.getByRole("contentinfo").textContent).toContain("Generated by lockrot");
-  });
-
-  test("the summary band leads with the flagged figure and its priority chips, on a wide screen", () => {
-    render(<App model={MINI} />);
-    const band = document.querySelector(".ledger-band");
-    expect(band?.querySelector(".ledger-lead .lead-num")?.textContent).toBe("2");
-    expect(band?.textContent).toContain("of 4 packages");
-    expect(screen.getByRole("button", { name: "high 1" })).toBeTruthy();
-    // No fold on a wide screen: the supporting columns sit in the band itself.
-    expect(band?.querySelector("details")).toBeNull();
-    expect(band?.querySelector(".ledger-tier")).not.toBeNull();
-  });
-
-  // PD-SUMMARY-6 (DESIGN.md §5/§8): on a phone the lead stays in view, and only the supporting tier
-  // folds, behind a line that counts what it holds.
-  test("a narrow screen keeps the lead unfolded and folds only the tier", () => {
+  test("the Filters fold counts the filters that are on", () => {
     media({ wide: false, narrow: true });
-    render(<App model={MINI} />);
-    const lead = document.querySelector(".ledger-lead");
-    expect(lead?.closest("details")).toBeNull();
-    expect(lead?.textContent).toContain("of 4 packages");
-    const summary = screen.getByText("More about this lock").closest("summary");
-    expect(summary?.textContent).toContain("2 reasons · no advisories · libyears not measured");
-    expect(summary?.parentElement?.querySelector(".ledger-tier")).not.toBeNull();
+    history.replaceState(null, "", "/report.html#flag=stale,pinned&scope=direct");
+
+    render(<App model={load()} />);
+
+    expect(screen.getByText("Filters").closest("summary")?.textContent).toContain("3 on");
   });
 
-  test("an older report's header says only the fail-on it was told, never which findings meet it", () => {
-    render(<App model={MINI} />);
-    const button = screen.getByRole("button", { name: /^gate: silent/ });
-    expect(button.getAttribute("title")).toBe(
-      "This run was told --fail-on=silent. This report does not say which findings meet it, or whether the run failed.",
-    );
-    expect(document.querySelector(".gate-fact")).toBeNull();
-    expect(document.querySelector(".lead-gate")).toBeNull();
+  test("hides the rail and the search box on the Run tab, which lists no package", () => {
+    history.replaceState(null, "", "/report.html#view=run");
+
+    render(<App model={load()} />);
+
+    expect(screen.queryByRole("searchbox")).toBeNull();
+    expect(screen.queryByRole("group", { name: "Filters" })).toBeNull();
+    expect(shellClasses()).toContain("no-rail");
   });
 
-  // PD-GATE-1: lockrot's root gate, in the header's words, causes as the CLI's flags.
-  test("the header says whether the run failed and on which flags, lockrot's gate as written", () => {
-    render(<App model={loadModel("mini-0.13-gate-verdict")} />);
-    expect(document.querySelector(".gate-fact")?.textContent).toBe("this run fails · --fail-on=pinned");
-    expect(screen.queryByRole("button", { name: /^gate:/ })).toBeNull();
-    cleanup();
-    render(<App model={loadModel("mini-0.13-edges")} />);
-    expect(document.querySelector(".gate-fact")?.textContent).toBe(
-      "this run fails · --strict-network · --fail-on=high",
-    );
-  });
+  test("the header names the lock, the target and the data date; the footer names the version", () => {
+    render(<App model={load()} />);
 
-  test("one failing package that is not flagged is said to be not flagged, at both levels", () => {
-    render(<App model={loadModel("mini-0.13-gate-unknown")} />);
-    expect(unechoed(".bl-answer")).toContain("1 fails this run, on All packages, not flagged. why");
-    expect(echoes(".bl-answer")).toEqual([" by --fail-on=copyleft", "; licence_policy fails the run too"]);
-    fireEvent.click(screen.getByRole("button", { name: "Why this run fails" }));
-    const panel = document.querySelector(".gate-why")?.textContent ?? "";
-    expect(panel).toContain("1 package meets it, and it fails. It is not flagged (ok).");
-    expect(panel).not.toContain("It is flagged");
-  });
-
-  test("an unknown cause is shown as written beside the known ones", () => {
-    render(<App model={loadModel("mini-0.13-gate-unknown")} />);
-    expect(document.querySelector(".gate-fact")?.textContent).toBe(
-      "this run fails · --fail-on=copyleft · licence_policy",
+    const header = document.querySelector(".topbar")?.textContent;
+    // The run names no project, so the header falls back to the lock file's usual name.
+    expect(header).toContain("composer.lock");
+    expect(header).toContain("target PHP 8.4");
+    expect(header).toContain("data as of 2026-10-01");
+    expect(document.querySelector(".colophon")?.textContent).toContain(
+      "Generated by lockrot 0.14.0 on 2026-10-01",
     );
   });
 
-  test("a baseline run nothing failed passes, and says it applies no fail-on", () => {
-    render(<App model={loadModel("wallabag_generate-baseline-0.13")} />);
-    const fact = document.querySelector(".gate-fact")?.textContent ?? "";
-    expect(fact).toBe("baseline run passes · --fail-on not applied");
-    expect(document.querySelector(".lead-gate")?.textContent).toBe(
-      "This run passes: it applies no fail-on, though 39 packages meet it. why",
-    );
-    expect(screen.getByRole("button", { name: "Why this run passes" })).toBeTruthy();
-    cleanup();
-    render(<App model={loadModel("mini-0.13-gate-generate")} />);
-    expect(document.querySelector(".gate-fact")?.textContent).toBe("baseline run fails · --strict-network");
-  });
+  test("the header names the project when the run has one", () => {
+    render(<App model={load("B")} />);
 
-  test("a run that only --strict-network failed says so under the lead, and level 1 keeps the fail-on", () => {
-    render(<App model={loadModel("wallabag_offline-strict-0.13")} />);
-    expect(document.querySelector(".lead-gate")?.textContent).toBe("This run fails by --strict-network. why");
-    expect(document.querySelector(".gate-fact")?.hasAttribute("data-said")).toBe(true);
-    cleanup();
-    render(<App model={loadModel("mini-0.13-gate-generate")} />);
-    expect(document.querySelector(".lead-gate")?.textContent).toBe(
-      "This run fails by --strict-network; it applies no fail-on. why",
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Why this run fails" }));
-    const panel = document.querySelector(".gate-why")?.textContent ?? "";
-    expect(panel).toContain("A network lookup failed, and this run fails when one does.");
-    expect(panel).toContain("This run wrote a baseline, so it was not applied; 14 packages meet it.");
-  });
-
-  test("the header's flags sit apart from its verdict, and its tooltip says them all", () => {
-    render(<App model={loadModel("mini-0.13-gate-generate")} />);
-    const fact = document.querySelector(".gate-fact");
-    expect(fact?.getAttribute("title")).toBe("baseline run fails · --strict-network");
-    expect(fact?.querySelector(".gate-fact-more")?.textContent).toBe(" · --strict-network");
-    cleanup();
-    render(<App model={loadModel("wallabag_generate-baseline-0.13")} />);
-    expect(document.querySelector(".gate-fact")?.getAttribute("title")).toBe(
-      "baseline run passes · --fail-on not applied",
-    );
-  });
-
-  // PD-GATE-2: every failing package first, then flagged and not flagged apart, the latter by why.
-  test("without a baseline the lead goes on: the total that fails, then flagged and unchecked", () => {
-    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
-    expect(unechoed(".lead-gate")).toBe(
-      "173 fail this run, on All packages: 2 flagged, 171 unchecked, on All packages→. why",
-    );
-    expect(echoes(".lead-gate")).toEqual([" by --fail-on=unchecked"]);
-    expect(document.querySelector(".gate-fact")?.hasAttribute("data-said")).toBe(false);
-    // The numbers list what they count; the one opener is apart from them.
-    const total = screen.getByRole("button", { name: /^173 fail this run\s?, on All packages$/ });
-    expect(total.hasAttribute("aria-expanded")).toBe(false);
-    const why = screen.getByRole("button", { name: "Why this run fails" });
-    expect(why.getAttribute("aria-expanded")).toBe("false");
-    fireEvent.click(why);
-    expect(why.getAttribute("aria-expanded")).toBe("true");
-    const panel = document.getElementById(why.getAttribute("aria-controls") ?? "");
-    expect(panel?.hidden).toBe(false);
-    expect(panel?.textContent).toContain(
-      "Fails on any package whose check did not run. 173 packages meet it, and all fail. Of those, 2 are flagged and 171 are not (ok).",
-    );
-  });
-
-  test("with a baseline the Against sentence closes on how many fail, which opens what ties them", () => {
-    render(<App model={loadModel("wallabag_baseline-older-0.13")} />);
-    expect(unechoed(".bl-answer")).toContain("43 already accepted; 12 fail this run. why");
-    expect(echoes(".bl-answer")).toEqual([" by --fail-on=high"]);
-    const why = screen.getByRole("button", { name: "Why this run fails" });
-    fireEvent.click(why);
-    expect(why.getAttribute("aria-expanded")).toBe("true");
-    const panel = document.querySelector(".gate-why");
-    expect(panel?.textContent).toContain("accepted30 of the 43 already accepted meet it");
-    expect(panel?.textContent).toContain("42 packages meet it: 12 fail.");
-  });
-
-  // PD-GATE-2: a count that is every failing package Findings lists is the rail's "Fails this run".
-  test("'12 fail this run' filters Findings to them and keeps focus, the opener apart and closed", () => {
-    render(<App model={loadModel("wallabag_baseline-older-0.13")} />);
-    const total = screen.getByRole("button", { name: "12 fail this run" });
-    expect(total.getAttribute("aria-pressed")).toBe("false");
-    expect(total.hasAttribute("aria-expanded")).toBe(false);
-    fireEvent.click(total);
-    expect(total.getAttribute("aria-pressed")).toBe("true");
-    expect(document.activeElement).toBe(total);
-    expect(window.location.hash).toBe("#gate=fails");
-    expect(screen.getByRole("button", { name: "Why this run fails" }).getAttribute("aria-expanded")).toBe(
-      "false",
-    );
-    fireEvent.click(total);
-    expect(total.getAttribute("aria-pressed")).toBe("false");
-  });
-
-  test("a total with failing packages Findings does not list opens All packages filtered to all of them", () => {
-    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
-    const total = screen.getByRole("button", { name: /^173 fail this run\s?, on All packages$/ });
-    fireEvent.click(total);
-    expect(document.activeElement).toBe(total);
-    expect(window.location.hash).toContain("view=packages");
-    expect(window.location.hash).toContain("gate=fails");
-  });
-
-  // PD-GATE-2/4: the flagged count is the rail's own "Fails this run", the same key in the address.
-  test("'2 flagged' filters Findings to the failing rows, the rail's own row pressed with it", () => {
-    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
-    const toggle = screen.getByRole("button", { name: "2 flagged" });
-    expect(toggle.getAttribute("aria-pressed")).toBe("false");
-    fireEvent.click(toggle);
-    expect(toggle.getAttribute("aria-pressed")).toBe("true");
-    expect(window.location.hash).toBe("#gate=fails");
-    const rail = screen.getByRole("group", { name: "Filters" });
-    expect(
-      within(rail)
-        .getByRole("button", { name: /^Fails this run/ })
-        .getAttribute("aria-pressed"),
-    ).toBe("true");
-  });
-
-  test("from another tab, the flagged count lists exactly the flagged failing rows on Findings", () => {
-    window.location.hash = "#view=packages&verdict=ok&gate=fails";
-    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
-    fireEvent.click(screen.getByRole("button", { name: /^2 flagged\s*,?\s*on Findings$/ }));
-    expect(screen.getByRole("tab", { name: /Findings/ }).getAttribute("aria-selected")).toBe("true");
-    expect(window.location.hash).toBe("#gate=fails");
-  });
-
-  test("from another tab, the flagged count keeps a search only when it hides none of them", () => {
-    window.location.hash = "#view=packages&q=spotify";
-    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
-    fireEvent.click(screen.getByRole("button", { name: /^2 flagged\s*,?\s*on Findings$/ }));
-    expect(window.location.hash).toBe("#gate=fails");
-    cleanup();
-    window.location.hash = "#view=packages&q=verdict:left-behind";
-    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
-    fireEvent.click(screen.getByRole("button", { name: /^2 flagged\s*,?\s*on Findings$/ }));
-    expect(window.location.hash).toContain("q=verdict");
-  });
-
-  test("the unchecked count opens All packages on exactly those packages", () => {
-    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
-    fireEvent.click(screen.getByRole("button", { name: /^171 unchecked\s*,?\s*on All packages$/ }));
-    expect(screen.getByRole("tab", { name: /All packages/ }).getAttribute("aria-selected")).toBe("true");
-    expect(window.location.hash).toBe("#view=packages&verdict=ok&gate=fails");
-  });
-
-  test("the unchecked count keeps a search only when the search hides none of them", () => {
-    window.location.hash = "#q=spotify";
-    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
-    fireEvent.click(screen.getByRole("button", { name: /^171 unchecked\s*,?\s*on All packages$/ }));
-    expect(window.location.hash).toBe("#view=packages&verdict=ok&gate=fails");
-    cleanup();
-    window.location.hash = "#q=verdict:ok";
-    render(<App model={loadModel("koel_no-token-unchecked-0.13")} />);
-    fireEvent.click(screen.getByRole("button", { name: /^171 unchecked\s*,?\s*on All packages$/ }));
-    expect(window.location.hash).toContain("q=verdict");
-  });
-
-  test("an address asking for the failing rows of a run no package fails lists every row", () => {
-    for (const name of [
-      "koel_koel-0.13",
-      "mini-0.13-gate-null",
-      "wallabag_wallabag",
-      "wallabag_offline-strict-0.13",
-    ]) {
-      window.location.hash = "#gate=fails";
-      render(<App model={loadModel(name)} />);
-      expect(window.location.hash, name).toBe("");
-      cleanup();
-    }
-  });
-
-  test("no gate, no gate words: the older report and --fail-on=none look as they did", () => {
-    for (const name of ["wallabag_wallabag", "koel_koel-0.13", "mini-0.13-gate-null"]) {
-      render(<App model={loadModel(name)} />);
-      expect(document.querySelector(".gate-fact"), name).toBeNull();
-      expect(document.querySelector(".lead-gate"), name).toBeNull();
-      expect(screen.queryByRole("button", { name: /^Fails this run/ }), name).toBeNull();
-      cleanup();
-    }
-  });
-
-  test("a document that predates run.fail_on shows no gate fact at all (PD-SUMMARY-2)", () => {
-    render(<App model={loadModel("mini-no-fail-on")} />);
-    expect(screen.queryByRole("button", { name: /gate/i })).toBeNull();
+    expect(document.querySelector(".topbar")?.textContent).toContain("matomo/matomo");
   });
 
   test("a document with a newer schema says so", () => {
-    render(<App model={{ ...MINI, schema: 2, newerSchema: true }} />);
+    render(<App model={{ ...load(), schema: 3, newerSchema: true }} />);
+
     expect(screen.getByText(/This report is newer than this page/)).toBeTruthy();
+  });
+
+  test("a document of the schema the page reads says nothing of it", () => {
+    render(<App model={load()} />);
+
+    expect(screen.queryByText(/newer than this page/)).toBeNull();
+  });
+});
+
+describe("the header's gate fact", () => {
+  function fact(): string | null {
+    return document.querySelector(".gate-fact")?.textContent ?? null;
+  }
+
+  test("says the run failed and on which flag, in the CLI's own spelling", () => {
+    render(<App model={load()} />);
+
+    expect(fact()).toBe("this run fails · --fail-on=high");
+    expect(document.querySelector(".gate-fact")?.getAttribute("title")).toBe(
+      "this run fails · --fail-on=high",
+    );
+    expect(screen.queryByRole("button", { name: /gate/ })).toBeNull();
+  });
+
+  test("writes a cause it has no words for as written, beside the known ones", () => {
+    const model = load("composite", ({ report }) => {
+      report.gate.tripped_by = ["fail_on", "licence_policy"] as never;
+    });
+
+    render(<App model={model} />);
+
+    expect(fact()).toBe("this run fails · --fail-on=high · licence_policy");
+  });
+
+  test("says a run that only --strict-network failed fails by that flag, which the summary then repeats", () => {
+    const model = load("composite", ({ report }) => {
+      report.gate.tripped_by = ["strict_network"];
+      report.gate.failing = 0;
+    });
+
+    render(<App model={model} />);
+
+    expect(fact()).toBe("this run fails · --strict-network");
+    expect(document.querySelector(".gate-fact")?.hasAttribute("data-said")).toBe(true);
+  });
+
+  test("says a baseline run that nothing failed passes, and applied no fail-on", () => {
+    const model = load("composite", ({ report }) => {
+      report.run.mode = "generate_baseline";
+      report.gate.fails = false;
+      report.gate.fail_on_applied = false;
+      report.gate.tripped_by = [];
+    });
+
+    render(<App model={model} />);
+
+    expect(fact()).toBe("baseline run passes · --fail-on not applied");
+  });
+
+  test("for a run told --fail-on=none draws a quiet 'no gate' button with its popover text, and no verdict", () => {
+    render(<App model={load("B-gate-none")} />);
+
+    const button = screen.getByRole("button", { name: /^no gate/ });
+    expect(fact()).toBeNull();
+    expect(button.getAttribute("title")).toContain(
+      "This run was told --fail-on=none: it fails on no finding",
+    );
   });
 });

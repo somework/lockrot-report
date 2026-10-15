@@ -1,185 +1,211 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render } from "@testing-library/preact";
+import { cleanup, fireEvent, render, screen } from "@testing-library/preact";
+import { assembleEmbed } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
 import type { Model } from "../../../src/model/types";
 import { INITIAL_STATE } from "../../../src/state/types";
-import { ReportContext, type ReportContextValue } from "../../../src/ui/context";
+import type { Action } from "../../../src/state/types";
+import { ReportContext } from "../../../src/ui/context";
 import { Glossary } from "../../../src/ui/Glossary";
 
 afterEach(cleanup);
 
-function loadMini(): Model {
-  const raw = JSON.parse(
-    readFileSync(join(process.cwd(), "fixtures", "bundles", "mini.json"), "utf8"),
-  ) as unknown;
-  const result = normalize(raw);
-  if (!result.ok) throw new Error("mini.json failed to normalize");
+function composite(extraSignals: string[] = []): Model {
+  const embed = assembleEmbed("composite");
+  embed.report.run.signal_ids = [...embed.report.run.signal_ids, ...extraSignals];
+  const result = normalize(embed);
+  if (!result.ok) throw new Error(result.error.message);
   return result.model;
 }
 
-function renderGlossary(props: { open: boolean; highlightTerm?: string | null; onClose?: () => void }) {
-  const highlightTerm = props.highlightTerm ?? null;
-  const model = loadMini();
-  const value: ReportContextValue = {
-    model,
-    state: INITIAL_STATE,
-    dispatch: vi.fn(),
-    now: new Date(model.report.generatedAt),
-    wide: true,
-    cursor: null,
-    openGlossary: vi.fn(),
-    openGlossaryFrom: vi.fn(),
-  };
-  return render(
-    <ReportContext.Provider value={value}>
-      <Glossary open={props.open} onClose={props.onClose ?? vi.fn()} highlightTerm={highlightTerm} />
-    </ReportContext.Provider>,
+interface Props {
+  open: boolean;
+  onClose?: () => void;
+  dispatch?: (action: Action) => void;
+  model?: Model;
+}
+
+function glossary({ open, onClose = vi.fn(), dispatch = vi.fn(), model = composite() }: Props) {
+  return (
+    <ReportContext.Provider
+      value={{
+        model,
+        state: INITIAL_STATE,
+        dispatch,
+        now: new Date(model.report.generated_at),
+        wide: true,
+        cursor: null,
+        openGlossary: vi.fn(),
+      }}
+    >
+      <button type="button">trigger</button>
+      <Glossary open={open} onClose={onClose} />
+    </ReportContext.Provider>
   );
 }
 
-describe("Glossary / highlightTerm (PD-GLOSSARY-7, DESIGN.md §5)", () => {
-  it("marks the term's dt/dd pair and focuses the term, ahead of the default focus on Close", () => {
-    // Act
-    const { container } = renderGlossary({ open: true, highlightTerm: "abandoned" });
+function sections(container: ParentNode): HTMLElement[] {
+  return [...container.querySelectorAll<HTMLElement>(".glossary-sect")];
+}
 
-    // Assert
-    const dt = container.querySelector('dt[data-term="abandoned"]');
-    const dd = dt?.nextElementSibling ?? null;
-    expect(dt?.classList.contains("glossary-highlight")).toBe(true);
-    expect(dd?.classList.contains("glossary-highlight")).toBe(true);
-    expect(document.activeElement).toBe(dt);
-  });
+function fold(container: ParentNode, title: RegExp): HTMLDetailsElement {
+  const found = sections(container).find((section) =>
+    title.test(section.querySelector("summary")?.textContent ?? ""),
+  );
+  if (!(found instanceof HTMLDetailsElement)) throw new Error(`no fold titled ${String(title)}`);
+  return found;
+}
 
-  it("clears the highlight after its own timer, on both the term and its definition", () => {
-    // Arrange
-    vi.useFakeTimers();
+describe("Glossary focus", () => {
+  it("puts focus on Close when it opens", () => {
+    render(glossary({ open: true }));
 
-    // Act
-    const { container } = renderGlossary({ open: true, highlightTerm: "silent" });
-    const dt = container.querySelector('dt[data-term="silent"]');
-    const dd = dt?.nextElementSibling ?? null;
-    expect(dt?.classList.contains("glossary-highlight")).toBe(true);
-
-    vi.advanceTimersByTime(1600);
-
-    // Assert
-    expect(dt?.classList.contains("glossary-highlight")).toBe(false);
-    expect(dd?.classList.contains("glossary-highlight")).toBe(false);
-
-    vi.useRealTimers();
-  });
-
-  it("focuses Close, not any term, when no highlightTerm is given — the '?' shortcut and Header's button", () => {
-    // Act
-    const { container } = renderGlossary({ open: true, highlightTerm: null });
-
-    // Assert
-    expect(container.querySelector(".glossary-highlight")).toBeNull();
     expect(document.activeElement?.textContent).toBe("Close");
   });
 
-  it("does nothing for a term this report's glossary carries no entry for", () => {
-    // Act
-    const { container } = renderGlossary({ open: true, highlightTerm: "not-a-real-verdict" });
+  it("hands focus back to what held it when it closes", () => {
+    const { rerender } = render(glossary({ open: false }));
+    const trigger = screen.getByRole("button", { name: "trigger" });
+    trigger.focus();
 
-    // Assert: falls back to the same default as no term at all, rather than throwing.
-    expect(container.querySelector(".glossary-highlight")).toBeNull();
-    expect(document.activeElement?.textContent).toBe("Close");
+    rerender(glossary({ open: true }));
+    expect(document.activeElement).not.toBe(trigger);
+    rerender(glossary({ open: false }));
+
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it("calls onClose from its Close button", () => {
+    const onClose = vi.fn();
+    render(glossary({ open: true, onClose }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    expect(onClose).toHaveBeenCalledOnce();
   });
 });
 
-describe("PD-GLOSSARY-10 (DESIGN.md §5): the allowlist note is a maintainer's step, out of the reading path", () => {
-  it("is not inside finished's definition any more, and the verdicts keep one <dd> per <dt>", () => {
-    // Act
-    const { container } = renderGlossary({ open: true });
+describe("Glossary sections", () => {
+  it("opens with the seven verdicts and the seven flags in view, and the rest folded", () => {
+    const { container } = render(glossary({ open: true }));
 
-    // Assert
-    const verdictDl = container.querySelectorAll(".glossary-sect")[0]?.querySelector(".deflist");
-    const dts = verdictDl?.querySelectorAll(":scope > dt") ?? [];
-    const dds = verdictDl?.querySelectorAll(":scope > dd") ?? [];
-    expect(dds.length).toBe(dts.length);
-    expect(verdictDl?.textContent).not.toContain("extra.lockrot.ignore");
+    expect(screen.getByRole("heading", { name: "The seven verdicts" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "The seven flags" })).toBeTruthy();
+    // The terms are run.verdicts, then run.flag_ids, each with its count when it has one.
+    expect([...container.querySelectorAll("dt[data-term]")].map((dt) => dt.textContent)).toEqual([
+      "critical 3",
+      "high 2",
+      "medium",
+      "low 2",
+      "unknown",
+      "finished",
+      "ok",
+      "abandoned 1",
+      "silent",
+      "pinned 1",
+      "left-behind 1",
+      "old-promise 3",
+      "stale 2",
+      "vulnerable 4",
+    ]);
+    expect(fold(container, /flags/).open).toBe(true);
+    for (const title of [/signals/, /libyears/, /Keys and search/, /maintainers/])
+      expect(fold(container, title).open, String(title)).toBe(false);
   });
 
-  it("sits in its own last fold, closed, linking to the configuration docs' allowlist section", () => {
-    // Act
-    const { container } = renderGlossary({ open: true });
+  it("takes a grade's floor from the model and a flag's years from the run's thresholds", () => {
+    const { container } = render(glossary({ open: true }));
 
-    // Assert
-    const sections = container.querySelectorAll(".glossary-sect");
-    const last = sections[sections.length - 1];
-    expect(last?.tagName).toBe("DETAILS");
+    expect(container.querySelector('dt[data-term="critical"] + dd')?.textContent).toBe(
+      "A score from 32: a critical finding.",
+    );
+    expect(container.querySelector('dt[data-term="silent"] + dd')?.textContent).toContain(
+      "5 years (release-high-years)",
+    );
+  });
+
+  it("links the verdicts' anchor on lockrot.dev", () => {
+    render(glossary({ open: true }));
+
+    expect(screen.getByRole("link", { name: /The verdicts on lockrot.dev/ }).getAttribute("href")).toBe(
+      "https://lockrot.dev/verdicts/#the-nine-verdicts",
+    );
+  });
+
+  it("keeps one definition per verdict and the allowlist note out of the reading path", () => {
+    const { container } = render(glossary({ open: true }));
+
+    const verdicts = sections(container)[0];
+    expect(verdicts?.querySelectorAll("dt")).toHaveLength(verdicts?.querySelectorAll("dd").length ?? -1);
+    expect(verdicts?.textContent).not.toContain("extra.lockrot.ignore");
+  });
+
+  it("keeps the allowlist note in its own last fold, closed", () => {
+    const { container } = render(glossary({ open: true }));
+
+    const all = sections(container);
+    const last = all[all.length - 1];
+    expect(last).toBe(fold(container, /maintainers/));
     expect((last as HTMLDetailsElement).open).toBe(false);
-    expect(last?.querySelector("summary")?.textContent).toMatch(/maintainers/);
     expect(last?.querySelector(".glossary-note")?.textContent).toContain("extra.lockrot.ignore");
-    expect(last?.querySelector("a.out")?.getAttribute("href")).toBe(
-      "https://lockrot.dev/configuration/#the-allowlist",
-    );
   });
 
-  it("opens the libyears section from the start", () => {
-    // Act
-    const { container } = renderGlossary({ open: true });
+  it("lists the search keys of the grammar in the keys fold", () => {
+    const { container } = render(glossary({ open: true }));
 
-    // Assert
-    const libyears = Array.from(container.querySelectorAll("details.glossary-sect")).find((d) =>
-      d.querySelector("summary")?.textContent.includes("libyears"),
+    const keys = [...fold(container, /Keys and search/).querySelectorAll("code")].map((code) =>
+      code.textContent.trim(),
     );
-    expect((libyears as HTMLDetailsElement | undefined)?.open).toBe(true);
+    expect(keys).toEqual(["flag:", "lead:", "verdict:", "score:>=N", "priority:"]);
+  });
+
+  it("closes itself and opens the Run tab from the link to How the score works", () => {
+    const onClose = vi.fn();
+    const dispatch = vi.fn();
+    render(glossary({ open: true, onClose, dispatch }));
+
+    fireEvent.click(screen.getByRole("link", { name: /How the score works/ }));
+
+    expect(dispatch).toHaveBeenCalledWith({ type: "view", view: "run" });
+    expect(onClose).toHaveBeenCalledOnce();
   });
 });
 
-describe("signal ids this page does not know (0.13 open vocabulary)", () => {
-  function renderWith(fixture: string) {
-    const raw = JSON.parse(
-      readFileSync(join(process.cwd(), "fixtures", "bundles", fixture), "utf8"),
-    ) as unknown;
-    const result = normalize(raw);
-    if (!result.ok) throw new Error(`${fixture} failed to normalize`);
-    const model = result.model;
-    const value: ReportContextValue = {
-      model,
-      state: INITIAL_STATE,
-      dispatch: vi.fn(),
-      now: new Date(model.report.generatedAt),
-      wide: true,
-      cursor: null,
-      openGlossary: vi.fn(),
-      openGlossaryFrom: vi.fn(),
-    };
-    return render(
-      <ReportContext.Provider value={value}>
-        <Glossary open onClose={vi.fn()} highlightTerm={null} />
-      </ReportContext.Provider>,
-    );
-  }
-
+describe("Glossary signals", () => {
   function signalTerms(container: ParentNode): string[] {
-    const list = Array.from(container.querySelectorAll("dl.deflist")).find((dl) =>
-      dl.querySelector("dt")?.textContent.startsWith("S1"),
+    return [...fold(container, /signals/).querySelectorAll("dt")].map(
+      (dt) => dt.textContent.trim().split(" ")[0] ?? "",
     );
-    return Array.from(list?.querySelectorAll("dt") ?? [], (dt) => dt.textContent.trim());
   }
 
-  it("lists each one the report carries after S10, as written in code, with what the page can say of it", () => {
-    const { container } = renderWith("mini-0.13-edges.json");
-    const terms = signalTerms(container);
-    expect(terms.slice(10)).toEqual(["S99", "acme:licence"]);
-    const list = container.querySelector("dt code")?.closest("dl");
-    const codes = Array.from(list?.querySelectorAll("dt code") ?? [], (c) => c.textContent);
-    expect(codes).toEqual(["S99", "acme:licence"]);
-    const defs = Array.from(list?.querySelectorAll("dd") ?? [], (dd) => dd.textContent).slice(10);
+  it("lists the run's signal ids in the run's order, S9 by its report-2 meaning", () => {
+    const { container } = render(glossary({ open: true }));
+
+    expect(signalTerms(container)).toEqual(["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"]);
+    const s9 = [...fold(container, /signals/).querySelectorAll("dt")].find((dt) =>
+      dt.textContent.startsWith("S9"),
+    );
+    expect(s9?.nextElementSibling?.textContent).toBe(
+      "Advisories on the installed version; raises the vulnerable flag.",
+    );
+  });
+
+  it("lists an id this page does not know after the known ones, with what its shape says of it", () => {
+    const model = composite(["S99", "acme:licence"]);
+    const { container } = render(glossary({ open: true, model }));
+
+    const signals = fold(container, /signals/);
+    expect(signalTerms(container).slice(10)).toEqual(["S99", "acme:licence"]);
+    const defs = [...signals.querySelectorAll("dd")].map((dd) => dd.textContent).slice(10);
     expect(defs).toEqual([
       "A lockrot check this page does not know.",
       "A check from outside lockrot, which this page does not know.",
     ]);
-  });
-
-  it("lists S1 to S10 only for a report that carries no other id", () => {
-    const { container } = renderWith("wallabag_wallabag.json");
-    expect(signalTerms(container)).toHaveLength(10);
-    expect(container.querySelector("dt code")).toBeNull();
+    // A newer lockrot check links to the list of signals, a check from outside lockrot to nothing.
+    const [lockrot, vendor] = [...signals.querySelectorAll("dt")].slice(10);
+    expect(lockrot?.querySelector("a")?.getAttribute("href")).toBe(
+      "https://lockrot.dev/verdicts/#the-signals",
+    );
+    expect(vendor?.querySelector("a")).toBeNull();
   });
 });

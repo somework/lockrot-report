@@ -1,12 +1,15 @@
 import type { NormalizeError } from "../model/types";
 import { ScreenFrame } from "./ScreenFrame";
 
+/** A report-1 document has its own screen (`Report1Screen`). */
+type ScreenError = Exclude<NormalizeError, { kind: "report-1" }>;
+
 /**
  * What each `NormalizeError.kind` means to someone who is not lockrot's own code. DESIGN.md §1.2: "a
  * payload that is not JSON, or not a lockrot document, renders an explained error in place of the
  * report — never a blank page."
  */
-const EXPLANATIONS: Readonly<Record<NormalizeError["kind"], string>> = {
+const EXPLANATIONS: Readonly<Record<ScreenError["kind"], string>> = {
   "not-json": "The data this page was given is not valid JSON, so nothing in it could be parsed.",
   "not-a-report":
     "The data parsed, but it is not shaped like a lockrot report: it has none of the fields " +
@@ -24,7 +27,7 @@ const EXPLANATIONS: Readonly<Record<NormalizeError["kind"], string>> = {
  * drawing it. `error.message` renders as text, never markup, so a hostile payload cannot use its own
  * error message to inject anything.
  */
-export function ErrorScreen({ error }: { error: NormalizeError }) {
+export function ErrorScreen({ error }: { error: ScreenError }) {
   return (
     <ScreenFrame headingId="error-heading">
       <h1 id="error-heading">This report could not be rendered</h1>

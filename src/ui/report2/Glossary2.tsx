@@ -14,7 +14,6 @@ import { OutLink, toneClass } from "../common/common";
 import { ScoreModelLink } from "./ScoreModelLink";
 import { useReport2 } from "./useReport2";
 
-/** `data-term` and `tabIndex={-1}` let "In the glossary" focus the term it named (PD-GLOSSARY-7). */
 function Entries({ entries, toned }: { entries: readonly GlossaryEntry[]; toned: boolean }) {
   return (
     <dl className="deflist">
@@ -22,7 +21,6 @@ function Entries({ entries, toned }: { entries: readonly GlossaryEntry[]; toned:
         <dt
           key={`t-${id}`}
           data-term={id}
-          tabIndex={-1}
           className={toned ? `term-toned ${toneClass(gradeTone(id))}` : undefined}
         >
           {id}

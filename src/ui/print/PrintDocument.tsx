@@ -1,19 +1,10 @@
 import type { ComponentChildren } from "preact";
-import { population } from "../../domain/filters";
-import { plural } from "../../domain/format";
-import { advisoryCheckIncomplete, allAdvisories } from "../../domain/advisories";
 import { FOLD_SINGLES } from "../../domain/radius";
-import { printSections, sharedDataDay, type PrintSection } from "../../domain/share";
+import { printSections, type PrintSection } from "../../domain/share";
 import type { View } from "../../model/types";
 import { EMPTY_FILTERS, INITIAL_STATE } from "../../state/types";
 import { ReportContext, type ReportContextValue } from "../context";
-import { Ledger } from "../ledger/Ledger";
 import { TABS } from "../Tabs";
-import { AdvisoriesView } from "../views/AdvisoriesView";
-import { FindingsView } from "../views/FindingsView";
-import { PackagesView } from "../views/PackagesView";
-import { RadiusView } from "../views/RadiusView";
-import { RunView } from "../views/RunView";
 import { printHasBody2, printLede2 } from "../../domain/print2";
 import { AdvisoriesView2 } from "../report2/AdvisoriesView2";
 import { FindingsView2 } from "../report2/FindingsView2";
@@ -61,7 +52,6 @@ function sectionValue(base: ReportContextValue, view: View): ReportContextValue 
     cursor: null,
     wide: false,
     openGlossary: NOOP,
-    openGlossaryFrom: NOOP,
   };
 }
 
@@ -97,84 +87,7 @@ function Section({ index, section, lede, more, children }: SectionProps) {
   );
 }
 
-/** Packages the run checked: `packagesChecked`, else the findings' count. */
-function lockSize(base: ReportContextValue): number {
-  const { report } = base.model;
-  return report.packagesChecked ?? report.findings.length;
-}
-
-/** Whether a section prints anything under its lede: an empty Findings or Advisories tab's own
- *  empty state is hidden on paper, where its lede already says so. */
-function hasBody(section: PrintSection, base: ReportContextValue): boolean {
-  const { model } = base;
-  if (model.report2 !== null) return printHasBody2(section, model.report2.report);
-  if (section === "summary") return lockSize(base) > 0;
-  if (section === "findings") return population(model, "findings").length > 0;
-  if (section === "advisories") return allAdvisories(model).length > 0;
-  return true;
-}
-
-/** Each section's one line under its heading: what it holds, counted, and what the print leaves
- *  out of it. Counts only, the same ones the tabs show. */
-function lede(section: PrintSection, base: ReportContextValue): ComponentChildren {
-  const { model } = base;
-  if (model.report2 !== null) return printLede2(section, model.report2.report);
-  switch (section) {
-    case "summary":
-      // An empty lock's band is three empty tiers; on paper its one line says it all.
-      return lockSize(base) === 0 ? "No packages in this lock." : null;
-    case "findings": {
-      const n = population(model, "findings").length;
-      const checked = lockSize(base);
-      return n === 0 ? (
-        <>
-          {checked === 0
-            ? "No packages in this lock."
-            : `Nothing flagged in ${plural(checked, "package", "packages")}.`}
-        </>
-      ) : (
-        <>
-          <b>{n}</b> flagged {n === 1 ? "package" : "packages"}, most urgent first, each with every signal it
-          fired.
-        </>
-      );
-    }
-    case "advisories": {
-      // With advisories to print, the tab's own answer sentence leads the section (PD-ADV-1).
-      if (allAdvisories(model).length > 0) return null;
-      return advisoryCheckIncomplete(model) ? (
-        <>No advisory found, but the advisory check was incomplete; the run's notes under Run data say why.</>
-      ) : (
-        <>No advisory affects this lock.</>
-      );
-    }
-    case "radius":
-      // With nothing flagged the tab's own one line says so; there is no top to describe.
-      return population(model, "findings").length === 0 ? null : (
-        <>The ranked rows from the top of the tab; the folded groups under them print as their counts.</>
-      );
-    case "run":
-      return null;
-    case "packages": {
-      const all = population(model, "packages");
-      const shared = sharedDataDay(all);
-      const zeroes = all.some((f) => f.libyears === 0);
-      return (
-        <>
-          Printed because the page was open on All packages:{" "}
-          <b>{plural(all.length, "package", "packages")}</b>, in the order the table had them.
-          {shared !== null && <> Every package's data is as of {shared}.</>}
-          {zeroes && (
-            <> A libyears of 0.0 marked “newest” is an installed release that is the newest release.</>
-          )}
-        </>
-      );
-    }
-  }
-}
-
-/** The same sections from the report-2 surfaces. */
-function SectionBody2({ section }: { section: PrintSection }) {
+function SectionBody({ section }: { section: PrintSection }) {
   switch (section) {
     case "summary":
       return <Overview2 narrow={false} />;
@@ -192,28 +105,6 @@ function SectionBody2({ section }: { section: PrintSection }) {
       );
     case "packages":
       return <PackagesView2 />;
-  }
-}
-
-function SectionBody({ section, base }: { section: PrintSection; base: ReportContextValue }) {
-  if (base.model.report2 !== null) return <SectionBody2 section={section} />;
-  switch (section) {
-    case "summary":
-      return lockSize(base) === 0 ? null : <Ledger />;
-    case "findings":
-      return <FindingsView />;
-    case "advisories":
-      return <AdvisoriesView />;
-    case "radius":
-      return <RadiusView />;
-    case "run":
-      return (
-        <div className="pd-run">
-          <RunView />
-        </div>
-      );
-    case "packages":
-      return <PackagesView />;
   }
 }
 
@@ -238,7 +129,7 @@ export function PrintDocument({ base }: { base: ReportContextValue }) {
   const sections = printSections(state.view);
   const packages = sections.includes("packages");
   // An empty lock has no packages to leave out.
-  const any = (model.report2?.report.findings ?? population(model, "packages")).length > 0;
+  const any = model.report.findings.length > 0;
   const note = [
     ...(screenNarrowed(base)
       ? ["The filters and search on screen do not apply: every section is printed in full."]
@@ -267,8 +158,13 @@ export function PrintDocument({ base }: { base: ReportContextValue }) {
         {note !== "" && <p className="pd-intro-note">{note}</p>}
         {sections.map((section, i) => (
           <ReportContext.Provider key={section} value={sectionValue(base, SECTION_VIEW[section])}>
-            <Section index={i + 1} section={section} lede={lede(section, base)} more={hasBody(section, base)}>
-              <SectionBody section={section} base={base} />
+            <Section
+              index={i + 1}
+              section={section}
+              lede={printLede2(section, model.report)}
+              more={printHasBody2(section, model.report)}
+            >
+              <SectionBody section={section} />
             </Section>
           </ReportContext.Provider>
         ))}

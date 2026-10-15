@@ -5,12 +5,9 @@
  * `unattributed` package is in neither.
  */
 
-import type { Finding, Verdict } from "../model/types";
-import { PRIORITIES } from "../model/types";
 import { countPhrase } from "./format";
-import { VERDICT_ORDER } from "./vocab";
 
-/** What the layout reads of a finding: a report-1 `Finding`, or a report-2 one through `radius2.ts`. */
+/** What the layout reads of a finding: a report-2 one through `radius2.ts`. */
 export interface RadiusFinding {
   readonly package: string;
   readonly version: string;
@@ -18,14 +15,13 @@ export interface RadiusFinding {
   readonly direct: boolean;
   readonly dev: boolean;
   readonly directDependents: readonly string[];
-  readonly priority: string;
   readonly verdict: string;
-  /** report-2's published order; a report-1 finding has none. */
-  readonly rank?: number;
+  /** report-2's published order. */
+  readonly rank: number;
 }
 
-/** The document fields the layout reads; a report-1 `Model` is one. */
-export interface RadiusSource<F extends RadiusFinding = Finding> {
+/** The document fields the layout reads. */
+export interface RadiusSource<F extends RadiusFinding = RadiusFinding> {
   readonly report: {
     readonly exposure: readonly { readonly package: string; readonly flagged: number }[];
     readonly unattributed: readonly { readonly package: string }[];
@@ -34,12 +30,12 @@ export interface RadiusSource<F extends RadiusFinding = Finding> {
 }
 
 /** `listedUnder` is the first direct requirement on its chain, or null when no row lists it. */
-export interface RadiusElsewhere<F extends RadiusFinding = Finding> {
+export interface RadiusElsewhere<F extends RadiusFinding = RadiusFinding> {
   readonly finding: F;
   readonly listedUnder: string | null;
 }
 
-export interface RadiusRow<F extends RadiusFinding = Finding> {
+export interface RadiusRow<F extends RadiusFinding = RadiusFinding> {
   readonly package: string;
   readonly version: string | null;
   readonly dev: boolean;
@@ -57,13 +53,13 @@ export interface RadiusRow<F extends RadiusFinding = Finding> {
 }
 
 /** A flagged package on the "only through rows above" receipt, and every tail row behind it. */
-export interface RadiusReceipt<F extends RadiusFinding = Finding> {
+export interface RadiusReceipt<F extends RadiusFinding = RadiusFinding> {
   readonly finding: F;
   readonly listedUnder: string | null;
   readonly behind: readonly string[];
 }
 
-export interface RadiusLayout<F extends RadiusFinding = Finding> {
+export interface RadiusLayout<F extends RadiusFinding = RadiusFinding> {
   /** Every row that lists at least one package, most first; exposure order on ties. */
   readonly ranked: readonly RadiusRow<F>[];
   /** The ranked rows shown one by one. */
@@ -219,17 +215,8 @@ function receiptOf<F extends RadiusFinding>(rows: readonly RadiusRow<F>[]): read
   );
 }
 
-export function radiusListed<F extends RadiusFinding>(layout: RadiusLayout<F>): ReadonlySet<string> {
-  const rows = [...layout.ranked, ...layout.selfOnly];
-  return new Set([
-    ...rows.flatMap((r) => [...(r.self ? [r.self.package] : []), ...r.pulled.map((f) => f.package)]),
-    ...layout.unlisted.map((f) => f.package),
-    ...layout.unattributed.map((f) => f.package),
-  ]);
-}
-
 /** The direct requirements the tab names by row or in a tail — what its count line counts. */
-export function radiusShownCount<F extends RadiusFinding>(layout: RadiusLayout<F>): number {
+function radiusShownCount<F extends RadiusFinding>(layout: RadiusLayout<F>): number {
   return layout.ranked.length + layout.selfOnly.length + layout.throughOther.length;
 }
 
@@ -249,95 +236,11 @@ export function radiusCountPhrase<F extends RadiusFinding>(layout: RadiusLayout<
   )} ${ones} with nothing flagged counted under ${layout.unfilteredUnlisted === 1 ? "it" : "them"}`;
 }
 
-/**
- * Listed under a row, heading one, named in the footnote or in the shared tail (`unattributed`); a
- * transitive package whose chain reaches no row has no place. The rail counts over this set
- * (PD-RAIL-1).
- */
-export function placedOnRadius<F extends RadiusFinding>(
-  model: RadiusSource<F>,
-  flagged: readonly F[],
-): readonly F[] {
-  const parents = new Set(model.report.exposure.map((exposure) => exposure.package));
-  const shared = unattributedNames(model);
-  return flagged.filter(
-    (f) =>
-      f.direct ||
-      parents.has(f.package) ||
-      shared.has(f.package) ||
-      f.chain.some((hop) => hop !== f.package && parents.has(hop)),
-  );
-}
-
-// ---------------------------------------------------------------------------------------------
-// Ordering and counting inside a row
-// ---------------------------------------------------------------------------------------------
-
-function rankOf(list: readonly string[], key: string): number {
-  const at = list.indexOf(key);
-  return at < 0 ? list.length : at;
-}
-
-/** Most urgent first: `rank` when both have one, else priority, then verdict, then name — the order a
- *  row's squares are drawn in. */
-export function byUrgency(a: RadiusFinding, b: RadiusFinding): number {
-  if (a.rank !== undefined && b.rank !== undefined) return a.rank - b.rank;
-  return (
-    rankOf(PRIORITIES, a.priority) - rankOf(PRIORITIES, b.priority) ||
-    rankOf(VERDICT_ORDER, a.verdict) - rankOf(VERDICT_ORDER, b.verdict) ||
-    a.package.localeCompare(b.package)
-  );
-}
-
-export interface VerdictCount {
-  readonly verdict: Verdict;
-  readonly count: number;
-}
-
-/** Packages per verdict, most common first; verdict order on ties. */
-export function verdictMix(findings: readonly Finding[]): readonly VerdictCount[] {
-  const counts = new Map<Verdict, number>();
-  for (const f of findings) counts.set(f.verdict, (counts.get(f.verdict) ?? 0) + 1);
-  return [...counts.entries()]
-    .map(([verdict, count]) => ({ verdict, count }))
-    .sort((a, b) => b.count - a.count || rankOf(VERDICT_ORDER, a.verdict) - rankOf(VERDICT_ORDER, b.verdict));
-}
-
-/** One vendor's share of a list: "hoa/*" with its count, or a lone package by its full name. */
-export interface VendorPart {
-  readonly text: string;
-  readonly count: number;
-}
-
-/** `null` when the list is too spread out for a short phrase to be true. */
-export function vendorPhrase(
-  findings: readonly Finding[],
-): { readonly parts: readonly VendorPart[]; readonly others: number; readonly all: boolean } | null {
-  const groups = new Map<string, string[]>();
-  for (const f of findings) {
-    const slash = f.package.indexOf("/");
-    const vendor = slash > 0 ? f.package.slice(0, slash) : f.package;
-    groups.set(vendor, [...(groups.get(vendor) ?? []), f.package]);
-  }
-  const parts = [...groups.entries()]
-    .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
-    .map(([vendor, names]) => ({
-      text: names.length === 1 ? (names[0] ?? vendor) : `${vendor}/*`,
-      count: names.length,
-    }));
-  if (parts.length === 1) return { parts, others: 0, all: findings.length > 1 };
-  if (parts.length <= 3) return { parts, others: 0, all: false };
-  const top = parts.slice(0, 2);
-  const held = top.reduce((n, p) => n + p.count, 0);
-  if (held * 2 < findings.length) return null;
-  return { parts: top, others: findings.length - held, all: false };
-}
-
 // ---------------------------------------------------------------------------------------------
 // The chain tree an open row draws
 // ---------------------------------------------------------------------------------------------
 
-export interface TreeNode<F extends RadiusFinding = Finding> {
+export interface TreeNode<F extends RadiusFinding = RadiusFinding> {
   readonly finding: F;
   /** 0 for a package whose nearest listed ancestor is the row's requirement itself. */
   readonly depth: number;
@@ -369,7 +272,7 @@ export function pulledTree<F extends RadiusFinding>(row: RadiusRow<F>): readonly
   const out: TreeNode<F>[] = [];
   const seen = new Set<string>();
   const walk = (parent: string, depth: number, rails: readonly boolean[]): void => {
-    const kids = [...(children.get(parent) ?? [])].sort((a, b) => byUrgency(a.finding, b.finding));
+    const kids = [...(children.get(parent) ?? [])].sort((a, b) => a.finding.rank - b.finding.rank);
     kids.forEach((kid, i) => {
       if (seen.has(kid.finding.package)) return;
       seen.add(kid.finding.package);
@@ -391,7 +294,7 @@ export function pulledTree<F extends RadiusFinding>(row: RadiusRow<F>): readonly
 // The answer sentence
 // ---------------------------------------------------------------------------------------------
 
-export interface RadiusAnswer<F extends RadiusFinding = Finding> {
+export interface RadiusAnswer<F extends RadiusFinding = RadiusFinding> {
   /** The rows the sentence names, most first: as few as hold half the listed packages, at most 3. */
   readonly top: readonly RadiusRow<F>[];
   /** Distinct packages the named rows list. */
@@ -458,22 +361,4 @@ export function isFoldOpen<F extends RadiusFinding>(
   if (key === FOLD_SINGLES) return !input.narrow || holds(layout.singles, input.pkg);
   if (key === FOLD_SELF) return holds(layout.selfOnly, input.pkg);
   return layout.receipt.some((r) => r.finding.package === input.pkg);
-}
-
-/** The order `j`/`k` walk (`ui/views/order.ts`). */
-export function radiusRowOrder<F extends RadiusFinding>(
-  layout: RadiusLayout<F>,
-  input: OpenInput,
-): readonly string[] {
-  const rowsOf = (rows: readonly RadiusRow<F>[], expandable: boolean) =>
-    rows.flatMap((row) => [
-      row.package,
-      ...(expandable && isRowOpen(row, input) ? pulledTree(row).map((n) => n.finding.package) : []),
-    ]);
-  return [
-    ...rowsOf(layout.lead, true),
-    ...(isFoldOpen(layout, FOLD_SINGLES, input) ? rowsOf(layout.singles, true) : []),
-    ...(isFoldOpen(layout, FOLD_SELF, input) ? rowsOf(layout.selfOnly, false) : []),
-    ...(isFoldOpen(layout, FOLD_OTHER, input) ? layout.receipt.map((r) => r.finding.package) : []),
-  ];
 }

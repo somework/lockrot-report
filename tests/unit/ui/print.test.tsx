@@ -1,18 +1,31 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/preact";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { assembleEmbed } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
+import type { Report2Embed } from "../../../src/model/report2";
 import type { Model } from "../../../src/model/types";
 import { App } from "../../../src/ui/App";
-import { summaryFor } from "../../../src/ui/CopySummary";
 
-function loadFixture(name: string): Model {
-  const raw = JSON.parse(readFileSync(join(process.cwd(), "fixtures", "bundles", name), "utf8")) as unknown;
-  const result = normalize(raw);
-  if (!result.ok) throw new Error(`${name} fixture failed to normalize`);
+function load(caseName: string, edit: (embed: Report2Embed) => void = () => undefined): Model {
+  const embed = assembleEmbed(caseName);
+  edit(embed);
+  const result = normalize(embed);
+  if (!result.ok) throw new Error(result.error.message);
   return result.model;
 }
+
+/** 7 graded findings in three grades (3 critical, 2 high, 2 low), no baseline, no project name. */
+const composite = () => load("composite");
+
+beforeEach(() => {
+  window.matchMedia = ((query: string) => ({
+    matches: query.includes("1181"),
+    media: query,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  })) as unknown as typeof window.matchMedia;
+  history.replaceState(null, "", "/report.html");
+});
 
 afterEach(() => {
   cleanup();
@@ -32,7 +45,7 @@ function sectionTitles(doc: HTMLElement): string[] {
 
 describe("the printed report (print/PrintDocument.tsx)", () => {
   it("is not in the page on screen: the host stays empty until the page prints", () => {
-    const { container } = render(<App model={loadFixture("mini.json")} />);
+    const { container } = render(<App model={composite()} />);
 
     expect(printDoc(container).childElementCount).toBe(0);
   });
@@ -40,7 +53,7 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
   it("mounts on beforeprint, in sections whatever tab is open, and empties on afterprint", () => {
     // Arrange: the reader is on Advisories.
     window.location.hash = "#view=advisories";
-    const { container } = render(<App model={loadFixture("mini.json")} />);
+    const { container } = render(<App model={composite()} />);
 
     // Act
     window.dispatchEvent(new Event("beforeprint"));
@@ -63,21 +76,22 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
 
   it("adds All packages, and says why, only when the reader printed from that tab", () => {
     window.location.hash = "#view=packages";
-    const { container } = render(<App model={loadFixture("mini.json")} />);
+    const { container } = render(<App model={composite()} />);
 
     window.dispatchEvent(new Event("beforeprint"));
 
     const doc = printDoc(container);
     expect(sectionTitles(doc).at(-1)).toBe("6All packages");
     expect(doc.querySelector(".pd-packages .pd-lede")?.textContent).toContain(
-      "Printed because the page was open on All packages",
+      "Printed because the page was open on All packages: 7 packages",
     );
   });
 
   it("prints every finding whatever the screen filters, and says the filters do not apply", () => {
-    // Arrange: a query that leaves one of mini's two flagged rows on screen.
-    window.location.hash = "#q=snapshot";
-    const { container } = render(<App model={loadFixture("mini.json")} />);
+    // Arrange: a query that leaves one of the seven rows on screen.
+    window.location.hash = "#q=tubalmartin";
+    const { container } = render(<App model={composite()} />);
+    expect(container.querySelectorAll("main .shell-main [data-pkg]")).toHaveLength(1);
 
     // Act
     window.dispatchEvent(new Event("beforeprint"));
@@ -87,40 +101,37 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     const rows = [...doc.querySelectorAll(".pd-findings [data-pkg]")].map((row) =>
       row.getAttribute("data-pkg"),
     );
-    expect(new Set(rows)).toEqual(new Set(["vendor/transitive", "vendor/snapshot"]));
+    expect(rows).toEqual([
+      "twig/twig",
+      "symfony/monolog-bridge",
+      "symfony/debug",
+      "friendsofsymfony/oauth-server-bundle",
+      "tubalmartin/cssmin",
+      "symfony/yaml",
+      "symfony/polyfill-intl-idn",
+    ]);
     expect(doc.querySelector(".pd-intro-note")?.textContent).toContain("do not apply");
   });
 
-  it("lays each Findings priority group out as a table whose head, the group and the axis, repeats per page", () => {
-    // Arrange
-    const { container } = render(<App model={loadFixture("wallabag_wallabag.json")} />);
+  it("repeats the score scale over each printed grade group, and draws it nowhere on screen", () => {
+    const { container } = render(<App model={composite()} />);
+    expect(container.querySelector(".f2-print-scale")).toBeNull();
 
-    // Act
     window.dispatchEvent(new Event("beforeprint"));
 
-    // Assert: one head per group — its name and the column head with the age axis' captions — and
-    // no column head of the screen's kind above the groups.
     const doc = printDoc(container);
-    const groups = [...doc.querySelectorAll(".pd-findings .pf-group")];
-    expect(groups.map((g) => g.querySelector(".pf-top h2")?.textContent)).toEqual([
+    const groups = [...doc.querySelectorAll(".pd-findings .fgroup")];
+    expect(groups.map((group) => group.querySelector(".fgroup-head h2")?.textContent)).toEqual([
       "critical",
       "high",
-      "medium",
       "low",
     ]);
-    for (const group of groups) {
-      expect(group.querySelector(".pf-top .fhead-axis")?.textContent).toBe("Years since release03y5y10y+");
-    }
-    expect(doc.querySelectorAll(".pd-findings .fledger > .fhead")).toHaveLength(0);
-    // Every row is a row of its own around the screen's grid; a run's note is a row too.
-    const rows = doc.querySelectorAll(".pd-findings .pf-tr[data-pkg] > .pf-td > .frow");
-    expect(rows).toHaveLength(69);
-    expect(doc.querySelectorAll(".pd-findings .pf-run > .pf-note .frun-note").length).toBeGreaterThan(0);
+    for (const group of groups) expect(group.querySelector(".f2-print-scale")).not.toBeNull();
   });
 
-  it("prints All packages' column heads as words, not buttons, and a shared data date once", () => {
+  it("prints All packages' column heads as words, not sort buttons", () => {
     window.location.hash = "#view=packages";
-    const { container } = render(<App model={loadFixture("wallabag_wallabag.json")} />);
+    const { container } = render(<App model={composite()} />);
 
     window.dispatchEvent(new Event("beforeprint"));
 
@@ -130,65 +141,66 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
       "Package",
       "Version",
       "Libyears",
+      "Age",
       "Verdict ↑",
-      "Priority",
+      "Score",
+      "Flags",
       "Reached",
       "Signals",
+      "Data as of",
     ]);
-    expect(doc.querySelectorAll(".pd-packages thead button")).toHaveLength(0);
-    expect(doc.querySelector(".pd-packages .pd-lede")?.textContent).toContain(
-      "Every package's data is as of 2026-09-24.",
-    );
-    expect(doc.querySelector('.pd-packages tr[data-pkg="hoa/stream"]')?.textContent).toContain(
-      "0.0 · newest",
-    );
   });
 
-  it("prints a signal id it does not know as written, in code, in All packages (mini-0.13-edges)", () => {
+  // A sort button in a head cell prints empty on a continuation page, where the head repeats.
+  it("prints All packages in the order the reader sorted it", () => {
     window.location.hash = "#view=packages";
-    const { container } = render(<App model={loadFixture("mini-0.13-edges.json")} />);
+    const { container } = render(<App model={composite()} />);
+    fireEvent.click(screen.getByRole("button", { name: /^Score/ }));
 
     window.dispatchEvent(new Event("beforeprint"));
 
-    const row = printDoc(container).querySelector('.pd-packages tr[data-pkg="acme/licensed"]');
-    expect(row?.textContent).toContain("S99 acme:licence S10");
-    expect([...(row?.querySelectorAll("code") ?? [])].map((c) => c.textContent)).toEqual([
-      "S99",
-      "acme:licence",
-    ]);
-    // A row with only ids it knows prints them as plain text.
-    const known = printDoc(container).querySelector('.pd-packages tr[data-pkg="acme/left"]');
-    expect(known?.querySelector("code")).toBeNull();
+    // Score, highest first: monolog-bridge and debug (36), twig (32), then the two highs (18).
+    const rows = [...printDoc(container).querySelectorAll(".pd-packages tr[data-pkg]")].map((row) =>
+      row.getAttribute("data-pkg"),
+    );
+    expect(rows.slice(0, 3)).toEqual(["symfony/monolog-bridge", "symfony/debug", "twig/twig"]);
   });
 
-  it("prints an empty lock as one line per section, without a note about All packages", () => {
-    const { container } = render(<App model={loadFixture("empty-lockrot-self.json")} />);
+  it("prints a lock with nothing in it as one line per section, without a note about All packages", () => {
+    const empty = load("composite", (embed) => {
+      embed.report.packages_checked = 0;
+      embed.report.packages_flagged = 0;
+      embed.report.findings = [];
+      embed.report.exposure = [];
+    });
+    const { container } = render(<App model={empty} />);
 
     window.dispatchEvent(new Event("beforeprint"));
 
     const doc = printDoc(container);
     expect(doc.querySelector(".pd-summary .pd-lede")?.textContent).toBe("No packages in this lock.");
-    expect(doc.querySelector(".pd-summary .ledger")).toBeNull();
+    expect(doc.querySelector('.pd-summary [data-surface="overview"] .waffle')).toBeNull();
     expect(doc.querySelector(".pd-intro-note")).toBeNull();
   });
 
-  it("does not tell a reader on paper that a name opens its detail", () => {
-    const { container } = render(<App model={loadFixture("koel_koel.json")} />);
+  it("sets the running line the @page header prints as a CSS string on <html>", () => {
+    render(<App model={load("B")} />);
 
     window.dispatchEvent(new Event("beforeprint"));
 
-    const foot = printDoc(container).querySelector(".pd-radius .rl-foot")?.textContent ?? "";
-    expect(foot).toContain("They are:");
-    expect(foot).not.toContain("opens its detail");
+    // B: project matomo/matomo, generated 2026-10-01, lockrot 0.14.0.
+    expect(document.documentElement.style.getPropertyValue("--lr-running-head")).toBe(
+      '"matomo/matomo  ·  data as of 2026-10-01  ·  lockrot 0.14.0"',
+    );
   });
 
-  it("sets the running line the @page header prints as a CSS string on <html>", () => {
-    render(<App model={loadFixture("mini.json")} />);
+  it("names the lock file in the running line when the run names no project", () => {
+    render(<App model={composite()} />);
 
     window.dispatchEvent(new Event("beforeprint"));
 
-    expect(document.documentElement.style.getPropertyValue("--lr-running-head")).toBe(
-      '"acme/app  ·  data as of 2026-09-24  ·  lockrot 0.11.0"',
+    expect(document.documentElement.style.getPropertyValue("--lr-running-head")).toContain(
+      '"composer.lock  ·  ',
     );
   });
 });
@@ -203,7 +215,7 @@ describe("the header's print and share controls", () => {
     // happy-dom has no window.print; the browser always does.
     const print = vi.fn();
     vi.stubGlobal("print", print);
-    render(<App model={loadFixture("mini.json")} />);
+    render(<App model={composite()} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Print / PDF" }));
 
@@ -213,10 +225,9 @@ describe("the header's print and share controls", () => {
 
   it("Copy summary writes the three-line summary to the clipboard and says so", async () => {
     // Arrange
-    const model = loadFixture("wallabag_wallabag.json");
-    const writeText = vi.fn(() => Promise.resolve());
+    const writeText = vi.fn((_text: string) => Promise.resolve());
     stubClipboard({ writeText });
-    render(<App model={model} />);
+    render(<App model={composite()} />);
 
     // Act
     fireEvent.click(screen.getByRole("button", { name: "Copy summary" }));
@@ -225,24 +236,13 @@ describe("the header's print and share controls", () => {
     await waitFor(() => {
       expect(screen.getByText("Summary copied to the clipboard").getAttribute("aria-live")).toBe("polite");
     });
-    expect(writeText).toHaveBeenCalledWith(summaryFor(model));
-    expect(summaryFor(model).split("\n")).toHaveLength(3);
-    expect(summaryFor(model)).toContain(
-      "51 in production, 18 dev-only · 20 required directly, 49 pulled in · ",
-    );
-  });
-
-  it("copies the caveat with the count when the advisory check was incomplete (PD-ADV-7)", () => {
-    const text = summaryFor(loadFixture("mini-advisories-partial.json"));
-    expect(text).toContain(
-      "6 security advisories on 5 packages (advisory check incomplete, so the list may be partial)",
-    );
-    expect(summaryFor(loadFixture("mini-advisories.json"))).not.toContain("incomplete");
+    expect(writeText).toHaveBeenCalledOnce();
+    expect(writeText.mock.calls[0]?.[0].split("\n")).toHaveLength(3);
   });
 
   it("falls back to the text, selected in a popover, when the clipboard refuses", async () => {
     stubClipboard({ writeText: () => Promise.reject(new Error("denied")) });
-    render(<App model={loadFixture("mini.json")} />);
+    render(<App model={composite()} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Copy summary" }));
 

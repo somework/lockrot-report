@@ -15,7 +15,7 @@ import { useReport } from "../context";
 import { useOverflowX } from "../useOverflowX";
 import { toneClass } from "../common/common";
 import { rowTabIndex } from "../rowCursor";
-import { openInteractions } from "../views/FindingRow";
+import { openInteractions } from "../rowOpen";
 import { EmptyState } from "../views/EmptyState";
 import { FlagPills } from "./FlagPills";
 import { useReport2 } from "./useReport2";
