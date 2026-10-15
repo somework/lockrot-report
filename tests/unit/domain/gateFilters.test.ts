@@ -56,6 +56,14 @@ describe("the gate filter (PD-GATE-4)", () => {
     expect(filtersFor(loadModel("wallabag_wallabag"), other)).toBe(other);
   });
 
+  it("a report-1 address keeps no report-2 group, so a 0.13 link means what it meant", () => {
+    const filters = { ...EMPTY_FILTERS, verdict: ["left-behind"], flag: ["stale"], accepted: ["with"] };
+    expect(filtersFor(loadModel("wallabag_wallabag"), filters)).toEqual({
+      ...EMPTY_FILTERS,
+      verdict: ["left-behind"],
+    });
+  });
+
   it("round-trips through the address, written after every older group", () => {
     const state: State = {
       ...INITIAL_STATE,
