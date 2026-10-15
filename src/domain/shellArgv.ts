@@ -28,6 +28,11 @@ const POWERSHELL_BARE = /^[A-Za-z0-9/._:-]+$/;
 const isArgument = (argument: string): boolean =>
   COMMAND_ARGUMENT.test(argument) && (!argument.startsWith("-") || LOCKROT_OPTIONS.has(argument));
 
+/** A package name inside a command the page writes itself: the argument set and no leading `-`,
+ *  with no option allowed (SPEC §5.6). */
+export const isPrintableName = (name: string): boolean =>
+  COMMAND_ARGUMENT.test(name) && !name.startsWith("-");
+
 // The command name stays bare before PowerShell's `--%`, so it gets the strictest set.
 export function isPrintableArgv(argv: readonly string[]): boolean {
   const [target] = argv;
@@ -35,7 +40,7 @@ export function isPrintableArgv(argv: readonly string[]): boolean {
 }
 
 // The rule leaves no quote, `%` or `!` inside an argument, so no quoting below escapes one.
-const posixWord = (argument: string): string =>
+export const posixArgument = (argument: string): string =>
   POSIX_BARE.test(argument) && !argument.startsWith("=") ? argument : `'${argument}'`;
 const cmdWord = (argument: string): string => (CMD_SPECIAL.test(argument) ? `"${argument}"` : argument);
 
@@ -48,7 +53,7 @@ function powershellLine(argv: readonly string[]): string {
 }
 
 const LINE: Readonly<Record<Shell, (argv: readonly string[]) => string>> = {
-  posix: (argv) => argv.map(posixWord).join(" "),
+  posix: (argv) => argv.map(posixArgument).join(" "),
   cmd: (argv) => argv.map(cmdWord).join(" "),
   powershell: powershellLine,
 };

@@ -15,6 +15,7 @@ import type {
 } from "../model/report";
 import { isScoreGraded, isSecurityVulnerable, isTermSecurity } from "../model/report";
 import { pluralNoun } from "./format";
+import { isPrintableName, posixArgument } from "./shellArgv";
 import { vocabTable } from "./vocab";
 import {
   acceptsWholePackage,
@@ -322,13 +323,29 @@ function unknownMoveSentence(move: AnyMove): string {
   return `Next step: ${move.kind}${move.reason ? ` (${move.reason})` : ""}`;
 }
 
+/** A report file can be edited: a package name prints inside a command only when it passes SPEC
+ *  §5.6's name rule, else the phrase names the package in words. The page writes the subcommand, so
+ *  only the name is checked. */
+const composerCommand = (subcommand: "update" | "why", pkg: string): string | null =>
+  isPrintableName(pkg) ? `composer ${subcommand} ${posixArgument(pkg)}` : null;
+
+function updatePhrase(pkg: string): string {
+  const command = composerCommand("update", pkg);
+  return command === null ? "an update of this package" : `\`${command}\``;
+}
+
+function whyPhrase(pkg: string): string {
+  const command = composerCommand("why", pkg);
+  return command === null ? "`composer why` with this package's name" : `\`${command}\``;
+}
+
 function moveSentence(finding: Finding, move: AnyMove, run: Run): string {
   const latest = move.latest;
   const sentence = ((): string => {
     switch (move.kind) {
       case "update":
         return (
-          `\`composer update ${finding.package}\` installs ${move.newest ?? ""}, ` +
+          `${capitalize(updatePhrase(finding.package))} installs ${move.newest ?? ""}, ` +
           `which clears ${factsPhrase(finding, move)}${moveTail(move)}`
         );
       case "require":
@@ -433,7 +450,7 @@ function notYoursSentence(finding: Finding): string {
 
 function unreachedSentence(finding: Finding, move: AnyMove, run: Run): string {
   const said = halvingPrinted(finding, "unreached");
-  const why = `\`composer why ${finding.package}\` names what requires it`;
+  const why = `${whyPhrase(finding.package)} names what requires it`;
   const resolved = RESOLVED_KINDS.includes(move.kind);
   if (finding.depth_unmeasured === "no_composer_json" && !said) {
     return resolved
@@ -618,7 +635,7 @@ function gradedAnswer(finding: Finding, score: ScoreGraded, run: Run): string {
     ...moves.map((m, i) => (i === 0 ? "" : "Then: ") + moveSentence(finding, m, run)),
     ...(partial
       ? [
-          `Meanwhile, \`composer update ${finding.package}\` installs ${partial.version}, which clears ${partialFacts(finding, partial)} ` +
+          `Meanwhile, ${updatePhrase(finding.package)} installs ${partial.version}, which clears ${partialFacts(finding, partial)} ` +
             `(${partial.if_applied.at_most ? "at most " : ""}${partial.if_applied.total}, ${partial.if_applied.verdict} after it` +
             (partial.if_applied.assumes.includes("no_new_advisories")
               ? ", if that release carries no new advisory"

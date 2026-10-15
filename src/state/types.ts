@@ -56,6 +56,9 @@ export interface State {
    * package opens the row and fold that list it (PD-RADIUS-3).
    */
   disclosure: Readonly<Record<string, boolean>>;
+  /** The package open when the reader last changed tab: the Run tab's score example (SPEC §7.9.12).
+   *  Not part of the fragment. */
+  example: string | null;
 }
 
 export type Action =
@@ -92,4 +95,5 @@ export const INITIAL_STATE: State = {
   sortDesc: false,
   filters: EMPTY_FILTERS,
   disclosure: {},
+  example: null,
 };

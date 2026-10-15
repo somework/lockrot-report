@@ -57,8 +57,7 @@ export interface GateFact {
   readonly text: string;
 }
 
-const HINT =
-  "Pass --fail-on=<verdict or priority> in CI to make the run fail on findings at or above that level.";
+const HINT = "Pass --fail-on=<grade> in CI to make the run fail on findings graded at or above that grade.";
 
 /** The header's quiet fact for a run with no decided gate (`--fail-on=none`), else null. */
 export function gateFact(report: Report2): GateFact | null {

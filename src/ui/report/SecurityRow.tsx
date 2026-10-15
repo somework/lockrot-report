@@ -2,13 +2,13 @@ import { useId } from "preact/hooks";
 import type { Finding, RepositoryMetadata, Run } from "../../model/report";
 import { DETAIL_WORDS } from "../../domain/detailWords";
 import { moreWaysOut, securityRow, type SecurityRung } from "../../domain/securityLine";
-import { TONE } from "../../domain/vocab";
+import { verdictTone } from "../../domain/findingRow";
 import { toneClass } from "../common/common";
 import { DisclosureButton, useDisclosure } from "../common/Disclosure";
 
 export const RUNGS_KEY = "security-rungs";
 
-function Rung({ rung, move, hidden }: { rung: SecurityRung; move: boolean; hidden: boolean }) {
+function Rung({ rung, move, hidden, run }: { rung: SecurityRung; move: boolean; hidden: boolean; run: Run }) {
   return (
     <li className={move ? "d2-rung is-move" : "d2-rung"} hidden={hidden} data-branch={rung.branch}>
       <span className="d2-rung-branch">{rung.branch}</span>{" "}
@@ -17,7 +17,9 @@ function Rung({ rung, move, hidden }: { rung: SecurityRung; move: boolean; hidde
         {rung.after !== null && (
           <>
             {"; "}
-            <span className={`d2-after ${toneClass(TONE(rung.afterVerdict ?? ""))}`}>{rung.after}</span>
+            <span className={`d2-after ${toneClass(verdictTone(run.score_model, rung.afterVerdict ?? ""))}`}>
+              {rung.after}
+            </span>
           </>
         )}
         )
@@ -59,6 +61,7 @@ export function SecurityRow2({
               rung={rung}
               move={rung.branch === moveBranch}
               hidden={i > 0 && !disclosure.open}
+              run={run}
             />
           ))}
         </ol>

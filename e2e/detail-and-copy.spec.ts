@@ -42,6 +42,24 @@ test.describe("report-2: the detail sheet and its copy control", () => {
     expect(await commandLines(sheet)).toEqual(["composer require 'symfony/monolog-bridge:^5.4.52'"]);
   });
 
+  test("dates a branch snapshot's lock time as a snapshot, never as a release", async ({ page }) => {
+    const sheet = await openDetail2(page, "G", "friendsofsymfony/oauth-server-bundle");
+
+    await sheet.getByText("The lock entry", { exact: true }).click();
+
+    const lock = sheet.locator("details", { hasText: "The lock entry" });
+    await expect(lock.locator("dt", { hasText: "snapshot dated" })).toHaveCount(1);
+    await expect(lock.locator("dt", { hasText: /^released$/ })).toHaveCount(0);
+    await expect(lock.locator("dt", { hasText: "branch snapshot" })).toHaveCount(1);
+  });
+
+  test("tones a score-0 verdict's chip as none, from score_model", async ({ page }) => {
+    const sheet = await openDetail2(page, "ok-unchecked", "scheb/2fa-google-authenticator");
+
+    await expect(sheet.locator(".detail-head .pill")).toHaveText("ok");
+    await expect(sheet.locator(".detail-head .pill")).toHaveClass(/\btone-none\b/);
+  });
+
   test("closing returns to no sheet open", async ({ page }) => {
     const sheet = await openDetail2(page, "B", B);
 

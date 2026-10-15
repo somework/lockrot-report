@@ -4,9 +4,11 @@
  * difference of two numbers the document already carries.
  */
 
-/** One run of same-priority squares, in the order the waffle draws them. */
+import type { Tone } from "./vocab";
+
+/** One run of same-tone squares, in the order the waffle draws them. */
 export interface WaffleRun {
-  readonly priority: string;
+  readonly tone: Tone;
   readonly count: number;
 }
 

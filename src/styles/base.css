@@ -101,8 +101,8 @@ code {
 /* ---------- tones ----------
    A tone is a pair of custom properties, set by one class and read by whatever draws it: a pill's
    text and border, a bar segment's fill, a stripe. Colour never travels as an inline style, which
-   the page's CSP would refuse (DESIGN.md §1.3). The root default matches TONE()'s own fallback,
-   "low", so an element that reads --tone outside any tone class still gets a real colour. */
+   the page's CSP would refuse (DESIGN.md §1.3). The root default matches the fallback of
+   `verdictTone`, "low", so an element that reads --tone outside any tone class still gets a real colour. */
 :root {
   --tone: var(--low);
   --tone-soft: var(--low-soft);

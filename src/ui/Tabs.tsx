@@ -1,6 +1,7 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { RefObject } from "preact";
 import { advisoryRows } from "../domain/advisoryRows";
+import { advisoryListPartial } from "../domain/copySummary";
 import { population2 } from "../domain/list";
 import type { Report2 } from "../model/report";
 import type { View } from "../model/types";
@@ -29,10 +30,11 @@ export function tabCounts(report: Report2): Readonly<Record<View, string>> {
   };
 }
 
-/** A tab's accessible name: its label and its badge as separate words; a tab with no badge is its
- *  label alone. */
-export function tabName(label: string, count: string): string {
-  return count === "" ? label : `${label} ${count}`;
+/** A tab's accessible name: its label and its badge as separate words, and PD-ADV-7's mark in words
+ *  ("Advisories 6, check incomplete"); a tab with no badge is its label alone. */
+export function tabName(label: string, count: string, checkIncomplete: boolean): string {
+  const name = count === "" ? label : `${label} ${count}`;
+  return checkIncomplete ? `${name}, check incomplete` : name;
 }
 
 export function tabId(idBase: string, view: View): string {
@@ -163,6 +165,8 @@ function Chevron({ dir }: { dir: "prev" | "next" }) {
 export function Tabs({ idBase, panelId }: { idBase: string; panelId: string }) {
   const { model, state, dispatch } = useReport();
   const counts = useMemo(() => tabCounts(model.report), [model]);
+  // PD-ADV-7: a count from an incomplete advisory check is what was found, not everything there is.
+  const partial = useMemo(() => advisoryListPartial(model.report), [model]);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const scroller = useRef<HTMLElement>(null);
   const overflow = useOverflow(scroller);
@@ -209,6 +213,7 @@ export function Tabs({ idBase, panelId }: { idBase: string; panelId: string }) {
       <nav ref={scroller} className="tabs" role="tablist" aria-label="Report views">
         {TABS.map(({ view, label }, index) => {
           const selected = state.view === view;
+          const flagged = view === "advisories" && partial;
           return (
             <button
               key={view}
@@ -223,7 +228,7 @@ export function Tabs({ idBase, panelId }: { idBase: string; panelId: string }) {
               aria-controls={panelId}
               // The label and its count are two inline runs with no space between them, so the name
               // computed from content ran them together ("Findings69", "All packages271").
-              aria-label={tabName(label, counts[view])}
+              aria-label={tabName(label, counts[view], flagged)}
               tabIndex={selected ? 0 : -1}
               // Even the current tab dispatches: a click on it closes the open detail, as on the
               // legacy page.
@@ -236,6 +241,7 @@ export function Tabs({ idBase, panelId }: { idBase: string; panelId: string }) {
             >
               {label}
               <span className="n">{counts[view]}</span>
+              {flagged && <span className="tab-flag" title="advisory check incomplete" />}
             </button>
           );
         })}

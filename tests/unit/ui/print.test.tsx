@@ -149,6 +149,7 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
       "Signals",
       "Data as of",
     ]);
+    expect(doc.querySelectorAll(".pd-packages thead button")).toHaveLength(0);
   });
 
   // A sort button in a head cell prints empty on a continuation page, where the head repeats.

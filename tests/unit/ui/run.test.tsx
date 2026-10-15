@@ -152,3 +152,34 @@ describe("the link to How the score works", () => {
     expect(view).toBe("run");
   });
 });
+
+describe("the live example of How the score works", () => {
+  const example = () => run().querySelector(".run2-example");
+
+  test("shows the first finding by rank, with the Findings score bar, when no finding was opened", () => {
+    render(<App model={model()} />);
+
+    const first = [...model().report.findings].sort((a, b) => a.rank - b.rank)[0];
+    expect(example()?.textContent).toContain(`The first finding by rank: ${first?.package} `);
+    expect(example()?.querySelector(".sbar")?.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  test("shows the finding whose Why block linked here", () => {
+    history.replaceState(null, "", "/report.html#pkg=symfony%2Fyaml");
+    render(<App model={model()} />);
+
+    fireEvent.click(screen.getByRole("link", { name: "How the score works ›" }));
+
+    expect(example()?.textContent).toContain("The finding you opened: symfony/yaml ");
+  });
+
+  test("says that nothing is flagged, with no bar, for a report that grades nothing", () => {
+    const embed = assembleEmbed("pagerfanta");
+    const result = normalize(embed);
+    if (!result.ok) throw new Error(result.error.message);
+    render(<App model={result.model} />);
+
+    expect(example()?.textContent).toBe("No package is flagged in this report.");
+    expect(example()?.querySelector(".sbar")).toBeNull();
+  });
+});

@@ -1,4 +1,4 @@
-/** Grades and signals: the vocabulary tables and the tone map that colours every pill, chip and
+/** Grades and signals: the vocabulary tables, and the tone tokens that colour every pill, chip and
  *  bar. */
 
 import type { SignalId } from "../model/types";
@@ -11,22 +11,6 @@ export type Tone = "crit" | "high" | "med" | "low" | "none";
  *  rather than an inherited member. */
 export function vocabTable<T extends object>(entries: T): Readonly<T> {
   return Object.assign(Object.create(null) as T, entries);
-}
-
-const TONE_TABLE: Readonly<Record<string, Tone>> = vocabTable({
-  critical: "crit",
-  high: "high",
-  medium: "med",
-  low: "low",
-  none: "none",
-  unknown: "low",
-  finished: "none",
-  ok: "none",
-});
-
-/** An unknown key reads as low, never an error. */
-export function TONE(key: string): Tone {
-  return TONE_TABLE[key] ?? "low";
 }
 
 export const SIGNAL_NAMES: Readonly<Record<string, string>> = vocabTable({
