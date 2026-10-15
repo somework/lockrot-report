@@ -114,12 +114,12 @@ function usedOn(used: Run["score_rules_used"], id: string): { used: string; mute
 }
 
 /** The text after the label: a known id from its words, an unknown id from the arithmetic of its `kind`. */
-function ruleText(rule: ScoreRule, model: Model, run: Run): { label: string; text: string } {
+function ruleText(rule: ScoreRule, model: Model, run: Run): { label: string; text: string; known: boolean } {
   const slots = ruleSlots(rule, model);
   const words = Object.hasOwn(RULE_WORDS, rule.id) ? RULE_WORDS[rule.id] : undefined;
   if (words === undefined) {
     const kind = Object.hasOwn(RULE_KIND_WORDS, rule.kind) ? RULE_KIND_WORDS[rule.kind] : undefined;
-    return { label: rule.id, text: (kind && fill(kind, slots)) ?? "" };
+    return { label: rule.id, text: (kind && fill(kind, slots)) ?? "", known: false };
   }
   const devTail =
     rule.kind === "exempt" && run.include_dev && model.rules.some(({ id }) => id === "divide-dev")
@@ -133,11 +133,15 @@ function ruleText(rule: ScoreRule, model: Model, run: Run): { label: string; tex
   return {
     label: fill(words.label, slots) ?? rule.id,
     text: parts.filter((part) => part !== null && part !== "").join(": "),
+    known: true,
   };
 }
 
 export interface RuleRow {
+  id: string;
   stage: number;
+  /** False for an id the page has no words for: its label is the id, set as code. */
+  known: boolean;
   label: string;
   text: string;
   used: string;
@@ -147,6 +151,7 @@ export interface RuleRow {
 
 function ruleRow(rule: ScoreRule, model: Model, run: Run): RuleRow {
   return {
+    id: rule.id,
     stage: rule.stage,
     ...ruleText(rule, model, run),
     ...usedOn(run.score_rules_used, rule.id),

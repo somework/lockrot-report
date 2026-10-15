@@ -68,15 +68,21 @@ type RootFlag = Report2["flags"][keyof Report2["flags"]];
 
 const rootFlags = ({ flags }: Report2): Readonly<Record<string, RootFlag | undefined>> => flags;
 
-export type GateState = "fails" | "passes" | "off";
+export type GateState = "fails" | "not_applied" | "off" | "passes";
 
-/** What the `gate:` line says, from fields: a run with no gate value and no strict network gates nothing. */
+/** The head of `gate.text`, read from the fields `RunGateText` reads, in its order. */
 export function gateState({ gate, run }: Report2): GateState {
   if (gate.fails) return "fails";
-  return run.gates.length === 0 && !run.strict_network ? "off" : "passes";
+  if (run.mode === "generate_baseline") return "not_applied";
+  return run.gates.length === 0 ? "off" : "passes";
 }
 
-export const GATE_GLYPHS: Readonly<Record<GateState, string>> = { fails: "✕", passes: "✓", off: "" };
+export const GATE_GLYPHS: Readonly<Record<GateState, string>> = {
+  fails: "✕",
+  not_applied: "",
+  off: "",
+  passes: "✓",
+};
 
 export function flagBars(report: Report2): FlagBar[] {
   const flags = rootFlags(report);

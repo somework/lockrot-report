@@ -237,19 +237,26 @@ describe("the gate line's state", () => {
     expect(gateState(report)).toBe("passes");
   });
 
-  test("is off when the run sets no gate and no strict network", () => {
-    const report = golden("composite");
-    report.gate = { ...report.gate, fails: false };
-    report.run = { ...report.run, gates: [], strict_network: false };
-
-    expect(gateState(report)).toBe("off");
-  });
-
-  test("passes under strict network with no fail-on", () => {
+  test("is off when the run sets no gate value, strict network or not", () => {
     const report = golden("composite");
     report.gate = { ...report.gate, fails: false };
     report.run = { ...report.run, gates: [], strict_network: true };
 
-    expect(gateState(report)).toBe("passes");
+    expect(gateState(report)).toBe("off");
+  });
+
+  test("is not applied under --generate-baseline when nothing fails", () => {
+    const report = golden("composite");
+    report.gate = { ...report.gate, fails: false };
+    report.run = { ...report.run, mode: "generate_baseline" };
+
+    expect(gateState(report)).toBe("not_applied");
+  });
+
+  test("fails under --generate-baseline when the gate fails", () => {
+    const report = golden("composite");
+    report.run = { ...report.run, mode: "generate_baseline" };
+
+    expect(gateState(report)).toBe("fails");
   });
 });

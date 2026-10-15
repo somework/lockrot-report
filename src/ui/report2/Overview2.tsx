@@ -68,7 +68,12 @@ function Figure({ lead }: { lead: Lead }) {
   );
 }
 
-export const GATE_TONES: Readonly<Record<GateState, Tone>> = { fails: "crit", passes: "none", off: "low" };
+export const GATE_TONES: Readonly<Record<GateState, Tone>> = {
+  fails: "crit",
+  not_applied: "low",
+  off: "low",
+  passes: "none",
+};
 
 export function GateLine({ report, className }: { report: Report2; className: string }) {
   const state = gateState(report);
@@ -157,6 +162,7 @@ function FlagBarButton({ bar, longest }: { bar: FlagBar; longest: number }) {
 }
 
 function FlagsBlock({ report }: { report: Report2 }) {
+  if (report.packages_flagged === 0) return null;
   const bars = flagBars(report);
   const multi = multiFlagLine(report);
   const depth = depthSentence(report);

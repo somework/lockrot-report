@@ -100,10 +100,10 @@ function ScoreWorks({ run }: { run: Report2["run"] }) {
         <summary>{RUN_WORDS.rules(parts.rules.length)}</summary>
         <ol className="run2-rule-list">
           {parts.rules.map((rule) => (
-            <li key={rule.stage} className={rule.muted ? "run2-rule is-muted" : "run2-rule"}>
+            <li key={rule.id} className={rule.muted ? "run2-rule is-muted" : "run2-rule"}>
               <span className="run2-rule-no">{rule.stage}</span>
               <span className="run2-rule-body">
-                <OutLink href={rule.href}>{rule.label}</OutLink>
+                <OutLink href={rule.href}>{rule.known ? rule.label : <code>{rule.label}</code>}</OutLink>
                 {rule.text !== "" && <span className="run2-rule-text"> {rule.text}</span>}
               </span>
               {rule.used !== "" && <span className="run2-rule-used">{rule.used}</span>}

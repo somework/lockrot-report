@@ -17,7 +17,9 @@ describe("the rule rows of How the score works", () => {
 
     expect(rules).toHaveLength(16);
     expect(rules[1]).toEqual({
+      id: "lead-first",
       stage: 2,
+      known: true,
       label: "lead in full",
       text: "the strongest maintenance fact counts in full",
       used: "used on 4",
@@ -31,6 +33,20 @@ describe("the rule rows of How the score works", () => {
 
     expect(rules[0]).toMatchObject({ label: "counted", used: "used on 0", muted: true });
     expect(rules[13]).toMatchObject({ label: "sort", used: "—", muted: false });
+  });
+
+  test("mark a rule id the page has no words for, labelled by its id", () => {
+    const { run } = golden("composite");
+    const rules = run.score_model.rules.map((rule) =>
+      rule.id === "floor-once" ? { ...rule, id: "new-rule" as typeof rule.id } : rule,
+    );
+    const model = { ...run.score_model, rules };
+
+    expect(scorePanelParts({ ...run, score_model: model }).rules[10]).toMatchObject({
+      id: "new-rule",
+      label: "new-rule",
+      known: false,
+    });
   });
 
   test("print no count for a rule id the report does not count", () => {

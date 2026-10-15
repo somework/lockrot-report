@@ -198,6 +198,8 @@ test.describe("report-2: the Run tab of SPEC §7.9.16", () => {
     await expect(runSurface(page).getByRole("table", { name: "Weights" })).toBeVisible();
     await expect(runSurface(page).getByRole("table", { name: "Advisories" })).toBeVisible();
     await expect(runSurface(page)).toContainText("packagist.org: 20 on record · 4 packages with records");
+    await runSurface(page).getByText("The 16 rules").click();
+    await expect(ruleRows(page)).toHaveCount(16);
     for (const colorScheme of ["light", "dark"] as const) {
       await page.emulateMedia({ colorScheme });
       await expect

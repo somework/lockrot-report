@@ -126,6 +126,7 @@ describe("the overview band of a report-2 document", () => {
 
     expect(band().textContent).toContain("Nothing flagged in 7 packages");
     expect(band().querySelector(".overview2-flag-bars")).toBeNull();
+    expect(band().querySelector(".ledger-verdicts")).toBeNull();
     expect(band().textContent).not.toContain("Accepted by the allowlist");
   });
 

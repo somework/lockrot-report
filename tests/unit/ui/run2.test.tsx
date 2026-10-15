@@ -72,6 +72,21 @@ describe("the Run tab of a report-2 document", () => {
     expect(rows[1]?.classList.contains("is-muted")).toBe(false);
   });
 
+  test("sets a rule id the page has no words for as code", () => {
+    render(
+      <App
+        model={model((report) => {
+          const rule = report.run.score_model.rules.find(({ id }) => id === "floor-once");
+          if (rule === undefined) throw new Error("no floor-once rule");
+          rule.id = "new-rule";
+        })}
+      />,
+    );
+
+    const code = run().querySelector("details.run2-rules li a code");
+    expect(code?.textContent).toBe("new-rule");
+  });
+
   test("prints gate.text as written", () => {
     render(<App model={model()} />);
 
