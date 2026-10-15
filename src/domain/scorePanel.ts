@@ -4,7 +4,7 @@
  * `run.score_rules_used`.
  */
 
-import type { Run, ScoreRule } from "../model/report";
+import type { Finding, Report2, Run, ScoreRule } from "../model/report";
 import {
   PANEL_WORDS,
   RULE_KIND_WORDS,
@@ -249,7 +249,7 @@ export interface ScorePanelParts {
   fixes: string;
 }
 
-/** The panel's parts for one report. The live example (the clicked finding's score) is the caller's. */
+/** The panel's parts for one report. The live example is `liveExample`'s. */
 export function scorePanelParts(run: Run): ScorePanelParts {
   const model = run.score_model;
   return {
@@ -368,4 +368,33 @@ export function scoreTables(model: Model): { weights: ScoreTable; advisories: Sc
       rows: advisories,
     },
   };
+}
+
+export interface LiveExample {
+  /** Null when the report grades no finding: every rule keeps its own `illustration` then. */
+  finding: Finding | null;
+  text: string;
+}
+
+const EXAMPLE_WORDS = {
+  opened: "The finding you opened",
+  first: "The first finding by rank",
+  none: "No package is flagged in this report.",
+} as const;
+
+const exampleText = (lead: string, f: Finding): string =>
+  `${lead}: ${f.package} ${f.version} scores ${f.score.total}, ${f.verdict}.`;
+
+/** The panel's live example: the score of the finding the reader opened, else of the first graded
+ *  finding by `rank`. */
+export function liveExample(report: Report2, opened: string | null): LiveExample {
+  const finding = report.findings.find((f) => f.package === opened);
+  if (finding !== undefined) return { finding, text: exampleText(EXAMPLE_WORDS.opened, finding) };
+  const graded: readonly string[] = report.run.graded_verdicts;
+  const first = report.findings
+    .filter((f) => graded.includes(f.verdict))
+    .reduce<Finding | null>((best, f) => (best === null || f.rank < best.rank ? f : best), null);
+  return first === null
+    ? { finding: null, text: EXAMPLE_WORDS.none }
+    : { finding: first, text: exampleText(EXAMPLE_WORDS.first, first) };
 }

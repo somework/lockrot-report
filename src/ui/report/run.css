@@ -17,6 +17,16 @@
   color: var(--ink-2);
   overflow-wrap: anywhere;
 }
+/* The live example: its words, then the Findings row's bar, which wraps under them on a phone. */
+.run2-example {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
 
 .run2-ruler {
   display: grid;

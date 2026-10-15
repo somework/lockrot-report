@@ -28,6 +28,19 @@ describe("reducer / view", () => {
     expect(next.pkg).toBe("acme/widget");
   });
 
+  it("keeps the open package as the Run tab's score example, and forgets it on the next tab change", () => {
+    // Arrange
+    const state: State = { ...INITIAL_STATE, view: "findings", pkg: "acme/widget" };
+
+    // Act
+    const onRun = reducer(state, { type: "view", view: "run" });
+    const back = reducer(onRun, { type: "view", view: "findings" });
+
+    // Assert
+    expect(onRun.example).toBe("acme/widget");
+    expect(back.example).toBeNull();
+  });
+
   it("does not mutate the original state object", () => {
     // Arrange
     const state = INITIAL_STATE;

@@ -47,6 +47,7 @@ export function reducer(state: State, action: Action): State {
         ...state,
         view: action.view,
         pkg: keepDetail ? state.pkg : null,
+        example: state.pkg,
       };
     }
 
