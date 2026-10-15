@@ -7,7 +7,7 @@
 import type { Finding, Grade, Report2 } from "../model/report";
 import { isScoreGraded } from "../model/report";
 import type { Filters, LinkTarget } from "../state/types";
-import { decimal, plural } from "./format";
+import { decimal, pluralNoun } from "./format";
 import { population2 } from "./list";
 import { gradeMix, RADIUS_WORDS } from "./radius2";
 import { bandTicks } from "./scoreBar";
@@ -90,7 +90,7 @@ export function scoreStrip(report: Report2): ScoreStrip {
       at: Math.min(total, max) / max,
       marks: findings.map((f) => ({ package: f.package, verdict: f.verdict })),
       say: `score ${total}: ${gradeMix(report, findings)}`,
-      link: { view: "findings" as const, q: `score:>=${total}` },
+      link: { view: "findings" as const, q: `score:${total}` },
     }));
 
   return { zones, labels, stacks };
@@ -151,6 +151,6 @@ export function libyearsTop(report: Report2): LibyearsRow[] {
 /** The Findings strip's figure: "{packages_flagged} flagged". */
 export const stripFlagged = ({ packages_flagged: flagged }: Report2): string => `${flagged} flagged`;
 
-/** An exposure bar's text equivalent. */
-export const exposureSay = (row: { package: string; flagged: number }): string =>
-  `${row.package} pulls in ${plural(row.flagged, "flagged package", "flagged packages")}`;
+/** The unit of an exposure row's count, which a screen reader hears after it. */
+export const exposureUnit = (flagged: number): string =>
+  pluralNoun(flagged, "flagged package", "flagged packages");

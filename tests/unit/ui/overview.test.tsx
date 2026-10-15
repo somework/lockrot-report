@@ -118,15 +118,26 @@ describe("the Overview tab of a report-2 document", () => {
     );
   });
 
+  test("a score stack opens exactly the rows it holds", () => {
+    render(<App model={model()} />);
+
+    fireEvent.click(within(band()).getByRole("link", { name: "score 18: 2 high" }));
+
+    expect([...document.querySelectorAll("[data-pkg]")].map((row) => row.getAttribute("data-pkg"))).toEqual([
+      "friendsofsymfony/oauth-server-bundle",
+      "tubalmartin/cssmin",
+    ]);
+  });
+
   test("names each score stack by its grades and links it to the search at its total", () => {
     render(<App model={model()} />);
 
     const stacks = within(within(band()).getByRole("list", { name: "Scores" })).getAllByRole("link");
     expect(stacks.map((stack) => [stack.getAttribute("aria-label"), stack.getAttribute("href")])).toEqual([
-      ["score 36: 2 critical", "#view=findings&q=score%3A%3E%3D36"],
-      ["score 32: 1 critical", "#view=findings&q=score%3A%3E%3D32"],
-      ["score 18: 2 high", "#view=findings&q=score%3A%3E%3D18"],
-      ["score 2: 2 low", "#view=findings&q=score%3A%3E%3D2"],
+      ["score 36: 2 critical", "#view=findings&q=score%3A36"],
+      ["score 32: 1 critical", "#view=findings&q=score%3A32"],
+      ["score 18: 2 high", "#view=findings&q=score%3A18"],
+      ["score 2: 2 low", "#view=findings&q=score%3A2"],
     ]);
     expect(band().querySelector(".ss-rule")?.getAttribute("aria-hidden")).toBe("true");
   });
@@ -134,7 +145,7 @@ describe("the Overview tab of a report-2 document", () => {
   test("draws the exposure rows as links to Blast radius", () => {
     render(<App model={model()} />);
 
-    const row = within(band()).getByRole("link", { name: "guzzlehttp/guzzle 1" });
+    const row = within(band()).getByRole("link", { name: "guzzlehttp/guzzle 1 flagged package" });
     expect(row.getAttribute("href")).toBe("#view=radius");
   });
 

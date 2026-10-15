@@ -1,6 +1,7 @@
 import { OVERVIEW_WORDS } from "../../domain/overviewBand";
 import {
   exposureBars,
+  exposureUnit,
   libyearsTop,
   OVERVIEW_TAB_WORDS,
   scoreStrip,
@@ -103,7 +104,10 @@ function ExposureBlock({ report }: { report: Report2 }) {
                 <span className="ov-ex-track" aria-hidden="true">
                   <span className="ov-ex-fill" style={{ width: `${(row.flagged / bars.longest) * 100}%` }} />
                 </span>
-                <span className="ov-ex-count">{row.flagged}</span>
+                <span className="ov-ex-count">
+                  {row.flagged}
+                  <span className="vh"> {exposureUnit(row.flagged)}</span>
+                </span>
               </TabLink>
             </li>
           ))}

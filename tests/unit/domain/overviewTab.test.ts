@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { assembleEmbed } from "../../../scripts/report2-embed";
 import {
   exposureBars,
+  exposureUnit,
   libyearsTop,
   OVERVIEW_TAB_WORDS,
   scoreStrip,
@@ -66,10 +67,10 @@ describe("the score strip", () => {
     expect(scoreStrip(composite()).labels.map(({ value }) => value)).toEqual([0, 8, 16, 32, 64]);
   });
 
-  test("links a stack to Findings searched at its total", () => {
+  test("links a stack to Findings searched at exactly its total, the rows it holds", () => {
     const stack = scoreStrip(composite()).stacks[2];
     if (stack === undefined) throw new Error("no third stack");
-    expect(linkHref(stack.link)).toBe("#view=findings&q=score%3A%3E%3D18");
+    expect(linkHref(stack.link)).toBe("#view=findings&q=score%3A18");
   });
 
   test("has no stack when nothing is graded", () => {
@@ -116,6 +117,12 @@ describe("the exposure bars", () => {
     expect(exposureBars(report).shared).toBe(
       "2 flagged packages shared by too many requirements to list under one: symfony/cache, symfony/yaml.",
     );
+  });
+});
+
+describe("an exposure row's unit, for a screen reader", () => {
+  test("names the count's unit with one singular rule", () => {
+    expect([exposureUnit(1), exposureUnit(15)]).toEqual(["flagged package", "flagged packages"]);
   });
 });
 

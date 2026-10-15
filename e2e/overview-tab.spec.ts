@@ -142,9 +142,9 @@ test.describe("from a chart to a list", () => {
     );
     await expect(band.getByRole("link", { name: "score 18: 2 high" })).toHaveAttribute(
       "href",
-      "#view=findings&q=score%3A%3E%3D18",
+      "#view=findings&q=score%3A18",
     );
-    await expect(band.getByRole("link", { name: "guzzlehttp/guzzle 1" })).toHaveAttribute(
+    await expect(band.getByRole("link", { name: "guzzlehttp/guzzle 1 flagged package" })).toHaveAttribute(
       "href",
       "#view=radius",
     );
