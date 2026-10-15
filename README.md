@@ -55,8 +55,9 @@ Content-Security-Policy; `manifest.json` carries the hashes it pins.
 
 ## Compatibility
 
-The renderer reads report schema 1 and every document lockrot has written with it, back to 0.10.0.
-A field it does not know is ignored; a verdict, signal or severity it does not know is shown as
+The renderer reads report schema 2, which lockrot writes from 0.14.0 on. A schema 1 document gets
+a screen that says so and names the way out: rerun lockrot 0.14, or open the report with
+lockrot-report 0.13. A field it does not know is ignored; an id it does not know is shown as
 written. The placeholders, the payload tag and the address format (`#view=…&q=…&pkg=…`) are part of
 the public interface; a release that changes them says so under **Breaking** in the changelog.
 

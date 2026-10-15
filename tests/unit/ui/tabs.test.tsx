@@ -1,35 +1,27 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/preact";
+import { assembleEmbed } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
-import type { Model } from "../../../src/model/types";
 import { INITIAL_STATE, type State } from "../../../src/state/types";
 import { ReportContext } from "../../../src/ui/context";
 import { tabName, Tabs } from "../../../src/ui/Tabs";
 
 afterEach(cleanup);
 
-function loadMini(name = "mini.json"): Model {
-  const raw = JSON.parse(readFileSync(join(process.cwd(), "fixtures", "bundles", name), "utf8")) as unknown;
-  const result = normalize(raw);
-  if (!result.ok) throw new Error(`${name} fixture failed to normalize`);
-  return result.model;
-}
-
-function renderTabs(state: State = INITIAL_STATE, fixture = "mini.json") {
-  const model = loadMini(fixture);
+function renderTabs(state: State = INITIAL_STATE, caseName = "composite") {
+  const result = normalize(assembleEmbed(caseName));
+  if (!result.ok) throw new Error(result.error.message);
+  const { model } = result;
   return render(
     <ReportContext.Provider
       value={{
         model,
         state,
         dispatch: vi.fn(),
-        now: new Date(model.report.generatedAt),
+        now: new Date(model.report.generated_at),
         wide: true,
         cursor: null,
         openGlossary: vi.fn(),
-        openGlossaryFrom: vi.fn(),
       }}
     >
       <Tabs idBase="t" panelId="panel" />
@@ -37,32 +29,56 @@ function renderTabs(state: State = INITIAL_STATE, fixture = "mini.json") {
   );
 }
 
-describe("the Advisories tab's count from an incomplete check (PD-ADV-7)", () => {
-  it("carries a mark, named in the tab's own name", () => {
-    renderTabs(INITIAL_STATE, "mini-advisories-partial.json");
-    const tab = screen.getByRole("tab", { name: /^Advisories/ });
-    expect(tab.getAttribute("aria-label")).toBe("Advisories 6, check incomplete");
-    expect(tab.querySelector(".tab-flag")?.getAttribute("title")).toBe("advisory check incomplete");
-  });
-});
+function tabNames(): (string | null)[] {
+  return screen.getAllByRole("tab").map((tab) => tab.getAttribute("aria-label"));
+}
 
-describe("tab names (cross-cutting a11y sweep)", () => {
-  it("say the label and its count as two words, not run together", () => {
+describe("tab names", () => {
+  it("say the label and its count as two words, from the whole report", () => {
     renderTabs();
-    const names = screen.getAllByRole("tab").map((tab) => tab.getAttribute("aria-label"));
-    expect(names.every((name) => name !== null && !/[a-z]\d/.test(name))).toBe(true);
-    expect(names[0]).toMatch(/^Findings \d+$/);
+
+    // composite: 7 graded findings, 20 counted advisories, 7 packages, 1 exposure entry, no notes.
+    expect(tabNames()).toEqual([
+      "Findings 7",
+      "Advisories 20",
+      "All packages 7",
+      "Blast radius 1",
+      "Run data",
+    ]);
+  });
+
+  it("count a report with nothing flagged as zero, and every package on All packages", () => {
+    renderTabs(INITIAL_STATE, "pagerfanta");
+
+    // pagerfanta: one package checked, none flagged, no advisory, no exposure entry.
+    expect(tabNames()).toEqual([
+      "Findings 0",
+      "Advisories 0",
+      "All packages 1",
+      "Blast radius 0",
+      "Run data",
+    ]);
+  });
+
+  it("give Run data the count of the run's notes", () => {
+    renderTabs(INITIAL_STATE, "B-accepted-dagger");
+
+    expect(tabNames().at(-1)).toBe("Run data 1");
+  });
+
+  it("do not move with the search or a filter", () => {
+    renderTabs({
+      ...INITIAL_STATE,
+      q: "no-such-package",
+      filters: { ...INITIAL_STATE.filters, flag: ["stale"] },
+    });
+
+    expect(tabNames()[0]).toBe("Findings 7");
   });
 
   it("tabName: a tab with no badge is its label alone", () => {
-    expect(tabName("Run data", "", false)).toBe("Run data");
-    expect(tabName("All packages", "271", false)).toBe("All packages 271");
-    expect(tabName("Advisories", "0", true)).toBe("Advisories 0, check incomplete");
-  });
-
-  it("carries none when the run reports a complete check", () => {
-    renderTabs(INITIAL_STATE, "mini-advisories.json");
-    expect(screen.getByRole("tab", { name: /^Advisories/ }).querySelector(".tab-flag")).toBeNull();
+    expect(tabName("Run data", "")).toBe("Run data");
+    expect(tabName("All packages", "271")).toBe("All packages 271");
   });
 });
 

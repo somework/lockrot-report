@@ -3,7 +3,7 @@
  * the package's repository, or why it did not ask.
  */
 
-import type { Finding } from "../model/report2";
+import type { Finding } from "../model/report";
 import { causeWord, eventWord, forgeWord } from "./pageVocabulary";
 
 const dateOf = (dateTime: string): string => dateTime.slice(0, 10);

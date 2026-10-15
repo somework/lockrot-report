@@ -1,213 +1,168 @@
-/**
- * Advisories: the S9 signal's payload, flattened across findings — ported from legacy's
- * `advisoriesOf`, `fixLadder`, `sevTone` and the sort the Advisories tab and the detail's "Every
- * advisory" list both use (report.js:140-171,525-546; js-1.md, js-2.md, js-3.md), corrected per
- * critic.md C1, M1, M33.
- */
+/** The Advisories tab of a report-2 (SPEC §8.7.1): the S9 rows, grouped by `fix.kind` and
+ *  `fix.to_branch`, with the tab's words. The lookup hedge reads root `security.check`, never a note
+ *  code. */
 
-import type { Advisory, Finding, Model, Severity } from "../model/types";
-import { severityRank } from "./severity";
+import type { Finding, Report2, Run, S9fix, S9row } from "../model/report";
+import type { Filters } from "../state/types";
+import { advisoryRows } from "./advisoryRows";
+import { plural } from "./format";
+import { joinAnd } from "./joinWords";
+import { causeWord, fixLabel, lookupWord } from "./pageVocabulary";
+import { holderWord } from "./securityLine";
 
-/**
- * The advisories of one finding. `normalize()` already does the S9-signal flattening legacy's
- * `advisoriesOf` did (`Finding.advisories` in model/types.ts), so this is a thin named accessor —
- * kept so this module, and its callers, read the way legacy's did rather than reaching into
- * `finding.advisories` directly at every call site.
- */
-export function advisoriesOf(finding: Finding): readonly Advisory[] {
-  return finding.advisories;
-}
-
-export interface FixRung {
-  readonly version: string | null;
-  readonly onBranch: boolean;
-  readonly n: number;
-  /** No release was read for these advisories, so a null `version` is not "no fix". */
-  readonly unchecked: boolean;
-}
-
-/** An advisory's null `fixedBy` in words: "no fix" only where its S9 read the releases. */
-export function noFixWords(advisory: Pick<Advisory, "releasesRead">): string {
-  return advisory.releasesRead === false ? "fix not checked" : "no fix listed";
-}
-
-/** Distinct releases that clear a finding's advisories: one on the installed branch first, then the
- *  one clearing more. Ties keep first-seen order, and a rung keeps its first advisory's
- *  `fixed_on_branch` where two disagree. */
-export function fixLadder(finding: Finding): readonly FixRung[] {
-  const buckets = new Map<string, FixRung>();
-  for (const advisory of advisoriesOf(finding)) {
-    const unchecked = advisory.fixedBy === null && advisory.releasesRead === false;
-    const key = advisory.fixedBy ?? (unchecked ? "\u0000unchecked" : "\u0000none");
-    const existing = buckets.get(key);
-    buckets.set(
-      key,
-      existing
-        ? { ...existing, n: existing.n + 1 }
-        : { version: advisory.fixedBy, onBranch: advisory.fixedOnBranch, n: 1, unchecked },
-    );
-  }
-  return Array.from(buckets.values()).sort((x, y) => {
-    if (x.onBranch !== y.onBranch) return x.onBranch ? -1 : 1;
-    return y.n - x.n;
-  });
-}
-
-/** The design-token suffix an advisory severity renders with (report.js:140-142). `unrated`, and
- *  any value this renderer does not know, fall back to `"low"` — the same fallback legacy's
- *  `sevTone` gave anything outside its four named tiers. */
-export function sevTone(severity: Severity): "crit" | "high" | "med" | "low" {
-  switch (severity) {
-    case "critical":
-      return "crit";
-    case "high":
-      return "high";
-    case "medium":
-      return "med";
-    default:
-      return "low";
-  }
-}
-
-/**
- * The sort the Advisories tab and the detail's "Every advisory" list both use. Legacy ran two
- * near-duplicate sorts, each ranking the *raw* severity string with `SEV_ORDER.indexOf`
- * (report.js:526, report.js:814) — a value outside the four named tiers gets `-1`, which sorts
- * before `"critical"` instead of after `"low"` as intended (critic.md C1). `Advisory.severity` is
- * already normalised by the time it reaches here (domain/severity.ts), so ranking by
- * `severityRank` alone fixes that: `"unrated"` is the last rank, not `indexOf`'s `-1`.
- *
- * `Array#sort` has been a stable sort since ES2019, so items tied on severity keep the document
- * order they arrived in. That replaces the Advisories tab's `reported_at`-descending tiebreak
- * (report.js:528) — a deliberate simplification, not a byte-for-byte port of the tiebreak.
- */
-export function sortAdvisories<T>(items: readonly T[], severityOf: (item: T) => Severity): readonly T[] {
-  return [...items].sort((a, b) => severityRank(severityOf(a)) - severityRank(severityOf(b)));
-}
-
-export interface AdvisoryWithFinding {
-  readonly advisory: Advisory;
+export interface AdvisoryPair2 {
   readonly finding: Finding;
+  readonly row: S9row;
 }
 
-/** lockrot's note codes for an advisory check that stopped early or lost a repository. */
-const ADVISORY_GAP_CODES: ReadonlySet<string> = new Set(["advisories_not_checked", "advisories_unavailable"]);
-
-/** Whether the run says its advisory check did not cover every package. */
-export function advisoryCheckIncomplete(model: Model): boolean {
-  return model.report.noteDetails.some((note) => ADVISORY_GAP_CODES.has(note.code));
-}
-
-/** Every advisory of every finding in the report, paired with its finding and sorted for the
- *  Advisories tab (legacy's `ALL_ADVISORIES`, report.js:147-157, plus its sort at report.js:525-529). */
-export function allAdvisories(model: Model): readonly AdvisoryWithFinding[] {
-  const pairs: AdvisoryWithFinding[] = [];
-  for (const finding of model.report.findings) {
-    for (const advisory of advisoriesOf(finding)) {
-      pairs.push({ advisory, finding });
-    }
-  }
-  return sortAdvisories(pairs, (pair) => pair.advisory.severity);
-}
-
-/** One package the advisories touch, with the `fixed_by` versions its advisories name, verbatim. */
-export interface AdvisoryPackage {
-  readonly package: string;
-  /** Distinct, in the order its advisories list them; empty when none names a fix. */
-  readonly fixedBy: readonly string[];
-  /** True when at least one of its advisories names no fix though its releases were read. */
-  readonly someUnfixed: boolean;
-  /** True when at least one of its advisories names no fix because no release was read. */
-  readonly someUnchecked: boolean;
-}
-
-/**
- * The packages behind a list of advisories, in the list's own order (so, from `allAdvisories`, the
- * package carrying the most severe advisory first), each with the fix versions its advisories name.
- * Display only: the versions are the advisories' own `fixed_by` text, never compared or ranked.
- */
-export function advisoryPackages(pairs: readonly AdvisoryWithFinding[]): readonly AdvisoryPackage[] {
-  const byPackage = new Map<string, { fixedBy: string[]; someUnfixed: boolean; someUnchecked: boolean }>();
-  for (const { advisory, finding } of pairs) {
-    const entry = byPackage.get(finding.package) ?? { fixedBy: [], someUnfixed: false, someUnchecked: false };
-    const fix = advisory.fixedBy;
-    const shape = fixShapeOf(advisory);
-    const fixedBy = fix && !entry.fixedBy.includes(fix) ? [...entry.fixedBy, fix] : entry.fixedBy;
-    byPackage.set(finding.package, {
-      fixedBy,
-      someUnfixed: entry.someUnfixed || shape === "none",
-      someUnchecked: entry.someUnchecked || shape === "unchecked",
-    });
-  }
-
-  return [...byPackage].map(([name, entry]) => ({ package: name, ...entry }));
-}
-
-/** An advisory's fix shape: a release that clears it exists on the installed branch, exists only on
- *  another branch, or none is listed; or no release was read, so nobody looked (`unchecked`). Drives
- *  the Advisories tab's groups and the rail's `fix` filter. */
-export type FixShape = "branch" | "move" | "none" | "unchecked";
-
-export function fixShapeOf(advisory: Advisory): FixShape {
-  if (!advisory.fixedBy) return advisory.releasesRead === false ? "unchecked" : "none";
-  return advisory.fixedOnBranch ? "branch" : "move";
-}
-
-/**
- * Whether one advisory clears the rail's own `sev`/`fix` selections. `domain/filters.ts`'s
- * `passesRail` only ever answers this at *finding* granularity (does the finding have at least one
- * matching advisory) — correct for narrowing which packages are eligible, but not enough to count or
- * order individual Advisories-tab rows, where a finding can pass the rail on one advisory while
- * carrying several that individually do not. Legacy's `advisoryMatches` made the same two checks at
- * the row level (`report.js:507,509`); this is that half of it, kept here as the one definition
- * `SearchBar`'s count line and `ui/views/order.ts`'s row order both call, so the two can never
- * disagree (quality finding: this check used to be hand-duplicated in both places).
- */
-export function passesAdvisoryRail(
-  filters: { readonly sev: readonly string[]; readonly fix: readonly string[] },
-  advisory: Advisory,
-): boolean {
-  if (filters.sev.length > 0 && !filters.sev.includes(advisory.severity)) return false;
-  if (filters.fix.length > 0 && !filters.fix.includes(fixShapeOf(advisory))) return false;
-  return true;
-}
-
-export interface AdvisoryGroup {
-  readonly shape: FixShape;
+export interface AdvisoryGroup2 {
+  readonly kind: string;
+  readonly toBranch: string | null;
   readonly heading: string;
-  readonly hint: string;
-  readonly advisories: readonly AdvisoryWithFinding[];
+  readonly pairs: readonly AdvisoryPair2[];
 }
 
-/** The Advisories tab's fix-shape groups, in a fixed order. */
-const GROUP_TEXT: readonly { shape: FixShape; heading: string; hint: string }[] = [
-  {
-    shape: "branch",
-    heading: "A release on the branch you are on",
-    hint: "The cheapest move: a patch or minor bump, no migration.",
-  },
-  {
-    shape: "move",
-    heading: "Only a move to another branch",
-    hint: "The fix never landed on your branch. This is an upgrade, not a bump.",
-  },
-  {
-    shape: "none",
-    heading: "No fix listed",
-    hint: "Nothing published clears it. Replacement or mitigation.",
-  },
-  {
-    shape: "unchecked",
-    heading: "Fix not checked",
-    hint: "lockrot read no release list for it, so whether a release clears it is not known.",
-  },
-];
-
-/** Buckets already-sorted advisory/finding pairs into the Advisories tab's fix-shape groups;
- *  a group with nothing in it is omitted rather than rendered empty (report.js:540). */
-export function groupAdvisories(pairs: readonly AdvisoryWithFinding[]): readonly AdvisoryGroup[] {
-  return GROUP_TEXT.map((group) => ({
-    ...group,
-    advisories: pairs.filter((pair) => fixShapeOf(pair.advisory) === group.shape),
-  })).filter((group) => group.advisories.length > 0);
+/** The rows of each finding in the order given, narrowed by the sev and fix rail buttons row by row. */
+export function advisoryPairs2(findings: readonly Finding[], filters: Filters): readonly AdvisoryPair2[] {
+  return findings.flatMap((finding) =>
+    advisoryRows(finding)
+      .filter((row) => filters.sev.length === 0 || filters.sev.includes(row.severity))
+      .filter((row) => filters.fix.length === 0 || filters.fix.includes(row.fix.kind))
+      .map((row) => ({ finding, row })),
+  );
 }
+
+const groupKey = ({ kind, to_branch: branch }: S9fix): string => `${kind}\u0000${branch ?? ""}`;
+
+function branchOrder(a: string | null, b: string | null): number {
+  if (a === b) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  return a.localeCompare(b, undefined, { numeric: true });
+}
+
+/** In `score_model.fix_kinds` order, an unknown kind after them; branches lowest first, none last. */
+export function advisoryGroups2(run: Run, pairs: readonly AdvisoryPair2[]): readonly AdvisoryGroup2[] {
+  const kinds = run.score_model.fix_kinds.map(({ id }) => id);
+  const rank = (kind: string): number => (kinds.includes(kind) ? kinds.indexOf(kind) : kinds.length);
+  const groups = new Map<string, AdvisoryPair2[]>();
+  for (const pair of pairs) {
+    const key = groupKey(pair.row.fix);
+    groups.set(key, [...(groups.get(key) ?? []), pair]);
+  }
+  return [...groups.values()]
+    .map((members) => {
+      const { kind, to_branch: toBranch } = (members[0] as AdvisoryPair2).row.fix;
+      const label = fixLabel(kind);
+      return {
+        kind,
+        toBranch,
+        heading: toBranch === null ? label : `${label} · ${toBranch}`,
+        pairs: members,
+      };
+    })
+    .sort((a, b) => rank(a.kind) - rank(b.kind) || branchOrder(a.toBranch, b.toBranch));
+}
+
+/** The package names the tab draws as rows, top to bottom (`j`/`k`); a package repeats per row. */
+export const advisoryRowPackages = (groups: readonly AdvisoryGroup2[]): readonly string[] =>
+  groups.flatMap((group) => group.pairs.map((pair) => pair.finding.package));
+
+export interface AdvisoryAnswer2 {
+  readonly text: string;
+  /** Set under a filter: the count without it. */
+  readonly narrowed: string | null;
+}
+
+export function advisoryAnswer2(
+  run: Run,
+  pairs: readonly AdvisoryPair2[],
+  unfiltered: number,
+): AdvisoryAnswer2 {
+  const isNarrowed = pairs.length < unfiltered;
+  const packages = new Set(pairs.map((pair) => pair.finding.package)).size;
+  const severities = run.score_model.severities
+    .map(({ id }) => ({ id, n: pairs.filter((pair) => pair.row.severity === id).length }))
+    .filter(({ n }) => n > 0)
+    .map(({ id, n }) => `${n} ${id}`);
+  const known = new Set(run.score_model.severities.map(({ id }) => id));
+  const others = [...new Set(pairs.map((pair) => pair.row.severity).filter((id) => !known.has(id)))].map(
+    (id) => `${pairs.filter((pair) => pair.row.severity === id).length} ${id}`,
+  );
+  const noun = isNarrowed ? ["matching advisory", "matching advisories"] : ["advisory", "advisories"];
+  return {
+    text: `${plural(pairs.length, noun[0] as string, noun[1] as string)} on ${plural(packages, "package", "packages")}, by severity: ${[...severities, ...others].join(", ")}.`,
+    narrowed: isNarrowed
+      ? `Only advisories that match the filter are counted; without it there ${unfiltered === 1 ? "is" : "are"} ${unfiltered}.`
+      : null,
+  };
+}
+
+/** What a severity counts as when the model scores it as another one: ", counted as medium". */
+export function advisoryCountedAs(run: Run, severity: string): string | null {
+  const countsAs = run.score_model.severities.find(({ id }) => id === severity)?.counts_as ?? null;
+  return countsAs === null ? null : `, counted as ${countsAs}`;
+}
+
+export interface AdvisoryFixWords {
+  readonly version: string | null;
+  readonly where: string;
+}
+
+/** The fixing release and where it is released, or the fix label and its reason without one. */
+export function advisoryFixWords(fix: S9fix, finding: Finding): AdvisoryFixWords {
+  if (fix.version === null) {
+    const reason = fix.reason === null ? "" : `: ${causeWord(fix.reason, finding.origin.kind)}`;
+    return { version: null, where: `${fixLabel(fix.kind)}${reason}` };
+  }
+  const where =
+    fix.on_installed_branch === true
+      ? "on your branch"
+      : fix.to_branch === null
+        ? fixLabel(fix.kind)
+        : `on ${fix.to_branch}`;
+  return { version: fix.version, where };
+}
+
+/** Under the answer when the run's lookup did not cover every package. */
+export function advisoryLookupHedge({ security }: Report2): string | null {
+  return security.check === "complete"
+    ? null
+    : `Advisories: ${lookupWord(security.check, null)}, so this list may be partial.`;
+}
+
+/** The tab when no finding is vulnerable: clean only after a complete lookup. */
+export function noAdvisoryLine({ security }: Report2): string {
+  return security.check === "complete"
+    ? "No advisory affects this lock."
+    : `No advisory found (${lookupWord(security.check, null)}).`;
+}
+
+/** What holds a fix and the PHP it needs: "needs PHP >=8.1.0 · held by composer.json and symfony/twig-bridge". */
+export function advisoryFixNote({ kind, php, held_by: heldBy }: S9fix): string | null {
+  const parts = [
+    ...(php !== null && (kind === "raise-php" || kind === "blocked") ? [`needs PHP ${php}`] : []),
+    ...(heldBy.length > 0 ? [`held by ${joinAnd([...new Set(heldBy.map(holderWord))])}`] : []),
+  ];
+  return parts.length === 0 ? null : parts.join(" · ");
+}
+
+/** The band a severity's square and word take, by lookup in the model. */
+export const advisoryBand = (run: Run, severity: string): string | null =>
+  run.score_model.severities.find(({ id }) => id === severity)?.band ?? null;
+
+/** A row's accessible name: one package can carry several rows. */
+export const advisoryRowLabel2 = ({ finding, row }: AdvisoryPair2): string =>
+  `${finding.package}, ${row.severity}, ${row.cve ?? row.id}`;
+
+export const ADVISORY_HEAD = {
+  sev: "Severity",
+  adv: "Advisory",
+  pkg: "Package · reached",
+  aff: "Affects",
+  fix: "Fixed by",
+  noCve: "no CVE assigned",
+  reported: "reported",
+  affects: "affects",
+  fixedBy: "fixed by",
+} as const;

@@ -1,57 +1,34 @@
-/** Page-quality checks (DESIGN.md §6) on every fixture page: axe in both colour schemes with a
- *  detail open, no CSP violation, no console error, no page overflow at 320px. */
+/** Page-quality checks (DESIGN.md §6) on report-2 pages: axe in both colour schemes with a detail
+ *  open, no CSP violation, no console error, no page overflow at 320px. */
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createReportPage } from "./support/report";
-import { isCorpusSlice, pageUrl, REPO_ROOT, report2Cases, type FixtureName } from "./support/pages";
+import { isCorpusSlice, REPO_ROOT, report2Cases, report2Url } from "./support/pages";
 
-/** Every page `scripts/pages.mjs` built, one per fixture bundle. The report-2 pages are the corpus
- *  slice only: all of them add minutes per browser, and each is opened by its own spec. */
-function builtFixtures(): FixtureName[] {
-  const corpusSlice = new Set(report2Cases().filter(isCorpusSlice));
-  return readdirSync(join(REPO_ROOT, "build/pages"))
-    .filter((file) => file.endsWith(".html"))
-    .map((file) => file.replace(/\.html$/, ""))
-    .filter((name) => !name.startsWith("report2-") || corpusSlice.has(name.slice("report2-".length)))
-    .map((name) => name as FixtureName);
-}
+/** The report-2 pages of the corpus slice: all of the built cases add minutes per browser, and
+ *  `report2-pages.spec.ts` opens each of them once. */
+const SLICE = report2Cases().filter(isCorpusSlice);
 
-const AXE_FIXTURES: readonly FixtureName[] = [
-  "mini",
-  "koel_koel",
-  "wallabag_wallabag",
-  "wallabag_baseline",
-  // Every real 0.13 bundle and both hand-built edge bundles.
-  "wallabag_wallabag-0.13",
-  "koel_koel-0.13",
-  "koel_koel-all-0.13",
-  "mautic_mautic-0.13",
-  "gh_akaunting_akaunting-0.13",
-  "mini-0.13-edges",
-  "mini-0.13-edges-lock-only",
-  "koel_lock-only-0.13",
-  "koel_no-token-unchecked-0.13",
-  "wallabag_baseline-older-0.13",
-  "wallabag_baseline-self-0.13",
-  "wallabag_generate-baseline-0.13",
-  "wallabag_offline-strict-0.13",
-  "wallabag_offline-strict-unchecked-0.13",
-  "mini-0.13-gate-generate",
-  "mini-0.13-gate-none",
-  "mini-0.13-gate-null",
-  "mini-0.13-gate-unchecked",
-  "mini-0.13-gate-unknown",
-  "mini-0.13-gate-verdict",
-  "synthetic-shared-many",
+/** A spread of recorded cases for the axe pass: a small lock, a large real one, a baseline, a
+ *  lock with nothing flagged, an offline run and a gate that fails. */
+const AXE_CASES = [
+  "composite",
+  "B",
+  "B-baselined-dagger",
+  "baselined-wallabag-2.6",
+  "A",
+  "ok-unchecked",
+  "B-offline-dagger",
+  "unknown",
 ];
 const SCHEMES = ["light", "dark"] as const;
 const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;
 
-async function load(page: Page, fixture: FixtureName, hash = ""): Promise<void> {
+async function load(page: Page, caseName: string, hash = ""): Promise<void> {
   await page.goto("about:blank");
-  await page.goto(pageUrl(fixture) + (hash ? "#" + hash : ""));
+  await page.goto(report2Url(caseName) + (hash ? "#" + hash : ""));
   await expect(page.getByRole("tab").first()).toBeVisible();
 }
 
@@ -70,11 +47,11 @@ test.describe("axe: no serious or critical violations", () => {
   test.describe.configure({ timeout: 180_000 });
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  for (const fixture of AXE_FIXTURES) {
+  for (const caseName of AXE_CASES) {
     for (const colorScheme of SCHEMES) {
-      test(`${fixture}, ${colorScheme}, detail open`, async ({ page }) => {
+      test(`${caseName}, ${colorScheme}, detail open`, async ({ page }) => {
         await page.emulateMedia({ colorScheme });
-        await load(page, fixture);
+        await load(page, caseName);
         const report = await createReportPage(page);
         // Nothing opens by itself (PD-ROWS-9): open the first row, or the first package when
         // nothing is flagged.
@@ -91,38 +68,38 @@ test.describe("axe: no serious or critical violations", () => {
   }
 
   for (const view of VIEWS) {
-    test(`wallabag_wallabag, ${view} tab, both schemes`, async ({ page }) => {
+    test(`baselined-wallabag-2.6, ${view} tab, both schemes`, async ({ page }) => {
       for (const colorScheme of SCHEMES) {
         await page.emulateMedia({ colorScheme });
-        await load(page, "wallabag_wallabag", view === "findings" ? "" : `view=${view}`);
+        await load(page, "baselined-wallabag-2.6", view === "findings" ? "" : `view=${view}`);
         expect(await seriousViolations(page)).toEqual([]);
       }
     });
   }
 
-  // PD-BASELINE-1/4: the delta line's toned counts (one of them pressed) and Run data's stat row.
+  // The rail's Since filter pressed, and the Run data tab of a baselined run.
   for (const hash of ["since=new", "view=run"]) {
-    test(`wallabag_baseline, ${hash}, both schemes`, async ({ page }) => {
+    test(`baselined-wallabag-2.6, ${hash}, both schemes`, async ({ page }) => {
       for (const colorScheme of SCHEMES) {
         await page.emulateMedia({ colorScheme });
-        await load(page, "wallabag_baseline", hash);
+        await load(page, "baselined-wallabag-2.6", hash);
         expect(await seriousViolations(page)).toEqual([]);
       }
     });
   }
 
-  test("mini, glossary open", async ({ page }) => {
-    await load(page, "mini");
+  test("composite, glossary open", async ({ page }) => {
+    await load(page, "composite");
     await page.getByRole("button", { name: /what these words mean/i }).click();
     expect(await seriousViolations(page)).toEqual([]);
   });
 });
 
-test.describe("CSP, console and runtime errors on every fixture page", () => {
+test.describe("CSP, console and runtime errors on every corpus-slice page", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  for (const fixture of builtFixtures()) {
-    test(fixture, async ({ page }) => {
+  for (const caseName of SLICE) {
+    test(caseName, async ({ page }) => {
       const problems: string[] = [];
       page.on("console", (message) => {
         if (message.type() === "error") problems.push(`console: ${message.text()}`);
@@ -136,7 +113,7 @@ test.describe("CSP, console and runtime errors on every fixture page", () => {
         });
       });
 
-      await load(page, fixture);
+      await load(page, caseName);
       for (const name of ["Advisories", "All packages", "Blast radius", "Run data", "Findings"]) {
         await page.getByRole("tab", { name }).click();
       }
@@ -155,11 +132,11 @@ test.describe("CSP, console and runtime errors on every fixture page", () => {
 test.describe("no horizontal overflow at 320px", () => {
   test.use({ viewport: { width: 320, height: 720 } });
 
-  for (const fixture of builtFixtures()) {
-    test(fixture, async ({ page }) => {
+  for (const caseName of SLICE) {
+    test(caseName, async ({ page }) => {
       const overflowing: string[] = [];
       for (const view of VIEWS) {
-        await load(page, fixture, view === "findings" ? "" : `view=${view}`);
+        await load(page, caseName, view === "findings" ? "" : `view=${view}`);
         const width = await page.evaluate(() => document.documentElement.scrollWidth);
         if (width > 320) overflowing.push(`${view}: ${width}px`);
       }
@@ -173,10 +150,10 @@ test.describe("no horizontal overflow inside the open detail sheet at 320px (reg
   // repository URL shown as link text must wrap.
   test.use({ viewport: { width: 320, height: 720 } });
 
-  test("wallabag_wallabag: sensio/framework-extra-bundle's repository link wraps instead of widening the sheet", async ({
+  test("baselined-wallabag-2.6: sensio/framework-extra-bundle's repository link wraps instead of widening the sheet", async ({
     page,
   }) => {
-    await load(page, "wallabag_wallabag");
+    await load(page, "baselined-wallabag-2.6");
     const report = await createReportPage(page);
     await report.openPackage("sensio/framework-extra-bundle");
 
@@ -196,12 +173,12 @@ test.describe("no horizontal overflow inside the open detail sheet at 320px (reg
  *  renderer's `.lockrot-provenance` class styles it. */
 test.describe("a publisher's provenance line", () => {
   test("is styled by the page and trips no policy", async ({ page }) => {
-    const source = readFileSync(join(REPO_ROOT, "build/pages/mini.html"), "utf8");
+    const source = readFileSync(join(REPO_ROOT, "build/pages/report2-composite.html"), "utf8");
     const banded = source.replace(
       "<body>",
       '<body>\n<div class="lockrot-provenance">Published by <a href="https://example.test/">a site</a>.</div>',
     );
-    const file = join(REPO_ROOT, "build/pages/mini-banded.tmp.html");
+    const file = join(REPO_ROOT, "build/pages/provenance-banded.tmp.html");
     writeFileSync(file, banded);
     const violations: string[] = [];
     await page.exposeFunction("reportViolation", (directive: string) => violations.push(directive));

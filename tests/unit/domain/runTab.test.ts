@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { advisoryLookup, acceptedUnchecked, noteRows, thresholdRows } from "../../../src/domain/runTab";
 import { bandRuler, scorePanelParts, scoreTables } from "../../../src/domain/scorePanel";
-import type { Report2, UncheckedAccepted } from "../../../src/model/report2";
+import type { Report2, UncheckedAccepted } from "../../../src/model/report";
 import { pageGoldens, readContractJson, recordedCases } from "../words/recorded";
 
 function golden(id: string): Report2 {

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { scoreLine } from "../../../src/domain/scoreLine";
-import type { Score } from "../../../src/model/report2";
+import type { Score } from "../../../src/model/report";
 import { readContractJson, recordedCases } from "./recorded";
 
 interface Pair {

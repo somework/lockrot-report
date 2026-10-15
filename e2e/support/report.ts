@@ -7,16 +7,12 @@
  * `new.ts` directly and never queries the page with a raw selector. Anything a spec needs to know
  * about the rendered page goes through a method on this interface.
  */
-import type { Locator, Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 import type { FixtureName } from "./pages";
 import { NewReportPage } from "./new";
 
 export const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;
 export type ViewName = (typeof VIEWS)[number];
-
-/** Filter groups only the ledger legend can set (`report.js:254,266,287`; rail excludes them, M17). */
-export const LEDGER_GROUPS = ["prio", "verdict", "sev"] as const;
-export type LedgerGroup = (typeof LEDGER_GROUPS)[number];
 
 /** Filter groups the rail offers (`report.js:344-392`). */
 export const RAIL_GROUPS = ["scope", "signal", "fix", "since"] as const;
@@ -55,8 +51,6 @@ export interface RowGeometry {
 export interface ReportPage {
   /** Loads one fixture bundle's built page, hash-less. */
   goto(fixture: FixtureName): Promise<void>;
-  /** Loads the page with a given `#...` fragment already in the URL, exactly as a shared link would. */
-  gotoWithHash(fixture: FixtureName, hash: string): Promise<void>;
   /** Loads the report-2 page of one case of lockrot's recorded bundle, such as `composite`. */
   gotoReport2(caseName: string): Promise<void>;
   /** The report-2 page of one case with a `#...` fragment, as a shared link would open it. */
@@ -83,14 +77,10 @@ export interface ReportPage {
   clear(): Promise<void>;
   /** The "N of M ..." status line, or null when the current view does not show one (Run). */
   countLine(): Promise<string | null>;
-  /** The empty-state message, or null when the current view has rows to show. */
-  emptyMessage(): Promise<string | null>;
 
   /** Package names for the current view's rendered rows/cards, in document order. Duplicates are
    *  possible (e.g. one Advisories row per advisory, several under the same package). */
   rows(): Promise<string[]>;
-  /** The current view's row for this package, found by its role and accessible name. */
-  packageRow(name: string): Locator;
   /** A single click on the row/card/button that represents this package. Every list's row opens
    *  its package and never closes it (PD-ROWS-7); a `data-open` button always opens. */
   clickPackage(name: string): Promise<void>;
@@ -153,34 +143,6 @@ export interface ReportPage {
   /** Moves keyboard focus onto the first outbound link inside a package's row (e.g. a signal-id
    *  link or the registry link) without clicking it, so a spec can then press Enter on it (M5). */
   focusLinkInRow(name: string): Promise<void>;
-  /** Where the link named after the package in its own row points (its registry page on All
-   *  packages), or null when the row does not link its name. */
-  packageLinkHref(name: string): Promise<string | null>;
-  /** The registry links in an open package's header. */
-  detailRegistryLinks(name: string): Locator;
-  /** The Origin line of an open package's Provenance. */
-  provenanceOrigin(name: string): Locator;
-  /** Links in an open package's answer, or the one named after `replacement`. */
-  replacementLink(name: string, replacement?: string): Locator;
-  /** The words a screen reader gets from one package's cell in an All packages column (a sort key,
-   *  e.g. "libyears"), with the drawn-only marks left out. */
-  packageCellWords(name: string, column: string): Promise<string>;
-  /** The same words for every row of that column, in row order. */
-  packageColumnWords(column: string): Promise<string[]>;
-  /** The accessible name (e.g. "S2") of every signal-id link inside a Findings row, in document
-   *  order — a Findings row carries no other link, so this doubles as "how many signal lines this
-   *  row draws" (PD-ROWS-1, DESIGN.md §5: exactly one, the row's own key fact). */
-  rowSignalIds(name: string): Promise<string[]>;
-  /** The row's old "+N more signal(s), open the package" note, or null when the row shows none —
-   *  which, since PD-ROWS-4 (DESIGN.md §5), is every row: the detail lists every signal. */
-  rowMoreSignalsText(name: string): Promise<string | null>;
-  /** The row's age scale (`role="img"`) accessible name, or null when the row draws no scale at
-   *  all (PD-ROWS-2, DESIGN.md §5). */
-  rowAgeScaleLabel(name: string): Promise<string | null>;
-  /** The row's age scale's own `title` — the same text as `rowAgeScaleLabel`, on hover rather than
-   *  only for assistive tech (PD-ROWS-3, DESIGN.md §5: the scale's two threshold ticks otherwise
-   *  show a reader nothing to hover). Null on the same terms as `rowAgeScaleLabel`. */
-  rowAgeScaleTitle(name: string): Promise<string | null>;
   /** The Findings list's age axis captions in its column head (PD-ROWS-4, DESIGN.md §5), e.g.
    *  "Years since release 0 3y 5y 10y+", or null when the tab draws no axis. */
   ageAxisText(): Promise<string | null>;
@@ -202,42 +164,12 @@ export interface ReportPage {
    *  ticks close enough together, in the default colour scheme, that a mid-zone dot's opaque fill
    *  covered them both, not only in forced-colors mode. */
   ageScaleHighTickSurvivesDot(name: string): Promise<boolean>;
-
-  ledgerButton(group: LedgerGroup, key: string): Promise<void>;
-  /** null when the button carries no pressed-state at all for assistive tech (M17, legacy). */
-  ledgerButtonPressed(group: LedgerGroup, key: string): Promise<boolean | null>;
-  /** The button's `title` — "Show only …" unpressed, "Showing only … — click to clear this
-   *  filter" pressed (PD-LEDGER-2, DESIGN.md §5). Null if the button carries no title at all. */
-  ledgerButtonTitle(group: LedgerGroup, key: string): Promise<string | null>;
-  /** The legend chip's own background/border, plus its swatch's background — the forced-colors
-   *  a11y fix (PD-LEDGER-2, DESIGN.md §5): before it, a pressed chip and an unpressed one, and the
-   *  swatch itself, all painted the same Canvas colour as the page. */
-  legendButtonForcedColorsStyle(
-    group: LedgerGroup,
-    key: string,
-  ): Promise<{ backgroundColor: string; borderColor: string; swatchBackgroundColor: string }>;
-  /** The fraction of pixels *actually painted* across the chip's own label text — not the DOM's
-   *  computed style — that differ from the label's own backplate colour (second a11y review,
-   *  PD-LEDGER-2, DESIGN.md §5): a native `<button>`'s forced-colors paint can diverge from
-   *  `getComputedStyle`, which `legendButtonForcedColorsStyle` alone could not have caught. Near
-   *  zero means the label painted the same colour as what is behind it — invisible whatever its
-   *  computed `color` says. */
-  legendButtonPressedLabelDistinctPixelRatio(group: LedgerGroup, key: string): Promise<number>;
-  /** The tooltip on the summary band's "Flagged packages" eyebrow (M29). */
-  priorityLedgerTooltip(): Promise<string | null>;
-  /** Whether this exact wording is visible on the page — a phone reader must see the summary
-   *  band's lead (figure, "of N packages", chips) without opening any fold (App.tsx#LedgerSlot,
-   *  ledger/Ledger.tsx). */
-  hasSummaryLine(text: string): Promise<boolean>;
   /** The summary band's waffle (ledger/Waffle.tsx, PD-SUMMARY-6): how many of its squares are
    *  flagged and how many in all, or null when it is not drawn or not visible. */
   summaryWaffle(): Promise<{ flagged: number; total: number } | null>;
   /** The waffle's first flagged and first quiet square under the current media: their computed
    *  fill and outline, against the page's own background (forced colors must keep both visible). */
   summaryWaffleForcedColors(): Promise<{ flaggedDistinct: boolean; restOutlined: boolean }>;
-  /** A verdict bar (`VerdictLedger.tsx`) under the current media: whether its first priority part
-   *  keeps a fill, and whether its row draws a border distinct from its own background. */
-  verdictBarForcedColors(verdict: string): Promise<{ partFilled: boolean; rowFramed: boolean }>;
 
   /** The header's gate-fact button (Header.tsx): "no gate" or "gate: <value>", or null when the
    *  document predates `run.fail_on` and the header shows neither. */
@@ -253,8 +185,6 @@ export interface ReportPage {
   railOptionPressed(group: RailGroup, key: string): Promise<boolean | null>;
   /** Every rail button in order, as its label, the count it shows (PD-RAIL-1) and whether it is on. */
   railRows(): Promise<{ label: string; count: number; pressed: boolean }[]>;
-  /** Clicks the rail button at that position (the order `railRows()` gives), selecting or clearing it. */
-  toggleRailRowAt(index: number): Promise<void>;
   /** Clicks the rail button `railRows()` reported as `label` (PD-RAIL-2: rows come and go). */
   toggleRailRow(label: string): Promise<void>;
   /** The name `rows()` would give at `index`, read in one page call; null past the end. */
@@ -262,23 +192,9 @@ export interface ReportPage {
   /** How many different packages the current view's rows name — `rows()` without duplicates. */
   listedPackageCount(): Promise<number>;
 
-  /** The value beside one term of the Run data tab ("fail-on", "libyears not measured"). */
-  runField(label: string): Locator;
-
   /** Clicks a Packages-table column header once (toggles direction on a repeat click). */
   sortBy(key: string): Promise<void>;
   sortState(): Promise<SortState | null>;
-
-  /**
-   * The Blast radius row for one direct requirement: the count its squares state ("N flagged
-   * packages listed under it") against how many package rows it holds, open or folded — M24/M25's
-   * exact disagreement. Null when no such row is rendered.
-   */
-  radiusCard(parent: string): Promise<{ statedCount: number | null; listedCount: number } | null>;
-
-  /** Every package name the Blast radius tab draws: its rows, the packages under them (folded
-   *  or not) and the footnote's flagged requirements that have no row. */
-  radiusNames(): Promise<string[]>;
 
   openGlossary(): Promise<void>;
   closeGlossaryButton(): Promise<void>;
@@ -288,39 +204,6 @@ export interface ReportPage {
    *  the browser's UA stylesheet gives a non-modal `<dialog>` otherwise (M28). */
   glossaryPosition(): Promise<string>;
 
-  /** Opens the open package's reference section titled `heading` ("The lock entry") and returns
-   *  its terms and values. */
-  detailFacts(heading: string): Promise<Record<string, string>>;
-
-  /** Clicks the verdict pill in the open package's own detail header — PD-GLOSSARY-4/5. Opens
-   *  `pkg` first if it is not already the open one, then must open the pill's popover without also
-   *  closing the detail. */
-  clickVerdictPill(pkg: string, verdict: string): Promise<void>;
-  /** Clicks a Findings row's own verdict pill — a walk found readers took it for the row's own
-   *  target, not a definition trigger (PD-GLOSSARY-4/5, DESIGN.md §5). Must behave exactly like a
-   *  click anywhere else on the row: open the package if it is closed, close it again if it is the
-   *  one already open — never a popover, since the row's own pill carries none. */
-  clickPillInFindingsRow(pkg: string, verdict: string): Promise<void>;
-  /** Whether some pill's popover is currently showing (`:popover-open`), wherever it was opened. */
-  isPillPopoverOpen(): Promise<boolean>;
-  /** Every visible word in the open pill popover, whitespace-collapsed. */
-  pillPopoverText(): Promise<string>;
-  /** Whether the open pill popover's own `::backdrop` paints anything (PD-GLOSSARY-4, DESIGN.md
-   *  §5, visual review) — before this fix it dimmed nothing, so a fixed, centred popover on a short
-   *  page could sit on the very row it opened from with no cue it was an overlay. */
-  pillPopoverBackdropVisible(): Promise<boolean>;
-  /** Clicks "In the glossary" inside an open pill popover. */
-  openGlossaryFromPillPopover(): Promise<void>;
-  /** Whichever element inside the open glossary dialog currently holds focus — its text, and
-   *  whether it sits within the dialog's own visible (scrolled-into-view) area — the two facts
-   *  "In the glossary" promises for the entry it names (PD-GLOSSARY-7, DESIGN.md §5). Null when the
-   *  glossary is not open, or focus is not inside it. */
-  glossaryFocusedEntry(): Promise<{ text: string | null; inView: boolean } | null>;
-  /** Whether the verdict pill itself (not "In the glossary", which hides its own popover in the
-   *  same click) is the currently focused element — the a11y review's regression: focus used to be
-   *  left on the glossary's Close button, or `<body>`, once the glossary closed this way. */
-  isPillFocused(pkg: string, verdict: string): Promise<boolean>;
-
   /** `"dark"` or `"light"` as the effective theme, read off computed styles, not an attribute that
    *  might be absent (M11: the attribute can be absent while the page is visibly dark). */
   theme(): Promise<"dark" | "light">;
@@ -328,9 +211,6 @@ export interface ReportPage {
   /** The raw `localStorage["lockrot-theme"]` value, or null (storage key is part of the contract,
    *  DESIGN.md §5, and is asserted directly rather than through the theme() abstraction). */
   themeStorageValue(): Promise<string | null>;
-
-  copyButtonLabel(): Promise<string | null>;
-  clickCopyButton(): Promise<void>;
 
   /** Whether the tab row is wider than its own box, so part of it is scrolled out of sight. */
   tabsOverflow(): Promise<boolean>;
@@ -362,16 +242,6 @@ export interface ReportPage {
   /** Whether the tab bar (the clearest piece of "app chrome", present on every fixture) is
    *  visible under the current media — used to check that print styling hides interactive chrome. */
   isNavigationVisible(): Promise<boolean>;
-
-  /** The first flagged verdict's bar fill (ledger/VerdictLedger.tsx, a chip drawn as a bar): its
-   *  computed background colour, and the computed `print-color-adjust` (or
-   *  its `-webkit-` form) that keeps that colour once an actual print applies Chromium's
-   *  ink-saving default — a plain screenshot never exercises that default, so the property itself
-   *  is what a print test can assert on (print.css). */
-  ledgerSegmentPrintStyle(): Promise<{ backgroundColor: string; printColorAdjust: string }>;
-  /** The same pair, read off one Findings row's own verdict word (its text colour carries the
-   *  verdict's tone, ledger-rows.css `.fc-verdict`). */
-  verdictPrintStyle(pkg: string, verdict: string): Promise<{ color: string; printColorAdjust: string }>;
 
   pressSlash(): Promise<void>;
   pressQuestion(): Promise<void>;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { whyLines } from "../../../src/domain/scoreWhy";
-import type { Finding, Report2 } from "../../../src/model/report2";
+import type { Finding, Report2 } from "../../../src/model/report";
 import { recordedCases } from "../words/recorded";
 
 function recorded(id: string): { finding: Finding; report: Report2 } {

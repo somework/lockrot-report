@@ -3,7 +3,7 @@
  * and the package furthest behind. `null` when no package could be measured.
  */
 
-import type { Report2 } from "../model/report2";
+import type { Report2 } from "../model/report";
 import { plural } from "./format";
 
 const AT_LEAST = "at least ";

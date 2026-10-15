@@ -1,14 +1,9 @@
 import { useReport } from "../context";
-import { FindingsView } from "./FindingsView";
-import { AdvisoriesView } from "./AdvisoriesView";
-import { PackagesView } from "./PackagesView";
-import { RadiusView } from "./RadiusView";
-import { RunView } from "./RunView";
-import { AdvisoriesView2 } from "../report2/AdvisoriesView2";
-import { FindingsView2 } from "../report2/FindingsView2";
-import { PackagesView2 } from "../report2/PackagesView2";
-import { RadiusView2 } from "../report2/RadiusView2";
-import { RunView2 } from "../report2/RunView2";
+import { AdvisoriesView2 } from "../report/AdvisoriesView";
+import { FindingsView2 } from "../report/FindingsView";
+import { PackagesView2 } from "../report/PackagesView";
+import { RadiusView2 } from "../report/RadiusView";
+import { RunView2 } from "../report/RunView";
 
 /**
  * The current tab's body. `state.view` is typed as one of the five known views end to end (parsing
@@ -16,25 +11,6 @@ import { RunView2 } from "../report2/RunView2";
  * back to `"findings"` there), so every case below is reachable and the switch needs no default.
  */
 export function CurrentView() {
-  const { model, state } = useReport();
-  if (model.report2 !== null) return <CurrentView2 />;
-
-  switch (state.view) {
-    case "findings":
-      return <FindingsView />;
-    case "advisories":
-      return <AdvisoriesView />;
-    case "packages":
-      return <PackagesView />;
-    case "radius":
-      return <RadiusView />;
-    case "run":
-      return <RunView />;
-  }
-}
-
-/** The same tabs on a report-2 document, each its own report-2 surface. */
-function CurrentView2() {
   const { state } = useReport();
 
   switch (state.view) {

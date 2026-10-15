@@ -8,8 +8,8 @@ import type {
   TermMaintenance,
   TermSecurity,
   WithoutRow,
-} from "../model/report2";
-import { isScoreGraded, isSecurityVulnerable, isTermSecurity } from "../model/report2";
+} from "../model/report";
+import { isScoreGraded, isSecurityVulnerable, isTermSecurity } from "../model/report";
 import { day, pluralNoun } from "./format";
 import { vocabTable } from "./vocab";
 import { advisoryRows } from "./advisoryRows";

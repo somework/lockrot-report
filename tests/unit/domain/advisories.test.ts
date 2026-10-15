@@ -1,454 +1,159 @@
 import { describe, expect, it } from "vitest";
 import {
-  advisoriesOf,
-  advisoryCheckIncomplete,
-  advisoryPackages,
-  allAdvisories,
-  fixLadder,
-  fixShapeOf,
-  groupAdvisories,
-  noFixWords,
-  passesAdvisoryRail,
-  sevTone,
-  sortAdvisories,
+  advisoryAnswer2,
+  advisoryBand,
+  advisoryFixWords,
+  advisoryGroups2,
+  advisoryLookupHedge,
+  advisoryPairs2,
+  advisoryRowLabel2,
+  advisoryCountedAs,
+  advisoryFixNote,
+  noAdvisoryLine,
 } from "../../../src/domain/advisories";
-import type { Model } from "../../../src/model/types";
-import { EMPTY_FILTERS } from "../../../src/state/types";
-import { makeAdvisory, makeFinding, makeModel } from "./fixtures";
+import type { Finding, Report2 } from "../../../src/model/report";
+import { EMPTY_FILTERS, type Filters } from "../../../src/state/types";
+import { readContractJson } from "../words/recorded";
 
-describe("advisoriesOf", () => {
-  it("returns the finding's already-flattened advisories", () => {
-    // Arrange
-    const advisory = makeAdvisory({ id: "GHSA-1" });
-    const finding = makeFinding({ advisories: [advisory] });
+const composite = readContractJson("report-2", "composite.json") as Report2;
+const vulnerable = composite.findings.filter((f) => f.security.status === "vulnerable");
 
-    // Act
-    const result = advisoriesOf(finding);
+const filters = (overrides: Partial<Filters> = {}): Filters => ({ ...EMPTY_FILTERS, ...overrides });
 
-    // Assert
-    expect(result).toEqual([advisory]);
+describe("advisoryPairs2", () => {
+  it("lists every S9 row of each finding, findings in the order given", () => {
+    const pairs = advisoryPairs2(vulnerable, filters());
+    expect(pairs).toHaveLength(composite.security.advisories.counted);
+    expect([...new Set(pairs.map((pair) => pair.finding.package))]).toEqual(vulnerable.map((f) => f.package));
   });
 
-  it("returns an empty list for a finding with no advisories", () => {
-    // Arrange
-    const finding = makeFinding({ advisories: [] });
-
-    // Act
-    const result = advisoriesOf(finding);
-
-    // Assert
-    expect(result).toEqual([]);
+  it("keeps only the rows the sev and fix rail buttons select", () => {
+    const low = advisoryPairs2(vulnerable, filters({ sev: ["low"] }));
+    expect(low.length).toBe(composite.security.severities.low);
+    expect(low.every((pair) => pair.row.severity === "low")).toBe(true);
+    const upgrade = advisoryPairs2(vulnerable, filters({ fix: ["upgrade"] }));
+    expect(upgrade.every((pair) => pair.row.fix.kind === "upgrade")).toBe(true);
+    expect(upgrade.map((pair) => pair.finding.package)).toEqual(["symfony/monolog-bridge"]);
   });
 });
 
-describe("sevTone", () => {
-  it("maps the four named tiers to their own tone", () => {
-    // Arrange / Act / Assert
-    expect(sevTone("critical")).toBe("crit");
-    expect(sevTone("high")).toBe("high");
-    expect(sevTone("medium")).toBe("med");
-    expect(sevTone("low")).toBe("low");
+describe("advisoryGroups2", () => {
+  const groups = advisoryGroups2(composite.run, advisoryPairs2(vulnerable, filters()));
+
+  it("groups on fix.kind and fix.to_branch, in the model's fix_kinds order", () => {
+    const kinds = composite.run.score_model.fix_kinds.map(({ id }) => id);
+    const order = groups.map((group) => kinds.indexOf(group.kind));
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+    for (const group of groups) {
+      expect(group.pairs.every((pair) => pair.row.fix.kind === group.kind)).toBe(true);
+      expect(group.pairs.every((pair) => pair.row.fix.to_branch === group.toBranch)).toBe(true);
+    }
   });
 
-  it("falls back to low for unrated", () => {
-    // Arrange / Act / Assert
-    expect(sevTone("unrated")).toBe("low");
-  });
-});
-
-describe("noFixWords", () => {
-  it("says no fix is listed only where the advisory's S9 read the releases, or does not say", () => {
-    expect(noFixWords(makeAdvisory({ releasesRead: true }))).toBe("no fix listed");
-    expect(noFixWords(makeAdvisory({ releasesRead: null }))).toBe("no fix listed");
-    expect(noFixWords(makeAdvisory({ releasesRead: false }))).toBe("fix not checked");
-  });
-});
-
-describe("fixLadder", () => {
-  it("returns one rung per distinct fixed_by version", () => {
-    // Arrange
-    const finding = makeFinding({
-      advisories: [
-        makeAdvisory({ id: "a", fixedBy: "2.0.0", fixedOnBranch: true }),
-        makeAdvisory({ id: "b", fixedBy: "3.0.0", fixedOnBranch: false }),
-      ],
-    });
-
-    // Act
-    const ladder = fixLadder(finding);
-
-    // Assert
-    expect(ladder).toEqual([
-      { version: "2.0.0", onBranch: true, n: 1, unchecked: false },
-      { version: "3.0.0", onBranch: false, n: 1, unchecked: false },
+  it("names a group by its fix label and branch", () => {
+    expect(groups.map((group) => group.heading)).toEqual([
+      "composer update · 1.x",
+      "composer update · 5.x",
+      "upgrade · 5.x",
+      "php floor raise · 3.x",
     ]);
   });
 
-  it("counts advisories that share a fixed_by into one rung", () => {
-    // Arrange
-    const finding = makeFinding({
-      advisories: [
-        makeAdvisory({ id: "a", fixedBy: "2.0.0", fixedOnBranch: true }),
-        makeAdvisory({ id: "b", fixedBy: "2.0.0", fixedOnBranch: true }),
-      ],
-    });
-
-    // Act
-    const ladder = fixLadder(finding);
-
-    // Assert
-    expect(ladder).toEqual([{ version: "2.0.0", onBranch: true, n: 2, unchecked: false }]);
+  it("keeps each finding's rows in the order given inside a group", () => {
+    const update5 = groups.find((group) => group.heading === "composer update · 5.x");
+    expect(update5?.pairs.every((pair) => pair.finding.package === "symfony/yaml")).toBe(true);
   });
 
-  it("buckets advisories with no fix listed together, distinct from any real version", () => {
-    // Arrange
-    const finding = makeFinding({
-      advisories: [
-        makeAdvisory({ id: "a", fixedBy: null, fixedOnBranch: false }),
-        makeAdvisory({ id: "b", fixedBy: null, fixedOnBranch: false }),
-      ],
-    });
-
-    // Act
-    const ladder = fixLadder(finding);
-
-    // Assert
-    expect(ladder).toEqual([{ version: null, onBranch: false, n: 2, unchecked: false }]);
-  });
-
-  it("keeps advisories whose releases were not read apart from those no release fixes", () => {
-    const finding = makeFinding({
-      advisories: [
-        makeAdvisory({ id: "a", fixedBy: null, releasesRead: false }),
-        makeAdvisory({ id: "b", fixedBy: null, releasesRead: true }),
-        makeAdvisory({ id: "c", fixedBy: null, releasesRead: null }),
-      ],
-    });
-
-    expect(fixLadder(finding)).toEqual([
-      { version: null, onBranch: false, n: 2, unchecked: false },
-      { version: null, onBranch: false, n: 1, unchecked: true },
-    ]);
-  });
-
-  it("puts an on-branch rung before an off-branch rung regardless of count", () => {
-    // Arrange
-    const finding = makeFinding({
-      advisories: [
-        makeAdvisory({ id: "a", fixedBy: "3.0.0", fixedOnBranch: false }),
-        makeAdvisory({ id: "b", fixedBy: "3.0.0", fixedOnBranch: false }),
-        makeAdvisory({ id: "c", fixedBy: "1.5.0", fixedOnBranch: true }),
-      ],
-    });
-
-    // Act
-    const ladder = fixLadder(finding);
-
-    // Assert
-    expect(ladder[0]).toEqual({ version: "1.5.0", onBranch: true, n: 1, unchecked: false });
-    expect(ladder[1]).toEqual({ version: "3.0.0", onBranch: false, n: 2, unchecked: false });
-  });
-
-  it("orders ties by advisory-arrival order, not JS's numeric-key-first object order (M33)", () => {
-    // Arrange: an integer-like fixed_by ("2") would sort ahead of "1.9.0" under Object.keys, even
-    // though "1.9.0" appeared first in the advisory list; a Map must not reproduce that.
-    const finding = makeFinding({
-      advisories: [
-        makeAdvisory({ id: "a", fixedBy: "1.9.0", fixedOnBranch: true }),
-        makeAdvisory({ id: "b", fixedBy: "2", fixedOnBranch: true }),
-      ],
-    });
-
-    // Act
-    const ladder = fixLadder(finding);
-
-    // Assert: both rungs are on-branch with n:1, a tie the sort leaves in first-seen order.
-    expect(ladder).toEqual([
-      { version: "1.9.0", onBranch: true, n: 1, unchecked: false },
-      { version: "2", onBranch: true, n: 1, unchecked: false },
-    ]);
-  });
-
-  it("keeps the first advisory's fixed_on_branch flag when a bucket disagrees on it (M33)", () => {
-    // Arrange
-    const finding = makeFinding({
-      advisories: [
-        makeAdvisory({ id: "a", fixedBy: "2.0.0", fixedOnBranch: true }),
-        makeAdvisory({ id: "b", fixedBy: "2.0.0", fixedOnBranch: false }),
-      ],
-    });
-
-    // Act
-    const ladder = fixLadder(finding);
-
-    // Assert
-    expect(ladder).toEqual([{ version: "2.0.0", onBranch: true, n: 2, unchecked: false }]);
+  it("sorts an unknown fix kind after the model's kinds, its id as written", () => {
+    const [pair] = advisoryPairs2(vulnerable, filters());
+    if (pair === undefined) throw new Error("no pair");
+    const odd = { ...pair, row: { ...pair.row, fix: { ...pair.row.fix, kind: "rebuild", to_branch: null } } };
+    const mixed = advisoryGroups2(composite.run, [odd, pair]);
+    expect(mixed.map((group) => group.heading)).toEqual(["php floor raise · 3.x", "rebuild"]);
   });
 });
 
-describe("fixShapeOf", () => {
-  it("is none when no fix is listed", () => {
-    // Arrange / Act / Assert
-    expect(fixShapeOf(makeAdvisory({ fixedBy: null }))).toBe("none");
+describe("advisoryAnswer2", () => {
+  it("counts advisories and packages, by severity in the model's severity order", () => {
+    const pairs = advisoryPairs2(vulnerable, filters());
+    expect(advisoryAnswer2(composite.run, pairs, pairs.length)).toEqual({
+      text: "20 advisories on 4 packages, by severity: 1 critical, 4 high, 4 medium, 2 unrated, 9 low.",
+      narrowed: null,
+    });
   });
 
-  it("is branch when the fix is on the installed branch", () => {
-    // Arrange / Act / Assert
-    expect(fixShapeOf(makeAdvisory({ fixedBy: "2.0.1", fixedOnBranch: true }))).toBe("branch");
-  });
-
-  it("is move when the fix requires a branch move", () => {
-    // Arrange / Act / Assert
-    expect(fixShapeOf(makeAdvisory({ fixedBy: "3.0.0", fixedOnBranch: false }))).toBe("move");
-  });
-
-  it("is unchecked, never none, when its S9 read no release", () => {
-    expect(fixShapeOf(makeAdvisory({ fixedBy: null, releasesRead: false }))).toBe("unchecked");
-    expect(fixShapeOf(makeAdvisory({ fixedBy: null, releasesRead: true }))).toBe("none");
+  it("says matching and counts the whole list under a filter", () => {
+    const pairs = advisoryPairs2(vulnerable, filters({ fix: ["upgrade"] }));
+    expect(advisoryAnswer2(composite.run, pairs, 20)).toEqual({
+      text: "1 matching advisory on 1 package, by severity: 1 high.",
+      narrowed: "Only advisories that match the filter are counted; without it there are 20.",
+    });
   });
 });
 
-describe("sortAdvisories", () => {
-  it("sorts ascending by severity rank", () => {
-    // Arrange
-    const items = ["low", "critical", "medium"] as const;
+describe("row words", () => {
+  const [pair] = advisoryPairs2(vulnerable, filters());
+  if (pair === undefined) throw new Error("no pair");
 
-    // Act
-    const sorted = sortAdvisories(items, (severity) => severity);
-
-    // Assert
-    expect(sorted).toEqual(["critical", "medium", "low"]);
+  it("words a fix by its version and where it is released", () => {
+    expect(advisoryFixWords(pair.row.fix, pair.finding)).toEqual({ version: "v3.26.0", where: "on 3.x" });
+    const onBranch = { ...pair.row.fix, on_installed_branch: true };
+    expect(advisoryFixWords(onBranch, pair.finding)).toEqual({ version: "v3.26.0", where: "on your branch" });
   });
 
-  it("puts unrated last, not first (fixes critic.md C1)", () => {
-    // Arrange
-    const items = ["unrated", "critical"] as const;
-
-    // Act
-    const sorted = sortAdvisories(items, (severity) => severity);
-
-    // Assert
-    expect(sorted).toEqual(["critical", "unrated"]);
+  it("words a fix with no version by its kind and reason", () => {
+    const none = { ...pair.row.fix, kind: "none", version: null, reason: "no_release_outside_range" };
+    expect(advisoryFixWords(none, pair.finding)).toEqual({
+      version: null,
+      where: "no fix: no release outside range",
+    });
   });
 
-  it("keeps document order for items tied on severity (stable sort)", () => {
-    // Arrange: two "high" items in a specific arrival order.
-    const items = [
-      { id: "first", severity: "high" as const },
-      { id: "second", severity: "high" as const },
-    ];
-
-    // Act
-    const sorted = sortAdvisories(items, (item) => item.severity);
-
-    // Assert
-    expect(sorted.map((item) => item.id)).toEqual(["first", "second"]);
-  });
-});
-
-describe("allAdvisories", () => {
-  it("pairs every advisory with its own finding, across all findings", () => {
-    // Arrange
-    const advisoryA = makeAdvisory({ id: "a", severity: "high" });
-    const advisoryB = makeAdvisory({ id: "b", severity: "critical" });
-    const findingA = makeFinding({ package: "acme/a", advisories: [advisoryA] });
-    const findingB = makeFinding({ package: "acme/b", advisories: [advisoryB] });
-    const model = makeModel([findingA, findingB]);
-
-    // Act
-    const pairs = allAdvisories(model);
-
-    // Assert: sorted by severity, critical first, each paired with its own finding.
-    expect(pairs).toEqual([
-      { advisory: advisoryB, finding: findingB },
-      { advisory: advisoryA, finding: findingA },
-    ]);
-  });
-
-  it("returns an empty list when no finding carries an advisory", () => {
-    // Arrange
-    const model = makeModel([makeFinding({ advisories: [] })]);
-
-    // Act
-    const pairs = allAdvisories(model);
-
-    // Assert
-    expect(pairs).toEqual([]);
-  });
-});
-
-describe("passesAdvisoryRail", () => {
-  // The one definition SearchBar's count line and ui/views/order.ts's row order both call, so the
-  // two can never disagree about which advisories the rail's sev/fix selections keep (quality
-  // finding: this check used to be hand-duplicated in both places).
-
-  it("passes everything when no sev or fix filter is selected", () => {
-    const advisory = makeAdvisory({ severity: "critical", fixedBy: null });
-    expect(passesAdvisoryRail(EMPTY_FILTERS, advisory)).toBe(true);
-  });
-
-  it("keeps only an advisory whose severity is in the sev filter", () => {
-    const filters = { ...EMPTY_FILTERS, sev: ["low"] };
-    expect(passesAdvisoryRail(filters, makeAdvisory({ severity: "low" }))).toBe(true);
-    expect(passesAdvisoryRail(filters, makeAdvisory({ severity: "critical" }))).toBe(false);
-  });
-
-  it("keeps only an advisory whose fix shape is in the fix filter", () => {
-    const filters = { ...EMPTY_FILTERS, fix: ["branch"] };
-    expect(passesAdvisoryRail(filters, makeAdvisory({ fixedBy: "1.0.1", fixedOnBranch: true }))).toBe(true);
-    expect(passesAdvisoryRail(filters, makeAdvisory({ fixedBy: "2.0.0", fixedOnBranch: false }))).toBe(false);
-    expect(passesAdvisoryRail(filters, makeAdvisory({ fixedBy: null }))).toBe(false);
-  });
-
-  it("requires both a sev and a fix filter to pass when both are set", () => {
-    const filters = { ...EMPTY_FILTERS, sev: ["critical"], fix: ["none"] };
-    expect(passesAdvisoryRail(filters, makeAdvisory({ severity: "critical", fixedBy: null }))).toBe(true);
-    // Matches sev but not fix.
-    expect(passesAdvisoryRail(filters, makeAdvisory({ severity: "critical", fixedBy: "1.0.0" }))).toBe(false);
-    // Matches fix but not sev.
-    expect(passesAdvisoryRail(filters, makeAdvisory({ severity: "low", fixedBy: null }))).toBe(false);
-  });
-});
-
-describe("advisoryCheckIncomplete", () => {
-  const withNotes = (codes: readonly string[]): Model => {
-    const base = makeModel([]);
-    const noteDetails = codes.map((code) => ({
-      code,
-      text: code,
-      docsUrl: null,
-      setsNetworkFailures: null,
-      data: {},
-    }));
-    return { ...base, report: { ...base.report, noteDetails } };
-  };
-
-  it.each(["advisories_not_checked", "advisories_unavailable"])("is true for a %s note", (code) => {
-    expect(advisoryCheckIncomplete(withNotes(["offline", code]))).toBe(true);
-  });
-
-  it("is false for notes about other checks, even with a network failure", () => {
-    const model = withNotes(["repository_activity_unreachable", "metadata_unavailable"]);
-    expect(advisoryCheckIncomplete({ ...model, report: { ...model.report, networkFailures: true } })).toBe(
-      false,
+  it("says what PHP a fix needs and what holds it", () => {
+    // composite twig/twig: a php floor raise to >=8.1.0, held by composer.json and symfony/twig-bridge.
+    expect(advisoryFixNote(pair.row.fix)).toBe(
+      "needs PHP >=8.1.0 · held by composer.json and symfony/twig-bridge",
     );
+    expect(advisoryFixNote({ ...pair.row.fix, kind: "update", held_by: [] })).toBeNull();
   });
 
-  it("does not read note text", () => {
-    const base = makeModel([]);
-    const model: Model = { ...base, report: { ...base.report, notes: ["advisories were not checked"] } };
-    expect(advisoryCheckIncomplete(model)).toBe(false);
-  });
-});
-
-describe("groupAdvisories", () => {
-  it("groups pairs by fix shape in the fixed branch/move/none order", () => {
-    // Arrange
-    const finding = makeFinding();
-    const branchAdvisory = makeAdvisory({ id: "a", fixedBy: "1.0.1", fixedOnBranch: true });
-    const moveAdvisory = makeAdvisory({ id: "b", fixedBy: "2.0.0", fixedOnBranch: false });
-    const noneAdvisory = makeAdvisory({ id: "c", fixedBy: null });
-    const pairs = [
-      { advisory: moveAdvisory, finding },
-      { advisory: noneAdvisory, finding },
-      { advisory: branchAdvisory, finding },
-    ];
-
-    // Act
-    const groups = groupAdvisories(pairs);
-
-    // Assert
-    expect(groups.map((group) => group.shape)).toEqual(["branch", "move", "none"]);
-    expect(groups[0]?.advisories).toEqual([{ advisory: branchAdvisory, finding }]);
-  });
-
-  it("files an advisory whose releases were not read under its own group, after no fix listed", () => {
-    const finding = makeFinding();
-    const unread = makeAdvisory({ id: "u", fixedBy: null, releasesRead: false });
-    const none = makeAdvisory({ id: "n", fixedBy: null, releasesRead: true });
-
-    const groups = groupAdvisories([
-      { advisory: unread, finding },
-      { advisory: none, finding },
-    ]);
-
-    expect(groups.map((group) => [group.shape, group.heading])).toEqual([
-      ["none", "No fix listed"],
-      ["unchecked", "Fix not checked"],
-    ]);
-    expect(groups[1]?.hint).not.toContain("Nothing published");
-  });
-
-  it("omits a group with nothing in it", () => {
-    // Arrange
-    const finding = makeFinding();
-    const branchAdvisory = makeAdvisory({ id: "a", fixedBy: "1.0.1", fixedOnBranch: true });
-    const pairs = [{ advisory: branchAdvisory, finding }];
-
-    // Act
-    const groups = groupAdvisories(pairs);
-
-    // Assert
-    expect(groups).toHaveLength(1);
-    expect(groups[0]?.shape).toBe("branch");
-  });
-
-  it("returns no groups for an empty list", () => {
-    // Arrange / Act
-    const groups = groupAdvisories([]);
-
-    // Assert
-    expect(groups).toEqual([]);
+  it("says what an unrated severity counts as, from the model", () => {
+    expect(advisoryCountedAs(composite.run, "unrated")).toBe(", counted as medium");
+    expect(advisoryCountedAs(composite.run, "high")).toBeNull();
+    expect(advisoryCountedAs(composite.run, "severe")).toBeNull();
   });
 });
 
-describe("advisoryPackages", () => {
-  it("lists each package once, in the advisories' order, with its distinct fix versions verbatim", () => {
-    // Arrange: two advisories on one package share a fix, a third names none.
-    const otphp = makeFinding({ package: "spomky-labs/otphp" });
-    const other = makeFinding({ package: "acme/other" });
-    const pairs = [
-      { advisory: makeAdvisory({ id: "A", fixedBy: "11.5.0" }), finding: otphp },
-      { advisory: makeAdvisory({ id: "B", fixedBy: "11.5.0" }), finding: otphp },
-      { advisory: makeAdvisory({ id: "C", fixedBy: null }), finding: other },
-    ];
-
-    // Act
-    const packages = advisoryPackages(pairs);
-
-    // Assert
-    expect(packages).toEqual([
-      { package: "spomky-labs/otphp", fixedBy: ["11.5.0"], someUnfixed: false, someUnchecked: false },
-      { package: "acme/other", fixedBy: [], someUnfixed: true, someUnchecked: false },
-    ]);
+describe("the lookup words", () => {
+  it("hedges nothing after a complete lookup", () => {
+    expect(advisoryLookupHedge(composite)).toBeNull();
+    expect(noAdvisoryLine(composite)).toBe("No advisory affects this lock.");
   });
 
-  it("marks a package whose advisories name a fix for some but not all", () => {
-    // Arrange
-    const finding = makeFinding({ package: "acme/mixed" });
-    const pairs = [
-      { advisory: makeAdvisory({ id: "A", fixedBy: "2.0.1" }), finding },
-      { advisory: makeAdvisory({ id: "B", fixedBy: null }), finding },
-      { advisory: makeAdvisory({ id: "C", fixedBy: "1.9.9" }), finding },
-    ];
-
-    // Act
-    const [entry] = advisoryPackages(pairs);
-
-    // Assert: never compared or ranked, just listed in the order the advisories give them.
-    expect(entry).toEqual({
-      package: "acme/mixed",
-      fixedBy: ["2.0.1", "1.9.9"],
-      someUnfixed: true,
-      someUnchecked: false,
-    });
+  it("hedges a partial or skipped lookup from root security.check", () => {
+    const partial: Report2 = { ...composite, security: { ...composite.security, check: "partial" } };
+    expect(advisoryLookupHedge(partial)).toBe("Advisories: lookup partial, so this list may be partial.");
+    expect(noAdvisoryLine(partial)).toBe("No advisory found (lookup partial).");
+    const skipped: Report2 = { ...composite, security: { ...composite.security, check: "not_run" } };
+    expect(advisoryLookupHedge(skipped)).toBe("Advisories: not checked, so this list may be partial.");
+    expect(noAdvisoryLine(skipped)).toBe("No advisory found (not checked).");
   });
 
-  it("tells an advisory whose releases were not read apart from one no release fixes", () => {
-    const finding = makeFinding({ package: "acme/unread" });
-    const [entry] = advisoryPackages([
-      { advisory: makeAdvisory({ id: "A", fixedBy: null, releasesRead: false }), finding },
-    ]);
-    expect(entry).toEqual({ package: "acme/unread", fixedBy: [], someUnfixed: false, someUnchecked: true });
+  it("finds no rows for a finding without an S9 signal", () => {
+    const clear = composite.findings.find((f) => f.security.status !== "vulnerable") as Finding;
+    expect(advisoryPairs2([clear], filters())).toEqual([]);
+  });
+});
+
+describe("row lookups", () => {
+  it("tones a severity by its band in the model", () => {
+    expect(advisoryBand(composite.run, "unrated")).toBe("medium");
+    expect(advisoryBand(composite.run, "severe")).toBeNull();
+  });
+
+  it("names a row by package, severity and CVE", () => {
+    const [pair] = advisoryPairs2(vulnerable, filters());
+    if (pair === undefined) throw new Error("no pair");
+    expect(advisoryRowLabel2(pair)).toBe("twig/twig, critical, CVE-2026-46633");
   });
 });

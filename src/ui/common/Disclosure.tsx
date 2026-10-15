@@ -60,30 +60,3 @@ export function DisclosureButton({
     </button>
   );
 }
-
-/** `labelledBy`: the button's id, so the opened panel is named by what opened it. */
-export function DisclosurePanel({
-  id,
-  open,
-  className,
-  labelledBy,
-  children,
-}: {
-  id: string;
-  open: boolean;
-  className?: string;
-  labelledBy?: string | undefined;
-  children: ComponentChildren;
-}) {
-  return (
-    <div
-      id={id}
-      className={className === undefined ? "l1-panel" : `l1-panel ${className}`}
-      hidden={!open}
-      role={labelledBy === undefined ? undefined : "group"}
-      aria-labelledby={labelledBy}
-    >
-      {children}
-    </div>
-  );
-}

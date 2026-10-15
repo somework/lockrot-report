@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { feedsLine } from "../../../src/domain/feedsLine";
 import { repositoryLine } from "../../../src/domain/repositoryLine";
-import type { Finding } from "../../../src/model/report2";
+import type { Finding } from "../../../src/model/report";
 import { modelCases } from "./recorded";
 
 const finding = (name: string): Finding => {

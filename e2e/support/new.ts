@@ -6,17 +6,9 @@
  * not a licence to fall back to a CSS selector here — fix the markup, not this file.
  */
 import type { Locator, Page } from "@playwright/test";
-import type {
-  DetailSnapshot,
-  LedgerGroup,
-  RailGroup,
-  ReportPage,
-  RowGeometry,
-  SortState,
-  ViewName,
-} from "./report";
+import type { DetailSnapshot, RailGroup, ReportPage, RowGeometry, SortState, ViewName } from "./report";
 import { pageUrl, report2Url, type FixtureName } from "./pages";
-import { decodePng, distinctPixelRatio } from "./png";
+import { decodePng } from "./png";
 
 /** The tab's accessible name (`role=tab`). A badge count appended after the label is fine — every
  *  match below is substring, not exact — but the label text itself has to be this. */
@@ -27,10 +19,6 @@ const VIEW_LABEL: Readonly<Record<ViewName, string>> = {
   radius: "Blast radius",
   run: "Run data",
 };
-
-/** `prio`/`verdict`/`sev` ledger buttons: the accessible name is the key itself (the vocabulary
- *  word lockrot already prints — "critical", "abandoned", "unrated" — a count may follow it). */
-const LEDGER_LABEL = (key: string): string => key;
 
 /** Rail button accessible names, one map per group, matching the words the legacy rail already
  *  shows a sighted user (`report.js:334-390`) — a rewrite changing the wording changes this map. */
@@ -69,12 +57,6 @@ export class NewReportPage implements ReportPage {
 
   async goto(fixture: FixtureName): Promise<void> {
     await freshNavigate(this.page, pageUrl(fixture));
-  }
-
-  async gotoWithHash(fixture: FixtureName, hash: string): Promise<void> {
-    const base = pageUrl(fixture);
-    const fragment = hash.startsWith("#") ? hash : "#" + hash;
-    await freshNavigate(this.page, base + fragment);
   }
 
   async gotoReport2(caseName: string): Promise<void> {
@@ -168,16 +150,6 @@ export class NewReportPage implements ReportPage {
     return text ? text : null;
   }
 
-  async emptyMessage(): Promise<string | null> {
-    // No fixed role for prose; a short, stable text probe is the accessible equivalent of the
-    // legacy `.empty` class here — the exact copy is expected to differ (DESIGN.md M20), only its
-    // presence is asked for by callers of this method.
-    const empty = this.page.getByText(/nothing (was flagged|matches)/i);
-    if ((await empty.count()) === 0) return null;
-
-    return collapse((await empty.first().textContent()) ?? "");
-  }
-
   /**
    * Rows/cards are expected to carry `role=row` (the Packages table), `role=option` (a selectable
    * Findings/Radius entry) or `role=listitem`, each with an accessible name that IS the package
@@ -208,10 +180,6 @@ export class NewReportPage implements ReportPage {
     }
 
     return names;
-  }
-
-  packageRow(name: string): Locator {
-    return this.pkgLocator(name);
   }
 
   private pkgLocator(name: string): Locator {
@@ -417,26 +385,6 @@ export class NewReportPage implements ReportPage {
     await this.pkgLocator(name).getByRole("link").first().focus();
   }
 
-  async rowSignalIds(name: string): Promise<string[]> {
-    const links = await this.pkgLocator(name).getByRole("link").all();
-    return Promise.all(links.map((link) => link.innerText()));
-  }
-
-  async rowMoreSignalsText(name: string): Promise<string | null> {
-    const note = this.pkgLocator(name).getByText(/more signals?, open the package/);
-    return (await note.count()) > 0 ? (await note.first().innerText()).trim() : null;
-  }
-
-  async rowAgeScaleLabel(name: string): Promise<string | null> {
-    const scale = this.pkgLocator(name).getByRole("img");
-    return (await scale.count()) > 0 ? scale.first().getAttribute("aria-label") : null;
-  }
-
-  async rowAgeScaleTitle(name: string): Promise<string | null> {
-    const scale = this.pkgLocator(name).getByRole("img");
-    return (await scale.count()) > 0 ? scale.first().getAttribute("title") : null;
-  }
-
   /** The Findings list's age axis (`views/AgeScale.tsx#AgeAxis`, PD-ROWS-4, DESIGN.md §5): the one
    *  `role=img` in the column head, found by its accessible name's fixed leading words. Its visible
    *  captions, whitespace-collapsed, or null when the tab draws no axis. */
@@ -527,107 +475,6 @@ export class NewReportPage implements ReportPage {
     }, tickIndex);
   }
 
-  /** The name starts with the key (a count may follow it, see LEDGER_LABEL). Anchored rather than a
-   *  substring, because rail buttons carry the same vocabulary inside longer names: the S1 signal
-   *  filter reads "S1 marked abandoned", which a bare "abandoned" would also match. Scoped to the
-   *  `role=group, name="Ledger"` strip (Ledger.tsx) since PD-GLOSSARY-4/5 gave a verdict pill the
-   *  bare word itself as its own accessible name, both in a row and in the open detail — without
-   *  this scope, filtering by "abandoned" would resolve to all three at once. */
-  private ledgerLocator(_group: LedgerGroup, key: string): Locator {
-    return this.page.getByRole("group", { name: "Ledger" }).getByRole("button", {
-      name: new RegExp(`^${escapeRegExp(LEDGER_LABEL(key))}(\\s|$)`, "i"),
-    });
-  }
-
-  async ledgerButton(group: LedgerGroup, key: string): Promise<void> {
-    await this.ledgerLocator(group, key).click();
-  }
-
-  async ledgerButtonPressed(group: LedgerGroup, key: string): Promise<boolean | null> {
-    const el = this.ledgerLocator(group, key);
-    if ((await el.count()) === 0) return null;
-    const has = await el.evaluate((node) => node.hasAttribute("aria-pressed"));
-
-    return has ? (await el.getAttribute("aria-pressed")) === "true" : null;
-  }
-
-  async ledgerButtonTitle(group: LedgerGroup, key: string): Promise<string | null> {
-    return this.ledgerLocator(group, key).getAttribute("title");
-  }
-
-  /** The legend chip's own colours, read the same structural way `ageScaleForcedColorsVisible`
-   *  reads the age scale's: by position (`children[0]`, the swatch), not by class. a11y review
-   *  (PD-LEDGER-2, DESIGN.md §5): forced-colors mode used to flatten a pressed chip and an unpressed
-   *  one to the same Canvas-on-Canvas look, and erase the swatch the same way. */
-  async legendButtonForcedColorsStyle(
-    group: LedgerGroup,
-    key: string,
-  ): Promise<{ backgroundColor: string; borderColor: string; swatchBackgroundColor: string }> {
-    return this.ledgerLocator(group, key).evaluate((el) => {
-      const swatch = el.children[0];
-      if (!(swatch instanceof HTMLElement)) throw new Error("legend chip has no swatch");
-      const style = getComputedStyle(el);
-      return {
-        backgroundColor: style.backgroundColor,
-        borderColor: style.borderColor,
-        swatchBackgroundColor: getComputedStyle(swatch).backgroundColor,
-      };
-    });
-  }
-
-  /** Second a11y review (PD-LEDGER-2, DESIGN.md §5): `legendButtonForcedColorsStyle` only reads
-   *  `getComputedStyle`, which a native `<button>`'s forced-colors paint can diverge from — this
-   *  screenshots the chip's own label text node (a bare text node between the swatch and the count,
-   *  found by `Range`, not by an element it has none of its own) and reads the actual pixels.
-   *
-   *  The `Range`'s own bounding box runs right up to the chip's rounded border on this fixture,
-   *  which bleeds a sliver of the chip's own border colour into an uninset crop regardless of
-   *  whether the label itself painted at all — measured against the actual bug (a broken build with
-   *  `forced-color-adjust: none` removed): an uninset crop still read as ~7% distinct, above a
-   *  careless threshold, while the same crop inset by 2px on every side read as exactly 0% distinct,
-   *  against ~30-40% once the label legitimately paints. The inset is what makes this check mean
-   *  anything. */
-  async legendButtonPressedLabelDistinctPixelRatio(group: LedgerGroup, key: string): Promise<number> {
-    const chip = this.ledgerLocator(group, key);
-    const rect = await chip.evaluate((el) => {
-      for (const node of Array.from(el.childNodes)) {
-        if (node.nodeType === Node.TEXT_NODE && (node.textContent ?? "").trim().length > 0) {
-          const range = document.createRange();
-          range.selectNodeContents(node);
-          const r = range.getBoundingClientRect();
-          return { x: r.x, y: r.y, width: r.width, height: r.height };
-        }
-      }
-      throw new Error("legend chip has no bare label text node to screenshot");
-    });
-
-    const inset = 2;
-    const buf = await this.page.screenshot({
-      clip: {
-        x: rect.x + inset,
-        y: rect.y + inset,
-        width: Math.max(1, rect.width - inset * 2),
-        height: Math.max(1, rect.height - inset * 2),
-      },
-    });
-    return distinctPixelRatio(decodePng(buf));
-  }
-
-  async priorityLedgerTooltip(): Promise<string | null> {
-    return this.page
-      .getByRole("group", { name: "Ledger" })
-      .getByText("Flagged packages", { exact: true })
-      .first()
-      .getAttribute("title");
-  }
-
-  async hasSummaryLine(text: string): Promise<boolean> {
-    // Visible, not just present: on a phone the band's supporting tier sits in a closed fold, and
-    // this is the assertion that a reader sees the lead without opening anything.
-    const line = this.page.getByText(text);
-    return (await line.count()) > 0 && (await line.first().isVisible());
-  }
-
   /** `.waffle` (`ledger/Waffle.tsx`): found by class, not an accessible query, since it is
    *  deliberately `aria-hidden` — the figure and chips beside it carry every number in words. */
   async summaryWaffle(): Promise<{ flagged: number; total: number } | null> {
@@ -637,25 +484,6 @@ export class NewReportPage implements ReportPage {
       flagged: el.querySelectorAll(".waffle-cell:not(.waffle-rest)").length,
       total: el.querySelectorAll(".waffle-cell").length,
     }));
-  }
-
-  /** A verdict bar's row frame and its first priority part under the current media (PD-SUMMARY-7):
-   *  the part must keep a fill, and an unpressed row must not draw a frame of its own. */
-  async verdictBarForcedColors(verdict: string): Promise<{ partFilled: boolean; rowFramed: boolean }> {
-    return this.page
-      .getByRole("group", { name: "Ledger" })
-      .getByRole("button", { name: new RegExp(`^${escapeRegExp(verdict)} \\d+$`) })
-      .evaluate((el) => {
-        const part = el.querySelector(".legend-seg");
-        if (!(part instanceof HTMLElement)) throw new Error("verdict bar has no priority part");
-        const pageBg = getComputedStyle(document.body).backgroundColor;
-        const fill = getComputedStyle(part).backgroundColor;
-        const row = getComputedStyle(el);
-        return {
-          partFilled: fill !== pageBg && fill !== "rgba(0, 0, 0, 0)",
-          rowFramed: row.borderTopColor !== row.backgroundColor,
-        };
-      });
   }
 
   async summaryWaffleForcedColors(): Promise<{ flaggedDistinct: boolean; restOutlined: boolean }> {
@@ -732,10 +560,6 @@ export class NewReportPage implements ReportPage {
         return { label, count: Number(count), pressed: el.getAttribute("aria-pressed") === "true" };
       }),
     );
-  }
-
-  async toggleRailRowAt(index: number): Promise<void> {
-    await this.page.getByRole("group", { name: "Filters" }).getByRole("button").nth(index).click();
   }
 
   /** Toggles the rail row `railRows()` reported as `label`. By label, not position: PD-RAIL-2 leaves
@@ -825,24 +649,6 @@ export class NewReportPage implements ReportPage {
     return null;
   }
 
-  /** A Blast radius row (PD-RADIUS-1): the list item named after the requirement. Its stated count
-   *  is the squares' accessible name ("N flagged packages listed under it: …"); what it lists is the
-   *  list items nested under it, open or folded — the M24/M25 contract is only that the two agree. */
-  async radiusCard(parent: string): Promise<{ statedCount: number | null; listedCount: number } | null> {
-    return this.page.evaluate((name) => {
-      const row = Array.from(document.querySelectorAll("li[aria-label]")).find(
-        (li) => li.getAttribute("aria-label") === name,
-      );
-      if (!row) return null;
-      const label = row.querySelector('[role="img"]')?.getAttribute("aria-label") ?? "";
-      const match = /^(\d+)\s+flagged/.exec(label);
-      const statedCount = match ? Number(match[1]) : null;
-      const listedCount = row.querySelectorAll("li[aria-label]").length;
-
-      return { statedCount, listedCount };
-    }, parent);
-  }
-
   /** `getByRole('button', { name: /what these words mean/i })` — the locator uses the page's
    *  accessible name, which keeps the legacy copy on purpose. */
   async openGlossary(): Promise<void> {
@@ -869,79 +675,6 @@ export class NewReportPage implements ReportPage {
     return this.glossaryLocator().evaluate((el) => getComputedStyle(el).position);
   }
 
-  /** PD-GLOSSARY-4/5: the verdict pill with a popover is the open detail's own header, not a row's
-   *  — a walk found a row's own pill read as the row's click target, and it is plain text there now
-   *  (`views/FindingRow.tsx`), no `<button>` role at all. Opens `pkg` first (a no-op if it is
-   *  already open), then clicks its header pill, whose accessible name is the verdict itself, same
-   *  case-insensitive matching every role lookup here uses. */
-  async clickVerdictPill(pkg: string, verdict: string): Promise<void> {
-    await this.openPackage(pkg);
-    await this.detailRegion().getByRole("button", { name: verdict, exact: true }).click();
-  }
-
-  /** The row's own pill carries no button role at all now (`views/FindingRow.tsx`), so it is found
-   *  the same way `verdictPrintStyle` finds it: by its own visible word, `exact` so a short verdict
-   *  does not also match a longer phrase that contains it. */
-  async clickPillInFindingsRow(pkg: string, verdict: string): Promise<void> {
-    await this.pkgLocator(pkg).getByText(verdict, { exact: true }).click();
-  }
-
-  /** There is no accessible role for "the currently open popover" to query by name — `:popover-open`
-   *  is the platform's own answer to "which one, if any", the same way `glossaryPosition()` above
-   *  reads a computed style rather than a role. At most one `popover="auto"` element is showing at
-   *  once, so this never has to pick among several. */
-  async isPillPopoverOpen(): Promise<boolean> {
-    return this.page.evaluate(() => document.querySelector(":popover-open") !== null);
-  }
-
-  async pillPopoverText(): Promise<string> {
-    return collapse(
-      await this.page.evaluate(() => document.querySelector(":popover-open")?.textContent ?? ""),
-    );
-  }
-
-  /** visual review (DESIGN.md §5, PD-GLOSSARY-4): the popover used to dim nothing behind it, so a
-   *  fixed, viewport-centred card could land on the very row that opened it with no cue it was an
-   *  overlay. `::backdrop` is a pseudo-element, unreachable by role or by `textContent`, so this
-   *  reads its computed style the same way `:popover-open` above is read — off the platform, not a
-   *  class. */
-  async pillPopoverBackdropVisible(): Promise<boolean> {
-    return this.page.evaluate(() => {
-      const popover = document.querySelector(":popover-open");
-      if (popover === null) return false;
-      const backdrop = getComputedStyle(popover, "::backdrop").backgroundColor;
-      return backdrop !== "rgba(0, 0, 0, 0)" && backdrop !== "";
-    });
-  }
-
-  async openGlossaryFromPillPopover(): Promise<void> {
-    await this.page.getByRole("button", { name: /in the glossary/i }).click();
-  }
-
-  async glossaryFocusedEntry(): Promise<{ text: string | null; inView: boolean } | null> {
-    const dialog = this.glossaryLocator();
-    if ((await dialog.count()) === 0) return null;
-
-    return dialog.evaluate((dialogEl) => {
-      const active = document.activeElement;
-      if (!active || !dialogEl.contains(active)) return null;
-      const rect = active.getBoundingClientRect();
-      const box = dialogEl.getBoundingClientRect();
-      const inView = rect.top >= box.top && rect.bottom <= box.bottom;
-      const text = active.textContent;
-
-      return { text: typeof text === "string" ? text.trim() : null, inView };
-    });
-  }
-
-  async isPillFocused(_pkg: string, verdict: string): Promise<boolean> {
-    // `_pkg` documents intent only — the row itself carries no pill button to focus any more
-    // (PD-GLOSSARY-4/5); the only pill this can mean is the open detail's own header's.
-    return this.detailRegion()
-      .getByRole("button", { name: verdict, exact: true })
-      .evaluate((el) => el === document.activeElement);
-  }
-
   async theme(): Promise<"dark" | "light"> {
     return this.page.evaluate(() => {
       const attribute = document.documentElement.getAttribute("data-theme");
@@ -966,18 +699,6 @@ export class NewReportPage implements ReportPage {
         return null;
       }
     });
-  }
-
-  async copyButtonLabel(): Promise<string | null> {
-    // Anchored: the header's own "Copy summary" (PD-PRINT-1) is a different button.
-    const button = this.page.getByRole("button", { name: /^(copy|copied|select it and copy)$/i });
-    if ((await button.count()) === 0) return null;
-
-    return (await button.first().textContent())?.trim() ?? null;
-  }
-
-  async clickCopyButton(): Promise<void> {
-    await this.page.getByRole("button", { name: /^copy$/i }).click();
   }
 
   async isScrollLocked(): Promise<boolean> {
@@ -1110,134 +831,6 @@ export class NewReportPage implements ReportPage {
     return this.tabLocator("findings").isVisible();
   }
 
-  async ledgerSegmentPrintStyle(): Promise<{ backgroundColor: string; printColorAdjust: string }> {
-    const bar = this.page.getByRole("group", { name: "Ledger" }).locator(".legend-btn-bar").first();
-    return bar.evaluate((el) => {
-      // The bar's first priority part (VerdictLedger.tsx): the element that actually paints a tone.
-      const segment = el.querySelector(".legend-seg");
-      if (!(segment instanceof HTMLElement)) throw new Error("the first verdict bar has no priority part");
-      const style = getComputedStyle(segment);
-      return {
-        backgroundColor: style.backgroundColor,
-        printColorAdjust:
-          style.getPropertyValue("-webkit-print-color-adjust") ||
-          style.getPropertyValue("print-color-adjust"),
-      };
-    });
-  }
-
-  async verdictPrintStyle(
-    pkg: string,
-    verdict: string,
-  ): Promise<{ color: string; printColorAdjust: string }> {
-    // Not `getByRole("button", ...)`: a row's own verdict is plain text (PD-GLOSSARY-4/5), and since
-    // PD-ROWS-4 a coloured word rather than a bordered pill — its tone is its text colour. `exact`
-    // keeps this from also matching a longer phrase that happens to contain the word.
-    return this.pkgLocator(pkg)
-      .getByText(verdict, { exact: true })
-      .evaluate((el) => {
-        const style = getComputedStyle(el);
-        return {
-          color: style.color,
-          printColorAdjust:
-            style.getPropertyValue("-webkit-print-color-adjust") ||
-            style.getPropertyValue("print-color-adjust"),
-        };
-      });
-  }
-
-  async packageLinkHref(name: string): Promise<string | null> {
-    const link = this.pkgLocator(name).getByRole("link", { name, exact: true });
-    if ((await link.count()) === 0) return null;
-    return link.first().getAttribute("href");
-  }
-
-  detailRegistryLinks(name: string): Locator {
-    return this.page.getByRole("complementary", { name }).locator(".detail-links").getByRole("link");
-  }
-
-  provenanceOrigin(name: string): Locator {
-    return this.page.getByRole("complementary", { name }).locator(".detail-prov-origin");
-  }
-
-  replacementLink(name: string, replacement?: string): Locator {
-    const answer = this.page.getByRole("complementary", { name }).locator(".detail-answer");
-    return replacement === undefined
-      ? answer.getByRole("link")
-      : answer.getByRole("link", { name: replacement });
-  }
-
-  async packageCellWords(name: string, column: string): Promise<string> {
-    const [words] = await this.columnWords(column, name);
-    if (words === undefined) throw new Error(`no ${column} cell for ${name}`);
-    return words;
-  }
-
-  packageColumnWords(column: string): Promise<string[]> {
-    return this.columnWords(column, null);
-  }
-
-  /** A cell is found by its column header's position, as a screen reader's table navigation does;
-   *  its words leave out `aria-hidden` marks. */
-  private columnWords(column: string, name: string | null): Promise<string[]> {
-    const label = SORT_LABEL[column] ?? column;
-    return this.page.getByRole("table", { name: "All packages", exact: true }).evaluate(
-      (table, [label, name]) => {
-        const headers = [...table.querySelectorAll('[role="columnheader"]')];
-        const at = headers.findIndex((h) => h.textContent.includes(label));
-        if (at < 0) throw new Error(`no ${label} column`);
-        return [...table.querySelectorAll('[role="row"][aria-label]')]
-          .filter((row) => name === null || row.getAttribute("aria-label") === name)
-          .map((row) => {
-            const cell = row.querySelectorAll('[role="cell"]')[at]?.cloneNode(true);
-            if (!(cell instanceof Element)) return "";
-            cell.querySelectorAll('[aria-hidden="true"]').forEach((el) => {
-              el.remove();
-            });
-            return cell.textContent.replace(/\s+/g, " ").trim();
-          });
-      },
-      [label, name] as const,
-    );
-  }
-
-  /** A `<dl>` term has no name of its own to pair it with its value, so the value is its sibling. */
-  runField(label: string): Locator {
-    return this.page
-      .getByRole("tabpanel")
-      .getByRole("term")
-      .filter({ hasText: new RegExp(`^${escapeRegExp(label)}$`) })
-      .locator("xpath=following-sibling::dd[1]");
-  }
-
-  /** Folded rows are drawn too, so hidden list items count; a footnote button is named after its
-   *  package and titled "Open <package>". */
-  async radiusNames(): Promise<string[]> {
-    const panel = this.page.getByRole("tabpanel");
-    const items = await panel
-      .getByRole("listitem", { includeHidden: true })
-      .evaluateAll((els) => els.map((el) => el.getAttribute("aria-label") ?? ""));
-    const jumps = await panel.getByRole("button", { includeHidden: true }).evaluateAll((els) =>
-      els.flatMap((el) => {
-        const text = el.textContent.trim();
-        return el.getAttribute("title") === `Open ${text}` ? [text] : [];
-      }),
-    );
-    return [...new Set([...items, ...jumps].filter((name) => name !== ""))];
-  }
-
-  async detailFacts(heading: string): Promise<Record<string, string>> {
-    const summary = this.detailRegion().first().getByText(heading, { exact: true });
-    const section = summary.locator("xpath=ancestor::details[1]");
-    // It may stay open from the package opened before, and a click would close it.
-    if ((await section.getAttribute("open")) === null) await summary.click();
-    const terms = section.getByRole("term");
-    await terms.first().waitFor();
-    const labels = await terms.allInnerTexts();
-    const values = await section.getByRole("definition").allInnerTexts();
-    return Object.fromEntries(labels.map((label, at) => [label.trim(), (values[at] ?? "").trim()]));
-  }
-
   async pressSlash(): Promise<void> {
     await this.page.keyboard.press("/");
   }
@@ -1257,10 +850,6 @@ export class NewReportPage implements ReportPage {
   async pressK(): Promise<void> {
     await this.page.keyboard.press("k");
   }
-}
-
-function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function collapse(text: string): string {

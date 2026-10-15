@@ -4,7 +4,7 @@
  * Findings rows.
  */
 
-import type { Run } from "../model/report2";
+import type { Run } from "../model/report";
 import type { ScoreBarLayout } from "./scoreBar";
 
 export interface RulerTick {

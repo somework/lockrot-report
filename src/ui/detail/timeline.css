@@ -1,11 +1,3 @@
-/* ---------- release branches (PD-TIMELINE-1..12, DESIGN.md §5) ----------
- * Answer first: two sentences, then a table whose middle column is one shared time axis ending at
- * a "today" rule (each strip cell's right border, so the rule runs unbroken down every row). Rows
- * are subgrid rows of one grid, so every branch, version and constraint lines up in its column
- * whatever its length, and nothing floats beside a dot any more. */
-.detail-timeline {
-  container-type: inline-size;
-}
 .detail-timeline-sr {
   position: absolute;
   width: 1px;
@@ -13,93 +5,6 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-.detail-timeline-answer {
-  margin: 2px 0 0;
-  font: 19px/1.32 var(--serif);
-  color: var(--ink);
-  text-wrap: pretty;
-}
-/* Mono inside a serif line reads large at the same size; 0.84em sits it on the serif's x-height. */
-.detail-timeline-name {
-  font-family: var(--mono);
-  font-size: 0.84em;
-  font-weight: 600;
-}
-.detail-timeline-age {
-  font-weight: 600;
-  white-space: nowrap;
-}
-.detail-timeline-age.is-toned {
-  color: var(--tone);
-}
-.detail-timeline-sub {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--ink-2);
-  text-wrap: pretty;
-}
-.detail-timeline-sub b {
-  font-weight: 600;
-  color: var(--ink);
-}
-/* A long constraint ("^5.3.3 || ^7.0 || ^8.0") breaks at its own spaces like any word; nothing
-   here is ever cut with an ellipsis. */
-.detail-timeline-sub .mono {
-  font-size: 12px;
-  color: var(--ink);
-}
-.detail-timeline-sub .detail-timeline-go {
-  color: var(--accent-ink);
-}
-/* A key or a constraint as written: never split from its parenthesis. */
-.detail-timeline-code {
-  font-size: 12px;
-  color: var(--ink);
-  white-space: nowrap;
-}
-
-/* Level 1 of the floors (TimelineFloors.tsx): a quiet list hung from the sentence that opens it. */
-.detail-timeline-floors {
-  margin: 6px 0 2px;
-  padding: 2px 0 2px 12px;
-  border-left: 2px solid var(--border);
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--ink-2);
-}
-.floors-def {
-  margin: 0 0 6px;
-  font-size: 12px;
-  color: var(--muted);
-  text-wrap: pretty;
-}
-.floors-def .detail-timeline-code {
-  font-size: 11.5px;
-  color: var(--ink-2);
-}
-.floors-groups {
-  display: grid;
-  gap: 3px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.floors-groups li {
-  text-wrap: pretty;
-}
-.floors-groups .mono,
-.floors-groups .detail-timeline-code {
-  font-size: 11.5px;
-  color: var(--ink);
-}
-.floors-run {
-  white-space: nowrap;
-}
-.floors-count,
-.floors-yours {
-  color: var(--muted);
 }
 
 .detail-timeline-grid {
@@ -144,11 +49,6 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
-}
-.detail-timeline-order {
-  margin-left: 3px;
-  letter-spacing: 0;
-  color: var(--ink-2);
 }
 .detail-timeline-branch {
   font-size: 12px;
@@ -401,11 +301,6 @@
   color: var(--muted);
   white-space: nowrap;
 }
-/* Under the range, inside the row's own min-height: a closed fold never hides a miss in silence. */
-.detail-timeline-fold-words {
-  display: block;
-  color: var(--ink-2);
-}
 
 /* The axis, under the rows: the oldest year on the left edge, "today" on the rule. */
 .detail-timeline-axis-row {
@@ -497,11 +392,6 @@
   font-size: 11.5px;
   color: var(--muted);
 }
-.detail-timeline-dated-by {
-  margin: var(--space-1) 0 0;
-  font-size: 11.5px;
-  color: var(--muted);
-}
 .detail-timeline-key-item {
   display: inline-flex;
   align-items: center;
@@ -546,9 +436,6 @@
 /* A phone-width panel: every column a notch smaller, so the strip — the part that answers — keeps
    a readable width next to the version and the constraint. */
 @container (max-width: 340px) {
-  .detail-timeline-answer {
-    font-size: 17.5px;
-  }
   /* A dot on the rule overhangs by half its width plus its halo; 4px here and the 8px column gap
      still clear the LATEST text. */
   .detail-timeline-grid {

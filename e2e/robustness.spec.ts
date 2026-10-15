@@ -29,11 +29,11 @@ test.describe("a history.replaceState() that throws must not stop the page", () 
   });
 
   test("tab switching still renders, even though writing the hash now always throws", async () => {
-    await report.goto(FIXTURES.mini);
-    expect(await report.rows()).toEqual(["vendor/transitive", "vendor/snapshot"]);
+    await report.gotoReport2("composite");
+    expect(await report.rows()).toHaveLength(7);
     await report.tab("packages");
     expect(await report.activeTab()).toBe("packages");
-    expect(await report.rows()).toHaveLength(4);
+    expect(await report.rows()).toHaveLength(7);
   });
 });
 
@@ -50,8 +50,8 @@ test.describe("a localStorage that throws must not stop theme switching", () => 
   });
 
   test("the page still boots and the theme still switches for the current view", async () => {
-    await report.goto(FIXTURES.mini);
-    expect(await report.rows()).toEqual(["vendor/transitive", "vendor/snapshot"]);
+    await report.gotoReport2("composite");
+    expect(await report.rows()).toHaveLength(7);
     const before = await report.theme();
     await report.toggleTheme();
     // In-memory state still flips even though persistence silently fails.
@@ -62,14 +62,14 @@ test.describe("a localStorage that throws must not stop theme switching", () => 
 
 test.describe("bundle shape (history.md item 7)", () => {
   test("the embedded bundle has exactly {report, details} at its top level", async () => {
-    await report.goto(FIXTURES.mini);
+    await report.gotoReport2("composite");
     const keys = (await report.bundleKeys()).slice().sort();
     expect(keys).toEqual(["details", "report"]);
   });
 
-  test("a document from before per-finding baseline state still renders (mini.json has none at all)", async () => {
-    await report.goto(FIXTURES.mini);
-    expect(await report.rows()).toEqual(["vendor/transitive", "vendor/snapshot"]);
+  test("a document with no baseline state at all still renders (the composite has none)", async () => {
+    await report.gotoReport2("composite");
+    expect(await report.rows()).toHaveLength(7);
   });
 });
 

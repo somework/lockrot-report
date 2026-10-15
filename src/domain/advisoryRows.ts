@@ -1,4 +1,4 @@
-import type { Finding, S9row } from "../model/report2";
+import type { Finding, S9row } from "../model/report";
 
 /** The counted advisories of a finding: the rows of its S9 signal, none without one. */
 export function advisoryRows(finding: Finding): readonly S9row[] {

@@ -2,7 +2,7 @@
  *  `chain` and `direct_dependents`, and the tab's words. A vulnerable-only package is graded, so
  *  it is listed as S7 lists it. */
 
-import type { Finding, Report2 } from "../model/report2";
+import type { Finding, Report2 } from "../model/report";
 import type { State } from "../state/types";
 import { plural } from "./format";
 import {

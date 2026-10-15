@@ -1,13 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { FIXTURES, report2Url } from "./support/pages";
+import { report2Url } from "./support/pages";
 import { detailSurface } from "./support/report2/detail";
 
 let report: ReportPage;
 
 test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);
-  await report.goto(FIXTURES.mini);
+  await report.gotoReport2("composite");
 });
 
 test.describe("/ focuses search, suppressed while already focused", () => {
@@ -42,7 +42,7 @@ test.describe("? opens the glossary, suppressed while search is focused", () => 
 
 test.describe("Escape priority chain", () => {
   test("closes the glossary first, even over an open detail pane", async () => {
-    await report.openPackage("vendor/snapshot");
+    await report.openPackage("symfony/yaml");
     await report.openGlossary();
     expect(await report.isGlossaryOpen()).toBe(true);
     expect((await report.detail()).open).toBe(true);
@@ -70,7 +70,6 @@ test.describe("focusedRowName() names a row the way rows() does", () => {
   // CodeRabbit on #6: an Advisories row's accessible name is "package, severity, id", while
   // `rows()` reads its `data-pkg`; the two helpers must agree for any spec that compares them.
   test("an Advisories row is named by its package", async () => {
-    await report.goto(FIXTURES.wallabag);
     await report.tab("advisories");
     const first = (await report.rows())[0];
     if (first === undefined) throw new Error("wallabag's Advisories tab lists no row");
@@ -83,19 +82,19 @@ test.describe("j / k walk the visible list and open each package", () => {
   test("j moves forward, k moves back, both open the detail", async () => {
     await report.tab("packages"); // nothing open, so j starts at the first row
     await report.pressJ();
-    expect((await report.detail()).name).toBe("vendor/transitive");
+    expect((await report.detail()).name).toBe("twig/twig");
     await report.pressJ();
-    expect((await report.detail()).name).toBe("vendor/snapshot");
+    expect((await report.detail()).name).toBe("symfony/monolog-bridge");
     await report.pressK();
-    expect((await report.detail()).name).toBe("vendor/transitive");
+    expect((await report.detail()).name).toBe("twig/twig");
   });
 
   test("k at the start of the list clamps to the first item instead of wrapping", async () => {
     await report.tab("packages");
     await report.pressK();
-    expect((await report.detail()).name).toBe("vendor/transitive"); // first item, not the last
+    expect((await report.detail()).name).toBe("twig/twig"); // first item, not the last
     await report.pressK();
-    expect((await report.detail()).name).toBe("vendor/transitive");
+    expect((await report.detail()).name).toBe("twig/twig");
   });
 
   test("j/k are suppressed while the search box is focused", async () => {
@@ -111,14 +110,14 @@ test.describe("Enter on a focused row opens its detail, and never closes it (PD-
     // Findings' rows have always been focusable (unlike Packages' before M6's fix), so this test
     // drives Enter from a Findings row.
     expect((await report.detail()).open).toBe(false); // nothing opens by itself (PD-ROWS-9)
-    await report.focusRow("vendor/snapshot");
+    await report.focusRow("symfony/yaml");
     await report.pressEnter();
-    expect((await report.detail()).name).toBe("vendor/snapshot");
+    expect((await report.detail()).name).toBe("symfony/yaml");
     // Re-render replaces the row's DOM node wholesale, so focus does not survive the first Enter —
     // re-focus before the second press rather than assuming keyboard focus persisted across it.
-    await report.focusRow("vendor/snapshot");
+    await report.focusRow("symfony/yaml");
     await report.pressEnter();
-    expect((await report.detail()).name).toBe("vendor/snapshot");
+    expect((await report.detail()).name).toBe("symfony/yaml");
     await report.pressEscape();
     expect((await report.detail()).open).toBe(false);
   });
@@ -129,11 +128,10 @@ test.describe("M5: Enter on a link inside a row must not hijack the link", () =>
     // M5 (DESIGN.md §5), fixed on purpose: legacy's keydown handler checked the row before
     // anything about an anchor, so Enter on a focused in-row link toggled the detail instead of
     // following the link.
-    // acme/left's origin carries a package_url, so its Packages-tab row links out to that page.
-    await report.goto(FIXTURES.miniEdges013);
-    await report.tab("packages");
+    // An Advisories row links out to its advisory page.
+    await report.tab("advisories");
     expect((await report.detail()).open).toBe(false);
-    await report.focusLinkInRow("acme/left");
+    await report.focusLinkInRow("symfony/yaml");
     await report.pressEnter();
     expect((await report.detail()).open).toBe(false);
   });
@@ -146,11 +144,11 @@ test.describe("M6: Packages-table rows are focusable and show a selected state",
     // each a Tab stop: with nothing open the first row is the list's one, and opening this row
     // makes it the one (this test used to read "focusable" as "in the Tab order").
     await report.tab("packages");
-    expect(await report.rowFocusable("vendor/snapshot")).toBe(true);
-    expect(await report.rowInTabOrder("vendor/snapshot")).toBe(false);
-    await report.openPackage("vendor/snapshot");
-    expect(await report.rowSelected("vendor/snapshot")).toBe(true);
-    expect(await report.rowInTabOrder("vendor/snapshot")).toBe(true);
+    expect(await report.rowFocusable("symfony/monolog-bridge")).toBe(true);
+    expect(await report.rowInTabOrder("symfony/monolog-bridge")).toBe(false);
+    await report.openPackage("symfony/monolog-bridge");
+    expect(await report.rowSelected("symfony/monolog-bridge")).toBe(true);
+    expect(await report.rowInTabOrder("symfony/monolog-bridge")).toBe(true);
   });
 });
 
@@ -158,28 +156,28 @@ test.describe("PD-ROWS-11: keyboard focus follows the selection", () => {
   test("after a click, j moves focus with the open package, so Enter opens the row j reached", async () => {
     // M5's mismatch: focus stayed on the clicked row while j moved the open package on, so Enter
     // opened the clicked row again instead of the one on screen as open.
-    await report.clickPackage("vendor/transitive");
+    await report.clickPackage("twig/twig");
     await report.pressJ();
     const reached = (await report.detail()).name;
-    expect(reached).not.toBe("vendor/transitive");
+    expect(reached).not.toBe("twig/twig");
     expect(await report.focusedRowName()).toBe(reached);
 
     await report.pressEnter();
     expect((await report.detail()).name).toBe(reached);
     await report.pressK();
-    expect(await report.focusedRowName()).toBe("vendor/transitive");
-    expect((await report.detail()).name).toBe("vendor/transitive");
+    expect(await report.focusedRowName()).toBe("twig/twig");
+    expect((await report.detail()).name).toBe("twig/twig");
   });
 
   test("Escape gives focus back to the row, and j continues below it rather than from the top", async () => {
     await report.tab("packages");
     await report.pressJ();
     await report.pressJ();
-    expect((await report.detail()).name).toBe("vendor/snapshot");
+    expect((await report.detail()).name).toBe("symfony/monolog-bridge");
     await report.pressEscape();
     expect((await report.detail()).open).toBe(false);
-    expect(await report.focusedRowName()).toBe("vendor/snapshot");
-    expect(await report.rowInTabOrder("vendor/snapshot")).toBe(true);
+    expect(await report.focusedRowName()).toBe("symfony/monolog-bridge");
+    expect(await report.rowInTabOrder("symfony/monolog-bridge")).toBe(true);
 
     const rows = await report.rows();
     await report.pressJ();
@@ -206,7 +204,9 @@ test.describe("PD-ROWS-11: keyboard focus follows the selection", () => {
     expect(await report.isSearchFocused()).toBe(true);
   });
 
-  test("Tab reaches one row of the list, then its own links, then leaves the list for the detail", async () => {
+  test("Tab reaches one row of the list, then its own links, then leaves the list for the detail", async ({
+    page,
+  }) => {
     // Every row, and each Findings row's signal link, used to be a Tab stop of its own.
     const rows = await report.rows();
     expect(rows.length).toBeGreaterThan(1);
@@ -216,12 +216,14 @@ test.describe("PD-ROWS-11: keyboard focus follows the selection", () => {
     const stops = await report.listTabStops();
     expect(new Set(stops)).toEqual(new Set([rows[1]]));
 
+    // Firefox gives the detail's scroll container a Tab stop of its own once its content scrolls.
+    const inDetail = () => page.evaluate(() => document.activeElement?.closest(".shell-detail") != null);
     let tabs = 0;
-    while (!(await report.isFocusInDetail()) && tabs < stops.length + 1) {
+    while (!(await inDetail()) && tabs < stops.length + 1) {
       await report.pressTab();
       tabs += 1;
     }
-    expect(await report.isFocusInDetail()).toBe(true);
+    expect(await inDetail()).toBe(true);
     expect(tabs).toBeLessThanOrEqual(stops.length);
   });
 });
@@ -237,11 +239,11 @@ for (const [width, height] of [
     test.use({ viewport: { width, height } });
 
     test("after a click and j, focus is in the sheet and in sight; Escape hands it to the row j reached", async () => {
-      await report.clickPackage("vendor/transitive");
+      await report.clickPackage("twig/twig");
       expect(await report.isFocusInDetail()).toBe(true);
       await report.pressJ();
       const reached = (await report.detail()).name;
-      expect(reached).not.toBe("vendor/transitive");
+      expect(reached).not.toBe("twig/twig");
       expect(await report.isFocusInDetail()).toBe(true);
       expect(await report.isFocusObscured()).toBe(false);
 
@@ -268,21 +270,27 @@ for (const [width, height] of [
 }
 
 test.describe("PD-ROWS-12: one Tab stop per list, and j walks a package listed twice", () => {
-  test("Advisories lists spomky-labs/otphp under two advisories: one Tab stop, and j reaches its second row", async () => {
-    await report.goto(FIXTURES.wallabag);
+  test("Advisories lists symfony/yaml under three advisories: one Tab stop, and j reaches each of its rows", async () => {
     await report.tab("advisories");
     const rows = await report.rows();
-    expect(rows).toEqual(["spomky-labs/otphp", "spomky-labs/otphp"]);
+    expect(rows.slice(0, 4)).toEqual([
+      "symfony/polyfill-intl-idn",
+      "symfony/yaml",
+      "symfony/yaml",
+      "symfony/yaml",
+    ]);
     // Each row used to be a Tab stop of its own, links and all.
     expect(await report.tabStopRowIndexes()).toEqual([0]);
-    expect(new Set(await report.listTabStops())).toEqual(new Set(["spomky-labs/otphp"]));
+    expect(new Set(await report.listTabStops())).toEqual(new Set(["symfony/polyfill-intl-idn"]));
 
     await report.pressJ();
     expect(await report.focusedRowIndex()).toBe(0);
     await report.pressJ();
     expect(await report.focusedRowIndex()).toBe(1);
+    await report.pressJ();
+    expect(await report.focusedRowIndex()).toBe(2);
     await report.pressEscape();
-    expect(await report.focusedRowIndex()).toBe(1);
+    expect(await report.focusedRowIndex()).toBe(2);
   });
 
   test("a second Escape from the search box hands focus to the list, not to the page", async () => {
@@ -293,22 +301,21 @@ test.describe("PD-ROWS-12: one Tab stop per list, and j walks a package listed t
     await report.pressEscape(); // closes the package, focus stays in the box
     expect(await report.isSearchFocused()).toBe(true);
     await report.pressEscape();
-    expect(await report.focusedRowName()).toBe("vendor/snapshot");
+    expect(await report.focusedRowName()).toBe("symfony/monolog-bridge");
   });
 });
 
 test.describe("M7: j/k must not open a package that has no row on screen", () => {
   test("Blast radius only ever selects a package it actually lists", async () => {
-    // M7 (DESIGN.md §5), fixed on purpose: legacy's j/k walked every flagged finding while Radius
-    // only lists each direct requirement's pulled children, so j/k could open a package with no
-    // card and no row on screen (mini.json's vendor/snapshot: direct:false, chain:[]). Since
-    // PD-RADIUS-3 the requirement is a row itself, its packages folded under it until opened.
+    // M7 (DESIGN.md §5), fixed on purpose: j/k used to walk every flagged finding while Radius only
+    // lists each direct requirement, so j/k could open a package with no row on screen. The
+    // composite's symfony/polyfill-intl-idn sits folded under guzzlehttp/guzzle.
     await report.tab("radius");
-    expect(await report.rows()).toEqual(["vendor/direct"]);
+    expect(await report.rows()).toEqual(["guzzlehttp/guzzle"]);
     await report.pressJ();
-    expect((await report.detail()).name).toBe("vendor/direct");
+    expect((await report.detail()).name).toBe("guzzlehttp/guzzle");
     await report.pressJ(); // a folded package and one with no row are both off screen
-    expect((await report.detail()).name).toBe("vendor/direct");
+    expect((await report.detail()).name).toBe("guzzlehttp/guzzle");
   });
 });
 
@@ -317,12 +324,12 @@ test.describe("M10: j/k must not act while the glossary is open", () => {
     // M10 (DESIGN.md §5), fixed on purpose: legacy's j/k guard only checked focus against the
     // search box, so keydown still bubbled to the document and moved the selection underneath an
     // open glossary dialog.
-    // With vendor/transitive open, a j that got through would move to vendor/snapshot.
-    await report.openPackage("vendor/transitive");
+    // With twig/twig open, a j that got through would move to symfony/monolog-bridge.
+    await report.openPackage("twig/twig");
     await report.openGlossary();
     await report.pressJ();
-    expect((await report.detail()).name).toBe("vendor/transitive");
-    expect(await report.hash()).toBe("#pkg=vendor%2Ftransitive");
+    expect((await report.detail()).name).toBe("twig/twig");
+    expect(await report.hash()).toBe("#pkg=twig%2Ftwig");
   });
 });
 

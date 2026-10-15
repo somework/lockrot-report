@@ -3,8 +3,8 @@
  * `32 = vulnerable 32 [critical advisory]`. `score.text` is lockrot's copy of it, a tooltip only.
  */
 
-import type { Modifier, Score, Term, TermMaintenance, TermSecurity } from "../model/report2";
-import { isScoreGraded, isTermSecurity } from "../model/report2";
+import type { Modifier, Score, Term, TermMaintenance, TermSecurity } from "../model/report";
+import { isScoreGraded, isTermSecurity } from "../model/report";
 import { shareGlyph } from "./pageVocabulary";
 
 const isPrinted = ({ before, after }: Modifier): boolean => before !== after;

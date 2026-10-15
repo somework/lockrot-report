@@ -1,120 +1,10 @@
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { FIXTURES } from "./support/pages";
 
-/**
- * `fixtures/bundles/mini.json`: 4 findings, 2 of them flagged (vendor/transitive: abandoned/high,
- * vendor/snapshot: pinned/medium), 1 unknown (vendor/direct, direct requirement, pulls in the
- * abandoned one), 1 finished (private/thing). 1 exposure entry, 2 notes, no advisories.
- */
 let report: ReportPage;
 
 test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);
-  await report.goto(FIXTURES.mini);
-});
-
-test.describe("tabs", () => {
-  test("Findings is the default tab", async () => {
-    expect(await report.activeTab()).toBe("findings");
-  });
-
-  test("switching tabs moves the aria-selected tab and closes any open detail", async () => {
-    await report.tab("packages");
-    expect(await report.activeTab()).toBe("packages");
-    await report.openPackage("vendor/transitive");
-    expect((await report.detail()).open).toBe(true);
-
-    await report.tab("radius");
-    expect(await report.activeTab()).toBe("radius");
-    expect((await report.detail()).open).toBe(false);
-  });
-
-  test("badge counts reflect the whole report, not the current filter", async () => {
-    expect(await report.tabCount("findings")).toBe("2");
-    expect(await report.tabCount("advisories")).toBe("0");
-    expect(await report.tabCount("packages")).toBe("4");
-    expect(await report.tabCount("radius")).toBe("1");
-    expect(await report.tabCount("run")).toBe("2");
-
-    // Narrowing the list with a filter must not move any badge (report.js:319-321: rail/ledger
-    // counts are computed once, over the whole population, independent of the query or filters).
-    await report.search("does-not-exist-anywhere");
-    expect(await report.tabCount("findings")).toBe("2");
-  });
-});
-
-test.describe("Findings view", () => {
-  test("renders one row per flagged package, grouped by priority (high before medium)", async () => {
-    expect(await report.rows()).toEqual(["vendor/transitive", "vendor/snapshot"]);
-  });
-
-  test("the count line reads N of the total flagged", async () => {
-    expect(await report.countLine()).toBe("2 of 2 flagged packages");
-  });
-});
-
-test.describe("Packages view", () => {
-  test("lists every finding, flagged or not", async () => {
-    await report.tab("packages");
-    const rows = await report.rows();
-    expect(rows).toHaveLength(4);
-    expect(rows).toEqual(
-      expect.arrayContaining(["vendor/transitive", "vendor/snapshot", "vendor/direct", "private/thing"]),
-    );
-  });
-});
-
-test.describe("Blast radius view", () => {
-  test("one row, naming the direct requirement that pulls in the abandoned package", async ({ page }) => {
-    await report.tab("radius");
-    // PD-RADIUS-3: a requirement's packages are folded under it until its toggle opens them.
-    expect(await report.rows()).toEqual(["vendor/direct"]);
-    await page.getByRole("button", { name: /Show the 1 package listed under vendor\/direct/ }).click();
-    expect(await report.rows()).toEqual(["vendor/direct", "vendor/transitive"]);
-  });
-});
-
-test.describe("a tab switch resets scroll (a first-time-reader walk found the old page)", () => {
-  // wallabag_wallabag.json: 69 flagged findings, tall enough on every tab (findings, packages,
-  // radius) that scrolling well down one and switching tabs lands mid-list in the next unless the
-  // switch itself resets the scroll — `mini`'s own four findings are too short to reproduce it.
-  test("a user-driven tab switch scrolls back to the top; a hashchange restore does not", async ({
-    page,
-  }) => {
-    const wallabag = await createReportPage(page);
-    await wallabag.goto(FIXTURES.wallabag);
-    await page.evaluate(() => {
-      window.scrollTo(0, 2000);
-    });
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
-
-    // A click on a tab — Tabs.tsx's own dispatch, the same path "See the advisories" (FindingsView's
-    // quiet note) uses — is the "user action" DESIGN.md means; the new tab's own first row should be
-    // where the reader lands, not wherever the last tab happened to be scrolled to.
-    await wallabag.tab("packages");
-
-    expect(await page.evaluate(() => window.scrollY)).toBe(0);
-
-    // A pasted link's hashchange restores state without the reader ever clicking a tab — it must
-    // not fight a scroll position the reader chose themselves.
-    await page.evaluate(() => {
-      window.scrollTo(0, 2000);
-    });
-    await wallabag.setLocationHash("view=radius");
-    await expect.poll(() => wallabag.activeTab()).toBe("radius");
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
-  });
-});
-
-test.describe("M14: an unrecognised view= falls back", () => {
-  test("an unrecognised view falls back to Findings, tab marked selected (M14)", async () => {
-    // M14 (DESIGN.md §5), fixed on purpose: legacy left no tab aria-selected and showed Run
-    // content with the ledger still visible for an unknown view.
-    await report.gotoWithHash(FIXTURES.mini, "view=not-a-real-view");
-    expect(await report.activeTab()).toBe("findings");
-    expect(await report.rows()).toEqual(["vendor/transitive", "vendor/snapshot"]);
-  });
 });
 
 test.describe("report-2: tabs and counts on the composite", () => {
@@ -145,5 +35,70 @@ test.describe("report-2: tabs and counts on the composite", () => {
 
     await report.search("does-not-exist-anywhere");
     expect(await report.tabCount("findings")).toBe("7");
+  });
+
+  test("Findings renders one row per flagged package, grouped by grade (critical before low)", async () => {
+    expect(await report.rows()).toEqual([
+      "twig/twig",
+      "symfony/monolog-bridge",
+      "symfony/debug",
+      "friendsofsymfony/oauth-server-bundle",
+      "tubalmartin/cssmin",
+      "symfony/yaml",
+      "symfony/polyfill-intl-idn",
+    ]);
+  });
+
+  test("the count line reads N of the total flagged", async () => {
+    expect(await report.countLine()).toBe("7 of 7 flagged packages");
+  });
+
+  test("All packages lists every finding, flagged or not", async () => {
+    await report.tab("packages");
+    expect(await report.rows()).toHaveLength(7);
+  });
+
+  test("Blast radius lists one row, naming the direct requirement that pulls in the transitive package", async ({
+    page,
+  }) => {
+    await report.tab("radius");
+    // A requirement's packages are folded under it until its toggle opens them.
+    expect(await report.rows()).toEqual(["guzzlehttp/guzzle"]);
+    await page.getByRole("button", { name: /Show the 1 package listed under guzzlehttp\/guzzle/ }).click();
+    expect(await report.rows()).toEqual(["guzzlehttp/guzzle", "symfony/polyfill-intl-idn"]);
+  });
+
+  // The long recorded lock is tall enough on every tab that scrolling well down one and switching
+  // tabs lands mid-list in the next unless the switch itself resets the scroll.
+  test("a user-driven tab switch scrolls back to the top; a hashchange restore does not", async ({
+    page,
+  }) => {
+    await report.gotoReport2("baselined-wallabag-2.6");
+    await page.evaluate(() => {
+      window.scrollTo(0, 2000);
+    });
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+
+    // A click on a tab is the "user action" DESIGN.md means: the new tab's first row is where the
+    // reader lands, not wherever the last tab happened to be scrolled to.
+    await report.tab("packages");
+
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+
+    // A pasted link's hashchange restores state without the reader ever clicking a tab, so it must
+    // not fight a scroll position the reader chose themselves.
+    await page.evaluate(() => {
+      window.scrollTo(0, 2000);
+    });
+    await report.setLocationHash("view=radius");
+    await expect.poll(() => report.activeTab()).toBe("radius");
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+  });
+
+  test("M14: an unrecognised view falls back to Findings, tab marked selected", async () => {
+    // M14 (DESIGN.md §5), fixed on purpose: no tab used to be aria-selected for an unknown view.
+    await report.gotoReport2WithHash("composite", "view=not-a-real-view");
+    expect(await report.activeTab()).toBe("findings");
+    expect(await report.rows()).toHaveLength(7);
   });
 });

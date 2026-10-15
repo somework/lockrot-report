@@ -1,4 +1,4 @@
-import type { Finding } from "../model/report2";
+import type { Finding } from "../model/report";
 import { feedAnswerWord } from "./pageVocabulary";
 
 /** `packagist.org (1 on record), repo.example (lookup failed)`, or `null` when no feed was asked. */
