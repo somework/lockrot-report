@@ -184,9 +184,10 @@ export interface ReportPage {
   railOption(group: RailGroup, key: string): Promise<void>;
   railOptionPressed(group: RailGroup, key: string): Promise<boolean | null>;
   /** Every rail button in order, as its label, the count it shows (PD-RAIL-1) and whether it is on. */
-  railRows(): Promise<{ label: string; count: number; pressed: boolean }[]>;
-  /** Clicks the rail button `railRows()` reported as `label` (PD-RAIL-2: rows come and go). */
-  toggleRailRow(label: string): Promise<void>;
+  railRows(): Promise<{ group: string; label: string; count: number; pressed: boolean }[]>;
+  /** Clicks the rail button `railRows()` reported as `label`, in the rail group titled `group` when
+   *  given (PD-RAIL-2: rows come and go). */
+  toggleRailRow(label: string, group?: string): Promise<void>;
   /** The name `rows()` would give at `index`, read in one page call; null past the end. */
   rowNameAt(index: number): Promise<string | null>;
   /** How many different packages the current view's rows name — `rows()` without duplicates. */

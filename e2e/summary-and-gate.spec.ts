@@ -1,6 +1,7 @@
 /**
- * The report-2 overview band (design 3A): the flagged figure, its chips and the waffle at every
- * width, with only the supporting tier folded on a phone, and the header's gate fact and its popover.
+ * The report-2 overview band (design 3A), on Findings only: the flagged figure, its chips and the
+ * waffle at every width, the supporting tier folded and closed at every width, and the header's gate
+ * fact and its popover.
  */
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
@@ -9,8 +10,10 @@ import {
   flagBars,
   gateLine,
   gradeChips,
+  openTier,
   overviewSurface,
   severityChips,
+  tierFold,
   waffleSquares,
 } from "./support/report2/overview";
 
@@ -37,6 +40,7 @@ test.describe("report-2: the overview band of design 3A", () => {
     page,
   }) => {
     await report.gotoReport2("composite");
+    await openTier(page);
     await expect(flagBars(page)).toHaveText([
       "abandoned 1 graded critical 1",
       "pinned 1 graded high 1",
@@ -60,6 +64,7 @@ test.describe("report-2: the overview band of design 3A", () => {
   ] as const) {
     test(`composite: ${name} sets its filter in the address`, async ({ page }) => {
       await report.gotoReport2("composite");
+      await openTier(page);
       const button = chip()(page).filter({ hasText: /^critical/ });
       await button.click();
       await expect(button).toHaveAttribute("aria-pressed", "true");
@@ -69,6 +74,7 @@ test.describe("report-2: the overview band of design 3A", () => {
 
   test("composite: a flag bar sets flag in the address", async ({ page }) => {
     await report.gotoReport2("composite");
+    await openTier(page);
     const stale = flagBars(page).filter({ hasText: /^stale/ });
     await stale.click();
     await expect(stale).toHaveAttribute("aria-pressed", "true");
@@ -86,6 +92,7 @@ test.describe("report-2: the overview band of design 3A", () => {
       await page.setViewportSize({ width, height: 900 });
       // wallabag-2.6 carries 54 left-behind packages, so its longest bar wants the whole column.
       await report.gotoReport2("baselined-wallabag-2.6");
+      await openTier(page);
       const splits = flagBars(page).locator(".overview2-split");
       await expect(splits.first()).toBeVisible();
       const lines = await splits.evaluateAll((items) =>
@@ -112,6 +119,7 @@ test.describe("report-2: the overview band of design 3A", () => {
 
   test("composite: axe finds nothing on the band, light and dark", async ({ page }) => {
     await report.gotoReport2("composite");
+    await openTier(page);
     for (const colorScheme of ["light", "dark"] as const) {
       await page.emulateMedia({ colorScheme });
       await expect
@@ -134,6 +142,7 @@ test.describe("report-2: the overview band of design 3A", () => {
   }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
     await report.gotoReport2("baselined-wallabag-2.6");
+    await openTier(page);
     const blocks = await overviewSurface(page)
       .locator(".ledger-tier > .ledger-block")
       .evaluateAll((items) =>
@@ -181,6 +190,53 @@ test.describe("report-2: the overview band of design 3A", () => {
     await report.pressEscape();
     expect((await report.detail()).open).toBe(false);
   });
+});
+
+test.describe("report-2: the band leads Findings only, its tier folded and closed", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("composite at 1440px: chips and gate line are visible, the flag bars wait in the fold", async ({
+    page,
+  }) => {
+    await report.gotoReport2("composite");
+    await expect(gradeChips(page).first()).toBeVisible();
+    await expect(gateLine(page)).toBeVisible();
+    await expect(tierFold(page)).not.toHaveAttribute("open");
+    await expect(flagBars(page).first()).toBeHidden();
+    await openTier(page);
+    await expect(flagBars(page).first()).toBeVisible();
+    await expect(severityChips(page).first()).toBeVisible();
+  });
+
+  test("the fold's state is stored nowhere: the address keeps no trace and a reload closes it", async ({
+    page,
+  }) => {
+    await report.gotoReport2WithHash("composite", "verdict=high");
+    await openTier(page);
+    expect(await report.hash()).toBe("#verdict=high");
+    await report.reload();
+    await expect(tierFold(page)).not.toHaveAttribute("open");
+  });
+
+  for (const view of ["findings", "advisories", "packages", "radius"] as const) {
+    test(`wallabag-2.6 at 1440×900: the first ${view} row starts on the first screen`, async ({ page }) => {
+      await report.gotoReport2WithHash("baselined-wallabag-2.6", `view=${view}`);
+      const row = page.locator(".shell-main [data-pkg]").first();
+      await expect(row).toBeVisible();
+      const top = await row.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+      expect(top).toBeLessThan(900);
+    });
+  }
+
+  for (const view of ["advisories", "packages", "radius", "run"] as const) {
+    test(`${view} carries no band, and Findings brings it back`, async ({ page }) => {
+      await report.gotoReport2WithHash("composite", `view=${view}`);
+      await expect(page.locator(`[data-surface="${view}"]`)).toBeVisible();
+      await expect(overviewSurface(page)).toHaveCount(0);
+      await report.tab("findings");
+      await expect(gradeChips(page).first()).toBeVisible();
+    });
+  }
 });
 
 test.describe("report-2: on a phone the lead stays open, the tier folds", () => {

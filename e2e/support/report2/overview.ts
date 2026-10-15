@@ -10,9 +10,22 @@ export function gradeChips(page: Page): Locator {
   return overviewSurface(page).getByRole("group", { name: "Grade" }).getByRole("button");
 }
 
-/** The severity chips of the Security block. */
+/** The severity chips of the Security block that is in view: the Advisories tab's lead, or the
+ *  band's tier once it is open. */
 export function severityChips(page: Page): Locator {
-  return overviewSurface(page).getByRole("group", { name: "Advisories by severity" }).getByRole("button");
+  return page.getByRole("group", { name: "Advisories by severity" }).getByRole("button");
+}
+
+/** The fold that holds the band's tier on screen. */
+export function tierFold(page: Page): Locator {
+  return overviewSurface(page).locator("details.ledger-fold");
+}
+
+/** Opens the band's tier: on screen it loads closed at every width. */
+export async function openTier(page: Page): Promise<void> {
+  const fold = tierFold(page);
+  if (await fold.evaluate((el) => (el as HTMLDetailsElement).open)) return;
+  await fold.locator(":scope > summary").click();
 }
 
 /** One button per flag the flag ledger draws, in its order. */

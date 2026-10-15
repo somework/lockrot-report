@@ -33,7 +33,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
   });
 
   test("a legend chip's title names the click's effect, and changes once pressed", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=advisories");
     const chip = severityChips(page).filter({ hasText: /^critical/ });
     await expect(chip).toHaveAttribute("title", "Show only critical");
 
@@ -43,11 +43,10 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
   });
 
   test("severity: selecting a severity chip narrows Advisories to that severity", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=advisories");
     await severityChips(page)
       .filter({ hasText: /^critical/ })
       .click();
-    await report.tab("advisories");
 
     expect(await report.rows()).toEqual(["twig/twig"]);
   });
@@ -168,10 +167,10 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
 
           const mismatches: string[] = [];
           for (const row of rows) {
-            await report.toggleRailRow(row.label);
+            await report.toggleRailRow(row.label, row.group);
             const listed = await report.listedPackageCount();
             if (listed !== row.count) mismatches.push(`${row.label}: shows ${row.count}, lists ${listed}`);
-            await report.toggleRailRow(row.label);
+            await report.toggleRailRow(row.label, row.group);
           }
 
           expect(mismatches).toEqual([]);
