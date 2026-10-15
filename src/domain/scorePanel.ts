@@ -93,7 +93,7 @@ function ruleSlots(rule: ScoreRule, model: Model): Slots {
     ratio_from: rule.ratio_from,
     cap_multiplier: asText(rule.cap_multiplier),
     op: rule.op,
-    covers: rule.covers,
+    covers: rule.covers?.replaceAll("_", " "),
     accept_group: rule.accept_group,
     when: rule.when?.join(" or "),
     order: rule.order?.replaceAll("_", " "),

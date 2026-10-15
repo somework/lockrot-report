@@ -7,6 +7,13 @@ import type { Report2 } from "../../../src/model/report2";
 import { pageGoldens } from "./recorded";
 
 describe("the page texts equal lockrot's page goldens", () => {
+  test("the pinned goldens are not empty", () => {
+    const goldens = pageGoldens();
+
+    expect(goldens.length).toBeGreaterThan(0);
+    expect(goldens.filter(({ golden }) => golden.panel !== null).length).toBeGreaterThan(0);
+  });
+
   test.each(pageGoldens())("$id: the copy summary", ({ golden, report }) => {
     expect(copySummary(report)).toEqual(golden.copy_summary);
   });
@@ -147,6 +154,23 @@ describe("the How the score works panel at its edges", () => {
     });
 
     expect(lines.at(-2)).toBe("17 cap: ÷ 3 (dev or unreached) · used on 5");
+  });
+
+  test("words the covered flags of an unknown cover rule without underscores", () => {
+    const lines = panel((run) => {
+      run.score_model.rules.push({
+        id: "shield",
+        stage: 17,
+        kind: "cover",
+        applies_to: "gate",
+        why: "unknown",
+        doc: "score-shield",
+        illustration: null,
+        covers: "listed_and_below",
+      });
+    });
+
+    expect(lines.at(-2)).toBe("17 shield: covers listed and below");
   });
 
   test("shows an unknown kind as its id alone, with no count when the report counts none", () => {
