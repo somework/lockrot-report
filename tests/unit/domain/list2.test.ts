@@ -247,7 +247,7 @@ describe("fitFilters2", () => {
 });
 
 describe("renderedPackages2", () => {
-  it("walks the Findings, All packages and Advisories rows", () => {
+  it("walks the rows of every tab with a list", () => {
     expect(renderedPackages2(composite, state({}, { verdict: ["low"] }), "findings")).toEqual([
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
@@ -259,6 +259,6 @@ describe("renderedPackages2", () => {
       "symfony/monolog-bridge",
       ...Array<string>(15).fill("twig/twig"),
     ]);
-    expect(renderedPackages2(composite, state(), "radius")).toEqual([]);
+    expect(renderedPackages2(composite, state(), "radius")).toEqual(["guzzlehttp/guzzle"]);
   });
 });

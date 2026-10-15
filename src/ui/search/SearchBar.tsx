@@ -6,13 +6,15 @@ import type { Report2 } from "../../model/report2";
 import { allAdvisories, passesAdvisoryRail } from "../../domain/advisories";
 import { matchesAdvisory, parseQuery } from "../../domain/query";
 import { radiusCountPhrase, radiusLayout } from "../../domain/radius";
+import { radiusLayout2 } from "../../domain/radius2";
+import { advisoryPairs2 } from "../../domain/advisories2";
 import { countPhrase, plural } from "../../domain/format";
 import { searchSplit, searchSplitPhrase } from "../../domain/searchHits";
 import { NoWrap } from "../common/common";
 import { ActiveFilters } from "./ActiveFilters";
 import { advisoryGroupsFor } from "../views/order";
 import type { Finding, Model } from "../../model/types";
-import type { State } from "../../state/types";
+import { EMPTY_FILTERS, type State } from "../../state/types";
 import "./search.css";
 
 /** Verbatim from legacy's search box (`report.html:79`). */
@@ -94,6 +96,15 @@ function countLine2(report: Report2, state: State): string | null {
       "packages",
     );
   }
+  if (state.view === "advisories") {
+    const shown = advisoryPairs2(applyFilters2(report, state, "advisories"), state.filters).length;
+    const all = advisoryPairs2(population2(report, "advisories"), EMPTY_FILTERS).length;
+    return countPhrase(shown, all, "advisory", "advisories");
+  }
+  if (state.view === "radius")
+    return radiusCountPhrase(
+      radiusLayout2(report, applyFilters2(report, state, "radius"), population2(report, "radius")),
+    );
   return null;
 }
 
