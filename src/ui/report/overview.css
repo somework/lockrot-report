@@ -1,4 +1,5 @@
-/* The report-2 overview band: ledger.css draws the lead and the tier; these rules add what report-2 has. */
+/* The report-2 band parts: ledger.css draws the lead and the blocks; these rules add what report-2 has.
+   overview-tab.css lays them out on the Overview tab. */
 
 /* Inline-size containment keeps a long gate line from widening the lead's max-content columns. */
 .overview2-gate {
@@ -27,7 +28,7 @@
 }
 
 /* The flag ledger's note is a clause, not a label: it wraps on a phone. */
-.overview2 .ledger-head-note {
+.ov .ledger-head-note {
   white-space: normal;
 }
 

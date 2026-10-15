@@ -13,6 +13,7 @@ import { decodePng } from "./png";
 /** The tab's accessible name (`role=tab`). A badge count appended after the label is fine — every
  *  match below is substring, not exact — but the label text itself has to be this. */
 const VIEW_LABEL: Readonly<Record<ViewName, string>> = {
+  overview: "Overview",
   findings: "Findings",
   advisories: "Advisories",
   packages: "All packages",

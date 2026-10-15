@@ -49,7 +49,7 @@ describe("serializeHash", () => {
     expect(h).toBe("");
   });
 
-  it("writes view unencoded when it is not the default findings tab", () => {
+  it("writes view unencoded for a tab other than Overview", () => {
     // Arrange
     const state: State = { ...INITIAL_STATE, view: "packages" };
 
@@ -60,26 +60,49 @@ describe("serializeHash", () => {
     expect(h).toBe("view=packages");
   });
 
-  it("omits view when it is findings, even if other fields are set", () => {
+  it("writes view=findings, because a fragment with no view and no key opens Overview (rule R1)", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, view: "findings", q: "abc" };
+    const state: State = { ...INITIAL_STATE, view: "findings" };
 
     // Act
     const h = serializeHash(state);
 
     // Assert
-    expect(h.startsWith("view=")).toBe(false);
+    expect(h).toBe("view=findings");
+  });
+
+  it("omits view=overview when nothing else is written", () => {
+    // Arrange
+    const state: State = { ...INITIAL_STATE, view: "overview" };
+
+    // Act
+    const h = serializeHash(state);
+
+    // Assert
+    expect(h).toBe("");
+  });
+
+  it("writes view=overview beside other keys, so the fragment does not read back as Findings", () => {
+    // Arrange
+    const state: State = { ...INITIAL_STATE, view: "overview", q: "abc" };
+
+    // Act
+    const h = serializeHash(state);
+
+    // Assert
+    expect(h).toBe("view=overview&q=abc");
+    expect(parseHash(h, INITIAL_STATE).view).toBe("overview");
   });
 
   it("URI-encodes a query", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, q: "a b&c" };
+    const state: State = { ...INITIAL_STATE, view: "findings", q: "a b&c" };
 
     // Act
     const h = serializeHash(state);
 
     // Assert
-    expect(h).toBe("q=" + encodeURIComponent("a b&c"));
+    expect(h).toBe("view=findings&q=" + encodeURIComponent("a b&c"));
   });
 
   it("does not write a whitespace-only query (DESIGN.md §4 fix)", () => {
@@ -97,6 +120,7 @@ describe("serializeHash", () => {
     // Arrange
     const state: State = {
       ...INITIAL_STATE,
+      view: "findings",
       filters: { ...EMPTY_FILTERS, since: ["30d"], prio: ["high"], verdict: ["stale", "silent"] },
     };
 
@@ -104,40 +128,44 @@ describe("serializeHash", () => {
     const h = serializeHash(state);
 
     // Assert
-    expect(h).toBe("prio=high&verdict=stale%2Csilent&since=30d");
+    expect(h).toBe("view=findings&prio=high&verdict=stale%2Csilent&since=30d");
   });
 
   it("joins multiple selected keys with a comma before encoding", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, filters: { ...EMPTY_FILTERS, verdict: ["stale", "silent"] } };
+    const state: State = {
+      ...INITIAL_STATE,
+      view: "findings",
+      filters: { ...EMPTY_FILTERS, verdict: ["stale", "silent"] },
+    };
 
     // Act
     const h = serializeHash(state);
 
     // Assert
-    expect(h).toBe("verdict=" + encodeURIComponent("stale,silent"));
+    expect(h).toBe("view=findings&verdict=" + encodeURIComponent("stale,silent"));
   });
 
   it("writes pkg whenever a package is open: the page never opens one by itself (PD-ROWS-9)", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, pkg: "acme/widget" };
+    const state: State = { ...INITIAL_STATE, view: "findings", pkg: "acme/widget" };
 
     // Act
     const h = serializeHash(state);
 
     // Assert
-    expect(h).toBe("pkg=acme%2Fwidget");
+    expect(h).toBe("view=findings&pkg=acme%2Fwidget");
   });
 
   it("omits pkg when no package is open", () => {
     // Arrange
-    const state: State = { ...INITIAL_STATE, view: "findings", pkg: null };
+    const state: State = { ...INITIAL_STATE, view: "packages", pkg: null };
 
     // Act
     const h = serializeHash(state);
 
     // Assert
-    expect(h).toBe("");
+    expect(h).toBe("view=packages");
   });
 
   it("assembles every piece in the documented order", () => {
@@ -162,6 +190,7 @@ describe("the report-2 groups in the address", () => {
   it("writes flag and accepted after every 0.13 group and reads them back", () => {
     const state: State = {
       ...INITIAL_STATE,
+      view: "findings",
       filters: {
         ...INITIAL_STATE.filters,
         gate: ["fails"],
@@ -172,21 +201,21 @@ describe("the report-2 groups in the address", () => {
 
     const h = serializeHash(state);
 
-    expect(h).toBe("gate=fails&flag=stale%2Cpinned&accepted=hide");
+    expect(h).toBe("view=findings&gate=fails&flag=stale%2Cpinned&accepted=hide");
     expect(parseHash(h, INITIAL_STATE).filters).toEqual(state.filters);
   });
 });
 
 describe("parseHash", () => {
-  it("returns base unchanged for an empty fragment", () => {
+  it("keeps what base holds beside the view for an empty fragment", () => {
     // Arrange
-    const base: State = { ...INITIAL_STATE, q: "kept" };
+    const base: State = { ...INITIAL_STATE, view: "packages", q: "kept" };
 
     // Act
     const next = parseHash("", base);
 
     // Assert
-    expect(next).toBe(base);
+    expect(next).toEqual({ ...base, view: "overview" });
   });
 
   it("strips a leading #", () => {
@@ -242,7 +271,7 @@ describe("parseHash", () => {
     const next = parseHash("view=bogus", INITIAL_STATE);
 
     // Assert
-    expect(next.view).toBe(INITIAL_STATE.view);
+    expect(next.view).toBe("overview");
   });
 
   it("assigns q verbatim, decoded", () => {
@@ -310,6 +339,56 @@ describe("parseHash", () => {
     // Assert
     expect(next.sort).toBe("libyears");
     expect(next.sortDesc).toBe(true);
+  });
+});
+
+describe("rule R1: the view a fragment opens", () => {
+  const base: State = { ...INITIAL_STATE, view: "radius" };
+
+  it.each(["", "#"])("opens Overview for the empty fragment %j", (fragment) => {
+    expect(parseHash(fragment, base).view).toBe("overview");
+  });
+
+  it.each([
+    ["q", "q=guzzle"],
+    ["pkg", "pkg=guzzlehttp%2Fguzzle"],
+    ["prio", "prio=high"],
+    ["verdict", "verdict=critical"],
+    ["scope", "scope=direct"],
+    ["signal", "signal=S7"],
+    ["sev", "sev=critical"],
+    ["fix", "fix=update"],
+    ["since", "since=new"],
+    ["gate", "gate=fails"],
+    ["flag", "flag=stale"],
+    ["accepted", "accepted=hide"],
+  ])("opens Findings for a fragment that holds %s alone", (_key, fragment) => {
+    expect(parseHash(fragment, base).view).toBe("findings");
+  });
+
+  it.each(["overview", "findings", "advisories", "packages", "radius", "run"])(
+    "opens the view an explicit view=%s names, beside a list key too",
+    (view) => {
+      expect(parseHash(`view=${view}`, base).view).toBe(view);
+      expect(parseHash(`q=x&view=${view}`, base).view).toBe(view);
+    },
+  );
+
+  it("opens Overview for an unknown view with no other key, and Findings beside a list key", () => {
+    expect(parseHash("view=bogus", base).view).toBe("overview");
+    expect(parseHash("view=bogus&verdict=high", base).view).toBe("findings");
+  });
+
+  it("opens Overview for a fragment of unknown keys and loose pieces", () => {
+    expect(parseHash("bogus=1&loose", base).view).toBe("overview");
+  });
+
+  it("opens Findings for a list key whose value fails to decode, as rc.1 did", () => {
+    expect(parseHash("q=%E0%A4%A", base).view).toBe("findings");
+  });
+
+  it("opens Findings for a list key with an empty value, as rc.1 did", () => {
+    expect(parseHash("q=", base).view).toBe("findings");
   });
 });
 

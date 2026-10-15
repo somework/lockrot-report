@@ -17,7 +17,7 @@ type Row = readonly [key: string, label: string];
 
 const byRank = (findings: readonly Finding[]): Finding[] => [...findings].sort((a, b) => a.rank - b.rank);
 
-/** The Run tab has no population: the rail and search box hide there. */
+/** Overview and the Run tab have no population: the rail and search box hide there. */
 export function population2(report: Report2, view: View): readonly Finding[] {
   const graded: readonly string[] = report.run.graded_verdicts;
   switch (view) {
@@ -28,6 +28,7 @@ export function population2(report: Report2, view: View): readonly Finding[] {
       return report.findings.filter((f) => isSecurityVulnerable(f.security));
     case "packages":
       return report.findings;
+    case "overview":
     case "run":
       return [];
   }

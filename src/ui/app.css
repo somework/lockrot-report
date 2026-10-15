@@ -336,17 +336,15 @@
   }
 }
 
-/* ---------- ledger band ----------
-   The summary sits on the header's surface, as on the legacy page, so the page reads as a band of
-   totals above the list; only the header part above it sticks. */
+/* ---------- the Findings strip's band ----------
+   The strip over the Findings list sits on the header's surface; only the header part above it
+   sticks. */
 .ledger-band {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
 
-/* ---------- rail fold (phone widths) ----------
-   The summary band's own fold (its supporting tier) is styled with the rest of the band, in
-   ledger/ledger.css. */
+/* ---------- rail fold (phone widths) ---------- */
 .rail-fold > summary {
   display: flex;
   align-items: baseline;

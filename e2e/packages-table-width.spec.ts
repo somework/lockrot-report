@@ -36,7 +36,7 @@ for (const { label, width, height } of WIDE_BREAKPOINTS) {
 
     test("the table fills the shell's own width when no detail is open", async ({ page }) => {
       const report: ReportPage = await createReportPage(page);
-      await report.gotoReport2("composite");
+      await report.gotoReport2WithHash("composite", "view=findings");
       expect((await report.detail()).open).toBe(false); // nothing opens by itself (PD-ROWS-9)
       await report.tab("packages");
       expect((await report.detail()).open).toBe(false);
@@ -56,7 +56,7 @@ test.describe("Blast radius shares the same fix", () => {
 
   test("the ledger fills the shell's own width when no detail is open", async ({ page }) => {
     const report: ReportPage = await createReportPage(page);
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     expect((await report.detail()).open).toBe(false); // nothing opens by itself (PD-ROWS-9)
     await report.tab("radius");
     expect((await report.detail()).open).toBe(false);
@@ -82,9 +82,9 @@ for (const width of [1181, 1280, 1440, 1920]) {
       page,
     }) => {
       const report: ReportPage = await createReportPage(page);
-      await report.gotoReport2("composite");
+      await report.gotoReport2WithHash("composite", "view=findings");
       expect((await report.detail()).open).toBe(false);
-      expect(await report.hash()).toBe("");
+      expect(await report.hash()).toBe("#view=findings");
 
       const list = page.locator('[data-surface="findings"]');
       const shellBox = await box(shellLocator(page));

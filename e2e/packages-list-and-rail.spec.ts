@@ -151,7 +151,7 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
   test("selecting Direct recounts every other row and hides Transitive; its chip takes it off again", async ({
     page,
   }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     expect(await report.railOptionPressed("scope", "transitive")).toBe(false);
 
     await report.railOption("scope", "direct");
@@ -174,7 +174,7 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
   });
 
   test("PD-RAIL-6: the Severity and Fix groups list the packages their rows count", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     const severity = page.getByRole("group", { name: "Severity", exact: true });
     const fix = page.getByRole("group", { name: "Fix", exact: true });
     await expect(severity.getByRole("button")).toHaveText([
@@ -207,7 +207,7 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
   });
 
   test("with a second flag picked, every row counts what the list shows with it on", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.tab("packages");
     await report.railOption("scope", "direct");
     await report.toggleRailRow("stale");
@@ -237,7 +237,7 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
   });
 
   test("a search is a chip of its own, and removing it leaves the rail's filters on", async ({ page }) => {
-    await report.gotoReport2("baselined-wallabag-main");
+    await report.gotoReport2WithHash("baselined-wallabag-main", "view=findings");
     await report.railOption("scope", "direct");
     await report.search("symfony");
     const chips = page.getByRole("group", { name: "Filtered by" }).getByRole("button");
@@ -253,7 +253,7 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
   test("PD-RAIL-3: no rail label breaks over two lines at 1440 or 1024", async ({ page }) => {
     for (const width of [1440, 1024]) {
       await page.setViewportSize({ width, height: 900 });
-      await report.gotoReport2("baselined-wallabag-main");
+      await report.gotoReport2WithHash("baselined-wallabag-main", "view=findings");
       const tall = await page
         .getByRole("group", { name: "Filters" })
         .getByRole("button")

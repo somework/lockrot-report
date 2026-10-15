@@ -44,7 +44,7 @@ for (const [width, height] of [
       page,
     }) => {
       const report = await createReportPage(page);
-      await report.gotoReport2(LONG_CASE);
+      await report.gotoReport2WithHash(LONG_CASE, "view=findings");
       const pkg = await rowAt(report, DEEP_ROW);
       await report.centerRow(pkg);
       const before = await place(report, pkg);
@@ -71,7 +71,7 @@ test.describe("1440×900 keyboard and links", () => {
 
   test("j opens the first row and puts focus on it, not only once Escape closes it", async ({ page }) => {
     const report = await createReportPage(page);
-    await report.gotoReport2(LONG_CASE);
+    await report.gotoReport2WithHash(LONG_CASE, "view=findings");
     const first = await rowAt(report, 0);
 
     await report.pressJ();
@@ -90,7 +90,7 @@ test.describe("1440×900 keyboard and links", () => {
     }) => {
       await page.emulateMedia({ reducedMotion });
       const report = await createReportPage(page);
-      await report.gotoReport2(LONG_CASE);
+      await report.gotoReport2WithHash(LONG_CASE, "view=findings");
 
       for (let i = 0; i < DEEP_ROW; i++) await report.pressJ();
       const pkg = await rowAt(report, DEEP_ROW - 1);
@@ -112,7 +112,7 @@ test.describe("1440×900 keyboard and links", () => {
     page,
   }) => {
     const report = await createReportPage(page);
-    await report.gotoReport2(LONG_CASE);
+    await report.gotoReport2WithHash(LONG_CASE, "view=findings");
 
     for (let i = 0; i < DEEP_ROW; i++) await report.pressJ();
     const pkg = await rowAt(report, DEEP_ROW - 1);
@@ -154,7 +154,7 @@ test.describe("report-2: 1440×900", () => {
   });
 
   test("a row clicked in the list stays where the reader saw it as the sheet opens", async ({ page }) => {
-    await page.goto(report2Url("composite"));
+    await page.goto(report2Url("composite") + "#view=findings");
     const row = page.getByRole("listitem", { name: "symfony/yaml", exact: true });
     await row.scrollIntoViewIfNeeded();
     const before = (await row.boundingBox())?.y ?? Number.NaN;

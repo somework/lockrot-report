@@ -1,6 +1,6 @@
 /**
- * PD-DISCLOSURE-1 (DESIGN.md §5): every `<details>`/`<summary>` on the page — the ledger and rail
- * phone folds, the glossary's own sections, the detail panel's reference sections — used to draw its
+ * PD-DISCLOSURE-1 (DESIGN.md §5): every `<details>`/`<summary>` on the page — the rail's phone
+ * fold, the glossary's own sections, the detail panel's reference sections — used to draw its
  * own "▸" text glyph as a disclosure marker, at slightly different sizes, with no hover or focus
  * state. A text glyph's exact shape depends on whatever font a viewer's OS (or a headless browser
  * with no system fonts) substitutes for it; one review environment rendered it as a near-invisible
@@ -44,7 +44,7 @@ test.describe("report-2: the glossary and the phone folds draw the one marker", 
   const glossary = (page: Page) => page.getByRole("dialog", { name: /what these words mean/i });
 
   test("the glossary's collapsed sections each draw a visible, sized marker", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openGlossary();
 
     for (const title of ["The signals", "Keys and search", "One number for the lock: libyears"]) {
@@ -56,7 +56,7 @@ test.describe("report-2: the glossary and the phone folds draw the one marker", 
   });
 
   test("rotates 90 degrees once its own <details> opens, and back once it closes", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openGlossary();
     const summary = glossary(page).locator("summary", { hasText: "The signals" });
 
@@ -70,13 +70,12 @@ test.describe("report-2: the glossary and the phone folds draw the one marker", 
     await expect.poll(() => markerRotation(summary)).toBe(closed);
   });
 
-  test("the phone fold's own overview and rail summaries draw the same marker shape", async ({ page }) => {
+  test("the phone's rail fold draws the same marker shape", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
 
-    const overviewSummary = page.locator('[data-surface="overview"] details.ledger-fold > summary');
     const railSummary = page.getByText("Filters").locator("xpath=ancestor-or-self::summary[1]");
-    for (const summary of [overviewSummary, railSummary]) {
+    for (const summary of [railSummary]) {
       const box = await markerBox(summary);
       expect(box.content).not.toBe("none");
       expect(box.width).toBeGreaterThan(0);
@@ -85,7 +84,7 @@ test.describe("report-2: the glossary and the phone folds draw the one marker", 
   });
 
   test("darkens on hover, a visible affordance and not only a cursor change", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openGlossary();
     const summary = glossary(page).locator("summary", { hasText: "The signals" });
 

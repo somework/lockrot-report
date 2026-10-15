@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("on the All packages tab, which draws every finding whatever its grade", () => {
   test.beforeEach(async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.tab("packages");
   });
 
@@ -68,7 +68,7 @@ test.describe("on the All packages tab, which draws every finding whatever its g
 
 test.describe("on a report-2 page", () => {
   test.beforeEach(async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
   });
 
   test("a bare word matches the package name and its version", async () => {

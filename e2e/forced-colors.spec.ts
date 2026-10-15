@@ -24,7 +24,7 @@ const WALLABAG = "baselined-wallabag-2.6";
 test.describe("report-2: the age bar and its guides stay visible in forced-colors mode", () => {
   for (const colorScheme of ["light", "dark"] as const) {
     test(`javibravo/simpleue (at-or-above-high zone), ${colorScheme} forced colors`, async ({ page }) => {
-      await report.gotoReport2(WALLABAG);
+      await report.gotoReport2WithHash(WALLABAG, "view=findings");
       await page.emulateMedia({ colorScheme, forcedColors: "active" });
 
       expect(await report.ageScaleForcedColorsVisible("javibravo/simpleue")).toEqual({
@@ -37,7 +37,7 @@ test.describe("report-2: the age bar and its guides stay visible in forced-color
     test(`symfony/http-foundation (warn..high zone, the hatched middle), ${colorScheme} forced colors`, async ({
       page,
     }) => {
-      await report.gotoReport2(WALLABAG);
+      await report.gotoReport2WithHash(WALLABAG, "view=findings");
       await page.emulateMedia({ colorScheme, forcedColors: "active" });
 
       expect(await report.ageScaleForcedColorsVisible("symfony/http-foundation")).toEqual({
@@ -51,7 +51,7 @@ test.describe("report-2: the age bar and its guides stay visible in forced-color
   // A colour check alone cannot tell a guide painted over by the bar from one that is missing.
   for (const colorScheme of ["light", "dark"] as const) {
     test(`the warn tick survives under the bar, ${colorScheme} forced colors`, async ({ page }) => {
-      await report.gotoReport2(WALLABAG);
+      await report.gotoReport2WithHash(WALLABAG, "view=findings");
       await page.emulateMedia({ colorScheme, forcedColors: "active" });
 
       expect(await report.ageScaleWarnTickSurvivesDot("symfony/http-foundation")).toBe(true);
@@ -170,7 +170,7 @@ test.describe("report-2: a flag bar keeps its marks, not a frame, in forced-colo
   }
 });
 
-test.describe("report-2: the overview band's waffle stays readable in forced-colors mode", () => {
+test.describe("report-2: the Overview waffle stays readable in forced-colors mode", () => {
   for (const colorScheme of ["light", "dark"] as const) {
     test(`flagged squares keep a fill and quiet ones an outline, ${colorScheme} forced colors`, async ({
       page,
@@ -221,7 +221,7 @@ test.describe("report-2: the score bars and the band ruler keep their marks in f
       page,
     }) => {
       await page.emulateMedia({ colorScheme, forcedColors: "active" });
-      await page.goto(report2Url("composite"));
+      await page.goto(report2Url("composite") + "#view=findings");
       const row = findingsRow(page, PKG);
       const ink = await canvasText(page);
       const seen = await borders(row.locator(".sbar-seg"));
@@ -256,7 +256,7 @@ test.describe("report-2: the score bars and the band ruler keep their marks in f
 
   test("the accepted pill keeps its dashed border and its word", async ({ page }) => {
     await page.emulateMedia({ forcedColors: "active" });
-    await page.goto(report2Url("D-partial-dagger"));
+    await page.goto(report2Url("D-partial-dagger") + "#view=findings");
     const pill = page.locator('[data-surface="findings"] .fp.is-accepted').first();
     await expect(pill).toContainText("accepted");
     expect(await pill.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe("dashed");

@@ -27,6 +27,7 @@ function input(overrides: Partial<KeyInput>): KeyInput {
     rendered: ROWS,
     sheetOpen: false,
     searchAvailable: true,
+    overview: false,
     ...overrides,
   };
 }
@@ -158,6 +159,22 @@ describe("/ and ?", () => {
     });
   });
 
+  // Overview draws no search box and no row (DESIGN.md §8, Keyboard).
+  test("/ does nothing on Overview, which has no search box, and lets the key through", () => {
+    const slash = decideKey(input({ key: "/", overview: true, searchAvailable: false }));
+
+    expect(slash).toEqual({ type: "ignore" });
+    expect(prevents(slash)).toBe(false);
+  });
+
+  test("j and k do nothing on Overview, which draws no row, and let the key through", () => {
+    const j = decideKey(input({ key: "j", overview: true, rendered: [] }));
+    const k = decideKey(input({ key: "k", overview: true, rendered: [] }));
+
+    expect([j, k]).toEqual([{ type: "ignore" }, { type: "ignore" }]);
+    expect(prevents(j)).toBe(false);
+  });
+
   test("? does not reopen an open glossary", () => {
     expect(decideKey(input({ key: "?", dialogOpen: true }))).toEqual({ type: "ignore" });
   });
@@ -267,6 +284,7 @@ describe("keyInputFrom reads the page around a key", () => {
       dialogOpen: false,
       selected: null,
       sheetOpen: false,
+      overview: false,
       rendered: () => {
         computed += 1;
         return ROWS;
@@ -302,6 +320,7 @@ describe("keyInputFrom reads the page around a key", () => {
       dialogOpen: false,
       selected: "a/one",
       sheetOpen: true,
+      overview: false,
       rendered: () => ROWS,
     };
 
@@ -309,6 +328,7 @@ describe("keyInputFrom reads the page around a key", () => {
       rowPkg: "a/one",
       rowIndex: 2,
       sheetOpen: true,
+      overview: false,
       searchAvailable: false,
     });
     // Read for j/k only.
@@ -328,6 +348,7 @@ describe("keyInputFrom reads the page around a key", () => {
       dialogOpen: false,
       selected: null,
       sheetOpen: false,
+      overview: false,
       rendered: () => ROWS,
     };
 
@@ -347,6 +368,7 @@ describe("keyInputFrom reads the page around a key", () => {
       dialogOpen: false,
       selected: null,
       sheetOpen: false,
+      overview: false,
       rendered: () => ROWS,
     });
     expect(read).toMatchObject({ typing: true, searchFocused: true });

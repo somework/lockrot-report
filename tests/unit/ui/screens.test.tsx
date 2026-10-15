@@ -73,7 +73,7 @@ describe("RenderGuard", () => {
 
     render(<RenderGuard model={result.model} />);
 
-    expect(document.querySelector('[data-surface="findings"]')).not.toBeNull();
+    expect(document.querySelector('[data-surface="overview"]')).not.toBeNull();
   });
 
   test("renders the error screen when the report throws while it renders", () => {

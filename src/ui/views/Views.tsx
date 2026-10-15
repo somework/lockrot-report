@@ -1,19 +1,22 @@
 import { useReport } from "../context";
 import { AdvisoriesView2 } from "../report/AdvisoriesView";
+import { OverviewView2 } from "../report/OverviewView";
 import { FindingsView2 } from "../report/FindingsView";
 import { PackagesView2 } from "../report/PackagesView";
 import { RadiusView2 } from "../report/RadiusView";
 import { RunView2 } from "../report/RunView";
 
 /**
- * The current tab's body. `state.view` is typed as one of the five known views end to end (parsing
- * an unrecognised `view=` out of the URL fragment is `state/hash.ts`'s job, and it already falls
- * back to `"findings"` there), so every case below is reachable and the switch needs no default.
+ * The current tab's body. `state.view` is typed as one of the known views end to end (an
+ * unrecognised `view=` in the URL fragment is `state/hash.ts`'s to resolve, by rule R1), so every
+ * case below is reachable and the switch needs no default.
  */
 export function CurrentView() {
   const { state } = useReport();
 
   switch (state.view) {
+    case "overview":
+      return <OverviewView2 />;
     case "findings":
       return <FindingsView2 />;
     case "advisories":

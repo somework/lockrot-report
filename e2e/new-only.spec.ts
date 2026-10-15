@@ -24,7 +24,7 @@ const AXE_CASES = [
   "unknown",
 ];
 const SCHEMES = ["light", "dark"] as const;
-const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;
+const VIEWS = ["overview", "findings", "advisories", "packages", "radius", "run"] as const;
 
 async function load(page: Page, caseName: string, hash = ""): Promise<void> {
   await page.goto("about:blank");
@@ -51,7 +51,7 @@ test.describe("axe: no serious or critical violations", () => {
     for (const colorScheme of SCHEMES) {
       test(`${caseName}, ${colorScheme}, detail open`, async ({ page }) => {
         await page.emulateMedia({ colorScheme });
-        await load(page, caseName);
+        await load(page, caseName, "view=findings");
         const report = await createReportPage(page);
         // Nothing opens by itself (PD-ROWS-9): open the first row, or the first package when
         // nothing is flagged.
@@ -71,7 +71,7 @@ test.describe("axe: no serious or critical violations", () => {
     test(`baselined-wallabag-2.6, ${view} tab, both schemes`, async ({ page }) => {
       for (const colorScheme of SCHEMES) {
         await page.emulateMedia({ colorScheme });
-        await load(page, "baselined-wallabag-2.6", view === "findings" ? "" : `view=${view}`);
+        await load(page, "baselined-wallabag-2.6", view === "overview" ? "" : `view=${view}`);
         expect(await seriousViolations(page)).toEqual([]);
       }
     });
@@ -114,7 +114,7 @@ test.describe("CSP, console and runtime errors on every corpus-slice page", () =
       });
 
       await load(page, caseName);
-      for (const name of ["Advisories", "All packages", "Blast radius", "Run data", "Findings"]) {
+      for (const name of ["Findings", "Advisories", "All packages", "Blast radius", "Run data", "Findings"]) {
         await page.getByRole("tab", { name }).click();
       }
       await page.getByRole("button", { name: /^(dark|light)$/i }).click();
@@ -136,7 +136,7 @@ test.describe("no horizontal overflow at 320px", () => {
     test(caseName, async ({ page }) => {
       const overflowing: string[] = [];
       for (const view of VIEWS) {
-        await load(page, caseName, view === "findings" ? "" : `view=${view}`);
+        await load(page, caseName, view === "overview" ? "" : `view=${view}`);
         const width = await page.evaluate(() => document.documentElement.scrollWidth);
         if (width > 320) overflowing.push(`${view}: ${width}px`);
       }
@@ -153,7 +153,7 @@ test.describe("no horizontal overflow inside the open detail sheet at 320px (reg
   test("baselined-wallabag-2.6: sensio/framework-extra-bundle's repository link wraps instead of widening the sheet", async ({
     page,
   }) => {
-    await load(page, "baselined-wallabag-2.6");
+    await load(page, "baselined-wallabag-2.6", "view=findings");
     const report = await createReportPage(page);
     await report.openPackage("sensio/framework-extra-bundle");
 

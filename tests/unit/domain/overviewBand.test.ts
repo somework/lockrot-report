@@ -4,7 +4,6 @@ import {
   acceptedLine,
   depthSentence,
   flagBars,
-  foldPeek2,
   gateState,
   gradeChips,
   leadFigure,
@@ -193,9 +192,9 @@ describe("the Security block", () => {
         { id: "low", band: "low", outlined: false, count: 9 },
       ],
       fixes: [
-        { label: "composer update", count: 2 },
-        { label: "upgrade", count: 1 },
-        { label: "php floor raise", count: 1 },
+        { kind: "update", label: "composer update", count: 2 },
+        { kind: "upgrade", label: "upgrade", count: 1 },
+        { kind: "raise-php", label: "php floor raise", count: 1 },
       ],
     });
   });
@@ -213,16 +212,6 @@ describe("the Security block", () => {
     expect(block.figure).toBeNull();
     expect(block.unit).toBe("no security advisory");
     expect(block.severities).toEqual([]);
-  });
-});
-
-describe("the phone fold", () => {
-  test("peeks at the flags, the advisories and the libyears", () => {
-    expect(foldPeek2(golden("composite"))).toEqual(["6 flags", "20 advisories", "17.9 libyears"]);
-  });
-
-  test("peeks at a clean lock with one singular word each", () => {
-    expect(foldPeek2(golden("new-symfony"))).toEqual(["no flag", "no advisory", "0.0 libyears"]);
   });
 });
 

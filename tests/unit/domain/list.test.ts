@@ -29,8 +29,15 @@ const withAccepted: Report2 = {
 };
 
 function state(overrides: Partial<State> = {}, filters: Partial<Filters> = {}): State {
-  return { ...INITIAL_STATE, ...overrides, filters: { ...EMPTY_FILTERS, ...filters } };
+  return { ...INITIAL_STATE, view: "findings", ...overrides, filters: { ...EMPTY_FILTERS, ...filters } };
 }
+
+describe("Overview, which lists nothing", () => {
+  it("draws no row, so j and k have nothing to walk", () => {
+    expect(renderedPackages2(composite, state({ view: "overview" }), "overview", false)).toEqual([]);
+    expect(renderedPackages2(composite, state({ view: "overview" }), "overview", true)).toEqual([]);
+  });
+});
 
 function names(findings: readonly Finding[]): string[] {
   return findings.map((f) => f.package);

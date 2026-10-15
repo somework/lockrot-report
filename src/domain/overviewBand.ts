@@ -6,7 +6,7 @@
 import type { Report2 } from "../model/report";
 import { advisoryListPartial, fixCounts, noAdvisoryWords, PARTIAL_HEDGE, scopeClauses } from "./copySummary";
 import { isAre, namesCapped } from "./findingWords";
-import { fixed, plural, pluralNoun } from "./format";
+import { plural, pluralNoun } from "./format";
 import { sharePhrase } from "./summary";
 
 export const OVERVIEW_WORDS = {
@@ -22,7 +22,6 @@ export const OVERVIEW_WORDS = {
   byFix: "By fix (packages)",
   updateNow: "Update now",
   libyears: "Libyears",
-  more: "More about this lock",
 } as const;
 
 export type Lead =
@@ -147,7 +146,7 @@ export interface SecurityBlock {
   unit: string;
   note: string | null;
   severities: SeverityCount[];
-  fixes: { label: string; count: number }[];
+  fixes: { kind: string; label: string; count: number }[];
 }
 
 export function securityBlock(report: Report2): SecurityBlock {
@@ -168,20 +167,8 @@ export function securityBlock(report: Report2): SecurityBlock {
         count: bySeverity[id] ?? 0,
       }))
       .filter(({ count }) => count > 0),
-    fixes: fixCounts(report).map(({ label, count }) => ({ label, count })),
+    fixes: fixCounts(report),
   };
-}
-
-/** The closed phone fold's one line: what the folded tier holds. */
-export function foldPeek2(report: Report2): string[] {
-  const flags = flagBars(report).length;
-  const advisories = report.security.advisories.counted;
-  const { libyears } = report;
-  return [
-    flags === 0 ? "no flag" : plural(flags, "flag", "flags"),
-    advisories === 0 ? "no advisory" : plural(advisories, "advisory", "advisories"),
-    ...(libyears.measured > 0 ? [`${fixed(libyears.total, 1)} libyears`] : []),
-  ];
 }
 
 /** `security.update_now_command` as an argv; `null` hides the line, as does an entry that is no string. */
