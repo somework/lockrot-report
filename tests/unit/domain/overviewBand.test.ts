@@ -13,7 +13,7 @@ import {
   securityBlock,
   updateNowArgv,
 } from "../../../src/domain/overviewBand";
-import type { Report2 } from "../../../src/model/report2";
+import type { Report2 } from "../../../src/model/report";
 import { pageGoldens } from "../words/recorded";
 
 function golden(id: string): Report2 {

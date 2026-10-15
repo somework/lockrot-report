@@ -20,7 +20,7 @@ import {
   type SeverityCount,
 } from "../../domain/overviewBand";
 import { TONE, type Tone } from "../../domain/vocab";
-import type { Report2 } from "../../model/report2";
+import type { Report2 } from "../../model/report";
 import type { FilterGroup } from "../../state/types";
 import { filterTitle, LegendButton, toneClass } from "../common/common";
 import { useReport } from "../context";

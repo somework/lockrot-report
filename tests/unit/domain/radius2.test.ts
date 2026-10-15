@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { population2 } from "../../../src/domain/list2";
+import { population2 } from "../../../src/domain/list";
 import { pulledTree } from "../../../src/domain/radius";
 import {
   gradeMix,
@@ -10,7 +10,7 @@ import {
   radiusRowSay,
   radiusRows2,
 } from "../../../src/domain/radius2";
-import type { Report2, Report2Embed } from "../../../src/model/report2";
+import type { Report2, Report2Embed } from "../../../src/model/report";
 import { INITIAL_STATE } from "../../../src/state/types";
 import { readContractJson } from "../words/recorded";
 

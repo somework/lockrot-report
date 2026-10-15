@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { isScoreGraded, type Run, type ScoreGraded } from "../../../src/model/report2";
+import { isScoreGraded, type Run, type ScoreGraded } from "../../../src/model/report";
 import { scoreBar } from "../../../src/domain/scoreBar";
 import { bandRuler, legendText } from "../../../src/domain/whyBar";
 import { recordedCases } from "./recorded";

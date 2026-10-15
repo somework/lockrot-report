@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/pr
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { assembleEmbed } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
-import type { Report2Embed } from "../../../src/model/report2";
+import type { Report2Embed } from "../../../src/model/report";
 import type { Model } from "../../../src/model/types";
 import { App } from "../../../src/ui/App";
 

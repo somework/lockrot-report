@@ -6,7 +6,7 @@ import type { ComponentChild } from "preact";
 import { assembleEmbed } from "../../../scripts/report2-embed";
 import type { Action, State } from "../../../src/state/types";
 import { INITIAL_STATE } from "../../../src/state/types";
-import type { Report2Embed } from "../../../src/model/report2";
+import type { Report2Embed } from "../../../src/model/report";
 import type { Model } from "../../../src/model/types";
 import { normalize } from "../../../src/model/normalize";
 import { ReportContext } from "../../../src/ui/context";

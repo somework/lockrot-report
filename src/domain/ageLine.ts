@@ -11,7 +11,7 @@ import type {
   AgeRelease,
   Finding,
   RepositoryMetadata,
-} from "../model/report2";
+} from "../model/report";
 import { ago } from "./ago";
 import { AGE_WORDS, causeWord, eventWord } from "./pageVocabulary";
 

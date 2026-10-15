@@ -3,7 +3,7 @@
  * stayed quiet, and which could not run, with the reason words of each group.
  */
 
-import type { Finding, Run, UncheckedAccepted } from "../model/report2";
+import type { Finding, Run, UncheckedAccepted } from "../model/report";
 import { causeWord } from "./pageVocabulary";
 
 type Blocking = { reason: string; blocks: readonly string[]; check: string };

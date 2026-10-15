@@ -1,5 +1,5 @@
 /** The rail's row shape, the signal ids' order, and the active-filters line (PD-RAIL-4). Which
- *  findings each tab lists lives in `list2.ts`. */
+ *  findings each tab lists lives in `list.ts`. */
 
 import { FILTER_GROUPS, type Filters, type FilterGroup } from "../state/types";
 import { SIGNAL_NAMES, vocabTable } from "./vocab";

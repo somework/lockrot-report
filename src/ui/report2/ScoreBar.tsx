@@ -1,5 +1,5 @@
-import type { Run, Score } from "../../model/report2";
-import { gradeTone } from "../../domain/findingRow2";
+import type { Run, Score } from "../../model/report";
+import { gradeTone } from "../../domain/findingRow";
 import { scoreBar, type BarSegment } from "../../domain/scoreBar";
 import { toneClass } from "../common/common";
 import "./scoreBar.css";

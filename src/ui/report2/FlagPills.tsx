@@ -1,5 +1,5 @@
-import type { Finding, Run } from "../../model/report2";
-import { gradeTone, shownPills, type BaselineMark } from "../../domain/findingRow2";
+import type { Finding, Run } from "../../model/report";
+import { gradeTone, shownPills, type BaselineMark } from "../../domain/findingRow";
 import { toneClass } from "../common/common";
 import "./flagPills.css";
 

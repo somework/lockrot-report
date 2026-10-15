@@ -2,7 +2,7 @@ import { useId } from "preact/hooks";
 import { acceptedUnchecked, advisoryLookup, noteRows, RUN_WORDS, thresholdRows } from "../../domain/runTab";
 import { bandRuler, scorePanelParts, scoreTables, type ScoreTable } from "../../domain/scorePanel";
 import { TONE } from "../../domain/vocab";
-import type { Report2 } from "../../model/report2";
+import type { Report2 } from "../../model/report";
 import { OutLink, toneClass } from "../common/common";
 import "../views/views.css";
 import { SCORE_SECTION_ID } from "./ScoreModelLink";

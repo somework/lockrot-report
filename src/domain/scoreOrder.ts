@@ -4,7 +4,7 @@
  * re-sorts after a filter cannot drift from the engine.
  */
 
-import type { Finding, ScoreModel } from "../model/report2";
+import type { Finding, ScoreModel } from "../model/report";
 
 export type SortKey = ScoreModel["sort"][number];
 

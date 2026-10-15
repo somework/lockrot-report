@@ -1,9 +1,9 @@
 import { useId } from "preact/hooks";
-import type { Finding, Report2 } from "../../model/report2";
-import { isScoreGraded } from "../../model/report2";
+import type { Finding, Report2 } from "../../model/report";
+import { isScoreGraded } from "../../model/report";
 import { DETAIL_WORDS, whyTitle } from "../../domain/detailWords";
 import { whyBlock, type WhyLineKind } from "../../domain/scoreWhy";
-import { gradeTone } from "../../domain/findingRow2";
+import { gradeTone } from "../../domain/findingRow";
 import { scoreBar } from "../../domain/scoreBar";
 import { bandRuler, legendText } from "../../domain/whyBar";
 import { TONE } from "../../domain/vocab";

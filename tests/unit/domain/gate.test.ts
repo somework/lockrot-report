@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { gateFact, gateFlag, gateHeadline } from "../../../src/domain/gate";
-import type { Report2 } from "../../../src/model/report2";
+import type { Report2 } from "../../../src/model/report";
 import { readContractJson } from "../words/recorded";
 
 function report(name: string): Report2 {

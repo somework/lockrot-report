@@ -1,5 +1,5 @@
 import { useId } from "preact/hooks";
-import type { Finding, Run } from "../../model/report2";
+import type { Finding, Run } from "../../model/report";
 import {
   ageReading,
   ageScaleLabel,
@@ -10,7 +10,7 @@ import {
   nextStepWords,
   reachWord,
   rowSpoken,
-} from "../../domain/findingRow2";
+} from "../../domain/findingRow";
 import { safeHref } from "../../domain/links";
 import type { AgeAxis } from "../../domain/age";
 import { useReport } from "../context";

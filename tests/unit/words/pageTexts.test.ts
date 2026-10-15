@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import { copySummary } from "../../../src/domain/copySummary";
 import { libyearsPanel } from "../../../src/domain/libyearsPanel";
 import { scorePanel } from "../../../src/domain/scorePanel";
-import type { Report2 } from "../../../src/model/report2";
+import type { Report2 } from "../../../src/model/report";
 import { pageGoldens } from "./recorded";
 
 describe("the page texts equal lockrot's page goldens", () => {

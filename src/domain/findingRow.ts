@@ -1,8 +1,8 @@
 /** The words and lookups of a report-2 Findings row (SPEC §7.9.5): flag pills, baseline marks, the
  *  reach, the age reading, the last column, row runs and the notes above the list. */
 
-import type { Finding, Grade, Move, Report2, Run, TermSecurity } from "../model/report2";
-import { isScoreGraded, isTermSecurity } from "../model/report2";
+import type { Finding, Grade, Move, Report2, Run, TermSecurity } from "../model/report";
+import { isScoreGraded, isTermSecurity } from "../model/report";
 import { advisoryRows } from "./advisoryRows";
 import { countedFlagIds } from "./countedFlags";
 import {

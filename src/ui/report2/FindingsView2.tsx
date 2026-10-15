@@ -1,5 +1,5 @@
-import type { Finding, Report2, Run } from "../../model/report2";
-import { applyFilters2, HIDE_ACCEPTED, population2 } from "../../domain/list2";
+import type { Finding, Report2, Run } from "../../model/report";
+import { applyFilters2, HIDE_ACCEPTED, population2 } from "../../domain/list";
 import { ageAxis, type AgeAxis } from "../../domain/age";
 import {
   cappedPackages,
@@ -12,7 +12,7 @@ import {
   runSegments,
   uncheckedNote,
   type PackagesNote,
-} from "../../domain/findingRow2";
+} from "../../domain/findingRow";
 import { bandTicks } from "../../domain/scoreBar";
 import { useReport } from "../context";
 import { toneClass } from "../common/common";

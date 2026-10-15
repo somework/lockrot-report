@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/pre
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { assembleEmbed } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
-import type { DetailsEntry, Report2Embed } from "../../../src/model/report2";
+import type { DetailsEntry, Report2Embed } from "../../../src/model/report";
 import { App } from "../../../src/ui/App";
 
 const B = "symfony/monolog-bridge";

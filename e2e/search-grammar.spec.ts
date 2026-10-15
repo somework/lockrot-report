@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
 
 /**
- * The search grammar of a report-2 page (`domain/query2.ts`): a bare word against the package name
+ * The search grammar of a report-2 page (`domain/query.ts`): a bare word against the package name
  * and version, and `key:value` operators that narrow one field.
  */
 let report: ReportPage;

@@ -1,6 +1,6 @@
 /** The All packages cells of a report-2 document (SPEC §7.9.6). */
 
-import type { Finding } from "../model/report2";
+import type { Finding } from "../model/report";
 import type { SortKey } from "../state/types";
 import { ago } from "./ago";
 import { day, plural } from "./format";

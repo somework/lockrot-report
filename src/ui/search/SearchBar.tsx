@@ -1,11 +1,11 @@
 import type { Ref, RefObject } from "preact";
 import { useReport } from "../context";
 import { activeFilters } from "../../domain/filters";
-import { applyFilters2, hiddenByFilters2, population2 } from "../../domain/list2";
-import type { Report2 } from "../../model/report2";
+import { applyFilters2, hiddenByFilters2, population2 } from "../../domain/list";
+import type { Report2 } from "../../model/report";
 import { radiusCountPhrase } from "../../domain/radius";
 import { radiusLayout2 } from "../../domain/radius2";
-import { advisoryPairs2 } from "../../domain/advisories2";
+import { advisoryPairs2 } from "../../domain/advisories";
 import { countPhrase, plural } from "../../domain/format";
 import { ActiveFilters } from "./ActiveFilters";
 import { EMPTY_FILTERS, type State } from "../../state/types";

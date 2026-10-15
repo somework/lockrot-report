@@ -1,15 +1,15 @@
 /** Which report-2 findings each tab lists, the rail's filters and groups, and each tab's order
- *  (SPEC §7.9.5, §7.9.6, §7.9.7). The search grammar lives in `query2.ts`. */
+ *  (SPEC §7.9.5, §7.9.6, §7.9.7). The search grammar lives in `query.ts`. */
 
 import type { View } from "../model/types";
-import type { Finding, Report2 } from "../model/report2";
-import { isSecurityVulnerable } from "../model/report2";
+import type { Finding, Report2 } from "../model/report";
+import { isSecurityVulnerable } from "../model/report";
 import type { Filters, FilterGroup, SortKey, State } from "../state/types";
 import { advisoryRows } from "./advisoryRows";
-import { advisoryGroups2, advisoryPairs2, advisoryRowPackages } from "./advisories2";
+import { advisoryGroups2, advisoryPairs2, advisoryRowPackages } from "./advisories";
 import { radiusLayout2, radiusRows2 } from "./radius2";
 import { acceptedFlagIds, countedFlagIds } from "./countedFlags";
-import { matchesFinding2, parseQuery2, type Term2 } from "./query2";
+import { matchesFinding2, parseQuery2, type Term2 } from "./query";
 import type { RailGroup } from "./filters";
 
 type Row = readonly [key: string, label: string];

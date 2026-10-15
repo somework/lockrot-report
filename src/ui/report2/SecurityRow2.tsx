@@ -1,5 +1,5 @@
 import { useId } from "preact/hooks";
-import type { Finding, RepositoryMetadata, Run } from "../../model/report2";
+import type { Finding, RepositoryMetadata, Run } from "../../model/report";
 import { DETAIL_WORDS } from "../../domain/detailWords";
 import { moreWaysOut, securityRow, type SecurityRung } from "../../domain/securityLine";
 import { TONE } from "../../domain/vocab";

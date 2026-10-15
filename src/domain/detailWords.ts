@@ -1,6 +1,6 @@
 /** The fixed words of the report-2 detail sheet (SPEC §7.9.8): its headings, controls and reference rows. */
 
-import type { Finding } from "../model/report2";
+import type { Finding } from "../model/report";
 import { day } from "./format";
 import { namesCapped } from "./findingWords";
 

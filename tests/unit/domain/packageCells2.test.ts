@@ -5,8 +5,8 @@ import {
   libyearsCell,
   reachedWord,
   signalIds,
-} from "../../../src/domain/packageCells2";
-import type { Finding, Report2 } from "../../../src/model/report2";
+} from "../../../src/domain/packageCells";
+import type { Finding, Report2 } from "../../../src/model/report";
 import { readContractJson } from "../words/recorded";
 
 const composite = readContractJson("report-2", "composite.json") as Report2;

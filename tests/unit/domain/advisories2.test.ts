@@ -10,8 +10,8 @@ import {
   advisoryCountedAs,
   advisoryFixNote,
   noAdvisoryLine,
-} from "../../../src/domain/advisories2";
-import type { Finding, Report2 } from "../../../src/model/report2";
+} from "../../../src/domain/advisories";
+import type { Finding, Report2 } from "../../../src/model/report";
 import { EMPTY_FILTERS, type Filters } from "../../../src/state/types";
 import { readContractJson } from "../words/recorded";
 

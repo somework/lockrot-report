@@ -3,7 +3,7 @@
  * higher one, lowest first, with the php each needs.
  */
 
-import type { Finding, ReleaseBranch, RepositoryMetadata } from "../model/report2";
+import type { Finding, ReleaseBranch, RepositoryMetadata } from "../model/report";
 import { ago } from "./ago";
 import { phpConstraintWord } from "./phpAlternatives";
 

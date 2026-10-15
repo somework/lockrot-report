@@ -1,5 +1,5 @@
-import type { Finding } from "../model/report2";
-import { isScoreGraded } from "../model/report2";
+import type { Finding } from "../model/report";
+import { isScoreGraded } from "../model/report";
 
 /** The flags a score term names: the join SPEC §7.9.5 asks for, never `flags[].role`. */
 export function countedFlagIds(f: Finding): readonly string[] {

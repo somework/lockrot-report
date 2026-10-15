@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);
 });
 
-// report-2 free text matches the name and the version only (`domain/query2.ts`), both on the row,
+// report-2 free text matches the name and the version only (`domain/query.ts`), both on the row,
 // so a found row never carries a match note and the count line never splits.
 test.describe("report-2: free text finds what the row shows", () => {
   test("a word lists the rows that name it, with no match note and no split", async ({ page }) => {

@@ -3,7 +3,7 @@
  * code, the views, the signal ids the page has words for, and why a payload cannot be rendered.
  */
 
-import type { Report2Embed } from "./report2";
+import type { Report2Embed } from "./report";
 
 export const SIGNAL_IDS = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"] as const;
 export type KnownSignalId = (typeof SIGNAL_IDS)[number];

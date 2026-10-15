@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { printHasBody2, printLede2 } from "../../../src/domain/print2";
-import type { Report2 } from "../../../src/model/report2";
+import { printHasBody2, printLede2 } from "../../../src/domain/print";
+import type { Report2 } from "../../../src/model/report";
 import { readContractJson } from "../words/recorded";
 
 const composite = readContractJson("report-2", "composite.json") as Report2;

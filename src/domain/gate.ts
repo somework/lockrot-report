@@ -1,7 +1,7 @@
 /** The header's gate fact, read off lockrot's root `gate`: lockrot decides what fails, the page words
  *  it (PD-GATE-1..5, DESIGN.md §5). */
 
-import type { Report2 } from "../model/report2";
+import type { Report2 } from "../model/report";
 
 export interface GateFlag {
   readonly text: string;

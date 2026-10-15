@@ -1,7 +1,7 @@
 /** The search box's grammar on a report-2 document (SPEC §7.9.7): free words, `flag:`, `lead:`,
  *  `verdict:` (`priority:` reads as `verdict:`), `score:` and `direct:`/`dev:`. */
 
-import type { Finding } from "../model/report2";
+import type { Finding } from "../model/report";
 import { countedFlagIds } from "./countedFlags";
 
 export interface Term2 {

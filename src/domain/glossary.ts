@@ -2,7 +2,7 @@
  *  ids. A grade's floor and a flag's signals are lookups in `run.score_model`; no rule of the model
  *  is restated in prose. */
 
-import type { Report2, Run } from "../model/report2";
+import type { Report2, Run } from "../model/report";
 import { flagClaim, grade, signalName, zeroVerdictReason } from "./pageVocabulary";
 import { annotateThresholds, DOCS_URL, signalDef, type Thresholds } from "./vocab";
 

@@ -2,7 +2,7 @@ import "../styles/tokens.css";
 import "../styles/base.css";
 import type { RefObject } from "preact";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
-import { fitFilters2, population2, renderedPackages2 } from "../domain/list2";
+import { fitFilters2, population2, renderedPackages2 } from "../domain/list";
 import type { Model } from "../model/types";
 import type { Action, State } from "../state/types";
 import { ReportContext, useReport } from "./context";

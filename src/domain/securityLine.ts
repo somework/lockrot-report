@@ -10,8 +10,8 @@ import type {
   Run,
   RepositoryMetadata,
   SecurityVulnerable,
-} from "../model/report2";
-import { isSecurityVulnerable } from "../model/report2";
+} from "../model/report";
+import { isSecurityVulnerable } from "../model/report";
 import { advisoryRows } from "./advisoryRows";
 import { joinAnd } from "./joinWords";
 import { fixLabel, lookupWord } from "./pageVocabulary";

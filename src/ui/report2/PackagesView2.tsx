@@ -1,7 +1,7 @@
 import { useRef } from "preact/hooks";
-import type { Finding, Run } from "../../model/report2";
-import { applyFilters2, HIDE_ACCEPTED, population2 } from "../../domain/list2";
-import { gradeTone, shownPills } from "../../domain/findingRow2";
+import type { Finding, Run } from "../../model/report";
+import { applyFilters2, HIDE_ACCEPTED, population2 } from "../../domain/list";
+import { gradeTone, shownPills } from "../../domain/findingRow";
 import {
   dataAsOf,
   installedAge,
@@ -10,7 +10,7 @@ import {
   reachedWord,
   signalIds,
   type Cell,
-} from "../../domain/packageCells2";
+} from "../../domain/packageCells";
 import { useReport } from "../context";
 import { useOverflowX } from "../useOverflowX";
 import { toneClass } from "../common/common";

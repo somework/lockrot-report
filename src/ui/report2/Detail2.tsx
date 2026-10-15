@@ -1,6 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { useId, useRef } from "preact/hooks";
-import type { DetailsEntry, Finding } from "../../model/report2";
+import type { DetailsEntry, Finding } from "../../model/report";
 import { ageLine, ageNotRead } from "../../domain/ageLine";
 import { answerText } from "../../domain/findingAnswer";
 import { baselineSuffix } from "../../domain/baselineSuffix";
@@ -11,7 +11,7 @@ import { agesAsOf, DETAIL_WORDS, detailReach, REFERENCE_WORDS } from "../../doma
 import { feedsLine } from "../../domain/feedsLine";
 import { day } from "../../domain/format";
 import { safeHref } from "../../domain/links";
-import { HIDE_ACCEPTED, hiddenByFilters2 } from "../../domain/list2";
+import { HIDE_ACCEPTED, hiddenByFilters2 } from "../../domain/list";
 import { repositoryLine } from "../../domain/repositoryLine";
 import { TONE } from "../../domain/vocab";
 import { OutLink, toneClass } from "../common/common";

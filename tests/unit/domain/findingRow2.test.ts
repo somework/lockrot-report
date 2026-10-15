@@ -12,9 +12,9 @@ import {
   reachWord,
   runSegments,
   uncheckedNote,
-} from "../../../src/domain/findingRow2";
-import type { Finding, Report2, TermSecurity } from "../../../src/model/report2";
-import { isScoreGraded, isTermSecurity } from "../../../src/model/report2";
+} from "../../../src/domain/findingRow";
+import type { Finding, Report2, TermSecurity } from "../../../src/model/report";
+import { isScoreGraded, isTermSecurity } from "../../../src/model/report";
 import { readContractJson } from "../words/recorded";
 
 function report(name: string): Report2 {

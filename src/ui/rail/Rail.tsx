@@ -1,6 +1,6 @@
 import { useReport } from "../context";
 import type { RailGroup } from "../../domain/filters";
-import { population2, railGroups2 } from "../../domain/list2";
+import { population2, railGroups2 } from "../../domain/list";
 import { signalDef } from "../../domain/vocab";
 import "./rail.css";
 

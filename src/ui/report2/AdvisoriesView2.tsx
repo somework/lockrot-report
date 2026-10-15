@@ -1,4 +1,4 @@
-import type { Run } from "../../model/report2";
+import type { Run } from "../../model/report";
 import {
   ADVISORY_HEAD,
   advisoryAnswer2,
@@ -13,9 +13,9 @@ import {
   noAdvisoryLine,
   type AdvisoryGroup2,
   type AdvisoryPair2,
-} from "../../domain/advisories2";
-import { gradeTone, reachWord } from "../../domain/findingRow2";
-import { applyFilters2, population2 } from "../../domain/list2";
+} from "../../domain/advisories";
+import { gradeTone, reachWord } from "../../domain/findingRow";
+import { applyFilters2, population2 } from "../../domain/list";
 import { cveUrl, safeHref } from "../../domain/links";
 import { day, plural } from "../../domain/format";
 import { EMPTY_FILTERS } from "../../state/types";

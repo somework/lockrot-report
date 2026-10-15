@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import type { Finding, RepositoryMetadata, Run } from "../../model/report2";
+import type { Finding, RepositoryMetadata, Run } from "../../model/report";
 import {
   branchTimeline,
   laneWords,

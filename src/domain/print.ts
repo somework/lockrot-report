@@ -1,10 +1,10 @@
 /** The printed report of a report-2 (print/PrintDocument.tsx): each section's one line under its
  *  heading, counted from the report-2 populations. */
 
-import type { Report2 } from "../model/report2";
-import { noAdvisoryLine } from "./advisories2";
+import type { Report2 } from "../model/report";
+import { noAdvisoryLine } from "./advisories";
 import { plural } from "./format";
-import { population2 } from "./list2";
+import { population2 } from "./list";
 import type { PrintSection } from "./share";
 
 const packages = (n: number): string => plural(n, "package", "packages");

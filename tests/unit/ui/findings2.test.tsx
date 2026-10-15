@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/pre
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { assembleEmbed } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
-import type { Report2 } from "../../../src/model/report2";
+import type { Report2 } from "../../../src/model/report";
 import type { Model } from "../../../src/model/types";
 import { App } from "../../../src/ui/App";
 import { readContractJson } from "../words/recorded";

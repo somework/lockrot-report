@@ -1,8 +1,8 @@
 import type { ComponentChildren } from "preact";
 import { useId } from "preact/hooks";
-import type { Report2 } from "../../model/report2";
-import { gradeTone } from "../../domain/findingRow2";
-import { applyFilters2, population2 } from "../../domain/list2";
+import type { Report2 } from "../../model/report";
+import { gradeTone } from "../../domain/findingRow";
+import { applyFilters2, population2 } from "../../domain/list";
 import {
   FOLD_OTHER,
   FOLD_SELF,

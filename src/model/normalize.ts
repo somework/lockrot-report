@@ -5,7 +5,7 @@
  */
 
 import type { Model, NormalizeError } from "./types";
-import { REPORT2_KEYS, type Details, type Report2 } from "./report2";
+import { REPORT2_KEYS, type Details, type Report2 } from "./report";
 import { READS_SCHEMAS } from "../schema";
 
 export type NormalizeResult = { ok: true; model: Model } | { ok: false; error: NormalizeError };

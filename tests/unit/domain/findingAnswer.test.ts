@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { answerText } from "../../../src/domain/findingAnswer";
-import type { Finding, Report2 } from "../../../src/model/report2";
+import type { Finding, Report2 } from "../../../src/model/report";
 import { recordedCases } from "../words/recorded";
 
 /** A recorded case's finding, copied so a test can set the open-set value it is about. */

@@ -7,8 +7,8 @@ import {
   verdictsHeading,
   VERDICTS_DOCS,
   type GlossaryEntry,
-} from "../../domain/glossary2";
-import { gradeTone } from "../../domain/findingRow2";
+} from "../../domain/glossary";
+import { gradeTone } from "../../domain/findingRow";
 import { signalDocUrl } from "../../domain/vocab";
 import { OutLink, toneClass } from "../common/common";
 import { ScoreModelLink } from "./ScoreModelLink";

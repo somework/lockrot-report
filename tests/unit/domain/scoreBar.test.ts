@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { scoreBar } from "../../../src/domain/scoreBar";
-import type { Report2, ScoreGraded, Term } from "../../../src/model/report2";
-import { isScoreGraded, isTermSecurity } from "../../../src/model/report2";
+import type { Report2, ScoreGraded, Term } from "../../../src/model/report";
+import { isScoreGraded, isTermSecurity } from "../../../src/model/report";
 import { readContractJson } from "../words/recorded";
 
 const composite = readContractJson("report-2", "composite.json") as Report2;

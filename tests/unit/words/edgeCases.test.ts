@@ -4,7 +4,7 @@ import { ageLine } from "../../../src/domain/ageLine";
 import { baselineSuffix } from "../../../src/domain/baselineSuffix";
 import { branchesLine } from "../../../src/domain/branchesLine";
 import { feedsLine } from "../../../src/domain/feedsLine";
-import type { Finding, FindingBaseline, ReleaseBranch } from "../../../src/model/report2";
+import type { Finding, FindingBaseline, ReleaseBranch } from "../../../src/model/report";
 import { modelCases } from "./recorded";
 
 const modelCase = (name: string) => {

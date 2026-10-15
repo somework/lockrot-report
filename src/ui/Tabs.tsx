@@ -1,8 +1,8 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { RefObject } from "preact";
 import { advisoryRows } from "../domain/advisoryRows";
-import { population2 } from "../domain/list2";
-import type { Report2 } from "../model/report2";
+import { population2 } from "../domain/list";
+import type { Report2 } from "../model/report";
 import type { View } from "../model/types";
 import { useReport } from "./context";
 

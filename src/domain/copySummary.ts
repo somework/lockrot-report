@@ -3,7 +3,7 @@
  * What it counts, `packages_flagged` and the rest, lockrot has already counted.
  */
 
-import type { Report2 } from "../model/report2";
+import type { Report2 } from "../model/report";
 import { day, fixed, plural } from "./format";
 import { fixLabel } from "./pageVocabulary";
 import { sharePhrase } from "./summary";

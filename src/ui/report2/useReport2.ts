@@ -1,4 +1,4 @@
-import type { Report2Embed } from "../../model/report2";
+import type { Report2Embed } from "../../model/report";
 import { useReport } from "../context";
 
 /** The report-2 embed the page draws. */

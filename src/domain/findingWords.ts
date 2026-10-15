@@ -17,7 +17,7 @@ import type {
   SecurityVulnerable,
   Severity,
   SignalId,
-} from "../model/report2";
+} from "../model/report";
 import { advisoryRows } from "./advisoryRows";
 import { pluralNoun } from "./format";
 import { joinAnd } from "./joinWords";

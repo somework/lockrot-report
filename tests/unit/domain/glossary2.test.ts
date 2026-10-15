@@ -5,8 +5,8 @@ import {
   signalEntries,
   verdictEntries,
   verdictsHeading,
-} from "../../../src/domain/glossary2";
-import type { Report2 } from "../../../src/model/report2";
+} from "../../../src/domain/glossary";
+import type { Report2 } from "../../../src/model/report";
 import { readContractJson } from "../words/recorded";
 
 const composite = readContractJson("report-2", "composite.json") as Report2;

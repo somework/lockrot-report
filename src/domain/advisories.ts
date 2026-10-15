@@ -2,7 +2,7 @@
  *  `fix.to_branch`, with the tab's words. The lookup hedge reads root `security.check`, never a note
  *  code. */
 
-import type { Finding, Report2, Run, S9fix, S9row } from "../model/report2";
+import type { Finding, Report2, Run, S9fix, S9row } from "../model/report";
 import type { Filters } from "../state/types";
 import { advisoryRows } from "./advisoryRows";
 import { plural } from "./format";

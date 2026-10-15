@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { matchesFinding2, parseQuery2 } from "../../../src/domain/query2";
-import type { Finding, Report2 } from "../../../src/model/report2";
+import { matchesFinding2, parseQuery2 } from "../../../src/domain/query";
+import type { Finding, Report2 } from "../../../src/model/report";
 import { readContractJson } from "../words/recorded";
 
 const composite = readContractJson("report-2", "composite.json") as Report2;

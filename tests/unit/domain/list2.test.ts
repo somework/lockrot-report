@@ -6,8 +6,8 @@ import {
   population2,
   railGroups2,
   renderedPackages2,
-} from "../../../src/domain/list2";
-import type { Finding, Report2 } from "../../../src/model/report2";
+} from "../../../src/domain/list";
+import type { Finding, Report2 } from "../../../src/model/report";
 import { EMPTY_FILTERS, INITIAL_STATE, type Filters, type State } from "../../../src/state/types";
 import { readContractJson } from "../words/recorded";
 
