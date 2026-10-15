@@ -155,7 +155,7 @@ describe("the Libyears panel at its edges", () => {
     report.libyears = {
       ...report.libyears,
       furthest_behind: null,
-      unmeasured: { later_cause: 4, undated: 2, ...rest, not_found: 1 } as Report2["libyears"]["unmeasured"],
+      unmeasured: { later_cause: 4, undated: 2, ...rest, not_found: 1 },
     };
 
     expect(libyearsPanel(report)).toMatch(
