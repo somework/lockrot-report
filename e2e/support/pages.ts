@@ -111,5 +111,7 @@ export const FIXTURES = {
   /** Planted: the composite report-2 embed without its `rot_depth` key. Kept out of the page sweeps,
    *  which expect a report. */
   malformedReport2: "planted/report2-malformed",
+  /** Planted: the composite with symfony/yaml renamed to `METACHAR_NAME`. */
+  metacharReport2: "planted/report2-metachar",
 } as const;
 export type FixtureName = (typeof FIXTURES)[keyof typeof FIXTURES];

@@ -361,3 +361,20 @@ export const SEVERITY_BASIS_WORDS: Readonly<Record<string, string>> = {
 };
 
 export const RULE_NOT_FOR_SECURITY_DEV = "packages-dev still halves it";
+
+/** What each flag claims, for the glossary; a config key it names takes the run's value there. */
+const FLAG_CLAIMS: Words = {
+  abandoned:
+    "The package's Composer repository marks it abandoned, or its repository is archived on its host.",
+  silent: "No release for release-high-years and no push for push-high-years.",
+  pinned: "The installed version is a branch snapshot, or the package has no tagged release at all.",
+  "left-behind":
+    "No stable release on the installed release branch for release-warn-years, while a higher branch keeps releasing.",
+  "old-promise":
+    "The installed release predates the target PHP's major, and its require.php admits the target only because it has no upper bound.",
+  stale: "No release for release-warn-years, or no push for push-warn-years, short of silent.",
+  vulnerable: "A counted security advisory affects the installed version.",
+};
+
+export const flagClaim = (id: string): string =>
+  Object.hasOwn(FLAG_CLAIMS, id) ? wordFor(FLAG_CLAIMS, id) : "A flag this page does not know.";

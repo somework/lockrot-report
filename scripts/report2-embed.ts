@@ -30,6 +30,9 @@ export function report2Cases(): string[] {
     .sort();
 }
 
+/** A package name of CSS-selector metacharacters, for the planted `report2-metachar` page. */
+export const METACHAR_NAME = `acme/q"u]o[te\\'<x>`;
+
 /** The corpus slice: the composite, the offline cases and the baselined embeds (by page case name). */
 export function isCorpusSlice(caseName: string): boolean {
   return caseName === "composite" || caseName.includes("offline") || caseName.startsWith("baselined-");

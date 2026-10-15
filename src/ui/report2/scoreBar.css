@@ -3,6 +3,8 @@
    so both themes come from tokens. */
 .sbar {
   --sbar-w: 128px;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
   --sbar-seg-min: 4px;
   position: relative;
   display: inline-block;
@@ -123,6 +125,14 @@
     inset: 0;
     font: 600 9.5px/10px var(--mono);
     text-align: center;
+    color: var(--bg);
+  }
+  /* A patterned segment's number sits on its pale tone, so it takes the ink. */
+  .sbar-seg.is-corroborating .sbar-n,
+  .sbar-seg.is-security .sbar-n {
     color: var(--ink);
+  }
+  .sbar-tick {
+    border-left-color: var(--muted);
   }
 }

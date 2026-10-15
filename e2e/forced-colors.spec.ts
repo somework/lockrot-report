@@ -5,9 +5,11 @@
  * fix this file proves for the age scale and the legend chip: measured before the fix, in both
  * colour schemes, every part named below computed to the same colour as the page itself.
  */
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { FIXTURES } from "./support/pages";
+import { FIXTURES, report2Url } from "./support/pages";
+import { openDetail2 } from "./support/report2/detail";
+import { findingsRow } from "./support/report2/findings";
 
 let report: ReportPage;
 
@@ -209,5 +211,83 @@ test.describe("PD-GATE-5: the advisory ladder keeps its bars in forced-colors mo
     });
     expect(painted.hatch).toContain("repeating-linear-gradient");
     expect(painted.track).not.toBe("none");
+  });
+});
+
+test.describe("report-2: the score bars and the band ruler keep their marks in forced colours", () => {
+  /** The forced palette's text colour, read off a probe, as the page's own text would compute. */
+  const canvasText = (page: Page) =>
+    page.evaluate(() => {
+      const probe = document.createElement("div");
+      probe.style.color = "CanvasText";
+      document.body.append(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      return color;
+    });
+  const borders = (segments: Locator) =>
+    segments.evaluateAll((items) =>
+      items.map((item) => {
+        const style = getComputedStyle(item);
+        return {
+          role: (item.getAttribute("class") ?? "").match(/is-(lead|corroborating|security)/)?.[1],
+          style: style.borderTopStyle,
+          color: style.borderTopColor,
+        };
+      }),
+    );
+  // composite symfony/monolog-bridge: left-behind 16 (lead), old-promise 4 (corroborating),
+  // vulnerable 16 (security).
+  const PKG = "symfony/monolog-bridge";
+  const ROLES = [
+    { role: "lead", style: "solid" },
+    { role: "corroborating", style: "dashed" },
+    { role: "security", style: "dotted" },
+  ];
+
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`the Findings bar: a CanvasText border by role, numbers on 6 blocks or more, ${colorScheme}`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ colorScheme, forcedColors: "active" });
+      await page.goto(report2Url("composite"));
+      const row = findingsRow(page, PKG);
+      const ink = await canvasText(page);
+      const seen = await borders(row.locator(".sbar-seg"));
+      expect(seen.map(({ role, style }) => ({ role, style }))).toEqual(ROLES);
+      expect(seen.every(({ color }) => color === ink)).toBe(true);
+      // 16 points is 8 blocks: labelled; 4 points is 2 blocks: not.
+      await expect(row.locator(".sbar-n")).toHaveText(["16", "16"]);
+      await expect(row.locator(".sbar-n").first()).toBeVisible();
+      const tick = await row
+        .locator(".sbar-tick")
+        .first()
+        .evaluate((el) => getComputedStyle(el).borderLeftColor);
+      expect(tick).toBe(ink);
+    });
+
+    test(`the Why bar, its legend swatches and the band ruler, ${colorScheme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme, forcedColors: "active" });
+      const sheet = await openDetail2(page, "composite", PKG);
+      const ink = await canvasText(page);
+      const bar = await borders(sheet.locator(".d2-why-bar .sbar-seg"));
+      expect(bar.map(({ role, style }) => ({ role, style }))).toEqual(ROLES);
+      const swatches = await borders(sheet.locator(".d2-swatch"));
+      expect(swatches.map(({ role, style }) => ({ role, style }))).toEqual(ROLES);
+      expect([...bar, ...swatches].every(({ color }) => color === ink)).toBe(true);
+      const ticks = await sheet
+        .locator(".d2-ruler-tick:not(.is-start):not(.is-end)")
+        .evaluateAll((items) => items.map((item) => getComputedStyle(item).borderLeftColor));
+      expect(ticks.length).toBeGreaterThan(0);
+      expect(ticks.every((color) => color === ink)).toBe(true);
+    });
+  }
+
+  test("the accepted pill keeps its dashed border and its word", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    await page.goto(report2Url("D-partial-dagger"));
+    const pill = page.locator('[data-surface="findings"] .fp.is-accepted').first();
+    await expect(pill).toContainText("accepted");
+    expect(await pill.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe("dashed");
   });
 });

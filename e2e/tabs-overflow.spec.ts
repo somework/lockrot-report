@@ -154,3 +154,59 @@ for (const width of WIDE) {
     });
   });
 }
+
+test.describe("report-2: the tab row of the baselined wallabag page", () => {
+  const CASE = "baselined-wallabag-2.6";
+
+  for (const width of NARROW) {
+    test(`${String(width)}px: the chevrons walk the row end to end, and the page never scrolls sideways`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 800 });
+      const report = await createReportPage(page);
+      await report.gotoReport2(CASE);
+
+      expect(await report.tabsOverflow()).toBe(true);
+      expect(await report.tabsOverflowCue()).toEqual({ prev: false, next: true });
+      await pageUntil(report, "next", "run");
+      expect(await report.tabInFullView("run")).toBe(true);
+      expect(await report.tabsOverflowCue()).toEqual({ prev: true, next: false });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    });
+  }
+
+  test("a shared link to the last tab opens with that tab in full view", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    const report = await createReportPage(page);
+    await report.gotoReport2WithHash(CASE, "view=run");
+    expect(await report.activeTab()).toBe("run");
+    expect(await report.tabInFullView("run")).toBe(true);
+  });
+
+  for (const width of WIDE) {
+    test(`${String(width)}px: the row fits, every tab in view`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      const report = await createReportPage(page);
+      await report.gotoReport2(CASE);
+      expect(await report.tabsOverflow()).toBe(false);
+      for (const view of ["findings", "advisories", "packages", "radius", "run"] as const) {
+        expect(await report.tabInFullView(view)).toBe(true);
+      }
+    });
+  }
+
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`320px: no serious or critical violation in the header, ${colorScheme}`, async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 800 });
+      await page.emulateMedia({ colorScheme });
+      const report = await createReportPage(page);
+      await report.gotoReport2(CASE);
+      await report.scrollTabs("next");
+      const results = await new AxeBuilder({ page }).include("header").analyze();
+      const serious = results.violations
+        .filter((v) => v.impact === "serious" || v.impact === "critical")
+        .flatMap((v) => v.nodes.map((node) => `${v.id}: ${node.target.join(" ")}`));
+      expect(serious).toEqual([]);
+    });
+  }
+});

@@ -6,6 +6,8 @@ import type { Finding, Report2 } from "../model/report2";
 import { isSecurityVulnerable } from "../model/report2";
 import type { Filters, FilterGroup, SortKey, State } from "../state/types";
 import { advisoryRows } from "./advisoryRows";
+import { advisoryGroups2, advisoryPairs2, advisoryRowPackages } from "./advisories2";
+import { radiusLayout2, radiusRows2 } from "./radius2";
 import { acceptedFlagIds, countedFlagIds } from "./countedFlags";
 import { matchesFinding2, parseQuery2, type Term2 } from "./query2";
 import type { RailGroup } from "./filters";
@@ -101,8 +103,23 @@ export function hiddenByFilters2(report: Report2, state: State, pkg: string): bo
   return !applyFilters2(report, state, state.view).some((f) => f.package === pkg);
 }
 
-/** The rows each tab draws, top to bottom, for `j`/`k`. Only Findings and All packages have rows. */
-export function renderedPackages2(report: Report2, state: State, view: View): readonly string[] {
+/** The rows each tab draws, top to bottom, for `j`/`k`. */
+export function renderedPackages2(
+  report: Report2,
+  state: State,
+  view: View,
+  narrow = false,
+): readonly string[] {
+  if (view === "radius")
+    return radiusRows2(
+      radiusLayout2(report, applyFilters2(report, state, view), population2(report, view)),
+      state,
+      narrow,
+    );
+  if (view === "advisories") {
+    const pairs = advisoryPairs2(applyFilters2(report, state, view), state.filters);
+    return advisoryRowPackages(advisoryGroups2(report.run, pairs));
+  }
   if (view !== "findings" && view !== "packages") return [];
   return applyFilters2(report, state, view).map((f) => f.package);
 }
