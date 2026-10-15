@@ -36,3 +36,9 @@ export function anchorShift(root: ParentNode, anchor: RowAnchor | null): number 
 
   return Math.abs(shift) < 1 ? 0 : shift;
 }
+
+/** How much page the anchor's scroll needs below the page's end: a row near the end of a short page
+ *  moves down further than the page can scroll, and the browser would clamp the scroll short. */
+export function roomBelow(shift: number, scrollY: number, maxScroll: number): number {
+  return Math.max(0, shift - (maxScroll - scrollY));
+}

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "vitest";
-import { anchorShift, measureRow } from "../../../src/ui/rowAnchor";
+import { anchorShift, measureRow, roomBelow } from "../../../src/ui/rowAnchor";
 
 /** A list of rows whose viewport tops the test sets, as jsdom lays nothing out itself. */
 function list(tops: Record<string, number>): HTMLElement {
@@ -46,5 +46,17 @@ describe("anchorShift", () => {
     expect(anchorShift(root, null)).toBe(0);
     expect(anchorShift(root, { pkg: "gone/row", top: 100 })).toBe(0);
     expect(anchorShift(root, { pkg: "a/b", top: 480 })).toBe(0);
+  });
+});
+
+describe("roomBelow", () => {
+  test("is what the page lacks below its end to scroll the row back: a row near the end of a short page", () => {
+    expect(roomBelow(105, 800, 820)).toBe(85);
+  });
+
+  test("is 0 when the page can scroll that far, or the row moved up", () => {
+    expect(roomBelow(105, 654, 820)).toBe(0);
+    expect(roomBelow(105, 715, 820)).toBe(0);
+    expect(roomBelow(-190, 820, 820)).toBe(0);
   });
 });
