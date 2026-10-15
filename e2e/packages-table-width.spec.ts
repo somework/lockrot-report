@@ -151,3 +151,25 @@ for (const { width, oneLine } of FINDINGS_WIDE) {
     });
   });
 }
+
+test.describe("report-2, 1440×900", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("the table fills the shell with nothing open, and sits beside an open package", async ({ page }) => {
+    const report: ReportPage = await createReportPage(page);
+    await report.gotoReport2WithHash("composite", "view=packages");
+
+    const shellBox = await box(shellLocator(page));
+    expect(
+      shellBox.x +
+        shellBox.width -
+        ((await box(tableWrapLocator(page))).x + (await box(tableWrapLocator(page))).width),
+    ).toBeLessThan(30);
+
+    await report.openPackage("symfony/debug");
+    const tableBox = await box(tableWrapLocator(page));
+    const detailBox = await box(page.locator(".shell-detail"));
+    expect(shellBox.x + shellBox.width - (tableBox.x + tableBox.width)).toBeGreaterThan(300);
+    expect(detailBox.x - (tableBox.x + tableBox.width)).toBeLessThan(40);
+  });
+});

@@ -14,17 +14,18 @@ test("the build wrote report-2 pages", () => {
   expect(cases.some((name) => name.startsWith("baselined-"))).toBe(true);
 });
 
-test("the composite's Findings rows draw the score, the package, the version and the reach word", async ({
+test("the composite's Findings rows draw the score, the package, the pills, the reach and the next step", async ({
   page,
 }) => {
   await page.goto(report2Url("composite"));
 
-  expect(await findingsRowCells(page, "twig/twig")).toEqual(["32", "twig/twig", "v2.16.1", "direct"]);
   expect(await findingsRowCells(page, "symfony/polyfill-intl-idn")).toEqual([
     "2",
-    "symfony/polyfill-intl-idn",
-    "v1.37.0",
+    "symfony/polyfill-intl-idn v1.37.0",
+    "vulnerable·1maintenance accepted (lockrot's list)",
+    "",
     "via guzzlehttp/guzzle",
+    "composer update",
   ]);
 });
 

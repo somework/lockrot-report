@@ -33,8 +33,6 @@ export function population2(report: Report2, view: View): readonly Finding[] {
 function passesRail2(filters: Filters, f: Finding): boolean {
   if (filters.verdict.length > 0 && !filters.verdict.includes(f.verdict)) return false;
   if (filters.flag.length > 0 && !countedFlagIds(f).some((id) => filters.flag.includes(id))) return false;
-  const accepted = acceptedFlagIds(f).length > 0 ? "with" : "without";
-  if (filters.accepted.length > 0 && !filters.accepted.includes(accepted)) return false;
   const rows = advisoryRows(f);
   if (filters.sev.length > 0 && !rows.some((row) => filters.sev.includes(row.severity))) return false;
   if (filters.fix.length > 0 && !rows.some((row) => filters.fix.includes(row.fix.kind))) return false;
@@ -144,10 +142,8 @@ const SINCE_ROWS: readonly Row[] = [
   ["worsened", "Worsened"],
   ["known", "Known"],
 ];
-const ACCEPTED_ROWS: readonly Row[] = [
-  ["with", "With an accepted flag"],
-  ["without", "Without one"],
-];
+/** The one key of the accepted group: a view toggle that hides the accepted pills (SPEC §7.9.7). */
+export const HIDE_ACCEPTED = "hide";
 const SCOPE_ROWS: readonly Row[] = [
   ["direct", "Direct"],
   ["transitive", "Transitive"],
@@ -158,6 +154,20 @@ const SCOPE_ROWS: readonly Row[] = [
 
 function runFails2(report: Report2): boolean {
   return report.gate.fails && report.findings.some((f) => f.gate.fails);
+}
+
+/** Filters no package, so its count is the listed rows whose pills it shows or hides. */
+function acceptedToggle(scope: Scope): RailGroup {
+  const listed = countUnder(
+    { ...scope, here: scope.here.filter((f) => acceptedFlagIds(f).length > 0) },
+    scope.filters,
+  );
+  const on = scope.filters.accepted.includes(HIDE_ACCEPTED);
+  return {
+    group: "accepted",
+    title: "Accepted flags",
+    rows: [{ key: HIDE_ACCEPTED, label: "Hide accepted flags", count: listed, on }],
+  };
 }
 
 /** Since, This run, Flag, Accepted flags and Scope, each where it has a row. */
@@ -176,9 +186,7 @@ export function railGroups2(report: Report2, state: State): readonly RailGroup[]
       "Flag",
       report.run.flag_ids.map((id): Row => [id, id]),
     ),
-    here.some((f) => acceptedFlagIds(f).length > 0)
-      ? groupOf(scope, "accepted", "Accepted flags", ACCEPTED_ROWS)
-      : null,
+    here.some((f) => acceptedFlagIds(f).length > 0) ? acceptedToggle(scope) : null,
     groupOf(scope, "scope", "Scope", SCOPE_ROWS),
   ];
   return groups.filter((group): group is RailGroup => group !== null);
@@ -193,15 +201,24 @@ const union = (a: readonly string[], b: readonly string[]): string[] => [...new 
 /**
  * The filters a report-2 address may carry. A 0.13 link opens on report-2 terms (SPEC §7.9.7):
  * `prio=` as `verdict=`, and a flag named in `verdict=` as `flag=`. A `gate` key stays only when
- * some package fails the run. Returns `filters` itself when nothing changes.
+ * some package fails the run, and `accepted` keeps only its toggle. Returns `filters` itself when
+ * nothing changes.
  */
 export function fitFilters2(report: Report2, filters: Filters): Filters {
   const flagIds: readonly string[] = report.run.flag_ids;
   const named = filters.verdict.filter((key) => flagIds.includes(key));
   const gate = runFails2(report) ? filters.gate.filter((key) => key === "fails") : [];
-  if (filters.prio.length === 0 && named.length === 0 && gate.length === filters.gate.length) return filters;
+  const accepted = filters.accepted.filter((key) => key === HIDE_ACCEPTED);
+  if (
+    filters.prio.length === 0 &&
+    named.length === 0 &&
+    gate.length === filters.gate.length &&
+    accepted.length === filters.accepted.length
+  )
+    return filters;
   return {
     ...filters,
+    accepted,
     prio: [],
     verdict: union(
       filters.verdict.filter((key) => !flagIds.includes(key)),

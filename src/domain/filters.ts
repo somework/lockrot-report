@@ -384,10 +384,6 @@ const SCOPE_LABELS: Readonly<Record<string, string>> = {
   ...Object.fromEntries(SCOPE_ROWS),
   unnamed: "not in composer.json",
 };
-const ACCEPTED_LABELS: Readonly<Record<string, string>> = {
-  with: "With an accepted flag",
-  without: "Without one",
-};
 const SINCE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(SINCE_ROWS);
 const FIX_LABELS: Readonly<Record<string, string>> = Object.fromEntries(FIX_GROUP_TEXT);
 
@@ -403,17 +399,15 @@ function activeLabel(group: FilterGroup, key: string): string {
       return FIX_LABELS[key] ?? key;
     case "since":
       return SINCE_LABELS[key] ?? key;
-    case "accepted":
-      return ACCEPTED_LABELS[key] ?? key;
     default:
       return key;
   }
 }
 
 /** Every rail and ledger selection, in fragment group order, then the order chosen (PD-RAIL-4); the
- *  search text is not one. */
+ *  search text is not one, nor the accepted toggle, which narrows no list. */
 export function activeFilters(filters: Filters): readonly ActiveFilter[] {
-  return FILTER_GROUPS.flatMap((group) =>
+  return FILTER_GROUPS.filter((group) => group !== "accepted").flatMap((group) =>
     filters[group].map((key) => ({
       group,
       key,
