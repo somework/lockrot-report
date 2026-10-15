@@ -5,6 +5,7 @@ import {
   depthSentence,
   flagBars,
   foldPeek2,
+  gateState,
   gradeChips,
   leadFigure,
   leadScope,
@@ -221,5 +222,34 @@ describe("the phone fold", () => {
 
   test("peeks at a clean lock with one singular word each", () => {
     expect(foldPeek2(golden("new-symfony"))).toEqual(["no flag", "no advisory", "0.0 libyears"]);
+  });
+});
+
+describe("the gate line's state", () => {
+  test("fails when the gate fails", () => {
+    expect(gateState(golden("composite"))).toBe("fails");
+  });
+
+  test("passes when a gate applies and nothing fails it", () => {
+    const report = golden("composite");
+    report.gate = { ...report.gate, fails: false };
+
+    expect(gateState(report)).toBe("passes");
+  });
+
+  test("is off when the run sets no gate and no strict network", () => {
+    const report = golden("composite");
+    report.gate = { ...report.gate, fails: false };
+    report.run = { ...report.run, gates: [], strict_network: false };
+
+    expect(gateState(report)).toBe("off");
+  });
+
+  test("passes under strict network with no fail-on", () => {
+    const report = golden("composite");
+    report.gate = { ...report.gate, fails: false };
+    report.run = { ...report.run, gates: [], strict_network: true };
+
+    expect(gateState(report)).toBe("passes");
   });
 });

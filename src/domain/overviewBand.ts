@@ -22,8 +22,6 @@ export const OVERVIEW_WORDS = {
   byFix: "By fix (packages)",
   libyears: "Libyears",
   more: "More about this lock",
-  gateFails: "✕",
-  gatePasses: "✓",
 } as const;
 
 export type Lead =
@@ -69,6 +67,16 @@ export interface FlagBar {
 type RootFlag = Report2["flags"][keyof Report2["flags"]];
 
 const rootFlags = ({ flags }: Report2): Readonly<Record<string, RootFlag | undefined>> => flags;
+
+export type GateState = "fails" | "passes" | "off";
+
+/** What the `gate:` line says, from fields: a run with no gate value and no strict network gates nothing. */
+export function gateState({ gate, run }: Report2): GateState {
+  if (gate.fails) return "fails";
+  return run.gates.length === 0 && !run.strict_network ? "off" : "passes";
+}
+
+export const GATE_GLYPHS: Readonly<Record<GateState, string>> = { fails: "✕", passes: "✓", off: "" };
 
 export function flagBars(report: Report2): FlagBar[] {
   const flags = rootFlags(report);

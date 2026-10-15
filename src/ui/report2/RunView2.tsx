@@ -6,6 +6,7 @@ import type { Report2 } from "../../model/report2";
 import { OutLink, toneClass } from "../common/common";
 import "../views/views.css";
 import { SCORE_SECTION_ID } from "./ScoreModelLink";
+import { GateLine } from "./Overview2";
 import { useReport2 } from "./useReport2";
 import "./run2.css";
 
@@ -199,7 +200,7 @@ export function RunView2() {
       <AcceptedUnchecked report={report} />
       <section className="sect">
         <h3>{RUN_WORDS.gate}</h3>
-        <p className={`run2-gate ${toneClass(report.gate.fails ? "crit" : "none")}`}>{report.gate.text}</p>
+        <GateLine report={report} className="overview2-gate" />
       </section>
       <Thresholds run={report.run} />
     </section>

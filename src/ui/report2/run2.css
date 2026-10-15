@@ -162,17 +162,6 @@
   overflow-wrap: anywhere;
 }
 
-.run2-gate {
-  margin: 0;
-  padding: 6px 10px;
-  font: 13px/1.45 var(--mono);
-  color: var(--ink);
-  background: var(--tone-soft);
-  border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent);
-  border-radius: var(--radius-s);
-  overflow-wrap: anywhere;
-}
-
 .run2-kv-row {
   display: contents;
 }
@@ -192,8 +181,5 @@
     background: Canvas;
     color: CanvasText;
     border: 1px solid CanvasText;
-  }
-  .run2-gate {
-    border-color: CanvasText;
   }
 }

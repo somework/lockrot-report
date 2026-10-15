@@ -5,6 +5,8 @@ import {
   depthSentence,
   flagBars,
   foldPeek2,
+  GATE_GLYPHS,
+  gateState,
   gradeChips,
   leadFigure,
   leadScope,
@@ -12,10 +14,11 @@ import {
   OVERVIEW_WORDS,
   securityBlock,
   type FlagBar,
+  type GateState,
   type Lead,
   type SeverityCount,
 } from "../../domain/overviewBand";
-import { TONE } from "../../domain/vocab";
+import { TONE, type Tone } from "../../domain/vocab";
 import type { Report2 } from "../../model/report2";
 import type { FilterGroup } from "../../state/types";
 import { filterTitle, LegendButton, toneClass } from "../common/common";
@@ -65,13 +68,18 @@ function Figure({ lead }: { lead: Lead }) {
   );
 }
 
-function GateLine({ gate }: { gate: Report2["gate"] }) {
+export const GATE_TONES: Readonly<Record<GateState, Tone>> = { fails: "crit", passes: "none", off: "low" };
+
+export function GateLine({ report, className }: { report: Report2; className: string }) {
+  const state = gateState(report);
   return (
-    <p className={`overview2-gate ${toneClass(gate.fails ? "crit" : "none")}`}>
-      <span className="overview2-gate-mark" aria-hidden="true">
-        {gate.fails ? OVERVIEW_WORDS.gateFails : OVERVIEW_WORDS.gatePasses}
-      </span>
-      <span className="overview2-gate-text">{gate.text}</span>
+    <p className={`${className} ${toneClass(GATE_TONES[state])}`}>
+      {GATE_GLYPHS[state] !== "" && (
+        <span className="overview2-gate-mark" aria-hidden="true">
+          {GATE_GLYPHS[state]}
+        </span>
+      )}
+      <span className="overview2-gate-text">{report.gate.text}</span>
     </p>
   );
 }
@@ -115,7 +123,7 @@ function Lead({ report }: { report: Report2 }) {
           <figcaption className="lead-waffle-cap">{OVERVIEW_WORDS.perPackage}</figcaption>
         </figure>
       )}
-      <GateLine gate={report.gate} />
+      <GateLine report={report} className="overview2-gate" />
     </div>
   );
 }
