@@ -102,6 +102,17 @@ test.describe("report-2: the Advisories tab groups the S9 rows by fix kind and b
       "No advisory found (not checked).",
     );
     await expect(advisoriesSurface(page).locator(".al-clean")).toHaveCount(0);
+    await expect(advisoriesSurface(page).locator(".ci-tag")).toHaveText("Check incomplete");
+  });
+
+  test("the overview band and the tab hedge the same run, by one test", async ({ page }) => {
+    await page.goto(report2Url("B-offline-dagger"));
+    await expect(page.locator(".ledger-advisories")).toContainText(
+      "no advisory found, but the advisory check was incomplete",
+    );
+
+    await page.getByRole("tab", { name: /^Advisories/ }).click();
+    await expect(advisoriesSurface(page).locator(".ci-tag")).toBeVisible();
   });
 
   for (const width of [320, 390, 1024, 1440]) {

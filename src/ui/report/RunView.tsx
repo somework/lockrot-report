@@ -99,7 +99,7 @@ function Example({ report, opened }: { report: Report2; opened: string | null })
   const { finding, text } = liveExample(report, opened);
   return (
     <p className="run2-example">
-      <span>{text}</span>
+      <span className="run2-example-text">{text}</span>
       {finding !== null && <ScoreBar score={finding.score} run={report.run} />}
     </p>
   );

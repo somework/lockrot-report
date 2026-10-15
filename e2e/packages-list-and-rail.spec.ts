@@ -173,6 +173,25 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
     expect(await page.evaluate(() => document.activeElement?.getAttribute("type"))).toBe("search");
   });
 
+  test("PD-RAIL-6: the Severity and Fix groups list the packages their rows count", async ({ page }) => {
+    await report.gotoReport2("composite");
+    const severity = page.getByRole("group", { name: "Severity", exact: true });
+    const fix = page.getByRole("group", { name: "Fix", exact: true });
+    await expect(severity.getByRole("button")).toHaveText([
+      /^\s*critical \d+$/,
+      /^\s*high \d+$/,
+      /^\s*medium \d+$/,
+      /^\s*unrated \d+$/,
+      /^\s*low \d+$/,
+    ]);
+
+    // SPEC §7.9.4's "By fix (packages)": composer update 2.
+    await fix.getByRole("button", { name: /^composer update 2$/ }).click();
+
+    expect(await report.listedPackageCount()).toBe(2);
+    await expect(page).toHaveURL(/[#&]fix=update(&|$)/);
+  });
+
   test("with a second flag picked, every row counts what the list shows with it on", async ({ page }) => {
     await report.gotoReport2("composite");
     await report.tab("packages");
