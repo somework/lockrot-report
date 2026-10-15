@@ -272,40 +272,44 @@ test.describe("the section spans the sheet, and nothing in it overflows (variant
     { width: 1440, height: 900 },
     { width: 1024, height: 900 },
     { width: 390, height: 844 },
+    { width: 320, height: 844 },
   ]) {
     for (const pkg of ["spomky-labs/otphp", "guzzlehttp/guzzle"]) {
-      test(`${pkg}, ${String(width)}px, folds open`, async ({ page }) => {
-        await page.setViewportSize({ width, height });
-        const sheet = await openDetail2(page, WALLABAG, pkg);
-        await openFolds(page, sheet);
+      for (const folds of ["open", "closed"] as const) {
+        test(`${pkg}, ${String(width)}px, folds ${folds}`, async ({ page }) => {
+          await page.setViewportSize({ width, height });
+          const sheet = await openDetail2(page, WALLABAG, pkg);
+          await expect(section(sheet).getByRole("table")).toBeVisible();
+          if (folds === "open") await openFolds(page, sheet);
 
-        const problems = await section(sheet).evaluate((block) => {
-          const found: string[] = [];
-          const sheetBox = block.closest(".detail-body")?.getBoundingClientRect();
-          const box = block.getBoundingClientRect();
-          if (sheetBox === undefined) return ["no sheet body"];
-          if (box.left < sheetBox.left - 1 || box.right > sheetBox.right + 1)
-            found.push("section past the sheet");
-          const scrollers = [
-            block,
-            ...block.querySelectorAll<HTMLElement>(
-              "[role='table'], [role='row'], [role='cell'], [role='rowheader'], [role='columnheader'], p",
-            ),
-          ];
-          for (const element of scrollers) {
-            if (element.matches(".detail-timeline-strip, .detail-timeline-strip-head")) continue;
-            if (element.scrollWidth > element.clientWidth + 1 && element.clientWidth > 0) {
-              found.push(
-                `overflow ${String(element.scrollWidth - element.clientWidth)}px: ${element.getAttribute("class") ?? ""}`,
-              );
+          const problems = await section(sheet).evaluate((block) => {
+            const found: string[] = [];
+            const sheetBox = block.closest(".detail-body")?.getBoundingClientRect();
+            const box = block.getBoundingClientRect();
+            if (sheetBox === undefined) return ["no sheet body"];
+            if (box.left < sheetBox.left - 1 || box.right > sheetBox.right + 1)
+              found.push("section past the sheet");
+            const scrollers = [
+              block,
+              ...block.querySelectorAll<HTMLElement>(
+                "[role='table'], [role='row'], [role='cell'], [role='rowheader'], [role='columnheader'], p",
+              ),
+            ];
+            for (const element of scrollers) {
+              if (element.matches(".detail-timeline-strip, .detail-timeline-strip-head")) continue;
+              if (element.scrollWidth > element.clientWidth + 1 && element.clientWidth > 0) {
+                found.push(
+                  `overflow ${String(element.scrollWidth - element.clientWidth)}px: ${element.getAttribute("class") ?? ""}`,
+                );
+              }
             }
-          }
-          return found;
-        });
+            return found;
+          });
 
-        expect(problems).toEqual([]);
-        expect(await sheet.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
-      });
+          expect(problems).toEqual([]);
+          expect(await sheet.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+        });
+      }
     }
   }
 

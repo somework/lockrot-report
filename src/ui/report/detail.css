@@ -359,6 +359,8 @@
   min-width: 0;
   padding: 10px 0 12px;
   border-bottom: 1px solid var(--border);
+  /* The query container of timeline.css's phone-width rules. */
+  container-type: inline-size;
 }
 .d2-branches-line {
   margin: 0;
