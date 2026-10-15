@@ -121,6 +121,10 @@ src/
     list2.ts, query2.ts   the same for report-2: population, rail, rank order, column sorts,
                           the report-2 search keys, and the address aliases of SPEC §7.9.7
     countedFlags.ts       a report-2 finding's counted and accepted flags (the join on score terms)
+    findingRow2.ts        a report-2 Findings row's words: flag pills and baseline marks, reach, age
+                          reading, the next-step column, row runs, the notes above the list
+    scoreBar.ts           the stacked score bar's layout: widths over `bar_max`, the clip, band ticks
+    packageCells2.ts      the report-2 All packages cells and columns
     priority.ts           priorityWhy — a finding's priority_basis in words; noFixKind
     answer.ts             the open package's answer sentence and what it pulls in (S7)
     libyears.ts           ledger items, sort key, reason, row phrases
@@ -140,7 +144,8 @@ src/
     state.ts              State, Action, reducer
     hash.ts               parse/serialise the fragment (format unchanged, see §4)
   ui/                     Preact components, one folder per surface, CSS next to the component
-    report2/              one component and one stylesheet per report-2 surface slot
+    report2/              one component and one stylesheet per report-2 surface slot; `ScoreBar` and
+                          `FlagPills`, which the Findings row and the detail sheet share
   styles/                 tokens.css, base.css, print.css
 tests/unit/               vitest, mirrors src/ (report-2's domain modules: tests/unit/words/, tests/unit/goldens/)
 e2e/                      Playwright; runs against the built page in build/pages/ (§6)
@@ -170,8 +175,9 @@ legacy page also left out the package it opened by itself; this page opens none,
 state → no fragment. Always `history.replaceState`, never `pushState`; a `SecurityError` (an
 opaque-origin frame) switches writing off for the page's life.
 
-report-2 appends two groups after `gate`: `flag` (the counted flags, any of) and `accepted` (`with`
-or `without` an accepted flag). `scope=unnamed` is the "not in composer.json" chip. On a report-2
+report-2 appends two groups after `gate`: `flag` (the counted flags, any of) and `accepted`, a view
+toggle whose one key `hide` hides the accepted pills and filters no package, so it is no
+active-filter chip. `scope=unnamed` is the "not in composer.json" chip. On a report-2
 document a 0.13 link opens on report-2 terms: `prio=` as `verdict=`, and a flag in `verdict=` as
 `flag=`. On a report-1 document every 0.13 fragment keeps its 0.13 meaning, and `flag` and
 `accepted` are dropped (SPEC §7.9.7).
