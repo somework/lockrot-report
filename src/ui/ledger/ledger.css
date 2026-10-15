@@ -1,5 +1,5 @@
-/* The summary band (PD-SUMMARY-6, DESIGN.md §5): one answer, the lead, then three supporting
-   facts, the tier. The lead outweighs the tier about three to one — a 76px figure against 26px —
+/* The summary band (PD-SUMMARY-6, DESIGN.md §5): one answer, the lead, then the supporting blocks,
+   the tier, which the Overview tab lays out (overview-tab.css). The lead outweighs the tier about three to one — a 76px figure against 26px —
    so the eye lands on "how many are flagged" before anything else, and every mark below it
    supports that answer with one encoding of its own. */
 .ledger {
@@ -225,71 +225,6 @@
   opacity: 1;
 }
 
-/* ---------- the tier ---------- */
-.ledger-tier {
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr);
-  margin-top: 22px;
-  padding-top: 18px;
-  border-top: 1px solid var(--border);
-}
-.ledger-tier > .ledger-block {
-  padding: 0 28px;
-  border-left: 1px solid var(--border);
-}
-.ledger-tier > .ledger-block:first-child {
-  padding-left: 0;
-  border-left: 0;
-}
-.ledger-tier > .ledger-block:last-child {
-  padding-right: 0;
-}
-@media (max-width: 1180px) {
-  .ledger-tier > .ledger-block {
-    padding: 0 20px;
-  }
-}
-/* Under 960px three columns get too narrow for a sentence, but stacking all three made the band
-   taller than a 1024×768 screen: the verdicts keep the left half, and the other two share the
-   right, one over the other. */
-@media (max-width: 959px) {
-  .ledger-tier {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-  }
-  .ledger-tier > .ledger-verdicts {
-    grid-row: span 2;
-  }
-  .ledger-tier > .ledger-advisories {
-    padding-right: 0;
-    padding-bottom: 16px;
-  }
-  .ledger-tier > .ledger-libyears {
-    grid-column: 2;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
-  }
-}
-@media (max-width: 759px) {
-  .ledger-tier {
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 16px;
-  }
-  .ledger-tier > .ledger-block,
-  .ledger-tier > .ledger-verdicts,
-  .ledger-tier > .ledger-advisories,
-  .ledger-tier > .ledger-libyears {
-    grid-row: auto;
-    grid-column: auto;
-    padding: 0;
-    border-left: 0;
-    border-top: 0;
-  }
-  .ledger-tier > .ledger-block + .ledger-block {
-    padding-top: 16px;
-    border-top: 1px dashed var(--border);
-  }
-}
-
 /* The note never splits ("first" alone on a line read as a stray word), and when it wraps as a
    whole it starts flush left: the gap between it and the heading is a flex gap, not a margin. */
 .ledger-verdicts > .ledger-head {
@@ -434,48 +369,6 @@
   height: 14px;
   border-radius: 3px;
   background: var(--tone);
-}
-
-/* ---------- the fold ----------
-   On screen the tier folds behind one summary line (Overview.tsx); the lead above it never does. */
-.ledger-fold {
-  margin-top: 16px;
-  border-top: 1px solid var(--border);
-}
-.ledger-fold > summary {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 12px 0 2px;
-}
-/* The shared marker (`styles/base.css`) sits beside the title line, not centred on both lines. */
-.ledger-fold > summary::after {
-  margin-top: 5px;
-}
-.ledger-fold-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  flex: 1 1 auto;
-}
-.ledger-fold-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink-2);
-}
-/* Every part carries a separator slot in front of it (empty on the first); the row is pulled one
-   slot to the left and clipped, so whichever part starts a line has its "·" cut off. A wrap then
-   falls between parts ("263.6 libyears" never splits) with no stray dot at either line's edge. */
-.ledger-fold-peek {
-  font: 12px/1.4 var(--mono);
-  color: var(--muted);
-  overflow: hidden;
-}
-.ledger-fold > .ledger-tier {
-  margin-top: 10px;
-  padding-top: 0;
-  border-top: 0;
 }
 
 /* ---------- chips (LegendButton) ---------- */

@@ -1,0 +1,282 @@
+/* The Overview tab (OverviewView.tsx, PD-OVERVIEW-2): one column in reading order under 760px, and
+   layout A from there. A 1px rule splits the columns. */
+.ov {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.ov > * {
+  min-width: 0;
+  padding-block: 20px;
+  border-top: 1px solid var(--border);
+}
+.ov > .ov-lead {
+  padding-top: 0;
+  border-top: 0;
+}
+.ov > :empty {
+  display: none;
+}
+
+@media (min-width: 760px) {
+  .ov {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    grid-template-areas:
+      "lead lead"
+      "flags security"
+      "score score"
+      "expo libyears";
+  }
+  .ov-security,
+  .ov-libyears {
+    padding-left: 24px;
+    border-left: 1px solid var(--border);
+  }
+  .ov-flags,
+  .ov-expo {
+    padding-right: 24px;
+  }
+}
+@media (min-width: 1181px) {
+  .ov {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "lead lead lead"
+      "flags security libyears"
+      "score score expo";
+  }
+  .ov-flags,
+  .ov-security,
+  .ov-score {
+    padding-right: 28px;
+  }
+  .ov-security,
+  .ov-libyears,
+  .ov-expo {
+    padding-left: 28px;
+    border-left: 1px solid var(--border);
+  }
+}
+@media (min-width: 760px) {
+  .ov-lead {
+    grid-area: lead;
+  }
+  .ov-flags {
+    grid-area: flags;
+  }
+  .ov-security {
+    grid-area: security;
+  }
+  .ov-score {
+    grid-area: score;
+  }
+  .ov-expo {
+    grid-area: expo;
+  }
+  .ov-libyears {
+    grid-area: libyears;
+  }
+}
+
+/* A chart mark is a link drawn as a chip or a bar, not as underlined text. */
+a.legend-btn,
+.ov-ex-row {
+  text-decoration: none;
+}
+.ov-link {
+  color: var(--accent-ink);
+  text-underline-offset: 3px;
+}
+
+/* ---------- the score strip (PD-OVERVIEW-4) ----------
+   A stack is a column of 4px marks over its total's place on the ruler. It fills bottom up, in
+   columns of at most 17 marks: the grid flips upside down. */
+.ss-plot {
+  position: relative;
+  height: 86px;
+}
+.ss-stacks {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ss-stack {
+  position: absolute;
+  bottom: 0;
+  transform: translateX(-50%);
+}
+.ss-link {
+  display: grid;
+  grid-template-rows: repeat(17, 4px);
+  grid-auto-flow: column;
+  grid-auto-columns: 4px;
+  gap: 1px;
+  padding: 0 1px;
+  border-radius: 2px;
+  transform: scaleY(-1);
+}
+.ss-link:hover {
+  outline: 1px solid var(--accent);
+}
+.ss-mark {
+  width: 4px;
+  height: 4px;
+  border-radius: 1px;
+  background: var(--tone);
+  print-color-adjust: exact;
+}
+.ss-guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed var(--border-strong);
+}
+.ss-rule {
+  position: relative;
+  height: 22px;
+  border-top: 1px solid var(--border-strong);
+}
+.ss-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+  padding-left: 4px;
+  border-right: 1px solid var(--surface);
+  background: var(--tone-soft);
+  color: var(--tone);
+  font: 600 10.5px/22px var(--sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.ss-axis {
+  position: relative;
+  height: 16px;
+  font: 11px var(--mono);
+  color: var(--muted);
+}
+.ss-axis > span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+.ss-axis > span:first-child {
+  transform: none;
+}
+.ss-axis > span:last-child {
+  transform: translateX(-100%);
+}
+@media (max-width: 759px) {
+  .ss-zone {
+    font-size: 9.5px;
+    letter-spacing: 0;
+    padding-left: 2px;
+  }
+}
+
+/* ---------- the exposure bars (PD-OVERVIEW-5) ---------- */
+.ov-ex {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(60px, 0.9fr) max-content;
+  column-gap: 12px;
+  margin: 0 -6px;
+  padding: 0;
+  list-style: none;
+}
+.ov-ex > li,
+.ov-ex-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+}
+.ov-ex-row {
+  padding: 3px 6px;
+  border-radius: var(--radius-s);
+  color: var(--ink);
+  font-size: 13px;
+}
+.ov-ex-row:hover {
+  background: var(--surface-2);
+}
+.ov-ex-name {
+  overflow-wrap: anywhere;
+}
+.ov-ex-track {
+  height: 10px;
+}
+.ov-ex-fill {
+  display: block;
+  height: 100%;
+  min-width: 3px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ink-2) 55%, transparent);
+  print-color-adjust: exact;
+}
+.ov-ex-count {
+  font: 600 13px var(--mono);
+  text-align: right;
+}
+
+/* ---------- the libyears table (PD-OVERVIEW-6) ---------- */
+.ov-ly {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.ov-ly caption {
+  padding-bottom: 6px;
+  text-align: left;
+  color: var(--muted);
+}
+.ov-ly th {
+  padding: 0 8px 6px 0;
+  border-bottom: 1px solid var(--border-strong);
+  font: 600 10.5px var(--sans);
+  letter-spacing: 0.1em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.ov-ly td {
+  padding: 5px 8px 5px 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: baseline;
+  overflow-wrap: anywhere;
+}
+.ov-ly .num {
+  font-family: var(--mono);
+  text-align: right;
+  white-space: nowrap;
+}
+.ov-ly-version {
+  font: 12px var(--mono);
+  color: var(--muted);
+}
+.ov-ly-grade {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 1px solid var(--tone);
+  border-radius: 3px;
+  background: var(--tone-soft);
+  color: var(--tone);
+  font: 600 11.5px/1 var(--sans);
+  white-space: nowrap;
+  print-color-adjust: exact;
+}
+
+@media (forced-colors: active) {
+  .ss-mark,
+  .ov-ex-fill {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+  .ss-zone {
+    border: 1px solid CanvasText;
+  }
+  .ss-link:hover {
+    outline-color: Highlight;
+  }
+}

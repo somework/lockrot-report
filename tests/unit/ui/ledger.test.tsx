@@ -85,7 +85,7 @@ describe("CleanMark", () => {
   });
 });
 
-describe("the overview band's grade chips and waffle", () => {
+describe("the Overview tab's grade chips and waffle", () => {
   beforeEach(() => {
     window.matchMedia = ((query: string) => ({
       matches: query.includes("1181"),
@@ -108,14 +108,14 @@ describe("the overview band's grade chips and waffle", () => {
     // composite grades 3 critical, 2 high, 0 medium, 2 low.
     const band = within(screen.getByRole("region", { name: "Overview" }));
     const grades = within(band.getByRole("group", { name: "Grade" }));
-    expect(grades.getByRole("button", { name: "medium 0" }).className).toContain("legend-btn-dim");
-    expect(grades.getByRole("button", { name: "high 2" }).className).not.toContain("legend-btn-dim");
+    expect(grades.getByRole("link", { name: "medium 0" }).className).toContain("legend-btn-dim");
+    expect(grades.getByRole("link", { name: "high 2" }).className).not.toContain("legend-btn-dim");
   });
 
   it("draws the waffle in the grades' tones, most urgent first", () => {
     render(<App model={composite()} />);
 
-    expect(squares(document.querySelector(".overview2 .waffle"))).toEqual([
+    expect(squares(document.querySelector(".ov .waffle"))).toEqual([
       "tone-crit",
       "tone-crit",
       "tone-crit",

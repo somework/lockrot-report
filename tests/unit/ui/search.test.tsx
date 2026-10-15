@@ -10,6 +10,9 @@ import { normalize } from "../../../src/model/normalize";
 import { ReportContext } from "../../../src/ui/context";
 import { SearchBar } from "../../../src/ui/search/SearchBar";
 
+/** The page on its Findings tab, with nothing filtered. */
+const FINDINGS: State = { ...INITIAL_STATE, view: "findings" };
+
 afterEach(cleanup);
 
 function load(caseName: string): Model {
@@ -58,7 +61,7 @@ function countLine(): string {
 
 describe("SearchBar", () => {
   it("renders the search box with an accessible label and a placeholder that names the report-2 keys", () => {
-    renderBar(composite(), INITIAL_STATE);
+    renderBar(composite(), FINDINGS);
 
     const input = screen.getByRole("searchbox", { name: "Filter packages" });
     const placeholder = input.getAttribute("placeholder") ?? "";
@@ -68,7 +71,7 @@ describe("SearchBar", () => {
 
   it("dispatches a query action as the reader types", () => {
     const dispatch = vi.fn();
-    renderBar(composite(), INITIAL_STATE, dispatch);
+    renderBar(composite(), FINDINGS, dispatch);
 
     fireEvent.input(screen.getByRole("searchbox"), { target: { value: "guzzle" } });
 
@@ -77,7 +80,7 @@ describe("SearchBar", () => {
 
   it("enables Clear once the query is non-blank, and dispatches clear when it is clicked", () => {
     const dispatch = vi.fn();
-    renderBar(composite(), { ...INITIAL_STATE, q: "guzzle" }, dispatch);
+    renderBar(composite(), { ...FINDINGS, q: "guzzle" }, dispatch);
 
     const clear = screen.getByRole("button", { name: /clear/i });
     expect(clear.hasAttribute("disabled")).toBe(false);
@@ -87,32 +90,32 @@ describe("SearchBar", () => {
   });
 
   it("disables Clear with no query and no filter", () => {
-    renderBar(composite(), INITIAL_STATE);
+    renderBar(composite(), FINDINGS);
 
     expect(screen.getByRole("button", { name: /clear/i }).hasAttribute("disabled")).toBe(true);
   });
 
   it("keeps Clear disabled for a whitespace-only query and counts no filter on", () => {
-    renderBar(composite(), { ...INITIAL_STATE, q: "   " });
+    renderBar(composite(), { ...FINDINGS, q: "   " });
 
     expect(screen.getByRole("button", { name: /clear/i }).hasAttribute("disabled")).toBe(true);
     expect(screen.queryByText(/filters? on/)).toBeNull();
   });
 
   it("counts the Findings tab against the graded findings", () => {
-    renderBar(composite(), INITIAL_STATE);
+    renderBar(composite(), FINDINGS);
 
     expect(countLine()).toBe("7 of 7 flagged packages");
   });
 
   it("singularises the noun at one", () => {
-    renderBar(load("B"), INITIAL_STATE);
+    renderBar(load("B"), FINDINGS);
 
     expect(countLine()).toBe("1 of 1 flagged package");
   });
 
   it("narrows the count and shows the active-filter suffix once a filter is selected", () => {
-    const state: State = { ...INITIAL_STATE, filters: { ...INITIAL_STATE.filters, verdict: ["critical"] } };
+    const state: State = { ...FINDINGS, filters: { ...FINDINGS.filters, verdict: ["critical"] } };
 
     renderBar(composite(), state);
 
@@ -122,7 +125,7 @@ describe("SearchBar", () => {
   });
 
   it("counts the All packages tab against every finding, not just the flagged ones", () => {
-    const state: State = { ...INITIAL_STATE, view: "packages" };
+    const state: State = { ...FINDINGS, view: "packages" };
 
     renderBar(composite(), state);
 
@@ -130,13 +133,13 @@ describe("SearchBar", () => {
   });
 
   it("counts the Advisories tab in advisories, against the document's counted total", () => {
-    renderBar(composite(), { ...INITIAL_STATE, view: "advisories" });
+    renderBar(composite(), { ...FINDINGS, view: "advisories" });
 
     expect(countLine()).toBe("20 of 20 advisories");
   });
 
   it("counts the Blast radius tab in direct requirements, and the flagged ones the exposure list leaves out", () => {
-    renderBar(composite(), { ...INITIAL_STATE, view: "radius" });
+    renderBar(composite(), { ...FINDINGS, view: "radius" });
 
     expect(countLine()).toBe(
       "1 of 1 direct requirement on the exposure list, plus 6 of 6 flagged ones with nothing flagged counted under them",
@@ -144,7 +147,7 @@ describe("SearchBar", () => {
   });
 
   it("hides the search box and hint, but keeps the count line, on a report with nothing flagged", () => {
-    renderBar(clean(), INITIAL_STATE);
+    renderBar(clean(), FINDINGS);
 
     expect(screen.queryByRole("searchbox")).toBeNull();
     expect(screen.queryByRole("button", { name: /clear/i })).toBeNull();
@@ -152,13 +155,13 @@ describe("SearchBar", () => {
   });
 
   it("draws no count line on Advisories when the document holds no advisory at all", () => {
-    renderBar(clean(), { ...INITIAL_STATE, view: "advisories" });
+    renderBar(clean(), { ...FINDINGS, view: "advisories" });
 
     expect(screen.queryByRole("status")).toBeNull();
   });
 
   it("shows nothing at all on the Run tab, which has no count to give", () => {
-    const { container } = renderBar(composite(), { ...INITIAL_STATE, view: "run" });
+    const { container } = renderBar(composite(), { ...FINDINGS, view: "run" });
 
     expect(container.textContent).toBe("");
   });
@@ -166,13 +169,13 @@ describe("SearchBar", () => {
 
 describe("the open package and the count line", () => {
   it("says nothing extra while the open package still matches the current filters", () => {
-    renderBar(composite(), { ...INITIAL_STATE, pkg: "twig/twig" });
+    renderBar(composite(), { ...FINDINGS, pkg: "twig/twig" });
 
     expect(countLine()).not.toContain("hidden by the current filters");
   });
 
   it("names the open package once a search term hides it from the tab it belongs to", () => {
-    renderBar(composite(), { ...INITIAL_STATE, pkg: "twig/twig", q: "no-such-package" });
+    renderBar(composite(), { ...FINDINGS, pkg: "twig/twig", q: "no-such-package" });
 
     expect(countLine()).toContain("0 of 7 flagged packages");
     expect(countLine()).toContain("twig/twig is hidden by the current filters");
@@ -180,7 +183,7 @@ describe("the open package and the count line", () => {
 
   it("says nothing extra for an open package the tab never lists at all", () => {
     // A `finished` package is never in the Findings population, filters or not.
-    renderBar(clean(), { ...INITIAL_STATE, pkg: "akaunting/laravel-version", q: "no-such-package" });
+    renderBar(clean(), { ...FINDINGS, pkg: "akaunting/laravel-version", q: "no-such-package" });
 
     expect(countLine()).not.toContain("hidden by the current filters");
   });
@@ -190,9 +193,9 @@ describe("the active-filters line", () => {
   it("draws one removable chip per selected filter and one for the search", () => {
     const dispatch = vi.fn();
     const state: State = {
-      ...INITIAL_STATE,
+      ...FINDINGS,
       q: "symfony",
-      filters: { ...INITIAL_STATE.filters, flag: ["stale"], scope: ["direct"] },
+      filters: { ...FINDINGS.filters, flag: ["stale"], scope: ["direct"] },
     };
     renderBar(composite(), state, dispatch);
 
@@ -205,7 +208,7 @@ describe("the active-filters line", () => {
   });
 
   it("draws no chip when nothing narrows the list, and none for the accepted toggle", () => {
-    const state: State = { ...INITIAL_STATE, filters: { ...INITIAL_STATE.filters, accepted: ["hide"] } };
+    const state: State = { ...FINDINGS, filters: { ...FINDINGS.filters, accepted: ["hide"] } };
     renderBar(composite(), state);
 
     expect(screen.queryByText("Filtered by")).toBeNull();

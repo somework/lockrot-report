@@ -7,7 +7,7 @@ import type { Model } from "../model/types";
 import type { Action, State } from "../state/types";
 import { ReportContext, useReport } from "./context";
 import { Detail2 } from "./report/Detail";
-import { Overview2 } from "./report/Overview";
+import { FindingsStrip } from "./report/FindingsView";
 import { Footer } from "./Footer";
 import { Glossary } from "./Glossary";
 import { Header } from "./Header";
@@ -134,6 +134,10 @@ function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
         search.current?.focus();
       }
       break;
+    case "findSearch":
+      focusRequest.current = { kind: "search" };
+      dispatch({ type: "view", view: "findings" });
+      break;
     case "blurSearch":
       leaveSearch(deps);
       break;
@@ -213,6 +217,7 @@ function useShortcuts(deps: ShortcutDeps) {
           selected: state.pkg,
           rendered: () => renderedPackages2(model.report, state, state.view, current.narrow),
           sheetOpen: current.sheet,
+          overview: state.view === "overview",
         }),
       );
       if (prevents(decision)) event.preventDefault();
@@ -224,18 +229,6 @@ function useShortcuts(deps: ShortcutDeps) {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, []);
-}
-
-/**
- * The summary band (DESIGN.md §8), on Findings only: the lead — how many packages are flagged — at
- * every width, and the supporting tier folded under it, so the list starts on the first screen.
- */
-function LedgerSlot({ inert }: { inert: boolean }) {
-  return (
-    <div className="ledger-band" inert={inert}>
-      <Overview2 folded />
-    </div>
-  );
 }
 
 /** The rail beside the list, or on phone widths a "Filters" disclosure above it. */
@@ -275,7 +268,9 @@ export function App({ model }: { model: Model }) {
   const fit = useCallback(
     (next: State): State => {
       const filters = fitFilters2(model.report, next.filters);
-      return filters === next.filters ? next : { ...next, filters };
+      // Overview lists no row, so it opens no package (PD-OVERVIEW-1).
+      const pkg = next.view === "overview" ? null : next.pkg;
+      return filters === next.filters && pkg === next.pkg ? next : { ...next, filters, pkg };
     },
     [model],
   );
@@ -287,6 +282,7 @@ export function App({ model }: { model: Model }) {
   const dispatch = useCallback(
     (action: Action) => {
       if (action.type === "select" && action.pkg !== null) openedByReader.current = true;
+      if (action.type === "focus" && action.pkg !== undefined) openedByReader.current = true;
       anchoredDispatch(action);
     },
     [anchoredDispatch],
@@ -361,13 +357,20 @@ export function App({ model }: { model: Model }) {
     [dispatch],
   );
 
-  // A "focus" action (the summary's gate counts, a Run data stat) lists a set counted a screen away:
-  // the list's top, its search and "N of M" line, comes under the sticky header.
+  // A "focus" action (an Overview chart mark, a Run data stat) lists a set counted a screen away:
+  // the list's top, its search and "N of M" line, comes under the sticky header. The control
+  // pressed has left the page with its tab, so focus goes to the new tab's panel, or to the row of
+  // the package the link opened.
   useEffect(() => {
     if (!listFocused.current) return;
     listFocused.current = false;
     const panel = document.getElementById(`${idBase}-panel`);
     if (typeof panel?.scrollIntoView === "function") panel.scrollIntoView({ block: "start" });
+    const active = document.activeElement;
+    if (active !== null && active !== document.body && document.contains(active)) return;
+    const row = state.pkg === null ? null : findRow(document, state.pkg);
+    if (row !== null && !sheet) focusRow(row);
+    else panel?.focus({ preventScroll: true });
   }, [state]);
 
   useEffect(() => {
@@ -477,7 +480,11 @@ export function App({ model }: { model: Model }) {
       {/* Empty on screen; print.css hides `<main>` while it holds the printed report. */}
       <div className="print-doc" ref={printHost} />
       <main>
-        {state.view === "findings" && <LedgerSlot inert={sheet} />}
+        {state.view === "findings" && (
+          <div className="ledger-band" inert={sheet}>
+            <FindingsStrip />
+          </div>
+        )}
         <div className={shellClass}>
           {filterable && <RailSlot narrow={narrow} inert={sheet} />}
           <div
@@ -485,11 +492,12 @@ export function App({ model }: { model: Model }) {
             id={panelId}
             role="tabpanel"
             aria-labelledby={tabId(idBase, state.view)}
+            tabIndex={-1}
             inert={sheet}
           >
             {/* SearchBar hides its own box and hint when the tab has nothing to filter, and keeps the
-                count line, which a clean report still shows. */}
-            <SearchBar inputRef={search} />
+                count line, which a clean report still shows. Overview lists nothing to count. */}
+            {state.view !== "overview" && <SearchBar inputRef={search} />}
             <CurrentView />
           </div>
           {state.pkg !== null && (

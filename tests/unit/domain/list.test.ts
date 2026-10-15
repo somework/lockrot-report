@@ -29,7 +29,7 @@ const withAccepted: Report2 = {
 };
 
 function state(overrides: Partial<State> = {}, filters: Partial<Filters> = {}): State {
-  return { ...INITIAL_STATE, ...overrides, filters: { ...EMPTY_FILTERS, ...filters } };
+  return { ...INITIAL_STATE, view: "findings", ...overrides, filters: { ...EMPTY_FILTERS, ...filters } };
 }
 
 function names(findings: readonly Finding[]): string[] {

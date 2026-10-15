@@ -12,6 +12,9 @@ import { normalize } from "../../../src/model/normalize";
 import { ReportContext } from "../../../src/ui/context";
 import { Rail } from "../../../src/ui/rail/Rail";
 
+/** The page on its Findings tab, with nothing filtered. */
+const FINDINGS: State = { ...INITIAL_STATE, view: "findings" };
+
 afterEach(cleanup);
 
 function toModel(embed: Report2Embed): Model {
@@ -63,13 +66,13 @@ function buttonTexts(): string[] {
 
 describe("Rail", () => {
   it("renders nothing when the current tab has no population to filter", () => {
-    const { container } = renderIn(<Rail />, composite(), { ...INITIAL_STATE, view: "run" });
+    const { container } = renderIn(<Rail />, composite(), { ...FINDINGS, view: "run" });
 
     expect(container.textContent).toBe("");
   });
 
   it("offers This run, Grade, Flag, Severity, Fix and Scope in that order, each row with the packages it would list", () => {
-    renderIn(<Rail />, composite(), INITIAL_STATE);
+    renderIn(<Rail />, composite(), FINDINGS);
 
     // Gate: `gate.failing` is 5. Grade: `counts`, medium held by none so left out. Flags: the document's carriers, `silent` carried by none so left out.
     // Severity and Fix count packages, not advisories: SPEC §7.9.4's "By fix (packages)" reads
@@ -102,14 +105,14 @@ describe("Rail", () => {
   });
 
   it("offers no This run row for a run that fails nothing", () => {
-    renderIn(<Rail />, toModel(assembleEmbed("B-gate-none")), INITIAL_STATE);
+    renderIn(<Rail />, toModel(assembleEmbed("B-gate-none")), FINDINGS);
 
     expect(screen.queryByRole("button", { name: /^Fails this run/ })).toBeNull();
   });
 
   it("dispatches a toggle of the group and key when a row is clicked", () => {
     const dispatch = vi.fn();
-    renderIn(<Rail />, composite(), INITIAL_STATE, dispatch);
+    renderIn(<Rail />, composite(), FINDINGS, dispatch);
 
     fireEvent.click(screen.getByRole("button", { name: /^Transitive /i }));
     expect(dispatch).toHaveBeenLastCalledWith({ type: "toggle", group: "scope", key: "transitive" });
@@ -118,7 +121,7 @@ describe("Rail", () => {
   });
 
   it("marks a selected row pressed and leaves the others unpressed", () => {
-    const state: State = { ...INITIAL_STATE, filters: { ...INITIAL_STATE.filters, scope: ["transitive"] } };
+    const state: State = { ...FINDINGS, filters: { ...FINDINGS.filters, scope: ["transitive"] } };
 
     renderIn(<Rail />, composite(), state);
 
@@ -127,35 +130,35 @@ describe("Rail", () => {
   });
 
   it("says so when the search leaves nothing for a row to add", () => {
-    renderIn(<Rail />, composite(), { ...INITIAL_STATE, q: "no-such-package" });
+    renderIn(<Rail />, composite(), { ...FINDINGS, q: "no-such-package" });
 
     expect(screen.getByText("Nothing here narrows the list further.")).toBeTruthy();
   });
 
   it("offers Hide accepted flags only for a document with an accepted flag, and toggles it", () => {
     const dispatch = vi.fn();
-    renderIn(<Rail />, toModel(assembleEmbed("B-accepted-dagger")), INITIAL_STATE, dispatch);
+    renderIn(<Rail />, toModel(assembleEmbed("B-accepted-dagger")), FINDINGS, dispatch);
 
     // B-accepted: one finding, with accepted maintenance flags on it.
     fireEvent.click(screen.getByRole("button", { name: "Hide accepted flags 1" }));
     expect(dispatch).toHaveBeenCalledWith({ type: "toggle", group: "accepted", key: "hide" });
     cleanup();
 
-    renderIn(<Rail />, composite(), INITIAL_STATE);
+    renderIn(<Rail />, composite(), FINDINGS);
     expect(screen.queryByRole("button", { name: /^Hide accepted flags/ })).toBeNull();
   });
 });
 
 describe("Rail on a document with a baseline", () => {
   it("titles the Since group with the baseline's own path, apart from the capitalised eyebrow", () => {
-    renderIn(<Rail />, wallabagBaselined(), INITIAL_STATE);
+    renderIn(<Rail />, wallabagBaselined(), FINDINGS);
 
     const title = screen.getByText("lockrot-baseline.json", { selector: ".rail-path" });
     expect(title.parentElement?.textContent).toBe("Since lockrot-baseline.json");
   });
 
   it("counts the graded findings in each baseline state", () => {
-    renderIn(<Rail />, wallabagBaselined(), INITIAL_STATE);
+    renderIn(<Rail />, wallabagBaselined(), FINDINGS);
 
     // Of the document's 112 graded findings: 61 new, 6 worsened, 45 known (the root `baseline.known`
     // of 47 also counts two ungraded `ok` packages).
@@ -165,7 +168,7 @@ describe("Rail on a document with a baseline", () => {
   });
 
   it("puts Fails this run under the Since eyebrow, not under an eyebrow of its own", () => {
-    renderIn(<Rail />, wallabagBaselined(), INITIAL_STATE);
+    renderIn(<Rail />, wallabagBaselined(), FINDINGS);
 
     // 46 is `gate.failing` of the document.
     const fails = screen.getByRole("button", { name: "Fails this run 46" });

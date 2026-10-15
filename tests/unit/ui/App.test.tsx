@@ -73,7 +73,7 @@ function openPackages() {
 
 beforeEach(() => {
   media();
-  history.replaceState(null, "", "/report.html");
+  history.replaceState(null, "", "/report.html#view=findings");
   localStorage.clear();
   document.documentElement.removeAttribute("data-theme");
 });
@@ -83,27 +83,39 @@ afterEach(() => {
 });
 
 describe("boot", () => {
-  test("opens no package on a wide screen: the list keeps the full width and the address stays bare", async () => {
+  test("opens no package on a wide screen: the list keeps the full width and the address holds the view alone", async () => {
     render(<App model={load()} />);
 
     expect(detailName()).toBeNull();
     expect(shellClasses()).toContain("no-detail");
     expect(document.querySelector(".shell-detail")).toBeNull();
     await waitFor(() => {
+      expect(location.hash).toBe("#view=findings");
+    });
+  });
+
+  test("an empty address opens Overview and stays bare", async () => {
+    history.replaceState(null, "", "/report.html");
+
+    render(<App model={load()} />);
+
+    expect(selectedTab()).toBe("Overview");
+    await waitFor(() => {
       expect(location.hash).toBe("");
     });
   });
 
-  test("a deep link opens its package on load, beside the list on a wide screen", async () => {
+  test("a 0.13 deep link opens its package on Findings on load, beside the list on a wide screen", async () => {
     history.replaceState(null, "", "/report.html#pkg=symfony%2Fdebug");
 
     render(<App model={load()} />);
 
+    expect(selectedTab()).toContain("Findings");
     expect(detailName()).toBe("symfony/debug");
     expect(shellClasses()).not.toContain("no-detail");
     expect(document.querySelector(".shell-detail")?.classList.contains("is-side")).toBe(true);
     await waitFor(() => {
-      expect(location.hash).toBe("#pkg=symfony%2Fdebug");
+      expect(location.hash).toBe("#view=findings&pkg=symfony%2Fdebug");
     });
   });
 
@@ -113,7 +125,7 @@ describe("boot", () => {
     expect(detailName()).toBe("symfony/yaml");
     expect(shellClasses()).not.toContain("no-detail");
     await waitFor(() => {
-      expect(location.hash).toBe("#pkg=symfony%2Fyaml");
+      expect(location.hash).toBe("#view=findings&pkg=symfony%2Fyaml");
     });
 
     fireEvent.click(within(screen.getByRole("complementary")).getByRole("button", { name: "Close" }));
@@ -121,7 +133,7 @@ describe("boot", () => {
     expect(detailName()).toBeNull();
     expect(shellClasses()).toContain("no-detail");
     await waitFor(() => {
-      expect(location.hash).toBe("");
+      expect(location.hash).toBe("#view=findings");
     });
   });
 
@@ -150,7 +162,7 @@ describe("boot", () => {
 
     expect(screen.queryByRole("button", { name: /^Fails this run/ })).toBeNull();
     await waitFor(() => {
-      expect(location.hash).toBe("");
+      expect(location.hash).toBe("#view=findings");
     });
     expect(document.querySelectorAll("li[data-pkg]")).toHaveLength(1);
   });
@@ -198,13 +210,15 @@ describe("tabs", () => {
     render(<App model={load()} />);
 
     fireEvent.keyDown(screen.getByRole("tab", { name: /^Findings/ }), { key: "ArrowLeft" });
+    expect(selectedTab()).toBe("Overview");
+    fireEvent.keyDown(screen.getByRole("tab", { name: /^Overview/ }), { key: "ArrowLeft" });
     expect(selectedTab()).toContain("Run data");
     fireEvent.keyDown(screen.getByRole("tab", { name: /^Run data/ }), { key: "ArrowRight" });
-    expect(selectedTab()).toContain("Findings");
-    fireEvent.keyDown(screen.getByRole("tab", { name: /^Findings/ }), { key: "End" });
+    expect(selectedTab()).toBe("Overview");
+    fireEvent.keyDown(screen.getByRole("tab", { name: /^Overview/ }), { key: "End" });
     expect(selectedTab()).toContain("Run data");
     fireEvent.keyDown(screen.getByRole("tab", { name: /^Run data/ }), { key: "Home" });
-    expect(selectedTab()).toContain("Findings");
+    expect(selectedTab()).toBe("Overview");
   });
 
   test("a hashchange applies the new address", async () => {
@@ -258,8 +272,29 @@ describe("tabs", () => {
 });
 
 describe("keyboard", () => {
+  test("j and k open nothing on Overview, which draws no row", () => {
+    history.replaceState(null, "", "/report.html");
+    render(<App model={load()} />);
+
+    key("j");
+    key("k");
+
+    expect(selectedTab()).toBe("Overview");
+    expect(detailName()).toBeNull();
+  });
+
+  test("/ on Overview opens Findings with its search box focused", () => {
+    history.replaceState(null, "", "/report.html");
+    render(<App model={load()} />);
+
+    key("/");
+
+    expect(selectedTab()).toContain("Findings");
+    expect(document.activeElement).toBe(screen.getByRole("searchbox"));
+  });
+
   test.each([
-    ["Findings", ""],
+    ["Findings", "#view=findings"],
     ["All packages", "#view=packages"],
   ])("j and k walk the %s rows on screen and open each one", (_tab, hash) => {
     history.replaceState(null, "", `/report.html${hash}`);

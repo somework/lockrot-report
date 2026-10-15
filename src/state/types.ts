@@ -61,14 +61,22 @@ export interface State {
   example: string | null;
 }
 
+/** Where a chart mark on Overview leads: a tab and the fragment keys it sets, nothing else. */
+export interface LinkTarget {
+  view: View;
+  filters?: Partial<Filters>;
+  q?: string;
+  pkg?: string;
+}
+
 export type Action =
   | { type: "view"; view: View; keepDetail?: boolean }
   | { type: "query"; q: string }
   | { type: "toggle"; group: FilterGroup; key: string }
   | { type: "clear" }
-  /** A tab (Findings unless named) listed through exactly these rail filters, no detail open; the
-   *  query box emptied unless `keepQuery`. */
-  | { type: "focus"; filters: Filters; view?: View; keepQuery?: boolean }
+  /** A tab (Findings unless named) listed through exactly these rail filters; the query box set to
+   *  `q`, else kept with `keepQuery`, else emptied; `pkg` open, else no detail. */
+  | { type: "focus"; filters: Filters; view?: View; keepQuery?: boolean; q?: string; pkg?: string }
   | { type: "sort"; key: SortKey }
   | { type: "select"; pkg: string | null }
   | { type: "disclose"; key: string; open: boolean }
@@ -87,8 +95,9 @@ export const EMPTY_FILTERS: Filters = {
   accepted: [],
 };
 
+/** The state an empty fragment opens: Overview, nothing filtered, nothing open. */
 export const INITIAL_STATE: State = {
-  view: "findings",
+  view: "overview",
   q: "",
   pkg: null,
   sort: "verdict",

@@ -57,7 +57,7 @@ describe("reducer / view", () => {
     reducer(state, { type: "view", view: "radius" });
 
     // Assert
-    expect(state.view).toBe("findings");
+    expect(state.view).toBe("overview");
   });
 });
 

@@ -37,14 +37,14 @@ afterEach(() => {
   cleanup();
 });
 
-describe("the overview band of a report-2 document", () => {
+describe("the Overview tab of a report-2 document", () => {
   test("leads with the flagged figure, the grade chips and gate.text as written", () => {
     render(<App model={model()} />);
 
     const lead = within(band());
     expect(band().querySelector(".lead-num")?.textContent).toBe("7");
-    expect(lead.getByRole("button", { name: "critical 3" })).toBeTruthy();
-    expect(lead.getByRole("button", { name: "medium 0" })).toBeTruthy();
+    expect(lead.getByRole("link", { name: "critical 3" })).toBeTruthy();
+    expect(lead.getByRole("link", { name: "medium 0" })).toBeTruthy();
     expect(
       lead.getByText("gate: fails · --fail-on=high · 5 findings fail it · target php 8.4 (--target-php)"),
     ).toBeTruthy();
@@ -53,7 +53,7 @@ describe("the overview band of a report-2 document", () => {
   test("draws one flag bar per carried flag, each with its split by grade", () => {
     render(<App model={model()} />);
 
-    const bars = [...band().querySelectorAll(".overview2-flag-bars > button")].map((bar) => bar.textContent);
+    const bars = [...band().querySelectorAll(".overview2-flag-bars > a")].map((bar) => bar.textContent);
     expect(bars).toEqual([
       "abandoned 1 graded critical 1",
       "pinned 1 graded high 1",
@@ -68,31 +68,108 @@ describe("the overview band of a report-2 document", () => {
     render(<App model={model()} />);
 
     const severities = within(band()).getByRole("group", { name: "Advisories by severity" });
-    expect(within(severities).getByRole("button", { name: "critical 1" })).toBeTruthy();
+    expect(within(severities).getByRole("link", { name: "critical 1" })).toBeTruthy();
     expect(within(band()).getByRole("group", { name: "Grade" })).toBeTruthy();
   });
 
   test.each([
-    ["Grade", "critical 3", "verdict=critical"],
-    ["Advisories by severity", "unrated 2", "sev=unrated"],
-  ])("a chip in %s toggles its filter", (group, name, fragment) => {
+    ["Grade", "critical 3", "#view=findings&verdict=critical", "Findings 7"],
+    ["Advisories by severity", "unrated 2", "#view=advisories&sev=unrated", "Advisories 20"],
+  ])("a chip in %s links to its list, and a click opens it in place", (group, name, fragment, tab) => {
     render(<App model={model()} />);
 
-    const chip = within(within(band()).getByRole("group", { name: group })).getByRole("button", { name });
+    const chip = within(within(band()).getByRole("group", { name: group })).getByRole("link", { name });
+    expect(chip.getAttribute("href")).toBe(fragment);
     fireEvent.click(chip);
 
-    expect(chip.getAttribute("aria-pressed")).toBe("true");
-    expect(location.hash).toContain(fragment);
+    expect(location.hash).toBe(fragment);
+    expect(screen.getByRole("tab", { selected: true }).getAttribute("aria-label")).toBe(tab);
+    expect(document.activeElement).toBe(document.querySelector(".shell-main"));
   });
 
-  test("a flag bar toggles the flag filter", () => {
+  test("a flag bar links to Findings under its flag", () => {
     render(<App model={model()} />);
 
-    const bar = within(band()).getByRole("button", { name: /^stale 2/ });
+    const bar = within(band()).getByRole("link", { name: /^stale 2/ });
+    expect(bar.getAttribute("href")).toBe("#view=findings&flag=stale");
     fireEvent.click(bar);
 
-    expect(bar.getAttribute("aria-pressed")).toBe("true");
-    expect(location.hash).toContain("flag=stale");
+    expect(location.hash).toBe("#view=findings&flag=stale");
+    expect([...document.querySelectorAll("[data-pkg]")].map((row) => row.getAttribute("data-pkg"))).toEqual([
+      "friendsofsymfony/oauth-server-bundle",
+      "tubalmartin/cssmin",
+    ]);
+  });
+
+  test("a click with a modifier is left to the browser", () => {
+    render(<App model={model()} />);
+
+    const bar = within(band()).getByRole("link", { name: /^stale 2/ });
+    fireEvent.click(bar, { ctrlKey: true });
+
+    expect(screen.getByRole("tab", { selected: true }).textContent).toBe("Overview");
+  });
+
+  test("links each fix count of the Security block to Findings under that fix", () => {
+    render(<App model={model()} />);
+
+    expect(within(band()).getByRole("link", { name: "composer update 2" }).getAttribute("href")).toBe(
+      "#view=findings&fix=update",
+    );
+  });
+
+  test("names each score stack by its grades and links it to the search at its total", () => {
+    render(<App model={model()} />);
+
+    const stacks = within(within(band()).getByRole("list", { name: "Scores" })).getAllByRole("link");
+    expect(stacks.map((stack) => [stack.getAttribute("aria-label"), stack.getAttribute("href")])).toEqual([
+      ["score 36: 2 critical", "#view=findings&q=score%3A%3E%3D36"],
+      ["score 32: 1 critical", "#view=findings&q=score%3A%3E%3D32"],
+      ["score 18: 2 high", "#view=findings&q=score%3A%3E%3D18"],
+      ["score 2: 2 low", "#view=findings&q=score%3A%3E%3D2"],
+    ]);
+    expect(band().querySelector(".ss-rule")?.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  test("draws the exposure rows as links to Blast radius", () => {
+    render(<App model={model()} />);
+
+    const row = within(band()).getByRole("link", { name: "guzzlehttp/guzzle 1" });
+    expect(row.getAttribute("href")).toBe("#view=radius");
+  });
+
+  test("tables the packages furthest behind, each linked to its row", () => {
+    render(<App model={model()} />);
+
+    const table = within(band()).getByRole("table", { name: "Furthest behind, top 8" });
+    const rows = within(table)
+      .getAllByRole("row")
+      .slice(1)
+      .map((row) => row.textContent);
+    expect(rows).toEqual([
+      "symfony/monolog-bridge v2.6.1310.6critical",
+      "symfony/yaml v5.4.233.4low",
+      "twig/twig v2.16.12.0critical",
+      "symfony/debug v3.4.471.8critical",
+      "tubalmartin/cssmin v4.1.10.0high",
+    ]);
+    fireEvent.click(within(table).getByRole("link", { name: "symfony/yaml" }));
+
+    expect(location.hash).toBe("#view=findings&pkg=symfony%2Fyaml");
+    expect(document.querySelector(".shell-detail")).not.toBeNull();
+  });
+
+  test("lays its parts out in reading order: lead, flags, Security, scores, exposure, Libyears", () => {
+    render(<App model={model()} />);
+
+    expect([...band().children].map((part) => part.className)).toEqual([
+      "ov-lead",
+      "ov-flags",
+      "ov-security",
+      "ov-score",
+      "ov-expo",
+      "ov-libyears",
+    ]);
   });
 
   test("states the depth sentence, the accepted line and the Libyears panel", () => {
@@ -135,25 +212,20 @@ describe("the overview band of a report-2 document", () => {
     );
 
     expect(band().textContent).toContain("No packages in this lock");
-    expect(within(band()).queryAllByRole("button")).toEqual([]);
+    expect(within(band()).queryAllByRole("link")).toEqual([]);
     expect(band().querySelector(".waffle")).toBeNull();
-    expect(band().querySelector(".ledger-tier")).toBeNull();
+    expect(band().querySelector(".ov-security")).toBeNull();
   });
 
-  test.each([false, true])("folds the tier, closed, behind a peek of what it holds (phone: %s)", (phone) => {
+  test.each([false, true])("folds nothing (phone: %s)", (phone) => {
     viewport(phone);
     render(<App model={model()} />);
 
-    const fold = band().querySelector<HTMLDetailsElement>("details.ledger-fold");
-    expect(fold?.open).toBe(false);
-    expect(fold?.querySelector("summary")?.textContent).toBe(
-      "More about this lock6 flags · 20 advisories · 17.9 libyears",
-    );
-    expect(fold?.querySelector(".ledger-tier")).not.toBeNull();
-    expect(band().querySelector(".ledger-lead .lead-chips")).not.toBeNull();
+    expect(band().querySelector("details")).toBeNull();
+    expect(band().querySelector(".overview2-flag-bars")).not.toBeNull();
   });
 
-  test.each(["advisories", "packages", "radius", "run"])("is left out of the %s tab", (view) => {
+  test.each(["findings", "advisories", "packages", "radius", "run"])("is left out of the %s tab", (view) => {
     history.replaceState(null, "", `/report.html#view=${view}`);
     render(<App model={model()} />);
 

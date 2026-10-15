@@ -172,3 +172,40 @@
   font: 500 9.5px/1 var(--mono);
   letter-spacing: 0;
 }
+
+/* The one line over the list (FindingsStrip, PD-SUMMARY-16), on the header's surface as the band
+   was. "Overview ›" sits at the line's end and wraps to the next line on a phone. */
+.f2-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 10px 20px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.f2-strip-figure {
+  margin: 0;
+  font-weight: 600;
+  color: var(--ink);
+}
+.f2-strip-chips {
+  gap: 4px 6px;
+}
+.f2-strip-back {
+  margin-left: auto;
+  font-weight: 500;
+  color: var(--accent-ink);
+  text-decoration: none;
+}
+.f2-strip-back:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (max-width: 759px) {
+  .f2-strip {
+    padding: 10px 16px;
+  }
+}

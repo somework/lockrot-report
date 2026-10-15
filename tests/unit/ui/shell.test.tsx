@@ -26,18 +26,33 @@ beforeEach(() => {
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
   })) as unknown as typeof window.matchMedia;
-  history.replaceState(null, "", "/report.html");
+  history.replaceState(null, "", "/report.html#view=findings");
 });
 afterEach(() => {
   cleanup();
 });
 
 describe("a report-2 document routes every slot to its report-2 surface", () => {
-  test("shows the Findings and Overview surfaces, in rank order, with no newer-schema banner", () => {
+  test("opens Overview on an empty fragment, with no row, no rail and no search box", () => {
+    history.replaceState(null, "", "/report.html");
+    render(<App model={composite()} />);
+
+    expect(surface("overview")).not.toBeNull();
+    expect(surface("findings")).toBeNull();
+    expect(rowNames()).toEqual([]);
+    expect(screen.queryByRole("group", { name: "Filters" })).toBeNull();
+    expect(screen.queryByRole("searchbox")).toBeNull();
+    expect(screen.getByRole("tab", { selected: true }).textContent).toBe("Overview");
+  });
+
+  test("shows the Findings surface under its one-line strip, in rank order, with no newer-schema banner", () => {
     render(<App model={composite()} />);
 
     expect(document.querySelector(".schema-banner")).toBeNull();
-    expect(surface("overview")).not.toBeNull();
+    expect(surface("overview")).toBeNull();
+    expect(document.querySelector(".f2-strip")?.textContent).toBe(
+      "7 flaggedcritical 3high 2medium 0low 2Overview ›",
+    );
     expect(surface("findings")).not.toBeNull();
     expect(rowNames()).toEqual([
       "twig/twig",
