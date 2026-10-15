@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { commandLine, isPrintableArgv, SHELLS, type Shell } from "../../../src/domain/shellArgv";
-import { readContractJson } from "./recorded";
+import { readContractJson, recordedCases } from "./recorded";
 
 interface Row {
   argv: string[];
@@ -88,5 +88,22 @@ describe("the command argument rule (SPEC §5.6)", () => {
 
   test("refuses an empty argv", () => {
     expect(isPrintableArgv([])).toBe(false);
+  });
+});
+
+describe("every recorded move's commands, as lockrot's golden writes them", () => {
+  const withGolden = recordedCases().filter(({ php }) => php !== null);
+
+  test("the recording has moves with commands", () => {
+    expect(withGolden.some(({ finding }) => (finding.next_step?.commands.length ?? 0) > 0)).toBe(true);
+  });
+
+  test.each(withGolden)("$name", ({ finding, php }) => {
+    const argvs = finding.next_step?.commands ?? [];
+
+    expect({
+      posix: argvs.map((argv) => commandLine(argv, "posix")),
+      cmd: argvs.map((argv) => commandLine(argv, "cmd")),
+    }).toEqual({ posix: php?.commands_posix, cmd: php?.commands_cmd });
   });
 });

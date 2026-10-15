@@ -17,7 +17,9 @@ describe("the Security row split into its summary and its rungs", () => {
 
     expect(row.summary).toBe("1 high advisory · 1 on record for this name · fix: upgrade · lookup complete");
     expect(row.rungs.map((r) => r.branch)).toEqual(["5.x", "6.x", "7.x", "8.x"]);
-    expect(rungText(row.rungs[0]!)).toBe(
+    const [first] = row.rungs;
+    if (first === undefined) throw new Error("B has a rung");
+    expect(rungText(first)).toBe(
       "clears 1 of 1 from v5.4.52 (upgrade; held by composer.json; after it: 0, ok, if Composer resolves it)",
     );
     expect(row.rungs[0]).toMatchObject({
@@ -31,8 +33,9 @@ describe("the Security row split into its summary and its rungs", () => {
 
     const [first] = securityRow(finding, run, metadata).rungs;
 
+    if (first === undefined) throw new Error("joomla-filter has a rung");
     expect(first).toMatchObject({ branch: "2.x", after: null, afterVerdict: null });
-    expect(rungText(first!)).toBe("clears 1 of 1 from 2.0.6 (needs a PHP your target does not run)");
+    expect(rungText(first)).toBe("clears 1 of 1 from 2.0.6 (needs a PHP your target does not run)");
   });
 
   test("a finding with no counted advisory has no rung", () => {
