@@ -15,6 +15,7 @@ import { unknownSignalIds } from "../domain/filters";
 import { SIGNAL_IDS, VERDICTS } from "../model/types";
 import { OutLink, toneClass } from "./common/common";
 import { useReport } from "./context";
+import { GlossaryBody2 } from "./report2/Glossary2";
 
 /** `data-term` and `tabIndex={-1}` let "In the glossary" give focus to the term it named
  *  (PD-GLOSSARY-7), outside the Tab order. */
@@ -258,6 +259,7 @@ export function Glossary({
   const titleId = useId();
   const { ref, closeRef, fallback } = useDialog(open, opener);
   useHighlightTerm(ref, open, highlightTerm);
+  const { model } = useReport();
 
   return (
     <dialog
@@ -275,46 +277,50 @@ export function Glossary({
           Close
         </button>
       </div>
-      <div className="glossary-body">
-        {/* The verdicts stay in view; every other section folds (PD-GLOSSARY-2). */}
-        <section className="glossary-sect">
-          <h3>The nine verdicts</h3>
-          <VerdictDefs />
-          <OrderNote />
-        </section>
-        {/* The heading sits inside <summary> so a reader moving by heading still finds it. */}
-        <details className="glossary-sect">
-          <summary>
-            <h3>The signals</h3>
-          </summary>
-          <SignalDefs />
-        </details>
-        {/* Open: the summary band and All packages lead with libyears (PD-GLOSSARY-10). */}
-        <details className="glossary-sect" open>
-          <summary>
-            <h3>One number for the lock: libyears</h3>
-          </summary>
-          <LibyearsSection />
-        </details>
-        <details className="glossary-sect">
-          <summary>
-            <h3>How a priority is reached</h3>
-          </summary>
-          <PrioritySection />
-        </details>
-        <details className="glossary-sect">
-          <summary>
-            <h3>Keys and search</h3>
-          </summary>
-          <KeysSection />
-        </details>
-        <details className="glossary-sect">
-          <summary>
-            <h3>For the lock's maintainers: accepting a package</h3>
-          </summary>
-          <AcceptSection />
-        </details>
-      </div>
+      {model.report2 !== null ? (
+        <GlossaryBody2 onClose={onClose} />
+      ) : (
+        <div className="glossary-body">
+          {/* The verdicts stay in view; every other section folds (PD-GLOSSARY-2). */}
+          <section className="glossary-sect">
+            <h3>The nine verdicts</h3>
+            <VerdictDefs />
+            <OrderNote />
+          </section>
+          {/* The heading sits inside <summary> so a reader moving by heading still finds it. */}
+          <details className="glossary-sect">
+            <summary>
+              <h3>The signals</h3>
+            </summary>
+            <SignalDefs />
+          </details>
+          {/* Open: the summary band and All packages lead with libyears (PD-GLOSSARY-10). */}
+          <details className="glossary-sect" open>
+            <summary>
+              <h3>One number for the lock: libyears</h3>
+            </summary>
+            <LibyearsSection />
+          </details>
+          <details className="glossary-sect">
+            <summary>
+              <h3>How a priority is reached</h3>
+            </summary>
+            <PrioritySection />
+          </details>
+          <details className="glossary-sect">
+            <summary>
+              <h3>Keys and search</h3>
+            </summary>
+            <KeysSection />
+          </details>
+          <details className="glossary-sect">
+            <summary>
+              <h3>For the lock's maintainers: accepting a package</h3>
+            </summary>
+            <AcceptSection />
+          </details>
+        </div>
+      )}
     </dialog>
   );
 }
