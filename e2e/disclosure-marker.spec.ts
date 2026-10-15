@@ -16,6 +16,7 @@
 import { expect, type Locator, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
 import { FIXTURES } from "./support/pages";
+import { openDetail2 } from "./support/report2/detail";
 
 let report: ReportPage;
 
@@ -119,5 +120,28 @@ test.describe("PD-DISCLOSURE-1: one marker, every fold", () => {
     await summary.hover();
     const hovered = await summary.evaluate((el) => getComputedStyle(el, "::after").borderLeftColor);
     expect(hovered).not.toBe(before);
+  });
+});
+
+test.describe("report-2: the detail sheet's folds draw the one marker", () => {
+  test("the two reference sections each draw a visible, sized marker", async ({ page }) => {
+    const sheet = await openDetail2(page, "B", "symfony/monolog-bridge");
+
+    for (const title of ["The lock entry", "Provenance"]) {
+      const box = await markerBox(sheet.locator("summary", { hasText: title }));
+      expect(box.content).not.toBe("none");
+      expect(box.width).toBeGreaterThan(0);
+      expect(box.height).toBeGreaterThan(0);
+    }
+  });
+
+  test("the Why and Security level-1 buttons draw the shared l1 marker", async ({ page }) => {
+    const sheet = await openDetail2(page, "B", "symfony/monolog-bridge");
+
+    for (const name of ["Show the arithmetic", /^3 more ways out/]) {
+      const mark = sheet.getByRole("button", { name }).locator(".l1-mark");
+      await expect(mark).toBeAttached();
+      expect(await mark.evaluate((el) => el.getBoundingClientRect().width)).toBeGreaterThan(0);
+    }
   });
 });

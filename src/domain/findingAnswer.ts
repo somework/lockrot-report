@@ -1,5 +1,6 @@
 /** The answer of a report-2 finding: SPEC §7.9.13's grammar, written from the finding's fields and its run. */
 
+import { noReachableFix } from "./findingRow2";
 import type {
   AlsoMove,
   Finding,
@@ -123,12 +124,8 @@ function vulnerableSentence(finding: Finding, run: Run): string {
         `is ${severityPhrase(run, term.severity, false)} (${named})`;
   const branchFix = finding.branch === null ? null : branchFixSentence(finding, finding.branch, n);
   if (branchFix) text += `. ${branchFix}`;
-  if (term.multiplier === 2) {
-    const what = n === 1 ? "it" : name;
-    if (term.fix_kind === "none") text += `; no release fixes ${what}`;
-    else if (n === 1) text += `; no fixing release runs on PHP ${run.target_php}`;
-    else text += `; no release fixing ${what} runs on PHP ${run.target_php}`;
-  }
+  const noFix = noReachableFix(finding, run);
+  if (noFix !== null) text += `; ${noFix}`;
   const ignored = security.ignored_count;
   if (ignored > 0) text += `; ${ignored} more ${isAre(ignored)} ignored by Composer's audit policy`;
   if (!finding.from_composer_repository && finding.origin.local) {

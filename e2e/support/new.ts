@@ -198,6 +198,8 @@ export class NewReportPage implements ReportPage {
       const el = candidates.nth(i);
       // Table header rows are `role=row` too; skip anything acting as a column header.
       if ((await el.getByRole("columnheader").count()) > 0) continue;
+      // The open package's sheet holds lists and a table of its own, which are not the view's rows.
+      if (await el.evaluate((node) => node.closest('[role="complementary"]') !== null)) continue;
       const name =
         (await el.getAttribute("data-pkg")) ??
         (await el.getAttribute("aria-label")) ??
@@ -780,6 +782,7 @@ export class NewReportPage implements ReportPage {
         const role = el.getAttribute("role") ?? implicit[el.tagName] ?? "";
         if (!["row", "option", "listitem"].includes(role)) continue;
         if (el.querySelector('[role="columnheader"], th')) continue;
+        if (el.closest('[role="complementary"]') !== null) continue;
         const name = el.getAttribute("data-pkg") ?? el.getAttribute("aria-label") ?? el.textContent;
         if (name) names.push(name.trim());
       }
