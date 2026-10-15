@@ -5,6 +5,7 @@ import { day, plural, pluralNoun } from "./format";
 import { causeWord, feedAnswerWord, wordFor } from "./pageVocabulary";
 
 export const RUN_WORDS = {
+  tab: "Run data",
   scoreLink: "How the score works ›",
   rules: (n: number): string => `The ${n} rules`,
   fixes: "Fixes, easiest first",
