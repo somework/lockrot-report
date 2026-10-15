@@ -1,7 +1,7 @@
 // What lockrot recorded at the pinned commit, read the way the page reads it: a report-2 document,
 // and the details of its one package (DESIGN.md §7).
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { gunzipSync } from "node:zlib";
 
 import type { Finding, Report2, RepositoryMetadata, Run } from "../../../src/model/report";
@@ -134,11 +134,10 @@ export interface PageGolden {
 
 /** The model's report-2 of a golden's document, where lockrot's `PageGoldensTest` reads it. */
 function pageGoldenDocument(document: string): Report2 {
-  const name = document.slice(document.indexOf("/") + 1);
   const documents = join(FIXTURES, "schema", "documents");
-  const raw = document.startsWith("cases/")
-    ? readFileSync(join(documents, "cases", name), "utf8")
-    : gunzipSync(readFileSync(join(documents, "corpus", `${name}.gz`))).toString("utf8");
+  const raw = document.startsWith("report-2/")
+    ? gunzipSync(readFileSync(join(documents, "corpus", `${basename(document)}.gz`))).toString("utf8")
+    : readFileSync(join(documents, document), "utf8");
   return JSON.parse(raw) as Report2;
 }
 

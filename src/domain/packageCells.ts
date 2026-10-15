@@ -3,7 +3,7 @@
 import type { Finding } from "../model/report";
 import type { SortKey } from "../state/types";
 import { ago } from "./ago";
-import { day, plural } from "./format";
+import { day, decimal, plural } from "./format";
 import { causeWord } from "./pageVocabulary";
 
 export interface Cell {
@@ -17,7 +17,7 @@ const DASH = "—";
 export function libyearsCell(f: Finding): Cell {
   if (f.libyears === null)
     return { text: DASH, label: causeWord(f.libyears_unmeasured ?? "", f.origin.kind) };
-  const value = f.libyears.toFixed(2);
+  const value = decimal(f.libyears, 2);
   return f.libyears_at_least
     ? { text: `≥ ${value}`, label: `at least ${value}` }
     : { text: value, label: null };

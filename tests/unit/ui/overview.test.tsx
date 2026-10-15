@@ -103,7 +103,7 @@ describe("the overview band of a report-2 document", () => {
     expect(text).toContain("1 of 7 flagged packages is named by no line of composer.json");
     expect(text).toContain("Accepted by the allowlist: none in flagged packages");
     expect(text).toContain(
-      "17.85 libyears over 5 packages · furthest behind: symfony/monolog-bridge v2.6.13, 10.62",
+      "17.85 libyears over 5 packages · 17.85 from direct requirements · furthest behind: symfony/monolog-bridge v2.6.13, 10.62 · 1 not measured (a branch snapshot has no release branch) · 1 not measured (no date)",
     );
   });
 

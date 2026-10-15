@@ -11,6 +11,7 @@ import {
   reachWord,
   rowSpoken,
 } from "../../domain/findingRow";
+import { decimal } from "../../domain/format";
 import { safeHref } from "../../domain/links";
 import type { AgeAxis } from "../../domain/age";
 import { useReport } from "../context";
@@ -43,7 +44,7 @@ function AgeCell2({ finding, run, axis }: { finding: Finding; run: Run; axis: Ag
         />
       </span>
       <span className={`age-num is-toned ${tone}`} aria-hidden="true">
-        {reading.years.toFixed(1)}
+        {decimal(reading.years, 1)}
       </span>
     </span>
   );

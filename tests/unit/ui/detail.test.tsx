@@ -248,6 +248,47 @@ describe("the copy control of design 5C", () => {
     expect(within(sheet).queryByRole("button", { name: "Copy" })).toBeNull();
   });
 
+  const withCommands =
+    (commands: string[][]) =>
+    (embed: Report2Embed): Report2Embed => {
+      const [finding] = embed.report.findings;
+      if (!finding?.next_step) throw new Error("the case has a move");
+      const next_step = { ...finding.next_step, commands };
+      return { ...embed, report: { ...embed.report, findings: [{ ...finding, next_step }] } };
+    };
+
+  test("one refused argv hides every step of the move on every shell, and the menu previews none", () => {
+    const sheet = openCase(
+      "B",
+      withCommands([
+        ["composer", "require", "php:>=8.1", "--no-update"],
+        ["composer", "require", "a/b:%PATH%"],
+      ]),
+    );
+
+    expect(commandText(sheet)).toEqual(["This command holds characters the page does not print."]);
+    expect(within(sheet).queryByRole("button", { name: "Copy" })).toBeNull();
+    fireEvent.click(within(sheet).getByRole("button", { name: "Shell: POSIX" }));
+    const menu = within(sheet).getByRole("menu", { name: "Shell" });
+    expect(
+      within(menu)
+        .getAllByRole("menuitemradio")
+        .map((item) => item.textContent),
+    ).toEqual(["POSIX", "cmd.exe", "PowerShell"]);
+    fireEvent.click(within(menu).getByRole("menuitemradio", { name: "PowerShell" }));
+    expect(commandText(sheet)).toEqual(["This command holds characters the page does not print."]);
+  });
+
+  test.each([
+    ["an update", "E", "`composer update symfony/yaml` installs v5.4.53"],
+    ["a require", "B", "Require ^5.4.52: it clears"],
+  ])("%s move with an empty commands[] shows no copy control and keeps its words", (_, name, words) => {
+    const sheet = openCase(name, withCommands([]));
+
+    expect(sheet.querySelector(".d2-copy")).toBeNull();
+    expect(sheet.textContent).toContain(words);
+  });
+
   test("a move with no command draws no copy control", () => {
     const sheet = openCase("stale-accepted-dagger");
 

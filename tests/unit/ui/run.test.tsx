@@ -174,7 +174,7 @@ describe("the live example of How the score works", () => {
   });
 
   test("says that nothing is flagged, with no bar, for a report that grades nothing", () => {
-    const embed = assembleEmbed("pagerfanta");
+    const embed = assembleEmbed("stale-accepted-dagger");
     const result = normalize(embed);
     if (!result.ok) throw new Error(result.error.message);
     render(<App model={result.model} />);

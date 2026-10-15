@@ -270,12 +270,10 @@ function SecurityBlock({ report }: { report: Report2 }) {
 }
 
 function LibyearsBlock({ report }: { report: Report2 }) {
-  const panel = libyearsPanel(report);
-  if (panel === null) return null;
   return (
     <div className="ledger-block ledger-libyears">
       <span className="eyebrow ledger-head">{OVERVIEW_WORDS.libyears}</span>
-      <p className="ledger-note overview2-libyears">{panel}</p>
+      <p className="ledger-note overview2-libyears">{libyearsPanel(report)}</p>
     </div>
   );
 }

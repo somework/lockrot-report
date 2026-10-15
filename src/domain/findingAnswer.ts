@@ -394,27 +394,26 @@ function partialFacts(finding: Finding, partial: NonNullable<SecurityVulnerable[
   return joinAnd([...flags, `${advisories} of its ${of} advisories`]);
 }
 
-function holderWords(heldBy: HeldBy): string {
+function holderWords(heldBy: HeldBy, run: Run): string {
   if (heldBy.source === "root") return `your composer.json (requires ${heldBy.constraint})`;
   const holder = heldBy.holder;
-  const itself = !holder
-    ? ""
-    : holder.lead
-      ? ` (itself ${holder.lead})`
-      : holder.flag_ids.length > 0
-        ? ` (itself ${holder.verdict}: ${holder.flag_ids.join(" · ")})`
-        : ` (itself ${holder.verdict})`;
+  const itself =
+    !holder || !(run.graded_verdicts as readonly string[]).includes(holder.verdict)
+      ? ""
+      : holder.lead
+        ? ` (itself ${holder.lead})`
+        : ` (itself ${holder.verdict}: ${holder.flag_ids.join(" · ")})`;
   return `${heldBy.package ?? ""} ${heldBy.version ?? ""}${itself}`;
 }
 
-function holdersSentences(moves: readonly AnyMove[]): string[] {
+function holdersSentences(moves: readonly AnyMove[], run: Run): string[] {
   return moves.flatMap((move, i) => {
     if (move.held_by.length === 0) return [];
     const who =
       i === 0
         ? "It is held by "
         : `The move to ${move.constraint ?? move.to_branch ?? move.kind} is held by `;
-    return [`${who}${move.held_by.map(holderWords).join(" and ")}.`];
+    return [`${who}${move.held_by.map((heldBy) => holderWords(heldBy, run)).join(" and ")}.`];
   });
 }
 
@@ -646,7 +645,7 @@ function gradedAnswer(finding: Finding, score: ScoreGraded, run: Run): string {
             ").",
         ]
       : []),
-    ...holdersSentences(moves),
+    ...holdersSentences(moves, run),
     ...composerSentences(finding, moves, run),
     ...(allowlist && acceptsWholePackage(finding)
       ? [`Its maintenance is accepted by ${allowlistBy(allowlist.by)}: ${allowlistReasonWords(allowlist)}.`]

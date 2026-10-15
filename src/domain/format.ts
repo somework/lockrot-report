@@ -57,7 +57,7 @@ export function ageOld(iso: string | null | undefined, now: Date): string | null
   const y = years(iso, now);
   if (y === null || Number.isNaN(y)) return null;
   const months = monthsUnderAYear(y);
-  return months !== null ? `${months}-month-old` : `${y.toFixed(1)}-year-old`;
+  return months !== null ? `${months}-month-old` : `${decimal(y, 1)}-year-old`;
 }
 
 /**
@@ -74,14 +74,14 @@ function monthsUnderAYear(years: number): number | null {
 /** "7 mo ago", "3.6 y ago" — see `monthsUnderAYear`. */
 export function yearsAgo(years: number): string {
   const months = monthsUnderAYear(years);
-  return months !== null ? `${months} mo ago` : `${years.toFixed(1)} y ago`;
+  return months !== null ? `${months} mo ago` : `${decimal(years, 1)} y ago`;
 }
 
 /** "1 month", "7 months", "3.6 years" — see `monthsUnderAYear`. */
 export function yearsPhrase(years: number): string {
   const months = monthsUnderAYear(years);
   if (months !== null) return months === 1 ? "1 month" : `${months} months`;
-  return `${years.toFixed(1)} years`;
+  return `${decimal(years, 1)} years`;
 }
 
 /** Years from `from` to `to`, negative when `to` is the earlier; `null` unless both parse. */
@@ -108,7 +108,7 @@ export function gapPhrase(years: number): string {
 /** `gapPhrase`'s terse form, for a ledger row: "<1 mo", "2 mo", "3.2 y". */
 export function gapShort(years: number): string {
   const months = gapMonths(Math.abs(years));
-  if (months === null) return `${Math.abs(years).toFixed(1)} y`;
+  if (months === null) return `${decimal(Math.abs(years), 1)} y`;
   return months === 0 ? "<1 mo" : `${months} mo`;
 }
 
@@ -133,7 +133,40 @@ export function plural(n: number, one: string, many: string): string {
  * value the document does not have would misrepresent it.
  */
 export function fixed(value: unknown, digits: number): string | null {
-  return typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : null;
+  return typeof value === "number" && Number.isFinite(value) ? decimal(value, digits) : null;
+}
+
+/** The exact value of a finite double as `mantissa × 2^exponent`. */
+function exactParts(value: number): { mantissa: bigint; exponent: number } {
+  const view = new DataView(new ArrayBuffer(8));
+  view.setFloat64(0, Math.abs(value));
+  const bits = view.getBigUint64(0);
+  const biased = Number(bits >> 52n);
+  const fraction = bits & ((1n << 52n) - 1n);
+  return biased === 0
+    ? { mantissa: fraction, exponent: -1074 }
+    : { mantissa: fraction | (1n << 52n), exponent: biased - 1075 };
+}
+
+/**
+ * `value` to `digits` decimals: the correctly rounded decimal of the double, and on an exact tie
+ * the even neighbour, as the model's Python prints it. `toFixed` breaks a tie upwards (2.25 → 2.3).
+ */
+export function decimal(value: number, digits: number): string {
+  const { mantissa, exponent } = exactParts(value);
+  const scaled = mantissa * 10n ** BigInt(digits);
+  let units: bigint;
+  if (exponent >= 0) {
+    units = scaled << BigInt(exponent);
+  } else {
+    const divisor = 1n << BigInt(-exponent);
+    const twiceRest = 2n * (scaled % divisor);
+    units = scaled / divisor;
+    if (twiceRest > divisor || (twiceRest === divisor && units % 2n === 1n)) units += 1n;
+  }
+  const text = units.toString().padStart(digits + 1, "0");
+  const whole = digits === 0 ? text : `${text.slice(0, -digits)}.${text.slice(-digits)}`;
+  return value < 0 ? `-${whole}` : whole;
 }
 
 /**

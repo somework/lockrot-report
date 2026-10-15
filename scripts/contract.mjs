@@ -24,14 +24,18 @@ const CONTRACT_FILES = {
   "lockrot-report-2.known.d.ts": "types/lockrot-report-2.known.d.ts",
 };
 
-/** The model's documents of the six `contract/page-goldens.json` entries (lockrot's `PageGoldensTest` reads the same). */
+/** The model's documents of the `contract/page-goldens.json` entries (lockrot's `PageGoldensTest` reads the same). */
 const PAGE_GOLDEN_DOCUMENTS = [
+  "tests/fixtures/schema/documents/cases/B-dev-dagger.json",
   "tests/fixtures/schema/documents/cases/composite.json",
   "tests/fixtures/schema/documents/cases/ok-offline-dagger.json",
+  "tests/fixtures/schema/documents/cases/pagerfanta.json",
   "tests/fixtures/schema/documents/cases/policy-off-dagger.json",
   "tests/fixtures/schema/documents/corpus/akaunting.json.gz",
   "tests/fixtures/schema/documents/corpus/moodle-v3.json.gz",
   "tests/fixtures/schema/documents/corpus/new-symfony.json.gz",
+  "tests/fixtures/schema/documents/corpus/wallabag.json.gz",
+  "tests/fixtures/schema/documents/page/composite.unknown-rules-dagger.json",
 ];
 
 const SPARSE = [

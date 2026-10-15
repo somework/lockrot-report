@@ -4,8 +4,8 @@ import type { Report2 } from "../../../src/model/report";
 import { readContractJson } from "../words/recorded";
 
 const composite = readContractJson("report-2", "composite.json") as Report2;
-/** pagerfanta: one package checked, none flagged. */
-const nothingFlagged = readContractJson("report-2", "pagerfanta.json") as Report2;
+/** One package checked, none flagged. */
+const nothingFlagged = readContractJson("report-2", "stale-accepted-dagger.json") as Report2;
 
 const firstByRank = () =>
   composite.findings

@@ -53,9 +53,9 @@ describe("tab names", () => {
   });
 
   it("count a report with nothing flagged as zero, and every package on All packages", () => {
-    renderTabs(INITIAL_STATE, "pagerfanta");
+    renderTabs(INITIAL_STATE, "stale-accepted-dagger");
 
-    // pagerfanta: one package checked, none flagged, no advisory, no exposure entry.
+    // One package checked, none flagged, no advisory, no exposure entry.
     expect(tabNames()).toEqual([
       "Findings 0",
       "Advisories 0",

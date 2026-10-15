@@ -1,255 +1,41 @@
 {
   "checks": {
-    "lockrot's recording and the model's input differ in checks_missing, checks_skipped, the fired signals": [
-      "ignored-marking-unchecked-dagger"
+    "lockrot's recording and the model's input differ: Bitbucket has no archived field, so lockrot raises no S3 and the abandoned flag has no archived reason; the model's input has the repository archived": [
+      "C-bitbucket-dagger"
     ],
-    "lockrot's recording and the model's input differ in checks_missing, the fired signals": [
-      "either-low-dev-dagger"
-    ],
-    "lockrot's recording and the model's input differ in checks_skipped": [
-      "C-offline-dagger",
-      "C-tokenless-dagger",
-      "hoa-tokenless-dagger",
-      "not-found-dagger"
-    ],
-    "lockrot's recording and the model's input differ in checks_skipped, the fired signals": [
-      "C-bitbucket-dagger",
-      "C-gitlab-hosted-dagger",
-      "gitlab-anon-dagger"
-    ],
-    "lockrot's recording and the model's input differ in the fired signals": [
-      "G",
-      "G-tag-dagger",
-      "cache-subscriber",
-      "guzzle",
-      "guzzle-5",
-      "guzzle-mixed",
-      "local-path-advisory",
-      "pagerfanta",
-      "partial",
-      "partial-op-dagger",
-      "replace-graded",
-      "replace-text",
-      "silent",
-      "tie-dagger",
-      "unknown",
-      "wp-config"
-    ]
-  },
-  "branches": {
-    "lockrot's recording and the model's input differ in metadata.branches[].released_years": [
-      "pagerfanta"
+    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": [
+      "tie-dagger"
     ]
   },
   "security_row": {
-    "lockrot's recording and the model's input differ in metadata.branches[].fixes.fix_kind, metadata.branches[].fixes.lowest, security.records": [
-      "xmlseclibs"
-    ],
-    "lockrot's recording and the model's input differ in metadata.branches[].fixes.fix_kind, security.fix_kind": [
-      "B-accepted-dagger",
-      "B-baselined-dagger",
-      "B-dev-dagger",
-      "either-critical-dagger",
-      "fail-on-config-dagger",
-      "fail-on-default-dagger"
-    ],
-    "lockrot's recording and the model's input differ in metadata.branches[].fixes.fix_kind, security.fix_kind, security.records": [
-      "A-php-star-dagger",
-      "flysystem",
-      "guzzle-5",
-      "routing"
-    ],
-    "lockrot's recording and the model's input differ in metadata.branches[].fixes.fix_kind, security.records": [
-      "guzzle-mixed",
-      "partial",
-      "twig-1"
-    ],
-    "lockrot's recording and the model's input differ in metadata.branches[].fixes.held_by, metadata.branches[].fixes.lowest, security.records": [
+    "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest: lockrot names the P2b candidate of each branch; the model names none": [
       "psr7"
     ],
-    "lockrot's recording and the model's input differ in metadata.branches[].fixes.held_by, security.records": [
-      "A",
-      "A-gate-critical",
-      "A-gate-vulnerable"
-    ],
-    "lockrot's recording and the model's input differ in metadata.branches[].fixes.if_applied, metadata.branches[].fixes.lowest": [
+    "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest: lockrot names the P2b candidate of each branch, and its if_applied follows from that candidate; the model names none": [
       "B-also-dagger"
     ],
-    "lockrot's recording and the model's input differ in security.ignored, security.ignored_count, security.records": [
-      "E-ignored-dagger"
-    ],
-    "lockrot's recording and the model's input differ in security.records": [
-      "A-baselined-dagger",
-      "A-blocked-dagger",
-      "E",
-      "E-ignored-whole-dagger",
-      "commonmark",
-      "feeds-drupal-dagger",
-      "guzzle",
-      "ignored-marking-only-dagger",
-      "ignored-marking-partial-dagger",
-      "ignored-marking-stale-dagger",
-      "joomla-filter",
-      "policy-off-dagger",
-      "twig-dev-dagger",
-      "unknown",
-      "unrated-dagger",
-      "yaml-3.4"
+    "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest and the 4.x fix_kind: lockrot names the P2b candidate, and classes 4.x by the hydrated links, none of which holds the package; the model classes 4.x by its position": [
+      "xmlseclibs"
     ]
   },
   "age_line": {
-    "lockrot's recording and the model's input differ in activity.event, age.push, age.push_unmeasured": [
-      "C-bitbucket-dagger",
-      "C-gitlab-hosted-dagger",
-      "either-low-dev-dagger",
-      "gitlab-anon-dagger"
-    ],
-    "lockrot's recording and the model's input differ in age.branch_release, age.installed": [
-      "B",
-      "B-accepted-dagger",
-      "B-also-dagger",
-      "B-baselined-dagger",
-      "B-dev-dagger",
-      "B-gate-flag",
-      "B-gate-list",
-      "B-gate-none",
-      "B-offline-dagger",
-      "B-offline-high-dagger",
-      "fail-on-config-dagger",
-      "fail-on-default-dagger",
-      "tie-dagger"
-    ],
-    "lockrot's recording and the model's input differ in age.installed_unmeasured": [
+    "lockrot's recording and the model's input differ: age.installed_unmeasured: the model has no commit date for a shared tag that is not the highest, so lockrot reads the installed release as undated": [
       "F",
       "affected-range-unknown-dagger",
-      "ok-unchecked",
       "replace-graded"
-    ],
-    "lockrot's recording and the model's input differ in age.release": [
-      "wp-config"
     ]
   },
   "answer": {
-    "lockrot's recording and the model's input differ: next_step.held_by[].holder: lockrot records the holder ungraded (no lead, no flag ids); the model grades it": [
-      "A",
-      "A-gate-critical",
-      "A-gate-vulnerable",
-      "holder-vuln-dagger",
-      "psr7"
-    ],
-    "lockrot's recording and the model's input differ: lockrot counts stale beside old-promise and records next_step.latest 1.0.0 as installed; the model counts old-promise alone and its newest release is v2.0.0-beta.1": [
-      "wp-config"
-    ],
-    "lockrot's recording and the model's input differ: next_step clears old-promise with clears_all true and nothing unverified; the model leaves old-promise unverified (undated) and the move clears less": [
-      "B-offline-dagger",
-      "B-offline-high-dagger",
-      "unreached-move"
-    ],
-    "lockrot's recording and the model's input differ: lockrot records verdict ok with no flag: S8 does not fire on the hydrated releases; the model grades it high (left-behind)": [
-      "pagerfanta"
-    ],
-    "lockrot's recording and the model's input differ: next_step.replacement.finding is null: the replacement package is not in the case lock; the model grades it": [
-      "installed-php-halved",
-      "replace-graded"
-    ],
-    "lockrot's recording and the model's input differ: next_step.also[0] clears old-promise with clears_all true and nothing unverified; the model leaves old-promise unverified (undated) and the move clears less": [
-      "B-also-dagger"
-    ],
-    "lockrot's recording and the model's input differ: checks_skipped reason no_repository (activity.repo is null); the model's reason is no_token": [
-      "C-tokenless-dagger",
-      "hoa-tokenless-dagger"
-    ],
-    "lockrot's recording and the model's input differ: lockrot counts old-promise beside left-behind (36, not 32); the model has no old-promise term": [
-      "tie-dagger"
-    ],
-    "lockrot's recording and the model's input differ: security.ignored_count is 0; the model's is 1": [
-      "E-ignored-dagger"
-    ],
-    "lockrot's recording and the model's input differ: allowlist.reason is \"accepted by the test\"; the model's entry gives its own reason": [
-      "E-ignored-whole-dagger",
-      "ignored-marking-partial-dagger",
-      "stale-accepted-dagger"
-    ],
-    "lockrot's recording and the model's input differ: checks_skipped reason no_repository (activity.repo is null); the model's reason is offline": [
-      "C-offline-dagger"
-    ],
-    "lockrot's recording and the model's input differ: activity was not read (checks_missing fetch_failed), so stale is read from releases only; the model read the activity": [
-      "either-low-dev-dagger"
-    ],
-    "lockrot's recording and the model's input differ: activity was not read (no_token), so S3 does not fire and the abandoned flag has no archived reason; the model read the archived flag": [
+    "lockrot's recording and the model's input differ: Bitbucket has no archived field, so lockrot raises no S3 and the abandoned flag has no archived reason; the model's input has the repository archived": [
       "C-bitbucket-dagger"
     ],
-    "lockrot's recording and the model's input differ: activity was not read (host_not_supported), so S3 does not fire and the abandoned flag has no archived reason; the model read the archived flag": [
-      "C-gitlab-hosted-dagger"
-    ],
-    "lockrot's recording and the model's input differ: checks_skipped reason no_repository (activity.repo is null); the model's reason is repository_not_found": [
-      "not-found-dagger"
-    ],
-    "lockrot's recording and the model's input differ: checks_skipped is repository_activity (fetch_failed); the model's is repository_archived (no_token)": [
-      "gitlab-anon-dagger"
-    ],
-    "lockrot's recording and the model's input differ: checks_skipped is no_repository where the model's checks_missing is rate_limit": [
-      "ignored-marking-unchecked-dagger"
-    ],
-    "lockrot's recording and the model's input differ: named_in is empty; the model's is [require-dev]": [
-      "require-dev-name-dagger"
-    ],
-    "lockrot's recording and the model's input differ: depth_unmeasured is unreached; the model's is no_composer_json": [
-      "lock-only-dagger"
+    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": [
+      "tie-dagger"
     ]
   },
   "why": {
-    "lockrot's recording and the model's input differ: lockrot counts stale beside old-promise (18, not 16); the model counts old-promise alone": [
-      "wp-config"
-    ],
-    "lockrot's recording and the model's input differ: the security term's fix_kind is update; the model's is upgrade": [
-      "A-php-star-dagger",
-      "B-accepted-dagger",
-      "B-baselined-dagger",
-      "B-dev-dagger",
-      "either-critical-dagger",
-      "fail-on-config-dagger",
-      "fail-on-default-dagger",
-      "flysystem",
-      "guzzle-5",
-      "guzzle-mixed",
-      "routing"
-    ],
-    "lockrot's recording and the model's input differ: next_step.if_applied is 0, ok: the move clears old-promise; the model's bound is higher because old-promise is unverified": [
-      "B-offline-dagger",
-      "B-offline-high-dagger",
-      "unreached-move"
-    ],
-    "lockrot's recording and the model's input differ: lockrot records verdict ok with no flag: S8 does not fire on the hydrated releases; the model grades it high (left-behind)": [
-      "pagerfanta"
-    ],
-    "lockrot's recording and the model's input differ: checks_skipped reason no_repository (activity.repo is null); the model's reason is no_token": [
-      "C-tokenless-dagger",
-      "hoa-tokenless-dagger"
-    ],
-    "lockrot's recording and the model's input differ: lockrot counts old-promise beside left-behind (36, not 32); the model has no old-promise term": [
+    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": [
       "tie-dagger"
-    ],
-    "lockrot's recording and the model's input differ: checks_skipped reason no_repository (activity.repo is null); the model's reason is offline": [
-      "C-offline-dagger"
-    ],
-    "lockrot's recording and the model's input differ: activity was not read (checks_missing fetch_failed), so stale is read from releases only; the model read the activity": [
-      "either-low-dev-dagger"
-    ],
-    "lockrot's recording and the model's input differ: activity was not read (no_token), so the Why names the skipped check; the model read it": [
-      "C-bitbucket-dagger"
-    ],
-    "lockrot's recording and the model's input differ: activity was not read (host_not_supported), so the Why names the skipped check; the model read it": [
-      "C-gitlab-hosted-dagger"
-    ],
-    "lockrot's recording and the model's input differ: checks_skipped reason no_repository (activity.repo is null); the model's reason is repository_not_found": [
-      "not-found-dagger"
-    ],
-    "lockrot's recording and the model's input differ: checks_skipped is repository_activity (fetch_failed); the model's is repository_archived (no_token); lockrot's counterfactual without abandoned reveals stale, the model's reveals silent": [
-      "gitlab-anon-dagger"
-    ],
-    "lockrot's recording and the model's input differ: checks_skipped is no_repository where the model's checks_missing is rate_limit": [
-      "ignored-marking-unchecked-dagger"
     ]
   }
 }
