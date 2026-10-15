@@ -62,17 +62,16 @@ docker run --rm -v "$PWD":/work -v lockrot-report-nm:/work/node_modules -w /work
   object prop; everything else is a class.
 - Nothing is fetched. A test fails on `fetch(`, `XMLHttpRequest`, `@import` or `import(` in the page.
 - Rules live in `src/domain/` as pure functions with tests; components render what those return.
-- `src/model/normalize.ts` is the one place that knows older document shapes.
+- `src/model/normalize.ts` is the one place that reads the raw document. The page reads report-2
+  only, and a report-1 document stops there, at the report-1 screen.
 - `src/template.html` is excluded from prettier: consumers match its tags byte for byte.
 
 ## Fixtures
 
-`fixtures/bundles/` holds real payloads written by lockrot. To add one, run lockrot with
-`--format=html` and cut the payload out of the page:
-
-```sh
-sed -n 's/.*<script id="lockrot-data" type="application\/json">\(.*\)<\/script>.*/\1/p' report.html > fixtures/bundles/name.json
-```
+The report-2 test data is lockrot's recorded bundle at the pinned commit: `npm run contract:fetch`
+gets it into `.lockrot/`, and `scripts/report2-embed.ts` assembles each case's page data from it.
+`fixtures/bundles/mini.json` is the one report-1 document the repository keeps, as the input of
+the report-1 screen.
 
 ## Releasing
 
