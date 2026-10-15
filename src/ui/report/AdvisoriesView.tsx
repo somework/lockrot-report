@@ -26,10 +26,10 @@ import { CleanMark } from "../ledger/CleanMark";
 import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "../rowOpen";
 import { EmptyState } from "../views/EmptyState";
-import { useReport2 } from "./useReport2";
+import { useReport2 } from "./useReport";
 import "../views/views.css";
 import "../views/advisories.css";
-import "./advisories2.css";
+import "./advisories.css";
 
 const pairKey = ({ finding, row }: AdvisoryPair2): string => `${finding.package}:${row.id}`;
 

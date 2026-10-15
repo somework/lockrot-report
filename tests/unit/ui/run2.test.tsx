@@ -5,7 +5,7 @@ import { normalize } from "../../../src/model/normalize";
 import type { Report2 } from "../../../src/model/report";
 import type { Model } from "../../../src/model/types";
 import { App } from "../../../src/ui/App";
-import { ScoreModelLink } from "../../../src/ui/report2/ScoreModelLink";
+import { ScoreModelLink } from "../../../src/ui/report/ScoreModelLink";
 import { ReportContext } from "../../../src/ui/context";
 
 function model(edit: (report: Report2) => void = () => undefined): Model {

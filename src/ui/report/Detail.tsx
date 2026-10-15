@@ -17,14 +17,14 @@ import { TONE } from "../../domain/vocab";
 import { OutLink, toneClass } from "../common/common";
 import { useReport } from "../context";
 import { KeyValue, presentRows, type KeyValueRow } from "../detail/KeyValue";
-import { BranchTimeline2 } from "./BranchTimeline2";
+import { BranchTimeline2 } from "./BranchTimeline";
 import { CopyMove } from "./CopyMove";
 import { FlagPills } from "./FlagPills";
 import { ScoreWhy } from "./ScoreWhy";
-import { SecurityRow2 } from "./SecurityRow2";
-import { useReport2 } from "./useReport2";
+import { SecurityRow2 } from "./SecurityRow";
+import { useReport2 } from "./useReport";
 import "../detail/detail.css";
-import "./detail2.css";
+import "./detail.css";
 
 function Row({ label, children, id }: { label: string; children: ComponentChildren; id?: string }) {
   return (

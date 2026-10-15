@@ -12,7 +12,7 @@ import { gradeTone } from "../../domain/findingRow";
 import { signalDocUrl } from "../../domain/vocab";
 import { OutLink, toneClass } from "../common/common";
 import { ScoreModelLink } from "./ScoreModelLink";
-import { useReport2 } from "./useReport2";
+import { useReport2 } from "./useReport";
 
 function Entries({ entries, toned }: { entries: readonly GlossaryEntry[]; toned: boolean }) {
   return (

@@ -18,9 +18,9 @@ import { rowTabIndex } from "../rowCursor";
 import { openInteractions } from "../rowOpen";
 import { EmptyState } from "../views/EmptyState";
 import { FlagPills } from "./FlagPills";
-import { useReport2 } from "./useReport2";
+import { useReport2 } from "./useReport";
 import "../views/views.css";
-import "./packages2.css";
+import "./packages.css";
 
 /** A dash or a lower bound says what it stands for, to the eye on hover and to a screen reader. */
 function Measured({ cell }: { cell: Cell }) {

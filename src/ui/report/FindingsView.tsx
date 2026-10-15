@@ -18,12 +18,12 @@ import { useReport } from "../context";
 import { toneClass } from "../common/common";
 import { EmptyState } from "../views/EmptyState";
 import { AgeAxis as AgeAxisHead } from "../views/AgeScale";
-import { FindingRow2 } from "./FindingRow2";
+import { FindingRow2 } from "./FindingRow";
 import { usePrinted } from "../print/printContext";
-import { useReport2 } from "./useReport2";
+import { useReport2 } from "./useReport";
 import "../views/views.css";
 import "../views/ledger-rows.css";
-import "./findings2.css";
+import "./findings.css";
 
 /** `applyFilters2` keeps `rank` order, which runs grade by grade, so a boundary is enough. */
 function byGrade(findings: readonly Finding[]): { verdict: string; findings: Finding[] }[] {

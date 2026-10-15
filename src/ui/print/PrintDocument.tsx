@@ -6,12 +6,12 @@ import { EMPTY_FILTERS, INITIAL_STATE } from "../../state/types";
 import { ReportContext, type ReportContextValue } from "../context";
 import { TABS } from "../Tabs";
 import { printHasBody2, printLede2 } from "../../domain/print";
-import { AdvisoriesView2 } from "../report2/AdvisoriesView2";
-import { FindingsView2 } from "../report2/FindingsView2";
-import { Overview2 } from "../report2/Overview2";
-import { PackagesView2 } from "../report2/PackagesView2";
-import { RadiusView2 } from "../report2/RadiusView2";
-import { RunView2 } from "../report2/RunView2";
+import { AdvisoriesView2 } from "../report/AdvisoriesView";
+import { FindingsView2 } from "../report/FindingsView";
+import { Overview2 } from "../report/Overview";
+import { PackagesView2 } from "../report/PackagesView";
+import { RadiusView2 } from "../report/RadiusView";
+import { RunView2 } from "../report/RunView";
 import { PrintContext } from "./printContext";
 
 const NOOP = (): void => undefined;

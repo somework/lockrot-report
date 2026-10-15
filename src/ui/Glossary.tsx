@@ -1,7 +1,7 @@
 import { useId, useLayoutEffect, useRef, useState } from "preact/hooks";
 import { DOCS_URL } from "../domain/vocab";
 import { OutLink } from "./common/common";
-import { GlossaryBody2 } from "./report2/Glossary2";
+import { GlossaryBody2 } from "./report/Glossary";
 
 /**
  * Where `showModal()` throws (a sandboxed frame without `allow-modals`), a plain open dialog pinned

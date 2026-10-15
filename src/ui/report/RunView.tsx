@@ -6,9 +6,9 @@ import type { Report2 } from "../../model/report";
 import { OutLink, toneClass } from "../common/common";
 import "../views/views.css";
 import { SCORE_SECTION_ID } from "./ScoreModelLink";
-import { GateLine } from "./Overview2";
-import { useReport2 } from "./useReport2";
-import "./run2.css";
+import { GateLine } from "./Overview";
+import { useReport2 } from "./useReport";
+import "./run.css";
 
 const pct = (share: number): string => `${share * 100}%`;
 

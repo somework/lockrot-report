@@ -31,8 +31,8 @@ import { useNarrow } from "../useWide";
 import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "../rowOpen";
 import { FlagPills } from "./FlagPills";
-import { useReport2 } from "./useReport2";
-import "./radius2.css";
+import { useReport2 } from "./useReport";
+import "./radius.css";
 
 function Name({ dev, pkg, version }: { dev: boolean; pkg: string; version: string | null }) {
   return (

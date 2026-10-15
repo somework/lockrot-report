@@ -28,8 +28,8 @@ import { CleanMark } from "../ledger/CleanMark";
 import { Waffle } from "../ledger/Waffle";
 import "../ledger/ledger.css";
 import { CopyMove } from "./CopyMove";
-import { useReport2 } from "./useReport2";
-import "./overview2.css";
+import { useReport2 } from "./useReport";
+import "./overview.css";
 
 function useToggle(group: FilterGroup) {
   const { state, dispatch } = useReport();
