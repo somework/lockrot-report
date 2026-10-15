@@ -24,8 +24,19 @@ const CONTRACT_FILES = {
   "lockrot-report-2.known.d.ts": "types/lockrot-report-2.known.d.ts",
 };
 
+/** The model's documents of the six `contract/page-goldens.json` entries (lockrot's `PageGoldensTest` reads the same). */
+const PAGE_GOLDEN_DOCUMENTS = [
+  "tests/fixtures/schema/documents/cases/composite.json",
+  "tests/fixtures/schema/documents/cases/ok-offline-dagger.json",
+  "tests/fixtures/schema/documents/cases/policy-off-dagger.json",
+  "tests/fixtures/schema/documents/corpus/akaunting.json.gz",
+  "tests/fixtures/schema/documents/corpus/moodle-v3.json.gz",
+  "tests/fixtures/schema/documents/corpus/new-symfony.json.gz",
+];
+
 const SPARSE = [
   "/tests/fixtures/contract/",
+  ...PAGE_GOLDEN_DOCUMENTS.map((path) => `/${path}`),
   "/tests/fixtures/baselined/*/check/report.bundle.json",
   "/tests/fixtures/bundle.generated.ts",
   "/tests/fixtures/flags/cases.json",
@@ -61,9 +72,13 @@ function assertCommit(commit) {
   }
 }
 
-/** A tree that differs from the commit is fetched again: the hash does not cover every file it holds. */
+/** A tree that differs from the commit or from the sparse set is fetched again: the hash does not cover every file it holds. */
 function isPristine(commit) {
-  return checkedOutCommit() === commit && git("status", "--porcelain", "--untracked-files=all") === "";
+  return (
+    checkedOutCommit() === commit &&
+    git("sparse-checkout", "list") === SPARSE.join("\n") &&
+    git("status", "--porcelain", "--untracked-files=all") === ""
+  );
 }
 
 function checkout(commit) {
@@ -113,7 +128,11 @@ function readJson(path) {
 }
 
 const GRAMMARS = ["text_grammar", "score_text_grammar"];
-const OUTSIDE_THE_HASH = ["tests/fixtures/bundle.generated.ts", "tests/fixtures/flags/cases.json"];
+const OUTSIDE_THE_HASH = [
+  "tests/fixtures/bundle.generated.ts",
+  "tests/fixtures/flags/cases.json",
+  ...PAGE_GOLDEN_DOCUMENTS,
+];
 
 function grammarsOf(provenance) {
   const missing = GRAMMARS.filter((key) => !Number.isInteger(provenance[key]));

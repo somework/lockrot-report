@@ -416,20 +416,24 @@
     "old-promise 4: ¼ of 16, beside abandoned (correlated evidence)",
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it critical",
-    "without abandoned: 18, high (stale would show) · without old-promise: 32, critical"
+    "without abandoned: 18, high (stale would show) · without old-promise: 32, critical",
+    "abandoned marking ignored (audit.ignore-abandoned: symfony/debug): removed in the 7.x upgrade (constraint ^3.4 not applied, as composer audit does not apply it)"
   ],
   "ignored-marking-only-dagger": [
-    "0 · ok · ages as of 2026-10-01"
+    "0 · ok · ages as of 2026-10-01",
+    "abandoned marking ignored (policy.abandoned: doctrine/*): the annotations reader goes with the ORM 3 upgrade"
   ],
   "ignored-marking-partial-dagger": [
     "0 · finished · ages as of 2026-10-01",
-    "stale accepted by your ignore list: counting it would make this 8, medium"
+    "stale accepted by your ignore list: counting it would make this 8, medium",
+    "abandoned marking ignored (policy.abandoned: doctrine/cache): PSR-6 migration is planned for 9.0"
   ],
   "ignored-marking-stale-dagger": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "stale 8 leads: the strongest maintenance fact counts in full",
     "direct requirement: maintenance not halved for reach",
-    "maintenance alone makes it medium"
+    "maintenance alone makes it medium",
+    "abandoned marking ignored (policy.abandoned: doctrine/cache): PSR-6 migration is planned for 9.0"
   ],
   "ignored-marking-unchecked-dagger": [
     "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
@@ -439,7 +443,8 @@
     "maintenance alone makes it high",
     "without old-promise: 8, medium (stale would lead) · without stale: 16, high",
     "after the move: 8, medium (if Composer resolves it)",
-    "checks not run: its repository activity (no repository found)"
+    "checks not run: its repository activity (no repository found)",
+    "abandoned marking ignored (policy.abandoned: symfony/debug): removed in the 7.x upgrade"
   ],
   "installed-php-halved": [
     "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",

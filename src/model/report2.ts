@@ -82,11 +82,15 @@ export interface ReleaseBranch {
   newest_dated_released: DateTime | null;
   dated_by: PackageName | null;
   php: string | null;
+  highest_php: string | null;
   admits_target_php: boolean | null;
   admits_project_php: boolean | null;
+  highest_admits_target_php: boolean | null;
+  highest_admits_project_php: boolean | null;
   php_blocked_by: PhpBlockedBy | null;
   misses_target_php: PhpMiss | null;
   misses_project_php: PhpMiss | null;
+  highest_misses_project_php: PhpMiss | null;
   released_years: Years | null;
   fixes: BranchFixes | null;
 }
