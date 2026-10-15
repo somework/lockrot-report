@@ -1,6 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { FIXTURES } from "./support/pages";
+import { FIXTURES, report2Url } from "./support/pages";
+import { detailSurface } from "./support/report2/detail";
 
 let report: ReportPage;
 
@@ -369,5 +370,60 @@ test.describe("shortcuts work on a non-Latin layout (shortcutKey)", () => {
   test("a - on the Slash position (German layout) does not focus search", async ({ page }) => {
     await pressOnLayout(page, "-", "Slash");
     expect(await report.isSearchFocused()).toBe(false);
+  });
+});
+
+test.describe("report-2: keys on the Findings rows and the detail sheet", () => {
+  const sheetName = (page: Page) => detailSurface(page).getAttribute("aria-label");
+  const focusedPkg = (page: Page) =>
+    page.evaluate(() => document.activeElement?.getAttribute("data-pkg") ?? null);
+
+  test("j opens the first row, j and k walk the list, Escape closes and hands focus back", async ({
+    page,
+  }) => {
+    await page.goto(report2Url("composite"));
+    await expect(detailSurface(page)).toHaveCount(0);
+
+    await page.keyboard.press("j");
+    await expect.poll(() => sheetName(page)).toBe("twig/twig");
+    await page.keyboard.press("j");
+    await expect.poll(() => sheetName(page)).toBe("symfony/monolog-bridge");
+    await page.keyboard.press("k");
+    await expect.poll(() => sheetName(page)).toBe("twig/twig");
+
+    await page.keyboard.press("Escape");
+    await expect(detailSurface(page)).toHaveCount(0);
+    await expect.poll(() => focusedPkg(page)).toBe("twig/twig");
+  });
+
+  test("Enter on a row opens its sheet and a second Enter keeps it open", async ({ page }) => {
+    await page.goto(report2Url("composite"));
+    const row = page.getByRole("listitem", { name: "symfony/yaml", exact: true });
+
+    await row.focus();
+    await page.keyboard.press("Enter");
+    await expect.poll(() => sheetName(page)).toBe("symfony/yaml");
+    await row.focus();
+    await page.keyboard.press("Enter");
+
+    await expect.poll(() => sheetName(page)).toBe("symfony/yaml");
+  });
+
+  test("Escape in the shell menu closes the menu first, then the sheet", async ({ page }) => {
+    await page.goto(`${report2Url("B")}#pkg=${encodeURIComponent("symfony/monolog-bridge")}`);
+    const sheet = detailSurface(page);
+    const shell = sheet.getByRole("button", { name: "Shell: POSIX" });
+
+    await shell.click();
+    await expect(sheet.getByRole("menuitemradio", { name: /^POSIX/ })).toBeFocused();
+    await page.keyboard.press("ArrowDown");
+    await expect(sheet.getByRole("menuitemradio", { name: /^cmd\.exe/ })).toBeFocused();
+    await page.keyboard.press("Escape");
+
+    await expect(sheet.getByRole("menu")).toBeHidden();
+    await expect(shell).toBeFocused();
+    await expect(sheet).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(detailSurface(page)).toHaveCount(0);
   });
 });

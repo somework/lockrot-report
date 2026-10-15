@@ -8,7 +8,7 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage, type RowGeometry } from "./support/report";
-import { FIXTURES } from "./support/pages";
+import { FIXTURES, report2Url } from "./support/pages";
 
 /** The wallabag list's 31st row: deep enough that thirty rows above it reflow. */
 const DEEP_ROW = 30;
@@ -132,5 +132,33 @@ test.describe("1440×900 keyboard and links", () => {
     await report.pressEscape();
     expect(await focusedPkg(page)).toBe("spomky-labs/otphp");
     expect((await place(report, "spomky-labs/otphp")).inView).toBe(true);
+  });
+});
+
+test.describe("report-2: 1440×900", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("a #pkg= link opens its sheet, and Escape hands focus to its row on screen", async ({ page }) => {
+    await page.goto(`${report2Url("composite")}#pkg=${encodeURIComponent("symfony/polyfill-intl-idn")}`);
+    await expect(page.getByRole("complementary", { name: "symfony/polyfill-intl-idn" })).toBeVisible();
+
+    await page.keyboard.press("Escape");
+
+    await expect.poll(() => focusedPkg(page)).toBe("symfony/polyfill-intl-idn");
+    await expect(
+      page.getByRole("listitem", { name: "symfony/polyfill-intl-idn", exact: true }),
+    ).toBeInViewport();
+  });
+
+  test("a row clicked in the list stays where the reader saw it as the sheet opens", async ({ page }) => {
+    await page.goto(report2Url("composite"));
+    const row = page.getByRole("listitem", { name: "symfony/yaml", exact: true });
+    const before = await row.boundingBox();
+
+    await row.click();
+
+    await expect(page.getByRole("complementary", { name: "symfony/yaml" })).toBeVisible();
+    await expect(row).toBeInViewport();
+    expect(Math.abs(((await row.boundingBox())?.y ?? 0) - (before?.y ?? 0))).toBeLessThan(400);
   });
 });
