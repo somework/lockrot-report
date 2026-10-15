@@ -1,0 +1,128 @@
+/* The stacked score bar (PD-SCORE-1..5): a fixed track of `bar_max` points, one segment per term.
+   Fill says the role: solid lead, hatched corroborating, dotted security. Tones are the band tokens,
+   so both themes come from tokens. */
+.sbar {
+  --sbar-w: 128px;
+  --sbar-seg-min: 4px;
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: var(--sbar-w);
+  height: 16px;
+  vertical-align: middle;
+}
+.sbar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--border);
+}
+.sbar-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  z-index: 1;
+  border-left: 1px dashed color-mix(in srgb, var(--muted) 45%, transparent);
+}
+.sbar-fill {
+  position: absolute;
+  left: 0;
+  top: 3px;
+  display: flex;
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+}
+.sbar-seg {
+  position: relative;
+  flex: none;
+  height: 100%;
+  border-right: 1px solid var(--row-bg, var(--bg));
+  background: var(--tone);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.sbar-seg:last-child {
+  border-right: 0;
+}
+.sbar-seg.is-corroborating {
+  background: repeating-linear-gradient(-45deg, var(--tone) 0 1.5px, var(--tone-soft) 1.5px 3.5px);
+  box-shadow: inset 0 0 0 1px var(--tone);
+}
+.sbar-seg.is-security {
+  background:
+    radial-gradient(circle, var(--tone) 0 1px, transparent 1.3px) 0 0 / 4px 4px,
+    var(--tone-soft);
+  box-shadow: inset 0 0 0 1px var(--tone);
+}
+/* Cut where it crosses the track's end, as an over-long age bar is. */
+.sbar-seg.is-cut::after {
+  content: "";
+  position: absolute;
+  right: 5px;
+  top: -3px;
+  bottom: -3px;
+  width: 3px;
+  background: var(--row-bg, var(--bg));
+  transform: skewX(-24deg);
+}
+.sbar.is-over::after {
+  content: "›";
+  position: absolute;
+  right: -9px;
+  top: -2px;
+  font: 700 13px/1 var(--mono);
+  color: var(--ink-2);
+}
+.sbar-n {
+  display: none;
+}
+
+@media (forced-colors: active) {
+  .sbar-fill {
+    top: 1px;
+    height: 14px;
+  }
+  .sbar-seg {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    box-shadow: none;
+    forced-color-adjust: none;
+  }
+  .sbar-seg.is-corroborating {
+    border-style: dashed;
+  }
+  .sbar-seg.is-security {
+    border-style: dotted;
+    border-width: 1.5px;
+  }
+  .sbar-n {
+    display: block;
+    position: absolute;
+    inset: 0;
+    font: 600 9.5px/12px var(--mono);
+    text-align: center;
+    color: CanvasText;
+  }
+  .sbar-tick {
+    border-left-color: CanvasText;
+  }
+  .sbar.is-over::after {
+    color: CanvasText;
+  }
+}
+
+@media print {
+  .sbar-n {
+    display: block;
+    position: absolute;
+    inset: 0;
+    font: 600 9.5px/10px var(--mono);
+    text-align: center;
+    color: var(--ink);
+  }
+}

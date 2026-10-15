@@ -32,7 +32,9 @@ describe("scoreBar", () => {
 
   it("ticks every band floor but the lowest", () => {
     const floors = run.score_model.bands.map((b) => b.floor).sort((a, b) => a - b);
-    expect(scoreBar(graded("twig/twig"), run).ticks).toEqual(floors.slice(1).map((floor) => floor / barMax));
+    expect(scoreBar(graded("twig/twig"), run).ticks).toEqual(
+      floors.slice(1).map((floor) => ({ floor, at: floor / barMax })),
+    );
   });
 
   it("clips past bar_max: the crossing segment is cut, a later one dropped, and the bar marked over", () => {

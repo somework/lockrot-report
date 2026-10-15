@@ -5,10 +5,18 @@ import type { Finding, Grade, Move, Report2, Run, TermSecurity } from "../model/
 import { isScoreGraded, isTermSecurity } from "../model/report2";
 import { advisoryRows } from "./advisoryRows";
 import { countedFlagIds } from "./countedFlags";
-import { acceptsWholePackage, advisoryName, isAre, namesCapped, oneDecimal } from "./findingWords";
+import {
+  acceptsWholePackage,
+  advisoryName,
+  isAre,
+  NAMES_SHOWN,
+  namesCapped,
+  oneDecimal,
+} from "./findingWords";
 import { plural, pluralNoun } from "./format";
 import { allowlistByInWhy, allowlistReason, headlineReasonWord } from "./pageVocabulary";
 import { RUN_MIN } from "./rows";
+import type { Tone } from "./vocab";
 
 export interface BaselineMark {
   /** A tick for a state the baseline already holds; an outlined dot and a visible word otherwise. */
@@ -350,3 +358,40 @@ export function uncheckedNote(report: Report2): PackagesNote | null {
 
 /** The group head's count. */
 export const packagesCount = (n: number): string => plural(n, "package", "packages");
+
+const GRADE_TONES: Readonly<Record<string, Tone>> = {
+  critical: "crit",
+  high: "high",
+  medium: "med",
+  low: "low",
+};
+
+/** The tone token of a band or a grade; one the page does not know is neutral. */
+export const gradeTone = (band: string | null): Tone =>
+  band === null ? "low" : (GRADE_TONES[band] ?? "low");
+
+/** What a screen reader hears after the package's name: the bar is hidden from it. */
+export const rowSpoken = (f: Finding): string => `score ${f.score.total}, ${f.verdict}`;
+
+export const gradeListLabel = (verdict: string): string => `${verdict} findings`;
+
+export const HELD_WORD = "· held";
+
+/** The Findings head's words; the head is hidden from a screen reader, since each row says its parts. */
+export const FINDINGS_HEAD = {
+  score: "Score",
+  pkg: "Package",
+  flags: "Flags",
+  age: "Years since release",
+  reach: "Reached",
+  next: "Next step",
+} as const;
+
+/** A note's packages: the first few by name, the rest counted. */
+export function cappedPackages(packages: readonly string[]): {
+  shown: readonly string[];
+  more: string | null;
+} {
+  const rest = packages.length - NAMES_SHOWN;
+  return { shown: packages.slice(0, NAMES_SHOWN), more: rest > 0 ? `and ${rest} more` : null };
+}

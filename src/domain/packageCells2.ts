@@ -1,6 +1,7 @@
 /** The All packages cells of a report-2 document (SPEC §7.9.6). */
 
 import type { Finding } from "../model/report2";
+import type { SortKey } from "../state/types";
 import { ago } from "./ago";
 import { day, plural } from "./format";
 import { causeWord } from "./pageVocabulary";
@@ -42,3 +43,17 @@ export function signalIds(f: Finding): string {
 export function dataAsOf(f: Finding): string {
   return f.data_date === null ? DASH : day(f.data_date);
 }
+
+/** The All packages columns in display order, each with the sort key its head sets. */
+export const PACKAGES_COLUMNS = [
+  { key: "package", label: "Package" },
+  { key: "version", label: "Version" },
+  { key: "libyears", label: "Libyears" },
+  { key: "age", label: "Age" },
+  { key: "verdict", label: "Verdict" },
+  { key: "score", label: "Score" },
+  { key: "flags", label: "Flags" },
+  { key: "reached", label: "Reached" },
+  { key: "signals", label: "Signals" },
+  { key: "data", label: "Data as of" },
+] as const satisfies readonly { key: SortKey; label: string }[];

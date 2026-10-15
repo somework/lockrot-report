@@ -1,0 +1,77 @@
+/* Flag pills (PD-ROWS-15..17): the word takes the band's tone, the qualifier stays in ink, so no
+   qualifier depends on its colour. The accepted pill is dashed and grey and carries its word. */
+.fp {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 6px;
+  border: 1px solid color-mix(in srgb, var(--tone) 60%, transparent);
+  border-radius: var(--radius-s);
+  background: var(--tone-soft);
+  color: var(--ink);
+  font: 500 11.5px/18px var(--sans);
+  white-space: nowrap;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.fp-word {
+  color: var(--tone);
+  font-weight: 650;
+}
+.fp-q {
+  font: 11px/18px var(--mono);
+  color: var(--ink-2);
+}
+.fp-sep {
+  color: var(--muted);
+}
+.fp.is-accepted {
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  color: var(--muted);
+}
+.fp.is-accepted .fp-word {
+  color: var(--muted);
+  font-weight: 500;
+}
+.fp.is-accepted .fp-q {
+  font-family: var(--sans);
+  color: var(--muted);
+}
+.fp-nofix {
+  font: 600 10.5px/18px var(--sans);
+  color: var(--tone);
+  white-space: normal;
+}
+.fp-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 1px;
+  padding-left: 5px;
+  border-left: 1px solid color-mix(in srgb, var(--tone) 40%, transparent);
+  font: 600 10.5px/18px var(--sans);
+  color: var(--ink-2);
+}
+.fp-mark svg {
+  width: 10px;
+  height: 10px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.fp-dot-mark {
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+@media (forced-colors: active) {
+  .fp {
+    border-color: CanvasText;
+  }
+  .fp.is-accepted {
+    border-style: dashed;
+  }
+}

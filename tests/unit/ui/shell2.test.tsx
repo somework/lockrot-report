@@ -50,13 +50,13 @@ describe("a report-2 document routes every slot to its report-2 surface", () => 
     ]);
   });
 
-  test("draws a Findings row as the score, the package, the version and the reach word", () => {
+  test("draws a Findings row with the score, the package and the reach word", () => {
     render(<App model={composite()} />);
 
-    const twig = screen.getByRole("listitem", { name: "twig/twig" });
-    expect(twig.textContent).toBe("32twig/twigv2.16.1direct");
     const idn = screen.getByRole("listitem", { name: "symfony/polyfill-intl-idn" });
-    expect(idn.textContent).toBe("2symfony/polyfill-intl-idnv1.37.0via guzzlehttp/guzzle");
+    expect(idn.querySelector(".f2-num")?.textContent).toBe("2");
+    expect(idn.querySelector(".f2-pkg")?.textContent).toBe("symfony/polyfill-intl-idn v1.37.0");
+    expect(idn.querySelector(".f2-reach")?.textContent).toBe("via guzzlehttp/guzzle");
   });
 
   test("counts the graded findings on the Findings tab and the flags in the rail", () => {

@@ -22,8 +22,24 @@ export interface BarSegment {
 export interface ScoreBarLayout {
   readonly segments: readonly BarSegment[];
   readonly over: boolean;
-  /** Each tick's place as a share of the track. */
-  readonly ticks: readonly number[];
+  readonly ticks: readonly BandTick[];
+}
+
+export interface BandTick {
+  readonly floor: number;
+  /** Its place as a share of the track. */
+  readonly at: number;
+}
+
+/** Every band floor but the lowest, which sits a hair from zero, and none past the track. */
+export function bandTicks(run: Run): readonly BandTick[] {
+  const max = run.score_model.bar_max;
+  return run.score_model.bands
+    .map((band) => band.floor)
+    .sort((a, b) => a - b)
+    .slice(1)
+    .filter((floor) => floor < max)
+    .map((floor) => ({ floor, at: floor / max }));
 }
 
 const ROLES: readonly string[] = ["lead", "corroborating", "security"];
@@ -31,11 +47,7 @@ const ROLES: readonly string[] = ["lead", "corroborating", "security"];
 export function scoreBar(score: Score, run: Run): ScoreBarLayout {
   const model = run.score_model;
   const max = model.bar_max;
-  const floors = model.bands.map((band) => band.floor).sort((a, b) => a - b);
-  const ticks = floors
-    .slice(1)
-    .filter((floor) => floor < max)
-    .map((floor) => floor / max);
+  const ticks = bandTicks(run);
   if (!isScoreGraded(score)) return { segments: [], over: false, ticks };
 
   const segments: BarSegment[] = [];

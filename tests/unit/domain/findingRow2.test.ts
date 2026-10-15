@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   ageReading,
   ageScaleLabel,
+  cappedPackages,
   flagPills,
+  gradeTone,
   ignoredNote,
   maintenanceAccepted,
   nextStepWords,
@@ -269,5 +271,18 @@ describe("the notes above the list", () => {
     expect(uncheckedNote(doc)?.packages).toEqual(unchecked);
     expect(uncheckedNote(doc)?.text).toMatch(/^\d+ packages? (was|were) not checked for advisories$/);
     expect(uncheckedNote(composite)).toBeNull();
+  });
+});
+
+describe("gradeTone and cappedPackages", () => {
+  it("tones each graded band and keeps an unknown or missing band neutral", () => {
+    expect(run.graded_verdicts.map(gradeTone)).toEqual(["crit", "high", "med", "low"]);
+    expect(gradeTone("dire")).toBe("low");
+    expect(gradeTone(null)).toBe("low");
+  });
+
+  it("names three packages and counts the rest", () => {
+    expect(cappedPackages(["a", "b", "c"])).toEqual({ shown: ["a", "b", "c"], more: null });
+    expect(cappedPackages(["a", "b", "c", "d", "e"])).toEqual({ shown: ["a", "b", "c"], more: "and 2 more" });
   });
 });
