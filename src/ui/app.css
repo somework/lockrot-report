@@ -412,7 +412,7 @@ html {
    clamped the scroll at the page's end and slid every row down with no action of the reader's
    (PD-ROWS-10). */
 @media (min-width: 760px) {
-  .shell {
+  .shell:not(.no-rail) {
     grid-template-rows: minmax(var(--sticky-room-full), auto);
   }
 }
