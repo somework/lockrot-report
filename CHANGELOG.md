@@ -113,7 +113,7 @@ each package by a score built from the flags that fired on it, and this page dra
 ### Security
 
 - The copy control and "Update now" print a command only when every argument passes lockrot's
-  argument rule (SPEC §5.6). The rule takes `composer` with `update`, `require` or `why-not`, and
+  command argument rule. The rule takes `composer` with `update`, `require` or `why-not`, and
   each argument from a fixed set of characters. `--no-update` is the only argument that starts with
   a dash.
 - A report file can be edited. So a command that fails the rule shows "This command holds
