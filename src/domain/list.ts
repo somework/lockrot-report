@@ -188,7 +188,7 @@ function acceptedToggle(scope: Scope): RailGroup {
   };
 }
 
-/** Since, This run, Flag, Severity, Fix, Accepted flags and Scope, each where it has a row. */
+/** Since, This run, Grade, Flag, Severity, Fix, Accepted flags and Scope, each where it has a row. */
 export function railGroups2(report: Report2, state: State): readonly RailGroup[] {
   const here = population2(report, state.view);
   const scope: Scope = { filters: state.filters, here, terms: parseQuery2(state.q) };
@@ -198,6 +198,12 @@ export function railGroups2(report: Report2, state: State): readonly RailGroup[]
       ? groupOf(scope, "since", `Since ${baseline.path}`, SINCE_ROWS)
       : null,
     runFails2(report) ? groupOf(scope, "gate", "This run", [["fails", "Fails this run"]]) : null,
+    groupOf(
+      scope,
+      "verdict",
+      "Grade",
+      report.run.graded_verdicts.map((id): Row => [id, id]),
+    ),
     groupOf(
       scope,
       "flag",

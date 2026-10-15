@@ -159,9 +159,9 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
     expect(await report.railOptionPressed("scope", "transitive")).toBeNull();
     for (const row of await countedRows()) {
       if (row.label === "Direct") continue; // on already: toggling it would turn it off
-      await report.toggleRailRow(row.label);
+      await report.toggleRailRow(row.label, row.group);
       expect(await report.listedPackageCount(), row.label).toBe(row.count);
-      await report.toggleRailRow(row.label);
+      await report.toggleRailRow(row.label, row.group);
     }
 
     const chips = page.getByRole("group", { name: "Filtered by" }).getByRole("button");
@@ -192,6 +192,20 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
     await expect(page).toHaveURL(/[#&]fix=update(&|$)/);
   });
 
+  test("the Grade group sets verdict on a tab without the band, and an rc.1 fragment opens it pressed", async ({
+    page,
+  }) => {
+    await report.gotoReport2WithHash("composite", "view=advisories");
+    const grade = page.getByRole("group", { name: "Filters" }).getByRole("group", { name: "Grade" });
+    await grade.getByRole("button", { name: /^critical \d+$/ }).click();
+    await expect(page).toHaveURL(/[#&]verdict=critical(&|$)/);
+    // composite: `flags.vulnerable.by_verdict` holds 2 critical packages.
+    expect(await report.listedPackageCount()).toBe(2);
+
+    await report.gotoReport2WithHash("composite", "view=radius&prio=high");
+    await expect(grade.getByRole("button", { name: /^high \d+$/ })).toHaveAttribute("aria-pressed", "true");
+  });
+
   test("with a second flag picked, every row counts what the list shows with it on", async ({ page }) => {
     await report.gotoReport2("composite");
     await report.tab("packages");
@@ -203,9 +217,9 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
         expect(row.count, `${row.label} is on`).toBe(listed);
         continue;
       }
-      await report.toggleRailRow(row.label);
+      await report.toggleRailRow(row.label, row.group);
       expect(await report.listedPackageCount(), row.label).toBe(row.count);
-      await report.toggleRailRow(row.label);
+      await report.toggleRailRow(row.label, row.group);
     }
     // The chips say which filters are on; the count line does not repeat "2 filters on" on screen.
     await expect(page.locator(".count-line .active-filters")).toHaveCount(0);

@@ -436,8 +436,8 @@
   background: var(--tone);
 }
 
-/* ---------- the phone fold ----------
-   Under 760px the tier folds behind one summary line (Ledger.tsx); the lead above it never does. */
+/* ---------- the fold ----------
+   On screen the tier folds behind one summary line (Overview.tsx); the lead above it never does. */
 .ledger-fold {
   margin-top: 16px;
   border-top: 1px solid var(--border);

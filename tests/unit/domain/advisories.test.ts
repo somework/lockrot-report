@@ -102,6 +102,7 @@ describe("advisoryAnswer2", () => {
     const pairs = advisoryPairs2(vulnerable, filters());
     expect(advisoryAnswer2(composite.run, pairs, pairs.length)).toEqual({
       text: "20 advisories on 4 packages, by severity: 1 critical, 4 high, 4 medium, 2 unrated, 9 low.",
+      head: "20 advisories on 4 packages.",
       narrowed: null,
     });
   });
@@ -110,6 +111,7 @@ describe("advisoryAnswer2", () => {
     const pairs = advisoryPairs2(vulnerable, filters({ fix: ["upgrade"] }));
     expect(advisoryAnswer2(composite.run, pairs, 20)).toEqual({
       text: "1 matching advisory on 1 package, by severity: 1 high.",
+      head: "1 matching advisory on 1 package.",
       narrowed: "Only advisories that match the filter are counted; without it there are 20.",
     });
   });

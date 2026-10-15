@@ -345,8 +345,8 @@
 }
 
 /* ---------- rail fold (phone widths) ----------
-   The ledger's own phone fold (the summary band's supporting tier) is styled with the rest of the
-   band, in ledger/ledger.css. */
+   The summary band's own fold (its supporting tier) is styled with the rest of the band, in
+   ledger/ledger.css. */
 .rail-fold > summary {
   display: flex;
   align-items: baseline;

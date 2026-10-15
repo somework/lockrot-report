@@ -18,11 +18,24 @@ test.describe("report-2: the Advisories tab groups the S9 rows by fix kind and b
         signal.id === "S9" ? (signal.data as { advisories: unknown[] }).advisories : [],
       ).length ?? 0;
 
-  test("the answer leads, then one row per S9 row under its fix group", async ({ page }) => {
+  test("the Security block and its answer lead, then one row per S9 row under its fix group", async ({
+    page,
+  }) => {
     await page.goto(report2Url("composite") + "#view=advisories");
-    await expect(advisoriesSurface(page).locator(".al-answer")).toHaveText(
-      "20 advisories on 4 packages, by severity: 1 critical, 4 high, 4 medium, 2 unrated, 9 low.",
+    const lead = advisoriesSurface(page).locator(".al-lead");
+    // The chips carry the severities, so the answer counts once and lists no severity.
+    await expect(lead.locator(".al-answer")).toHaveText("20 advisories on 4 packages.");
+    await expect(lead.getByRole("group", { name: "Advisories by severity" }).getByRole("button")).toHaveText([
+      "critical 1",
+      "high 4",
+      "medium 4",
+      "unrated 2",
+      "low 9",
+    ]);
+    await expect(lead.locator(".overview2-update .d2-copy-cmd")).toHaveText(
+      "composer update symfony/yaml symfony/polyfill-intl-idn",
     );
+    await expect(advisoriesSurface(page)).not.toContainText("by severity:");
     // composite: polyfill-intl-idn updates on 1.x, yaml on 5.x, monolog-bridge upgrades to 5.x, and
     // twig needs a php floor raise to 3.x; fix_kinds orders update, upgrade, raise-php.
     await expect(advisoryGroupHeads(page)).toHaveText([

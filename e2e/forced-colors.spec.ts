@@ -100,7 +100,7 @@ async function labelPixelRatio(page: Page, chip: Locator): Promise<number> {
 
 test.describe("report-2: a severity chip stays legible in forced-colors mode", () => {
   test("an unpressed chip's swatch paints a colour distinct from the page", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=advisories");
     await page.emulateMedia({ colorScheme: "light", forcedColors: "active" });
 
     const { swatch } = await chipColours(severityChips(page).first());
@@ -114,7 +114,7 @@ test.describe("report-2: a severity chip stays legible in forced-colors mode", (
     test(`pressing a chip changes its own colours, not just aria-pressed, ${colorScheme}`, async ({
       page,
     }) => {
-      await report.gotoReport2("composite");
+      await report.gotoReport2WithHash("composite", "view=advisories");
       // Reduced motion lands the chip's colour transition in the click's own tick.
       await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
       const chip = severityChips(page).first();
@@ -130,7 +130,7 @@ test.describe("report-2: a severity chip stays legible in forced-colors mode", (
     test(`the pressed chip's label paints pixels distinct from its backplate, ${colorScheme}`, async ({
       page,
     }) => {
-      await report.gotoReport2("composite");
+      await report.gotoReport2WithHash("composite", "view=advisories");
       await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
       const chip = severityChips(page).first();
       await chip.click();
