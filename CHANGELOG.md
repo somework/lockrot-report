@@ -26,14 +26,16 @@ gets a tab of its own, and the other tabs lead with their own part.
   closes the list when lockrot lists more.
 - The libyears table lists the 8 packages furthest behind, with "≥" before a lower bound. A row
   opens its package.
-- Every mark on Overview is a link. A grade chip, a flag bar, a fix count and a ruler zone open
-  Findings under that filter. A severity chip opens Advisories under its severity.
+- The grade chips, the flag bars, the severity chips, the fix counts, the ruler zones, the exposure
+  bars and the libyears rows on Overview are links. A grade chip, a flag bar, a fix count and a
+  ruler zone open Findings under that filter. A severity chip opens Advisories under its severity.
 
 ### Changed
 
 - The other tabs no longer repeat the summary band. Findings opens with one line: the flagged
   count, the grade chips, which filter the list, and "Overview ›". Advisories leads with its
-  Security block, and Blast radius with the sentence on how deep the flagged packages sit. All
+  Security block. With no filter on, its count line leaves the severities to the chips beside it.
+  Blast radius leads with the sentence on how deep the flagged packages sit. All
   packages starts with its table.
 - The rail gains a "Grade" group, each row counting the packages it lists (`#verdict=`). The
   phone's "Filters" summary also counts the grade and severity filters that are on.
