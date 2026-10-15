@@ -91,3 +91,7 @@ export function bandRuler(run: Pick<Run, "score_model">): BandRuler {
     max,
   };
 }
+
+/** The legend lane as one line of text, for a reader who cannot see the bar: "left-behind 16, old-promise 4". */
+export const legendText = (bar: WhyBar): string =>
+  bar.segments.map((segment) => `${segment.flag} ${segment.contribution}`).join(", ");

@@ -63,3 +63,40 @@ describe("the level-0 button over the other rungs", () => {
     expect(moreWaysOut(rungs.slice(1, 2))).toBe("1 more way out: 3.x (upgrade)");
   });
 });
+
+describe("the advisories Composer's audit policy ignores, under the summary (SPEC §7.9.9)", () => {
+  const withIgnored = (reason: string | null, cve: string | null) => {
+    const { finding, run, metadata } = byName("B");
+    const ignored = [
+      {
+        id: "PKSA-aaaa-bbbb-cccc",
+        cve,
+        title: null,
+        severity: "high",
+        by: "audit.ignore",
+        matched: "id",
+        reason,
+      },
+    ];
+    const security = { ...finding.security, ignored, ignored_count: 1 };
+    return securityRow({ ...finding, security } as typeof finding, run, metadata);
+  };
+
+  test("names each one by its cve, its severity, who ignores it and why", () => {
+    expect(withIgnored("not reachable from our code", "CVE-2026-1").ignored).toEqual([
+      "CVE-2026-1 (high) ignored by audit.ignore: not reachable from our code",
+    ]);
+  });
+
+  test("falls back to the id, and says when no reason is given", () => {
+    expect(withIgnored(null, null).ignored).toEqual([
+      "PKSA-aaaa-bbbb-cccc (high) ignored by audit.ignore, no reason given",
+    ]);
+  });
+
+  test("is empty on every recorded case, none of which ignores an advisory", () => {
+    const { finding, run, metadata } = byName("B");
+
+    expect(securityRow(finding, run, metadata).ignored).toEqual([]);
+  });
+});

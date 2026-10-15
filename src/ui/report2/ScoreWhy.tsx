@@ -3,7 +3,7 @@ import type { Finding, Report2 } from "../../model/report2";
 import { isScoreGraded } from "../../model/report2";
 import { DETAIL_WORDS, whyTitle } from "../../domain/detailWords";
 import { whyBlock, type WhyLineKind } from "../../domain/scoreWhy";
-import { bandRuler, whyBar, type BarSegment } from "../../domain/whyBar";
+import { bandRuler, legendText, whyBar, type BarSegment } from "../../domain/whyBar";
 import { TONE } from "../../domain/vocab";
 import { toneClass } from "../common/common";
 import { DisclosureButton, useDisclosure } from "../common/Disclosure";
@@ -27,43 +27,46 @@ function Bar({ finding, report }: { finding: Finding; report: Report2 }) {
   const bar = whyBar(score, report.run);
   const ruler = bandRuler(report.run);
   return (
-    <div className="d2-why-figure" aria-hidden="true">
-      <div className={`d2-why-bar${bar.over ? " is-over" : ""}`} title={score.text}>
-        {bar.segments.map((segment, i) => (
-          <span key={i} className={segmentClass(segment)} style={at("--w", segment.width)} />
-        ))}
-      </div>
-      <div className="d2-why-legend">
-        {bar.segments.map((segment, i) => (
-          <span key={i} className="d2-why-legend-item">
-            <span className={`d2-swatch ${segmentClass(segment)}`} />
-            {segment.flag} <b>{segment.contribution}</b>
-          </span>
-        ))}
-      </div>
-      <div className="d2-ruler">
-        <div className="d2-ruler-zones">
-          {ruler.zones.map((zone) => (
-            <i
-              key={zone.verdict}
-              className={toneClass(TONE(zone.verdict))}
-              style={{ ...at("--from", zone.from), ...at("--w", zone.width) }}
-            />
+    <>
+      <p className="vh">{legendText(bar)}</p>
+      <div className="d2-why-figure" aria-hidden="true">
+        <div className={`d2-why-bar${bar.over ? " is-over" : ""}`} title={score.text}>
+          {bar.segments.map((segment, i) => (
+            <span key={i} className={segmentClass(segment)} style={at("--w", segment.width)} />
           ))}
         </div>
-        <span className="d2-ruler-tick is-start">0</span>
-        {ruler.ticks.map((tick) => (
-          <span
-            key={tick.floor}
-            className={`d2-ruler-tick ${toneClass(TONE(tick.verdict))}`}
-            style={at("--at", tick.at)}
-          >
-            {tick.floor} <em>{tick.verdict}</em>
-          </span>
-        ))}
-        <span className="d2-ruler-tick is-end">{ruler.max}</span>
+        <div className="d2-why-legend">
+          {bar.segments.map((segment, i) => (
+            <span key={i} className="d2-why-legend-item">
+              <span className={`d2-swatch ${segmentClass(segment)}`} />
+              {segment.flag} <b>{segment.contribution}</b>
+            </span>
+          ))}
+        </div>
+        <div className="d2-ruler">
+          <div className="d2-ruler-zones">
+            {ruler.zones.map((zone) => (
+              <i
+                key={zone.verdict}
+                className={toneClass(TONE(zone.verdict))}
+                style={{ ...at("--from", zone.from), ...at("--w", zone.width) }}
+              />
+            ))}
+          </div>
+          <span className="d2-ruler-tick is-start">0</span>
+          {ruler.ticks.map((tick) => (
+            <span
+              key={tick.floor}
+              className={`d2-ruler-tick ${toneClass(TONE(tick.verdict))}`}
+              style={at("--at", tick.at)}
+            >
+              {tick.floor} <em>{tick.verdict}</em>
+            </span>
+          ))}
+          <span className="d2-ruler-tick is-end">{ruler.max}</span>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

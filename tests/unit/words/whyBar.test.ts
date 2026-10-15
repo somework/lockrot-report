@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { isScoreGraded, type Finding, type Run, type ScoreGraded } from "../../../src/model/report2";
-import { bandRuler, whyBar } from "../../../src/domain/whyBar";
+import { bandRuler, legendText, whyBar } from "../../../src/domain/whyBar";
 import { recordedCases } from "./recorded";
 
 const byName = (name: string): { finding: Finding; run: Run; score: ScoreGraded } => {
@@ -67,4 +67,10 @@ test("the ruler ticks every band floor but the lowest, and tones each zone up to
     ["high", 25, 25],
     ["critical", 50, 50],
   ]);
+});
+
+test("the legend as text names each segment and its contribution in bar order", () => {
+  const { run, score } = byName("B");
+
+  expect(legendText(whyBar(score, run))).toBe("left-behind 16, old-promise 4, vulnerable 16");
 });

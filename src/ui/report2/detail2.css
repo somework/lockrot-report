@@ -402,6 +402,12 @@
 }
 
 /* ---------- the Security ladder ---------- */
+.d2-ignored {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
 .d2-ladder {
   list-style: none;
   margin: 0;

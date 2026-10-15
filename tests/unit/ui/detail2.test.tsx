@@ -130,6 +130,9 @@ describe("the Why block of design 2A", () => {
     const figure = sheet.querySelector(".d2-why-figure") as HTMLElement;
 
     expect(figure.getAttribute("aria-hidden")).toBe("true");
+    expect(sheet.querySelector(".d2-why > p.vh")?.textContent).toBe(
+      "left-behind 16, old-promise 4, vulnerable 16",
+    );
     expect([...figure.querySelectorAll(".d2-why-bar .d2-seg")].map((s) => s.className)).toEqual([
       "d2-seg is-lead tone-high",
       "d2-seg is-corroborating tone-high",

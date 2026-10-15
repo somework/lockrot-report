@@ -38,12 +38,19 @@ export function SecurityRow2({
 }) {
   const disclosure = useDisclosure(RUNGS_KEY);
   const listId = `${useId()}-rungs`;
-  const { summary, rungs } = securityRow(finding, run, metadata);
+  const { summary, rungs, ignored } = securityRow(finding, run, metadata);
   const moveBranch = finding.next_step?.to_branch ?? null;
   const rest = rungs.slice(1);
   return (
     <>
       <p className="d2-row-text">{summary}</p>
+      {ignored.length > 0 && (
+        <ul className="d2-ignored">
+          {ignored.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      )}
       {rungs.length > 0 && (
         <ol className="d2-ladder" id={listId}>
           {rungs.map((rung, i) => (

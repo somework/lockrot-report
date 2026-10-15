@@ -102,6 +102,16 @@ function partialFix(finding: Finding, kind: string): string {
 export interface SecurityRow {
   readonly summary: string;
   readonly rungs: readonly SecurityRung[];
+  /** One line per advisory Composer's audit policy ignores: "{cve or id} ({severity}) ignored by {by}: {reason}". */
+  readonly ignored: readonly string[];
+}
+
+function ignoredLines(security: Finding["security"]): string[] {
+  if (!isSecurityVulnerable(security)) return [];
+  return security.ignored.map(
+    ({ id, cve, severity, by, reason }) =>
+      `${cve ?? id} (${severity}) ignored by ${by}${reason === null ? ", no reason given" : `: ${reason}`}`,
+  );
 }
 
 export function securityRow(finding: Finding, run: Run, metadata: RepositoryMetadata | null): SecurityRow {
@@ -123,6 +133,7 @@ export function securityRow(finding: Finding, run: Run, metadata: RepositoryMeta
         lookup,
       ].join(" · "),
       rungs: [],
+      ignored: ignoredLines(security),
     };
   }
   return {
@@ -134,6 +145,7 @@ export function securityRow(finding: Finding, run: Run, metadata: RepositoryMeta
       lookup,
     ].join(" · "),
     rungs: ladder(metadata),
+    ignored: ignoredLines(security),
   };
 }
 
