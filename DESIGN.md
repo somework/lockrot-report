@@ -392,6 +392,11 @@ and a key the document leaves out is named on Run data (PD-RUN-3) like any other
   from `flags/cases.json` on the model's own inputs; Repository and Advisory feeds have none and are
   held to SPEC's examples. On lockrot's recording it may differ from the
   model's golden only for a case that `goldens/en/model-differences.json` lists with its reason.
+- **Page texts** (`copySummary`, `libyearsPanel`, `scorePanel` in `src/domain/`): pure functions of
+  a report-2, held equal to `contract/page-goldens.json` (`tests/unit/words/pageTexts.test.ts`). The
+  goldens render the model's documents, which `contract:fetch` gets beside the bundle (the cases
+  and corpus documents named in `scripts/contract.mjs`), as lockrot's `PageGoldensTest` reads them.
+  The panel holds words keyed by rule id (`RULE_WORDS`) and no number of the model.
 - **Build checks**: the built `report.html` contains each coupling in §1.1 exactly once, none of the
   forbidden strings, and building twice gives identical bytes.
 

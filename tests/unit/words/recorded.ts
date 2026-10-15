@@ -2,6 +2,7 @@
 // and the details of its one package (DESIGN.md §7).
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { gunzipSync } from "node:zlib";
 
 import type { Finding, Report2, RepositoryMetadata, Run } from "../../../src/model/report2";
 
@@ -121,4 +122,31 @@ export function multiFindingReports(): { name: string; report: Report2 }[] {
     { name: "composite", report: readContractJson("report-2", "composite.json") as Report2 },
     ...embeds,
   ];
+}
+
+/** One entry of `page-goldens.json`: the strings the model rendered from the root fields of `document`. */
+export interface PageGolden {
+  document: string;
+  copy_summary: string[];
+  libyears_panel: string | null;
+  panel: string[] | null;
+}
+
+/** The model's report-2 of a golden's document, where lockrot's `PageGoldensTest` reads it. */
+function pageGoldenDocument(document: string): Report2 {
+  const name = document.slice(document.indexOf("/") + 1);
+  const documents = join(FIXTURES, "schema", "documents");
+  const raw = document.startsWith("cases/")
+    ? readFileSync(join(documents, "cases", name), "utf8")
+    : gunzipSync(readFileSync(join(documents, "corpus", `${name}.gz`))).toString("utf8");
+  return JSON.parse(raw) as Report2;
+}
+
+export function pageGoldens(): { id: string; golden: PageGolden; report: Report2 }[] {
+  const { goldens } = readContractJson("page-goldens.json") as { goldens: Record<string, PageGolden> };
+  return Object.entries(goldens).map(([id, golden]) => ({
+    id,
+    golden,
+    report: pageGoldenDocument(golden.document),
+  }));
 }
