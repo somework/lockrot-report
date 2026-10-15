@@ -39,10 +39,14 @@ describe("liveExample (SPEC §7.9.12, the live example)", () => {
     );
   });
 
-  it("says that nothing is flagged when the report grades no finding", () => {
+  it.each([
+    ["no package opened", null],
+    ["its score-0 package opened", nothingFlagged.findings[0]?.package ?? "missing"],
+  ])("says that nothing is flagged when the report grades no finding, with %s", (_, pkg) => {
     expect(nothingFlagged.packages_flagged).toBe(0);
+    expect(nothingFlagged.findings).toHaveLength(1);
 
-    expect(liveExample(nothingFlagged, null)).toEqual({
+    expect(liveExample(nothingFlagged, pkg)).toEqual({
       finding: null,
       text: "No package is flagged in this report.",
     });

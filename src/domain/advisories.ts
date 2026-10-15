@@ -1,6 +1,6 @@
 /** The Advisories tab of a report-2 (SPEC §8.7.1): the S9 rows, grouped by `fix.kind` and
- *  `fix.to_branch`, with the tab's words. The lookup hedge reads root `security.check`, never a note
- *  code. */
+ *  `fix.to_branch`, with the tab's words. The lookup hedge reads SPEC §7.9.15's one test,
+ *  `advisoryListPartial`, as the overview band does. */
 
 import type { Finding, Report2, Run, S9fix, S9row } from "../model/report";
 import type { Filters } from "../state/types";

@@ -385,15 +385,17 @@ const EXAMPLE_WORDS = {
 const exampleText = (lead: string, f: Finding): string =>
   `${lead}: ${f.package} ${f.version} scores ${f.score.total}, ${f.verdict}.`;
 
-/** The panel's live example: the score of the finding the reader opened, else of the first graded
- *  finding by `rank`. */
+/** The panel's live example: the score of the graded finding the reader opened, else of the first
+ *  graded finding by `rank`. A score-0 package is no finding (SPEC §7.9.5). */
 export function liveExample(report: Report2, opened: string | null): LiveExample {
-  const finding = report.findings.find((f) => f.package === opened);
-  if (finding !== undefined) return { finding, text: exampleText(EXAMPLE_WORDS.opened, finding) };
   const graded: readonly string[] = report.run.graded_verdicts;
-  const first = report.findings
-    .filter((f) => graded.includes(f.verdict))
-    .reduce<Finding | null>((best, f) => (best === null || f.rank < best.rank ? f : best), null);
+  const findings = report.findings.filter((f) => graded.includes(f.verdict));
+  const finding = findings.find((f) => f.package === opened);
+  if (finding !== undefined) return { finding, text: exampleText(EXAMPLE_WORDS.opened, finding) };
+  const first = findings.reduce<Finding | null>(
+    (best, f) => (best === null || f.rank < best.rank ? f : best),
+    null,
+  );
   return first === null
     ? { finding: null, text: EXAMPLE_WORDS.none }
     : { finding: first, text: exampleText(EXAMPLE_WORDS.first, first) };

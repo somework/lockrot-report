@@ -41,6 +41,14 @@ describe("reducer / view", () => {
     expect(back.example).toBeNull();
   });
 
+  it("keeps the score example when the reader clicks the tab that is already open", () => {
+    const state: State = { ...INITIAL_STATE, view: "run", example: "acme/widget" };
+
+    const next = reducer(state, { type: "view", view: "run" });
+
+    expect(next.example).toBe("acme/widget");
+  });
+
   it("does not mutate the original state object", () => {
     // Arrange
     const state = INITIAL_STATE;

@@ -47,7 +47,8 @@ export function reducer(state: State, action: Action): State {
         ...state,
         view: action.view,
         pkg: keepDetail ? state.pkg : null,
-        example: state.pkg,
+        // A click on the open tab dispatches too: it keeps the example it shows.
+        example: action.view === state.view ? state.example : state.pkg,
       };
     }
 
