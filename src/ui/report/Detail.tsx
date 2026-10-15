@@ -168,8 +168,11 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
             </Row>
           )}
           {branches !== null && (
-            <Row label={DETAIL_WORDS.branches}>
-              <p className="d2-row-text" id={branchesId}>
+            <section className="d2-branches" aria-labelledby={`${branchesId}-head`}>
+              <h3 className="d2-row-label" id={`${branchesId}-head`}>
+                {DETAIL_WORDS.branches}
+              </h3>
+              <p className="d2-branches-line" id={branchesId}>
                 {branches}
               </p>
               <BranchTimeline2
@@ -179,7 +182,7 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
                 run={run}
                 summaryId={branchesId}
               />
-            </Row>
+            </section>
           )}
           {age !== null && (
             <Row label={DETAIL_WORDS.age}>

@@ -352,6 +352,20 @@
   font-size: 12px;
   color: var(--muted);
 }
+/* Release branches spans the sheet (PD-TIMELINE-18): the timeline takes the label column's width. */
+.d2-branches {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+.d2-branches-line {
+  margin: 0;
+  font: 19px/1.35 var(--serif);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
 @media (max-width: 480px) {
   .d2-row {
     grid-template-columns: minmax(0, 1fr);
