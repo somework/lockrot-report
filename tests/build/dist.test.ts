@@ -128,9 +128,10 @@ describe.skipIf(!distBuilt)(
       expect(manifest.files["lockrot-report.css"]).toBe(sha256Hex(cssFile));
     });
 
-    it("manifest names this renderer and its version", () => {
+    it("manifest names this renderer and the version package.json carries", () => {
+      const packageJson = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as { version: string };
       expect(manifest.name.length).toBeGreaterThan(0);
-      expect(manifest.version.length).toBeGreaterThan(0);
+      expect(manifest.version).toBe(packageJson.version);
     });
 
     it("manifest.schema.report lists READS_SCHEMAS, which is report-2 only (DESIGN.md §2)", () => {
