@@ -60,47 +60,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.fhead-verdict,
-.fhead-why,
-.fhead-pkg {
-  display: none;
-}
-.fhead-pkg {
-  grid-area: pkg;
-}
-.fhead-reach {
-  grid-area: reach;
-  justify-self: end;
-  text-align: right;
-}
 .fhead-age {
   grid-area: age;
   align-self: stretch;
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--fl-num);
   column-gap: 6px;
-}
-/* The key to a grey bar, in the head's top line: the swatch is the bar itself, the words the same
-   ones an age cell with no bar uses. Sentence case, so it reads as a note, not a column's name. */
-.fhead-key {
-  grid-area: key;
-  justify-self: end;
-  align-self: start;
-  margin-top: 6px;
-  min-width: 0;
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: 1;
-  text-transform: none;
-  white-space: nowrap;
-  color: var(--muted);
-}
-.fhead-key .fledger-key {
-  width: 16px;
-  margin-right: 6px;
-  vertical-align: 1px;
 }
 /* The axis' captions sit over the track part of the age column only — the number column beside it
    has no scale to caption. */
@@ -180,24 +145,6 @@
   font-family: var(--mono);
   font-size: 12px;
   color: var(--muted);
-  white-space: nowrap;
-}
-.fgroup-sentence {
-  flex: 1 1 22em;
-  min-width: 0;
-  margin: 0;
-  font-family: var(--serif);
-  font-size: 15.5px;
-  line-height: 1.35;
-  color: var(--ink-2);
-}
-.fgroup-sentence b {
-  font-weight: 600;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-/* A count and its word ("1 old-promise", "1 dev-only") wrap as one: never at the hyphen. */
-.fl-unit {
   white-space: nowrap;
 }
 
@@ -288,24 +235,6 @@
   overflow-wrap: anywhere;
 }
 
-.fc-verdict {
-  grid-area: verdict;
-  white-space: nowrap;
-  font-family: var(--cond);
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--tone);
-  print-color-adjust: exact;
-  -webkit-print-color-adjust: exact;
-}
-/* A repeat keeps its full tone and loses only its weight: quieter, never dimmed or greyed. A
-   critical row's verdict never repeats (FindingsView.tsx#dittoFor). */
-.fc-verdict.is-ditto {
-  font-weight: 500;
-}
-
 .fc-pkg {
   grid-area: pkg;
   font-weight: 600;
@@ -327,35 +256,11 @@
 .fc-pkg .tag {
   margin-left: 6px;
 }
-
-/* The package and how it gets in: one flex line in the two-line layout; elsewhere dissolved, so
-   the row's own grid places each. */
-.fc-line {
-  display: contents;
-}
-.fc-why {
-  grid-area: why;
-  color: var(--ink);
-  font-size: 12.5px;
-}
-.fc-why:not(.is-ditto) .fc-why-text {
-  font-weight: 500;
-}
-.fc-reach {
-  grid-area: reach;
-  justify-self: end;
-  text-align: right;
-  color: var(--ink);
-  font-size: 12px;
-}
 /* A name after its vendor's slash moves to the next line whole when it can, and breaks at its own
    hyphens only when it is wider than the whole cell. */
 .fc-unit {
   display: inline-block;
   max-width: 100%;
-}
-.fc-via {
-  color: var(--muted);
 }
 .fc-dev {
   display: inline-block;
@@ -374,37 +279,11 @@
   padding: 0 5px;
   vertical-align: 1px;
 }
-.fc-why .tag,
-.fc-why .adv-chip {
-  margin-right: 6px;
-}
-.fc-why .sid {
-  /* A lockrot signal id never splits, even where the cell's own `overflow-wrap: anywhere` would let it. */
-  overflow-wrap: normal;
-  white-space: nowrap;
-  margin-right: 6px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  font-weight: 600;
-  color: var(--muted);
-  text-decoration: none;
-}
-/* An id from outside lockrot has no length limit; unbroken it would widen a 320px page. */
-.fc-why span.sid {
-  overflow-wrap: anywhere;
-  white-space: normal;
-}
-.fc-why a.sid:hover {
-  color: var(--accent-ink);
-  text-decoration: underline;
-}
 
 /*
  * Still real text, in `--muted`, which keeps 4.5:1 on every row background (an opacity would not).
  */
-.fc-vendor.is-ditto,
-.fc-why.is-ditto,
-.fc-reach.is-ditto {
+.fc-vendor.is-ditto {
   color: var(--muted);
 }
 
@@ -475,20 +354,6 @@
   background: var(--row-bg);
   transform: skewX(-24deg);
 }
-/* A little `--muted` keeps it visible on the dark track (`--border-strong` alone sat at ~1.6:1). */
-.age-bar-context {
-  background: color-mix(in srgb, var(--muted) 28%, var(--border-strong));
-}
-.age-bar-context::before {
-  content: "";
-  position: absolute;
-  right: -1px;
-  top: -2px;
-  width: 2px;
-  height: 10px;
-  border-radius: 1px;
-  background: var(--muted);
-}
 .age-num {
   grid-column: 2;
   grid-row: 1;
@@ -500,86 +365,6 @@
 }
 .age-num.is-toned {
   color: var(--tone);
-}
-.age-none {
-  grid-column: 1 / -1;
-  grid-row: 1;
-  justify-self: start;
-  z-index: 2;
-  padding-right: 6px;
-  background: var(--row-bg);
-  font-size: 11.5px;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  transition: background-color 0.12s ease;
-}
-
-/* Whose the number is, where the why names a second date: under the number, or on a phone, whose
-   row has no height to spare, just past it, clear of the bar; the way in keeps room for it. */
-.age-whose {
-  font-family: var(--cond);
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  line-height: 10px;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-@container fledger (max-width: 479px) {
-  .fc-age:has(.age-whose) {
-    position: relative;
-    overflow: visible;
-  }
-  .age-whose {
-    position: absolute;
-    top: 50%;
-    left: calc(100% + 5px);
-    transform: translateY(-50%);
-    white-space: nowrap;
-  }
-  .frow:has(.age-whose) .fc-reach {
-    max-width: calc(100% - var(--fl-whose));
-  }
-}
-/* The number and its word centre as a pair, so a one-line row, as short as rows get, holds both. */
-@container fledger (min-width: 480px) {
-  .fc-age:has(.age-whose) {
-    grid-template-rows: 1fr auto auto 1fr;
-  }
-  .fc-age:has(.age-whose) > .age-track {
-    grid-row: 1 / -1;
-  }
-  .fc-age:has(.age-whose) > .age-num {
-    grid-row: 2;
-  }
-  .age-whose {
-    grid-column: 2;
-    grid-row: 3;
-    justify-self: end;
-  }
-}
-
-/* The swatch in the head's grey-bar key: the context bar's own shape, end cap included. */
-.fledger-key {
-  position: relative;
-  display: inline-block;
-  width: 18px;
-  height: 6px;
-  border-radius: 0 3px 3px 0;
-  background: color-mix(in srgb, var(--muted) 28%, var(--border-strong));
-}
-.fledger-key::after {
-  content: "";
-  position: absolute;
-  right: -1px;
-  top: -2px;
-  width: 2px;
-  height: 10px;
-  border-radius: 1px;
-  background: var(--muted);
 }
 
 /* ---------- phone, narrowest: the age column gives the way in a little more room ---------- */
@@ -605,19 +390,6 @@
       "key key age"
       "pkg pkg age";
   }
-  .fhead-pkg {
-    display: block;
-  }
-  /* Beside the axis it keys, as in the one-line head — right-aligned up to the age column, with
-     room for that column's caption, which is a little wider than the column and overhangs it. */
-  .fhead-key {
-    justify-self: end;
-    margin-right: 18px;
-  }
-  /* "Reached" sits over the right end of the rows' first line, where each row's way in ends. */
-  .fhead-reach {
-    grid-area: pkg;
-  }
   /* Right-aligned with the whole column, the number column included, so it overhangs the column's
      left edge by a few pixels only and leaves the key beside it room. */
   .fhead-axis-label {
@@ -631,22 +403,8 @@
       "verdict why age";
     row-gap: 0;
   }
-  /* The package, then how it gets in pushed to the line's right end; when both do not fit, the way
-     in drops to a line of its own, still right-aligned, rather than either being cut. */
-  .fc-line {
-    grid-area: line;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    column-gap: 14px;
-    min-width: 0;
-  }
   .fc-pkg {
     flex: 0 1 auto;
-  }
-  .fc-reach {
-    flex: 0 1 auto;
-    margin-left: auto;
   }
   /* Edge to edge of the row, so the guides run on unbroken from one row into the next. */
   .fc-age {
@@ -670,28 +428,6 @@
       ". . key age ."
       "verdict pkg why age reach";
   }
-  .fhead-verdict,
-  .fhead-why {
-    display: block;
-  }
-  .fhead-verdict {
-    grid-area: verdict;
-  }
-  .fhead-why {
-    grid-area: why;
-  }
-  .fhead-narrow {
-    display: none;
-  }
-  .fhead-key {
-    justify-self: end;
-    margin-right: 4px;
-  }
-  .fhead-reach {
-    grid-area: reach;
-    justify-self: start;
-    text-align: left;
-  }
   .fhead-axis-label {
     left: 0;
     right: auto;
@@ -704,24 +440,6 @@
     align-items: center;
     min-height: 36px;
   }
-  .fc-line {
-    display: contents;
-  }
-  .fc-reach {
-    justify-self: start;
-    margin-left: 0;
-    text-align: left;
-  }
-  /*
-   * From here one clipped line: a wrapped note grew every noted row for a fact the row's `title`
-   * gives.
-   */
-  .fc-why .match-note {
-    display: block;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
 }
 
 /* ---------- forced colours ----------
@@ -730,12 +448,9 @@
   .age-track::before,
   .age-guide,
   .age-bar,
-  .age-bar-context::before,
   .fhead-tick,
   .frun::before,
-  .frow[aria-current="true"]::before,
-  .fledger-key,
-  .fledger-key::after {
+  .frow[aria-current="true"]::before {
     forced-color-adjust: none;
   }
   /* No hairline here: in a forced palette the empty track read louder than a stippled bar. */
@@ -763,15 +478,6 @@
     background: Canvas;
     box-shadow: inset 0 0 0 1px CanvasText;
   }
-  .age-bar-context,
-  .fledger-key {
-    background: repeating-linear-gradient(90deg, CanvasText 0 1px, Canvas 1px 4px);
-    box-shadow: none;
-  }
-  .age-bar-context::before,
-  .fledger-key::after {
-    background: CanvasText;
-  }
   .age-bar.is-over::after {
     background: Canvas;
   }
@@ -787,8 +493,7 @@
   }
 }
 
-/* ---------- print ----------
-   Every signal a row carries prints under its reason (`.sig-rest`, un-hidden in print.css). */
+/* ---------- print ---------- */
 @media print {
   .fhead {
     position: static;
@@ -802,11 +507,6 @@
   }
   .frow[aria-current="true"]::before {
     display: none;
-  }
-  /* The row's background is gone on paper; the phrase keeps the page's own, so no guide runs
-     through its letters. */
-  .age-none {
-    background: var(--bg);
   }
   .frun::before {
     print-color-adjust: exact;
