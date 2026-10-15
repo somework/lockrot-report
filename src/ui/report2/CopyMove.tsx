@@ -1,5 +1,4 @@
 import { useEffect, useId, useRef, useState } from "preact/hooks";
-import type { Finding } from "../../model/report2";
 import { DETAIL_WORDS } from "../../domain/detailWords";
 import { commandLine, REFUSED_COMMAND, SHELL_NAMES, SHELLS, type Shell } from "../../domain/shellArgv";
 
@@ -56,12 +55,12 @@ const linesFor = (argvs: readonly (readonly string[])[], shell: Shell): (string 
   argvs.map((argv) => commandLine(argv, shell));
 
 /**
- * The copy control of design 5C: a Copy button and a shell menu, POSIX first. It renders
- * `next_step.commands[]` as written, and for an argv the argument rule refuses it prints why in
- * place of the command and offers no copy, so a reader never runs part of a move.
+ * The copy control of design 5C: a Copy button and a shell menu, POSIX first. It renders `argvs`
+ * as written (a move's `next_step.commands[]`, the overview's `update_now_command`), and for an argv
+ * the argument rule refuses it prints why in place of the command and offers no copy, so a reader
+ * never runs part of a move. `label` replaces the move's own eyebrow.
  */
-export function CopyMove({ finding }: { finding: Finding }) {
-  const argvs = finding.next_step?.commands ?? [];
+export function CopyMove({ argvs, label }: { argvs: readonly (readonly string[])[]; label?: string }) {
   const [shell, setShell] = useState<Shell>(readShell);
   const [menuOpen, setMenuOpen] = useState(false);
   const [status, setStatus] = useCopyStatus();
@@ -133,7 +132,9 @@ export function CopyMove({ finding }: { finding: Finding }) {
   return (
     <div className="d2-copy">
       <div className="d2-copy-bar">
-        <span className="eyebrow">{argvs.length > 1 ? DETAIL_WORDS.moveInOrder : DETAIL_WORDS.move}</span>
+        <span className="eyebrow">
+          {label ?? (argvs.length > 1 ? DETAIL_WORDS.moveInOrder : DETAIL_WORDS.move)}
+        </span>
         {printable && (
           <button type="button" className="d2-btn d2-copy-btn" onClick={copy}>
             {LABELS[status]}

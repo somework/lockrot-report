@@ -107,12 +107,6 @@ describe("the overview band of a report-2 document", () => {
     );
   });
 
-  test("leaves out the Update now line", () => {
-    render(<App model={model()} />);
-
-    expect(band().textContent).not.toContain("Update now");
-  });
-
   test("says nothing is flagged and draws no flag bar", () => {
     render(
       <App
@@ -185,5 +179,45 @@ describe("the header's Copy summary on a report-2 document", () => {
         "All 7 in production · 6 required directly, 1 pulled in · 20 security advisories on 4 packages (severity: 1 critical, 4 high, 4 medium, 2 unrated, 9 low) · fix by package: 2 composer update, 1 upgrade, 1 php floor raise · 17.9 libyears behind.",
       ].join("\n"),
     );
+  });
+});
+
+describe("the overview's Update now line", () => {
+  test("prints security.update_now_command through the copy control, POSIX first", () => {
+    render(<App model={model()} />);
+
+    const line = band().querySelector<HTMLElement>(".overview2-update");
+    expect(line).not.toBeNull();
+    expect(within(line as HTMLElement).getByText("Update now")).toBeTruthy();
+    expect(line?.querySelector(".d2-copy-cmd")?.textContent).toBe(
+      "composer update symfony/yaml symfony/polyfill-intl-idn",
+    );
+    expect(within(line as HTMLElement).getByRole("button", { name: "Copy" })).toBeTruthy();
+  });
+
+  test("a null command hides the line", () => {
+    render(
+      <App
+        model={model((report) => {
+          report.security.update_now_command = null;
+        })}
+      />,
+    );
+    expect(band().querySelector(".overview2-update")).toBeNull();
+  });
+
+  test("a command the argument rule refuses prints why and offers no copy", () => {
+    render(
+      <App
+        model={model((report) => {
+          report.security.update_now_command = ["composer", "update", "a/b;rm -rf"];
+        })}
+      />,
+    );
+    const line = band().querySelector<HTMLElement>(".overview2-update");
+    expect(line?.querySelector(".d2-copy-cmd")?.textContent).toBe(
+      "This command holds characters the page does not print.",
+    );
+    expect(within(line as HTMLElement).queryByRole("button", { name: "Copy" })).toBeNull();
   });
 });

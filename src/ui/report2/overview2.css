@@ -70,3 +70,8 @@
     box-shadow: inset 0 0 0 2px CanvasText;
   }
 }
+
+/* The detail sheet's copy control, at the block's width. */
+.overview2-update .d2-copy {
+  margin: 4px 0 0;
+}

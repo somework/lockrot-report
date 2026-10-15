@@ -11,6 +11,7 @@ import {
   leadScope,
   multiFlagLine,
   securityBlock,
+  updateNowArgv,
 } from "../../../src/domain/overviewBand";
 import type { Report2 } from "../../../src/model/report2";
 import { pageGoldens } from "../words/recorded";
@@ -258,5 +259,23 @@ describe("the gate line's state", () => {
     report.run = { ...report.run, mode: "generate_baseline" };
 
     expect(gateState(report)).toBe("fails");
+  });
+});
+
+describe("updateNowArgv", () => {
+  test("reads the published argv, and null when it is null or holds a non-string", () => {
+    const report = golden("composite");
+    expect(updateNowArgv(report)).toEqual([
+      "composer",
+      "update",
+      "symfony/yaml",
+      "symfony/polyfill-intl-idn",
+    ]);
+    expect(
+      updateNowArgv({ ...report, security: { ...report.security, update_now_command: null } }),
+    ).toBeNull();
+    expect(
+      updateNowArgv({ ...report, security: { ...report.security, update_now_command: ["composer", 3] } }),
+    ).toBeNull();
   });
 });

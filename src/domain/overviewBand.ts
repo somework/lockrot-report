@@ -20,6 +20,7 @@ export const OVERVIEW_WORDS = {
   perAdvisory: "One square per advisory",
   bySeverity: "Advisories by severity",
   byFix: "By fix (packages)",
+  updateNow: "Update now",
   libyears: "Libyears",
   more: "More about this lock",
 } as const;
@@ -181,4 +182,11 @@ export function foldPeek2(report: Report2): string[] {
     advisories === 0 ? "no advisory" : plural(advisories, "advisory", "advisories"),
     ...(libyears.measured > 0 ? [`${fixed(libyears.total, 1)} libyears`] : []),
   ];
+}
+
+/** `security.update_now_command` as an argv; `null` hides the line, as does an entry that is no string. */
+export function updateNowArgv({ security }: Report2): readonly string[] | null {
+  const argv = security.update_now_command;
+  if (argv === null || !argv.every((arg): arg is string => typeof arg === "string")) return null;
+  return argv;
 }

@@ -13,6 +13,7 @@ import {
   multiFlagLine,
   OVERVIEW_WORDS,
   securityBlock,
+  updateNowArgv,
   type FlagBar,
   type GateState,
   type Lead,
@@ -26,6 +27,7 @@ import { useReport } from "../context";
 import { CleanMark } from "../ledger/CleanMark";
 import { Waffle } from "../ledger/Waffle";
 import "../ledger/ledger.css";
+import { CopyMove } from "./CopyMove";
 import { useReport2 } from "./useReport2";
 import "./overview2.css";
 
@@ -195,6 +197,7 @@ const severityTone = ({ band, outlined }: SeverityCount): string =>
 function SecurityBlock({ report }: { report: Report2 }) {
   const block = securityBlock(report);
   const severities = useToggle("sev");
+  const updateNow = updateNowArgv(report);
 
   return (
     <div className="ledger-block ledger-advisories">
@@ -250,6 +253,11 @@ function SecurityBlock({ report }: { report: Report2 }) {
             </Fragment>
           ))}
         </p>
+      )}
+      {updateNow !== null && (
+        <div className="overview2-update">
+          <CopyMove argvs={[updateNow]} label={OVERVIEW_WORDS.updateNow} />
+        </div>
       )}
     </div>
   );
