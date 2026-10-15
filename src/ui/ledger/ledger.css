@@ -50,21 +50,20 @@
    The serif sets the answer apart from the UI text around it (tokens.css `--serif`). */
 .ov-grade {
   margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  column-gap: 0.3em;
-  row-gap: 4px;
-  font: 30px/1.2 var(--serif);
+  font: 26px/1.35 var(--serif);
   color: var(--ink);
   text-wrap: balance;
 }
 .ov-grade-sep {
   color: var(--muted);
 }
+.ov-grade .clean-mark {
+  margin-right: 10px;
+  vertical-align: -5px;
+}
 .ov-grade-chip {
   display: inline-block;
-  padding: 1px 10px 3px;
+  padding: 0 9px 2px;
   border: 1px solid var(--tone);
   border-radius: var(--radius-m);
   background: var(--tone-soft);
@@ -179,7 +178,7 @@
 }
 @media (max-width: 759px) {
   .ov-grade {
-    font-size: 24px;
+    font-size: 22px;
   }
   .ov-figure {
     font-size: 16px;

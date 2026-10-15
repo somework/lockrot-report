@@ -225,16 +225,23 @@ test.describe("report-2: the printed report reads the report-2 model", () => {
     );
   });
 
-  test("printed from Overview, the summary prints once and its score strip as text", async ({ page }) => {
+  test("printed from Overview, the summary prints once, with the grade line and Weighs most as text", async ({
+    page,
+  }) => {
     await page.goto(report2Url("composite"));
     await page.emulateMedia({ media: "print" });
     await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
 
     await expect(page.locator('[data-surface="overview"]').filter({ visible: true })).toHaveCount(1);
-    await expect(page.locator(".pd .ss-plot")).toHaveCount(0);
-    await expect(page.locator(".pd .ov-scores .ledger-note")).toHaveText(
-      "score 36: 2 critical · score 32: 1 critical · score 18: 2 high · score 2: 2 low",
+    await expect(page.locator(".pd .ov-grade")).toHaveText(
+      "Project grade: critical · 3 critical findings · 5 of 7 packages high or worse",
     );
+    await expect(page.locator(".pd .ov-figure")).toHaveText("7 of 7 packages flagged · 0 ok · 0 allowlisted");
+    await expect(page.locator(".pd .wm-load")).toHaveText(
+      "144 points on 7 flagged packages · 140 (97 %) from high or worse · score model 1",
+    );
+    await expect(page.locator(".pd .wm-list > li .wm-text")).toHaveCount(7);
+    await expect(page.locator(".pd .wm-seg").first()).toHaveCSS("border-top-style", "solid");
     await expect(page.locator(".pd .f2-strip")).toHaveCount(0);
   });
 

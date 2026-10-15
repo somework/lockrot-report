@@ -58,7 +58,7 @@ function WeighsMostBlock({ report }: { report: Report2 }) {
   return (
     <div className="ledger-block wm">
       <p className="eyebrow ledger-head">
-        {WEIGHS_WORDS.head}
+        {WEIGHS_WORDS.head}{" "}
         {chart.rows.length > 0 && <span className="ledger-head-note">{WEIGHS_WORDS.note}</span>}
       </p>
       <p className="wm-load">{load}</p>
