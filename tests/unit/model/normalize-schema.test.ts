@@ -6,7 +6,7 @@ import { describe, expect, test, vi } from "vitest";
 
 import { normalize } from "../../../src/model/normalize";
 
-vi.mock("../../../src/schema", () => ({ READS_SCHEMAS: [2] }));
+vi.mock("../../../src/schema", () => ({ READS_SCHEMAS: [3] }));
 
 const FIXTURE = join(
   dirname(fileURLToPath(import.meta.url)),
@@ -23,10 +23,10 @@ function newerSchemaFor(schema: number): boolean {
 
 describe("newerSchema follows READS_SCHEMAS", () => {
   test("the highest schema the page reads is not newer", () => {
-    expect(newerSchemaFor(2)).toBe(false);
+    expect(newerSchemaFor(3)).toBe(false);
   });
 
   test("a schema above the highest one the page reads is newer", () => {
-    expect(newerSchemaFor(3)).toBe(true);
+    expect(newerSchemaFor(4)).toBe(true);
   });
 });
