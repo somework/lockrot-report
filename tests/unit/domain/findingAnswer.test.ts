@@ -76,15 +76,15 @@ describe("answerText", () => {
     expect(answer).not.toContain("It is not required directly");
   });
 
-  it("names a holder that carries no flag by its grade alone", () => {
+  it("says nothing about a holder that is not graded", () => {
     const { finding, report } = recorded("holder-vuln-dagger");
     const holder = finding.next_step?.held_by[0]?.holder;
     if (!holder) throw new Error("holder-vuln‡ is held by a package");
-    holder.verdict = "unknown";
+    holder.verdict = "ok";
     holder.lead = null;
     holder.flag_ids = [];
 
-    expect(answerText(finding, report.run)).toContain("It is held by joomla/filter 2.0.5 (itself unknown).");
+    expect(answerText(finding, report.run)).toContain("It is held by joomla/filter 2.0.5.");
   });
 
   it("prints lockrot's own move text for a no-move reason named like an Object member", () => {
