@@ -33,6 +33,7 @@ export const REFERENCE_WORDS = {
   installed: "installed",
   php: "php constraint",
   released: "released",
+  snapshotDated: "snapshot dated",
   repository: "repository",
   type: "type",
   dev: "packages-dev",

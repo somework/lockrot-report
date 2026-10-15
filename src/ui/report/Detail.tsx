@@ -41,7 +41,11 @@ function lockRows(finding: Finding, entry: DetailsEntry | null): readonly KeyVal
   return presentRows([
     { label: REFERENCE_WORDS.installed, value: finding.version },
     { label: REFERENCE_WORDS.php, value: lock?.php ?? null },
-    { label: REFERENCE_WORDS.released, value: lock?.released ? day(lock.released) : null },
+    {
+      // A branch snapshot's lock time is its commit's date, which is no release (PD-S6-3).
+      label: lock?.branch_snapshot ? REFERENCE_WORDS.snapshotDated : REFERENCE_WORDS.released,
+      value: lock?.released ? day(lock.released) : null,
+    },
     {
       label: REFERENCE_WORDS.repository,
       value: link !== null ? <OutLink href={link}>{link}</OutLink> : (lock?.repository ?? null),
