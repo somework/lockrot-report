@@ -1,6 +1,6 @@
 {
   "name": "@somework/lockrot-report",
-  "version": "0.14.0-rc.1",
+  "version": "0.14.0-rc.2",
   "private": true,
   "description": "The renderer behind lockrot --format=html: one self-contained page per report.",
   "license": "MIT",
