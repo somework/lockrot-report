@@ -5,6 +5,7 @@ import { normalize } from "../../../src/model/normalize";
 import type { Report2 } from "../../../src/model/report2";
 import type { Model } from "../../../src/model/types";
 import { App } from "../../../src/ui/App";
+import { readContractJson } from "../words/recorded";
 
 function model(caseName: string): Model {
   const result = normalize(assembleEmbed(caseName));
@@ -199,6 +200,21 @@ describe("the report-2 All packages tab", () => {
     const ly = document.querySelector('tr[data-pkg="symfony/polyfill-intl-idn"] .p2-ly [title]');
     expect(ly?.querySelector('[aria-hidden="true"]')?.textContent).toBe("—");
     expect(ly?.querySelector(".vh")?.textContent).toBe(ly?.getAttribute("title"));
+  });
+
+  test("prints a dash for a package whose every pill the accepted toggle hides", () => {
+    const psrLog = (readContractJson("model-only", "psr-log.json") as Report2).findings.find(
+      (f) => f.package === "psr/log",
+    );
+    if (psrLog === undefined) throw new Error("psr-log.json has psr/log");
+    const withPsrLog = withReport(model("composite"), (report) => ({
+      ...report,
+      findings: [...report.findings, { ...psrLog, rank: 8 }],
+    }));
+    history.replaceState(null, "", "/report.html#view=packages&accepted=hide");
+    render(<App model={withPsrLog} />);
+
+    expect(document.querySelector('tr[data-pkg="psr/log"] .p2-flags')?.textContent).toBe("—");
   });
 
   test("sorts by score, highest first, from the Score head", () => {

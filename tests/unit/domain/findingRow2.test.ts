@@ -5,6 +5,7 @@ import {
   cappedPackages,
   flagPills,
   gradeTone,
+  shownPills,
   ignoredNote,
   maintenanceAccepted,
   nextStepWords,
@@ -80,7 +81,8 @@ describe("flagPills", () => {
 
   it("names the deciding advisory when more than one counts and none fixes it", () => {
     const unrated = report("unrated-dagger");
-    expect(flagPills(finding(unrated), unrated.run)[0]?.noFix).toMatch(/^no release fixes \S+$/);
+    // SPEC §7.9.5 names CVE-2026-45305 as unrated-dagger's deciding advisory.
+    expect(flagPills(finding(unrated), unrated.run)[0]?.noFix).toBe("no release fixes CVE-2026-45305");
   });
 
   it("puts a flag no term names last, untoned, with the word accepted and who accepted it", () => {
@@ -275,7 +277,7 @@ describe("the notes above the list", () => {
 });
 
 describe("gradeTone and cappedPackages", () => {
-  it("tones each graded band and keeps an unknown or missing band neutral", () => {
+  it("tones each graded band and falls back to low for an unknown or missing band", () => {
     expect(run.graded_verdicts.map(gradeTone)).toEqual(["crit", "high", "med", "low"]);
     expect(gradeTone("dire")).toBe("low");
     expect(gradeTone(null)).toBe("low");
@@ -284,5 +286,17 @@ describe("gradeTone and cappedPackages", () => {
   it("names three packages and counts the rest", () => {
     expect(cappedPackages(["a", "b", "c"])).toEqual({ shown: ["a", "b", "c"], more: null });
     expect(cappedPackages(["a", "b", "c", "d", "e"])).toEqual({ shown: ["a", "b", "c"], more: "and 2 more" });
+  });
+});
+
+describe("shownPills", () => {
+  const psrLog = readContractJson("model-only", "psr-log.json") as Report2;
+
+  it("drops the accepted pills only while the toggle hides them", () => {
+    const f = finding(psrLog, "psr/log");
+    expect(shownPills(f, psrLog.run, false).map((p) => [p.id, p.accepted])).toEqual(
+      f.flags.map((flag) => [flag.id, true]),
+    );
+    expect(shownPills(f, psrLog.run, true)).toEqual([]);
   });
 });

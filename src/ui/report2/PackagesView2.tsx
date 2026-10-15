@@ -1,7 +1,7 @@
 import { useRef } from "preact/hooks";
 import type { Finding, Run } from "../../model/report2";
 import { applyFilters2, HIDE_ACCEPTED, population2 } from "../../domain/list2";
-import { gradeTone } from "../../domain/findingRow2";
+import { gradeTone, shownPills } from "../../domain/findingRow2";
 import {
   dataAsOf,
   installedAge,
@@ -78,7 +78,7 @@ function PackageRow({ finding, run, hideAccepted }: { finding: Finding; run: Run
         {finding.score.total}
       </td>
       <td role="cell" className="p2-flags">
-        {finding.flags.length === 0 ? (
+        {shownPills(finding, run, hideAccepted).length === 0 ? (
           "—"
         ) : (
           <FlagPills finding={finding} run={run} hideAccepted={hideAccepted} />

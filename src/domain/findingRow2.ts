@@ -158,6 +158,11 @@ export function flagPills(f: Finding, run: Run): readonly FlagPill[] {
   return [...pills.filter((p) => !p.accepted), ...pills.filter((p) => p.accepted)];
 }
 
+/** The pills a row shows: every one, or the counted ones while the rail's toggle hides the accepted. */
+export function shownPills(f: Finding, run: Run, hideAccepted: boolean): readonly FlagPill[] {
+  return flagPills(f, run).filter((pill) => !(hideAccepted && pill.accepted));
+}
+
 /** Keyed on who wrote the entry, never on the score-0 word. A partial entry says nothing here. */
 export function maintenanceAccepted(f: Finding): string | null {
   return acceptsWholePackage(f) && f.allowlist !== null
@@ -366,7 +371,8 @@ const GRADE_TONES: Readonly<Record<string, Tone>> = {
   low: "low",
 };
 
-/** The tone token of a band or a grade; one the page does not know is neutral. */
+/** The tone token of a band or a grade; `low` is the fallback for one the page does not know, as
+ *  `TONE()` has it. */
 export const gradeTone = (band: string | null): Tone =>
   band === null ? "low" : (GRADE_TONES[band] ?? "low");
 

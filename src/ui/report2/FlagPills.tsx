@@ -1,5 +1,5 @@
 import type { Finding, Run } from "../../model/report2";
-import { flagPills, gradeTone, type BaselineMark } from "../../domain/findingRow2";
+import { gradeTone, shownPills, type BaselineMark } from "../../domain/findingRow2";
 import { toneClass } from "../common/common";
 import "./flagPills.css";
 
@@ -37,7 +37,7 @@ export function FlagPills({
   run: Run;
   hideAccepted?: boolean;
 }) {
-  const pills = flagPills(finding, run).filter((pill) => !(hideAccepted && pill.accepted));
+  const pills = shownPills(finding, run, hideAccepted);
   return (
     <>
       {pills.map((pill) => (
