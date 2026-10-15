@@ -140,3 +140,35 @@
     grid-area: next;
   }
 }
+
+/* The printed scale over each group: the bar's track starts after the score's number. */
+.f2-print-scale {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 16px;
+  margin-top: 4px;
+  padding-left: var(--fl-pad-l, 14px);
+  font: 600 9.5px var(--cond);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  break-after: avoid;
+}
+.f2-print-gap {
+  flex: none;
+  width: var(--fl-num);
+}
+.f2-print-axis {
+  position: relative;
+  flex: none;
+  width: var(--sbar-w, 96px);
+  height: 100%;
+}
+.f2-print-axis .f2-head-tick {
+  position: absolute;
+  bottom: 0;
+  transform: translateX(-50%);
+  font: 500 9.5px/1 var(--mono);
+  letter-spacing: 0;
+}

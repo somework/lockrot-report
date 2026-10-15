@@ -2,9 +2,11 @@
  * PD-BASELINE-1..6 (DESIGN.md §5): the baseline surfaces, against `wallabag_baseline` (synthetic, no
  * gate fields) and `wallabag_baseline-older-0.13`, whose findings carry their own `gate`.
  */
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { FIXTURES } from "./support/pages";
+import { FIXTURES, report2Url } from "./support/pages";
+import { findingsRow, findingsSurface } from "./support/report2/findings";
+import { report2Pages } from "../scripts/report2-embed.ts";
 
 let report: ReportPage;
 
@@ -255,5 +257,59 @@ test.describe("PD-GATE-2: the Against sentence closes on how many fail this run"
     const box = await page.locator(".rail-path").boundingBox();
     // One line of 11.5px mono: well under two lines' height.
     expect(box?.height ?? 99).toBeLessThan(22);
+  });
+});
+
+test.describe("report-2: the baseline on the Findings tab and the rail", () => {
+  const CASE = "baselined-wallabag-2.6";
+  const embed = report2Pages().find((p) => p.name === `report2-${CASE}`)?.embed;
+  const graded = (embed?.report.findings ?? [])
+    .filter((f) => (embed?.report.run.graded_verdicts as readonly string[] | undefined)?.includes(f.verdict))
+    .sort((a, b) => a.rank - b.rank);
+  const rows = (page: Page) =>
+    findingsSurface(page)
+      .locator("li[data-pkg]")
+      .evaluateAll((items) => items.map((item) => item.getAttribute("data-pkg") ?? ""));
+
+  test("the rail's Since rows count the graded findings in each baseline state", async ({ page }) => {
+    await page.goto(report2Url(CASE));
+    const rail = page.getByRole("group", { name: "Filters" });
+    const newCount = graded.filter((f) => f.baseline?.status === "new").length;
+    expect(newCount).toBeGreaterThan(0);
+    await expect(rail.getByRole("button", { name: /^New/ })).toContainText(String(newCount));
+  });
+
+  test("a pasted since=new link lists exactly the new findings, in rank order", async ({ page }) => {
+    await page.goto(report2Url(CASE) + "#since=new");
+    await expect(findingsSurface(page).locator("li[data-pkg]").first()).toBeVisible();
+    expect(await rows(page)).toEqual(
+      graded.filter((f) => f.baseline?.status === "new").map((f) => f.package),
+    );
+    await expect(
+      page.getByRole("group", { name: "Filters" }).getByRole("button", { name: /^New/ }),
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("the rail's 'Fails this run' lists the findings whose gate fails", async ({ page }) => {
+    await page.goto(report2Url(CASE));
+    await page
+      .getByRole("group", { name: "Filters" })
+      .getByRole("button", { name: /^Fails this run/ })
+      .click();
+    await expect.poll(() => page.evaluate(() => location.hash)).toContain("gate=fails");
+    expect(await rows(page)).toEqual(graded.filter((f) => f.gate.fails).map((f) => f.package));
+  });
+
+  test("the rail's Since title names the baseline file", async ({ page }) => {
+    await page.goto(report2Url(CASE));
+    await expect(page.locator(".rail-path")).toHaveText(embed?.report.baseline?.path ?? "");
+  });
+
+  test("a known flag carries a tick with hidden words, a covered one names its cover", async ({ page }) => {
+    await page.goto(report2Url("B-baselined-dagger"));
+    const pills = findingsRow(page, "symfony/monolog-bridge").locator(".fp");
+    const pill = (flag: string) => pills.filter({ has: page.locator(".fp-word", { hasText: flag }) });
+    await expect(pill("left-behind").locator(".fp-mark")).toHaveText("known to the baseline");
+    await expect(pill("old-promise").locator(".fp-mark")).toHaveText("covered by the recorded left-behind");
   });
 });

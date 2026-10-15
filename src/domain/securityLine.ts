@@ -26,7 +26,7 @@ const SECURITY_FIX_WORDS: Readonly<Record<string, string>> = {
 
 const securityFixWord = (kind: string): string => SECURITY_FIX_WORDS[kind] ?? fixLabel(kind);
 
-function holderWord({ source, package: name }: HeldBy): string {
+export function holderWord({ source, package: name }: HeldBy): string {
   return source === "root" || name === null ? "composer.json" : name;
 }
 

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { FIXTURES } from "./support/pages";
+import { FIXTURES, report2Url } from "./support/pages";
 
 /**
  * Print (print.css, print/PrintDocument.tsx): the stylesheet hides the app chrome, and while the
@@ -332,4 +332,92 @@ test("the printed Findings axis keeps its captions apart", async ({ page }) => {
   expect(key.x).toBeGreaterThanOrEqual(age.x - 1);
   expect(key.y).toBeGreaterThanOrEqual(caption.y + caption.height - 1);
   expect(key.y + key.height).toBeLessThanOrEqual(zero.y + 1);
+});
+
+test.describe("report-2: the printed report reads the report-2 model", () => {
+  const MONOLOG = "symfony/monolog-bridge";
+
+  test("every section prints its report-2 surface, whatever tab is open", async ({ page }) => {
+    await page.goto(report2Url("composite") + "#view=radius");
+    await page.emulateMedia({ media: "print" });
+    await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
+    for (const surface of ["overview", "findings", "advisories", "radius", "run"]) {
+      await expect(page.locator(`.pd [data-surface="${surface}"]`)).toHaveCount(1);
+    }
+    await expect(page.locator(".pd .pd-lede").first()).toHaveText(
+      "7 flagged packages, by grade, each with every flag that fired.",
+    );
+  });
+
+  test("the bar keeps its colours and prints the number of a segment of 6 blocks or more", async ({
+    page,
+  }) => {
+    await page.goto(report2Url("composite"));
+    await page.emulateMedia({ media: "print" });
+    const row = page.locator(`.pd [data-surface="findings"] li[data-pkg="${MONOLOG}"]`);
+    const adjust = await row
+      .locator(".sbar-seg")
+      .evaluateAll((items) => items.map((item) => getComputedStyle(item).printColorAdjust));
+    expect(adjust).toEqual(["exact", "exact", "exact"]);
+    // left-behind 16 and vulnerable 16 are 8 blocks each; old-promise 4 is 2.
+    await expect(row.locator(".sbar-n")).toHaveText(["16", "16"]);
+    await expect(row.locator(".sbar-n").first()).toBeVisible();
+  });
+
+  test("the score scale repeats over each printed Findings group", async ({ page }) => {
+    await page.goto(report2Url("composite"));
+    await page.emulateMedia({ media: "print" });
+    const groups = page.locator('.pd [data-surface="findings"] .fgroup');
+    // composite grades: critical, high and low.
+    await expect(groups).toHaveCount(3);
+    await expect(groups.locator(".f2-print-scale")).toHaveCount(3);
+    await expect(groups.first().locator(".f2-print-scale .f2-head-tick")).toHaveText(["0", "8", "16", "32"]);
+    await page.emulateMedia({ media: "screen" });
+    await expect(page.locator(".f2-print-scale")).toHaveCount(0);
+  });
+
+  test("the Why bar's ruler keeps its tones on paper", async ({ page }) => {
+    await page.goto(`${report2Url("composite")}#pkg=${encodeURIComponent(MONOLOG)}`);
+    const ruler = page.locator('[data-surface="detail"] .d2-ruler');
+    await expect(ruler).toBeVisible();
+    await page.emulateMedia({ media: "print" });
+    expect(await ruler.evaluate((el) => getComputedStyle(el).printColorAdjust)).toBe("exact");
+  });
+
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`the hatch's two tones stay apart in greyscale, from the theme's tokens, ${colorScheme}`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ colorScheme });
+      await page.goto(report2Url("composite"));
+      const seg = page.locator(
+        `[data-surface="findings"] li[data-pkg="${MONOLOG}"] .sbar-seg.is-corroborating`,
+      );
+      const [tone, soft] = await seg.evaluate((el) => {
+        const style = getComputedStyle(el);
+        return [style.getPropertyValue("--tone"), style.getPropertyValue("--tone-soft")];
+      });
+      const lightness = (color: string): Promise<number> =>
+        page.evaluate((c) => {
+          const canvas = document.createElement("canvas").getContext("2d");
+          if (canvas === null) return -1;
+          canvas.fillStyle = c;
+          canvas.fillRect(0, 0, 1, 1);
+          const [r = 0, g = 0, b = 0] = canvas.getImageData(0, 0, 1, 1).data;
+          return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+        }, color);
+      expect(Math.abs((await lightness(tone)) - (await lightness(soft)))).toBeGreaterThan(0.25);
+    });
+  }
+
+  test("the tone tokens differ between the themes", async ({ page }) => {
+    const toneIn = async (colorScheme: "light" | "dark") => {
+      await page.emulateMedia({ colorScheme });
+      await page.goto(report2Url("composite"));
+      return page
+        .locator(`[data-surface="findings"] li[data-pkg="${MONOLOG}"] .sbar-seg.is-lead`)
+        .evaluate((el) => getComputedStyle(el).backgroundColor);
+    };
+    expect(await toneIn("light")).not.toBe(await toneIn("dark"));
+  });
 });

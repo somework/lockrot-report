@@ -125,12 +125,16 @@ src/
                           reading, the next-step column, row runs, the notes above the list
     scoreBar.ts           the stacked score bar's layout: widths over `bar_max`, the clip, band ticks
     packageCells2.ts      the report-2 All packages cells and columns
+    advisories2.ts        the report-2 Advisories tab: S9 rows grouped by `fix.kind` and `fix.to_branch`
+    radius2.ts            the report-2 Blast radius: `radius.ts`'s layout over the graded findings
+    glossary2.ts          the report-2 glossary: verdicts, flags and signals, from ids and the model
+    print2.ts             the ledes of the printed report-2 sections
     priority.ts           priorityWhy — a finding's priority_basis in words; noFixKind
     answer.ts             the open package's answer sentence and what it pulls in (S7)
     libyears.ts           ledger items, sort key, reason, row phrases
     timeline.ts           release branches: order, folds, one shared axis, age phrases
     age.ts                a Findings row's age scale: signal, thresholds, shared maximum
-    radius.ts             blast-radius cards
+    radius.ts             blast-radius cards, generic over the finding fields it reads
     share.ts              print and share: scope rollup, copied summary, running line (PD-PRINT-*)
     pageVocabulary.ts     report-2's page words keyed by ids; an id it does not know prints as written
     ago.ts, shellArgv.ts  the years phrase; an argv in POSIX, cmd.exe and PowerShell

@@ -7,7 +7,7 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 
-import { assembleEmbed, report2Pages } from "./report2-embed.ts";
+import { assembleEmbed, METACHAR_NAME, report2Pages } from "./report2-embed.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const DIST = join(ROOT, "dist");
@@ -75,7 +75,16 @@ function main() {
     .replaceAll("{{DATA}}", () => payload({ report: malformed, details: {} }));
   mkdirSync(join(OUT, "planted"), { recursive: true });
   writeFileSync(join(OUT, "planted", "report2-malformed.html"), planted);
-  console.log(`${fixtureFiles.length + report2.length + 1} page(s) written to ${OUT}`);
+  // The composite with one package renamed to CSS-selector metacharacters: names are document data.
+  const hostile = JSON.parse(
+    JSON.stringify(assembleEmbed("composite")).replaceAll('"symfony/yaml"', JSON.stringify(METACHAR_NAME)),
+  );
+  const metachar = template
+    .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DATA}}", () => payload(hostile));
+  writeFileSync(join(OUT, "planted", "report2-metachar.html"), metachar);
+  console.log(`${fixtureFiles.length + report2.length + 2} page(s) written to ${OUT}`);
 }
 
 main();

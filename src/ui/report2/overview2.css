@@ -31,11 +31,12 @@
   white-space: normal;
 }
 
-/* A fourth column holds each flag bar's split by grade. */
+/* A fourth column holds each flag bar's split by grade. It keeps room for two lines of it, so a
+   long bar shrinks before the split does. */
 .overview2-flag-bars {
   grid-template-columns:
     max-content minmax(0, calc(var(--longest, 1) * var(--unit)))
-    max-content minmax(0, 1fr);
+    max-content minmax(min(12em, 40vw), 1fr);
 }
 .overview2-split {
   font-size: 11.5px;
@@ -69,4 +70,9 @@
     background: Canvas;
     box-shadow: inset 0 0 0 2px CanvasText;
   }
+}
+
+/* The detail sheet's copy control, at the block's width. */
+.overview2-update .d2-copy {
+  margin: 4px 0 0;
 }

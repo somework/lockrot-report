@@ -14,6 +14,13 @@ import { FindingsView } from "../views/FindingsView";
 import { PackagesView } from "../views/PackagesView";
 import { RadiusView } from "../views/RadiusView";
 import { RunView } from "../views/RunView";
+import { printHasBody2, printLede2 } from "../../domain/print2";
+import { AdvisoriesView2 } from "../report2/AdvisoriesView2";
+import { FindingsView2 } from "../report2/FindingsView2";
+import { Overview2 } from "../report2/Overview2";
+import { PackagesView2 } from "../report2/PackagesView2";
+import { RadiusView2 } from "../report2/RadiusView2";
+import { RunView2 } from "../report2/RunView2";
 import { PrintContext } from "./printContext";
 
 const NOOP = (): void => undefined;
@@ -100,6 +107,7 @@ function lockSize(base: ReportContextValue): number {
  *  empty state is hidden on paper, where its lede already says so. */
 function hasBody(section: PrintSection, base: ReportContextValue): boolean {
   const { model } = base;
+  if (model.report2 !== null) return printHasBody2(section, model.report2.report);
   if (section === "summary") return lockSize(base) > 0;
   if (section === "findings") return population(model, "findings").length > 0;
   if (section === "advisories") return allAdvisories(model).length > 0;
@@ -110,6 +118,7 @@ function hasBody(section: PrintSection, base: ReportContextValue): boolean {
  *  out of it. Counts only, the same ones the tabs show. */
 function lede(section: PrintSection, base: ReportContextValue): ComponentChildren {
   const { model } = base;
+  if (model.report2 !== null) return printLede2(section, model.report2.report);
   switch (section) {
     case "summary":
       // An empty lock's band is three empty tiers; on paper its one line says it all.
@@ -164,7 +173,30 @@ function lede(section: PrintSection, base: ReportContextValue): ComponentChildre
   }
 }
 
+/** The same sections from the report-2 surfaces. */
+function SectionBody2({ section }: { section: PrintSection }) {
+  switch (section) {
+    case "summary":
+      return <Overview2 narrow={false} />;
+    case "findings":
+      return <FindingsView2 />;
+    case "advisories":
+      return <AdvisoriesView2 />;
+    case "radius":
+      return <RadiusView2 />;
+    case "run":
+      return (
+        <div className="pd-run">
+          <RunView2 />
+        </div>
+      );
+    case "packages":
+      return <PackagesView2 />;
+  }
+}
+
 function SectionBody({ section, base }: { section: PrintSection; base: ReportContextValue }) {
+  if (base.model.report2 !== null) return <SectionBody2 section={section} />;
   switch (section) {
     case "summary":
       return lockSize(base) === 0 ? null : <Ledger />;
@@ -206,7 +238,7 @@ export function PrintDocument({ base }: { base: ReportContextValue }) {
   const sections = printSections(state.view);
   const packages = sections.includes("packages");
   // An empty lock has no packages to leave out.
-  const any = population(model, "packages").length > 0;
+  const any = (model.report2?.report.findings ?? population(model, "packages")).length > 0;
   const note = [
     ...(screenNarrowed(base)
       ? ["The filters and search on screen do not apply: every section is printed in full."]

@@ -2,8 +2,9 @@
  * PD-A11Y-SWEEP-1..3 (DESIGN.md §5): what a cross-cutting sweep of every tab — 768 and 1024, light
  * at 1440, forced colours, keyboard only, the names a screen reader reads — found and fixed.
  */
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { FIXTURES, pageUrl } from "./support/pages";
+import { FIXTURES, pageUrl, report2Url } from "./support/pages";
 
 async function load(page: Page, fixture: string, hash = ""): Promise<void> {
   await page.goto(pageUrl(fixture as never) + (hash ? "#" + hash : ""));
@@ -85,4 +86,56 @@ test.describe("PD-A11Y-SWEEP-3: widgets that share a word are named apart", () =
     // The arrow is still drawn for the eye.
     await expect(sorted.getByRole("button")).toContainText("↑");
   });
+});
+
+test.describe("report-2: the sweep over every tab", () => {
+  const CASE = "composite";
+
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`only the selected tab carries an underline distinct from the page in forced colours, ${colorScheme}`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ colorScheme, forcedColors: "active" });
+      await page.goto(report2Url(CASE) + "#view=radius");
+      await expect(page.getByRole("tab").first()).toBeVisible();
+      const lines = await underlines(page);
+      const selected = lines.filter((line) => line.selected);
+      expect(selected).toHaveLength(1);
+      expect(
+        new Set(lines.filter((line) => !line.selected).map((line) => line.color)).has(
+          selected[0]?.color ?? "",
+        ),
+      ).toBe(false);
+    });
+  }
+
+  test("each tab's name is 'label count'", async ({ page }) => {
+    await page.goto(report2Url(CASE));
+    // composite: 7 graded findings, 20 counted advisories, 7 packages, 1 exposure row.
+    for (const name of ["Findings 7", "Advisories 20", "All packages 7", "Blast radius 1", "Run data"]) {
+      await expect(page.getByRole("tab", { name, exact: true })).toBeVisible();
+    }
+  });
+
+  test("the grade chips and the advisory-severity chips sit in their own named groups", async ({ page }) => {
+    await page.goto(report2Url(CASE));
+    const band = page.locator('[data-surface="overview"]');
+    await expect(
+      band.getByRole("group", { name: "Grade" }).getByRole("button", { name: /^high 2$/ }),
+    ).toBeVisible();
+    await expect(
+      band.getByRole("group", { name: "Advisories by severity" }).getByRole("button", { name: /^high 4$/ }),
+    ).toBeVisible();
+  });
+
+  for (const view of ["findings", "advisories", "packages", "radius", "run"] as const) {
+    test(`axe finds no violation on ${view}`, async ({ page }) => {
+      await page.goto(`${report2Url(CASE)}#view=${view}`);
+      await expect(page.locator(`[data-surface="${view}"]`)).toBeVisible();
+      const results = await new AxeBuilder({ page }).include(`[data-surface="${view}"]`).analyze();
+      expect(
+        results.violations.flatMap((v) => v.nodes.map((node) => `${v.id}: ${node.target.join(" ")}`)),
+      ).toEqual([]);
+    });
+  }
 });

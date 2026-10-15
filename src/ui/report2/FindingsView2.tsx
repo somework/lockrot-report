@@ -19,6 +19,7 @@ import { toneClass } from "../common/common";
 import { EmptyState } from "../views/EmptyState";
 import { AgeAxis as AgeAxisHead } from "../views/AgeScale";
 import { FindingRow2 } from "./FindingRow2";
+import { usePrinted } from "../print/printContext";
 import { useReport2 } from "./useReport2";
 import "../views/views.css";
 import "../views/ledger-rows.css";
@@ -93,9 +94,28 @@ function ColumnHead({ run, axis }: { run: Run; axis: AgeAxis | null }) {
   );
 }
 
+/** On paper, over each group: the score floors at the bars' own scale, as the age axis repeats. */
+function PrintedScale({ run }: { run: Run }) {
+  return (
+    <div className="f2-print-scale" aria-hidden="true">
+      <span className="f2-print-gap" />
+      <span className="f2-print-axis">
+        <span className="f2-head-tick">0</span>
+        {bandTicks(run).map((tick) => (
+          <span key={tick.floor} className="f2-head-tick" style={{ left: `${tick.at * 100}%` }}>
+            {tick.floor}
+          </span>
+        ))}
+      </span>
+      <span>{FINDINGS_HEAD.score}</span>
+    </div>
+  );
+}
+
 function Group({ verdict, findings, axis }: { verdict: string; findings: Finding[]; axis: AgeAxis | null }) {
   const { state } = useReport();
   const { report } = useReport2();
+  const printed = usePrinted();
   const hideAccepted = state.filters.accepted.includes(HIDE_ACCEPTED);
   const rows = (members: readonly Finding[]) =>
     members.map((finding) => (
@@ -115,6 +135,7 @@ function Group({ verdict, findings, axis }: { verdict: string; findings: Finding
         <h2>{verdict}</h2>
         <span className="fgroup-count">{packagesCount(findings.length)}</span>
       </header>
+      {printed && <PrintedScale run={report.run} />}
       {runSegments(findings).map((segment) => {
         const first = segment.findings[0]?.package ?? "";
         if (segment.key === null) {

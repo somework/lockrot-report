@@ -146,7 +146,7 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
         <div className="d2-lead">
           <p className="d2-asof">{agesAsOf(report.generated_at)}</p>
           <p className="d2-answer">{answerText(finding, run)}</p>
-          <CopyMove key={finding.package} finding={finding} />
+          <CopyMove key={finding.package} argvs={finding.next_step?.commands ?? []} />
         </div>
         <ScoreWhy finding={finding} report={report} />
         <div className="d2-rows">
