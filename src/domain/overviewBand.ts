@@ -7,6 +7,7 @@ import type { Report2 } from "../model/report";
 import { advisoryListPartial, fixCounts, noAdvisoryWords, PARTIAL_HEDGE, scopeClauses } from "./copySummary";
 import { isAre, namesCapped } from "./findingWords";
 import { plural, pluralNoun } from "./format";
+import { flagPoints, pointsText } from "./projectGrade";
 import { sharePhrase } from "./summary";
 
 export const OVERVIEW_WORDS = {
@@ -62,6 +63,8 @@ export interface FlagBar {
   carrying: number;
   parts: GradeCount[];
   split: string;
+  /** "{points} pts" the flag's terms hold over the graded findings. */
+  points: string;
 }
 
 type RootFlag = Report2["flags"][keyof Report2["flags"]];
@@ -86,6 +89,7 @@ export const GATE_GLYPHS: Readonly<Record<GateState, string>> = {
 
 export function flagBars(report: Report2): FlagBar[] {
   const flags = rootFlags(report);
+  const points = flagPoints(report);
   return report.run.score_model.flag_order.flatMap((flag) => {
     const entry = flags[flag];
     if (entry === undefined || entry.carrying === 0) return [];
@@ -94,7 +98,7 @@ export function flagBars(report: Report2): FlagBar[] {
       .map((grade) => ({ grade, count: byVerdict[grade] ?? 0 }))
       .filter(({ count }) => count > 0);
     const split = `graded ${parts.map(({ grade, count }) => `${grade} ${count}`).join(" · ")}`;
-    return [{ flag, carrying: entry.carrying, parts, split }];
+    return [{ flag, carrying: entry.carrying, parts, split, points: pointsText(points.get(flag) ?? 0) }];
   });
 }
 

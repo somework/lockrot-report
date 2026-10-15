@@ -84,6 +84,7 @@ describe("the flag ledger", () => {
         { grade: "low", count: 2 },
       ],
       split: "graded critical 2 · low 2",
+      points: "52 pts",
     });
   });
 
