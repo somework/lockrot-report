@@ -49,7 +49,8 @@ function countLine(report: Report2): string {
   ].join(" ");
 }
 
-function scopeClauses({ packages_flagged: flagged, rot_depth: depth }: Report2): string[] {
+/** "all 7 in production", "6 required directly, 1 pulled in": the scope rollup of root `rot_depth`. */
+export function scopeClauses({ packages_flagged: flagged, rot_depth: depth }: Report2): string[] {
   const total = depth.production + depth.development;
   if (flagged === 0 || total === 0) return [];
   const { direct, transitive, unreached } = depth.by_reach;
@@ -61,17 +62,38 @@ function scopeClauses({ packages_flagged: flagged, rot_depth: depth }: Report2):
   return [split(total, depth.production, "in production", "dev-only"), ...(reach === "" ? [] : [reach])];
 }
 
-function securityClauses(report: Report2): string[] {
-  const { security, run } = report;
-  const incomplete =
+/** Whether the counted advisories may not be every advisory (SPEC §7.9.15's hedge). */
+export function advisoryListPartial({ security, note_details: notes }: Report2): boolean {
+  return (
     security.check === "partial" ||
     security.check === "not_run" ||
     security.packages.unchecked > 0 ||
-    report.note_details.some(({ code }) => code === "advisories_not_checked");
+    notes.some(({ code }) => code === "advisories_not_checked")
+  );
+}
+
+export const PARTIAL_HEDGE = "advisory check incomplete, so the list may be partial";
+
+/** `security.fixes` with a count, in `fix_kinds[]` ease order, then any kind the model does not list. */
+export function fixCounts({ security, run }: Report2): { kind: string; label: string; count: number }[] {
+  const fixes: Readonly<Record<string, number>> = security.fixes;
+  const kinds = run.score_model.fix_kinds.map(({ id }) => id);
+  return [...kinds, ...Object.keys(fixes).filter((kind) => !kinds.includes(kind))]
+    .filter((kind) => (fixes[kind] ?? 0) > 0)
+    .map((kind) => ({ kind, label: fixLabel(kind), count: fixes[kind] ?? 0 }));
+}
+
+/** The Security clause when no advisory counted. */
+export const noAdvisoryWords = (report: Report2): string =>
+  advisoryListPartial(report)
+    ? "no advisory found, but the advisory check was incomplete"
+    : "no security advisory";
+
+function securityClauses(report: Report2): string[] {
+  const { security, run } = report;
+  const incomplete = advisoryListPartial(report);
   const counted = security.advisories.counted;
-  if (counted === 0) {
-    return [incomplete ? "no advisory found, but the advisory check was incomplete" : "no security advisory"];
-  }
+  if (counted === 0) return [noAdvisoryWords(report)];
 
   const severities: Readonly<Record<string, number>> = security.severities;
   const bySeverity = run.score_model.severities
@@ -79,13 +101,9 @@ function securityClauses(report: Report2): string[] {
     .map(({ id }) => `${severities[id]} ${id}`);
   const found = `${plural(counted, "security advisory", "security advisories")} on ${plural(security.packages.vulnerable, "package", "packages")} (severity: ${bySeverity.join(", ")})`;
 
-  const fixes: Readonly<Record<string, number>> = security.fixes;
-  const kinds = run.score_model.fix_kinds.map(({ id }) => id);
-  const byFix = [...kinds, ...Object.keys(fixes).filter((kind) => !kinds.includes(kind))]
-    .filter((kind) => (fixes[kind] ?? 0) > 0)
-    .map((kind) => `${fixes[kind]} ${fixLabel(kind)}`);
+  const byFix = fixCounts(report).map(({ label, count }) => `${count} ${label}`);
   return [
-    incomplete ? `${found} (advisory check incomplete, so the list may be partial)` : found,
+    incomplete ? `${found} (${PARTIAL_HEDGE})` : found,
     ...(byFix.length === 0 ? [] : [`fix by package: ${byFix.join(", ")}`]),
   ];
 }

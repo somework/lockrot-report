@@ -234,7 +234,7 @@ function LedgerSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
   const { model } = useReport();
   return (
     <div className="ledger-band" inert={inert}>
-      {model.report2 === null ? <Ledger narrow={narrow} /> : <Overview2 />}
+      {model.report2 === null ? <Ledger narrow={narrow} /> : <Overview2 narrow={narrow} />}
     </div>
   );
 }

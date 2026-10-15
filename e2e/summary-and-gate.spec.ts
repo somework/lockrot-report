@@ -4,9 +4,18 @@
  * header's quiet gate fact and its popover, and the Run tab's em dash for a document that predates
  * `run.fail_on`.
  */
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
 import { FIXTURES, type FixtureName } from "./support/pages";
+import {
+  flagBars,
+  gateLine,
+  gradeChips,
+  overviewSurface,
+  severityChips,
+  waffleSquares,
+} from "./support/report2/overview";
 
 let report: ReportPage;
 
@@ -205,5 +214,114 @@ test.describe("PD-SUMMARY-3: the Run tab's fail-on without the field", () => {
     const panel = page.getByRole("tabpanel");
     await expect(panel).toContainText("fail-on");
     await expect(panel).toContainText("silent");
+  });
+});
+
+test.describe("report-2: the overview band of design 3A", () => {
+  test("composite: the flagged figure, the grade chips, the waffle and gate.text as written", async ({
+    page,
+  }) => {
+    await report.gotoReport2("composite");
+    await expect(overviewSurface(page).locator(".lead-num")).toHaveText("7");
+    await expect(gradeChips(page)).toHaveText(["critical 3", "high 2", "medium 0", "low 2"]);
+    await expect(waffleSquares(page)).toHaveCount(7);
+    await expect(gateLine(page)).toHaveText(
+      "gate: fails · --fail-on=high · 5 findings fail it · target php 8.4 (--target-php)",
+    );
+  });
+
+  test("composite: one flag bar per carried flag, split by grade, then the depth and accepted lines", async ({
+    page,
+  }) => {
+    await report.gotoReport2("composite");
+    await expect(flagBars(page)).toHaveText([
+      "abandoned 1 graded critical 1",
+      "pinned 1 graded high 1",
+      "left-behind 1 graded critical 1",
+      "old-promise 3 graded critical 2 · high 1",
+      "stale 2 graded high 2",
+      "vulnerable 4 graded critical 2 · low 2",
+    ]);
+    const band = overviewSurface(page);
+    await expect(band).toContainText("4 carry more than one flag · score model 1");
+    await expect(band).toContainText(
+      "1 of 7 flagged packages is named by no line of composer.json; the deepest, symfony/polyfill-intl-idn, sits 1 hop from the nearest line.",
+    );
+    await expect(band).toContainText("Accepted by the allowlist: none in flagged packages");
+    await expect(severityChips(page)).toHaveText(["critical 1", "high 4", "medium 4", "unrated 2", "low 9"]);
+  });
+
+  for (const [name, chip, fragment] of [
+    ["a grade chip", () => gradeChips, "verdict=critical"],
+    ["a severity chip", () => severityChips, "sev=critical"],
+  ] as const) {
+    test(`composite: ${name} sets its filter in the address`, async ({ page }) => {
+      await report.gotoReport2("composite");
+      const button = chip()(page).filter({ hasText: /^critical/ });
+      await button.click();
+      await expect(button).toHaveAttribute("aria-pressed", "true");
+      await expect.poll(() => report.hash()).toContain(fragment);
+    });
+  }
+
+  test("composite: a flag bar sets flag in the address", async ({ page }) => {
+    await report.gotoReport2("composite");
+    const stale = flagBars(page).filter({ hasText: /^stale/ });
+    await stale.click();
+    await expect(stale).toHaveAttribute("aria-pressed", "true");
+    await expect.poll(() => report.hash()).toContain("flag=stale");
+  });
+
+  test("pagerfanta: nothing flagged says so, with no flag bar", async ({ page }) => {
+    await report.gotoReport2("pagerfanta");
+    await expect(overviewSurface(page)).toContainText("Nothing flagged in 1 package");
+    await expect(flagBars(page)).toHaveCount(0);
+  });
+
+  test("the band never overflows the page, 320px to 1920px", async ({ page }) => {
+    for (const name of ["composite", "B-gate-list"]) {
+      await report.gotoReport2(name);
+      for (const width of [320, 390, 768, 1024, 1180, 1181, 1440, 1920]) {
+        await page.setViewportSize({ width, height: 900 });
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+        expect(overflow, `${name} at ${width}px`).toBeLessThanOrEqual(0);
+      }
+    }
+  });
+
+  test("composite: axe finds nothing on the band, light and dark", async ({ page }) => {
+    await report.gotoReport2("composite");
+    for (const colorScheme of ["light", "dark"] as const) {
+      await page.emulateMedia({ colorScheme });
+      await expect
+        .poll(async () =>
+          (await new AxeBuilder({ page }).include('[data-surface="overview"]').analyze()).violations.map(
+            (v) => v.id,
+          ),
+        )
+        .toEqual([]);
+    }
+  });
+
+  test("the header keeps its short gate fact", async ({ page }) => {
+    await report.gotoReport2("composite");
+    await expect(page.locator("header .gate-fact")).toHaveText("this run fails · --fail-on=high");
+  });
+});
+
+test.describe("report-2: on a phone the lead stays open, the tier folds", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("composite at 390px: chips and gate line are visible, the flag bars wait in the fold", async ({
+    page,
+  }) => {
+    await report.gotoReport2("composite");
+    await expect(gradeChips(page).first()).toBeVisible();
+    await expect(gateLine(page)).toBeVisible();
+    await expect(flagBars(page).first()).toBeHidden();
+    const summary = overviewSurface(page).locator("details.ledger-fold > summary");
+    await expect(summary).toContainText("6 flags · 20 advisories · 17.9 libyears");
+    await summary.click();
+    await expect(flagBars(page).first()).toBeVisible();
   });
 });

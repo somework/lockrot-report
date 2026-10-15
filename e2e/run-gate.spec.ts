@@ -9,6 +9,8 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
 import { FIXTURES, pageUrl } from "./support/pages";
+import { gateLine } from "./support/report2/overview";
+import { runGateLine } from "./support/report2/run";
 
 let report: ReportPage;
 
@@ -659,5 +661,32 @@ test.describe("PD-GATE-2/4: level 1 and its counts lead where they said", () => 
     await expect(report.runField("network failures")).toHaveText(
       "yes · no count recorded · 6 of the 21 notes above",
     );
+  });
+});
+
+test.describe("report-2: the gate view prints gate.text as written", () => {
+  for (const [name, text] of [
+    [
+      "B-gate-list",
+      "gate: fails · --fail-on=left-behind,vulnerable-high · 1 finding fails it (left-behind 1, vulnerable-high 1) · target php 8.4 (--target-php)",
+    ],
+    ["B-gate-none", "gate: off · --fail-on=none · target php 8.4 (--target-php)"],
+    ["pagerfanta", "gate: passes · --fail-on=high · no finding fails it · target php 8.4 (--target-php)"],
+  ] as const) {
+    test(`${name}: in the overview lead and on the Run tab`, async ({ page }) => {
+      await report.gotoReport2(name);
+      await expect(gateLine(page)).toHaveText(text);
+      await report.tab("run");
+      await expect(runGateLine(page)).toHaveText(text);
+    });
+  }
+
+  test("B-gate-list: the lead's gate line wraps inside the band at every width", async ({ page }) => {
+    await report.gotoReport2("B-gate-list");
+    for (const width of [320, 390, 768, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      expect(overflow, `at ${width}px`).toBeLessThanOrEqual(0);
+    }
   });
 });

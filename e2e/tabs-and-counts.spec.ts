@@ -116,3 +116,34 @@ test.describe("M14: an unrecognised view= falls back", () => {
     expect(await report.rows()).toEqual(["vendor/transitive", "vendor/snapshot"]);
   });
 });
+
+test.describe("report-2: tabs and counts on the composite", () => {
+  test.beforeEach(async () => {
+    await report.gotoReport2("composite");
+  });
+
+  test("Findings is the default tab", async () => {
+    expect(await report.activeTab()).toBe("findings");
+  });
+
+  test("switching tabs moves the aria-selected tab and closes any open detail", async () => {
+    await report.tab("packages");
+    expect(await report.activeTab()).toBe("packages");
+    await report.openPackage("twig/twig");
+    expect((await report.detail()).open).toBe(true);
+
+    await report.tab("run");
+    expect(await report.activeTab()).toBe("run");
+    expect((await report.detail()).open).toBe(false);
+  });
+
+  test("badge counts reflect the whole report, not the current filter", async () => {
+    expect(await report.tabCount("findings")).toBe("7");
+    expect(await report.tabCount("advisories")).toBe("20");
+    expect(await report.tabCount("packages")).toBe("7");
+    expect(await report.tabCount("radius")).toBe("1");
+
+    await report.search("does-not-exist-anywhere");
+    expect(await report.tabCount("findings")).toBe("7");
+  });
+});
