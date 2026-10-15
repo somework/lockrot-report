@@ -5,6 +5,7 @@ import {
   cappedPackages,
   flagPills,
   gradeTone,
+  verdictTone,
   shownPills,
   ignoredNote,
   maintenanceAccepted,
@@ -283,9 +284,38 @@ describe("gradeTone and cappedPackages", () => {
     expect(gradeTone(null)).toBe("low");
   });
 
+  it("never tones a band named like an Object member", () => {
+    expect(gradeTone("constructor")).toBe("low");
+    expect(gradeTone("toString")).toBe("low");
+  });
+
   it("names three packages and counts the rest", () => {
     expect(cappedPackages(["a", "b", "c"])).toEqual({ shown: ["a", "b", "c"], more: null });
     expect(cappedPackages(["a", "b", "c", "d", "e"])).toEqual({ shown: ["a", "b", "c"], more: "and 2 more" });
+  });
+});
+
+describe("verdictTone", () => {
+  const model = run.score_model;
+
+  it("tones each band of the model by its grade", () => {
+    expect(model.bands.map(({ verdict }) => verdictTone(model, verdict))).toEqual(
+      model.bands.map(({ verdict }) => gradeTone(verdict)),
+    );
+  });
+
+  it("gives every score-0 verdict of the model no tone", () => {
+    expect(model.zero_verdicts.map(({ verdict }) => verdictTone(model, verdict))).toEqual(
+      model.zero_verdicts.map(() => "none"),
+    );
+  });
+
+  it("falls back to low for an id the model does not list", () => {
+    expect(verdictTone(model, "dire")).toBe("low");
+    expect(verdictTone(model, "constructor")).toBe("low");
+    expect(
+      verdictTone({ ...model, bands: model.bands.filter(({ verdict }) => verdict !== "high") }, "high"),
+    ).toBe("low");
   });
 });
 

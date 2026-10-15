@@ -185,6 +185,7 @@ test("printed All packages heads are words, so the repeated head on a continuati
     /^signals/i,
     /^data as of/i,
   ]);
+  await expect(page.locator(".pd-packages thead button")).toHaveCount(0);
 });
 
 // The scale that repeats over each printed Findings group reads as a scale: its ticks keep apart and

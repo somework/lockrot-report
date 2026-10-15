@@ -9,6 +9,7 @@ import { advisoryRows } from "./advisoryRows";
 import { advisoryGroups2, advisoryPairs2, advisoryRowPackages } from "./advisories";
 import { radiusLayout2, radiusRows2 } from "./radius2";
 import { acceptedFlagIds, countedFlagIds } from "./countedFlags";
+import { fixLabel } from "./pageVocabulary";
 import { matchesFinding2, parseQuery2, type Term2 } from "./query";
 import type { RailGroup } from "./filters";
 
@@ -187,7 +188,7 @@ function acceptedToggle(scope: Scope): RailGroup {
   };
 }
 
-/** Since, This run, Flag, Accepted flags and Scope, each where it has a row. */
+/** Since, This run, Flag, Severity, Fix, Accepted flags and Scope, each where it has a row. */
 export function railGroups2(report: Report2, state: State): readonly RailGroup[] {
   const here = population2(report, state.view);
   const scope: Scope = { filters: state.filters, here, terms: parseQuery2(state.q) };
@@ -202,6 +203,20 @@ export function railGroups2(report: Report2, state: State): readonly RailGroup[]
       "flag",
       "Flag",
       report.run.flag_ids.map((id): Row => [id, id]),
+    ),
+    groupOf(
+      scope,
+      "sev",
+      "Severity",
+      report.run.score_model.severities.map(({ id }): Row => [id, id]),
+    ),
+    groupOf(
+      scope,
+      "fix",
+      "Fix",
+      [...report.run.score_model.fix_kinds]
+        .sort((a, b) => a.ease - b.ease)
+        .map(({ id }): Row => [id, fixLabel(id)]),
     ),
     here.some((f) => acceptedFlagIds(f).length > 0) ? acceptedToggle(scope) : null,
     groupOf(scope, "scope", "Scope", SCOPE_ROWS),

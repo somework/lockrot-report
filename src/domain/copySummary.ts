@@ -62,14 +62,10 @@ export function scopeClauses({ packages_flagged: flagged, rot_depth: depth }: Re
   return [split(total, depth.production, "in production", "dev-only"), ...(reach === "" ? [] : [reach])];
 }
 
-/** Whether the counted advisories may not be every advisory (SPEC §7.9.15's hedge). */
-export function advisoryListPartial({ security, note_details: notes }: Report2): boolean {
-  return (
-    security.check === "partial" ||
-    security.check === "not_run" ||
-    security.packages.unchecked > 0 ||
-    notes.some(({ code }) => code === "advisories_not_checked")
-  );
+/** Whether the counted advisories may not be every advisory (SPEC §7.9.15's hedge). It reads no
+ *  note code (§7.9.16). */
+export function advisoryListPartial({ security }: Report2): boolean {
+  return security.check === "partial" || security.check === "not_run" || security.packages.unchecked > 0;
 }
 
 export const PARTIAL_HEDGE = "advisory check incomplete, so the list may be partial";

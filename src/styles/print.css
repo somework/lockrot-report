@@ -369,12 +369,6 @@
     font-size: 8.5px;
     border-bottom-color: var(--border-strong);
   }
-  .pd .tablewrap .sort-btn {
-    padding: 0;
-    font: inherit;
-    letter-spacing: inherit;
-    text-transform: inherit;
-  }
 
   /* A package name that opens something on screen prints as the name: nothing on paper opens. */
   .pd button,

@@ -19,8 +19,11 @@ import {
   type Lead,
   type SeverityCount,
 } from "../../domain/overviewBand";
-import { TONE, type Tone } from "../../domain/vocab";
+import { verdictTone } from "../../domain/findingRow";
+import type { Tone } from "../../domain/vocab";
 import type { Report2 } from "../../model/report";
+
+type ScoreModel = Report2["run"]["score_model"];
 import type { FilterGroup } from "../../state/types";
 import { filterTitle, LegendButton, toneClass } from "../common/common";
 import { useReport } from "../context";
@@ -108,7 +111,7 @@ function Lead({ report }: { report: Report2 }) {
             {chips.map(({ grade, count }) => (
               <LegendButton
                 key={grade}
-                tone={TONE(grade)}
+                tone={verdictTone(report.run.score_model, grade)}
                 dim={count === 0}
                 pressed={grades.pressed(grade)}
                 label={grade}
@@ -124,7 +127,7 @@ function Lead({ report }: { report: Report2 }) {
           <Waffle
             runs={chips
               .filter(({ count }) => count > 0)
-              .map(({ grade, count }) => ({ priority: grade, count }))}
+              .map(({ grade, count }) => ({ tone: verdictTone(report.run.score_model, grade), count }))}
             total={report.packages_checked}
           />
           <figcaption className="lead-waffle-cap">{OVERVIEW_WORDS.perPackage}</figcaption>
@@ -135,7 +138,7 @@ function Lead({ report }: { report: Report2 }) {
   );
 }
 
-function FlagBarButton({ bar, longest }: { bar: FlagBar; longest: number }) {
+function FlagBarButton({ bar, longest, model }: { bar: FlagBar; longest: number; model: ScoreModel }) {
   const flags = useToggle("flag");
   const pressed = flags.pressed(bar.flag);
   return (
@@ -152,7 +155,7 @@ function FlagBarButton({ bar, longest }: { bar: FlagBar; longest: number }) {
           {bar.parts.map(({ grade, count }) => (
             <span
               key={grade}
-              className={`legend-seg ${toneClass(TONE(grade))}`}
+              className={`legend-seg ${toneClass(verdictTone(model, grade))}`}
               style={{ flexGrow: count }}
             />
           ))}
@@ -180,7 +183,7 @@ function FlagsBlock({ report }: { report: Report2 }) {
       {bars.length > 0 && (
         <div className="verdict-bars overview2-flag-bars" style={{ "--longest": String(longest) }}>
           {bars.map((bar) => (
-            <FlagBarButton key={bar.flag} bar={bar} longest={longest} />
+            <FlagBarButton key={bar.flag} bar={bar} longest={longest} model={report.run.score_model} />
           ))}
         </div>
       )}
@@ -191,8 +194,8 @@ function FlagsBlock({ report }: { report: Report2 }) {
   );
 }
 
-const severityTone = ({ band, outlined }: SeverityCount): string =>
-  `${toneClass(TONE(band))}${outlined ? " is-outlined" : ""}`;
+const severityTone = (model: ScoreModel, { band, outlined }: SeverityCount): string =>
+  `${toneClass(verdictTone(model, band))}${outlined ? " is-outlined" : ""}`;
 
 function SecurityBlock({ report }: { report: Report2 }) {
   const block = securityBlock(report);
@@ -216,7 +219,10 @@ function SecurityBlock({ report }: { report: Report2 }) {
           <div className="advisory-squares" aria-hidden="true">
             {block.severities.map((severity) =>
               Array.from({ length: severity.count }, (_, index) => (
-                <i key={`${severity.id}-${index}`} className={`advisory-square ${severityTone(severity)}`} />
+                <i
+                  key={`${severity.id}-${index}`}
+                  className={`advisory-square ${severityTone(report.run.score_model, severity)}`}
+                />
               )),
             )}
           </div>
@@ -230,7 +236,7 @@ function SecurityBlock({ report }: { report: Report2 }) {
                 <button
                   key={severity.id}
                   type="button"
-                  className={`legend-btn ${severityTone(severity)}`}
+                  className={`legend-btn ${severityTone(report.run.score_model, severity)}`}
                   aria-pressed={pressed}
                   title={filterTitle(severity.id, pressed)}
                   onClick={severities.toggle(severity.id)}

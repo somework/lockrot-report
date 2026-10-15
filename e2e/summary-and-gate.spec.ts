@@ -159,7 +159,7 @@ test.describe("report-2: the overview band of design 3A", () => {
     await report.openGateFact();
     expect(await report.isGateFactOpen()).toBe(true);
     expect(await report.gateFactPopoverText()).toBe(
-      "This run was told --fail-on=none: it fails on no finding, and this page lists what it saw. Pass --fail-on=<verdict or priority> in CI to make the run fail on findings at or above that level.",
+      "This run was told --fail-on=none: it fails on no finding, and this page lists what it saw. Pass --fail-on=<grade> in CI to make the run fail on findings graded at or above that grade.",
     );
   });
 

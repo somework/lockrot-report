@@ -14,6 +14,7 @@ import {
 import { useReport } from "../context";
 import { useOverflowX } from "../useOverflowX";
 import { toneClass } from "../common/common";
+import { usePrinted } from "../print/printContext";
 import { rowTabIndex } from "../rowCursor";
 import { openInteractions } from "../rowOpen";
 import { EmptyState } from "../views/EmptyState";
@@ -103,6 +104,7 @@ function PackageRow({ finding, run, hideAccepted }: { finding: Finding; run: Run
 export function PackagesView2() {
   const { state, dispatch } = useReport();
   const { report } = useReport2();
+  const printed = usePrinted();
   const wrap = useRef<HTMLDivElement>(null);
   const scrolls = useOverflowX(wrap);
   const rows = applyFilters2(report, state, "packages");
@@ -136,16 +138,23 @@ export function PackagesView2() {
                     className={`p2-h-${column.key}`}
                     aria-sort={active ? (state.sortDesc ? "descending" : "ascending") : "none"}
                   >
-                    <button
-                      type="button"
-                      className={active ? "sort-btn active" : "sort-btn"}
-                      onClick={() => {
-                        dispatch({ type: "sort", key: column.key });
-                      }}
-                    >
-                      {column.label}
-                      <span aria-hidden="true">{arrow}</span>
-                    </button>
+                    {printed ? (
+                      <>
+                        {column.label}
+                        <span aria-hidden="true">{arrow}</span>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        className={active ? "sort-btn active" : "sort-btn"}
+                        onClick={() => {
+                          dispatch({ type: "sort", key: column.key });
+                        }}
+                      >
+                        {column.label}
+                        <span aria-hidden="true">{arrow}</span>
+                      </button>
+                    )}
                   </th>
                 );
               })}

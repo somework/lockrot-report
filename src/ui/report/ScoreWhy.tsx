@@ -3,10 +3,9 @@ import type { Finding, Report2 } from "../../model/report";
 import { isScoreGraded } from "../../model/report";
 import { DETAIL_WORDS, whyTitle } from "../../domain/detailWords";
 import { whyBlock, type WhyLineKind } from "../../domain/scoreWhy";
-import { gradeTone } from "../../domain/findingRow";
+import { gradeTone, verdictTone } from "../../domain/findingRow";
 import { scoreBar } from "../../domain/scoreBar";
 import { bandRuler, legendText } from "../../domain/whyBar";
-import { TONE } from "../../domain/vocab";
 import { toneClass } from "../common/common";
 import { DisclosureButton, useDisclosure } from "../common/Disclosure";
 import { ScoreModelLink } from "./ScoreModelLink";
@@ -83,7 +82,7 @@ export function ScoreWhy({ finding, report }: { finding: Finding; report: Report
 
   return (
     <section
-      className={`detail-section d2-why ${toneClass(TONE(finding.verdict))}`}
+      className={`detail-section d2-why ${toneClass(verdictTone(report.run.score_model, finding.verdict))}`}
       aria-labelledby={`${listId}-h`}
     >
       <div className="d2-why-head">

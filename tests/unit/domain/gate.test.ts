@@ -79,7 +79,7 @@ describe("gateFact (a report with no decided gate)", () => {
       label: "no gate",
       text:
         "This run was told --fail-on=none: it fails on no finding, and this page lists what it saw. " +
-        "Pass --fail-on=<verdict or priority> in CI to make the run fail on findings at or above that level.",
+        "Pass --fail-on=<grade> in CI to make the run fail on findings graded at or above that grade.",
     });
   });
 
@@ -93,7 +93,7 @@ describe("gateFact (a report with no decided gate)", () => {
       text:
         "This run was told --fail-on=none: it fails on no finding, but --strict-network fails the run when a " +
         "network lookup fails. This page lists what it saw. " +
-        "Pass --fail-on=<verdict or priority> in CI to make the run fail on findings at or above that level.",
+        "Pass --fail-on=<grade> in CI to make the run fail on findings graded at or above that grade.",
     });
   });
 });

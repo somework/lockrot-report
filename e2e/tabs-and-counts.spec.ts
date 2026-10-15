@@ -95,10 +95,24 @@ test.describe("report-2: tabs and counts on the composite", () => {
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
   });
 
+  test("PD-ADV-7: a count from a complete advisory check carries no ring", async ({ page }) => {
+    await expect(page.getByRole("tab", { name: "Advisories 20" }).locator(".tab-flag")).toHaveCount(0);
+  });
+
   test("M14: an unrecognised view falls back to Findings, tab marked selected", async () => {
     // M14 (DESIGN.md §5), fixed on purpose: no tab used to be aria-selected for an unknown view.
     await report.gotoReport2WithHash("composite", "view=not-a-real-view");
     expect(await report.activeTab()).toBe("findings");
     expect(await report.rows()).toHaveLength(7);
   });
+});
+
+test("PD-ADV-7: the Advisories count from a lookup that did not run carries a ring, named in words", async ({
+  page,
+}) => {
+  await report.gotoReport2("B-offline-dagger");
+
+  const tab = page.getByRole("tab", { name: /^Advisories \d+, check incomplete$/ });
+  await expect(tab.locator(".tab-flag")).toBeVisible();
+  await expect(tab.locator(".tab-flag")).toHaveAttribute("title", "advisory check incomplete");
 });

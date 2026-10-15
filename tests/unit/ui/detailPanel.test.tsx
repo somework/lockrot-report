@@ -122,6 +122,18 @@ describe("The lock entry reference", () => {
 
     expect(Object.keys(reference(sheet, "The lock entry"))).toEqual(["installed", "released", "repository"]);
   });
+
+  test("dates a branch snapshot's commit as a snapshot, never as a release", () => {
+    const sheet = open(B, (embed) => ({
+      ...embed,
+      details: { [B]: { ...entryOf(embed), lock: { ...entryOf(embed).lock, branch_snapshot: true } } },
+    }));
+
+    const rows = reference(sheet, "The lock entry");
+    expect(rows["snapshot dated"]).toBe("2016-01-14");
+    expect(rows["branch snapshot"]).toBe("yes");
+    expect(rows).not.toHaveProperty("released");
+  });
 });
 
 describe("a package with no details entry", () => {

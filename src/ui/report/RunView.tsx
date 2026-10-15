@@ -1,10 +1,18 @@
 import { useId } from "preact/hooks";
 import { acceptedUnchecked, advisoryLookup, noteRows, RUN_WORDS, thresholdRows } from "../../domain/runTab";
-import { bandRuler, scorePanelParts, scoreTables, type ScoreTable } from "../../domain/scorePanel";
-import { TONE } from "../../domain/vocab";
+import {
+  bandRuler,
+  liveExample,
+  scorePanelParts,
+  scoreTables,
+  type ScoreTable,
+} from "../../domain/scorePanel";
+import { verdictTone } from "../../domain/findingRow";
 import type { Report2 } from "../../model/report";
 import { OutLink, toneClass } from "../common/common";
+import { useReport } from "../context";
 import "../views/views.css";
+import { ScoreBar } from "./ScoreBar";
 import { SCORE_SECTION_ID } from "./ScoreModelLink";
 import { GateLine } from "./Overview";
 import { useReport2 } from "./useReport";
@@ -20,7 +28,7 @@ function Ruler({ model }: { model: Report2["run"]["score_model"] }) {
         {zones.map(({ verdict, from, to }) => (
           <i
             key={verdict}
-            className={toneClass(TONE(verdict))}
+            className={toneClass(verdictTone(model, verdict))}
             style={{ left: pct(from), width: pct(Math.max(0, to - from)) }}
           >
             {verdict}
@@ -42,7 +50,7 @@ function Ruler({ model }: { model: Report2["run"]["score_model"] }) {
   );
 }
 
-function Table({ table }: { table: ScoreTable }) {
+function Table({ table, model }: { table: ScoreTable; model: Report2["run"]["score_model"] }) {
   const id = useId();
   return (
     <div className="run2-table-wrap" role="region" aria-labelledby={id} tabIndex={0}>
@@ -69,7 +77,9 @@ function Table({ table }: { table: ScoreTable }) {
                   <td
                     key={index}
                     className={
-                      cell.band === undefined ? undefined : `run2-band ${toneClass(TONE(cell.band))}`
+                      cell.band === undefined
+                        ? undefined
+                        : `run2-band ${toneClass(verdictTone(model, cell.band))}`
                     }
                   >
                     {cell.text}
@@ -84,7 +94,19 @@ function Table({ table }: { table: ScoreTable }) {
   );
 }
 
-function ScoreWorks({ run }: { run: Report2["run"] }) {
+/** The score of one finding of this report, drawn with the Findings row's bar. */
+function Example({ report, opened }: { report: Report2; opened: string | null }) {
+  const { finding, text } = liveExample(report, opened);
+  return (
+    <p className="run2-example">
+      <span className="run2-example-text">{text}</span>
+      {finding !== null && <ScoreBar score={finding.score} run={report.run} />}
+    </p>
+  );
+}
+
+function ScoreWorks({ report, opened }: { report: Report2; opened: string | null }) {
+  const { run } = report;
   const parts = scorePanelParts(run);
   const tables = scoreTables(run.score_model);
   return (
@@ -93,8 +115,9 @@ function ScoreWorks({ run }: { run: Report2["run"] }) {
       <Ruler model={run.score_model} />
       <p className="run2-caption">{parts.bands}</p>
       <p className="run2-caption">{parts.zero}</p>
-      <Table table={tables.weights} />
-      <Table table={tables.advisories} />
+      <Example report={report} opened={opened} />
+      <Table table={tables.weights} model={run.score_model} />
+      <Table table={tables.advisories} model={run.score_model} />
       <p className="run2-caption">{parts.fixes}</p>
       <details className="run2-rules">
         <summary>{RUN_WORDS.rules(parts.rules.length)}</summary>
@@ -192,13 +215,14 @@ function Thresholds({ run }: { run: Report2["run"] }) {
 /** The Run data tab of a report-2 document (SPEC §7.9.16). */
 export function RunView2() {
   const { report } = useReport2();
+  const { state } = useReport();
   const headingId = useId();
   return (
     <section className="run-sections run2" data-surface="run" aria-labelledby={headingId}>
       <h2 className="vh" id={headingId}>
         {RUN_WORDS.tab}
       </h2>
-      <ScoreWorks run={report.run} />
+      <ScoreWorks report={report} opened={state.example} />
       <Lookup run={report.run} />
       <Notes report={report} />
       <AcceptedUnchecked report={report} />

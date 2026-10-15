@@ -1,6 +1,13 @@
 import { describe, expect, test } from "vitest";
 
-import { commandLine, isPrintableArgv, SHELLS, type Shell } from "../../../src/domain/shellArgv";
+import {
+  commandLine,
+  isPrintableArgv,
+  isPrintableName,
+  posixArgument,
+  SHELLS,
+  type Shell,
+} from "../../../src/domain/shellArgv";
 import { readContractJson, recordedCases } from "./recorded";
 
 interface Row {
@@ -139,6 +146,28 @@ describe("the command argument rule (SPEC §5.6)", () => {
 
   test("refuses an empty argv", () => {
     expect(isPrintableArgv([])).toBe(false);
+  });
+});
+
+describe("the name rule of a command the page writes itself (SPEC §5.6)", () => {
+  test.each(["symfony/yaml", "vendor/pkg", "a/b|c", "@scope/name"])("passes %s", (name) => {
+    expect(isPrintableName(name)).toBe(true);
+  });
+
+  test.each([
+    ["lockrot's own option", "--no-update"],
+    ["a leading dash", "-a/b"],
+    ["a character outside the set", "a/b;curl x|sh;#"],
+    ["a quote", "a/b'c"],
+    ["an empty name", ""],
+  ])("refuses %s: %s", (_, name) => {
+    expect(isPrintableName(name)).toBe(false);
+  });
+
+  test("quotes one argument for POSIX as a command line does", () => {
+    expect(posixArgument("symfony/yaml")).toBe("symfony/yaml");
+    expect(posixArgument("a/b|c")).toBe("'a/b|c'");
+    expect(posixArgument("=x")).toBe("'=x'");
   });
 });
 
