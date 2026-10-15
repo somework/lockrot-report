@@ -64,8 +64,8 @@ function GradeLineView({ report }: { report: Report2 }) {
           </TabLink>
         </>
       )}
-      {line.clauses.map((clause) => (
-        <Fragment key={clause}>
+      {line.clauses.map((clause, index) => (
+        <Fragment key={index}>
           <span className="ov-grade-sep"> · </span>
           {clause}
         </Fragment>
