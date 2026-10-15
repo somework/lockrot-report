@@ -77,10 +77,11 @@ test("How the score works takes the reader to the Run tab", async ({ page }) => 
   const sheet = await openDetail2(page, "B", B);
 
   await why(sheet)
-    .getByRole("button", { name: /How the score works/ })
+    .getByRole("link", { name: /How the score works/ })
     .click();
 
   await expect(page.getByRole("tab", { name: /Run data/ })).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#how-the-score-works")).toBeFocused();
 });
 
 for (const colorScheme of ["light", "dark"] as const) {

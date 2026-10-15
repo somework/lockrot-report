@@ -7,7 +7,7 @@ import { bandRuler, legendText, whyBar, type BarSegment } from "../../domain/why
 import { TONE } from "../../domain/vocab";
 import { toneClass } from "../common/common";
 import { DisclosureButton, useDisclosure } from "../common/Disclosure";
-import { useReport } from "../context";
+import { ScoreModelLink } from "./ScoreModelLink";
 
 export const WHY_KEY = "why-arithmetic";
 
@@ -72,7 +72,6 @@ function Bar({ finding, report }: { finding: Finding; report: Report2 }) {
 
 /** "Why <verdict>" (SPEC §7.9.8, design 2A): the bar is `aria-hidden`, and its lines are its text. */
 export function ScoreWhy({ finding, report }: { finding: Finding; report: Report2 }) {
-  const { dispatch } = useReport();
   const disclosure = useDisclosure(WHY_KEY);
   const listId = `${useId()}-why`;
   const [header, ...lines] = whyBlock(finding, report);
@@ -106,15 +105,7 @@ export function ScoreWhy({ finding, report }: { finding: Finding; report: Report
             onToggle={disclosure.toggle}
           />
         )}
-        <button
-          type="button"
-          className="d2-link"
-          onClick={() => {
-            dispatch({ type: "view", view: "run", keepDetail: false });
-          }}
-        >
-          {DETAIL_WORDS.howScoreWorks} <span aria-hidden="true">›</span>
-        </button>
+        <ScoreModelLink />
       </div>
     </section>
   );

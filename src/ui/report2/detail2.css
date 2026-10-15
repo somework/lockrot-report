@@ -342,18 +342,8 @@
   gap: 6px 14px;
   font-size: 12px;
 }
-.d2-link {
+.d2-why-foot .score-model-link {
   margin-left: auto;
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  color: var(--accent-ink);
-  cursor: pointer;
-  border-bottom: 1px solid color-mix(in srgb, var(--accent-ink) 40%, transparent);
-}
-.d2-link:hover {
-  border-bottom-color: currentColor;
 }
 
 /* ---------- the rows: a label column beside the golden line ---------- */
@@ -489,8 +479,7 @@
 /* ---------- print: everything open, the patterns kept ---------- */
 @media print {
   .d2-copy-bar .d2-btn,
-  .d2-shell-menu,
-  .d2-link {
+  .d2-shell-menu {
     display: none;
   }
   .d2-why-bar,

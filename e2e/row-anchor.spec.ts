@@ -153,12 +153,14 @@ test.describe("report-2: 1440×900", () => {
   test("a row clicked in the list stays where the reader saw it as the sheet opens", async ({ page }) => {
     await page.goto(report2Url("composite"));
     const row = page.getByRole("listitem", { name: "symfony/yaml", exact: true });
-    const before = await row.boundingBox();
+    await row.scrollIntoViewIfNeeded();
+    const before = (await row.boundingBox())?.y ?? Number.NaN;
 
     await row.click();
 
     await expect(page.getByRole("complementary", { name: "symfony/yaml" })).toBeVisible();
-    await expect(row).toBeInViewport();
-    expect(Math.abs(((await row.boundingBox())?.y ?? 0) - (before?.y ?? 0))).toBeLessThan(400);
+    await expect
+      .poll(async () => Math.abs(((await row.boundingBox())?.y ?? Number.NaN) - before))
+      .toBeLessThan(2);
   });
 });

@@ -18,7 +18,6 @@ export const DETAIL_WORDS = {
   lockEntry: "The lock entry",
   provenance: "Provenance",
   showArithmetic: "Show the arithmetic",
-  howScoreWorks: "How the score works",
   firstWayOnly: "Show the first way out only",
   move: "The move",
   moveInOrder: "The move, in order",
