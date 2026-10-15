@@ -118,28 +118,37 @@ describe("the Overview tab of a report-2 document", () => {
     );
   });
 
-  test("a score stack opens exactly the rows it holds", () => {
+  test("draws the score stacks only, and says each one in a list for a screen reader", () => {
     render(<App model={model()} />);
 
-    fireEvent.click(within(band()).getByRole("link", { name: "score 18: 2 high" }));
+    const plot = band().querySelector(".ss-plot");
+    expect(plot?.getAttribute("aria-hidden")).toBe("true");
+    expect(plot?.querySelectorAll("a, button, [tabindex]")).toHaveLength(0);
+    const said = within(within(band()).getByRole("list", { name: "Scores" })).getAllByRole("listitem");
+    expect(said.map((item) => item.textContent)).toEqual([
+      "score 36: 2 critical",
+      "score 32: 1 critical",
+      "score 18: 2 high",
+      "score 2: 2 low",
+    ]);
+  });
+
+  test("makes each band zone of the ruler a link to Findings under its grade", () => {
+    render(<App model={model()} />);
+
+    const zones = within(band().querySelector<HTMLElement>(".ss-rule") as HTMLElement).getAllByRole("link");
+    expect(zones.map((zone) => [zone.getAttribute("aria-label"), zone.getAttribute("href")])).toEqual([
+      ["low findings", "#view=findings&verdict=low"],
+      ["medium findings", "#view=findings&verdict=medium"],
+      ["high findings", "#view=findings&verdict=high"],
+      ["critical findings", "#view=findings&verdict=critical"],
+    ]);
+    fireEvent.click(within(band()).getByRole("link", { name: "high findings" }));
 
     expect([...document.querySelectorAll("[data-pkg]")].map((row) => row.getAttribute("data-pkg"))).toEqual([
       "friendsofsymfony/oauth-server-bundle",
       "tubalmartin/cssmin",
     ]);
-  });
-
-  test("names each score stack by its grades and links it to the search at its total", () => {
-    render(<App model={model()} />);
-
-    const stacks = within(within(band()).getByRole("list", { name: "Scores" })).getAllByRole("link");
-    expect(stacks.map((stack) => [stack.getAttribute("aria-label"), stack.getAttribute("href")])).toEqual([
-      ["score 36: 2 critical", "#view=findings&q=score%3A36"],
-      ["score 32: 1 critical", "#view=findings&q=score%3A32"],
-      ["score 18: 2 high", "#view=findings&q=score%3A18"],
-      ["score 2: 2 low", "#view=findings&q=score%3A2"],
-    ]);
-    expect(band().querySelector(".ss-rule")?.getAttribute("aria-hidden")).toBe("true");
   });
 
   test("draws the exposure rows as links to Blast radius", () => {

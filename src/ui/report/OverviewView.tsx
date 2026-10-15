@@ -20,21 +20,16 @@ type ScoreModel = Report2["run"]["score_model"];
 
 function Stack({ stack, model }: { stack: ScoreStack; model: ScoreModel }) {
   return (
-    <li className="ss-stack" style={{ left: `${stack.at * 100}%` }}>
-      <TabLink target={stack.link} className="ss-link" label={stack.say}>
-        {stack.marks.map((mark) => (
-          <i
-            key={mark.package}
-            className={`ss-mark ${toneClass(verdictTone(model, mark.verdict))}`}
-            aria-hidden="true"
-          />
-        ))}
-      </TabLink>
-    </li>
+    <span className="ss-stack" style={{ left: `${stack.at * 100}%` }}>
+      {stack.marks.map((mark) => (
+        <i key={mark.package} className={`ss-mark ${toneClass(verdictTone(model, mark.verdict))}`} />
+      ))}
+    </span>
   );
 }
 
-/** PD-OVERVIEW-4: each stack is a link named by its text; the ruler and its words are drawn only. */
+/** PD-OVERVIEW-4: the stacks are a drawing, said by a list a screen reader reads. The band zones
+ *  of the ruler are the strip's links, each at least 24px a side (WCAG 2.5.8). */
 function ScoreStripBlock({ report }: { report: Report2 }) {
   const strip = scoreStrip(report);
   const printed = usePrinted();
@@ -50,24 +45,33 @@ function ScoreStripBlock({ report }: { report: Report2 }) {
         <p className="ledger-note">{strip.stacks.map(({ say }) => say).join(" · ")}</p>
       ) : (
         <div className="ss">
-          <div className="ss-plot">
+          <div className="ss-plot" aria-hidden="true">
             {strip.labels.slice(1, -1).map(({ value, at }) => (
-              <span key={value} className="ss-guide" style={{ left: `${at * 100}%` }} aria-hidden="true" />
+              <span key={value} className="ss-guide" style={{ left: `${at * 100}%` }} />
             ))}
-            <ul className="ss-stacks" aria-label={OVERVIEW_TAB_WORDS.scores}>
-              {strip.stacks.map((stack) => (
-                <Stack key={stack.total} stack={stack} model={model} />
-              ))}
-            </ul>
+            {strip.stacks.map((stack) => (
+              <Stack key={stack.total} stack={stack} model={model} />
+            ))}
           </div>
-          <div className="ss-rule" aria-hidden="true">
+          <ul className="vh" aria-label={OVERVIEW_TAB_WORDS.scores}>
+            {strip.stacks.map((stack) => (
+              <li key={stack.total}>{stack.say}</li>
+            ))}
+          </ul>
+          <div className="ss-rule">
             {strip.zones.map((zone) => (
               <span
                 key={zone.verdict}
-                className={`ss-zone ${toneClass(verdictTone(model, zone.verdict))}`}
+                className="ss-zone-slot"
                 style={{ left: `${zone.from * 100}%`, width: `${(zone.to - zone.from) * 100}%` }}
               >
-                {zone.verdict}
+                <TabLink
+                  target={zone.link}
+                  label={zone.say}
+                  className={`ss-zone ${toneClass(verdictTone(model, zone.verdict))}`}
+                >
+                  {zone.verdict}
+                </TabLink>
               </span>
             ))}
           </div>

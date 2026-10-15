@@ -68,8 +68,6 @@ export type KeyDecision =
   | { type: "move"; pkg: string; index: number }
   /** `closeDetail`: the sheet covering the search box closes first (PD-ROWS-12). */
   | { type: "focusSearch"; closeDetail: boolean }
-  /** Switch to Findings, then focus its search box. */
-  | { type: "findSearch" }
   | { type: "openGlossary" }
   | { type: "closeGlossary" }
   /** `restore` is the row to hand focus back to, or null to leave focus where it is (a text field). */
@@ -111,10 +109,10 @@ function decideEscape(input: KeyInput): KeyDecision {
 }
 
 /** `/` goes to the search box. With a sheet over the page the box is under it, so the sheet closes
- *  first rather than focus landing on a field nobody can see (PD-ROWS-12). Overview has no box, so
- *  `/` takes the reader to Findings' box, as it did from the 0.13 default view. */
+ *  first rather than focus landing on a field nobody can see (PD-ROWS-12). Overview has no box, and
+ *  no key moves the reader to another tab, so `/` does nothing there. */
 function decideSlash(input: KeyInput): KeyDecision {
-  if (input.overview) return { type: "findSearch" };
+  if (input.overview) return IGNORE;
   if (!input.sheetOpen) return { type: "focusSearch", closeDetail: false };
   if (!input.searchAvailable) return IGNORE;
 

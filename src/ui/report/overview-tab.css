@@ -88,36 +88,22 @@ a.legend-btn,
 }
 
 /* ---------- the score strip (PD-OVERVIEW-4) ----------
-   A stack is a column of 4px marks over its total's place on the ruler. It fills bottom up, in
-   columns of at most 17 marks: the grid flips upside down. */
+   A stack is a column of 4px marks over its total's place on the ruler, a drawing only. It fills
+   bottom up, in columns of at most 17 marks: the grid flips upside down. The ruler's band zones are
+   the strip's links, 24px tall, so each target meets WCAG 2.5.8. */
 .ss-plot {
   position: relative;
   height: 86px;
 }
-.ss-stacks {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
 .ss-stack {
   position: absolute;
   bottom: 0;
-  transform: translateX(-50%);
-}
-.ss-link {
   display: grid;
   grid-template-rows: repeat(17, 4px);
   grid-auto-flow: column;
   grid-auto-columns: 4px;
   gap: 1px;
-  padding: 0 1px;
-  border-radius: 2px;
-  transform: scaleY(-1);
-}
-.ss-link:hover {
-  outline: 1px solid var(--accent);
+  transform: translateX(-50%) scaleY(-1);
 }
 .ss-mark {
   width: 4px;
@@ -132,24 +118,40 @@ a.legend-btn,
   bottom: 0;
   border-left: 1px dashed var(--border-strong);
 }
+/* 24px inside its 1px top rule: each zone is a full 24px target. */
 .ss-rule {
   position: relative;
-  height: 22px;
+  height: 25px;
   border-top: 1px solid var(--border-strong);
 }
-.ss-zone {
+.ss-zone-slot {
   position: absolute;
   top: 0;
   bottom: 0;
+  min-width: 24px;
+}
+.ss-zone {
+  display: block;
+  height: 100%;
   overflow: hidden;
   padding-left: 4px;
   border-right: 1px solid var(--surface);
   background: var(--tone-soft);
   color: var(--tone);
-  font: 600 10.5px/22px var(--sans);
+  font: 600 10.5px/24px var(--sans);
   letter-spacing: 0.06em;
+  text-decoration: none;
   text-transform: uppercase;
   white-space: nowrap;
+  transition: background-color 0.12s ease;
+}
+.ss-zone:hover {
+  background: color-mix(in srgb, var(--tone) 22%, var(--tone-soft));
+}
+.ss-zone:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline-offset: -2px;
 }
 .ss-axis {
   position: relative;
@@ -275,8 +277,6 @@ a.legend-btn,
   }
   .ss-zone {
     border: 1px solid CanvasText;
-  }
-  .ss-link:hover {
-    outline-color: Highlight;
+    color: LinkText;
   }
 }

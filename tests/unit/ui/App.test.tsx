@@ -283,14 +283,14 @@ describe("keyboard", () => {
     expect(detailName()).toBeNull();
   });
 
-  test("/ on Overview opens Findings with its search box focused", () => {
+  test("/ on Overview stays on Overview: no key moves the reader to another tab", () => {
     history.replaceState(null, "", "/report.html");
     render(<App model={load()} />);
 
     key("/");
 
-    expect(selectedTab()).toContain("Findings");
-    expect(document.activeElement).toBe(screen.getByRole("searchbox"));
+    expect(selectedTab()).toBe("Overview");
+    expect(screen.queryByRole("searchbox")).toBeNull();
   });
 
   test.each([

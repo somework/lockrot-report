@@ -130,9 +130,7 @@ test.describe("from a chart to a list", () => {
     await expect(page.getByRole("tabpanel")).toBeFocused();
   });
 
-  test("a flag bar, a score stack and an exposure bar each carry the fragment they open", async ({
-    page,
-  }) => {
+  test("a flag bar, a ruler zone and an exposure bar each carry the fragment they open", async ({ page }) => {
     await page.goto(report2Url("composite"));
     const band = overviewSurface(page);
 
@@ -140,10 +138,12 @@ test.describe("from a chart to a list", () => {
       "href",
       "#view=findings&flag=stale",
     );
-    await expect(band.getByRole("link", { name: "score 18: 2 high" })).toHaveAttribute(
+    await expect(band.getByRole("link", { name: "high findings" })).toHaveAttribute(
       "href",
-      "#view=findings&q=score%3A18",
+      "#view=findings&verdict=high",
     );
+    // The stacks are a drawing: no target in it.
+    await expect(band.locator(".ss-plot a, .ss-plot [tabindex]")).toHaveCount(0);
     await expect(band.getByRole("link", { name: "guzzlehttp/guzzle 1 flagged package" })).toHaveAttribute(
       "href",
       "#view=radius",
@@ -161,29 +161,58 @@ test.describe("from a chart to a list", () => {
 });
 
 test.describe("keys on Overview", () => {
-  test("/ opens Findings with its search box focused, and j opens nothing", async ({ page }) => {
+  test("/, j and k do nothing: no key moves the reader to another tab", async ({ page }) => {
     await page.goto(report2Url("composite"));
     await expect(overviewSurface(page)).toBeVisible();
 
-    await page.keyboard.press("j");
-    await expect(page.locator(".shell-detail")).toHaveCount(0);
-    await expect(selectedTab(page)).toHaveText(/^Overview/);
+    for (const key of ["j", "k", "/"]) {
+      await page.keyboard.press(key);
+      await expect(page.locator(".shell-detail")).toHaveCount(0);
+      await expect(selectedTab(page)).toHaveText(/^Overview/);
+    }
+    expect(await page.evaluate(() => location.hash)).toBe("");
+  });
 
-    await page.keyboard.press("/");
+  test("a ruler zone takes focus with a visible ring and opens Findings under its grade on Enter", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(report2Url(WALLABAG));
+    const zone = overviewSurface(page).getByRole("link", { name: "medium findings" });
+
+    await zone.focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    await expect(zone).toBeFocused();
+    expect(await zone.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe("solid");
+    const box = await zone.boundingBox();
+    expect(box?.width).toBeGreaterThanOrEqual(24);
+    expect(box?.height).toBeGreaterThanOrEqual(24);
+
+    await page.keyboard.press("Enter");
     await expect(selectedTab(page)).toHaveText(/^Findings/);
-    await expect(page.getByRole("searchbox")).toBeFocused();
+    expect(await page.evaluate(() => location.hash)).toBe("#view=findings&verdict=medium");
   });
 });
 
-for (const colorScheme of ["light", "dark"] as const) {
-  test(`Overview passes axe in the ${colorScheme} theme`, async ({ page }) => {
-    await page.emulateMedia({ colorScheme });
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(report2Url(WALLABAG));
-    await expect(overviewSurface(page)).toBeVisible();
+for (const width of [1440, 390]) {
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`Overview passes axe with WCAG 2.2 AA at ${String(width)}px in the ${colorScheme} theme`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ colorScheme });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(report2Url(WALLABAG));
+      await expect(overviewSurface(page)).toBeVisible();
 
-    const results = await new AxeBuilder({ page }).analyze();
+      const ids = async (builder: AxeBuilder) =>
+        (await builder.analyze()).violations.flatMap((v) =>
+          v.nodes.map((n) => `${v.id}: ${n.target.join(" ")}`),
+        );
 
-    expect(results.violations).toEqual([]);
-  });
+      // axe's default rules, then WCAG 2.2 AA, whose target-size rule the default set leaves out.
+      expect(await ids(new AxeBuilder({ page }))).toEqual([]);
+      expect(await ids(new AxeBuilder({ page }).withTags(["wcag22aa"]))).toEqual([]);
+    });
+  }
 }

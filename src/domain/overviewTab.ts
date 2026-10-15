@@ -8,6 +8,7 @@ import type { Finding, Grade, Report2 } from "../model/report";
 import { isScoreGraded } from "../model/report";
 import type { Filters, LinkTarget } from "../state/types";
 import { decimal, pluralNoun } from "./format";
+import { gradeListLabel } from "./findingRow";
 import { population2 } from "./list";
 import { gradeMix, RADIUS_WORDS } from "./radius2";
 import { bandTicks } from "./scoreBar";
@@ -36,6 +37,9 @@ export interface ScoreZone {
   /** Its start and end as shares of the ruler. */
   from: number;
   to: number;
+  /** Its link's name, and the Findings under its grade it opens: the strip's only targets. */
+  say: string;
+  link: LinkTarget;
 }
 
 export interface ScoreStack {
@@ -43,9 +47,8 @@ export interface ScoreStack {
   /** Its place as a share of the ruler, clipped at `bar_max`. */
   at: number;
   marks: { package: string; verdict: string }[];
-  /** The stack's text equivalent, its link's name. */
+  /** The stack's text equivalent: the drawing itself is `aria-hidden`. */
   say: string;
-  link: LinkTarget;
 }
 
 export interface ScoreStrip {
@@ -71,6 +74,8 @@ export function scoreStrip(report: Report2): ScoreStrip {
       verdict,
       from: floor / max,
       to: Math.min(floors[i + 1]?.floor ?? max, max) / max,
+      say: gradeListLabel(verdict),
+      link: findingsLink({ verdict: [verdict] }),
     }));
   const labels = [0, ...bandTicks(run).map(({ floor }) => floor), max].map((value) => ({
     value,
@@ -90,7 +95,6 @@ export function scoreStrip(report: Report2): ScoreStrip {
       at: Math.min(total, max) / max,
       marks: findings.map((f) => ({ package: f.package, verdict: f.verdict })),
       say: `score ${total}: ${gradeMix(report, findings)}`,
-      link: { view: "findings" as const, q: `score:${total}` },
     }));
 
   return { zones, labels, stacks };

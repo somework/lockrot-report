@@ -160,10 +160,11 @@ describe("/ and ?", () => {
   });
 
   // Overview draws no search box and no row (DESIGN.md §8, Keyboard).
-  test("/ on Overview goes to the Findings search box", () => {
-    expect(decideKey(input({ key: "/", overview: true, searchAvailable: false }))).toEqual({
-      type: "findSearch",
-    });
+  test("/ does nothing on Overview, which has no search box, and lets the key through", () => {
+    const slash = decideKey(input({ key: "/", overview: true, searchAvailable: false }));
+
+    expect(slash).toEqual({ type: "ignore" });
+    expect(prevents(slash)).toBe(false);
   });
 
   test("j and k do nothing on Overview, which draws no row, and let the key through", () => {

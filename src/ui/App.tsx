@@ -134,10 +134,6 @@ function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
         search.current?.focus();
       }
       break;
-    case "findSearch":
-      focusRequest.current = { kind: "search" };
-      dispatch({ type: "view", view: "findings" });
-      break;
     case "blurSearch":
       leaveSearch(deps);
       break;

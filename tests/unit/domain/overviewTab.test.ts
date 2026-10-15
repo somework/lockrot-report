@@ -55,7 +55,7 @@ describe("the score strip", () => {
   });
 
   test("draws each band as a zone from its floor to the next one up", () => {
-    expect(scoreStrip(composite()).zones).toEqual([
+    expect(scoreStrip(composite()).zones.map(({ verdict, from, to }) => ({ verdict, from, to }))).toEqual([
       { verdict: "low", from: 1 / 64, to: 8 / 64 },
       { verdict: "medium", from: 8 / 64, to: 16 / 64 },
       { verdict: "high", from: 16 / 64, to: 32 / 64 },
@@ -63,14 +63,23 @@ describe("the score strip", () => {
     ]);
   });
 
+  test("names each zone and links it to Findings under its grade", () => {
+    const zones = scoreStrip(composite()).zones;
+
+    expect(zones.map(({ say, link }) => [say, linkHref(link)])).toEqual([
+      ["low findings", "#view=findings&verdict=low"],
+      ["medium findings", "#view=findings&verdict=medium"],
+      ["high findings", "#view=findings&verdict=high"],
+      ["critical findings", "#view=findings&verdict=critical"],
+    ]);
+  });
+
   test("labels 0, the band floors above the lowest, and bar_max", () => {
     expect(scoreStrip(composite()).labels.map(({ value }) => value)).toEqual([0, 8, 16, 32, 64]);
   });
 
-  test("links a stack to Findings searched at exactly its total, the rows it holds", () => {
-    const stack = scoreStrip(composite()).stacks[2];
-    if (stack === undefined) throw new Error("no third stack");
-    expect(linkHref(stack.link)).toBe("#view=findings&q=score%3A18");
+  test("gives a stack no link: the zones under it are the strip's targets", () => {
+    expect(scoreStrip(composite()).stacks.every((stack) => !("link" in stack))).toBe(true);
   });
 
   test("has no stack when nothing is graded", () => {
