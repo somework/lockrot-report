@@ -90,7 +90,7 @@
   }
   .p2-table tbody tr {
     display: grid;
-    grid-template-columns: 6.5em 3em minmax(0, 1fr) auto;
+    grid-template-columns: 5.5em 2.5em minmax(0, 1fr) auto;
     grid-template-areas:
       "name name name ver"
       "verdict score flags flags"
@@ -125,6 +125,11 @@
   .p2-flags {
     grid-area: flags;
     min-width: 0;
+  }
+  /* A pill wider than a phone's flags cell wraps inside its own border rather than push the row. */
+  .p2-flags .fp {
+    max-width: 100%;
+    white-space: normal;
   }
   .p2-ly {
     grid-area: ly;

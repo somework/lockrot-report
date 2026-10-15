@@ -9,6 +9,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
 import { FIXTURES } from "./support/pages";
+import { packagesCell, packagesCellLabel, packagesRow, packagesSurface } from "./support/report2/packages";
 
 let report: ReportPage;
 
@@ -338,5 +339,58 @@ test.describe("PD-PROSE-1: a package named in a sentence opens it", () => {
       .click();
     expect((await report.detail()).name).toBe("wallabag/rulerz");
     expect(decodeURIComponent(await report.hash())).toContain("pkg=wallabag/rulerz");
+  });
+});
+
+test.describe("report-2: the All packages table", () => {
+  async function wrapFits(page: Page): Promise<void> {
+    const [scroll, client] = await packagesSurface(page)
+      .locator(".tablewrap")
+      .evaluate((wrap) => [wrap.scrollWidth, wrap.clientWidth]);
+    expect(scroll).toBeLessThanOrEqual(client);
+  }
+
+  for (const name of ["composite", "baselined-wallabag-main"]) {
+    test(`1440px, ${name}: the ten columns fit the wrap, nothing scrolls sideways`, async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await report.gotoReport2WithHash(name, "view=packages");
+
+      await wrapFits(page);
+      await noPageOverflow(page);
+    });
+  }
+
+  for (const width of [320, 390, 768] as const) {
+    test(`${width}px: the rows stack inside the list, and a tap still opens a package`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await report.gotoReport2WithHash("composite", "view=packages");
+
+      await expect(packagesRow(page, "twig/twig")).toHaveCSS("display", "grid");
+      await wrapFits(page);
+      await noPageOverflow(page);
+      await packagesRow(page, "symfony/yaml").click();
+      expect(await report.hash()).toContain("pkg=symfony%2Fyaml");
+    });
+  }
+
+  test("an unmeasured value is a dash that says its cause; a transitive one reads its hops", async ({
+    page,
+  }) => {
+    await report.gotoReport2WithHash("composite", "view=packages");
+
+    expect(await packagesCell(page, "symfony/polyfill-intl-idn", "ly")).toBe("—");
+    expect(await packagesCellLabel(page, "symfony/polyfill-intl-idn", "ly")).toBe("no date");
+    expect(await packagesCell(page, "symfony/polyfill-intl-idn", "age")).toBe("—");
+    expect(await packagesCell(page, "symfony/polyfill-intl-idn", "reach")).toBe("1 hop");
+    expect(await packagesCell(page, "twig/twig", "verdict")).toBe("critical");
+    expect(await packagesCell(page, "twig/twig", "score")).toBe("32");
+  });
+
+  test("a lower bound prints ≥ and says at least", async ({ page }) => {
+    await report.gotoReport2WithHash("baselined-wallabag-main", "view=packages");
+
+    const text = await packagesCell(page, "scheb/2fa-backup-code", "ly");
+    expect(text).toMatch(/^≥ \d+\.\d\d$/);
+    expect(await packagesCellLabel(page, "scheb/2fa-backup-code", "ly")).toBe(`at least ${text.slice(2)}`);
   });
 });
