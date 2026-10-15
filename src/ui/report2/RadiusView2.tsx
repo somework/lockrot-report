@@ -1,4 +1,5 @@
 import type { ComponentChildren } from "preact";
+import { useId } from "preact/hooks";
 import type { Finding, Report2 } from "../../model/report2";
 import { gradeTone } from "../../domain/findingRow2";
 import { applyFilters2, population2 } from "../../domain/list2";
@@ -91,7 +92,7 @@ function ParentRow2({
   const { state, dispatch, cursor } = useReport();
   const canOpen = expandable && row.count > 0;
   const open = canOpen && isRowOpen(row, input);
-  const kidsId = `r2-kids-${row.package.replace(/[^a-z0-9_-]/gi, "_")}`;
+  const kidsId = `${useId()}-kids`;
   const toggle = (event: Event) => {
     event.stopPropagation();
     dispatch({ type: "disclose", key: rowKey(row.package), open: !open });
@@ -171,20 +172,21 @@ function Fold({
   children: ComponentChildren;
 }) {
   const { dispatch } = useReport();
+  const bodyId = `${useId()}-fold`;
   return (
     <section className="r2-fold">
       <button
         type="button"
         className="r2-fold-head"
         aria-expanded={open ? "true" : "false"}
-        aria-controls={`r2-fold-${id}`}
+        aria-controls={bodyId}
         onClick={() => {
           dispatch({ type: "disclose", key: id, open: !open });
         }}
       >
         <span aria-hidden="true">{open ? "▾" : "▸"}</span> {head}
       </button>
-      <div id={`r2-fold-${id}`} hidden={!open}>
+      <div id={bodyId} hidden={!open}>
         {open && children}
       </div>
     </section>

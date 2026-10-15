@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { population2 } from "../../../src/domain/list2";
-import { radiusRowOrder } from "../../../src/domain/radius";
+import { pulledTree, radiusRowOrder } from "../../../src/domain/radius";
 import {
   gradeMix,
   radiusAnswer2,
@@ -34,8 +34,34 @@ describe("radiusLayout2", () => {
     expect(layout.ranked[0]?.pulled.map((f) => f.package)).toEqual(["symfony/polyfill-intl-idn"]);
   });
 
-  it("puts a graded direct requirement that lists nothing among the self-only rows", () => {
-    expect(layoutOf(composite).unlisted.map((f) => f.package)).toContain("twig/twig");
+  it("puts a graded direct requirement off the exposure list among the unlisted, not a row", () => {
+    const layout = layoutOf(composite);
+    expect(layout.unlisted.map((f) => f.package)).toContain("twig/twig");
+    expect(layout.selfOnly.map((row) => row.package)).not.toContain("twig/twig");
+  });
+
+  it("orders an open row's packages by rank, never by a grade order of its own", () => {
+    const polyfill = composite.findings.find((f) => f.package === "symfony/polyfill-intl-idn");
+    if (polyfill === undefined) throw new Error("no polyfill");
+    const sibling = (name: string, rank: number) => ({
+      ...polyfill,
+      package: name,
+      verdict: "high" as const,
+      priority: "high" as const,
+      rank,
+      chain: ["guzzlehttp/guzzle", name],
+    });
+    const report: Report2 = {
+      ...composite,
+      findings: [...composite.findings, sibling("zzz/first", 8), sibling("aaa/second", 9)],
+    };
+    const [row] = layoutOf(report).ranked;
+    if (row === undefined) throw new Error("no row");
+    expect(pulledTree(row).map((node) => node.finding.package)).toEqual([
+      "symfony/polyfill-intl-idn",
+      "zzz/first",
+      "aaa/second",
+    ]);
   });
 
   it("lists or points to every package of a requirement's S7 signal, vulnerable-only ones too", () => {

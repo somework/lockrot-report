@@ -3,6 +3,7 @@ import {
   ADVISORY_HEAD,
   advisoryAnswer2,
   advisoryBand,
+  advisoryFixNote,
   advisoryFixWords,
   advisoryGroups2,
   advisoryLookupHedge,
@@ -70,6 +71,7 @@ function AdvisoryRow2({ pair, run, first }: { pair: AdvisoryPair2; run: Run; fir
   const { finding, row } = pair;
   const fix = advisoryFixWords(row.fix, finding);
   const countedAs = advisoryCountedAs(run, row.severity);
+  const note = advisoryFixNote(row.fix);
   return (
     <li
       tabIndex={rowTabIndex(finding.package, cursor, first)}
@@ -105,6 +107,7 @@ function AdvisoryRow2({ pair, run, first }: { pair: AdvisoryPair2; run: Run; fir
           </>
         )}
         <span className="ac-where">{fix.where}</span>
+        {note !== null && <span className="ac2-note">{note}</span>}
       </span>
     </li>
   );

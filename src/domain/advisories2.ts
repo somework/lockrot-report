@@ -1,12 +1,14 @@
 /** The Advisories tab of a report-2 (SPEC §8.7.1): the S9 rows, grouped by `fix.kind` and
- *  `fix.to_branch`, with the tab's words. The lookup words read root `security` and
- *  `run.advisory_lookup`, never a note code. */
+ *  `fix.to_branch`, with the tab's words. The lookup hedge reads root `security.check`, never a note
+ *  code. */
 
 import type { Finding, Report2, Run, S9fix, S9row } from "../model/report2";
 import type { Filters } from "../state/types";
 import { advisoryRows } from "./advisoryRows";
 import { plural } from "./format";
+import { joinAnd } from "./joinWords";
 import { causeWord, fixLabel, lookupWord } from "./pageVocabulary";
+import { holderWord } from "./securityLine";
 
 export interface AdvisoryPair2 {
   readonly finding: Finding;
@@ -122,27 +124,27 @@ export function advisoryFixWords(fix: S9fix, finding: Finding): AdvisoryFixWords
   return { version: fix.version, where };
 }
 
-/** What the lookup missed, by root `security.check`; an unknown check reads its lookup word. */
-const LOOKUP_GAPS: Readonly<Record<string, string>> = {
-  partial: "the advisory lookup was partial",
-  not_run: "the advisories were not checked",
-};
-
-function lookupGap({ security }: Report2): string | null {
-  if (security.check === "complete") return null;
-  return LOOKUP_GAPS[security.check] ?? lookupWord(security.check, null);
-}
-
 /** Under the answer when the run's lookup did not cover every package. */
-export function advisoryLookupHedge(report: Report2): string | null {
-  const gap = lookupGap(report);
-  return gap === null ? null : `${gap.charAt(0).toUpperCase()}${gap.slice(1)}, so this list may be partial.`;
+export function advisoryLookupHedge({ security }: Report2): string | null {
+  return security.check === "complete"
+    ? null
+    : `Advisories: ${lookupWord(security.check, null)}, so this list may be partial.`;
 }
 
 /** The tab when no finding is vulnerable: clean only after a complete lookup. */
-export function noAdvisoryLine(report: Report2): string {
-  const gap = lookupGap(report);
-  return gap === null ? "No advisory affects this lock." : `No advisory found, but ${gap}.`;
+export function noAdvisoryLine({ security }: Report2): string {
+  return security.check === "complete"
+    ? "No advisory affects this lock."
+    : `No advisory found (${lookupWord(security.check, null)}).`;
+}
+
+/** What holds a fix and the PHP it needs: "needs PHP >=8.1.0 · held by composer.json and symfony/twig-bridge". */
+export function advisoryFixNote({ kind, php, held_by: heldBy }: S9fix): string | null {
+  const parts = [
+    ...(php !== null && (kind === "raise-php" || kind === "blocked") ? [`needs PHP ${php}`] : []),
+    ...(heldBy.length > 0 ? [`held by ${joinAnd([...new Set(heldBy.map(holderWord))])}`] : []),
+  ];
+  return parts.length === 0 ? null : parts.join(" · ");
 }
 
 /** The band a severity's square and word take, by lookup in the model. */

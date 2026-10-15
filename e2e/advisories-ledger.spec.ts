@@ -252,7 +252,10 @@ test.describe("report-2: the Advisories tab groups the S9 rows by fix kind and b
     const row = advisoriesSurface(page).getByRole("listitem", {
       name: "symfony/monolog-bridge, high, CVE-2026-45077",
     });
-    await expect(row.locator(".ac-fix")).toHaveText("fixed by v5.4.52 on 5.x");
+    await expect(row.locator(".ac-fixver")).toHaveText("v5.4.52");
+    await expect(row.locator(".ac-where")).toHaveText("on 5.x");
+    // composite: composer.json's ^2.6 holds monolog-bridge below 5.x.
+    await expect(row.locator(".ac2-note")).toHaveText("held by composer.json");
     await expect(advisoriesSurface(page).locator('li[data-pkg="symfony/yaml"] .ac-where').first()).toHaveText(
       "on your branch",
     );
@@ -299,7 +302,7 @@ test.describe("report-2: the Advisories tab groups the S9 rows by fix kind and b
   test("a lookup that did not run never reads clean", async ({ page }) => {
     await page.goto(report2Url("B-offline-dagger") + "#view=advisories");
     await expect(advisoriesSurface(page).locator(".al-answer")).toHaveText(
-      "No advisory found, but the advisories were not checked.",
+      "No advisory found (not checked).",
     );
     await expect(advisoriesSurface(page).locator(".al-clean")).toHaveCount(0);
   });

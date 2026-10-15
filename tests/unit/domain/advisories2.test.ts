@@ -8,6 +8,7 @@ import {
   advisoryPairs2,
   advisoryRowLabel2,
   advisoryCountedAs,
+  advisoryFixNote,
   noAdvisoryLine,
 } from "../../../src/domain/advisories2";
 import type { Finding, Report2 } from "../../../src/model/report2";
@@ -108,6 +109,14 @@ describe("row words", () => {
     });
   });
 
+  it("says what PHP a fix needs and what holds it", () => {
+    // composite twig/twig: a php floor raise to >=8.1.0, held by composer.json and symfony/twig-bridge.
+    expect(advisoryFixNote(pair.row.fix)).toBe(
+      "needs PHP >=8.1.0 · held by composer.json and symfony/twig-bridge",
+    );
+    expect(advisoryFixNote({ ...pair.row.fix, kind: "update", held_by: [] })).toBeNull();
+  });
+
   it("says what an unrated severity counts as, from the model", () => {
     expect(advisoryCountedAs(composite.run, "unrated")).toBe(", counted as medium");
     expect(advisoryCountedAs(composite.run, "high")).toBeNull();
@@ -123,14 +132,11 @@ describe("the lookup words", () => {
 
   it("hedges a partial or skipped lookup from root security.check", () => {
     const partial: Report2 = { ...composite, security: { ...composite.security, check: "partial" } };
-    expect(advisoryLookupHedge(partial)).toBe(
-      "The advisory lookup was partial, so this list may be partial.",
-    );
-    expect(noAdvisoryLine(partial)).toBe("No advisory found, but the advisory lookup was partial.");
+    expect(advisoryLookupHedge(partial)).toBe("Advisories: lookup partial, so this list may be partial.");
+    expect(noAdvisoryLine(partial)).toBe("No advisory found (lookup partial).");
     const skipped: Report2 = { ...composite, security: { ...composite.security, check: "not_run" } };
-    expect(advisoryLookupHedge(skipped)).toBe(
-      "The advisories were not checked, so this list may be partial.",
-    );
+    expect(advisoryLookupHedge(skipped)).toBe("Advisories: not checked, so this list may be partial.");
+    expect(noAdvisoryLine(skipped)).toBe("No advisory found (not checked).");
   });
 
   it("finds no rows for a finding without an S9 signal", () => {

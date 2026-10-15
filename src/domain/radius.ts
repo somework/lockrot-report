@@ -20,6 +20,8 @@ export interface RadiusFinding {
   readonly directDependents: readonly string[];
   readonly priority: string;
   readonly verdict: string;
+  /** report-2's published order; a report-1 finding has none. */
+  readonly rank?: number;
 }
 
 /** The document fields the layout reads; a report-1 `Model` is one. */
@@ -276,8 +278,10 @@ function rankOf(list: readonly string[], key: string): number {
   return at < 0 ? list.length : at;
 }
 
-/** Most urgent first: priority, then verdict, then name — the order a row's squares are drawn in. */
+/** Most urgent first: `rank` when both have one, else priority, then verdict, then name — the order a
+ *  row's squares are drawn in. */
 export function byUrgency(a: RadiusFinding, b: RadiusFinding): number {
+  if (a.rank !== undefined && b.rank !== undefined) return a.rank - b.rank;
   return (
     rankOf(PRIORITIES, a.priority) - rankOf(PRIORITIES, b.priority) ||
     rankOf(VERDICT_ORDER, a.verdict) - rankOf(VERDICT_ORDER, b.verdict) ||

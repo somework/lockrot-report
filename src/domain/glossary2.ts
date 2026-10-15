@@ -3,7 +3,7 @@
  *  is restated in prose. */
 
 import type { Report2, Run } from "../model/report2";
-import { grade, signalName, zeroVerdictReason } from "./pageVocabulary";
+import { flagClaim, grade, signalName, zeroVerdictReason } from "./pageVocabulary";
 import { annotateThresholds, DOCS_URL, signalDef, type Thresholds } from "./vocab";
 
 export interface GlossaryEntry {
@@ -44,20 +44,6 @@ export function verdictEntries(report: Report2): readonly GlossaryEntry[] {
   });
 }
 
-/** What each flag claims, keyed by id; the config keys get this run's values. */
-const FLAG_CLAIMS: Readonly<Record<string, string>> = {
-  abandoned:
-    "The package's Composer repository marks it abandoned, or its repository is archived on its host.",
-  silent: "No release for release-high-years and no push for push-high-years.",
-  pinned: "The installed version is a branch snapshot, or the package has no tagged release at all.",
-  "left-behind":
-    "No stable release on the installed release branch for release-warn-years, while a higher branch keeps releasing.",
-  "old-promise":
-    "The installed release predates the target PHP's major, and its require.php admits the target only because it has no upper bound.",
-  stale: "No release for release-warn-years, or no push for push-warn-years, short of silent.",
-  vulnerable: "A counted security advisory affects the installed version.",
-};
-
 export function thresholdPairs(run: Run): Thresholds {
   return run.thresholds === null ? [] : Object.entries(run.thresholds);
 }
@@ -66,10 +52,7 @@ export function flagEntries(report: Report2): readonly GlossaryEntry[] {
   const { run } = report;
   const flags: Readonly<Record<string, { carrying: number }>> = report.flags;
   return run.flag_ids.map((id) => {
-    const claim = annotateThresholds(
-      FLAG_CLAIMS[id] ?? "A flag this page does not know.",
-      thresholdPairs(run),
-    );
+    const claim = annotateThresholds(flagClaim(id), thresholdPairs(run));
     const raisedBy = run.score_model.flags.find((flag) => flag.id === id)?.raised_by ?? [];
     const by = raisedBy.length === 0 ? "" : ` Signals: ${raisedBy.join(", ")}.`;
     return { id, count: flags[id]?.carrying ?? 0, text: `${claim}${by}` };
