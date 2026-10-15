@@ -19,7 +19,7 @@ import type {
   SignalId,
 } from "../model/report";
 import { advisoryRows } from "./advisoryRows";
-import { pluralNoun } from "./format";
+import { decimal, pluralNoun } from "./format";
 import { joinAnd } from "./joinWords";
 import {
   allowlistReason,
@@ -43,7 +43,7 @@ export function namesCapped(names: readonly string[]): string {
   return `${names.slice(0, NAMES_SHOWN).join(", ")} and ${names.length - NAMES_SHOWN} more`;
 }
 
-export const oneDecimal = (years: number | null): string => (years === null ? "" : years.toFixed(1));
+export const oneDecimal = (years: number | null): string => (years === null ? "" : decimal(years, 1));
 
 interface SignalData {
   S1: S1;

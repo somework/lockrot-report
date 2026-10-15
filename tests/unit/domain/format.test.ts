@@ -5,6 +5,7 @@ import {
   ageOld,
   countPhrase,
   day,
+  decimal,
   fixed,
   gapPhrase,
   gapShort,
@@ -205,5 +206,39 @@ describe("ageOld", () => {
     expect(ageOld("2026-09-20T00:00:00Z", now)).toBe("1-month-old");
     expect(ageOld(null, now)).toBeNull();
     expect(ageOld("not a date", now)).toBeNull();
+  });
+});
+
+describe("decimal: the correctly rounded decimal of the double, a tie to even", () => {
+  test.each([
+    [2.25, 1, "2.2"],
+    [2.35, 1, "2.4"],
+    [2.75, 1, "2.8"],
+    [0.125, 2, "0.12"],
+    [0.375, 2, "0.38"],
+    [0.5, 0, "0"],
+    [1.5, 0, "2"],
+    [2.5, 0, "2"],
+    [-2.25, 1, "-2.2"],
+    [17.85, 2, "17.85"],
+    [406.585, 2, "406.58"],
+    [0, 2, "0.00"],
+    [97.8, 1, "97.8"],
+  ])("%d to %d decimals is %s", (value, digits, text) => {
+    expect(decimal(value, digits)).toBe(text);
+  });
+
+  test("rounds a written tie that no double holds by the stored value", () => {
+    // 1.005 is stored as 1.00499999999999989…, 0.45 as 0.45000000000000001…
+    expect(decimal(1.005, 2)).toBe("1.00");
+    expect(decimal(2.675, 2)).toBe("2.67");
+    expect(decimal(0.15, 1)).toBe("0.1");
+    expect(decimal(1.45, 1)).toBe("1.4");
+    expect(decimal(0.45, 1)).toBe("0.5");
+  });
+
+  test("lets fixed keep its null for a value that is not a finite number", () => {
+    expect(fixed(2.25, 1)).toBe("2.2");
+    expect(fixed(Number.NaN, 1)).toBeNull();
   });
 });
