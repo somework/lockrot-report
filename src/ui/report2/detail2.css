@@ -240,6 +240,7 @@
   position: relative;
   height: 36px;
   print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
 }
 .d2-ruler-zones i {
   position: absolute;
@@ -426,6 +427,20 @@
   .d2-after {
     border-color: CanvasText;
   }
+  /* The legend's swatch keeps the segment's role border, so the lane reads without colour. */
+  .d2-swatch.sbar-seg {
+    border: 1px solid CanvasText;
+  }
+  .d2-swatch.sbar-seg.is-corroborating {
+    border-style: dashed;
+  }
+  .d2-swatch.sbar-seg.is-security {
+    border-style: dotted;
+    border-width: 1.5px;
+  }
+  .d2-why-bar.is-over::after {
+    color: CanvasText;
+  }
 }
 
 /* ---------- print: everything open, the patterns kept ---------- */
@@ -437,5 +452,6 @@
   .d2-why-bar,
   .d2-why-legend {
     print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 }
