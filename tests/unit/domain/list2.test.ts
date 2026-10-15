@@ -89,6 +89,17 @@ describe("applyFilters2", () => {
     ]);
   });
 
+  it("keeps a finding with an advisory row of a selected severity or fix kind", () => {
+    expect(names(applyFilters2(composite, state({}, { sev: ["critical"] }), "findings"))).toEqual([
+      "twig/twig",
+    ]);
+    expect(names(applyFilters2(composite, state({}, { fix: ["update", "upgrade"] }), "findings"))).toEqual([
+      "symfony/monolog-bridge",
+      "symfony/yaml",
+      "symfony/polyfill-intl-idn",
+    ]);
+  });
+
   it("filters by verdict, the gate and the search box", () => {
     expect(names(applyFilters2(composite, state({}, { verdict: ["low"] }), "findings"))).toEqual([
       "symfony/yaml",
@@ -123,7 +134,7 @@ describe("applyFilters2", () => {
     expect(names(applyFilters2(reversed, state({ sort: "verdict" }), "packages"))).toEqual(BY_RANK);
   });
 
-  it("sorts by installed age and by reach, unmeasured last", () => {
+  it("sorts by installed age, unmeasured last, and by reach, an unreached package deepest", () => {
     expect(names(applyFilters2(composite, state({ sort: "age", sortDesc: true }), "packages"))).toEqual([
       "symfony/monolog-bridge",
       "tubalmartin/cssmin",
@@ -133,9 +144,16 @@ describe("applyFilters2", () => {
       "friendsofsymfony/oauth-server-bundle",
       "symfony/polyfill-intl-idn",
     ]);
-    expect(names(applyFilters2(composite, state({ sort: "reached", sortDesc: true }), "packages"))[0]).toBe(
+    const unreached = readContractJson("report-2", "unreached.json") as Report2;
+    const withUnreached = {
+      ...composite,
+      findings: [...composite.findings, { ...only(unreached.findings), rank: 8 }],
+    };
+    expect(names(applyFilters2(withUnreached, state({ sort: "reached" }), "packages"))).toEqual([
+      ...BY_RANK.filter((pkg) => pkg !== "symfony/polyfill-intl-idn"),
       "symfony/polyfill-intl-idn",
-    );
+      "fgrosse/phpasn1",
+    ]);
   });
 });
 

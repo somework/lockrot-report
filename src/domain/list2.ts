@@ -5,6 +5,7 @@ import type { View } from "../model/types";
 import type { Finding, Report2 } from "../model/report2";
 import { isSecurityVulnerable } from "../model/report2";
 import type { Filters, FilterGroup, SortKey, State } from "../state/types";
+import { advisoryRows } from "./advisoryRows";
 import { acceptedFlagIds, countedFlagIds } from "./countedFlags";
 import { matchesFinding2, parseQuery2, type Term2 } from "./query2";
 import type { RailGroup } from "./filters";
@@ -34,6 +35,9 @@ function passesRail2(filters: Filters, f: Finding): boolean {
   if (filters.flag.length > 0 && !countedFlagIds(f).some((id) => filters.flag.includes(id))) return false;
   const accepted = acceptedFlagIds(f).length > 0 ? "with" : "without";
   if (filters.accepted.length > 0 && !filters.accepted.includes(accepted)) return false;
+  const rows = advisoryRows(f);
+  if (filters.sev.length > 0 && !rows.some((row) => filters.sev.includes(row.severity))) return false;
+  if (filters.fix.length > 0 && !rows.some((row) => filters.fix.includes(row.fix.kind))) return false;
   if (filters.signal.length > 0 && !f.signals.some((signal) => filters.signal.includes(signal.id)))
     return false;
   const since = f.baseline?.status;
@@ -47,7 +51,8 @@ function passesRail2(filters: Filters, f: Finding): boolean {
   return !(filters.scope.includes("unnamed") && f.named_in.length > 0);
 }
 
-/** Unmeasured values take the lowest place, so a descending sort lists them last. */
+/** An unmeasured libyears or age takes the lowest place, and an unreached package sorts as the
+ *  deepest. */
 function sortValue(f: Finding, key: SortKey): string | number {
   switch (key) {
     case "package":

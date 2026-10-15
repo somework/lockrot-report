@@ -115,7 +115,7 @@ test.describe("SEARCH-FALLBACK: emptying the state must not erase location.searc
 
 test.describe("on a report-2 page", () => {
   const HASH =
-    "view=packages&q=symfony&verdict=critical&scope=direct&gate=fails&flag=old-promise&pkg=symfony%2Fdebug";
+    "view=packages&q=symfony&verdict=critical&scope=direct&gate=fails&flag=old-promise&accepted=without&pkg=symfony%2Fdebug";
 
   test("a fragment with every report-2 group restores exactly the same state", async () => {
     await report.gotoReport2WithHash("composite", HASH);
