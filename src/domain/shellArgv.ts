@@ -28,8 +28,10 @@ const POWERSHELL_BARE = /^[A-Za-z0-9/._:-]+$/;
 const isArgument = (argument: string): boolean =>
   COMMAND_ARGUMENT.test(argument) && (!argument.startsWith("-") || LOCKROT_OPTIONS.has(argument));
 
+// The command name stays bare before PowerShell's `--%`, so it gets the strictest set.
 export function isPrintableArgv(argv: readonly string[]): boolean {
-  return argv.length > 0 && argv.every(isArgument);
+  const [target] = argv;
+  return target !== undefined && POWERSHELL_BARE.test(target) && argv.every(isArgument);
 }
 
 // The rule leaves no quote, `%` or `!` inside an argument, so no quoting below escapes one.

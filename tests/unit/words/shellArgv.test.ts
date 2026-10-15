@@ -131,6 +131,12 @@ describe("the command argument rule (SPEC §5.6)", () => {
     );
   });
 
+  test("refuses a command name outside PowerShell's bare set on every shell, which --% would leave unquoted", () => {
+    expect(isPrintableArgv(["a|calc", "require", "a/b:^1.0"])).toBe(false);
+    expect(inEveryShell(["a|calc", "require", "a/b:^1.0"])).toEqual(refused);
+    expect(inEveryShell(["comp oser", "update", "a/b"])).toEqual(refused);
+  });
+
   test("refuses an empty argv", () => {
     expect(isPrintableArgv([])).toBe(false);
   });
