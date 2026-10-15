@@ -11,6 +11,7 @@ import {
   advisoryRowLabel2,
   advisoryCountedAs,
   noAdvisoryLine,
+  type AdvisoryAnswer2,
   type AdvisoryGroup2,
   type AdvisoryPair2,
 } from "../../domain/advisories";
@@ -18,6 +19,7 @@ import { gradeTone, reachWord } from "../../domain/findingRow";
 import { applyFilters2, population2 } from "../../domain/list";
 import { cveUrl, safeHref } from "../../domain/links";
 import { day, plural } from "../../domain/format";
+import type { Report2 } from "../../model/report";
 import { EMPTY_FILTERS } from "../../state/types";
 import { useReport } from "../context";
 import { toneClass } from "../common/common";
@@ -25,7 +27,9 @@ import { CheckIncompleteTag } from "../common/CheckIncompleteTag";
 import { CleanMark } from "../ledger/CleanMark";
 import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "../rowOpen";
+import { usePrinted } from "../print/printContext";
 import { EmptyState } from "../views/EmptyState";
+import { SecurityBlock } from "./Overview";
 import { useReport2 } from "./useReport";
 import "../views/views.css";
 import "../views/advisories.css";
@@ -150,11 +154,29 @@ function NoAdvisories2() {
   );
 }
 
-/** The Advisories tab of a report-2 document: an answer, then every S9 row, grouped by the fix
- *  it takes. Rows keep `applyFilters2` order inside a group. */
+/** The tab's answer and lookup hedge; `counted` drops the severities the chips beside it count. */
+function Answer({ report, answer, counted }: { report: Report2; answer: AdvisoryAnswer2; counted: boolean }) {
+  const hedge = advisoryLookupHedge(report);
+  return (
+    <>
+      <p className="al-answer">{counted ? answer.head : answer.text}</p>
+      {hedge !== null && (
+        <p className="al-partial">
+          <CheckIncompleteTag /> <span>{hedge}</span>
+        </p>
+      )}
+      {answer.narrowed !== null && <p className="al-scope">{answer.narrowed}</p>}
+    </>
+  );
+}
+
+/** The Advisories tab of a report-2 document: on screen the Security block with the tab's answer,
+ *  on paper the answer alone (the printed summary holds the block); then every S9 row, grouped by
+ *  the fix it takes. Rows keep `applyFilters2` order inside a group. */
 export function AdvisoriesView2() {
   const { state } = useReport();
   const { report } = useReport2();
+  const printed = usePrinted();
   const { run } = report;
   if (population2(report, "advisories").length === 0)
     return (
@@ -167,25 +189,29 @@ export function AdvisoriesView2() {
   const unfiltered = advisoryPairs2(population2(report, "advisories"), EMPTY_FILTERS).length;
   const groups = advisoryGroups2(run, pairs);
   const answer = advisoryAnswer2(run, pairs, unfiltered);
-  const hedge = advisoryLookupHedge(report);
   const shown = groups.flatMap((group) => group.pairs);
   const first = firstRows(shown, (pair) => pair.finding.package, pairKey);
+  const listed = groups.length > 0;
 
   return (
     <section className="advisories2" data-surface="advisories" aria-label="Advisories">
-      {groups.length === 0 ? (
+      {!printed && (
+        <div className="al-lead">
+          <SecurityBlock
+            report={report}
+            answer={listed ? <Answer report={report} answer={answer} counted /> : undefined}
+          />
+        </div>
+      )}
+      {!listed ? (
         <EmptyState reason="filtered" />
       ) : (
         <>
-          <div className="al-top">
-            <p className="al-answer">{answer.text}</p>
-            {hedge !== null && (
-              <p className="al-partial">
-                <CheckIncompleteTag /> <span>{hedge}</span>
-              </p>
-            )}
-            {answer.narrowed !== null && <p className="al-scope">{answer.narrowed}</p>}
-          </div>
+          {printed && (
+            <div className="al-top">
+              <Answer report={report} answer={answer} counted={false} />
+            </div>
+          )}
           <div className="aledger no-axis">
             <div className="al-head" aria-hidden="true">
               <span className="al-col al-col-sev">{ADVISORY_HEAD.sev}</span>

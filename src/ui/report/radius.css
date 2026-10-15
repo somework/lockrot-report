@@ -10,6 +10,14 @@
   font: 17px/1.4 var(--serif);
   color: var(--ink);
 }
+/* The depth sentence leads the tab, so it reads as the answer's context, a size down. */
+.r2-depth {
+  margin: 0;
+  max-width: 72ch;
+  font: 15px/1.45 var(--serif);
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
 .r2-list,
 .r2-kids {
   list-style: none;

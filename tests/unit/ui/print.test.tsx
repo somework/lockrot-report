@@ -167,6 +167,26 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     expect(rows.slice(0, 3)).toEqual(["symfony/monolog-bridge", "symfony/debug", "twig/twig"]);
   });
 
+  it("prints the whole band once, unfolded, and the Advisories and Blast radius sections without its parts", () => {
+    window.location.hash = "#view=advisories";
+    const { container } = render(<App model={composite()} />);
+
+    window.dispatchEvent(new Event("beforeprint"));
+
+    const doc = printDoc(container);
+    expect(doc.querySelectorAll('[data-surface="overview"]')).toHaveLength(1);
+    expect(doc.querySelector(".pd-summary .ledger-fold")).toBeNull();
+    expect(doc.querySelector(".pd-summary .ledger-tier .overview2-flag-bars")).not.toBeNull();
+    expect(doc.querySelectorAll(".ledger-advisories")).toHaveLength(1);
+    expect(doc.querySelector(".al-lead")).toBeNull();
+    expect(doc.querySelector('[data-surface="advisories"] .al-answer')?.textContent).toBe(
+      "20 advisories on 4 packages, by severity: 1 critical, 4 high, 4 medium, 2 unrated, 9 low.",
+    );
+    expect(doc.querySelector('[data-surface="radius"]')?.textContent).not.toContain(
+      "named by no line of composer.json",
+    );
+  });
+
   it("prints a lock with nothing in it as one line per section, without a note about All packages", () => {
     const empty = load("composite", (embed) => {
       embed.report.packages_checked = 0;

@@ -2,6 +2,7 @@ import type { ComponentChildren } from "preact";
 import { useId } from "preact/hooks";
 import type { Report2 } from "../../model/report";
 import { gradeTone } from "../../domain/findingRow";
+import { depthSentence } from "../../domain/overviewBand";
 import { applyFilters2, population2 } from "../../domain/list";
 import {
   FOLD_OTHER,
@@ -27,6 +28,7 @@ import {
 } from "../../domain/radius2";
 import { useReport } from "../context";
 import { toneClass } from "../common/common";
+import { usePrinted } from "../print/printContext";
 import { useNarrow } from "../useWide";
 import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
 import { openInteractions } from "../rowOpen";
@@ -194,12 +196,15 @@ function Fold({
   );
 }
 
-/** The Blast radius tab of a report-2 document: each direct requirement on `exposure`, most
- *  flagged packages listed under it first, then the tails `radius.ts` lays out. */
+/** The Blast radius tab of a report-2 document: on screen the depth sentence, the printed summary
+ *  holding it on paper; then each direct requirement on `exposure`, most flagged packages listed
+ *  under it first, then the tails `radius.ts` lays out. */
 export function RadiusView2() {
   const { state } = useReport();
   const { report } = useReport2();
   const narrow = useNarrow();
+  const printed = usePrinted();
+  const depth = printed ? null : depthSentence(report);
   const layout = radiusLayout2(report, applyFilters2(report, state, "radius"), population2(report, "radius"));
   const input: OpenInput = { disclosure: state.disclosure, pkg: state.pkg, narrow };
   const first = firstRows(
@@ -222,6 +227,7 @@ export function RadiusView2() {
 
   return (
     <section className="radius2" data-surface="radius" aria-label="Blast radius">
+      {depth !== null && <p className="r2-depth">{depth}</p>}
       <p className="r2-answer">{radiusAnswer2(layout)}</p>
       {layout.lead.length > 0 && (
         <ul className="r2-list" aria-label={RADIUS_WORDS.list}>

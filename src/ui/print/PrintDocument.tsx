@@ -90,7 +90,7 @@ function Section({ index, section, lede, more, children }: SectionProps) {
 function SectionBody({ section }: { section: PrintSection }) {
   switch (section) {
     case "summary":
-      return <Overview2 narrow={false} />;
+      return <Overview2 />;
     case "findings":
       return <FindingsView2 />;
     case "advisories":

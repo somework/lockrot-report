@@ -140,21 +140,95 @@ describe("the overview band of a report-2 document", () => {
     expect(band().querySelector(".ledger-tier")).toBeNull();
   });
 
-  test("folds the tier on a phone behind a peek of what it holds", () => {
-    viewport(true);
+  test.each([false, true])("folds the tier, closed, behind a peek of what it holds (phone: %s)", (phone) => {
+    viewport(phone);
     render(<App model={model()} />);
 
-    const fold = band().querySelector("details.ledger-fold");
+    const fold = band().querySelector<HTMLDetailsElement>("details.ledger-fold");
+    expect(fold?.open).toBe(false);
     expect(fold?.querySelector("summary")?.textContent).toBe(
       "More about this lock6 flags · 20 advisories · 17.9 libyears",
     );
+    expect(fold?.querySelector(".ledger-tier")).not.toBeNull();
+    expect(band().querySelector(".ledger-lead .lead-chips")).not.toBeNull();
   });
 
-  test("is hidden on the Run tab", () => {
-    history.replaceState(null, "", "/report.html#view=run");
+  test.each(["advisories", "packages", "radius", "run"])("is left out of the %s tab", (view) => {
+    history.replaceState(null, "", `/report.html#view=${view}`);
     render(<App model={model()} />);
 
     expect(document.querySelector('[data-surface="overview"]')).toBeNull();
+  });
+});
+
+describe("the tabs that lead without the band", () => {
+  function surface(name: string): HTMLElement {
+    const found = document.querySelector<HTMLElement>(`[data-surface="${name}"]`);
+    if (found === null) throw new Error(`no ${name} surface`);
+    return found;
+  }
+
+  test("Advisories leads with the Security block, its answer counted once, and Update now", () => {
+    history.replaceState(null, "", "/report.html#view=advisories");
+    render(<App model={model()} />);
+
+    const advisories = surface("advisories");
+    const lead = advisories.querySelector<HTMLElement>(".al-lead");
+    expect(lead).not.toBeNull();
+    expect(lead?.querySelector(".al-answer")?.textContent).toBe("20 advisories on 4 packages.");
+    expect(advisories.textContent.match(/20 advisories/g)).toHaveLength(1);
+    expect(advisories.textContent).not.toContain("by severity:");
+    const chips = within(within(lead as HTMLElement).getByRole("group", { name: "Advisories by severity" }));
+    expect(chips.getByRole("button", { name: "critical 1" })).toBeTruthy();
+    expect(lead?.querySelector(".overview2-update .d2-copy-cmd")?.textContent).toBe(
+      "composer update symfony/yaml symfony/polyfill-intl-idn",
+    );
+    expect(lead?.compareDocumentPosition(advisories.querySelector("li[data-pkg]") as Node)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
+  test("Advisories under a filter counts the matching advisories and says the whole count once", () => {
+    history.replaceState(null, "", "/report.html#view=advisories&fix=upgrade");
+    render(<App model={model()} />);
+
+    const lead = surface("advisories").querySelector<HTMLElement>(".al-lead");
+    expect(lead?.querySelector(".al-answer")?.textContent).toBe("1 matching advisory on 1 package.");
+    expect(lead?.textContent).toContain("without it there are 20.");
+    expect(lead?.querySelector(".ledger-fig")).toBeNull();
+  });
+
+  test("Advisories keeps the lookup hedge beside its answer", () => {
+    history.replaceState(null, "", "/report.html#view=advisories");
+    render(
+      <App
+        model={model((report) => {
+          report.security.check = "partial";
+        })}
+      />,
+    );
+
+    const lead = surface("advisories").querySelector<HTMLElement>(".al-lead");
+    expect(lead?.querySelector(".al-partial")?.textContent).toContain("so this list may be partial.");
+    expect(lead?.textContent).not.toContain("advisory check incomplete, so the list may be partial");
+  });
+
+  test("Blast radius leads with the depth sentence", () => {
+    history.replaceState(null, "", "/report.html#view=radius");
+    render(<App model={model()} />);
+
+    expect(surface("radius").firstElementChild?.textContent).toBe(
+      "1 of 7 flagged packages is named by no line of composer.json; the deepest, symfony/polyfill-intl-idn, sits 1 hop from the nearest line.",
+    );
+  });
+
+  test("All packages starts with its table", () => {
+    history.replaceState(null, "", "/report.html#view=packages");
+    render(<App model={model()} />);
+
+    const main = document.querySelector<HTMLElement>(".shell-main");
+    expect(main?.querySelector('[data-surface="packages"] table')).not.toBeNull();
+    expect(document.querySelector("main")?.querySelector(".ledger-band")).toBeNull();
   });
 });
 
@@ -219,5 +293,15 @@ describe("the overview's Update now line", () => {
       "This command holds characters the page does not print.",
     );
     expect(within(line as HTMLElement).queryByRole("button", { name: "Copy" })).toBeNull();
+  });
+});
+
+describe("the phone's Filters fold", () => {
+  test("counts the Grade and Severity filters, which no band chip shows on this tab", () => {
+    viewport(true);
+    history.replaceState(null, "", "/report.html#view=packages&verdict=critical&sev=high");
+    render(<App model={model()} />);
+
+    expect(document.querySelector(".rail-fold > summary")?.textContent).toBe("Filters · 2 on");
   });
 });
