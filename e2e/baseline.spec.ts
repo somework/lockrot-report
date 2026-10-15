@@ -20,7 +20,7 @@ test.describe("report-2: the baseline on the Findings tab and the rail", () => {
       .evaluateAll((items) => items.map((item) => item.getAttribute("data-pkg") ?? ""));
 
   test("the rail's Since rows count the graded findings in each baseline state", async ({ page }) => {
-    await page.goto(report2Url(CASE));
+    await page.goto(report2Url(CASE) + "#view=findings");
     const rail = page.getByRole("group", { name: "Filters" });
     const newCount = graded.filter((f) => f.baseline?.status === "new").length;
     expect(newCount).toBeGreaterThan(0);
@@ -39,7 +39,7 @@ test.describe("report-2: the baseline on the Findings tab and the rail", () => {
   });
 
   test("the rail's 'Fails this run' lists the findings whose gate fails", async ({ page }) => {
-    await page.goto(report2Url(CASE));
+    await page.goto(report2Url(CASE) + "#view=findings");
     await page
       .getByRole("group", { name: "Filters" })
       .getByRole("button", { name: /^Fails this run/ })
@@ -49,12 +49,12 @@ test.describe("report-2: the baseline on the Findings tab and the rail", () => {
   });
 
   test("the rail's Since title names the baseline file", async ({ page }) => {
-    await page.goto(report2Url(CASE));
+    await page.goto(report2Url(CASE) + "#view=findings");
     await expect(page.locator(".rail-path")).toHaveText(embed?.report.baseline?.path ?? "");
   });
 
   test("a known flag carries a tick with hidden words, a covered one names its cover", async ({ page }) => {
-    await page.goto(report2Url("B-baselined-dagger"));
+    await page.goto(report2Url("B-baselined-dagger") + "#view=findings");
     const pills = findingsRow(page, "symfony/monolog-bridge").locator(".fp");
     const pill = (flag: string) => pills.filter({ has: page.locator(".fp-word", { hasText: flag }) });
     await expect(pill("left-behind").locator(".fp-mark")).toHaveText("known to the baseline");

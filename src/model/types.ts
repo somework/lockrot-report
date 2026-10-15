@@ -9,7 +9,7 @@ export const SIGNAL_IDS = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9",
 export type KnownSignalId = (typeof SIGNAL_IDS)[number];
 export type SignalId = KnownSignalId | (string & {});
 
-export const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;
+export const VIEWS = ["overview", "findings", "advisories", "packages", "radius", "run"] as const;
 export type View = (typeof VIEWS)[number];
 
 /** The report-2 embed `normalize()` accepted, with the schema it states. */

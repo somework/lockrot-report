@@ -10,7 +10,7 @@ test.describe("report-2: a lock with nothing flagged", () => {
   const PKG = "scheb/2fa-google-authenticator";
 
   test.beforeEach(async ({ page }) => {
-    await page.goto(report2Url("ok-unchecked"));
+    await page.goto(report2Url("ok-unchecked") + "#view=findings");
   });
 
   test("Findings reads zero and says nothing was flagged, not that a filter matched nothing", async ({

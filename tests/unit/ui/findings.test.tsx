@@ -36,7 +36,7 @@ beforeEach(() => {
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
   })) as unknown as typeof window.matchMedia;
-  history.replaceState(null, "", "/report.html");
+  history.replaceState(null, "", "/report.html#view=findings");
 });
 afterEach(() => {
   cleanup();
@@ -430,7 +430,7 @@ describe("the age axis in the Findings column head", () => {
 
 describe("a long package name", () => {
   test("breaks only after its vendor's slash, on Findings and on All packages", () => {
-    history.replaceState(null, "", "/report.html");
+    history.replaceState(null, "", "/report.html#view=findings");
     render(<App model={model("composite")} />);
     const finding = row("symfony/monolog-bridge");
 

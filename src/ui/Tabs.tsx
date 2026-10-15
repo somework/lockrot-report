@@ -7,8 +7,10 @@ import type { Report2 } from "../model/report";
 import type { View } from "../model/types";
 import { useReport } from "./context";
 
-/** The five views in tab order, with the labels the legacy page shows (report.html:44-48). */
+/** The views in tab order: Overview, the default view (PD-TABS-2), then the legacy page's five,
+ *  with its labels (report.html:44-48). */
 export const TABS: readonly { view: View; label: string }[] = [
+  { view: "overview", label: "Overview" },
   { view: "findings", label: "Findings" },
   { view: "advisories", label: "Advisories" },
   { view: "packages", label: "All packages" },
@@ -18,10 +20,12 @@ export const TABS: readonly { view: View; label: string }[] = [
 
 /**
  * Each tab's badge: whole-report totals that no filter moves (legacy report.js:860-864, kept on
- * purpose, critic.md M18). Run data counts the run's notes and shows nothing when there are none.
+ * purpose, critic.md M18). Run data counts the run's notes and shows nothing when there are none,
+ * and Overview, which lists nothing, has no badge.
  */
 export function tabCounts(report: Report2): Readonly<Record<View, string>> {
   return {
+    overview: "",
     findings: String(population2(report, "findings").length),
     advisories: String(report.findings.reduce((n, f) => n + advisoryRows(f).length, 0)),
     packages: String(report.findings.length),

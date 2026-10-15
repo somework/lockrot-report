@@ -69,8 +69,8 @@ export function reducer(state: State, action: Action): State {
       return {
         ...state,
         view: action.view ?? "findings",
-        q: action.keepQuery === true ? state.q : "",
-        pkg: null,
+        q: action.q ?? (action.keepQuery === true ? state.q : ""),
+        pkg: action.pkg ?? null,
         filters: action.filters,
       };
 

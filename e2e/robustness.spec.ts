@@ -29,7 +29,7 @@ test.describe("a history.replaceState() that throws must not stop the page", () 
   });
 
   test("tab switching still renders, even though writing the hash now always throws", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     expect(await report.rows()).toHaveLength(7);
     await report.tab("packages");
     expect(await report.activeTab()).toBe("packages");
@@ -50,7 +50,7 @@ test.describe("a localStorage that throws must not stop theme switching", () => 
   });
 
   test("the page still boots and the theme still switches for the current view", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     expect(await report.rows()).toHaveLength(7);
     const before = await report.theme();
     await report.toggleTheme();
@@ -62,13 +62,13 @@ test.describe("a localStorage that throws must not stop theme switching", () => 
 
 test.describe("bundle shape (history.md item 7)", () => {
   test("the embedded bundle has exactly {report, details} at its top level", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     const keys = (await report.bundleKeys()).slice().sort();
     expect(keys).toEqual(["details", "report"]);
   });
 
   test("a document with no baseline state at all still renders (the composite has none)", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     expect(await report.rows()).toHaveLength(7);
   });
 });
@@ -83,7 +83,7 @@ test.describe("a malformed report-2 document fails visibly, never as a blank pag
   });
 
   test("a render-time error shows the error screen in place of the report", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
 
     // `mount()` into a second target, with a bundle the model accepts and the Findings tab cannot
     // draw: the error boundary renders its screen on the render that follows the throw.

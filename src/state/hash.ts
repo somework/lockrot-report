@@ -4,10 +4,11 @@
  * byte from `report.js`'s `writeHash`/`readHash` (js-4.md §3a/§3b), with three deliberate fixes
  * (DESIGN.md §5, M12/§4): a fragment piece that fails to decode is skipped instead of blanking the
  * whole page, an unknown `view=` is ignored instead of falling through to the Run tab, and the
- * fallback URL keeps `location.search` instead of dropping it.
+ * fallback URL keeps `location.search` instead of dropping it. Rule R1 (DESIGN.md §4) adds the
+ * Overview tab without changing what any 0.13 or rc.1 link opens.
  */
-import type { FilterGroup, Filters, State } from "./types";
-import { FILTER_GROUPS } from "./types";
+import type { FilterGroup, Filters, LinkTarget, State } from "./types";
+import { EMPTY_FILTERS, FILTER_GROUPS, INITIAL_STATE } from "./types";
 import { VIEWS } from "../model/types";
 import type { View } from "../model/types";
 
@@ -28,10 +29,6 @@ function isFilterGroup(key: string): key is FilterGroup {
 export function serializeHash(state: State): string {
   const parts: string[] = [];
 
-  if (state.view !== "findings") {
-    parts.push("view=" + state.view);
-  }
-
   if (state.q.trim() !== "") {
     parts.push("q=" + encodeURIComponent(state.q));
   }
@@ -47,8 +44,27 @@ export function serializeHash(state: State): string {
     parts.push("pkg=" + encodeURIComponent(state.pkg));
   }
 
+  // Rule R1: a fragment with list keys and no `view` reads back as Findings.
+  if (state.view !== "overview" || parts.length > 0) {
+    parts.unshift("view=" + state.view);
+  }
+
   return parts.join("&");
 }
+
+/** The state a link opens: its tab and keys on an empty page, the sort and folds left out. */
+export function linkState(target: LinkTarget): State {
+  return {
+    ...INITIAL_STATE,
+    view: target.view,
+    q: target.q ?? "",
+    pkg: target.pkg ?? null,
+    filters: { ...EMPTY_FILTERS, ...target.filters },
+  };
+}
+
+/** A link's `href`: the fragment the page itself writes for that state. */
+export const linkHref = (target: LinkTarget): string => "#" + serializeHash(linkState(target));
 
 /** Appends `key` to `group`'s list if it is not already there, keeping selection order. */
 function addFilterKey(filters: Filters, group: FilterGroup, key: string): Filters {
@@ -58,6 +74,8 @@ function addFilterKey(filters: Filters, group: FilterGroup, key: string): Filter
 
 /**
  * Rebuilds a `State` from a hash fragment (with or without its leading `#`), starting from `base`.
+ * The view follows rule R1 and never `base`: a known `view` opens that view, else a fragment with a
+ * `q`, `pkg` or filter key opens Findings, as every 0.13 and rc.1 link did, else Overview.
  * Ported from `readHash` (js-4.md §3b), piece by piece:
  * - a piece with no `=` is skipped silently;
  * - a piece whose value fails to `decodeURIComponent` is skipped whole (the DESIGN.md fix for
@@ -72,21 +90,21 @@ function addFilterKey(filters: Filters, group: FilterGroup, key: string): Filter
  */
 export function parseHash(fragment: string, base: State): State {
   const h = fragment.startsWith("#") ? fragment.slice(1) : fragment;
-  if (h === "") {
-    return base;
-  }
 
-  let view: View = base.view;
+  let view: View | null = null;
+  let listKey = false;
   let q = base.q;
   let pkg = base.pkg;
   let filters: Filters = base.filters;
 
-  for (const piece of h.split("&")) {
+  for (const piece of h === "" ? [] : h.split("&")) {
     const i = piece.indexOf("=");
     if (i < 0) {
       continue;
     }
     const key = piece.slice(0, i);
+    // A list key counts for rule R1 even when its value cannot be read, as it opened Findings on rc.1.
+    if (key === "q" || key === "pkg" || isFilterGroup(key)) listKey = true;
     let value: string;
     try {
       value = decodeURIComponent(piece.slice(i + 1));
@@ -119,7 +137,7 @@ export function parseHash(fragment: string, base: State): State {
     // Any other key — including an unrecognised group name — is ignored.
   }
 
-  return { ...base, view, q, pkg, filters };
+  return { ...base, view: view ?? (listKey ? "findings" : "overview"), q, pkg, filters };
 }
 
 /** The minimal `window` surface `writeHash` needs; lets tests pass a fake instead of jsdom. */

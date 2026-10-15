@@ -4,7 +4,6 @@ import {
   acceptedLine,
   depthSentence,
   flagBars,
-  foldPeek2,
   GATE_GLYPHS,
   gateState,
   gradeChips,
@@ -20,18 +19,19 @@ import {
   type SeverityCount,
 } from "../../domain/overviewBand";
 import { verdictTone } from "../../domain/findingRow";
+import { findingsLink } from "../../domain/overviewTab";
 import type { Tone } from "../../domain/vocab";
 import type { Report2 } from "../../model/report";
 
 type ScoreModel = Report2["run"]["score_model"];
 import type { FilterGroup } from "../../state/types";
-import { filterTitle, LegendButton, toneClass } from "../common/common";
+import { filterTitle, toneClass } from "../common/common";
 import { useReport } from "../context";
 import { CleanMark } from "../ledger/CleanMark";
 import { Waffle } from "../ledger/Waffle";
 import "../ledger/ledger.css";
 import { CopyMove } from "./CopyMove";
-import { useReport2 } from "./useReport";
+import { TabLink } from "./TabLink";
 import "./overview.css";
 
 function useToggle(group: FilterGroup) {
@@ -94,11 +94,11 @@ export function GateLine({ report, className }: { report: Report2; className: st
   );
 }
 
+/** The lead of Overview: each grade chip links to Findings under that grade (PD-OVERVIEW-7). */
 export function Lead({ report }: { report: Report2 }) {
   const lead = leadFigure(report);
   const chips = gradeChips(report);
   const scope = lead.kind === "flagged" ? leadScope(report) : [];
-  const grades = useToggle("verdict");
 
   return (
     <div className={`ledger-lead${lead.kind === "flagged" ? "" : ` is-${lead.kind}`}`}>
@@ -109,15 +109,14 @@ export function Lead({ report }: { report: Report2 }) {
         {chips.length > 0 && (
           <div className="legend lead-chips" role="group" aria-label={OVERVIEW_WORDS.grades}>
             {chips.map(({ grade, count }) => (
-              <LegendButton
+              <TabLink
                 key={grade}
-                tone={verdictTone(report.run.score_model, grade)}
-                dim={count === 0}
-                pressed={grades.pressed(grade)}
-                label={grade}
-                count={count}
-                onToggle={grades.toggle(grade)}
-              />
+                target={findingsLink({ verdict: [grade] })}
+                className={`legend-btn ${toneClass(verdictTone(report.run.score_model, grade))}${count === 0 ? " legend-btn-dim" : ""}`}
+              >
+                <i className="swatch" aria-hidden="true" />
+                {grade} <i className="count">{count}</i>
+              </TabLink>
             ))}
           </div>
         )}
@@ -138,17 +137,9 @@ export function Lead({ report }: { report: Report2 }) {
   );
 }
 
-function FlagBarButton({ bar, longest, model }: { bar: FlagBar; longest: number; model: ScoreModel }) {
-  const flags = useToggle("flag");
-  const pressed = flags.pressed(bar.flag);
+function FlagBarLink({ bar, longest, model }: { bar: FlagBar; longest: number; model: ScoreModel }) {
   return (
-    <button
-      type="button"
-      className="legend-btn legend-btn-bar"
-      aria-pressed={pressed}
-      title={filterTitle(bar.flag, pressed)}
-      onClick={flags.toggle(bar.flag)}
-    >
+    <TabLink target={findingsLink({ flag: [bar.flag] })} className="legend-btn legend-btn-bar">
       {bar.flag}{" "}
       <span className="legend-track" aria-hidden="true">
         <span className="legend-fill" style={{ width: `${(bar.carrying / longest) * 100}%` }}>
@@ -162,10 +153,11 @@ function FlagBarButton({ bar, longest, model }: { bar: FlagBar; longest: number;
         </span>
       </span>
       <i className="count">{bar.carrying}</i> <span className="overview2-split">{bar.split}</span>
-    </button>
+    </TabLink>
   );
 }
 
+/** The flag ledger: each bar links to Findings under that flag (PD-OVERVIEW-7). */
 export function FlagsBlock({ report }: { report: Report2 }) {
   if (report.packages_flagged === 0) return null;
   const bars = flagBars(report);
@@ -183,7 +175,7 @@ export function FlagsBlock({ report }: { report: Report2 }) {
       {bars.length > 0 && (
         <div className="verdict-bars overview2-flag-bars" style={{ "--longest": String(longest) }}>
           {bars.map((bar) => (
-            <FlagBarButton key={bar.flag} bar={bar} longest={longest} model={report.run.score_model} />
+            <FlagBarLink key={bar.flag} bar={bar} longest={longest} model={report.run.score_model} />
           ))}
         </div>
       )}
@@ -197,8 +189,17 @@ export function FlagsBlock({ report }: { report: Report2 }) {
 const severityTone = (model: ScoreModel, { band, outlined }: SeverityCount): string =>
   `${toneClass(verdictTone(model, band))}${outlined ? " is-outlined" : ""}`;
 
-/** `answer`, when given, takes the place of the block's own count and hedge. */
-export function SecurityBlock({ report, answer }: { report: Report2; answer?: ComponentChildren }) {
+/** `answer`, when given, takes the place of the block's own count and hedge. With `linked` the
+ *  severity chips and fix counts link to their lists (Overview); else the chips toggle `sev`. */
+export function SecurityBlock({
+  report,
+  answer,
+  linked = false,
+}: {
+  report: Report2;
+  answer?: ComponentChildren;
+  linked?: boolean;
+}) {
   const block = securityBlock(report);
   const severities = useToggle("sev");
   const updateNow = updateNowArgv(report);
@@ -238,6 +239,17 @@ export function SecurityBlock({ report, answer }: { report: Report2; answer?: Co
               {OVERVIEW_WORDS.bySeverity}
             </span>
             {block.severities.map((severity) => {
+              if (linked)
+                return (
+                  <TabLink
+                    key={severity.id}
+                    target={{ view: "advisories", filters: { sev: [severity.id] } }}
+                    className={`legend-btn ${severityTone(report.run.score_model, severity)}`}
+                  >
+                    <i className="swatch" aria-hidden="true" />
+                    {severity.id} <i className="count">{severity.count}</i>
+                  </TabLink>
+                );
               const pressed = severities.pressed(severity.id);
               return (
                 <button
@@ -259,10 +271,18 @@ export function SecurityBlock({ report, answer }: { report: Report2; answer?: Co
       {block.fixes.length > 0 && (
         <p className="ledger-note">
           {OVERVIEW_WORDS.byFix}:{" "}
-          {block.fixes.map(({ label, count }, index) => (
+          {block.fixes.map(({ kind, label, count }, index) => (
             <Fragment key={label}>
               {index > 0 && " · "}
-              {label} <b>{count}</b>
+              {linked ? (
+                <TabLink target={findingsLink({ fix: [kind] })} className="ov-link">
+                  {label} <b>{count}</b>
+                </TabLink>
+              ) : (
+                <>
+                  {label} <b>{count}</b>
+                </>
+              )}
             </Fragment>
           ))}
         </p>
@@ -276,50 +296,13 @@ export function SecurityBlock({ report, answer }: { report: Report2; answer?: Co
   );
 }
 
-export function LibyearsBlock({ report }: { report: Report2 }) {
+/** The Libyears line of PD-SUMMARY-15, and on Overview its table under it. */
+export function LibyearsBlock({ report, children }: { report: Report2; children?: ComponentChildren }) {
   return (
     <div className="ledger-block ledger-libyears">
       <span className="eyebrow ledger-head">{OVERVIEW_WORDS.libyears}</span>
       <p className="ledger-note overview2-libyears">{libyearsPanel(report)}</p>
+      {children}
     </div>
-  );
-}
-
-function Tier({ report }: { report: Report2 }) {
-  return (
-    <div className="ledger-tier">
-      <FlagsBlock report={report} />
-      <SecurityBlock report={report} />
-      <LibyearsBlock report={report} />
-    </div>
-  );
-}
-
-/** The overview band of a report-2 document (SPEC §7.9.4). It counts nothing a filter changes.
- *  On screen the tier is `folded`, closed on load; paper has no tap to open it. */
-export function Overview2({ folded = false }: { folded?: boolean }) {
-  const { state } = useReport();
-  const { report } = useReport2();
-  if (state.view === "run") return null;
-  const empty = report.packages_checked === 0;
-
-  return (
-    <section className="ledger overview2" data-surface="overview" aria-label={OVERVIEW_WORDS.band}>
-      <Lead report={report} />
-      {!empty &&
-        (folded ? (
-          <details className="ledger-fold">
-            <summary>
-              <span className="ledger-fold-summary">
-                <span className="ledger-fold-title">{OVERVIEW_WORDS.more}</span>
-                <span className="ledger-fold-peek">{foldPeek2(report).join(" · ")}</span>
-              </span>
-            </summary>
-            <Tier report={report} />
-          </details>
-        ) : (
-          <Tier report={report} />
-        ))}
-    </section>
   );
 }

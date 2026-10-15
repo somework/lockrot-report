@@ -17,7 +17,7 @@ test("the build wrote report-2 pages", () => {
 test("the composite's Findings rows draw the score, the package, the pills, the reach and the next step", async ({
   page,
 }) => {
-  await page.goto(report2Url("composite"));
+  await page.goto(report2Url("composite") + "#view=findings");
 
   expect(await findingsRowCells(page, "symfony/polyfill-intl-idn")).toEqual([
     "2",
@@ -40,8 +40,9 @@ for (const name of cases) {
     await page.goto(report2Url(name));
     await page.waitForLoadState("load");
 
-    await expect(findingsSurface(page)).toBeAttached();
     await expect(overviewSurface(page)).toBeAttached();
+    await page.getByRole("tab", { name: /^Findings/ }).click();
+    await expect(findingsSurface(page)).toBeAttached();
     expect(problems).toEqual([]);
   });
 }

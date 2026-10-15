@@ -167,7 +167,7 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     expect(rows.slice(0, 3)).toEqual(["symfony/monolog-bridge", "symfony/debug", "twig/twig"]);
   });
 
-  it("prints the whole band once, unfolded, and the Advisories and Blast radius sections without its parts", () => {
+  it("prints the whole band once, as Overview's content, and the Advisories and Blast radius sections without its parts", () => {
     window.location.hash = "#view=advisories";
     const { container } = render(<App model={composite()} />);
 
@@ -175,8 +175,7 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
 
     const doc = printDoc(container);
     expect(doc.querySelectorAll('[data-surface="overview"]')).toHaveLength(1);
-    expect(doc.querySelector(".pd-summary .ledger-fold")).toBeNull();
-    expect(doc.querySelector(".pd-summary .ledger-tier .overview2-flag-bars")).not.toBeNull();
+    expect(doc.querySelector('.pd-summary [data-surface="overview"] .overview2-flag-bars')).not.toBeNull();
     expect(doc.querySelectorAll(".ledger-advisories")).toHaveLength(1);
     expect(doc.querySelector(".al-lead")).toBeNull();
     expect(doc.querySelector('[data-surface="advisories"] .al-answer')?.textContent).toBe(
@@ -184,6 +183,20 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     );
     expect(doc.querySelector('[data-surface="radius"]')?.textContent).not.toContain(
       "named by no line of composer.json",
+    );
+  });
+
+  it("prints the score strip as its text, and Overview once when printed from Overview", () => {
+    window.location.hash = "";
+    const { container } = render(<App model={composite()} />);
+
+    window.dispatchEvent(new Event("beforeprint"));
+
+    const doc = printDoc(container);
+    expect(doc.querySelectorAll('[data-surface="overview"]')).toHaveLength(1);
+    expect(doc.querySelector(".pd-summary .ss-plot")).toBeNull();
+    expect(doc.querySelector(".pd-summary .ov-scores .ledger-note")?.textContent).toBe(
+      "score 36: 2 critical · score 32: 1 critical · score 18: 2 high · score 2: 2 low",
     );
   });
 

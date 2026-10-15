@@ -1,6 +1,6 @@
 /**
- * PD-TABS-1 (DESIGN.md §5): the tab row at phone widths. The wallabag lock's five labels with their
- * real badge counts take 582px, so from 320px to 390px "Blast radius" was cut mid-word and
+ * PD-TABS-1, PD-TABS-2 (DESIGN.md §5): the tab row at phone widths. The wallabag lock's labels with
+ * their real badge counts took 582px for five tabs, and Overview makes six, so from 320px to 390px "Blast radius" was cut mid-word and
  * "Run data" sat off-screen with nothing to say either was there. The row now fades out on the side
  * with tabs out of sight, under a chevron that scrolls it, and scrolls the selected tab into full
  * view on load and on every switch — without adding a Tab stop or touching the arrow-key roving.
@@ -9,14 +9,14 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
 
-/** A recorded lock whose five labels with their real badge counts take 582px. */
+/** A recorded lock whose six labels with their real badge counts overflow a phone. */
 const CASE = "baselined-wallabag-2.6";
 const NARROW = [320, 360, 390] as const;
 const WIDE = [768, 1024, 1440, 1920] as const;
 /** More chevron clicks than the widest overflow could ever need: a hard cap, not a wait. */
 const MAX_PAGES = 6;
 
-async function pageUntil(report: ReportPage, side: "prev" | "next", name: "findings" | "run") {
+async function pageUntil(report: ReportPage, side: "prev" | "next", name: "overview" | "run") {
   for (let i = 0; i < MAX_PAGES && !(await report.tabInFullView(name)); i += 1) {
     await report.scrollTabs(side);
   }
@@ -32,7 +32,7 @@ for (const width of NARROW) {
         await report.gotoReport2(CASE);
 
         expect(await report.tabsOverflow()).toBe(true);
-        expect(await report.tabInFullView("findings")).toBe(true);
+        expect(await report.tabInFullView("overview")).toBe(true);
         expect(await report.tabInFullView("run")).toBe(false);
         expect(await report.tabsOverflowCue()).toEqual({ prev: false, next: true });
 
@@ -40,13 +40,13 @@ for (const width of NARROW) {
         expect(await report.tabInFullView("run")).toBe(true);
         expect(await report.tabsOverflowCue()).toEqual({ prev: true, next: false });
 
-        await pageUntil(report, "prev", "findings");
-        expect(await report.tabInFullView("findings")).toBe(true);
+        await pageUntil(report, "prev", "overview");
+        expect(await report.tabInFullView("overview")).toBe(true);
         expect(await report.tabsOverflowCue()).toEqual({ prev: false, next: true });
 
         // A chevron click is a pointer affordance: it never takes focus or selects a tab.
         expect(await report.isFocusOnTabsChevron()).toBe(false);
-        expect(await report.activeTab()).toBe("findings");
+        expect(await report.activeTab()).toBe("overview");
         // The row scrolls inside itself; the page never scrolls sideways.
         expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       });
@@ -72,15 +72,15 @@ test.describe("390px, keyboard", () => {
     const report = await createReportPage(page);
     await report.gotoReport2(CASE);
 
-    await report.focusTab("findings");
+    await report.focusTab("overview");
     await report.pressKey("ArrowLeft");
     expect(await report.activeTab()).toBe("run");
     expect(await report.focusedTab()).toBe("run");
     await expect.poll(() => report.tabInFullView("run")).toBe(true);
 
     await report.pressKey("Home");
-    expect(await report.focusedTab()).toBe("findings");
-    await expect.poll(() => report.tabInFullView("findings")).toBe(true);
+    expect(await report.focusedTab()).toBe("overview");
+    await expect.poll(() => report.tabInFullView("overview")).toBe(true);
 
     await report.pressKey("End");
     expect(await report.focusedTab()).toBe("run");
@@ -149,7 +149,7 @@ for (const width of WIDE) {
 
       expect(await report.tabsOverflow()).toBe(false);
       expect(await report.tabsOverflowCue()).toEqual({ prev: false, next: false });
-      for (const view of ["findings", "advisories", "packages", "radius", "run"] as const) {
+      for (const view of ["overview", "findings", "advisories", "packages", "radius", "run"] as const) {
         expect(await report.tabInFullView(view)).toBe(true);
       }
     });
@@ -188,7 +188,7 @@ test.describe("report-2: the tab row of the baselined wallabag page", () => {
       const report = await createReportPage(page);
       await report.gotoReport2(CASE);
       expect(await report.tabsOverflow()).toBe(false);
-      for (const view of ["findings", "advisories", "packages", "radius", "run"] as const) {
+      for (const view of ["overview", "findings", "advisories", "packages", "radius", "run"] as const) {
         expect(await report.tabInFullView(view)).toBe(true);
       }
     });

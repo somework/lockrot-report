@@ -7,7 +7,7 @@ let report: ReportPage;
 
 test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);
-  await report.gotoReport2("composite");
+  await report.gotoReport2WithHash("composite", "view=findings");
 });
 
 test.describe("/ focuses search, suppressed while already focused", () => {
@@ -329,7 +329,7 @@ test.describe("M10: j/k must not act while the glossary is open", () => {
     await report.openGlossary();
     await report.pressJ();
     expect((await report.detail()).name).toBe("twig/twig");
-    expect(await report.hash()).toBe("#pkg=twig%2Ftwig");
+    expect(await report.hash()).toBe("#view=findings&pkg=twig%2Ftwig");
   });
 });
 
@@ -388,7 +388,7 @@ test.describe("report-2: keys on the Findings rows and the detail sheet", () => 
   test("j opens the first row, j and k walk the list, Escape closes and hands focus back", async ({
     page,
   }) => {
-    await page.goto(report2Url("composite"));
+    await page.goto(report2Url("composite") + "#view=findings");
     await expect(detailSurface(page)).toHaveCount(0);
 
     await page.keyboard.press("j");
@@ -404,7 +404,7 @@ test.describe("report-2: keys on the Findings rows and the detail sheet", () => 
   });
 
   test("Enter on a row opens its sheet and a second Enter keeps it open", async ({ page }) => {
-    await page.goto(report2Url("composite"));
+    await page.goto(report2Url("composite") + "#view=findings");
     const row = page.getByRole("listitem", { name: "symfony/yaml", exact: true });
 
     await row.focus();

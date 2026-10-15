@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
 // so a found row never carries a match note and the count line never splits.
 test.describe("report-2: free text finds what the row shows", () => {
   test("a word lists the rows that name it, with no match note and no split", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.search("Symfony/");
 
     expect(await report.rows()).toEqual([

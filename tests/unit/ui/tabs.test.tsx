@@ -43,7 +43,9 @@ describe("tab names", () => {
     renderTabs();
 
     // composite: 7 graded findings, 20 counted advisories, 7 packages, 1 exposure entry, no notes.
+    // Overview, first, lists nothing and has no badge.
     expect(tabNames()).toEqual([
+      "Overview",
       "Findings 7",
       "Advisories 20",
       "All packages 7",
@@ -57,6 +59,7 @@ describe("tab names", () => {
 
     // One package checked, none flagged, no advisory, no exposure entry.
     expect(tabNames()).toEqual([
+      "Overview",
       "Findings 0",
       "Advisories 0",
       "All packages 1",
@@ -78,7 +81,7 @@ describe("tab names", () => {
       filters: { ...INITIAL_STATE.filters, flag: ["stale"] },
     });
 
-    expect(tabNames()[0]).toBe("Findings 7");
+    expect(tabNames()[1]).toBe("Findings 7");
   });
 
   it("tabName: a tab with no badge is its label alone", () => {
@@ -141,7 +144,7 @@ describe("Tabs' overflow chevrons (PD-TABS-1)", () => {
 
     // Assert: the roving tabindex is untouched — only the selected tab is in the Tab order.
     const tabs = screen.getAllByRole("tab");
-    expect(tabs.map((tab) => tab.tabIndex)).toEqual([-1, -1, -1, 0, -1]);
+    expect(tabs.map((tab) => tab.tabIndex)).toEqual([-1, -1, -1, -1, 0, -1]);
     const chevrons = [...container.querySelectorAll<HTMLButtonElement>(".tabs-scroll")];
     expect(chevrons).toHaveLength(2);
     for (const chevron of chevrons) {

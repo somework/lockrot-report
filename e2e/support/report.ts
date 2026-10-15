@@ -11,7 +11,7 @@ import type { Page } from "@playwright/test";
 import type { FixtureName } from "./pages";
 import { NewReportPage } from "./new";
 
-export const VIEWS = ["findings", "advisories", "packages", "radius", "run"] as const;
+export const VIEWS = ["overview", "findings", "advisories", "packages", "radius", "run"] as const;
 export type ViewName = (typeof VIEWS)[number];
 
 /** Filter groups the rail offers (`report.js:344-392`). */

@@ -57,6 +57,8 @@ export interface KeyInput {
   sheetOpen: boolean;
   /** The current tab draws the search box. */
   searchAvailable: boolean;
+  /** The current tab is Overview, which draws no row and no search box. */
+  overview: boolean;
 }
 
 export type KeyDecision =
@@ -107,8 +109,10 @@ function decideEscape(input: KeyInput): KeyDecision {
 }
 
 /** `/` goes to the search box. With a sheet over the page the box is under it, so the sheet closes
- *  first rather than focus landing on a field nobody can see (PD-ROWS-12). */
+ *  first rather than focus landing on a field nobody can see (PD-ROWS-12). Overview has no box, and
+ *  no key moves the reader to another tab, so `/` does nothing there. */
 function decideSlash(input: KeyInput): KeyDecision {
+  if (input.overview) return IGNORE;
   if (!input.sheetOpen) return { type: "focusSearch", closeDetail: false };
   if (!input.searchAvailable) return IGNORE;
 
@@ -165,6 +169,7 @@ export interface KeyContext {
   /** Called only for `j`/`k`, so the rendered order is not recomputed on every keystroke typed. */
   rendered: () => readonly string[];
   sheetOpen: boolean;
+  overview: boolean;
 }
 
 /** Whether any native popover (a verdict pill's, Header's gate fact) is currently open. Read from the DOM, not
@@ -231,6 +236,7 @@ export function keyInputFrom(event: KeyboardEvent, context: KeyContext): KeyInpu
     rendered: key === "j" || key === "k" ? context.rendered() : [],
     sheetOpen: context.sheetOpen,
     searchAvailable: context.search !== null,
+    overview: context.overview,
   };
 }
 

@@ -14,8 +14,11 @@ import {
   type PackagesNote,
 } from "../../domain/findingRow";
 import { bandTicks } from "../../domain/scoreBar";
+import { gradeChips, OVERVIEW_WORDS } from "../../domain/overviewBand";
+import { OVERVIEW_TAB_WORDS, stripFlagged } from "../../domain/overviewTab";
+import { verdictTone } from "../../domain/findingRow";
 import { useReport } from "../context";
-import { toneClass } from "../common/common";
+import { LegendButton, toneClass } from "../common/common";
 import { EmptyState } from "../views/EmptyState";
 import { AgeAxis as AgeAxisHead } from "../views/AgeScale";
 import { FindingRow2 } from "./FindingRow";
@@ -167,6 +170,48 @@ function Notes({ report }: { report: Report2 }) {
       {ignored !== null && <NoteLine note={ignored} />}
       {unchecked !== null && <NoteLine note={unchecked} />}
     </>
+  );
+}
+
+/**
+ * One line over the Findings list (PD-SUMMARY-16): the flagged figure, the grade chips, which toggle
+ * `verdict` in place, and the way back to Overview, where the summary band lives.
+ */
+export function FindingsStrip() {
+  const { state, dispatch } = useReport();
+  const { report } = useReport2();
+  if (report.packages_flagged === 0) return null;
+  const pressed = state.filters.verdict;
+
+  return (
+    <div className="f2-strip">
+      <p className="f2-strip-figure">{stripFlagged(report)}</p>
+      <div className="legend f2-strip-chips" role="group" aria-label={OVERVIEW_WORDS.grades}>
+        {gradeChips(report).map(({ grade, count }) => (
+          <LegendButton
+            key={grade}
+            tone={verdictTone(report.run.score_model, grade)}
+            dim={count === 0}
+            pressed={pressed.includes(grade)}
+            label={grade}
+            count={count}
+            onToggle={() => {
+              dispatch({ type: "toggle", group: "verdict", key: grade });
+            }}
+          />
+        ))}
+      </div>
+      <a
+        className="ov-link f2-strip-back"
+        href="#"
+        onClick={(event) => {
+          event.preventDefault();
+          dispatch({ type: "view", view: "overview" });
+        }}
+      >
+        {OVERVIEW_TAB_WORDS.overview} <span aria-hidden="true">›</span>
+      </a>
+    </div>
   );
 }
 

@@ -1,14 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
 import { rowPills } from "./support/report2/findings";
-import { gradeChips, severityChips } from "./support/report2/overview";
+import { severityChips, stripChips } from "./support/report2/overview";
 import { packagesColumn, packagesOrder, sortPackagesBy } from "./support/report2/packages";
 
 let report: ReportPage;
 
-/** The grade chip whose label starts with the grade, such as "high". */
+/** The Findings strip's grade chip whose label starts with the grade, such as "high". */
 const gradeChipNamed = (page: Page, grade: string) =>
-  gradeChips(page).filter({ hasText: new RegExp(`^${grade}`) });
+  stripChips(page).filter({ hasText: new RegExp(`^${grade}`) });
 
 test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);
@@ -16,14 +16,14 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("report-2: rail filters, the accepted toggle and the All packages sort", () => {
   test("grade: selecting a grade chip narrows Findings to that grade", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await gradeChipNamed(page, "high").click();
 
     expect(await report.rows()).toEqual(["friendsofsymfony/oauth-server-bundle", "tubalmartin/cssmin"]);
   });
 
   test("M17: grade chips expose a pressed state to assistive tech", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     const chip = gradeChipNamed(page, "high");
     await expect(chip).toHaveAttribute("aria-pressed", "false");
 
@@ -52,7 +52,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
   });
 
   test("scope: transitive narrows out the direct requirements", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.railOption("scope", "transitive");
 
     expect(await report.rows()).toEqual(["symfony/polyfill-intl-idn"]);
@@ -60,7 +60,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
   });
 
   test("clear resets the query and every filter group, but not the tab or the open package", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.tab("packages");
     await report.openPackage("twig/twig");
     await report.railOption("scope", "transitive");
@@ -76,7 +76,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
   });
 
   test("sort: clicking a different column switches the sort key and resets to ascending", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.tab("packages");
     await report.sortBy("package");
     expect(await report.sortState()).toEqual({ key: "package", desc: false });
@@ -88,7 +88,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
     expect(await report.sortState()).toEqual({ key: "verdict", desc: false });
   });
   test("flag: a flag row narrows Findings to the packages whose score counts it", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.toggleRailRow("stale");
 
     expect(await report.rows()).toEqual(["friendsofsymfony/oauth-server-bundle", "tubalmartin/cssmin"]);
@@ -97,7 +97,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
   });
 
   test("scope: not in composer.json keeps the package no line names", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.toggleRailRow("not in composer.json");
 
     expect(await report.rows()).toEqual(["symfony/polyfill-intl-idn"]);
@@ -106,7 +106,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
   test("accepted: the toggle hides the accepted pills, keeps every row, and is no filter chip", async ({
     page,
   }) => {
-    await report.gotoReport2("B-accepted-dagger");
+    await report.gotoReport2WithHash("B-accepted-dagger", "view=findings");
     const before = await report.rows();
     await expect(rowPills(page, "symfony/monolog-bridge")).toHaveText([
       "vulnerable·1",
@@ -138,7 +138,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
   test("sort: All packages opens in rank order; Score sorts highest first, then reverses", async ({
     page,
   }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.tab("packages");
     const byRank = await packagesOrder(page);
     expect(byRank[0]).toBe("twig/twig");
@@ -159,7 +159,7 @@ test.describe("report-2: rail filters, the accepted toggle and the All packages 
     for (const name of ["composite", "baselined-wallabag-main"]) {
       for (const view of ["findings", "packages"] as const) {
         test(`${name}, ${view}`, async () => {
-          await report.gotoReport2(name);
+          await report.gotoReport2WithHash(name, "view=findings");
           await report.tab(view);
           // The accepted toggle filters no package: its count is the rows whose pills it hides.
           const rows = (await report.railRows()).filter((row) => row.label !== "Hide accepted flags");

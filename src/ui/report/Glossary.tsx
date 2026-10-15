@@ -92,8 +92,11 @@ export function GlossaryBody2({ onClose }: { onClose: () => void }) {
           <h3>Keys and search</h3>
         </summary>
         <p className="prose">
-          <kbd>/</kbd> to search · <kbd>j</kbd> <kbd>k</kbd> to move · <kbd>Enter</kbd> to open ·{" "}
-          <kbd>Esc</kbd> to close · <kbd>?</kbd> for this glossary.
+          {GLOSSARY2_WORDS.listKeys} <kbd>/</kbd> to search · <kbd>j</kbd> <kbd>k</kbd> to move ·{" "}
+          <kbd>Enter</kbd> to open.
+        </p>
+        <p className="prose">
+          {GLOSSARY2_WORDS.everyKeys} <kbd>Esc</kbd> to close · <kbd>?</kbd> for this glossary.
         </p>
         <p className="prose">
           {GLOSSARY2_WORDS.search}{" "}

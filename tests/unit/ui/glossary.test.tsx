@@ -150,6 +150,16 @@ describe("Glossary sections", () => {
     expect(last?.querySelector(".glossary-note")?.textContent).toContain("extra.lockrot.ignore");
   });
 
+  it("names / and j k as keys of the tabs with a list, and Esc and ? as keys of every tab", () => {
+    const { container } = render(glossary({ open: true }));
+
+    const lines = [...fold(container, /Keys and search/).querySelectorAll("p")].map((p) => p.textContent);
+    expect(lines.slice(0, 2)).toEqual([
+      "On a tab with a list: / to search · j k to move · Enter to open.",
+      "On every tab: Esc to close · ? for this glossary.",
+    ]);
+  });
+
   it("lists the search keys of the grammar in the keys fold", () => {
     const { container } = render(glossary({ open: true }));
 

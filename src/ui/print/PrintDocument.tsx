@@ -8,7 +8,7 @@ import { TABS } from "../Tabs";
 import { printHasBody2, printLede2 } from "../../domain/print";
 import { AdvisoriesView2 } from "../report/AdvisoriesView";
 import { FindingsView2 } from "../report/FindingsView";
-import { Overview2 } from "../report/Overview";
+import { OverviewView2 } from "../report/OverviewView";
 import { PackagesView2 } from "../report/PackagesView";
 import { RadiusView2 } from "../report/RadiusView";
 import { RunView2 } from "../report/RunView";
@@ -17,7 +17,7 @@ import { PrintContext } from "./printContext";
 const NOOP = (): void => undefined;
 
 /** The section names the print uses, which are the tabs' own words — a reader who printed from the
- *  screen finds the same headings on paper. The summary band has no tab. */
+ *  screen finds the same headings on paper. The summary is the Overview tab's content. */
 const TITLES: Readonly<Record<PrintSection, string>> = {
   summary: "Summary",
   findings: "Findings",
@@ -90,7 +90,7 @@ function Section({ index, section, lede, more, children }: SectionProps) {
 function SectionBody({ section }: { section: PrintSection }) {
   switch (section) {
     case "summary":
-      return <Overview2 />;
+      return <OverviewView2 />;
     case "findings":
       return <FindingsView2 />;
     case "advisories":
@@ -109,7 +109,7 @@ function SectionBody({ section }: { section: PrintSection }) {
 }
 
 const SECTION_VIEW: Readonly<Record<PrintSection, View>> = {
-  summary: "findings",
+  summary: "overview",
   findings: "findings",
   advisories: "advisories",
   radius: "radius",
@@ -119,7 +119,7 @@ const SECTION_VIEW: Readonly<Record<PrintSection, View>> = {
 
 /**
  * The printed report (print.css, `usePrintDocument`): one document in sections whatever tab was
- * open — the summary band, Findings, Advisories in full, the top of Blast radius, the run's facts,
+ * open — the summary (Overview's content), Findings, Advisories in full, the top of Blast radius, the run's facts,
  * and All packages only when the reader printed from that tab. Mounted only while the page prints,
  * in place of `<main>`, which the print stylesheet hides while this holds anything; the screen's
  * own state (tab, filters, scroll, open package) is left exactly as it was.

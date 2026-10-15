@@ -9,10 +9,13 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("report-2: tabs and counts on the composite", () => {
   test.beforeEach(async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
   });
 
-  test("Findings is the default tab", async () => {
+  test("Overview is the default tab, and a list key with no view opens Findings", async () => {
+    await report.gotoReport2("composite");
+    expect(await report.activeTab()).toBe("overview");
+    await report.gotoReport2WithHash("composite", "scope=direct");
     expect(await report.activeTab()).toBe("findings");
   });
 
@@ -28,6 +31,7 @@ test.describe("report-2: tabs and counts on the composite", () => {
   });
 
   test("badge counts reflect the whole report, not the current filter", async () => {
+    expect(await report.tabCount("overview")).toBe("");
     expect(await report.tabCount("findings")).toBe("7");
     expect(await report.tabCount("advisories")).toBe("20");
     expect(await report.tabCount("packages")).toBe("7");
@@ -73,7 +77,7 @@ test.describe("report-2: tabs and counts on the composite", () => {
   test("a user-driven tab switch scrolls back to the top; a hashchange restore does not", async ({
     page,
   }) => {
-    await report.gotoReport2("baselined-wallabag-2.6");
+    await report.gotoReport2WithHash("baselined-wallabag-2.6", "view=findings");
     await page.evaluate(() => {
       window.scrollTo(0, 2000);
     });
@@ -99,11 +103,13 @@ test.describe("report-2: tabs and counts on the composite", () => {
     await expect(page.getByRole("tab", { name: "Advisories 20" }).locator(".tab-flag")).toHaveCount(0);
   });
 
-  test("M14: an unrecognised view falls back to Findings, tab marked selected", async () => {
+  test("M14: an unrecognised view falls back by rule R1, tab marked selected", async () => {
     // M14 (DESIGN.md §5), fixed on purpose: no tab used to be aria-selected for an unknown view.
     await report.gotoReport2WithHash("composite", "view=not-a-real-view");
+    expect(await report.activeTab()).toBe("overview");
+    await report.gotoReport2WithHash("composite", "view=not-a-real-view&scope=direct");
     expect(await report.activeTab()).toBe("findings");
-    expect(await report.rows()).toHaveLength(7);
+    expect(await report.rows()).toHaveLength(6);
   });
 });
 
