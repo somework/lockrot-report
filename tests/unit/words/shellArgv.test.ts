@@ -19,6 +19,32 @@ const REFUSED_BY_THE_RULE = new Set([
   "composer require 'vendor/package:~1.4,!=1.4.2'",
 ]);
 
+// The pinned golden single-quotes for PowerShell. SPEC §5.6 now writes argv[0], `--%`, then the
+// cmd.exe rendering of the rest, because PowerShell hands a .bat target to cmd.exe. Keyed by the
+// row's POSIX line; the re-pin rewrites these rows.
+const POWERSHELL_BY_THE_NEW_RULE: Readonly<Record<string, string>> = {
+  "composer require 'friendsofsymfony/oauth-server-bundle:^1.6.2'":
+    'composer --% require "friendsofsymfony/oauth-server-bundle:^1.6.2"',
+  "composer require 'geoip2/geoip2:^3.4'": 'composer --% require "geoip2/geoip2:^3.4"',
+  "composer require 'guzzlehttp/guzzle:^7.15.2'": 'composer --% require "guzzlehttp/guzzle:^7.15.2"',
+  "composer require 'guzzlehttp/guzzle:^8.2'": 'composer --% require "guzzlehttp/guzzle:^8.2"',
+  "composer require 'joomla/filter:^3.0.5'": 'composer --% require "joomla/filter:^3.0.5"',
+  "composer require 'joomla/string:^3.0'": 'composer --% require "joomla/string:^3.0"',
+  "composer require 'laravel/framework:^12.69.0'": 'composer --% require "laravel/framework:^12.69.0"',
+  "composer require 'php:>=7.2.5' --no-update": 'composer --% require "php:>=7.2.5" --no-update',
+  "composer require 'php:>=8.1' --no-update": 'composer --% require "php:>=8.1" --no-update',
+  "composer require 'php:>=8.2' --no-update": 'composer --% require "php:>=8.2" --no-update',
+  "composer require 'symfony/debug:^4.4.0'": 'composer --% require "symfony/debug:^4.4.0"',
+  "composer require 'symfony/debug:^4.4.44'": 'composer --% require "symfony/debug:^4.4.44"',
+  "composer require 'symfony/monolog-bridge:^5.4'": 'composer --% require "symfony/monolog-bridge:^5.4"',
+  "composer require 'symfony/monolog-bridge:^5.4.52'":
+    'composer --% require "symfony/monolog-bridge:^5.4.52"',
+  "composer require 'symfony/yaml:^5.4.52'": 'composer --% require "symfony/yaml:^5.4.52"',
+  "composer require 'twig/twig:^3.27.0'": 'composer --% require "twig/twig:^3.27.0"',
+  "composer require 'vendor/package:>=1.2 <2.0'": 'composer --% require "vendor/package:>=1.2 <2.0"',
+  "composer require 'vendor/package:^2.0 || ^3.0'": 'composer --% require "vendor/package:^2.0 || ^3.0"',
+};
+
 const inEveryShell = (argv: readonly string[]): Record<Shell, string | null> =>
   Object.fromEntries(SHELLS.map((shell) => [shell, commandLine(argv, shell)])) as Record<
     Shell,
@@ -29,19 +55,38 @@ const refused = { posix: null, cmd: null, powershell: null };
 
 describe("an argv in each shell", () => {
   test.each(rows)("$posix", ({ argv, posix, cmd, powershell }) => {
-    expect(inEveryShell(argv)).toEqual(REFUSED_BY_THE_RULE.has(posix) ? refused : { posix, cmd, powershell });
+    expect(inEveryShell(argv)).toEqual(
+      REFUSED_BY_THE_RULE.has(posix)
+        ? refused
+        : { posix, cmd, powershell: POWERSHELL_BY_THE_NEW_RULE[posix] ?? powershell },
+    );
   });
 
-  test("every row the rule refuses is still in the golden", () => {
-    expect(rows.filter((row) => REFUSED_BY_THE_RULE.has(row.posix))).toHaveLength(REFUSED_BY_THE_RULE.size);
+  test("every row the new rules change is still in the golden", () => {
+    const changed = [...REFUSED_BY_THE_RULE, ...Object.keys(POWERSHELL_BY_THE_NEW_RULE)];
+
+    expect(rows.filter((row) => changed.includes(row.posix))).toHaveLength(changed.length);
   });
 
-  test("PowerShell quotes @, + and = and a comma, which POSIX leaves bare", () => {
-    expect(inEveryShell(["composer", "require", "a/b:1.0,@dev", "x+y=z"])).toEqual({
-      posix: "composer require a/b:1.0,@dev x+y=z",
-      cmd: "composer require a/b:1.0,@dev x+y=z",
-      powershell: "composer require 'a/b:1.0,@dev' 'x+y=z'",
+  test("PowerShell keeps the bare form only when every argument is inside its bare set", () => {
+    expect(commandLine(["composer", "update", "symfony/yaml"], "powershell")).toBe(
+      "composer update symfony/yaml",
+    );
+    expect(commandLine(["composer", "require", "a/b:1.0,@dev", "x+y=z"], "powershell")).toBe(
+      "composer --% require a/b:1.0,@dev x+y=z",
+    );
+  });
+
+  test("PowerShell never single-quotes, and cmd.exe double-quotes a pipe after --%", () => {
+    expect(inEveryShell(["composer", "require", "a/b|calc"])).toEqual({
+      posix: "composer require 'a/b|calc'",
+      cmd: 'composer require "a/b|calc"',
+      powershell: 'composer --% require "a/b|calc"',
     });
+  });
+
+  test("POSIX single-quotes an argument that starts with =, which zsh would expand", () => {
+    expect(commandLine(["composer", "require", "=ls"], "posix")).toBe("composer require '=ls'");
   });
 
   test("cmd.exe double-quotes a space, a caret, a pipe and the angle brackets", () => {
@@ -80,9 +125,9 @@ describe("the command argument rule (SPEC §5.6)", () => {
     expect(isPrintableArgv(["composer", "require", "php:>=8.1", "--no-update"])).toBe(true);
   });
 
-  test("allows @name and a,b, which PowerShell single-quotes", () => {
-    expect(commandLine(["composer", "require", "@name", "a,b"], "powershell")).toBe(
-      "composer require '@name' 'a,b'",
+  test("allows @name, a,b and a/b|c, which PowerShell writes after --%", () => {
+    expect(commandLine(["composer", "require", "@name", "a,b", "a/b|c"], "powershell")).toBe(
+      'composer --% require @name a,b "a/b|c"',
     );
   });
 

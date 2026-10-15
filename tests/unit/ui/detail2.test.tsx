@@ -211,7 +211,7 @@ describe("the copy control of design 5C", () => {
 
     const sheet = openCase("B");
 
-    expect(commandText(sheet)).toEqual(["composer require 'symfony/monolog-bridge:^5.4.52'"]);
+    expect(commandText(sheet)).toEqual(['composer --% require "symfony/monolog-bridge:^5.4.52"']);
     expect(within(sheet).getByRole("button", { name: "Shell: PowerShell" })).toBeTruthy();
   });
 
