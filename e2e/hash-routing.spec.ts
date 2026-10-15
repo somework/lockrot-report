@@ -16,19 +16,20 @@ test.describe("PD-ROWS-9: only the reader or the address opens a package", () =>
     expect(await report.hash()).toBe("");
   });
 
-  test("a deep link still opens its package on load, and keeps it in the address", async () => {
+  test("a deep link still opens its package on load, on Findings, and keeps it in the address", async () => {
     await report.gotoReport2WithHash("composite", "pkg=symfony%2Fyaml");
     expect((await report.detail()).name).toBe("symfony/yaml");
-    expect(await report.hash()).toBe("#pkg=symfony%2Fyaml");
+    expect(await report.activeTab()).toBe("findings");
+    expect(await report.hash()).toBe("#view=findings&pkg=symfony%2Fyaml");
   });
 
   test("opening a package writes it to the address, and closing it takes it out again", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openPackage("symfony/yaml");
     // Polled: the address is written after the render that opens the panel, not in the same tick.
     await expect.poll(() => report.hash()).toContain("pkg=symfony%2Fyaml");
     await report.closeDetail();
-    await expect.poll(() => report.hash()).toBe("");
+    await expect.poll(() => report.hash()).toBe("#view=findings");
   });
 });
 
@@ -37,6 +38,7 @@ test.describe("M12: a malformed %-escape must not blank the whole page", () => {
     // M12 (DESIGN.md §5), fixed on purpose: readHash() used to let decodeURIComponent throw
     // unguarded, before anything else rendered, leaving tabs and rows all empty.
     await report.gotoReport2WithHash("composite", "q=%E0%A4%A");
+    expect(await report.activeTab()).toBe("findings");
     expect(await report.rows()).toHaveLength(7);
   });
 });
@@ -46,7 +48,7 @@ test.describe("M13: an unknown pkg= on a narrow screen must not strand a scroll 
 
   test("positive control: opening a real package on this viewport does lock scroll", async () => {
     // Proves isScrollLocked() actually detects the lock the M13 test below relies on being absent.
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openPackage("symfony/yaml");
     expect((await report.detail()).open).toBe(true);
     expect(await report.isScrollLocked()).toBe(true);
@@ -69,7 +71,7 @@ test.describe("M13: an unknown pkg= on a narrow screen must not strand a scroll 
 test.describe("hashchange: a link pasted into an open page", () => {
   test("a pasted link applies live", async () => {
     // Fixed on purpose (DESIGN.md §5): the page used to register no hashchange listener at all.
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     expect(await report.rows()).toHaveLength(7);
     await report.setLocationHash("q=cssmin");
     expect(await report.rows()).toEqual(["tubalmartin/cssmin"]);
@@ -110,12 +112,12 @@ test.describe("on a report-2 page", () => {
   test("an old prio= fragment opens verdict=", async () => {
     await report.gotoReport2WithHash("composite", "prio=low");
     expect(await report.rows()).toEqual(["symfony/yaml", "symfony/polyfill-intl-idn"]);
-    expect(await report.hash()).toBe("#verdict=low");
+    expect(await report.hash()).toBe("#view=findings&verdict=low");
   });
 
   test("an old verdict=<flag> fragment opens flag=", async () => {
     await report.gotoReport2WithHash("composite", "verdict=left-behind");
     expect(await report.rows()).toEqual(["symfony/monolog-bridge"]);
-    expect(await report.hash()).toBe("#flag=left-behind");
+    expect(await report.hash()).toBe("#view=findings&flag=left-behind");
   });
 });

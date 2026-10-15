@@ -26,7 +26,7 @@ test.describe("report-2: the Findings row leads with the score, then the pills, 
   test("composite: symfony/monolog-bridge draws its score, its three pills, its age scale, its reach and its move", async ({
     page,
   }) => {
-    await page.goto(report2Url("composite"));
+    await page.goto(report2Url("composite") + "#view=findings");
 
     expect(await findingsRowCells(page, "symfony/monolog-bridge")).toEqual([
       "36",
@@ -44,7 +44,7 @@ test.describe("report-2: the Findings row leads with the score, then the pills, 
   test("composite: a row whose age no check judged draws no scale, and a held move says so", async ({
     page,
   }) => {
-    await page.goto(report2Url("composite"));
+    await page.goto(report2Url("composite") + "#view=findings");
 
     expect(await rowAge(page, "twig/twig")).toBeNull();
     expect(await findingsRowCell(page, "twig/twig", "next")).toBe("php floor raise · held");
@@ -54,7 +54,7 @@ test.describe("report-2: the Findings row leads with the score, then the pills, 
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(report2Url("composite"));
+    await page.goto(report2Url("composite") + "#view=findings");
 
     // SPEC §7.9.5: ticks at 8, 16 and 32, none at low's floor 1.
     expect(await findingsHeadCaptions(page)).toEqual({
@@ -67,7 +67,7 @@ test.describe("report-2: the Findings row leads with the score, then the pills, 
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(report2Url("composite"));
+    await page.goto(report2Url("composite") + "#view=findings");
 
     const [width] = await scoreSegmentWidths(page, "symfony/yaml");
     expect(width).toBeGreaterThanOrEqual(4);
@@ -77,7 +77,7 @@ test.describe("report-2: the Findings row leads with the score, then the pills, 
 
 test.describe("report-2: the age scale and axis", () => {
   test("a tab that draws no age draws no age axis", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     expect(await report.ageAxisText()).toBe("Years since release 0 3y 5y 10y+");
 
     await report.tab("run");
@@ -86,7 +86,7 @@ test.describe("report-2: the age scale and axis", () => {
   });
 
   test("the axis names the run's own thresholds to a screen reader", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
 
     expect(await report.ageAxisAccessibleName()).toBe(
       "age axis: years since the last release, 0 to 10 and more; warn at 3 years, high at 5 years",
@@ -94,7 +94,7 @@ test.describe("report-2: the age scale and axis", () => {
   });
 
   test("a bar that crosses a guide does not erase it, in the default colour scheme too", async () => {
-    await report.gotoReport2("baselined-wallabag-2.6");
+    await report.gotoReport2WithHash("baselined-wallabag-2.6", "view=findings");
 
     expect(await report.ageScaleWarnTickSurvivesDot("symfony/http-foundation")).toBe(true);
     expect(await report.ageScaleHighTickSurvivesDot("symfony/http-foundation")).toBe(true);
@@ -106,7 +106,7 @@ test.describe("report-2: no serious axe violation on the Findings tab", () => {
     for (const colorScheme of ["light", "dark"] as const) {
       test(`${name}, ${colorScheme}`, async ({ page }) => {
         await page.emulateMedia({ colorScheme });
-        await page.goto(report2Url(name));
+        await page.goto(report2Url(name) + "#view=findings");
         await expect(findingsSurface(page).locator(".fp").first()).toBeVisible();
 
         const results = await new AxeBuilder({ page }).include('[data-surface="findings"]').analyze();

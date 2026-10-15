@@ -49,7 +49,7 @@ for (const { label, width, height } of BREAKPOINTS) {
 
     test("wheel over the list scrolls the page normally, with no detail open", async ({ page }) => {
       const report = await createReportPage(page);
-      await report.gotoReport2(LONG_CASE);
+      await report.gotoReport2WithHash(LONG_CASE, "view=findings");
       // Nothing opens by itself at any width (PD-ROWS-9), so the list is all there is on load.
       expect((await report.detail()).open).toBe(false);
 

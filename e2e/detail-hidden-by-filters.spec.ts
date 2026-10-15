@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("on a report-2 page", () => {
   test("shows the hidden line, and its control clears the filters and moves focus to Close", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openPackage("twig/twig");
     expect((await report.detail()).text).not.toContain("Hidden by the current filters");
 
@@ -30,7 +30,7 @@ test.describe("on a report-2 page", () => {
   });
 
   test("shows the line when a rail filter hides the open package", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openPackage("twig/twig");
     await report.toggleRailRow("stale");
 

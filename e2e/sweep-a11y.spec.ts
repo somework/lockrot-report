@@ -40,7 +40,14 @@ test.describe("report-2: the sweep over every tab", () => {
   test("each tab's name is 'label count'", async ({ page }) => {
     await page.goto(report2Url(CASE));
     // composite: 7 graded findings, 20 counted advisories, 7 packages, 1 exposure row.
-    for (const name of ["Findings 7", "Advisories 20", "All packages 7", "Blast radius 1", "Run data"]) {
+    for (const name of [
+      "Overview",
+      "Findings 7",
+      "Advisories 20",
+      "All packages 7",
+      "Blast radius 1",
+      "Run data",
+    ]) {
       await expect(page.getByRole("tab", { name, exact: true })).toBeVisible();
     }
   });
@@ -49,11 +56,17 @@ test.describe("report-2: the sweep over every tab", () => {
     await page.goto(report2Url(CASE));
     const band = page.locator('[data-surface="overview"]');
     await expect(
-      band.getByRole("group", { name: "Grade" }).getByRole("button", { name: /^high 2$/ }),
+      band.getByRole("group", { name: "Grade" }).getByRole("link", { name: /^high 2$/ }),
     ).toBeVisible();
-    await band.locator("details.ledger-fold > summary").click();
     await expect(
-      band.getByRole("group", { name: "Advisories by severity" }).getByRole("button", { name: /^high 4$/ }),
+      band.getByRole("group", { name: "Advisories by severity" }).getByRole("link", { name: /^high 4$/ }),
+    ).toBeVisible();
+    await page.getByRole("tab", { name: /^Findings/ }).click();
+    await expect(
+      page
+        .locator(".f2-strip")
+        .getByRole("group", { name: "Grade" })
+        .getByRole("button", { name: /^high 2$/ }),
     ).toBeVisible();
     await page.getByRole("tab", { name: /^Advisories/ }).click();
     await expect(
@@ -68,13 +81,15 @@ test.describe("report-2: the sweep over every tab", () => {
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(report2Url(CASE));
+    await page.goto(report2Url(CASE) + "#view=findings");
     const rail = page.getByRole("group", { name: "Filters" });
     await expect(rail.getByRole("group", { name: "Grade" }).getByRole("button")).toHaveText([
       /^\s*critical 3$/,
       /^\s*high 2$/,
       /^\s*low 2$/,
     ]);
+    await expect(page.getByRole("region", { name: "Overview" })).toHaveCount(0);
+    await page.getByRole("tab", { name: "Overview" }).click();
     await expect(
       page.getByRole("region", { name: "Overview" }).getByRole("group", { name: "Grade" }),
     ).toHaveCount(1);
@@ -92,12 +107,10 @@ test.describe("report-2: the sweep over every tab", () => {
     await expect(sorted.getByRole("button")).toContainText("↑");
   });
 
-  for (const view of ["findings", "advisories", "packages", "radius", "run"] as const) {
+  for (const view of ["overview", "findings", "advisories", "packages", "radius", "run"] as const) {
     test(`axe finds no violation on ${view}`, async ({ page }) => {
       await page.goto(`${report2Url(CASE)}#view=${view}`);
       await expect(page.locator(`[data-surface="${view}"]`)).toBeVisible();
-      if (view === "findings")
-        await page.locator('[data-surface="overview"] details.ledger-fold > summary').click();
       const results = await new AxeBuilder({ page }).include(`[data-surface="${view}"]`).analyze();
       expect(
         results.violations.flatMap((v) => v.nodes.map((node) => `${v.id}: ${node.target.join(" ")}`)),

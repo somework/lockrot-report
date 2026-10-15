@@ -225,11 +225,25 @@ test.describe("report-2: the printed report reads the report-2 model", () => {
     );
   });
 
+  test("printed from Overview, the summary prints once and its score strip as text", async ({ page }) => {
+    await page.goto(report2Url("composite"));
+    await page.emulateMedia({ media: "print" });
+    await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
+
+    await expect(page.locator('[data-surface="overview"]').filter({ visible: true })).toHaveCount(1);
+    await expect(page.locator(".pd .ss-plot")).toHaveCount(0);
+    await expect(page.locator(".pd .ov-scores .ledger-note")).toHaveText(
+      "score 36: 2 critical · score 32: 1 critical · score 18: 2 high · score 2: 2 low",
+    );
+    await expect(page.locator(".pd .f2-strip")).toHaveCount(0);
+  });
+
   test("the bar keeps its colours and prints the number of a segment of 6 blocks or more", async ({
     page,
   }) => {
     await page.goto(report2Url("composite"));
     await page.emulateMedia({ media: "print" });
+    await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
     const row = page.locator(`.pd [data-surface="findings"] li[data-pkg="${MONOLOG}"]`);
     const adjust = await row
       .locator(".sbar-seg")
@@ -265,7 +279,7 @@ test.describe("report-2: the printed report reads the report-2 model", () => {
       page,
     }) => {
       await page.emulateMedia({ colorScheme });
-      await page.goto(report2Url("composite"));
+      await page.goto(report2Url("composite") + "#view=findings");
       const seg = page.locator(
         `[data-surface="findings"] li[data-pkg="${MONOLOG}"] .sbar-seg.is-corroborating`,
       );
@@ -289,7 +303,7 @@ test.describe("report-2: the printed report reads the report-2 model", () => {
   test("the tone tokens differ between the themes", async ({ page }) => {
     const toneIn = async (colorScheme: "light" | "dark") => {
       await page.emulateMedia({ colorScheme });
-      await page.goto(report2Url("composite"));
+      await page.goto(report2Url("composite") + "#view=findings");
       return page
         .locator(`[data-surface="findings"] li[data-pkg="${MONOLOG}"] .sbar-seg.is-lead`)
         .evaluate((el) => getComputedStyle(el).backgroundColor);

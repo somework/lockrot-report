@@ -11,7 +11,7 @@ test.describe("report-2: a package name of CSS-selector metacharacters", () => {
   test("lists, opens and walks by j/k without throwing", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(String(error)));
-    await page.goto(pageUrl(FIXTURES.metacharReport2));
+    await page.goto(pageUrl(FIXTURES.metacharReport2) + "#view=findings");
     expect(await rows(page)).toContain(METACHAR_NAME);
 
     const row = page

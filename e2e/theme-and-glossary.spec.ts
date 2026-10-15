@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("theme toggle and persistence", () => {
   test("toggling flips the effective theme and writes localStorage['lockrot-theme']", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     const before = await report.theme();
     await report.toggleTheme();
     const after = await report.theme();
@@ -18,7 +18,7 @@ test.describe("theme toggle and persistence", () => {
   });
 
   test("persists across a reload", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.toggleTheme();
     const chosen = await report.theme();
     await report.reload();
@@ -32,7 +32,7 @@ test.describe("M11: the theme button must reflect the effective theme, not just 
   test("the first click under an OS dark preference actually switches to light", async () => {
     // M11 (DESIGN.md §5), fixed on purpose: the template shipped no data-theme attribute, so the
     // first click computed "next" off that absent attribute and set it explicitly, visually a no-op.
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     expect(await report.theme()).toBe("dark"); // OS preference, no stored/explicit theme yet
     await report.toggleTheme();
     expect(await report.theme()).toBe("light");
@@ -41,7 +41,7 @@ test.describe("M11: the theme button must reflect the effective theme, not just 
 
 test.describe("glossary", () => {
   test("opens via its button, shows the verdict reference, and closes via its own button", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     expect(await report.isGlossaryOpen()).toBe(false);
     await report.openGlossary();
     expect(await report.isGlossaryOpen()).toBe(true);
@@ -56,7 +56,7 @@ test.describe("M2: S10 belongs in the glossary like every other signal", () => {
   test("the glossary lists S10 (the vocabulary is a fixed constant, independent of the case)", async () => {
     // M2 (DESIGN.md §5), fixed on purpose: the glossary used to define S1..S9 only. S10 sits inside
     // "The signals", a collapsed <details>: textContent reads a closed <details> as an open one.
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openGlossary();
     expect(await report.glossaryText()).toContain("S10");
   });
@@ -64,7 +64,7 @@ test.describe("M2: S10 belongs in the glossary like every other signal", () => {
 
 test.describe("PD-GLOSSARY-9/10: how to accept a package yourself, in its own fold", () => {
   test("names extra.lockrot.ignore and composer.json", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openGlossary();
     const dialog = page.getByRole("dialog", { name: /what these words mean/i });
 
@@ -85,7 +85,7 @@ test.describe("PD-GLOSSARY-1: the search hint", () => {
     // Scoped to `.hint` itself: the glossary's own "Keys and search" section carries the address-bar
     // note and the key list verbatim, so a page-wide text search would find a match there even with
     // the glossary closed (a <dialog> without `open` stays in the DOM).
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     const hint = page.locator(".hint");
     await expect(hint).toHaveText(/press \? for keys and search syntax/i);
     await expect(hint).not.toContainText("address bar is a link");
@@ -111,14 +111,14 @@ test.describe("M28: the glossary must stay reachable when showModal() is not all
   test("the fallback glossary is still reachable and stays in view", async () => {
     // M28 (DESIGN.md §5), fixed on purpose: the fallback set a plain open attribute with no
     // positioning of its own, so the UA default rendered it in normal flow after the footer.
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openGlossary();
     expect(await report.isGlossaryOpen()).toBe(true);
     expect(await report.glossaryPosition()).toBe("fixed");
   });
 
   test("it can still be closed the same way, whichever mode it opened in", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openGlossary();
     await report.pressEscape();
     expect(await report.isGlossaryOpen()).toBe(false);
@@ -127,7 +127,7 @@ test.describe("M28: the glossary must stay reachable when showModal() is not all
 
 test.describe("report-2: the theme and the glossary", () => {
   test("the theme toggle flips and persists on a report-2 page", async () => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     const before = await report.theme();
     await report.toggleTheme();
     const after = await report.theme();
@@ -139,7 +139,7 @@ test.describe("report-2: the theme and the glossary", () => {
   test("opens with the seven verdicts in view and the seven flags open, the rest folded", async ({
     page,
   }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openGlossary();
     const dialog = page.getByRole("dialog", { name: /what these words mean/i });
     await expect(dialog.getByRole("heading", { name: "The seven verdicts" })).toBeVisible();
@@ -172,7 +172,7 @@ test.describe("report-2: the theme and the glossary", () => {
   test("a grade's words take its floor from the model and the flags this run's thresholds", async ({
     page,
   }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openGlossary();
     const dialog = page.getByRole("dialog", { name: /what these words mean/i });
     await expect(dialog.locator('dt[data-term="critical"] + dd')).toHaveText(
@@ -182,7 +182,7 @@ test.describe("report-2: the theme and the glossary", () => {
   });
 
   test("links the verdicts' anchor on lockrot.dev, and S9 says it raises vulnerable", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openGlossary();
     const dialog = page.getByRole("dialog", { name: /what these words mean/i });
     await expect(dialog.getByRole("link", { name: /The verdicts on lockrot.dev/ })).toHaveAttribute(
@@ -196,7 +196,7 @@ test.describe("report-2: the theme and the glossary", () => {
   });
 
   test("'How the score works' closes the glossary on the Run tab's section", async ({ page }) => {
-    await report.gotoReport2("composite");
+    await report.gotoReport2WithHash("composite", "view=findings");
     await report.openGlossary();
     await page
       .getByRole("dialog", { name: /what these words mean/i })
