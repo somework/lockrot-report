@@ -1,12 +1,6 @@
 {
   "checks": {
-    "lockrot's recording and the model's input differ in abandoned_ignored": [
-      "ignored-marking-archived-dagger",
-      "ignored-marking-only-dagger",
-      "ignored-marking-partial-dagger",
-      "ignored-marking-stale-dagger"
-    ],
-    "lockrot's recording and the model's input differ in abandoned_ignored, checks_missing, checks_skipped, the fired signals": [
+    "lockrot's recording and the model's input differ in checks_missing, checks_skipped, the fired signals": [
       "ignored-marking-unchecked-dagger"
     ],
     "lockrot's recording and the model's input differ in checks_missing, the fired signals": [
@@ -194,7 +188,7 @@
     "lockrot's recording and the model's input differ: checks_skipped is repository_activity (fetch_failed); the model's is repository_archived (no_token)": [
       "gitlab-anon-dagger"
     ],
-    "lockrot's recording and the model's input differ: abandoned_ignored is null: the case lock carries no ignored marking; the model's finding has one; checks_skipped is no_repository where the model's checks_missing is rate_limit": [
+    "lockrot's recording and the model's input differ: checks_skipped is no_repository where the model's checks_missing is rate_limit": [
       "ignored-marking-unchecked-dagger"
     ],
     "lockrot's recording and the model's input differ: named_in is empty; the model's is [require-dev]": [
@@ -254,13 +248,7 @@
     "lockrot's recording and the model's input differ: checks_skipped is repository_activity (fetch_failed); the model's is repository_archived (no_token); lockrot's counterfactual without abandoned reveals stale, the model's reveals silent": [
       "gitlab-anon-dagger"
     ],
-    "lockrot's recording and the model's input differ: abandoned_ignored is null: the case lock carries no ignored marking; the model's finding has one": [
-      "ignored-marking-archived-dagger",
-      "ignored-marking-only-dagger",
-      "ignored-marking-partial-dagger",
-      "ignored-marking-stale-dagger"
-    ],
-    "lockrot's recording and the model's input differ: abandoned_ignored is null: the case lock carries no ignored marking; the model's finding has one; checks_skipped is no_repository where the model's checks_missing is rate_limit": [
+    "lockrot's recording and the model's input differ: checks_skipped is no_repository where the model's checks_missing is rate_limit": [
       "ignored-marking-unchecked-dagger"
     ]
   }
