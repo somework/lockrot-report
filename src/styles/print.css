@@ -76,6 +76,13 @@
     --low-soft: #dfe9ee;
     --none: #366b4b;
     --none-soft: #dcebe1;
+    --flag-abandoned: #2a78d6;
+    --flag-silent: #eb6834;
+    --flag-pinned: #1baf7a;
+    --flag-left-behind: #eda100;
+    --flag-old-promise: #e87ba4;
+    --flag-stale: #008300;
+    --flag-vulnerable: #6250d6;
     --shadow: none;
     --gutter: 0px;
     color-scheme: light;
@@ -167,7 +174,7 @@
    * advisory square, the libyears bar, a chip's swatch), a Packages/Radius row's own verdict or
    * priority pill (styles/base.css `.pill`), and the tone-coloured text a Findings priority-group
    * heading and the band's clean-report line paint with the same `--tone` custom property
-   * (`.fgroup-head h2`, `.lead-clean`). Chromium's print default drops background colour — and, per the same
+   * (`.fgroup-head h2`, `.ov-grade`). Chromium's print default drops background colour — and, per the same
    * "Background graphics" setting, any colour it treats as decorative — unless the rule opts out;
    * `ledger-rows.css`'s verdict word, age bars and guides already carry this for PD-ROWS-4, and
    * this gathers the rest of the page's tone-bearing elements here, in the one file print decisions
@@ -181,7 +188,7 @@
   .pill,
   .fgroup-head h2,
   .lead-chips .count,
-  .lead-clean {
+  .ov-grade {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }

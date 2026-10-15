@@ -8,11 +8,10 @@ import { advisoryListPartial, fixCounts, noAdvisoryWords, PARTIAL_HEDGE, scopeCl
 import { isAre, namesCapped } from "./findingWords";
 import { plural, pluralNoun } from "./format";
 import { flagPoints, pointsText } from "./projectGrade";
-import { sharePhrase } from "./summary";
 
 export const OVERVIEW_WORDS = {
   band: "Overview",
-  flagged: "Flagged packages",
+  emptyLock: "No packages in this lock",
   grades: "Grade",
   perPackage: "One square per package",
   flags: "Flags",
@@ -25,24 +24,7 @@ export const OVERVIEW_WORDS = {
   libyears: "Libyears",
 } as const;
 
-export type Lead =
-  | { kind: "empty"; text: string }
-  | { kind: "clean"; text: string }
-  | { kind: "flagged"; figure: string; of: string; flagged: string; share: string };
-
 const packages = (n: number): string => plural(n, "package", "packages");
-
-export function leadFigure({ packages_checked: checked, packages_flagged: flagged }: Report2): Lead {
-  if (checked === 0) return { kind: "empty", text: "No packages in this lock" };
-  if (flagged === 0) return { kind: "clean", text: `Nothing flagged in ${packages(checked)}` };
-  return {
-    kind: "flagged",
-    figure: String(flagged),
-    of: `of ${packages(checked)}`,
-    flagged: "flagged",
-    share: `· ${sharePhrase(flagged, checked)} of the lock`,
-  };
-}
 
 export const leadScope = (report: Report2): string[] => scopeClauses(report);
 

@@ -224,7 +224,7 @@ describe("the grade line", () => {
     const line = gradeLine(golden("composite"));
 
     expect(line?.grade).toBe("critical");
-    expect(line === null ? null : linkHref(line.link)).toBe("#view=findings&verdict=critical");
+    expect(line?.link == null ? null : linkHref(line.link)).toBe("#view=findings&verdict=critical");
   });
 
   test("has no grade and no link when nothing is graded", () => {

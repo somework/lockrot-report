@@ -1,25 +1,19 @@
 /**
- * The Overview tab's charts of a report-2 (PD-OVERVIEW-3 to PD-OVERVIEW-6) and the Findings strip
+ * The Overview tab's charts of a report-2 (PD-OVERVIEW-3, PD-OVERVIEW-5, PD-OVERVIEW-6) and the Findings strip
  * (PD-SUMMARY-16), as words, places and links, from published fields only. The page counts, sorts,
  * slices and lays out; every score, band and grade is lockrot's.
  */
 
-import type { Finding, Grade, Report2 } from "../model/report";
-import { isScoreGraded } from "../model/report";
+import type { Report2 } from "../model/report";
 import type { Filters, LinkTarget } from "../state/types";
 import { decimal, pluralNoun } from "./format";
-import { gradeListLabel } from "./findingRow";
-import { population2 } from "./list";
-import { gradeMix, RADIUS_WORDS } from "./radius2";
-import { bandTicks } from "./scoreBar";
+import { RADIUS_WORDS } from "./radius2";
 
 /** How many rows the exposure bars and the libyears table show before "more". */
 export const EXPOSURE_SHOWN = 8;
 export const LIBYEARS_SHOWN = 8;
 
 export const OVERVIEW_TAB_WORDS = {
-  scores: "Scores",
-  scoresNote: "one mark per finding on the score model's ruler",
   exposure: "Blast radius",
   exposureNote: "flagged packages each direct requirement pulls in",
   libyearsTop: `Furthest behind, top ${LIBYEARS_SHOWN}`,
@@ -31,74 +25,6 @@ export const OVERVIEW_TAB_WORDS = {
 
 /** A link to one tab, filtered by the existing fragment keys. */
 export const findingsLink = (filters: Partial<Filters>): LinkTarget => ({ view: "findings", filters });
-
-export interface ScoreZone {
-  verdict: Grade;
-  /** Its start and end as shares of the ruler. */
-  from: number;
-  to: number;
-  /** Its link's name, and the Findings under its grade it opens: the strip's only targets. */
-  say: string;
-  link: LinkTarget;
-}
-
-export interface ScoreStack {
-  total: number;
-  /** Its place as a share of the ruler, clipped at `bar_max`. */
-  at: number;
-  marks: { package: string; verdict: string }[];
-  /** The stack's text equivalent: the drawing itself is `aria-hidden`. */
-  say: string;
-}
-
-export interface ScoreStrip {
-  zones: ScoreZone[];
-  /** The ruler's labels: 0, the band floors on it, `bar_max`. */
-  labels: { value: number; at: number }[];
-  stacks: ScoreStack[];
-}
-
-const gradedScore = (f: Finding): number | null => (isScoreGraded(f.score) ? f.score.total : null);
-
-/**
- * One mark per graded finding at `score.total ÷ bar_max` over the `score_model.bands` ruler. Equal
- * totals stack, highest total first; a stack's marks keep the Findings order.
- */
-export function scoreStrip(report: Report2): ScoreStrip {
-  const { run } = report;
-  const max = run.score_model.bar_max;
-  const floors = [...run.score_model.bands].sort((a, b) => a.floor - b.floor);
-  const zones = floors
-    .filter(({ floor }) => floor < max)
-    .map(({ verdict, floor }, i) => ({
-      verdict,
-      from: floor / max,
-      to: Math.min(floors[i + 1]?.floor ?? max, max) / max,
-      say: gradeListLabel(verdict),
-      link: findingsLink({ verdict: [verdict] }),
-    }));
-  const labels = [0, ...bandTicks(run).map(({ floor }) => floor), max].map((value) => ({
-    value,
-    at: value / max,
-  }));
-
-  const byTotal = new Map<number, Finding[]>();
-  for (const finding of [...population2(report, "findings")].sort((a, b) => a.rank - b.rank)) {
-    const total = gradedScore(finding);
-    if (total === null) continue;
-    byTotal.set(total, [...(byTotal.get(total) ?? []), finding]);
-  }
-  const stacks = [...byTotal.entries()]
-    .sort(([a], [b]) => b - a)
-    .map(([total, findings]) => ({
-      total,
-      at: Math.min(total, max) / max,
-      marks: findings.map((f) => ({ package: f.package, verdict: f.verdict })),
-      say: `score ${total}: ${gradeMix(report, findings)}`,
-    }));
-
-  return { zones, labels, stacks };
-}
 
 export interface ExposureBars {
   rows: { package: string; flagged: number }[];

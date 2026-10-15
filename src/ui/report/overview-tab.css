@@ -23,7 +23,7 @@
     grid-template-areas:
       "lead lead"
       "flags security"
-      "score score"
+      "weighs weighs"
       "expo libyears";
   }
   .ov-security,
@@ -42,11 +42,11 @@
     grid-template-areas:
       "lead lead lead"
       "flags security libyears"
-      "score score expo";
+      "weighs weighs expo";
   }
   .ov-flags,
   .ov-security,
-  .ov-score {
+  .ov-weighs {
     padding-right: 28px;
   }
   .ov-security,
@@ -66,8 +66,8 @@
   .ov-security {
     grid-area: security;
   }
-  .ov-score {
-    grid-area: score;
+  .ov-weighs {
+    grid-area: weighs;
   }
   .ov-expo {
     grid-area: expo;
@@ -87,94 +87,142 @@ a.legend-btn,
   text-underline-offset: 3px;
 }
 
-/* ---------- the score strip (PD-OVERVIEW-4) ----------
-   A stack is a column of 4px marks over its total's place on the ruler, a drawing only. It fills
-   bottom up, in columns of at most 17 marks: the grid flips upside down. The ruler's band zones are
-   the strip's links, 24px tall, so each target meets WCAG 2.5.8. */
-.ss-plot {
-  position: relative;
-  height: 86px;
+/* ---------- "Weighs most" (PD-OVERVIEW-4) ----------
+   Ranked bars by term: every bar shares one track `bar_max` wide, and each segment takes its flag's
+   fill (tokens.css `--flag-*`). The label sits beside the bar from 760px and above it under that. */
+.wm-load {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
 }
-.ss-stack {
-  position: absolute;
-  bottom: 0;
+.wm-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.wm-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.wm-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wm-row {
   display: grid;
-  grid-template-rows: repeat(17, 4px);
-  grid-auto-flow: column;
-  grid-auto-columns: 4px;
-  gap: 1px;
-  transform: translateX(-50%) scaleY(-1);
+  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-areas:
+    "label total"
+    "bar bar"
+    "text text";
+  column-gap: 12px;
+  row-gap: 4px;
+  align-items: center;
+  padding: 7px 0;
+  border-top: 1px solid var(--border);
 }
-.ss-mark {
-  width: 4px;
-  height: 4px;
-  border-radius: 1px;
-  background: var(--tone);
-  print-color-adjust: exact;
+.wm-row:first-child {
+  border-top: 0;
 }
-.ss-guide {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  border-left: 1px dashed var(--border-strong);
+@media (min-width: 760px) {
+  .wm-row {
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) 3ch;
+    grid-template-areas:
+      "label bar total"
+      ". text text";
+  }
 }
-/* 24px inside its 1px top rule: each zone is a full 24px target. */
-.ss-rule {
-  position: relative;
-  height: 25px;
-  border-top: 1px solid var(--border-strong);
+.wm-label {
+  grid-area: label;
+  min-width: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
 }
-.ss-zone-slot {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  min-width: 24px;
-}
-.ss-zone {
-  display: block;
-  height: 100%;
-  overflow: hidden;
-  padding-left: 4px;
-  border-right: 1px solid var(--surface);
-  background: var(--tone-soft);
-  color: var(--tone);
-  font: 600 10.5px/24px var(--sans);
-  letter-spacing: 0.06em;
-  text-decoration: none;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: background-color 0.12s ease;
-}
-.ss-zone:hover {
-  background: color-mix(in srgb, var(--tone) 22%, var(--tone-soft));
-}
-.ss-zone:focus-visible {
-  position: relative;
-  z-index: 1;
-  outline-offset: -2px;
-}
-.ss-axis {
-  position: relative;
-  height: 16px;
-  font: 11px var(--mono);
+.wm-reach {
+  font-size: 12px;
   color: var(--muted);
 }
-.ss-axis > span {
+.wm-total {
+  grid-area: total;
+  font: 600 13px var(--mono);
+  text-align: right;
+}
+.wm-text {
+  grid-area: text;
+  min-width: 0;
+  font: 11.5px/1.4 var(--mono);
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.wm-bar {
+  --wm-seg-min: 4px;
+  grid-area: bar;
+  position: relative;
+  display: flex;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--surface-2);
+}
+.wm-seg,
+.wm-swatch {
+  background: var(--flag, var(--ink-2));
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.wm-seg {
+  position: relative;
+  flex: none;
+  height: 100%;
+  border-right: 2px solid var(--surface);
+}
+.wm-seg:last-child {
+  border-right: 0;
+}
+.wm-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+.wm [data-flag="abandoned"] {
+  --flag: var(--flag-abandoned);
+}
+.wm [data-flag="silent"] {
+  --flag: var(--flag-silent);
+}
+.wm [data-flag="pinned"] {
+  --flag: var(--flag-pinned);
+}
+.wm [data-flag="left-behind"] {
+  --flag: var(--flag-left-behind);
+}
+.wm [data-flag="old-promise"] {
+  --flag: var(--flag-old-promise);
+}
+.wm [data-flag="stale"] {
+  --flag: var(--flag-stale);
+}
+.wm [data-flag="vulnerable"] {
+  --flag: var(--flag-vulnerable);
+}
+/* A score past `bar_max` is cut at the track's end, as the Findings bar is. */
+.wm-seg.is-cut::after {
+  content: "";
   position: absolute;
-  transform: translateX(-50%);
-}
-.ss-axis > span:first-child {
-  transform: none;
-}
-.ss-axis > span:last-child {
-  transform: translateX(-100%);
-}
-@media (max-width: 759px) {
-  .ss-zone {
-    font-size: 9.5px;
-    letter-spacing: 0;
-    padding-left: 2px;
-  }
+  right: 5px;
+  top: -2px;
+  bottom: -2px;
+  width: 3px;
+  background: var(--surface);
+  transform: skewX(-24deg);
 }
 
 /* ---------- the exposure bars (PD-OVERVIEW-5) ---------- */
@@ -270,13 +318,52 @@ a.legend-btn,
 }
 
 @media (forced-colors: active) {
-  .ss-mark,
   .ov-ex-fill {
     forced-color-adjust: none;
     background: CanvasText;
   }
-  .ss-zone {
+  /* Colour is gone, so each flag keeps its own pattern, the legend's key to the bars. */
+  .wm-bar {
+    forced-color-adjust: none;
+    background: Canvas;
     border: 1px solid CanvasText;
-    color: LinkText;
+  }
+  .wm-seg,
+  .wm-swatch {
+    forced-color-adjust: none;
+    border: 1px solid CanvasText;
+    background: var(--flag-pattern, Canvas);
+  }
+  [data-flag="abandoned"] {
+    --flag-pattern: CanvasText;
+  }
+  [data-flag="silent"] {
+    --flag-pattern: repeating-linear-gradient(0deg, CanvasText 0 1px, Canvas 1px 3px);
+  }
+  [data-flag="pinned"] {
+    --flag-pattern: repeating-linear-gradient(90deg, CanvasText 0 1px, Canvas 1px 3px);
+  }
+  [data-flag="left-behind"] {
+    --flag-pattern: repeating-linear-gradient(45deg, CanvasText 0 1px, Canvas 1px 4px);
+  }
+  [data-flag="old-promise"] {
+    --flag-pattern: repeating-linear-gradient(-45deg, CanvasText 0 1px, Canvas 1px 4px);
+  }
+  [data-flag="stale"] {
+    --flag-pattern: radial-gradient(circle, CanvasText 0 1px, Canvas 1.3px) 0 0 / 4px 4px;
+  }
+  [data-flag="vulnerable"] {
+    --flag-pattern:
+      repeating-linear-gradient(45deg, CanvasText 0 1px, transparent 1px 4px),
+      repeating-linear-gradient(-45deg, CanvasText 0 1px, Canvas 1px 4px);
+  }
+}
+
+@media print {
+  .wm-seg {
+    border: 1px solid var(--ink);
+  }
+  .wm-text {
+    color: var(--ink-2);
   }
 }

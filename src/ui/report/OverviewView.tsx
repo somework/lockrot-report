@@ -1,16 +1,9 @@
 import { OVERVIEW_WORDS } from "../../domain/overviewBand";
-import {
-  exposureBars,
-  exposureUnit,
-  libyearsTop,
-  OVERVIEW_TAB_WORDS,
-  scoreStrip,
-  type ScoreStack,
-} from "../../domain/overviewTab";
+import { exposureBars, exposureUnit, libyearsTop, OVERVIEW_TAB_WORDS } from "../../domain/overviewTab";
+import { loadLine, weighsMost, WEIGHS_WORDS, type WeighsRow } from "../../domain/projectGrade";
 import { verdictTone } from "../../domain/findingRow";
 import type { Report2 } from "../../model/report";
 import { toneClass } from "../common/common";
-import { usePrinted } from "../print/printContext";
 import { FlagsBlock, Lead, LibyearsBlock, SecurityBlock } from "./Overview";
 import { TabLink } from "./TabLink";
 import { useReport2 } from "./useReport";
@@ -18,71 +11,80 @@ import "./overview-tab.css";
 
 type ScoreModel = Report2["run"]["score_model"];
 
-function Stack({ stack, model }: { stack: ScoreStack; model: ScoreModel }) {
+/** The segments of one row, on the shared `bar_max` scale; each takes its flag's fill. */
+function WeighsBar({ row }: { row: WeighsRow }) {
   return (
-    <span className="ss-stack" style={{ left: `${stack.at * 100}%` }}>
-      {stack.marks.map((mark) => (
-        <i key={mark.package} className={`ss-mark ${toneClass(verdictTone(model, mark.verdict))}`} />
+    <span className={row.over ? "wm-bar is-over" : "wm-bar"} aria-hidden="true">
+      {row.segments.map((segment, i) => (
+        <span
+          key={`${String(i)}-${segment.flag}`}
+          className={segment.cut ? "wm-seg is-cut" : "wm-seg"}
+          data-flag={segment.flag}
+          style={{ width: `max(var(--wm-seg-min), ${String(segment.width * 100)}%)` }}
+        />
       ))}
     </span>
   );
 }
 
-/** PD-OVERVIEW-4: the stacks are a drawing, said by a list a screen reader reads. The band zones
- *  of the ruler are the strip's links, each at least 24px a side (WCAG 2.5.8). */
-function ScoreStripBlock({ report }: { report: Report2 }) {
-  const strip = scoreStrip(report);
-  const printed = usePrinted();
-  if (strip.stacks.length === 0) return null;
-  const model = report.run.score_model;
+function WeighsItem({ row, model }: { row: WeighsRow; model: ScoreModel }) {
+  return (
+    <li className="wm-row">
+      <span className="wm-label">
+        <TabLink target={row.link} className="ov-link wm-pkg">
+          {row.package}
+        </TabLink>{" "}
+        <span className={`ov-ly-grade ${toneClass(verdictTone(model, row.grade))}`}>{row.grade}</span>{" "}
+        <span className="vh">
+          {row.total} {row.unit}
+        </span>
+        {row.reach.length > 0 && <span className="wm-reach"> {row.reach.join(" · ")}</span>}
+      </span>
+      <span className="wm-total" aria-hidden="true">
+        {row.total}
+      </span>
+      <WeighsBar row={row} />
+      <span className="wm-text">{row.text}</span>
+    </li>
+  );
+}
+
+/** "Weighs most" (SPEC §7.9.4): the load line, then the highest scores as ranked bars by term. */
+function WeighsMostBlock({ report }: { report: Report2 }) {
+  const chart = weighsMost(report);
+  const load = loadLine(report);
+  if (chart === null || load === null) return null;
 
   return (
-    <div className="ledger-block ov-scores">
+    <div className="ledger-block wm">
       <p className="eyebrow ledger-head">
-        {OVERVIEW_TAB_WORDS.scores} <span className="ledger-head-note">{OVERVIEW_TAB_WORDS.scoresNote}</span>
+        {WEIGHS_WORDS.head}
+        {chart.rows.length > 0 && <span className="ledger-head-note">{WEIGHS_WORDS.note}</span>}
       </p>
-      {printed ? (
-        <p className="ledger-note">{strip.stacks.map(({ say }) => say).join(" · ")}</p>
-      ) : (
-        <div className="ss">
-          <div className="ss-plot" aria-hidden="true">
-            {strip.labels.slice(1, -1).map(({ value, at }) => (
-              <span key={value} className="ss-guide" style={{ left: `${at * 100}%` }} />
-            ))}
-            {strip.stacks.map((stack) => (
-              <Stack key={stack.total} stack={stack} model={model} />
-            ))}
-          </div>
-          <ul className="vh" aria-label={OVERVIEW_TAB_WORDS.scores}>
-            {strip.stacks.map((stack) => (
-              <li key={stack.total}>{stack.say}</li>
-            ))}
-          </ul>
-          <div className="ss-rule">
-            {strip.zones.map((zone) => (
-              <span
-                key={zone.verdict}
-                className="ss-zone-slot"
-                style={{ left: `${zone.from * 100}%`, width: `${(zone.to - zone.from) * 100}%` }}
-              >
-                <TabLink
-                  target={zone.link}
-                  label={zone.say}
-                  className={`ss-zone ${toneClass(verdictTone(model, zone.verdict))}`}
-                >
-                  {zone.verdict}
-                </TabLink>
-              </span>
-            ))}
-          </div>
-          <div className="ss-axis" aria-hidden="true">
-            {strip.labels.map(({ value, at }) => (
-              <span key={value} style={{ left: `${at * 100}%` }}>
-                {value}
-              </span>
-            ))}
-          </div>
-        </div>
+      <p className="wm-load">{load}</p>
+      {chart.legend.length > 0 && (
+        <p className="wm-legend" aria-label={WEIGHS_WORDS.legend}>
+          {chart.legend.map((flag) => (
+            <span key={flag} className="wm-key">
+              <i className="wm-swatch" data-flag={flag} aria-hidden="true" />
+              {flag}
+            </span>
+          ))}
+        </p>
+      )}
+      {chart.rows.length > 0 && (
+        <ol className="wm-list">
+          {chart.rows.map((row) => (
+            <WeighsItem key={row.package} row={row} model={report.run.score_model} />
+          ))}
+        </ol>
+      )}
+      {chart.rest !== null && (
+        <p className="ledger-note">
+          <TabLink target={chart.restLink} className="ov-link">
+            {chart.rest} <span aria-hidden="true">›</span>
+          </TabLink>
+        </p>
       )}
     </div>
   );
@@ -169,7 +171,7 @@ function LibyearsTable({ report }: { report: Report2 }) {
 
 /**
  * The Overview tab, the default view (PD-OVERVIEW-1, PD-OVERVIEW-2): the lead, then the flags,
- * Security, the score strip, exposure and Libyears in that reading order. From 760px a grid puts
+ * Security, Weighs most, exposure and Libyears in that reading order. From 760px a grid puts
  * Libyears beside Security. Paper prints the same content as its summary section.
  */
 export function OverviewView2() {
@@ -189,8 +191,8 @@ export function OverviewView2() {
           <div className="ov-security">
             <SecurityBlock report={report} linked />
           </div>
-          <div className="ov-score">
-            <ScoreStripBlock report={report} />
+          <div className="ov-weighs">
+            <WeighsMostBlock report={report} />
           </div>
           <div className="ov-expo">
             <ExposureBlock report={report} />

@@ -22,7 +22,7 @@ export const WEIGHS_WORDS = {
   dev: "dev",
 } as const;
 
-const GRADE_HEAD = "Project grade:";
+export const GRADE_HEAD = "Project grade:";
 const NOTHING_FLAGGED = "nothing flagged";
 /** The last verdict that "high or worse" holds. */
 const HIGH = "high";
