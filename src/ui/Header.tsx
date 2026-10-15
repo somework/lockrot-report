@@ -1,7 +1,7 @@
 import type { ComponentChildren, RefObject } from "preact";
 import { useId, useLayoutEffect, useRef } from "preact/hooks";
 import { day } from "../domain/format";
-import { gateFact, runGate } from "../domain/gate";
+import { gateFact, gateHeadline } from "../domain/gate";
 import { GateHeadlineText } from "./common/GateWords";
 import { useReport } from "./context";
 import { CopySummary } from "./CopySummary";
@@ -88,19 +88,18 @@ export interface HeaderProps {
 
 /**
  * The top band: what was checked, against which PHP, as of when, by which lockrot, and the two
- * page-wide controls (legacy report.html:26-42). Every value falls back to an em dash rather than a
- * guess: the page must not name a PHP target the run may not have had.
+ * page-wide controls (legacy report.html:26-42).
  */
 export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert = false }: HeaderProps) {
   const { model } = useReport();
-  const { run, tool, generatedAt } = model.report;
+  const { run, lockrot, generated_at } = model.report;
   const ref = useHeaderHeight();
   useGateFactFit(ref);
   // The project names itself; the lock is called composer.lock everywhere, so it is the fallback.
-  const project = run.project ?? run.lockFile ?? "composer.lock";
+  const project = run.project ?? run.lock_file ?? "composer.lock";
   const label = themeButtonLabel(theme);
-  const decided = runGate(model);
-  const gate = decided === null ? gateFact(model) : null;
+  const decided = gateHeadline(model.report);
+  const gate = gateFact(model.report);
   const popoverId = `${useId()}-gate`;
 
   return (
@@ -117,15 +116,15 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
         </div>
         <div className="run-meta">
           <span>
-            target PHP <b className="mono">{run.targetPhp ?? "—"}</b>
+            target PHP <b className="mono">{run.target_php}</b>
           </span>
           <span>
-            data as of <b className="mono">{day(generatedAt)}</b>
+            data as of <b className="mono">{day(generated_at)}</b>
           </span>
           <span>
-            lockrot <b className="mono">{tool.version ?? "—"}</b>
+            lockrot <b className="mono">{lockrot.version}</b>
           </span>
-          {decided !== null && <GateHeadlineText gate={decided} />}
+          {decided !== null && <GateHeadlineText words={decided} />}
           {/* A native popover: no application state opens or closes it, so it needs no JS handler
               and nothing the page's CSP would have to allow (DESIGN.md §1.3). `title` repeats the
               same text for an engine without the Popover API. */}

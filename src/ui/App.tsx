@@ -2,19 +2,16 @@ import "../styles/tokens.css";
 import "../styles/base.css";
 import type { RefObject } from "preact";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
-import { filtersFor, population } from "../domain/filters";
-import { fitFilters2, population2 } from "../domain/list2";
+import { fitFilters2, population2, renderedPackages2 } from "../domain/list";
 import type { Model } from "../model/types";
 import type { Action, State } from "../state/types";
 import { ReportContext, useReport } from "./context";
-import { Detail } from "./detail/Detail";
-import { Detail2 } from "./report2/Detail2";
-import { Overview2 } from "./report2/Overview2";
+import { Detail2 } from "./report/Detail";
+import { Overview2 } from "./report/Overview";
 import { Footer } from "./Footer";
 import { Glossary } from "./Glossary";
 import { Header } from "./Header";
 import { decideKey, findRow, keyInputFrom, prevents, rowAt, rowPosition, type KeyDecision } from "./keyboard";
-import { Ledger } from "./ledger/Ledger";
 import { NewerSchemaBanner } from "./NewerSchemaBanner";
 import { Rail } from "./rail/Rail";
 import { anchorShift, measureRow, type RowAnchor } from "./rowAnchor";
@@ -26,7 +23,6 @@ import { useHashState } from "./useHashState";
 import { useTheme } from "./useTheme";
 import { useNarrow, useWide } from "./useWide";
 import { CurrentView } from "./views/Views";
-import { renderedPackages } from "./views/order";
 import "./app.css";
 import "../styles/print.css";
 
@@ -210,7 +206,7 @@ function useShortcuts(deps: ShortcutDeps) {
           search: current.search.current,
           dialogOpen: current.glossaryOpen,
           selected: state.pkg,
-          rendered: () => renderedPackages(model, state, state.view, current.narrow),
+          rendered: () => renderedPackages2(model.report, state, state.view, current.narrow),
           sheetOpen: current.sheet,
         }),
       );
@@ -231,10 +227,9 @@ function useShortcuts(deps: ShortcutDeps) {
  * answer without a tap and the list still starts right under it.
  */
 function LedgerSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
-  const { model } = useReport();
   return (
     <div className="ledger-band" inert={inert}>
-      {model.report2 === null ? <Ledger narrow={narrow} /> : <Overview2 narrow={narrow} />}
+      <Overview2 narrow={narrow} />
     </div>
   );
 }
@@ -267,10 +262,7 @@ export function App({ model }: { model: Model }) {
   const narrow = useNarrow();
   const fit = useCallback(
     (next: State): State => {
-      const filters =
-        model.report2 === null
-          ? filtersFor(model, next.filters)
-          : fitFilters2(model.report2.report, next.filters);
+      const filters = fitFilters2(model.report, next.filters);
       return filters === next.filters ? next : { ...next, filters };
     },
     [model],
@@ -289,23 +281,7 @@ export function App({ model }: { model: Model }) {
   );
   const theme = useTheme();
   const [glossaryOpen, setGlossaryOpen] = useState(false);
-  // The verdict word "In the glossary" opens to, or null for the "?" shortcut and Header's own
-  // button, which never name one (PD-GLOSSARY-7, DESIGN.md §5) — state, not a ref, since `Glossary`
-  // reads it as a prop and needs the render it changes to see the new value.
-  const [glossaryTerm, setGlossaryTerm] = useState<string | null>(null);
-  // The element to return focus to once the glossary closes, read by `Glossary`'s own `useDialog`
-  // in place of a freshly-read `document.activeElement` (a11y review: focus lost opening the
-  // glossary from a pill popover). A ref, not state: setting it never needs its own render, only
-  // to be in place before `glossaryOpen` flips true.
-  const glossaryOpener = useRef<HTMLElement | null>(null);
   const openGlossary = useCallback(() => {
-    glossaryOpener.current = null;
-    setGlossaryTerm(null);
-    setGlossaryOpen(true);
-  }, []);
-  const openGlossaryFrom = useCallback((returnTo: HTMLElement | null, term?: string) => {
-    glossaryOpener.current = returnTo;
-    setGlossaryTerm(term ?? null);
     setGlossaryOpen(true);
   }, []);
   const search = useRef<HTMLInputElement>(null);
@@ -325,7 +301,8 @@ export function App({ model }: { model: Model }) {
   const lastOpened = useRef<string | null>(state.pkg);
   if (state.pkg !== null) lastOpened.current = state.pkg;
   const cursor = useMemo(
-    () => pickCursor(renderedPackages(model, state, state.view, narrow), state.pkg, lastOpened.current),
+    () =>
+      pickCursor(renderedPackages2(model.report, state, state.view, narrow), state.pkg, lastOpened.current),
     [model, state, narrow],
   );
 
@@ -453,17 +430,15 @@ export function App({ model }: { model: Model }) {
     detailScrollRef.current?.scrollTo(0, 0);
   }, [state.pkg]);
 
-  const now = useMemo(() => new Date(model.report.generatedAt), [model]);
+  const now = useMemo(() => new Date(model.report.generated_at), [model]);
   const value = useMemo(
-    () => ({ model, state, dispatch: dispatchTracked, now, wide, cursor, openGlossary, openGlossaryFrom }),
-    [model, state, dispatchTracked, now, wide, cursor, openGlossary, openGlossaryFrom],
+    () => ({ model, state, dispatch: dispatchTracked, now, wide, cursor, openGlossary }),
+    [model, state, dispatchTracked, now, wide, cursor, openGlossary],
   );
   // The printed report (print/PrintDocument.tsx): mounted into `printHost` only while the page prints.
   const printHost = useRef<HTMLDivElement>(null);
   usePrintDocument(printHost, value);
-  const filterable =
-    (model.report2 === null ? population(model, state.view) : population2(model.report2.report, state.view))
-      .length > 0;
+  const filterable = population2(model.report, state.view).length > 0;
   const panelId = `${idBase}-panel`;
   // The detail's own grid column (`.shell`, ui/app.css) is static CSS and can't see that
   // `.shell-detail` below is unmounted while `state.pkg` is null — left alone, the wide layout kept
@@ -507,7 +482,7 @@ export function App({ model }: { model: Model }) {
           </div>
           {state.pkg !== null && (
             <div ref={detailScrollRef} className={wide ? "shell-detail is-side" : "shell-detail is-sheet"}>
-              {model.report2 === null ? <Detail onClose={closeDetail} /> : <Detail2 onClose={closeDetail} />}
+              <Detail2 onClose={closeDetail} />
             </div>
           )}
         </div>
@@ -515,8 +490,6 @@ export function App({ model }: { model: Model }) {
       <Footer inert={sheet} />
       <Glossary
         open={glossaryOpen}
-        opener={glossaryOpener}
-        highlightTerm={glossaryTerm}
         onClose={() => {
           setGlossaryOpen(false);
         }}

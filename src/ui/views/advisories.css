@@ -31,29 +31,10 @@
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
-.al-answer .mono,
-.al-group-sentence .mono {
+.al-answer .mono {
   font-size: 0.8em;
   font-weight: 600;
   color: var(--ink);
-}
-/* A package named in a sentence: the sans the rows use, a size under the serif's. */
-.al-pk {
-  font-family: var(--sans);
-  font-size: 0.84em;
-  font-weight: 650;
-  color: var(--ink);
-}
-/* Each half of "vendor/name" stays whole; the name may wrap only at the slash. */
-.al-pk-part {
-  white-space: nowrap;
-}
-/* A severity word in the sentence, in the tone its rows' severity takes. */
-.al-sw {
-  color: var(--tone);
-  font-weight: 600;
-  print-color-adjust: exact;
-  -webkit-print-color-adjust: exact;
 }
 .al-scope {
   margin: 4px 0 0;
@@ -147,19 +128,6 @@
   font-size: 12px;
   color: var(--muted);
   white-space: nowrap;
-}
-.al-group-sentence {
-  display: inline;
-  margin: 0;
-  font-family: var(--serif);
-  font-size: 15.5px;
-  line-height: 1.35;
-  color: var(--ink-2);
-}
-.al-group-sentence b {
-  font-weight: 600;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
 }
 
 .adv-list {
@@ -273,9 +241,6 @@
 .ac-name b {
   font-weight: 600;
 }
-.ac-vendor {
-  color: var(--ink-2);
-}
 .ac-ver {
   font-family: var(--mono);
   font-size: 11.5px;
@@ -283,8 +248,7 @@
 }
 /* PD-ROWS-5: the row above named the same package — still there in full, only quieter, as a
    repeated value on a Findings row is. */
-.ac-name.is-ditto,
-.ac-name.is-ditto .ac-vendor {
+.ac-name.is-ditto {
   color: var(--muted);
 }
 .ac-name.is-ditto b {
@@ -293,30 +257,6 @@
 .ac-reach {
   font-size: 12px;
   color: var(--ink-2);
-}
-.ac-via {
-  color: var(--muted);
-}
-/* Where the package is installed: production solid, development dashed and quiet. */
-.ac-scope {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 0 4px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  line-height: 14px;
-  border: 1px solid var(--border-strong);
-  border-radius: 3px;
-  vertical-align: 1px;
-}
-.ac-scope.is-prod {
-  color: var(--ink);
-  border-color: var(--ink-2);
-  font-weight: 600;
-}
-.ac-scope.is-dev {
-  color: var(--muted);
-  border-style: dashed;
 }
 
 .ac-aff {
@@ -356,20 +296,6 @@
   font-style: italic;
 }
 
-/* The years since it was reported: a bar on the list's one axis, the figure beside it. Shown only
-   in the one-line layout, where the column head captions the axis; narrower, the advisory's own
-   line says "reported … ago" in words. */
-.ac-age {
-  display: none;
-}
-.ac-ago {
-  display: inline;
-}
-
-.adv > .match-note {
-  grid-column: 1 / -1;
-}
-
 /* ---------- two columns (beside an open package, a laptop with the rail, paper) ---------- */
 /* The right-hand column stacks what fixing it takes: the release and where it is, the range it
    affects, then years since it was reported on the list's one axis, captioned by a slim column head
@@ -391,9 +317,6 @@
   .ac-fix,
   .ac-aff {
     text-align: right;
-  }
-  .adv > .match-note {
-    grid-column: 2 / -1;
   }
   .al-head {
     grid-template-columns: var(--al-sev) minmax(0, 1fr) var(--al-fix);
@@ -435,95 +358,6 @@
   }
   .al-col-adv {
     grid-area: adv;
-  }
-  /* The axis' captions over the track part of the column; the figure beside it has none. */
-  .al-col-age {
-    grid-area: age;
-    position: relative;
-    align-self: stretch;
-    margin-right: calc(var(--al-num) + 6px);
-    overflow: visible;
-  }
-  .al-age-label {
-    position: absolute;
-    top: 6px;
-    left: 0;
-  }
-  .al-tick {
-    position: absolute;
-    bottom: 7px;
-    transform: translateX(-50%);
-    font-family: var(--mono);
-    font-size: 10.5px;
-    font-weight: 500;
-    letter-spacing: 0;
-    text-transform: none;
-    line-height: 1;
-  }
-  .al-tick.is-start {
-    transform: none;
-  }
-  .al-tick.is-end {
-    transform: translateX(-100%);
-  }
-  /* The figure beside the bar says how long ago; the words would say it twice. */
-  .aledger:not(.no-axis) .ac-ago {
-    display: none;
-  }
-  .ac-age {
-    grid-area: age;
-    align-self: center;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) var(--al-num);
-    column-gap: 6px;
-    align-items: center;
-    min-height: 17px;
-  }
-  .ac-track {
-    position: relative;
-    align-self: stretch;
-  }
-  .ac-track::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    height: 1px;
-    background: var(--border);
-  }
-  .ac-guide {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 0;
-    border-left: 1px dotted var(--border-strong);
-  }
-  .ac-bar {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    min-width: 3px;
-    height: 6px;
-    transform: translateY(-50%);
-    border-radius: 0 3px 3px 0;
-    background: var(--tone);
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
-  }
-  .ac-num {
-    font-family: var(--mono);
-    font-size: 11.5px;
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-    white-space: nowrap;
-    color: var(--ink-2);
-  }
-  .ac-age-none {
-    grid-column: 1 / -1;
-    text-align: right;
-    font-size: 11.5px;
-    color: var(--muted);
   }
 }
 
@@ -584,26 +418,12 @@
   .ac-reach {
     display: block;
   }
-  .ac-age {
-    align-self: stretch;
-    margin-block: -6px -7px;
-  }
-  .ac-age-none {
-    text-align: left;
-  }
-  .adv > .match-note {
-    grid-column: title-start / fix-end;
-  }
 }
 
 /* ---------- forced colours: every tone becomes the system ink; the bar keeps its length ---------- */
 @media (forced-colors: active) {
-  .ac-bar,
   .adv[aria-current="true"]::before {
     forced-color-adjust: none;
-  }
-  .ac-bar {
-    background: CanvasText;
   }
   .adv[aria-current="true"]::before {
     background: Highlight;
@@ -611,9 +431,6 @@
   .adv[aria-current="true"] {
     outline: 2px solid Highlight;
     outline-offset: -2px;
-  }
-  .ac-scope.is-prod {
-    border-color: CanvasText;
   }
 }
 

@@ -3,8 +3,8 @@
  * from `finding.baseline` and the per-fact states alone, never from the baseline file.
  */
 
-import type { Finding, FindingBaseline, Run } from "../model/report2";
-import { isScoreGraded } from "../model/report2";
+import type { Finding, FindingBaseline, Run } from "../model/report";
+import { isScoreGraded } from "../model/report";
 import { advisoryRows } from "./advisoryRows";
 
 type Worsened = NonNullable<FindingBaseline>["worsened_by"][number];

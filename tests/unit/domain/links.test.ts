@@ -1,8 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { cveUrl, fromComposerRepository, registryLink, repoHost, safeHref } from "../../../src/domain/links";
-import type { PackageDetails, PackageOrigin } from "../../../src/model/types";
-
-// safeHref is where a mistake becomes a vulnerability rather than a rendering bug.
+import { cveUrl, safeHref } from "../../../src/domain/links";
 
 describe("safeHref", () => {
   test("passes the links a report really carries (lib.test.js:33-43)", () => {
@@ -59,105 +56,6 @@ describe("safeHref", () => {
   });
 });
 
-describe("fromComposerRepository", () => {
-  const lockSaying = (fromComposerRepository: boolean | null): Map<string, PackageDetails> =>
-    new Map([
-      [
-        "vendor/pkg",
-        {
-          metadata: null,
-          activity: null,
-          repositoryLink: null,
-          lock: {
-            php: null,
-            released: null,
-            repository: null,
-            fromComposerRepository,
-            dev: false,
-            branchSnapshot: false,
-            type: null,
-          },
-        },
-      ],
-    ]);
-  const finding = (fromComposerRepository: boolean | null) => ({
-    package: "vendor/pkg",
-    fromComposerRepository,
-  });
-
-  test("the finding's own field wins over its lock entry's", () => {
-    expect(fromComposerRepository(finding(true), lockSaying(false))).toBe(true);
-    expect(fromComposerRepository(finding(false), lockSaying(true))).toBe(false);
-  });
-
-  test("falls back to the lock entry's from_composer_repository, the same fact, where the finding has none", () => {
-    expect(fromComposerRepository(finding(null), lockSaying(true))).toBe(true);
-    expect(fromComposerRepository(finding(null), lockSaying(false))).toBe(false);
-    expect(fromComposerRepository(finding(null), lockSaying(null))).toBeNull();
-  });
-
-  test("assumes nothing where no field says: no details entry, or one without a lock", () => {
-    expect(fromComposerRepository(finding(null), new Map())).toBeNull();
-    const noLock = new Map<string, PackageDetails>([
-      ["vendor/pkg", { metadata: null, activity: null, repositoryLink: null, lock: null }],
-    ]);
-    expect(fromComposerRepository(finding(null), noLock)).toBeNull();
-  });
-});
-
-describe("registryLink", () => {
-  const origin = (overrides: Partial<PackageOrigin>): { origin: PackageOrigin } => ({
-    origin: { kind: "composer", registry: null, packageUrl: null, local: false, ...overrides },
-  });
-
-  test("links package_url as written, labelled by its registry", () => {
-    expect(
-      registryLink(
-        origin({
-          kind: "composer",
-          registry: "wp-packages.org",
-          packageUrl: "https://wp-packages.org/packages/wp-plugin/acme-forms",
-        }),
-      ),
-    ).toEqual({
-      href: "https://wp-packages.org/packages/wp-plugin/acme-forms",
-      label: "wp-packages.org",
-      title: "this package's page on wp-packages.org",
-    });
-  });
-
-  test("never builds a link: a packagist entry without package_url has none", () => {
-    expect(
-      registryLink(origin({ kind: "packagist", registry: "packagist.org", packageUrl: null })),
-    ).toBeNull();
-  });
-
-  test("a registry the page does not know is a label like any other", () => {
-    expect(
-      registryLink(
-        origin({ registry: "registry.acme.example", packageUrl: "https://registry.acme.example/p/acme" }),
-      )?.label,
-    ).toBe("registry.acme.example");
-  });
-
-  test("a link with no registry named names none: not the URL's host, whose registry no field states", () => {
-    for (const registry of [null, ""]) {
-      expect(
-        registryLink(origin({ registry, packageUrl: "https://user@www.example.test:8443/p/acme" })),
-      ).toEqual({
-        href: "https://user@www.example.test:8443/p/acme",
-        label: "registry page",
-        title: "this package's page on the registry it came from",
-      });
-    }
-  });
-
-  test("no link where the document does not say where the package came from, or the URL is unsafe", () => {
-    expect(registryLink({ origin: null })).toBeNull();
-    expect(registryLink(origin({ registry: "packagist.org", packageUrl: "javascript:alert(1)" }))).toBeNull();
-  });
-});
-
 describe("cveUrl", () => {
   test("links an advisory whose id is a CVE", () => {
     expect(cveUrl({ cve: "CVE-2022-31090" })).toBe("https://nvd.nist.gov/vuln/detail/CVE-2022-31090");
@@ -173,22 +71,5 @@ describe("cveUrl", () => {
 
   test("the CVE- prefix check is case-sensitive, matching the legacy regex exactly", () => {
     expect(cveUrl({ cve: "cve-2022-31090" })).toBeNull();
-  });
-});
-
-describe("repoHost", () => {
-  test("returns the host of an absolute http(s) URL", () => {
-    expect(repoHost("https://github.com/vendor/pkg")).toBe("github.com");
-    expect(repoHost("http://example.test/path")).toBe("example.test");
-  });
-
-  test("strips a leading www.", () => {
-    expect(repoHost("https://www.gitlab.com/vendor/pkg")).toBe("gitlab.com");
-  });
-
-  test("falls back to the literal 'repository' for null or a non-http(s) URL", () => {
-    expect(repoHost(null)).toBe("repository");
-    expect(repoHost("not-a-url")).toBe("repository");
-    expect(repoHost("ftp://example.com/x")).toBe("repository");
   });
 });

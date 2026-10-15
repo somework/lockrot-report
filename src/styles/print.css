@@ -162,25 +162,6 @@
     border-left-color: #999;
   }
 
-  /* PD-ROWS-1 (DESIGN.md §5, regression review): a Findings row quotes one signal on screen, and
-   * the package's detail — which this file already hides above — lists the rest; paper has nothing
-   * to open. `.sig-rest` (views/FindingRow.tsx) carries the rest under a native `hidden` attribute,
-   * which base.css makes `!important` on purpose (so a class-based display rule elsewhere can never
-   * leave a hidden element holding its grid column by winning a specificity tie); un-hiding it for
-   * print has to match that `!important`, or lose to it. It takes a line of its own under the reason.
-   */
-  .sig-rest[hidden] {
-    display: flex !important;
-    flex-direction: column;
-    gap: 3px;
-    flex-basis: 100%;
-    margin-top: 3px;
-  }
-  .sig-rest .sig-line {
-    display: flex;
-    gap: 6px;
-  }
-
   /* Colour that carries meaning must survive an actual print, not a screen render's approximation
    * of one: the summary band's marks (ledger.css: a waffle square, a verdict bar's priority parts, an
    * advisory square, the libyears bar, a chip's swatch), a Packages/Radius row's own verdict or
@@ -196,7 +177,6 @@
   .waffle-cell,
   .legend-seg,
   .advisory-square,
-  .libyears-bar > span,
   .swatch,
   .pill,
   .fgroup-head h2,
@@ -324,73 +304,13 @@
   /* The sections follow on; none forces a page of its own. A heading, a lede, a column head and a
    * group's head each keep to the first row under them instead, so a page never ends on one. */
   .pd .fhead,
-  .pd .rl-head,
-  .pd .rl-answer,
-  .pd .rl-key,
   .pd .advgroup > header {
     break-after: avoid;
   }
-  /* A two-line answer or key is not split across pages either: the second line of a key alone at
-   * the top of a page keys nothing. */
-  .pd .rl-answer,
-  .pd .rl-key {
-    break-inside: avoid;
-  }
   /* The same rule from the other side: Chromium does not carry a head's break-after into the list
    * that follows, so a list's first entry refuses the break before it too. */
-  .pd .rl-list > :first-child,
   .pd .adv-list > :first-child {
     break-before: avoid;
-  }
-
-  /* PD-PRINT-4: a Findings priority group is a table on paper (FindingsView's PrintedGroup). Its
-   * head — the group's name and sentence, the column head with the age axis' captions — is a
-   * table-header-group, which Chromium repeats at the top of every page the group runs onto, so a
-   * bar on page 5 still has its 0/3y/5y/10y+ scale and its group above it. The repeat needs
-   * `break-inside: avoid` on the head (the UA gives <thead> that; a div needs it said). Each row is
-   * a table row around the screen's own grid, which keeps the break between rows. */
-  .pd .pf-group {
-    display: table;
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    table-layout: fixed;
-    margin-top: 22px;
-  }
-  .pd .pf-group:first-child {
-    margin-top: 6px;
-  }
-  .pd .pf-top {
-    display: table-header-group;
-    break-inside: avoid;
-    break-after: avoid;
-  }
-  .pd .pf-top .fgroup-head {
-    border-bottom: 0;
-    padding-top: 4px;
-    padding-bottom: 2px;
-  }
-  .pd .pf-group > .frows {
-    display: table-row-group;
-  }
-  .pd .pf-tr {
-    display: table-row;
-    break-inside: avoid;
-  }
-  .pd .pf-td {
-    display: table-cell;
-    padding: 0;
-  }
-  /* The first row keeps to the head above it; a run's note keeps to the run's first row. */
-  .pd .pf-group > .frows:first-of-type > .pf-tr:first-child,
-  .pd .pf-note + .pf-tr {
-    break-before: avoid;
-  }
-  /* A run's rule, row by row: the screen draws it down the run's wrapper, which paper splits. */
-  .pd .pf-run > .pf-tr > .pf-td {
-    border-left: 2px solid var(--tone);
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
   }
 
   /* PD-PRINT-5: the age axis on paper, where its head repeats on every page. The Findings age
@@ -409,66 +329,6 @@
     height: 17px;
     padding-left: 3px;
     border-left: 1px solid var(--border-strong);
-  }
-  /* The grey-bar key moves into the age column itself, between its caption and its ticks — over the
-   * bars it keys, and no longer stacked on "Reached" in the corner beside them. */
-  .pd .fhead:has(.fhead-key) {
-    height: 56px;
-  }
-  .pd .fhead-key {
-    grid-area: age;
-    justify-self: start;
-    align-self: start;
-    margin: 21px 0 0;
-  }
-  /* Blast radius's axis on paper: its column widens from 210px to 230px and the gap before it from
-   * 14px to 18px, so its 3y and 5y captions clear each other's guides as the Findings ones do. */
-  .pd .rl > * {
-    --rl-age-w: 230px;
-    --rl-gap: 18px;
-  }
-
-  /* PD-PRINT-5: Blast radius's ranked rows are a table on paper too (RadiusView's `.rl-ptable`), its
-   * head — the key and the column head with the age axis — a table-header-group repeated on every
-   * page the rows run onto, and each row one unbreakable table row. A table row draws no border of
-   * its own here (separate borders), so the row's rule moves onto its line. */
-  .pd .rl-ptable {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
-    border-collapse: separate;
-    border-spacing: 0;
-  }
-  .pd .rl-ptop {
-    display: table-header-group;
-    break-inside: avoid;
-    break-after: avoid;
-  }
-  /* The key at paper's size keeps to one line, so it costs a continuation page one line, not two. */
-  .pd .rl-key {
-    column-gap: 14px;
-    font-size: 10.5px;
-  }
-  .pd .rl-ptop > .rl-key {
-    padding-top: 2px;
-    margin-bottom: 6px;
-  }
-  .pd .rl-ptable > .rl-list {
-    display: table-row-group;
-  }
-  .pd .rl-ptable > .rl-list > .rrow {
-    display: table-row;
-    break-inside: avoid;
-  }
-  .pd .rl-ptable > .rl-list > .rrow > .rr-line {
-    border-bottom: 1px solid var(--border);
-  }
-  /* What follows the ranking — the one-each count, the two tails, the unlisted requirements — keeps
-   * to the last ranked row, so it never opens a page of its own looking like the start of Run data:
-   * a page that carries it over starts with the repeated head and a ranked row. */
-  .pd .rl-ptable ~ .rl-fold,
-  .pd .rl-ptable ~ .rl-foot {
-    break-before: avoid;
   }
 
   /* The All packages table on paper: every column on the page, not a scroller clipped at the
@@ -516,62 +376,9 @@
     text-transform: inherit;
   }
 
-  /* Blast radius prints its top: the jump links and the folds' chevrons are screen affordances,
-   * and a fold head prints as the one-line count it is. */
-  .pd .rl-fold-chev,
-  .pd .rl-tails {
-    display: none;
-  }
-  /* radius.css prints the tab itself unfolded, every row's packages listed; the report's section is
-   * its top, so the rows stay shut here — each keeps its count, its squares and its verdict mix. */
-  .pd .rr-kids[hidden],
-  .pd .rl-fold-body[hidden],
-  .pd .rl-head[hidden] {
-    display: none !important;
-  }
-  .pd .rl-fold-head {
-    border: 0;
-    background: none;
-    padding: 9px 0 6px;
-  }
-  /* Paper's spacing for the tails: a rule and a line of air between them, not the screen's tap
-   * targets' padding. */
-  .pd .rl-fold.is-tail {
-    margin-top: 8px;
-  }
-  /* One rule where the rows meet a tail: a ranked row's line (or an open fold's last row) already
-   * draws one, so the tail's own top rule would sit a line of air under it as a double rule. Only a
-   * fold shut on paper ends with no rule, and the tail after it keeps its own. */
-  .pd .rl-ptable + .rl-fold.is-tail,
-  .pd .rl-fold:has(> .rl-fold-body:not([hidden])) + .rl-fold.is-tail {
-    border-top: 0;
-  }
-  .pd .rl-foot {
-    margin-top: 12px;
-  }
-  /* The column head's words wrap on paper instead of ending in an ellipsis at the margin. */
-  .pd .rl-head {
-    height: auto;
-    min-height: 36px;
-  }
-  .pd .rl-h {
-    white-space: normal;
-    overflow: visible;
-  }
-  /* With nothing flagged, the tab's one line prints as a line, not as the screen's dashed box. */
-  .pd .rl > .empty {
-    margin: 8px 0 0;
-    padding: 0;
-    border: 0;
-    text-align: left;
-    font: 14px/1.4 var(--serif);
-    color: var(--ink-2);
-  }
-
   /* A package name that opens something on screen prints as the name: nothing on paper opens. */
   .pd button,
-  .pd .pkg-link-btn,
-  .pd .rl-jump {
+  .pd .pkg-link-btn {
     text-decoration: none;
     color: inherit;
   }
@@ -586,18 +393,10 @@
     gap: 8px;
     padding-top: 6px;
   }
-  .pd-run .sect,
-  .pd-run .run-top {
+  .pd-run .sect {
     margin-top: 0;
     gap: 5px;
     break-inside: avoid;
-  }
-  .pd-run .run-answer {
-    font-size: 13.5px;
-  }
-  .pd-run .run-absent {
-    padding: 4px 8px;
-    font-size: 10.5px;
   }
   .pd-run .note {
     margin: 0;
@@ -609,29 +408,6 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--muted);
-  }
-  .pd-run .run-thr-row {
-    grid-template-columns: 150px minmax(0, 260px) minmax(0, 1fr);
-    padding: 5px 0;
-  }
-  .pd-run .run-fields {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px 16px;
-  }
-  .pd-run .run-kv {
-    font-size: 10px;
-  }
-  .pd-run .run-kv dt,
-  .pd-run .run-kv dd {
-    padding: 2px 0;
-  }
-  .pd-run .run-kv dd,
-  .pd-run .run-null {
-    font-size: 9.5px;
-    overflow-wrap: break-word;
-  }
-  .pd-run .run-footer {
-    font-size: 10px;
   }
 }
 

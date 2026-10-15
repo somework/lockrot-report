@@ -4,7 +4,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gunzipSync } from "node:zlib";
 
-import type { Finding, Report2, RepositoryMetadata, Run } from "../../../src/model/report2";
+import type { Finding, Report2, RepositoryMetadata, Run } from "../../../src/model/report";
 
 const FIXTURES = join(process.cwd(), ".lockrot", "tests", "fixtures");
 const CONTRACT = join(FIXTURES, "contract");

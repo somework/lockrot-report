@@ -76,7 +76,8 @@ must either keep that markup free of inline style/script or replace the meta pol
   page draws nothing from it and derives no score for it. A higher major renders with a banner
   saying the document is newer than the renderer.
 - report-2 is typed by lockrot's TypeScript contract, as lockrot writes it: every key required.
-  `normalize.ts` keeps the document as `Model.report2`, and every surface reads that model alone.
+  `normalize.ts` keeps the document as `Model.report`, with its `details`, and every surface reads
+  that model alone.
   A document without a root key report-2 requires (`REPORT2_KEYS`) is a `malformed-report` error
   that names the keys. The html embed's `details` has no report-2 type. The model types it from
   explain-2's `lock` and `repositoryMetadata`, plus `repository_link`, which no schema defines.
@@ -103,13 +104,13 @@ src/
   main.ts                 IIFE entry: LockrotReport global, mount(), autoboot
   template.html           the report.html skeleton, before inlining
   model/
-    types.ts              Bundle (wire, all-optional) and Model (normalised, all-present)
+    report.ts             lockrot's report-2 contract types, `REPORT2_KEYS`, the `details` types, guards
+    types.ts              Model (the report-2 embed and its schema), the views, NormalizeError
     normalize.ts          unknown → Model | NormalizeError
   domain/                 pure functions, no DOM, no Preact; unit-tested
-    vocab.ts              verdicts, signals (S1–S10), tones, definitions, doc links
+    vocab.ts              signals (S1–S10), grade tones, definitions, doc links
     format.ts             day, ageText, plural, count phrases
-    links.ts              safeHref, cveUrl, repoHost
-    severity.ts           advisory severity words
+    links.ts              safeHref, cveUrl
     countedFlags.ts       a finding's counted and accepted flags (the join on score terms)
     scoreBar.ts           the stacked score bar's layout: widths over `bar_max`, the clip, band ticks
     whyBar.ts             the Why block's band ruler and the text copy of its legend
@@ -135,8 +136,8 @@ src/
   state/
     types.ts, reducer.ts  State, Action, reducer
     hash.ts               parse/serialise the fragment (format unchanged, see §4)
-  ui/                     Preact components, one folder per surface, CSS next to the component
-                          one component and one stylesheet per surface slot; `ScoreBar` and
+  ui/                     Preact components, CSS next to the component; the shell at the top
+    report/               one component and one stylesheet per surface slot; `ScoreBar` and
                           `FlagPills`, which the Findings row and the detail sheet share
   styles/                 tokens.css, base.css, print.css
 tests/unit/               vitest, mirrors src/ (the words and goldens: tests/unit/words/, tests/unit/goldens/)
@@ -402,21 +403,22 @@ key is the error screen (§2).
 
 ## 6. Testing
 
-- **Unit** (vitest): every `domain/` and `state/` module, `model/normalize` over every fixture. The
-  legacy `lib.test.js` cases are ported verbatim as the first tests of `format`, `links`, `install`,
-  `query` and `libyears`.
-- **Components** (vitest + happy-dom + @testing-library/preact): the parts with logic in them —
-  detail panel sections, timeline, ledger.
+- **Unit** (vitest): every `domain/` and `state/` module, `model/normalize` over every recorded
+  report-2 document. The legacy `lib.test.js` cases are ported verbatim as the first tests of
+  `format` and `links`.
+- **Components** (vitest + happy-dom + @testing-library/preact): the shell and each surface slot —
+  the Findings rows, the detail sheet, the overview band, the Run tab, the glossary and the print.
 - **E2E** (Playwright, Chromium; Firefox and WebKit in CI): one behavioural suite, run against
   `build/pages/`. It was written and made green against the legacy page first, during the
   extraction, which proved the tests tested something, and ran against both pages until lockrot
   0.12.0 stopped shipping the legacy one; the new page is the only page it runs against since. §5's
   table stays the record of the differences that comparison found and fixed on purpose. Every row
   an e2e test covers carries the row's id in a comment on that test, and later deliberate changes to
-  the new page are recorded there the same way; M1, M19, M24, M26 and C2 are covered by a unit test
+  the new page are recorded there the same way; M19 and M24 are covered by a unit test
   instead (its `describe`/`it` name carries the id); M25 is e2e-covered too
-  (`e2e/detail-and-copy.spec.ts`), alongside its own unit test (`tests/unit/domain/radius.test.ts`,
-  `tests/unit/ui/views.test.tsx`); M8/M9 and WIDE have no test naming their id at all yet. Page-quality checks that apply regardless of any legacy comparison: axe (no
+  (`e2e/radius-ledger.spec.ts`), alongside its own unit test (`tests/unit/domain/radius.test.ts`).
+  M1, M26 and C2 described report-1 surfaces and left with them; M8/M9 and WIDE have no test
+  naming their id at all yet. Page-quality checks that apply regardless of any legacy comparison: axe (no
   serious or critical violations), zero CSP violations, both colour schemes, 320/768/1024/1440.
 - **report-2 pages**: lockrot records no html embed per case, so `scripts/report2-embed.ts`
   assembles one from the fetched bundle (`npm run contract:fetch`, DESIGN.md §7). `report` is
@@ -425,7 +427,10 @@ key is the error screen (§2).
   has no repository link. A case without an explain-2 document (`composite`) has no `details`. Every document of `contract/report-2/` gets a page, because the detail and axe specs open single cases. The two baselined
   embeds (`baselined/*/check/report.bundle.json`) get a page each, used as recorded. The corpus
   slice (`isCorpusSlice`) is `composite`, the offline cases and the two baselined embeds.
-  `scripts/pages.mjs` writes them as `report2-<case>.html` and `report2-baselined-<scenario>.html`.
+  `scripts/pages.mjs` writes them as `report2-<case>.html` and `report2-baselined-<scenario>.html`,
+  and plants three pages under `planted/`, which the page sweeps do not list: a report-2 document
+  without a root key, the composite with a package named in CSS-selector metacharacters, and
+  `fixtures/bundles/mini.json` for the report-1 screen.
   `e2e/support/pages.ts` opens them with `report2Url(<case>)`, and `tests/unit/` imports the same
   module. `e2e/report2-pages.spec.ts` checks that each loads without a console error or an uncaught
   exception.

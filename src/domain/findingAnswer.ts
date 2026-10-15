@@ -1,6 +1,6 @@
 /** The answer of a report-2 finding: SPEC §7.9.13's grammar, written from the finding's fields and its run. */
 
-import { noReachableFix } from "./findingRow2";
+import { noReachableFix } from "./findingRow";
 import type {
   AlsoMove,
   Finding,
@@ -12,8 +12,8 @@ import type {
   SecurityVulnerable,
   Severity,
   ThroughEntry,
-} from "../model/report2";
-import { isScoreGraded, isSecurityVulnerable, isTermSecurity } from "../model/report2";
+} from "../model/report";
+import { isScoreGraded, isSecurityVulnerable, isTermSecurity } from "../model/report";
 import { pluralNoun } from "./format";
 import { vocabTable } from "./vocab";
 import {

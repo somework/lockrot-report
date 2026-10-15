@@ -2,9 +2,9 @@
  *  cumulatively and clipped at its end, and the band ticks. Widths and places are fractions of the
  *  track; the drawing rules (the 4 px minimum, the mark) are the component's. */
 
-import type { Grade, Run, Score } from "../model/report2";
-import { isScoreGraded, isTermSecurity } from "../model/report2";
-import { securityBand } from "./findingRow2";
+import type { Grade, Run, Score } from "../model/report";
+import { isScoreGraded, isTermSecurity } from "../model/report";
+import { securityBand } from "./findingRow";
 
 export type SegmentRole = "lead" | "corroborating" | "security";
 

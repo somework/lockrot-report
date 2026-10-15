@@ -40,9 +40,12 @@ export function usePrintDocument(host: RefObject<HTMLElement>, value: ReportCont
       if (mounted) return;
       mounted = true;
       const { model } = latest.current;
-      const { run, tool, generatedAt } = model.report;
-      const project = run.project ?? run.lockFile ?? "composer.lock";
-      root.style.setProperty(RUNNING_HEAD, cssString(runningLine(project, day(generatedAt), tool.version)));
+      const { run, lockrot, generated_at } = model.report;
+      const project = run.project ?? run.lock_file ?? "composer.lock";
+      root.style.setProperty(
+        RUNNING_HEAD,
+        cssString(runningLine(project, day(generated_at), lockrot.version)),
+      );
       render(h(PrintDocument, { base: latest.current }), node);
     };
     const unmount = (): void => {

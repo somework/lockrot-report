@@ -4,7 +4,7 @@
  * reads no date against a clock, no php floor and no constraint.
  */
 
-import type { Finding, ReleaseBranch, RepositoryMetadata, Run } from "../model/report2";
+import type { Finding, ReleaseBranch, RepositoryMetadata, Run } from "../model/report";
 import { ago } from "./ago";
 import { phpConstraintWord } from "./phpAlternatives";
 

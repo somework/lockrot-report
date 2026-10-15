@@ -18,7 +18,7 @@ import {
   type DetailsLock,
   type ReleaseBranch,
   type RepositoryMetadata,
-} from "../../../src/model/report2";
+} from "../../../src/model/report";
 import { embeds, readJson, reportDocuments } from "./lockrotContract";
 
 const REPORT_ID = "https://lockrot.dev/schema/report-2.json";

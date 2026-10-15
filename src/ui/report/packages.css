@@ -1,0 +1,147 @@
+/* The report-2 All packages table: views.css draws the wrap, heads and row states. The grade is the
+   verdict's word in its tone; the flags are the Findings pills. Under 1100px of list each row stacks:
+   name and version, then verdict, score and flags, then libyears, age and the way in. */
+@media screen {
+  .p2 {
+    container: p2 / inline-size;
+  }
+}
+
+/* Ten columns in the list's width: tighter cells, and the name, the flags and the signal ids wrap. */
+.p2-table th,
+.p2-table td {
+  padding-left: 8px;
+  padding-right: 8px;
+  vertical-align: middle;
+}
+.p2-name {
+  font-weight: 600;
+}
+.p2-unit {
+  display: inline-block;
+  max-width: 100%;
+}
+.p2-table td.p2-name,
+.p2-table td.p2-sig {
+  white-space: normal;
+}
+.p2-ver,
+.p2-data,
+.p2-sig {
+  color: var(--muted);
+}
+.p2-verdict {
+  font-family: var(--cond);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--tone);
+}
+.p2-score {
+  text-align: right;
+  font-weight: 600;
+  color: var(--tone);
+}
+.is-ungraded .p2-verdict,
+.is-ungraded .p2-score {
+  color: var(--muted);
+}
+.p2-table td.p2-flags {
+  white-space: normal;
+}
+.p2-flags {
+  min-width: 12em;
+}
+.p2-flags .fp {
+  margin: 1px 4px 1px 0;
+}
+
+@container p2 (max-width: 1099px) {
+  .p2-table,
+  .p2-table thead,
+  .p2-table tbody {
+    display: block;
+  }
+  /* The head becomes the list's sort bar: the same buttons as a row of chips. */
+  .p2-table thead tr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 6px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border-strong);
+    background: var(--surface-2);
+  }
+  .p2-table th {
+    position: static;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+  .p2-table th .sort-btn {
+    padding: 3px 9px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    line-height: 1.3;
+  }
+  .p2-table th .sort-btn.active {
+    border-color: var(--ink-2);
+  }
+  .p2-table tbody tr {
+    display: grid;
+    grid-template-columns: 5.5em 2.5em minmax(0, 1fr) auto;
+    grid-template-areas:
+      "name name name ver"
+      "verdict score flags flags"
+      "ly age age reach";
+    gap: 3px 10px;
+    align-items: baseline;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .p2-table td {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    white-space: normal;
+  }
+  .p2-name {
+    grid-area: name;
+    overflow-wrap: anywhere;
+  }
+  .p2-ver {
+    grid-area: ver;
+    justify-self: end;
+  }
+  .p2-verdict {
+    grid-area: verdict;
+  }
+  .p2-score {
+    grid-area: score;
+    text-align: left;
+  }
+  .p2-flags {
+    grid-area: flags;
+    min-width: 0;
+  }
+  .p2-ly {
+    grid-area: ly;
+  }
+  .p2-age {
+    grid-area: age;
+  }
+  .p2-reach {
+    grid-area: reach;
+    justify-self: end;
+    color: var(--ink-2);
+  }
+  /* The stacked row has no room for these two, so their sort buttons go with them. */
+  .p2-table td.p2-sig,
+  .p2-table td.p2-data,
+  .p2-table th.p2-h-signals,
+  .p2-table th.p2-h-data {
+    display: none;
+  }
+}

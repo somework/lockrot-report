@@ -90,6 +90,6 @@ describe("report2Pages", () => {
   test.each(pages)("$name is a report-2 embed the model reads", ({ embed }) => {
     const result = normalize(embed);
 
-    expect(result.ok && result.model.report2).toEqual(embed);
+    expect(result.ok && result.model.report).toEqual(embed.report);
   });
 });

@@ -4,7 +4,7 @@
  * `run.score_rules_used`.
  */
 
-import type { Run, ScoreRule } from "../model/report2";
+import type { Run, ScoreRule } from "../model/report";
 import {
   PANEL_WORDS,
   RULE_KIND_WORDS,

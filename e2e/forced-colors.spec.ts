@@ -7,9 +7,11 @@
  */
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { FIXTURES, report2Url } from "./support/pages";
+import { report2Url } from "./support/pages";
 import { openDetail2 } from "./support/report2/detail";
 import { findingsRow } from "./support/report2/findings";
+import { flagBars, severityChips } from "./support/report2/overview";
+import { decodePng, distinctPixelRatio } from "./support/png";
 
 let report: ReportPage;
 
@@ -17,173 +19,163 @@ test.beforeEach(async ({ page }) => {
   report = await createReportPage(page);
 });
 
-test.describe("PD-ROWS-2/PD-ROWS-4: the age bar and its guides stay visible in forced-colors mode", () => {
-  test("javibravo/simpleue (wallabag, at-or-above-high zone), light forced colors", async ({ page }) => {
-    await report.goto(FIXTURES.wallabag);
-    await page.emulateMedia({ colorScheme: "light", forcedColors: "active" });
+const WALLABAG = "baselined-wallabag-2.6";
 
-    const parts = await report.ageScaleForcedColorsVisible("javibravo/simpleue");
-    expect(parts).toEqual({ track: true, tick: true, dot: true });
-  });
-
-  test("javibravo/simpleue (wallabag, at-or-above-high zone), dark forced colors", async ({ page }) => {
-    await report.goto(FIXTURES.wallabag);
-    await page.emulateMedia({ colorScheme: "dark", forcedColors: "active" });
-
-    const parts = await report.ageScaleForcedColorsVisible("javibravo/simpleue");
-    expect(parts).toEqual({ track: true, tick: true, dot: true });
-  });
-
-  test("defuse/php-encryption (wallabag, warn..high zone), light forced colors", async ({ page }) => {
-    // "stale" (S2 3.3 years, against warn=3/high=5): the hatched middle zone (PD-ROWS-4), not the
-    // solid or hollow ends. Not sensio/framework-extra-bundle (also in this range, at 3.6y) — its own verdict
-    // is "abandoned", so PD-ROWS-3 (DESIGN.md §5) now draws its scale in the neutral `contextOnly`
-    // tone regardless of zone; this test wants the zone shapes themselves, so it picks a verdict
-    // ("stale") whose priority actually comes from age.
-    await report.goto(FIXTURES.wallabag);
-    await page.emulateMedia({ colorScheme: "light", forcedColors: "active" });
-
-    const parts = await report.ageScaleForcedColorsVisible("defuse/php-encryption");
-    expect(parts).toEqual({ track: true, tick: true, dot: true });
-  });
-
-  // Second a11y review: a colour check alone can't tell a guide painted over by the bar from one
-  // that's genuinely missing. jwilsson/spotify-web-api-php sits at 3.1y against koel_koel's own
-  // warn=3 threshold — its bar ends right on the warn guide, which must stay on top.
-  test("jwilsson/spotify-web-api-php (koel_koel, 3.1y against warn=3): the warn tick survives under the dot", async ({
-    page,
-  }) => {
-    await report.goto(FIXTURES.koel);
-    await page.emulateMedia({ colorScheme: "light", forcedColors: "active" });
-
-    expect(await report.ageScaleWarnTickSurvivesDot("jwilsson/spotify-web-api-php")).toBe(true);
-  });
-
-  test("jwilsson/spotify-web-api-php (koel_koel, 3.1y against warn=3): the warn tick survives under the dot, dark forced colors", async ({
-    page,
-  }) => {
-    await report.goto(FIXTURES.koel);
-    await page.emulateMedia({ colorScheme: "dark", forcedColors: "active" });
-
-    expect(await report.ageScaleWarnTickSurvivesDot("jwilsson/spotify-web-api-php")).toBe(true);
-  });
-
-  // PD-ROWS-3 (DESIGN.md §5): sensio/framework-extra-bundle's own bar draws in the neutral
-  // `contextOnly` tone (abandoned, from S1/S3, not from its own S2 age) — GrayText in forced-colors
-  // mode, distinct from both the page and the zone patterns. Still a real mark, not an invisible one.
-  test("sensio/framework-extra-bundle's own contextOnly bar is still visible in forced colors", async ({
-    page,
-  }) => {
-    await report.goto(FIXTURES.wallabag);
-    await page.emulateMedia({ colorScheme: "dark", forcedColors: "active" });
-
-    const parts = await report.ageScaleForcedColorsVisible("sensio/framework-extra-bundle");
-    expect(parts).toEqual({ track: true, tick: true, dot: true });
-  });
-});
-
-test.describe("PD-LEDGER-2: a ledger legend chip stays legible in forced-colors mode", () => {
-  // A priority chip ("high 1" on mini.json): the verdicts mini flags are drawn as bars now, with no
-  // swatch of their own (PD-SUMMARY-7) — `verdictBarForcedColors` below covers those.
-  test("an unpressed chip's swatch paints a colour distinct from the page", async ({ page }) => {
-    await report.goto(FIXTURES.mini);
-    await page.emulateMedia({ colorScheme: "light", forcedColors: "active" });
-
-    const style = await report.legendButtonForcedColorsStyle("prio", "high");
-    const pageBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    expect(style.swatchBackgroundColor).not.toBe(pageBg);
-    expect(style.swatchBackgroundColor).not.toBe("rgba(0, 0, 0, 0)");
-  });
-
-  test("pressing a chip changes its own colours, not just its aria-pressed attribute", async ({ page }) => {
-    await report.goto(FIXTURES.mini);
-    // `.legend-btn` carries a `background-color`/`border-color` transition for every reader, on or
-    // off forced colors — reduced motion (`styles/base.css`'s own `!important` override) makes the
-    // change land in the same tick as the click, so this reads the settled colour, not a mid-fade one.
-    await page.emulateMedia({ colorScheme: "light", forcedColors: "active", reducedMotion: "reduce" });
-
-    const before = await report.legendButtonForcedColorsStyle("prio", "high");
-    await report.ledgerButton("prio", "high");
-    const after = await report.legendButtonForcedColorsStyle("prio", "high");
-
-    // `border-color` is the property `.legend-btn[aria-pressed="true"]` itself declares (`Highlight`,
-    // against the unpressed rule's `--border`, both forced); `background-color` also changes but
-    // isn't asserted on its own, since `Highlight`'s alpha channel can read close to `Canvas` by
-    // coincidence on some system palettes.
-    expect(after.borderColor).not.toBe(before.borderColor);
-    expect(after.swatchBackgroundColor).not.toBe("rgba(0, 0, 0, 0)");
-  });
-
-  test("pressing a chip changes its colours in dark forced colors too", async ({ page }) => {
-    await report.goto(FIXTURES.mini);
-    await page.emulateMedia({ colorScheme: "dark", forcedColors: "active", reducedMotion: "reduce" });
-
-    const before = await report.legendButtonForcedColorsStyle("verdict", "abandoned");
-    await report.ledgerButton("verdict", "abandoned");
-    const after = await report.legendButtonForcedColorsStyle("verdict", "abandoned");
-
-    expect(after.borderColor).not.toBe(before.borderColor);
-  });
-
-  // Second a11y review: `legendButtonForcedColorsStyle` above only proves `getComputedStyle`
-  // changed on press — it stayed green before this fix too, because a native `<button>`'s
-  // forced-colors paint can diverge from its own computed style: `getComputedStyle` kept reporting
-  // `.legend-btn[aria-pressed="true"]`'s own `background: Highlight`, but the button's real content
-  // face painted as a light, near-white system colour regardless, with the label's `color:
-  // HighlightText` (also light) on top of it — a light-on-light label no colour-only check could
-  // tell from a working one (confirmed by screenshot: reverting the fix reproduces exactly this,
-  // the word rendered but not one pixel of it distinguishable from its own backplate). This
-  // screenshots the label's own text and reads its pixels instead. Measured against that broken
-  // build: this ratio reads exactly 0 there, and ~30-40% once the label actually paints — 0.15 is a
-  // wide margin between the two, not a tuned edge.
-  test("the pressed chip's label actually paints pixels distinct from its own backplate, light forced colors", async ({
-    page,
-  }) => {
-    await report.goto(FIXTURES.mini);
-    await page.emulateMedia({ colorScheme: "light", forcedColors: "active", reducedMotion: "reduce" });
-    await report.ledgerButton("verdict", "abandoned");
-
-    const ratio = await report.legendButtonPressedLabelDistinctPixelRatio("verdict", "abandoned");
-    expect(ratio).toBeGreaterThan(0.15);
-  });
-
-  test("the pressed chip's label actually paints pixels distinct from its own backplate, dark forced colors", async ({
-    page,
-  }) => {
-    await report.goto(FIXTURES.mini);
-    await page.emulateMedia({ colorScheme: "dark", forcedColors: "active", reducedMotion: "reduce" });
-    await report.ledgerButton("verdict", "abandoned");
-
-    const ratio = await report.legendButtonPressedLabelDistinctPixelRatio("verdict", "abandoned");
-    expect(ratio).toBeGreaterThan(0.15);
-  });
-});
-
-test.describe("PD-SUMMARY-7: a verdict bar keeps its marks, not a frame, in forced-colors mode", () => {
+test.describe("report-2: the age bar and its guides stay visible in forced-colors mode", () => {
   for (const colorScheme of ["light", "dark"] as const) {
-    test(`the bar's priority parts keep a fill and an unpressed row draws no box, ${colorScheme}`, async ({
-      page,
-    }) => {
-      await report.goto(FIXTURES.wallabag);
+    test(`javibravo/simpleue (at-or-above-high zone), ${colorScheme} forced colors`, async ({ page }) => {
+      await report.gotoReport2(WALLABAG);
       await page.emulateMedia({ colorScheme, forcedColors: "active" });
 
-      // Polled: under load Firefox can read styles before the forced palette has been applied.
-      await expect
-        .poll(() => report.verdictBarForcedColors("left-behind"))
-        .toEqual({
-          partFilled: true,
-          rowFramed: false,
-        });
+      expect(await report.ageScaleForcedColorsVisible("javibravo/simpleue")).toEqual({
+        track: true,
+        tick: true,
+        dot: true,
+      });
+    });
+
+    test(`symfony/http-foundation (warn..high zone, the hatched middle), ${colorScheme} forced colors`, async ({
+      page,
+    }) => {
+      await report.gotoReport2(WALLABAG);
+      await page.emulateMedia({ colorScheme, forcedColors: "active" });
+
+      expect(await report.ageScaleForcedColorsVisible("symfony/http-foundation")).toEqual({
+        track: true,
+        tick: true,
+        dot: true,
+      });
+    });
+  }
+
+  // A colour check alone cannot tell a guide painted over by the bar from one that is missing.
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`the warn tick survives under the bar, ${colorScheme} forced colors`, async ({ page }) => {
+      await report.gotoReport2(WALLABAG);
+      await page.emulateMedia({ colorScheme, forcedColors: "active" });
+
+      expect(await report.ageScaleWarnTickSurvivesDot("symfony/http-foundation")).toBe(true);
     });
   }
 });
 
-test.describe("PD-SUMMARY-6: the summary band's waffle stays readable in forced-colors mode", () => {
+/** A legend chip's colours: its own, and its swatch's (the swatch is the chip's first child). */
+async function chipColours(chip: Locator): Promise<{ borderColor: string; swatch: string }> {
+  return chip.evaluate((el) => {
+    const swatch = el.children[0];
+    if (!(swatch instanceof HTMLElement)) throw new Error("legend chip has no swatch");
+    return {
+      borderColor: getComputedStyle(el).borderColor,
+      swatch: getComputedStyle(swatch).backgroundColor,
+    };
+  });
+}
+
+/** The share of pixels actually painted across a chip's label that differ from its backplate. A
+ *  native `<button>`'s forced-colors paint can diverge from `getComputedStyle`, so this reads the
+ *  screenshot. The 2px inset keeps the chip's own border out of the crop. */
+async function labelPixelRatio(page: Page, chip: Locator): Promise<number> {
+  const rect = await chip.evaluate((el) => {
+    for (const node of Array.from(el.childNodes)) {
+      if (node.nodeType === Node.TEXT_NODE && (node.textContent ?? "").trim().length > 0) {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const r = range.getBoundingClientRect();
+        return { x: r.x, y: r.y, width: r.width, height: r.height };
+      }
+    }
+    throw new Error("legend chip has no bare label text node to screenshot");
+  });
+  const inset = 2;
+  const buf = await page.screenshot({
+    clip: {
+      x: rect.x + inset,
+      y: rect.y + inset,
+      width: Math.max(1, rect.width - inset * 2),
+      height: Math.max(1, rect.height - inset * 2),
+    },
+  });
+  return distinctPixelRatio(decodePng(buf));
+}
+
+test.describe("report-2: a severity chip stays legible in forced-colors mode", () => {
+  test("an unpressed chip's swatch paints a colour distinct from the page", async ({ page }) => {
+    await report.gotoReport2("composite");
+    await page.emulateMedia({ colorScheme: "light", forcedColors: "active" });
+
+    const { swatch } = await chipColours(severityChips(page).first());
+
+    const pageBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    expect(swatch).not.toBe(pageBg);
+    expect(swatch).not.toBe("rgba(0, 0, 0, 0)");
+  });
+
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`pressing a chip changes its own colours, not just aria-pressed, ${colorScheme}`, async ({
+      page,
+    }) => {
+      await report.gotoReport2("composite");
+      // Reduced motion lands the chip's colour transition in the click's own tick.
+      await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
+      const chip = severityChips(page).first();
+
+      const before = await chipColours(chip);
+      await chip.click();
+      const after = await chipColours(chip);
+
+      expect(after.borderColor).not.toBe(before.borderColor);
+      expect(after.swatch).not.toBe("rgba(0, 0, 0, 0)");
+    });
+
+    test(`the pressed chip's label paints pixels distinct from its backplate, ${colorScheme}`, async ({
+      page,
+    }) => {
+      await report.gotoReport2("composite");
+      await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
+      const chip = severityChips(page).first();
+      await chip.click();
+
+      expect(await labelPixelRatio(page, chip)).toBeGreaterThan(0.15);
+    });
+  }
+});
+
+test.describe("report-2: a flag bar keeps its marks, not a frame, in forced-colors mode", () => {
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`the bar's grade parts keep a fill and an unpressed row draws no box, ${colorScheme}`, async ({
+      page,
+    }) => {
+      await report.gotoReport2(WALLABAG);
+      await page.emulateMedia({ colorScheme, forcedColors: "active" });
+
+      // Polled: under load Firefox can read styles before the forced palette has been applied.
+      await expect
+        .poll(() =>
+          flagBars(page)
+            .first()
+            .evaluate((el) => {
+              const part = el.querySelector(".legend-seg");
+              if (!(part instanceof HTMLElement)) throw new Error("flag bar has no grade part");
+              const pageBg = getComputedStyle(document.body).backgroundColor;
+              const fill = getComputedStyle(part).backgroundColor;
+              const row = getComputedStyle(el);
+              return {
+                partFilled: fill !== pageBg && fill !== "rgba(0, 0, 0, 0)",
+                rowFramed: row.borderTopColor !== row.backgroundColor,
+              };
+            }),
+        )
+        .toEqual({ partFilled: true, rowFramed: false });
+    });
+  }
+});
+
+test.describe("report-2: the overview band's waffle stays readable in forced-colors mode", () => {
   for (const colorScheme of ["light", "dark"] as const) {
     test(`flagged squares keep a fill and quiet ones an outline, ${colorScheme} forced colors`, async ({
       page,
     }) => {
-      await report.goto(FIXTURES.wallabag);
+      await report.gotoReport2(WALLABAG);
       await page.emulateMedia({ colorScheme, forcedColors: "active" });
 
       await expect
@@ -191,27 +183,6 @@ test.describe("PD-SUMMARY-6: the summary band's waffle stays readable in forced-
         .toEqual({ flaggedDistinct: true, restOutlined: true });
     });
   }
-});
-
-test.describe("PD-GATE-5: the advisory ladder keeps its bars in forced-colors mode", () => {
-  test("acme/silent-snapshot: the hatched 'not checked' share and the track stay painted", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await page.emulateMedia({ forcedColors: "active" });
-    await report.gotoWithHash(FIXTURES.miniEdges013, "pkg=acme%2Fsilent-snapshot");
-    const bar = page.locator(".detail-rung-bar.is-unchecked").first();
-    await expect(bar).toBeVisible();
-    const painted = await bar.evaluate((el) => {
-      const share = el.querySelector("i");
-      return {
-        hatch: share === null ? "" : getComputedStyle(share).backgroundImage,
-        track: getComputedStyle(el).boxShadow,
-      };
-    });
-    expect(painted.hatch).toContain("repeating-linear-gradient");
-    expect(painted.track).not.toBe("none");
-  });
 });
 
 test.describe("report-2: the score bars and the band ruler keep their marks in forced colours", () => {
@@ -290,4 +261,48 @@ test.describe("report-2: the score bars and the band ruler keep their marks in f
     await expect(pill).toContainText("accepted");
     expect(await pill.evaluate((el) => getComputedStyle(el).borderTopStyle)).toBe("dashed");
   });
+});
+
+// A spread of recorded cases: a lock with nothing flagged, a gate that fails, a baseline, an
+// offline run and a large real lock.
+const SWEEP = ["A", "B-offline-dagger", "D", "E", "G", "ok-unchecked", "baselined-wallabag-2.6", "unknown"];
+
+test.describe("report-2: forced colours across recorded cases", () => {
+  for (const name of SWEEP) {
+    for (const colorScheme of ["light", "dark"] as const) {
+      test(`${name}, ${colorScheme}: the waffle and flag bar keep their marks`, async ({ page }) => {
+        const problems: string[] = [];
+        page.on("console", (message) => {
+          if (message.type() === "error") problems.push(`console: ${message.text()}`);
+        });
+        page.on("pageerror", (error) => problems.push(`pageerror: ${error.message}`));
+        await report.gotoReport2(name);
+        await page.emulateMedia({ colorScheme, forcedColors: "active" });
+
+        const waffle = await report.summaryWaffle();
+        if (waffle !== null && waffle.flagged > 0 && waffle.total > waffle.flagged) {
+          await expect
+            .poll(() => report.summaryWaffleForcedColors())
+            .toEqual({ flaggedDistinct: true, restOutlined: true });
+        }
+        if ((await flagBars(page).count()) > 0) {
+          await expect
+            .poll(() =>
+              flagBars(page)
+                .first()
+                .evaluate((el) => {
+                  const part = el.querySelector(".legend-seg");
+                  if (!(part instanceof HTMLElement)) throw new Error("flag bar has no grade part");
+                  const fill = getComputedStyle(part).backgroundColor;
+                  return (
+                    fill !== getComputedStyle(document.body).backgroundColor && fill !== "rgba(0, 0, 0, 0)"
+                  );
+                }),
+            )
+            .toBe(true);
+        }
+        expect(problems).toEqual([]);
+      });
+    }
+  }
 });

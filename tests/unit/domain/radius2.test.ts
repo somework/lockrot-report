@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { population2 } from "../../../src/domain/list2";
-import { pulledTree, radiusRowOrder } from "../../../src/domain/radius";
+import { population2 } from "../../../src/domain/list";
+import { pulledTree } from "../../../src/domain/radius";
 import {
   gradeMix,
   radiusAnswer2,
@@ -10,7 +10,7 @@ import {
   radiusRowSay,
   radiusRows2,
 } from "../../../src/domain/radius2";
-import type { Report2, Report2Embed } from "../../../src/model/report2";
+import type { Report2, Report2Embed } from "../../../src/model/report";
 import { INITIAL_STATE } from "../../../src/state/types";
 import { readContractJson } from "../words/recorded";
 
@@ -115,15 +115,32 @@ describe("radiusRows2", () => {
   });
 });
 
-describe("radiusRows2 against the report-1 walk", () => {
-  it("walks the rows radiusRowOrder walks, folds and tails included", () => {
-    const layout = layoutOf(wallabag);
-    const all = Object.fromEntries(
-      [...layout.ranked, ...layout.selfOnly].map((row) => [`row:${row.package}`, true]),
-    );
+describe("radiusRows2 on a recorded case", () => {
+  const layout = layoutOf(wallabag);
+  const rowsOf = (rows: typeof layout.lead) =>
+    rows.flatMap((row) => [row.package, ...pulledTree(row).map((node) => node.finding.package)]);
+  const all = Object.fromEntries(
+    [...layout.ranked, ...layout.selfOnly].map((row) => [`row:${row.package}`, true]),
+  );
+
+  it("walks lead rows with their packages, then the singles, the self tail and the receipt", () => {
     const open = { ...INITIAL_STATE, disclosure: { ...all, "fold:self": true, "fold:other": true } };
-    const rows = radiusRows2(layout, open, false);
-    expect(rows).toEqual(radiusRowOrder(layout, { disclosure: open.disclosure, pkg: null, narrow: false }));
-    expect(rows.length).toBeGreaterThan(layout.ranked.length);
+
+    expect(radiusRows2(layout, open, false)).toEqual([
+      ...rowsOf(layout.lead),
+      ...rowsOf(layout.singles),
+      ...layout.selfOnly.map((row) => row.package),
+      ...layout.receipt.map((entry) => entry.finding.package),
+    ]);
+    expect(radiusRows2(layout, open, false).length).toBeGreaterThan(layout.ranked.length);
+  });
+
+  it("leaves out a closed tail and the packages of a closed row", () => {
+    const closed = { ...INITIAL_STATE, disclosure: { "fold:self": false, "fold:other": false } };
+
+    expect(radiusRows2(layout, closed, false)).toEqual([
+      ...layout.lead.map((row) => row.package),
+      ...layout.singles.map((row) => row.package),
+    ]);
   });
 });

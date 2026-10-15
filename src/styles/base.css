@@ -78,9 +78,6 @@ code {
 .muted {
   color: var(--muted);
 }
-.nowrap {
-  white-space: nowrap;
-}
 /* Words for a screen reader only, beside a mark drawn for the eye (a dash, a row of dots). */
 .vh {
   position: absolute;

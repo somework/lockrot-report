@@ -13,9 +13,8 @@
  * precedent for this is `theme-and-glossary.spec.ts`'s own direct locator/evaluate use for the
  * glossary's DOM structure).
  */
-import { expect, type Locator, test } from "@playwright/test";
+import { expect, type Locator, type Page, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
-import { FIXTURES } from "./support/pages";
 import { openDetail2 } from "./support/report2/detail";
 
 let report: ReportPage;
@@ -41,30 +40,15 @@ async function markerRotation(summary: Locator): Promise<string> {
   return summary.evaluate((el) => getComputedStyle(el, "::after").transform);
 }
 
-test.describe("PD-DISCLOSURE-1: one marker, every fold", () => {
-  test("the glossary's own collapsed sections each draw a visible, sized marker", async ({ page }) => {
-    await report.goto(FIXTURES.mini);
+test.describe("report-2: the glossary and the phone folds draw the one marker", () => {
+  const glossary = (page: Page) => page.getByRole("dialog", { name: /what these words mean/i });
+
+  test("the glossary's collapsed sections each draw a visible, sized marker", async ({ page }) => {
+    await report.gotoReport2("composite");
     await report.openGlossary();
-    const dialog = page.getByRole("dialog", { name: /what these words mean/i });
 
-    for (const title of ["The signals", "How a priority is reached", "Keys and search"]) {
-      const summary = dialog.locator("summary", { hasText: title });
-      const box = await markerBox(summary);
-      expect(box.content).not.toBe("none");
-      expect(box.width).toBeGreaterThan(0);
-      expect(box.height).toBeGreaterThan(0);
-    }
-  });
-
-  // "How it is reached" is no longer one of them: its chain opens the panel now (PD-DETAIL-6).
-  test("the detail panel's two reference sections each draw the same marker", async ({ page }) => {
-    await report.goto(FIXTURES.mini);
-    await report.openPackage("vendor/transitive");
-    const detail = page.getByRole("complementary", { name: "vendor/transitive" });
-
-    for (const title of ["The lock entry", "Provenance"]) {
-      const summary = detail.locator("summary", { hasText: title });
-      const box = await markerBox(summary);
+    for (const title of ["The signals", "Keys and search", "One number for the lock: libyears"]) {
+      const box = await markerBox(glossary(page).locator("summary", { hasText: title }));
       expect(box.content).not.toBe("none");
       expect(box.width).toBeGreaterThan(0);
       expect(box.height).toBeGreaterThan(0);
@@ -72,37 +56,27 @@ test.describe("PD-DISCLOSURE-1: one marker, every fold", () => {
   });
 
   test("rotates 90 degrees once its own <details> opens, and back once it closes", async ({ page }) => {
-    await report.goto(FIXTURES.mini);
+    await report.gotoReport2("composite");
     await report.openGlossary();
-    const dialog = page.getByRole("dialog", { name: /what these words mean/i });
-    const summary = dialog.locator("summary", { hasText: "The signals" });
+    const summary = glossary(page).locator("summary", { hasText: "The signals" });
 
-    // Reads the CSS `transform` once the 0.15s rotate transition has settled, not mid-flight — the
-    // marker's whole point is the *end* state, and a snapshot taken during the animation would read
-    // as neither "closed" nor "open".
-    async function settledRotation(): Promise<string> {
-      await page.waitForTimeout(250);
-      return markerRotation(summary);
-    }
-
-    const closed = await settledRotation();
+    // Read once the rotate transition has settled: the end state is the point, not a frame mid-flight.
+    await page.waitForTimeout(250);
+    const closed = await markerRotation(summary);
     await summary.click();
-    // Polled, not read once: on a loaded CI runner WebKit can still be mid-transition after 250ms.
     await expect.poll(() => markerRotation(summary)).not.toBe(closed);
 
     await summary.click();
     await expect.poll(() => markerRotation(summary)).toBe(closed);
   });
 
-  test("the phone fold's own ledger and rail summaries draw the same marker shape", async ({ page }) => {
+  test("the phone fold's own overview and rail summaries draw the same marker shape", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await report.goto(FIXTURES.mini);
+    await report.gotoReport2("composite");
 
-    const ledgerSummary = page
-      .getByText("More about this lock")
-      .locator("xpath=ancestor-or-self::summary[1]");
+    const overviewSummary = page.locator('[data-surface="overview"] details.ledger-fold > summary');
     const railSummary = page.getByText("Filters").locator("xpath=ancestor-or-self::summary[1]");
-    for (const summary of [ledgerSummary, railSummary]) {
+    for (const summary of [overviewSummary, railSummary]) {
       const box = await markerBox(summary);
       expect(box.content).not.toBe("none");
       expect(box.width).toBeGreaterThan(0);
@@ -110,11 +84,10 @@ test.describe("PD-DISCLOSURE-1: one marker, every fold", () => {
     }
   });
 
-  test("darkens on hover — a visible affordance, not just a cursor change", async ({ page }) => {
-    await report.goto(FIXTURES.mini);
+  test("darkens on hover, a visible affordance and not only a cursor change", async ({ page }) => {
+    await report.gotoReport2("composite");
     await report.openGlossary();
-    const dialog = page.getByRole("dialog", { name: /what these words mean/i });
-    const summary = dialog.locator("summary", { hasText: "The signals" });
+    const summary = glossary(page).locator("summary", { hasText: "The signals" });
 
     const before = await summary.evaluate((el) => getComputedStyle(el, "::after").borderLeftColor);
     await summary.hover();

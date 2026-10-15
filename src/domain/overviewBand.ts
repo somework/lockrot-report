@@ -3,7 +3,7 @@
  * count here is lockrot's; the page lays them out.
  */
 
-import type { Report2 } from "../model/report2";
+import type { Report2 } from "../model/report";
 import { advisoryListPartial, fixCounts, noAdvisoryWords, PARTIAL_HEDGE, scopeClauses } from "./copySummary";
 import { isAre, namesCapped } from "./findingWords";
 import { fixed, plural, pluralNoun } from "./format";

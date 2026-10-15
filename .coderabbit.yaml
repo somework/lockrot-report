@@ -29,16 +29,6 @@ reviews:
 
   # CodeRabbit already skips dist/, node_modules/, lock files and media. On top of that:
   path_filters:
-    # Reports captured from real lockrot runs: data, not code, and ~2 MB of it. The hand-written
-    # fixtures (mini*.json, empty-lockrot-self.json) stay in review: they must keep the exact
-    # shapes lockrot emits, and have drifted from them before.
-    - "!fixtures/bundles/wallabag_wallabag.json"
-    - "!fixtures/bundles/wallabag_baseline.json"
-    - "!fixtures/bundles/koel_koel.json"
-    - "!fixtures/bundles/koel_koel-all.json"
-    - "!fixtures/bundles/mautic_mautic.json"
-    - "!fixtures/bundles/capsule-0.10-drupal.json"
-    - "!fixtures/bundles/synthetic-no-details.json"
     # lockrot's hand-written page at the commit in legacy/SOURCE_COMMIT: frozen history, never edited.
     - "!legacy/**"
     - "!build/**"
@@ -80,12 +70,6 @@ reviews:
         behaviour (forced-colors painting, smooth scrolling, keyboard scrolling) unless the test
         says why it is skipped elsewhere. Rows and controls are found by role and name through the
         page object in e2e/support/, not by CSS classes, unless the file says why.
-    - path: "fixtures/bundles/**"
-      instructions: |
-        Hand-written fixtures must use exactly the shapes lockrot emits: compare signal data keys,
-        details (metadata, lock, activity) and run fields with the captured reports in the same
-        directory (wallabag_wallabag.json, koel_koel.json) and with lockrot's
-        resources/lockrot-report.schema.json. Flag invented keys.
     - path: "scripts/**"
       instructions: |
         The build must stay reproducible byte for byte (two builds, same sha) and must keep the

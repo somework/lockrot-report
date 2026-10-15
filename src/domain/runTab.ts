@@ -1,6 +1,6 @@
 /** The Run tab of a report-2 (SPEC §7.9.16) as words, from `run` and root fields only. */
 
-import type { Report2, Run } from "../model/report2";
+import type { Report2, Run } from "../model/report";
 import { day, plural, pluralNoun } from "./format";
 import { causeWord, feedAnswerWord, wordFor } from "./pageVocabulary";
 
