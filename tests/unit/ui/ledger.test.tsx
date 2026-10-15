@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/preact";
+import { cleanup, render, screen, within } from "@testing-library/preact";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { assembleEmbed } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
@@ -106,8 +106,9 @@ describe("the overview band's grade chips and waffle", () => {
     render(<App model={composite()} />);
 
     // composite grades 3 critical, 2 high, 0 medium, 2 low.
-    expect(screen.getByRole("button", { name: "medium 0" }).className).toContain("legend-btn-dim");
-    expect(screen.getByRole("button", { name: "high 2" }).className).not.toContain("legend-btn-dim");
+    const grades = within(screen.getByRole("group", { name: "Grade" }));
+    expect(grades.getByRole("button", { name: "medium 0" }).className).toContain("legend-btn-dim");
+    expect(grades.getByRole("button", { name: "high 2" }).className).not.toContain("legend-btn-dim");
   });
 
   it("draws the waffle in the grades' tones, most urgent first", () => {

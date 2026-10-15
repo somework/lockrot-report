@@ -60,7 +60,7 @@ export function Rail() {
     <div className="rail" role="group" aria-label="Filters">
       {groups.length === 0 && <p className="rail-empty">Nothing here narrows the list further.</p>}
       {placed(groups).map(([group, extra]) => (
-        <div className="rail-group" key={group.group}>
+        <div className="rail-group" key={group.group} role="group" aria-label={group.title}>
           <span className="eyebrow">
             <RailTitle title={group.title} path={group.group === "since" ? baselinePath : undefined} />
           </span>

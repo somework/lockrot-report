@@ -9,6 +9,8 @@ import {
 } from "../../../src/domain/list";
 import type { Finding, Report2 } from "../../../src/model/report";
 import { EMPTY_FILTERS, INITIAL_STATE, type Filters, type State } from "../../../src/state/types";
+import { advisoryRows } from "../../../src/domain/advisoryRows";
+import { fixLabel } from "../../../src/domain/pageVocabulary";
 import { readContractJson } from "../words/recorded";
 
 const composite = readContractJson("report-2", "composite.json") as Report2;
@@ -178,6 +180,38 @@ describe("railGroups2", () => {
     ]);
   });
 
+  it("offers each advisory severity in score_model order, counting the packages with one", () => {
+    const sev = railGroups2(composite, state()).find((group) => group.group === "sev");
+    const withSeverity = (id: string): number =>
+      population2(composite, "findings").filter((f) => advisoryRows(f).some((row) => row.severity === id))
+        .length;
+    const listed = composite.run.score_model.severities
+      .map(({ id }) => id)
+      .filter((id) => withSeverity(id) > 0);
+
+    expect(sev?.title).toBe("Severity");
+    expect(sev?.rows.map((row) => [row.key, row.label, row.count])).toEqual(
+      listed.map((id) => [id, id, withSeverity(id)]),
+    );
+  });
+
+  it("offers each fix kind in ease order under its label, counting the packages an advisory of it holds", () => {
+    const fix = railGroups2(composite, state()).find((group) => group.group === "fix");
+    const withFix = (id: string): number =>
+      population2(composite, "findings").filter((f) => advisoryRows(f).some((row) => row.fix.kind === id))
+        .length;
+    const listed = [...composite.run.score_model.fix_kinds]
+      .sort((a, b) => a.ease - b.ease)
+      .map(({ id }) => id)
+      .filter((id) => withFix(id) > 0);
+
+    expect(fix?.title).toBe("Fix");
+    expect(fix?.rows.map((row) => [row.key, row.label, row.count])).toEqual(
+      listed.map((id) => [id, fixLabel(id), withFix(id)]),
+    );
+    expect(listed.length).toBeGreaterThan(0);
+  });
+
   it("counts the union within the flag group", () => {
     const flag = railGroups2(composite, state({}, { flag: ["stale"] })).find(
       (group) => group.group === "flag",
@@ -191,7 +225,13 @@ describe("railGroups2", () => {
   });
 
   it("offers the accepted toggle only where an accepted flag exists, counting the rows it changes", () => {
-    expect(railGroups2(composite, state()).map((group) => group.group)).toEqual(["gate", "flag", "scope"]);
+    expect(railGroups2(composite, state()).map((group) => group.group)).toEqual([
+      "gate",
+      "flag",
+      "sev",
+      "fix",
+      "scope",
+    ]);
     const accepted = railGroups2(withAccepted, state()).find((group) => group.group === "accepted");
     expect(accepted?.rows).toEqual([{ key: "hide", label: "Hide accepted flags", count: 1, on: false }]);
     const on = railGroups2(withAccepted, state({}, { accepted: ["hide"] })).find(
