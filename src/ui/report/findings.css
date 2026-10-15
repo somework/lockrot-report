@@ -174,7 +174,7 @@
 }
 
 /* The one line over the list (FindingsStrip, PD-SUMMARY-16), on the header's surface as the band
-   was. "Overview ›" sits at the line's end and wraps to the next line on a phone. */
+   was. "Overview ›" sits at the line's end. */
 .f2-strip {
   display: flex;
   flex-wrap: wrap;
@@ -204,8 +204,15 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* On a phone "Overview ›" shares the figure's line, so the chips' wrap costs no third line. */
 @media (max-width: 759px) {
   .f2-strip {
+    position: relative;
     padding: 10px 16px;
+  }
+  .f2-strip-back {
+    position: absolute;
+    top: 10px;
+    right: 16px;
   }
 }

@@ -103,6 +103,8 @@ export function parseHash(fragment: string, base: State): State {
       continue;
     }
     const key = piece.slice(0, i);
+    // A list key counts for rule R1 even when its value cannot be read, as it opened Findings on rc.1.
+    if (key === "q" || key === "pkg" || isFilterGroup(key)) listKey = true;
     let value: string;
     try {
       value = decodeURIComponent(piece.slice(i + 1));
@@ -118,17 +120,14 @@ export function parseHash(fragment: string, base: State): State {
     }
     if (key === "q") {
       q = value;
-      listKey = true;
       continue;
     }
     if (key === "pkg") {
       // A package named in the hash round-trips straight back into the next `writeHash()`.
       pkg = value;
-      listKey = true;
       continue;
     }
     if (isFilterGroup(key)) {
-      listKey = true;
       for (const part of value.split(",")) {
         if (part !== "") {
           filters = addFilterKey(filters, key, part);

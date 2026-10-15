@@ -379,8 +379,12 @@ describe("rule R1: the view a fragment opens", () => {
     expect(parseHash("view=bogus&verdict=high", base).view).toBe("findings");
   });
 
-  it("opens Overview for a fragment of unknown keys and pieces that fail to decode", () => {
-    expect(parseHash("bogus=1&q=%&loose", base).view).toBe("overview");
+  it("opens Overview for a fragment of unknown keys and loose pieces", () => {
+    expect(parseHash("bogus=1&loose", base).view).toBe("overview");
+  });
+
+  it("opens Findings for a list key whose value fails to decode, as rc.1 did", () => {
+    expect(parseHash("q=%E0%A4%A", base).view).toBe("findings");
   });
 
   it("opens Findings for a list key with an empty value, as rc.1 did", () => {
