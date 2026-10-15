@@ -2,14 +2,19 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/preact";
 import { assembleEmbed } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
+import type { Report2Embed } from "../../../src/model/report";
 import { INITIAL_STATE, type State } from "../../../src/state/types";
 import { ReportContext } from "../../../src/ui/context";
 import { tabName, Tabs } from "../../../src/ui/Tabs";
 
 afterEach(cleanup);
 
-function renderTabs(state: State = INITIAL_STATE, caseName = "composite") {
-  const result = normalize(assembleEmbed(caseName));
+function renderTabs(
+  state: State = INITIAL_STATE,
+  caseName = "composite",
+  edit: (embed: Report2Embed) => Report2Embed = (embed) => embed,
+) {
+  const result = normalize(edit(assembleEmbed(caseName)));
   if (!result.ok) throw new Error(result.error.message);
   const { model } = result;
   return render(
@@ -91,6 +96,35 @@ describe("the Advisories tab's count from an incomplete check (PD-ADV-7)", () =>
     const tab = screen.getByRole("tab", { name: /^Advisories/ });
     expect(tab.getAttribute("aria-label")).toMatch(/^Advisories \d+, check incomplete$/);
     expect(tab.querySelector(".tab-flag")?.getAttribute("title")).toBe("advisory check incomplete");
+  });
+
+  it("carries none on a lock with no finding, whatever note the run wrote", () => {
+    renderTabs(INITIAL_STATE, "composite", (embed) => ({
+      ...embed,
+      report: {
+        ...embed.report,
+        findings: [],
+        security: {
+          ...embed.report.security,
+          check: "complete",
+          packages: { vulnerable: 0, unchecked: 0, ignored: 0, clear: 0 },
+        },
+        note_details: [
+          ...embed.report.note_details,
+          {
+            code: "advisories_not_checked",
+            text: "advisories were not checked",
+            docs_url: null,
+            sets_network_failures: false,
+            data: { reason: "offline", composer_repositories_checked: 0 },
+          },
+        ],
+      },
+    }));
+
+    const tab = screen.getByRole("tab", { name: /^Advisories/ });
+    expect(tab.querySelector(".tab-flag")).toBeNull();
+    expect(tab.getAttribute("aria-label")).toBe("Advisories 0");
   });
 
   it("carries none after a complete check", () => {

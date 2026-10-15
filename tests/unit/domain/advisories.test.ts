@@ -11,7 +11,7 @@ import {
   advisoryFixNote,
   noAdvisoryLine,
 } from "../../../src/domain/advisories";
-import { advisoryListPartial } from "../../../src/domain/copySummary";
+import { advisoryListPartial, noAdvisoryWords } from "../../../src/domain/copySummary";
 import type { Finding, Report2 } from "../../../src/model/report";
 import { EMPTY_FILTERS, type Filters } from "../../../src/state/types";
 import { readContractJson } from "../words/recorded";
@@ -27,6 +27,20 @@ const NOT_CHECKED = {
   sets_network_failures: false,
   data: { reason: "offline", composer_repositories_checked: 0 },
 } as unknown as Report2["note_details"][number];
+
+/** The composite with every package taken out: a lock with no finding, after a complete lookup. */
+const EMPTY_LOCK: Report2 = {
+  ...composite,
+  findings: [],
+  packages_checked: 0,
+  packages_flagged: 0,
+  security: {
+    ...composite.security,
+    check: "complete",
+    packages: { vulnerable: 0, unchecked: 0, ignored: 0, clear: 0 },
+    advisories: { counted: 0, ignored: 0 },
+  },
+};
 
 const filters = (overrides: Partial<Filters> = {}): Filters => ({ ...EMPTY_FILTERS, ...overrides });
 
@@ -149,23 +163,27 @@ describe("the lookup words", () => {
     expect(noAdvisoryLine(skipped)).toBe("No advisory found (not checked).");
   });
 
-  it.each([
-    [
-      "an unchecked package",
-      {
-        ...composite,
-        security: { ...composite.security, packages: { ...composite.security.packages, unchecked: 1 } },
-      },
-    ],
-    [
-      "an advisories_not_checked note",
-      { ...composite, note_details: [...composite.note_details, NOT_CHECKED] },
-    ],
-  ])("hedges a complete lookup beside %s, as the overview does", (_, report: Report2) => {
+  it("hedges a complete lookup beside an unchecked package, as the overview does", () => {
+    const report: Report2 = {
+      ...composite,
+      security: { ...composite.security, packages: { ...composite.security.packages, unchecked: 1 } },
+    };
+
     expect(report.security.check).toBe("complete");
     expect(advisoryListPartial(report)).toBe(true);
     expect(advisoryLookupHedge(report)).toBe("Advisories: check incomplete, so this list may be partial.");
     expect(noAdvisoryLine(report)).toBe("No advisory found (check incomplete).");
+  });
+
+  it("never reads a note code: a lock with no finding and a not-checked note reads clean", () => {
+    // lockrot sets the check to partial or not_run whenever it writes this note, except on a lock
+    // with no finding, where nothing was left unchecked.
+    const report: Report2 = { ...EMPTY_LOCK, note_details: [...EMPTY_LOCK.note_details, NOT_CHECKED] };
+
+    expect(advisoryListPartial(report)).toBe(false);
+    expect(advisoryLookupHedge(report)).toBeNull();
+    expect(noAdvisoryLine(report)).toBe("No advisory affects this lock.");
+    expect(noAdvisoryWords(report)).toBe("no security advisory");
   });
 
   it("finds no rows for a finding without an S9 signal", () => {
