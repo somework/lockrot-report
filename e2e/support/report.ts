@@ -57,6 +57,10 @@ export interface ReportPage {
   goto(fixture: FixtureName): Promise<void>;
   /** Loads the page with a given `#...` fragment already in the URL, exactly as a shared link would. */
   gotoWithHash(fixture: FixtureName, hash: string): Promise<void>;
+  /** Loads the report-2 page of one case of lockrot's recorded bundle, such as `composite`. */
+  gotoReport2(caseName: string): Promise<void>;
+  /** The report-2 page of one case with a `#...` fragment, as a shared link would open it. */
+  gotoReport2WithHash(caseName: string, hash: string): Promise<void>;
   reload(): Promise<void>;
   /** The current address bar, `file://...`, query string and fragment included. */
   url(): string;

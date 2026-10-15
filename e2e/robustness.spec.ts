@@ -72,3 +72,36 @@ test.describe("bundle shape (history.md item 7)", () => {
     expect(await report.rows()).toEqual(["vendor/transitive", "vendor/snapshot"]);
   });
 });
+
+test.describe("a malformed report-2 document fails visibly, never as a blank page", () => {
+  test("the model rejects a report-2 document without a root key and names the key", async ({ page }) => {
+    await report.goto(FIXTURES.malformedReport2);
+
+    await expect(page.getByRole("heading", { name: "This report could not be rendered" })).toBeVisible();
+    await expect(page.getByRole("main")).toContainText("leaves out keys lockrot always writes: rot_depth.");
+    await expect(page.getByRole("tab")).toHaveCount(0);
+  });
+
+  test("a render-time error shows the error screen in place of the report", async ({ page }) => {
+    await report.gotoReport2("composite");
+
+    // `mount()` into a second target, with a bundle the model accepts and the Findings tab cannot
+    // draw: the error boundary renders its screen on the render that follows the throw.
+    await page.evaluate(() => {
+      const bundle = JSON.parse(document.getElementById("lockrot-data")?.textContent ?? "{}") as {
+        report: Record<string, unknown>;
+      };
+      const target = document.createElement("div");
+      target.id = "guarded";
+      document.body.append(target);
+      window.LockrotReport?.mount(target, {
+        ...bundle,
+        report: { ...bundle.report, findings: "not a list" },
+      });
+    });
+
+    const guarded = page.locator("#guarded");
+    await expect(guarded.getByRole("heading", { name: "This report could not be rendered" })).toBeVisible();
+    await expect(guarded).toContainText("broke while the page drew it");
+  });
+});

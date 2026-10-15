@@ -15,7 +15,7 @@ import type {
   SortState,
   ViewName,
 } from "./report";
-import { pageUrl, type FixtureName } from "./pages";
+import { pageUrl, report2Url, type FixtureName } from "./pages";
 import { decodePng, distinctPixelRatio } from "./png";
 
 /** The tab's accessible name (`role=tab`). A badge count appended after the label is fine — every
@@ -75,6 +75,14 @@ export class NewReportPage implements ReportPage {
     const base = pageUrl(fixture);
     const fragment = hash.startsWith("#") ? hash : "#" + hash;
     await freshNavigate(this.page, base + fragment);
+  }
+
+  async gotoReport2(caseName: string): Promise<void> {
+    await freshNavigate(this.page, report2Url(caseName));
+  }
+
+  async gotoReport2WithHash(caseName: string, hash: string): Promise<void> {
+    await freshNavigate(this.page, report2Url(caseName) + (hash.startsWith("#") ? hash : "#" + hash));
   }
 
   async reload(): Promise<void> {
