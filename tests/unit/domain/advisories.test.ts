@@ -11,12 +11,22 @@ import {
   advisoryFixNote,
   noAdvisoryLine,
 } from "../../../src/domain/advisories";
+import { advisoryListPartial } from "../../../src/domain/copySummary";
 import type { Finding, Report2 } from "../../../src/model/report";
 import { EMPTY_FILTERS, type Filters } from "../../../src/state/types";
 import { readContractJson } from "../words/recorded";
 
 const composite = readContractJson("report-2", "composite.json") as Report2;
 const vulnerable = composite.findings.filter((f) => f.security.status === "vulnerable");
+
+/** The note a run writes when it asked no repository for advisories. */
+const NOT_CHECKED = {
+  code: "advisories_not_checked",
+  text: "advisories were not checked",
+  docs_url: null,
+  sets_network_failures: false,
+  data: { reason: "offline", composer_repositories_checked: 0 },
+} as unknown as Report2["note_details"][number];
 
 const filters = (overrides: Partial<Filters> = {}): Filters => ({ ...EMPTY_FILTERS, ...overrides });
 
@@ -137,6 +147,25 @@ describe("the lookup words", () => {
     const skipped: Report2 = { ...composite, security: { ...composite.security, check: "not_run" } };
     expect(advisoryLookupHedge(skipped)).toBe("Advisories: not checked, so this list may be partial.");
     expect(noAdvisoryLine(skipped)).toBe("No advisory found (not checked).");
+  });
+
+  it.each([
+    [
+      "an unchecked package",
+      {
+        ...composite,
+        security: { ...composite.security, packages: { ...composite.security.packages, unchecked: 1 } },
+      },
+    ],
+    [
+      "an advisories_not_checked note",
+      { ...composite, note_details: [...composite.note_details, NOT_CHECKED] },
+    ],
+  ])("hedges a complete lookup beside %s, as the overview does", (_, report: Report2) => {
+    expect(report.security.check).toBe("complete");
+    expect(advisoryListPartial(report)).toBe(true);
+    expect(advisoryLookupHedge(report)).toBe("Advisories: check incomplete, so this list may be partial.");
+    expect(noAdvisoryLine(report)).toBe("No advisory found (check incomplete).");
   });
 
   it("finds no rows for a finding without an S9 signal", () => {

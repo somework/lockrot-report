@@ -77,8 +77,26 @@ describe("tab names", () => {
   });
 
   it("tabName: a tab with no badge is its label alone", () => {
-    expect(tabName("Run data", "")).toBe("Run data");
-    expect(tabName("All packages", "271")).toBe("All packages 271");
+    expect(tabName("Run data", "", false)).toBe("Run data");
+    expect(tabName("All packages", "271", false)).toBe("All packages 271");
+    expect(tabName("Advisories", "0", true)).toBe("Advisories 0, check incomplete");
+  });
+});
+
+describe("the Advisories tab's count from an incomplete check (PD-ADV-7)", () => {
+  it("carries a mark, named in the tab's own name", () => {
+    // C-offline‡: the run was offline, so its advisory lookup did not run.
+    renderTabs(INITIAL_STATE, "C-offline-dagger");
+
+    const tab = screen.getByRole("tab", { name: /^Advisories/ });
+    expect(tab.getAttribute("aria-label")).toMatch(/^Advisories \d+, check incomplete$/);
+    expect(tab.querySelector(".tab-flag")?.getAttribute("title")).toBe("advisory check incomplete");
+  });
+
+  it("carries none after a complete check", () => {
+    renderTabs();
+
+    expect(screen.getByRole("tab", { name: /^Advisories/ }).querySelector(".tab-flag")).toBeNull();
   });
 });
 

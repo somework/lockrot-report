@@ -5,6 +5,7 @@
 import type { Finding, Report2, Run, S9fix, S9row } from "../model/report";
 import type { Filters } from "../state/types";
 import { advisoryRows } from "./advisoryRows";
+import { advisoryListPartial } from "./copySummary";
 import { plural } from "./format";
 import { joinAnd } from "./joinWords";
 import { causeWord, fixLabel, lookupWord } from "./pageVocabulary";
@@ -124,18 +125,24 @@ export function advisoryFixWords(fix: S9fix, finding: Finding): AdvisoryFixWords
   return { version: fix.version, where };
 }
 
-/** Under the answer when the run's lookup did not cover every package. */
-export function advisoryLookupHedge({ security }: Report2): string | null {
-  return security.check === "complete"
-    ? null
-    : `Advisories: ${lookupWord(security.check, null)}, so this list may be partial.`;
+/** The lookup word of an advisory list that may be partial, by SPEC §7.9.15's one test; a
+ *  complete lookup beside an unchecked package or note reads "check incomplete". Null for a full list. */
+function partialLookupWord(report: Report2): string | null {
+  if (!advisoryListPartial(report)) return null;
+  const { check } = report.security;
+  return check === "complete" ? "check incomplete" : lookupWord(check, null);
 }
 
-/** The tab when no finding is vulnerable: clean only after a complete lookup. */
-export function noAdvisoryLine({ security }: Report2): string {
-  return security.check === "complete"
-    ? "No advisory affects this lock."
-    : `No advisory found (${lookupWord(security.check, null)}).`;
+/** Under the answer when the run's lookup did not cover every package. */
+export function advisoryLookupHedge(report: Report2): string | null {
+  const word = partialLookupWord(report);
+  return word === null ? null : `Advisories: ${word}, so this list may be partial.`;
+}
+
+/** The tab when no finding is vulnerable: clean only after a full list. */
+export function noAdvisoryLine(report: Report2): string {
+  const word = partialLookupWord(report);
+  return word === null ? "No advisory affects this lock." : `No advisory found (${word}).`;
 }
 
 /** What holds a fix and the PHP it needs: "needs PHP >=8.1.0 · held by composer.json and symfony/twig-bridge". */

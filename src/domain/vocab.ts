@@ -1,4 +1,4 @@
-/** Grades and signals: the vocabulary tables and the tone map that colours every pill, chip and
+/** Grades and signals: the vocabulary tables, and the tone tokens that colour every pill, chip and
  *  bar. */
 
 import type { SignalId } from "../model/types";
