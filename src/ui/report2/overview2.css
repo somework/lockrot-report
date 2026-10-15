@@ -1,7 +1,9 @@
 /* The report-2 overview band: ledger.css draws the lead and the tier; these rules add what report-2 has. */
 
+/* Inline-size containment keeps a long gate line from widening the lead's max-content columns. */
 .overview2-gate {
   grid-column: 1 / -1;
+  contain: inline-size;
   display: flex;
   gap: 8px;
   align-items: flex-start;
@@ -22,6 +24,11 @@
 .overview2-gate-text {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+/* The flag ledger's note is a clause, not a label: it wraps on a phone. */
+.overview2 .ledger-head-note {
+  white-space: normal;
 }
 
 /* A fourth column holds each flag bar's split by grade. */

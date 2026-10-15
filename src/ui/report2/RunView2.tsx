@@ -192,8 +192,12 @@ function Thresholds({ run }: { run: Report2["run"] }) {
 /** The Run data tab of a report-2 document (SPEC §7.9.16). */
 export function RunView2() {
   const { report } = useReport2();
+  const headingId = useId();
   return (
-    <section className="run-sections run2" data-surface="run" aria-label={RUN_WORDS.tab}>
+    <section className="run-sections run2" data-surface="run" aria-labelledby={headingId}>
+      <h2 className="vh" id={headingId}>
+        {RUN_WORDS.tab}
+      </h2>
       <ScoreWorks run={report.run} />
       <Lookup run={report.run} />
       <Notes report={report} />
