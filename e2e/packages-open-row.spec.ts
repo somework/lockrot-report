@@ -14,7 +14,26 @@ const CASE = "baselined-wallabag-2.6";
 const OPEN = "symfony/http-foundation";
 const HASH = `view=packages&pkg=${encodeURIComponent(OPEN)}`;
 
-type Rgb = string;
+type Rgb = readonly [number, number, number];
+
+/** Rasterisers differ by a unit or two on one fill, so colours this close count as one. */
+const SAME = 2;
+
+/** The largest gap between two colours on any one channel. */
+function distance(a: Rgb, b: Rgb): number {
+  return Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]), Math.abs(a[2] - b[2]));
+}
+
+function first(colours: readonly Rgb[]): Rgb {
+  const colour = colours[0];
+  if (colour === undefined) throw new Error("no pixels sampled");
+  return colour;
+}
+
+/** The largest distance from the first colour of a run to any other. */
+function spread(colours: readonly Rgb[]): number {
+  return Math.max(...colours.map((c) => distance(first(colours), c)));
+}
 
 async function rowShot(page: Page, row: Locator): Promise<DecodedPng> {
   await row.scrollIntoViewIfNeeded();
@@ -34,25 +53,22 @@ async function rowShot(page: Page, row: Locator): Promise<DecodedPng> {
 
 function pixel(png: DecodedPng, x: number, y: number): Rgb {
   const i = (y * png.width + x) * 4;
-  return `${png.data.readUInt8(i)},${png.data.readUInt8(i + 1)},${png.data.readUInt8(i + 2)}`;
+  return [png.data.readUInt8(i), png.data.readUInt8(i + 1), png.data.readUInt8(i + 2)];
 }
 
 /** The colours along the row's top padding, its bottom padding and its right edge, clear of the
  *  accent rule and the row's bottom border: one colour where the row is painted once. */
-function frameColours(png: DecodedPng): Set<Rgb> {
-  const colours = new Set<Rgb>();
-  for (let x = 6; x < png.width - 3; x += 1) {
-    colours.add(pixel(png, x, 2));
-    colours.add(pixel(png, x, png.height - 4));
-  }
-  for (let y = 2; y < png.height - 3; y += 1) colours.add(pixel(png, png.width - 3, y));
+function frameColours(png: DecodedPng): Rgb[] {
+  const colours: Rgb[] = [];
+  for (let x = 6; x < png.width - 3; x += 1) colours.push(pixel(png, x, 2), pixel(png, x, png.height - 4));
+  for (let y = 2; y < png.height - 3; y += 1) colours.push(pixel(png, png.width - 3, y));
   return colours;
 }
 
 /** The colours down the row's first pixel column, above its bottom border: the accent rule. */
-function ruleColours(png: DecodedPng): Set<Rgb> {
-  const colours = new Set<Rgb>();
-  for (let y = 0; y < png.height - 2; y += 1) colours.add(pixel(png, 1, y));
+function ruleColours(png: DecodedPng): Rgb[] {
+  const colours: Rgb[] = [];
+  for (let y = 0; y < png.height - 2; y += 1) colours.push(pixel(png, 1, y));
   return colours;
 }
 
@@ -72,11 +88,11 @@ for (const colorScheme of ["light", "dark"] as const) {
         const closedShot = await rowShot(page, packagesRow(page, "symfony/yaml"));
 
         const frame = frameColours(openShot);
-        expect([...frame]).toHaveLength(1);
-        expect(frame).not.toEqual(frameColours(closedShot));
         const rule = ruleColours(openShot);
-        expect([...rule]).toHaveLength(1);
-        expect(rule).not.toEqual(frame);
+        expect(spread(frame)).toBeLessThanOrEqual(SAME);
+        expect(spread(rule)).toBeLessThanOrEqual(SAME);
+        expect(distance(first(frame), first(frameColours(closedShot)))).toBeGreaterThan(SAME);
+        expect(distance(first(rule), first(frame))).toBeGreaterThan(SAME);
       });
     });
   }
@@ -103,6 +119,7 @@ test.describe("the open row outside a plain screen", () => {
     const report = await createReportPage(page);
     await report.gotoReport2WithHash(CASE, HASH);
     await page.emulateMedia({ media: "print" });
+    await expect(packagesRow(page, OPEN)).toHaveCount(2);
 
     const paints = await packagesRow(page, OPEN).evaluateAll((rows) =>
       rows.map((el) => {
@@ -110,7 +127,6 @@ test.describe("the open row outside a plain screen", () => {
         return { background: style.backgroundColor, rule: style.boxShadow };
       }),
     );
-    expect(paints.length).toBeGreaterThan(0);
     for (const paint of paints) expect(paint).toEqual({ background: "rgba(0, 0, 0, 0)", rule: "none" });
   });
 });
@@ -126,9 +142,12 @@ test.describe("the open row matches the Findings row", () => {
     await report.gotoReport2WithHash(CASE, `view=findings&pkg=${encodeURIComponent(OPEN)}`);
     const findings = await rowShot(page, findingsRow(page, OPEN));
 
-    expect(pixel(packages, packages.width - 3, 2)).toBe(pixel(findings, findings.width - 3, 2));
-    expect(pixel(packages, 1, Math.floor(packages.height / 2))).toBe(
+    const fill = distance(pixel(packages, packages.width - 3, 2), pixel(findings, findings.width - 3, 2));
+    const rule = distance(
+      pixel(packages, 1, Math.floor(packages.height / 2)),
       pixel(findings, 1, Math.floor(findings.height / 2)),
     );
+    expect(fill).toBeLessThanOrEqual(SAME);
+    expect(rule).toBeLessThanOrEqual(SAME);
   });
 });
