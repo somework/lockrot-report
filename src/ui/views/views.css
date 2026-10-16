@@ -98,15 +98,22 @@
 .tablewrap tbody tr {
   cursor: pointer;
 }
-.tablewrap tbody tr:hover td {
+/* Row states paint the row, never its cells: a stacked row is a grid whose gaps show between cells. */
+.tablewrap tbody tr:hover {
   background: var(--surface-2);
 }
-/* The open package's row (M6): the accent rule on its first cell mirrors a Findings row's border. */
-.tablewrap tbody tr[aria-current="true"] td {
-  background: var(--surface-2);
+/* The open package's row wears a Findings row's selected treatment (ledger-rows.css). */
+@media screen {
+  .tablewrap tbody tr[aria-current="true"] {
+    background: var(--accent-soft);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
 }
-.tablewrap tbody tr[aria-current="true"] td:first-child {
-  box-shadow: inset 3px 0 0 var(--accent);
+@media screen and (forced-colors: active) {
+  .tablewrap tbody tr[aria-current="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
 }
 .tablewrap tbody tr:focus-visible {
   outline-offset: -2px;

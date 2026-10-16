@@ -154,6 +154,8 @@ project is overall, and the other tabs lead with their own part.
 - A key pressed or a link applied as soon as the page loads is no longer lost.
 - A row clicked at the end of a short page stays where it was as its package opens. The page no
   longer slides down when the footer comes into view.
+- The open row of All packages is one highlight with the accent rule down its edge, as on Findings.
+  It no longer shows a grey block behind each cell and a short bar beside the name.
 
 ### Security
 
