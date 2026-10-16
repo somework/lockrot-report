@@ -94,8 +94,8 @@ project is overall, and the other tabs lead with their own part.
   It takes the package that was open when you changed tab, else the highest ranked one. With
   nothing flagged it says "No package is flagged in this report.". "How the score works ›" leads
   there from an open package and from the glossary.
-- The rail gains "Grade", "Severity" and "Fix" groups, each row counting the packages it lists
-  (`#verdict=`). It also gains "Accepted flags", a toggle that hides the accepted pills and filters
+- The rail gains "Grade" (`#verdict=`), "Severity" (`#sev=`) and "Fix" (`#fix=`) groups, each row
+  counting the packages it lists. It also gains "Accepted flags", a toggle that hides the accepted pills and filters
   no package (`#accepted=hide`). Flags filter the list too (`#flag=stale`). The phone's "Filters"
   summary also counts the grade and severity filters that are on.
 - Search reads `flag:`, `lead:`, `verdict:` (`priority:` alike) and `score:>=16` (also `>`, `<=`,
