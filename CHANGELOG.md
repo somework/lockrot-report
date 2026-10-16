@@ -8,65 +8,11 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ## [Unreleased]
 
-## [0.14.0-rc.2]
+## [0.14.0]
 
-The page lockrot 0.14.0 writes with `--format=html`, second release candidate. The summary band
-gets a tab of its own, which says how bad the project is overall, and the other tabs lead with
-their own part.
-
-### Added
-
-- An Overview tab, the first tab and the default view. It holds the summary band, unfolded at
-  every width: the lead, then the charts. The charts are the flag ledger, the Security block,
-  "Weighs most", the exposure bars and the libyears table.
-- The lead opens with the project grade, in the largest type: "Project grade: critical · 3
-  critical findings · 25 of 183 packages high or worse". The grade is the worst grade a package
-  holds. The line adds "lookup partial" or "not checked", "{n} not judged" and "{n} known to the
-  baseline" when they apply. Under it: "37 of 183 packages flagged · 126 ok · 20 allowlisted",
-  then the grade chips, the waffle and lockrot's gate sentence.
-- "Weighs most" opens with the score load: "527 points on 37 flagged packages · 450 (85 %) from
-  high or worse". It then draws the 10 highest scores as bars on one scale, one segment per flag,
-  each flag in its own fill with a legend. lockrot's score sentence stands under each bar, and
-  "{n} more flagged packages hold {points} points ›" ends the list. The page shows no percentage
-  of a maximum, no 0 to 100 score and no average.
-- Each flag in the flag ledger adds the points it brings to the scores ("abandoned … 288 pts").
-- The exposure bars take the first 8 direct requirements in lockrot's order. Each bar counts the
-  flagged packages its requirement pulls in and opens Blast radius. "{n} more in Blast radius ›"
-  closes the list when lockrot lists more.
-- The libyears table lists the 8 packages furthest behind, with "≥" before a lower bound. A row
-  opens its package.
-- On Overview the grades, the flag bars, the severity chips and the fix counts are links. So are
-  the packages of "Weighs most", the exposure bars and the libyears rows. A grade, a flag bar and
-  a fix count open Findings under that filter. A severity chip opens
-  Advisories under its severity, and a package opens its sheet.
-
-### Changed
-
-- The other tabs no longer repeat the summary band. Findings opens with one line: the flagged
-  count, the grade chips, which filter the list, and "Overview ›". Advisories leads with its
-  Security block. With no filter on, its count line leaves the severities to the chips beside it.
-  Blast radius leads with the sentence on how deep the flagged packages sit. All
-  packages starts with its table.
-- The rail gains a "Grade" group, each row counting the packages it lists (`#verdict=`). The
-  phone's "Filters" summary also counts the grade and severity filters that are on.
-- Release branches is a section across the open package's sheet, under a "Release branches"
-  heading. lockrot's sentence leads it, and the timeline takes the full width of the sheet.
-- A link from 0.13 or rc.1 with a search, a package or a filter and no `view` still opens
-  Findings. An empty link opens Overview.
-- On Overview the keys `/`, `j` and `k` do nothing and stay with the browser.
-- Printing prints Overview's content once as the summary, from every tab. "Weighs most" prints
-  its bars with borders and lockrot's score sentences.
-
-### Fixed
-
-- The PHP column of Release branches no longer runs past the sheet. At phone width the timeline
-  now takes its narrow layout.
-- A key pressed or a link applied as soon as the page loads is no longer lost.
-
-## [0.14.0-rc.1]
-
-The page lockrot 0.14.0 writes with `--format=html`, first release candidate. lockrot 0.14 grades
-each package by a score built from the flags that fired on it, and this page draws that score.
+The page lockrot 0.14.0 writes with `--format=html`. lockrot 0.14 grades each package by a score built
+from the flags that fired on it, and this page draws that score. An Overview tab says how bad the
+project is overall, and the other tabs lead with their own part.
 
 ### Breaking
 
@@ -79,6 +25,37 @@ each package by a score built from the flags that fired on it, and this page dra
 
 ### Added
 
+- An Overview tab, the first tab and the default view. It holds the summary band, unfolded at
+  every width: the lead, then the charts. The charts are the flag ledger, the Security block,
+  "Weighs most", the exposure bars and the libyears table.
+- The lead opens with the project grade, in the largest type: "Project grade: critical · 3
+  critical findings · 25 of 183 packages high or worse". The grade is the worst grade a package
+  holds. The line adds "lookup partial" or "not checked", "{n} not judged" and "{n} known to the
+  baseline" when they apply. Under it: "37 of 183 packages flagged · 126 ok · 20 allowlisted",
+  then a chip per grade, the waffle and lockrot's own gate sentence, marked "✓" or "✕".
+- "Weighs most" opens with the score load: "527 points on 37 flagged packages · 450 (85 %) from
+  high or worse". It then draws the 10 highest scores as bars on one scale, one segment per flag,
+  each flag in its own fill with a legend. lockrot's score sentence stands under each bar, and
+  "{n} more flagged packages hold {points} points ›" ends the list. The page shows no percentage
+  of a maximum, no 0 to 100 score and no average.
+- The flag ledger: one bar per flag that fired, in lockrot's flag order. Each bar splits by the
+  grades of its packages ("graded critical 2 · low 2"), adds the points the flag brings to the
+  scores ("abandoned … 288 pts") and filters the list. Under the ledger the band says how many
+  packages carry more than one flag, how deep the flagged packages sit, and what the allowlist
+  accepts.
+- The Security block counts the advisories and the packages they sit on. It draws a square per
+  advisory in its severity's tone under "Advisories by severity", and counts the packages by what
+  the fix takes. It closes with "Update now", the command lockrot publishes for the advisories, in
+  the copy control.
+- The exposure bars take the first 8 direct requirements in lockrot's order. Each bar counts the
+  flagged packages its requirement pulls in and opens Blast radius. "{n} more in Blast radius ›"
+  closes the list when lockrot lists more.
+- The libyears table lists the 8 packages furthest behind, with "≥" before a lower bound. A row
+  opens its package.
+- On Overview the grades, the flag bars, the severity chips and the fix counts are links. So are
+  the packages of "Weighs most", the exposure bars and the libyears rows. A grade, a flag bar and
+  a fix count open Findings under that filter. A severity chip opens Advisories under its
+  severity, and a package opens its sheet.
 - Each Findings row leads with its score and a score bar. The bar has one segment per term of the
   score, as wide as the term's share of the scale. A segment is solid for the flag that decides,
   hatched for a flag that corroborates and dotted for an advisory. Its tone is the band lockrot
@@ -96,16 +73,6 @@ each package by a score built from the flags that fired on it, and this page dra
   "maintenance accepted" after its pills.
 - Against a baseline each pill ends with its mark: a tick for known or covered, and a dot with the
   word for "new", "re-rated" and "fix lost".
-- The flag ledger in the summary band: one bar per flag that fired, in lockrot's flag order. Each
-  bar splits by the grades of its packages ("graded critical 2 · low 2") and filters the list.
-  Under the ledger the band says how many packages carry more than one flag, how deep the flagged
-  packages sit, and what the allowlist accepts.
-- The lead counts the packages by grade, with a chip per grade beside the waffle. Under them it
-  prints lockrot's own gate sentence, marked "✓" or "✕".
-- The Security block counts the advisories and the packages they sit on. It draws a square per
-  advisory in its severity's tone under "Advisories by severity", and counts the packages by what
-  the fix takes. It closes with "Update now", the command lockrot publishes for the advisories, in
-  the copy control.
 - The open package explains its score in "Why <grade>". The heading gives the score, the grade's
   floor and the date the ages are counted from. The bar follows at full width with each segment
   named, then the ruler. The block says first what decides the grade and where the move would
@@ -127,9 +94,10 @@ each package by a score built from the flags that fired on it, and this page dra
   It takes the package that was open when you changed tab, else the highest ranked one. With
   nothing flagged it says "No package is flagged in this report.". "How the score works ›" leads
   there from an open package and from the glossary.
-- The rail gains "Severity" and "Fix" groups, each row counting the packages it lists. It also
-  gains "Accepted flags", a toggle that hides the accepted pills and filters no package
-  (`#accepted=hide`). Flags filter the list too (`#flag=stale`).
+- The rail gains "Grade", "Severity" and "Fix" groups, each row counting the packages it lists
+  (`#verdict=`). It also gains "Accepted flags", a toggle that hides the accepted pills and filters
+  no package (`#accepted=hide`). Flags filter the list too (`#flag=stale`). The phone's "Filters"
+  summary also counts the grade and severity filters that are on.
 - Search reads `flag:`, `lead:`, `verdict:` (`priority:` alike) and `score:>=16` (also `>`, `<=`,
   `<` and `=`).
 - A report the page cannot read, or one that breaks the page as it draws, shows a screen that says
@@ -137,9 +105,16 @@ each package by a score built from the flags that fired on it, and this page dra
 
 ### Changed
 
-- Release branches are drawn from what lockrot publishes for each branch: its newest release, how
-  long ago it released, and the PHP it needs. The sentence above the timeline is lockrot's. The
-  page no longer works out which branch your PHP can take.
+- The other tabs no longer repeat the summary band. Findings opens with one line: the flagged
+  count, the grade chips, which filter the list, and "Overview ›". Advisories leads with its
+  Security block. With no filter on, its count line leaves the severities to the chips beside it.
+  Blast radius leads with the sentence on how deep the flagged packages sit. All packages starts
+  with its table.
+- Release branches is a section across the open package's sheet, under a "Release branches"
+  heading. It is drawn from what lockrot publishes for each branch: its newest release, how long
+  ago it released, and the PHP it needs. lockrot's sentence leads it, and the timeline takes the
+  full width of the sheet. At phone width the timeline takes its narrow layout. The page no longer
+  works out which branch your PHP can take.
 - All packages also sorts by score, flags or age. It shows a lower bound as "≥", read as "at
   least", and an unmeasured value as "—" with the reason.
 - The Advisories tab groups advisories by what the fix takes and to which branch. Each fix says
@@ -157,13 +132,23 @@ each package by a score built from the flags that fired on it, and this page dra
   floor. Each flag names the signals that raise it and this run's thresholds.
 - The header, the footer and paper read the lockrot version, the date and the target PHP of the
   report. The header's gate fact reads lockrot's gate.
-- Printing renders every section as on screen, the score bars included. Each printed Findings group
-  opens with the score scale.
-- In forced colours each score segment keeps a border that says its role. A wide segment prints its
-  number. The ticks and the overflow mark stay visible.
 - A link from the 0.13 page opens on the new terms: `#prio=` as `#verdict=`, and a flag in
-  `#verdict=` as `#flag=`.
+  `#verdict=` as `#flag=`. A link with a search, a package or a filter and no `view` still opens
+  Findings. An empty link opens Overview.
+- On Overview the keys `/`, `j` and `k` do nothing and stay with the browser.
+- Printing renders every section as on screen, the score bars included. It prints Overview's
+  content once as the summary, from every tab. "Weighs most" prints its bars with borders and
+  lockrot's score sentences. Each printed Findings group opens with the score scale.
+- In forced colours each score segment keeps a border that says its role, and each flag of
+  "Weighs most" keeps a pattern of its own. A wide segment prints its number. The ticks and the
+  overflow mark stay visible.
 - Numbers round a tie to the even digit, as lockrot does (2.25 reads 2.2).
+
+### Fixed
+
+- A key pressed or a link applied as soon as the page loads is no longer lost.
+- A row clicked at the end of a short page stays where it was as its package opens. The page no
+  longer slides down when the footer comes into view.
 
 ### Security
 
