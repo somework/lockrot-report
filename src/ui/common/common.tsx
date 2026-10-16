@@ -69,12 +69,15 @@ export function OutLink({
   children,
   tabIndex,
   title,
+  label,
 }: {
   href: string | null;
   children: ComponentChildren;
   /** -1 inside a list row that is not the list's Tab stop (PD-ROWS-11, `ui/rowCursor.ts`). */
   tabIndex?: -1 | undefined;
   title?: string;
+  /** The accessible name, when the visible text does not say where the link goes. */
+  label?: string;
 }) {
   const safe = safeHref(href);
   if (safe === null) return <span className="out">{children}</span>;
@@ -87,6 +90,7 @@ export function OutLink({
       rel="noopener noreferrer"
       tabIndex={tabIndex}
       title={title}
+      aria-label={label}
     >
       {children}
     </a>

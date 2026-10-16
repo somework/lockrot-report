@@ -105,7 +105,7 @@ describe("the libyears table", () => {
     if (first === undefined || second === undefined) throw new Error("fewer than two rows");
 
     expect(linkHref(first.link)).toBe("#view=findings&pkg=symfony%2Fmonolog-bridge");
-    expect(second).toMatchObject({ package: "symfony/yaml", grade: "ok" });
+    expect(second.package).toBe("symfony/yaml");
     expect(linkHref(second.link)).toBe("#view=packages&pkg=symfony%2Fyaml");
   });
 
@@ -122,6 +122,35 @@ describe("the libyears table", () => {
     expect(libyearsTop(report).map(({ package: name }) => name)).toEqual(
       ["p9", "p8", "p7", "p6", "p5", "p4", "p3", "p2"].map((p) => `v/${p}`),
     );
+  });
+
+  test("shows the newest release beside the installed version, with its date", () => {
+    expect(libyearsTop(composite()).map(({ package: name, release }) => [name, release])).toEqual([
+      ["symfony/monolog-bridge", "v2.6.13 → v6.4.45 (2026-08-30)"],
+      ["symfony/yaml", "v5.4.23 → v8.1.8 (2026-09-26)"],
+      ["twig/twig", "v2.16.1 → v3.30.0 (2026-09-25)"],
+      ["symfony/debug", "v3.4.47 → v4.4.44 (2022-07-28)"],
+      ["tubalmartin/cssmin", "v4.1.1 → v4.1.1 (2018-01-15)"],
+    ]);
+  });
+
+  test("gives the cause words when the newest release was not measured", () => {
+    const report = withFinding(composite(), "symfony/yaml", (f) => {
+      f.age.release = null;
+      f.age.release_unmeasured = "undated_releases";
+    });
+
+    expect(libyearsTop(report).find((row) => row.package === "symfony/yaml")?.release).toBe(
+      "undated releases",
+    );
+  });
+
+  test("carries no grade: a row is the package's lag, not its verdict", () => {
+    const row = libyearsTop(composite())[0];
+
+    expect(row).not.toHaveProperty("grade");
+    expect(Object.values(OVERVIEW_TAB_WORDS)).not.toContain("Grade");
+    expect(OVERVIEW_TAB_WORDS.release).toBe("Newest release");
   });
 
   test("names its caption after the cut", () => {

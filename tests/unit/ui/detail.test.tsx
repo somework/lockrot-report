@@ -113,6 +113,53 @@ describe("the sheet in SPEC §7.9.8's order", () => {
   });
 });
 
+describe("the header out-links", () => {
+  const withLink =
+    (link: string | null) =>
+    (embed: Report2Embed): Report2Embed => {
+      const entry = embed.details[B];
+      if (entry === undefined) throw new Error(`no details for ${B}`);
+      return { ...embed, details: { [B]: { ...entry, repository_link: link } } };
+    };
+
+  test("follow the reach text: the repository by host, then the registry, each in a new tab", () => {
+    const sheet = openCase("B", withLink("https://www.github.com/symfony/monolog-bridge"));
+    const meta = sheet.querySelector(".d2-meta");
+
+    expect(meta?.textContent).toBe("direct requirement · github.com ↗ · packagist.org ↗");
+    const links = within(sheet.querySelector<HTMLElement>(".d2-meta") ?? sheet).getAllByRole("link");
+    expect(links.map((a) => [a.getAttribute("aria-label"), a.getAttribute("href")])).toEqual([
+      ["github.com repository, opens in a new tab", "https://www.github.com/symfony/monolog-bridge"],
+      [
+        "packagist.org page of this package, opens in a new tab",
+        "https://packagist.org/packages/symfony/monolog-bridge",
+      ],
+    ]);
+    for (const a of links) {
+      expect(a.getAttribute("target")).toBe("_blank");
+      expect(a.getAttribute("rel")).toBe("noopener noreferrer");
+    }
+  });
+
+  test("leave out a refused repository URL and keep the registry", () => {
+    const sheet = openCase("B", withLink("javascript:alert(1)"));
+
+    expect(sheet.querySelector(".d2-meta")?.textContent).toBe("direct requirement · packagist.org ↗");
+  });
+
+  test("leave the reach text alone when no URL is published", () => {
+    const sheet = openCase("B", (embed) => {
+      const report = structuredClone(embed.report);
+      const [first] = report.findings;
+      if (first !== undefined) first.origin.package_url = null;
+      return { ...embed, report };
+    });
+
+    expect(sheet.querySelector(".d2-meta")?.textContent).toBe("direct requirement");
+    expect(sheet.querySelectorAll(".d2-meta a")).toHaveLength(0);
+  });
+});
+
 describe("the Why block of design 2A", () => {
   test("shows the header, the opening and the after-the-move line at once", () => {
     const sheet = openCase("B");

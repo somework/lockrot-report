@@ -307,6 +307,10 @@ a.legend-btn,
   font: 12px var(--mono);
   color: var(--muted);
 }
+.ov-ly-release {
+  font: 12px var(--mono);
+  color: var(--ink-2);
+}
 .ov-ly-grade {
   display: inline-block;
   padding: 2px 6px;

@@ -1,4 +1,4 @@
-import type { ComponentChildren } from "preact";
+import { Fragment, type ComponentChildren } from "preact";
 import { useId, useRef } from "preact/hooks";
 import type { DetailsEntry, Finding } from "../../model/report";
 import { ageLine, ageNotRead } from "../../domain/ageLine";
@@ -11,7 +11,7 @@ import { checksLine } from "../../domain/checksLine";
 import { agesAsOf, DETAIL_WORDS, detailReach, REFERENCE_WORDS } from "../../domain/detailWords";
 import { feedsLine } from "../../domain/feedsLine";
 import { day } from "../../domain/format";
-import { safeHref } from "../../domain/links";
+import { headerLinks, safeHref } from "../../domain/links";
 import { HIDE_ACCEPTED, hiddenByFilters2 } from "../../domain/list";
 import { repositoryLine } from "../../domain/repositoryLine";
 import { OutLink, toneClass } from "../common/common";
@@ -130,7 +130,17 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
               hideAccepted={state.filters.accepted.includes(HIDE_ACCEPTED)}
             />
           </span>
-          <span className="d2-reach">{detailReach(finding)}</span>
+          <span className="d2-meta">
+            <span className="d2-reach">{detailReach(finding)}</span>
+            {headerLinks(finding, entry?.repository_link ?? null).map((link) => (
+              <Fragment key={link.href}>
+                {" · "}
+                <OutLink href={link.href} label={link.name}>
+                  {link.text}
+                </OutLink>
+              </Fragment>
+            ))}
+          </span>
         </div>
         {hiddenByFilters2(report, state, finding.package) && (
           <p className="detail-hidden-note">
