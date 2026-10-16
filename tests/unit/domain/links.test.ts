@@ -108,6 +108,12 @@ describe("headerLinks", () => {
     expect(hosts).toEqual(["gitlab.com ↗", "git.example.test ↗"]);
   });
 
+  test("names the host the browser goes to, whatever a backslash or a user part pretends", () => {
+    const [repo] = headerLinks(finding({ package_url: null }), "https://evil.test\\@github.com/a/b");
+
+    expect(repo?.text).toBe("evil.test ↗");
+  });
+
   test("marks an archived repository with a word", () => {
     const [repo] = headerLinks(finding({}, true), REPO);
 
@@ -144,7 +150,7 @@ describe("headerLinks", () => {
     ).toEqual([]);
   });
 
-  test("leaves out a repository URL with no host to name", () => {
-    expect(headerLinks(finding({ package_url: null }), "https:///a/b")).toEqual([]);
+  test("leaves out a repository URL that safeHref passes and the browser cannot parse", () => {
+    expect(headerLinks(finding({ package_url: null }), "https://[github.com/a/b")).toEqual([]);
   });
 });

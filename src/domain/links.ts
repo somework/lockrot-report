@@ -28,12 +28,14 @@ export interface HeaderLink {
 
 const NEW_TAB = ", opens in a new tab";
 
-/** The host a reader recognises: no user, no port, no `www.`. */
-const hostOf = (url: string): string | null =>
-  /^https?:\/\/(?:[^/?#@]*@)?([^/?#:]+)/i
-    .exec(url)?.[1]
-    ?.toLowerCase()
-    .replace(/^www\./, "") ?? null;
+/** The host the browser goes to, as its own URL parser reads it, without `www.`. */
+function hostOf(url: string): string | null {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "") || null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * SPEC §7.9.8: the repository by its host, then the registry page by its name. Both URLs are
