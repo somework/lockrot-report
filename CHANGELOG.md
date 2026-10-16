@@ -50,8 +50,10 @@ project is overall, and the other tabs lead with their own part.
 - The exposure bars take the first 8 direct requirements in lockrot's order. Each bar counts the
   flagged packages its requirement pulls in and opens Blast radius. "{n} more in Blast radius ›"
   closes the list when lockrot lists more.
-- The libyears table lists the 8 packages furthest behind, with "≥" before a lower bound. A row
-  opens its package.
+- The libyears table lists the 8 packages furthest behind, with "≥" before a lower bound. Each row
+  shows the newest release beside the installed version, with its date ("v4.1.0 → v5.3.0
+  (2026-08-11)"), or why it was not measured. The table shows no grade, because a grade beside a
+  libyears number read as a grade of the lag. A row opens its package.
 - On Overview the grades, the flag bars, the severity chips and the fix counts are links. So are
   the packages of "Weighs most", the exposure bars and the libyears rows. A grade, a flag bar and
   a fix count open Findings under that filter. A severity chip opens Advisories under its
@@ -80,6 +82,9 @@ project is overall, and the other tabs lead with their own part.
 - "Show the arithmetic" opens the rest of the Why block: every term, the halvings, what each flag
   would change if it were gone, and the checks that did not run. A score of 0 shows every line. The
   lines are the bar's text, and a screen reader reads them in the bar's place.
+- The open package's header links its repository by host and its registry page by name, after
+  the reach text: "direct requirement · github.com ↗ · packagist.org ↗". An archived repository
+  reads "github.com ↗ (archived)". Each link opens in a new tab and uses the URL lockrot publishes.
 - A copy control under the open package's answer. "Copy" puts the move's commands on the
   clipboard. The shell button opens a menu of POSIX, cmd.exe and PowerShell, and each item previews
   the command quoted for that shell. The page keeps the choice for the next visit. A screen reader
