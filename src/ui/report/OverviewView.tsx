@@ -135,7 +135,6 @@ function ExposureBlock({ report }: { report: Report2 }) {
 function LibyearsTable({ report }: { report: Report2 }) {
   const rows = libyearsTop(report);
   if (rows.length === 0) return null;
-  const model = report.run.score_model;
 
   return (
     <table className="ov-ly">
@@ -146,7 +145,7 @@ function LibyearsTable({ report }: { report: Report2 }) {
           <th scope="col" className="num">
             {OVERVIEW_TAB_WORDS.libyears}
           </th>
-          <th scope="col">{OVERVIEW_TAB_WORDS.grade}</th>
+          <th scope="col">{OVERVIEW_TAB_WORDS.release}</th>
         </tr>
       </thead>
       <tbody>
@@ -159,9 +158,7 @@ function LibyearsTable({ report }: { report: Report2 }) {
               <span className="ov-ly-version">{row.version}</span>
             </td>
             <td className="num">{row.libyears}</td>
-            <td>
-              <span className={`ov-ly-grade ${toneClass(verdictTone(model, row.grade))}`}>{row.grade}</span>
-            </td>
+            <td className="ov-ly-release">{row.release}</td>
           </tr>
         ))}
       </tbody>
