@@ -90,8 +90,12 @@ test.describe("the open row outside a plain screen", () => {
     await report.gotoReport2WithHash(CASE, HASH);
     await page.emulateMedia({ forcedColors: "active" });
 
-    const style = await packagesRow(page, OPEN).evaluate((el) => getComputedStyle(el).outlineStyle);
-    expect(style).toBe("solid");
+    const outline = await packagesRow(page, OPEN).evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { style: style.outlineStyle, width: style.outlineWidth, color: style.outlineColor };
+    });
+    expect(outline).toMatchObject({ style: "solid", width: "2px" });
+    expect(outline.color).not.toBe("rgba(0, 0, 0, 0)");
   });
 
   // A print medium mounts the printed document beside the screen's table, so both rows are read.
