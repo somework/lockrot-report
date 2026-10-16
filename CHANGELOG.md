@@ -11,24 +11,34 @@ tag or the address format, says so under **Breaking** in its entry.
 ## [0.14.0-rc.2]
 
 The page lockrot 0.14.0 writes with `--format=html`, second release candidate. The summary band
-gets a tab of its own, and the other tabs lead with their own part.
+gets a tab of its own, which says how bad the project is overall, and the other tabs lead with
+their own part.
 
 ### Added
 
 - An Overview tab, the first tab and the default view. It holds the summary band, unfolded at
-  every width: the lead with the flagged figure, the grade chips, the waffle and lockrot's gate
-  sentence, then the charts. The charts are the flag ledger, the Security block, the score strip,
-  the exposure bars and the libyears table.
-- The score strip puts one mark per graded package at its score, over the ruler of the grades.
-  Equal scores stack. Each zone of the ruler is a link to Findings under its grade.
+  every width: the lead, then the charts. The charts are the flag ledger, the Security block,
+  "Weighs most", the exposure bars and the libyears table.
+- The lead opens with the project grade, in the largest type: "Project grade: critical · 3
+  critical findings · 25 of 183 packages high or worse". The grade is the worst grade a package
+  holds. The line adds "lookup partial" or "not checked", "{n} not judged" and "{n} known to the
+  baseline" when they apply. Under it: "37 of 183 packages flagged · 126 ok · 20 allowlisted",
+  then the grade chips, the waffle and lockrot's gate sentence.
+- "Weighs most" opens with the score load: "527 points on 37 flagged packages · 450 (85 %) from
+  high or worse". It then draws the 10 highest scores as bars on one scale, one segment per flag,
+  each flag in its own fill with a legend. lockrot's score sentence stands under each bar, and
+  "{n} more flagged packages hold {points} points ›" ends the list. The page shows no percentage
+  of a maximum, no 0 to 100 score and no average.
+- Each flag in the flag ledger adds the points it brings to the scores ("abandoned … 288 pts").
 - The exposure bars take the first 8 direct requirements in lockrot's order. Each bar counts the
   flagged packages its requirement pulls in and opens Blast radius. "{n} more in Blast radius ›"
   closes the list when lockrot lists more.
 - The libyears table lists the 8 packages furthest behind, with "≥" before a lower bound. A row
   opens its package.
-- The grade chips, the flag bars, the severity chips, the fix counts, the ruler zones, the exposure
-  bars and the libyears rows on Overview are links. A grade chip, a flag bar, a fix count and a
-  ruler zone open Findings under that filter. A severity chip opens Advisories under its severity.
+- On Overview the grades, the flag bars, the severity chips and the fix counts are links. So are
+  the packages of "Weighs most", the exposure bars and the libyears rows. A grade, a flag bar and
+  a fix count open Findings under that filter. A severity chip opens
+  Advisories under its severity, and a package opens its sheet.
 
 ### Changed
 
@@ -44,8 +54,8 @@ gets a tab of its own, and the other tabs lead with their own part.
 - A link from 0.13 or rc.1 with a search, a package or a filter and no `view` still opens
   Findings. An empty link opens Overview.
 - On Overview the keys `/`, `j` and `k` do nothing and stay with the browser.
-- Printing prints Overview's content once as the summary, from every tab. The score strip prints
-  as a line of its scores.
+- Printing prints Overview's content once as the summary, from every tab. "Weighs most" prints
+  its bars with borders and lockrot's score sentences.
 
 ### Fixed
 
