@@ -25,6 +25,11 @@
 .p2-table td.p2-sig {
   white-space: normal;
 }
+/* A branch version can outgrow the column: it wraps rather than push the table past its box. */
+.p2-table td.p2-ver {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .p2-ver,
 .p2-data,
 .p2-sig {

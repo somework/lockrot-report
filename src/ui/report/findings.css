@@ -68,8 +68,9 @@
   font-size: 12.5px;
   color: var(--ink);
 }
+/* A branch version can be longer than the row: it breaks only where it does not fit whole. */
 .f2-pkg .fc-ver {
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .f2-held {
   color: var(--muted);
