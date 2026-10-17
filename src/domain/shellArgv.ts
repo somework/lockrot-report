@@ -46,18 +46,23 @@ export function isPrintableArgv(argv: readonly string[]): boolean {
 // The rule leaves no quote, `%` or `!` inside an argument, so no quoting below escapes one.
 export const posixArgument = (argument: string): string =>
   POSIX_BARE.test(argument) && !argument.startsWith("=") ? argument : `'${argument}'`;
-const cmdLine = (words: readonly string[]): string =>
-  words.map((word) => (CMD_SPECIAL.test(word) ? `"${word}"` : word)).join(" ");
+const cmdWords = (words: readonly string[]): string[] =>
+  words.map((word) => (CMD_SPECIAL.test(word) ? `"${word}"` : word));
 
 // `composer` is often composer.bat, and PowerShell hands a .bat target's arguments to cmd.exe,
 // which parses `|`, `<`, `>` and `^` again. After `--%` PowerShell passes the rest verbatim.
-const LINE: Readonly<Record<Shell, (argv: readonly string[]) => string>> = {
-  posix: (argv) => argv.map(posixArgument).join(" "),
-  cmd: cmdLine,
-  powershell: ([program, ...rest]) => `${program} --% ${cmdLine(rest)}`,
+const WORDS: Readonly<Record<Shell, (argv: readonly string[]) => string[]>> = {
+  posix: (argv) => argv.map(posixArgument),
+  cmd: cmdWords,
+  powershell: ([program = "", ...rest]) => [program, "--%", ...cmdWords(rest)],
 };
 
-/** `null` when the argv fails the argument rule: no shell gets a line then. */
+/** The words of a command line, each quoted for the shell, so a line breaks only between them.
+ *  `null` when the argv fails the argument rule: no shell gets a line then. */
+export function commandWords(argv: readonly string[], shell: Shell): string[] | null {
+  return isPrintableArgv(argv) ? WORDS[shell](argv) : null;
+}
+
 export function commandLine(argv: readonly string[], shell: Shell): string | null {
-  return isPrintableArgv(argv) ? LINE[shell](argv) : null;
+  return commandWords(argv, shell)?.join(" ") ?? null;
 }

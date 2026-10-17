@@ -5,6 +5,7 @@ import { basename, join } from "node:path";
 import { gunzipSync } from "node:zlib";
 
 import type { Finding, Report2, RepositoryMetadata, Run } from "../../../src/model/report";
+import type { BlockKey } from "../blocks/blockGoldens";
 
 const FIXTURES = join(process.cwd(), ".lockrot", "tests", "fixtures");
 const CONTRACT = join(FIXTURES, "contract");
@@ -17,13 +18,11 @@ export interface PhpGoldens {
   commands_cmd: string[];
 }
 
-/** The model's strings for one case (`flags/cases.json`), the reference of the first recording only. */
-export interface ModelGoldens extends PhpGoldens {
-  answer: string;
+/** The model's strings for one case (`flags/cases.json`); the blocks of the detail sheet are `unknown` here and
+ *  typed by the page's own projection (`tests/unit/blocks/blockGoldens.ts`). */
+export interface ModelGoldens extends PhpGoldens, Record<BlockKey, unknown> {
   why: string[];
   checks: string;
-  branches: string | null;
-  security_row: string;
 }
 
 export interface RecordedCase {
