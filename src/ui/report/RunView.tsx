@@ -1,5 +1,13 @@
 import { useId } from "preact/hooks";
-import { acceptedUnchecked, advisoryLookup, noteRows, RUN_WORDS, thresholdRows } from "../../domain/runTab";
+import {
+  acceptedUnchecked,
+  advisoryLookup,
+  baselineFacts,
+  noteRows,
+  RUN_WORDS,
+  runFacts,
+  thresholdRows,
+} from "../../domain/runTab";
 import {
   bandRuler,
   liveExample,
@@ -194,12 +202,11 @@ function AcceptedUnchecked({ report }: { report: Report2 }) {
   );
 }
 
-function Thresholds({ run }: { run: Report2["run"] }) {
-  const rows = thresholdRows(run);
+function KeyValues({ head, rows }: { head: string; rows: readonly { key: string; value: string }[] }) {
   if (rows.length === 0) return null;
   return (
     <section className="sect">
-      <h3>{RUN_WORDS.thresholds}</h3>
+      <h3>{head}</h3>
       <dl className="kv">
         {rows.map(({ key, value }) => (
           <div key={key} className="run2-kv-row">
@@ -208,6 +215,27 @@ function Thresholds({ run }: { run: Report2["run"] }) {
           </div>
         ))}
       </dl>
+    </section>
+  );
+}
+
+function Baseline({ report }: { report: Report2 }) {
+  const baseline = baselineFacts(report);
+  if (baseline === null) return null;
+  return (
+    <section className="sect run2-baseline">
+      <h3>{RUN_WORDS.baseline}</h3>
+      <p className="run2-line">{baseline.head}</p>
+      {baseline.stale.length > 0 && (
+        <>
+          <p className="run2-line">{RUN_WORDS.stale}</p>
+          <ul className="run2-rows">
+            {baseline.stale.map((name) => (
+              <li key={name}>{name}</li>
+            ))}
+          </ul>
+        </>
+      )}
     </section>
   );
 }
@@ -222,15 +250,17 @@ export function RunView2() {
       <h2 className="vh" id={headingId}>
         {RUN_WORDS.tab}
       </h2>
+      <KeyValues head={RUN_WORDS.facts} rows={runFacts(report)} />
       <ScoreWorks report={report} opened={state.example} />
       <Lookup run={report.run} />
+      <Baseline report={report} />
       <Notes report={report} />
       <AcceptedUnchecked report={report} />
       <section className="sect">
         <h3>{RUN_WORDS.gate}</h3>
         <GateLine report={report} className="overview2-gate" />
       </section>
-      <Thresholds run={report.run} />
+      <KeyValues head={RUN_WORDS.thresholds} rows={thresholdRows(report.run)} />
     </section>
   );
 }
