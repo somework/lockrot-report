@@ -20,13 +20,13 @@ export type RadiusFinding2 = Finding;
 export type RadiusLayout2 = RadiusLayout<RadiusFinding2>;
 export type RadiusRow2 = RadiusRow<RadiusFinding2>;
 
-/** The packages a requirement's S7 names, with their chains. A document that holds no finding for
- *  the requirement has no S7 for it, so its graded findings that name it in `direct_dependents`
- *  stand in, less `unattributed`. */
+/** The packages a requirement's S7 names, with their chains. */
 function members(report: Report2, requirement: string, own: Finding | undefined): readonly RadiusMember[] {
   const s7 = own?.signals.find(({ id }) => id === "S7");
   if (s7 !== undefined) return (s7.data as S7).packages;
   if (own !== undefined) return [];
+  // shortcut: stands in only for a document that breaks I25 (an exposure requirement with no
+  // finding, so no S7), goes when the lockrot goldens give each such requirement a finding and an S7.
   const graded: readonly string[] = report.run.graded_verdicts;
   const shared = new Set(report.unattributed.map(({ package: name }) => name));
   return report.findings
