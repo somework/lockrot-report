@@ -1,4 +1,4 @@
-/** Words and clauses that a report-2 finding's answer (SPEC §7.9.13) and its Why lines (§7.9.8) share. */
+/** Words and clauses that the detail sheet's blocks (SPEC §7.9.13) and its Why lines (§7.9.8.8) share. */
 
 import type {
   CheckMissing,

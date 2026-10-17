@@ -192,7 +192,9 @@ function composerNotes(finding: Finding, move: AnyMove, run: Run, noted: readonl
   const why: Rich = [{ code: "composer why" }, WHY_WORDS];
   for (const reason of move.composer_moves_because) {
     if (noted.includes(reason)) continue;
-    switch (reason) {
+    // A value the page does not know reads as its words, never dropped.
+    const id: string = reason;
+    switch (id) {
       case "holders":
         note(["The packages that hold it may need to move too"]);
         break;
@@ -234,6 +236,8 @@ function composerNotes(finding: Finding, move: AnyMove, run: Run, noted: readonl
         }
         break;
       }
+      default:
+        note([capitalize(id.replaceAll("_", " "))]);
     }
   }
   return notes;

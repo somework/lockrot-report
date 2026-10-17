@@ -146,6 +146,24 @@ describe("the move's action for an open set (G91 to G93)", () => {
   });
 });
 
+describe("the Composer notes of an open set", () => {
+  test("a composer_moves_because value the page does not know reads as its words, once", () => {
+    const { finding, run } = modelCase("B-also-dagger");
+    if (finding.next_step === null) throw new Error("B-also‡ has a move");
+    finding.next_step.composer_moves_because = ["a_later_reason" as never];
+    const [also] = finding.next_step.also;
+    if (also === undefined) throw new Error("B-also‡ has an also[] move");
+    also.composer_moves_because = ["a_later_reason" as never];
+
+    const cards = moveCards(finding, run);
+
+    expect(cards.map((card) => card.composer.map((note) => plain(note.text)))).toEqual([
+      ["A later reason"],
+      [],
+    ]);
+  });
+});
+
 describe("the qualifier rows of an open set", () => {
   test("G45: a halving whose reason the page does not know names its divisor and id", () => {
     const { finding, run } = modelCase("xmlseclibs");

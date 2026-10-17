@@ -92,7 +92,8 @@ project is overall, and the other tabs lead with their own part.
 - The move card says what to run and what it clears: the action, the command, Clears, Stays, Not
   checked, Adds, the PHP check with a mark per answer, the grade after the move and Composer's
   notes. Held by hangs off the card and gives each holder's own grade and its own step. Past four
-  holders the worst three show and the rest fold, counted by grade. Each further move of the plan
+  holders three show, your composer.json first and then the worst graded, and the rest fold,
+  counted by grade. Each further move of the plan
   follows as a "Then" card with its own holders.
 - A command box in each move card. "Copy" puts the move's commands on the clipboard. The shell
   button opens a menu of POSIX, cmd.exe and PowerShell, and each item previews the command quoted

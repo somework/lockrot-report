@@ -184,14 +184,16 @@ test.describe("enshrined/svg-sanitize, a 23-branch timeline (baselined wallabag 
   test("a fold opens by keyboard, and its rows lose their clip", async ({ page }) => {
     const sheet = await openDetail2(page, "baselined-wallabag-2.6", "enshrined/svg-sanitize");
     const button = sheet.locator(".detail-timeline-fold-btn").first();
+    const collapsed = sheet.locator(".detail-timeline-row.is-collapsed");
+    const before = await collapsed.count();
+    const folded = Number.parseInt((await button.textContent()) ?? "", 10);
 
     await button.focus();
     await page.keyboard.press("Enter");
 
     await expect(button).toHaveAttribute("aria-expanded", "true");
-    await expect(sheet.locator(".detail-timeline-row.is-collapsed")).toHaveCount(
-      await sheet.locator(".detail-timeline-row.is-folded.is-collapsed").count(),
-    );
+    await expect(collapsed).toHaveCount(before - folded);
+    expect(folded).toBeGreaterThan(0);
   });
 });
 
