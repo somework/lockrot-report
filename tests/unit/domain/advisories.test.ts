@@ -11,7 +11,7 @@ import {
   advisoryFixNote,
   noAdvisoryLine,
 } from "../../../src/domain/advisories";
-import { advisoryListPartial, noAdvisoryWords } from "../../../src/domain/copySummary";
+import { advisoryCheckMark, advisoryListPartial, noAdvisoryWords } from "../../../src/domain/copySummary";
 import type { Finding, Report2 } from "../../../src/model/report";
 import { EMPTY_FILTERS, type Filters } from "../../../src/state/types";
 import { readContractJson } from "../words/recorded";
@@ -147,6 +147,22 @@ describe("row words", () => {
     expect(advisoryCountedAs(composite.run, "unrated")).toBe(", counted as medium");
     expect(advisoryCountedAs(composite.run, "high")).toBeNull();
     expect(advisoryCountedAs(composite.run, "severe")).toBeNull();
+  });
+});
+
+describe("advisoryCheckMark", () => {
+  it("is null after a complete lookup that left no package unchecked", () => {
+    expect(advisoryCheckMark(composite)).toBeNull();
+  });
+
+  it("says the check did not run when security.check is not_run", () => {
+    const skipped: Report2 = { ...composite, security: { ...composite.security, check: "not_run" } };
+    expect(advisoryCheckMark(skipped)).toBe("check not run");
+  });
+
+  it("says the check is incomplete when it was partial", () => {
+    const partial: Report2 = { ...composite, security: { ...composite.security, check: "partial" } };
+    expect(advisoryCheckMark(partial)).toBe("check incomplete");
   });
 });
 

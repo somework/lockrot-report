@@ -15,6 +15,7 @@ import {
   type AdvisoryGroup2,
   type AdvisoryPair2,
 } from "../../domain/advisories";
+import { advisoryCheckMark } from "../../domain/copySummary";
 import { gradeTone, reachWord } from "../../domain/findingRow";
 import { applyFilters2, population2 } from "../../domain/list";
 import { cveUrl, safeHref } from "../../domain/links";
@@ -136,10 +137,11 @@ function Group({ group, run, first }: { group: AdvisoryGroup2; run: Run; first: 
 function NoAdvisories2() {
   const { report } = useReport2();
   const line = noAdvisoryLine(report);
-  if (advisoryLookupHedge(report) !== null) {
+  const mark = advisoryCheckMark(report);
+  if (mark !== null) {
     return (
       <div className="empty al-empty">
-        <CheckIncompleteTag />
+        <CheckIncompleteTag mark={mark} />
         <p className="al-answer">{line}</p>
       </div>
     );
@@ -158,12 +160,13 @@ function NoAdvisories2() {
  *  beside it count. */
 function Answer({ report, answer, counted }: { report: Report2; answer: AdvisoryAnswer2; counted: boolean }) {
   const hedge = advisoryLookupHedge(report);
+  const mark = advisoryCheckMark(report);
   return (
     <>
       <p className="al-answer">{counted ? answer.head : answer.text}</p>
-      {hedge !== null && (
+      {hedge !== null && mark !== null && (
         <p className="al-partial">
-          <CheckIncompleteTag /> <span>{hedge}</span>
+          <CheckIncompleteTag mark={mark} /> <span>{hedge}</span>
         </p>
       )}
       {answer.narrowed !== null && <p className="al-scope">{answer.narrowed}</p>}

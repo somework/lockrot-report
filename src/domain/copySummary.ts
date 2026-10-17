@@ -70,6 +70,12 @@ export function advisoryListPartial({ security }: Report2): boolean {
 
 export const PARTIAL_HEDGE = "advisory check incomplete, so the list may be partial";
 
+/** PD-ADV-7's mark on a list that may be partial, or null for a full list. */
+export function advisoryCheckMark(report: Report2): string | null {
+  if (!advisoryListPartial(report)) return null;
+  return report.security.check === "not_run" ? "check not run" : "check incomplete";
+}
+
 /** `security.fixes` with a count, in `fix_kinds[]` ease order, then any kind the model does not list. */
 export function fixCounts({ security, run }: Report2): { kind: string; label: string; count: number }[] {
   const fixes: Readonly<Record<string, number>> = security.fixes;
