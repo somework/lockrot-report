@@ -1,0 +1,863 @@
+/*
+ * The sheet as blocks. Every class is prefixed `d3-`; colour, type, radius and spacing come from
+ * tokens.css and the shapes detail.css already draws (the rung, the row label, the copy box).
+ * Four shapes, one per job: the verdict is open text, the move is the one framed object (the
+ * ladder's move rung, grown), the holders hang off it on a rail, and Why keeps its tone card.
+ */
+
+.d3 {
+  container: sheet / inline-size;
+  --label-w: 88px;
+}
+.d3-body {
+  gap: 20px;
+}
+
+/* ---------- shared: a small label column beside a value ---------- */
+.d3-q > dt,
+.d3-mf > dt,
+.d3-notes-label {
+  margin: 0;
+  font: 600 10.5px/19px var(--cond);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- the verdict ---------- */
+.d3-verdict {
+  display: grid;
+  gap: 12px;
+}
+.d3-verdict .d2-asof {
+  margin-bottom: -6px;
+}
+/* The largest type on the sheet: the grade and its reason come first. */
+.d3-verdict-line {
+  margin: 0;
+  font: 22px/1.36 var(--serif);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.d3-grade {
+  font-weight: 700;
+  color: var(--tone);
+}
+.d3-inline {
+  display: inline;
+  margin: 0;
+}
+/* The headline's pointer to another block, in the small type of the readings. */
+.d3-verdict-jump {
+  margin: -6px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+/* A jump lands below the sticky header. */
+.d3-row-wide,
+.d2-branches-line {
+  scroll-margin-top: 172px;
+}
+.d3-verdict-line a.lnk,
+.d3-reading a.lnk {
+  border-bottom-style: dotted;
+}
+
+/* A reading per counted flag: the flag by word (the header holds its pill), then what lockrot read. */
+.d3-readings {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.d3-reading {
+  display: grid;
+  grid-template-columns: var(--label-w) minmax(0, 1fr);
+  gap: 3px 10px;
+  align-items: baseline;
+}
+.d3-reading-flag {
+  min-width: 0;
+  font: 600 12.5px/1.5 var(--sans);
+  color: var(--ink);
+}
+.d3-reading-text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+
+/* The qualifiers of the grade: reach and its halving, the gaps, the allowlist, the gate. */
+.d3-qualifiers {
+  margin: 0;
+  display: grid;
+  gap: 7px;
+  padding-top: 11px;
+  border-top: 1px solid var(--border);
+}
+.d3-q {
+  display: grid;
+  grid-template-columns: var(--label-w) minmax(0, 1fr);
+  gap: 1px 10px;
+  align-items: baseline;
+}
+.d3-q > dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.d3-q-line {
+  display: block;
+}
+.d3-q-sub {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+.d3-gate.is-fails {
+  color: var(--crit);
+}
+.d3-gate.is-reaches,
+.d3-gate.is-none,
+.d3-gate.is-clear {
+  color: var(--ink);
+}
+.d3-q .l1-btn {
+  font-size: 12.5px;
+}
+.d3-q code {
+  font-size: 11.5px;
+}
+
+/* ---------- the move ---------- */
+.d3-move {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px 13px 17px;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.d3-move > h3 {
+  margin: 0;
+}
+.d3-move.is-advice {
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  box-shadow: none;
+}
+/* A later move of the same plan: the card's edge is thinner than the lead move's. */
+.d3-move.is-then {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.d3-move-action {
+  margin: 0;
+  font: 600 15px/1.4 var(--sans);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.d3-move.is-advice .d3-move-action {
+  font-weight: 500;
+  color: var(--ink-2);
+}
+.d3-move-action .out {
+  font: inherit;
+}
+.d3-cmd {
+  margin-top: 0;
+}
+.d3-cmd .d2-copy-bar .eyebrow {
+  margin-right: 0;
+}
+.d3-cmd .d2-copy-bar .tag {
+  margin-right: auto;
+  font-size: 10.5px;
+  padding: 0 5px;
+}
+.d3-cmd .d2-copy-cmd code {
+  font: inherit;
+}
+.d3-move-facts {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.d3-mf {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 2px 10px;
+  align-items: baseline;
+}
+.d3-mf > dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 3px 12px;
+  font-size: 13px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.d3-mf code {
+  font-size: 12px;
+}
+.d3-check {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  color: var(--ink-2);
+}
+.d3-check-mark {
+  font-weight: 700;
+  color: var(--none);
+}
+.d3-check.is-no .d3-check-mark {
+  color: var(--crit);
+}
+
+/* Composer's caveats: a note on the move, not sentences in the answer. */
+.d3-notes {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 2px 10px;
+  padding-top: 9px;
+  border-top: 1px dashed var(--border);
+}
+.d3-notes ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+.d3-notes li {
+  position: relative;
+  padding-left: 12px;
+}
+.d3-notes li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.66em;
+  width: 5px;
+  height: 1px;
+  background: var(--border-strong);
+}
+
+/* ---------- held by: a rail that hangs off the move ---------- */
+.d3-holders {
+  --rail: color-mix(in srgb, var(--accent) 55%, var(--border));
+  position: relative;
+  display: grid;
+  gap: 8px;
+  margin-top: -20px;
+  padding: 12px 0 0 18px;
+}
+.d3-holders::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: 0;
+  bottom: 9px;
+  border-left: 1.5px solid var(--rail);
+}
+.d3-holders > h3 {
+  margin: 0;
+}
+.d3-count {
+  letter-spacing: 0.04em;
+}
+.d3-chain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+.d3-holder {
+  position: relative;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.d3-holder::before {
+  content: "";
+  position: absolute;
+  left: -17px;
+  top: 0.72em;
+  width: 11px;
+  border-top: 1.5px solid var(--rail);
+}
+.d3-holder-name {
+  overflow-wrap: anywhere;
+}
+.d3-holder-pkg {
+  font-weight: 600;
+  color: var(--ink);
+}
+.d3-holder.is-root .d3-holder-pkg {
+  font-weight: 500;
+}
+.d3-holder-ver {
+  font: 12px var(--mono);
+  color: var(--muted);
+}
+.d3-holder .tag {
+  font-size: 10.5px;
+  padding: 0 5px;
+  vertical-align: 1px;
+}
+.d3-holder-meta {
+  font-size: 12px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.d3-holder-step {
+  font-size: 12px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+/* The holder's own move, labelled so that it never reads as this sheet's move. */
+.d3-holder-step-label {
+  font: 600 10px/1 var(--cond);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.d3-holder-meta code {
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+.d3-fold > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 1px 2px;
+  border-radius: var(--radius-s);
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.d3-fold > summary::after {
+  margin-left: 0;
+}
+.d3-fold > summary:hover {
+  color: var(--ink);
+}
+.d3-fold > summary:focus-visible {
+  outline-offset: 1px;
+}
+.d3-fold[open] > summary {
+  margin-bottom: 7px;
+}
+.d3-fold .d3-holder::before {
+  left: -17px;
+}
+
+/* ---------- Why and the rows: the page's, with two marks on the ladder ---------- */
+.d3-rung-mark {
+  display: inline-block;
+  margin-left: 3px;
+  padding: 1px 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-s);
+  font: 600 9.5px/1.3 var(--cond);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  vertical-align: 1px;
+}
+.d3-rung-mark.is-move {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ---------- the advisory list: the evidence, by severity ---------- */
+.d3-advs {
+  display: grid;
+  gap: 6px;
+}
+.d3-adv-cap {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.d3-adv-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+.d3-adv {
+  display: grid;
+  gap: 1px;
+  padding: 5px 0 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+  line-height: 1.45;
+  scroll-margin-top: 172px;
+}
+.d3-adv:last-child {
+  border-bottom: 0;
+}
+.d3-adv:target {
+  background: var(--accent-soft);
+}
+.d3-adv-head {
+  overflow-wrap: anywhere;
+}
+.d3-adv-id,
+.d3-adv-src,
+.d3-name {
+  display: inline-block;
+  max-width: 100%;
+}
+/* With its advisory list, the Security row stacks its label over a full-width value. */
+.d3-row-wide {
+  grid-template-columns: minmax(0, 1fr);
+}
+.d3-adv-head .tag {
+  min-width: 5.6em;
+  font-size: 10.5px;
+  padding: 0 5px;
+  text-align: center;
+  vertical-align: 1px;
+}
+.d3-adv-id {
+  font: 600 12px var(--mono);
+  color: var(--ink);
+}
+.d3-adv-src {
+  font: 11px var(--mono);
+  color: var(--muted);
+}
+/* One line under the id: the fix, then what it affects; a long range string folds to a count. */
+.d3-adv-meta {
+  font-size: 12px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.d3-adv-affects {
+  color: var(--muted);
+}
+/* "affects" and its count of ranges wrap as one. */
+.d3-adv-affects.is-folded {
+  display: inline-block;
+  white-space: nowrap;
+}
+.d3-adv-sep {
+  color: var(--muted);
+  white-space: pre;
+}
+.d3-adv-range {
+  font-size: 11px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.d3-adv-meta > .d3-adv-range {
+  display: block;
+  margin: 3px 0 1px;
+  padding: 3px 0 3px 8px;
+  border-left: 2px solid var(--border);
+  line-height: 1.55;
+}
+.d3-adv-meta > .d3-adv-range[hidden] {
+  display: none;
+}
+/* An opened string: one alternative per line, each a box as wide as the line, so the text and a
+   copy stay the string as written. An alternative longer than the line wraps inside its box. */
+.d3-range-alt {
+  display: inline-block;
+  min-width: 100%;
+}
+.d3-range-btn {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.d3-adv-same {
+  display: block;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* A long list: one head per severity, its count beside its tag; the rows hang under it. */
+.d3-advs.is-grouped {
+  gap: 0;
+}
+.d3-advs.is-grouped .d3-adv-cap {
+  margin-bottom: 6px;
+}
+.d3-advs.is-grouped .d3-adv-list {
+  border-top: 0;
+  margin: 0 0 4px 3px;
+  padding-left: 11px;
+  border-left: 1px solid var(--border);
+}
+.d3-sev-group {
+  border-top: 1px solid var(--border);
+}
+.d3-sev-group:last-child {
+  border-bottom: 1px solid var(--border);
+}
+.d3-sev-head {
+  margin: 0;
+  font: inherit;
+}
+.d3-sev-btn {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 6px 4px 6px 0;
+  border: 0;
+  background: none;
+  font: 12.5px/1.4 var(--sans);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.d3-sev-btn .tag {
+  min-width: 5.6em;
+  font-size: 10.5px;
+  padding: 0 5px;
+  text-align: center;
+}
+.d3-sev-n {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.d3-sev-word {
+  color: var(--muted);
+}
+.d3-sev-btn .l1-mark {
+  margin-left: auto;
+  color: var(--muted);
+}
+.d3-sev-btn[aria-expanded="true"] .l1-mark {
+  transform: rotate(90deg);
+}
+.d3-sev-btn:hover {
+  background: var(--accent-soft);
+}
+.d3-sev-btn:hover .d3-sev-word {
+  color: var(--ink-2);
+}
+.d3-sev-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* ---------- lists that were sentences: one fact per line ---------- */
+.d3-lines,
+.d3-namelist,
+.d3-sev-counts,
+.d3-notes-sub {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.d3-lines {
+  display: grid;
+  gap: 2px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.d3-namelist {
+  display: grid;
+  gap: 1px;
+  margin: 2px 0 1px;
+  padding-left: 10px;
+  border-left: 1px solid var(--border);
+}
+.d3-namelist > li[hidden] {
+  display: none;
+}
+.d3-sev-counts {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin-left: 8px;
+  vertical-align: top;
+}
+.d3-sev-counts > li {
+  white-space: nowrap;
+}
+.d3-sev-counts .tag {
+  font-size: 10.5px;
+  padding: 0 5px;
+  vertical-align: 1px;
+}
+/* A count that jumps to its group: the number takes the link's underline, the tag keeps its tone. */
+.d3-sev-jump {
+  border-bottom: 0;
+  color: var(--ink);
+  text-decoration: none;
+}
+.d3-sev-jump > b {
+  border-bottom: 1px solid var(--accent);
+}
+.d3-sev-jump:hover > b {
+  color: var(--accent-ink);
+}
+.d3-sev-jump:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-s);
+}
+/* The partial update: what a plain update installs while the move waits. */
+.d3-meanwhile {
+  margin-top: 2px;
+}
+.d3-meanwhile code {
+  font-size: 11.5px;
+}
+.d3-notes-sub {
+  margin-top: 1px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+}
+.d3-mf-lines {
+  flex-direction: column;
+}
+.d3-after-cond {
+  font-size: 12px;
+  color: var(--muted);
+}
+.d3-mf .d2-after {
+  font-weight: 600;
+}
+
+/* The Age row: a label column beside each dated release or event. */
+.d3-kv {
+  margin: 0;
+  display: grid;
+  gap: 3px;
+}
+.d3-kv > div {
+  display: grid;
+  grid-template-columns: 5.5em minmax(0, 1fr);
+  gap: 0 8px;
+  align-items: baseline;
+}
+.d3-kv dt {
+  font-size: 12px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.d3-kv dd {
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* A ladder rung: what it clears on the first line, its class and holders, then the grade after it. */
+.d3-rung-head {
+  color: var(--ink);
+}
+.d3-rung-line {
+  overflow-wrap: anywhere;
+}
+.d3-rung-line .d2-after {
+  font-size: 12px;
+}
+
+/* ---------- Release branches: a short lead, and the table holds each branch ---------- */
+.d3-branches-lead {
+  font: 13.5px/1.5 var(--sans);
+  color: var(--ink);
+}
+.d3-tl-mark {
+  display: block;
+  width: fit-content;
+  margin: 2px 0 1px;
+  font-size: 8.5px;
+}
+.d3-tl-age {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.d3-tl-php-note {
+  display: block;
+  font: 500 10.5px/1.3 var(--sans);
+  white-space: normal;
+  color: var(--ink-2);
+}
+.detail-timeline-row .detail-timeline-latest,
+.detail-timeline-row .detail-timeline-php,
+.detail-timeline-row .detail-timeline-branch {
+  padding: 4px 0;
+}
+/* An open fold's rows are tight, so a long run of old branches reads as one column, not a wall. */
+.detail-timeline-row.is-folded {
+  min-height: 0;
+  line-height: 1.2;
+}
+.detail-timeline-row.is-folded .detail-timeline-latest,
+.detail-timeline-row.is-folded .detail-timeline-php,
+.detail-timeline-row.is-folded .detail-timeline-branch {
+  padding: 2px 0;
+}
+.detail-timeline-row.is-folded .d3-tl-age {
+  font-size: 9.5px;
+}
+/* A folded row stays in the accessibility tree: clipped to a hairline, not hidden. */
+.detail-timeline-row.is-collapsed {
+  visibility: visible;
+  height: 1px;
+  margin-bottom: -1px;
+  clip-path: inset(50%);
+}
+
+/* A command breaks between its words only; a word longer than the line still wraps. */
+.d3-arg {
+  display: inline-block;
+  max-width: 100%;
+}
+
+/* ---------- the phone: labels stack over their values ---------- */
+@container sheet (max-width: 400px) {
+  .d3 {
+    --label-w: 100%;
+  }
+  .d3-reading,
+  .d3-q {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .d3-verdict-line {
+    font-size: 21px;
+  }
+  .d3-notes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* detail.css's phone rule, keyed to the sheet's width instead of the window's. */
+  .d2-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .d2-ruler-tick,
+  .d2-ruler-tick em {
+    font-size: 9.5px;
+  }
+}
+
+/* ---------- forced colours: borders by role, no colour-only state ---------- */
+@media (forced-colors: active) {
+  .d3-move,
+  .d3-move.is-advice,
+  .d3-rung-mark,
+  .d3-rung-mark.is-move {
+    border-color: CanvasText;
+  }
+  .d3-holders::before,
+  .d3-holder::before {
+    border-color: CanvasText;
+  }
+  .d3-sev-btn:focus-visible,
+  .d3-sev-jump:focus-visible {
+    outline-color: Highlight;
+  }
+  .d3-sev-jump > b {
+    border-bottom-color: LinkText;
+  }
+  .d3-grade,
+  .d3-gate,
+  .d3-check-mark,
+  .d3-check.is-no .d3-check-mark {
+    color: CanvasText;
+  }
+}
+
+/* ---------- paper: every fold open, nothing to click ---------- */
+@media print {
+  .d3-move {
+    box-shadow: inset 3px 0 0 var(--accent);
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .d2-why-lines > li[hidden],
+  .d3-adv-list[hidden],
+  .d3-adv-meta > .d3-adv-range[hidden] {
+    display: block !important;
+  }
+  .d3-sev-btn .l1-mark {
+    display: none;
+  }
+  /* Paper has no in-page jumps; the evidence links print their address. */
+  .d3-jump {
+    display: none;
+  }
+  .d3 a.d3-count-link {
+    border-bottom: none;
+  }
+  a.d3-adv-id::after,
+  .detail-head-line a.out::after {
+    content: " " attr(href);
+    font: 400 9.5px var(--mono);
+    color: var(--muted);
+    word-break: break-all;
+  }
+  /* A grid that breaks across pages lays the items after the break over it in Chrome, so the
+     rows that run long on paper are blocks there. */
+  .d2-rows,
+  .d3-row-wide,
+  .d3-row-wide > .d2-row-value,
+  .d3-advs {
+    display: block;
+  }
+  .d3-row-wide > .d2-row-value > * + *,
+  .d3-advs > * + * {
+    margin-top: 6px;
+  }
+  .d3-namelist > li[hidden] {
+    display: list-item !important;
+  }
+  .d3-namelist + .l1-btn {
+    display: none;
+  }
+  /* Every branch row prints, with its marks; the fold's own row has nothing to click. */
+  .detail-timeline-row.is-collapsed {
+    height: auto;
+    min-height: 30px;
+    margin-bottom: 0;
+    clip-path: none;
+    border-top: 1px solid var(--border);
+  }
+  .detail-timeline-fold,
+  .detail-timeline-rug,
+  .detail-timeline-rug-tick {
+    display: none;
+  }
+  /* Paginated layout sizes subgrid rows one by one, so a row's text spills into the next; on
+     paper each row takes the same explicit columns instead. */
+  .detail-timeline-grid {
+    display: block;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .detail-timeline-row {
+    grid-template-columns: 9ch minmax(72px, 1fr) 10ch 17ch;
+    column-gap: 12px;
+    break-inside: avoid;
+  }
+  .d3-fold > summary::after,
+  .detail-reference-summary::after,
+  .d2-btn,
+  .detail-close {
+    display: none;
+  }
+  .detail-head {
+    position: static;
+  }
+}

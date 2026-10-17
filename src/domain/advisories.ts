@@ -9,7 +9,7 @@ import { advisoryListPartial } from "./copySummary";
 import { plural } from "./format";
 import { joinAnd } from "./joinWords";
 import { causeWord, fixLabel, lookupWord } from "./pageVocabulary";
-import { holderWord } from "./securityLine";
+import { holderWord } from "./securityBlock";
 
 export interface AdvisoryPair2 {
   readonly finding: Finding;

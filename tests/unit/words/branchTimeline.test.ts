@@ -17,8 +17,8 @@ const shape = (name: string) => {
 };
 
 describe("the rows of the timeline", () => {
-  test("B folds the five branches between the newest and yours", () => {
-    expect(shape("B")).toEqual(["8.x", "between:7.x,6.x,5.x,4.x,3.x", "2.x"]);
+  test("B folds the runs between the newest and yours on each side of the move's branch", () => {
+    expect(shape("B")).toEqual(["8.x", "between:7.x,6.x", "5.x", "between:4.x,3.x", "2.x"]);
   });
 
   test("A draws every branch: one newer, yours, one older", () => {
