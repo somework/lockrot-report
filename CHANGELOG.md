@@ -51,8 +51,8 @@ project is overall, and the other tabs lead with their own part.
   flagged packages its requirement pulls in and opens Blast radius. "{n} more in Blast radius ›"
   closes the list when lockrot lists more.
 - The libyears table lists the 8 packages furthest behind, with "≥" before a lower bound. Each row
-  shows the newest release beside the installed version, with its date ("v4.1.0 → v5.3.0
-  (2026-08-11)"), or why it was not measured. The table shows no grade, because a grade beside a
+  shows the package's most recent release with its date ("v5.3.0 (2026-08-11)"), or why it was not
+  measured. That release can be older than the installed version, so no arrow joins the two. The table shows no grade, because a grade beside a
   libyears number read as a grade of the lag. A row opens its package.
 - On Overview the grades, the flag bars, the severity chips and the fix counts are links. So are
   the packages of "Weighs most", the exposure bars and the libyears rows. A grade, a flag bar and
@@ -142,11 +142,13 @@ project is overall, and the other tabs lead with their own part.
 - The Advisories tab groups advisories by what the fix takes and to which branch. Each fix says
   the PHP it needs and what holds it. A row gives the date the advisory was reported.
 - "No advisory affects this lock." shows only after a complete lookup. Otherwise the tab says what
-  the lookup missed under a "Check incomplete" tag. The Advisories tab then marks its count with a
-  ring and adds ", check incomplete" to its name.
-- Blast radius places each flagged package under every direct requirement its chain runs through.
-  An open row's tree shows each package's flags and score. One sentence names the flagged packages
-  that too many requirements share to list under one.
+  the lookup missed under a "Check incomplete" tag, or "Check not run" when the lookup did not run.
+  The Advisories tab then marks its count with a ring and adds ", check incomplete" or ", check not
+  run" to its name. Overview's Security block says "the advisory check did not run" for such a run.
+- Blast radius lists the direct requirements in the order of lockrot's exposure list, the order of
+  Overview's exposure bars. Each row lists the flagged packages lockrot names under that
+  requirement, so its count is lockrot's. An open row's tree shows each package's flags and score.
+  One sentence names the flagged packages that too many requirements share to list under one.
 - Libyears reads as one line: the total, the direct requirements' share, the furthest behind, and
   one "N not measured" per cause. Every number has two decimals. With no package measured it says
   so.
@@ -161,6 +163,13 @@ project is overall, and the other tabs lead with their own part.
 - Printing renders every section as on screen, the score bars included. It prints Overview's
   content once as the summary, from every tab. "Weighs most" prints its bars with borders and
   lockrot's score sentences. Each printed Findings group opens with the score scale.
+- Print opens every fold: the score rules, each Blast radius row and every fold of a sheet. It
+  prints each affected range in full and fits the Run data tables to the page width. With a
+  package's sheet open, print prints that sheet alone.
+- Run data opens with the run's facts: the mode, the lock file, whether require-dev was checked,
+  and how old the cached repository activity is. Each advisory registry row names its outcome. A
+  run against a baseline gets a Baseline block with its known, new, worsened and stale counts and
+  each stale entry.
 - In forced colours each score segment keeps a border that says its role, and each flag of
   "Weighs most" keeps a pattern of its own. A wide segment prints its number. The ticks and the
   overflow mark stay visible.
@@ -168,6 +177,14 @@ project is overall, and the other tabs lead with their own part.
 
 ### Fixed
 
+- The header's "data as of" reads the report's data date. A run that read no repository data, such
+  as an offline run without a cache, shows "—" there and no date.
+- An advisory's CVE id links to the advisory's own page as lockrot records it. The page no longer
+  builds a link to the NVD. A CVE id with no recorded link is text.
+- A long branch version wraps in Findings and in All packages. No tab scrolls sideways at 320 px,
+  and All packages keeps every column in view.
+- A skip link is the page's first Tab stop and moves focus to the list. Below the wide layout the
+  open sheet is a modal dialog to a screen reader. Overview names its blocks in headings.
 - A key pressed or a link applied as soon as the page loads is no longer lost.
 - A row clicked at the end of a short page stays where it was as its package opens. The page no
   longer slides down when the footer comes into view.
