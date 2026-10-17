@@ -7,7 +7,7 @@ import { REACH_NAMES_SHOWN, REACH_NAMES_SHOWN_MAX } from "../../domain/sheetThre
 import { readingRich, verdictBlock } from "../../domain/verdictBlock";
 import { toneClass } from "../common/common";
 import { DisclosureButton } from "../common/Disclosure";
-import { RichText, type JumpIds } from "./RichText";
+import { jumpTo, RichText, type JumpIds } from "./RichText";
 
 const Name = ({ name }: { name: string }) => <span className="d3-name">{name}</span>;
 
@@ -155,7 +155,13 @@ export function VerdictBlock({
       </p>
       {inline?.jump != null && jumps.branches !== undefined && (
         <p className="d3-verdict-jump d3-jump">
-          <a className="lnk" href={`#${jumps.branches}`}>
+          <a
+            className="lnk"
+            href={`#${jumps.branches}`}
+            onClick={(event) => {
+              if (jumps.branches !== undefined) jumpTo(event, jumps.branches);
+            }}
+          >
             {inline.jump}
           </a>
         </p>

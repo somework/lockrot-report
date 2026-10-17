@@ -15,7 +15,7 @@ import {
 } from "../../domain/securityBlock";
 import { toneClass } from "../common/common";
 import { DisclosureButton } from "../common/Disclosure";
-import { RichText } from "./RichText";
+import { jumpTo, RichText } from "./RichText";
 
 const severityTag = (run: Run, severity: string) => (
   <span className={`tag ${toneClass(gradeTone(advisoryBand(run, severity)))}`}>{severity}</span>
@@ -121,8 +121,9 @@ function AdvisoryRow({ row, rowId, at, run, withTag, reveal }: RowProps) {
             <a
               className="lnk"
               href={`#${rowId(sameAs.at)}`}
-              onClick={() => {
+              onClick={(event) => {
                 reveal(sameAs.at);
+                jumpTo(event, rowId(sameAs.at));
               }}
             >
               {sameAs.id}
@@ -222,8 +223,9 @@ export function SecurityRow2({
                         className="lnk d3-sev-jump"
                         href={`#${groupId(group)}`}
                         aria-label={showGroupName(count, severity)}
-                        onClick={() => {
+                        onClick={(event) => {
                           openGroup(group);
+                          jumpTo(event, groupId(group));
                         }}
                       >
                         {body}

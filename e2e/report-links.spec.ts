@@ -43,13 +43,13 @@ test.describe("the libyears table", () => {
 });
 
 test.describe("the detail header's out-links", () => {
-  test("follow the reach text, mark an archived repository in words and open in a new tab", async ({
+  test("mark an archived repository in words and open in a new tab; the Reach row holds the reach", async ({
     page,
   }) => {
     const sheet = await openDetail2(page, WALLABAG, ARCHIVED);
     const meta = sheet.locator(".d2-meta");
 
-    await expect(meta).toHaveText("direct requirement · github.com ↗ (archived) · packagist.org ↗");
+    await expect(meta).toHaveText("github.com ↗ (archived) · packagist.org ↗");
     const repository = meta.getByRole("link", {
       name: "github.com repository (archived), opens in a new tab",
     });

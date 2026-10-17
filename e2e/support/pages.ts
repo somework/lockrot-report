@@ -33,6 +33,11 @@ export function report2Cases(): string[] {
     .sort();
 }
 
+/** The `file://` URL of one recorded sheet's page (`fixtures/sheets/`), by its file name. */
+export function sheetUrl(name: string): string {
+  return fileUrl(`sheet-${name}`);
+}
+
 /** The `file://` URL of one report-2 page, by case name. */
 export function report2Url(caseName: string): string {
   return fileUrl(REPORT2_PREFIX + caseName);

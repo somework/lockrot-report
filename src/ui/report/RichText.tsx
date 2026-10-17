@@ -1,6 +1,20 @@
 import type { JumpTarget, Rich } from "../../domain/rich";
 import { OutLink } from "../common/common";
 
+/** Scrolls to an element of the sheet. The page keeps its state in the URL fragment, so a jump
+ *  never sets the fragment: `#id` would drop the open package. */
+export function jumpTo(event: MouseEvent, id: string): void {
+  event.preventDefault();
+  // A frame later, so a group the click opens has drawn the row it lands on.
+  requestAnimationFrame(() => {
+    const target = document.getElementById(id);
+    if (target === null) return;
+    if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+    if (typeof target.scrollIntoView === "function") target.scrollIntoView({ block: "start" });
+    target.focus({ preventScroll: true });
+  });
+}
+
 /** The ids the sheet's in-page jumps land on; a target the sheet does not draw prints as text. */
 export type JumpIds = Readonly<Partial<Record<JumpTarget, string>>>;
 
@@ -22,7 +36,14 @@ export function RichText({ rich, jumps = {} }: { rich: Rich; jumps?: JumpIds }) 
         const target = jumps[piece.jump];
         if (target === undefined) return (piece.lead ?? "") + piece.text;
         const link = (
-          <a key={i} className={piece.lead === undefined ? "lnk d3-count-link" : "lnk"} href={`#${target}`}>
+          <a
+            key={i}
+            className={piece.lead === undefined ? "lnk d3-count-link" : "lnk"}
+            href={`#${target}`}
+            onClick={(event) => {
+              jumpTo(event, target);
+            }}
+          >
             {piece.text}
           </a>
         );

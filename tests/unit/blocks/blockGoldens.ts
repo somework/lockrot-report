@@ -3,12 +3,7 @@
 import { ageRows } from "../../../src/domain/ageRows";
 import { branchesLead, branchTimeline, laneMarks, laneWords } from "../../../src/domain/branchTimeline";
 import type { Holder, HeldByBlock } from "../../../src/domain/moveCards";
-import {
-  commandLines,
-  holderName,
-  moveCards,
-  STEP_LABEL,
-} from "../../../src/domain/moveCards";
+import { commandLines, holderName, moveCards, STEP_LABEL } from "../../../src/domain/moveCards";
 import { gateLines, qualifiers, reachLines } from "../../../src/domain/qualifierRows";
 import { plain } from "../../../src/domain/rich";
 import { rungLines, securityBlock } from "../../../src/domain/securityBlock";

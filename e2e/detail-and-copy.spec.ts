@@ -1,5 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { commandLines, detailSurface, golden, openDetail2, phpGolden } from "./support/report2/detail";
+import {
+  commandLines,
+  detailSurface,
+  golden,
+  goldenOf,
+  openDetail2,
+  phpGolden,
+} from "./support/report2/detail";
 
 /**
  * The clipboard itself is the browser's: permissions for it exist only in Chromium, and a headless
@@ -24,13 +31,14 @@ function stubClipboard(mode: string): void {
 test.describe("report-2: the detail sheet and its copy control", () => {
   const B = "symfony/monolog-bridge";
 
-  test("names a graded replacement the answer points at", async ({ page }) => {
+  test("names a graded replacement in the move's action, linked to its registry page", async ({ page }) => {
     const sheet = await openDetail2(page, "replace-graded", "web-token/jwt-key-mgmt");
+    const [move] = goldenOf("moves", "replace-graded") as { action: string }[];
 
-    await expect(sheet.locator(".d2-answer")).toHaveText(golden("answer", "replace-graded"));
+    await expect(sheet.locator(".d3-move-action")).toHaveText(move?.action ?? "");
   });
 
-  test("names the package and its grade, and prints the golden answer above the copy control", async ({
+  test("names the package and its grade, the golden verdict line, then the move's command", async ({
     page,
   }) => {
     const sheet = await openDetail2(page, "B", B);
@@ -38,7 +46,8 @@ test.describe("report-2: the detail sheet and its copy control", () => {
     await expect(sheet.getByRole("heading", { level: 2 })).toHaveText(B);
     await expect(sheet.locator(".detail-head .pill")).toHaveText("critical");
     await expect(sheet.locator(".d2-asof")).toHaveText("Ages as of 2026-10-01");
-    await expect(sheet.locator(".d2-answer")).toHaveText(golden("answer", "B"));
+    await expect(sheet.locator(".d3-verdict-line")).toHaveText(golden("verdict-line", "B"));
+    await expect(sheet.locator(".d3-move .eyebrow").first()).toHaveText("The move");
     expect(await commandLines(sheet)).toEqual(["composer require 'symfony/monolog-bridge:^5.4.52'"]);
   });
 

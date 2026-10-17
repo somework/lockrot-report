@@ -117,7 +117,7 @@ describe("the move's action for an open set (G91 to G93)", () => {
   ])("a no-move with reason %s", (reason, words) => {
     const { finding, run } = modelCase("stale-only");
     if (finding.next_step === null) throw new Error("stale-only has a move");
-    finding.next_step.reason = reason as never;
+    finding.next_step.reason = reason;
 
     expect(action(finding, run)).toBe(words);
   });
@@ -127,7 +127,7 @@ describe("the move's action for an open set (G91 to G93)", () => {
     (reason) => {
       const { finding, run } = modelCase("stale-only");
       if (finding.next_step === null) throw new Error("stale-only has a move");
-      finding.next_step.reason = reason as never;
+      finding.next_step.reason = reason;
       finding.next_step.text = "no move: a later reason.";
 
       expect(action(finding, run)).toBe("Next step: no move: a later reason.");
@@ -137,8 +137,8 @@ describe("the move's action for an open set (G91 to G93)", () => {
   test("a kind the page does not know, with no text, reads its kind and reason", () => {
     const { finding, run } = modelCase("stale-only");
     if (finding.next_step === null) throw new Error("stale-only has a move");
-    finding.next_step.kind = "a-later-kind" as never;
-    finding.next_step.reason = "some_reason" as never;
+    finding.next_step.kind = "a-later-kind";
+    finding.next_step.reason = "some_reason";
     finding.next_step.text = "";
 
     expect(action(finding, run)).toBe("Next step: a later kind (some reason)");
@@ -183,7 +183,10 @@ describe("Held by of a holder that is not graded", () => {
     held.holder.verdict = "ok";
     held.holder.flag_ids = [];
 
-    expect(moveCards(finding, run)[0]?.heldBy?.shown[0]).toMatchObject({ grade: null, meta: ["requires ", { code: held.constraint }] });
+    expect(moveCards(finding, run)[0]?.heldBy?.shown[0]).toMatchObject({
+      grade: null,
+      meta: ["requires ", { code: held.constraint }],
+    });
   });
 });
 
@@ -209,7 +212,7 @@ describe("the Security row", () => {
     if (finding.security.status !== "vulnerable" || finding.security.partial === null)
       throw new Error("partial-op‡ has a partial update");
     finding.security.partial.clears = [
-      { kind: "flag", id: "left-behind", basis: "branch_releasing" } as never,
+      { kind: "flag", id: "left-behind", basis: "branch_releasing" },
       ...finding.security.partial.clears,
     ];
 

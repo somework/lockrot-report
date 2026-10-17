@@ -16,7 +16,8 @@ export async function openDetail2(page: Page, caseName: string, pkg: string, has
   return sheet;
 }
 
-function goldenOf(stringClass: string, caseName: string): unknown {
+/** One case's value of a class under `goldens/en/`, such as a block golden. */
+export function goldenOf(stringClass: string, caseName: string): unknown {
   const all = JSON.parse(
     readFileSync(join(REPO_ROOT, "goldens", "en", `${stringClass}.json`), "utf8"),
   ) as Record<string, unknown>;
