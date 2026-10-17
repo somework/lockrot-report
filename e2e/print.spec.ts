@@ -319,9 +319,11 @@ test.describe("report-2: the printed report reads the report-2 model", () => {
 
   test("the Why bar's ruler keeps its tones on paper", async ({ page }) => {
     await page.goto(`${report2Url("composite")}#pkg=${encodeURIComponent(MONOLOG)}`);
-    const ruler = page.locator('[data-surface="detail"] .d2-ruler');
-    await expect(ruler).toBeVisible();
+    await expect(page.locator('main [data-surface="detail"] .d2-ruler')).toBeVisible();
     await page.emulateMedia({ media: "print" });
+    // With a sheet open, the printed document is that sheet.
+    const ruler = page.locator('.pd [data-surface="detail"] .d2-ruler');
+    await expect(ruler).toBeVisible();
     expect(await ruler.evaluate((el) => getComputedStyle(el).printColorAdjust)).toBe("exact");
   });
 
