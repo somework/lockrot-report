@@ -31,6 +31,6 @@
 
 .advisories2 .ac2-note {
   display: block;
-  font-size: 11.5px;
+  font-size: var(--text-11-5);
   color: var(--muted);
 }

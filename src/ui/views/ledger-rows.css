@@ -42,7 +42,7 @@
   /* Covers the pixel or two a rounded, measured --topbar-h can leave between the header and this. */
   box-shadow: 0 -3px 0 var(--bg);
   font-family: var(--cond);
-  font-size: 10.5px;
+  font-size: var(--text-10-5);
   font-weight: 600;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -84,7 +84,7 @@
   bottom: 0;
   padding-bottom: 7px;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-10);
   font-weight: 500;
   letter-spacing: 0;
   line-height: 1;
@@ -134,7 +134,7 @@
 .fgroup-head h2 {
   margin: 0;
   font-family: var(--cond);
-  font-size: 12.5px;
+  font-size: var(--text-12-5);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -143,7 +143,7 @@
 }
 .fgroup-count {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--text-12);
   color: var(--muted);
   white-space: nowrap;
 }
@@ -173,7 +173,7 @@
   margin: 0;
   padding: 10px var(--fl-pad-r) 8px var(--fl-pad-l);
   font-family: var(--serif);
-  font-size: 14.5px;
+  font-size: var(--text-14-5);
   line-height: 1.35;
   color: var(--ink-2);
   border-bottom: 1px solid var(--border);
@@ -203,7 +203,7 @@
   padding: var(--fl-pad-y) var(--fl-pad-r) var(--fl-pad-y) var(--fl-pad-l);
   border-bottom: 1px solid var(--border);
   background: var(--row-bg);
-  font-size: 13px;
+  font-size: var(--text-13);
   line-height: 18px;
   cursor: pointer;
   transition: background-color 0.12s ease;
@@ -249,7 +249,7 @@
 }
 .fc-ver {
   font-family: var(--mono);
-  font-size: 11.5px;
+  font-size: var(--text-11-5);
   font-weight: 400;
   color: var(--muted);
 }
@@ -267,14 +267,14 @@
   margin-left: 6px;
   padding: 0 4px;
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: var(--text-10-5);
   line-height: 14px;
   color: var(--muted);
   border: 1px solid var(--border-strong);
-  border-radius: 3px;
+  border-radius: var(--radius-s);
 }
 .frow .tag {
-  font-size: 10.5px;
+  font-size: var(--text-10-5);
   line-height: 15px;
   padding: 0 5px;
   vertical-align: 1px;
@@ -335,7 +335,7 @@
   top: 50%;
   height: 6px;
   transform: translateY(-50%);
-  border-radius: 0 3px 3px 0;
+  border-radius: 0 var(--radius-s) var(--radius-s) 0;
   background: var(--tone);
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
@@ -358,7 +358,7 @@
   grid-column: 2;
   grid-row: 1;
   font-family: var(--mono);
-  font-size: 11.5px;
+  font-size: var(--text-11-5);
   font-variant-numeric: tabular-nums;
   text-align: right;
   color: var(--ink-2);

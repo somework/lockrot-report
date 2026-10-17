@@ -33,7 +33,7 @@
   min-width: 0;
 }
 .brand h1 {
-  font-size: 19px;
+  font-size: var(--text-19);
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.3;
@@ -50,7 +50,7 @@
   flex: none;
   width: 9px;
   height: 9px;
-  border-radius: 50%;
+  border-radius: var(--radius-round);
   background: var(--crit);
   align-self: center;
   box-shadow: 0 0 0 3px var(--crit-soft);
@@ -63,7 +63,7 @@
   flex-wrap: wrap;
   gap: 4px 18px;
   align-items: center;
-  font-size: 12px;
+  font-size: var(--text-12);
   color: var(--muted);
   margin-left: auto;
   justify-content: flex-end;
@@ -126,7 +126,7 @@
   border-radius: var(--radius-s);
   background: var(--surface-2);
   color: var(--ink);
-  font: 12px/1.5 var(--mono);
+  font: var(--text-12)/1.5 var(--mono);
 }
 @media screen {
   /* Only ever filled while the page prints (print/usePrintDocument.ts). */
@@ -171,7 +171,7 @@
   background: var(--surface);
   color: var(--ink-2);
   box-shadow: var(--shadow);
-  font-size: 13px;
+  font-size: var(--text-13);
   line-height: 1.5;
 }
 
@@ -236,7 +236,7 @@
   margin-top: -9px;
   padding: 0;
   border: 1px solid var(--border-strong);
-  border-radius: 50%;
+  border-radius: var(--radius-round);
   background: var(--surface);
   color: var(--ink-2);
   box-shadow: var(--shadow);
@@ -301,7 +301,7 @@
 }
 .tab .n {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-11);
   margin-left: 6px;
   color: var(--muted);
 }
@@ -315,7 +315,7 @@
   height: 7px;
   margin-left: 4px;
   border: 1.5px solid var(--high);
-  border-radius: 50%;
+  border-radius: var(--radius-round);
   vertical-align: 1px;
 }
 @media (forced-colors: active) {
@@ -353,7 +353,7 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-m);
-  font-size: 13px;
+  font-size: var(--text-13);
   color: var(--ink-2);
 }
 /* The disclosure marker itself (shape, rotation, hover/focus) is the one shared rule in
@@ -541,7 +541,7 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   background: var(--high-soft);
   border-bottom: 1px solid var(--high);
   color: var(--ink);
-  font-size: 13px;
+  font-size: var(--text-13);
 }
 .schema-banner p {
   max-width: var(--page-max);
@@ -570,7 +570,7 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   scroll-behavior: smooth;
   padding: 0;
   border: 1px solid var(--border);
-  border-radius: 11px;
+  border-radius: var(--radius-l);
   /* visual review: `background`/`color` longhand, not the shorthand — a report of the dialog
      painting stale (a white panel with dark-theme text, while `getComputedStyle` already read the
      right dark `--surface`) pointed at this top-layer element specifically, never the pill or gate
@@ -611,7 +611,7 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   align-items: baseline;
 }
 .glossary-head h2 {
-  font-size: 16px;
+  font-size: var(--text-16);
   margin-right: auto;
 }
 .glossary-body {
@@ -627,7 +627,7 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
 }
 .glossary-sect > h3 {
   font-family: var(--cond);
-  font-size: 11px;
+  font-size: var(--text-11);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
@@ -649,7 +649,7 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
 .glossary-sect > summary h3 {
   margin: 0;
   font-family: var(--cond);
-  font-size: 11px;
+  font-size: var(--text-11);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
@@ -659,16 +659,16 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   display: grid;
   grid-template-columns: minmax(96px, auto) minmax(0, 1fr);
   gap: 7px 14px;
-  font-size: 13px;
+  font-size: var(--text-13);
 }
 .glossary .deflist dt {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--text-12);
 }
 .glossary .deflist dt .out,
 .glossary .deflist dt .term-name {
   font-family: var(--sans);
-  font-size: 12px;
+  font-size: var(--text-12);
   color: var(--muted);
 }
 .glossary .deflist dd {
@@ -685,11 +685,11 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   color: var(--tone);
 }
 .glossary .small-note {
-  font-size: 12px;
+  font-size: var(--text-12);
   color: var(--muted);
 }
 .glossary .prose {
-  font-size: 13px;
+  font-size: var(--text-13);
   color: var(--ink-2);
 }
 @media (max-width: 480px) {
@@ -712,7 +712,7 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 12px;
+  font-size: var(--text-12);
   color: var(--muted);
 }
 /* The one line in the colophon a reader is meant to act on, so it carries ink rather than the
@@ -722,7 +722,7 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   padding: 9px 12px;
   border-left: 2px solid var(--accent);
   background: var(--surface-2);
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 var(--radius-m) var(--radius-m) 0;
   color: var(--ink-2);
   line-height: 1.7;
 }
@@ -731,7 +731,7 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   border: 1px solid var(--border);
   padding: 1px 6px;
   border-radius: var(--radius-s);
-  font-size: 11px;
+  font-size: var(--text-11);
   color: var(--ink);
   white-space: nowrap;
 }

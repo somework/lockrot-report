@@ -19,7 +19,7 @@
   letter-spacing: 0.1em;
 }
 .run-meta .gate-flag {
-  font-size: 11px;
+  font-size: var(--text-11);
   font-weight: 500;
 }
 /* Out of sight, still read aloud: the header's flags where they would cost it a line (Header.tsx). */

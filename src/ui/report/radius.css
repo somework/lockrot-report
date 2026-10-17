@@ -7,14 +7,14 @@
 .r2-answer {
   margin: 0;
   max-width: 72ch;
-  font: 17px/1.4 var(--serif);
+  font: var(--text-17)/1.4 var(--serif);
   color: var(--ink);
 }
 /* The depth sentence leads the tab, so it reads as the answer's context, a size down. */
 .r2-depth {
   margin: 0;
   max-width: 72ch;
-  font: 15px/1.45 var(--serif);
+  font: var(--text-15)/1.45 var(--serif);
   color: var(--ink-2);
   overflow-wrap: anywhere;
 }
@@ -53,7 +53,7 @@
   outline-offset: -2px;
 }
 .r2-rank {
-  font: 600 12px var(--mono);
+  font: 600 var(--text-12) var(--mono);
   color: var(--muted);
   text-align: right;
 }
@@ -71,14 +71,14 @@
   grid-column: 4;
 }
 .r2-self {
-  font: 700 10.5px var(--cond);
+  font: 700 var(--text-10-5) var(--cond);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--tone);
   white-space: nowrap;
 }
 .r2-say {
-  font-size: 13px;
+  font-size: var(--text-13);
   color: var(--ink-2);
 }
 .r2-also {
@@ -110,23 +110,23 @@
   margin-left: calc(var(--depth, 0) * 18px);
   padding: 4px 8px 4px 10px;
   border-left: 2px solid var(--tone);
-  font-size: 13px;
+  font-size: var(--text-13);
   cursor: pointer;
 }
 .r2-score {
   min-width: 2ch;
-  font: 600 12.5px var(--mono);
+  font: 600 var(--text-12-5) var(--mono);
   color: var(--tone);
   text-align: right;
 }
 .r2-grade {
-  font: 700 10px var(--cond);
+  font: 700 var(--text-10) var(--cond);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--tone);
 }
 .r2-via {
-  font-size: 12px;
+  font-size: var(--text-12);
   color: var(--muted);
 }
 .r2-pills {
@@ -139,7 +139,7 @@
   border: 0;
   background: none;
   padding: 4px 0;
-  font: 600 13px var(--sans);
+  font: 600 var(--text-13) var(--sans);
   color: var(--ink);
   cursor: pointer;
   text-align: left;
@@ -147,7 +147,7 @@
 .r2-note {
   margin: 0;
   max-width: 90ch;
-  font-size: 12.5px;
+  font-size: var(--text-12-5);
   color: var(--muted);
 }
 

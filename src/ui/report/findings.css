@@ -33,7 +33,7 @@
 .f2-num {
   width: var(--fl-num);
   text-align: right;
-  font: 600 13px var(--mono);
+  font: 600 var(--text-13) var(--mono);
   font-variant-numeric: tabular-nums;
   color: var(--tone);
 }
@@ -48,7 +48,7 @@
   gap: 4px 5px;
 }
 .f2-accepted {
-  font-size: 11.5px;
+  font-size: var(--text-11-5);
   color: var(--muted);
 }
 .f2-ledger .f2-age {
@@ -58,14 +58,14 @@
   grid-area: reach;
   justify-self: end;
   text-align: right;
-  font-size: 12px;
+  font-size: var(--text-12);
   color: var(--ink-2);
 }
 .f2-next {
   grid-area: next;
   justify-self: end;
   text-align: right;
-  font-size: 12.5px;
+  font-size: var(--text-12-5);
   color: var(--ink);
 }
 /* A branch version can be longer than the row: it breaks only where it does not fit whole. */
@@ -124,7 +124,7 @@
     bottom: 0;
     padding-bottom: 7px;
     transform: translateX(-50%);
-    font: 500 10px/1 var(--mono);
+    font: 500 var(--text-10)/1 var(--mono);
     letter-spacing: 0;
     text-transform: none;
   }
@@ -150,7 +150,7 @@
   height: 16px;
   margin-top: 4px;
   padding-left: var(--fl-pad-l, 14px);
-  font: 600 9.5px var(--cond);
+  font: 600 var(--text-9-5) var(--cond);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -170,7 +170,7 @@
   position: absolute;
   bottom: 0;
   transform: translateX(-50%);
-  font: 500 9.5px/1 var(--mono);
+  font: 500 var(--text-9-5)/1 var(--mono);
   letter-spacing: 0;
 }
 
@@ -184,7 +184,7 @@
   max-width: var(--page-max);
   margin: 0 auto;
   padding: 10px 20px;
-  font-size: 13.5px;
+  font-size: var(--text-13-5);
   color: var(--ink-2);
 }
 .f2-strip-figure {

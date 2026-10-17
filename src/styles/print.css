@@ -30,14 +30,14 @@
 
   @top-left {
     content: var(--lr-running-head, "");
-    font: 7.5pt/1.2 var(--mono);
+    font: var(--text-print-xs)/1.2 var(--mono);
     color: #536562;
     vertical-align: bottom;
     padding-bottom: 3mm;
   }
   @bottom-right {
     content: "page " counter(page) " of " counter(pages);
-    font: 7.5pt/1.2 var(--mono);
+    font: var(--text-print-xs)/1.2 var(--mono);
     color: #536562;
     vertical-align: top;
     padding-top: 3mm;
@@ -145,7 +145,7 @@
     display: block;
     border-top-color: #999;
     padding: 8px 0 0;
-    font-size: 10.5px;
+    font-size: var(--text-10-5);
     line-height: 1.5;
     break-inside: avoid;
   }
@@ -206,11 +206,11 @@
  * the tabs' own components; only their screen spacing is trimmed to paper's. */
 @media print {
   .pd {
-    font-size: 12px;
+    font-size: var(--text-12);
   }
   .pd-intro {
     margin: 10px 0 2px;
-    font: 15px/1.45 var(--serif);
+    font: var(--text-15)/1.45 var(--serif);
     color: var(--ink);
   }
   .pd-intro-lead {
@@ -226,12 +226,12 @@
     color: var(--muted);
   }
   .pd-toc-num {
-    font: 600 10px var(--mono);
+    font: 600 var(--text-10) var(--mono);
     color: var(--muted);
   }
   .pd-intro-note {
     margin: 0 0 4px;
-    font-size: 11px;
+    font-size: var(--text-11);
     color: var(--muted);
   }
 
@@ -254,17 +254,17 @@
     align-items: baseline;
     gap: 10px;
     margin: 0;
-    font: 600 19px/1.2 var(--serif);
+    font: 600 var(--text-19)/1.2 var(--serif);
     letter-spacing: -0.01em;
     color: var(--ink);
   }
   .pd-num {
-    font: 600 11px var(--mono);
+    font: 600 var(--text-11) var(--mono);
     color: var(--muted);
   }
   .pd-lede {
     margin: 8px 0 10px;
-    font: 14px/1.4 var(--serif);
+    font: var(--text-14)/1.4 var(--serif);
     color: var(--ink-2);
   }
   /* A lede keeps to what follows it only when something does (PrintDocument's `more`): an empty
@@ -336,7 +336,7 @@
     border-radius: 0;
   }
   .pd .tablewrap table {
-    font-size: 10px;
+    font-size: var(--text-10);
   }
   .pd .tablewrap th,
   .pd .tablewrap td {
@@ -355,12 +355,12 @@
     white-space: nowrap;
   }
   .pd .tablewrap .pill {
-    font-size: 8px;
+    font-size: var(--text-8);
     padding: 1px 4px;
   }
   .pd .tablewrap th {
     position: static;
-    font-size: 8.5px;
+    font-size: var(--text-8-5);
     border-bottom-color: var(--border-strong);
   }
 
@@ -392,7 +392,7 @@
   }
   .pd-run .sect h3 {
     margin: 0 0 4px;
-    font-size: 11px;
+    font-size: var(--text-11);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--muted);
@@ -403,7 +403,7 @@
   }
   .pd-run .run2-table {
     width: 100%;
-    font-size: 9.5px;
+    font-size: var(--text-9-5);
   }
   .pd-run .run2-table th,
   .pd-run .run2-table td {
