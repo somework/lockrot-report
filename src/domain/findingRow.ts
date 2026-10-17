@@ -64,7 +64,7 @@ function headlineWord({ headline }: FindingFlag): string {
   }
 }
 
-/** With more than one counted advisory the words name the deciding one, as the answer does. */
+/** With more than one counted advisory the words name the deciding one, as the verdict line does. */
 export function noReachableFix(f: Finding, run: Run): string | null {
   const term = securityTerm(f);
   if (term === undefined || term.multiplier !== 2 || !isScoreGraded(f.score)) return null;
@@ -225,7 +225,7 @@ export interface NextStepWords {
   /** The whole text when `text` is cut. */
   readonly title: string | null;
   readonly href: string | null;
-  /** A package holds the move; a root hold is the answer's to say. */
+  /** A package holds the move; a root hold is the sheet's Held by to say. */
   readonly held: boolean;
 }
 

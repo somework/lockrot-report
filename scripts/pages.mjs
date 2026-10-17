@@ -7,7 +7,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { assembleEmbed, METACHAR_NAME, report2Pages } from "./report2-embed.ts";
+import { assembleEmbed, METACHAR_NAME, report2Pages, sheetPages } from "./report2-embed.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const DIST = join(ROOT, "dist");
@@ -30,7 +30,7 @@ const REPORT2_TITLE = "lockrot report";
 function main() {
   mkdirSync(OUT, { recursive: true });
   const template = read(join(DIST, "report.html"));
-  const report2 = report2Pages();
+  const report2 = [...report2Pages(), ...sheetPages()];
   for (const { name, embed } of report2) {
     const page = template
       .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))

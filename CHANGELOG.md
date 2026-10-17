@@ -77,21 +77,38 @@ project is overall, and the other tabs lead with their own part.
   word for "new", "re-rated" and "fix lost".
 - The open package explains its score in "Why <grade>". The heading gives the score, the grade's
   floor and the date the ages are counted from. The bar follows at full width with each segment
-  named, then the ruler. The block says first what decides the grade and where the move would
-  leave it.
+  named, then the ruler. The block says first what decides the grade.
 - "Show the arithmetic" opens the rest of the Why block: every term, the halvings, what each flag
   would change if it were gone, and the checks that did not run. A score of 0 shows every line. The
   lines are the bar's text, and a screen reader reads them in the bar's place.
-- The open package's header links its repository by host and its registry page by name, after
-  the reach text: "direct requirement · github.com ↗ · packagist.org ↗". An archived repository
-  reads "github.com ↗ (archived)". Each link opens in a new tab and uses the URL lockrot publishes.
-- A copy control under the open package's answer. "Copy" puts the move's commands on the
-  clipboard. The shell button opens a menu of POSIX, cmd.exe and PowerShell, and each item previews
-  the command quoted for that shell. The page keeps the choice for the next visit. A screen reader
-  hears "Copied" once.
-- The advisory line of an open package lists every branch that fixes it, lowest first. The branch
-  of the move is marked, and each branch says what the package grades after it. Level 0 shows the
-  first branch and "3 more ways out: 6.x, 7.x and 8.x".
+- The open package's header links its repository by host and its registry page by name:
+  "github.com ↗ · packagist.org ↗". An archived repository reads "github.com ↗ (archived)". Each
+  link opens in a new tab and uses the URL lockrot publishes. A package with no flag names its
+  reach before the links ("direct requirement · …").
+- The open package reads as blocks, each fact in one place. The verdict line comes first, in the
+  largest type: "Critical: two serious risks at once, its maintenance (left-behind and
+  old-promise) and its advisory (vulnerable)." One reading per other counted flag follows, then
+  the rows Reach, Origin, Not judged, Unchecked, Not run, PHP, Accepted and Gate.
+- The move card says what to run and what it clears: the action, the command, Clears, Stays, Not
+  checked, Adds, the PHP check with a mark per answer, the grade after the move and Composer's
+  notes. Held by hangs off the card and gives each holder's own grade and its own step. Past four
+  holders three show, your composer.json first and then the worst graded, and the rest fold,
+  counted by grade. Each further move of the plan
+  follows as a "Then" card with its own holders.
+- A command box in each move card. "Copy" puts the move's commands on the clipboard. The shell
+  button opens a menu of POSIX, cmd.exe and PowerShell, and each item previews the command quoted
+  for that shell. The page keeps the choice for the next visit. A screen reader hears "Copied"
+  once. A command line breaks only between its arguments.
+- The Security row lists every advisory: up to six as a flat list, more in groups by severity, the
+  worst group open. Each severity count opens its group. A range string longer than 40 characters
+  folds to "affects 19 ranges" and opens one range per line. A row that repeats a CVE links the
+  earlier row. Under the list every branch that fixes an advisory shows, lowest first, with its
+  class, its holders and the grade after it.
+- Release branches opens with at most two sentences: your branch and its last release, then the
+  branch the check reads against. Every other fact is a row of the timeline, marked "yours" and
+  "the move", each with its latest release's age and why its PHP is out of reach. Past four
+  branches above yours, the runs between the newest and yours fold, on each side of the move's
+  branch.
 - "How the score works" opens the Run tab, from the run's score model. It shows the ruler with the
   grade words, the weights, the advisory table and the fix kinds. "The N rules" lists each rule
   with a link to its lockrot.dev page, muted where no package used it.
@@ -167,8 +184,8 @@ project is overall, and the other tabs lead with their own part.
   characters the page does not print." in place of every step, on every shell. The menu previews
   nothing, and the Copy button is hidden. PowerShell always reads `composer --%` and the cmd.exe
   form of the rest.
-- A package name goes into a command in the open package's answer only when it passes the same
-  rule. Otherwise the answer keeps its words and names no command.
+- A package name goes into the command of the open package's Meanwhile line only when it passes
+  the same rule. Otherwise the line reads "an update of this package" and names no command.
 
 ## [0.13.0]
 

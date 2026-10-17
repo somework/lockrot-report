@@ -18,14 +18,12 @@
       "xmlseclibs"
     ]
   },
-  "age_line": {
-    "lockrot's recording and the model's input differ: age.installed_unmeasured: the model has no commit date for a shared tag that is not the highest, so lockrot reads the installed release as undated": [
-      "F",
-      "affected-range-unknown-dagger",
-      "replace-graded"
+  "why": {
+    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": [
+      "tie-dagger"
     ]
   },
-  "answer": {
+  "verdict_line": {
     "lockrot's recording and the model's input differ: Bitbucket has no archived field, so lockrot raises no S3 and the abandoned flag has no archived reason; the model's input has the repository archived": [
       "C-bitbucket-dagger"
     ],
@@ -33,9 +31,51 @@
       "tie-dagger"
     ]
   },
-  "why": {
+  "readings": {
     "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": [
       "tie-dagger"
+    ]
+  },
+  "moves": {
+    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": [
+      "tie-dagger"
+    ]
+  },
+  "held_by": {
+    "lockrot's recording and the model's input differ: the case sets require.php to *, under which lockrot judges the holder's own step to its newest line; the model keeps the holder's own step of case A": [
+      "A-php-star-dagger"
+    ]
+  },
+  "security": {
+    "lockrot's recording and the model's input differ: signals[].data.advisories[].fix.version: lockrot reads every release of the branch and names its lowest release outside the range; the model reads it from the affected range alone": [
+      "A",
+      "A-baselined-dagger",
+      "A-blocked-dagger",
+      "A-gate-critical",
+      "A-gate-vulnerable",
+      "A-php-star-dagger",
+      "commonmark",
+      "feeds-drupal-dagger",
+      "flysystem",
+      "twig-1",
+      "twig-dev-dagger"
+    ],
+    "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest: lockrot names the P2b candidate of each branch; the model names none": [
+      "psr7"
+    ],
+    "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest: lockrot names the P2b candidate of each branch, and its if_applied follows from that candidate; the model names none": [
+      "B-also-dagger"
+    ],
+    "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest and the 4.x fix_kind: lockrot names the P2b candidate, and classes 4.x by the hydrated links, none of which holds the package; the model classes 4.x by its position; and the fix version of its second advisory, which lockrot reads from every release of the branch": [
+      "xmlseclibs"
+    ]
+  },
+  "age_rows": {
+    "lockrot's recording and the model's input differ: age.installed_unmeasured: the model has no commit date for a shared tag that is not the highest, so lockrot reads the installed release as undated": [
+      "F",
+      "affected-range-unknown-dagger",
+      "long-range-dagger",
+      "replace-graded"
     ]
   }
 }

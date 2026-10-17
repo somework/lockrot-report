@@ -20,7 +20,6 @@ test("B's Why lines carry their kinds in SPEC order", () => {
     "halving",
     "opening",
     "counterfactuals",
-    "after-the-move",
   ]);
 });
 

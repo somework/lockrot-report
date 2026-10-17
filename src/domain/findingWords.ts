@@ -1,4 +1,4 @@
-/** Words and clauses that a report-2 finding's answer (SPEC §7.9.13) and its Why lines (§7.9.8) share. */
+/** Words and clauses that the detail sheet's blocks (SPEC §7.9.13) and its Why lines (§7.9.8.8) share. */
 
 import type {
   CheckMissing,
@@ -78,7 +78,7 @@ export const metadataWords = (finding: Finding): string =>
   metadataStatusWord(finding.metadata.status, finding.origin.kind);
 
 /** One check entry's reason as a sentence words it; an accepted check carries the project's own reason. */
-function entryReasonWords(finding: Finding, entry: CheckMissing | CheckSkipped): string {
+export function entryReasonWords(finding: Finding, entry: CheckMissing | CheckSkipped): string {
   if (entry.reason === "accepted_by_config") {
     const accepted = finding.unchecked_accepted.find((u) => u.check === entry.check);
     if (accepted) {

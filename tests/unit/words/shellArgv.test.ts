@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   commandLine,
+  commandWords,
   isPrintableArgv,
   isPrintableName,
   posixArgument,
@@ -62,6 +63,25 @@ describe("an argv in each shell", () => {
     expect(commandLine(["composer", "require", "a/b:^1.0 || <2"], "cmd")).toBe(
       'composer require "a/b:^1.0 || <2"',
     );
+  });
+});
+
+describe("the words of a command line", () => {
+  test("keep an argument with spaces as one word, so a line breaks only between arguments", () => {
+    const argv = ["composer", "require", "symfony/yaml:^5.4 || ^6.0"];
+
+    expect(commandWords(argv, "posix")).toEqual(["composer", "require", "'symfony/yaml:^5.4 || ^6.0'"]);
+    expect(commandWords(argv, "powershell")).toEqual([
+      "composer",
+      "--%",
+      "require",
+      '"symfony/yaml:^5.4 || ^6.0"',
+    ]);
+    expect(commandWords(argv, "posix")?.join(" ")).toBe(commandLine(argv, "posix"));
+  });
+
+  test("are null for an argv the rule refuses", () => {
+    expect(commandWords(["composer", "require", "a/b:%PATH%"], "posix")).toBeNull();
   });
 });
 

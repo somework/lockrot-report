@@ -1,34 +1,48 @@
 import { Fragment, type ComponentChildren } from "preact";
-import { useId, useRef } from "preact/hooks";
+import { useEffect, useId, useRef } from "preact/hooks";
 import type { DetailsEntry, Finding } from "../../model/report";
-import { ageLine, ageNotRead } from "../../domain/ageLine";
-import { answerText } from "../../domain/findingAnswer";
+import { ageRows } from "../../domain/ageRows";
 import { baselineSuffix } from "../../domain/baselineSuffix";
-import { branchesLine } from "../../domain/branchesLine";
+import { branchesLead } from "../../domain/branchTimeline";
 import { verdictTone } from "../../domain/findingRow";
 import { checkReasonWords } from "../../domain/findingWords";
-import { checksLine } from "../../domain/checksLine";
-import { agesAsOf, DETAIL_WORDS, detailReach, REFERENCE_WORDS } from "../../domain/detailWords";
+import { checksItems } from "../../domain/checksLine";
+import { DETAIL_WORDS, detailReach, REFERENCE_WORDS } from "../../domain/detailWords";
 import { feedsLine } from "../../domain/feedsLine";
 import { day } from "../../domain/format";
 import { headerLinks, safeHref } from "../../domain/links";
 import { HIDE_ACCEPTED, hiddenByFilters2 } from "../../domain/list";
+import { moveCards } from "../../domain/moveCards";
 import { repositoryLine } from "../../domain/repositoryLine";
+import { advisoryRows } from "../../domain/advisoryRows";
 import { OutLink, toneClass } from "../common/common";
 import { useReport } from "../context";
 import { KeyValue, presentRows, type KeyValueRow } from "../detail/KeyValue";
 import { BranchTimeline2 } from "./BranchTimeline";
-import { CopyMove } from "./CopyMove";
 import { FlagPills } from "./FlagPills";
+import { HeldBy, MoveCard } from "./MoveCard";
+import type { JumpIds } from "./RichText";
 import { ScoreWhy } from "./ScoreWhy";
 import { SecurityRow2 } from "./SecurityRow";
 import { useReport2 } from "./useReport";
+import { VerdictBlock } from "./VerdictBlock";
 import "../detail/detail.css";
 import "./detail.css";
+import "./sheet.css";
 
-function Row({ label, children, id }: { label: string; children: ComponentChildren; id?: string }) {
+function Row({
+  label,
+  children,
+  id,
+  wide = false,
+}: {
+  label: string;
+  children: ComponentChildren;
+  id?: string;
+  wide?: boolean;
+}) {
   return (
-    <div className="d2-row" id={id}>
+    <div className={wide ? "d2-row d3-row-wide" : "d2-row"} id={id}>
       <h3 className="d2-row-label">{label}</h3>
       <div className="d2-row-value">{children}</div>
     </div>
@@ -90,23 +104,63 @@ function Reference({ title, rows }: { title: string; rows: readonly KeyValueRow[
   );
 }
 
+/** Paper opens every `details` of the sheet, and the screen gets each one's state back after it. */
+function usePrintOpen(root: { current: HTMLElement | null }): void {
+  useEffect(() => {
+    const was = new Map<HTMLDetailsElement, boolean>();
+    const open = (): void => {
+      for (const details of root.current?.querySelectorAll("details") ?? []) {
+        was.set(details, details.open);
+        details.open = true;
+      }
+    };
+    const restore = (): void => {
+      for (const [details, isOpen] of was) details.open = isOpen;
+      was.clear();
+    };
+    window.addEventListener("beforeprint", open);
+    window.addEventListener("afterprint", restore);
+    return () => {
+      window.removeEventListener("beforeprint", open);
+      window.removeEventListener("afterprint", restore);
+    };
+  }, [root]);
+}
+
 function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) {
   const { state, dispatch } = useReport();
   const { report, details } = useReport2();
   // `dispatch` unmounts the Clear-filters button, so focus goes to Close, which every state keeps.
   const closeRef = useRef<HTMLButtonElement>(null);
-  const branchesId = `${useId()}-branches`;
+  const sheetRef = useRef<HTMLElement>(null);
+  usePrintOpen(sheetRef);
+  const base = useId();
+  const branchesId = `${base}-branches`;
+  const securityId = `${base}-security`;
   const entry = details[finding.package] ?? null;
   const metadata = entry?.metadata ?? null;
   const { run } = report;
   const feeds = feedsLine(finding);
-  const branches = branchesLine(finding, metadata);
-  const age = ageLine(finding, metadata);
-  const notRead = ageNotRead(finding, metadata);
+  const lead = branchesLead(finding, metadata);
+  const age = ageRows(finding, metadata);
   const baseline = baselineSuffix(finding, run);
+  const cards = moveCards(finding, run);
+  const hasAdvisories = advisoryRows(finding).length > 0;
+  const jumps: JumpIds = {
+    ...(lead.length > 0 ? { branches: branchesId } : {}),
+    ...(hasAdvisories ? { security: securityId } : {}),
+  };
+  const reach = finding.flags.length === 0 ? detailReach(finding, run) : null;
+  const links = headerLinks(finding, entry?.repository_link ?? null);
 
   return (
-    <aside className="detail d2" role="complementary" aria-label={finding.package} data-surface="detail">
+    <aside
+      ref={sheetRef}
+      className="detail d2 d3"
+      role="complementary"
+      aria-label={finding.package}
+      data-surface="detail"
+    >
       <div className="detail-head">
         <div className="detail-head-top">
           <div className="detail-head-name">
@@ -131,10 +185,10 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
             />
           </span>
           <span className="d2-meta">
-            <span className="d2-reach">{detailReach(finding)}</span>
-            {headerLinks(finding, entry?.repository_link ?? null).map((link) => (
+            {reach !== null && <span className="d2-reach">{reach}</span>}
+            {links.map((link, i) => (
               <Fragment key={link.href}>
-                {" · "}
+                {(reach !== null || i > 0) && " · "}
                 <OutLink href={link.href} label={link.name}>
                   {link.text}
                 </OutLink>
@@ -158,32 +212,44 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
           </p>
         )}
       </div>
-      <div className="detail-body d2-body">
-        <div className="d2-lead">
-          <p className="d2-asof">{agesAsOf(report.generated_at)}</p>
-          <p className="d2-answer">{answerText(finding, run)}</p>
-          <CopyMove key={finding.package} argvs={finding.next_step?.commands ?? []} />
-        </div>
+      <div className="detail-body d2-body d3-body">
+        <VerdictBlock
+          finding={finding}
+          run={run}
+          metadata={metadata}
+          generatedAt={report.generated_at}
+          jumps={jumps}
+        />
+        {cards.map((card, i) => (
+          <Fragment key={i}>
+            <MoveCard card={card} run={run} />
+            {card.heldBy !== null && <HeldBy block={card.heldBy} />}
+          </Fragment>
+        ))}
         <ScoreWhy finding={finding} report={report} />
         <div className="d2-rows">
           <Row label={DETAIL_WORDS.checks}>
-            <p className="d2-row-text">{checksLine(finding, run)}</p>
+            <ul className="d3-lines">
+              {checksItems(finding, run).map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
           </Row>
-          <Row label={DETAIL_WORDS.security}>
-            <SecurityRow2 finding={finding} run={run} metadata={metadata} />
+          <Row label={DETAIL_WORDS.security} id={securityId} wide={hasAdvisories}>
+            <SecurityRow2 finding={finding} run={run} metadata={metadata} id={securityId} />
           </Row>
           {feeds !== null && (
             <Row label={DETAIL_WORDS.feeds}>
               <p className="d2-row-text">{feeds}</p>
             </Row>
           )}
-          {branches !== null && (
+          {lead.length > 0 && (
             <section className="d2-branches" aria-labelledby={`${branchesId}-head`}>
               <h3 className="d2-row-label" id={`${branchesId}-head`}>
                 {DETAIL_WORDS.branches}
               </h3>
-              <p className="d2-branches-line" id={branchesId}>
-                {branches}
+              <p className="d2-branches-line d3-branches-lead" id={branchesId}>
+                {lead.join(" ")}
               </p>
               <BranchTimeline2
                 key={finding.package}
@@ -191,13 +257,29 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
                 metadata={metadata}
                 run={run}
                 summaryId={branchesId}
+                headId={`${branchesId}-head`}
               />
             </section>
           )}
-          {age !== null && (
-            <Row label={DETAIL_WORDS.age}>
-              <p className="d2-row-text">{age}</p>
-              {notRead.length > 0 && <p className="d2-row-text d2-row-note">{notRead.join(" · ")}</p>}
+          {age.length > 0 && (
+            <Row label={DETAIL_WORDS.age} wide>
+              <dl className="d3-kv">
+                {age.flatMap(({ label, value }) =>
+                  label === null
+                    ? []
+                    : [
+                        <div key={label}>
+                          <dt>{label}</dt>
+                          <dd>{value}</dd>
+                        </div>,
+                      ],
+                )}
+              </dl>
+              {age.some(({ label }) => label === null) && (
+                <ul className="d3-lines d2-row-note">
+                  {age.flatMap(({ label, value }) => (label === null ? [<li key={value}>{value}</li>] : []))}
+                </ul>
+              )}
             </Row>
           )}
           <Row label={DETAIL_WORDS.repository}>

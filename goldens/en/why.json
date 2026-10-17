@@ -3,15 +3,13 @@
     "32 · critical from 32 · ages as of 2026-10-01",
     "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (php floor raise on 3.x) is reachable: no × 2",
     "the advisories alone make it critical",
-    "without CVE-2026-46633: 16, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without CVE-2026-46633: 16, high"
   ],
   "A-baselined-dagger": [
     "32 · critical from 32 · ages as of 2026-10-01",
     "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (php floor raise on 3.x) is reachable: no × 2",
     "the advisories alone make it critical",
-    "without CVE-2026-46633: 16, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without CVE-2026-46633: 16, high"
   ],
   "A-blocked-dagger": [
     "64 · critical from 32 · ages as of 2026-10-01",
@@ -23,22 +21,19 @@
     "32 · critical from 32 · ages as of 2026-10-01",
     "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (php floor raise on 3.x) is reachable: no × 2",
     "the advisories alone make it critical",
-    "without CVE-2026-46633: 16, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without CVE-2026-46633: 16, high"
   ],
   "A-gate-vulnerable": [
     "32 · critical from 32 · ages as of 2026-10-01",
     "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (php floor raise on 3.x) is reachable: no × 2",
     "the advisories alone make it critical",
-    "without CVE-2026-46633: 16, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without CVE-2026-46633: 16, high"
   ],
   "A-php-star-dagger": [
     "32 · critical from 32 · ages as of 2026-10-01",
     "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (upgrade on 3.x) is reachable: no × 2",
     "the advisories alone make it critical",
-    "without CVE-2026-46633: 16, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without CVE-2026-46633: 16, high"
   ],
   "B": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -47,14 +42,12 @@
     "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
-    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high"
   ],
   "B-accepted-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable: no × 2",
     "the advisory alone makes it high",
-    "after the move: 0, ok (if Composer resolves it)",
     "left-behind accepted by your ignore list: counting it would make this 32, critical",
     "old-promise accepted by your ignore list: counting it would make this 32, critical"
   ],
@@ -65,8 +58,7 @@
     "vulnerable 16: high advisory CVE-2026-45077; its own fix (composer update on 2.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
-    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high",
-    "after the move: 20, high"
+    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high"
   ],
   "B-baselined-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -75,8 +67,7 @@
     "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
-    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high"
   ],
   "B-dev-dagger": [
     "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
@@ -86,8 +77,7 @@
     "packages-dev: total 36 ÷ 2 = 18",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating, halved: packages-dev) alone grades it medium, the advisory (halved: packages-dev) alone grades it medium: together high",
-    "without left-behind: 16, high (old-promise would lead) · without old-promise: 16, high · without the advisory: 10, medium",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without left-behind: 16, high (old-promise would lead) · without old-promise: 16, high · without the advisory: 10, medium"
   ],
   "B-gate-flag": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -96,8 +86,7 @@
     "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
-    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high"
   ],
   "B-gate-list": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -106,8 +95,7 @@
     "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
-    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high"
   ],
   "B-gate-none": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -116,8 +104,7 @@
     "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
-    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high"
   ],
   "B-offline-dagger": [
     "20 · high from 16 · 12 points short of critical · ages as of 2026-10-01",
@@ -126,7 +113,6 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it high",
     "without left-behind: 16, high (old-promise would lead) · without old-promise: 16, high",
-    "after the move: at most, from the facts it checked, 16, high (if Composer resolves it; advisories on its new versions not checked)",
     "checks missing: advisories (S9) not checked (offline)"
   ],
   "B-offline-high-dagger": [
@@ -136,7 +122,6 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it high",
     "without left-behind: 16, high (old-promise would lead) · without old-promise: 16, high",
-    "after the move: at most, from the facts it checked, 16, high (if Composer resolves it; advisories on its new versions not checked)",
     "checks missing: advisories (S9) not checked (offline)"
   ],
   "C": [
@@ -209,22 +194,19 @@
     "2 · low from 1 · 6 points short of medium · ages as of 2026-10-01",
     "vulnerable 2: low advisory CVE-2026-45133, the worst of 3 (tied with CVE-2026-45305, CVE-2026-45304); its own fix (composer update on 5.x) is reachable: no × 2",
     "the advisories alone make it low",
-    "without CVE-2026-45133: 2, low (tied: the others weigh the same)",
-    "after the move: 0, ok"
+    "without CVE-2026-45133: 2, low (tied: the others weigh the same)"
   ],
   "E-ignored-dagger": [
     "2 · low from 1 · 6 points short of medium · ages as of 2026-10-01",
     "vulnerable 2: low advisory CVE-2026-45133, the worst of 3 (tied with CVE-2026-45305, CVE-2026-45304); its own fix (composer update on 5.x) is reachable: no × 2",
     "the advisories alone make it low",
-    "without CVE-2026-45133: 2, low (tied: the others weigh the same)",
-    "after the move: 0, ok"
+    "without CVE-2026-45133: 2, low (tied: the others weigh the same)"
   ],
   "E-ignored-whole-dagger": [
     "2 · low from 1 · 6 points short of medium · ages as of 2026-10-01",
     "vulnerable 2: low advisory CVE-2026-45133, the worst of 3 (tied with CVE-2026-45305, CVE-2026-45304); its own fix (composer update on 5.x) is reachable: no × 2",
     "the advisories alone make it low",
     "without CVE-2026-45133: 2, low (tied: the others weigh the same)",
-    "after the move: 0, finished",
     "checks not run: its repository activity (allowlisted)"
   ],
   "F": [
@@ -232,7 +214,6 @@
     "vulnerable 2: low advisory CVE-2026-46644; its own fix (composer update on 1.x) is reachable: no × 2",
     "transitive: no maintenance to halve; security is never halved for reach",
     "the advisory alone makes it low",
-    "after the move: 0, finished",
     "checks not run: its repository activity (allowlisted)"
   ],
   "G": [
@@ -249,8 +230,7 @@
     "stale 2: ¼ of 8, beside pinned (correlated evidence)",
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it high",
-    "without pinned: 8, medium (stale would lead) · without stale: 16, high",
-    "after the move: 18, high (adds old-promise)"
+    "without pinned: 8, medium (stale would lead) · without stale: 16, high"
   ],
   "abandoned-audit-ignore-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -288,8 +268,7 @@
     "vulnerable 16: high advisory PKSA-m4t9-vsgq-8khn, the worst of 3 (tied with PKSA-zyf5-hrxv-hrd7); its own fix (composer update on 2.x) is reachable: no × 2",
     "transitive: no maintenance to halve; security is never halved for reach",
     "the advisories alone make it high",
-    "without PKSA-m4t9-vsgq-8khn: 16, high (tied: the others weigh the same)",
-    "after the move: 0, ok"
+    "without PKSA-m4t9-vsgq-8khn: 16, high (tied: the others weigh the same)"
   ],
   "either-critical-dagger": [
     "68 · critical from 32 · ages as of 2026-10-01",
@@ -316,8 +295,7 @@
     "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
-    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high"
   ],
   "fail-on-default-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -326,15 +304,13 @@
     "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
-    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high"
   ],
   "feeds-drupal-dagger": [
     "32 · critical from 32 · ages as of 2026-10-01",
     "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (php floor raise on 3.x) is reachable: no × 2",
     "the advisories alone make it critical",
-    "without CVE-2026-46633: 16, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without CVE-2026-46633: 16, high"
   ],
   "flysystem": [
     "10 · medium from 8 · 6 points short of high · ages as of 2026-10-01",
@@ -342,8 +318,7 @@
     "vulnerable 2: low advisory CVE-2026-102601; its own fix (upgrade on 3.x) is reachable: no × 2",
     "transitive: maintenance 16 ÷ 2 = 8",
     "maintenance alone makes it medium",
-    "without left-behind: 2, low · without the advisory: 8, medium",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without left-behind: 2, low · without the advisory: 8, medium"
   ],
   "gitlab-anon-dagger": [
     "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
@@ -360,8 +335,7 @@
     "vulnerable 16: high advisory CVE-2026-69246, the worst of 9; its own fix (php floor raise on 7.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "left-behind alone grades it high, the advisories alone grade it high: together critical",
-    "without left-behind: 16, high · without the advisories: 16, high · without CVE-2026-69246: 24, high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without left-behind: 16, high · without the advisories: 16, high · without CVE-2026-69246: 24, high"
   ],
   "guzzle-5": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -370,8 +344,7 @@
     "vulnerable 16: high advisory CVE-2022-31043, the worst of 14 (tied with CVE-2022-29248, CVE-2022-31042, CVE-2026-69246 and 2 more); its own fix (upgrade on 6.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisories alone grade it high: together critical",
-    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisories: 20, high · without CVE-2022-31043: 36, critical (tied: the others weigh the same)",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisories: 20, high · without CVE-2022-31043: 36, critical (tied: the others weigh the same)"
   ],
   "guzzle-mixed": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -380,8 +353,7 @@
     "vulnerable 16: high advisory CVE-2022-31043, the worst of 14 (tied with CVE-2022-29248, CVE-2022-31042, CVE-2026-69246 and 2 more); its own fix (upgrade on 6.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisories alone grade it high: together critical",
-    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisories: 20, high · without CVE-2022-31043: 36, critical (tied: the others weigh the same)",
-    "after the move: at most 16, high (if Composer resolves it)"
+    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisories: 20, high · without CVE-2022-31043: 36, critical (tied: the others weigh the same)"
   ],
   "hoa": [
     "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
@@ -404,8 +376,7 @@
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "direct requirement: maintenance not halved for reach",
-    "maintenance alone makes it high",
-    "after the move: 0, ok (if Composer resolves it)"
+    "maintenance alone makes it high"
   ],
   "ignored-marking-archived-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -439,7 +410,6 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it high",
     "without old-promise: 8, medium (stale would lead) · without stale: 16, high",
-    "after the move: 8, medium (if Composer resolves it)",
     "checks missing: archived repository (S3) and repository activity (S4) not checked (rate limited)",
     "abandoned marking ignored (policy.abandoned: symfony/debug): removed in the 7.x upgrade"
   ],
@@ -454,8 +424,7 @@
   "joomla-filter": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "vulnerable 8: medium advisory CVE-2025-54476; its own fix (php floor raise on 3.x) is reachable: no × 2",
-    "the advisory alone makes it medium",
-    "after the move: 0, ok (if Composer resolves it)"
+    "the advisory alone makes it medium"
   ],
   "local-path-advisory": [
     "32 · critical from 32 · ages as of 2026-10-01",
@@ -474,12 +443,18 @@
     "maintenance alone makes it high",
     "without abandoned: 9, medium (stale would show) · without old-promise: 16, high"
   ],
+  "long-range-dagger": [
+    "2 · low from 1 · 6 points short of medium · ages as of 2026-10-01",
+    "vulnerable 2: low advisory CVE-2026-46644; its own fix (composer update on 1.x) is reachable: no × 2",
+    "transitive: no maintenance to halve; security is never halved for reach",
+    "the advisory alone makes it low",
+    "checks not run: its repository activity (allowlisted)"
+  ],
   "many-dependents": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "transitive: maintenance 16 ÷ 2 = 8",
-    "maintenance alone makes it medium",
-    "after the move: 0, ok (if Composer resolves it)"
+    "maintenance alone makes it medium"
   ],
   "not-found-dagger": [
     "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
@@ -498,15 +473,13 @@
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "old-promise 16 leads: the strongest maintenance fact counts in full",
     "direct requirement: maintenance not halved for reach",
-    "maintenance alone makes it high",
-    "after the move: 0, ok"
+    "maintenance alone makes it high"
   ],
   "pagerfanta": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it high",
-    "after the move: 0, ok (if Composer resolves it)",
     "checks missing: release age (S2) not checked (undated releases); release branch (S8) incomplete (undated releases)"
   ],
   "partial": [
@@ -514,7 +487,6 @@
     "vulnerable 16: high advisory PKSA-3r5d-mb8f-1qw9, the worst of 6 (tied with CVE-2024-52301); its own fix (php floor raise on 12.x) is reachable: no × 2",
     "the advisories alone make it high",
     "without PKSA-3r5d-mb8f-1qw9: 16, high (tied: the others weigh the same)",
-    "after the move: 0, ok (if Composer resolves it)",
     "composer update alone: 16, high (it clears 1 of its 6 advisories)"
   ],
   "partial-op-dagger": [
@@ -525,15 +497,13 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisories alone grade it high: together critical",
     "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisories: 20, high · without CVE-2026-00011: 28, high",
-    "after the move: 0, ok (if Composer resolves it)",
     "composer update alone: 32, critical (it clears old-promise and 1 of its 2 advisories)"
   ],
   "php-null": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "transitive: maintenance 16 ÷ 2 = 8",
-    "maintenance alone makes it medium",
-    "after the move: 0, ok (if Composer resolves it)"
+    "maintenance alone makes it medium"
   ],
   "pinned-unread": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
@@ -545,8 +515,7 @@
   "policy-off-dagger": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "vulnerable 8: medium advisory CVE-2025-54476; its own fix (php floor raise on 3.x) is reachable: no × 2",
-    "the advisory alone makes it medium",
-    "after the move: 0, ok (if Composer resolves it)"
+    "the advisory alone makes it medium"
   ],
   "psr7": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
@@ -554,8 +523,7 @@
     "vulnerable 8: medium advisory CVE-2026-55766, the worst of 4 (tied with CVE-2026-49214, CVE-2026-48998, CVE-2026-59882); its own fix (php floor raise on 2.x) is reachable: no × 2",
     "transitive: maintenance 16 ÷ 2 = 8",
     "maintenance (left-behind, halved for reach) alone grades it medium, the advisories alone grade it medium: together high",
-    "without left-behind: 8, medium · without the advisories: 8, medium · without CVE-2026-55766: 16, high (tied: the others weigh the same)",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without left-behind: 8, medium · without the advisories: 8, medium · without CVE-2026-55766: 16, high (tied: the others weigh the same)"
   ],
   "replace-graded": [
     "32 · critical from 32 · ages as of 2026-10-01",
@@ -573,8 +541,7 @@
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "transitive: maintenance 16 ÷ 2 = 8",
-    "maintenance alone makes it medium",
-    "after the move: 0, ok (if Composer resolves it)"
+    "maintenance alone makes it medium"
   ],
   "rounded-dev-dagger": [
     "4 · low from 1 · 4 points short of medium · ages as of 2026-10-01",
@@ -584,8 +551,7 @@
     "transitive: maintenance 18 ÷ 2 = 9",
     "packages-dev: total 9 ÷ 2 = 4.5",
     "maintenance alone makes it low",
-    "without old-promise: 2, low (stale would lead) · without stale: 4, low",
-    "after the move: 2, low (if Composer resolves it)"
+    "without old-promise: 2, low (stale would lead) · without stale: 4, low"
   ],
   "routing": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
@@ -593,8 +559,7 @@
     "vulnerable 8: medium advisory CVE-2026-48784, the worst of 2 (tied with CVE-2026-45065); its own fix (upgrade on 5.x) is reachable: no × 2",
     "transitive: maintenance 16 ÷ 2 = 8",
     "maintenance (left-behind, halved for reach) alone grades it medium, the advisories alone grade it medium: together high",
-    "without left-behind: 8, medium · without the advisories: 8, medium · without CVE-2026-48784: 16, high (tied: the others weigh the same)",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without left-behind: 8, medium · without the advisories: 8, medium · without CVE-2026-48784: 16, high (tied: the others weigh the same)"
   ],
   "silent": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -608,22 +573,19 @@
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "pinned 16 leads: the strongest maintenance fact counts in full",
     "transitive: maintenance 16 ÷ 2 = 8",
-    "maintenance alone makes it medium",
-    "after the move: 0, ok (if Composer resolves it)"
+    "maintenance alone makes it medium"
   ],
   "snapshot-dead-line-dagger": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "pinned 16 leads: the strongest maintenance fact counts in full",
     "transitive: maintenance 16 ÷ 2 = 8",
-    "maintenance alone makes it medium",
-    "after the move: 8, medium (adds left-behind; if Composer resolves it)"
+    "maintenance alone makes it medium"
   ],
   "snapshot-undated-line-dagger": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "pinned 16 leads: the strongest maintenance fact counts in full",
     "transitive: maintenance 16 ÷ 2 = 8",
-    "maintenance alone makes it medium",
-    "after the move: at most 10, medium (left-behind not checked; old-promise not checked; if Composer resolves it)"
+    "maintenance alone makes it medium"
   ],
   "stale-accepted-dagger": [
     "0 · finished · ages as of 2026-10-01",
@@ -642,8 +604,7 @@
     "vulnerable 16: medium advisory CVE-2026-45077; × 2: no release fixes it",
     "direct requirement: maintenance not halved for reach",
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
-    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high",
-    "after the move: at most 32, critical (if Composer resolves it)"
+    "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisory: 20, high"
   ],
   "twig-1": [
     "48 · critical from 32 · ages as of 2026-10-01",
@@ -651,16 +612,14 @@
     "vulnerable 32: critical advisory CVE-2026-46633, the worst of 16; its own fix (php floor raise on 3.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "the advisories alone make it critical",
-    "without old-promise: 32, critical · without the advisories: 16, high · without CVE-2026-46633: 32, critical",
-    "after the move: at most 16, high (if Composer resolves it)"
+    "without old-promise: 32, critical · without the advisories: 16, high · without CVE-2026-46633: 32, critical"
   ],
   "twig-dev-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (php floor raise on 3.x) is reachable: no × 2",
     "packages-dev: total 32 ÷ 2 = 16",
     "the advisories (halved: packages-dev) alone make it high",
-    "without CVE-2026-46633: 8, medium",
-    "after the move: 0, ok (if Composer resolves it)"
+    "without CVE-2026-46633: 8, medium"
   ],
   "unknown": [
     "0 · unknown · ages as of 2026-10-01",
@@ -688,8 +647,7 @@
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "unreached: maintenance 16 ÷ 2 = 8",
-    "maintenance alone makes it medium",
-    "after the move: 0, ok (if Composer resolves it)"
+    "maintenance alone makes it medium"
   ],
   "unreached-move": [
     "10 · medium from 8 · 6 points short of high · ages as of 2026-10-01",
@@ -697,8 +655,7 @@
     "old-promise 4: ¼ of 16, beside left-behind (correlated evidence)",
     "unreached: maintenance 20 ÷ 2 = 10",
     "maintenance alone makes it medium",
-    "without left-behind: 8, medium (old-promise would lead) · without old-promise: 8, medium",
-    "after the move: at most 8, medium (if Composer resolves it)"
+    "without left-behind: 8, medium (old-promise would lead) · without old-promise: 8, medium"
   ],
   "wp-config": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
@@ -712,8 +669,7 @@
     "vulnerable 16: high advisory CVE-2026-32313, the worst of 2; its own fix (composer update on 3.x) is reachable: no × 2",
     "transitive: maintenance 16 ÷ 2 = 8",
     "the advisories alone make it high",
-    "without old-promise: 16, high · without the advisories: 8, medium · without CVE-2026-32313: 16, high",
-    "after the move: 0, ok"
+    "without old-promise: 16, high · without the advisories: 8, medium · without CVE-2026-32313: 16, high"
   ],
   "yaml-3.4": [
     "22 · high from 16 · 10 points short of critical · ages as of 2026-10-01",
@@ -722,8 +678,7 @@
     "vulnerable 2: low advisory CVE-2026-45133, the worst of 3 (tied with CVE-2026-45305, CVE-2026-45304); its own fix (php floor raise on 5.x) is reachable: no × 2",
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it high",
-    "without left-behind: 18, high (old-promise would lead) · without old-promise: 18, high · without the advisories: 20, high · without CVE-2026-45133: 22, high (tied: the others weigh the same)",
-    "after the move: at most 16, high (if Composer resolves it)"
+    "without left-behind: 18, high (old-promise would lead) · without old-promise: 18, high · without the advisories: 20, high · without CVE-2026-45133: 22, high (tied: the others weigh the same)"
   ],
   "zero-n": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",

@@ -28,21 +28,10 @@
 .d2-body {
   gap: 18px;
 }
-.d2-lead {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
 .d2-asof {
   margin: 0;
   font-size: 11.5px;
   color: var(--muted);
-}
-.d2-answer {
-  margin: 0;
-  font: 16px/1.45 var(--serif);
-  color: var(--ink);
-  overflow-wrap: anywhere;
 }
 
 .d2-copy {
@@ -306,8 +295,7 @@
   height: 1px;
   background: var(--border-strong);
 }
-.d2-why-line.is-opening,
-.d2-why-line.is-after-the-move {
+.d2-why-line.is-opening {
   color: var(--ink);
 }
 .d2-why-foot {
@@ -424,13 +412,6 @@
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tone) 50%, transparent);
   print-color-adjust: exact;
 }
-.d2-more {
-  justify-self: start;
-  white-space: normal;
-  text-align: left;
-  font-size: 12.5px;
-}
-
 .d2-timeline {
   margin-top: 2px;
 }

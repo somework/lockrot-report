@@ -1,10 +1,10 @@
 /**
- * The report-2 Release branches block (SPEC §7.9.8): the golden line is the text heading and the
- * accessible summary, and the 0.13 timeline under it is drawn from published years only.
+ * The report-2 Release branches block (SPEC §7.9.8.11): the golden lead is the table's accessible
+ * description, and the timeline under it is drawn from published years only.
  */
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { golden, openDetail2 } from "./support/report2/detail";
+import { goldenLines, openDetail2 } from "./support/report2/detail";
 
 const B = "symfony/monolog-bridge";
 
@@ -28,26 +28,56 @@ async function dotPlaces(sheet: Locator): Promise<Record<string, number>> {
     );
 }
 
+/** Opens every fold and waits until the page is still: a phone-width sheet slides in, and an axe
+ *  colour-contrast pass taken mid-slide reads half-faded text. */
+async function openFolds(page: Page, sheet: Locator): Promise<void> {
+  const buttons = sheet.locator(".detail-timeline-fold-btn");
+  const count = await buttons.count();
+  for (let index = 0; index < count; index++) {
+    const button = buttons.nth(index);
+    await button.click();
+    await expect(button).toHaveAttribute("aria-expanded", "true");
+  }
+  await page.mouse.move(0, 0);
+  await page.evaluate(() =>
+    Promise.all(
+      document
+        .getAnimations()
+        .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+        .map((animation) => animation.finished),
+    ),
+  );
+}
+
 test.describe("1440×900", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  test("the golden line describes the table, and the rows fold as in 0.13", async ({ page }) => {
+  test("the golden lead describes the table, and the runs fold on each side of the move's branch", async ({
+    page,
+  }) => {
     const sheet = await openDetail2(page, "B", B);
     const described = await table(sheet).getAttribute("aria-describedby");
 
-    await expect(page.locator(`[id="${described ?? ""}"]`)).toHaveText(golden("branches", "B"));
-    await expect(table(sheet).getByRole("rowheader")).toHaveText([
+    await expect(page.locator(`[id="${described ?? ""}"]`)).toHaveText(
+      goldenLines("branches-lead", "B").join(" "),
+    );
+    await expect(
+      table(sheet).getByRole("button", { name: "2 between the newest branch and yours" }),
+    ).toHaveCount(2);
+    await expect(
+      table(sheet).locator(".detail-timeline-row:not(.is-collapsed) [role='rowheader']"),
+    ).toHaveText([
       "8.x, the newest",
-      "5 between branches, between the newest and yours",
-      "2.x, yours",
+      "2 between the newest branch and yours",
+      "5.x the move",
+      "2 between the newest branch and yours",
+      "2.x yours",
     ]);
   });
 
   test("a bar's length is its published years, so the dots order by age on one axis", async ({ page }) => {
     const sheet = await openDetail2(page, "B", B);
-    await table(sheet)
-      .getByRole("button", { name: /5 between/ })
-      .click();
+    await openFolds(page, sheet);
 
     const places = await dotPlaces(sheet);
 
@@ -76,7 +106,7 @@ test.describe("1440×900", () => {
   test("one branch draws the line and no timeline", async ({ page }) => {
     const sheet = await openDetail2(page, "F", "symfony/polyfill-intl-idn");
 
-    await expect(sheet.getByText(golden("branches", "F"))).toBeVisible();
+    await expect(sheet.getByText(goldenLines("branches-lead", "F").join(" "))).toBeVisible();
     await expect(table(sheet)).toHaveCount(0);
   });
 
@@ -84,9 +114,7 @@ test.describe("1440×900", () => {
     test(`the open timeline has no axe violation, ${colorScheme}`, async ({ page }) => {
       await page.emulateMedia({ colorScheme });
       const sheet = await openDetail2(page, "B", B);
-      await table(sheet)
-        .getByRole("button", { name: /5 between/ })
-        .click();
+      await openFolds(page, sheet);
 
       const results = await new AxeBuilder({ page }).include(".d2-timeline").analyze();
 
@@ -100,36 +128,13 @@ test.describe("390×844", () => {
 
   test("the sheet never scrolls sideways", async ({ page }) => {
     const sheet = await openDetail2(page, "B", B);
-    await table(sheet)
-      .getByRole("button", { name: /5 between/ })
-      .click();
+    await openFolds(page, sheet);
 
     const overflow = await sheet.evaluate((el) => el.scrollWidth - el.clientWidth);
 
     expect(overflow).toBeLessThanOrEqual(0);
   });
 });
-
-/** Opens every fold and waits until the page is still: a phone-width sheet slides in, and an axe
- *  colour-contrast pass taken mid-slide reads half-faded text. */
-async function openFolds(page: Page, sheet: Locator): Promise<void> {
-  const buttons = sheet.locator(".detail-timeline-fold-btn");
-  const count = await buttons.count();
-  for (let index = 0; index < count; index++) {
-    const button = buttons.nth(index);
-    await button.click();
-    await expect(button).toHaveAttribute("aria-expanded", "true");
-  }
-  await page.mouse.move(0, 0);
-  await page.evaluate(() =>
-    Promise.all(
-      document
-        .getAnimations()
-        .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
-        .map((animation) => animation.finished),
-    ),
-  );
-}
 
 test.describe("1440×900: the axis and the rows hold their geometry", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
@@ -150,9 +155,7 @@ test.describe("1440×900: the axis and the rows hold their geometry", () => {
     const dot = table(sheet).locator(".detail-timeline-row.is-mine .detail-timeline-dot");
     const before = await dot.boundingBox();
 
-    await table(sheet)
-      .getByRole("button", { name: /5 between/ })
-      .click();
+    await openFolds(page, sheet);
 
     expect((await dot.boundingBox())?.x).toBeCloseTo(before?.x ?? -1, 1);
   });

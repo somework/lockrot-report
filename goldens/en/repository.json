@@ -56,6 +56,7 @@
   "joomla-filter": "GitHub github.com/joomla-framework/filter: last push 2026-09-29 · fetched 2026-09-14",
   "local-path-advisory": "Repository activity not asked (not from a Composer repository)",
   "lock-only-dagger": "GitHub github.com/symfony/debug: last push 2022-07-29, archived · fetched 2026-09-14",
+  "long-range-dagger": "github.com/symfony/polyfill-intl-idn: not asked (allowlisted)",
   "many-dependents": "GitHub github.com/symfony/event-dispatcher-contracts: last push 2026-09-16 · fetched 2026-09-14",
   "not-found-dagger": "GitHub github.com/hoaproject/Consistency: the host answered 404 (private, renamed or removed)",
   "ok-unchecked": "GitHub github.com/scheb/2fa-google-authenticator: last push 2026-07-10 · fetched 2026-09-14",
