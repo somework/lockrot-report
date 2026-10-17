@@ -4,7 +4,7 @@
  */
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { sheetUrl } from "./support/pages";
-import { detailSurface, openDetail2 } from "./support/report2/detail";
+import { detailSurface, openDetail2, openEveryFold } from "./support/report2/detail";
 
 const SHEETS = [
   { label: "B", open: (page: Page) => openDetail2(page, "B", "symfony/monolog-bridge") },
@@ -23,16 +23,6 @@ const SHEETS = [
     },
   },
 ] as const;
-
-/** Opens every fold of the sheet: the buttons, the timeline folds and every `details`. */
-async function openEveryFold(sheet: Locator): Promise<void> {
-  const closed = sheet.locator(
-    '.l1-btn[aria-expanded="false"], .d3-sev-btn[aria-expanded="false"], .detail-timeline-fold-btn[aria-expanded="false"]',
-  );
-  for (let guard = 0; guard < 200 && (await closed.count()) > 0; guard++) await closed.first().click();
-  const summaries = sheet.locator("details:not([open]) > summary");
-  for (let guard = 0; guard < 20 && (await summaries.count()) > 0; guard++) await summaries.first().click();
-}
 
 /** The elements of the sheet that reach past its right edge. */
 const overflowing = (sheet: Locator): Promise<string[]> =>
@@ -112,6 +102,8 @@ test.describe("both themes", () => {
 });
 
 test.describe("forced colours", () => {
+  test.skip(({ browserName }) => browserName === "webkit", "WebKit does not emulate forced colours");
+
   for (const colorScheme of ["light", "dark"] as const) {
     test(`the card borders, the grade and gate words and the PHP marks are CanvasText, ${colorScheme}`, async ({
       page,
