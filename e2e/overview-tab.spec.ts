@@ -83,7 +83,7 @@ test.describe("the Overview layout", () => {
     await page.goto(report2Url(WALLABAG));
 
     const tops = await overviewSurface(page)
-      .locator(":scope > *")
+      .locator(":scope > :not(.vh)")
       .evaluateAll((parts) =>
         parts.map((part): [string, number] => [
           part.getAttribute("class") ?? "",

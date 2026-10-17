@@ -129,12 +129,21 @@ function usePrintOpen(root: { current: HTMLElement | null }): void {
   }, [root]);
 }
 
+/** Below the wide layout the sheet covers the page and the rest is inert, so it is a modal dialog to
+ *  assistive technology; beside the list it is a complementary column. */
+function useSheetRole(): { role: "dialog" | "complementary"; "aria-modal"?: "true" } {
+  const { wide } = useReport();
+  const printed = usePrinted();
+  return wide || printed ? { role: "complementary" } : { role: "dialog", "aria-modal": "true" };
+}
+
 function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) {
   const { state, dispatch } = useReport();
+  const sheetRole = useSheetRole();
   const { report, details } = useReport2();
   // `dispatch` unmounts the Clear-filters button, so focus goes to Close, which every state keeps.
   const closeRef = useRef<HTMLButtonElement>(null);
-  const sheetRef = useRef<HTMLElement>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
   usePrintOpen(sheetRef);
   const base = useId();
   const branchesId = `${base}-branches`;
@@ -156,10 +165,10 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
   const links = headerLinks(finding, entry?.repository_link ?? null);
 
   return (
-    <aside
+    <div
       ref={sheetRef}
       className="detail d2 d3"
-      role="complementary"
+      {...sheetRole}
       aria-label={finding.package}
       data-surface="detail"
     >
@@ -296,7 +305,7 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
         <Reference title={DETAIL_WORDS.lockEntry} rows={lockRows(finding, entry)} />
         <Reference title={DETAIL_WORDS.provenance} rows={provenanceRows(finding, entry)} />
       </div>
-    </aside>
+    </div>
   );
 }
 
@@ -305,17 +314,18 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
 export function Detail2({ onClose }: { onClose: () => void }) {
   const { state } = useReport();
   const { report } = useReport2();
+  const sheetRole = useSheetRole();
   if (state.pkg === null) return null;
 
   const finding = report.findings.find((f) => f.package === state.pkg);
   if (finding === undefined) {
     return (
-      <aside className="detail d2" role="complementary" aria-label={state.pkg} data-surface="detail">
+      <div className="detail d2" {...sheetRole} aria-label={state.pkg} data-surface="detail">
         <p className="detail-missing">{state.pkg} is not in this report.</p>
         <button type="button" className="detail-close" onClick={onClose} data-detail-focus="">
           {DETAIL_WORDS.close}
         </button>
-      </aside>
+      </div>
     );
   }
   return <Sheet key={finding.package} finding={finding} onClose={onClose} />;

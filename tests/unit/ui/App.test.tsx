@@ -47,8 +47,9 @@ function media({ wide = true, narrow = false, dark = false, reduce = false } = {
   })) as unknown as typeof window.matchMedia;
 }
 
+/** The open sheet's name: a complementary column when wide, a modal dialog below that. */
 function detailName(): string | null {
-  return screen.queryByRole("complementary")?.getAttribute("aria-label") ?? null;
+  return document.querySelector('[data-surface="detail"]')?.getAttribute("aria-label") ?? null;
 }
 
 function row(pkg: string): HTMLElement {
@@ -485,6 +486,7 @@ describe("a sheet over the page takes focus", () => {
     fireEvent.click(target);
 
     expect(detailName()).toBe("symfony/yaml");
+    expect(screen.getByRole("dialog", { name: "symfony/yaml" }).getAttribute("aria-modal")).toBe("true");
     expect(document.activeElement).toBe(sheetHeading());
     expect(document.querySelector(".shell-main")?.hasAttribute("inert")).toBe(true);
     expect(document.querySelector(".topbar")?.hasAttribute("inert")).toBe(true);

@@ -741,3 +741,26 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
     overflow-wrap: anywhere;
   }
 }
+
+/* Out of sight until a keyboard reaches it: the page's first Tab stop. */
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 8px 12px;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-s);
+  background: var(--surface);
+  color: var(--accent-ink);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+.skip-link:focus {
+  transform: none;
+}
+@media print {
+  .skip-link {
+    display: none;
+  }
+}

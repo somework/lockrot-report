@@ -231,13 +231,28 @@ describe("the Overview tab of a report-2 document", () => {
   test("lays its parts out in reading order: lead, flags, Security, Weighs most, exposure, Libyears", () => {
     render(<App model={model()} />);
 
-    expect([...band().children].map((part) => part.className)).toEqual([
+    expect([...band().children].map((part) => part.className).filter((name) => name !== "vh")).toEqual([
       "ov-lead",
       "ov-flags",
       "ov-security",
       "ov-weighs",
       "ov-expo",
       "ov-libyears",
+    ]);
+  });
+
+  test("names itself in an h2 and each block in an h3, in reading order", () => {
+    render(<App model={model()} />);
+
+    const headings = [...band().querySelectorAll("h2, h3")].map((h) => [h.tagName, h.textContent]);
+    expect(headings.map(([tag]) => tag)).toEqual(["H2", "H3", "H3", "H3", "H3", "H3"]);
+    expect(headings[0]?.[1]).toBe("Overview");
+    expect(headings.slice(1).map(([, text]) => text?.split(/\s/)[0])).toEqual([
+      "Flags",
+      "Security",
+      "Weighs",
+      "Blast",
+      "Libyears",
     ]);
   });
 

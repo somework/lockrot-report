@@ -118,7 +118,7 @@ test("PD-ADV-7: the Advisories count from a lookup that did not run carries a ri
 }) => {
   await report.gotoReport2("B-offline-dagger");
 
-  const tab = page.getByRole("tab", { name: /^Advisories \d+, check incomplete$/ });
+  const tab = page.getByRole("tab", { name: /^Advisories \d+, check not run$/ });
   await expect(tab.locator(".tab-flag")).toBeVisible();
-  await expect(tab.locator(".tab-flag")).toHaveAttribute("title", "advisory check incomplete");
+  await expect(tab.locator(".tab-flag")).toHaveAttribute("title", "advisory check not run");
 });
