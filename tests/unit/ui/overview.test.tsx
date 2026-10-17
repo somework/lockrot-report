@@ -213,13 +213,13 @@ describe("the Overview tab of a report-2 document", () => {
       within(head as HTMLElement)
         .getAllByRole("columnheader")
         .map((th) => th.textContent),
-    ).toEqual(["Package", "Libyears", "Newest release"]);
+    ).toEqual(["Package", "Libyears", "Most recent release"]);
     expect(rows.map((row) => [...row.querySelectorAll("td")].map((td) => td.textContent))).toEqual([
-      ["symfony/monolog-bridge v2.6.13", "10.6", "v2.6.13 → v6.4.45 (2026-08-30)"],
-      ["symfony/yaml v5.4.23", "3.4", "v5.4.23 → v8.1.8 (2026-09-26)"],
-      ["twig/twig v2.16.1", "2.0", "v2.16.1 → v3.30.0 (2026-09-25)"],
-      ["symfony/debug v3.4.47", "1.8", "v3.4.47 → v4.4.44 (2022-07-28)"],
-      ["tubalmartin/cssmin v4.1.1", "0.0", "v4.1.1 → v4.1.1 (2018-01-15)"],
+      ["symfony/monolog-bridge v2.6.13", "10.6", "v6.4.45 (2026-08-30)"],
+      ["symfony/yaml v5.4.23", "3.4", "v8.1.8 (2026-09-26)"],
+      ["twig/twig v2.16.1", "2.0", "v3.30.0 (2026-09-25)"],
+      ["symfony/debug v3.4.47", "1.8", "v4.4.44 (2022-07-28)"],
+      ["tubalmartin/cssmin v4.1.1", "0.0", "v4.1.1 (2018-01-15)"],
     ]);
     expect(table.querySelector(".ov-ly-grade")).toBeNull();
     fireEvent.click(within(table).getByRole("link", { name: "symfony/yaml" }));

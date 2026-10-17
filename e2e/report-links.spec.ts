@@ -12,17 +12,17 @@ const WALLABAG = "baselined-wallabag-2.6";
 const ARCHIVED = "lexik/form-filter-bundle";
 
 test.describe("the libyears table", () => {
-  test("shows the newest release in place of a grade, and a row still opens its package", async ({
+  test("shows the most recent release in place of a grade, and a row still opens its package", async ({
     page,
   }) => {
     await page.goto(report2Url(WALLABAG));
     const table = overviewSurface(page).getByRole("table", { name: "Furthest behind, top 8" });
 
-    await expect(table.getByRole("columnheader")).toHaveText(["Package", "Libyears", "Newest release"]);
+    await expect(table.getByRole("columnheader")).toHaveText(["Package", "Libyears", "Most recent release"]);
     await expect(table.locator("tbody tr").first().locator("td")).toHaveText([
       "willdurand/jsonp-callback-validator v1.1.0",
       "8.0",
-      "v1.1.0 → v2.0.0 (2022-01-30)",
+      "v2.0.0 (2022-01-30)",
     ]);
     await expect(table.locator(".ov-ly-grade")).toHaveCount(0);
 
