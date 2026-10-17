@@ -2,12 +2,12 @@
 // of lockrot's fetched bundle (`scripts/report2-embed.ts`; needs `npm run contract:fetch`), using
 // the same payload escaping as `HtmlFormatter::payload()` (`</` -> `<\/`, `<!--` -> `<\u0021--`).
 // Also plants pages under `planted/`, which the page sweeps do not list: a malformed report-2, a
-// report-1 document and the composite with a hostile package name. Writes `build/pages/`, which is
+// report-1 document, the composite with a hostile package name and one with a long version. Writes `build/pages/`, which is
 // what the e2e suite runs against.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { assembleEmbed, METACHAR_NAME, report2Pages, sheetPages } from "./report2-embed.ts";
+import { assembleEmbed, LONG_VERSION, METACHAR_NAME, report2Pages, sheetPages } from "./report2-embed.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const DIST = join(ROOT, "dist");
@@ -56,13 +56,23 @@ function main() {
     .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
     .replaceAll("{{DATA}}", () => payload(hostile));
   writeFileSync(join(OUT, "planted", "report2-metachar.html"), metachar);
+  // The composite with one graded package on a long branch version, as a real lock can hold.
+  const long = assembleEmbed("composite");
+  long.report.findings = long.report.findings.map((f) =>
+    f.package === "symfony/yaml" ? { ...f, version: LONG_VERSION } : f,
+  );
+  const longPage = template
+    .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DATA}}", () => payload(long));
+  writeFileSync(join(OUT, "planted", "report2-long-version.html"), longPage);
   // The one report-1 bundle the page keeps, for the report-1 screen.
   const report1 = template
     .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))
     .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
     .replaceAll("{{DATA}}", () => payload(JSON.parse(read(REPORT1))));
   writeFileSync(join(OUT, "planted", "report1.html"), report1);
-  console.log(`${report2.length + 3} page(s) written to ${OUT}`);
+  console.log(`${report2.length + 4} page(s) written to ${OUT}`);
 }
 
 main();

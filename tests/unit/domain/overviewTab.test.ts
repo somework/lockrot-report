@@ -124,14 +124,23 @@ describe("the libyears table", () => {
     );
   });
 
-  test("shows the newest release beside the installed version, with its date", () => {
+  test("shows the most recent release with its date, and draws no arrow from the installed version", () => {
     expect(libyearsTop(composite()).map(({ package: name, release }) => [name, release])).toEqual([
-      ["symfony/monolog-bridge", "v2.6.13 → v6.4.45 (2026-08-30)"],
-      ["symfony/yaml", "v5.4.23 → v8.1.8 (2026-09-26)"],
-      ["twig/twig", "v2.16.1 → v3.30.0 (2026-09-25)"],
-      ["symfony/debug", "v3.4.47 → v4.4.44 (2022-07-28)"],
-      ["tubalmartin/cssmin", "v4.1.1 → v4.1.1 (2018-01-15)"],
+      ["symfony/monolog-bridge", "v6.4.45 (2026-08-30)"],
+      ["symfony/yaml", "v8.1.8 (2026-09-26)"],
+      ["twig/twig", "v3.30.0 (2026-09-25)"],
+      ["symfony/debug", "v4.4.44 (2022-07-28)"],
+      ["tubalmartin/cssmin", "v4.1.1 (2018-01-15)"],
     ]);
+  });
+
+  test("draws no arrow when the most recent release is an older version than the installed one", () => {
+    const report = withFinding(composite(), "symfony/yaml", (f) => {
+      f.age.release = { ...(f.age.release as NonNullable<typeof f.age.release>), version: "v1.0.0" };
+    });
+
+    const row = libyearsTop(report).find(({ package: name }) => name === "symfony/yaml");
+    expect(row?.release).toBe("v1.0.0 (2026-09-26)");
   });
 
   test("gives the cause words when the newest release was not measured", () => {
@@ -150,7 +159,7 @@ describe("the libyears table", () => {
 
     expect(row).not.toHaveProperty("grade");
     expect(Object.values(OVERVIEW_TAB_WORDS)).not.toContain("Grade");
-    expect(OVERVIEW_TAB_WORDS.release).toBe("Newest release");
+    expect(OVERVIEW_TAB_WORDS.release).toBe("Most recent release");
   });
 
   test("names its caption after the cut", () => {

@@ -3,6 +3,7 @@ import "../styles/base.css";
 import type { RefObject } from "preact";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { fitFilters2, population2, renderedPackages2 } from "../domain/list";
+import { skipLinkLabel } from "../domain/pageVocabulary";
 import type { Model } from "../model/types";
 import type { Action, State } from "../state/types";
 import { ReportContext, useReport } from "./context";
@@ -465,6 +466,21 @@ export function App({ model }: { model: Model }) {
   // was the one part of the page a screen reader's landmark list could not reach (axe `region`).
   return (
     <ReportContext.Provider value={value}>
+      {/* A link to the hash would route the page, so the skip moves focus itself: to the list's
+          Tab stop row, else to the panel. */}
+      <a
+        className="skip-link"
+        href={`#${panelId}`}
+        inert={sheet}
+        onClick={(event) => {
+          event.preventDefault();
+          const panel = document.getElementById(panelId);
+          const row = panel?.querySelector<HTMLElement>('[data-pkg][tabindex="0"]');
+          (row ?? panel)?.focus();
+        }}
+      >
+        {skipLinkLabel(filterable)}
+      </a>
       <NewerSchemaBanner inert={sheet} />
       <Header
         theme={theme.effective}

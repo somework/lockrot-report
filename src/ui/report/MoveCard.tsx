@@ -4,6 +4,7 @@ import { DETAIL_WORDS } from "../../domain/detailWords";
 import { gradeTone, verdictTone } from "../../domain/findingRow";
 import { type Holder, type HeldByBlock, type MoveCard as Card, STEP_LABEL } from "../../domain/moveCards";
 import { toneClass } from "../common/common";
+import { usePrinted } from "../print/printContext";
 import { CopyMove } from "./CopyMove";
 import { RichText } from "./RichText";
 
@@ -144,6 +145,7 @@ function HolderItem({ holder }: { holder: Holder }) {
 /** Held by (SPEC §7.9.8.7): every holder up to HOLDERS_SHOWN_MAX, else the worst and a fold. */
 export function HeldBy({ block }: { block: HeldByBlock }) {
   const id = `${useId()}-held`;
+  const printed = usePrinted();
   return (
     <section className="d3-holders" aria-labelledby={id}>
       <h3 className="eyebrow" id={id}>
@@ -157,7 +159,7 @@ export function HeldBy({ block }: { block: HeldByBlock }) {
         ))}
       </ul>
       {block.fold !== null && (
-        <details className="d3-fold">
+        <details className="d3-fold" open={printed ? true : undefined}>
           <summary>
             <span>{block.fold.summary}</span>
           </summary>

@@ -64,9 +64,38 @@
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 28px;
+  --radius-xs: 2px;
   --radius-s: 4px;
   --radius-m: 7px;
   --radius-l: 10px;
+  --radius-round: 50%;
+  --radius-pill: 999px;
+
+  /* The type scale: every font size the page draws, each named by its pixel size, so a rule picks a
+     step instead of inventing one. */
+  --text-8: 8px;
+  --text-8-5: 8.5px;
+  --text-9-5: 9.5px;
+  --text-10: 10px;
+  --text-10-5: 10.5px;
+  --text-11: 11px;
+  --text-11-5: 11.5px;
+  --text-12: 12px;
+  --text-12-5: 12.5px;
+  --text-13: 13px;
+  --text-13-5: 13.5px;
+  --text-14: 14px;
+  --text-14-5: 14.5px;
+  --text-15: 15px;
+  --text-16: 16px;
+  --text-17: 17px;
+  --text-18: 18px;
+  --text-19: 19px;
+  --text-21: 21px;
+  --text-22: 22px;
+  --text-26: 26px;
+  /* Paper's smallest size, in points as print sets type. */
+  --text-print-xs: 7.5pt;
   --gutter: 20px;
   --page-max: 1500px;
 

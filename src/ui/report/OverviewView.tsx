@@ -57,10 +57,10 @@ function WeighsMostBlock({ report }: { report: Report2 }) {
 
   return (
     <div className="ledger-block wm">
-      <p className="eyebrow ledger-head">
+      <h3 className="eyebrow ledger-head">
         {WEIGHS_WORDS.head}{" "}
         {chart.rows.length > 0 && <span className="ledger-head-note">{WEIGHS_WORDS.note}</span>}
-      </p>
+      </h3>
       <p className="wm-load">{load}</p>
       {chart.legend.length > 0 && (
         <ul className="wm-legend" aria-label={WEIGHS_WORDS.legend}>
@@ -97,10 +97,10 @@ function ExposureBlock({ report }: { report: Report2 }) {
 
   return (
     <div className="ledger-block ov-exposure">
-      <p className="eyebrow ledger-head">
+      <h3 className="eyebrow ledger-head">
         {OVERVIEW_TAB_WORDS.exposure}{" "}
         <span className="ledger-head-note">{OVERVIEW_TAB_WORDS.exposureNote}</span>
-      </p>
+      </h3>
       {bars.rows.length > 0 && (
         <ul className="ov-ex">
           {bars.rows.map((row) => (
@@ -177,6 +177,7 @@ export function OverviewView2() {
 
   return (
     <section className="ledger ov" data-surface="overview" aria-label={OVERVIEW_WORDS.band}>
+      <h2 className="vh">{OVERVIEW_TAB_WORDS.overview}</h2>
       <div className="ov-lead">
         <Lead report={report} />
       </div>

@@ -15,7 +15,7 @@
   grid-template-columns: max-content minmax(72px, 1fr) auto fit-content(17ch);
   column-gap: 12px;
   margin-top: 4px;
-  font: 11.5px/1.3 var(--mono);
+  font: var(--text-11-5)/1.3 var(--mono);
   /* The strip stops this short of its column, so a dot on the today rule — a release from last
      week — has room for its right half without touching the LATEST column. */
   --rule-gap: 7px;
@@ -45,13 +45,13 @@
   align-items: end;
 }
 .detail-timeline-head > span {
-  font: 600 10.5px/1 var(--cond);
+  font: 600 var(--text-10-5)/1 var(--cond);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
 }
 .detail-timeline-branch {
-  font-size: 12px;
+  font-size: var(--text-12);
   color: var(--ink-2);
   white-space: nowrap;
 }
@@ -61,7 +61,7 @@
 /* A constraint stays on one line — a row is one line — unless it is long enough to crowd the strip
    out of a phone-width panel ("^5.3.3 || ^7.0 || ^8.0"); then it breaks at its own spaces. */
 .detail-timeline-php {
-  font-size: 11px;
+  font-size: var(--text-11);
   color: var(--muted);
   white-space: nowrap;
 }
@@ -104,7 +104,7 @@
   box-sizing: border-box;
   width: 7px;
   height: 7px;
-  border-radius: 50%;
+  border-radius: var(--radius-round);
   transform: translate(-50%, -50%);
   background: var(--surface);
   border: 1.5px solid var(--muted);
@@ -143,7 +143,7 @@
   position: absolute;
   bottom: -6px;
   padding-bottom: 6px;
-  font: 500 10px/1 var(--mono);
+  font: 500 var(--text-10)/1 var(--mono);
   letter-spacing: 0;
   text-transform: none;
   white-space: nowrap;
@@ -178,7 +178,7 @@
   top: 5px;
   bottom: 5px;
   width: 3px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   background: var(--ink);
 }
 .detail-timeline-row.is-mine .detail-timeline-branch,
@@ -188,7 +188,7 @@
 }
 .detail-timeline-row.is-mine .detail-timeline-tail {
   height: 4px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   background: var(--ink-2);
 }
 .detail-timeline-row.is-mine.is-toned .detail-timeline-tail {
@@ -203,7 +203,7 @@
 .detail-timeline-row.is-snapshot .detail-timeline-dot {
   width: 12px;
   height: 12px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
@@ -222,7 +222,7 @@
    eight years old read as healthy beside a toned "you". Its age is in the sentence above. */
 .detail-timeline-row.is-newest .detail-timeline-tail {
   height: 2px;
-  border-radius: 1px;
+  border-radius: var(--radius-xs);
   background: var(--muted);
 }
 .detail-timeline-row.is-newest .detail-timeline-dot {
@@ -249,7 +249,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font: 12px var(--sans);
+  font: var(--text-12) var(--sans);
   color: var(--ink-2);
   background: none;
   border: 0;
@@ -288,7 +288,7 @@
   height: 14px;
   transform: translateY(-50%);
   min-width: 8px;
-  border-radius: 3px;
+  border-radius: var(--radius-s);
   background: var(--surface-2);
   /* An outline, not only a tint: in dark mode the tint alone all but vanished into the panel. */
   box-shadow: inset 0 0 0 1px var(--border);
@@ -305,7 +305,7 @@
 }
 .detail-timeline-range {
   grid-column: 3 / -1;
-  font-size: 11px;
+  font-size: var(--text-11);
   color: var(--muted);
   white-space: nowrap;
 }
@@ -320,7 +320,7 @@
   position: relative;
   height: 20px;
   container-type: inline-size;
-  font-size: 10.5px;
+  font-size: var(--text-10-5);
   color: var(--muted);
 }
 .detail-timeline-year {
@@ -397,7 +397,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px 14px;
-  font-size: 11.5px;
+  font-size: var(--text-11-5);
   color: var(--muted);
 }
 .detail-timeline-key-item {
@@ -411,7 +411,7 @@
   display: inline-block;
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: var(--radius-round);
 }
 .detail-timeline-swatch.is-mine {
   border: 2.5px solid var(--ink);
@@ -420,7 +420,7 @@
   width: 9px;
   height: 9px;
   border: 2.5px solid var(--ink);
-  border-radius: 1px;
+  border-radius: var(--radius-xs);
   transform: rotate(45deg);
 }
 .detail-timeline-swatch.is-newest {
@@ -430,7 +430,7 @@
   display: inline-block;
   width: 16px;
   height: 3px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   background: var(--border-strong);
 }
 /* A guide as the key draws it: a short upright dash in muted ink, not a tone — the key names what
@@ -448,7 +448,7 @@
      still clear the LATEST text. */
   .detail-timeline-grid {
     column-gap: 8px;
-    font-size: 10.5px;
+    font-size: var(--text-10-5);
     --rule-gap: 4px;
   }
   /* A narrower gutter after the constraint, but still one: "^7.2 || ^8.0" ran to the panel's edge. */
@@ -457,7 +457,7 @@
   }
   .detail-timeline-branch,
   .detail-timeline-fold-btn {
-    font-size: 11.5px;
+    font-size: var(--text-11-5);
   }
   /* Any constraint may break at its own spaces here, and only does when the strip is already at its
      floor — the grid shrinks an auto column only then — so the gutter above never costs the strip. */
@@ -466,6 +466,6 @@
   }
   .detail-timeline-php,
   .detail-timeline-range {
-    font-size: 10px;
+    font-size: var(--text-10);
   }
 }

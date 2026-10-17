@@ -92,7 +92,7 @@ a.legend-btn,
    fill (tokens.css `--flag-*`). The label sits beside the bar from 760px and above it under that. */
 .wm-load {
   margin: 0 0 10px;
-  font-size: 13.5px;
+  font-size: var(--text-13-5);
   line-height: 1.45;
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
@@ -104,7 +104,7 @@ a.legend-btn,
   margin: 0 0 10px;
   padding: 0;
   list-style: none;
-  font-size: 12px;
+  font-size: var(--text-12);
   color: var(--ink-2);
 }
 .wm-key {
@@ -144,22 +144,22 @@ a.legend-btn,
 .wm-label {
   grid-area: label;
   min-width: 0;
-  font-size: 13px;
+  font-size: var(--text-13);
   overflow-wrap: anywhere;
 }
 .wm-reach {
-  font-size: 12px;
+  font-size: var(--text-12);
   color: var(--muted);
 }
 .wm-total {
   grid-area: total;
-  font: 600 13px var(--mono);
+  font: 600 var(--text-13) var(--mono);
   text-align: right;
 }
 .wm-text {
   grid-area: text;
   min-width: 0;
-  font: 11.5px/1.4 var(--mono);
+  font: var(--text-11-5)/1.4 var(--mono);
   color: var(--muted);
   overflow-wrap: anywhere;
 }
@@ -170,7 +170,7 @@ a.legend-btn,
   display: flex;
   height: 12px;
   overflow: hidden;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   background: var(--surface-2);
 }
 .wm-seg,
@@ -192,7 +192,7 @@ a.legend-btn,
   display: inline-block;
   width: 10px;
   height: 10px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
 }
 .wm [data-flag="abandoned"] {
   --flag: var(--flag-abandoned);
@@ -247,7 +247,7 @@ a.legend-btn,
   padding: 3px 6px;
   border-radius: var(--radius-s);
   color: var(--ink);
-  font-size: 13px;
+  font-size: var(--text-13);
 }
 .ov-ex-row:hover {
   background: var(--surface-2);
@@ -262,12 +262,12 @@ a.legend-btn,
   display: block;
   height: 100%;
   min-width: 3px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   background: color-mix(in srgb, var(--ink-2) 55%, transparent);
   print-color-adjust: exact;
 }
 .ov-ex-count {
-  font: 600 13px var(--mono);
+  font: 600 var(--text-13) var(--mono);
   text-align: right;
 }
 
@@ -275,7 +275,7 @@ a.legend-btn,
 .ov-ly {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--text-13);
   font-variant-numeric: tabular-nums;
 }
 .ov-ly caption {
@@ -286,7 +286,7 @@ a.legend-btn,
 .ov-ly th {
   padding: 0 8px 6px 0;
   border-bottom: 1px solid var(--border-strong);
-  font: 600 10.5px var(--sans);
+  font: 600 var(--text-10-5) var(--sans);
   letter-spacing: 0.1em;
   text-align: left;
   text-transform: uppercase;
@@ -304,21 +304,21 @@ a.legend-btn,
   white-space: nowrap;
 }
 .ov-ly-version {
-  font: 12px var(--mono);
+  font: var(--text-12) var(--mono);
   color: var(--muted);
 }
 .ov-ly-release {
-  font: 12px var(--mono);
+  font: var(--text-12) var(--mono);
   color: var(--ink-2);
 }
 .ov-ly-grade {
   display: inline-block;
   padding: 2px 6px;
   border: 1px solid var(--tone);
-  border-radius: 3px;
+  border-radius: var(--radius-s);
   background: var(--tone-soft);
   color: var(--tone);
-  font: 600 11.5px/1 var(--sans);
+  font: 600 var(--text-11-5)/1 var(--sans);
   white-space: nowrap;
   print-color-adjust: exact;
 }

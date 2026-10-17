@@ -12,13 +12,6 @@ export function safeHref(url: unknown): string | null {
   return /^https?:\/\/[^\s<>"']+$/i.test(value) ? value : null;
 }
 
-/** The NVD page for an advisory that carries a CVE id; a GHSA-only id has nowhere to link. */
-export function cveUrl(advisory: { readonly cve: string | null }): string | null {
-  return advisory.cve && /^CVE-/.test(advisory.cve)
-    ? `https://nvd.nist.gov/vuln/detail/${advisory.cve}`
-    : null;
-}
-
 /** One out-link of the detail sheet's header: its URL, its visible text and its accessible name. */
 export interface HeaderLink {
   href: string;

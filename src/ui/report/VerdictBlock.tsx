@@ -7,13 +7,16 @@ import { REACH_NAMES_SHOWN, REACH_NAMES_SHOWN_MAX } from "../../domain/sheetThre
 import { readingRich, verdictBlock } from "../../domain/verdictBlock";
 import { toneClass } from "../common/common";
 import { DisclosureButton } from "../common/Disclosure";
+import { usePrinted } from "../print/printContext";
 import { jumpTo, RichText, type JumpIds } from "./RichText";
 
 const Name = ({ name }: { name: string }) => <span className="d3-name">{name}</span>;
 
 /** One name inline; more as a list, past REACH_NAMES_SHOWN_MAX the rest behind "{n} more". */
 function Names({ names }: { names: readonly string[] }) {
-  const [open, setOpen] = useState(false);
+  const [opened, setOpen] = useState(false);
+  const printed = usePrinted();
+  const open = opened || printed;
   const listId = `${useId()}-names`;
   const shown = names.length <= REACH_NAMES_SHOWN_MAX ? names.length : REACH_NAMES_SHOWN;
   const rest = names.length - shown;

@@ -50,6 +50,8 @@ export const FIXTURES = {
   malformedReport2: "planted/report2-malformed",
   /** Planted: the composite with symfony/yaml renamed to `METACHAR_NAME`. */
   metacharReport2: "planted/report2-metachar",
+  /** Planted: the composite with symfony/yaml on `LONG_VERSION`, a 45-character branch version. */
+  longVersionReport2: "planted/report2-long-version",
   /** Planted: a report-1 document (`fixtures/bundles/mini.json`), which the page answers with the
    *  report-1 screen. */
   report1: "planted/report1",

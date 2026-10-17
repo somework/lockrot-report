@@ -4,7 +4,7 @@ import { report2Url } from "./support/pages";
 import { radiusKids, radiusRow, radiusRowPackages, radiusSurface } from "./support/report2/radius";
 import { report2Pages } from "../scripts/report2-embed.ts";
 
-test.describe("report-2: the Blast radius tab reads chain, direct_dependents and S7", () => {
+test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
   const WALLABAG = "baselined-wallabag-2.6";
   const wallabag = report2Pages().find((p) => p.name === `report2-${WALLABAG}`)?.embed.report;
   const go = async (page: Page, caseName: string, hash = "", width = 1440): Promise<void> => {
@@ -37,16 +37,23 @@ test.describe("report-2: the Blast radius tab reads chain, direct_dependents and
     expect((await radiusKids(page, "kphoen/rulerz")).length).toBe(stated);
   });
 
-  test("ranks the requirements by the packages listed under them, most first", async ({ page }) => {
+  test("lists the requirements in the order of report.exposure, each with its exposure count", async ({
+    page,
+  }) => {
     await go(page, WALLABAG);
-    const counts = await radiusSurface(page)
-      .locator("ul.r2-list")
-      .first()
-      .locator(":scope > li .r2-say")
-      .allTextContents();
-    const numbers = counts.map((text) => Number(/Pulls in (\d+)/.exec(text)?.[1] ?? "0"));
-    expect(numbers.length).toBeGreaterThan(1);
-    expect(numbers).toEqual([...numbers].sort((a, b) => b - a));
+    await radiusSurface(page)
+      .getByRole("button", { name: /more pull in one flagged package each/ })
+      .evaluate((button) => {
+        if (button.getAttribute("aria-expanded") === "false") (button as HTMLButtonElement).click();
+      });
+    const exposure = wallabag?.exposure ?? [];
+    expect(exposure.length).toBeGreaterThan(1);
+    await expect.poll(() => radiusRowPackages(page)).toEqual(exposure.map((entry) => entry.package));
+    const counts = await radiusSurface(page).locator("li.r2-row > .r2-line .r2-say").allTextContents();
+    expect(counts.map((text) => Number(/Pulls in (\d+)/.exec(text)?.[1] ?? "0"))).toEqual(
+      exposure.map((entry) => entry.flagged),
+    );
+    await expect(radiusSurface(page)).not.toContainText("listing nothing flagged");
   });
 
   test("a toggle opens the row's packages as a tree; every package is one the requirement's S7 lists", async ({
@@ -70,13 +77,19 @@ test.describe("report-2: the Blast radius tab reads chain, direct_dependents and
     await expect.poll(() => page.evaluate(() => location.hash)).not.toContain("pkg=");
   });
 
-  test("a #pkg= link to a listed package opens the row that lists it", async ({ page }) => {
+  test("a #pkg= link to a listed package opens the first row that lists it, and only that one", async ({
+    page,
+  }) => {
+    // hoa/ruler is in the S7 of kphoen/rulerz-bundle, first on exposure[], and of kphoen/rulerz.
     await go(page, WALLABAG, "&pkg=hoa%2Fruler");
+    await expect(
+      radiusRow(page, "kphoen/rulerz-bundle").getByRole("button", { name: /Show the/ }),
+    ).toHaveAttribute("aria-expanded", "true");
     await expect(radiusRow(page, "kphoen/rulerz").getByRole("button", { name: /Show the/ })).toHaveAttribute(
       "aria-expanded",
-      "true",
+      "false",
     );
-    await expect(radiusRow(page, "kphoen/rulerz").locator('li[data-pkg="hoa/ruler"]')).toHaveAttribute(
+    await expect(radiusRow(page, "kphoen/rulerz-bundle").locator('li[data-pkg="hoa/ruler"]')).toHaveAttribute(
       "aria-current",
       "true",
     );
@@ -93,7 +106,7 @@ test.describe("report-2: the Blast radius tab reads chain, direct_dependents and
     await expect(radiusRow(page, "kphoen/rulerz").locator(`li[data-pkg="${firstKid ?? ""}"]`)).toBeFocused();
   });
 
-  test("the one-each rows and the tails fold, and open on demand", async ({ page }) => {
+  test("the one-each rows fold, and open on demand", async ({ page }) => {
     await go(page, WALLABAG, "", 390);
     const singles = radiusSurface(page).getByRole("button", {
       name: /more pull in one flagged package each/,
@@ -103,9 +116,6 @@ test.describe("report-2: the Blast radius tab reads chain, direct_dependents and
     await singles.click();
     await expect(singles).toHaveAttribute("aria-expanded", "true");
     expect((await radiusRowPackages(page)).length).toBeGreaterThan(before);
-    const self = radiusSurface(page).getByRole("button", { name: /flagged themselves/ });
-    await self.click();
-    await expect(self).toHaveAttribute("aria-expanded", "true");
   });
 
   test("an unflagged dev requirement still says dev", async ({ page }) => {
@@ -117,7 +127,7 @@ test.describe("report-2: the Blast radius tab reads chain, direct_dependents and
   test("a listed package says its grade in words, so forced colours keep it", async ({ page }) => {
     await page.emulateMedia({ forcedColors: "active" });
     await go(page, WALLABAG, "&pkg=hoa%2Fruler");
-    const kid = radiusRow(page, "kphoen/rulerz").locator('li[data-pkg="hoa/ruler"]');
+    const kid = radiusRow(page, "kphoen/rulerz-bundle").locator('li[data-pkg="hoa/ruler"]');
     const verdict = wallabag?.findings.find((f) => f.package === "hoa/ruler")?.verdict ?? "";
     expect(verdict).not.toBe("");
     await expect(kid.locator(".r2-grade")).toHaveText(verdict);
@@ -137,9 +147,6 @@ test.describe("report-2: the Blast radius tab reads chain, direct_dependents and
     test(`no serious axe violation with a row and the folds open, ${colorScheme}`, async ({ page }) => {
       await page.emulateMedia({ colorScheme });
       await go(page, WALLABAG, "&pkg=hoa%2Fruler");
-      await radiusSurface(page)
-        .getByRole("button", { name: /flagged themselves/ })
-        .click();
       const results = await new AxeBuilder({ page }).include('[data-surface="radius"]').analyze();
       const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
       expect(serious.flatMap((v) => v.nodes.map((node) => `${v.id}: ${node.target.join(" ")}`))).toEqual([]);

@@ -44,7 +44,7 @@ function listedPackages(report: Report2, state: State): ReadonlySet<string> {
       applyFilters2(report, state, "radius"),
       population2(report, "radius"),
     );
-    const rows = [...layout.ranked, ...layout.selfOnly];
+    const rows = layout.rows;
     return new Set([
       ...rows.flatMap((row) => [
         ...(row.self ? [row.self.package] : []),

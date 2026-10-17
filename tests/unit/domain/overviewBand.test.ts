@@ -185,6 +185,13 @@ describe("the Security block", () => {
     expect(securityBlock(report).note).toBe("advisory check incomplete, so the list may be partial");
   });
 
+  test("says the advisory check did not run, never that it was incomplete, when it did not run", () => {
+    const report = golden("ok-offline");
+
+    expect(report.security.check).toBe("not_run");
+    expect(securityBlock(report).unit).toBe("the advisory check did not run");
+  });
+
   test("words a lock with no counted advisory", () => {
     const block = securityBlock(golden("new-symfony"));
 

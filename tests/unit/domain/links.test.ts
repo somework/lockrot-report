@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { cveUrl, headerLinks, safeHref } from "../../../src/domain/links";
+import { headerLinks, safeHref } from "../../../src/domain/links";
 import type { Finding } from "../../../src/model/report";
 
 const REPO = "https://github.com/symfony/monolog-bridge";
@@ -67,24 +67,6 @@ describe("safeHref", () => {
     // The regex inspects literal characters only, so a percent-encoded scheme passes: pinned, not
     // endorsed.
     expect(safeHref("https://example.test/%6A%61%76%61")).toBe("https://example.test/%6A%61%76%61");
-  });
-});
-
-describe("cveUrl", () => {
-  test("links an advisory whose id is a CVE", () => {
-    expect(cveUrl({ cve: "CVE-2022-31090" })).toBe("https://nvd.nist.gov/vuln/detail/CVE-2022-31090");
-  });
-
-  test("returns null for an advisory with no CVE id", () => {
-    expect(cveUrl({ cve: null })).toBeNull();
-  });
-
-  test("returns null for a non-CVE identifier such as a GHSA id", () => {
-    expect(cveUrl({ cve: "GHSA-xxxx-yyyy-zzzz" })).toBeNull();
-  });
-
-  test("the CVE- prefix check is case-sensitive, matching the legacy regex exactly", () => {
-    expect(cveUrl({ cve: "cve-2022-31090" })).toBeNull();
   });
 });
 

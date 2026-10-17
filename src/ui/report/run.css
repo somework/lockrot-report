@@ -13,7 +13,7 @@
 .run2-caption,
 .run2-line {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--text-13);
   color: var(--ink-2);
   overflow-wrap: anywhere;
 }
@@ -24,7 +24,7 @@
   align-items: center;
   gap: 4px 12px;
   margin: 0;
-  font-size: 13px;
+  font-size: var(--text-13);
   overflow-wrap: anywhere;
 }
 
@@ -36,7 +36,7 @@
 .run2-ruler-bands {
   position: relative;
   height: 22px;
-  border-radius: 3px;
+  border-radius: var(--radius-s);
   overflow: hidden;
 }
 .run2-ruler-bands > i {
@@ -45,7 +45,7 @@
   bottom: 0;
   padding-left: 6px;
   overflow: hidden;
-  font: 600 10.5px/22px var(--cond);
+  font: 600 var(--text-10-5)/22px var(--cond);
   font-style: normal;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -57,7 +57,7 @@
 .run2-ruler-ticks {
   position: relative;
   height: 14px;
-  font: 10.5px/14px var(--mono);
+  font: var(--text-10-5)/14px var(--mono);
   color: var(--muted);
 }
 .run2-ruler-ticks > span {
@@ -81,12 +81,12 @@
 }
 .run2-table {
   border-collapse: collapse;
-  font-size: 12.5px;
+  font-size: var(--text-12-5);
 }
 .run2-table caption {
   padding-bottom: 6px;
   text-align: left;
-  font: 600 11px var(--cond);
+  font: 600 var(--text-11) var(--cond);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
@@ -100,7 +100,7 @@
   color: var(--ink-2);
 }
 .run2-table thead th {
-  font: 600 10px var(--cond);
+  font: 600 var(--text-10) var(--cond);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -113,7 +113,7 @@
   white-space: nowrap;
 }
 .run2-table td.run2-band {
-  font: 600 10.5px var(--cond);
+  font: 600 var(--text-10-5) var(--cond);
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--tone);
@@ -121,7 +121,7 @@
 
 .run2-rules > summary {
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--text-13);
   font-weight: 600;
   padding: 4px 0;
 }
@@ -138,10 +138,10 @@
   align-items: baseline;
   padding: 6px 0;
   border-bottom: 1px solid var(--border);
-  font-size: 12.5px;
+  font-size: var(--text-12-5);
 }
 .run2-rule-no {
-  font: 600 11.5px var(--mono);
+  font: 600 var(--text-11-5) var(--mono);
   color: var(--muted);
   text-align: right;
 }
@@ -153,7 +153,7 @@
   color: var(--ink-2);
 }
 .run2-rule-used {
-  font: 11.5px var(--mono);
+  font: var(--text-11-5) var(--mono);
   white-space: nowrap;
   color: var(--ink-2);
 }
@@ -167,7 +167,7 @@
   padding-left: 18px;
   display: grid;
   gap: 4px;
-  font-size: 13px;
+  font-size: var(--text-13);
   color: var(--ink-2);
   overflow-wrap: anywhere;
 }

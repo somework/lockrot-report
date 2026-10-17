@@ -114,12 +114,13 @@ test.describe("the open row outside a plain screen", () => {
     expect(outline.color).not.toBe("rgba(0, 0, 0, 0)");
   });
 
-  // A print medium mounts the printed document beside the screen's table, so both rows are read.
+  // With a package open, print prints its sheet, so the screen's table is the one row left to read.
   test("paper paints no open row", async ({ page }) => {
     const report = await createReportPage(page);
     await report.gotoReport2WithHash(CASE, HASH);
     await page.emulateMedia({ media: "print" });
-    await expect(packagesRow(page, OPEN)).toHaveCount(2);
+    await expect(page.locator('.pd [data-surface="detail"]')).toHaveCount(1);
+    await expect(packagesRow(page, OPEN)).toHaveCount(1);
 
     const paints = await packagesRow(page, OPEN).evaluateAll((rows) =>
       rows.map((el) => {

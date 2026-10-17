@@ -15,6 +15,7 @@ import {
 } from "../../domain/securityBlock";
 import { toneClass } from "../common/common";
 import { DisclosureButton } from "../common/Disclosure";
+import { usePrinted } from "../print/printContext";
 import { jumpTo, RichText } from "./RichText";
 
 const severityTag = (run: Run, severity: string) => (
@@ -31,7 +32,9 @@ const withBreaks = (parts: readonly string[]) =>
   ));
 
 function Affects({ affects }: { affects: AdvisoryAffects }) {
-  const [open, setOpen] = useState(false);
+  const [opened, setOpen] = useState(false);
+  const printed = usePrinted();
+  const open = opened || printed;
   const id = `${useId()}-range`;
   if (affects.folded === null) {
     return (

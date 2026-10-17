@@ -50,7 +50,7 @@
    The serif sets the answer apart from the UI text around it (tokens.css `--serif`). */
 .ov-grade {
   margin: 0;
-  font: 26px/1.35 var(--serif);
+  font: var(--text-26)/1.35 var(--serif);
   color: var(--ink);
   text-wrap: balance;
 }
@@ -82,13 +82,13 @@
 }
 .ov-figure {
   margin: -4px 0 0;
-  font: 18px/1.3 var(--serif);
+  font: var(--text-18)/1.3 var(--serif);
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
 }
 .ov-empty {
   margin: 0;
-  font: 26px/1.15 var(--serif);
+  font: var(--text-26)/1.15 var(--serif);
   color: var(--ink-2);
 }
 /* PD-SUMMARY-9: the flagged packages split by install scope and by reach, one quiet line that
@@ -97,7 +97,7 @@
 .lead-scope {
   margin: -4px 0 0;
   overflow: hidden;
-  font-size: 12.5px;
+  font-size: var(--text-12-5);
   line-height: 1.5;
   color: var(--muted);
 }
@@ -118,7 +118,7 @@
   gap: 6px;
 }
 .lead-chips .legend-btn {
-  font-size: 13.5px;
+  font-size: var(--text-13-5);
   padding: 5px 12px 5px 10px;
   gap: 7px;
 }
@@ -143,7 +143,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 14px;
-  font-size: 12px;
+  font-size: var(--text-12);
   color: var(--muted);
 }
 
@@ -178,13 +178,13 @@
 }
 @media (max-width: 759px) {
   .ov-grade {
-    font-size: 22px;
+    font-size: var(--text-22);
   }
   .ov-figure {
-    font-size: 16px;
+    font-size: var(--text-16);
   }
   .lead-chips .legend-btn {
-    font-size: 13px;
+    font-size: var(--text-13);
     padding: 4px 10px 4px 9px;
   }
   .waffle {
@@ -194,7 +194,7 @@
   }
 }
 .waffle-cell {
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   background: var(--tone);
   transition: opacity 0.15s ease;
 }
@@ -243,7 +243,7 @@
 .ledger-head-note {
   white-space: nowrap;
   font-weight: 400;
-  font-size: 12px;
+  font-size: var(--text-12);
   letter-spacing: 0.02em;
   text-transform: none;
 }
@@ -257,23 +257,23 @@
   gap: 2px 8px;
 }
 .ledger-fig-num {
-  font: 600 26px/1 var(--sans);
+  font: 600 var(--text-26)/1 var(--sans);
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
 .ledger-fig-unit {
-  font: 15px/1.25 var(--serif);
+  font: var(--text-15)/1.25 var(--serif);
   color: var(--ink-2);
 }
 .ledger-fig-text {
-  font: 16px/1.35 var(--serif);
+  font: var(--text-16)/1.35 var(--serif);
   color: var(--tone);
 }
 
 .ledger-note {
   margin: 0;
-  font-size: 12.5px;
+  font-size: var(--text-12-5);
   line-height: 1.5;
   color: var(--muted);
 }
@@ -282,7 +282,7 @@
   font-weight: 600;
 }
 .ledger-note .mono {
-  font-size: 12px;
+  font-size: var(--text-12);
   color: var(--ink-2);
 }
 
@@ -319,7 +319,7 @@
   border-radius: var(--radius-s);
   background: transparent;
   border-color: transparent;
-  font-size: 13px;
+  font-size: var(--text-13);
   text-align: left;
   color: var(--ink-2);
 }
@@ -347,7 +347,7 @@
   gap: 1px;
   height: 100%;
   min-width: 3px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   overflow: hidden;
 }
 .legend-seg {
@@ -374,7 +374,7 @@
 .advisory-square {
   width: 14px;
   height: 14px;
-  border-radius: 3px;
+  border-radius: var(--radius-s);
   background: var(--tone);
 }
 
@@ -383,7 +383,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px 6px;
-  font-size: 12px;
+  font-size: var(--text-12);
 }
 
 /* PD-LEDGER-2 (DESIGN.md §5): a legend entry is a filter toggle, not static text ("Anatoly:
@@ -392,7 +392,7 @@
 .legend-btn {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 3px 10px 3px 8px;
   cursor: pointer;
   display: inline-flex;
@@ -434,7 +434,7 @@
 .swatch {
   width: 9px;
   height: 9px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   display: inline-block;
 }
 
