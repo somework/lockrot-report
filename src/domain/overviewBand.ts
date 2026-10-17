@@ -139,7 +139,13 @@ export function securityBlock(report: Report2): SecurityBlock {
   const { security, run } = report;
   const counted = security.advisories.counted;
   if (counted === 0)
-    return { figure: null, unit: noAdvisoryWords(report), note: null, severities: [], fixes: [] };
+    return {
+      figure: null,
+      unit: security.check === "not_run" ? "the advisory check did not run" : noAdvisoryWords(report),
+      note: null,
+      severities: [],
+      fixes: [],
+    };
   const bySeverity: Readonly<Record<string, number>> = security.severities;
   return {
     figure: String(counted),

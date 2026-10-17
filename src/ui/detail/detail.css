@@ -46,14 +46,14 @@
 }
 .detail-title {
   margin: 0;
-  font-size: 17px;
+  font-size: var(--text-17);
   font-weight: 650;
   line-height: 1.3;
   overflow-wrap: anywhere;
 }
 .detail-version {
   font-family: var(--mono);
-  font-size: 12.5px;
+  font-size: var(--text-12-5);
   color: var(--muted);
   overflow-wrap: anywhere;
 }
@@ -74,16 +74,16 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  font-size: 12px;
+  font-size: var(--text-12);
   color: var(--muted);
 }
 .detail-close {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-m);
   padding: 5px 10px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--text-12);
   white-space: nowrap;
 }
 .detail-close:hover {
@@ -105,7 +105,7 @@
 .detail-section > h3 {
   margin: 0;
   font-family: var(--cond);
-  font-size: 11px;
+  font-size: var(--text-11);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
@@ -130,7 +130,7 @@
 .detail-reference-summary h3 {
   margin: 0;
   font-family: var(--cond);
-  font-size: 11px;
+  font-size: var(--text-11);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
@@ -141,7 +141,7 @@
   display: grid;
   grid-template-columns: minmax(84px, auto) minmax(0, 1fr);
   gap: 4px 12px;
-  font-size: 13px;
+  font-size: var(--text-13);
 }
 .detail-kv dt {
   color: var(--muted);
@@ -149,7 +149,7 @@
 .detail-kv dd {
   margin: 0;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--text-12);
   word-break: break-word;
 }
 /*

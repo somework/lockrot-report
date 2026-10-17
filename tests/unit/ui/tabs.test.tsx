@@ -85,9 +85,9 @@ describe("tab names", () => {
   });
 
   it("tabName: a tab with no badge is its label alone", () => {
-    expect(tabName("Run data", "", false)).toBe("Run data");
-    expect(tabName("All packages", "271", false)).toBe("All packages 271");
-    expect(tabName("Advisories", "0", true)).toBe("Advisories 0, check incomplete");
+    expect(tabName("Run data", "", null)).toBe("Run data");
+    expect(tabName("All packages", "271", null)).toBe("All packages 271");
+    expect(tabName("Advisories", "0", "check incomplete")).toBe("Advisories 0, check incomplete");
   });
 });
 
@@ -97,8 +97,8 @@ describe("the Advisories tab's count from an incomplete check (PD-ADV-7)", () =>
     renderTabs(INITIAL_STATE, "C-offline-dagger");
 
     const tab = screen.getByRole("tab", { name: /^Advisories/ });
-    expect(tab.getAttribute("aria-label")).toMatch(/^Advisories \d+, check incomplete$/);
-    expect(tab.querySelector(".tab-flag")?.getAttribute("title")).toBe("advisory check incomplete");
+    expect(tab.getAttribute("aria-label")).toMatch(/^Advisories \d+, check not run$/);
+    expect(tab.querySelector(".tab-flag")?.getAttribute("title")).toBe("advisory check not run");
   });
 
   it("carries none on a lock with no finding, whatever note the run wrote", () => {

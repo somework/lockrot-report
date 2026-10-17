@@ -1,7 +1,7 @@
 import type { ComponentChildren, RefObject } from "preact";
 import { useId, useLayoutEffect, useRef } from "preact/hooks";
-import { day } from "../domain/format";
 import { gateFact, gateHeadline } from "../domain/gate";
+import { DATA_AS_OF, dataDay } from "../domain/share";
 import { GateHeadlineText } from "./common/GateWords";
 import { useReport } from "./context";
 import { CopySummary } from "./CopySummary";
@@ -92,7 +92,7 @@ export interface HeaderProps {
  */
 export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert = false }: HeaderProps) {
   const { model } = useReport();
-  const { run, lockrot, generated_at } = model.report;
+  const { run, lockrot, data_date } = model.report;
   const ref = useHeaderHeight();
   useGateFactFit(ref);
   // The project names itself; the lock is called composer.lock everywhere, so it is the fallback.
@@ -119,7 +119,7 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
             target PHP <b className="mono">{run.target_php}</b>
           </span>
           <span>
-            data as of <b className="mono">{day(generated_at)}</b>
+            {DATA_AS_OF} <b className="mono">{dataDay(data_date)}</b>
           </span>
           <span>
             lockrot <b className="mono">{lockrot.version}</b>

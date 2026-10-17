@@ -378,3 +378,6 @@ const FLAG_CLAIMS: Words = {
 
 export const flagClaim = (id: string): string =>
   Object.hasOwn(FLAG_CLAIMS, id) ? wordFor(FLAG_CLAIMS, id) : "A flag this page does not know.";
+
+/** The skip link: to the rows of a tab that lists packages, else to the tab's content. */
+export const skipLinkLabel = (lists: boolean): string => (lists ? "Skip to the list" : "Skip to the content");

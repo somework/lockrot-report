@@ -25,6 +25,11 @@
 .p2-table td.p2-sig {
   white-space: normal;
 }
+/* A branch version can outgrow the column: it wraps rather than push the table past its box. */
+.p2-table td.p2-ver {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .p2-ver,
 .p2-data,
 .p2-sig {
@@ -32,7 +37,7 @@
 }
 .p2-verdict {
   font-family: var(--cond);
-  font-size: 10.5px;
+  font-size: var(--text-10-5);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -81,7 +86,7 @@
   .p2-table th .sort-btn {
     padding: 3px 9px;
     border: 1px solid var(--border);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: var(--surface);
     line-height: 1.3;
   }

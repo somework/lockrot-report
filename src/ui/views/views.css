@@ -31,7 +31,7 @@
   border-left: 3px solid var(--high);
   border-radius: 0 var(--radius-m) var(--radius-m) 0;
   padding: 10px 13px;
-  font-size: 13px;
+  font-size: var(--text-13);
   margin-bottom: var(--space-3);
   /* A run note can quote a URL lockrot could not reach, one unbroken word wider than a phone. */
   overflow-wrap: anywhere;
@@ -71,7 +71,7 @@
 .tablewrap table {
   border-collapse: collapse;
   width: 100%;
-  font-size: 13px;
+  font-size: var(--text-13);
 }
 .tablewrap th,
 .tablewrap td {
@@ -82,7 +82,7 @@
 }
 .tablewrap th {
   font-family: var(--cond);
-  font-size: 11px;
+  font-size: var(--text-11);
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--muted);
@@ -98,15 +98,22 @@
 .tablewrap tbody tr {
   cursor: pointer;
 }
-.tablewrap tbody tr:hover td {
+/* Row states paint the row, never its cells: a stacked row is a grid whose gaps show between cells. */
+.tablewrap tbody tr:hover {
   background: var(--surface-2);
 }
-/* The open package's row (M6): the accent rule on its first cell mirrors a Findings row's border. */
-.tablewrap tbody tr[aria-current="true"] td {
-  background: var(--surface-2);
+/* The open package's row wears a Findings row's selected treatment (ledger-rows.css). */
+@media screen {
+  .tablewrap tbody tr[aria-current="true"] {
+    background: var(--accent-soft);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
 }
-.tablewrap tbody tr[aria-current="true"] td:first-child {
-  box-shadow: inset 3px 0 0 var(--accent);
+@media screen and (forced-colors: active) {
+  .tablewrap tbody tr[aria-current="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
 }
 .tablewrap tbody tr:focus-visible {
   outline-offset: -2px;
@@ -138,7 +145,7 @@
 }
 .sect > h3 {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--text-13);
   font-family: var(--cond);
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -149,7 +156,7 @@
   display: grid;
   grid-template-columns: minmax(84px, auto) minmax(0, 1fr);
   gap: 4px 12px;
-  font-size: 13px;
+  font-size: var(--text-13);
 }
 .kv dt {
   color: var(--muted);
@@ -157,7 +164,7 @@
 .kv dd {
   margin: 0;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--text-12);
   word-break: break-word;
 }
 .run-sections {

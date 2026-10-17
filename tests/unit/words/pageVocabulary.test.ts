@@ -24,6 +24,7 @@ import {
   shareGlyph,
   signalName,
   skippedCheckWord,
+  skipLinkLabel,
   wordFor,
   zeroVerdictWhen,
 } from "../../../src/domain/pageVocabulary";
@@ -216,5 +217,12 @@ describe("the small tables", () => {
         feedAnswerWord({ answer, records: null, reason: null }),
       ),
     ).toEqual(["publishes no advisories", "network error", "unreadable answer", "new"]);
+  });
+});
+
+describe("skipLinkLabel", () => {
+  test("skips to the list on a tab that lists packages, else to the tab's content", () => {
+    expect(skipLinkLabel(true)).toBe("Skip to the list");
+    expect(skipLinkLabel(false)).toBe("Skip to the content");
   });
 });

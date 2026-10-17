@@ -208,17 +208,20 @@ describe("the Overview tab of a report-2 document", () => {
     render(<App model={model()} />);
 
     const table = within(band()).getByRole("table", { name: "Furthest behind, top 8" });
-    const rows = within(table)
-      .getAllByRole("row")
-      .slice(1)
-      .map((row) => row.textContent);
-    expect(rows).toEqual([
-      "symfony/monolog-bridge v2.6.1310.6critical",
-      "symfony/yaml v5.4.233.4low",
-      "twig/twig v2.16.12.0critical",
-      "symfony/debug v3.4.471.8critical",
-      "tubalmartin/cssmin v4.1.10.0high",
+    const [head, ...rows] = within(table).getAllByRole("row");
+    expect(
+      within(head as HTMLElement)
+        .getAllByRole("columnheader")
+        .map((th) => th.textContent),
+    ).toEqual(["Package", "Libyears", "Most recent release"]);
+    expect(rows.map((row) => [...row.querySelectorAll("td")].map((td) => td.textContent))).toEqual([
+      ["symfony/monolog-bridge v2.6.13", "10.6", "v6.4.45 (2026-08-30)"],
+      ["symfony/yaml v5.4.23", "3.4", "v8.1.8 (2026-09-26)"],
+      ["twig/twig v2.16.1", "2.0", "v3.30.0 (2026-09-25)"],
+      ["symfony/debug v3.4.47", "1.8", "v4.4.44 (2022-07-28)"],
+      ["tubalmartin/cssmin v4.1.1", "0.0", "v4.1.1 (2018-01-15)"],
     ]);
+    expect(table.querySelector(".ov-ly-grade")).toBeNull();
     fireEvent.click(within(table).getByRole("link", { name: "symfony/yaml" }));
 
     expect(location.hash).toBe("#view=findings&pkg=symfony%2Fyaml");
@@ -228,13 +231,28 @@ describe("the Overview tab of a report-2 document", () => {
   test("lays its parts out in reading order: lead, flags, Security, Weighs most, exposure, Libyears", () => {
     render(<App model={model()} />);
 
-    expect([...band().children].map((part) => part.className)).toEqual([
+    expect([...band().children].map((part) => part.className).filter((name) => name !== "vh")).toEqual([
       "ov-lead",
       "ov-flags",
       "ov-security",
       "ov-weighs",
       "ov-expo",
       "ov-libyears",
+    ]);
+  });
+
+  test("names itself in an h2 and each block in an h3, in reading order", () => {
+    render(<App model={model()} />);
+
+    const headings = [...band().querySelectorAll("h2, h3")].map((h) => [h.tagName, h.textContent]);
+    expect(headings.map(([tag]) => tag)).toEqual(["H2", "H3", "H3", "H3", "H3", "H3"]);
+    expect(headings[0]?.[1]).toBe("Overview");
+    expect(headings.slice(1).map(([, text]) => text?.split(/\s/)[0])).toEqual([
+      "Flags",
+      "Security",
+      "Weighs",
+      "Blast",
+      "Libyears",
     ]);
   });
 

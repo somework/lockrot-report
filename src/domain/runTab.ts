@@ -6,6 +6,9 @@ import { causeWord, feedAnswerWord, wordFor } from "./pageVocabulary";
 
 export const RUN_WORDS = {
   tab: "Run data",
+  facts: "This run",
+  baseline: "Baseline",
+  stale: "Entries for packages that left the lock",
   scoreLink: "How the score works ›",
   rules: (n: number): string => `The ${n} rules`,
   fixes: "Fixes, easiest first",
@@ -40,8 +43,9 @@ export function advisoryLookup({ advisory_lookup: lookup }: Run): AdvisoryLookup
       records: repository.records,
       reason: repository.reason,
     });
+    const outcome = repository.outcome === "answered" ? `answered · ${answer}` : answer;
     const parts = [
-      `${repository.registry ?? repository.composer_repository}: ${answer}`,
+      `${repository.registry ?? repository.composer_repository}: ${outcome}`,
       ...(repository.packages_with_records === null
         ? []
         : [`${plural(repository.packages_with_records, "package", "packages")} with records`]),
@@ -58,6 +62,39 @@ export function advisoryLookup({ advisory_lookup: lookup }: Run): AdvisoryLookup
       others === 0
         ? null
         : `${plural(others, "other repository", "other repositories")} ${pluralNoun(others, "publishes", "publish")} no advisories`,
+  };
+}
+
+const MODE_WORDS = {
+  check: "check",
+  generate_baseline: "generate baseline",
+};
+
+/** `activity_cache_age_hours` as lockrot rounded it; null when no answer came from the cache. */
+function activityCache({
+  activity_cache_age_hours: hours,
+  activity_cache_oldest_at: oldest,
+}: Report2): string {
+  if (hours === null || oldest === null) return "no cached answer read";
+  return `from lockrot's cache, up to ${String(hours)} h old (oldest ${day(oldest)})`;
+}
+
+export function runFacts(report: Report2): { key: string; value: string }[] {
+  const { run } = report;
+  return [
+    { key: "mode", value: wordFor(MODE_WORDS, run.mode) },
+    { key: "lock file", value: run.lock_file ?? "—" },
+    { key: "require-dev", value: run.include_dev ? "checked" : "not checked" },
+    { key: "repository activity", value: activityCache(report) },
+  ];
+}
+
+export function baselineFacts({ baseline }: Report2): { head: string; stale: readonly string[] } | null {
+  if (baseline === null) return null;
+  const { path, known, worsened, stale } = baseline;
+  return {
+    head: `${path}: ${known} known · ${baseline.new} new · ${worsened} worsened · ${stale.length} stale`,
+    stale,
   };
 }
 

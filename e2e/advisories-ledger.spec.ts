@@ -101,6 +101,15 @@ test.describe("report-2: the Advisories tab groups the S9 rows by fix kind and b
     await expect(advisoryRows(page).nth(1)).toBeFocused();
   });
 
+  test("a CVE id links to the advisory's own link, and the page links no URL it built", async ({ page }) => {
+    await page.goto(report2Url("composite") + "#view=advisories");
+    const cve = advisoriesSurface(page).getByRole("link", { name: "CVE-2026-49981" });
+    await expect(cve).toHaveAttribute("href", "https://github.com/advisories/GHSA-529h-vh3j-85hq");
+    await expect(advisoriesSurface(page).locator('a[href*="nvd.nist.gov"]')).toHaveCount(0);
+    // The PKSA id beside it is text: one link per advisory.
+    await expect(advisoriesSurface(page).getByRole("link", { name: "PKSA-8zx5-v2nz-58pb" })).toHaveCount(0);
+  });
+
   test("a complete lookup with nothing vulnerable reads clean", async ({ page }) => {
     await page.goto(report2Url("C") + "#view=advisories");
     await expect(advisoriesSurface(page).locator(".al-answer")).toHaveText("No advisory affects this lock.");
@@ -115,16 +124,15 @@ test.describe("report-2: the Advisories tab groups the S9 rows by fix kind and b
       "No advisory found (not checked).",
     );
     await expect(advisoriesSurface(page).locator(".al-clean")).toHaveCount(0);
-    await expect(advisoriesSurface(page).locator(".ci-tag")).toHaveText("Check incomplete");
+    await expect(advisoriesSurface(page).locator(".ci-tag")).toHaveText("check not run");
   });
 
-  test("the overview band and the tab hedge the same run, by one test", async ({ page }) => {
+  test("the overview band and the tab say that a lookup which did not run did not run", async ({ page }) => {
     await page.goto(report2Url("B-offline-dagger"));
-    await expect(page.locator(".ledger-advisories")).toContainText(
-      "no advisory found, but the advisory check was incomplete",
-    );
+    await expect(page.locator(".ledger-advisories")).toContainText("the advisory check did not run");
+    await expect(page.locator(".ledger-advisories")).not.toContainText("incomplete");
 
-    await page.getByRole("tab", { name: /^Advisories/ }).click();
+    await page.getByRole("tab", { name: "Advisories 0, check not run" }).click();
     await expect(advisoriesSurface(page).locator(".ci-tag")).toBeVisible();
   });
 

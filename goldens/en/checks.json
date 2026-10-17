@@ -56,6 +56,7 @@
   "joomla-filter": "1 fired (S9) · 9 quiet · every check ran",
   "local-path-advisory": "3 fired (S6, S7, S9) · 3 quiet · S2, S3, S4, S8 not run (not from a Composer repository)",
   "lock-only-dagger": "5 fired (S1, S2, S3, S4, S5) · 5 quiet · every check ran",
+  "long-range-dagger": "1 fired (S9) · 7 quiet · S3, S4 not run (allowlisted)",
   "many-dependents": "1 fired (S8) · 9 quiet · every check ran",
   "not-found-dagger": "3 fired (S1, S2, S5) · 5 quiet · S3, S4 not run (repository not found)",
   "ok-unchecked": "1 fired (S10) · 7 quiet · S2, S8 not checked (undated releases)",

@@ -107,15 +107,62 @@ test("printing from All packages adds it as the last section and says why", asyn
   await expect(page.getByText(/Printed because the page was open on All packages/)).toBeVisible();
 });
 
-test("the printed Blast radius is its top: each ranked row's packages stay folded", async ({ page }) => {
+test("the printed Blast radius opens every row's packages", async ({ page }) => {
   await report.gotoReport2WithHash("composite", "view=radius");
   await page.emulateMedia({ media: "print" });
   await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
 
-  // symfony/polyfill-intl-idn is listed under guzzlehttp/guzzle's row: shown when the tab itself prints.
+  // symfony/polyfill-intl-idn is listed under guzzlehttp/guzzle's row, closed on screen.
   await expect(
     page.locator('.pd [data-surface="radius"] li[data-pkg="symfony/polyfill-intl-idn"]'),
-  ).toHaveCount(0);
+  ).toBeVisible();
+});
+
+test("print opens every fold and prints affected_versions in full", async ({ page }) => {
+  await report.gotoReport2WithHash("composite", "view=run");
+  await page.emulateMedia({ media: "print" });
+  await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
+
+  await expect(page.locator(".pd details:not([open])")).toHaveCount(0);
+  await expect(page.locator(".pd .run2-rule").first()).toBeVisible();
+  // A clamp needs a hidden overflow; an inline box has no client height to compare in every engine.
+  const ranges = page.locator(".pd .ac2-range");
+  expect(await ranges.count()).toBeGreaterThan(0);
+  const clamps = await ranges.evaluateAll(
+    (cells) => cells.filter((cell) => getComputedStyle(cell).overflow !== "visible").length,
+  );
+  expect(clamps).toBe(0);
+});
+
+test("the printed weights table fits the page width", async ({ page }) => {
+  // A4's printable width: 210mm less 2 x 13mm margins at 96 dpi.
+  await page.setViewportSize({ width: 696, height: 1000 });
+  await report.gotoReport2("composite");
+  await page.emulateMedia({ media: "print" });
+  await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
+
+  const wrap = page.locator(".pd .run2-table-wrap").first();
+  const sizes = await wrap.evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+  expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
+});
+
+test("with a sheet open, print prints that package's sheet, its folds open", async ({ page }) => {
+  await report.gotoReport2WithHash("composite", "view=findings&pkg=twig%2Ftwig");
+  await expect(page.locator('main [data-surface="detail"]')).toBeVisible();
+
+  await page.emulateMedia({ media: "print" });
+
+  const sheet = page.locator('.pd [data-surface="detail"]');
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByRole("heading", { level: 2, name: "twig/twig" })).toBeVisible();
+  await expect(page.getByText("Printed from the sheet of twig/twig.", { exact: false })).toBeVisible();
+  expect(await printedSections(page)).toEqual([]);
+  await expect(sheet.locator("details:not([open])")).toHaveCount(0);
+  await expect(sheet.locator('.l1-btn[aria-expanded="false"]')).toHaveCount(0);
+
+  await page.emulateMedia({ media: "screen" });
+  await expect(page.locator(".pd")).toHaveCount(0);
+  await expect(page.locator('main [data-surface="detail"]')).toBeVisible();
 });
 
 test("the overview band carries the production rollup on screen and on paper", async ({ page }) => {
@@ -275,9 +322,11 @@ test.describe("report-2: the printed report reads the report-2 model", () => {
 
   test("the Why bar's ruler keeps its tones on paper", async ({ page }) => {
     await page.goto(`${report2Url("composite")}#pkg=${encodeURIComponent(MONOLOG)}`);
-    const ruler = page.locator('[data-surface="detail"] .d2-ruler');
-    await expect(ruler).toBeVisible();
+    await expect(page.locator('main [data-surface="detail"] .d2-ruler')).toBeVisible();
     await page.emulateMedia({ media: "print" });
+    // With a sheet open, the printed document is that sheet.
+    const ruler = page.locator('.pd [data-surface="detail"] .d2-ruler');
+    await expect(ruler).toBeVisible();
     expect(await ruler.evaluate((el) => getComputedStyle(el).printColorAdjust)).toBe("exact");
   });
 

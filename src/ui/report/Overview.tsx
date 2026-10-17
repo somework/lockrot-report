@@ -177,10 +177,10 @@ export function FlagsBlock({ report }: { report: Report2 }) {
 
   return (
     <div className="ledger-block ledger-verdicts">
-      <p className="eyebrow ledger-head">
-        {OVERVIEW_WORDS.flags}
+      <h3 className="eyebrow ledger-head">
+        {OVERVIEW_WORDS.flags}{" "}
         {bars.length > 0 && <span className="ledger-head-note">{OVERVIEW_WORDS.flagsNote}</span>}
-      </p>
+      </h3>
       {bars.length > 0 && (
         <div className="verdict-bars overview2-flag-bars" style={{ "--longest": String(longest) }}>
           {bars.map((bar) => (
@@ -199,7 +199,8 @@ const severityTone = (model: ScoreModel, { band, outlined }: SeverityCount): str
   `${toneClass(verdictTone(model, band))}${outlined ? " is-outlined" : ""}`;
 
 /** `answer`, when given, takes the place of the block's own count and hedge. With `linked` the
- *  severity chips and fix counts link to their lists (Overview); else the chips toggle `sev`. */
+ *  severity chips and fix counts link to their lists and the head is a heading (Overview); else the
+ *  chips toggle `sev`. */
 export function SecurityBlock({
   report,
   answer,
@@ -215,7 +216,11 @@ export function SecurityBlock({
 
   return (
     <div className="ledger-block ledger-advisories">
-      <span className="eyebrow ledger-head">{OVERVIEW_WORDS.security}</span>
+      {linked ? (
+        <h3 className="eyebrow ledger-head">{OVERVIEW_WORDS.security}</h3>
+      ) : (
+        <span className="eyebrow ledger-head">{OVERVIEW_WORDS.security}</span>
+      )}
       {answer ?? (
         <>
           <p className="ledger-fig">
@@ -309,7 +314,7 @@ export function SecurityBlock({
 export function LibyearsBlock({ report, children }: { report: Report2; children?: ComponentChildren }) {
   return (
     <div className="ledger-block ledger-libyears">
-      <span className="eyebrow ledger-head">{OVERVIEW_WORDS.libyears}</span>
+      <h3 className="eyebrow ledger-head">{OVERVIEW_WORDS.libyears}</h3>
       <p className="ledger-note overview2-libyears">{libyearsPanel(report)}</p>
       {children}
     </div>

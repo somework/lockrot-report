@@ -6,6 +6,7 @@ import {
   advisoryFixNote,
   advisoryFixWords,
   advisoryGroups2,
+  advisoryIds,
   advisoryLookupHedge,
   advisoryPairs2,
   advisoryRowLabel2,
@@ -15,9 +16,9 @@ import {
   type AdvisoryGroup2,
   type AdvisoryPair2,
 } from "../../domain/advisories";
+import { advisoryCheckMark } from "../../domain/copySummary";
 import { gradeTone, reachWord } from "../../domain/findingRow";
 import { applyFilters2, population2 } from "../../domain/list";
-import { cveUrl, safeHref } from "../../domain/links";
 import { day, plural } from "../../domain/format";
 import type { Report2 } from "../../model/report";
 import { EMPTY_FILTERS } from "../../state/types";
@@ -39,28 +40,30 @@ const pairKey = ({ finding, row }: AdvisoryPair2): string => `${finding.package}
 
 function Ids({ pair, tabIndex }: { pair: AdvisoryPair2; tabIndex: -1 | undefined }) {
   const { row } = pair;
-  const cve = cveUrl(row);
-  const link = safeHref(row.link);
-  const showId = row.cve === null || row.id !== row.cve;
   return (
     <span className="ac-ids">
-      {cve !== null ? (
-        <a className="ac-id lnk" href={cve} target="_blank" rel="noopener noreferrer" tabIndex={tabIndex}>
-          {row.cve}
-        </a>
-      ) : row.cve !== null ? (
-        <span className="ac-id">{row.cve}</span>
-      ) : (
-        <span className="ac-nocve">{ADVISORY_HEAD.noCve}</span>
-      )}
-      {showId &&
-        (link !== null ? (
-          <a className="ac-id lnk" href={link} target="_blank" rel="noopener noreferrer" tabIndex={tabIndex}>
-            {row.id}
+      {advisoryIds(row).map(({ text, href, noCve }) =>
+        noCve ? (
+          <span key={text} className="ac-nocve">
+            {text}
+          </span>
+        ) : href !== null ? (
+          <a
+            key={text}
+            className="ac-id lnk"
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            tabIndex={tabIndex}
+          >
+            {text}
           </a>
         ) : (
-          <span className="ac-id">{row.id}</span>
-        ))}
+          <span key={text} className="ac-id">
+            {text}
+          </span>
+        ),
+      )}
       {row.reported_at !== null && (
         <span className="ac-reported">
           {ADVISORY_HEAD.reported} {day(row.reported_at)}
@@ -136,10 +139,11 @@ function Group({ group, run, first }: { group: AdvisoryGroup2; run: Run; first: 
 function NoAdvisories2() {
   const { report } = useReport2();
   const line = noAdvisoryLine(report);
-  if (advisoryLookupHedge(report) !== null) {
+  const mark = advisoryCheckMark(report);
+  if (mark !== null) {
     return (
       <div className="empty al-empty">
-        <CheckIncompleteTag />
+        <CheckIncompleteTag mark={mark} />
         <p className="al-answer">{line}</p>
       </div>
     );
@@ -158,12 +162,13 @@ function NoAdvisories2() {
  *  beside it count. */
 function Answer({ report, answer, counted }: { report: Report2; answer: AdvisoryAnswer2; counted: boolean }) {
   const hedge = advisoryLookupHedge(report);
+  const mark = advisoryCheckMark(report);
   return (
     <>
       <p className="al-answer">{counted ? answer.head : answer.text}</p>
-      {hedge !== null && (
+      {hedge !== null && mark !== null && (
         <p className="al-partial">
-          <CheckIncompleteTag /> <span>{hedge}</span>
+          <CheckIncompleteTag mark={mark} /> <span>{hedge}</span>
         </p>
       )}
       {answer.narrowed !== null && <p className="al-scope">{answer.narrowed}</p>}

@@ -1,8 +1,9 @@
 /** The fixed words of the report-2 detail sheet (SPEC §7.9.8): its headings, controls and reference rows. */
 
-import type { Finding } from "../model/report";
+import type { Finding, Run } from "../model/report";
 import { day } from "./format";
-import { namesCapped } from "./findingWords";
+import { namesShown } from "./moveCards";
+import { dependentNames, noPathWords } from "./qualifierRows";
 
 export const DETAIL_WORDS = {
   close: "Close",
@@ -18,14 +19,32 @@ export const DETAIL_WORDS = {
   lockEntry: "The lock entry",
   provenance: "Provenance",
   showArithmetic: "Show the arithmetic",
-  firstWayOnly: "Show the first way out only",
-  move: "The move",
-  moveInOrder: "The move, in order",
   copy: "Copy",
   copied: "Copied",
   copyByHand: "Select it and copy",
   shell: "Shell",
   shellFor: "Shell: {shell}",
+  verdict: "Verdict",
+  otherFlags: "The other counted flags",
+  reach: "Reach",
+  origin: "Origin",
+  notJudged: "Not judged",
+  unchecked: "Unchecked",
+  notRun: "Not run",
+  php: "PHP",
+  accepted: "Accepted",
+  gate: "Gate",
+  more: "{n} more",
+  showFewer: "show fewer",
+  clears: "Clears",
+  stays: "Stays",
+  notChecked: "Not checked",
+  adds: "Adds",
+  after: "After",
+  composer: "Composer",
+  heldBy: "Held by",
+  yes: "yes: ",
+  no: "no: ",
 } as const;
 
 /** "The lock entry" and "Provenance" row labels. */
@@ -54,13 +73,14 @@ export const agesAsOf = (generatedAt: string): string => `Ages as of ${day(gener
 
 export const whyTitle = (verdict: string): string => `Why ${verdict}`;
 
-/** The header's reach text: "direct requirement", "via a, b and 3 more", "unreached", with "· dev" for packages-dev. */
-export function detailReach(finding: Finding): string {
+/** The header's reach text on a sheet with no flag (G46 to G49): "direct requirement", "via a, b
+ *  and 3 more" or the unreached words, with " · dev" for packages-dev. */
+export function detailReach(finding: Finding, run: Run): string {
   const way =
     finding.reach === "direct"
       ? "direct requirement"
       : finding.reach === "transitive"
-        ? `via ${namesCapped(finding.direct_dependents)}`
-        : finding.reach;
+        ? `via ${namesShown(dependentNames(finding))}`
+        : noPathWords(finding, run);
   return finding.dev ? `${way} · dev` : way;
 }

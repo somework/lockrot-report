@@ -6,7 +6,8 @@
 
 import type { Report2 } from "../model/report";
 import type { Filters, LinkTarget } from "../state/types";
-import { decimal, pluralNoun } from "./format";
+import { day, decimal, pluralNoun } from "./format";
+import { causeWord } from "./pageVocabulary";
 import { RADIUS_WORDS } from "./radius2";
 
 /** How many rows the exposure bars and the libyears table show before "more". */
@@ -19,7 +20,7 @@ export const OVERVIEW_TAB_WORDS = {
   libyearsTop: `Furthest behind, top ${LIBYEARS_SHOWN}`,
   package: "Package",
   libyears: "Libyears",
-  grade: "Grade",
+  release: "Most recent release",
   overview: "Overview",
 } as const;
 
@@ -58,8 +59,17 @@ export interface LibyearsRow {
   version: string;
   /** One decimal (SPEC §7.9.9), "≥ " before a lower bound. */
   libyears: string;
-  grade: string;
+  /** "{version} ({date})" of `age.release`, or the cause words when it was not measured. */
+  release: string;
   link: LinkTarget;
+}
+
+/** `age.release` is the release with the latest date, which can be an older version than the
+ *  installed one, so no arrow joins the two. */
+function mostRecentRelease({ age, origin }: Report2["findings"][number]): string {
+  return age.release === null
+    ? causeWord(age.release_unmeasured ?? "", origin.kind)
+    : `${age.release.version} (${day(age.release.at)})`;
 }
 
 /** `findings[].libyears` high to low, ties by name, cut at `LIBYEARS_SHOWN`; a null is not ranked. */
@@ -73,7 +83,7 @@ export function libyearsTop(report: Report2): LibyearsRow[] {
       package: f.package,
       version: f.version,
       libyears: `${f.libyears_at_least ? "≥ " : ""}${decimal(years, 1)}`,
-      grade: f.verdict,
+      release: mostRecentRelease(f),
       link: { view: graded.includes(f.verdict) ? "findings" : "packages", pkg: f.package },
     }));
 }
