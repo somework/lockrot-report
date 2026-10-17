@@ -6,6 +6,7 @@ import type { Finding, Report2, Run, S9fix, S9row } from "../model/report";
 import type { Filters } from "../state/types";
 import { advisoryRows } from "./advisoryRows";
 import { advisoryListPartial } from "./copySummary";
+import { safeHref } from "./links";
 import { plural } from "./format";
 import { joinAnd } from "./joinWords";
 import { causeWord, fixLabel, lookupWord } from "./pageVocabulary";
@@ -161,6 +162,25 @@ export function advisoryFixNote({ kind, php, held_by: heldBy }: S9fix): string |
 /** The band a severity's square and word take, by lookup in the model. */
 export const advisoryBand = (run: Run, severity: string): string | null =>
   run.score_model.severities.find(({ id }) => id === severity)?.band ?? null;
+
+export interface AdvisoryId {
+  readonly text: string;
+  readonly href: string | null;
+  /** The "no CVE assigned" placeholder, which is no id. */
+  readonly noCve: boolean;
+}
+
+/** The ids a row shows: the advisory's name (its CVE, else its id) links to lockrot's `link`, never
+ *  to a URL the page builds. */
+export function advisoryIds({ cve, id, link }: Pick<S9row, "cve" | "id" | "link">): readonly AdvisoryId[] {
+  const href = safeHref(link);
+  if (cve === null)
+    return [
+      { text: ADVISORY_HEAD.noCve, href: null, noCve: true },
+      { text: id, href, noCve: false },
+    ];
+  return [{ text: cve, href, noCve: false }, ...(id === cve ? [] : [{ text: id, href: null, noCve: false }])];
+}
 
 /** A row's accessible name: one package can carry several rows. */
 export const advisoryRowLabel2 = ({ finding, row }: AdvisoryPair2): string =>

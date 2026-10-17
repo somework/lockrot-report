@@ -9,6 +9,7 @@ import {
   advisoryRowLabel2,
   advisoryCountedAs,
   advisoryFixNote,
+  advisoryIds,
   noAdvisoryLine,
 } from "../../../src/domain/advisories";
 import { advisoryCheckMark, advisoryListPartial, noAdvisoryWords } from "../../../src/domain/copySummary";
@@ -147,6 +148,36 @@ describe("row words", () => {
     expect(advisoryCountedAs(composite.run, "unrated")).toBe(", counted as medium");
     expect(advisoryCountedAs(composite.run, "high")).toBeNull();
     expect(advisoryCountedAs(composite.run, "severe")).toBeNull();
+  });
+});
+
+describe("advisoryIds", () => {
+  const LINK = "https://github.com/advisories/GHSA-aaaa-bbbb-cccc";
+
+  it("links the CVE id to the advisory's own link, and shows a different id as text", () => {
+    expect(advisoryIds({ cve: "CVE-2024-1", id: "GHSA-aaaa-bbbb-cccc", link: LINK })).toEqual([
+      { text: "CVE-2024-1", href: LINK, noCve: false },
+      { text: "GHSA-aaaa-bbbb-cccc", href: null, noCve: false },
+    ]);
+  });
+
+  it("shows a CVE id without a link as text, and never builds a URL for it", () => {
+    expect(advisoryIds({ cve: "CVE-2024-1", id: "CVE-2024-1", link: null })).toEqual([
+      { text: "CVE-2024-1", href: null, noCve: false },
+    ]);
+  });
+
+  it("links the id when the advisory has no CVE", () => {
+    expect(advisoryIds({ cve: null, id: "GHSA-aaaa-bbbb-cccc", link: LINK })).toEqual([
+      { text: "no CVE assigned", href: null, noCve: true },
+      { text: "GHSA-aaaa-bbbb-cccc", href: LINK, noCve: false },
+    ]);
+  });
+
+  it("refuses a link that is not http or https", () => {
+    expect(advisoryIds({ cve: "CVE-2024-1", id: "CVE-2024-1", link: "javascript:alert(1)" })).toEqual([
+      { text: "CVE-2024-1", href: null, noCve: false },
+    ]);
   });
 });
 
