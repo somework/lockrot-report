@@ -175,8 +175,9 @@ test.describe("print", () => {
   });
 
   test("a closed details opens before print and returns to its state after it", async ({ page }) => {
-    const sheet = await SHEETS[3].open(page);
-    const fold = sheet.locator(".d3-fold");
+    await SHEETS[3].open(page);
+    // `beforeprint` also mounts the printed copy of the sheet, outside `<main>`.
+    const fold = page.locator("main .d3-fold");
 
     await page.evaluate(() => window.dispatchEvent(new Event("beforeprint")));
     await expect(fold).toHaveAttribute("open", "");
