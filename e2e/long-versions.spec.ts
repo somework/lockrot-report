@@ -23,8 +23,13 @@ test("Findings at 320 px shows the whole long version", async ({ page }) => {
   await page.goto(`${pageUrl(FIXTURES.longVersionReport2)}#view=findings`);
   const version = page.locator('li[data-pkg="symfony/yaml"] .fc-ver');
   await expect(version).toHaveText(LONG_VERSION);
-  const clipped = await version.evaluate((el) => el.scrollWidth > el.clientWidth + 1);
-  expect(clipped).toBe(false);
+  // An inline box has no client width in every engine, so the version is held to its row's box.
+  const outside = await version.evaluate((el) => {
+    const row = el.closest("li")?.getBoundingClientRect();
+    const box = el.getBoundingClientRect();
+    return row === undefined ? true : box.left < row.left || box.right > row.right + 1;
+  });
+  expect(outside).toBe(false);
 });
 
 test("All packages at 1440 px wraps the long version and keeps every column in its box", async ({ page }) => {

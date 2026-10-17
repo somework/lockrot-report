@@ -125,9 +125,12 @@ test("print opens every fold and prints affected_versions in full", async ({ pag
 
   await expect(page.locator(".pd details:not([open])")).toHaveCount(0);
   await expect(page.locator(".pd .run2-rule").first()).toBeVisible();
-  const clamps = await page
-    .locator(".pd .ac2-range")
-    .evaluateAll((cells) => cells.filter((cell) => cell.scrollHeight > cell.clientHeight + 1).length);
+  // A clamp needs a hidden overflow; an inline box has no client height to compare in every engine.
+  const ranges = page.locator(".pd .ac2-range");
+  expect(await ranges.count()).toBeGreaterThan(0);
+  const clamps = await ranges.evaluateAll(
+    (cells) => cells.filter((cell) => getComputedStyle(cell).overflow !== "visible").length,
+  );
   expect(clamps).toBe(0);
 });
 
