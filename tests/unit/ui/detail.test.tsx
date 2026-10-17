@@ -161,7 +161,7 @@ describe("the header out-links", () => {
 });
 
 describe("the Why block of design 2A", () => {
-  test("shows the header, the opening and the after-the-move line at once", () => {
+  test("shows the header and the opening at once", () => {
     const sheet = openCase("B");
     const why = sheet.querySelector(".d2-why") as HTMLElement;
     const lines = golden("why", "B") as string[];
@@ -169,7 +169,6 @@ describe("the Why block of design 2A", () => {
     expect(why.querySelector(".d2-why-header")?.textContent).toBe(lines[0]);
     expect(visibleText([...why.querySelectorAll("li")])).toEqual([
       "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
-      "after the move: 0, ok (if Composer resolves it)",
     ]);
   });
 

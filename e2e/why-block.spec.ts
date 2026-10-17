@@ -1,7 +1,7 @@
 /**
  * The report-2 "Why <verdict>" block (SPEC §7.9.8, design 2A), which takes over from the report-1
  * priority ladder that `priority-basis.spec.ts` covers: the header, the bar with its legend and band
- * ruler, the opening and the after-the-move line at once, and the rest of the golden lines on click.
+ * ruler and the opening at once, and the rest of the golden lines on click.
  */
 import { expect, test, type Locator } from "@playwright/test";
 import { goldenLines, openDetail2, visibleWhyLines } from "./support/report2/detail";
@@ -10,7 +10,7 @@ const B = "symfony/monolog-bridge";
 
 const why = (sheet: Locator): Locator => sheet.locator(".d2-why");
 
-test("B shows its golden header, the opening and the after-the-move line at once", async ({ page }) => {
+test("B shows its golden header and the opening at once", async ({ page }) => {
   const sheet = await openDetail2(page, "B", B);
   const lines = goldenLines("why", "B");
 
@@ -18,7 +18,6 @@ test("B shows its golden header, the opening and the after-the-move line at once
   await expect(why(sheet).locator(".d2-why-header")).toHaveText(lines[0] ?? "");
   expect(await visibleWhyLines(sheet)).toEqual([
     "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
-    "after the move: 0, ok (if Composer resolves it)",
   ]);
 });
 
@@ -31,7 +30,7 @@ test("Show the arithmetic opens every golden line in SPEC order, and closes agai
   await expect(button).toHaveAttribute("aria-expanded", "true");
   expect(await visibleWhyLines(sheet)).toEqual(goldenLines("why", "B").slice(1));
   await button.click();
-  expect(await visibleWhyLines(sheet)).toHaveLength(2);
+  expect(await visibleWhyLines(sheet)).toHaveLength(1);
 });
 
 test("the bar is hidden from assistive technology and its legend prints each contribution", async ({

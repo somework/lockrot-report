@@ -14,7 +14,7 @@ import { segmentClass } from "./ScoreBar";
 export const WHY_KEY = "why-arithmetic";
 
 /** Shown at once (design 2A): the rest is the arithmetic, on click. */
-const LEVEL_0: ReadonlySet<WhyLineKind> = new Set(["opening", "after-the-move"]);
+const LEVEL_0: ReadonlySet<WhyLineKind> = new Set(["opening"]);
 
 const at = (name: string, x: number): Record<string, string> => ({ [name]: `${x}%` });
 

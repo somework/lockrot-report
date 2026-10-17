@@ -306,8 +306,7 @@
   height: 1px;
   background: var(--border-strong);
 }
-.d2-why-line.is-opening,
-.d2-why-line.is-after-the-move {
+.d2-why-line.is-opening {
   color: var(--ink);
 }
 .d2-why-foot {
