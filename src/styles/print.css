@@ -397,6 +397,25 @@
     text-transform: uppercase;
     color: var(--muted);
   }
+  /* A printed table cannot scroll: it takes the page width and its cells wrap. */
+  .pd-run .run2-table-wrap {
+    overflow: visible;
+  }
+  .pd-run .run2-table {
+    width: 100%;
+    font-size: 9.5px;
+  }
+  .pd-run .run2-table th,
+  .pd-run .run2-table td {
+    padding: 3px 6px 3px 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* The printed sheet (PrintDocument with a package open): the sheet's own layout, nothing to close. */
+  .pd-sheet .detail-close {
+    display: none;
+  }
 }
 
 /* A print medium wider than any paper is a screen emulating print (a preview pane, a test's

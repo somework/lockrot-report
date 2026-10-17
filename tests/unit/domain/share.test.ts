@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cssString, dataDay, printSections, runningLine } from "../../../src/domain/share";
+import { cssString, dataDay, printSections, printSheetIntro, runningLine } from "../../../src/domain/share";
 
 describe("runningLine", () => {
   it("joins the project, the data date and the lockrot version", () => {
@@ -17,6 +17,14 @@ describe("dataDay", () => {
 
   it("is a dash, never a date, when no finding read repository data", () => {
     expect(dataDay(null)).toBe("—");
+  });
+});
+
+describe("printSheetIntro", () => {
+  it("names the package whose sheet prints and how to print the whole report", () => {
+    expect(printSheetIntro("twig/twig")).toBe(
+      "Printed from the sheet of twig/twig. Close the sheet to print the whole report.",
+    );
   });
 });
 

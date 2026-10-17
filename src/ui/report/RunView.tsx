@@ -19,6 +19,7 @@ import { verdictTone } from "../../domain/findingRow";
 import type { Report2 } from "../../model/report";
 import { OutLink, toneClass } from "../common/common";
 import { useReport } from "../context";
+import { usePrinted } from "../print/printContext";
 import "../views/views.css";
 import { ScoreBar } from "./ScoreBar";
 import { SCORE_SECTION_ID } from "./ScoreModelLink";
@@ -117,6 +118,7 @@ function ScoreWorks({ report, opened }: { report: Report2; opened: string | null
   const { run } = report;
   const parts = scorePanelParts(run);
   const tables = scoreTables(run.score_model);
+  const printed = usePrinted();
   return (
     <section className="sect run2-score" id={SCORE_SECTION_ID} tabIndex={-1} aria-label={parts.title}>
       <h3>{parts.title}</h3>
@@ -127,7 +129,7 @@ function ScoreWorks({ report, opened }: { report: Report2; opened: string | null
       <Table table={tables.weights} model={run.score_model} />
       <Table table={tables.advisories} model={run.score_model} />
       <p className="run2-caption">{parts.fixes}</p>
-      <details className="run2-rules">
+      <details className="run2-rules" open={printed ? true : undefined}>
         <summary>{RUN_WORDS.rules(parts.rules.length)}</summary>
         <ol className="run2-rule-list">
           {parts.rules.map((rule) => (

@@ -91,8 +91,9 @@ function ParentRow2({
   first: ReadonlySet<string>;
 }) {
   const { state, dispatch, cursor } = useReport();
+  const printed = usePrinted();
   const canOpen = row.count > 0;
-  const open = canOpen && isRowOpen(layout, row, input);
+  const open = canOpen && (printed || isRowOpen(layout, row, input));
   const kidsId = `${useId()}-kids`;
   const toggle = (event: Event) => {
     event.stopPropagation();
@@ -231,7 +232,7 @@ export function RadiusView2() {
       {layout.singles.length > 0 && (
         <Fold
           id={FOLD_SINGLES}
-          open={isSinglesOpen(layout, input)}
+          open={printed || isSinglesOpen(layout, input)}
           head={RADIUS_WORDS.singles(layout.singles.length)}
         >
           <ul className="r2-list">{rows(layout.singles, layout.lead.length + 1)}</ul>

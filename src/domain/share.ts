@@ -18,6 +18,10 @@ export function runningLine(project: string, dataDate: string, toolVersion: stri
   ].join("  ·  ");
 }
 
+/** The intro of a print made while a sheet is open: that package's sheet alone. */
+export const printSheetIntro = (pkg: string): string =>
+  `Printed from the sheet of ${pkg}. Close the sheet to print the whole report.`;
+
 /**
  * `text` as a CSS string literal, for a custom property a `@page` margin box's `content` reads
  * (print.css): quotes and backslashes escaped, and any control character — a newline in a project

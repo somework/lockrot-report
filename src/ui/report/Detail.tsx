@@ -17,6 +17,7 @@ import { repositoryLine } from "../../domain/repositoryLine";
 import { advisoryRows } from "../../domain/advisoryRows";
 import { OutLink, toneClass } from "../common/common";
 import { useReport } from "../context";
+import { usePrinted } from "../print/printContext";
 import { KeyValue, presentRows, type KeyValueRow } from "../detail/KeyValue";
 import { BranchTimeline2 } from "./BranchTimeline";
 import { FlagPills } from "./FlagPills";
@@ -94,8 +95,9 @@ function provenanceRows(finding: Finding, entry: DetailsEntry | null): readonly 
 }
 
 function Reference({ title, rows }: { title: string; rows: readonly KeyValueRow[] }) {
+  const printed = usePrinted();
   return (
-    <details className="detail-section detail-reference">
+    <details className="detail-section detail-reference" open={printed ? true : undefined}>
       <summary className="detail-reference-summary">
         <h3>{title}</h3>
       </summary>
