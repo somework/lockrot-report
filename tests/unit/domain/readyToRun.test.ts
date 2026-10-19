@@ -5,16 +5,19 @@ import { pageGoldens } from "../words/recorded";
 
 const hold = (source: "root" | "package", name: string | null = null) => ({ source, package: name });
 const REQUIRE = ["composer", "require", "a/b:^2.0"];
+const RESOLVES = { result: "resolves", form: "inline", reason: null };
 
 function finding(step: Record<string, unknown> | null): Finding {
   return {
     next_step:
-      step === null ? null : { kind: "require", held_by: [], also: [], commands: [REQUIRE], ...step },
+      step === null
+        ? null
+        : { kind: "require", held_by: [], also: [], commands: [REQUIRE], check: RESOLVES, ...step },
   } as unknown as Finding;
 }
 
-describe("readyToRun (accepted derivation 10)", () => {
-  it("is ready with a checked require or update step and no holder", () => {
+describe("readyToRun (SPEC §7.9.7)", () => {
+  it("is ready with a require or update step whose check resolves, and no holder", () => {
     expect(readyToRun(finding({}))).toBe(true);
     expect(readyToRun(finding({ commands: [["composer", "update", "a/b"]] }))).toBe(true);
   });
@@ -42,6 +45,14 @@ describe("readyToRun (accepted derivation 10)", () => {
   it("is not ready without commands or without a move", () => {
     expect(readyToRun(finding({ commands: [] }))).toBe(false);
     expect(readyToRun(finding(null))).toBe(false);
+  });
+
+  it("is not ready when the move check refused it, did not check it, or did not run", () => {
+    expect(readyToRun(finding({ check: { result: "refused", form: null, reason: null } }))).toBe(false);
+    expect(readyToRun(finding({ check: { result: "not_checked", form: null, reason: "offline" } }))).toBe(
+      false,
+    );
+    expect(readyToRun(finding({ check: null }))).toBe(false);
   });
 
   it("is not ready when the move is not an update or a require, as a php floor raise", () => {

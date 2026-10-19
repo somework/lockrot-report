@@ -11,12 +11,11 @@ import {
   wayOutLine,
 } from "../../../src/domain/firstMoves";
 import { applyFilters2, fitFilters2 } from "../../../src/domain/list";
-import { checksMissingBody } from "../../../src/domain/findingWords";
 import { isHeld, needsAnotherWayOut } from "../../../src/domain/readyToRun";
 import { linkState } from "../../../src/state/hash";
 import type { LinkTarget } from "../../../src/state/types";
 import { INITIAL_STATE } from "../../../src/state/types";
-import { pageGoldens } from "../words/recorded";
+import { pageGoldens, readContractJson } from "../words/recorded";
 import { MOVE_KIND_WORDS } from "../../../src/domain/pageVocabulary";
 import type { Finding, Report2 } from "../../../src/model/report";
 
@@ -36,6 +35,7 @@ function finding(
     next_step: {
       kind: "update",
       commands: [["composer", "update", name]],
+      check: { result: "resolves", form: "inline", reason: null },
       held_by: held === "none" ? [] : [hold(held)],
       also: [],
     },
@@ -53,7 +53,7 @@ function stuck(
     verdict: "high",
     rank: 9,
     gate: { fails: true, by: by.map((entry) => ({ value: entry.kind, ...entry })) },
-    next_step: kind === null ? null : { kind, commands: [], held_by: [], also: [] },
+    next_step: kind === null ? null : { kind, commands: [], check: null, held_by: [], also: [] },
     // An unchecked advisory gate, as an offline run writes it: the missing check blocks S9.
     checks_missing: by.some((entry) => entry.kind === "unchecked")
       ? [{ check: "advisories", reason: "offline", blocks: ["S9"] }]
@@ -76,6 +76,7 @@ function raisePhp(name: string, raiseTo: string | null): Finding {
         ["composer", "require", `${name}:^2.0`],
       ],
       php_check: { raise_to: raiseTo },
+      check: { result: "resolves", form: "inline", reason: null },
       held_by: [],
       also: [],
     },
@@ -88,7 +89,7 @@ function report(findings: Finding[], gateFails: boolean): Report2 {
   return {
     findings,
     gate: { fails: gateFails, failing: findings.filter((f) => f.gate.fails).length },
-    run: { graded_verdicts: ["critical", "high", "medium", "low"] },
+    run: { graded_verdicts: ["critical", "high", "medium", "low"], move_check: { baseline: "resolves" } },
   } as unknown as Report2;
 }
 
@@ -140,7 +141,7 @@ describe("wayOutLine", () => {
     expect(wayOutLine(r)).toBe("4 need another way out: 2 replace, 2 find an alternative");
   });
 
-  it("never says other: a move with no command by its kind, a finding with no move by its gate kind, an unknown kind as written", () => {
+  it("never says other: a move with no command by its kind, an unknown kind as written after the known ones, a finding with no move by its gate kind", () => {
     const r = report(
       [
         stuck("c/c", "vendor:teleport"),
@@ -151,7 +152,7 @@ describe("wayOutLine", () => {
       true,
     );
     expect(wayOutLine(r)).toBe(
-      "4 need another way out: 1 no fix, 1 no move for its grade, 1 unchecked: the advisory check did not run, 1 vendor:teleport",
+      "4 need another way out: 1 no fix, 1 vendor:teleport, 1 no move for its grade, 1 unchecked: the advisory check did not run",
     );
   });
 
@@ -162,6 +163,39 @@ describe("wayOutLine", () => {
     expect(wayOutLine(report([raisePhp("a/a", ">=8.1"), raisePhp("b/b", ">=8.2")], true))).toBe(
       "2 need another way out: 2 raise PHP",
     );
+  });
+
+  it("counts a move the check stopped by its check: refused, then not checked in the table's order, then an unknown reason", () => {
+    const stopped = (name: string, kind: string, result: string, reason: string | null): Finding =>
+      ({
+        ...stuck(name, kind),
+        next_step: { kind, commands: [], held_by: [], also: [], check: { result, form: null, reason } },
+      }) as unknown as Finding;
+    const r = report(
+      [
+        stopped("a/a", "update", "not_checked", "offline"),
+        stopped("b/b", "require", "not_checked", "baseline_refused"),
+        stopped("c/c", "update", "not_checked", "a_later_reason"),
+        stopped("d/d", "require", "refused", null),
+        stuck("e/e", "test"),
+      ],
+      true,
+    );
+    expect(wayOutLine(r)).toBe(
+      "5 need another way out: 1 test, 1 Composer refuses the move, 1 not checked: Composer refuses the lock itself, 1 not checked: a package it needs is not in Composer's cache, 1 not checked: a_later_reason",
+    );
+    expect(firstMoves(r).wayOutParts).toContainEqual({ text: "a_later_reason", code: true });
+  });
+
+  it("counts every Composer move as not checked when the run checked no move", () => {
+    const r = {
+      ...report(
+        [stuck("a/a", "update"), stuck("b/b", "raise-php"), stuck("c/c", "tag"), stuck("d/d", "replace")],
+        true,
+      ),
+      run: { graded_verdicts: ["critical", "high", "medium", "low"], move_check: null },
+    } as unknown as Report2;
+    expect(wayOutLine(r)).toBe("4 need another way out: 1 replace, 3 not checked: the run checked no move");
   });
 
   it("says what fails the gate, with no way-out prefix, when nothing is graded and nothing has a move", () => {
@@ -314,16 +348,33 @@ describe("a count link opens exactly the rows it counts (coordinator rule)", () 
   );
 });
 
-describe("the unchecked words are the sheet's, never a raw check id", () => {
-  const byId = new Map(caseDocuments().map(({ id, report }) => [id, report]));
+describe("the unchecked words (SPEC §7.9.4, §7.9.9)", () => {
+  const missing = (check: string): Finding =>
+    ({
+      ...stuck("a/a", null, [{ kind: "unchecked", facts: [{ kind: "signal", id: "S2" }] }]),
+      checks_missing: [{ check, reason: "undated_releases", blocks: ["S2"] }],
+      security: { check: "complete" },
+    }) as unknown as Finding;
 
-  it.each(["ok-unchecked", "host-unsupported"])("%s reads the sheet's checks-missing words", (id) => {
-    const report = byId.get(id);
-    if (report === undefined) throw new Error(`no case ${id}`);
-    const failing = report.findings.filter(needsAnotherWayOut);
-    const line = wayOutLine(report) ?? "";
-    for (const f of failing) expect(line).toContain(checksMissingBody(f, report.run) ?? "");
-    expect(line).not.toMatch(/\b[a-z]+_[a-z_]+ not checked/);
+  it.each([
+    ["release_dates", "release dates not checked"],
+    ["releases", "releases not checked"],
+    ["release_metadata", "its release metadata not checked"],
+    ["advisories", "the advisory check did not run"],
+  ])("reads %s as %s", (check, words) => {
+    expect(wayOutLine(report([missing(check)], true))).toBe(`1 needs another way out: 1 unchecked: ${words}`);
+  });
+
+  it("prints an unknown check id as written, in a code element", () => {
+    expect(firstMoves(report([missing("a_later_check")], true)).wayOutParts).toContainEqual({
+      text: "a_later_check",
+      code: true,
+    });
+  });
+
+  it("reads lockrot's ok-unchecked recording in the check words", () => {
+    const recorded = readContractJson("report-2", "ok-unchecked.json") as Report2;
+    expect(wayOutLine(recorded)).toBe("1 fails the gate as unchecked: release dates not checked.");
   });
 });
 

@@ -156,7 +156,7 @@ describe("commandLabel (SPEC §7.9.8.6, G114)", () => {
   });
 });
 
-describe("rowAfter (accepted derivation 9)", () => {
+describe("rowAfter (SPEC §7.9.5, After it)", () => {
   const applied = (overrides: Record<string, unknown>) => ({
     total: 0,
     verdict: "ok",
@@ -167,13 +167,18 @@ describe("rowAfter (accepted derivation 9)", () => {
     ...overrides,
   });
 
-  it("reads the lead move's if_applied and leaves the Composer caveat to the head", () => {
+  it("reads the lead move's if_applied, with the Composer caveat when its assumes hold composer_resolves", () => {
     const f = finding({
       next_step: step({
         if_applied: applied({}),
         also: [{ held_by: [], if_applied: applied({ total: 8 }) }],
       }),
     });
+    expect(rowAfter(f)).toBe("after it: 0, ok, if Composer resolves it");
+  });
+
+  it("reads no caveat for a move whose check resolves, which drops composer_resolves", () => {
+    const f = finding({ next_step: step({ if_applied: applied({ assumes: ["clears_hold"] }) }) });
     expect(rowAfter(f)).toBe("after it: 0, ok");
   });
 
