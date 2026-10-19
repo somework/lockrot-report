@@ -122,13 +122,11 @@ export function depthSentence({ rot_depth: depth }: Report2): string | null {
 export function acceptedLine(report: Report2): string | null {
   if (report.packages_flagged === 0) return null;
   const flags = rootFlags(report);
-  const accepted = report.run.score_model.flag_order.flatMap((flag) => {
+  const accepted = report.run.flag_ids.flatMap((flag) => {
     const inGraded = flags[flag]?.accepted?.in_graded ?? 0;
     return inGraded > 0 ? [`${flag} ${inGraded}`] : [];
   });
-  return accepted.length === 0
-    ? "Accepted by the allowlist: none in flagged packages"
-    : `Accepted by the allowlist in flagged packages: ${accepted.join(", ")}`;
+  return `Accepted by the allowlist: ${accepted.length === 0 ? "none in flagged packages" : accepted.join(", ")}`;
 }
 
 export interface SeverityCount {

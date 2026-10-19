@@ -130,6 +130,10 @@ export const CHECK_REASON_WORDS: readonly (readonly [reason: string, words: stri
   ["solver_error", "Composer's solver failed on it"],
 ];
 
+/** A reason's words; an unknown reason as written. */
+export const checkReasonWords = (reason: string): string =>
+  CHECK_REASON_WORDS.find(([id]) => id === reason)?.[1] ?? reason;
+
 export const CAUSE_WORDS: Words = {
   above_listed_releases: "installed above every listed release",
   accepted_by_config: "accepted by your accept-unchecked list",
