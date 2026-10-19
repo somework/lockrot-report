@@ -136,11 +136,19 @@ export interface PageGolden {
 }
 
 /** The model's report-2 of a golden's document, where lockrot's `PageGoldensTest` reads it. */
-function pageGoldenDocument(document: string): Report2 {
+export function pageGoldenDocument(document: string): Report2 {
+  if (document.startsWith("baselined/")) {
+    return (JSON.parse(readFileSync(join(FIXTURES, document), "utf8")) as { report: Report2 }).report;
+  }
   const documents = join(FIXTURES, "schema", "documents");
-  const raw = document.startsWith("report-2/")
-    ? gunzipSync(readFileSync(join(documents, "corpus", `${basename(document)}.gz`))).toString("utf8")
-    : readFileSync(join(documents, document), "utf8");
+  const path = document.startsWith("contract/")
+    ? join(FIXTURES, document)
+    : document.startsWith("report-2/")
+      ? join(documents, "corpus", basename(document))
+      : join(documents, document);
+  const raw = existsSync(path)
+    ? readFileSync(path, "utf8")
+    : gunzipSync(readFileSync(`${path}.gz`)).toString("utf8");
   return JSON.parse(raw) as Report2;
 }
 

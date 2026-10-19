@@ -27,15 +27,27 @@ const CONTRACT_FILES = {
 /** The model's documents of the `contract/page-goldens.json` entries (lockrot's `PageGoldensTest` reads the same). */
 const PAGE_GOLDEN_DOCUMENTS = [
   "tests/fixtures/schema/documents/cases/B-dev-dagger.json",
+  "tests/fixtures/schema/documents/cases/B-gate-none.json",
+  "tests/fixtures/schema/documents/cases/E-ignored-whole-dagger.json",
+  "tests/fixtures/schema/documents/cases/composite-generate-baseline.json",
   "tests/fixtures/schema/documents/cases/composite.json",
+  "tests/fixtures/schema/documents/cases/guzzle-mixed.json",
   "tests/fixtures/schema/documents/cases/ok-offline-dagger.json",
   "tests/fixtures/schema/documents/cases/pagerfanta.json",
   "tests/fixtures/schema/documents/cases/policy-off-dagger.json",
+  "tests/fixtures/schema/documents/cases/rounded-dev-dagger.json",
+  "tests/fixtures/schema/documents/cases/unreached.json",
   "tests/fixtures/schema/documents/corpus/akaunting.json.gz",
+  "tests/fixtures/schema/documents/corpus/matomo.json.gz",
   "tests/fixtures/schema/documents/corpus/moodle-v3.json.gz",
   "tests/fixtures/schema/documents/corpus/new-symfony.json.gz",
   "tests/fixtures/schema/documents/corpus/wallabag.json.gz",
+  "tests/fixtures/schema/documents/coverage/baselined/new-slim.json.gz",
+  "tests/fixtures/schema/documents/page/B-also.checked-dagger.json",
+  "tests/fixtures/schema/documents/page/composite.other-day-same-cve-dagger.json",
   "tests/fixtures/schema/documents/page/composite.unknown-rules-dagger.json",
+  "tests/fixtures/schema/documents/page/snipe-it.unloaded-dagger.json",
+  "tests/fixtures/schema/documents/page/unknown.offline-dagger.json",
 ];
 
 const SPARSE = [
