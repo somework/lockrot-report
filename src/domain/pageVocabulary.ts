@@ -4,7 +4,8 @@
  * `contract/en/` equals its recording (`PageVocabularyTest`).
  */
 
-import type { Rich } from "./rich";
+import type { MoveCheck } from "../model/report";
+import { plain, type Rich } from "./rich";
 
 type Words = Readonly<Record<string, string>>;
 
@@ -463,3 +464,12 @@ export const uncheckedWords = (signal: string, name: string): string =>
   Object.hasOwn(UNCHECKED_SIGNAL_WORDS, signal)
     ? (UNCHECKED_SIGNAL_WORDS[signal] ?? signal)
     : `${name} not checked`;
+
+/** The short words of a check that stopped a move (SPEC §7.9.21): "Composer refuses the move" or
+ *  "not checked: {reason words}"; null for a resolving check or none. */
+export function stoppedCheckWords(check: MoveCheck): string | null {
+  if (check === null) return null;
+  if (check.result === "refused") return "Composer refuses the move";
+  if (check.result === "not_checked") return `not checked: ${plain(checkReasonRich(check.reason ?? ""))}`;
+  return null;
+}

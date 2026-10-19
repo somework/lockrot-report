@@ -11,7 +11,7 @@ import { capitalize, metadataWords } from "./findingWords";
 import { pluralNoun } from "./format";
 import { joinAnd } from "./joinWords";
 import { safeHref } from "./links";
-import { addsBasisWord, checkReasonRich, phpFloorWord } from "./pageVocabulary";
+import { addsBasisWord, checkReasonRich, phpFloorWord, stoppedCheckWords } from "./pageVocabulary";
 import { phpConstraintWord } from "./phpAlternatives";
 import { dependentNames, foundWords, installedPhpWords } from "./qualifierRows";
 import { newTab, type Rich } from "./rich";
@@ -394,6 +394,13 @@ function linkWords({ link, target, constraint, package: holder }: HeldBy): Rich 
   }
 }
 
+type HolderStep = NonNullable<NonNullable<HeldBy["holder"]>["next_step"]>;
+
+const ownStep = (step: HolderStep, where: string): string =>
+  step.kind === "require" && step.constraint
+    ? `require ${step.constraint}${where}`
+    : `${step.kind.replaceAll("-", " ")}${where}`;
+
 function holderItem(held: HeldBy, run: Run): Holder {
   if (held.source === "root") {
     return {
@@ -418,9 +425,7 @@ function holderItem(held: HeldBy, run: Run): Holder {
     step:
       step === null
         ? null
-        : step.kind === "require" && step.constraint
-          ? `require ${step.constraint}${where}`
-          : `${step.kind.replaceAll("-", " ")}${where}`,
+        : [ownStep(step, where), stoppedCheckWords(step.check)].filter((w) => w !== null).join(" · "),
   };
 }
 

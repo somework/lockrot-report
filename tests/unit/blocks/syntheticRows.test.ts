@@ -5,7 +5,7 @@ import { describe, expect, test } from "vitest";
 import { commandLines, moveCards } from "../../../src/domain/moveCards";
 import { qualifiers } from "../../../src/domain/qualifierRows";
 import { plain } from "../../../src/domain/rich";
-import { securityBlock } from "../../../src/domain/securityBlock";
+import { afterIt, securityBlock } from "../../../src/domain/securityBlock";
 import { readingRich, verdictBlock, verdictLineText } from "../../../src/domain/verdictBlock";
 import type { Finding, RepositoryMetadata, Run, S8, S9row } from "../../../src/model/report";
 import { modelCases } from "../words/recorded";
@@ -346,5 +346,56 @@ describe("the check line (SPEC §7.9.21)", () => {
       { code: "a_later_reason" },
       ")",
     ]);
+  });
+});
+
+describe("the move check in Held by and on the ladder (coordinator rulings on #49)", () => {
+  const holderStep = (check: unknown): string | null => {
+    const { finding, run } = modelCase("B");
+    if (finding.next_step === null) throw new Error("B has a move");
+    const hold = {
+      source: "package",
+      package: "acme/holder",
+      version: "1.0.0",
+      link: "require",
+      target: null,
+      constraint: "^4.4",
+      holder: {
+        verdict: "high",
+        lead: null,
+        flag_ids: [],
+        replacement: null,
+        next_step: { kind: "require", to_branch: "2.x", constraint: "^2.0", check },
+      },
+    };
+    finding.next_step = { ...finding.next_step, held_by: [hold] } as unknown as typeof finding.next_step;
+    return moveCards(finding, run)[0]?.heldBy?.shown[0]?.step ?? null;
+  };
+
+  test.each([
+    [{ result: "refused", form: null, reason: null }, "require ^2.0 on 2.x · Composer refuses the move"],
+    [
+      { result: "not_checked", form: null, reason: "offline" },
+      "require ^2.0 on 2.x · not checked: a package it needs is not in Composer's cache",
+    ],
+    [{ result: "resolves", form: "inline", reason: null }, "require ^2.0 on 2.x"],
+    [null, "require ^2.0 on 2.x"],
+  ])("a holder's own step with check %j reads %s", (check, step) => {
+    expect(holderStep(check)).toBe(step);
+  });
+
+  const applied = { total: 0, verdict: "ok", lead: null, deciding_advisory: null, at_most: false };
+
+  test("a stopped row drops the Composer caveat, and its check words end the row", () => {
+    const assumes = ["composer_resolves", "no_new_advisories"];
+    expect(afterIt({ ...applied, assumes } as never, "Composer refuses the move")).toBe(
+      "after it: 0, ok, advisories on its new versions not checked, Composer refuses the move",
+    );
+  });
+
+  test("a row with no stopped check keeps the caveat from assumes", () => {
+    expect(afterIt({ ...applied, assumes: ["composer_resolves"] } as never)).toBe(
+      "after it: 0, ok, if Composer resolves it",
+    );
   });
 });
