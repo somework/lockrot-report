@@ -144,8 +144,13 @@ test.describe("report-2: the summary band on Overview", () => {
       await report.gotoReport2WithHash(name, hash);
       for (const width of [320, 390, 768, 1024, 1180, 1181, 1440, 1920]) {
         await page.setViewportSize({ width, height: 900 });
-        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-        expect(overflow, `${name} #${hash} at ${width}px`).toBeLessThanOrEqual(0);
+        // WebKit answers a forced layout right after a resize from stale container-query sizes; the
+        // page is judged once it settles.
+        await expect
+          .poll(() => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), {
+            message: `${name} #${hash} at ${width}px`,
+          })
+          .toBeLessThanOrEqual(0);
       }
     }
   });

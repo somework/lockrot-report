@@ -81,10 +81,14 @@ export interface NextStepParts {
 /** The next-step cell part by part; a part the row does not draw is null. */
 export async function findingsNextStep(page: Page, pkg: string): Promise<NextStepParts> {
   const cell = findingsRow(page, pkg).locator(".f2-next");
-  const text = async (selector: string): Promise<string | null> => {
+  const text = async (selector: string, copied = false): Promise<string | null> => {
     const part = cell.locator(selector);
     if ((await part.count()) === 0) return null;
-    return (await part.first().innerText()).replace(/\s+/g, " ").trim();
+    // A copy keeps the space at a soft wrap, which WebKit's innerText drops.
+    const raw = copied
+      ? await part.first().evaluate((node) => node.textContent)
+      : await part.first().innerText();
+    return raw.replace(/\s+/g, " ").trim();
   };
   const held = await text(".f2-held");
   const move = await cell.locator(".f2-move").evaluate((node) => {
@@ -98,6 +102,6 @@ export async function findingsNextStep(page: Page, pkg: string): Promise<NextSte
     held: held === null ? null : held.replace(/^·\s*/, ""),
     after: await text(".f2-after"),
     major: await text(".f2-major"),
-    command: await text(".f2-cmd"),
+    command: await text(".f2-cmd", true),
   };
 }

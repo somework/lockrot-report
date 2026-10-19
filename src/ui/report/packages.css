@@ -79,9 +79,10 @@
 .is-ungraded .p2-score {
   color: var(--muted);
 }
-/* Pills on one line: a pill's sentence is the open package's to say. */
+/* A pill never breaks inside itself (a pill's sentence is the open package's to say), but the row's
+   pills may wrap between themselves, so a wide font narrows the column instead of the wrap scrolling. */
 .p2-table td.p2-flags {
-  white-space: nowrap;
+  white-space: normal;
 }
 .p2-flags .fp {
   margin: 1px 1px 1px 0;
@@ -192,6 +193,7 @@
   .p2-name {
     grid-area: name;
     overflow-wrap: anywhere;
+    align-self: start;
   }
   .p2-h-version,
   .p2-ver {

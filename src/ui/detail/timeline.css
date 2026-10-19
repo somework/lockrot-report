@@ -447,6 +447,7 @@
   /* A dot on the rule overhangs by half its width plus its halo; 4px here and the 8px column gap
      still clear the LATEST text. */
   .detail-timeline-grid {
+    grid-template-columns: max-content minmax(64px, 1fr) auto fit-content(17ch);
     column-gap: 8px;
     font-size: var(--text-xs);
     --rule-gap: 4px;

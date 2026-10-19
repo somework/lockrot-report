@@ -56,19 +56,24 @@ function pixel(png: DecodedPng, x: number, y: number): Rgb {
   return [png.data.readUInt8(i), png.data.readUInt8(i + 1), png.data.readUInt8(i + 2)];
 }
 
+/** The first sampled pixel row of the frame and of the rule. A row on a fractional offset (WebKit
+ *  keeps one) pulls the border of the row above into the clip's first pixels. */
+const TOP = 6;
+const RULE_TOP = 2;
+
 /** The colours along the row's top padding, its bottom padding and its right edge, clear of the
  *  accent rule and the row's bottom border: one colour where the row is painted once. */
 function frameColours(png: DecodedPng): Rgb[] {
   const colours: Rgb[] = [];
-  for (let x = 6; x < png.width - 3; x += 1) colours.push(pixel(png, x, 2), pixel(png, x, png.height - 4));
-  for (let y = 2; y < png.height - 3; y += 1) colours.push(pixel(png, png.width - 3, y));
+  for (let x = 6; x < png.width - 3; x += 1) colours.push(pixel(png, x, TOP), pixel(png, x, png.height - 4));
+  for (let y = TOP; y < png.height - 3; y += 1) colours.push(pixel(png, png.width - 3, y));
   return colours;
 }
 
 /** The colours down the row's first pixel column, above its bottom border: the accent rule. */
 function ruleColours(png: DecodedPng): Rgb[] {
   const colours: Rgb[] = [];
-  for (let y = 0; y < png.height - 2; y += 1) colours.push(pixel(png, 1, y));
+  for (let y = RULE_TOP; y < png.height - 2; y += 1) colours.push(pixel(png, 1, y));
   return colours;
 }
 
