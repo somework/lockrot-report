@@ -1,6 +1,12 @@
 import { Fragment, type ComponentChildren } from "preact";
 import { useId } from "preact/hooks";
-import { firstMoves, FIRST_WORDS, gateLineTarget, type ReadyMove } from "../../domain/firstMoves";
+import {
+  firstMoves,
+  FIRST_WORDS,
+  gateLineTarget,
+  type ReadyMove,
+  type WordPart,
+} from "../../domain/firstMoves";
 import { libyearsLead } from "../../domain/libyearsLead";
 import {
   acceptedLine,
@@ -169,6 +175,11 @@ function StateLines({ report }: { report: Report2 }) {
   );
 }
 
+/** Words with an id the page does not know printed as written in a code element. */
+function PartWords({ parts }: { parts: readonly WordPart[] }) {
+  return <>{parts.map((part, index) => (part.code ? <code key={index}>{part.text}</code> : part.text))}</>;
+}
+
 function MoveItem({ move, model }: { move: ReadyMove; model: ScoreModel }) {
   return (
     <li className="ov-move">
@@ -190,7 +201,7 @@ function MoveItem({ move, model }: { move: ReadyMove; model: ScoreModel }) {
           {move.clears !== null && move.after !== null && <span className="ov-sep"> · </span>}
           {move.after !== null && (
             <span>
-              {FIRST_WORDS.after}: {move.after}
+              {FIRST_WORDS.after}: {[move.after.result, ...move.after.conditions].join(", ")}
             </span>
           )}
         </p>
@@ -208,10 +219,7 @@ function FirstMovesBlock({ report }: { report: Report2 }) {
   return (
     <section className="ov-first" aria-labelledby={headId}>
       <h3 className="ov-first-head" id={headId}>
-        {FIRST_WORDS.head}{" "}
-        {first.moves.length > 0 && (
-          <span className="ov-first-note">{first.forGate ? FIRST_WORDS.noteGate : FIRST_WORDS.noteAll}</span>
-        )}
+        {FIRST_WORDS.head} {first.note !== null && <span className="ov-first-note">{first.note}</span>}
       </h3>
       {first.moves.length > 0 && (
         <ol className="ov-moves">
@@ -231,12 +239,14 @@ function FirstMovesBlock({ report }: { report: Report2 }) {
                 {first.held} <span aria-hidden="true">›</span>
               </TabLink>
             ))}
-          {first.wayOut !== null &&
+          {first.wayOutParts !== null &&
             (first.wayOutLink === null ? (
-              <span>{first.wayOut}</span>
+              <span>
+                <PartWords parts={first.wayOutParts} />
+              </span>
             ) : (
               <TabLink target={first.wayOutLink} className="ov-link">
-                {first.wayOut} <span aria-hidden="true">›</span>
+                <PartWords parts={first.wayOutParts} /> <span aria-hidden="true">›</span>
               </TabLink>
             ))}
           {first.more !== null && first.moreLink !== null && (

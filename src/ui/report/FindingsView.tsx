@@ -13,13 +13,11 @@ import {
   runNote,
   majorCount,
   majorCountWords,
-  rowAfter,
   runSegments,
   uncheckedNote,
   type PackagesNote,
 } from "../../domain/findingRow";
 import { bandTicks } from "../../domain/scoreBar";
-import { COMPOSER_CAVEAT } from "../../domain/securityBlock";
 import { gradeChips, OVERVIEW_WORDS } from "../../domain/overviewBand";
 import { OVERVIEW_TAB_WORDS, stripFlagged } from "../../domain/overviewTab";
 import { verdictTone } from "../../domain/findingRow";
@@ -74,7 +72,7 @@ function NoteLine({ note }: { note: PackagesNote }) {
 
 /** The column heads of the Findings table: the score scale's floors over the bars, and the age
  *  axis. A narrow layout hides them from sight only; each value there carries its own label. */
-function ColumnHead({ run, axis, caveat }: { run: Run; axis: AgeAxis | null; caveat: boolean }) {
+function ColumnHead({ run, axis }: { run: Run; axis: AgeAxis | null }) {
   return (
     <div className="fhead f2-head" role="row">
       <span className="fhead-col f2-head-score" role="columnheader">
@@ -106,7 +104,6 @@ function ColumnHead({ run, axis, caveat }: { run: Run; axis: AgeAxis | null; cav
       </span>
       <span className="fhead-col f2-head-next" role="columnheader">
         {FINDINGS_HEAD.next}
-        {caveat && <span className="f2-head-note">after it: …, {COMPOSER_CAVEAT}</span>}
       </span>
     </div>
   );
@@ -123,17 +120,7 @@ function SpanRow({ className, children }: { className: string; children: Compone
   );
 }
 
-function Group({
-  verdict,
-  findings,
-  axis,
-  caveat,
-}: {
-  verdict: string;
-  findings: Finding[];
-  axis: AgeAxis | null;
-  caveat: boolean;
-}) {
+function Group({ verdict, findings, axis }: { verdict: string; findings: Finding[]; axis: AgeAxis | null }) {
   const { state } = useReport();
   const { report } = useReport2();
   const printed = usePrinted();
@@ -163,7 +150,7 @@ function Group({
         {majors !== null && <span className="fgroup-major">{majors}</span>}
       </SpanRow>
       {/* On paper each group repeats the column head, as a printed table repeats its head row. */}
-      {printed && <ColumnHead run={report.run} axis={axis} caveat={caveat} />}
+      {printed && <ColumnHead run={report.run} axis={axis} />}
       {runSegments(findings).map((segment) => {
         const first = segment.findings[0]?.package ?? "";
         if (segment.key === null) {
@@ -249,8 +236,6 @@ export function FindingsView2() {
   const thresholds = report.run.thresholds;
   const axis = thresholds === null ? null : ageAxis(Object.entries(thresholds));
   const printed = usePrinted();
-  // The rows leave rule 9's Composer caveat to the head, or to a caption where no head shows.
-  const caveat = rows.some((finding) => rowAfter(finding) !== null);
   return (
     <section className="f2" data-surface="findings">
       <Notes report={report} />
@@ -258,18 +243,10 @@ export function FindingsView2() {
         <EmptyState reason={population2(report, "findings").length === 0 ? "clean" : "filtered"} />
       ) : (
         <>
-          {/* Outside the table: where the heads are out of sight, this says the caveat they hold. */}
-          {caveat && <p className="f2-caveat">Next step · after it: …, {COMPOSER_CAVEAT}</p>}
           <div className="fledger f2-ledger" role="table" aria-label="Findings">
-            {!printed && <ColumnHead run={report.run} axis={axis} caveat={caveat} />}
+            {!printed && <ColumnHead run={report.run} axis={axis} />}
             {byGrade(rows).map((group) => (
-              <Group
-                key={group.verdict}
-                verdict={group.verdict}
-                findings={group.findings}
-                axis={axis}
-                caveat={caveat}
-              />
+              <Group key={group.verdict} verdict={group.verdict} findings={group.findings} axis={axis} />
             ))}
           </div>
         </>

@@ -41,19 +41,17 @@ export function holderWord({ source, package: name }: Pick<HeldBy, "source" | "p
 
 /** "after it: {bound}{total}, {verdict}", with its conditions (G139); a Findings row leaves the
  *  Composer caveat to its column head. */
-export function afterIt(applied: BranchFixes["if_applied"], composerCaveat = true): string | null {
+export function afterIt(applied: BranchFixes["if_applied"]): string | null {
   if (applied === null) return null;
   const noNew = applied.assumes.includes("no_new_advisories");
   const bound = applied.at_most ? (noNew ? "at most, from the facts it checked, " : "at most ") : "";
   return (
     `after it: ${bound}${applied.total}, ${applied.verdict}` +
-    (composerCaveat && applied.assumes.includes("composer_resolves") ? `, ${COMPOSER_CAVEAT}` : "") +
+    (applied.assumes.includes("composer_resolves") ? `, ${COMPOSER_CAVEAT}` : "") +
     (noNew ? ", advisories on its new versions not checked" : "")
   );
 }
 
-/** Accepted derivation 9: a Findings row's "after it", from the lead move's `if_applied` only. The
- *  Composer caveat stands once for every row, in the Next step head. */
 export const COMPOSER_CAVEAT = "if Composer resolves it";
 
 export interface SecurityRung {
