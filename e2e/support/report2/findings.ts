@@ -7,7 +7,7 @@ export function findingsSurface(page: Page): Locator {
 
 /** One Findings row, by its accessible name: the package. */
 export function findingsRow(page: Page, pkg: string): Locator {
-  return findingsSurface(page).getByRole("listitem", { name: pkg, exact: true });
+  return findingsSurface(page).getByRole("row", { name: pkg, exact: true });
 }
 
 export type RowCell = "num" | "pkg" | "flags" | "age" | "reach" | "next";

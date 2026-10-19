@@ -110,7 +110,24 @@ export function sheetPages(): Report2Page[] {
     });
 }
 
+/** The page cases of `page-goldens.json` that carry a real move check: lockrot's engine run of
+ *  snipe-it, and the model's ‡ document derived from it. Neither has an explain-2, so no details. */
+const PAGE_CASES = [
+  { name: "page-snipe-it", path: ["contract", "page", "snipe-it.json"] },
+  {
+    name: "page-snipe-it.unloaded-dagger",
+    path: ["schema", "documents", "page", "snipe-it.unloaded-dagger.json"],
+  },
+];
+
+function pageCasePages(): Report2Page[] {
+  return PAGE_CASES.map(({ name, path }) => ({
+    name: `report2-${name}`,
+    embed: { report: readJson(...path) as Report2Embed["report"], details: {} },
+  }));
+}
+
 export function report2Pages(): Report2Page[] {
   const assembled = report2Cases().map((name) => ({ name: `report2-${name}`, embed: assembleEmbed(name) }));
-  return [...assembled, ...baselinedPages()];
+  return [...assembled, ...baselinedPages(), ...pageCasePages()];
 }
