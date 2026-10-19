@@ -45,7 +45,7 @@ export function ageRows(finding: Finding, metadata: RepositoryMetadata | null): 
   } else {
     const newest =
       release?.version === version
-        ? " · its newest release"
+        ? " · its most recent release"
         : last?.version === version
           ? ` · the newest on ${branch}`
           : "";
@@ -57,8 +57,8 @@ export function ageRows(finding: Finding, metadata: RepositoryMetadata | null): 
   if (release !== null && release.version !== version) {
     rows.push(
       last?.version === release.version
-        ? { label: `${branch} last`, value: `${release.version} · ${when(release)} · its newest release` }
-        : { label: "newest", value: `${release.version} · ${when(release)}` },
+        ? { label: `${branch} last`, value: `${release.version} · ${when(release)} · its most recent release` }
+        : { label: "most recent", value: `${release.version} · ${when(release)}` },
     );
   }
   const event = eventWord(finding.activity.event ?? "push");
@@ -66,7 +66,7 @@ export function ageRows(finding: Finding, metadata: RepositoryMetadata | null): 
   const notRead: [string, string | null][] = [
     ["installed", age.installed_unmeasured],
     [finding.branch ?? "its branch", age.branch_release_unmeasured],
-    ["newest", age.release_unmeasured],
+    ["most recent", age.release_unmeasured],
     [`last ${event}`, age.push_unmeasured],
   ];
   for (const [name, id] of notRead) {

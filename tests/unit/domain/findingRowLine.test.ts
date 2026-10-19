@@ -133,16 +133,26 @@ describe("GATE_WORDS.group (accepted derivation 1)", () => {
   });
 });
 
-describe("commandLabel (accepted derivation 8)", () => {
-  it("labels a why-not step Check, any other Command", () => {
-    expect(commandLabel([["composer", "why-not", "a/b", "2.0"]])).toBe("Check");
+describe("commandLabel (SPEC §7.9.8.6, G114)", () => {
+  it("labels one step Command and several Commands, in order", () => {
     expect(commandLabel([["composer", "require", "a/b:^2.0"]])).toBe("Command");
     expect(
       commandLabel([
         ["composer", "update", "a/b"],
-        ["composer", "update", "c/d"],
+        ["composer", "why-not", "c/d", "2.0"],
       ]),
     ).toBe("Commands, in order");
+  });
+
+  it("labels a move of why-not steps only Check, and a move with no step null", () => {
+    expect(commandLabel([["composer", "why-not", "a/b", "2.0"]])).toBe("Check");
+    expect(
+      commandLabel([
+        ["composer", "why-not", "a/b", "2.0"],
+        ["composer", "why-not", "c/d", "1.0"],
+      ]),
+    ).toBe("Check");
+    expect(commandLabel([])).toBeNull();
   });
 });
 

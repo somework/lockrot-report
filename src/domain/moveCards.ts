@@ -454,9 +454,10 @@ export function commandLines(argvs: readonly (readonly string[])[]): string[] {
 
 export const COMMAND_WORDS = { one: "Command", several: "Commands, in order", check: "Check" } as const;
 
-/** A move card's label: a `why-not` step checks why a move is held, it does not make it. */
-export function commandLabel(argvs: readonly (readonly string[])[]): string {
-  if (argvs.length > 0 && argvs.every((argv) => argv[1] === "why-not")) return COMMAND_WORDS.check;
+/** A move card's `commands_label`: a `why-not` step checks why a move is held, it does not make it. */
+export function commandLabel(argvs: readonly (readonly string[])[]): string | null {
+  if (argvs.length === 0) return null;
+  if (argvs.every((argv) => argv[1] === "why-not")) return COMMAND_WORDS.check;
   return argvs.length > 1 ? COMMAND_WORDS.several : COMMAND_WORDS.one;
 }
 

@@ -8,14 +8,8 @@
     ]
   },
   "security_row": {
-    "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest: lockrot names the P2b candidate of each branch; the model names none": [
-      "psr7"
-    ],
     "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest: lockrot names the P2b candidate of each branch, and its if_applied follows from that candidate; the model names none": [
       "B-also-dagger"
-    ],
-    "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest and the 4.x fix_kind: lockrot names the P2b candidate, and classes 4.x by the hydrated links, none of which holds the package; the model classes 4.x by its position": [
-      "xmlseclibs"
     ]
   },
   "why": {
@@ -47,27 +41,8 @@
     ]
   },
   "security": {
-    "lockrot's recording and the model's input differ: signals[].data.advisories[].fix.version: lockrot reads every release of the branch and names its lowest release outside the range; the model reads it from the affected range alone": [
-      "A",
-      "A-baselined-dagger",
-      "A-blocked-dagger",
-      "A-gate-critical",
-      "A-gate-vulnerable",
-      "A-php-star-dagger",
-      "commonmark",
-      "feeds-drupal-dagger",
-      "flysystem",
-      "twig-1",
-      "twig-dev-dagger"
-    ],
-    "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest: lockrot names the P2b candidate of each branch; the model names none": [
-      "psr7"
-    ],
     "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest: lockrot names the P2b candidate of each branch, and its if_applied follows from that candidate; the model names none": [
       "B-also-dagger"
-    ],
-    "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest and the 4.x fix_kind: lockrot names the P2b candidate, and classes 4.x by the hydrated links, none of which holds the package; the model classes 4.x by its position; and the fix version of its second advisory, which lockrot reads from every release of the branch": [
-      "xmlseclibs"
     ]
   },
   "age_rows": {

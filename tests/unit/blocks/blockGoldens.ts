@@ -3,7 +3,7 @@
 import { ageRows } from "../../../src/domain/ageRows";
 import { branchesLead, branchTimeline, laneMarks, laneWords } from "../../../src/domain/branchTimeline";
 import type { Holder, HeldByBlock } from "../../../src/domain/moveCards";
-import { commandLines, holderName, moveCards, STEP_LABEL } from "../../../src/domain/moveCards";
+import { commandLabel, commandLines, holderName, moveCards, STEP_LABEL } from "../../../src/domain/moveCards";
 import { gateLines, qualifiers, reachLines } from "../../../src/domain/qualifierRows";
 import { plain } from "../../../src/domain/rich";
 import { rungLines, securityBlock } from "../../../src/domain/securityBlock";
@@ -84,6 +84,7 @@ export function blockGolden(
         heading: c.heading,
         action: plain(c.action),
         commands: commandLines(c.argvs),
+        commands_label: commandLabel(c.argvs),
         clears: c.clears,
         stays: c.stays,
         not_checked: c.notChecked,

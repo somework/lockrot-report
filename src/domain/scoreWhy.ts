@@ -104,7 +104,7 @@ function securityTermLine(finding: Finding, score: ScoreGraded, term: TermSecuri
     line += "; its fix is unknown: no × 2";
   } else if (!doubles) {
     const branch = advisoryRows(finding).find((row) => row.id === term.advisory)?.fix.to_branch ?? null;
-    line += `; its own fix (${fixLabel(term.fix_kind)}${branch ? ` on ${branch}` : ""}) is reachable: no × 2`;
+    line += `; its own fix (${fixLabel(term.fix_kind)}${branch ? ` on ${branch}` : ""}) is reachable, so no × 2`;
   }
   return line;
 }

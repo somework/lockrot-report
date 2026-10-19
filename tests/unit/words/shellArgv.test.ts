@@ -121,6 +121,24 @@ describe("the command argument rule (SPEC §5.6)", () => {
     expect(inEveryShell(["composer", "why-not", "a/b", "--no-update"])).toEqual(refused);
   });
 
+  test.each([
+    ["update", "--with-dependencies"],
+    ["update", "--with-all-dependencies"],
+    ["require", "--with-dependencies"],
+    ["require", "--with-all-dependencies"],
+  ])("allows lockrot's %s option %s after the package", (subcommand, option) => {
+    expect(isPrintableArgv(["composer", subcommand, "a/b:^2.0", option])).toBe(true);
+  });
+
+  test.each([
+    ["an option before the package", ["composer", "update", "--with-dependencies", "a/b"]],
+    ["a package after an option", ["composer", "update", "a/b", "--with-dependencies", "c/d"]],
+    ["an option with no package", ["composer", "require", "--no-update"]],
+    ["the option of a why-not step", ["composer", "why-not", "a/b", "--with-dependencies"]],
+  ])("refuses %s on every shell", (_, argv) => {
+    expect(inEveryShell(argv)).toEqual(refused);
+  });
+
   test("allows @name, a,b and a/b|c, which PowerShell writes after --%", () => {
     expect(commandLine(["composer", "require", "@name", "a,b", "a/b|c"], "powershell")).toBe(
       'composer --% require @name a,b "a/b|c"',

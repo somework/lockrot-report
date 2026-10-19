@@ -589,25 +589,6 @@
       "Tripped by abandoned"
     ]
   },
-  "commonmark": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Not required directly, through:",
-      "laravel/framework",
-      "laravel/nightwatch",
-      "spatie/laravel-markdown"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "accepted": [],
-    "gate": [
-      "fails the run: grade high or above",
-      "Tripped by PKSA-m4t9-vsgq-8khn"
-    ]
-  },
   "either-critical-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -1076,6 +1057,21 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
+  "move-check-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
   "not-found-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -1100,14 +1096,14 @@
     "origin": null,
     "not_judged": null,
     "unchecked": [
-      "Release age (S2) and release branch (S8) not checked (undated releases)"
+      "Release age (S2) not checked (undated releases)"
     ],
     "not_run": [],
     "php": null,
     "accepted": [],
     "gate": [
       "fails the run: a check that did not run",
-      "Tripped by S2 and S8"
+      "Tripped by S2"
     ]
   },
   "op-update": {
@@ -1134,8 +1130,7 @@
     "origin": null,
     "not_judged": null,
     "unchecked": [
-      "Release age (S2) not checked (undated releases)",
-      "Release branch (S8) incomplete (undated releases)"
+      "Release age (S2) not checked (undated releases)"
     ],
     "not_run": [],
     "php": null,
@@ -1619,23 +1614,6 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by old-promise"
-    ]
-  },
-  "xmlseclibs": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Not required directly, through mautic/core-lib",
-      "Its maintenance counts half"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "accepted": [],
-    "gate": [
-      "fails the run: grade high or above",
-      "Tripped by old-promise and CVE-2026-32313"
     ]
   },
   "yaml-3.4": {
