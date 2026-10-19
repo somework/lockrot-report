@@ -136,10 +136,8 @@ span.f2-unit {
   font-size: var(--text-s);
   color: var(--muted);
 }
-/* A word wider than the cell scrolls inside the box rather than run past the row. */
 .f2-cmd {
   max-width: 100%;
-  overflow-x: auto;
   padding: 0 5px;
   border-radius: var(--radius-s);
   background: var(--surface-2);
@@ -179,9 +177,12 @@ span.f2-unit {
   content: "$ ";
   color: var(--muted);
 }
-/* A command word never breaks inside itself; the line breaks only at the spaces between words. */
+/* The line breaks at the spaces between words. A word breaks inside itself only when it is wider
+   than the cell, so the box never scrolls and takes no Tab stop. */
 .f2-word {
-  white-space: nowrap;
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .f2-note {
   margin: 0 0 10px;
@@ -427,6 +428,34 @@ span.f2-unit {
   }
   .f2-ledger .f2-row .f2-next {
     display: flex;
+  }
+}
+
+/* Paper has no open package to hold the bar's parts, so the two-line layout keeps the score bar and
+   the scale there. */
+@media print {
+  @container fledger (min-width: 600px) {
+    .f2-ledger .f2-head,
+    .f2-ledger .f2-row {
+      --sbar-w: 96px;
+      grid-template-columns:
+        calc(var(--fl-num) + 6px + var(--sbar-w) + 8px + var(--gate-w)) minmax(0, 1.15fr)
+        minmax(0, 0.85fr) minmax(0, 1.3fr);
+    }
+    .f2-ledger .f2-row .f2-score {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+    }
+    .f2-ledger .f2-row .f2-score .f2-num {
+      width: var(--fl-num);
+    }
+    .f2-ledger .f2-row .f2-score .sbar {
+      display: inline-block;
+    }
+    .f2-ledger .f2-head .f2-head-axis {
+      display: block;
+    }
   }
 }
 

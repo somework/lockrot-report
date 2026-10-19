@@ -34,10 +34,17 @@
 .p2-table td.p2-ver {
   white-space: normal;
 }
-/* A branch version can outgrow the column: it wraps rather than push the table past its box. */
+/* A branch version can outgrow the column: it wraps rather than push the table past its box, so
+   the cut of PackageWord.tsx#Version does not apply here. */
 .p2-table td.p2-ver {
   white-space: normal;
   overflow-wrap: anywhere;
+}
+.p2-table td.p2-ver .is-clipped {
+  display: inline;
+  max-width: none;
+  overflow: visible;
+  white-space: normal;
 }
 .p2-ver,
 .p2-data,

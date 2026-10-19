@@ -167,6 +167,7 @@
 .overview2-gate-link {
   display: flex;
   flex: 1;
+  min-width: 0;
   gap: var(--space-2);
   align-items: flex-start;
   color: inherit;
@@ -183,6 +184,17 @@
 }
 .overview2-gate-text {
   min-width: 0;
+}
+/* A word of gate.text stays whole and breaks inside itself only when it is wider than the line. */
+.overview2-gate-text .nb {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.overview2-gate-link:hover .overview2-gate-text .nb {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .overview2-gate-go {
   margin-left: auto;
