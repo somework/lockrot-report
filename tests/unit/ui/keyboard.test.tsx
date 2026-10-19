@@ -131,6 +131,37 @@ describe("j / k walk the rendered rows", () => {
   });
 });
 
+describe("Up and Down on a row", () => {
+  test("move focus to the next or previous row while nothing is open", () => {
+    const on = { rowPkg: "a/two", rowIndex: 1 };
+    expect(decideKey(input({ key: "ArrowDown", ...on }))).toEqual({ type: "focusRow", pkg: "a/three", index: 2 });
+    expect(decideKey(input({ key: "ArrowUp", ...on }))).toEqual({ type: "focusRow", pkg: "a/one", index: 0 });
+  });
+
+  test("open the next row's package while one is open, as j does", () => {
+    expect(decideKey(input({ key: "ArrowDown", rowPkg: "a/two", rowIndex: 1, selected: "a/two" }))).toEqual({
+      type: "move",
+      pkg: "a/three",
+      index: 2,
+    });
+  });
+
+  test("Home and End go to the first and the last row", () => {
+    const on = { rowPkg: "a/two", rowIndex: 1 };
+    expect(decideKey(input({ key: "Home", ...on }))).toEqual({ type: "focusRow", pkg: "a/one", index: 0 });
+    expect(decideKey(input({ key: "End", ...on, selected: "a/two" }))).toEqual({
+      type: "move",
+      pkg: "a/three",
+      index: 2,
+    });
+  });
+
+  test("are left to the browser off a row and on a control inside one", () => {
+    expect(decideKey(input({ key: "ArrowDown" }))).toEqual({ type: "ignore" });
+    expect(decideKey(input({ key: "ArrowDown", rowPkg: "a/two", onControl: true }))).toEqual({ type: "ignore" });
+  });
+});
+
 describe("/ and ?", () => {
   test("/ focuses the search box, ? opens the glossary", () => {
     expect(decideKey(input({ key: "/" }))).toEqual({ type: "focusSearch", closeDetail: false });

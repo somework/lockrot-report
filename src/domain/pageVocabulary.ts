@@ -84,6 +84,22 @@ const ZERO_VERDICT_WHEN: Words = { allowlisted: "allowlisted", no_metadata: "no 
 
 export const zeroVerdictWhen = (id: string): string => wordFor(ZERO_VERDICT_WHEN, id);
 
+export interface ZeroVerdictMark {
+  readonly word: string;
+  readonly mark: "soft" | "outline" | "hatch";
+}
+
+const ZERO_VERDICT_MARKS: Readonly<Record<string, ZeroVerdictMark>> = {
+  ok: { word: "ok", mark: "soft" },
+  finished: { word: "allowlisted", mark: "outline" },
+  unknown: { word: "not judged", mark: "hatch" },
+};
+
+/** The page's word and waffle mark for a score-0 verdict, by the verdict's name; null for a graded
+ *  verdict or one the page does not know, which is filled and named as written. */
+export const zeroVerdictMark = (verdict: string): ZeroVerdictMark | null =>
+  Object.hasOwn(ZERO_VERDICT_MARKS, verdict) ? (ZERO_VERDICT_MARKS[verdict] ?? null) : null;
+
 const SKIPPED_CHECKS: Words = {
   repository_activity: "its repository activity",
   repository_archived: "its archived flag",
@@ -381,3 +397,41 @@ export const flagClaim = (id: string): string =>
 
 /** The skip link: to the rows of a tab that lists packages, else to the tab's content. */
 export const skipLinkLabel = (lists: boolean): string => (lists ? "Skip to the list" : "Skip to the content");
+
+/** `next_step.kind` in the schema's `x-known-values` order (`#/definitions/move/properties/kind`),
+ *  each with the short words the move cards and the Findings row use for it. */
+export const MOVE_KIND_WORDS: readonly (readonly [kind: string, words: string])[] = [
+  ["replace", "replace"],
+  ["find-alternative", "find an alternative"],
+  ["tag", "move to a tag"],
+  ["require", "require"],
+  ["update", "composer update"],
+  ["raise-php", "raise PHP"],
+  ["test", "test"],
+  ["blocked", "blocked"],
+  ["no-tag", "no tag"],
+  ["no-move", "no move"],
+  ["no-fix", "no fix"],
+  ["no-single-fix", "see advisories"],
+];
+
+/** The way-out words for a finding with no move, by the `kind` of its `gate.by[]` entry, in that
+ *  field's `x-known-values` order. `unchecked` adds the words of the check that did not run. */
+export const GATE_KIND_WORDS: readonly (readonly [kind: string, words: string])[] = [
+  ["grade", "no move for its grade"],
+  ["flag", "no move for its flag"],
+  ["vulnerable", "no move for its advisories"],
+  ["unchecked", "unchecked"],
+];
+
+/** §7.9.16's words for a check that did not run, by the signal an `unchecked` gate value names. A
+ *  signal without words of its own reads "{signal name} not checked". */
+/** §7.9.16's words for the advisory check that did not run. */
+export const ADVISORY_NOT_RUN = "the advisory check did not run";
+
+const UNCHECKED_SIGNAL_WORDS: Readonly<Record<string, string>> = { S9: ADVISORY_NOT_RUN };
+
+export const uncheckedWords = (signal: string, name: string): string =>
+  Object.hasOwn(UNCHECKED_SIGNAL_WORDS, signal)
+    ? (UNCHECKED_SIGNAL_WORDS[signal] ?? signal)
+    : `${name} not checked`;

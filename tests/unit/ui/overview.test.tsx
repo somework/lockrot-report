@@ -15,6 +15,10 @@ function model(edit: (report: Report2) => void = () => undefined): Model {
   return result.model;
 }
 
+/** An accessible name test that ignores the spaces a DOM shim puts around a package name's parts;
+ *  Chromium names the link without them (captured aria trees). */
+const named = (name: string) => (accessible: string) => accessible.replace(/\/\s+/g, "/") === name;
+
 function band(): HTMLElement {
   const found = document.querySelector<HTMLElement>('[data-surface="overview"]');
   if (found === null) throw new Error("no overview band");
@@ -23,7 +27,7 @@ function band(): HTMLElement {
 
 function viewport(phone: boolean): void {
   window.matchMedia = ((query: string) => ({
-    matches: phone ? query.includes("max-width: 759px") : query.includes("1181"),
+    matches: phone ? query.includes("max-width: 759px") : /1000px|1024px/.test(query),
     media: query,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
@@ -50,10 +54,10 @@ describe("the Overview tab of a report-2 document", () => {
       "7 of 7 packages flagged · 0 ok · 0 allowlisted",
     );
     expect(lead.getByRole("link", { name: "critical 3" })).toBeTruthy();
-    expect(lead.getByRole("link", { name: "medium 0" })).toBeTruthy();
-    expect(
-      lead.getByText("gate: fails · --fail-on=high · 5 findings fail it · target php 8.4 (--target-php)"),
-    ).toBeTruthy();
+    expect(lead.queryByRole("link", { name: "medium 0" })).toBeNull();
+    expect(band().querySelector(".overview2-gate-text")?.textContent).toBe(
+      "gate: fails · --fail-on=high · 5 findings fail it · target php 8.4 (--target-php)",
+    );
   });
 
   test("links the grade of the grade line to Findings under it, and reads the line before the waffle", () => {
@@ -70,7 +74,27 @@ describe("the Overview tab of a report-2 document", () => {
   test("never shows a share of the lock", () => {
     render(<App model={model()} />);
 
-    expect(band().querySelector(".ov-lead")?.textContent).not.toContain("%");
+    for (const part of [".ov-answer", ".ov-gate-wrap", ".ov-picture"])
+      expect(band().querySelector(part)?.textContent).not.toContain("%");
+  });
+
+  test("says what lockrot is, as fixed text, before the grade", () => {
+    render(<App model={model()} />);
+
+    const kicker = band().querySelector(".ov-kicker");
+    expect(kicker?.textContent).toBe(
+      "lockrot grades each package in composer.lock by its security advisories and its maintenance signals.",
+    );
+    expect(kicker?.compareDocumentPosition(band().querySelector(".ov-grade") as Node)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
+  test("links the gate line to the findings that fail it, with the rail filter's key", () => {
+    render(<App model={model()} />);
+
+    const gate = band().querySelector(".overview2-gate a");
+    expect(gate?.getAttribute("href")).toBe("#view=findings&gate=fails");
   });
 
   test("draws one flag bar per carried flag, each with its split by grade", () => {
@@ -149,7 +173,7 @@ describe("the Overview tab of a report-2 document", () => {
       "144 points on 7 flagged packages · 140 (97 %) from high or worse · score model 1",
     );
     const items = [...(block?.querySelectorAll("ol > li") ?? [])];
-    expect(items.map((item) => item.querySelector("a")?.textContent)).toEqual([
+    expect(items.map((item) => item.querySelector(".wm-label a")?.textContent)).toEqual([
       "symfony/monolog-bridge",
       "symfony/debug",
       "twig/twig",
@@ -158,38 +182,33 @@ describe("the Overview tab of a report-2 document", () => {
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
     ]);
-    expect(items[6]?.querySelector(".wm-label")?.textContent).toBe(
-      "symfony/polyfill-intl-idn low 2 points transitive",
+    const cells = [".wm-label", ".wm-grade", ".wm-reach", ".wm-total", ".wm-terms"].map(
+      (cell) => items[6]?.querySelector(cell)?.textContent,
     );
-    expect(items[6]?.querySelector(".wm-total")?.getAttribute("aria-hidden")).toBe("true");
-    expect(items[6]?.querySelector(".wm-text")?.textContent).toBe("2 = vulnerable 2 [low advisory]");
+    expect(cells).toEqual(["symfony/polyfill-intl-idn", "low", "transitive", "2 points:", "vulnerable 2"]);
+    expect(block?.querySelector(".wm-text")).toBeNull();
   });
 
-  test("hides each Weighs most bar and its legend swatches from a screen reader", () => {
+  test("hides each Weighs most bar from a screen reader, draws one segment per term in the grade's tone, and has no legend", () => {
     render(<App model={model()} />);
 
     const block = band().querySelector<HTMLElement>(".ov-weighs") as HTMLElement;
     const bars = [...block.querySelectorAll(".wm-bar")];
     expect(bars).toHaveLength(7);
     expect(bars.every((bar) => bar.getAttribute("aria-hidden") === "true")).toBe(true);
-    expect(block.querySelector(".wm-legend")?.textContent).toBe(
-      "abandonedpinnedleft-behindold-promisestalevulnerable",
+    expect(block.querySelector(".wm-legend")).toBeNull();
+    expect(bars[0]?.querySelectorAll(".wm-seg")).toHaveLength(3);
+    expect(block.querySelector(".wm-row")?.className).toContain("tone-");
+    expect(block.querySelector(".wm-row .wm-terms")?.textContent).toBe(
+      "left-behind 16 · old-promise 4 · vulnerable 16",
     );
-    expect(
-      [...block.querySelectorAll(".wm-swatch")].every(
-        (swatch) => swatch.getAttribute("aria-hidden") === "true",
-      ),
-    ).toBe(true);
-    expect(
-      [...(bars[0]?.querySelectorAll(".wm-seg") ?? [])].map((seg) => seg.getAttribute("data-flag")),
-    ).toEqual(["left-behind", "old-promise", "vulnerable"]);
   });
 
   test("links a Weighs most row to its package on Findings", () => {
     render(<App model={model()} />);
 
     const row = within(band().querySelector<HTMLElement>(".ov-weighs") as HTMLElement).getByRole("link", {
-      name: "symfony/debug",
+      name: named("symfony/debug"),
     });
     expect(row.getAttribute("href")).toBe("#view=findings&pkg=symfony%2Fdebug");
     fireEvent.click(row);
@@ -200,8 +219,9 @@ describe("the Overview tab of a report-2 document", () => {
   test("draws the exposure rows as links to Blast radius", () => {
     render(<App model={model()} />);
 
-    const row = within(band()).getByRole("link", { name: "guzzlehttp/guzzle 1 flagged package" });
-    expect(row.getAttribute("href")).toBe("#view=radius");
+    const row = within(band()).getByRole("link", { name: named("guzzlehttp/guzzle 1 flagged package") });
+    expect(row.getAttribute("href")).toBe("#view=radius&pkg=guzzlehttp%2Fguzzle");
+    expect(band().querySelector(".ov-ex-head")?.textContent).toBe("Direct requirementflagged, of 7");
   });
 
   test("tables the packages furthest behind, each linked to its row", () => {
@@ -219,53 +239,56 @@ describe("the Overview tab of a report-2 document", () => {
       ["symfony/yaml v5.4.23", "3.4", "v8.1.8 (2026-09-26)"],
       ["twig/twig v2.16.1", "2.0", "v3.30.0 (2026-09-25)"],
       ["symfony/debug v3.4.47", "1.8", "v4.4.44 (2022-07-28)"],
-      ["tubalmartin/cssmin v4.1.1", "0.0", "v4.1.1 (2018-01-15)"],
     ]);
-    expect(table.querySelector(".ov-ly-grade")).toBeNull();
-    fireEvent.click(within(table).getByRole("link", { name: "symfony/yaml" }));
+    fireEvent.click(within(table).getByRole("link", { name: named("symfony/yaml") }));
 
     expect(location.hash).toBe("#view=findings&pkg=symfony%2Fyaml");
     expect(document.querySelector(".shell-detail")).not.toBeNull();
   });
 
-  test("lays its parts out in reading order: lead, flags, Security, Weighs most, exposure, Libyears", () => {
+  test("lays its parts out in reading order: lead (with Security), Weighs most, flags, Libyears, exposure", () => {
     render(<App model={model()} />);
 
     expect([...band().children].map((part) => part.className).filter((name) => name !== "vh")).toEqual([
       "ov-lead",
-      "ov-flags",
-      "ov-security",
       "ov-weighs",
-      "ov-expo",
+      "ov-flags",
       "ov-libyears",
+      "ov-expo",
     ]);
+    expect(band().querySelector(".ov-lead .ledger-advisories")).not.toBeNull();
   });
 
   test("names itself in an h2 and each block in an h3, in reading order", () => {
     render(<App model={model()} />);
 
-    const headings = [...band().querySelectorAll("h2, h3")].map((h) => [h.tagName, h.textContent]);
-    expect(headings.map(([tag]) => tag)).toEqual(["H2", "H3", "H3", "H3", "H3", "H3"]);
+    const headings = [...band().querySelectorAll("h2, h3, h4")].map((h) => [h.tagName, h.textContent]);
+    expect(headings.map(([tag]) => tag)).toEqual(["H2", "H3", "H3", "H3", "H3", "H3", "H3", "H3", "H4"]);
     expect(headings[0]?.[1]).toBe("Overview");
     expect(headings.slice(1).map(([, text]) => text?.split(/\s/)[0])).toEqual([
-      "Flags",
+      "Project",
+      "Ready",
       "Security",
       "Weighs",
-      "Blast",
+      "Flags",
       "Libyears",
+      "Blast",
+      "How",
     ]);
   });
 
-  test("states the depth sentence, the accepted line and the Libyears panel", () => {
+  test("states the depth sentence, the accepted line and each fact of the Libyears panel", () => {
     render(<App model={model()} />);
 
     const text = band().textContent;
     expect(text).toContain("4 carry more than one flag · score model 1");
     expect(text).toContain("1 of 7 flagged packages is named by no line of composer.json");
     expect(text).toContain("Accepted by the allowlist: none in flagged packages");
-    expect(text).toContain(
-      "17.85 libyears over 5 packages · 17.85 from direct requirements · furthest behind: symfony/monolog-bridge v2.6.13, 10.62 · 1 not measured (a branch snapshot has no release branch) · 1 not measured (no date)",
-    );
+    const libyears = band().querySelector(".ledger-libyears")?.textContent ?? "";
+    expect(libyears).toContain("17.85 libyears");
+    expect(libyears).toContain("over 5 packages · 17.85 from direct requirements");
+    expect(libyears).toContain("Not measured: 1 a branch snapshot has no release branch · 1 no date");
+    expect(libyears).toContain("symfony/monolog-bridge v2.6.13");
   });
 
   test("says nothing is flagged and draws no flag bar", () => {
@@ -283,8 +306,10 @@ describe("the Overview tab of a report-2 document", () => {
 
     expect(band().querySelector(".ov-grade")?.textContent).toBe("Project grade: nothing flagged");
     expect(within(band().querySelector(".ov-grade") as HTMLElement).queryByRole("link")).toBeNull();
-    expect(band().querySelector(".ov-weighs")?.textContent).toContain("0 points: nothing flagged");
+    expect(band().querySelector(".wm-load")).toBeNull();
     expect(band().querySelector(".ov-weighs ol")).toBeNull();
+    expect(band().textContent).toContain("Nothing to run: no package is flagged.");
+    expect(within(band()).queryByRole("group", { name: "Grade" })).toBeNull();
     expect(band().querySelector(".overview2-flag-bars")).toBeNull();
     expect(band().querySelector(".ledger-verdicts")).toBeNull();
     expect(band().textContent).not.toContain("Accepted by the allowlist");
@@ -304,7 +329,11 @@ describe("the Overview tab of a report-2 document", () => {
     expect(band().querySelector(".ov-grade")).toBeNull();
     expect(band().querySelector(".ov-figure")).toBeNull();
     expect(band().querySelector(".ov-weighs")).toBeNull();
-    expect(within(band()).queryAllByRole("link")).toEqual([]);
+    expect(
+      within(band())
+        .queryAllByRole("link")
+        .map((link) => link.getAttribute("href")),
+    ).toEqual(["#view=findings&gate=fails"]);
     expect(band().querySelector(".waffle")).toBeNull();
     expect(band().querySelector(".ov-security")).toBeNull();
   });
@@ -332,10 +361,15 @@ describe("the Overview's three lines equal lockrot's page goldens on the page", 
     render(<App model={result.model} />);
 
     const text = (selector: string) => band().querySelector(selector)?.textContent ?? null;
+    // The load line is not drawn when nothing is graded (coordinator ruling on iteration 1).
+    const graded = result.model.report.findings.some((f) =>
+      (result.model.report.run.graded_verdicts as readonly string[]).includes(f.verdict),
+    );
     expect([text(".ov-grade"), text(".ov-figure"), text(".wm-load")]).toEqual([
-      golden.grade_line,
+      // Golden change: the grade line drops "not checked", which the offline state line states.
+      golden.grade_line?.replace(" · not checked", "") ?? null,
       golden.figure_line,
-      golden.load_line,
+      graded ? golden.load_line : null,
     ]);
   });
 });
@@ -347,7 +381,7 @@ describe("the tabs that lead without the band", () => {
     return found;
   }
 
-  test("Advisories leads with the Security block, its answer counted once, and Update now", () => {
+  test("Advisories leads with the Security block, its answer counted once, and no Update now", () => {
     history.replaceState(null, "", "/report.html#view=advisories");
     render(<App model={model()} />);
 
@@ -359,10 +393,9 @@ describe("the tabs that lead without the band", () => {
     expect(advisories.textContent).not.toContain("by severity:");
     const chips = within(within(lead as HTMLElement).getByRole("group", { name: "Advisories by severity" }));
     expect(chips.getByRole("button", { name: "critical 1" })).toBeTruthy();
-    expect(lead?.querySelector(".overview2-update .d2-copy-cmd")?.textContent).toBe(
-      "composer update symfony/yaml symfony/polyfill-intl-idn",
-    );
-    expect(lead?.compareDocumentPosition(advisories.querySelector("li[data-pkg]") as Node)).toBe(
+    // A command lives in its row; Overview's ready-to-run block replaces Update now.
+    expect(lead?.textContent).not.toContain("Update now");
+    expect(lead?.compareDocumentPosition(advisories.querySelector('[role="row"][data-pkg]') as Node)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
   });
@@ -429,7 +462,7 @@ describe("the header's Copy summary on a report-2 document", () => {
     });
     expect(writeText).toHaveBeenCalledWith(
       [
-        "lockrot report · data as of 2026-10-01 · lockrot 0.14.0 · score model 1 · target PHP 8.4",
+        "lockrot report · data as of 2026-10-01 · lockrot 0.14.0 · score model 1 · target PHP 8.4 · this run fails · --fail-on=high",
         "7 of 7 packages flagged (100%): 3 graded critical, 2 high, 2 low. Flags: abandoned 1, pinned 1, left-behind 1, old-promise 3, stale 2, vulnerable 4.",
         "All 7 in production · 6 required directly, 1 pulled in · 20 security advisories on 4 packages (severity: 1 critical, 4 high, 4 medium, 2 unrated, 9 low) · fix by package: 2 composer update, 1 upgrade, 1 php floor raise · 17.9 libyears behind.",
       ].join("\n"),
@@ -438,42 +471,10 @@ describe("the header's Copy summary on a report-2 document", () => {
 });
 
 describe("the overview's Update now line", () => {
-  test("prints security.update_now_command through the copy control, POSIX first", () => {
+  test("is gone from Overview: Ready to run follows the ready-to-run rule instead", () => {
     render(<App model={model()} />);
 
-    const line = band().querySelector<HTMLElement>(".overview2-update");
-    expect(line).not.toBeNull();
-    expect(within(line as HTMLElement).getByText("Update now")).toBeTruthy();
-    expect(line?.querySelector(".d2-copy-cmd")?.textContent).toBe(
-      "composer update symfony/yaml symfony/polyfill-intl-idn",
-    );
-    expect(within(line as HTMLElement).getByRole("button", { name: "Copy" })).toBeTruthy();
-  });
-
-  test("a null command hides the line", () => {
-    render(
-      <App
-        model={model((report) => {
-          report.security.update_now_command = null;
-        })}
-      />,
-    );
-    expect(band().querySelector(".overview2-update")).toBeNull();
-  });
-
-  test("a command the argument rule refuses prints why and offers no copy", () => {
-    render(
-      <App
-        model={model((report) => {
-          report.security.update_now_command = ["composer", "update", "a/b;rm -rf"];
-        })}
-      />,
-    );
-    const line = band().querySelector<HTMLElement>(".overview2-update");
-    expect(line?.querySelector(".d2-copy-cmd")?.textContent).toBe(
-      "This command holds characters the page does not print.",
-    );
-    expect(within(line as HTMLElement).queryByRole("button", { name: "Copy" })).toBeNull();
+    expect(band().textContent).not.toContain("Update now");
   });
 });
 
@@ -484,5 +485,31 @@ describe("the phone's Filters fold", () => {
     render(<App model={model()} />);
 
     expect(document.querySelector(".rail-fold > summary")?.textContent).toBe("Filters · 2 on");
+  });
+});
+
+describe("a grade line with nothing graded above a failing gate", () => {
+  test("is neutral, with no all-clear mark, on lockrot's ok-offline page golden", () => {
+    const golden = pageGoldens().find(({ id }) => id === "ok-offline");
+    if (golden === undefined) throw new Error("no ok-offline page golden");
+    const result = normalize(golden.report);
+    if (!result.ok) throw new Error(result.error.message);
+    render(<App model={result.model} />);
+
+    const grade = band().querySelector(".ov-grade");
+    expect(grade?.classList.contains("tone-unk")).toBe(true);
+    expect(grade?.querySelector(".clean-mark")).toBeNull();
+  });
+
+  test("keeps the all-clear mark when nothing is graded and the gate passes", () => {
+    const golden = pageGoldens().find(({ id }) => id === "new-symfony");
+    if (golden === undefined) throw new Error("no new-symfony page golden");
+    const result = normalize(golden.report);
+    if (!result.ok) throw new Error(result.error.message);
+    render(<App model={result.model} />);
+
+    const grade = band().querySelector(".ov-grade");
+    expect(grade?.classList.contains("tone-none")).toBe(true);
+    expect(grade?.querySelector(".clean-mark")).not.toBeNull();
   });
 });

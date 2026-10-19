@@ -4,30 +4,40 @@
  * difference of two numbers the document already carries.
  */
 
+import type { Report2 } from "../model/report";
+import { verdictTone } from "./findingRow";
+import { zeroVerdictMark } from "./pageVocabulary";
 import type { Tone } from "./vocab";
 
-/** One run of same-tone squares, in the order the waffle draws them. */
+/** One run of same-verdict squares, in the order the waffle draws them. */
 export interface WaffleRun {
+  readonly verdict: string;
+  /** The key's word: the grade as written, or the page's word for a score-0 verdict. */
+  readonly label: string;
   readonly tone: Tone;
+  /** How the square is drawn: filled for a grade, soft for ok, outlined when allowlisted, hatched
+   *  when not judged. */
+  readonly mark: "fill" | "soft" | "outline" | "hatch";
   readonly count: number;
 }
 
-/**
- * How many squares tall the waffle is, for a strip `columns` squares wide at most. The square size
- * never changes (a 4-package lock and a 900-package one compare at the same scale), so a bigger
- * lock grows taller instead. A small lock stays a short strip — ten squares a row until it reaches
- * the five-row block every mid-sized lock is — so four packages draw four squares in a line, not a
- * one-square-wide column, and never more rows than there are packages.
- */
-const WAFFLE_MIN_ROWS = 5;
-const WAFFLE_SMALL_ROW = 10;
-
-export function waffleRows(total: number, columns: number): number {
-  if (total <= 0) return 1;
-  const fitted = Math.ceil(total / Math.max(1, columns));
-  const small = Math.min(WAFFLE_MIN_ROWS, Math.ceil(total / WAFFLE_SMALL_ROW));
-
-  return Math.min(total, Math.max(fitted, small));
+/** One run per verdict of `run.verdicts` that some finding holds, counted from `findings[].verdict`;
+ *  the mark comes from the verdict's name (accepted derivation 5). */
+export function waffleRuns({ findings, run }: Report2): WaffleRun[] {
+  return run.verdicts.flatMap((verdict) => {
+    const count = findings.filter((f) => f.verdict === verdict).length;
+    if (count === 0) return [];
+    const zero = zeroVerdictMark(verdict);
+    return [
+      {
+        verdict,
+        label: zero?.word ?? verdict,
+        tone: verdictTone(run.score_model, verdict),
+        mark: zero?.mark ?? "fill",
+        count,
+      },
+    ];
+  });
 }
 
 /**

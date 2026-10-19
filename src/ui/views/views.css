@@ -31,7 +31,7 @@
   border-left: 3px solid var(--high);
   border-radius: 0 var(--radius-m) var(--radius-m) 0;
   padding: 10px 13px;
-  font-size: var(--text-13);
+  font-size: var(--text-s);
   margin-bottom: var(--space-3);
   /* A run note can quote a URL lockrot could not reach, one unbroken word wider than a phone. */
   overflow-wrap: anywhere;
@@ -71,7 +71,7 @@
 .tablewrap table {
   border-collapse: collapse;
   width: 100%;
-  font-size: var(--text-13);
+  font-size: var(--text-s);
 }
 .tablewrap th,
 .tablewrap td {
@@ -82,7 +82,7 @@
 }
 .tablewrap th {
   font-family: var(--cond);
-  font-size: var(--text-11);
+  font-size: var(--text-xs);
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--muted);
@@ -133,8 +133,24 @@
   text-transform: inherit;
   color: inherit;
 }
+.sort-btn {
+  border-radius: var(--radius-s);
+  text-decoration: underline transparent;
+  text-underline-offset: 4px;
+  transition:
+    color 0.12s ease,
+    text-decoration-color 0.12s ease;
+}
+.sort-btn:hover {
+  color: var(--ink-2);
+  text-decoration-color: var(--border-strong);
+}
+.sort-btn:focus-visible {
+  outline-offset: 3px;
+}
 .sort-btn.active {
   color: var(--ink);
+  text-decoration-color: var(--accent);
 }
 
 /* ---------- Run ---------- */
@@ -145,7 +161,7 @@
 }
 .sect > h3 {
   margin: 0;
-  font-size: var(--text-13);
+  font-size: var(--text-s);
   font-family: var(--cond);
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -156,7 +172,7 @@
   display: grid;
   grid-template-columns: minmax(84px, auto) minmax(0, 1fr);
   gap: 4px 12px;
-  font-size: var(--text-13);
+  font-size: var(--text-s);
 }
 .kv dt {
   color: var(--muted);
@@ -164,11 +180,30 @@
 .kv dd {
   margin: 0;
   font-family: var(--mono);
-  font-size: var(--text-12);
+  font-size: var(--text-s);
   word-break: break-word;
 }
 .run-sections {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+/* A long version cut to one line (PackageWord.tsx#Version). Its box's bottom sits on the line's
+   bottom, as close to the text baseline as a clipped box can. */
+.is-clipped {
+  display: inline-block;
+  max-width: 18ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+/* A package name (PackageWord.tsx, the Findings and All packages name cells): one inline box, so it
+   moves to the next line whole, and breaks after its vendor's slash only when it is wider than a
+   line. Its parts are plain inline text, so a screen reader reads the name whole. */
+.pkg-word {
+  display: inline-block;
+  max-width: 100%;
 }

@@ -40,7 +40,7 @@ function reference(sheet: HTMLElement, title: string): Record<string, string> {
 
 beforeEach(() => {
   window.matchMedia = ((query: string) => ({
-    matches: query.includes("1181"),
+    matches: /1000px|1024px/.test(query),
     media: query,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,

@@ -74,15 +74,16 @@
     --med-soft: #f4edd2;
     --low: #456472;
     --low-soft: #dfe9ee;
-    --none: #366b4b;
-    --none-soft: #dcebe1;
-    --flag-abandoned: #2a78d6;
-    --flag-silent: #eb6834;
-    --flag-pinned: #1baf7a;
-    --flag-left-behind: #eda100;
-    --flag-old-promise: #e87ba4;
-    --flag-stale: #008300;
-    --flag-vulnerable: #6250d6;
+    --none: #3a6b2e;
+    --none-soft: #e2eddb;
+    --unk: #5a605f;
+    --unk-soft: #eaedec;
+    --crit-mark: #770116;
+    --high-mark: #893e01;
+    --med-mark: #8d6d01;
+    --low-mark: #4689aa;
+    --unk-mark: #848484;
+    --none-mark: #639359;
     --shadow: none;
     --gutter: 0px;
     color-scheme: light;
@@ -145,7 +146,7 @@
     display: block;
     border-top-color: #999;
     padding: 8px 0 0;
-    font-size: var(--text-10-5);
+    font-size: var(--text-xs);
     line-height: 1.5;
     break-inside: avoid;
   }
@@ -193,8 +194,13 @@
     -webkit-print-color-adjust: exact;
   }
 
-  .ledger,
-  .ledger-lead {
+  /* Overview flows across pages: a row, a chart or a move never splits, a block may. */
+  .legend-btn-bar,
+  .ov-ly tr,
+  .ov-ex-row,
+  .ov-move,
+  .ov-state,
+  .ledger-fig {
     break-inside: avoid;
   }
 }
@@ -206,11 +212,11 @@
  * the tabs' own components; only their screen spacing is trimmed to paper's. */
 @media print {
   .pd {
-    font-size: var(--text-12);
+    font-size: var(--text-s);
   }
   .pd-intro {
     margin: 10px 0 2px;
-    font: var(--text-15)/1.45 var(--serif);
+    font: var(--text-l)/1.45 var(--serif);
     color: var(--ink);
   }
   .pd-intro-lead {
@@ -226,12 +232,12 @@
     color: var(--muted);
   }
   .pd-toc-num {
-    font: 600 var(--text-10) var(--mono);
+    font: 600 var(--text-xs) var(--mono);
     color: var(--muted);
   }
   .pd-intro-note {
     margin: 0 0 4px;
-    font-size: var(--text-11);
+    font-size: var(--text-xs);
     color: var(--muted);
   }
 
@@ -254,17 +260,17 @@
     align-items: baseline;
     gap: 10px;
     margin: 0;
-    font: 600 var(--text-19)/1.2 var(--serif);
+    font: 600 var(--text-xl)/1.2 var(--serif);
     letter-spacing: -0.01em;
     color: var(--ink);
   }
   .pd-num {
-    font: 600 var(--text-11) var(--mono);
+    font: 600 var(--text-xs) var(--mono);
     color: var(--muted);
   }
   .pd-lede {
     margin: 8px 0 10px;
-    font: var(--text-14)/1.4 var(--serif);
+    font: var(--text-base)/1.4 var(--serif);
     color: var(--ink-2);
   }
   /* A lede keeps to what follows it only when something does (PrintDocument's `more`): an empty
@@ -336,7 +342,7 @@
     border-radius: 0;
   }
   .pd .tablewrap table {
-    font-size: var(--text-10);
+    font-size: var(--text-xs);
   }
   .pd .tablewrap th,
   .pd .tablewrap td {
@@ -355,12 +361,12 @@
     white-space: nowrap;
   }
   .pd .tablewrap .pill {
-    font-size: var(--text-8);
+    font-size: var(--text-xs);
     padding: 1px 4px;
   }
   .pd .tablewrap th {
     position: static;
-    font-size: var(--text-8-5);
+    font-size: var(--text-xs);
     border-bottom-color: var(--border-strong);
   }
 
@@ -392,7 +398,7 @@
   }
   .pd-run .sect h3 {
     margin: 0 0 4px;
-    font-size: var(--text-11);
+    font-size: var(--text-xs);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--muted);
@@ -403,7 +409,7 @@
   }
   .pd-run .run2-table {
     width: 100%;
-    font-size: var(--text-9-5);
+    font-size: var(--text-xs);
   }
   .pd-run .run2-table th,
   .pd-run .run2-table td {

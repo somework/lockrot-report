@@ -1,11 +1,27 @@
 import { describe, expect, test } from "vitest";
 
 import { copySummary } from "../../../src/domain/copySummary";
+import { gateFact, gateHeadline, gateHeadlineLine } from "../../../src/domain/gate";
 import { libyearsPanel } from "../../../src/domain/libyearsPanel";
 import { figureLine, gradeLine, gradeLineText, loadLine } from "../../../src/domain/projectGrade";
 import { scorePanel } from "../../../src/domain/scorePanel";
 import type { Report2 } from "../../../src/model/report";
 import { pageGoldens } from "./recorded";
+
+
+/** The golden change of the LEDGER-LAYOUT session, listed for the one lockrot goldens PR: the copy
+ *  summary's first line ends with the header's gate words (§7.9.15 delta in the placement draft). */
+const withLedgerChanges = (copy: readonly string[], report: Report2): readonly string[] => {
+  const headline = gateHeadline(report);
+  const gate = headline === null ? gateFact(report)?.label : gateHeadlineLine(headline);
+  const [head, ...rest] = copy;
+  return gate === undefined || head === undefined ? copy : [`${head} · ${gate}`, ...rest];
+};
+
+/** The golden changes of the OVERVIEW session, listed for the one lockrot goldens PR: the grade line
+ *  drops the "not checked" qualifier, which the offline state line states. */
+const withOverviewChanges = (gradeLine: string | null): string | null =>
+  gradeLine === null ? null : gradeLine.replace(" · not checked", "");
 
 describe("the page texts equal lockrot's page goldens", () => {
   test("the pinned goldens are not empty", () => {
@@ -16,7 +32,7 @@ describe("the page texts equal lockrot's page goldens", () => {
   });
 
   test.each(pageGoldens())("$id: the copy summary", ({ golden, report }) => {
-    expect(copySummary(report)).toEqual(golden.copy_summary);
+    expect(copySummary(report)).toEqual(withLedgerChanges(golden.copy_summary, report));
   });
 
   test.each(pageGoldens())("$id: the Libyears panel", ({ golden, report }) => {
@@ -29,7 +45,7 @@ describe("the page texts equal lockrot's page goldens", () => {
       const grade = gradeLine(report);
 
       expect([grade === null ? null : gradeLineText(grade), figureLine(report), loadLine(report)]).toEqual([
-        golden.grade_line,
+        withOverviewChanges(golden.grade_line),
         golden.figure_line,
         golden.load_line,
       ]);
@@ -54,7 +70,17 @@ describe("the copy summary at its edges", () => {
   test("names no project and no data date when the report has none", () => {
     const report = { ...composite(), data_date: null, run: { ...composite().run, project: null } };
 
-    expect(copySummary(report)[0]).toBe("lockrot report · lockrot 0.14.0 · score model 1 · target PHP 8.4");
+    expect(copySummary(report)[0]).toBe(
+      "lockrot report · lockrot 0.14.0 · score model 1 · target PHP 8.4 · this run fails · --fail-on=high",
+    );
+  });
+
+  test("says the header's words for a run with no gate, and for one where only the network gates it", () => {
+    const quiet = { ...composite(), gate: { ...composite().gate, fails: false }, run: { ...composite().run, fail_on: "none" } };
+    const strict = { ...quiet, run: { ...quiet.run, strict_network: true } };
+
+    expect(copySummary(quiet)[0]).toMatch(/ · target PHP 8\.4 · no gate$/);
+    expect(copySummary(strict)[0]).toMatch(/ · target PHP 8\.4 · gate: strict network$/);
   });
 
   test("splits production from dev-only and counts the unreached", () => {

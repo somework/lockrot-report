@@ -1,70 +1,52 @@
-/* The Overview tab (OverviewView.tsx, PD-OVERVIEW-2): one column in reading order under 760px, and
-   layout A from there. A 1px rule splits the columns. */
+/* The Overview tab (OverviewView.tsx, PD-OVERVIEW-2): the lead (which holds the Security summary),
+   then "Weighs most", then Flags beside Libyears, then Blast radius. The DOM
+   order is the reading order. Blast radius sets its two parts, exposure and depth, side by side; a
+   run with nothing flagged keeps only Libyears, its figure beside its table. Paper keeps one
+   column, so every bar gets the page's width. */
 .ov {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
 }
 .ov > * {
   min-width: 0;
-  padding-block: 20px;
+  padding-block: var(--space-6);
   border-top: 1px solid var(--border);
 }
 .ov > .ov-lead {
   padding-top: 0;
+  padding-bottom: var(--space-6);
   border-top: 0;
 }
 .ov > :empty {
   display: none;
 }
 
-@media (min-width: 760px) {
+@media screen and (min-width: 1024px) {
   .ov {
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       "lead lead"
-      "flags security"
       "weighs weighs"
-      "expo libyears";
+      "flags libyears"
+      "expo expo";
   }
-  .ov-security,
-  .ov-libyears {
-    padding-left: 24px;
-    border-left: 1px solid var(--border);
-  }
-  .ov-flags,
-  .ov-expo {
-    padding-right: 24px;
-  }
-}
-@media (min-width: 1181px) {
-  .ov {
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr);
+  .ov.is-clean {
     grid-template-areas:
-      "lead lead lead"
-      "flags security libyears"
-      "weighs weighs expo";
+      "lead lead"
+      "libyears libyears";
   }
-  .ov-flags,
-  .ov-security,
-  .ov-weighs {
-    padding-right: 28px;
+  .ov:not(.is-clean) .ov-flags {
+    padding-right: 40px;
   }
-  .ov-security,
-  .ov-libyears,
-  .ov-expo {
-    padding-left: 28px;
+  .ov:not(.is-clean) .ov-libyears {
+    padding-left: 40px;
     border-left: 1px solid var(--border);
   }
-}
-@media (min-width: 760px) {
   .ov-lead {
     grid-area: lead;
   }
   .ov-flags {
     grid-area: flags;
-  }
-  .ov-security {
-    grid-area: security;
   }
   .ov-weighs {
     grid-area: weighs;
@@ -76,6 +58,24 @@
     grid-area: libyears;
   }
 }
+@media screen and (min-width: 1024px) {
+  .ov-exposure,
+  .ov.is-clean .ledger-libyears {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-3) 40px;
+    align-items: start;
+  }
+}
+.ov-part {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.ledger-libyears .ov-part:first-child .ledger-fig {
+  margin-top: var(--space-1);
+}
 
 /* A chart mark is a link drawn as a chip or a bar, not as underlined text. */
 a.legend-btn,
@@ -86,31 +86,27 @@ a.legend-btn,
   color: var(--accent-ink);
   text-underline-offset: 3px;
 }
+.ov-subhead {
+  margin-top: var(--space-2);
+  font: 600 var(--text-xs) var(--cond);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- the chart style ----------
+   Every Overview bar: 10px tall on a --surface-2 track, square-ended, its value in the mono beside
+   it. A tone fill means a grade; a neutral --muted fill means a count with no grade, quieter than
+   any grade. */
 
 /* ---------- "Weighs most" (PD-OVERVIEW-4) ----------
-   Ranked bars by term: every bar shares one track `bar_max` wide, and each segment takes its flag's
-   fill (tokens.css `--flag-*`). The label sits beside the bar from 760px and above it under that. */
+   One line per finding from 1181px: the package and its grade, the bar on the shared `bar_max`
+   scale, the total, then each term. The row's tone is its grade. */
 .wm-load {
-  margin: 0 0 10px;
-  font-size: var(--text-13-5);
+  font-size: var(--text-s);
   line-height: 1.45;
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
-}
-.wm-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
-  margin: 0 0 10px;
-  padding: 0;
-  list-style: none;
-  font-size: var(--text-12);
-  color: var(--ink-2);
-}
-.wm-key {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 .wm-list {
   margin: 0;
@@ -119,101 +115,83 @@ a.legend-btn,
 }
 .wm-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-columns: max-content max-content minmax(0, 1fr) 3ch;
   grid-template-areas:
-    "label total"
-    "bar bar"
-    "text text";
-  column-gap: 12px;
+    "label label label total"
+    "grade reach . ."
+    "bar bar bar bar"
+    "terms terms terms terms";
+  column-gap: var(--space-3);
   row-gap: 4px;
   align-items: center;
-  padding: 7px 0;
+  padding: 8px 0;
   border-top: 1px solid var(--border);
 }
 .wm-row:first-child {
   border-top: 0;
 }
+/* From 760px the grade tag leads the row in a column of its own, so it sits beside every name,
+   short or long, and the tags line up. */
 @media (min-width: 760px) {
   .wm-row {
-    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) 3ch;
+    grid-template-columns: 5rem minmax(0, 19rem) 6rem minmax(0, 1fr) 3ch;
     grid-template-areas:
-      "label bar total"
-      ". text text";
+      "grade label reach bar total"
+      ". terms terms terms terms";
   }
+}
+@media (min-width: 1181px) {
+  .wm-row {
+    grid-template-columns: 5rem minmax(0, 19rem) 6rem minmax(0, 1fr) 3ch minmax(0, 23rem);
+    grid-template-areas: "grade label reach bar total terms";
+  }
+}
+.wm-grade {
+  grid-area: grade;
 }
 .wm-label {
   grid-area: label;
   min-width: 0;
-  font-size: var(--text-13);
-  overflow-wrap: anywhere;
+  font-size: var(--text-s);
 }
+/* A fixed slot, so a repeated "transitive" reads as a column, never as noise after each name. */
 .wm-reach {
-  font-size: var(--text-12);
+  grid-area: reach;
+  font-size: var(--text-s);
   color: var(--muted);
 }
 .wm-total {
   grid-area: total;
-  font: 600 var(--text-13) var(--mono);
+  font: 600 var(--text-s) var(--mono);
   text-align: right;
 }
-.wm-text {
-  grid-area: text;
+.wm-terms {
+  grid-area: terms;
   min-width: 0;
-  font: var(--text-11-5)/1.4 var(--mono);
+  font: var(--text-s)/1.4 var(--mono);
   color: var(--muted);
-  overflow-wrap: anywhere;
 }
 .wm-bar {
   --wm-seg-min: 4px;
   grid-area: bar;
   position: relative;
   display: flex;
-  height: 12px;
+  height: 10px;
   overflow: hidden;
   border-radius: var(--radius-xs);
   background: var(--surface-2);
-}
-.wm-seg,
-.wm-swatch {
-  background: var(--flag, var(--ink-2));
-  print-color-adjust: exact;
-  -webkit-print-color-adjust: exact;
 }
 .wm-seg {
   position: relative;
   flex: none;
   height: 100%;
+  background: var(--tone-mark);
   border-right: 2px solid var(--surface);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
 }
 .wm-seg:last-child {
   border-right: 0;
-}
-.wm-swatch {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: var(--radius-xs);
-}
-.wm [data-flag="abandoned"] {
-  --flag: var(--flag-abandoned);
-}
-.wm [data-flag="silent"] {
-  --flag: var(--flag-silent);
-}
-.wm [data-flag="pinned"] {
-  --flag: var(--flag-pinned);
-}
-.wm [data-flag="left-behind"] {
-  --flag: var(--flag-left-behind);
-}
-.wm [data-flag="old-promise"] {
-  --flag: var(--flag-old-promise);
-}
-.wm [data-flag="stale"] {
-  --flag: var(--flag-stale);
-}
-.wm [data-flag="vulnerable"] {
-  --flag: var(--flag-vulnerable);
 }
 /* A score past `bar_max` is cut at the track's end, as the Findings bar is. */
 .wm-seg.is-cut::after {
@@ -227,11 +205,11 @@ a.legend-btn,
   transform: skewX(-24deg);
 }
 
-/* ---------- the exposure bars (PD-OVERVIEW-5) ---------- */
+/* ---------- Blast radius: the exposure bars (PD-OVERVIEW-5) and the depth bars ---------- */
 .ov-ex {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(60px, 0.9fr) max-content;
-  column-gap: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(60px, 0.9fr) 3ch;
+  column-gap: var(--space-3);
   margin: 0 -6px;
   padding: 0;
   list-style: none;
@@ -245,29 +223,43 @@ a.legend-btn,
 }
 .ov-ex-row {
   padding: 3px 6px;
-  border-radius: var(--radius-s);
+  border-radius: var(--radius-xs);
   color: var(--ink);
-  font-size: var(--text-13);
+  font-size: var(--text-s);
 }
-.ov-ex-row:hover {
+a.ov-ex-row:hover {
   background: var(--surface-2);
 }
 .ov-ex-name {
-  overflow-wrap: anywhere;
+  min-width: 0;
+}
+/* The column heads of the exposure bars: the scale's words sit over the counts. */
+.ov-ex-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font: 600 var(--text-xs) var(--cond);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 .ov-ex-track {
+  display: block;
   height: 10px;
+  border-radius: var(--radius-xs);
+  background: var(--surface-2);
 }
 .ov-ex-fill {
   display: block;
   height: 100%;
   min-width: 3px;
   border-radius: var(--radius-xs);
-  background: color-mix(in srgb, var(--ink-2) 55%, transparent);
+  background: var(--muted);
   print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
 }
 .ov-ex-count {
-  font: 600 var(--text-13) var(--mono);
+  font: 600 var(--text-s) var(--mono);
   text-align: right;
 }
 
@@ -275,7 +267,7 @@ a.legend-btn,
 .ov-ly {
   width: 100%;
   border-collapse: collapse;
-  font-size: var(--text-13);
+  font-size: var(--text-s);
   font-variant-numeric: tabular-nums;
 }
 .ov-ly caption {
@@ -286,7 +278,7 @@ a.legend-btn,
 .ov-ly th {
   padding: 0 8px 6px 0;
   border-bottom: 1px solid var(--border-strong);
-  font: 600 var(--text-10-5) var(--sans);
+  font: 600 var(--text-xs) var(--sans);
   letter-spacing: 0.1em;
   text-align: left;
   text-transform: uppercase;
@@ -296,7 +288,6 @@ a.legend-btn,
   padding: 5px 8px 5px 0;
   border-bottom: 1px solid var(--border);
   vertical-align: baseline;
-  overflow-wrap: anywhere;
 }
 .ov-ly .num {
   font-family: var(--mono);
@@ -304,23 +295,50 @@ a.legend-btn,
   white-space: nowrap;
 }
 .ov-ly-version {
-  font: var(--text-12) var(--mono);
+  font: var(--text-s) var(--mono);
   color: var(--muted);
 }
 .ov-ly-release {
-  font: var(--text-12) var(--mono);
+  font: var(--text-s) var(--mono);
   color: var(--ink-2);
 }
-.ov-ly-grade {
-  display: inline-block;
-  padding: 2px 6px;
-  border: 1px solid var(--tone);
-  border-radius: var(--radius-s);
-  background: var(--tone-soft);
-  color: var(--tone);
-  font: 600 var(--text-11-5)/1 var(--sans);
-  white-space: nowrap;
-  print-color-adjust: exact;
+@media (min-width: 760px) {
+  .ov-ly-release {
+    white-space: nowrap;
+  }
+}
+/* On a phone a row is the package on its line, then each value under its head's words, so a long
+   name never squeezes the numbers. */
+@media (max-width: 759px) {
+  .ov-ly thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .ov-ly tr {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    column-gap: var(--space-3);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ov-ly td {
+    padding: 0;
+    border-bottom: 0;
+  }
+  .ov-ly td:first-child {
+    grid-column: 1 / -1;
+  }
+  .ov-ly td.num {
+    text-align: left;
+  }
+  .ov-ly td[data-label]::before {
+    content: attr(data-label) " ";
+    font: var(--text-xs) var(--sans);
+    color: var(--muted);
+  }
 }
 
 @media (forced-colors: active) {
@@ -328,50 +346,32 @@ a.legend-btn,
     forced-color-adjust: none;
     background: CanvasText;
   }
-  /* Colour is gone, so each flag keeps its own pattern, the legend's key to the bars. Inside its
-     two 1px borders a 6px segment keeps 4px of pattern (SPEC §7.9.10). */
+  .ov-ex-track,
   .wm-bar {
-    --wm-seg-min: 6px;
     forced-color-adjust: none;
     background: Canvas;
-    border: 1px solid CanvasText;
+    outline: 1px solid CanvasText;
   }
-  .wm-seg,
-  .wm-swatch {
-    forced-color-adjust: none;
-    border: 1px solid CanvasText;
-    background: var(--flag-pattern, Canvas);
-  }
-  [data-flag="abandoned"] {
-    --flag-pattern: CanvasText;
-  }
-  [data-flag="silent"] {
-    --flag-pattern: repeating-linear-gradient(0deg, CanvasText 0 1px, Canvas 1px 3px);
-  }
-  [data-flag="pinned"] {
-    --flag-pattern: repeating-linear-gradient(90deg, CanvasText 0 1px, Canvas 1px 3px);
-  }
-  [data-flag="left-behind"] {
-    --flag-pattern: repeating-linear-gradient(45deg, CanvasText 0 1px, Canvas 1px 4px);
-  }
-  [data-flag="old-promise"] {
-    --flag-pattern: repeating-linear-gradient(-45deg, CanvasText 0 1px, Canvas 1px 4px);
-  }
-  [data-flag="stale"] {
-    --flag-pattern: radial-gradient(circle, CanvasText 0 1px, Canvas 1.3px) 0 0 / 4px 4px;
-  }
-  [data-flag="vulnerable"] {
-    --flag-pattern:
-      repeating-linear-gradient(45deg, CanvasText 0 1px, transparent 1px 4px),
-      repeating-linear-gradient(-45deg, CanvasText 0 1px, Canvas 1px 4px);
+  .wm-seg {
+    border-right-color: Canvas;
   }
 }
 
 @media print {
-  .wm-seg {
-    border: 1px solid var(--ink);
+  .wm-row {
+    break-inside: avoid;
   }
-  .wm-text {
-    color: var(--ink-2);
+  .wm-load {
+    break-after: avoid;
+  }
+  .wm-row:first-child {
+    break-before: avoid;
+  }
+  /* On paper a Flags bar has a fixed scale, 6px per package up to 22em for the longest, so a bar
+     of 38 packages is 228px and one of 1 package stays short. */
+  .overview2-flag-bars {
+    grid-template-columns:
+      max-content min(calc(var(--longest, 1) * 6px), 22em)
+      max-content max-content max-content;
   }
 }

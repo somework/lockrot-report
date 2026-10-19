@@ -199,10 +199,7 @@ function composerNotes(finding: Finding, move: AnyMove, run: Run, noted: readonl
         note(["The packages that hold it may need to move too"]);
         break;
       case "crosses_major": {
-        const fresh = (move.to_branch ?? "").startsWith("0.")
-          ? "A new 0.x line (Composer treats 0.x minors as breaking)"
-          : "A new major";
-        note([`${fresh} brings its own requirements, which lockrot does not solve`]);
+        note([`${newLineWords(move.to_branch)} brings its own requirements, which lockrot does not solve`]);
         break;
       }
       case "transitive": {
@@ -334,11 +331,24 @@ export interface HeldByBlock {
 const isGradedHolder = (held: HeldBy, run: Run): boolean =>
   (run.graded_verdicts as readonly string[]).includes(held.holder?.verdict ?? "");
 
+const isZeroLine = (toBranch: string | null): boolean => (toBranch ?? "").startsWith("0.");
+
+/** A Findings row's tag for a move that crosses a major: the words the sheet's note opens with. */
+export const newLineTag = (toBranch: string | null): string =>
+  isZeroLine(toBranch) ? "a new 0.x line" : "a new major";
+
+/** The sheet's Composer note opens with these, the 0.x form with its reason. */
+const newLineWords = (toBranch: string | null): string =>
+  isZeroLine(toBranch) ? "A new 0.x line (Composer treats 0.x minors as breaking)" : "A new major";
+
+/** The root's name as a holder (§7.9.13): the sheet's Held by and a row's "held by" say it alike. */
+export const ROOT_HOLDER_NAME = "your composer.json";
+
 function holderItem(held: HeldBy, run: Run): Holder {
   if (held.source === "root") {
     return {
       root: true,
-      name: "your composer.json",
+      name: ROOT_HOLDER_NAME,
       version: null,
       grade: null,
       meta: ["requires ", { code: held.constraint }],
@@ -384,16 +394,19 @@ function foldWords(rest: readonly HeldBy[], run: Run): string {
   return `${rest.length} more: ${joinAnd([...counts].map(([word, n]) => `${n} ${word}`))}`;
 }
 
+/** §7.9.13's holder rank, the Held by "More" order: the root first, then by the holder's grade in
+ *  `run.graded_verdicts`, then the rest. Lower comes first; equal ranks keep data order. */
+export function holderRank(h: Pick<HeldBy, "source" | "holder">, run: Run): number {
+  if (h.source === "root") return -1;
+  const graded: readonly string[] = run.graded_verdicts;
+  const verdict = h.holder?.verdict ?? "";
+  return graded.includes(verdict) ? graded.indexOf(verdict) : graded.length;
+}
+
 function heldBy(move: AnyMove, run: Run, then: boolean): HeldByBlock | null {
   const holders = move.held_by;
   if (holders.length === 0) return null;
-  const graded: readonly string[] = run.graded_verdicts;
-  const rank = (h: HeldBy): number =>
-    h.source === "root"
-      ? -1
-      : graded.includes(h.holder?.verdict ?? "")
-        ? graded.indexOf(h.holder?.verdict ?? "")
-        : graded.length;
+  const rank = (h: HeldBy): number => holderRank(h, run);
   const fold = holders.length > HOLDERS_SHOWN_MAX;
   const ordered = fold
     ? holders
@@ -439,7 +452,13 @@ export function commandLines(argvs: readonly (readonly string[])[]): string[] {
   return lines.every((line) => line !== null) ? lines : [REFUSED_COMMAND];
 }
 
-export const COMMAND_WORDS = { one: "Command", several: "Commands, in order" } as const;
+export const COMMAND_WORDS = { one: "Command", several: "Commands, in order", check: "Check" } as const;
+
+/** A move card's label: a `why-not` step checks why a move is held, it does not make it. */
+export function commandLabel(argvs: readonly (readonly string[])[]): string {
+  if (argvs.length > 0 && argvs.every((argv) => argv[1] === "why-not")) return COMMAND_WORDS.check;
+  return argvs.length > 1 ? COMMAND_WORDS.several : COMMAND_WORDS.one;
+}
 
 function moveCard(
   finding: Finding,

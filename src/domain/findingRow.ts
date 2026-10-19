@@ -1,7 +1,7 @@
 /** The words and lookups of a report-2 Findings row (SPEC §7.9.5): flag pills, baseline marks, the
  *  reach, the age reading, the last column, row runs and the notes above the list. */
 
-import type { Finding, Grade, Move, Report2, Run, TermSecurity } from "../model/report";
+import type { Finding, Grade, HeldBy, Move, Report2, Run, TermSecurity } from "../model/report";
 import { isScoreGraded, isTermSecurity } from "../model/report";
 import { advisoryRows } from "./advisoryRows";
 import { countedFlagIds } from "./countedFlags";
@@ -14,6 +14,9 @@ import {
   oneDecimal,
 } from "./findingWords";
 import { plural, pluralNoun } from "./format";
+import { holderRank, newLineTag, ROOT_HOLDER_NAME } from "./moveCards";
+import { afterIt } from "./securityBlock";
+import { commandLine } from "./shellArgv";
 import { allowlistByInWhy, allowlistReason, headlineReasonWord } from "./pageVocabulary";
 import { vocabTable, type Tone } from "./vocab";
 
@@ -169,6 +172,32 @@ export function maintenanceAccepted(f: Finding): string | null {
     : null;
 }
 
+/** A row's reach in one short line: one direct requirement it comes through, and how many more;
+ *  the sheet's Reach lists them all, in `direct_dependents` order. */
+export interface ReachLine {
+  readonly lead: string;
+  readonly through: string | null;
+  readonly more: number;
+  readonly dev: boolean;
+}
+
+/** Accepted derivation 2: the requirement on lockrot's `chain`, when `direct_dependents` lists it,
+ *  else the first of `direct_dependents`, and the others counted. */
+export function reachLine(f: Finding): ReachLine {
+  const dependents = f.reach === "transitive" ? f.direct_dependents : [];
+  const onChain = f.chain[0];
+  const first = onChain !== undefined && dependents.includes(onChain) ? onChain : (dependents[0] ?? null);
+  return {
+    lead: first === null ? f.reach : "via",
+    through: first,
+    more: Math.max(0, dependents.length - 1),
+    dev: f.dev,
+  };
+}
+
+/** The count after a capped list (accepted derivations 2 and 3). */
+export const moreWord = (n: number): string => `and ${n} more`;
+
 export function reachWord(f: Finding): string {
   const way = f.reach === "transitive" ? `via ${namesCapped(f.direct_dependents)}` : f.reach;
   return f.dev ? `${way} · dev` : way;
@@ -183,13 +212,6 @@ export interface AgeReading {
 }
 
 const AGE_KINDS = ["branch_release", "release", "push"] as const;
-
-/** Anything but `high` or `warn`, `info` included, reads as low. */
-export function levelTone(level: string): Tone {
-  if (level === "high") return "crit";
-  if (level === "warn") return "med";
-  return "low";
-}
 
 /** The reading a fired S8, S2 or S4 judged: the first with a `level`. */
 export function ageReading(f: Finding, run: Run): AgeReading | null {
@@ -215,6 +237,10 @@ const AGE_LEADS: Readonly<Record<AgeReading["kind"], string>> = {
   release: "last release",
   push: "last push",
 };
+
+/** A pill already prints the reading's years, so the bar need not print them again. */
+export const ageInPill = (f: Finding, run: Run, reading: AgeReading, hideAccepted: boolean): boolean =>
+  shownPills(f, run, hideAccepted).some((pill) => pill.word === `${oneDecimal(reading.years)} y`);
 
 export function ageScaleLabel(reading: AgeReading): string {
   return `${AGE_LEADS[reading.kind]} ${oneDecimal(reading.years)} years ago; warn at ${reading.warn} years, high at ${reading.high}`;
@@ -304,6 +330,77 @@ export function nextStepWords(f: Finding, run: Run): NextStepWords {
   return { text: kindWords(f, step, run), title: null, href: null, held };
 }
 
+type Hold = Pick<HeldBy, "source" | "package" | "holder">;
+
+/** Accepted derivation 3: the distinct package holders, sorted by the sheet's holder rank
+ *  (`holderRank`), the first named and the rest counted; with only a root hold, the root as the
+ *  sheet's Held by names it. */
+export function heldByLine(
+  holds: readonly Hold[],
+  run: Run,
+): { readonly name: string; readonly more: number } | null {
+  const seen = new Set<string>();
+  const packages = holds.filter((hold) => {
+    if (hold.source !== "package" || hold.package === null || seen.has(hold.package)) return false;
+    seen.add(hold.package);
+    return true;
+  });
+  const [first, ...rest] = packages
+    .map((hold, at) => ({ hold, at, rank: holderRank(hold, run) }))
+    .sort((a, b) => a.rank - b.rank || a.at - b.at);
+  if (first !== undefined) return { name: first.hold.package ?? "", more: rest.length };
+  return holds.some((hold) => hold.source === "root") ? { name: ROOT_HOLDER_NAME, more: 0 } : null;
+}
+
+export const heldByWords = ({ name, more }: { name: string; more: number }): string =>
+  `held by ${name}${more > 0 ? ` ${moreWord(more)}` : ""}`;
+
+/** `next_step.held_by[]`, then each `also[]` move's. */
+export const rowHolds = (f: Finding): readonly Hold[] =>
+  f.next_step === null ? [] : [f.next_step, ...f.next_step.also].flatMap((move) => move.held_by);
+
+const ROW_STEPS: ReadonlySet<string> = new Set(["update", "require"]);
+
+/** Accepted derivation 8 (§5.6): the first checked `update` or `require` step of the move; none
+ *  when one argv fails the check or every step is a `why-not`. */
+export function rowCommandArgv(f: Finding): readonly string[] | null {
+  const argvs = f.next_step?.commands ?? [];
+  if (argvs.some((argv) => commandLine(argv, "posix") === null)) return null;
+  return argvs.find((argv) => ROW_STEPS.has(argv[1] ?? "")) ?? null;
+}
+
+/** Accepted derivation 9: what is left after the lead move, with the Composer caveat left to the
+ *  column head; null without `if_applied`. */
+export const rowAfter = (f: Finding): string | null =>
+  f.next_step === null ? null : afterIt(f.next_step.if_applied, false);
+
+/** Accepted derivation 11: the lead move crosses a major (`next_step.crosses_major`), in the
+ *  sheet's Composer note words without their reason, which the sheet keeps. Null otherwise. */
+export function rowNewLine(f: Finding): string | null {
+  const step = f.next_step;
+  if (step === null || step.crosses_major !== true) return null;
+  return newLineTag(step.to_branch);
+}
+
+/** Accepted derivation 11's group count: of the lead moves whose `crosses_major` is set (true or
+ *  false), how many are true. A null value counts in neither; the head says nothing when either
+ *  number is 0. */
+export function majorCount(findings: readonly Finding[]): { readonly n: number; readonly m: number } {
+  const known = findings.flatMap((f) =>
+    f.next_step?.crosses_major == null ? [] : [f.next_step.crosses_major],
+  );
+  return { n: known.filter((crosses) => crosses).length, m: known.length };
+}
+
+export const majorCountWords = ({ n, m }: { n: number; m: number }): string | null =>
+  m === 0 || n === 0 ? null : `${n} of ${m} moves cross a major`;
+
+/** That step as one POSIX line. */
+export function rowCommand(f: Finding): string | null {
+  const argv = rowCommandArgv(f);
+  return argv === null ? null : commandLine(argv, "posix");
+}
+
 export interface RunSegment {
   /** The flag the run shares, or null for rows that form no run. */
   readonly key: string | null;
@@ -387,8 +484,9 @@ export const gradeTone = (band: string | null): Tone =>
 /** A verdict's tone, by the table of `score_model` that lists it: a band's own tone, none for a
  *  score-0 verdict, and `low` for an id the model lists in neither. */
 export function verdictTone(model: Run["score_model"], verdict: string): Tone {
+  if (verdict === "unknown") return "unk";
   if (model.zero_verdicts.some((zero) => zero.verdict === verdict)) return "none";
-  return model.bands.some((band) => band.verdict === verdict) ? gradeTone(verdict) : "low";
+  return model.bands.some((band) => band.verdict === verdict) ? gradeTone(verdict) : "unk";
 }
 
 /** What a screen reader hears after the package's name: the bar is hidden from it. */
@@ -396,9 +494,18 @@ export const rowSpoken = (f: Finding): string => `score ${f.score.total}, ${f.ve
 
 export const gradeListLabel = (verdict: string): string => `${verdict} findings`;
 
-export const HELD_WORD = "· held";
+/** Accepted derivation 1, on `gate.fails` only: the group head's words and the row tag. */
+export const GATE_WORDS = {
+  row: "fails gate",
+  group: (failing: number, rows: number, applied: boolean): string | null => {
+    if (!applied || failing === 0) return null;
+    return failing === rows ? "all fail the gate" : `${failing} fail the gate`;
+  },
+} as const;
 
-/** The Findings head's words; the head is hidden from a screen reader, since each row says its parts. */
+/** The Findings table's column heads, in the cells' order. */
+export const FINDINGS_COLUMNS = 6;
+
 export const FINDINGS_HEAD = {
   score: "Score",
   pkg: "Package",

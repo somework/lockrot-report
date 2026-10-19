@@ -63,38 +63,27 @@ describe("advisoryPairs2", () => {
 });
 
 describe("advisoryGroups2", () => {
-  const groups = advisoryGroups2(composite.run, advisoryPairs2(vulnerable, filters()));
+  const pairs = advisoryPairs2(vulnerable, filters());
+  const groups = advisoryGroups2(pairs);
 
-  it("groups on fix.kind and fix.to_branch, in the model's fix_kinds order", () => {
-    const kinds = composite.run.score_model.fix_kinds.map(({ id }) => id);
-    const order = groups.map((group) => kinds.indexOf(group.kind));
-    expect(order).toEqual([...order].sort((a, b) => a - b));
+  it("makes one group per package, packages in the order given", () => {
+    expect(groups.map((group) => group.finding.package)).toEqual(vulnerable.map((f) => f.package));
     for (const group of groups) {
-      expect(group.pairs.every((pair) => pair.row.fix.kind === group.kind)).toBe(true);
-      expect(group.pairs.every((pair) => pair.row.fix.to_branch === group.toBranch)).toBe(true);
+      expect(group.pairs.every((pair) => pair.finding === group.finding)).toBe(true);
     }
   });
 
-  it("names a group by its fix label and branch", () => {
-    expect(groups.map((group) => group.heading)).toEqual([
-      "composer update · 1.x",
-      "composer update · 5.x",
-      "upgrade · 5.x",
-      "php floor raise · 3.x",
-    ]);
+  it("keeps each package's rows in the order given", () => {
+    expect(groups.flatMap((group) => group.pairs)).toEqual(pairs);
   });
 
-  it("keeps each finding's rows in the order given inside a group", () => {
-    const update5 = groups.find((group) => group.heading === "composer update · 5.x");
-    expect(update5?.pairs.every((pair) => pair.finding.package === "symfony/yaml")).toBe(true);
-  });
-
-  it("sorts an unknown fix kind after the model's kinds, its id as written", () => {
-    const [pair] = advisoryPairs2(vulnerable, filters());
+  it("names, on a later row, the earlier row of its package with the same CVE", () => {
+    const [pair] = pairs;
     if (pair === undefined) throw new Error("no pair");
-    const odd = { ...pair, row: { ...pair.row, fix: { ...pair.row.fix, kind: "rebuild", to_branch: null } } };
-    const mixed = advisoryGroups2(composite.run, [odd, pair]);
-    expect(mixed.map((group) => group.heading)).toEqual(["php floor raise · 3.x", "rebuild"]);
+    const cve = { ...pair, row: { ...pair.row, id: "A-1", cve: "CVE-2026-1" } };
+    const again = { ...pair, row: { ...pair.row, id: "B-2", cve: "CVE-2026-1" } };
+    const none = { ...pair, row: { ...pair.row, id: "C-3", cve: null } };
+    expect(advisoryGroups2([cve, none, again])[0]?.sameAs).toEqual([null, null, "A-1"]);
   });
 });
 
@@ -138,10 +127,16 @@ describe("row words", () => {
 
   it("says what PHP a fix needs and what holds it", () => {
     // composite twig/twig: a php floor raise to >=8.1.0, held by composer.json and symfony/twig-bridge.
-    expect(advisoryFixNote(pair.row.fix)).toBe(
-      "needs PHP >=8.1.0 · held by composer.json and symfony/twig-bridge",
+    expect(advisoryFixNote(pair.row.fix, composite.run)).toBe(
+      "needs PHP >=8.1.0 · held by symfony/twig-bridge",
     );
-    expect(advisoryFixNote({ ...pair.row.fix, kind: "update", held_by: [] })).toBeNull();
+    expect(advisoryFixNote({ ...pair.row.fix, kind: "update", held_by: [] }, composite.run)).toBeNull();
+  });
+
+  it("says the holders as a Findings row does", () => {
+    const hold = (name: string) => ({ ...pair.row.fix.held_by[1], source: "package", package: name });
+    const fix = { ...pair.row.fix, kind: "update", held_by: [hold("a/a"), hold("b/b"), hold("c/c")] };
+    expect(advisoryFixNote(fix as typeof pair.row.fix, composite.run)).toBe("held by a/a and 2 more");
   });
 
   it("says what an unrated severity counts as, from the model", () => {
@@ -154,10 +149,16 @@ describe("row words", () => {
 describe("advisoryIds", () => {
   const LINK = "https://github.com/advisories/GHSA-aaaa-bbbb-cccc";
 
-  it("links the CVE id to the advisory's own link, and shows a different id as text", () => {
+  it("links the source id the link belongs to, and shows a different CVE id as text", () => {
     expect(advisoryIds({ cve: "CVE-2024-1", id: "GHSA-aaaa-bbbb-cccc", link: LINK })).toEqual([
+      { text: "CVE-2024-1", href: null, noCve: false },
+      { text: "GHSA-aaaa-bbbb-cccc", href: LINK, noCve: false },
+    ]);
+  });
+
+  it("links the CVE id when it is the source id", () => {
+    expect(advisoryIds({ cve: "CVE-2024-1", id: "CVE-2024-1", link: LINK })).toEqual([
       { text: "CVE-2024-1", href: LINK, noCve: false },
-      { text: "GHSA-aaaa-bbbb-cccc", href: null, noCve: false },
     ]);
   });
 

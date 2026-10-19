@@ -15,7 +15,7 @@
   grid-template-columns: max-content minmax(72px, 1fr) auto fit-content(17ch);
   column-gap: 12px;
   margin-top: 4px;
-  font: var(--text-11-5)/1.3 var(--mono);
+  font: var(--text-xs)/1.3 var(--mono);
   /* The strip stops this short of its column, so a dot on the today rule — a release from last
      week — has room for its right half without touching the LATEST column. */
   --rule-gap: 7px;
@@ -45,13 +45,13 @@
   align-items: end;
 }
 .detail-timeline-head > span {
-  font: 600 var(--text-10-5)/1 var(--cond);
+  font: 600 var(--text-xs)/1 var(--cond);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
 }
 .detail-timeline-branch {
-  font-size: var(--text-12);
+  font-size: var(--text-s);
   color: var(--ink-2);
   white-space: nowrap;
 }
@@ -61,7 +61,7 @@
 /* A constraint stays on one line — a row is one line — unless it is long enough to crowd the strip
    out of a phone-width panel ("^5.3.3 || ^7.0 || ^8.0"); then it breaks at its own spaces. */
 .detail-timeline-php {
-  font-size: var(--text-11);
+  font-size: var(--text-xs);
   color: var(--muted);
   white-space: nowrap;
 }
@@ -143,7 +143,7 @@
   position: absolute;
   bottom: -6px;
   padding-bottom: 6px;
-  font: 500 var(--text-10)/1 var(--mono);
+  font: 500 var(--text-xs)/1 var(--mono);
   letter-spacing: 0;
   text-transform: none;
   white-space: nowrap;
@@ -249,7 +249,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font: var(--text-12) var(--sans);
+  font: var(--text-s) var(--sans);
   color: var(--ink-2);
   background: none;
   border: 0;
@@ -305,7 +305,7 @@
 }
 .detail-timeline-range {
   grid-column: 3 / -1;
-  font-size: var(--text-11);
+  font-size: var(--text-xs);
   color: var(--muted);
   white-space: nowrap;
 }
@@ -320,7 +320,7 @@
   position: relative;
   height: 20px;
   container-type: inline-size;
-  font-size: var(--text-10-5);
+  font-size: var(--text-xs);
   color: var(--muted);
 }
 .detail-timeline-year {
@@ -397,7 +397,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px 14px;
-  font-size: var(--text-11-5);
+  font-size: var(--text-xs);
   color: var(--muted);
 }
 .detail-timeline-key-item {
@@ -448,7 +448,7 @@
      still clear the LATEST text. */
   .detail-timeline-grid {
     column-gap: 8px;
-    font-size: var(--text-10-5);
+    font-size: var(--text-xs);
     --rule-gap: 4px;
   }
   /* A narrower gutter after the constraint, but still one: "^7.2 || ^8.0" ran to the panel's edge. */
@@ -457,7 +457,7 @@
   }
   .detail-timeline-branch,
   .detail-timeline-fold-btn {
-    font-size: var(--text-11-5);
+    font-size: var(--text-xs);
   }
   /* Any constraint may break at its own spaces here, and only does when the strip is already at its
      floor — the grid shrinks an auto column only then — so the gutter above never costs the strip. */
@@ -466,6 +466,6 @@
   }
   .detail-timeline-php,
   .detail-timeline-range {
-    font-size: var(--text-10);
+    font-size: var(--text-xs);
   }
 }

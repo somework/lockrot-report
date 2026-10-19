@@ -174,6 +174,50 @@ describe("hiddenByFilters2", () => {
   });
 });
 
+describe("ready to run (accepted derivation 10)", () => {
+  it("lists the findings whose lead move is ready to run, in rank order", () => {
+    expect(
+      applyFilters2(composite, state({}, { gate: ["ready"] }), "findings").map((f) => f.package),
+    ).toEqual(["symfony/monolog-bridge", "symfony/yaml", "symfony/polyfill-intl-idn"]);
+  });
+
+  it("ANDs with Fails this run, and the rail row counts what its click lists", () => {
+    const both = applyFilters2(composite, state({}, { gate: ["fails", "ready"] }), "findings");
+    expect(both.map((f) => f.package)).toEqual(["symfony/monolog-bridge"]);
+    const gate = railGroups2(composite, state({}, { gate: ["fails"] })).find(
+      (group) => group.group === "gate",
+    );
+    expect(gate?.rows.find((row) => row.key === "ready")?.count).toBe(1);
+  });
+
+  it("lists the held findings, and ANDs held with the other This run filters", () => {
+    expect(applyFilters2(composite, state({}, { gate: ["held"] }), "findings").map((f) => f.package)).toEqual(
+      ["twig/twig"],
+    );
+    expect(applyFilters2(composite, state({}, { gate: ["held", "ready"] }), "findings")).toHaveLength(0);
+  });
+
+  it("lists the findings that need another way out, and offers the row only when the run fails", () => {
+    expect(applyFilters2(composite, state({}, { gate: ["wayout"] }), "findings").map((f) => f.package)).toEqual(
+      ["symfony/debug", "friendsofsymfony/oauth-server-bundle", "tubalmartin/cssmin"],
+    );
+    const passing = { ...composite, gate: { ...composite.gate, fails: false } };
+    const keys = (report: typeof composite): string[] =>
+      railGroups2(report, state()).find((group) => group.group === "gate")?.rows.map((row) => row.key) ?? [];
+    expect(keys(composite)).toContain("wayout");
+    expect(keys(passing)).not.toContain("wayout");
+    expect(fitFilters2(passing, { ...EMPTY_FILTERS, gate: ["wayout"] }).gate).toEqual([]);
+  });
+
+  it("keeps the key in an address even on a run that fails nothing", () => {
+    const passing = { ...composite, gate: { ...composite.gate, fails: false } };
+    expect(fitFilters2(passing, { ...EMPTY_FILTERS, gate: ["fails", "ready", "held"] }).gate).toEqual([
+      "ready",
+      "held",
+    ]);
+  });
+});
+
 describe("railGroups2", () => {
   it("offers each graded verdict with a package under the title Grade, in run.graded_verdicts order", () => {
     const grade = railGroups2(composite, state()).find((group) => group.group === "verdict");
@@ -332,10 +376,10 @@ describe("renderedPackages2", () => {
     ]);
     expect(renderedPackages2(composite, state(), "packages")).toEqual(BY_RANK);
     expect(renderedPackages2(composite, state(), "advisories")).toEqual([
-      "symfony/polyfill-intl-idn",
-      ...Array<string>(3).fill("symfony/yaml"),
-      "symfony/monolog-bridge",
       ...Array<string>(15).fill("twig/twig"),
+      "symfony/monolog-bridge",
+      ...Array<string>(3).fill("symfony/yaml"),
+      "symfony/polyfill-intl-idn",
     ]);
     expect(renderedPackages2(composite, state(), "radius")).toEqual(["guzzlehttp/guzzle"]);
   });

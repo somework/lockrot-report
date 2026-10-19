@@ -304,18 +304,18 @@ describe("verdictTone", () => {
     );
   });
 
-  it("gives every score-0 verdict of the model no tone", () => {
+  it("tones a score-0 verdict none, and the unknown verdict unk, by name", () => {
     expect(model.zero_verdicts.map(({ verdict }) => verdictTone(model, verdict))).toEqual(
-      model.zero_verdicts.map(() => "none"),
+      model.zero_verdicts.map(({ verdict }) => (verdict === "unknown" ? "unk" : "none")),
     );
   });
 
-  it("falls back to low for an id the model does not list", () => {
-    expect(verdictTone(model, "dire")).toBe("low");
-    expect(verdictTone(model, "constructor")).toBe("low");
+  it("falls back to unk, never a band's tone, for an id the model does not list", () => {
+    expect(verdictTone(model, "dire")).toBe("unk");
+    expect(verdictTone(model, "constructor")).toBe("unk");
     expect(
       verdictTone({ ...model, bands: model.bands.filter(({ verdict }) => verdict !== "high") }, "high"),
-    ).toBe("low");
+    ).toBe("unk");
   });
 });
 

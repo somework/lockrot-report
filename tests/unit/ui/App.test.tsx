@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/preact";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { assembleEmbed } from "../../../scripts/report2-embed";
+import { copySummary } from "../../../src/domain/copySummary";
 import { normalize } from "../../../src/model/normalize";
 import type { Report2Embed } from "../../../src/model/report";
 import type { Model } from "../../../src/model/types";
@@ -32,7 +33,7 @@ const BY_RANK = [
 /** Stubs matchMedia: the layout, the OS colour preference and reduced motion, per test. */
 function media({ wide = true, narrow = false, dark = false, reduce = false } = {}) {
   window.matchMedia = ((query: string) => ({
-    matches: query.includes("1181")
+    matches: /1000px|1024px/.test(query)
       ? wide
       : query.includes("759")
         ? narrow
@@ -53,7 +54,7 @@ function detailName(): string | null {
 }
 
 function row(pkg: string): HTMLElement {
-  return screen.getByRole("listitem", { name: pkg });
+  return screen.getByRole("row", { name: pkg });
 }
 
 function key(k: string, target: Element = document.body) {
@@ -88,7 +89,7 @@ describe("boot", () => {
     render(<App model={load()} />);
 
     expect(detailName()).toBeNull();
-    expect(shellClasses()).toContain("no-detail");
+    expect(shellClasses()).not.toContain("has-detail");
     expect(document.querySelector(".shell-detail")).toBeNull();
     await waitFor(() => {
       expect(location.hash).toBe("#view=findings");
@@ -113,7 +114,7 @@ describe("boot", () => {
 
     expect(selectedTab()).toContain("Findings");
     expect(detailName()).toBe("symfony/debug");
-    expect(shellClasses()).not.toContain("no-detail");
+    expect(shellClasses()).toContain("has-detail");
     expect(document.querySelector(".shell-detail")?.classList.contains("is-side")).toBe(true);
     await waitFor(() => {
       expect(location.hash).toBe("#view=findings&pkg=symfony%2Fdebug");
@@ -124,7 +125,7 @@ describe("boot", () => {
     render(<App model={load()} />);
     fireEvent.click(row("symfony/yaml"));
     expect(detailName()).toBe("symfony/yaml");
-    expect(shellClasses()).not.toContain("no-detail");
+    expect(shellClasses()).toContain("has-detail");
     await waitFor(() => {
       expect(location.hash).toBe("#view=findings&pkg=symfony%2Fyaml");
     });
@@ -132,7 +133,7 @@ describe("boot", () => {
     fireEvent.click(within(screen.getByRole("complementary")).getByRole("button", { name: "Close" }));
 
     expect(detailName()).toBeNull();
-    expect(shellClasses()).toContain("no-detail");
+    expect(shellClasses()).not.toContain("has-detail");
     await waitFor(() => {
       expect(location.hash).toBe("#view=findings");
     });
@@ -165,7 +166,7 @@ describe("boot", () => {
     await waitFor(() => {
       expect(location.hash).toBe("#view=findings");
     });
-    expect(document.querySelectorAll("li[data-pkg]")).toHaveLength(1);
+    expect(document.querySelectorAll('[role="row"][data-pkg]')).toHaveLength(1);
   });
 
   test("bootState is the address alone: a named package opens, an unnamed one never does", () => {
@@ -325,19 +326,19 @@ describe("keyboard", () => {
     render(<App model={load()} />);
 
     const walked: (string | null)[] = [];
-    for (let step = 0; step < 6; step += 1) {
+    for (let step = 0; step < 20; step += 1) {
       key("j", document.activeElement ?? document.body);
       walked.push(document.activeElement?.getAttribute("data-pkg") ?? null);
     }
 
-    // One row for polyfill-intl-idn, three for yaml, one for monolog-bridge, then twig/twig's.
+    // One group per package in rank order: twig/twig's rows, then monolog-bridge, yaml's three, polyfill.
     expect(walked).toEqual([
-      "symfony/polyfill-intl-idn",
-      "symfony/yaml",
-      "symfony/yaml",
-      "symfony/yaml",
+      ...Array<string>(15).fill("twig/twig"),
       "symfony/monolog-bridge",
-      "twig/twig",
+      "symfony/yaml",
+      "symfony/yaml",
+      "symfony/yaml",
+      "symfony/polyfill-intl-idn",
     ]);
   });
 
@@ -356,7 +357,7 @@ describe("keyboard", () => {
   test("Enter on a row opens it and a second Enter keeps it open; Enter on a link inside a row does not", () => {
     history.replaceState(null, "", "/report.html#view=advisories");
     render(<App model={load()} />);
-    const first = document.querySelector<HTMLElement>("li[data-pkg]");
+    const first = document.querySelector<HTMLElement>('[role="row"][data-pkg]');
     if (first === null) throw new Error("the Advisories tab lists a row");
     const pkg = first.getAttribute("data-pkg");
 
@@ -451,7 +452,7 @@ describe("keyboard", () => {
     key("j");
     key("j");
 
-    const stops = [...document.querySelectorAll("li[data-pkg]")]
+    const stops = [...document.querySelectorAll('[role="row"][data-pkg]')]
       .filter((item) => item.getAttribute("tabindex") === "0")
       .map((item) => item.getAttribute("data-pkg"));
 
@@ -621,6 +622,21 @@ describe("the row a reader acts on keeps its place", () => {
     render(<App model={load()} />);
     expect(scrolled).toEqual(["symfony/yaml"]);
   });
+
+  test("a #pkg= link leaves the page still when its row is already in full view under the header", () => {
+    const scrolled: (string | null)[] = [];
+    vi.spyOn(HTMLElement.prototype, "scrollIntoView").mockImplementation(function (this: HTMLElement) {
+      scrolled.push(this.getAttribute("data-pkg"));
+    });
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      const box = this.matches("[data-pkg]") ? { top: 400, bottom: 440 } : { top: 0, bottom: 160 };
+      return { ...box, height: box.bottom - box.top, left: 0, right: 0, width: 0, x: 0, y: box.top } as DOMRect;
+    });
+
+    history.replaceState(null, "", "/report.html#pkg=symfony%2Fyaml");
+    render(<App model={load()} />);
+    expect(scrolled).toEqual([]);
+  });
 });
 
 describe("glossary", () => {
@@ -751,7 +767,7 @@ describe("layout", () => {
 
     expect(screen.queryByRole("searchbox")).toBeNull();
     expect(screen.queryByRole("group", { name: "Filters" })).toBeNull();
-    expect(shellClasses()).toContain("no-rail");
+    expect(shellClasses()).not.toContain("has-rail");
   });
 
   test("the header names the lock, the target and the data date; the footer names the version", () => {
@@ -809,6 +825,8 @@ describe("the header's gate fact", () => {
     render(<App model={model} />);
 
     expect(fact()).toBe("this run fails · --fail-on=high · licence_policy");
+    expect(document.querySelector(".gate-fact code.gate-flag")?.textContent).toBe("licence_policy");
+    expect(copySummary(model.report)[0]).toMatch(/ · this run fails · --fail-on=high · licence_policy$/);
   });
 
   test("says a run that only --strict-network failed fails by that flag, which the summary then repeats", () => {
@@ -844,5 +862,16 @@ describe("the header's gate fact", () => {
     expect(button.getAttribute("title")).toContain(
       "This run was told --fail-on=none: it fails on no finding",
     );
+  });
+
+  test("for --fail-on=none with --strict-network names that gate in the header and in the copy summary", () => {
+    const model = load("B-gate-none", ({ report }) => {
+      report.run.strict_network = true;
+    });
+    render(<App model={model} />);
+
+    expect(screen.getByRole("button", { name: /^gate: strict network/ })).toBeTruthy();
+    expect(fact()).toBeNull();
+    expect(copySummary(model.report)[0]).toMatch(/ · gate: strict network$/);
   });
 });

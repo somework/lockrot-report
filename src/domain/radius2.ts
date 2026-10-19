@@ -117,14 +117,22 @@ export function radiusAnswer2(layout: RadiusLayout2): string {
   return `${answer.held} of the ${flagged} pulled in sit under ${named}.`;
 }
 
-/** A requirement row's sentence: what it lists, by grade; lockrot's count alone when its S7 names no
- *  finding of the report. */
-export function radiusRowSay(report: Report2, row: RadiusRow2): string {
-  if (row.count === 0)
-    return row.unfiltered > 0
-      ? `None of the ${plural(row.unfiltered, "flagged package", "flagged packages")} listed under it match the filter.`
-      : `Pulls in ${plural(row.exposure, "flagged package", "flagged packages")}.`;
-  return `Pulls in ${plural(row.count, "flagged package", "flagged packages")}: ${gradeMix(report, row.pulled)}.`;
+/** A requirement row's facts: the count it lists and its grade split; lockrot's count alone when
+ *  its S7 names no finding of the report; no count, and a note, when the filter hides them all. */
+export interface RadiusRowFacts {
+  readonly count: number | null;
+  readonly mix: string | null;
+  readonly note: string | null;
+}
+
+export function radiusRowFacts(report: Report2, row: RadiusRow2): RadiusRowFacts {
+  if (row.count > 0) return { count: row.count, mix: gradeMix(report, row.pulled), note: null };
+  if (row.unfiltered === 0) return { count: row.exposure, mix: null, note: null };
+  return {
+    count: null,
+    mix: null,
+    note: `None of the ${plural(row.unfiltered, "flagged package", "flagged packages")} listed under it match the filter.`,
+  };
 }
 
 export const RADIUS_WORDS = {

@@ -21,7 +21,7 @@ function rowNames(): string[] {
 
 beforeEach(() => {
   window.matchMedia = ((query: string) => ({
-    matches: query.includes("1181"),
+    matches: /1000px|1024px/.test(query),
     media: query,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
@@ -68,10 +68,10 @@ describe("a report-2 document routes every slot to its report-2 surface", () => 
   test("draws a Findings row with the score, the package and the reach word", () => {
     render(<App model={composite()} />);
 
-    const idn = screen.getByRole("listitem", { name: "symfony/polyfill-intl-idn" });
+    const idn = screen.getByRole("row", { name: "symfony/polyfill-intl-idn" });
     expect(idn.querySelector(".f2-num")?.textContent).toBe("2");
     expect(idn.querySelector(".f2-pkg")?.textContent).toBe("symfony/polyfill-intl-idn v1.37.0");
-    expect(idn.querySelector(".f2-reach")?.textContent).toBe("via guzzlehttp/guzzle");
+    expect(idn.querySelector(".f2-reach")?.textContent).toBe("Reached via guzzlehttp/guzzle");
   });
 
   test("counts the graded findings on the Findings tab and the flags in the rail", () => {
@@ -96,7 +96,7 @@ describe("a report-2 document routes every slot to its report-2 surface", () => 
   test("opens the report-2 detail sheet for a clicked row", () => {
     render(<App model={composite()} />);
 
-    fireEvent.click(screen.getByRole("listitem", { name: "symfony/debug" }));
+    fireEvent.click(screen.getByRole("row", { name: "symfony/debug" }));
     const sheet = screen.getByRole("complementary", { name: "symfony/debug" });
     expect(sheet.getAttribute("data-surface")).toBe("detail");
     expect(within(sheet).getByRole("button", { name: "Close" })).toBeTruthy();

@@ -32,9 +32,7 @@ test.describe("report-2: the Advisories tab groups the S9 rows by fix kind and b
       "unrated 2",
       "low 9",
     ]);
-    await expect(lead.locator(".overview2-update .d2-copy-cmd")).toHaveText(
-      "composer update symfony/yaml symfony/polyfill-intl-idn",
-    );
+    await expect(lead).not.toContainText("Update now");
     await expect(advisoriesSurface(page)).not.toContainText("by severity:");
     // composite: polyfill-intl-idn updates on 1.x, yaml on 5.x, monolog-bridge upgrades to 5.x, and
     // twig needs a php floor raise to 3.x; fix_kinds orders update, upgrade, raise-php.
@@ -101,13 +99,13 @@ test.describe("report-2: the Advisories tab groups the S9 rows by fix kind and b
     await expect(advisoryRows(page).nth(1)).toBeFocused();
   });
 
-  test("a CVE id links to the advisory's own link, and the page links no URL it built", async ({ page }) => {
+  test("the source id links to the advisory's own link, and the page links no URL it built", async ({ page }) => {
     await page.goto(report2Url("composite") + "#view=advisories");
-    const cve = advisoriesSurface(page).getByRole("link", { name: "CVE-2026-49981" });
-    await expect(cve).toHaveAttribute("href", "https://github.com/advisories/GHSA-529h-vh3j-85hq");
+    const id = advisoriesSurface(page).getByRole("link", { name: "PKSA-8zx5-v2nz-58pb" });
+    await expect(id).toHaveAttribute("href", "https://github.com/advisories/GHSA-529h-vh3j-85hq");
     await expect(advisoriesSurface(page).locator('a[href*="nvd.nist.gov"]')).toHaveCount(0);
-    // The PKSA id beside it is text: one link per advisory.
-    await expect(advisoriesSurface(page).getByRole("link", { name: "PKSA-8zx5-v2nz-58pb" })).toHaveCount(0);
+    // The CVE id beside it is text: one link per advisory.
+    await expect(advisoriesSurface(page).getByRole("link", { name: "CVE-2026-49981" })).toHaveCount(0);
   });
 
   test("a complete lookup with nothing vulnerable reads clean", async ({ page }) => {

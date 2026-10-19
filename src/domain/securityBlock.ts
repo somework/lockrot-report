@@ -39,17 +39,22 @@ export function holderWord({ source, package: name }: Pick<HeldBy, "source" | "p
   return source === "root" || name === null ? "composer.json" : name;
 }
 
-/** "after it: {bound}{total}, {verdict}", with its conditions (G139). */
-export function afterIt(applied: BranchFixes["if_applied"]): string | null {
+/** "after it: {bound}{total}, {verdict}", with its conditions (G139); a Findings row leaves the
+ *  Composer caveat to its column head. */
+export function afterIt(applied: BranchFixes["if_applied"], composerCaveat = true): string | null {
   if (applied === null) return null;
   const noNew = applied.assumes.includes("no_new_advisories");
   const bound = applied.at_most ? (noNew ? "at most, from the facts it checked, " : "at most ") : "";
   return (
     `after it: ${bound}${applied.total}, ${applied.verdict}` +
-    (applied.assumes.includes("composer_resolves") ? ", if Composer resolves it" : "") +
+    (composerCaveat && applied.assumes.includes("composer_resolves") ? `, ${COMPOSER_CAVEAT}` : "") +
     (noNew ? ", advisories on its new versions not checked" : "")
   );
 }
+
+/** Accepted derivation 9: a Findings row's "after it", from the lead move's `if_applied` only. The
+ *  Composer caveat stands once for every row, in the Next step head. */
+export const COMPOSER_CAVEAT = "if Composer resolves it";
 
 export interface SecurityRung {
   readonly branch: string;
@@ -241,7 +246,7 @@ export interface SecurityBlock extends SecuritySummary {
   readonly ladder: readonly SecurityRung[];
 }
 
-function affects(range: string | null): AdvisoryAffects | null {
+export function advisoryAffects(range: string | null): AdvisoryAffects | null {
   if (!range) return null;
   const n = rangeCount(range);
   return {
@@ -291,7 +296,7 @@ export function securityBlock(
       deciding: row.deciding,
       severity: row.severity,
       fix: advisoryFixWords(row.fix),
-      affects: affects(row.affected_versions),
+      affects: advisoryAffects(row.affected_versions),
       sameAs: first === undefined ? null : { id: sorted[first]?.id ?? "", at: first },
     };
   });

@@ -74,12 +74,15 @@ describe("Rail", () => {
   it("offers This run, Grade, Flag, Severity, Fix and Scope in that order, each row with the packages it would list", () => {
     renderIn(<Rail />, composite(), FINDINGS);
 
-    // Gate: `gate.failing` is 5. Grade: `counts`, medium held by none so left out. Flags: the document's carriers, `silent` carried by none so left out.
+    // This run: `gate.failing` is 5, the ready-to-run filter of accepted derivation 10 holds 3, and the held filter (`isHeld`) 1. Grade: `counts`, medium held by none so left out. Flags: the document's carriers, `silent` carried by none so left out.
     // Severity and Fix count packages, not advisories: SPEC §7.9.4's "By fix (packages)" reads
     // composer update 2, upgrade 1, php floor raise 1.
     // Scope: `rot_depth` has 6 direct, 1 transitive, 7 production, 0 development, 1 not in composer.json.
     expect(buttonTexts()).toEqual([
       "Fails this run 5",
+      "Ready to run 3",
+      "Held 1",
+      "Another way out 3",
       "critical 3",
       "high 2",
       "low 2",

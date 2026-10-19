@@ -48,3 +48,33 @@ export function libyearsPanel(report: Pick<Report2, "libyears">): string {
     .map(([cause, count]) => `${count} not measured (${causeWord(cause, "")})`);
   return [...measuredParts(report), ...unmeasured].join(SEPARATOR);
 }
+
+export interface LibyearsLead {
+  /** The total to two decimals, or null when no package was measured. */
+  readonly figure: string | null;
+  /** "at least" when some measured package is a lower bound, else "". */
+  readonly bound: string;
+  /** "over {n} packages · {d} from direct requirements", or the words for none measured. */
+  readonly sub: string;
+  /** One clause per unmeasured cause, or null when every package was measured. */
+  readonly unmeasured: string | null;
+}
+
+/** The Libyears block's lead: one number, then its scope; the furthest package is the table's first row. */
+export function libyearsLead({ libyears }: Pick<Report2, "libyears">): LibyearsLead {
+  const unmeasured = Object.entries(libyears.unmeasured)
+    .filter(([, count]) => count > 0)
+    .sort(([a], [b]) => schemaRank(a) - schemaRank(b))
+    .map(([cause, count]) => `${count} ${causeWord(cause, "")}`);
+  const tail = unmeasured.length === 0 ? null : `Not measured: ${unmeasured.join(SEPARATOR)}`;
+  if (libyears.measured === 0) return { figure: null, bound: "", sub: "no package measured", unmeasured: tail };
+  return {
+    figure: decimal(libyears.total ?? 0, 2),
+    bound: libyears.at_least_count > 0 ? "at least" : "",
+    sub: [
+      `over ${plural(libyears.measured, "package", "packages")}`,
+      `${decimal(libyears.direct_requirements ?? 0, 2)} from direct requirements`,
+    ].join(SEPARATOR),
+    unmeasured: tail,
+  };
+}

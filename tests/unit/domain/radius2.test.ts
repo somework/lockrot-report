@@ -7,7 +7,7 @@ import {
   gradeMix,
   radiusAnswer2,
   radiusLayout2,
-  radiusRowSay,
+  radiusRowFacts,
   radiusRows2,
 } from "../../../src/domain/radius2";
 import type { Report2, Report2Embed } from "../../../src/model/report";
@@ -42,7 +42,7 @@ describe("radiusLayout2", () => {
     const [row] = layoutOf(report).rows;
     if (row === undefined) throw new Error("no row");
     expect([row.count, row.exposure]).toEqual([0, 2]);
-    expect(radiusRowSay(report, row)).toBe("Pulls in 2 flagged packages.");
+    expect(radiusRowFacts(report, row)).toEqual({ count: 2, mix: null, note: null });
   });
 
   it("puts a graded direct requirement off the exposure list among the unlisted, not a row", () => {
@@ -127,13 +127,25 @@ describe("radius words", () => {
     );
   });
 
-  it("says what a row lists, by grade in graded_verdicts order", () => {
+  it("gives a row's count and its grade split in graded_verdicts order", () => {
     const row = layoutOf(wallabag).rows.find((r) => r.package === "kphoen/rulerz");
     if (row === undefined) throw new Error("no row");
-    expect(radiusRowSay(wallabag, row)).toBe(
-      `Pulls in ${String(row.count)} flagged packages: ${gradeMix(wallabag, row.pulled)}.`,
-    );
+    expect(radiusRowFacts(wallabag, row)).toEqual({
+      count: row.count,
+      mix: gradeMix(wallabag, row.pulled),
+      note: null,
+    });
     expect(gradeMix(composite, composite.findings)).toBe("3 critical, 2 high, 2 low");
+  });
+
+  it("gives no count for a row the filter empties, and says how many it hides", () => {
+    const [row] = layoutOf(composite).rows;
+    if (row === undefined) throw new Error("no row");
+    expect(radiusRowFacts(composite, { ...row, count: 0, unfiltered: 1, pulled: [] })).toEqual({
+      count: null,
+      mix: null,
+      note: "None of the 1 flagged package listed under it match the filter.",
+    });
   });
 
   it("answers an empty tab, and a filtered one", () => {

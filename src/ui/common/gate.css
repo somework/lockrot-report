@@ -19,10 +19,11 @@
   letter-spacing: 0.1em;
 }
 .run-meta .gate-flag {
-  font-size: var(--text-11);
+  font-size: var(--text-xs);
   font-weight: 500;
 }
-/* Out of sight, still read aloud: the header's flags where they would cost it a line (Header.tsx). */
+/* Out of sight, still read aloud: the header's flags where the summary names them and they would
+   cost a line (Header.tsx). */
 @media screen {
   .topbar[data-fact="short"] .gate-fact-more {
     position: absolute;

@@ -9,7 +9,6 @@ import {
   leadScope,
   multiFlagLine,
   securityBlock,
-  updateNowArgv,
 } from "../../../src/domain/overviewBand";
 import type { Report2 } from "../../../src/model/report";
 import { pageGoldens } from "../words/recorded";
@@ -120,9 +119,18 @@ describe("the depth sentence", () => {
 
   test("leaves the second clause out when no package is deepest", () => {
     const report = golden("composite");
-    report.rot_depth = { ...report.rot_depth, not_in_composer_json: 0, deepest: [] };
+    report.rot_depth = { ...report.rot_depth, not_in_composer_json: 2, deepest: [] };
 
-    expect(depthSentence(report)).toBe("0 of 7 flagged packages are named by no line of composer.json.");
+    expect(depthSentence(report)).toBe("2 of 7 flagged packages are named by no line of composer.json.");
+  });
+
+  test("says so positively when composer.json names every flagged package, one or many", () => {
+    const report = golden("composite");
+    report.rot_depth = { ...report.rot_depth, not_in_composer_json: 0, deepest: [] };
+    expect(depthSentence(report)).toBe("All 7 flagged packages are named by a line of composer.json.");
+
+    report.rot_depth = { ...report.rot_depth, flagged: 1 };
+    expect(depthSentence(report)).toBe("The flagged package is named by a line of composer.json.");
   });
 
   test("says depth is unknown when the run read no composer.json", () => {
@@ -164,11 +172,11 @@ describe("the Security block", () => {
       unit: "advisories on 4 packages",
       note: null,
       severities: [
-        { id: "critical", band: "critical", outlined: false, count: 1 },
-        { id: "high", band: "high", outlined: false, count: 4 },
-        { id: "medium", band: "medium", outlined: false, count: 4 },
-        { id: "unrated", band: "medium", outlined: true, count: 2 },
-        { id: "low", band: "low", outlined: false, count: 9 },
+        { id: "critical", band: "critical", outlined: false, countedAs: null, count: 1 },
+        { id: "high", band: "high", outlined: false, countedAs: null, count: 4 },
+        { id: "medium", band: "medium", outlined: false, countedAs: null, count: 4 },
+        { id: "unrated", band: "medium", outlined: true, countedAs: "unrated, counted as medium", count: 2 },
+        { id: "low", band: "low", outlined: false, countedAs: null, count: 9 },
       ],
       fixes: [
         { kind: "update", label: "composer update", count: 2 },
@@ -237,20 +245,3 @@ describe("the gate line's state", () => {
   });
 });
 
-describe("updateNowArgv", () => {
-  test("reads the published argv, and null when it is null or holds a non-string", () => {
-    const report = golden("composite");
-    expect(updateNowArgv(report)).toEqual([
-      "composer",
-      "update",
-      "symfony/yaml",
-      "symfony/polyfill-intl-idn",
-    ]);
-    expect(
-      updateNowArgv({ ...report, security: { ...report.security, update_now_command: null } }),
-    ).toBeNull();
-    expect(
-      updateNowArgv({ ...report, security: { ...report.security, update_now_command: ["composer", 3] } }),
-    ).toBeNull();
-  });
-});

@@ -179,8 +179,8 @@ project is overall, and the other tabs lead with their own part.
 
 - The header's "data as of" reads the report's data date. A run that read no repository data, such
   as an offline run without a cache, shows "—" there and no date.
-- An advisory's CVE id links to the advisory's own page as lockrot records it. The page no longer
-  builds a link to the NVD. A CVE id with no recorded link is text.
+- An advisory's source id links to the advisory's own page as lockrot records it. The page no longer
+  builds a link to the NVD. A CVE id beside it, and an id with no recorded link, are text.
 - A long branch version wraps in Findings and in All packages. No tab scrolls sideways at 320 px,
   and All packages keeps every column in view.
 - A skip link is the page's first Tab stop and moves focus to the list. Below the wide layout the

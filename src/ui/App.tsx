@@ -22,7 +22,7 @@ import { SearchBar } from "./search/SearchBar";
 import { tabId, Tabs } from "./Tabs";
 import { useHashState } from "./useHashState";
 import { useTheme } from "./useTheme";
-import { useNarrow, useWide } from "./useWide";
+import { useNarrow, useRailRoom, useWide } from "./useWide";
 import { CurrentView } from "./views/Views";
 import "./app.css";
 import "../styles/print.css";
@@ -120,6 +120,14 @@ function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
       focusRequest.current = { kind: "row", pkg: decision.pkg, index: decision.index };
       dispatch({ type: "select", pkg: decision.pkg });
       break;
+    case "focusRow": {
+      const row = rowAt(document, decision.pkg, decision.index);
+      if (row !== null) {
+        focusRow(row);
+        lastRow.current = { pkg: decision.pkg, index: decision.index };
+      }
+      break;
+    }
     case "closeDetail":
       // Null when Escape was typed in the search box: the detail closes, the caret stays.
       focusRequest.current =
@@ -198,6 +206,13 @@ function useRowAnchor(
   return [anchored, keepInPlace];
 }
 
+/** Laid out, and wholly between the sticky header and the viewport's bottom edge. */
+function inFullView(row: HTMLElement): boolean {
+  const box = row.getBoundingClientRect();
+  const header = document.querySelector(".topbar")?.getBoundingClientRect().bottom ?? 0;
+  return box.height > 0 && box.top >= header && box.bottom <= window.innerHeight;
+}
+
 /** One document keydown listener that reads the latest page state through a ref. A layout effect,
  *  so a key pressed as soon as the page has loaded already reaches it. */
 function useShortcuts(deps: ShortcutDeps) {
@@ -229,10 +244,11 @@ function useShortcuts(deps: ShortcutDeps) {
   }, []);
 }
 
-/** The rail beside the list, or on phone widths a "Filters" disclosure above it. */
-function RailSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
+/** The rail beside the list, or a "Filters" disclosure above it: on narrow screens, and while an open
+ *  package takes the width beside the list. */
+function RailSlot({ folded, inert }: { folded: boolean; inert: boolean }) {
   const { state } = useReport();
-  if (!narrow) {
+  if (!folded) {
     return (
       <div className="shell-rail" inert={inert}>
         <Rail />
@@ -263,6 +279,7 @@ function RailSlot({ narrow, inert }: { narrow: boolean; inert: boolean }) {
 export function App({ model }: { model: Model }) {
   const wide = useWide();
   const narrow = useNarrow();
+  const railRoom = useRailRoom();
   const fit = useCallback(
     (next: State): State => {
       const filters = fitFilters2(model.report, next.filters);
@@ -414,13 +431,14 @@ export function App({ model }: { model: Model }) {
     if (row !== null) focusRow(row);
   }, [state, sheet]);
 
-  // A `#pkg=` link opens its package on load (PD-ROWS-9) — and now also brings its row into view:
-  // the page used to open at the top with the open package's row thousands of pixels down, so Close
-  // sent focus to a row off screen (PD-ROWS-10). Boot only: a link pasted into an open page leaves
-  // the reader's scroll alone, as a restored tab does.
+  // A `#pkg=` link opens its package on load (PD-ROWS-9) and brings its row into view, so Close hands
+  // focus to a row on screen (PD-ROWS-10). A row already in full view under the header stays put, so
+  // the strip above the list stays clear of the sticky header. Boot only: a link pasted into an open
+  // page leaves the reader's scroll alone, as a restored tab does.
   useLayoutEffect(() => {
     const row = state.pkg === null ? null : findRow(document, state.pkg);
-    if (typeof row?.scrollIntoView === "function") row.scrollIntoView({ block: "center" });
+    if (typeof row?.scrollIntoView !== "function" || inFullView(row)) return;
+    row.scrollIntoView({ block: "center" });
   }, []); // once, for the address the page booted with
 
   // Scroll is locked only while a sheet actually covers the page (DESIGN.md §5 M13).
@@ -453,12 +471,9 @@ export function App({ model }: { model: Model }) {
   usePrintDocument(printHost, value);
   const filterable = population2(model.report, state.view).length > 0;
   const panelId = `${idBase}-panel`;
-  // The detail's own grid column (`.shell`, ui/app.css) is static CSS and can't see that
-  // `.shell-detail` below is unmounted while `state.pkg` is null — left alone, the wide layout kept
-  // reserving that column's width with nothing in it, so the list column never grew to fill the
-  // space a closed panel had freed (a walk found this on All packages and Blast radius at 1440).
   const detailOpen = state.pkg !== null;
-  const shellClass = ["shell", !filterable && "no-rail", !detailOpen && "no-detail"]
+  const railFolded = narrow || !railRoom || (detailOpen && wide);
+  const shellClass = ["shell", filterable && !railFolded && "has-rail", detailOpen && wide && "has-detail"]
     .filter(Boolean)
     .join(" ");
 
@@ -499,7 +514,7 @@ export function App({ model }: { model: Model }) {
           </div>
         )}
         <div className={shellClass}>
-          {filterable && <RailSlot narrow={narrow} inert={sheet} />}
+          {filterable && !railFolded && <RailSlot folded={false} inert={sheet} />}
           <div
             className="shell-main"
             id={panelId}
@@ -508,6 +523,7 @@ export function App({ model }: { model: Model }) {
             tabIndex={-1}
             inert={sheet}
           >
+            {filterable && railFolded && <RailSlot folded inert={sheet} />}
             {/* SearchBar hides its own box and hint when the tab has nothing to filter, and keeps the
                 count line, which a clean report still shows. Overview lists nothing to count. */}
             {state.view !== "overview" && <SearchBar inputRef={search} />}

@@ -7,6 +7,7 @@ import {
   gradeLine,
   gradeLineText,
   loadLine,
+  waffleCaption,
   weighsMost,
   WEIGHS_WORDS,
 } from "../../../src/domain/projectGrade";
@@ -155,7 +156,7 @@ describe("the four recorded runs of the brief", () => {
       ["abandoned", 16 / 64],
       ["old-promise", 2 / 64],
     ]);
-    expect(rows[3]?.text).toBe("18 = (abandoned 32 + old-promise 4 [¼ of 16]) ÷ 2 transitive");
+    expect(rows[3]?.terms).toBe("abandoned 16 · old-promise 2");
   });
 
   test("akaunting's flag ledger prints the points each flag holds", () => {
@@ -185,7 +186,8 @@ describe("the three lines of the page-golden documents", () => {
     ],
     [
       "ok-offline",
-      "Project grade: nothing flagged · not checked",
+      // Golden change: the grade line no longer repeats "not checked"; the offline state line says it.
+      "Project grade: nothing flagged",
       "0 of 1 package flagged · 1 ok · 0 allowlisted",
       "0 points: nothing flagged",
     ],
@@ -320,15 +322,18 @@ describe("Weighs most", () => {
     expect(chart?.rest).toBeNull();
   });
 
-  test("names in its legend each flag a drawn segment carries, in flag order", () => {
-    expect(weighsMost(golden("composite"))?.legend).toEqual([
-      "abandoned",
-      "pinned",
-      "left-behind",
-      "old-promise",
-      "stale",
-      "vulnerable",
-    ]);
+  test("names each term in order, and shows the total beside the terms only when they do not sum to it", () => {
+    const report = golden("composite");
+    const chart = weighsMost(report);
+    expect(chart?.rows[0]?.terms).toBe("left-behind 16 · old-promise 4 · vulnerable 16");
+    expect(chart?.rows[0]?.termsTotal).toBeNull();
+
+    const first = report.findings.find((f) => f.package === "symfony/monolog-bridge");
+    if (first === undefined || !("terms" in first.score)) throw new Error("no graded first row");
+    first.score.terms = first.score.terms.map((t, i) => (i === 1 ? { ...t, contribution: 4.5 } : t));
+    const off = weighsMost(report)?.rows.find((row) => row.package === "symfony/monolog-bridge");
+    expect(off?.terms).toBe("left-behind 16 · old-promise 4.5 · vulnerable 16");
+    expect(off?.termsTotal).toBe("(score 36)");
   });
 
   test("links each row to its package on Findings and the rest line to Findings", () => {
@@ -352,7 +357,6 @@ describe("Weighs most", () => {
   test("draws no bar and no rest line when nothing is graded", () => {
     expect(weighsMost(golden("new-symfony"))).toEqual({
       rows: [],
-      legend: [],
       rest: null,
       restLink: { view: "findings" },
     });
@@ -371,7 +375,17 @@ describe("Weighs most", () => {
   test("names its block and its order, with no count that a short list would belie", () => {
     expect([WEIGHS_WORDS.head, WEIGHS_WORDS.note]).toEqual([
       "Weighs most",
-      "highest score first, one segment per flag",
+      "highest score first",
     ]);
+  });
+});
+
+describe("the waffle caption", () => {
+  test("keys every drawn square, so its parts sum to packages_checked", () => {
+    const report = golden("composite");
+    expect(waffleCaption(report)).toBe(figureLine(report));
+
+    report.counts = { ...report.counts, unknown: 2 };
+    expect(waffleCaption(report)).toBe("7 of 7 packages flagged · 2 not judged · 0 ok · 0 allowlisted");
   });
 });

@@ -16,8 +16,7 @@ export const WEIGHS_SHOWN = 10;
 
 export const WEIGHS_WORDS = {
   head: "Weighs most",
-  note: "highest score first, one segment per flag",
-  legend: "Flags in the bars",
+  note: "highest score first",
   transitive: "transitive",
   dev: "dev",
 } as const;
@@ -66,9 +65,7 @@ export function gradeLine(report: Report2): GradeLine | null {
           plural(byVerdict[grade] ?? 0, `${grade} finding`, `${grade} findings`),
           `${String(worse)} of ${plural(checked, "package", "packages")} high or worse`,
         ]),
-    ...(security.check === "partial" || security.check === "not_run"
-      ? [lookupWord(security.check, null)]
-      : []),
+    ...(security.check === "partial" ? [lookupWord(security.check, null)] : []),
     ...(counts.unknown > 0 ? [`${String(counts.unknown)} not judged`] : []),
     ...(report.baseline !== null && known > 0 ? [`${String(known)} known to the baseline`] : []),
   ];
@@ -84,13 +81,26 @@ export const gradeLineHead = ({ grade }: GradeLine): string => `${GRADE_HEAD} ${
 
 export const gradeLineText = (line: GradeLine): string => [gradeLineHead(line), ...line.clauses].join(" · ");
 
-export function figureLine({
-  packages_checked: checked,
-  packages_flagged: flagged,
-  counts,
-}: Report2): string | null {
-  if (checked === 0) return null;
-  return `${String(flagged)} of ${plural(checked, "package", "packages")} flagged · ${String(counts.ok)} ok · ${String(counts.finished)} ${zeroVerdictWhen("allowlisted")}`;
+function figureParts(
+  { packages_checked: checked, packages_flagged: flagged, counts }: Report2,
+  keyed: boolean,
+) {
+  return [
+    `${String(flagged)} of ${plural(checked, "package", "packages")} flagged`,
+    ...(keyed && counts.unknown > 0 ? [`${String(counts.unknown)} not judged`] : []),
+    `${String(counts.ok)} ok`,
+    `${String(counts.finished)} ${zeroVerdictWhen("allowlisted")}`,
+  ];
+}
+
+export function figureLine(report: Report2): string | null {
+  return report.packages_checked === 0 ? null : figureParts(report, false).join(" · ");
+}
+
+/** The waffle's caption, the key of its squares: the figure line with "{n} not judged" after the
+ *  flagged count when `counts.unknown` is above 0, so its parts sum to `packages_checked`. */
+export function waffleCaption(report: Report2): string | null {
+  return report.packages_checked === 0 ? null : figureParts(report, true).join(" · ");
 }
 
 export function loadLine(report: Report2): string | null {
@@ -121,8 +131,10 @@ export function flagPoints(report: Report2): ReadonlyMap<string, number> {
 }
 
 /** "{points} pts", a half point as ".5". */
-export const pointsText = (points: number): string =>
-  `${Number.isInteger(points) ? String(points) : decimal(points, 1)} pts`;
+export const pointsNumber = (points: number): string =>
+  Number.isInteger(points) ? String(points) : decimal(points, 1);
+
+export const pointsText = (points: number): string => `${pointsNumber(points)} pts`;
 
 export interface WeighsRow {
   package: string;
@@ -132,8 +144,12 @@ export interface WeighsRow {
   unit: string;
   /** "transitive" when `direct` is false, then "dev" when `dev` is true. */
   reach: string[];
-  /** `score.text` as written. */
-  text: string;
+  /** Each `score.terms[]` entry as "{flag} {contribution}", in term order: the row's one-line reason. */
+  terms: string;
+  /** The same terms one by one, so the page can break the line only between two terms. */
+  termParts: readonly string[];
+  /** "(score {total})" when the terms do not sum to `score.total`, else null; no term is adjusted. */
+  termsTotal: string | null;
   segments: readonly BarSegment[];
   /** The terms run past `bar_max`. */
   over: boolean;
@@ -142,8 +158,6 @@ export interface WeighsRow {
 
 export interface WeighsMost {
   rows: WeighsRow[];
-  /** The flags a drawn segment carries, in `flag_order`, then any other in the order drawn. */
-  legend: string[];
   /** "{n} more flagged packages hold {points} points", or null when every graded finding is drawn. */
   rest: string | null;
   restLink: LinkTarget;
@@ -164,21 +178,24 @@ export function weighsMost(report: Report2): WeighsMost | null {
       total: total(f),
       unit: pluralNoun(total(f), "point", "points"),
       reach: [...(f.direct ? [] : [WEIGHS_WORDS.transitive]), ...(f.dev ? [WEIGHS_WORDS.dev] : [])],
-      text: f.score.text,
+      termParts: isScoreGraded(f.score)
+        ? f.score.terms.map((t) => `${t.flag} ${pointsNumber(t.contribution)}`)
+        : [],
+      terms: isScoreGraded(f.score)
+        ? f.score.terms.map((t) => `${t.flag} ${pointsNumber(t.contribution)}`).join(" · ")
+        : "",
+      termsTotal:
+        isScoreGraded(f.score) && sum(f.score.terms.map((t) => t.contribution)) !== f.score.total
+          ? `(score ${String(f.score.total)})`
+          : null,
       segments: bar.segments,
       over: bar.over,
       link: { view: "findings", pkg: f.package } satisfies LinkTarget,
     };
   });
-  const drawn = new Set(rows.flatMap(({ segments }) => segments.map(({ flag }) => flag)));
-  const order: readonly string[] = report.run.score_model.flag_order;
-  const legend = [
-    ...order.filter((flag) => drawn.has(flag)),
-    ...[...drawn].filter((flag) => !order.includes(flag)),
-  ];
   const rest =
     others.length === 0
       ? null
       : `${plural(others.length, "more flagged package holds", "more flagged packages hold")} ${String(sum(others.map(total)))} points`;
-  return { rows, legend, rest, restLink: { view: "findings" } };
+  return { rows, rest, restLink: { view: "findings" } };
 }

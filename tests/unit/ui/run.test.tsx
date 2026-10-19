@@ -24,7 +24,7 @@ function run(): HTMLElement {
 
 beforeEach(() => {
   window.matchMedia = ((query: string) => ({
-    matches: query.includes("1181"),
+    matches: /1000px|1024px/.test(query),
     media: query,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
@@ -113,11 +113,9 @@ describe("the Run tab of a report-2 document", () => {
   test("prints gate.text as written", () => {
     render(<App model={model()} />);
 
-    expect(
-      within(run()).getByText(
-        "gate: fails · --fail-on=high · 5 findings fail it · target php 8.4 (--target-php)",
-      ),
-    ).toBeTruthy();
+    expect(run().querySelector(".overview2-gate-text")?.textContent).toBe(
+      "gate: fails · --fail-on=high · 5 findings fail it · target php 8.4 (--target-php)",
+    );
   });
 
   test("lists the notes and the accepted unchecked checks when the run has them", () => {

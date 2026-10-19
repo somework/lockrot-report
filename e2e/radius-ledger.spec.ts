@@ -21,9 +21,8 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     await expect(radiusSurface(page).locator(".r2-answer")).toHaveText(
       "1 flagged package pulled in, under guzzlehttp/guzzle.",
     );
-    await expect(radiusRow(page, "guzzlehttp/guzzle").locator(".r2-say")).toHaveText(
-      "Pulls in 1 flagged package: 1 low.",
-    );
+    await expect(radiusRow(page, "guzzlehttp/guzzle").locator(".r2-count")).toHaveText("1 flagged");
+    await expect(radiusRow(page, "guzzlehttp/guzzle").locator(".r2-mix")).toHaveText("1 low");
   });
 
   test("M25: the toggle states as many packages as the row then lists", async ({ page }) => {
@@ -49,8 +48,8 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     const exposure = wallabag?.exposure ?? [];
     expect(exposure.length).toBeGreaterThan(1);
     await expect.poll(() => radiusRowPackages(page)).toEqual(exposure.map((entry) => entry.package));
-    const counts = await radiusSurface(page).locator("li.r2-row > .r2-line .r2-say").allTextContents();
-    expect(counts.map((text) => Number(/Pulls in (\d+)/.exec(text)?.[1] ?? "0"))).toEqual(
+    const counts = await radiusSurface(page).locator("li.r2-row > .r2-line .r2-n").allTextContents();
+    expect(counts.map(Number)).toEqual(
       exposure.map((entry) => entry.flagged),
     );
     await expect(radiusSurface(page)).not.toContainText("listing nothing flagged");

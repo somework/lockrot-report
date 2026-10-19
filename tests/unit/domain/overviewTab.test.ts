@@ -24,12 +24,14 @@ function withFinding(report: Report2, pkg: string, edit: (f: Finding) => void): 
 }
 
 describe("the exposure bars", () => {
-  test("show the rows as published, sized to the longest, with nothing more", () => {
-    const bars = exposureBars(composite());
+  test("show the rows as published, on a track of the flagged set, with nothing more", () => {
+    const report = composite();
+    const bars = exposureBars(report);
 
     expect(bars).toMatchObject({
       rows: [{ package: "guzzlehttp/guzzle", flagged: 1 }],
-      longest: 1,
+      longest: report.packages_flagged,
+      overlap: null,
       more: null,
       shared: null,
     });
@@ -45,8 +47,16 @@ describe("the exposure bars", () => {
     expect(bars.rows.map((row) => row.package)).toEqual(
       ["p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7"].map((p) => `vendor/${p}`),
     );
-    expect(bars.longest).toBe(11);
+    expect(bars.longest).toBe(Math.max(11, report.packages_flagged));
+    expect(bars.overlap).toContain(`up to ${String(report.exposure_rule.max_fan_in)}`);
     expect(bars.more).toBe("3 more in Blast radius");
+    expect(bars.count).toBe("11 direct requirements pull in flagged packages.");
+  });
+
+  test("count exposure[] with no threshold only from two entries up", () => {
+    const report = composite();
+    report.exposure = [{ package: "vendor/a", flagged: 3 }];
+    expect(exposureBars(report).count).toBeNull();
   });
 
   test("name the unattributed packages in one sentence", () => {
@@ -69,13 +79,12 @@ describe("an exposure row's unit, for a screen reader", () => {
 });
 
 describe("the libyears table", () => {
-  test("ranks measured packages high to low with one decimal and leaves a null unranked", () => {
+  test("ranks measured packages high to low with one decimal, leaving a null and a 0.0 out", () => {
     expect(libyearsTop(composite()).map(({ package: name, libyears }) => [name, libyears])).toEqual([
       ["symfony/monolog-bridge", "10.6"],
       ["symfony/yaml", "3.4"],
       ["twig/twig", "2.0"],
       ["symfony/debug", "1.8"],
-      ["tubalmartin/cssmin", "0.0"],
     ]);
   });
 
@@ -130,7 +139,6 @@ describe("the libyears table", () => {
       ["symfony/yaml", "v8.1.8 (2026-09-26)"],
       ["twig/twig", "v3.30.0 (2026-09-25)"],
       ["symfony/debug", "v4.4.44 (2022-07-28)"],
-      ["tubalmartin/cssmin", "v4.1.1 (2018-01-15)"],
     ]);
   });
 

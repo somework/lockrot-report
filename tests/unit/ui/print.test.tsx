@@ -19,7 +19,7 @@ const composite = () => load("composite");
 
 beforeEach(() => {
   window.matchMedia = ((query: string) => ({
-    matches: query.includes("1181"),
+    matches: /1000px|1024px/.test(query),
     media: query,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
@@ -113,9 +113,10 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     expect(doc.querySelector(".pd-intro-note")?.textContent).toContain("do not apply");
   });
 
-  it("repeats the score scale over each printed grade group, and draws it nowhere on screen", () => {
+  it("repeats the column head over each printed grade group, and once on screen", () => {
+    window.location.hash = "#view=findings";
     const { container } = render(<App model={composite()} />);
-    expect(container.querySelector(".f2-print-scale")).toBeNull();
+    expect(container.querySelectorAll(".f2-head")).toHaveLength(1);
 
     window.dispatchEvent(new Event("beforeprint"));
 
@@ -126,7 +127,28 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
       "high",
       "low",
     ]);
-    for (const group of groups) expect(group.querySelector(".f2-print-scale")).not.toBeNull();
+    for (const group of groups) expect(group.querySelector(":scope > .f2-head")).not.toBeNull();
+    expect(doc.querySelectorAll(".pd-findings .f2-ledger > .f2-head")).toHaveLength(0);
+  });
+
+  it("prints every range of a folded affected_versions, with no disclosure", () => {
+    window.location.hash = "#view=advisories";
+    const { container } = render(<App model={composite()} />);
+
+    window.dispatchEvent(new Event("beforeprint"));
+
+    const doc = printDoc(container);
+    expect(doc.querySelectorAll("details.ac2-fold")).toHaveLength(0);
+    const counts = [...doc.querySelectorAll(".ac2-count")];
+    expect(counts.length).toBeGreaterThan(0);
+    // One line that runs on as the field writes it, and wraps only after a range's own "|".
+    for (const count of counts) {
+      const range = count.nextElementSibling;
+      expect(range?.classList.contains("ac2-flow")).toBe(true);
+      expect(range?.querySelectorAll("wbr").length).toBeGreaterThan(1);
+      expect(range?.querySelectorAll(".ac2-r").length).toBe(range?.querySelectorAll("wbr").length);
+      expect(range?.textContent).toMatch(/\|/);
+    }
   });
 
   it("prints All packages' column heads as words, not sort buttons", () => {
@@ -147,7 +169,6 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
       "Flags",
       "Reached",
       "Signals",
-      "Data as of",
     ]);
     expect(doc.querySelectorAll(".pd-packages thead button")).toHaveLength(0);
   });
@@ -204,10 +225,10 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
       "144 points on 7 flagged packages · 140 (97 %) from high or worse · score model 1",
     );
     expect(
-      [...doc.querySelectorAll(".pd-summary .wm-list .wm-text")].map((text) => text.textContent),
+      [...doc.querySelectorAll(".pd-summary .wm-list .wm-terms")].map((text) => text.textContent),
     ).toHaveLength(7);
-    expect(doc.querySelector(".pd-summary .wm-list .wm-text")?.textContent).toBe(
-      "36 = left-behind 16 + old-promise 4 [¼ of 16] + vulnerable 16 [high advisory]",
+    expect(doc.querySelector(".pd-summary .wm-list .wm-terms")?.textContent).toBe(
+      "left-behind 16 · old-promise 4 · vulnerable 16",
     );
   });
 
