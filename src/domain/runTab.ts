@@ -2,7 +2,8 @@
 
 import type { Report2, Run } from "../model/report";
 import { day, plural, pluralNoun } from "./format";
-import { causeWord, checkReasonWords, feedAnswerWord, wordFor } from "./pageVocabulary";
+import { causeWord, checkReasonRich, feedAnswerWord, wordFor } from "./pageVocabulary";
+import type { Rich } from "./rich";
 
 export const RUN_WORDS = {
   tab: "Run data",
@@ -79,7 +80,7 @@ function activityCache({
   return `from lockrot's cache, up to ${String(hours)} h old (oldest ${day(oldest)})`;
 }
 
-export function runFacts(report: Report2): { key: string; value: string }[] {
+export function runFacts(report: Report2): { key: string; value: string | Rich }[] {
   const { run } = report;
   const moveCheck = moveCheckFact(report);
   return [
@@ -93,17 +94,19 @@ export function runFacts(report: Report2): { key: string; value: string }[] {
 
 /** `run.move_check` in the words of lockrot's text footer (`RunFooter::moveCheck`), or null when the
  *  run checked no move. */
-export function moveCheckFact({ run }: Report2): string | null {
+export function moveCheckFact({ run }: Report2): Rich | null {
   const check = run.move_check;
   if (check === null) return null;
   switch (check.baseline) {
     case "resolves":
       // `ignores_extensions` is always true: the solve ignores ext-* requirements (§5.6).
-      return `checked with the solver of Composer${check.composer === null ? "" : ` ${check.composer}`} against the lock · ext-* requirements not checked`;
+      return [
+        `checked with the solver of Composer${check.composer === null ? "" : ` ${check.composer}`} against the lock · ext-* requirements not checked`,
+      ];
     case "refused":
-      return "not checked, because Composer's solver refuses the lock itself";
+      return ["not checked, because Composer's solver refuses the lock itself"];
     default:
-      return `not checked (${checkReasonWords(check.reason ?? "")})`;
+      return ["not checked (", ...checkReasonRich(check.reason ?? ""), ")"];
   }
 }
 

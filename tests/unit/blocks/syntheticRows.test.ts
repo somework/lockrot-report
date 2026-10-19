@@ -331,3 +331,20 @@ describe("the Held by link words (SPEC §7.9.21)", () => {
     expect(metaOf("require", "symfony/console", "root")).toBe("requires symfony/console ^4.4.49");
   });
 });
+
+describe("the check line (SPEC §7.9.21)", () => {
+  test("prints an unknown reason as written, in a code element", () => {
+    const { finding, run } = modelCase("B");
+    if (finding.next_step === null) throw new Error("B has a move");
+    finding.next_step = {
+      ...finding.next_step,
+      check: { result: "not_checked", form: null, reason: "a_later_reason" },
+    };
+    const conditions = moveCards(finding, { ...run, move_check: null })[0]?.after?.conditions ?? [];
+    expect(conditions).toContainEqual([
+      "if Composer resolves it (not checked: ",
+      { code: "a_later_reason" },
+      ")",
+    ]);
+  });
+});

@@ -139,6 +139,11 @@ describe("row words", () => {
     expect(advisoryFixNote({ ...fix, php: ">=7.2" }, floor)).toBeNull();
   });
 
+  it("names no PHP for a constraint it cannot read", () => {
+    const fix = { ...pair.row.fix, php: "7.4 - 8.4", held_by: [] };
+    expect(advisoryFixNote(fix, composite.run)).toBeNull();
+  });
+
   it("says the holders as a Findings row does", () => {
     const hold = (name: string) => ({ ...pair.row.fix.held_by[1], source: "package", package: name });
     const fix = { ...pair.row.fix, kind: "update", held_by: [hold("a/a"), hold("b/b"), hold("c/c")] };

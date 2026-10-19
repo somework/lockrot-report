@@ -151,13 +151,15 @@ export function advisoryFixNote(fix: S9fix, run: Run): string | null {
 /** The target PHP at patch 99, as lockrot's move check solves it (§5.6). */
 const solvePhp = (target: string): string => (target.split(".").length === 2 ? `${target}.99` : target);
 
-/** The PHP a fix needs, when the target PHP or the project's PHP floor does not admit it. */
+/** The PHP a fix needs, when the target PHP or the project's PHP floor does not admit it. A
+ *  constraint the page cannot read gets no note, because the page cannot say it is not admitted. */
 export function advisoryFixPhp({ php }: S9fix, run: Run): string | null {
   if (php === null) return null;
-  const admitted =
-    phpAdmits(php, solvePhp(run.target_php)) &&
-    (run.project_php_lowest === null || phpAdmits(php, run.project_php_lowest));
-  return admitted ? null : `needs PHP ${php}`;
+  const answers = [
+    phpAdmits(php, solvePhp(run.target_php)),
+    ...(run.project_php_lowest === null ? [] : [phpAdmits(php, run.project_php_lowest)]),
+  ];
+  return answers.includes(false) && !answers.includes(null) ? `needs PHP ${php}` : null;
 }
 
 /** The band a severity's square and word take, by lookup in the model. */

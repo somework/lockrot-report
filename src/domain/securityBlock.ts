@@ -39,8 +39,7 @@ export function holderWord({ source, package: name }: Pick<HeldBy, "source" | "p
   return source === "root" || name === null ? "composer.json" : name;
 }
 
-/** "after it: {bound}{total}, {verdict}", with its conditions (G139); a Findings row leaves the
- *  Composer caveat to its column head. */
+/** "after it: {bound}{total}, {verdict}", with its conditions (G139). */
 export function afterIt(applied: BranchFixes["if_applied"]): string | null {
   if (applied === null) return null;
   const noNew = applied.assumes.includes("no_new_advisories");

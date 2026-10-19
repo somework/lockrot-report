@@ -4,6 +4,8 @@
  * `contract/en/` equals its recording (`PageVocabularyTest`).
  */
 
+import type { Rich } from "./rich";
+
 type Words = Readonly<Record<string, string>>;
 
 export function wordFor(table: Words, id: string): string {
@@ -130,9 +132,11 @@ export const CHECK_REASON_WORDS: readonly (readonly [reason: string, words: stri
   ["solver_error", "Composer's solver failed on it"],
 ];
 
-/** A reason's words; an unknown reason as written. */
-export const checkReasonWords = (reason: string): string =>
-  CHECK_REASON_WORDS.find(([id]) => id === reason)?.[1] ?? reason;
+/** A reason's words; an unknown reason as written, in a code element (SPEC §7.9.21). */
+export function checkReasonRich(reason: string): Rich {
+  const words = CHECK_REASON_WORDS.find(([id]) => id === reason)?.[1];
+  return words === undefined ? [{ code: reason }] : [words];
+}
 
 export const CAUSE_WORDS: Words = {
   above_listed_releases: "installed above every listed release",

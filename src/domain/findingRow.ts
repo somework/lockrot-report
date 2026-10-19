@@ -489,7 +489,7 @@ export const gradeTone = (band: string | null): Tone =>
   band === null ? "low" : (GRADE_TONES[band] ?? "low");
 
 /** A verdict's tone, by the table of `score_model` that lists it: a band's own tone, none for a
- *  score-0 verdict, and `low` for an id the model lists in neither. */
+ *  score-0 verdict, and `unk` for `unknown` and for an id the model lists in neither. */
 export function verdictTone(model: Run["score_model"], verdict: string): Tone {
   if (verdict === "unknown") return "unk";
   if (model.zero_verdicts.some((zero) => zero.verdict === verdict)) return "none";

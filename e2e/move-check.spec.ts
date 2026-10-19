@@ -87,7 +87,9 @@ test.describe("wallabag-2.6, whose baseline Composer's solver refuses", () => {
     await page.goto(report2Url("baselined-wallabag-2.6") + "#view=run");
     const run = runSurface(page);
 
-    await expect(run).toContainText("not checked, because Composer's solver refuses the lock itself");
+    await expect(run.locator(".run2-kv-row", { hasText: "moves" })).toContainText(
+      "not checked, because Composer's solver refuses the lock itself",
+    );
     await expect(run).toContainText(
       "moves not checked: Composer's solver refuses the lock itself at php 8.4.99, so it would refuse every move",
     );
@@ -102,5 +104,16 @@ test("the composite, a run that checked no move, has no ready move and says so i
 
   await expect(block.locator(".ov-move")).toHaveCount(0);
   await expect(block.locator(".ov-first-foot")).toContainText("not checked: the run checked no move");
-  await expect(runSurface(page)).toHaveCount(0);
+
+  await page.goto(report2Url("composite") + "#view=run");
+  await expect(runSurface(page).locator(".run2-kv-row").first()).toBeVisible();
+  await expect(runSurface(page).locator(".run2-kv-row dt")).not.toContainText(["moves"]);
+});
+
+test("snipe-it names the Composer that checked its moves in the Run tab", async ({ page }) => {
+  await page.goto(report2Url("page-snipe-it") + "#view=run");
+
+  await expect(runSurface(page).locator(".run2-kv-row", { hasText: "moves" })).toContainText(
+    "checked with the solver of Composer 2.10.3 against the lock · ext-* requirements not checked",
+  );
 });

@@ -1,3 +1,5 @@
+import { RichText } from "./RichText";
+import type { Rich } from "../../domain/rich";
 import { useId } from "preact/hooks";
 import {
   acceptedUnchecked,
@@ -204,7 +206,7 @@ function AcceptedUnchecked({ report }: { report: Report2 }) {
   );
 }
 
-function KeyValues({ head, rows }: { head: string; rows: readonly { key: string; value: string }[] }) {
+function KeyValues({ head, rows }: { head: string; rows: readonly { key: string; value: string | Rich }[] }) {
   if (rows.length === 0) return null;
   return (
     <section className="sect">
@@ -213,7 +215,7 @@ function KeyValues({ head, rows }: { head: string; rows: readonly { key: string;
         {rows.map(({ key, value }) => (
           <div key={key} className="run2-kv-row">
             <dt>{key}</dt>
-            <dd>{value}</dd>
+            <dd>{typeof value === "string" ? value : <RichText rich={value} />}</dd>
           </div>
         ))}
       </dl>

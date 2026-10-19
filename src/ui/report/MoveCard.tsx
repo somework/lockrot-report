@@ -77,9 +77,9 @@ export function MoveCard({ card, run }: { card: Card; run: Run }) {
                 {after.result}
               </span>
             )}
-            {after.conditions.map((condition) => (
-              <span key={condition} className="d3-after-cond">
-                {condition}
+            {after.conditions.map((condition, i) => (
+              <span key={i} className="d3-after-cond">
+                <RichText rich={condition} />
               </span>
             ))}
           </Fact>

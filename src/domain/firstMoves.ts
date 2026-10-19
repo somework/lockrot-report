@@ -7,6 +7,7 @@ import { rowCommand, rowCommandArgv } from "./findingRow";
 import { plural } from "./format";
 import { HELD_KEY, READY_KEY, WAY_OUT_KEY } from "./list";
 import { moveCards } from "./moveCards";
+import { plain } from "./rich";
 import {
   ADVISORY_NOT_RUN,
   CHECK_REASON_WORDS,
@@ -96,7 +97,7 @@ function readyMove(f: Finding, report: Report2, argv: readonly string[], command
     argv,
     command,
     clears: card?.clears ?? null,
-    after: after === null ? null : { result: after.result, conditions: after.conditions },
+    after: after === null ? null : { result: after.result, conditions: after.conditions.map(plain) },
     newMajor: f.next_step?.crosses_major ?? false,
     alsoHolds: alsoHolds(report, f.package),
     link: { view: "findings", pkg: f.package },

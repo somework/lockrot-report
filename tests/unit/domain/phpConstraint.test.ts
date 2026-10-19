@@ -29,8 +29,14 @@ describe("phpAdmits (SPEC §7.9.19, the PHP a fix needs)", () => {
     expect(phpAdmits(constraint, version)).toBe(admitted);
   });
 
-  test("admits nothing for a constraint it cannot read", () => {
-    expect(phpAdmits("1.0 - 2.0 @dev", "8.4.99")).toBe(false);
-    expect(phpAdmits("", "8.4.99")).toBe(false);
+  test.each(["7.4 - 8.4", "^8.1@dev", ">=8.1.0-dev", ""])(
+    "cannot answer for %s, which it does not read",
+    (constraint) => {
+      expect(phpAdmits(constraint, "8.4.99")).toBeNull();
+    },
+  );
+
+  test("answers true when a readable alternative admits the version", () => {
+    expect(phpAdmits("7.4 - 7.9 || ^8.0", "8.4.99")).toBe(true);
   });
 });
