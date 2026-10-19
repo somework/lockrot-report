@@ -199,7 +199,11 @@ function composerNotes(finding: Finding, move: AnyMove, run: Run, noted: readonl
         note(["The packages that hold it may need to move too"]);
         break;
       case "crosses_major": {
-        note([`${newLineWords(move.to_branch)} brings its own requirements, which lockrot does not solve`]);
+        // A move that Composer's solver checked, resolved or refused, drops the clause, as `next_step.text` does.
+        const solved = move.check?.result === "resolves" || move.check?.result === "refused";
+        note([
+          `${newLineWords(move.to_branch)} brings its own requirements${solved ? "" : ", which lockrot does not solve"}`,
+        ]);
         break;
       }
       case "transitive": {

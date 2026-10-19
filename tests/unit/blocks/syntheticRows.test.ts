@@ -268,3 +268,27 @@ describe("a command only for a name that passes the argument rule (SPEC §5.6)",
     ]);
   });
 });
+
+describe("G106: the new-major note and the move check", () => {
+  const noteOf = (check: unknown): string[] => {
+    const { finding, run } = modelCase("B");
+    if (finding.next_step === null) throw new Error("B has a move");
+    finding.next_step = { ...finding.next_step, check } as typeof finding.next_step;
+    return (moveCards(finding, run)[0]?.composer ?? []).map((n) => plain(n.text));
+  };
+  const SOLVE = ", which lockrot does not solve";
+
+  test.each([
+    ["resolves", { result: "resolves", form: "inline", reason: null }],
+    ["refused", { result: "refused", form: null, reason: null }],
+  ])("drops the clause when the check %s", (_, check) => {
+    expect(noteOf(check)).toContain("A new major brings its own requirements");
+  });
+
+  test.each([
+    ["not_checked", { result: "not_checked", form: null, reason: "offline" }],
+    ["null", null],
+  ])("keeps the clause when the check is %s", (_, check) => {
+    expect(noteOf(check)).toContain(`A new major brings its own requirements${SOLVE}`);
+  });
+});
