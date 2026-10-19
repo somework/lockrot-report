@@ -34,9 +34,7 @@ test.describe("report-2: the age bar and its guides stay visible in forced-color
       });
     });
 
-    test(`symfony/http-foundation (warn..high zone), ${colorScheme} forced colors`, async ({
-      page,
-    }) => {
+    test(`symfony/http-foundation (warn..high zone), ${colorScheme} forced colors`, async ({ page }) => {
       await report.gotoReport2WithHash(WALLABAG, "view=findings");
       await page.emulateMedia({ colorScheme, forcedColors: "active" });
 

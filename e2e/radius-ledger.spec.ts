@@ -53,9 +53,7 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     expect(exposure.length).toBeGreaterThan(1);
     await expect.poll(() => radiusRowPackages(page)).toEqual(exposure.map((entry) => entry.package));
     const counts = await radiusSurface(page).locator("li.r2-row > .r2-line .r2-n").allTextContents();
-    expect(counts.map(Number)).toEqual(
-      exposure.map((entry) => entry.flagged),
-    );
+    expect(counts.map(Number)).toEqual(exposure.map((entry) => entry.flagged));
     await expect(radiusSurface(page)).not.toContainText("listing nothing flagged");
   });
 

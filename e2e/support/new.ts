@@ -169,7 +169,11 @@ export class NewReportPage implements ReportPage {
       .getByRole("row", { name, exact: true })
       .or(this.page.getByRole("option", { name, exact: true }))
       .or(this.page.getByRole("listitem", { name, exact: true }))
-      .or(this.page.locator(`[data-surface="advisories"] [role="row"][data-pkg="${name.replace(/["\\]/g, "\\$&")}"]`))
+      .or(
+        this.page.locator(
+          `[data-surface="advisories"] [role="row"][data-pkg="${name.replace(/["\\]/g, "\\$&")}"]`,
+        ),
+      )
       .first();
   }
 

@@ -27,7 +27,9 @@ test("the composite's Findings rows draw the score, the package, the pills, the 
     "vulnerable·1maintenance accepted (lockrot's list)",
     "via guzzlehttp/guzzle",
   ]);
-  const golden = pageGolden("composite").findings_rows.find((row) => row.package === "symfony/polyfill-intl-idn");
+  const golden = pageGolden("composite").findings_rows.find(
+    (row) => row.package === "symfony/polyfill-intl-idn",
+  );
   expect(reach).toBe(golden?.reach);
   const next = await findingsNextStep(page, "symfony/polyfill-intl-idn");
   expect(next.move).toBe("composer update");

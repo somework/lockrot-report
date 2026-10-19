@@ -12,7 +12,9 @@ import { runSurface } from "./support/report2/run";
 const readyBlock = (page: Page) => overviewSurface(page).locator(".ov-first");
 
 test.describe("snipe-it, lockrot's engine run with a move check", () => {
-  test("lists the ready moves, a ready move's Also holds, and the held and way-out lines", async ({ page }) => {
+  test("lists the ready moves, a ready move's Also holds, and the held and way-out lines", async ({
+    page,
+  }) => {
     await page.goto(report2Url("page-snipe-it"));
     const block = readyBlock(page);
 
@@ -50,7 +52,9 @@ test.describe("snipe-it, lockrot's engine run with a move check", () => {
 
   test("the way-out link opens exactly the findings it counts", async ({ page }) => {
     await page.goto(report2Url("page-snipe-it"));
-    await readyBlock(page).getByRole("link", { name: /need another way out/ }).click();
+    await readyBlock(page)
+      .getByRole("link", { name: /need another way out/ })
+      .click();
 
     await expect(page.locator('[data-surface="findings"] [role="row"][data-pkg]')).toHaveCount(9);
   });

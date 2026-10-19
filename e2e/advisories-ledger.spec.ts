@@ -105,7 +105,9 @@ test.describe("report-2: the Advisories tab groups the S9 rows by package", () =
     await expect(advisoryRows(page).nth(1)).toBeFocused();
   });
 
-  test("the source id links to the advisory's own link, and the page links no URL it built", async ({ page }) => {
+  test("the source id links to the advisory's own link, and the page links no URL it built", async ({
+    page,
+  }) => {
     await page.goto(report2Url("composite") + "#view=advisories");
     const id = advisoriesSurface(page).getByRole("link", { name: "PKSA-8zx5-v2nz-58pb" });
     await expect(id).toHaveAttribute("href", "https://github.com/advisories/GHSA-529h-vh3j-85hq");

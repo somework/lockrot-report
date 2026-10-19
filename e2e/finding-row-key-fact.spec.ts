@@ -39,7 +39,9 @@ test.describe("report-2: the Findings row leads with the score, then the pills, 
     ]);
     // The bar is a drawing, so the cell has no words of its own: the reading is in the left-behind
     // pill and in the cell's label.
-    const golden = pageGolden("composite").findings_rows.find((row) => row.package === "symfony/monolog-bridge");
+    const golden = pageGolden("composite").findings_rows.find(
+      (row) => row.package === "symfony/monolog-bridge",
+    );
     const next = await findingsNextStep(page, "symfony/monolog-bridge");
     expect(next.move).toBe("require ^5.4.52");
     expect(next.held).toBe(golden?.held);
@@ -59,7 +61,9 @@ test.describe("report-2: the Findings row leads with the score, then the pills, 
     expect(await rowAge(page, "twig/twig")).toBeNull();
     const next = await findingsNextStep(page, "twig/twig");
     expect(next.move).toBe("php floor raise");
-    expect(next.held).toBe(pageGolden("composite").findings_rows.find((row) => row.package === "twig/twig")?.held);
+    expect(next.held).toBe(
+      pageGolden("composite").findings_rows.find((row) => row.package === "twig/twig")?.held,
+    );
   });
 
   test("composite: the column head captions the score scale at the band floors and the age axis", async ({
