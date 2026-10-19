@@ -11,7 +11,7 @@ import { capitalize, metadataWords } from "./findingWords";
 import { pluralNoun } from "./format";
 import { joinAnd } from "./joinWords";
 import { safeHref } from "./links";
-import { addsBasisWord, phpFloorWord } from "./pageVocabulary";
+import { addsBasisWord, checkReasonRich, phpFloorWord, stoppedCheckWords } from "./pageVocabulary";
 import { phpConstraintWord } from "./phpAlternatives";
 import { dependentNames, foundWords, installedPhpWords } from "./qualifierRows";
 import { newTab, type Rich } from "./rich";
@@ -199,10 +199,11 @@ function composerNotes(finding: Finding, move: AnyMove, run: Run, noted: readonl
         note(["The packages that hold it may need to move too"]);
         break;
       case "crosses_major": {
-        const fresh = (move.to_branch ?? "").startsWith("0.")
-          ? "A new 0.x line (Composer treats 0.x minors as breaking)"
-          : "A new major";
-        note([`${fresh} brings its own requirements, which lockrot does not solve`]);
+        // A move that Composer's solver checked, resolved or refused, drops the clause, as `next_step.text` does.
+        const solved = move.check?.result === "resolves" || move.check?.result === "refused";
+        note([
+          `${newLineWords(move.to_branch)} brings its own requirements${solved ? "" : ", which lockrot does not solve"}`,
+        ]);
         break;
       }
       case "transitive": {
@@ -282,14 +283,40 @@ function movePhp(finding: Finding, move: AnyMove, run: Run, then: boolean): Move
 }
 
 export interface MoveAfter {
-  readonly result: string;
-  readonly verdict: string;
-  readonly conditions: readonly string[];
+  /** "{bound}{total}, {verdict}", or null when the move has no `if_applied` and the block holds the
+   *  check line alone. */
+  readonly result: string | null;
+  readonly verdict: string | null;
+  readonly conditions: readonly Rich[];
 }
 
-function moveAfter(finding: Finding, move: AnyMove): MoveAfter | null {
+const COMPOSER_KINDS: readonly string[] = ["update", "require", "raise-php", "tag"];
+const RESOLVES_CAVEAT = "if Composer resolves it";
+
+/** The check line of SPEC §7.9.21 "The move", one After condition; null for a kind that runs no
+ *  Composer request. An unknown reason prints as written, in a code element. */
+export function checkLine(move: AnyMove, run: Run): Rich | null {
+  const check = move.check;
+  if (check === null) {
+    return run.move_check === null && COMPOSER_KINDS.includes(move.kind)
+      ? [`${RESOLVES_CAVEAT} (not checked: the run checked no move)`]
+      : null;
+  }
+  switch (check.result) {
+    case "resolves":
+      return ["checked with Composer"];
+    case "refused":
+      return ["Composer refuses the move"];
+    default:
+      return [`${RESOLVES_CAVEAT} (not checked: `, ...checkReasonRich(check.reason ?? ""), ")"];
+  }
+}
+
+function moveAfter(finding: Finding, move: AnyMove, run: Run): MoveAfter | null {
+  if (!isScoreGraded(finding.score)) return null;
   const applied = move.if_applied;
-  if (!isScoreGraded(finding.score) || !applied) return null;
+  const check = checkLine(move, run);
+  if (!applied) return check === null ? null : { result: null, verdict: null, conditions: [check] };
   const noNew = applied.assumes.includes("no_new_advisories");
   const counted = countedFlagIds(finding);
   const bound = applied.at_most ? (noNew ? "at most, from the facts it checked, " : "at most ") : "";
@@ -297,12 +324,12 @@ function moveAfter(finding: Finding, move: AnyMove): MoveAfter | null {
     result: `${bound}${applied.total}, ${applied.verdict}`,
     verdict: applied.verdict,
     conditions: [
-      ...(move.adds.length > 0 ? [`adds ${move.adds.map((a) => a.id).join(" and ")}`] : []),
+      ...(move.adds.length > 0 ? [[`adds ${move.adds.map((a) => a.id).join(" and ")}`]] : []),
       ...move.unverified
         .filter((u) => u.kind === "flag" && !counted.includes(u.id))
-        .map((u) => `${u.id} not checked`),
-      ...(applied.assumes.includes("composer_resolves") ? ["if Composer resolves it"] : []),
-      ...(noNew ? ["advisories on its new versions not checked"] : []),
+        .map((u) => [`${u.id} not checked`]),
+      ...(check === null ? [] : [check]),
+      ...(noNew ? [["advisories on its new versions not checked"]] : []),
     ],
   };
 }
@@ -313,7 +340,7 @@ export interface Holder {
   readonly name: string;
   readonly version: string | null;
   readonly grade: string | null;
-  /** "requires {constraint}", then " · itself {flags}" (G117, G118). */
+  /** The link words of §7.9.21, then " · itself {flags}" (G117, G118). */
   readonly meta: Rich;
   /** "require ^2.0 on 2.x", after "its own step:". */
   readonly step: string | null;
@@ -334,14 +361,54 @@ export interface HeldByBlock {
 const isGradedHolder = (held: HeldBy, run: Run): boolean =>
   (run.graded_verdicts as readonly string[]).includes(held.holder?.verdict ?? "");
 
+const isZeroLine = (toBranch: string | null): boolean => (toBranch ?? "").startsWith("0.");
+
+/** A Findings row's tag for a move that crosses a major: the words the sheet's note opens with. */
+export const newLineTag = (toBranch: string | null): string =>
+  isZeroLine(toBranch) ? "a new 0.x line" : "a new major";
+
+/** The sheet's Composer note opens with these, the 0.x form with its reason. */
+const newLineWords = (toBranch: string | null): string =>
+  isZeroLine(toBranch) ? "A new 0.x line (Composer treats 0.x minors as breaking)" : "A new major";
+
+/** The root's name as a holder (§7.9.13): the sheet's Held by and a row's "held by" say it alike. */
+export const ROOT_HOLDER_NAME = "your composer.json";
+
+/** A hold's link words (SPEC §7.9.21), with the target it names. A link the page does not know reads
+ *  as a requirement. */
+function linkWords({ link, target, constraint, package: holder }: HeldBy): Rich {
+  const named = (verb: string): Rich => [
+    verb,
+    ...(target === null ? [] : [`${target} `]),
+    { code: constraint },
+  ];
+  switch (link) {
+    case "conflict":
+      return named("conflicts with ");
+    case "replace":
+      return target === null ? [`replaced by ${holder ?? ""}`] : named("replaces ");
+    case "root-require":
+      return target === null ? ["no release of ", { code: constraint }, " can install"] : named("requires ");
+    default:
+      return named("requires ");
+  }
+}
+
+type HolderStep = NonNullable<NonNullable<HeldBy["holder"]>["next_step"]>;
+
+const ownStep = (step: HolderStep, where: string): string =>
+  step.kind === "require" && step.constraint
+    ? `require ${step.constraint}${where}`
+    : `${step.kind.replaceAll("-", " ")}${where}`;
+
 function holderItem(held: HeldBy, run: Run): Holder {
   if (held.source === "root") {
     return {
       root: true,
-      name: "your composer.json",
+      name: ROOT_HOLDER_NAME,
       version: null,
       grade: null,
-      meta: ["requires ", { code: held.constraint }],
+      meta: linkWords(held),
       step: null,
     };
   }
@@ -354,17 +421,11 @@ function holderItem(held: HeldBy, run: Run): Holder {
     name: held.package ?? "",
     version: held.version ?? "",
     grade: holder !== null && isGradedHolder(held, run) ? holder.verdict : null,
-    meta: [
-      "requires ",
-      { code: held.constraint },
-      ...(flags.length > 0 ? [` · itself ${flags.join(" · ")}`] : []),
-    ],
+    meta: [...linkWords(held), ...(flags.length > 0 ? [` · itself ${flags.join(" · ")}`] : [])],
     step:
       step === null
         ? null
-        : step.kind === "require" && step.constraint
-          ? `require ${step.constraint}${where}`
-          : `${step.kind.replaceAll("-", " ")}${where}`,
+        : [ownStep(step, where), stoppedCheckWords(step.check)].filter((w) => w !== null).join(" · "),
   };
 }
 
@@ -384,16 +445,19 @@ function foldWords(rest: readonly HeldBy[], run: Run): string {
   return `${rest.length} more: ${joinAnd([...counts].map(([word, n]) => `${n} ${word}`))}`;
 }
 
+/** §7.9.13's holder rank, the Held by "More" order: the root first, then by the holder's grade in
+ *  `run.graded_verdicts`, then the rest. Lower comes first; equal ranks keep data order. */
+export function holderRank(h: Pick<HeldBy, "source" | "holder">, run: Run): number {
+  if (h.source === "root") return -1;
+  const graded: readonly string[] = run.graded_verdicts;
+  const verdict = h.holder?.verdict ?? "";
+  return graded.includes(verdict) ? graded.indexOf(verdict) : graded.length;
+}
+
 function heldBy(move: AnyMove, run: Run, then: boolean): HeldByBlock | null {
   const holders = move.held_by;
   if (holders.length === 0) return null;
-  const graded: readonly string[] = run.graded_verdicts;
-  const rank = (h: HeldBy): number =>
-    h.source === "root"
-      ? -1
-      : graded.includes(h.holder?.verdict ?? "")
-        ? graded.indexOf(h.holder?.verdict ?? "")
-        : graded.length;
+  const rank = (h: HeldBy): number => holderRank(h, run);
   const fold = holders.length > HOLDERS_SHOWN_MAX;
   const ordered = fold
     ? holders
@@ -439,7 +503,14 @@ export function commandLines(argvs: readonly (readonly string[])[]): string[] {
   return lines.every((line) => line !== null) ? lines : [REFUSED_COMMAND];
 }
 
-export const COMMAND_WORDS = { one: "Command", several: "Commands, in order" } as const;
+export const COMMAND_WORDS = { one: "Command", several: "Commands, in order", check: "Check" } as const;
+
+/** A move card's `commands_label`: a `why-not` step checks why a move is held, it does not make it. */
+export function commandLabel(argvs: readonly (readonly string[])[]): string | null {
+  if (argvs.length === 0) return null;
+  if (argvs.every((argv) => argv[1] === "why-not")) return COMMAND_WORDS.check;
+  return argvs.length > 1 ? COMMAND_WORDS.several : COMMAND_WORDS.one;
+}
 
 function moveCard(
   finding: Finding,
@@ -471,7 +542,7 @@ function moveCard(
     notChecked: move.unverified.length > 0 && names ? move.unverified.map((u) => u.id).join(", ") : null,
     adds: move.adds.map((a) => `${a.id}: ${addsBasisWord(a.basis)}`),
     php: movePhp(finding, move, run, then),
-    after: moveAfter(finding, move),
+    after: moveAfter(finding, move, run),
     composer: composerNotes(finding, move, run, noted),
     heldBy: heldBy(move, run, then),
   };

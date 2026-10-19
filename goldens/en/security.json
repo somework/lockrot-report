@@ -3057,70 +3057,6 @@
     "ignored": [],
     "ladder": []
   },
-  "commonmark": {
-    "summary": [
-      "3 advisories:",
-      "18 on record for this name",
-      "fix: composer update",
-      "lookup complete"
-    ],
-    "counts": [
-      "high 2",
-      "medium 1"
-    ],
-    "meanwhile": null,
-    "caption": [
-      "By severity. Each affects your version, 2.9.1."
-    ],
-    "groups": [],
-    "rows": [
-      {
-        "name": "PKSA-m4t9-vsgq-8khn",
-        "source": null,
-        "deciding": true,
-        "severity": "high",
-        "fix": "fix 2.10.3 on 2.x, your branch (composer update)",
-        "affects": "affects >=2.0.0,<=2.10.1",
-        "ranges": null,
-        "same_as": null
-      },
-      {
-        "name": "PKSA-zyf5-hrxv-hrd7",
-        "source": null,
-        "deciding": false,
-        "severity": "high",
-        "fix": "fix 2.10.0 on 2.x, your branch (composer update)",
-        "affects": "affects >=1.5.0,<2.10.0",
-        "ranges": null,
-        "same_as": null
-      },
-      {
-        "name": "PKSA-m2dq-1fhr-29b1",
-        "source": null,
-        "deciding": false,
-        "severity": "medium",
-        "fix": "fix 2.10.3 on 2.x, your branch (composer update)",
-        "affects": "affects >=1.3.0,<=2.10.1",
-        "ranges": null,
-        "same_as": null
-      }
-    ],
-    "ignored": [],
-    "ladder": [
-      {
-        "branch": "2.x",
-        "marks": [
-          "your branch",
-          "the move"
-        ],
-        "lines": [
-          "2.x your branch the move clears 3 of 3 from 2.10.3",
-          "composer update",
-          "after it: 0, ok"
-        ]
-      }
-    ]
-  },
   "either-critical-dagger": {
     "summary": [
       "1 critical advisory",
@@ -4574,6 +4510,60 @@
     "rows": [],
     "ignored": [],
     "ladder": []
+  },
+  "move-check-dagger": {
+    "summary": [
+      "2 advisories:",
+      "6 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [
+      "medium 1",
+      "low 1"
+    ],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v2.2.0."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-47345",
+        "source": "PKSA-7jn3-yc49-35c6",
+        "deciding": true,
+        "severity": "medium",
+        "fix": "fix v2.3.2 on 2.x, your branch (composer update)",
+        "affects": "affects <2.3.2",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-47344",
+        "source": "PKSA-5mxx-9w1m-fqfb",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v2.3.2 on 2.x, your branch (composer update)",
+        "affects": "affects <2.3.2",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "2.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "2.x your branch the move clears 2 of 2 from v2.3.2",
+          "composer update",
+          "after it: 0, ok"
+        ]
+      }
+    ]
   },
   "not-found-dagger": {
     "summary": [
@@ -6095,69 +6085,6 @@
     "rows": [],
     "ignored": [],
     "ladder": []
-  },
-  "xmlseclibs": {
-    "summary": [
-      "2 advisories:",
-      "4 on record for this name",
-      "fix: composer update",
-      "lookup complete"
-    ],
-    "counts": [
-      "high 1",
-      "medium 1"
-    ],
-    "meanwhile": null,
-    "caption": [
-      "By severity. Each affects your version, 3.1.1."
-    ],
-    "groups": [],
-    "rows": [
-      {
-        "name": "CVE-2026-32313",
-        "source": "PKSA-pr5h-1dpm-9x4k",
-        "deciding": true,
-        "severity": "high",
-        "fix": "fix 3.1.5 on 3.x, your branch (composer update)",
-        "affects": "affects <3.1.5",
-        "ranges": null,
-        "same_as": null
-      },
-      {
-        "name": "CVE-2025-66578",
-        "source": "PKSA-pcdf-qvqm-w4tv",
-        "deciding": false,
-        "severity": "medium",
-        "fix": "fix 3.1.5 on 3.x, your branch (composer update)",
-        "affects": "affects <=3.1.3",
-        "ranges": null,
-        "same_as": null
-      }
-    ],
-    "ignored": [],
-    "ladder": [
-      {
-        "branch": "3.x",
-        "marks": [
-          "your branch",
-          "the move"
-        ],
-        "lines": [
-          "3.x your branch the move clears 2 of 2 from 3.1.5",
-          "composer update",
-          "after it: 0, ok"
-        ]
-      },
-      {
-        "branch": "4.x",
-        "marks": [],
-        "lines": [
-          "4.x clears 2 of 2 from 4.0.0",
-          "composer update",
-          "after it: 0, ok, if Composer resolves it"
-        ]
-      }
-    ]
   },
   "yaml-3.4": {
     "summary": [

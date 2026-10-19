@@ -44,7 +44,7 @@
   flex: none;
   height: 100%;
   border-right: 1px solid var(--row-bg, var(--bg));
-  background: var(--tone);
+  background: var(--tone-mark);
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
@@ -52,14 +52,14 @@
   border-right: 0;
 }
 .sbar-seg.is-corroborating {
-  background: repeating-linear-gradient(-45deg, var(--tone) 0 1.5px, var(--tone-soft) 1.5px 3.5px);
-  box-shadow: inset 0 0 0 1px var(--tone);
+  background: repeating-linear-gradient(-45deg, var(--tone-mark) 0 1.5px, var(--tone-soft) 1.5px 3.5px);
+  box-shadow: inset 0 0 0 1px var(--tone-mark);
 }
 .sbar-seg.is-security {
   background:
-    radial-gradient(circle, var(--tone) 0 1px, transparent 1.3px) 0 0 / 4px 4px,
+    radial-gradient(circle, var(--tone-mark) 0 1px, transparent 1.3px) 0 0 / 4px 4px,
     var(--tone-soft);
-  box-shadow: inset 0 0 0 1px var(--tone);
+  box-shadow: inset 0 0 0 1px var(--tone-mark);
 }
 /* Cut where it crosses the track's end, as an over-long age bar is. */
 .sbar-seg.is-cut::after {
@@ -77,7 +77,7 @@
   position: absolute;
   right: -9px;
   top: -2px;
-  font: 700 var(--text-13)/1 var(--mono);
+  font: 700 var(--text-s)/1 var(--mono);
   color: var(--ink-2);
 }
 .sbar-n {
@@ -89,7 +89,10 @@
     top: 1px;
     height: 14px;
   }
-  .sbar-seg {
+  /* The role classes set their own fills, so each is named to drop it. */
+  .sbar-seg,
+  .sbar-seg.is-corroborating,
+  .sbar-seg.is-security {
     border: 1px solid CanvasText;
     background: Canvas;
     box-shadow: none;
@@ -101,14 +104,6 @@
   .sbar-seg.is-security {
     border-style: dotted;
     border-width: 1.5px;
-  }
-  .sbar-n {
-    display: block;
-    position: absolute;
-    inset: 0;
-    font: 600 var(--text-9-5)/12px var(--mono);
-    text-align: center;
-    color: CanvasText;
   }
   .sbar-tick {
     border-left-color: CanvasText;
@@ -123,7 +118,7 @@
     display: block;
     position: absolute;
     inset: 0;
-    font: 600 var(--text-9-5)/10px var(--mono);
+    font: 600 var(--text-xs)/10px var(--mono);
     text-align: center;
     color: var(--bg);
   }
@@ -134,5 +129,12 @@
   }
   .sbar-tick {
     border-left-color: var(--muted);
+  }
+}
+
+/* A one-segment bar's number is the row's own score, printed beside it. */
+@media print {
+  .sbar-seg:only-child > .sbar-n {
+    display: none;
   }
 }

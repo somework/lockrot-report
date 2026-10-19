@@ -16,15 +16,15 @@ const WHEEL_TRANSACTION_MS = 1600;
 
 const BREAKPOINTS = [
   { label: "1440×900 (side)", width: 1440, height: 900 },
-  { label: "1024×900 (sheet)", width: 1024, height: 900 },
+  { label: "999×900 (sheet)", width: 999, height: 900 },
   { label: "390×844 (sheet)", width: 390, height: 844 },
 ] as const;
 
-/** `is-side` (≥1181px) chains a wheel that has exhausted the panel's own scroll into the page
+/** `is-side` (≥1000px) chains a wheel that has exhausted the panel's own scroll into the page
  *  (PD-DETAIL-5); `is-sheet` (below that) keeps `overscroll-behavior: contain`, since it is a
  *  full-screen overlay with the page's own scroll locked behind it (M13). */
 const SHEET_BREAKPOINTS = [
-  { label: "1024×900 (sheet)", width: 1024, height: 900 },
+  { label: "999×900 (sheet)", width: 999, height: 900 },
   { label: "390×844 (sheet)", width: 390, height: 844 },
 ] as const;
 
@@ -53,7 +53,7 @@ for (const { label, width, height } of BREAKPOINTS) {
       // Nothing opens by itself at any width (PD-ROWS-9), so the list is all there is on load.
       expect((await report.detail()).open).toBe(false);
 
-      const row = page.getByRole("listitem", { name: LONG_PACKAGE, exact: true });
+      const row = page.getByRole("row", { name: LONG_PACKAGE, exact: true });
       const before = await scrollYAfterHover(page, row);
       await page.mouse.wheel(0, 600);
       await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(before);
@@ -163,7 +163,7 @@ test.describe("report-2: the sheet scrolls alone", () => {
       await page.mouse.wheel(0, 400);
       await expect.poll(() => container.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
 
-      await page.getByRole("listitem", { name: "twig/twig", exact: true }).click();
+      await page.getByRole("row", { name: "twig/twig", exact: true }).click();
 
       await expect(page.getByRole("complementary", { name: "twig/twig" })).toBeVisible();
       await expect.poll(() => container.evaluate((el) => el.scrollTop)).toBe(0);

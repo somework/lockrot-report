@@ -1,7 +1,8 @@
 import { Fragment } from "preact";
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import { DETAIL_WORDS } from "../../domain/detailWords";
-import { COMMAND_WORDS } from "../../domain/moveCards";
+import { Breakable } from "./PkgName";
+import { commandLabel } from "../../domain/moveCards";
 import {
   commandLine,
   commandWords,
@@ -150,9 +151,7 @@ export function CopyMove({
   return (
     <div className={className === undefined ? "d2-copy" : `d2-copy ${className}`}>
       <div className="d2-copy-bar">
-        <span className="eyebrow">
-          {label ?? (argvs.length > 1 ? COMMAND_WORDS.several : COMMAND_WORDS.one)}
-        </span>
+        <span className="eyebrow">{label ?? commandLabel(argvs)}</span>
         {printable && (
           <button type="button" className="d2-btn d2-copy-btn" onClick={copy}>
             {LABELS[status]}
@@ -209,7 +208,9 @@ export function CopyMove({
               {(commandWords(argv, shell) ?? []).map((word, at) => (
                 <Fragment key={at}>
                   {at > 0 && " "}
-                  <span className="d3-arg">{word}</span>
+                  <span className="d3-arg">
+                    <Breakable text={word} className="d3-arg-part" />
+                  </span>
                 </Fragment>
               ))}
             </span>

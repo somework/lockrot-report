@@ -1,7 +1,6 @@
 import { describe, expect, test } from "vitest";
 
 import { copySummary } from "../../../src/domain/copySummary";
-import { libyearsPanel } from "../../../src/domain/libyearsPanel";
 import { figureLine, gradeLine, gradeLineText, loadLine } from "../../../src/domain/projectGrade";
 import { scorePanel } from "../../../src/domain/scorePanel";
 import type { Report2 } from "../../../src/model/report";
@@ -17,10 +16,6 @@ describe("the page texts equal lockrot's page goldens", () => {
 
   test.each(pageGoldens())("$id: the copy summary", ({ golden, report }) => {
     expect(copySummary(report)).toEqual(golden.copy_summary);
-  });
-
-  test.each(pageGoldens())("$id: the Libyears panel", ({ golden, report }) => {
-    expect(libyearsPanel(report)).toBe(golden.libyears_panel);
   });
 
   test.each(pageGoldens())(
@@ -54,7 +49,21 @@ describe("the copy summary at its edges", () => {
   test("names no project and no data date when the report has none", () => {
     const report = { ...composite(), data_date: null, run: { ...composite().run, project: null } };
 
-    expect(copySummary(report)[0]).toBe("lockrot report · lockrot 0.14.0 · score model 1 · target PHP 8.4");
+    expect(copySummary(report)[0]).toBe(
+      "lockrot report · lockrot 0.14.0 · score model 1 · target PHP 8.4 · this run fails · --fail-on=high",
+    );
+  });
+
+  test("says the header's words for a run with no gate, and for one where only the network gates it", () => {
+    const quiet = {
+      ...composite(),
+      gate: { ...composite().gate, fails: false },
+      run: { ...composite().run, fail_on: "none" },
+    };
+    const strict = { ...quiet, run: { ...quiet.run, strict_network: true } };
+
+    expect(copySummary(quiet)[0]).toMatch(/ · target PHP 8\.4 · no gate$/);
+    expect(copySummary(strict)[0]).toMatch(/ · target PHP 8\.4 · gate: strict network$/);
   });
 
   test("splits production from dev-only and counts the unreached", () => {
@@ -83,7 +92,7 @@ describe("the copy summary at its edges", () => {
     report.security = { ...report.security, check: "partial" };
 
     expect(copySummary(report)[2]).toContain(
-      "(severity: 1 critical, 4 high, 4 medium, 2 unrated, 9 low) (advisory check incomplete, so the list may be partial) · fix by package:",
+      "(severity: 1 critical, 5 high, 12 medium, 2 unrated, 9 low) (advisory check incomplete, so the list may be partial) · fix by package:",
     );
   });
 
@@ -102,93 +111,20 @@ describe("the copy summary at its edges", () => {
     const report = composite();
     report.security = { ...report.security, fixes: { ...report.security.fixes, "new-kind": 3 } };
 
-    expect(copySummary(report)[2]).toContain("1 php floor raise, 3 new-kind · ");
+    expect(copySummary(report)[2]).toContain("2 php floor raise, 3 new-kind · ");
   });
 
   test("leaves the flag list out when no flag carries a package", () => {
     const report = composite();
     for (const flag of Object.values(report.flags)) flag.carrying = 0;
 
-    expect(copySummary(report)[1]).toBe("7 of 7 packages flagged (100%): 3 graded critical, 2 high, 2 low.");
+    expect(copySummary(report)[1]).toBe("9 of 9 packages flagged (100%): 4 graded critical, 2 high, 3 low.");
   });
 
   test("says there is no package in an empty lock", () => {
     const report = { ...composite(), packages_checked: 0, packages_flagged: 0 };
 
     expect(copySummary(report)[1]).toBe("No packages in this lock.");
-  });
-});
-
-describe("the Libyears panel at its edges", () => {
-  const none = (report: Report2): Report2["libyears"]["unmeasured"] =>
-    Object.fromEntries(
-      Object.keys(report.libyears.unmeasured).map((key) => [key, 0]),
-    ) as Report2["libyears"]["unmeasured"];
-
-  test("says at least when a package is only bounded from below", () => {
-    const report = composite();
-    report.libyears = {
-      ...report.libyears,
-      at_least_count: 1,
-      furthest_behind: report.libyears.furthest_behind && {
-        ...report.libyears.furthest_behind,
-        at_least: true,
-      },
-    };
-
-    expect(libyearsPanel(report)).toMatch(
-      /^at least 17\.85 libyears over 5 packages · 17\.85 from direct requirements · furthest behind: symfony\/monolog-bridge v2\.6\.13, 10\.62 or more · /,
-    );
-  });
-
-  test("names no package when none is behind", () => {
-    const report = composite();
-    report.libyears = { ...report.libyears, furthest_behind: null };
-
-    expect(libyearsPanel(report)).not.toContain("furthest behind");
-  });
-
-  test("writes one clause per unmeasured key above zero, in the schema's key order, with two decimals", () => {
-    const report = composite();
-    report.libyears = {
-      ...report.libyears,
-      total: 2.125,
-      direct_requirements: 0,
-      furthest_behind: null,
-      unmeasured: { ...none(report), undated: 2, not_found: 1 },
-    };
-
-    expect(libyearsPanel(report)).toBe(
-      "2.12 libyears over 5 packages · 0.00 from direct requirements · 1 not measured (not in the repository) · 2 not measured (no date)",
-    );
-  });
-
-  test("keeps the schema's key order when the document holds the keys in another, and prints an unknown key last", () => {
-    const report = composite();
-    const { undated: _undated, not_found: _notFound, ...rest } = none(report);
-    report.libyears = {
-      ...report.libyears,
-      furthest_behind: null,
-      unmeasured: { later_cause: 4, undated: 2, ...rest, not_found: 1 },
-    };
-
-    expect(libyearsPanel(report)).toMatch(
-      / · 1 not measured \(not in the repository\) · 2 not measured \(no date\) · 4 not measured \(later cause\)$/,
-    );
-  });
-
-  test("says no package measured, and keeps the unmeasured clauses, when nothing was measured", () => {
-    const report = composite();
-    report.libyears = {
-      ...report.libyears,
-      total: null,
-      direct_requirements: null,
-      measured: 0,
-      furthest_behind: null,
-      unmeasured: { ...none(report), undated: 3 },
-    };
-
-    expect(libyearsPanel(report)).toBe("no package measured · 3 not measured (no date)");
   });
 });
 

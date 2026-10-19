@@ -194,7 +194,6 @@
       "text": "It was written for PHP 5 and admits 8.4 untested."
     }
   ],
-  "commonmark": [],
   "either-critical-dagger": [
     {
       "flag": "abandoned",
@@ -351,6 +350,7 @@
   ],
   "long-range-dagger": [],
   "many-dependents": [],
+  "move-check-dagger": [],
   "not-found-dagger": [
     {
       "flag": "old-promise",
@@ -451,12 +451,6 @@
     }
   ],
   "wp-config": [],
-  "xmlseclibs": [
-    {
-      "flag": "old-promise",
-      "text": "It was written for PHP 5 and admits 8.4 untested."
-    }
-  ],
   "yaml-3.4": [
     {
       "flag": "old-promise",

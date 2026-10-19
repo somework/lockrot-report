@@ -19,7 +19,7 @@ import {
   radiusKeys2,
   radiusAnswer2,
   radiusLayout2,
-  radiusRowSay,
+  radiusRowFacts,
   type RadiusFinding2,
   type RadiusLayout2,
   type RadiusRow2,
@@ -64,8 +64,10 @@ function ChildRow2({ finding, depth, note, report, first }: ChildProps) {
       tabIndex={rowTabIndex(finding.package, cursor, first)}
       {...openInteractions(finding.package, dispatch)}
     >
-      <span className="r2-score">{finding.score.total}</span>
       <span className="r2-grade">{finding.verdict}</span>
+      <span className="r2-score">
+        <span className="r2-lbl">score</span> {finding.score.total}
+      </span>
       <Name dev={finding.dev} pkg={finding.package} version={finding.version} />
       {note !== null && <span className="r2-via">{note}</span>}
       <span className="r2-pills">
@@ -95,6 +97,7 @@ function ParentRow2({
   const canOpen = row.count > 0;
   const open = canOpen && (printed || isRowOpen(layout, row, input));
   const kidsId = `${useId()}-kids`;
+  const facts = radiusRowFacts(report, row);
   const toggle = (event: Event) => {
     event.stopPropagation();
     dispatch({ type: "disclose", key: rowKey(row.package), open: !open });
@@ -120,12 +123,19 @@ function ParentRow2({
             </span>
           )}
         </span>
-        <span className="r2-say">
-          {radiusRowSay(report, row)}
-          {row.count > 0 && row.unfiltered > row.count && (
-            <span className="r2-also"> {RADIUS_WORDS.filtered(row.unfiltered - row.count)}</span>
-          )}
-        </span>
+        {facts.count !== null && (
+          <span className="r2-count">
+            <span className="r2-n">{facts.count}</span> <span className="r2-unit">flagged</span>
+          </span>
+        )}
+        {(facts.mix !== null || facts.note !== null) && (
+          <span className="r2-mix">
+            {facts.mix ?? facts.note}
+            {row.count > 0 && row.unfiltered > row.count && (
+              <span className="r2-also"> · {RADIUS_WORDS.filtered(row.unfiltered - row.count)}</span>
+            )}
+          </span>
+        )}
         {canOpen && (
           <button
             type="button"

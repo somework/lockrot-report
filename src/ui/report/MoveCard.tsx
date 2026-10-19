@@ -72,12 +72,14 @@ export function MoveCard({ card, run }: { card: Card; run: Run }) {
         )}
         {after !== null && (
           <Fact label={DETAIL_WORDS.after}>
-            <span className={`d2-after ${toneClass(verdictTone(run.score_model, after.verdict))}`}>
-              {after.result}
-            </span>
-            {after.conditions.map((condition) => (
-              <span key={condition} className="d3-after-cond">
-                {condition}
+            {after.result !== null && after.verdict !== null && (
+              <span className={`d2-after ${toneClass(verdictTone(run.score_model, after.verdict))}`}>
+                {after.result}
+              </span>
+            )}
+            {after.conditions.map((condition, i) => (
+              <span key={i} className="d3-after-cond">
+                <RichText rich={condition} />
               </span>
             ))}
           </Fact>

@@ -5,28 +5,33 @@
 
 import type { Report2 } from "../model/report";
 import { day, fixed, plural } from "./format";
-import { fixLabel } from "./pageVocabulary";
+import { gateFact, gateHeadline, gateHeadlineLine } from "./gate";
+import { ADVISORY_NOT_RUN, fixLabel } from "./pageVocabulary";
 import { sharePhrase } from "./summary";
 
 const DOT = " · ";
 
 /** `a`, `all n a`, `all n b` or `a, b` for two counts that make the total. */
-function split(total: number, a: number, aWord: string, bWord: string): string {
+function split(total: number, a: number, aWord: string, bWord: string, numbered = false): string {
   const b = total - a;
-  if (total === 1) return a === 1 ? aWord : bWord;
+  if (total === 1) return `${numbered ? "1 " : ""}${a === 1 ? aWord : bWord}`;
   if (b === 0) return `all ${total} ${aWord}`;
   if (a === 0) return `all ${total} ${bWord}`;
   return `${a} ${aWord}, ${b} ${bWord}`;
 }
 
+/** The header's facts, the gate in the header's own words last: its fact, else its "no gate" label. */
 function headLine(report: Report2): string {
   const { run, lockrot } = report;
+  const headline = gateHeadline(report);
+  const gate = headline === null ? (gateFact(report)?.label ?? null) : gateHeadlineLine(headline);
   return [
     run.project === null ? "lockrot report" : `lockrot report for ${run.project}`,
     ...(report.data_date === null ? [] : [`data as of ${day(report.data_date)}`]),
     `lockrot ${lockrot.version}`,
     `score model ${run.score_model.id}`,
     `target PHP ${run.target_php}`,
+    ...(gate === null ? [] : [gate]),
   ].join(DOT);
 }
 
@@ -49,17 +54,26 @@ function countLine(report: Report2): string {
   ].join(" ");
 }
 
-/** "all 7 in production", "6 required directly, 1 pulled in": the scope rollup of root `rot_depth`. */
-export function scopeClauses({ packages_flagged: flagged, rot_depth: depth }: Report2): string[] {
+/** "all 7 in production", "6 required directly, 1 pulled in": the scope rollup of root `rot_depth`.
+ *  With `numbered`, a lone package keeps its count ("1 in production"), as Overview prints it. */
+export function scopeClauses(
+  { packages_flagged: flagged, rot_depth: depth }: Report2,
+  numbered = false,
+): string[] {
   const total = depth.production + depth.development;
   if (flagged === 0 || total === 0) return [];
   const { direct, transitive, unreached } = depth.by_reach;
   const reached = direct + transitive;
+  // The Overview's scope line names the unreached only beside a reached count (golden `lead_scope`).
+  const unreachedShown = unreached > 0 && (!numbered || reached > 0);
   const reach = [
-    ...(reached === 0 ? [] : [split(reached, direct, "required directly", "pulled in")]),
-    ...(unreached === 0 ? [] : [`${unreached} unreached`]),
+    ...(reached === 0 ? [] : [split(reached, direct, "required directly", "pulled in", numbered)]),
+    ...(unreachedShown ? [`${unreached} unreached`] : []),
   ].join(", ");
-  return [split(total, depth.production, "in production", "dev-only"), ...(reach === "" ? [] : [reach])];
+  return [
+    split(total, depth.production, "in production", "dev-only", numbered),
+    ...(reach === "" ? [] : [reach]),
+  ];
 }
 
 /** Whether the counted advisories may not be every advisory (SPEC §7.9.15's hedge). It reads no
@@ -87,9 +101,11 @@ export function fixCounts({ security, run }: Report2): { kind: string; label: st
 
 /** The Security clause when no advisory counted. */
 export const noAdvisoryWords = (report: Report2): string =>
-  advisoryListPartial(report)
-    ? "no advisory found, but the advisory check was incomplete"
-    : "no security advisory";
+  report.security.check === "not_run"
+    ? ADVISORY_NOT_RUN
+    : advisoryListPartial(report)
+      ? "no advisory found, but the advisory check was incomplete"
+      : "no security advisory";
 
 function securityClauses(report: Report2): string[] {
   const { security, run } = report;

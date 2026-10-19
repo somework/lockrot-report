@@ -219,3 +219,15 @@ test.describe("a partial update (case partial)", () => {
     await expect(line.locator("code")).toHaveText("composer update laravel/framework");
   });
 });
+
+test("drupal/core at target PHP 8.1: the move card and Held by say what Composer's solver found", async ({
+  page,
+}) => {
+  const sheet = await openSheet(page, "drupal-site-php81-drupal-core", "drupal/core");
+  const card = sheet.locator(".d3-move-facts").first();
+  const holders = sheet.locator(".d3-holders").first();
+
+  await expect(card.locator(".d3-after-cond")).toContainText(["Composer refuses the move"]);
+  await holders.locator(".d3-fold > summary").click();
+  await expect(holders).toContainText("its own step: require ^10.6.19 on 10.x · Composer refuses the move");
+});

@@ -4,8 +4,9 @@
 import type { SignalId } from "../model/types";
 import { SIGNAL_IDS } from "../model/types";
 
-/** The five CSS tone tokens a grade pill, chip or bar segment can carry. */
-export type Tone = "crit" | "high" | "med" | "low" | "none";
+/** The CSS tone tokens a grade pill, chip or bar segment can carry: one per band, "none" for a zero
+ *  score, "unk" for no data. */
+export type Tone = "crit" | "high" | "med" | "low" | "none" | "unk";
 
 /** No prototype, so a key a report chose (`constructor`, `__proto__`, `toString`) finds nothing
  *  rather than an inherited member. */

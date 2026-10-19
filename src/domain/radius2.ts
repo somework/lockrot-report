@@ -20,27 +20,11 @@ export type RadiusFinding2 = Finding;
 export type RadiusLayout2 = RadiusLayout<RadiusFinding2>;
 export type RadiusRow2 = RadiusRow<RadiusFinding2>;
 
-/** The packages a requirement's S7 names, with their chains. */
-function members(report: Report2, requirement: string, own: Finding | undefined): readonly RadiusMember[] {
+/** The packages a requirement's S7 names, with their chains; none without an S7 (I25 gives every
+ *  exposure requirement a finding). */
+function members(own: Finding | undefined): readonly RadiusMember[] {
   const s7 = own?.signals.find(({ id }) => id === "S7");
-  if (s7 !== undefined) return (s7.data as S7).packages;
-  if (own !== undefined) return [];
-  // shortcut: stands in only for a document that breaks I25 (an exposure requirement with no
-  // finding, so no S7), goes when the lockrot goldens give each such requirement a finding and an S7.
-  const graded: readonly string[] = report.run.graded_verdicts;
-  const shared = new Set(report.unattributed.map(({ package: name }) => name));
-  return report.findings
-    .filter(
-      (f) =>
-        graded.includes(f.verdict) &&
-        f.package !== requirement &&
-        !shared.has(f.package) &&
-        f.direct_dependents.includes(requirement),
-    )
-    .map((f) => ({
-      package: f.package,
-      chain: f.chain[0] === requirement ? f.chain : [requirement, f.package],
-    }));
+  return s7 === undefined ? [] : (s7.data as S7).packages;
 }
 
 /** `visible` is the tab's filtered list, `all` its population. */
@@ -54,7 +38,7 @@ export function radiusLayout2(
     report: {
       exposure: report.exposure.map((entry) => ({
         ...entry,
-        members: members(report, entry.package, byName.get(entry.package)),
+        members: members(byName.get(entry.package)),
       })),
       unattributed: report.unattributed,
       findings: report.findings,
@@ -117,14 +101,22 @@ export function radiusAnswer2(layout: RadiusLayout2): string {
   return `${answer.held} of the ${flagged} pulled in sit under ${named}.`;
 }
 
-/** A requirement row's sentence: what it lists, by grade; lockrot's count alone when its S7 names no
- *  finding of the report. */
-export function radiusRowSay(report: Report2, row: RadiusRow2): string {
-  if (row.count === 0)
-    return row.unfiltered > 0
-      ? `None of the ${plural(row.unfiltered, "flagged package", "flagged packages")} listed under it match the filter.`
-      : `Pulls in ${plural(row.exposure, "flagged package", "flagged packages")}.`;
-  return `Pulls in ${plural(row.count, "flagged package", "flagged packages")}: ${gradeMix(report, row.pulled)}.`;
+/** A requirement row's facts: the count it lists and its grade split; lockrot's count alone when
+ *  its S7 names no finding of the report; no count, and a note, when the filter hides them all. */
+export interface RadiusRowFacts {
+  readonly count: number | null;
+  readonly mix: string | null;
+  readonly note: string | null;
+}
+
+export function radiusRowFacts(report: Report2, row: RadiusRow2): RadiusRowFacts {
+  if (row.count > 0) return { count: row.count, mix: gradeMix(report, row.pulled), note: null };
+  if (row.unfiltered === 0) return { count: row.exposure, mix: null, note: null };
+  return {
+    count: null,
+    mix: null,
+    note: `None of the ${plural(row.unfiltered, "flagged package", "flagged packages")} listed under it match the filter.`,
+  };
 }
 
 export const RADIUS_WORDS = {

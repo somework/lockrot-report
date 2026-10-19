@@ -18,7 +18,7 @@ import { advisoryRows } from "./advisoryRows";
 import { pluralNoun } from "./format";
 import { joinAnd } from "./joinWords";
 import { safeHref } from "./links";
-import { fixLabel, lookupWord } from "./pageVocabulary";
+import { fixLabel, lookupWord, stoppedCheckWords } from "./pageVocabulary";
 import { vocabTable } from "./vocab";
 import { newTab, type Rich } from "./rich";
 import { isPrintableName, posixArgument } from "./shellArgv";
@@ -39,17 +39,21 @@ export function holderWord({ source, package: name }: Pick<HeldBy, "source" | "p
   return source === "root" || name === null ? "composer.json" : name;
 }
 
-/** "after it: {bound}{total}, {verdict}", with its conditions (G139). */
-export function afterIt(applied: BranchFixes["if_applied"]): string | null {
-  if (applied === null) return null;
+/** "after it: {bound}{total}, {verdict}", with its conditions (G139). A move that the check stopped
+ *  drops the Composer caveat, and " · " and its short check words end the line. */
+export function afterIt(applied: BranchFixes["if_applied"], stopped: string | null = null): string | null {
+  if (applied === null) return stopped;
   const noNew = applied.assumes.includes("no_new_advisories");
   const bound = applied.at_most ? (noNew ? "at most, from the facts it checked, " : "at most ") : "";
   return (
     `after it: ${bound}${applied.total}, ${applied.verdict}` +
-    (applied.assumes.includes("composer_resolves") ? ", if Composer resolves it" : "") +
-    (noNew ? ", advisories on its new versions not checked" : "")
+    (stopped === null && applied.assumes.includes("composer_resolves") ? `, ${COMPOSER_CAVEAT}` : "") +
+    (noNew ? ", advisories on its new versions not checked" : "") +
+    (stopped === null ? "" : ` · ${stopped}`)
   );
 }
+
+export const COMPOSER_CAVEAT = "if Composer resolves it";
 
 export interface SecurityRung {
   readonly branch: string;
@@ -94,7 +98,7 @@ export function securityRungs(finding: Finding, metadata: RepositoryMetadata | n
         kind:
           ladderFixWord(fixes.fix_kind ?? "unknown") +
           (holders.length > 0 ? ` · held by ${held(holders)}` : ""),
-        after: afterIt(fixes.if_applied),
+        after: afterIt(fixes.if_applied, stoppedCheckWords(fixes.check)),
         afterVerdict: fixes.if_applied?.verdict ?? null,
       },
     ];
@@ -241,7 +245,7 @@ export interface SecurityBlock extends SecuritySummary {
   readonly ladder: readonly SecurityRung[];
 }
 
-function affects(range: string | null): AdvisoryAffects | null {
+export function advisoryAffects(range: string | null): AdvisoryAffects | null {
   if (!range) return null;
   const n = rangeCount(range);
   return {
@@ -291,7 +295,7 @@ export function securityBlock(
       deciding: row.deciding,
       severity: row.severity,
       fix: advisoryFixWords(row.fix),
-      affects: affects(row.affected_versions),
+      affects: advisoryAffects(row.affected_versions),
       sameAs: first === undefined ? null : { id: sorted[first]?.id ?? "", at: first },
     };
   });

@@ -28,10 +28,10 @@ test.describe("on the All packages tab, which draws every finding whatever its g
   test("direct:yes / direct:no narrow on the direct flag", async () => {
     await report.search("direct:yes");
     expect(await report.rows()).not.toContain("symfony/polyfill-intl-idn");
-    expect(await report.rows()).toHaveLength(6);
+    expect(await report.rows()).toHaveLength(7);
 
     await report.search("direct:no");
-    expect(await report.rows()).toEqual(["symfony/polyfill-intl-idn"]);
+    expect(await report.rows()).toEqual(["symfony/polyfill-intl-idn", "friendsofsymfony/oauth2-php"]);
   });
 
   test("dev:yes / dev:no narrow on the dev flag (none of this lock's flagged packages is dev-only)", async () => {
@@ -39,19 +39,19 @@ test.describe("on the All packages tab, which draws every finding whatever its g
     expect(await report.rows()).toEqual([]);
 
     await report.search("dev:no");
-    expect(await report.rows()).toHaveLength(7);
+    expect(await report.rows()).toHaveLength(9);
   });
 
   test("repeating direct:/dev: overwrites rather than accumulating", async () => {
     // direct and dev are single-valued: the second occurrence wins outright, unlike verdict: and
     // lead:, which OR together.
     await report.search("direct:yes direct:no");
-    expect(await report.rows()).toEqual(["symfony/polyfill-intl-idn"]);
+    expect(await report.rows()).toEqual(["symfony/polyfill-intl-idn", "friendsofsymfony/oauth2-php"]);
   });
 
   test("a whitespace-only query matches everything (the query is trimmed before it is split)", async () => {
     await report.search("   ");
-    expect(await report.rows()).toHaveLength(7);
+    expect(await report.rows()).toHaveLength(9);
   });
 
   test("WS-Q: a whitespace-only query is not counted as an active filter (DESIGN.md §4)", async () => {
@@ -84,7 +84,7 @@ test.describe("on a report-2 page", () => {
     await report.search("flag:old-promise flag:stale");
     expect(await report.rows()).toEqual(["tubalmartin/cssmin"]);
     await report.search("lead:left-behind");
-    expect(await report.rows()).toEqual(["symfony/monolog-bridge"]);
+    expect(await report.rows()).toEqual(["symfony/monolog-bridge", "guzzlehttp/guzzle"]);
   });
 
   test("verdict: widens on repeats, and priority: reads as verdict:", async () => {
@@ -94,16 +94,22 @@ test.describe("on a report-2 page", () => {
       "tubalmartin/cssmin",
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
+      "friendsofsymfony/oauth2-php",
     ]);
   });
 
   test("score:>=N compares with the published total", async () => {
     await report.search("score:>=32");
-    expect(await report.rows()).toEqual(["twig/twig", "symfony/monolog-bridge", "symfony/debug"]);
+    expect(await report.rows()).toEqual([
+      "twig/twig",
+      "symfony/monolog-bridge",
+      "guzzlehttp/guzzle",
+      "symfony/debug",
+    ]);
   });
 
   test("direct:no keeps the packages no requirement names directly", async () => {
     await report.search("direct:no");
-    expect(await report.rows()).toEqual(["symfony/polyfill-intl-idn"]);
+    expect(await report.rows()).toEqual(["symfony/polyfill-intl-idn", "friendsofsymfony/oauth2-php"]);
   });
 });

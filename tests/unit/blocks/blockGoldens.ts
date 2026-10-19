@@ -3,7 +3,7 @@
 import { ageRows } from "../../../src/domain/ageRows";
 import { branchesLead, branchTimeline, laneMarks, laneWords } from "../../../src/domain/branchTimeline";
 import type { Holder, HeldByBlock } from "../../../src/domain/moveCards";
-import { commandLines, holderName, moveCards, STEP_LABEL } from "../../../src/domain/moveCards";
+import { commandLabel, commandLines, holderName, moveCards, STEP_LABEL } from "../../../src/domain/moveCards";
 import { gateLines, qualifiers, reachLines } from "../../../src/domain/qualifierRows";
 import { plain } from "../../../src/domain/rich";
 import { rungLines, securityBlock } from "../../../src/domain/securityBlock";
@@ -84,6 +84,7 @@ export function blockGolden(
         heading: c.heading,
         action: plain(c.action),
         commands: commandLines(c.argvs),
+        commands_label: commandLabel(c.argvs),
         clears: c.clears,
         stays: c.stays,
         not_checked: c.notChecked,
@@ -92,7 +93,8 @@ export function blockGolden(
           c.php === null
             ? null
             : { head: c.php.head === null ? null : plain(c.php.head), lines: c.php.lines },
-        after: c.after === null ? null : { result: c.after.result, conditions: c.after.conditions },
+        after:
+          c.after === null ? null : { result: c.after.result, conditions: c.after.conditions.map(plain) },
         composer: c.composer.map((n) => ({ text: plain(n.text), items: n.items })),
       }));
     case "held_by":

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { report2Url } from "./support/pages";
 import { advisoryRows } from "./support/report2/advisories";
 import { openDetail2 } from "./support/report2/detail";
-import { findingsSurface } from "./support/report2/findings";
+import { findingsRows, findingsSurface } from "./support/report2/findings";
 import { packagesOrder } from "./support/report2/packages";
 
 /** report2-ok-unchecked: five packages checked, one `ok` finding, so nothing is flagged. */
@@ -17,7 +17,7 @@ test.describe("report-2: a lock with nothing flagged", () => {
     page,
   }) => {
     await expect(page.getByRole("tab", { name: /^Findings/ })).toHaveText("Findings0");
-    await expect(findingsSurface(page).locator("li[data-pkg]")).toHaveCount(0);
+    await expect(findingsRows(page)).toHaveCount(0);
     await expect(findingsSurface(page)).toContainText("Nothing was flagged.");
     await expect(findingsSurface(page)).not.toContainText("matches this filter");
   });

@@ -21,11 +21,11 @@ for (const view of ["overview", "findings", "advisories", "packages", "radius", 
 test("Findings at 320 px shows the whole long version", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto(`${pageUrl(FIXTURES.longVersionReport2)}#view=findings`);
-  const version = page.locator('li[data-pkg="symfony/yaml"] .fc-ver');
+  const version = page.locator('[role="row"][data-pkg="symfony/yaml"] .fc-ver');
   await expect(version).toHaveText(LONG_VERSION);
   // An inline box has no client width in every engine, so the version is held to its row's box.
   const outside = await version.evaluate((el) => {
-    const row = el.closest("li")?.getBoundingClientRect();
+    const row = el.closest('[role="row"]')?.getBoundingClientRect();
     const box = el.getBoundingClientRect();
     return row === undefined ? true : box.left < row.left || box.right > row.right + 1;
   });

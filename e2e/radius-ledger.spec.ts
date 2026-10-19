@@ -13,17 +13,20 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     await expect(radiusSurface(page).locator(".r2-answer")).toBeVisible();
   };
 
-  test("answers first, with the one requirement the composite's transitive package sits under", async ({
+  test("answers first, with the requirement that holds half of the flagged packages pulled in", async ({
     page,
   }) => {
     await go(page, "composite");
-    // composite: symfony/polyfill-intl-idn (low) reaches through guzzlehttp/guzzle, the one exposure row.
+    // composite: symfony/polyfill-intl-idn (low) reaches through guzzlehttp/guzzle and
+    // friendsofsymfony/oauth2-php (low) through friendsofsymfony/oauth-server-bundle: the two
+    // exposure rows, one flagged package each, so the first holds half of the 2.
     await expect(radiusSurface(page).locator(".r2-answer")).toHaveText(
-      "1 flagged package pulled in, under guzzlehttp/guzzle.",
+      "1 of the 2 flagged packages pulled in sit under friendsofsymfony/oauth-server-bundle.",
     );
-    await expect(radiusRow(page, "guzzlehttp/guzzle").locator(".r2-say")).toHaveText(
-      "Pulls in 1 flagged package: 1 low.",
-    );
+    for (const pkg of ["friendsofsymfony/oauth-server-bundle", "guzzlehttp/guzzle"]) {
+      await expect(radiusRow(page, pkg).locator(".r2-count")).toHaveText("1 flagged");
+      await expect(radiusRow(page, pkg).locator(".r2-mix")).toHaveText("1 low");
+    }
   });
 
   test("M25: the toggle states as many packages as the row then lists", async ({ page }) => {
@@ -49,10 +52,8 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     const exposure = wallabag?.exposure ?? [];
     expect(exposure.length).toBeGreaterThan(1);
     await expect.poll(() => radiusRowPackages(page)).toEqual(exposure.map((entry) => entry.package));
-    const counts = await radiusSurface(page).locator("li.r2-row > .r2-line .r2-say").allTextContents();
-    expect(counts.map((text) => Number(/Pulls in (\d+)/.exec(text)?.[1] ?? "0"))).toEqual(
-      exposure.map((entry) => entry.flagged),
-    );
+    const counts = await radiusSurface(page).locator("li.r2-row > .r2-line .r2-n").allTextContents();
+    expect(counts.map(Number)).toEqual(exposure.map((entry) => entry.flagged));
     await expect(radiusSurface(page)).not.toContainText("listing nothing flagged");
   });
 

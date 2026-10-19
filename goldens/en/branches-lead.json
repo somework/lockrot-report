@@ -116,10 +116,6 @@
     "Your branch, 0.2.x, had its last release, 0.2.0, 7.0 years ago.",
     "It has no higher branch."
   ],
-  "commonmark": [
-    "Your branch, 2.x, had its last release, 2.10.3, less than three weeks ago.",
-    "It has no higher branch."
-  ],
   "either-critical-dagger": [
     "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
   ],
@@ -203,6 +199,10 @@
   "many-dependents": [
     "Your branch, 1.x, had its last release, v1.10.0, 4.2 years ago.",
     "The move's branch, 2.x, released v2.5.4 2.0 years ago."
+  ],
+  "move-check-dagger": [
+    "Your branch, 2.x, had its last release, v2.3.2, 0.3 years ago.",
+    "It has no higher branch."
   ],
   "not-found-dagger": [
     "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
@@ -308,9 +308,6 @@
   "wp-config": [
     "Your branch, 1.x, had its last release, 1.0.0, 8.1 years ago.",
     "It has no higher branch."
-  ],
-  "xmlseclibs": [
-    "Your branch, 3.x, had its last release, 3.1.5, 0.6 years ago."
   ],
   "yaml-3.4": [
     "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago.",

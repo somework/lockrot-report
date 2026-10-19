@@ -29,7 +29,7 @@ describe("the rule rows of How the score works", () => {
       known: true,
       label: "lead in full",
       text: "the strongest maintenance fact counts in full",
-      used: "used on 4",
+      used: "used on 6",
       muted: false,
       href: "https://lockrot.dev/verdicts/model-1/#score-lead-first",
     });
@@ -128,8 +128,8 @@ describe("the advisory lookup", () => {
   test("states the scope, the packages asked and one row per repository", () => {
     expect(advisoryLookup(golden("composite").run)).toEqual({
       scope: "Scope: all · default",
-      asked: "7 packages asked · 0 not asked",
-      repositories: ["packagist.org: answered · 33 on record · 4 packages with records"],
+      asked: "9 packages asked · 0 not asked",
+      repositories: ["packagist.org: answered · 49 on record · 6 packages with records"],
       other: null,
     });
   });

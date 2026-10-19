@@ -166,7 +166,7 @@ describe("a package with several advisories (composite)", () => {
     const vulnerable = flag?.rows.find((row) => row.key === "vulnerable");
 
     // `security.packages.vulnerable` and `security.advisories.counted` of the document.
-    expect(vulnerable?.count).toBe(4);
-    expect(renderedPackages2(report, state, "advisories")).toHaveLength(20);
+    expect(vulnerable?.count).toBe(5);
+    expect(renderedPackages2(report, state, "advisories")).toHaveLength(29);
   });
 });

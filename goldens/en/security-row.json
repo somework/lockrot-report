@@ -347,15 +347,6 @@
     "none on record for this name",
     "lookup complete"
   ],
-  "commonmark": [
-    "3 advisories: high 2, medium 1",
-    "18 on record for this name",
-    "fix: composer update",
-    "lookup complete",
-    "2.x your branch the move clears 3 of 3 from 2.10.3",
-    "composer update",
-    "after it: 0, ok"
-  ],
   "either-critical-dagger": [
     "1 critical advisory",
     "1 on record for this name",
@@ -555,6 +546,15 @@
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
+  ],
+  "move-check-dagger": [
+    "2 advisories: medium 1, low 1",
+    "6 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 2 of 2 from v2.3.2",
+    "composer update",
+    "after it: 0, ok"
   ],
   "not-found-dagger": [
     "no counted advisory",
@@ -793,18 +793,6 @@
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
-  ],
-  "xmlseclibs": [
-    "2 advisories: high 1, medium 1",
-    "4 on record for this name",
-    "fix: composer update",
-    "lookup complete",
-    "3.x your branch the move clears 2 of 2 from 3.1.5",
-    "composer update",
-    "after it: 0, ok",
-    "4.x clears 2 of 2 from 4.0.0",
-    "composer update",
-    "after it: 0, ok, if Composer resolves it"
   ],
   "yaml-3.4": [
     "3 advisories: low 3",

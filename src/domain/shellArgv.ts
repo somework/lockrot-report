@@ -21,8 +21,12 @@ export const REFUSED_COMMAND = "This command holds characters the page does not 
 const COMMAND_ARGUMENT = /^(?! +$)[A-Za-z0-9/._:@+=,^~*<>| -]+$/;
 // Any other program or subcommand runs what the data names (`composer exec calc`, `iex calc`).
 const SUBCOMMANDS: ReadonlySet<string> = new Set(["update", "require", "why-not"]);
-// Anywhere else, a leading `-` came from data and would pass an option to Composer.
-const LOCKROT_OPTIONS: Readonly<Record<string, string>> = { require: "--no-update" };
+// lockrot writes these after every package argument. Anywhere else, a leading `-` came from data and
+// would pass an option to Composer.
+const LOCKROT_OPTIONS: Readonly<Record<string, ReadonlySet<string>>> = {
+  update: new Set(["--with-dependencies", "--with-all-dependencies"]),
+  require: new Set(["--no-update", "--with-dependencies", "--with-all-dependencies"]),
+};
 
 const POSIX_BARE = /^[A-Za-z0-9/._:@%+=,-]+$/;
 const CMD_SPECIAL = /[ ^|<>]/;
@@ -36,10 +40,14 @@ export const isPrintableName = (name: string): boolean =>
 export function isPrintableArgv(argv: readonly string[]): boolean {
   const [program, subcommand = ""] = argv;
   if (program !== "composer" || !SUBCOMMANDS.has(subcommand)) return false;
-  return argv.every(
-    (argument) =>
-      COMMAND_ARGUMENT.test(argument) &&
-      (!argument.startsWith("-") || LOCKROT_OPTIONS[subcommand] === argument),
+  const args = argv.slice(2);
+  const firstOption = args.findIndex((argument) => argument.startsWith("-"));
+  const packages = firstOption === -1 ? args : args.slice(0, firstOption);
+  const options = firstOption === -1 ? [] : args.slice(firstOption);
+  return (
+    args.every((argument) => COMMAND_ARGUMENT.test(argument)) &&
+    (options.length === 0 ||
+      (packages.length > 0 && options.every((option) => LOCKROT_OPTIONS[subcommand]?.has(option) === true)))
   );
 }
 

@@ -258,9 +258,6 @@
   "cache-subscriber": [
     null
   ],
-  "commonmark": [
-    null
-  ],
   "either-critical-dagger": [
     null,
     {
@@ -453,6 +450,9 @@
   "many-dependents": [
     null
   ],
+  "move-check-dagger": [
+    null
+  ],
   "not-found-dagger": [
     null
   ],
@@ -599,9 +599,6 @@
     null
   ],
   "wp-config": [
-    null
-  ],
-  "xmlseclibs": [
     null
   ],
   "yaml-3.4": [

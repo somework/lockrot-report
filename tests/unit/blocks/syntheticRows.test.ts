@@ -5,7 +5,7 @@ import { describe, expect, test } from "vitest";
 import { commandLines, moveCards } from "../../../src/domain/moveCards";
 import { qualifiers } from "../../../src/domain/qualifierRows";
 import { plain } from "../../../src/domain/rich";
-import { securityBlock } from "../../../src/domain/securityBlock";
+import { afterIt, securityBlock } from "../../../src/domain/securityBlock";
 import { readingRich, verdictBlock, verdictLineText } from "../../../src/domain/verdictBlock";
 import type { Finding, RepositoryMetadata, Run, S8, S9row } from "../../../src/model/report";
 import { modelCases } from "../words/recorded";
@@ -90,6 +90,7 @@ describe("G35: the installed branch's fix, when no ladder rung says it", () => {
       newest: null,
       held_by: [],
       if_applied: null,
+      check: null,
     };
 
     expect(readingTexts(finding, run, null).at(-1)).toContain(`). ${clause}.`);
@@ -265,5 +266,136 @@ describe("a command only for a name that passes the argument rule (SPEC §5.6)",
     expect(commandLines(card?.argvs ?? [])).toEqual([
       "This command holds characters the page does not print.",
     ]);
+  });
+});
+
+describe("G106: the new-major note and the move check", () => {
+  const noteOf = (check: unknown): string[] => {
+    const { finding, run } = modelCase("B");
+    if (finding.next_step === null) throw new Error("B has a move");
+    finding.next_step = { ...finding.next_step, check } as typeof finding.next_step;
+    return (moveCards(finding, run)[0]?.composer ?? []).map((n) => plain(n.text));
+  };
+  const SOLVE = ", which lockrot does not solve";
+
+  test.each([
+    ["resolves", { result: "resolves", form: "inline", reason: null }],
+    ["refused", { result: "refused", form: null, reason: null }],
+  ])("drops the clause when the check %s", (_, check) => {
+    expect(noteOf(check)).toContain("A new major brings its own requirements");
+  });
+
+  test.each([
+    ["not_checked", { result: "not_checked", form: null, reason: "offline" }],
+    ["null", null],
+  ])("keeps the clause when the check is %s", (_, check) => {
+    expect(noteOf(check)).toContain(`A new major brings its own requirements${SOLVE}`);
+  });
+});
+
+describe("the Held by link words (SPEC §7.9.21)", () => {
+  const metaOf = (link: string, target: string | null, source: "root" | "package" = "package"): string => {
+    const { finding, run } = modelCase("B");
+    if (finding.next_step === null) throw new Error("B has a move");
+    const hold = {
+      source,
+      package: source === "root" ? null : "acme/holder",
+      version: source === "root" ? null : "1.0.0",
+      link,
+      target,
+      constraint: "^4.4.49",
+      holder: null,
+    };
+    finding.next_step = { ...finding.next_step, held_by: [hold] } as unknown as typeof finding.next_step;
+    const shown = moveCards(finding, run)[0]?.heldBy?.shown[0];
+    if (shown === undefined) throw new Error("no holder shown");
+    return plain(shown.meta);
+  };
+
+  test.each([
+    ["require", null, "requires ^4.4.49"],
+    ["require", "symfony/console", "requires symfony/console ^4.4.49"],
+    ["require-dev", "symfony/console", "requires symfony/console ^4.4.49"],
+    ["platform", null, "requires ^4.4.49"],
+    ["conflict", null, "conflicts with ^4.4.49"],
+    ["conflict", "symfony/console", "conflicts with symfony/console ^4.4.49"],
+    ["replace", "symfony/console", "replaces symfony/console ^4.4.49"],
+    ["replace", null, "replaced by acme/holder"],
+    ["root-require", "symfony/console", "requires symfony/console ^4.4.49"],
+    ["root-require", null, "no release of ^4.4.49 can install"],
+  ])("%s with target %s reads %s", (link, target, words) => {
+    expect(metaOf(link, target)).toBe(words);
+  });
+
+  test("the root names its target too", () => {
+    expect(metaOf("require", "symfony/console", "root")).toBe("requires symfony/console ^4.4.49");
+  });
+});
+
+describe("the check line (SPEC §7.9.21)", () => {
+  test("prints an unknown reason as written, in a code element", () => {
+    const { finding, run } = modelCase("B");
+    if (finding.next_step === null) throw new Error("B has a move");
+    finding.next_step = {
+      ...finding.next_step,
+      check: { result: "not_checked", form: null, reason: "a_later_reason" },
+    };
+    const conditions = moveCards(finding, { ...run, move_check: null })[0]?.after?.conditions ?? [];
+    expect(conditions).toContainEqual([
+      "if Composer resolves it (not checked: ",
+      { code: "a_later_reason" },
+      ")",
+    ]);
+  });
+});
+
+describe("the move check in Held by and on the ladder (coordinator rulings on #49)", () => {
+  const holderStep = (check: unknown): string | null => {
+    const { finding, run } = modelCase("B");
+    if (finding.next_step === null) throw new Error("B has a move");
+    const hold = {
+      source: "package",
+      package: "acme/holder",
+      version: "1.0.0",
+      link: "require",
+      target: null,
+      constraint: "^4.4",
+      holder: {
+        verdict: "high",
+        lead: null,
+        flag_ids: [],
+        replacement: null,
+        next_step: { kind: "require", to_branch: "2.x", constraint: "^2.0", check },
+      },
+    };
+    finding.next_step = { ...finding.next_step, held_by: [hold] } as unknown as typeof finding.next_step;
+    return moveCards(finding, run)[0]?.heldBy?.shown[0]?.step ?? null;
+  };
+
+  test.each([
+    [{ result: "refused", form: null, reason: null }, "require ^2.0 on 2.x · Composer refuses the move"],
+    [
+      { result: "not_checked", form: null, reason: "offline" },
+      "require ^2.0 on 2.x · not checked: a package it needs is not in Composer's cache",
+    ],
+    [{ result: "resolves", form: "inline", reason: null }, "require ^2.0 on 2.x"],
+    [null, "require ^2.0 on 2.x"],
+  ])("a holder's own step with check %j reads %s", (check, step) => {
+    expect(holderStep(check)).toBe(step);
+  });
+
+  const applied = { total: 0, verdict: "ok", lead: null, deciding_advisory: null, at_most: false };
+
+  test("a stopped row drops the Composer caveat, and its check words end the row", () => {
+    const assumes = ["composer_resolves", "no_new_advisories"];
+    expect(afterIt({ ...applied, assumes } as never, "Composer refuses the move")).toBe(
+      "after it: 0, ok, advisories on its new versions not checked · Composer refuses the move",
+    );
+  });
+
+  test("a row with no stopped check keeps the caveat from assumes", () => {
+    expect(afterIt({ ...applied, assumes: ["composer_resolves"] } as never)).toBe(
+      "after it: 0, ok, if Composer resolves it",
+    );
   });
 });

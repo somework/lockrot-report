@@ -25,7 +25,7 @@ describe("PackagesView2 (PD-PACKAGES-5): the wrap is a keyboard region only whil
   beforeEach(() => {
     observed = [];
     window.matchMedia = ((query: string) => ({
-      matches: query.includes("1181"),
+      matches: /1000px|1024px/.test(query),
       media: query,
       addEventListener: () => undefined,
       removeEventListener: () => undefined,

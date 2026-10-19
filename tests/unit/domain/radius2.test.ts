@@ -7,7 +7,7 @@ import {
   gradeMix,
   radiusAnswer2,
   radiusLayout2,
-  radiusRowSay,
+  radiusRowFacts,
   radiusRows2,
 } from "../../../src/domain/radius2";
 import type { Report2, Report2Embed } from "../../../src/model/report";
@@ -28,13 +28,24 @@ const layoutOf = (report: Report2) =>
   radiusLayout2(report, population2(report, "radius"), population2(report, "radius"));
 
 describe("radiusLayout2", () => {
-  it("lists, for a requirement the document holds no finding for, the graded findings naming it in direct_dependents", () => {
-    // composite: exposure names guzzlehttp/guzzle, which has no finding and so no S7.
+  it("lists under each requirement the packages its S7 names", () => {
+    // composite: each exposure requirement has a finding, and its S7 names one flagged package.
     const layout = layoutOf(composite);
     expect(layout.rows.map((row) => [row.package, row.count, row.exposure])).toEqual([
+      ["friendsofsymfony/oauth-server-bundle", 1, 1],
       ["guzzlehttp/guzzle", 1, 1],
     ]);
-    expect(layout.rows[0]?.pulled.map((f) => f.package)).toEqual(["symfony/polyfill-intl-idn"]);
+    expect(layout.rows.map((row) => row.pulled.map((f) => f.package))).toEqual([
+      ["friendsofsymfony/oauth2-php"],
+      ["symfony/polyfill-intl-idn"],
+    ]);
+  });
+
+  it("lists nothing under a requirement with no finding, and keeps lockrot's count", () => {
+    const report: Report2 = { ...composite, exposure: [{ package: "acme/absent", flagged: 3 }] };
+    const [row] = layoutOf(report).rows;
+    if (row === undefined) throw new Error("no row");
+    expect([row.count, row.exposure]).toEqual([0, 3]);
   });
 
   it("lists nothing under a requirement with a finding but no S7, and keeps lockrot's count", () => {
@@ -42,7 +53,7 @@ describe("radiusLayout2", () => {
     const [row] = layoutOf(report).rows;
     if (row === undefined) throw new Error("no row");
     expect([row.count, row.exposure]).toEqual([0, 2]);
-    expect(radiusRowSay(report, row)).toBe("Pulls in 2 flagged packages.");
+    expect(radiusRowFacts(report, row)).toEqual({ count: 2, mix: null, note: null });
   });
 
   it("puts a graded direct requirement off the exposure list among the unlisted, not a row", () => {
@@ -116,8 +127,11 @@ describe("radius words", () => {
     );
   });
 
-  it("answers with the one requirement the composite's transitive package sits under", () => {
-    expect(radiusAnswer2(layoutOf(composite))).toBe("1 flagged package pulled in, under guzzlehttp/guzzle.");
+  it("answers with the first requirement as published when the rows tie", () => {
+    // composite: two transitive packages, one under each of its two exposure requirements.
+    expect(radiusAnswer2(layoutOf(composite))).toBe(
+      "1 of the 2 flagged packages pulled in sit under friendsofsymfony/oauth-server-bundle.",
+    );
   });
 
   it("answers with lockrot's exposure list when no row lists a finding", () => {
@@ -127,13 +141,25 @@ describe("radius words", () => {
     );
   });
 
-  it("says what a row lists, by grade in graded_verdicts order", () => {
+  it("gives a row's count and its grade split in graded_verdicts order", () => {
     const row = layoutOf(wallabag).rows.find((r) => r.package === "kphoen/rulerz");
     if (row === undefined) throw new Error("no row");
-    expect(radiusRowSay(wallabag, row)).toBe(
-      `Pulls in ${String(row.count)} flagged packages: ${gradeMix(wallabag, row.pulled)}.`,
-    );
-    expect(gradeMix(composite, composite.findings)).toBe("3 critical, 2 high, 2 low");
+    expect(radiusRowFacts(wallabag, row)).toEqual({
+      count: row.count,
+      mix: gradeMix(wallabag, row.pulled),
+      note: null,
+    });
+    expect(gradeMix(composite, composite.findings)).toBe("4 critical, 2 high, 3 low");
+  });
+
+  it("gives no count for a row the filter empties, and says how many it hides", () => {
+    const [row] = layoutOf(composite).rows;
+    if (row === undefined) throw new Error("no row");
+    expect(radiusRowFacts(composite, { ...row, count: 0, unfiltered: 1, pulled: [] })).toEqual({
+      count: null,
+      mix: null,
+      note: "None of the 1 flagged package listed under it match the filter.",
+    });
   });
 
   it("answers an empty tab, and a filtered one", () => {

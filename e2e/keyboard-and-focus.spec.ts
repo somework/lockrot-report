@@ -230,10 +230,10 @@ test.describe("PD-ROWS-11: keyboard focus follows the selection", () => {
 
 // PD-ROWS-12: below the wide layout the detail is a sheet over the whole page. Focus used to stay on
 // the row under it, ring and all out of sight (WCAG 2.4.11), with Tab going next to that row's own
-// covered links. 1024 is the sheet at its widest, 390 a phone.
+// covered links. 999 is the sheet at its widest (the split layout starts at 1000), 390 a phone.
 for (const [width, height] of [
   [390, 844],
-  [1024, 768],
+  [999, 768],
 ] as const) {
   test.describe(`PD-ROWS-12 at ${width}×${height}: a sheet over the page holds focus`, () => {
     test.use({ viewport: { width, height } });
@@ -270,18 +270,13 @@ for (const [width, height] of [
 }
 
 test.describe("PD-ROWS-12: one Tab stop per list, and j walks a package listed twice", () => {
-  test("Advisories lists symfony/yaml under three advisories: one Tab stop, and j reaches each of its rows", async () => {
+  test("Advisories lists twig/twig under many advisories: one Tab stop, and j reaches each of its rows", async () => {
     await report.tab("advisories");
     const rows = await report.rows();
-    expect(rows.slice(0, 4)).toEqual([
-      "symfony/polyfill-intl-idn",
-      "symfony/yaml",
-      "symfony/yaml",
-      "symfony/yaml",
-    ]);
+    expect(rows.slice(0, 3)).toEqual(["twig/twig", "twig/twig", "twig/twig"]);
     // Each row used to be a Tab stop of its own, links and all.
     expect(await report.tabStopRowIndexes()).toEqual([0]);
-    expect(new Set(await report.listTabStops())).toEqual(new Set(["symfony/polyfill-intl-idn"]));
+    expect(new Set(await report.listTabStops())).toEqual(new Set(["twig/twig"]));
 
     await report.pressJ();
     expect(await report.focusedRowIndex()).toBe(0);
@@ -311,7 +306,9 @@ test.describe("M7: j/k must not open a package that has no row on screen", () =>
     // lists each direct requirement, so j/k could open a package with no row on screen. The
     // composite's symfony/polyfill-intl-idn sits folded under guzzlehttp/guzzle.
     await report.tab("radius");
-    expect(await report.rows()).toEqual(["guzzlehttp/guzzle"]);
+    expect(await report.rows()).toEqual(["friendsofsymfony/oauth-server-bundle", "guzzlehttp/guzzle"]);
+    await report.pressJ();
+    expect((await report.detail()).name).toBe("friendsofsymfony/oauth-server-bundle");
     await report.pressJ();
     expect((await report.detail()).name).toBe("guzzlehttp/guzzle");
     await report.pressJ(); // a folded package and one with no row are both off screen
@@ -405,7 +402,7 @@ test.describe("report-2: keys on the Findings rows and the detail sheet", () => 
 
   test("Enter on a row opens its sheet and a second Enter keeps it open", async ({ page }) => {
     await page.goto(report2Url("composite") + "#view=findings");
-    const row = page.getByRole("listitem", { name: "symfony/yaml", exact: true });
+    const row = page.getByRole("row", { name: "symfony/yaml", exact: true });
 
     await row.focus();
     await page.keyboard.press("Enter");

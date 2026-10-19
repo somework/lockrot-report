@@ -9,7 +9,7 @@
   flex: 1;
   min-width: 0;
   font-family: var(--mono);
-  font-size: var(--text-13);
+  font-size: var(--text-s);
   padding: 9px 12px;
   border-radius: var(--radius-m);
   border: 1px solid var(--border);
@@ -22,7 +22,7 @@
 }
 
 .hint {
-  font-size: var(--text-12);
+  font-size: var(--text-s);
   color: var(--muted);
   margin: -4px 0 14px;
 }
@@ -34,11 +34,11 @@
   background: var(--surface-2);
   padding: 1px 5px;
   border-radius: var(--radius-s);
-  font-size: var(--text-11);
+  font-size: var(--text-xs);
 }
 
 .count-line {
-  font-size: var(--text-12);
+  font-size: var(--text-s);
   color: var(--muted);
   margin: -4px 0 12px;
   display: flex;
@@ -69,7 +69,7 @@
   margin: -4px 0 14px;
 }
 .af-lead {
-  font-size: var(--text-12);
+  font-size: var(--text-s);
   color: var(--muted);
 }
 .af-list {
@@ -88,7 +88,7 @@
   border-radius: var(--radius-pill);
   background: var(--accent-soft);
   color: var(--ink);
-  font-size: var(--text-12);
+  font-size: var(--text-s);
   line-height: 1.45;
   text-align: left;
   transition:
