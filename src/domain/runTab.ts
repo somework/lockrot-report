@@ -98,10 +98,8 @@ export function moveCheckFact({ run }: Report2): string | null {
   if (check === null) return null;
   switch (check.baseline) {
     case "resolves":
-      return [
-        `checked with the solver of Composer${check.composer === null ? "" : ` ${check.composer}`} against the lock`,
-        ...(check.ignores_extensions ? ["ext-* requirements not checked"] : []),
-      ].join(" · ");
+      // `ignores_extensions` is always true: the solve ignores ext-* requirements (§5.6).
+      return `checked with the solver of Composer${check.composer === null ? "" : ` ${check.composer}`} against the lock · ext-* requirements not checked`;
     case "refused":
       return "not checked, because Composer's solver refuses the lock itself";
     default:

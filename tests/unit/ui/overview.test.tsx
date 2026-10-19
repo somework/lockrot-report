@@ -48,15 +48,15 @@ describe("the Overview tab of a report-2 document", () => {
 
     const lead = within(band());
     expect(band().querySelector(".ov-grade")?.textContent).toBe(
-      "Project grade: critical · 3 critical findings · 5 of 7 packages high or worse",
+      "Project grade: critical · 4 critical findings · 6 of 9 packages high or worse",
     );
     expect(band().querySelector(".ov-figure")?.textContent).toBe(
-      "7 of 7 packages flagged · 0 ok · 0 allowlisted",
+      "9 of 9 packages flagged · 0 ok · 0 allowlisted",
     );
-    expect(lead.getByRole("link", { name: "critical 3" })).toBeTruthy();
+    expect(lead.getByRole("link", { name: "critical 4" })).toBeTruthy();
     expect(lead.queryByRole("link", { name: "medium 0" })).toBeNull();
     expect(band().querySelector(".overview2-gate-text")?.textContent).toBe(
-      "gate: fails · --fail-on=high · 5 findings fail it · target php 8.4 (--target-php)",
+      "gate: fails · --fail-on=high · 6 findings fail it · target php 8.4 (--target-php)",
     );
   });
 
@@ -104,10 +104,10 @@ describe("the Overview tab of a report-2 document", () => {
     expect(bars).toEqual([
       "abandoned 1 graded critical 1 32 pts",
       "pinned 1 graded high 1 16 pts",
-      "left-behind 1 graded critical 1 16 pts",
+      "left-behind 2 graded critical 2 32 pts",
       "old-promise 3 graded critical 2 · high 1 24 pts",
-      "stale 2 graded high 2 4 pts",
-      "vulnerable 4 graded critical 2 · low 2 52 pts",
+      "stale 3 graded high 2 · low 1 8 pts",
+      "vulnerable 5 graded critical 3 · low 2 68 pts",
     ]);
   });
 
@@ -120,8 +120,8 @@ describe("the Overview tab of a report-2 document", () => {
   });
 
   test.each([
-    ["Grade", "critical 3", "#view=findings&verdict=critical", "Findings 7"],
-    ["Advisories by severity", "unrated 2", "#view=advisories&sev=unrated", "Advisories 20"],
+    ["Grade", "critical 4", "#view=findings&verdict=critical", "Findings 9"],
+    ["Advisories by severity", "unrated 2", "#view=advisories&sev=unrated", "Advisories 29"],
   ])("a chip in %s links to its list, and a click opens it in place", (group, name, fragment, tab) => {
     render(<App model={model()} />);
 
@@ -137,7 +137,7 @@ describe("the Overview tab of a report-2 document", () => {
   test("a flag bar links to Findings under its flag", () => {
     render(<App model={model()} />);
 
-    const bar = within(band()).getByRole("link", { name: /^stale 2/ });
+    const bar = within(band()).getByRole("link", { name: /^stale 3/ });
     expect(bar.getAttribute("href")).toBe("#view=findings&flag=stale");
     fireEvent.click(bar);
 
@@ -145,13 +145,14 @@ describe("the Overview tab of a report-2 document", () => {
     expect([...document.querySelectorAll("[data-pkg]")].map((row) => row.getAttribute("data-pkg"))).toEqual([
       "friendsofsymfony/oauth-server-bundle",
       "tubalmartin/cssmin",
+      "friendsofsymfony/oauth2-php",
     ]);
   });
 
   test("a click with a modifier is left to the browser", () => {
     render(<App model={model()} />);
 
-    const bar = within(band()).getByRole("link", { name: /^stale 2/ });
+    const bar = within(band()).getByRole("link", { name: /^stale 3/ });
     fireEvent.click(bar, { ctrlKey: true });
 
     expect(screen.getByRole("tab", { selected: true }).textContent).toBe("Overview");
@@ -170,20 +171,22 @@ describe("the Overview tab of a report-2 document", () => {
 
     const block = band().querySelector<HTMLElement>(".ov-weighs");
     expect(block?.querySelector(".wm-load")?.textContent).toBe(
-      "144 points on 7 flagged packages · 140 (97 %) from high or worse · score model 1",
+      "180 points on 9 flagged packages · 172 (95 %) from high or worse · score model 1",
     );
     const items = [...(block?.querySelectorAll("ol > li") ?? [])];
     expect(items.map((item) => item.querySelector(".wm-label a")?.textContent)).toEqual([
       "symfony/monolog-bridge",
       "symfony/debug",
       "twig/twig",
+      "guzzlehttp/guzzle",
       "friendsofsymfony/oauth-server-bundle",
       "tubalmartin/cssmin",
+      "friendsofsymfony/oauth2-php",
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
     ]);
     const cells = [".wm-label", ".wm-grade", ".wm-reach", ".wm-total", ".wm-terms"].map(
-      (cell) => items[6]?.querySelector(cell)?.textContent,
+      (cell) => items[8]?.querySelector(cell)?.textContent,
     );
     expect(cells).toEqual(["symfony/polyfill-intl-idn", "low", "transitive", "2 points:", "vulnerable 2"]);
     expect(block?.querySelector(".wm-text")).toBeNull();
@@ -194,7 +197,7 @@ describe("the Overview tab of a report-2 document", () => {
 
     const block = band().querySelector<HTMLElement>(".ov-weighs") as HTMLElement;
     const bars = [...block.querySelectorAll(".wm-bar")];
-    expect(bars).toHaveLength(7);
+    expect(bars).toHaveLength(9);
     expect(bars.every((bar) => bar.getAttribute("aria-hidden") === "true")).toBe(true);
     expect(block.querySelector(".wm-legend")).toBeNull();
     expect(bars[0]?.querySelectorAll(".wm-seg")).toHaveLength(3);
@@ -221,7 +224,7 @@ describe("the Overview tab of a report-2 document", () => {
 
     const row = within(band()).getByRole("link", { name: named("guzzlehttp/guzzle 1 flagged package") });
     expect(row.getAttribute("href")).toBe("#view=radius&pkg=guzzlehttp%2Fguzzle");
-    expect(band().querySelector(".ov-ex-head")?.textContent).toBe("Direct requirementflagged, of 7");
+    expect(band().querySelector(".ov-ex-head")?.textContent).toBe("Direct requirementflagged, of 9");
   });
 
   test("tables the packages furthest behind, each linked to its row", () => {
@@ -236,6 +239,7 @@ describe("the Overview tab of a report-2 document", () => {
     ).toEqual(["Package", "Libyears", "Most recent release"]);
     expect(rows.map((row) => [...row.querySelectorAll("td")].map((td) => td.textContent))).toEqual([
       ["symfony/monolog-bridge v2.6.13", "10.6", "v6.4.45 (2026-08-30)"],
+      ["guzzlehttp/guzzle 6.5.8", "4.2", "8.2.0 (2026-09-06)"],
       ["symfony/yaml v5.4.23", "3.4", "v8.1.8 (2026-09-26)"],
       ["twig/twig v2.16.1", "2.0", "v3.30.0 (2026-09-25)"],
       ["symfony/debug v3.4.47", "1.8", "v4.4.44 (2022-07-28)"],
@@ -281,12 +285,12 @@ describe("the Overview tab of a report-2 document", () => {
     render(<App model={model()} />);
 
     const text = band().textContent;
-    expect(text).toContain("4 carry more than one flag · score model 1");
-    expect(text).toContain("1 of 7 flagged packages is named by no line of composer.json");
+    expect(text).toContain("5 carry more than one flag · score model 1");
+    expect(text).toContain("2 of 9 flagged packages are named by no line of composer.json");
     expect(text).toContain("Accepted by the allowlist: none in flagged packages");
     const libyears = band().querySelector(".ledger-libyears")?.textContent ?? "";
-    expect(libyears).toContain("17.85 libyears");
-    expect(libyears).toContain("over 5 packages · 17.85 from direct requirements");
+    expect(libyears).toContain("22.06 libyears");
+    expect(libyears).toContain("over 7 packages · 22.06 from direct requirements");
     expect(libyears).toContain("Not measured: 1 a branch snapshot has no release branch · 1 no date");
     expect(libyears).toContain("symfony/monolog-bridge v2.6.13");
   });
@@ -361,15 +365,11 @@ describe("the Overview's three lines equal lockrot's page goldens on the page", 
     render(<App model={result.model} />);
 
     const text = (selector: string) => band().querySelector(selector)?.textContent ?? null;
-    // The load line is not drawn when nothing is graded (coordinator ruling on iteration 1).
-    const graded = result.model.report.findings.some((f) =>
-      (result.model.report.run.graded_verdicts as readonly string[]).includes(f.verdict),
-    );
+    // The figure line on the page is the waffle's caption, which also counts the packages not judged.
     expect([text(".ov-grade"), text(".ov-figure"), text(".wm-load")]).toEqual([
-      // Golden change: the grade line drops "not checked", which the offline state line states.
-      golden.grade_line?.replace(" · not checked", "") ?? null,
-      golden.figure_line,
-      graded ? golden.load_line : null,
+      golden.grade_line,
+      golden.waffle_caption,
+      golden.load_line,
     ]);
   });
 });
@@ -388,8 +388,8 @@ describe("the tabs that lead without the band", () => {
     const advisories = surface("advisories");
     const lead = advisories.querySelector<HTMLElement>(".al-lead");
     expect(lead).not.toBeNull();
-    expect(lead?.querySelector(".al-answer")?.textContent).toBe("20 advisories on 4 packages.");
-    expect(advisories.textContent.match(/20 advisories/g)).toHaveLength(1);
+    expect(lead?.querySelector(".al-answer")?.textContent).toBe("29 advisories on 5 packages.");
+    expect(advisories.textContent.match(/29 advisories/g)).toHaveLength(1);
     expect(advisories.textContent).not.toContain("by severity:");
     const chips = within(within(lead as HTMLElement).getByRole("group", { name: "Advisories by severity" }));
     expect(chips.getByRole("button", { name: "critical 1" })).toBeTruthy();
@@ -408,7 +408,7 @@ describe("the tabs that lead without the band", () => {
     expect(lead?.querySelector(".al-answer")?.textContent).toBe(
       "1 matching advisory on 1 package, by severity: 1 high.",
     );
-    expect(lead?.textContent).toContain("without it there are 20.");
+    expect(lead?.textContent).toContain("without it there are 29.");
     expect(lead?.querySelector(".ledger-fig")).toBeNull();
   });
 
@@ -432,7 +432,7 @@ describe("the tabs that lead without the band", () => {
     render(<App model={model()} />);
 
     expect(surface("radius").firstElementChild?.textContent).toBe(
-      "1 of 7 flagged packages is named by no line of composer.json; the deepest, symfony/polyfill-intl-idn, sits 1 hop from the nearest line.",
+      "2 of 9 flagged packages are named by no line of composer.json; the deepest, friendsofsymfony/oauth2-php, symfony/polyfill-intl-idn, sit 1 hop from the nearest line.",
     );
   });
 
@@ -463,8 +463,8 @@ describe("the header's Copy summary on a report-2 document", () => {
     expect(writeText).toHaveBeenCalledWith(
       [
         "lockrot report · data as of 2026-10-01 · lockrot 0.14.0 · score model 1 · target PHP 8.4 · this run fails · --fail-on=high",
-        "7 of 7 packages flagged (100%): 3 graded critical, 2 high, 2 low. Flags: abandoned 1, pinned 1, left-behind 1, old-promise 3, stale 2, vulnerable 4.",
-        "All 7 in production · 6 required directly, 1 pulled in · 20 security advisories on 4 packages (severity: 1 critical, 4 high, 4 medium, 2 unrated, 9 low) · fix by package: 2 composer update, 1 upgrade, 1 php floor raise · 17.9 libyears behind.",
+        "9 of 9 packages flagged (100%): 4 graded critical, 2 high, 3 low. Flags: abandoned 1, pinned 1, left-behind 2, old-promise 3, stale 3, vulnerable 5.",
+        "All 9 in production · 7 required directly, 2 pulled in · 29 security advisories on 5 packages (severity: 1 critical, 5 high, 12 medium, 2 unrated, 9 low) · fix by package: 2 composer update, 1 upgrade, 2 php floor raise · 22.1 libyears behind.",
       ].join("\n"),
     );
   });

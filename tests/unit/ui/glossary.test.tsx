@@ -93,20 +93,20 @@ describe("Glossary sections", () => {
     expect(screen.getByRole("heading", { name: "The seven flags" })).toBeTruthy();
     // The terms are run.verdicts, then run.flag_ids, each with its count when it has one.
     expect([...container.querySelectorAll("dt[data-term]")].map((dt) => dt.textContent)).toEqual([
-      "critical 3",
+      "critical 4",
       "high 2",
       "medium",
-      "low 2",
+      "low 3",
       "unknown",
       "finished",
       "ok",
       "abandoned 1",
       "silent",
       "pinned 1",
-      "left-behind 1",
+      "left-behind 2",
       "old-promise 3",
-      "stale 2",
-      "vulnerable 4",
+      "stale 3",
+      "vulnerable 5",
     ]);
     expect(fold(container, /flags/).open).toBe(true);
     for (const title of [/signals/, /libyears/, /Keys and search/, /maintainers/])

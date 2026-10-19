@@ -9,7 +9,7 @@ import { INITIAL_STATE } from "../../../src/state/types";
 import { App } from "../../../src/ui/App";
 import { bootState, stateFromHashChange } from "../../../src/ui/useHashState";
 
-/** Seven graded findings, none dev: 6 direct requirements and 1 transitive package. No project name
+/** Nine graded findings, none dev: 7 direct requirements and 2 transitive packages. No project name
  *  and no baseline; the gate fails on `--fail-on=high`. */
 function load(caseName = "composite", edit: (embed: Report2Embed) => void = () => undefined): Model {
   const embed = assembleEmbed(caseName);
@@ -23,11 +23,13 @@ function load(caseName = "composite", edit: (embed: Report2Embed) => void = () =
 const BY_RANK = [
   "twig/twig",
   "symfony/monolog-bridge",
+  "guzzlehttp/guzzle",
   "symfony/debug",
   "friendsofsymfony/oauth-server-bundle",
   "tubalmartin/cssmin",
   "symfony/yaml",
   "symfony/polyfill-intl-idn",
+  "friendsofsymfony/oauth2-php",
 ];
 
 /** Stubs matchMedia: the layout, the OS colour preference and reduced motion, per test. */
@@ -200,7 +202,7 @@ describe("tabs", () => {
     fireEvent.click(row("symfony/yaml"));
     expect(detailName()).toBe("symfony/yaml");
 
-    const packages = screen.getByRole("tab", { name: "All packages 7" });
+    const packages = screen.getByRole("tab", { name: "All packages 9" });
     expect(screen.getByRole("tab", { name: "Run data" })).toBeTruthy();
     fireEvent.click(packages);
 
@@ -326,15 +328,16 @@ describe("keyboard", () => {
     render(<App model={load()} />);
 
     const walked: (string | null)[] = [];
-    for (let step = 0; step < 20; step += 1) {
+    for (let step = 0; step < 29; step += 1) {
       key("j", document.activeElement ?? document.body);
       walked.push(document.activeElement?.getAttribute("data-pkg") ?? null);
     }
 
-    // One group per package in rank order: twig/twig's rows, then monolog-bridge, yaml's three, polyfill.
+    // One group per package in rank order, a row for each of its advisories.
     expect(walked).toEqual([
       ...Array<string>(15).fill("twig/twig"),
       "symfony/monolog-bridge",
+      ...Array<string>(9).fill("guzzlehttp/guzzle"),
       "symfony/yaml",
       "symfony/yaml",
       "symfony/yaml",

@@ -114,7 +114,7 @@ describe("the Run tab of a report-2 document", () => {
     render(<App model={model()} />);
 
     expect(run().querySelector(".overview2-gate-text")?.textContent).toBe(
-      "gate: fails · --fail-on=high · 5 findings fail it · target php 8.4 (--target-php)",
+      "gate: fails · --fail-on=high · 6 findings fail it · target php 8.4 (--target-php)",
     );
   });
 

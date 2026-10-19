@@ -151,12 +151,12 @@ describe("the four recorded runs of the brief", () => {
       ["left-behind", 16 / 64],
       ["vulnerable", 16 / 64],
     ]);
-    expect(rows[3]).toMatchObject({ package: "hoa/consistency", grade: "high", reach: ["transitive"] });
+    expect(rows[3]).toMatchObject({ package: "hoa/consistency", grade: "high", reach: "transitive" });
     expect(rows[3]?.segments.map(({ flag, width }) => [flag, width])).toEqual([
       ["abandoned", 16 / 64],
       ["old-promise", 2 / 64],
     ]);
-    expect(rows[3]?.terms).toBe("abandoned 16 · old-promise 2");
+    expect(rows[3]?.terms).toEqual(["abandoned 16", "old-promise 2"]);
   });
 
   test("akaunting's flag ledger prints the points each flag holds", () => {
@@ -174,22 +174,17 @@ describe("the three lines of the page-golden documents", () => {
   test.each([
     [
       "composite",
-      "Project grade: critical · 3 critical findings · 5 of 7 packages high or worse",
-      "7 of 7 packages flagged · 0 ok · 0 allowlisted",
-      "144 points on 7 flagged packages · 140 (97 %) from high or worse · score model 1",
+      "Project grade: critical · 4 critical findings · 6 of 9 packages high or worse",
+      "9 of 9 packages flagged · 0 ok · 0 allowlisted",
+      "180 points on 9 flagged packages · 172 (95 %) from high or worse · score model 1",
     ],
-    [
-      "new-symfony",
-      "Project grade: nothing flagged",
-      "0 of 1 package flagged · 1 ok · 0 allowlisted",
-      "0 points: nothing flagged",
-    ],
+    ["new-symfony", "Project grade: nothing flagged", "0 of 1 package flagged · 1 ok · 0 allowlisted", null],
     [
       "ok-offline",
       // Golden change: the grade line no longer repeats "not checked"; the offline state line says it.
       "Project grade: nothing flagged",
       "0 of 1 package flagged · 1 ok · 0 allowlisted",
-      "0 points: nothing flagged",
+      null,
     ],
     [
       "policy-off",
@@ -238,7 +233,7 @@ describe("the grade line", () => {
     report.security.check = "partial";
 
     expect(lines(report)[0]).toBe(
-      "Project grade: critical · 3 critical findings · 5 of 7 packages high or worse · lookup partial",
+      "Project grade: critical · 4 critical findings · 6 of 9 packages high or worse · lookup partial",
     );
   });
 
@@ -302,7 +297,7 @@ describe("the points of the flag ledger", () => {
     if (twig === undefined) throw new Error("no twig/twig");
     twig.verdict = "ok";
 
-    expect(flagPoints(report).get("vulnerable")).toBe(20);
+    expect(flagPoints(report).get("vulnerable")).toBe(36);
   });
 });
 
@@ -314,25 +309,29 @@ describe("Weighs most", () => {
       "symfony/monolog-bridge",
       "symfony/debug",
       "twig/twig",
+      "guzzlehttp/guzzle",
       "friendsofsymfony/oauth-server-bundle",
       "tubalmartin/cssmin",
+      "friendsofsymfony/oauth2-php",
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
     ]);
     expect(chart?.rest).toBeNull();
+    expect(chart?.restLink).toBeNull();
+    expect(chart?.caption).toBe("highest score first");
   });
 
   test("names each term in order, and shows the total beside the terms only when they do not sum to it", () => {
     const report = golden("composite");
     const chart = weighsMost(report);
-    expect(chart?.rows[0]?.terms).toBe("left-behind 16 · old-promise 4 · vulnerable 16");
+    expect(chart?.rows[0]?.terms).toEqual(["left-behind 16", "old-promise 4", "vulnerable 16"]);
     expect(chart?.rows[0]?.termsTotal).toBeNull();
 
     const first = report.findings.find((f) => f.package === "symfony/monolog-bridge");
     if (first === undefined || !("terms" in first.score)) throw new Error("no graded first row");
     first.score.terms = first.score.terms.map((t, i) => (i === 1 ? { ...t, contribution: 4.5 } : t));
     const off = weighsMost(report)?.rows.find((row) => row.package === "symfony/monolog-bridge");
-    expect(off?.terms).toBe("left-behind 16 · old-promise 4.5 · vulnerable 16");
+    expect(off?.terms).toEqual(["left-behind 16", "old-promise 4.5", "vulnerable 16"]);
     expect(off?.termsTotal).toBe("(score 36)");
   });
 
@@ -350,16 +349,13 @@ describe("Weighs most", () => {
     const finding = report.findings[0];
     if (finding === undefined) throw new Error("no finding");
     finding.direct = false;
+    finding.reach = "transitive";
 
-    expect(weighsMost(report)?.rows[0]?.reach).toEqual(["transitive", "dev"]);
+    expect(weighsMost(report)?.rows[0]?.reach).toBe("transitive · dev");
   });
 
-  test("draws no bar and no rest line when nothing is graded", () => {
-    expect(weighsMost(golden("new-symfony"))).toEqual({
-      rows: [],
-      rest: null,
-      restLink: { view: "findings" },
-    });
+  test("draws no chart when nothing is graded", () => {
+    expect(weighsMost(golden("new-symfony"))).toBeNull();
   });
 
   test("holds one singular rest line", () => {
@@ -383,6 +379,6 @@ describe("the waffle caption", () => {
     expect(waffleCaption(report)).toBe(figureLine(report));
 
     report.counts = { ...report.counts, unknown: 2 };
-    expect(waffleCaption(report)).toBe("7 of 7 packages flagged · 2 not judged · 0 ok · 0 allowlisted");
+    expect(waffleCaption(report)).toBe("9 of 9 packages flagged · 2 not judged · 0 ok · 0 allowlisted");
   });
 });

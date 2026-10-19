@@ -87,14 +87,24 @@ describe("the report-2 Findings tab", () => {
       text(head, ".fgroup-count"),
     ]);
     expect(heads).toEqual([
-      ["critical", "3 packages"],
+      ["critical", "4 packages"],
       ["high", "2 packages"],
-      ["low", "2 packages"],
+      ["low", "3 packages"],
     ]);
   });
 
   test("draws the score, its hidden bar, the pills, the age, the reach and the next step", () => {
-    const composite = model("composite");
+    const composite = withReport(model("composite"), (report) => ({
+      ...report,
+      findings: report.findings.map((f) =>
+        f.package === "symfony/monolog-bridge" && f.next_step !== null
+          ? {
+              ...f,
+              next_step: { ...f.next_step, check: { result: "resolves", form: "inline", reason: null } },
+            }
+          : f,
+      ),
+    }));
     render(<App model={composite} />);
 
     const bridge = row("symfony/monolog-bridge");
@@ -114,6 +124,7 @@ describe("the report-2 Findings tab", () => {
     );
     expect(text(bridge, ".f2-reach")).toBe("direct");
     expect(text(bridge, ".f2-ready")).toBe("ready to run");
+    expect(row("symfony/yaml").querySelector(".f2-ready")).toBeNull();
     expect(text(bridge, ".f2-move")).toBe("require ^5.4.52 · held by your composer.json");
     expect(text(bridge, ".f2-major")).toBe("a new major");
   });
@@ -138,26 +149,37 @@ describe("the report-2 Findings tab", () => {
     expect(bridge.querySelector(".age-num")).toBeNull();
   });
 
-  test("says the Composer caveat once, in the Next step head, while rows say what is left after the move", () => {
-    render(<App model={model("composite")} />);
+  test("ends a row's after text with the Composer caveat when its move assumes it, and the head says none", () => {
+    const composite = model("composite");
+    render(<App model={composite} />);
 
-    expect(document.querySelector(".f2-head-next .f2-head-note")?.textContent).toBe(
-      "after it: …, if Composer resolves it",
+    expect(document.querySelector(".f2-head-next .f2-head-note")).toBeNull();
+    expect(document.querySelector(".f2-caveat")).toBeNull();
+    const caveat = ", if Composer resolves it";
+    const carried = composite.report.findings.filter(
+      (f) => f.next_step?.if_applied?.assumes.includes("composer_resolves") === true,
     );
-    const afters = [...document.querySelectorAll(".f2-after")].map((node) => node.textContent);
-    expect(afters.length).toBeGreaterThan(0);
-    expect(afters.every((line) => /^after it: /.test(line) && !line.includes("Composer"))).toBe(true);
+    expect(carried.length).toBeGreaterThan(0);
+    for (const f of composite.report.findings) {
+      const after = row(f.package).querySelector(".f2-after")?.textContent;
+      if (f.next_step?.if_applied == null) continue;
+      expect({ pkg: f.package, caveat: after?.endsWith(caveat) }).toEqual({
+        pkg: f.package,
+        caveat: carried.includes(f),
+      });
+    }
+    expect(row("symfony/yaml").querySelector(".f2-after")?.textContent).toBe("after it: 0, ok");
   });
 
   test("tags a major move at the end of the result line, and counts them in the group head", () => {
     render(<App model={model("composite")} />);
 
-    for (const pkg of ["twig/twig", "symfony/monolog-bridge"])
+    for (const pkg of ["twig/twig", "symfony/monolog-bridge", "guzzlehttp/guzzle"])
       expect(row(pkg).querySelector(".f2-meta > .f2-major")?.textContent).toBe("a new major");
     expect(row("symfony/yaml").querySelector(".f2-major")).toBeNull();
-    // critical: twig and monolog-bridge cross a major; symfony/debug's move does not say (null).
+    // critical: twig, monolog-bridge and guzzle cross a major; symfony/debug's move does not say (null).
     const heads = [...document.querySelectorAll(".fgroup-head")].map((head) => text(head, ".fgroup-major"));
-    expect(heads[0]).toBe("2 of 2 moves cross a major");
+    expect(heads[0]).toBe("3 of 3 moves cross a major");
   });
 
   test("puts the gate tag in the score cell, quiet under a head that says all fail", () => {
@@ -165,7 +187,7 @@ describe("the report-2 Findings tab", () => {
 
     const tags = [...document.querySelectorAll(".f2-gate")];
     // composite: every critical and high finding fails, so each group head says "all fail".
-    expect(tags).toHaveLength(5);
+    expect(tags).toHaveLength(6);
     expect(tags.every((tag) => tag.closest(".f2-score") !== null)).toBe(true);
     expect(tags.every((tag) => tag.classList.contains("is-quiet"))).toBe(true);
     expect(text(document.querySelector(".fgroup-head"), ".fgroup-gate")).toBe("all fail the gate");
@@ -335,7 +357,7 @@ describe("the Findings list when it has no rows", () => {
     expect(surface.textContent).not.toContain("Nothing was flagged.");
 
     fireEvent.click(within(surface).getByRole("button", { name: "Clear filters" }));
-    expect(document.querySelectorAll('[data-surface="findings"] .f2-row')).toHaveLength(7);
+    expect(document.querySelectorAll('[data-surface="findings"] .f2-row')).toHaveLength(9);
     expect(screen.getByRole<HTMLInputElement>("searchbox").value).toBe("");
   });
 

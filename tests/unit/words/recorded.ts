@@ -132,6 +132,7 @@ export interface PageGolden {
   grade_line: string | null;
   figure_line: string | null;
   load_line: string | null;
+  waffle_caption: string | null;
 }
 
 /** The model's report-2 of a golden's document, where lockrot's `PageGoldensTest` reads it. */

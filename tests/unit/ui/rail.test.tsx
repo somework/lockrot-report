@@ -23,8 +23,7 @@ function toModel(embed: Report2Embed): Model {
   return result.model;
 }
 
-/** 7 graded findings, none dev: 6 direct and 1 transitive, 7 in `require`, 1 not named in composer.json.
- *  The run fails the gate on 5 of them. No baseline. */
+/** The composite case: graded findings, none dev, direct and transitive. The run fails the gate. No baseline. */
 const composite = () => toModel(assembleEmbed("composite"));
 
 const wallabagBaselined = () =>
@@ -74,36 +73,35 @@ describe("Rail", () => {
   it("offers This run, Grade, Flag, Severity, Fix and Scope in that order, each row with the packages it would list", () => {
     renderIn(<Rail />, composite(), FINDINGS);
 
-    // This run: `gate.failing` is 5, the ready-to-run filter of accepted derivation 10 holds 3, and the held filter (`isHeld`) 1. Grade: `counts`, medium held by none so left out. Flags: the document's carriers, `silent` carried by none so left out.
+    // This run: `gate.failing` is 6, no finding is ready to run (no move has a resolving check), and the held filter (`isHeld`) holds 1. Grade: `counts`, medium held by none so left out. Flags: the document's carriers, `silent` carried by none so left out.
     // Severity and Fix count packages, not advisories: SPEC §7.9.4's "By fix (packages)" reads
-    // composer update 2, upgrade 1, php floor raise 1.
-    // Scope: `rot_depth` has 6 direct, 1 transitive, 7 production, 0 development, 1 not in composer.json.
+    // composer update 2, upgrade 1, php floor raise 2.
+    // Scope: `rot_depth` has 7 direct, 2 transitive, 9 production, 0 development, 2 not in composer.json.
     expect(buttonTexts()).toEqual([
-      "Fails this run 5",
-      "Ready to run 3",
+      "Fails this run 6",
       "Held 1",
-      "Another way out 3",
-      "critical 3",
+      "Another way out 5",
+      "critical 4",
       "high 2",
-      "low 2",
+      "low 3",
       "abandoned 1",
       "pinned 1",
-      "left-behind 1",
+      "left-behind 2",
       "old-promise 3",
-      "stale 2",
-      "vulnerable 4",
+      "stale 3",
+      "vulnerable 5",
       "critical 1",
-      "high 2",
-      "medium 1",
+      "high 3",
+      "medium 2",
       "unrated 1",
       "low 3",
       "composer update 2",
       "upgrade 1",
-      "php floor raise 1",
-      "Direct 6",
-      "Transitive 1",
-      "require 7",
-      "not in composer.json 1",
+      "php floor raise 2",
+      "Direct 7",
+      "Transitive 2",
+      "require 9",
+      "not in composer.json 2",
     ]);
   });
 

@@ -83,26 +83,28 @@ describe("the Overview tab's grade chips and waffle", () => {
   it("draws a chip only for a grade some package holds, on every page", () => {
     render(<App model={composite()} />);
 
-    // composite grades 3 critical, 2 high, 0 medium, 2 low.
+    // composite grades 4 critical, 2 high, 0 medium, 3 low.
     const band = within(screen.getByRole("region", { name: "Overview" }));
     const grades = within(band.getByRole("group", { name: "Grade" }));
     expect(grades.queryByRole("link", { name: "medium 0" })).toBeNull();
     expect(grades.getAllByRole("link").map((chip) => chip.textContent)).toEqual([
-      "critical 3",
+      "critical 4",
       "high 2",
-      "low 2",
+      "low 3",
     ]);
   });
 
   it("draws the waffle in the grades' tones, most urgent first", () => {
     render(<App model={composite()} />);
 
-    expect(squares(document.querySelector(".ov .waffle")).slice(0, 7)).toEqual([
+    expect(squares(document.querySelector(".ov .waffle")).slice(0, 9)).toEqual([
+      "is-fill tone-crit",
       "is-fill tone-crit",
       "is-fill tone-crit",
       "is-fill tone-crit",
       "is-fill tone-high",
       "is-fill tone-high",
+      "is-fill tone-low",
       "is-fill tone-low",
       "is-fill tone-low",
     ]);

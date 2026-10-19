@@ -19,7 +19,7 @@ describe("the report-2 glossary", () => {
 
   it("words a grade from its band floor and a score-0 verdict from its reason", () => {
     const byId = Object.fromEntries(verdictEntries(composite).map((entry) => [entry.id, entry]));
-    expect(byId.critical).toEqual({ id: "critical", count: 3, text: "A score from 32: a critical finding." });
+    expect(byId.critical).toEqual({ id: "critical", count: 4, text: "A score from 32: a critical finding." });
     expect(byId.high?.text).toBe("A score from 16: a serious finding.");
     expect(byId.finished?.text).toBe("A score of 0: accepted by an allowlist.");
     expect(byId.unknown?.text).toBe("A score of 0: no metadata.");
@@ -44,7 +44,7 @@ describe("the report-2 glossary", () => {
     const silent = entries.find((entry) => entry.id === "silent");
     expect(silent?.text).toContain("5 years (release-high-years)");
     expect(silent?.text).toContain("Signals: S2, S4.");
-    expect(entries.find((entry) => entry.id === "vulnerable")?.count).toBe(4);
+    expect(entries.find((entry) => entry.id === "vulnerable")?.count).toBe(5);
   });
 
   it("names every signal of the run, S9 by its report-2 meaning", () => {

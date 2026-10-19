@@ -10,8 +10,7 @@ import {
 import type { Finding, Report2 } from "../../../src/model/report";
 import { linkHref } from "../../../src/state/hash";
 
-/** The contract composite: 7 graded findings, scores 32, 36, 36, 18, 18, 2 and 2 in rank order,
- *  libyears 2.04, 10.62, 1.76, null, 0, 3.43 and null, one exposure row. */
+/** The recorded contract composite. */
 function composite(): Report2 {
   return structuredClone(assembleEmbed("composite").report);
 }
@@ -29,9 +28,13 @@ describe("the exposure bars", () => {
     const bars = exposureBars(report);
 
     expect(bars).toMatchObject({
-      rows: [{ package: "guzzlehttp/guzzle", flagged: 1 }],
+      rows: [
+        { package: "friendsofsymfony/oauth-server-bundle", flagged: 1 },
+        { package: "guzzlehttp/guzzle", flagged: 1 },
+      ],
       longest: report.packages_flagged,
-      overlap: null,
+      overlap:
+        "A flagged package counts under each direct requirement it is reached from, up to 8, so the rows overlap.",
       more: null,
       shared: null,
     });
@@ -59,7 +62,7 @@ describe("the exposure bars", () => {
     expect(exposureBars(report).count).toBeNull();
   });
 
-  test("name the unattributed packages in one sentence", () => {
+  test("name the unattributed packages that are graded findings in one sentence", () => {
     const report = composite();
     report.unattributed = [
       { package: "symfony/cache", verdict: "medium", fan_in: 26 },
@@ -67,7 +70,7 @@ describe("the exposure bars", () => {
     ] as Report2["unattributed"];
 
     expect(exposureBars(report).shared).toBe(
-      "2 flagged packages shared by too many requirements to list under one: symfony/cache, symfony/yaml.",
+      "1 flagged package shared by too many requirements to list under one: symfony/yaml.",
     );
   });
 });
@@ -82,6 +85,7 @@ describe("the libyears table", () => {
   test("ranks measured packages high to low with one decimal, leaving a null and a 0.0 out", () => {
     expect(libyearsTop(composite()).map(({ package: name, libyears }) => [name, libyears])).toEqual([
       ["symfony/monolog-bridge", "10.6"],
+      ["guzzlehttp/guzzle", "4.2"],
       ["symfony/yaml", "3.4"],
       ["twig/twig", "2.0"],
       ["symfony/debug", "1.8"],
@@ -99,14 +103,14 @@ describe("the libyears table", () => {
 
     const rows = libyearsTop(report);
 
-    expect(rows.slice(2, 4).map(({ package: name, libyears }) => [name, libyears])).toEqual([
+    expect(rows.slice(3, 5).map(({ package: name, libyears }) => [name, libyears])).toEqual([
       ["symfony/debug", "2.2"],
       ["twig/twig", "≥ 2.2"],
     ]);
   });
 
   test("links a graded row to Findings and an ungraded one to All packages", () => {
-    const report = withFinding(composite(), "symfony/yaml", (f) => {
+    const report = withFinding(composite(), "guzzlehttp/guzzle", (f) => {
       f.verdict = "ok";
     });
 
@@ -114,8 +118,8 @@ describe("the libyears table", () => {
     if (first === undefined || second === undefined) throw new Error("fewer than two rows");
 
     expect(linkHref(first.link)).toBe("#view=findings&pkg=symfony%2Fmonolog-bridge");
-    expect(second.package).toBe("symfony/yaml");
-    expect(linkHref(second.link)).toBe("#view=packages&pkg=symfony%2Fyaml");
+    expect(second.package).toBe("guzzlehttp/guzzle");
+    expect(linkHref(second.link)).toBe("#view=packages&pkg=guzzlehttp%2Fguzzle");
   });
 
   test("keeps eight rows", () => {
@@ -136,6 +140,7 @@ describe("the libyears table", () => {
   test("shows the most recent release with its date, and draws no arrow from the installed version", () => {
     expect(libyearsTop(composite()).map(({ package: name, release }) => [name, release])).toEqual([
       ["symfony/monolog-bridge", "v6.4.45 (2026-08-30)"],
+      ["guzzlehttp/guzzle", "8.2.0 (2026-09-06)"],
       ["symfony/yaml", "v8.1.8 (2026-09-26)"],
       ["twig/twig", "v3.30.0 (2026-09-25)"],
       ["symfony/debug", "v4.4.44 (2022-07-28)"],
@@ -177,6 +182,6 @@ describe("the libyears table", () => {
 
 describe("the Findings strip", () => {
   test("states the flagged figure", () => {
-    expect(stripFlagged(composite())).toBe("7 flagged");
+    expect(stripFlagged(composite())).toBe("9 flagged");
   });
 });
