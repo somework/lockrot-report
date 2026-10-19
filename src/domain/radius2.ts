@@ -20,27 +20,11 @@ export type RadiusFinding2 = Finding;
 export type RadiusLayout2 = RadiusLayout<RadiusFinding2>;
 export type RadiusRow2 = RadiusRow<RadiusFinding2>;
 
-/** The packages a requirement's S7 names, with their chains. */
-function members(report: Report2, requirement: string, own: Finding | undefined): readonly RadiusMember[] {
+/** The packages a requirement's S7 names, with their chains; none without an S7 (I25 gives every
+ *  exposure requirement a finding). */
+function members(own: Finding | undefined): readonly RadiusMember[] {
   const s7 = own?.signals.find(({ id }) => id === "S7");
-  if (s7 !== undefined) return (s7.data as S7).packages;
-  if (own !== undefined) return [];
-  // shortcut: stands in only for a document that breaks I25 (an exposure requirement with no
-  // finding, so no S7), goes when the lockrot goldens give each such requirement a finding and an S7.
-  const graded: readonly string[] = report.run.graded_verdicts;
-  const shared = new Set(report.unattributed.map(({ package: name }) => name));
-  return report.findings
-    .filter(
-      (f) =>
-        graded.includes(f.verdict) &&
-        f.package !== requirement &&
-        !shared.has(f.package) &&
-        f.direct_dependents.includes(requirement),
-    )
-    .map((f) => ({
-      package: f.package,
-      chain: f.chain[0] === requirement ? f.chain : [requirement, f.package],
-    }));
+  return s7 === undefined ? [] : (s7.data as S7).packages;
 }
 
 /** `visible` is the tab's filtered list, `all` its population. */
@@ -54,7 +38,7 @@ export function radiusLayout2(
     report: {
       exposure: report.exposure.map((entry) => ({
         ...entry,
-        members: members(report, entry.package, byName.get(entry.package)),
+        members: members(byName.get(entry.package)),
       })),
       unattributed: report.unattributed,
       findings: report.findings,
