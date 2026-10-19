@@ -31,7 +31,10 @@ export function differencesFromModel(
   line: (recorded: RecordedCase) => unknown,
 ): Difference[] {
   const models = new Map(
-    modelCases().map(({ name, golden }) => [name, corrected(name, field, golden[field])]),
+    modelCases().map(({ name, golden, finding, run }) => [
+      name,
+      corrected(name, field, golden[field], finding, run),
+    ]),
   );
   return recordedCases()
     .filter(({ name }) => models.has(name))

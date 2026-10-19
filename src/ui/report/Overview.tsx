@@ -201,7 +201,8 @@ function MoveItem({ move, model }: { move: ReadyMove; model: ScoreModel }) {
           {move.clears !== null && move.after !== null && <span className="ov-sep"> · </span>}
           {move.after !== null && (
             <span>
-              {FIRST_WORDS.after}: {[move.after.result, ...move.after.conditions].join(", ")}
+              {FIRST_WORDS.after}:{" "}
+              {[move.after.result, ...move.after.conditions].filter((part) => part !== null).join(", ")}
             </span>
           )}
         </p>

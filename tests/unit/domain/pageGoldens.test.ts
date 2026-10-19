@@ -178,6 +178,29 @@ function findingsRowsOf(report: Report2): unknown {
     .map((f) => findingsRowFacts(f, report.run));
 }
 
+// SPEC §7.9.21 (coordinator ruling): a ready move's After reads the check line "checked with Composer",
+// which the pinned page goldens leave out. Until the re-pin, each ready move expects it.
+const CHECKED_READY_CASES = ["snipe-it", "snipe-it.unloaded‡", "B-also.checked‡"];
+
+interface GoldenReady {
+  moves: { after: { result: string | null; conditions: string[] } | null }[];
+}
+
+function correctedReady(id: string, golden: unknown): unknown {
+  if (!CHECKED_READY_CASES.includes(id) || golden === null) return golden;
+  const ready = golden as GoldenReady;
+  return {
+    ...ready,
+    moves: ready.moves.map((move) => ({
+      ...move,
+      after:
+        move.after === null
+          ? { result: null, conditions: ["checked with Composer"] }
+          : { ...move.after, conditions: [...move.after.conditions, "checked with Composer"] },
+    })),
+  };
+}
+
 const cases = pageGoldens().flatMap(({ id, golden, report }) =>
   Object.keys(FIELDS).map((field) => ({
     id,
@@ -194,8 +217,18 @@ describe("every page-golden field equals lockrot's page golden (SPEC §7.9.14)",
     }
   });
 
-  test.each(cases)("$id: $field", ({ field, golden, report }) => {
-    expect(FIELDS[field]?.(report)).toEqual(golden);
+  test.each(cases)("$id: $field", ({ id, field, golden, report }) => {
+    expect(FIELDS[field]?.(report)).toEqual(field === "ready" ? correctedReady(id, golden) : golden);
+  });
+
+  test("the corrected ready cases are exactly the cases with a ready move", () => {
+    const withMoves = pageGoldens()
+      .filter(
+        ({ golden }) => ((golden as unknown as { ready: GoldenReady | null }).ready?.moves.length ?? 0) > 0,
+      )
+      .map(({ id }) => id);
+
+    expect(withMoves.sort()).toEqual([...CHECKED_READY_CASES].sort());
   });
 });
 

@@ -11,7 +11,7 @@ import { capitalize, metadataWords } from "./findingWords";
 import { pluralNoun } from "./format";
 import { joinAnd } from "./joinWords";
 import { safeHref } from "./links";
-import { addsBasisWord, phpFloorWord } from "./pageVocabulary";
+import { addsBasisWord, checkReasonWords, phpFloorWord } from "./pageVocabulary";
 import { phpConstraintWord } from "./phpAlternatives";
 import { dependentNames, foundWords, installedPhpWords } from "./qualifierRows";
 import { newTab, type Rich } from "./rich";
@@ -283,14 +283,40 @@ function movePhp(finding: Finding, move: AnyMove, run: Run, then: boolean): Move
 }
 
 export interface MoveAfter {
-  readonly result: string;
-  readonly verdict: string;
+  /** "{bound}{total}, {verdict}", or null when the move has no `if_applied` and the block holds the
+   *  check line alone. */
+  readonly result: string | null;
+  readonly verdict: string | null;
   readonly conditions: readonly string[];
 }
 
-function moveAfter(finding: Finding, move: AnyMove): MoveAfter | null {
+const COMPOSER_KINDS: readonly string[] = ["update", "require", "raise-php", "tag"];
+const RESOLVES_CAVEAT = "if Composer resolves it";
+
+/** The check line of SPEC §7.9.21 "The move", one After condition; null for a kind that runs no
+ *  Composer request. */
+export function checkLine(move: AnyMove, run: Run): string | null {
+  const check = move.check;
+  if (check === null) {
+    return run.move_check === null && COMPOSER_KINDS.includes(move.kind)
+      ? `${RESOLVES_CAVEAT} (not checked: the run checked no move)`
+      : null;
+  }
+  switch (check.result) {
+    case "resolves":
+      return "checked with Composer";
+    case "refused":
+      return "Composer refuses the move";
+    default:
+      return `${RESOLVES_CAVEAT} (not checked: ${checkReasonWords(check.reason ?? "")})`;
+  }
+}
+
+function moveAfter(finding: Finding, move: AnyMove, run: Run): MoveAfter | null {
+  if (!isScoreGraded(finding.score)) return null;
   const applied = move.if_applied;
-  if (!isScoreGraded(finding.score) || !applied) return null;
+  const check = checkLine(move, run);
+  if (!applied) return check === null ? null : { result: null, verdict: null, conditions: [check] };
   const noNew = applied.assumes.includes("no_new_advisories");
   const counted = countedFlagIds(finding);
   const bound = applied.at_most ? (noNew ? "at most, from the facts it checked, " : "at most ") : "";
@@ -302,7 +328,7 @@ function moveAfter(finding: Finding, move: AnyMove): MoveAfter | null {
       ...move.unverified
         .filter((u) => u.kind === "flag" && !counted.includes(u.id))
         .map((u) => `${u.id} not checked`),
-      ...(applied.assumes.includes("composer_resolves") ? ["if Composer resolves it"] : []),
+      ...(check === null ? [] : [check]),
       ...(noNew ? ["advisories on its new versions not checked"] : []),
     ],
   };
@@ -511,7 +537,7 @@ function moveCard(
     notChecked: move.unverified.length > 0 && names ? move.unverified.map((u) => u.id).join(", ") : null,
     adds: move.adds.map((a) => `${a.id}: ${addsBasisWord(a.basis)}`),
     php: movePhp(finding, move, run, then),
-    after: moveAfter(finding, move),
+    after: moveAfter(finding, move, run),
     composer: composerNotes(finding, move, run, noted),
     heldBy: heldBy(move, run, then),
   };

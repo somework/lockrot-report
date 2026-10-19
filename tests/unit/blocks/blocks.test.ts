@@ -8,7 +8,9 @@ import { corrected, type GoldenCard, SINGULAR_LABEL_CASES, singularSeveral } fro
 describe("each block equals the model's golden from the model's own inputs (SPEC §7.9.14)", () => {
   test.each(modelCases())("$name", ({ name, finding, run, metadata, golden }) => {
     const page = Object.fromEntries(BLOCK_KEYS.map((key) => [key, blockGolden(key, finding, run, metadata)]));
-    const model = Object.fromEntries(BLOCK_KEYS.map((key) => [key, corrected(name, key, golden[key])]));
+    const model = Object.fromEntries(
+      BLOCK_KEYS.map((key) => [key, corrected(name, key, golden[key], finding, run)]),
+    );
 
     expect(page).toEqual(model);
   });

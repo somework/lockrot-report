@@ -42,7 +42,7 @@ export interface ReadyMove {
   /** The lead move card's "clears" words, or null when it clears nothing it names. */
   readonly clears: string | null;
   /** The move card's After: "{total}, {verdict}" and its G104 conditions, or null without `if_applied`. */
-  readonly after: { readonly result: string; readonly conditions: readonly string[] } | null;
+  readonly after: { readonly result: string | null; readonly conditions: readonly string[] } | null;
   readonly newMajor: boolean;
   /** "Also holds: {name} ({grade}), …", or null when no finding names this package as a holder. */
   readonly alsoHolds: string | null;
