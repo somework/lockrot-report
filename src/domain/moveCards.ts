@@ -314,7 +314,7 @@ export interface Holder {
   readonly name: string;
   readonly version: string | null;
   readonly grade: string | null;
-  /** "requires {constraint}", then " · itself {flags}" (G117, G118). */
+  /** The link words of §7.9.21, then " · itself {flags}" (G117, G118). */
   readonly meta: Rich;
   /** "require ^2.0 on 2.x", after "its own step:". */
   readonly step: string | null;
@@ -348,6 +348,26 @@ const newLineWords = (toBranch: string | null): string =>
 /** The root's name as a holder (§7.9.13): the sheet's Held by and a row's "held by" say it alike. */
 export const ROOT_HOLDER_NAME = "your composer.json";
 
+/** A hold's link words (SPEC §7.9.21), with the target it names. A link the page does not know reads
+ *  as a requirement. */
+function linkWords({ link, target, constraint, package: holder }: HeldBy): Rich {
+  const named = (verb: string): Rich => [
+    verb,
+    ...(target === null ? [] : [`${target} `]),
+    { code: constraint },
+  ];
+  switch (link) {
+    case "conflict":
+      return named("conflicts with ");
+    case "replace":
+      return target === null ? [`replaced by ${holder ?? ""}`] : named("replaces ");
+    case "root-require":
+      return target === null ? ["no release of ", { code: constraint }, " can install"] : named("requires ");
+    default:
+      return named("requires ");
+  }
+}
+
 function holderItem(held: HeldBy, run: Run): Holder {
   if (held.source === "root") {
     return {
@@ -355,7 +375,7 @@ function holderItem(held: HeldBy, run: Run): Holder {
       name: ROOT_HOLDER_NAME,
       version: null,
       grade: null,
-      meta: ["requires ", { code: held.constraint }],
+      meta: linkWords(held),
       step: null,
     };
   }
@@ -368,11 +388,7 @@ function holderItem(held: HeldBy, run: Run): Holder {
     name: held.package ?? "",
     version: held.version ?? "",
     grade: holder !== null && isGradedHolder(held, run) ? holder.verdict : null,
-    meta: [
-      "requires ",
-      { code: held.constraint },
-      ...(flags.length > 0 ? [` · itself ${flags.join(" · ")}`] : []),
-    ],
+    meta: [...linkWords(held), ...(flags.length > 0 ? [` · itself ${flags.join(" · ")}`] : [])],
     step:
       step === null
         ? null

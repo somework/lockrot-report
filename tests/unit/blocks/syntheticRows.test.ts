@@ -292,3 +292,42 @@ describe("G106: the new-major note and the move check", () => {
     expect(noteOf(check)).toContain(`A new major brings its own requirements${SOLVE}`);
   });
 });
+
+describe("the Held by link words (SPEC §7.9.21)", () => {
+  const metaOf = (link: string, target: string | null, source: "root" | "package" = "package"): string => {
+    const { finding, run } = modelCase("B");
+    if (finding.next_step === null) throw new Error("B has a move");
+    const hold = {
+      source,
+      package: source === "root" ? null : "acme/holder",
+      version: source === "root" ? null : "1.0.0",
+      link,
+      target,
+      constraint: "^4.4.49",
+      holder: null,
+    };
+    finding.next_step = { ...finding.next_step, held_by: [hold] } as unknown as typeof finding.next_step;
+    const shown = moveCards(finding, run)[0]?.heldBy?.shown[0];
+    if (shown === undefined) throw new Error("no holder shown");
+    return plain(shown.meta);
+  };
+
+  test.each([
+    ["require", null, "requires ^4.4.49"],
+    ["require", "symfony/console", "requires symfony/console ^4.4.49"],
+    ["require-dev", "symfony/console", "requires symfony/console ^4.4.49"],
+    ["platform", null, "requires ^4.4.49"],
+    ["conflict", null, "conflicts with ^4.4.49"],
+    ["conflict", "symfony/console", "conflicts with symfony/console ^4.4.49"],
+    ["replace", "symfony/console", "replaces symfony/console ^4.4.49"],
+    ["replace", null, "replaced by acme/holder"],
+    ["root-require", "symfony/console", "requires symfony/console ^4.4.49"],
+    ["root-require", null, "no release of ^4.4.49 can install"],
+  ])("%s with target %s reads %s", (link, target, words) => {
+    expect(metaOf(link, target)).toBe(words);
+  });
+
+  test("the root names its target too", () => {
+    expect(metaOf("require", "symfony/console", "root")).toBe("requires symfony/console ^4.4.49");
+  });
+});
