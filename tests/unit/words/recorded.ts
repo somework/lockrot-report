@@ -152,6 +152,15 @@ export function pageGoldenDocument(document: string): Report2 {
   return JSON.parse(raw) as Report2;
 }
 
+/** The details of a golden's document, by package: only a baselined bundle records them. */
+export function pageGoldenMetadata(document: string, pkg: string): RepositoryMetadata | null {
+  if (!document.startsWith("baselined/")) return null;
+  const { details } = JSON.parse(readFileSync(join(FIXTURES, document), "utf8")) as {
+    details: Record<string, { metadata: RepositoryMetadata | null } | undefined>;
+  };
+  return details[pkg]?.metadata ?? null;
+}
+
 export function pageGoldens(): { id: string; golden: PageGolden; report: Report2 }[] {
   const { goldens } = readContractJson("page-goldens.json") as { goldens: Record<string, PageGolden> };
   return Object.entries(goldens).map(([id, golden]) => ({

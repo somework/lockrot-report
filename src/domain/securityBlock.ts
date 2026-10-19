@@ -40,7 +40,7 @@ export function holderWord({ source, package: name }: Pick<HeldBy, "source" | "p
 }
 
 /** "after it: {bound}{total}, {verdict}", with its conditions (G139). A move that the check stopped
- *  drops the Composer caveat, and its short check words end the line. */
+ *  drops the Composer caveat, and " · " and its short check words end the line. */
 export function afterIt(applied: BranchFixes["if_applied"], stopped: string | null = null): string | null {
   if (applied === null) return stopped;
   const noNew = applied.assumes.includes("no_new_advisories");
@@ -49,7 +49,7 @@ export function afterIt(applied: BranchFixes["if_applied"], stopped: string | nu
     `after it: ${bound}${applied.total}, ${applied.verdict}` +
     (stopped === null && applied.assumes.includes("composer_resolves") ? `, ${COMPOSER_CAVEAT}` : "") +
     (noNew ? ", advisories on its new versions not checked" : "") +
-    (stopped === null ? "" : `, ${stopped}`)
+    (stopped === null ? "" : ` · ${stopped}`)
   );
 }
 

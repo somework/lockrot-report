@@ -10,7 +10,6 @@ import { safeHref } from "./links";
 import { plural } from "./format";
 import { causeWord, fixLabel, lookupWord } from "./pageVocabulary";
 import { heldByLine, heldByWords } from "./findingRow";
-import { phpAdmits } from "./phpConstraint";
 
 export interface AdvisoryPair2 {
   readonly finding: Finding;
@@ -142,24 +141,16 @@ export function noAdvisoryLine(report: Report2): string {
  *  the holders as a Findings row says them (accepted derivation 3). */
 export function advisoryFixNote(fix: S9fix, run: Run): string | null {
   const held = heldByLine(fix.held_by, run);
-  const parts = [advisoryFixPhp(fix, run), held === null ? null : heldByWords(held)].filter(
+  const parts = [advisoryFixPhp(fix), held === null ? null : heldByWords(held)].filter(
     (p) => p !== null,
   );
   return parts.length === 0 ? null : parts.join(" · ");
 }
 
-/** The target PHP at patch 99, as lockrot's move check solves it (§5.6). */
-const solvePhp = (target: string): string => (target.split(".").length === 2 ? `${target}.99` : target);
-
-/** The PHP a fix needs, when the target PHP or the project's PHP floor does not admit it. A
- *  constraint the page cannot read gets no note, because the page cannot say it is not admitted. */
-export function advisoryFixPhp({ php }: S9fix, run: Run): string | null {
-  if (php === null) return null;
-  const answers = [
-    phpAdmits(php, solvePhp(run.target_php)),
-    ...(run.project_php_lowest === null ? [] : [phpAdmits(php, run.project_php_lowest)]),
-  ];
-  return answers.includes(false) && !answers.includes(null) ? `needs PHP ${php}` : null;
+/** The PHP a fix needs, when lockrot says that the target PHP or the project's PHP floor does not
+ *  admit it. A null answer is no answer. */
+export function advisoryFixPhp({ php, admits_target_php: target, admits_project_php: project }: S9fix): string | null {
+  return php !== null && (target === false || project === false) ? `needs PHP ${php}` : null;
 }
 
 /** The band a severity's square and word take, by lookup in the model. */

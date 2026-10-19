@@ -29,7 +29,7 @@ import type { Report2 } from "../../../src/model/report";
 import { linkHref, linkState } from "../../../src/state/hash";
 import type { LinkTarget } from "../../../src/state/types";
 import { blockGolden } from "../blocks/blockGoldens";
-import { pageGoldens } from "../words/recorded";
+import { pageGoldenMetadata, pageGoldens } from "../words/recorded";
 
 const href = (target: LinkTarget | null): string | null => (target === null ? null : linkHref(target));
 
@@ -205,6 +205,27 @@ describe("every page-golden field equals lockrot's page golden (SPEC §7.9.14)",
 
   test.each(cases)("$id: $field", ({ field, golden, report }) => {
     expect(FIELDS[field]?.(report)).toEqual(golden);
+  });
+
+  test.each(pageGoldens())("$id: sheet_holders and sheet_ladder", ({ golden, report }) => {
+    const { sheet_holders: holders, sheet_ladder: ladder } = golden as unknown as Record<
+      "sheet_holders" | "sheet_ladder",
+      Record<string, unknown>
+    >;
+    const block = (key: "held_by" | "security", pkg: string): unknown => {
+      const finding = report.findings.find((f) => f.package === pkg);
+      if (finding === undefined) throw new Error(`no finding ${pkg}`);
+      return blockGolden(key, finding, report.run, pageGoldenMetadata(golden.document, pkg));
+    };
+
+    expect(Object.fromEntries(Object.keys(holders).map((pkg) => [pkg, block("held_by", pkg)]))).toEqual(
+      holders,
+    );
+    expect(
+      Object.fromEntries(
+        Object.keys(ladder).map((pkg) => [pkg, (block("security", pkg) as { ladder: unknown }).ladder]),
+      ),
+    ).toEqual(ladder);
   });
 
   test.each(pageGoldens())("$id: sheet_moves", ({ golden, report }) => {

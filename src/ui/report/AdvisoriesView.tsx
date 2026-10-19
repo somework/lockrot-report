@@ -157,7 +157,7 @@ function AdvisoryRow2({
   const { finding, row } = pair;
   const fix = advisoryFixWords(row.fix, finding);
   const countedAs = advisoryCountedAs(run, row.severity);
-  const php = advisoryFixPhp(row.fix, run);
+  const php = advisoryFixPhp(row.fix);
   const held = heldByLine(row.fix.held_by, run);
   const inner = innerTabIndex(finding.package, cursor, first);
   return (

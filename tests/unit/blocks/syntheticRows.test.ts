@@ -389,7 +389,7 @@ describe("the move check in Held by and on the ladder (coordinator rulings on #4
   test("a stopped row drops the Composer caveat, and its check words end the row", () => {
     const assumes = ["composer_resolves", "no_new_advisories"];
     expect(afterIt({ ...applied, assumes } as never, "Composer refuses the move")).toBe(
-      "after it: 0, ok, advisories on its new versions not checked, Composer refuses the move",
+      "after it: 0, ok, advisories on its new versions not checked · Composer refuses the move",
     );
   });
 

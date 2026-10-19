@@ -125,28 +125,40 @@ describe("row words", () => {
     });
   });
 
-  it("names no PHP that the target PHP admits, and the holders", () => {
-    // composite twig/twig: a php floor raise to >=8.1.0 at target PHP 8.4, held by symfony/twig-bridge.
-    expect(advisoryFixNote(pair.row.fix, composite.run)).toBe("held by symfony/twig-bridge");
-    expect(advisoryFixNote({ ...pair.row.fix, kind: "update", held_by: [] }, composite.run)).toBeNull();
+  it("names the PHP a fix needs when lockrot says the project's floor does not admit it, then the holders", () => {
+    // composite twig/twig: a php floor raise to >=8.1.0 that require.php does not admit, held by symfony/twig-bridge.
+    expect(advisoryFixNote(pair.row.fix, composite.run)).toBe(
+      "needs PHP >=8.1.0 · held by symfony/twig-bridge",
+    );
   });
 
-  it("names the PHP a fix needs when the target PHP or the project's floor does not admit it", () => {
-    const fix = { ...pair.row.fix, php: ">=8.5", held_by: [] };
-    expect(advisoryFixNote(fix, composite.run)).toBe("needs PHP >=8.5");
-    const floor = { ...composite.run, project_php_lowest: "7.4" };
-    expect(advisoryFixNote({ ...fix, php: ">=8.1.0" }, floor)).toBe("needs PHP >=8.1.0");
-    expect(advisoryFixNote({ ...fix, php: ">=7.2" }, floor)).toBeNull();
-  });
-
-  it("names no PHP for a constraint it cannot read", () => {
-    const fix = { ...pair.row.fix, php: "7.4 - 8.4", held_by: [] };
-    expect(advisoryFixNote(fix, composite.run)).toBeNull();
+  it.each([
+    [false, true, "needs PHP >=8.5"],
+    [true, false, "needs PHP >=8.5"],
+    [true, true, null],
+    [null, true, null],
+    [true, null, null],
+    [null, null, null],
+  ])("reads admits_target_php %s and admits_project_php %s as %s", (target, project, note) => {
+    const fix = {
+      ...pair.row.fix,
+      php: ">=8.5",
+      admits_target_php: target,
+      admits_project_php: project,
+      held_by: [],
+    };
+    expect(advisoryFixNote(fix, composite.run)).toBe(note);
   });
 
   it("says the holders as a Findings row does", () => {
     const hold = (name: string) => ({ ...pair.row.fix.held_by[1], source: "package", package: name });
-    const fix = { ...pair.row.fix, kind: "update", held_by: [hold("a/a"), hold("b/b"), hold("c/c")] };
+    const fix = {
+      ...pair.row.fix,
+      kind: "update",
+      admits_target_php: true,
+      admits_project_php: true,
+      held_by: [hold("a/a"), hold("b/b"), hold("c/c")],
+    };
     expect(advisoryFixNote(fix as typeof pair.row.fix, composite.run)).toBe("held by a/a and 2 more");
   });
 
