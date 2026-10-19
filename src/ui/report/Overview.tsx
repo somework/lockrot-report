@@ -1,7 +1,7 @@
 import { Fragment, type ComponentChildren } from "preact";
 import { useId } from "preact/hooks";
 import { firstMoves, FIRST_WORDS, gateLineTarget, type ReadyMove } from "../../domain/firstMoves";
-import { libyearsLead } from "../../domain/libyearsPanel";
+import { libyearsLead } from "../../domain/libyearsLead";
 import {
   acceptedLine,
   flagBars,

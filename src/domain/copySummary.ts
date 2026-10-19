@@ -6,7 +6,7 @@
 import type { Report2 } from "../model/report";
 import { day, fixed, plural } from "./format";
 import { gateFact, gateHeadline, gateHeadlineLine } from "./gate";
-import { fixLabel } from "./pageVocabulary";
+import { ADVISORY_NOT_RUN, fixLabel } from "./pageVocabulary";
 import { sharePhrase } from "./summary";
 
 const DOT = " · ";
@@ -96,9 +96,11 @@ export function fixCounts({ security, run }: Report2): { kind: string; label: st
 
 /** The Security clause when no advisory counted. */
 export const noAdvisoryWords = (report: Report2): string =>
-  advisoryListPartial(report)
-    ? "no advisory found, but the advisory check was incomplete"
-    : "no security advisory";
+  report.security.check === "not_run"
+    ? ADVISORY_NOT_RUN
+    : advisoryListPartial(report)
+      ? "no advisory found, but the advisory check was incomplete"
+      : "no security advisory";
 
 function securityClauses(report: Report2): string[] {
   const { security, run } = report;

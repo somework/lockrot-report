@@ -106,7 +106,7 @@ export function waffleCaption(report: Report2): string | null {
 export function loadLine(report: Report2): string | null {
   if (report.packages_checked === 0) return null;
   const findings = graded(report);
-  if (findings.length === 0) return `0 points: ${NOTHING_FLAGGED}`;
+  if (findings.length === 0) return null;
   const worse = highOrWorse(report);
   const load = sum(findings.map(total));
   const high = sum(findings.filter((f) => worse.includes(f.verdict)).map(total));

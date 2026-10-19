@@ -151,7 +151,7 @@ export function securityBlock(report: Report2): SecurityBlock {
   if (counted === 0)
     return {
       figure: null,
-      unit: security.check === "not_run" ? "the advisory check did not run" : noAdvisoryWords(report),
+      unit: noAdvisoryWords(report),
       note: null,
       severities: [],
       fixes: [],

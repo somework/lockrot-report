@@ -90,6 +90,7 @@ describe("G35: the installed branch's fix, when no ladder rung says it", () => {
       newest: null,
       held_by: [],
       if_applied: null,
+      check: null,
     };
 
     expect(readingTexts(finding, run, null).at(-1)).toContain(`). ${clause}.`);

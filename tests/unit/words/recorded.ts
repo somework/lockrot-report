@@ -127,7 +127,6 @@ export function multiFindingReports(): { name: string; report: Report2 }[] {
 export interface PageGolden {
   document: string;
   copy_summary: string[];
-  libyears_panel: string | null;
   panel: string[] | null;
   /** The Overview's three lines; null where the page shows no such line. */
   grade_line: string | null;

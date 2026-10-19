@@ -122,7 +122,7 @@ src/
     overviewTab.ts        the Overview tab's charts and the Findings strip: places, words and links
     projectGrade.ts       the Overview's grade line, figure line and load line, flag points and "Weighs most"
     runTab.ts, scorePanel.ts   the Run tab: lookup, notes, thresholds, "How the score works"
-    copySummary.ts, libyearsPanel.ts   the copied summary and the Libyears panel (page goldens, §6)
+    copySummary.ts, libyearsLead.ts   the copied summary and the Overview Libyears lead (page goldens, §6)
     branchTimeline.ts     the release-branches timeline: rows, folds and guides from published years
     radius.ts             blast-radius rows, generic over the finding fields it reads
     age.ts                a Findings row's age axis: one shared maximum from the thresholds
@@ -478,7 +478,7 @@ key is the error screen (§2).
   from `flags/cases.json` on the model's own inputs; Repository and Advisory feeds have none and are
   held to SPEC's examples. On lockrot's recording it may differ from the
   model's golden only for a case that `goldens/en/model-differences.json` lists with its reason.
-- **Page texts** (`copySummary`, `libyearsPanel`, `scorePanel` in `src/domain/`): pure functions of
+- **Page texts** (`copySummary`, `scorePanel` and the page-golden fields of SPEC §7.9.14 in `src/domain/`): pure functions of
   a report-2, held equal to `contract/page-goldens.json` (`tests/unit/words/pageTexts.test.ts`). The
   goldens render the model's documents, which `contract:fetch` gets beside the bundle (the documents
   named in `scripts/contract.mjs`), as lockrot's `PageGoldensTest` reads them.
