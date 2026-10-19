@@ -29,7 +29,7 @@ test.describe("report-2: the Run tab of SPEC §7.9.16", () => {
     await expect(runSurface(page).getByRole("table", { name: "Weights" })).toBeVisible();
     await expect(runSurface(page).getByRole("table", { name: "Advisories" })).toBeVisible();
     await expect(runSurface(page)).toContainText(
-      "packagist.org: answered · 33 on record · 4 packages with records",
+      "packagist.org: answered · 49 on record · 6 packages with records",
     );
     await runSurface(page).getByText("The 16 rules").click();
     await expect(ruleRows(page)).toHaveCount(16);
@@ -63,7 +63,7 @@ test.describe("report-2: the Run tab of SPEC §7.9.16", () => {
       "href",
       "https://lockrot.dev/verdicts/model-1/#score-lead-first",
     );
-    await expect(ruleRows(page).nth(1)).toContainText("used on 4");
+    await expect(ruleRows(page).nth(1)).toContainText("used on 6");
   });
 
   test("routing: the not-from-a-Composer-repository note says the advisories were asked", async ({

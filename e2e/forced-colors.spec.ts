@@ -28,20 +28,20 @@ test.describe("report-2: the age bar and its guides stay visible in forced-color
       await page.emulateMedia({ colorScheme, forcedColors: "active" });
 
       expect(await report.ageScaleForcedColorsVisible("javibravo/simpleue")).toEqual({
-        track: true,
+        track: false,
         tick: true,
         dot: true,
       });
     });
 
-    test(`symfony/http-foundation (warn..high zone, the hatched middle), ${colorScheme} forced colors`, async ({
+    test(`symfony/http-foundation (warn..high zone), ${colorScheme} forced colors`, async ({
       page,
     }) => {
       await report.gotoReport2WithHash(WALLABAG, "view=findings");
       await page.emulateMedia({ colorScheme, forcedColors: "active" });
 
       expect(await report.ageScaleForcedColorsVisible("symfony/http-foundation")).toEqual({
-        track: true,
+        track: false,
         tick: true,
         dot: true,
       });
@@ -217,7 +217,7 @@ test.describe("report-2: the score bars and the band ruler keep their marks in f
   ];
 
   for (const colorScheme of ["light", "dark"] as const) {
-    test(`the Findings bar: a CanvasText border by role, numbers on 6 blocks or more, ${colorScheme}`, async ({
+    test(`the Findings bar: a CanvasText border by role, numbers left to paper, ${colorScheme}`, async ({
       page,
     }) => {
       await page.emulateMedia({ colorScheme, forcedColors: "active" });
@@ -227,9 +227,10 @@ test.describe("report-2: the score bars and the band ruler keep their marks in f
       const seen = await borders(row.locator(".sbar-seg"));
       expect(seen.map(({ role, style }) => ({ role, style }))).toEqual(ROLES);
       expect(seen.every(({ color }) => color === ink)).toBe(true);
-      // 16 points is 8 blocks: labelled; 4 points is 2 blocks: not.
+      // 16 points is 8 blocks: labelled; 4 points is 2 blocks: not. The labels are for paper: on
+      // screen the row's own score and its terms carry the numbers.
       await expect(row.locator(".sbar-n")).toHaveText(["16", "16"]);
-      await expect(row.locator(".sbar-n").first()).toBeVisible();
+      await expect(row.locator(".sbar-n").first()).toBeHidden();
       const tick = await row
         .locator(".sbar-tick")
         .first()
@@ -293,9 +294,12 @@ test.describe("report-2: forced colours across recorded cases", () => {
                 .evaluate((el) => {
                   const part = el.querySelector(".legend-seg");
                   if (!(part instanceof HTMLElement)) throw new Error("flag bar has no grade part");
-                  const fill = getComputedStyle(part).backgroundColor;
+                  // A grade takes its tone's pattern in forced colors, so a fill is a colour or an image.
+                  const style = getComputedStyle(part);
                   return (
-                    fill !== getComputedStyle(document.body).backgroundColor && fill !== "rgba(0, 0, 0, 0)"
+                    (style.backgroundColor !== getComputedStyle(document.body).backgroundColor &&
+                      style.backgroundColor !== "rgba(0, 0, 0, 0)") ||
+                    style.backgroundImage !== "none"
                   );
                 }),
             )

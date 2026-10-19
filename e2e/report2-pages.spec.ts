@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { FIXTURES, pageUrl, report2Cases, report2Url } from "./support/pages";
-import { findingsRowCells, findingsSurface } from "./support/report2/findings";
+import { findingsNextStep, findingsRowCells, findingsSurface } from "./support/report2/findings";
+import { pageGolden } from "./support/report2/page-goldens";
 import { overviewSurface } from "./support/report2/overview";
 
 /**
@@ -19,14 +20,18 @@ test("the composite's Findings rows draw the score, the package, the pills, the 
 }) => {
   await page.goto(report2Url("composite") + "#view=findings");
 
-  expect(await findingsRowCells(page, "symfony/polyfill-intl-idn")).toEqual([
+  const [score, pkg, flags, , reach] = await findingsRowCells(page, "symfony/polyfill-intl-idn");
+  expect([score, pkg, flags, reach]).toEqual([
     "2",
     "symfony/polyfill-intl-idn v1.37.0",
     "vulnerable·1maintenance accepted (lockrot's list)",
-    "",
     "via guzzlehttp/guzzle",
-    "composer update",
   ]);
+  const golden = pageGolden("composite").findings_rows.find((row) => row.package === "symfony/polyfill-intl-idn");
+  expect(reach).toBe(golden?.reach);
+  const next = await findingsNextStep(page, "symfony/polyfill-intl-idn");
+  expect(next.move).toBe("composer update");
+  expect(next.after).toBe(golden?.after);
 });
 
 for (const name of cases) {

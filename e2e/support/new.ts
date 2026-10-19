@@ -161,26 +161,7 @@ export class NewReportPage implements ReportPage {
    * carries the package alone, and is what this reads first.
    */
   async rows(): Promise<string[]> {
-    const candidates = this.page
-      .getByRole("row")
-      .or(this.page.getByRole("option"))
-      .or(this.page.getByRole("listitem"));
-    const count = await candidates.count();
-    const names: string[] = [];
-    for (let i = 0; i < count; i++) {
-      const el = candidates.nth(i);
-      // Table header rows are `role=row` too; skip anything acting as a column header.
-      if ((await el.getByRole("columnheader").count()) > 0) continue;
-      // The open package's sheet holds lists and a table of its own, which are not the view's rows.
-      if (await el.evaluate((node) => node.closest('[data-surface="detail"]') !== null)) continue;
-      const name =
-        (await el.getAttribute("data-pkg")) ??
-        (await el.getAttribute("aria-label")) ??
-        (await el.textContent());
-      if (name) names.push(name.trim());
-    }
-
-    return names;
+    return this.renderedRowNames();
   }
 
   private pkgLocator(name: string): Locator {
@@ -188,7 +169,7 @@ export class NewReportPage implements ReportPage {
       .getByRole("row", { name, exact: true })
       .or(this.page.getByRole("option", { name, exact: true }))
       .or(this.page.getByRole("listitem", { name, exact: true }))
-      .or(this.page.locator(`li.adv[data-pkg="${name.replace(/["\\]/g, "\\$&")}"]`))
+      .or(this.page.locator(`[data-surface="advisories"] [role="row"][data-pkg="${name.replace(/["\\]/g, "\\$&")}"]`))
       .first();
   }
 
@@ -386,10 +367,15 @@ export class NewReportPage implements ReportPage {
   }
 
   /** The Findings list's age axis (`views/AgeScale.tsx#AgeAxis`, PD-ROWS-4, DESIGN.md §5): the one
-   *  `role=img` in the column head, found by its accessible name's fixed leading words. Its visible
-   *  captions, whitespace-collapsed, or null when the tab draws no axis. */
+   *  column head whose accessible description starts "age axis:" — the head's name is its caption,
+   *  its description spells out the thresholds. */
+  private ageAxisLocator(): Locator {
+    return this.page.getByRole("columnheader", { description: /^age axis:/ });
+  }
+
+  /** The axis' visible captions, whitespace-collapsed, or null when the tab draws no axis. */
   async ageAxisText(): Promise<string | null> {
-    const axis = this.page.getByRole("img", { name: /^age axis:/ });
+    const axis = this.ageAxisLocator();
     if ((await axis.count()) === 0) return null;
     return axis.first().evaluate((el) =>
       Array.from(el.querySelectorAll(".fhead-axis > *"))
@@ -398,90 +384,81 @@ export class NewReportPage implements ReportPage {
     );
   }
 
-  async ageAxisAccessibleName(): Promise<string | null> {
-    const axis = this.page.getByRole("img", { name: /^age axis:/ });
-    return (await axis.count()) > 0 ? axis.first().getAttribute("aria-label") : null;
+  /** The axis' accessible description: its thresholds, in words. */
+  async ageAxisDescription(): Promise<string | null> {
+    const axis = this.ageAxisLocator();
+    return (await axis.count()) > 0 ? axis.first().getAttribute("title") : null;
   }
 
-  /** The age cell's decorative parts (`AgeScale.tsx#AgeCell`) carry no accessible role of their
-   *  own — the whole cell is one `role=img` — so they're read by position from that element
-   *  (`children[0]` the track; inside it the warn guide, the high guide and the bar), the same
-   *  structural approach `ledgerSegmentPrintStyle` below uses, rather than by class. a11y review
-   *  (PD-ROWS-2/4, DESIGN.md §5): forced-colors mode flattens every tone to the page's Canvas; each
-   *  boolean is whether that part still paints something distinct from it — the track's hairline,
-   *  the warn guide's line, the bar's fill, hatch or outline. The names keep the scale's first shape
-   *  (`tick` the guide, `dot` the bar). */
+  /** The age cell's decorative parts (`views/AgeScale.tsx`, `ledger-rows.css`) are aria-hidden and
+   *  carry no role: the cell's `aria-label` holds the reading, and the parts are reached by class
+   *  (`age-track`, `age-guide`, `age-bar`). Forced-colors mode flattens every tone to the page's
+   *  Canvas; each boolean is whether that part still paints something distinct from it. The track's
+   *  hairline is drawn off by design in forced colors, so `track` is false there: the guides and the
+   *  bar carry the scale. */
   async ageScaleForcedColorsVisible(name: string): Promise<{ track: boolean; tick: boolean; dot: boolean }> {
     return this.pkgLocator(name)
-      .getByRole("img")
-      .first()
-      .evaluate((scale) => {
-        const track = scale.children[0];
-        const guide = track?.children[0];
-        const bar = track?.children[2];
-        if (
-          !(track instanceof HTMLElement) ||
-          !(guide instanceof HTMLElement) ||
-          !(bar instanceof HTMLElement)
-        ) {
+      .locator(".f2-age .age-track")
+      .evaluate((track) => {
+        const guide = track.querySelector(".age-guide.is-warn");
+        const bar = track.querySelector(".age-bar");
+        if (!(guide instanceof HTMLElement) || !(bar instanceof HTMLElement)) {
           throw new Error("age cell is missing a track, guide or bar");
         }
         const pageBg = getComputedStyle(document.body).backgroundColor;
-        const trackColor = getComputedStyle(track, "::before").backgroundColor;
+        const trackColor = getComputedStyle(track, "::before");
         const guideStyle = getComputedStyle(guide);
         const barStyle = getComputedStyle(bar);
         const distinct = (c: string) => c !== pageBg && c !== "rgba(0, 0, 0, 0)" && c !== "";
-        // The bar's pattern carries the zone (ledger-rows.css): solid fill past `high`, a hatch
-        // between the thresholds, an inset outline below `warn` — any one says it is drawn at all.
+        // The bar is a fill, or in forced colors an inset outline: any one says it is drawn at all.
         const barVisible =
           distinct(barStyle.backgroundColor) ||
           barStyle.backgroundImage !== "none" ||
           barStyle.boxShadow !== "none";
         return {
-          track: distinct(trackColor),
+          track: trackColor.display !== "none" && distinct(trackColor.backgroundColor),
           tick: guideStyle.borderLeftStyle !== "none" && distinct(guideStyle.borderLeftColor),
           dot: barVisible,
         };
       });
   }
 
-  /** `document.elementFromPoint` at the warn tick's own centre: `true` when the tick itself is the
+  /** `document.elementFromPoint` at the warn guide's own centre: `true` when the guide itself is the
    *  topmost element painted there. A colour check alone (`ageScaleForcedColorsVisible`) can't tell
-   *  a tick that renders fine but sits under an opaquely-filled dot from one that's genuinely
+   *  a guide that renders fine but sits under an opaquely-filled bar from one that is genuinely
    *  missing — this reads paint order instead. */
   async ageScaleWarnTickSurvivesDot(name: string): Promise<boolean> {
-    return this.ageScaleTickSurvivesDot(name, 0);
+    return this.ageScaleGuideSurvivesBar(name, "is-warn");
   }
 
   async ageScaleHighTickSurvivesDot(name: string): Promise<boolean> {
-    return this.ageScaleTickSurvivesDot(name, 1);
+    return this.ageScaleGuideSurvivesBar(name, "is-high");
   }
 
-  /** `tickIndex` 0 is the warn tick, 1 the high tick — the track's own child order
-   *  (`views/AgeScale.tsx`: warn tick, high tick, dot). */
-  private async ageScaleTickSurvivesDot(name: string, tickIndex: 0 | 1): Promise<boolean> {
-    const scaleLocator = this.pkgLocator(name).getByRole("img").first();
+  private async ageScaleGuideSurvivesBar(name: string, guideClass: "is-warn" | "is-high"): Promise<boolean> {
+    const track = this.pkgLocator(name).locator(".f2-age .age-track");
     // `elementFromPoint` only ever sees the viewport, not the scrollable page — the row this scale
     // sits in is usually well below the fold in a 200+ package report.
-    await scaleLocator.scrollIntoViewIfNeeded();
-    return scaleLocator.evaluate((scale, index) => {
-      const track = scale.children[0];
-      const tick = track?.children[index];
-      if (!(tick instanceof HTMLElement)) throw new Error("age scale is missing a threshold tick");
-      const rect = tick.getBoundingClientRect();
+    await track.scrollIntoViewIfNeeded();
+    return track.evaluate((el, selector) => {
+      const guide = el.querySelector(selector);
+      if (!(guide instanceof HTMLElement)) throw new Error("age scale is missing a guide");
+      const rect = guide.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
-      return document.elementFromPoint(cx, cy) === tick;
-    }, tickIndex);
+      return document.elementFromPoint(cx, cy) === guide;
+    }, `.age-guide.${guideClass}`);
   }
 
   /** `.waffle` (`ledger/Waffle.tsx`): found by class, not an accessible query, since it is
-   *  deliberately `aria-hidden` — the figure and chips beside it carry every number in words. */
+   *  deliberately `aria-hidden` — the grade line and chips beside it carry every number in words.
+   *  A graded package is a filled square (`is-fill`); the others (ok, allowlisted, not judged) are
+   *  soft, ringed or hatched. */
   async summaryWaffle(): Promise<{ flagged: number; total: number } | null> {
     const waffle = this.page.locator(".waffle");
     if ((await waffle.count()) === 0 || !(await waffle.first().isVisible())) return null;
     return waffle.first().evaluate((el) => ({
-      flagged: el.querySelectorAll(".waffle-cell:not(.waffle-rest)").length,
+      flagged: el.querySelectorAll(".waffle-cell.is-fill").length,
       total: el.querySelectorAll(".waffle-cell").length,
     }));
   }
@@ -491,17 +468,20 @@ export class NewReportPage implements ReportPage {
       .locator(".waffle")
       .first()
       .evaluate((el) => {
-        const flagged = el.querySelector(".waffle-cell:not(.waffle-rest)");
-        const rest = el.querySelector(".waffle-rest");
+        const flagged = el.querySelector(".waffle-cell.is-fill");
+        const rest = el.querySelector(".waffle-cell:not(.is-fill)");
         if (!(flagged instanceof HTMLElement) || !(rest instanceof HTMLElement)) {
           throw new Error("waffle needs a flagged and a quiet square for this check");
         }
         const pageBg = getComputedStyle(document.body).backgroundColor;
-        const fill = getComputedStyle(flagged).backgroundColor;
+        const fill = getComputedStyle(flagged);
         const restStyle = getComputedStyle(rest);
         return {
-          flaggedDistinct: fill !== pageBg && fill !== "rgba(0, 0, 0, 0)",
-          restOutlined: restStyle.outlineStyle === "solid" && restStyle.outlineColor !== pageBg,
+          // A grade takes its tone's pattern in forced colors, so a fill is a colour or an image.
+          flaggedDistinct:
+            (fill.backgroundColor !== pageBg && fill.backgroundColor !== "rgba(0, 0, 0, 0)") ||
+            fill.backgroundImage !== "none",
+          restOutlined: restStyle.boxShadow !== "none",
         };
       });
   }
@@ -547,11 +527,24 @@ export class NewReportPage implements ReportPage {
       .getByRole("button", { name: railLabel(group, key) });
   }
 
+  /** While a package is open beside the list, and on a phone, the rail lives in a closed "Filters"
+   *  disclosure (`App.tsx#RailSlot`): a reader opens it before pressing a button in it. */
+  private async openRailFold(): Promise<void> {
+    const fold = this.page.locator("details", {
+      has: this.page.locator("summary", { hasText: /^Filters/ }),
+    });
+    if ((await fold.count()) === 0) return;
+    if (await fold.first().evaluate((el) => (el as HTMLDetailsElement).open)) return;
+    await fold.first().locator("summary").click();
+  }
+
   async railOption(group: RailGroup, key: string): Promise<void> {
+    await this.openRailFold();
     await this.railLocator(group, key).click();
   }
 
   async railRows(): Promise<{ group: string; label: string; count: number; pressed: boolean }[]> {
+    await this.openRailFold();
     const buttons = this.page.getByRole("group", { name: "Filters" }).getByRole("button");
     return buttons.evaluateAll((els) =>
       els.map((el) => {
@@ -567,6 +560,7 @@ export class NewReportPage implements ReportPage {
    *  Grade row and a Severity row). By label, not position: PD-RAIL-2 leaves out a row that would
    *  list nothing, so selecting one row can move the others. */
   async toggleRailRow(label: string, group?: string): Promise<void> {
+    await this.openRailFold();
     const buttons = this.page.getByRole("group", { name: "Filters" }).getByRole("button");
     const index = await buttons.evaluateAll(
       (els, [wanted, inGroup]) =>
@@ -612,6 +606,7 @@ export class NewReportPage implements ReportPage {
         if (!["row", "option", "listitem"].includes(role)) continue;
         if (el.querySelector('[role="columnheader"], th')) continue;
         if (el.closest('[data-surface="detail"]') !== null) continue;
+        if (role === "row" && !el.hasAttribute("data-pkg")) continue;
         const name = el.getAttribute("data-pkg") ?? el.getAttribute("aria-label") ?? el.textContent;
         if (name) names.push(name.trim());
       }
@@ -620,6 +615,7 @@ export class NewReportPage implements ReportPage {
   }
 
   async railOptionPressed(group: RailGroup, key: string): Promise<boolean | null> {
+    await this.openRailFold();
     const el = this.railLocator(group, key);
     if ((await el.count()) === 0) return null;
     const has = await el.evaluate((node) => node.hasAttribute("aria-pressed"));

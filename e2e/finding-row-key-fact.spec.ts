@@ -6,10 +6,11 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
 import { report2Url } from "./support/pages";
+import { pageGolden } from "./support/report2/page-goldens";
 import {
   findingsHeadCaptions,
+  findingsNextStep,
   findingsRow,
-  findingsRowCell,
   findingsRowCells,
   findingsSurface,
   rowAge,
@@ -28,26 +29,37 @@ test.describe("report-2: the Findings row leads with the score, then the pills, 
   }) => {
     await page.goto(report2Url("composite") + "#view=findings");
 
-    expect(await findingsRowCells(page, "symfony/monolog-bridge")).toEqual([
+    const [score, pkg, flags, ageCell, reach] = await findingsRowCells(page, "symfony/monolog-bridge");
+    expect([score, pkg, flags, ageCell, reach]).toEqual([
       "36",
       "symfony/monolog-bridge v2.6.13",
-      "left-behind·6.9 yold-promise·PHP 5vulnerable·1",
-      "6.9",
+      "left-behind·6.9 y old-promise·PHP 5 vulnerable·1",
+      "",
       "direct",
-      "require ^5.4.52",
     ]);
+    // The bar is a drawing, so the cell has no words of its own: the reading is in the left-behind
+    // pill and in the cell's label.
+    const golden = pageGolden("composite").findings_rows.find((row) => row.package === "symfony/monolog-bridge");
+    const next = await findingsNextStep(page, "symfony/monolog-bridge");
+    expect(next.move).toBe("require ^5.4.52");
+    expect(next.held).toBe(golden?.held);
+    expect(next.after).toBe(golden?.after);
+    expect(next.major).toBe(golden?.major);
+    expect(next.command).toBe(golden?.command);
     const age = await rowAge(page, "symfony/monolog-bridge");
     expect(age?.label).toBe("installed branch last released 6.9 years ago; warn at 3 years, high at 5");
     expect(age?.title).toBe(age?.label);
   });
 
-  test("composite: a row whose age no check judged draws no scale, and a held move says so", async ({
+  test("composite: a row whose age no check judged draws no scale, and a held move names its holder", async ({
     page,
   }) => {
     await page.goto(report2Url("composite") + "#view=findings");
 
     expect(await rowAge(page, "twig/twig")).toBeNull();
-    expect(await findingsRowCell(page, "twig/twig", "next")).toBe("php floor raise · held");
+    const next = await findingsNextStep(page, "twig/twig");
+    expect(next.move).toBe("php floor raise");
+    expect(next.held).toBe(pageGolden("composite").findings_rows.find((row) => row.package === "twig/twig")?.held);
   });
 
   test("composite: the column head captions the score scale at the band floors and the age axis", async ({
@@ -85,10 +97,10 @@ test.describe("report-2: the age scale and axis", () => {
     expect(await report.ageAxisText()).toBeNull();
   });
 
-  test("the axis names the run's own thresholds to a screen reader", async () => {
+  test("the axis describes the run's own thresholds to a screen reader", async () => {
     await report.gotoReport2WithHash("composite", "view=findings");
 
-    expect(await report.ageAxisAccessibleName()).toBe(
+    expect(await report.ageAxisDescription()).toBe(
       "age axis: years since the last release, 0 to 10 and more; warn at 3 years, high at 5 years",
     );
   });

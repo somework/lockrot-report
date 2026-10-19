@@ -39,13 +39,13 @@ test.describe("report-2: the sweep over every tab", () => {
 
   test("each tab's name is 'label count'", async ({ page }) => {
     await page.goto(report2Url(CASE));
-    // composite: 7 graded findings, 20 counted advisories, 7 packages, 1 exposure row.
+    // composite: 9 graded findings, 29 counted advisories, 9 packages, 2 exposure rows.
     for (const name of [
       "Overview",
-      "Findings 7",
-      "Advisories 20",
-      "All packages 7",
-      "Blast radius 1",
+      "Findings 9",
+      "Advisories 29",
+      "All packages 9",
+      "Blast radius 2",
       "Run data",
     ]) {
       await expect(page.getByRole("tab", { name, exact: true })).toBeVisible();
@@ -59,7 +59,7 @@ test.describe("report-2: the sweep over every tab", () => {
       band.getByRole("group", { name: "Grade" }).getByRole("link", { name: /^high 2$/ }),
     ).toBeVisible();
     await expect(
-      band.getByRole("group", { name: "Advisories by severity" }).getByRole("link", { name: /^high 4$/ }),
+      band.getByRole("group", { name: "Advisories by severity" }).getByRole("link", { name: /^high 5$/ }),
     ).toBeVisible();
     await page.getByRole("tab", { name: /^Findings/ }).click();
     await expect(
@@ -73,7 +73,7 @@ test.describe("report-2: the sweep over every tab", () => {
       page
         .locator('[data-surface="advisories"]')
         .getByRole("group", { name: "Advisories by severity" })
-        .getByRole("button", { name: /^high 4$/ }),
+        .getByRole("button", { name: /^high 5$/ }),
     ).toBeVisible();
   });
 
@@ -84,9 +84,9 @@ test.describe("report-2: the sweep over every tab", () => {
     await page.goto(report2Url(CASE) + "#view=findings");
     const rail = page.getByRole("group", { name: "Filters" });
     await expect(rail.getByRole("group", { name: "Grade" }).getByRole("button")).toHaveText([
-      /^\s*critical 3$/,
+      /^\s*critical 4$/,
       /^\s*high 2$/,
-      /^\s*low 2$/,
+      /^\s*low 3$/,
     ]);
     await expect(page.getByRole("region", { name: "Overview" })).toHaveCount(0);
     await page.getByRole("tab", { name: "Overview" }).click();
