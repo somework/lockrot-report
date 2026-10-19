@@ -3,7 +3,6 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { corrected } from "../blocks/modelCorrections";
 import type { ModelGoldens, RecordedCase } from "./recorded";
 import { modelCases, recordedCases } from "./recorded";
 
@@ -30,12 +29,7 @@ export function differencesFromModel(
   field: keyof Omit<ModelGoldens, "why" | "commands_posix" | "commands_cmd" | "age_line">,
   line: (recorded: RecordedCase) => unknown,
 ): Difference[] {
-  const models = new Map(
-    modelCases().map(({ name, golden, finding, run }) => [
-      name,
-      corrected(name, field, golden[field], finding, run),
-    ]),
-  );
+  const models = new Map(modelCases().map(({ name, golden }) => [name, golden[field]]));
   return recordedCases()
     .filter(({ name }) => models.has(name))
     .map((recorded) => ({

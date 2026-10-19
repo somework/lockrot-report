@@ -26,6 +26,7 @@ const CONTRACT_FILES = {
 
 /** The model's documents of the `contract/page-goldens.json` entries (lockrot's `PageGoldensTest` reads the same). */
 const PAGE_GOLDEN_DOCUMENTS = [
+  "tests/fixtures/schema/documents/cases/B-accepted-dagger.json",
   "tests/fixtures/schema/documents/cases/B-dev-dagger.json",
   "tests/fixtures/schema/documents/cases/B-gate-none.json",
   "tests/fixtures/schema/documents/cases/E-ignored-whole-dagger.json",
@@ -33,6 +34,7 @@ const PAGE_GOLDEN_DOCUMENTS = [
   "tests/fixtures/schema/documents/cases/composite.json",
   "tests/fixtures/schema/documents/cases/guzzle-mixed.json",
   "tests/fixtures/schema/documents/cases/ok-offline-dagger.json",
+  "tests/fixtures/schema/documents/cases/ok-unchecked.json",
   "tests/fixtures/schema/documents/cases/pagerfanta.json",
   "tests/fixtures/schema/documents/cases/policy-off-dagger.json",
   "tests/fixtures/schema/documents/cases/rounded-dev-dagger.json",

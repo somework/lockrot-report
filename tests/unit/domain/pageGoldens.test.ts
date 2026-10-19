@@ -28,6 +28,7 @@ import { waffleRuns } from "../../../src/domain/summary";
 import type { Report2 } from "../../../src/model/report";
 import { linkHref, linkState } from "../../../src/state/hash";
 import type { LinkTarget } from "../../../src/state/types";
+import { blockGolden } from "../blocks/blockGoldens";
 import { pageGoldens } from "../words/recorded";
 
 const href = (target: LinkTarget | null): string | null => (target === null ? null : linkHref(target));
@@ -164,6 +165,14 @@ const FIELDS: Readonly<Record<string, (report: Report2) => unknown>> = {
   run_notes: runNotes,
 };
 
+/** The sheet's move cards of the packages that the golden names, in the `moves` block shape. */
+function sheetMoves(report: Report2, packages: readonly string[]): unknown {
+  return Object.fromEntries(
+    report.findings
+      .filter((f) => packages.includes(f.package))
+      .map((f) => [f.package, blockGolden("moves", f, report.run, null)]),
+  );
+}
 function abandonedNote(report: Report2): string | null {
   return report.abandoned.total > 0
     ? OVERVIEW_WORDS.abandoned(report.abandoned.total, report.abandoned.with_replacement)
@@ -176,29 +185,6 @@ function findingsRowsOf(report: Report2): unknown {
     .filter((f) => graded.includes(f.verdict))
     .sort((a, b) => a.rank - b.rank)
     .map((f) => findingsRowFacts(f, report.run));
-}
-
-// SPEC §7.9.21 (coordinator ruling): a ready move's After reads the check line "checked with Composer",
-// which the pinned page goldens leave out. Until the re-pin, each ready move expects it.
-const CHECKED_READY_CASES = ["snipe-it", "snipe-it.unloaded‡", "B-also.checked‡"];
-
-interface GoldenReady {
-  moves: { after: { result: string | null; conditions: string[] } | null }[];
-}
-
-function correctedReady(id: string, golden: unknown): unknown {
-  if (!CHECKED_READY_CASES.includes(id) || golden === null) return golden;
-  const ready = golden as GoldenReady;
-  return {
-    ...ready,
-    moves: ready.moves.map((move) => ({
-      ...move,
-      after:
-        move.after === null
-          ? { result: null, conditions: ["checked with Composer"] }
-          : { ...move.after, conditions: [...move.after.conditions, "checked with Composer"] },
-    })),
-  };
 }
 
 const cases = pageGoldens().flatMap(({ id, golden, report }) =>
@@ -217,20 +203,37 @@ describe("every page-golden field equals lockrot's page golden (SPEC §7.9.14)",
     }
   });
 
-  test.each(cases)("$id: $field", ({ id, field, golden, report }) => {
-    expect(FIELDS[field]?.(report)).toEqual(field === "ready" ? correctedReady(id, golden) : golden);
+  test.each(cases)("$id: $field", ({ field, golden, report }) => {
+    expect(FIELDS[field]?.(report)).toEqual(golden);
   });
 
-  test("the corrected ready cases are exactly the cases with a ready move", () => {
-    const withMoves = pageGoldens()
-      .filter(
-        ({ golden }) => ((golden as unknown as { ready: GoldenReady | null }).ready?.moves.length ?? 0) > 0,
-      )
-      .map(({ id }) => id);
+  test.each(pageGoldens())("$id: sheet_moves", ({ golden, report }) => {
+    const expected = (golden as unknown as { sheet_moves: Record<string, unknown> }).sheet_moves;
 
-    expect(withMoves.sort()).toEqual([...CHECKED_READY_CASES].sort());
+    expect(sheetMoves(report, Object.keys(expected))).toEqual(expected);
+  });
+
+  test("sheet_moves covers the four check lines of SPEC §7.9.21", () => {
+    const lines = pageGoldens().flatMap(({ golden }) =>
+      Object.values((golden as unknown as { sheet_moves: Record<string, GoldenCard[]> }).sheet_moves).flatMap(
+        (cards) => cards.flatMap((card) => card.after?.conditions ?? []),
+      ),
+    );
+
+    expect(lines).toEqual(
+      expect.arrayContaining([
+        "checked with Composer",
+        "Composer refuses the move",
+        "if Composer resolves it (not checked: a package it needs could not be loaded)",
+        "if Composer resolves it (not checked: Composer refuses the lock itself)",
+      ]),
+    );
   });
 });
+
+interface GoldenCard {
+  after: { conditions: string[] } | null;
+}
 
 describe("the gate partition (SPEC §7.9.7)", () => {
   test.each(pageGoldens().filter(({ report }) => report.gate.fails))(

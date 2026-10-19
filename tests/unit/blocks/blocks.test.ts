@@ -3,24 +3,13 @@ import { describe, expect, test } from "vitest";
 import { differencesFromModel, listedDifferences } from "../words/modelDifferences";
 import { modelCases, recordedCases } from "../words/recorded";
 import { BLOCK_KEYS, blockGolden } from "./blockGoldens";
-import { corrected, type GoldenCard, SINGULAR_LABEL_CASES, singularSeveral } from "./modelCorrections";
 
 describe("each block equals the model's golden from the model's own inputs (SPEC §7.9.14)", () => {
-  test.each(modelCases())("$name", ({ name, finding, run, metadata, golden }) => {
+  test.each(modelCases())("$name", ({ finding, run, metadata, golden }) => {
     const page = Object.fromEntries(BLOCK_KEYS.map((key) => [key, blockGolden(key, finding, run, metadata)]));
-    const model = Object.fromEntries(
-      BLOCK_KEYS.map((key) => [key, corrected(name, key, golden[key], finding, run)]),
-    );
+    const model = Object.fromEntries(BLOCK_KEYS.map((key) => [key, golden[key]]));
 
     expect(page).toEqual(model);
-  });
-
-  test("the corrected commands_label cases are exactly the two-step cards that read Command", () => {
-    const singular = modelCases()
-      .filter(({ golden }) => (golden.moves as GoldenCard[]).some(singularSeveral))
-      .map(({ name }) => name);
-
-    expect(singular.sort()).toEqual([...SINGULAR_LABEL_CASES].sort());
   });
 });
 
