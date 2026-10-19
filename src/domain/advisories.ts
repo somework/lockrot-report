@@ -141,15 +141,17 @@ export function noAdvisoryLine(report: Report2): string {
  *  the holders as a Findings row says them (accepted derivation 3). */
 export function advisoryFixNote(fix: S9fix, run: Run): string | null {
   const held = heldByLine(fix.held_by, run);
-  const parts = [advisoryFixPhp(fix), held === null ? null : heldByWords(held)].filter(
-    (p) => p !== null,
-  );
+  const parts = [advisoryFixPhp(fix), held === null ? null : heldByWords(held)].filter((p) => p !== null);
   return parts.length === 0 ? null : parts.join(" · ");
 }
 
 /** The PHP a fix needs, when lockrot says that the target PHP or the project's PHP floor does not
  *  admit it. A null answer is no answer. */
-export function advisoryFixPhp({ php, admits_target_php: target, admits_project_php: project }: S9fix): string | null {
+export function advisoryFixPhp({
+  php,
+  admits_target_php: target,
+  admits_project_php: project,
+}: S9fix): string | null {
   return php !== null && (target === false || project === false) ? `needs PHP ${php}` : null;
 }
 
