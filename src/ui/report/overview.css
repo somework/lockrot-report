@@ -446,7 +446,7 @@
   background: var(--tone-soft);
   box-shadow: inset 0 0 0 1.5px var(--tone-mark);
 }
-.waffle-cell.is-outline {
+.waffle-cell.is-ring-dot {
   background: radial-gradient(circle, var(--tone-mark) 0 18%, transparent 22%);
   box-shadow: inset 0 0 0 1.5px var(--tone-mark);
 }
@@ -582,7 +582,7 @@
     background: Canvas;
     box-shadow: inset 0 0 0 1.5px CanvasText;
   }
-  .waffle-cell.is-outline {
+  .waffle-cell.is-ring-dot {
     background: radial-gradient(circle, CanvasText 0 18%, Canvas 22%);
     box-shadow: inset 0 0 0 1.5px CanvasText;
   }

@@ -6,7 +6,6 @@ import { scorePanel } from "../../../src/domain/scorePanel";
 import type { Report2 } from "../../../src/model/report";
 import { pageGoldens } from "./recorded";
 
-
 describe("the page texts equal lockrot's page goldens", () => {
   test("the pinned goldens are not empty", () => {
     const goldens = pageGoldens();
@@ -56,7 +55,11 @@ describe("the copy summary at its edges", () => {
   });
 
   test("says the header's words for a run with no gate, and for one where only the network gates it", () => {
-    const quiet = { ...composite(), gate: { ...composite().gate, fails: false }, run: { ...composite().run, fail_on: "none" } };
+    const quiet = {
+      ...composite(),
+      gate: { ...composite().gate, fails: false },
+      run: { ...composite().run, fail_on: "none" },
+    };
     const strict = { ...quiet, run: { ...quiet.run, strict_network: true } };
 
     expect(copySummary(quiet)[0]).toMatch(/ · target PHP 8\.4 · no gate$/);

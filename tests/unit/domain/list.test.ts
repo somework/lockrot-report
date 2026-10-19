@@ -198,12 +198,14 @@ describe("ready to run (accepted derivation 10)", () => {
   });
 
   it("lists the findings that need another way out, and offers the row only when the run fails", () => {
-    expect(applyFilters2(composite, state({}, { gate: ["wayout"] }), "findings").map((f) => f.package)).toEqual(
-      ["symfony/debug", "friendsofsymfony/oauth-server-bundle", "tubalmartin/cssmin"],
-    );
+    expect(
+      applyFilters2(composite, state({}, { gate: ["wayout"] }), "findings").map((f) => f.package),
+    ).toEqual(["symfony/debug", "friendsofsymfony/oauth-server-bundle", "tubalmartin/cssmin"]);
     const passing = { ...composite, gate: { ...composite.gate, fails: false } };
     const keys = (report: typeof composite): string[] =>
-      railGroups2(report, state()).find((group) => group.group === "gate")?.rows.map((row) => row.key) ?? [];
+      railGroups2(report, state())
+        .find((group) => group.group === "gate")
+        ?.rows.map((row) => row.key) ?? [];
     expect(keys(composite)).toContain("wayout");
     expect(keys(passing)).not.toContain("wayout");
     expect(fitFilters2(passing, { ...EMPTY_FILTERS, gate: ["wayout"] }).gate).toEqual([]);

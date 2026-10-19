@@ -141,10 +141,10 @@ function StateLines({ report }: { report: Report2 }) {
     <ul className="ov-states">
       {lines.map((line) => (
         <li key={line.kind} className={`ov-state is-${line.kind}`}>
-          <b className="ov-state-head">{line.head}</b>
+          {line.head !== null && <b className="ov-state-head">{line.head}: </b>}
           {line.parts.map((part, index) => (
             <Fragment key={index}>
-              {index === 0 ? ": " : " · "}
+              {index > 0 && " · "}
               {part.link === null ? (
                 part.text
               ) : (
@@ -154,9 +154,10 @@ function StateLines({ report }: { report: Report2 }) {
               )}
             </Fragment>
           ))}
+          {"."}
           {line.more !== null && (
             <>
-              {". "}
+              {" "}
               <TabLink target={line.more.link} className="ov-link ov-state-more">
                 {line.more.text} <span aria-hidden="true">›</span>
               </TabLink>
@@ -251,7 +252,7 @@ function FirstMovesBlock({ report }: { report: Report2 }) {
 
 /** The grade chips, the waffle and its key: one picture of every package by verdict. */
 function VerdictPicture({ report }: { report: Report2 }) {
-  const chips = gradeChips(report).filter(({ count }) => count > 0);
+  const chips = gradeChips(report);
   const runs = waffleRuns(report);
   const figure = waffleCaption(report);
   const scope = leadScope(report);
@@ -282,9 +283,6 @@ function VerdictPicture({ report }: { report: Report2 }) {
   );
 }
 
-const KICKER =
-  "lockrot grades each package in composer.lock by its security advisories and its maintenance signals.";
-
 /** The lead of Overview: what lockrot is, the grade, the gate, what limits the run, what is ready to
  *  run, then every package as a square. Each chip links to Findings under its grade. */
 export function Lead({ report }: { report: Report2 }) {
@@ -293,7 +291,7 @@ export function Lead({ report }: { report: Report2 }) {
 
   return (
     <div className={`ov-top${hasMoves ? "" : " no-moves"}`}>
-      <p className="ov-kicker">{KICKER}</p>
+      <p className="ov-kicker">{OVERVIEW_WORDS.kicker}</p>
       <div className="ov-answer">
         {figure === null ? (
           <p className="ov-empty">{OVERVIEW_WORDS.emptyLock}</p>

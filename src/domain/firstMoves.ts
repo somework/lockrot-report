@@ -1,15 +1,20 @@
 /** Overview's "Ready to run" block: the ready moves of accepted derivation 10 in lockrot's rank order,
  *  each with what its move card says it clears and leaves. A fact list, not advice. */
 
-import type { Finding, Report2, Run } from "../model/report";
-import { checksMissingBody } from "./findingWords";
+import type { Finding, Report2 } from "../model/report";
 import type { LinkTarget } from "../state/types";
-import { rowCommandArgv } from "./findingRow";
+import { rowCommand, rowCommandArgv } from "./findingRow";
 import { plural } from "./format";
 import { HELD_KEY, READY_KEY, WAY_OUT_KEY } from "./list";
 import { moveCards } from "./moveCards";
-import { ADVISORY_NOT_RUN, GATE_KIND_WORDS, MOVE_KIND_WORDS, uncheckedWords } from "./pageVocabulary";
-import { SIGNAL_NAMES } from "./vocab";
+import {
+  ADVISORY_NOT_RUN,
+  CHECK_REASON_WORDS,
+  GATE_KIND_WORDS,
+  isKnownCheck,
+  MOVE_KIND_WORDS,
+  skippedCheckWord,
+} from "./pageVocabulary";
 import { isHeld, needsAnotherWayOut, readyToRun } from "./readyToRun";
 
 export const READY_SHOWN = 3;
@@ -32,18 +37,27 @@ export interface ReadyMove {
   readonly package: string;
   readonly grade: string;
   readonly argv: readonly string[];
+  /** That step's POSIX line. */
+  readonly command: string;
   /** The lead move card's "clears" words, or null when it clears nothing it names. */
   readonly clears: string | null;
-  /** "{total}, {verdict}" then its conditions, or null without `if_applied`. */
-  readonly after: string | null;
+  /** The move card's After: "{total}, {verdict}" and its G104 conditions, or null without `if_applied`. */
+  readonly after: { readonly result: string; readonly conditions: readonly string[] } | null;
   readonly newMajor: boolean;
   /** "Also holds: {name} ({grade}), …", or null when no finding names this package as a holder. */
   readonly alsoHolds: string | null;
   readonly link: LinkTarget;
 }
 
+/** A run of words; a `code` part is an id the page does not know, printed as written in a code element. */
+export type WordPart = { readonly text: string; readonly code?: true };
+
+export const partsText = (parts: readonly WordPart[]): string => parts.map(({ text }) => text).join("");
+
 export interface FirstMoves {
   readonly forGate: boolean;
+  /** The head's note, or null with no move. */
+  readonly note: string | null;
   readonly moves: readonly ReadyMove[];
   /** "All {m} ready to run" when more than `READY_SHOWN` are ready, else null. */
   readonly more: string | null;
@@ -51,8 +65,9 @@ export interface FirstMoves {
   /** The held count line, only when the gate fails. */
   readonly held: string | null;
   readonly heldLink: LinkTarget | null;
-  /** The way-out line: gate-failing findings neither ready nor held, by `next_step.kind`. */
+  /** The way-out line: gate-failing findings neither ready nor held, by kind or by check. */
   readonly wayOut: string | null;
+  readonly wayOutParts: readonly WordPart[] | null;
   /** Findings when a way-out finding is graded, else All packages, which lists every package; null
    *  when no way-out line shows. */
   readonly wayOutLink: LinkTarget | null;
@@ -72,15 +87,16 @@ export function alsoHolds(report: Report2, pkg: string): string | null {
   return `Also holds: ${names.join(", ")}${rest > 0 ? `, +${String(rest)} more` : ""}`;
 }
 
-function readyMove(f: Finding, report: Report2, argv: readonly string[]): ReadyMove {
+function readyMove(f: Finding, report: Report2, argv: readonly string[], command: string): ReadyMove {
   const card = moveCards(f, report.run)[0];
   const after = card?.after ?? null;
   return {
     package: f.package,
     grade: f.verdict,
     argv,
+    command,
     clears: card?.clears ?? null,
-    after: after === null ? null : [after.result, ...after.conditions].join(", "),
+    after: after === null ? null : { result: after.result, conditions: after.conditions },
     newMajor: f.next_step?.crosses_major ?? false,
     alsoHolds: alsoHolds(report, f.package),
     link: { view: "findings", pkg: f.package },
@@ -112,27 +128,38 @@ function raisePhpWords(findings: readonly Finding[]): string {
   return targets.size === 1 && only !== null && only !== undefined ? `raise PHP ${only}` : "raise PHP";
 }
 
-/** One finding's §7.9.16 words for the check that did not run, the words of the sheet: the
- *  advisory check reads "the advisory check did not run"; any other check reads the sheet's
- *  checks-missing words (`checksMissingBody`), for example "release age (S2) and release branch
- *  (S8) not checked (undated releases)". Never empty and never a raw check id. */
-function uncheckedReasons(f: Finding, run: Run): string[] {
-  const advisoryOnly = f.checks_missing.length > 0 && f.checks_missing.every((m) => m.check === "advisories");
-  if (advisoryOnly || (f.checks_missing.length === 0 && f.security.check === "not_run"))
-    return [ADVISORY_NOT_RUN];
-  const body = checksMissingBody(f, run);
-  if (body !== null) return [body];
-  const signals = f.gate.by
-    .filter((b) => b.kind === "unchecked")
-    .flatMap((b) => b.facts.map((fact) => fact.id));
-  return signals.map((id) => uncheckedWords(id, SIGNAL_NAMES[id] ?? id));
+const notChecked = (check: string): readonly WordPart[] =>
+  isKnownCheck(check)
+    ? [{ text: `${skippedCheckWord(check)} not checked` }]
+    : [{ text: check, code: true }, { text: " not checked" }];
+
+/** One finding's words for the check that did not run: its `checks_missing[]` entries that block a
+ *  signal its unchecked `gate.by[]` names. */
+function uncheckedReasons(f: Finding): (readonly WordPart[])[] {
+  const signals = new Set(
+    f.gate.by.filter((b) => b.kind === "unchecked").flatMap((b) => b.facts.map((fact) => fact.id)),
+  );
+  const missing = f.checks_missing.filter((m) => m.blocks.some((signal) => signals.has(signal)));
+  if (missing.length > 0)
+    return missing.map((m) =>
+      m.check === "advisories" ? [{ text: ADVISORY_NOT_RUN }] : notChecked(m.check),
+    );
+  return [[{ text: f.security.check === "not_run" ? ADVISORY_NOT_RUN : "a check did not run" }]];
 }
 
-/** The unchecked item's words over its findings, each reason once; a generic reason when the
- *  document names none. */
-function uncheckedItemWords(findings: readonly Finding[], run: Run): string {
-  const reasons = [...new Set(findings.flatMap((f) => uncheckedReasons(f, run)))];
-  return `unchecked: ${reasons.length === 0 ? "a check did not run" : reasons.join("; ")}`;
+/** The unchecked item's words over its findings, each reason once, joined ", ". */
+function uncheckedItemParts(findings: readonly Finding[]): WordPart[] {
+  const seen = new Set<string>();
+  const reasons = findings.flatMap(uncheckedReasons).filter((parts) => {
+    const key = JSON.stringify(parts);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return [
+    { text: "unchecked: " },
+    ...reasons.flatMap((parts, at) => (at === 0 ? parts : [{ text: ", " }, ...parts])),
+  ];
 }
 
 /** A finding with no move counts by the first `gate.by[]` kind in that field's known order. */
@@ -141,40 +168,92 @@ function gateKindOf(f: Finding): string {
   return GATE_KIND_WORDS.find(([kind]) => kinds.includes(kind))?.[0] ?? kinds[0] ?? "grade";
 }
 
-interface WayOutItem {
-  readonly count: number;
-  readonly words: string;
+const COMPOSER_KINDS: readonly string[] = ["update", "require", "raise-php", "tag"];
+const NO_MOVE_CHECKED = "the run checked no move";
+const REFUSED = "Composer refuses the move";
+
+/** Where a way-out finding counts: a move the check stopped counts by its check, any other by its kind. */
+type Slot =
+  | { readonly by: "kind"; readonly kind: string }
+  | { readonly by: "gate"; readonly kind: string }
+  | { readonly by: "refused" }
+  | { readonly by: "reason"; readonly reason: string }
+  | { readonly by: "unrun" };
+
+function slotOf(f: Finding, report: Report2): Slot {
+  const step = f.next_step;
+  if (step === null) return { by: "gate", kind: gateKindOf(f) };
+  if (step.check?.result === "refused") return { by: "refused" };
+  if (step.check?.result === "not_checked") return { by: "reason", reason: step.check.reason ?? "" };
+  if (step.check === null && report.run.move_check === null && COMPOSER_KINDS.includes(step.kind))
+    return { by: "unrun" };
+  return { by: "kind", kind: step.kind };
 }
 
-/** The way-out items: by `next_step.kind` in `x-known-values` order, then the findings with no move
- *  by their `gate.by[]` kind, then any kind the page does not know, as written. Never "other". */
-function wayOutItems(rest: readonly Finding[], run: Run): WayOutItem[] {
-  const moveKinds = MOVE_KIND_WORDS.map(([kind]) => kind);
-  const byMove = MOVE_KIND_WORDS.flatMap(([kind, words]) => {
-    const group = rest.filter((f) => f.next_step?.kind === kind);
-    if (group.length === 0) return [];
-    return [{ count: group.length, words: kind === "raise-php" ? raisePhpWords(group) : words }];
-  });
-  const noMove = rest.filter((f) => f.next_step === null);
-  const byGate = GATE_KIND_WORDS.flatMap(([kind, words]) => {
-    const group = noMove.filter((f) => gateKindOf(f) === kind);
-    if (group.length === 0) return [];
-    return [{ count: group.length, words: kind === "unchecked" ? uncheckedItemWords(group, run) : words }];
-  });
-  const unknown = [
-    ...new Set(
-      rest.flatMap((f) =>
-        f.next_step !== null && !moveKinds.includes(f.next_step.kind) ? [f.next_step.kind] : [],
+interface WayOutItem {
+  readonly count: number;
+  readonly parts: readonly WordPart[];
+}
+
+const firstSeen = (values: readonly string[]): string[] => [...new Set(values)];
+
+/** The way-out items: the kinds in `x-known-values` order, the unknown kinds as written, the no-move
+ *  findings by `gate.by[]` kind, refused, not checked by reason in the table's order, "the run
+ *  checked no move", then the unknown reasons. Never "other". */
+function wayOutItems(rest: readonly Finding[], report: Report2): WayOutItem[] {
+  const slotted = rest.map((f) => ({ f, slot: slotOf(f, report) }));
+  const pick = (test: (slot: Slot) => boolean): Finding[] =>
+    slotted.filter(({ slot }) => test(slot)).map(({ f }) => f);
+  const item = (group: readonly Finding[], parts: readonly WordPart[]): WayOutItem[] =>
+    group.length === 0 ? [] : [{ count: group.length, parts }];
+  const kindOf = (slot: Slot): string | null => (slot.by === "kind" ? slot.kind : null);
+  const reasonOf = (slot: Slot): string | null => (slot.by === "reason" ? slot.reason : null);
+  const known = MOVE_KIND_WORDS.map(([kind]) => kind);
+  const knownReasons = CHECK_REASON_WORDS.map(([reason]) => reason);
+  const kinds = slotted.map(({ slot }) => kindOf(slot)).filter((kind) => kind !== null);
+  const reasons = slotted.map(({ slot }) => reasonOf(slot)).filter((reason) => reason !== null);
+  return [
+    ...MOVE_KIND_WORDS.flatMap(([kind, words]) => {
+      const group = pick((slot) => kindOf(slot) === kind);
+      return item(group, [{ text: kind === "raise-php" ? raisePhpWords(group) : words }]);
+    }),
+    ...firstSeen(kinds.filter((kind) => !known.includes(kind))).flatMap((kind) =>
+      item(
+        pick((slot) => kindOf(slot) === kind),
+        [{ text: kind }],
       ),
     ),
-  ].map((kind) => ({ count: rest.filter((f) => f.next_step?.kind === kind).length, words: kind }));
-  return [...byMove, ...byGate, ...unknown];
+    ...GATE_KIND_WORDS.flatMap(([kind, words]) => {
+      const group = pick((slot) => slot.by === "gate" && slot.kind === kind);
+      return item(group, kind === "unchecked" ? uncheckedItemParts(group) : [{ text: words }]);
+    }),
+    ...item(
+      pick((slot) => slot.by === "refused"),
+      [{ text: REFUSED }],
+    ),
+    ...CHECK_REASON_WORDS.flatMap(([reason, words]) =>
+      item(
+        pick((slot) => reasonOf(slot) === reason),
+        [{ text: `not checked: ${words}` }],
+      ),
+    ),
+    ...item(
+      pick((slot) => slot.by === "unrun"),
+      [{ text: `not checked: ${NO_MOVE_CHECKED}` }],
+    ),
+    ...firstSeen(reasons.filter((reason) => !knownReasons.includes(reason))).flatMap((reason) =>
+      item(
+        pick((slot) => reasonOf(slot) === reason),
+        [{ text: "not checked: " }, { text: reason, code: true }],
+      ),
+    ),
+  ];
 }
 
 /** The way-out line over the findings `needsAnotherWayOut` holds: "{k} need another way out: {n}
  *  {words}, …". When nothing is graded and every one is unchecked with no move, it reads "{k}
  *  fail(s) the gate as unchecked: {words}." Null when the gate passes or k is 0. */
-export function wayOutLine(report: Report2): string | null {
+export function wayOutParts(report: Report2): WordPart[] | null {
   if (!report.gate.fails) return null;
   const rest = report.findings.filter(needsAnotherWayOut);
   if (rest.length === 0) return null;
@@ -182,9 +261,21 @@ export function wayOutLine(report: Report2): string | null {
   const graded: readonly string[] = report.run.graded_verdicts;
   const noneGraded = !report.findings.some((f) => graded.includes(f.verdict));
   if (noneGraded && rest.every((f) => f.next_step === null && gateKindOf(f) === "unchecked"))
-    return `${String(k)} ${k === 1 ? "fails" : "fail"} the gate as ${uncheckedItemWords(rest, report.run)}.`;
-  const items = wayOutItems(rest, report.run).map(({ count, words }) => `${String(count)} ${words}`);
-  return `${String(k)} ${k === 1 ? "needs" : "need"} another way out: ${items.join(", ")}`;
+    return [
+      { text: `${String(k)} ${k === 1 ? "fails" : "fail"} the gate as ` },
+      ...uncheckedItemParts(rest),
+      { text: "." },
+    ];
+  const items = wayOutItems(rest, report).flatMap(({ count, parts }, at) => [
+    { text: `${at === 0 ? "" : ", "}${String(count)} ` },
+    ...parts,
+  ]);
+  return [{ text: `${String(k)} ${k === 1 ? "needs" : "need"} another way out: ` }, ...items];
+}
+
+export function wayOutLine(report: Report2): string | null {
+  const parts = wayOutParts(report);
+  return parts === null ? null : partsText(parts);
 }
 
 /** A count link opens exactly the rows it counts: Findings, with the same gate keys, when every
@@ -216,7 +307,8 @@ export function firstMoves(report: Report2): FirstMoves {
   const ready = readyFindings(report);
   const moves = ready.slice(0, READY_SHOWN).flatMap((f) => {
     const argv = rowCommandArgv(f);
-    return argv === null ? [] : [readyMove(f, report, argv)];
+    const command = rowCommand(f);
+    return argv === null || command === null ? [] : [readyMove(f, report, argv, command)];
   });
   const none =
     moves.length > 0
@@ -228,6 +320,7 @@ export function firstMoves(report: Report2): FirstMoves {
           : FIRST_WORDS.noneReady;
   return {
     forGate,
+    note: moves.length === 0 ? null : forGate ? FIRST_WORDS.noteGate : FIRST_WORDS.noteAll,
     moves,
     more: ready.length > READY_SHOWN ? `All ${String(ready.length)} ready to run` : null,
     moreLink:
@@ -241,6 +334,7 @@ export function firstMoves(report: Report2): FirstMoves {
       ["fails", HELD_KEY],
     ),
     wayOut: wayOutLine(report),
+    wayOutParts: wayOutParts(report),
     wayOutLink: countTarget(report, report.gate.fails ? report.findings.filter(needsAnotherWayOut) : [], [
       "fails",
       WAY_OUT_KEY,

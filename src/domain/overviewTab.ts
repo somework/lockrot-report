@@ -43,7 +43,7 @@ export interface ExposureBars {
   overlap: string | null;
   /** "{n} more in Blast radius", or null when every row shows. */
   more: string | null;
-  /** The `unattributed` sentence of PD-RADIUS-12, or null when there is none. */
+  /** The `unattributed` note of SPEC §7.9.20 over the flagged findings, or null when none is flagged. */
   shared: string | null;
   link: LinkTarget;
 }
@@ -55,14 +55,18 @@ export function exposureBars(report: Report2): ExposureBars {
     flagged,
   }));
   const rest = report.exposure.length - rows.length;
-  const names = report.unattributed.map(({ package: name }) => name);
-  const flagged = Math.max(1, report.packages_flagged, ...rows.map(({ flagged: n }) => n));
+  const graded: readonly string[] = report.run.graded_verdicts;
+  const flagged = new Set(report.findings.filter((f) => graded.includes(f.verdict)).map((f) => f.package));
+  const names = [...new Set(report.unattributed.map(({ package: name }) => name))].filter((name) =>
+    flagged.has(name),
+  );
+  const longest = Math.max(1, report.packages_flagged, ...rows.map(({ flagged: n }) => n));
   const n = report.exposure.length;
   return {
     rows,
     count:
       n < 2 ? null : `${plural(n, "direct requirement", "direct requirements")} pull in flagged packages.`,
-    longest: flagged,
+    longest,
     scale: `flagged, of ${String(report.packages_flagged)}`,
     overlap:
       rows.length < 2

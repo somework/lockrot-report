@@ -10,6 +10,7 @@ import { safeHref } from "./links";
 import { plural } from "./format";
 import { causeWord, fixLabel, lookupWord } from "./pageVocabulary";
 import { heldByLine, heldByWords } from "./findingRow";
+import { phpAdmits } from "./phpConstraint";
 
 export interface AdvisoryPair2 {
   readonly finding: Finding;
@@ -141,13 +142,23 @@ export function noAdvisoryLine(report: Report2): string {
  *  the holders as a Findings row says them (accepted derivation 3). */
 export function advisoryFixNote(fix: S9fix, run: Run): string | null {
   const held = heldByLine(fix.held_by, run);
-  const parts = [advisoryFixPhp(fix), held === null ? null : heldByWords(held)].filter((p) => p !== null);
+  const parts = [advisoryFixPhp(fix, run), held === null ? null : heldByWords(held)].filter(
+    (p) => p !== null,
+  );
   return parts.length === 0 ? null : parts.join(" · ");
 }
 
-/** The PHP a raise or a blocked fix needs. */
-export const advisoryFixPhp = ({ kind, php }: S9fix): string | null =>
-  php !== null && (kind === "raise-php" || kind === "blocked") ? `needs PHP ${php}` : null;
+/** The target PHP at patch 99, as lockrot's move check solves it (§5.6). */
+const solvePhp = (target: string): string => (target.split(".").length === 2 ? `${target}.99` : target);
+
+/** The PHP a fix needs, when the target PHP or the project's PHP floor does not admit it. */
+export function advisoryFixPhp({ php }: S9fix, run: Run): string | null {
+  if (php === null) return null;
+  const admitted =
+    phpAdmits(php, solvePhp(run.target_php)) &&
+    (run.project_php_lowest === null || phpAdmits(php, run.project_php_lowest));
+  return admitted ? null : `needs PHP ${php}`;
+}
 
 /** The band a severity's square and word take, by lookup in the model. */
 export const advisoryBand = (run: Run, severity: string): string | null =>
@@ -192,3 +203,28 @@ export const ADVISORY_HEAD = {
   affects: "affects",
   fixedBy: "fixed by",
 } as const;
+
+export interface AdvisoryGroupNotes {
+  readonly package: string;
+  /** "{id}: same CVE as {earlier id}", one per repeating row. */
+  readonly same_cve_as: readonly string[];
+  /** The distinct fix notes, in row order. */
+  readonly fix_notes: readonly string[];
+}
+
+/** Each package group's repeated CVEs and fix notes, with no filter (golden `advisory_groups`). */
+export function advisoryGroupNotes(report: Report2): AdvisoryGroupNotes[] {
+  const findings = report.findings.filter((f) => advisoryRows(f).length > 0).sort((a, b) => a.rank - b.rank);
+  return advisoryGroups2(advisoryPairs2(findings, { sev: [], fix: [] } as unknown as Filters)).map(
+    ({ finding, pairs, sameAs }) => ({
+      package: finding.package,
+      same_cve_as: pairs.flatMap(({ row }, at) => {
+        const earlier = sameAs[at];
+        return earlier === null || earlier === undefined
+          ? []
+          : [`${row.id}: ${ADVISORY_HEAD.sameAs} ${earlier}`];
+      }),
+      fix_notes: [...new Set(pairs.flatMap(({ row }) => advisoryFixNote(row.fix, report.run) ?? []))],
+    }),
+  );
+}

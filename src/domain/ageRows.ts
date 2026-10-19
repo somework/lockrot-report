@@ -57,7 +57,10 @@ export function ageRows(finding: Finding, metadata: RepositoryMetadata | null): 
   if (release !== null && release.version !== version) {
     rows.push(
       last?.version === release.version
-        ? { label: `${branch} last`, value: `${release.version} · ${when(release)} · its most recent release` }
+        ? {
+            label: `${branch} last`,
+            value: `${release.version} · ${when(release)} · its most recent release`,
+          }
         : { label: "most recent", value: `${release.version} · ${when(release)}` },
     );
   }

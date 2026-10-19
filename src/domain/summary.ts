@@ -15,9 +15,9 @@ export interface WaffleRun {
   /** The key's word: the grade as written, or the page's word for a score-0 verdict. */
   readonly label: string;
   readonly tone: Tone;
-  /** How the square is drawn: filled for a grade, soft for ok, outlined when allowlisted, hatched
+  /** How the square is drawn: filled for a grade, soft for ok, a ring with a dot when allowlisted, hatched
    *  when not judged. */
-  readonly mark: "fill" | "soft" | "outline" | "hatch";
+  readonly mark: "fill" | "soft" | "ring-dot" | "hatch";
   readonly count: number;
 }
 

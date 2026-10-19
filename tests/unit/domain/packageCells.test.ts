@@ -85,7 +85,11 @@ describe("signalIds and dataAsOf", () => {
 
 describe("the data date said once (accepted derivation 4)", () => {
   const at = (data_date: string | null) => ({ ...twig, data_date });
-  const page = (findings: Finding[]): Report2 => ({ ...composite, data_date: "2026-10-17T10:00:00+00:00", findings });
+  const page = (findings: Finding[]): Report2 => ({
+    ...composite,
+    data_date: "2026-10-17T10:00:00+00:00",
+    findings,
+  });
 
   it("hides the column when every dated row falls on the report's UTC day", () => {
     const doc = page([at("2026-10-17T23:30:00+00:00"), at("2026-10-18T01:00:00+02:00")]);

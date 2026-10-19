@@ -8,7 +8,8 @@ const REQUIRE = ["composer", "require", "a/b:^2.0"];
 
 function finding(step: Record<string, unknown> | null): Finding {
   return {
-    next_step: step === null ? null : { kind: "require", held_by: [], also: [], commands: [REQUIRE], ...step },
+    next_step:
+      step === null ? null : { kind: "require", held_by: [], also: [], commands: [REQUIRE], ...step },
   } as unknown as Finding;
 }
 
@@ -74,9 +75,9 @@ describe("needsAnotherWayOut", () => {
   it("leaves out a ready finding, a held one and one that passes the gate", () => {
     expect(needsAnotherWayOut(failing({}))).toBe(false);
     expect(needsAnotherWayOut(failing({ held_by: [hold("package", "c/d")] }))).toBe(false);
-    expect(needsAnotherWayOut({ ...finding({ kind: "raise-php" }), gate: { fails: false } } as unknown as Finding)).toBe(
-      false,
-    );
+    expect(
+      needsAnotherWayOut({ ...finding({ kind: "raise-php" }), gate: { fails: false } } as unknown as Finding),
+    ).toBe(false);
   });
 
   it("splits the failing findings of every golden into ready, held and another way out", () => {

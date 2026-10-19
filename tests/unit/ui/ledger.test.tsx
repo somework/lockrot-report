@@ -18,7 +18,7 @@ describe("Waffle", () => {
     { verdict: "critical", label: "critical", tone: "crit", mark: "fill", count: 1 },
     { verdict: "high", label: "high", tone: "high", mark: "fill", count: 2 },
     { verdict: "unknown", label: "not judged", tone: "unk", mark: "hatch", count: 1 },
-    { verdict: "finished", label: "allowlisted", tone: "none", mark: "outline", count: 1 },
+    { verdict: "finished", label: "allowlisted", tone: "none", mark: "ring-dot", count: 1 },
     { verdict: "ok", label: "ok", tone: "none", mark: "soft", count: 2 },
   ];
 
@@ -30,7 +30,7 @@ describe("Waffle", () => {
       "is-fill tone-high",
       "is-fill tone-high",
       "is-hatch tone-unk",
-      "is-outline tone-none",
+      "is-ring-dot tone-none",
       "is-soft tone-none",
       "is-soft tone-none",
     ]);

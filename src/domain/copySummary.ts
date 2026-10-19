@@ -64,11 +64,16 @@ export function scopeClauses(
   if (flagged === 0 || total === 0) return [];
   const { direct, transitive, unreached } = depth.by_reach;
   const reached = direct + transitive;
+  // The Overview's scope line names the unreached only beside a reached count (golden `lead_scope`).
+  const unreachedShown = unreached > 0 && (!numbered || reached > 0);
   const reach = [
     ...(reached === 0 ? [] : [split(reached, direct, "required directly", "pulled in", numbered)]),
-    ...(unreached === 0 ? [] : [`${unreached} unreached`]),
+    ...(unreachedShown ? [`${unreached} unreached`] : []),
   ].join(", ");
-  return [split(total, depth.production, "in production", "dev-only", numbered), ...(reach === "" ? [] : [reach])];
+  return [
+    split(total, depth.production, "in production", "dev-only", numbered),
+    ...(reach === "" ? [] : [reach]),
+  ];
 }
 
 /** Whether the counted advisories may not be every advisory (SPEC §7.9.15's hedge). It reads no

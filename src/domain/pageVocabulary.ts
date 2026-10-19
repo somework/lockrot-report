@@ -86,12 +86,12 @@ export const zeroVerdictWhen = (id: string): string => wordFor(ZERO_VERDICT_WHEN
 
 export interface ZeroVerdictMark {
   readonly word: string;
-  readonly mark: "soft" | "outline" | "hatch";
+  readonly mark: "soft" | "ring-dot" | "hatch";
 }
 
 const ZERO_VERDICT_MARKS: Readonly<Record<string, ZeroVerdictMark>> = {
   ok: { word: "ok", mark: "soft" },
-  finished: { word: "allowlisted", mark: "outline" },
+  finished: { word: "allowlisted", mark: "ring-dot" },
   unknown: { word: "not judged", mark: "hatch" },
 };
 
@@ -106,9 +106,29 @@ const SKIPPED_CHECKS: Words = {
   release_metadata: "its release metadata",
   advisories: "its advisories",
   release_branch: "its release branch",
+  release_dates: "release dates",
+  releases: "releases",
 };
 
 export const skippedCheckWord = (id: string): string => wordFor(SKIPPED_CHECKS, id);
+
+/** A check id with words of its own; any other prints as written in a code element. */
+export const isKnownCheck = (id: string): boolean => Object.hasOwn(SKIPPED_CHECKS, id);
+
+/** `check.reason` → reason words (SPEC §7.9.21), in the table's order, the order of the way-out items.
+ *  The words are lockrot's `MoveCheck::REASON_WORDS`, so the page and `next_step.text` agree. */
+export const CHECK_REASON_WORDS: readonly (readonly [reason: string, words: string])[] = [
+  ["baseline_refused", "Composer refuses the lock itself"],
+  ["unloaded_name", "a package it needs could not be loaded"],
+  ["offline", "a package it needs is not in Composer's cache"],
+  ["install_time_budget", "the install-time budget ran out"],
+  ["not_from_composer_repository", "no Composer repository serves it"],
+  ["no_composer_json", "the project has no composer.json"],
+  ["composer_json_invalid", "Composer cannot load composer.json"],
+  ["no_release_read", "no release of the row was read"],
+  ["pass_cap", "Composer refused each move before it"],
+  ["solver_error", "Composer's solver failed on it"],
+];
 
 export const CAUSE_WORDS: Words = {
   above_listed_releases: "installed above every listed release",

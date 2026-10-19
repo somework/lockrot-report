@@ -244,4 +244,3 @@ describe("the gate line's state", () => {
     expect(gateState(report)).toBe("fails");
   });
 });
-

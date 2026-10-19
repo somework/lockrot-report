@@ -520,7 +520,9 @@ describe("the age axis in the Findings column head", () => {
 
     const levels = m.report.findings.flatMap((f) => {
       const bar = row(f.package).querySelector(".age-bar");
-      return bar === null ? [] : [[ageReading(f, m.report.run)?.level === "high", bar.classList.contains("is-high")]];
+      return bar === null
+        ? []
+        : [[ageReading(f, m.report.run)?.level === "high", bar.classList.contains("is-high")]];
     });
     expect(levels.some(([high]) => high)).toBe(true);
     expect(levels.every(([high, marked]) => high === marked)).toBe(true);

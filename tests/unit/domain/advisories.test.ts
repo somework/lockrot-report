@@ -91,8 +91,8 @@ describe("advisoryAnswer2", () => {
   it("counts advisories and packages, by severity in the model's severity order", () => {
     const pairs = advisoryPairs2(vulnerable, filters());
     expect(advisoryAnswer2(composite.run, pairs, pairs.length)).toEqual({
-      text: "20 advisories on 4 packages, by severity: 1 critical, 4 high, 4 medium, 2 unrated, 9 low.",
-      head: "20 advisories on 4 packages.",
+      text: "29 advisories on 5 packages, by severity: 1 critical, 5 high, 12 medium, 2 unrated, 9 low.",
+      head: "29 advisories on 5 packages.",
       narrowed: null,
     });
   });
@@ -125,12 +125,18 @@ describe("row words", () => {
     });
   });
 
-  it("says what PHP a fix needs and what holds it", () => {
-    // composite twig/twig: a php floor raise to >=8.1.0, held by composer.json and symfony/twig-bridge.
-    expect(advisoryFixNote(pair.row.fix, composite.run)).toBe(
-      "needs PHP >=8.1.0 · held by symfony/twig-bridge",
-    );
+  it("names no PHP that the target PHP admits, and the holders", () => {
+    // composite twig/twig: a php floor raise to >=8.1.0 at target PHP 8.4, held by symfony/twig-bridge.
+    expect(advisoryFixNote(pair.row.fix, composite.run)).toBe("held by symfony/twig-bridge");
     expect(advisoryFixNote({ ...pair.row.fix, kind: "update", held_by: [] }, composite.run)).toBeNull();
+  });
+
+  it("names the PHP a fix needs when the target PHP or the project's floor does not admit it", () => {
+    const fix = { ...pair.row.fix, php: ">=8.5", held_by: [] };
+    expect(advisoryFixNote(fix, composite.run)).toBe("needs PHP >=8.5");
+    const floor = { ...composite.run, project_php_lowest: "7.4" };
+    expect(advisoryFixNote({ ...fix, php: ">=8.1.0" }, floor)).toBe("needs PHP >=8.1.0");
+    expect(advisoryFixNote({ ...fix, php: ">=7.2" }, floor)).toBeNull();
   });
 
   it("says the holders as a Findings row does", () => {

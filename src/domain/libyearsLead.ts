@@ -41,7 +41,8 @@ export function libyearsLead({ libyears }: Pick<Report2, "libyears">): LibyearsL
     .sort(([a], [b]) => schemaRank(a) - schemaRank(b))
     .map(([cause, count]) => `${count} ${causeWord(cause, "")}`);
   const tail = unmeasured.length === 0 ? null : `Not measured: ${unmeasured.join(SEPARATOR)}`;
-  if (libyears.measured === 0) return { figure: null, bound: "", sub: "no package measured", unmeasured: tail };
+  if (libyears.measured === 0)
+    return { figure: null, bound: "", sub: "no package measured", unmeasured: tail };
   return {
     figure: decimal(libyears.total ?? 0, 2),
     bound: libyears.at_least_count > 0 ? "at least" : "",

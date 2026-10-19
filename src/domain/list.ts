@@ -263,7 +263,10 @@ export function fitFilters2(report: Report2, filters: Filters): Filters {
   const flagIds: readonly string[] = report.run.flag_ids;
   const named = filters.verdict.filter((key) => flagIds.includes(key));
   const gate = filters.gate.filter(
-    (key) => key === READY_KEY || key === HELD_KEY || ((key === "fails" || key === WAY_OUT_KEY) && runFails2(report)),
+    (key) =>
+      key === READY_KEY ||
+      key === HELD_KEY ||
+      ((key === "fails" || key === WAY_OUT_KEY) && runFails2(report)),
   );
   const accepted = filters.accepted.filter((key) => key === HIDE_ACCEPTED);
   if (

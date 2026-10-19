@@ -113,6 +113,9 @@ export function noteRows({ note_details: notes }: Report2): NoteRow[] {
   });
 }
 
+/** The Run tab's note lines (golden `run_notes`). */
+export const runNotes = (report: Report2): string[] => noteRows(report).map(({ text }) => text);
+
 export function acceptedUnchecked(report: Report2): { head: string; rows: string[] } | null {
   const count = report.packages_unchecked_accepted;
   if (count === 0) return null;

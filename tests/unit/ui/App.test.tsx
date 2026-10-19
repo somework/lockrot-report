@@ -630,7 +630,15 @@ describe("the row a reader acts on keeps its place", () => {
     });
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
       const box = this.matches("[data-pkg]") ? { top: 400, bottom: 440 } : { top: 0, bottom: 160 };
-      return { ...box, height: box.bottom - box.top, left: 0, right: 0, width: 0, x: 0, y: box.top } as DOMRect;
+      return {
+        ...box,
+        height: box.bottom - box.top,
+        left: 0,
+        right: 0,
+        width: 0,
+        x: 0,
+        y: box.top,
+      } as DOMRect;
     });
 
     history.replaceState(null, "", "/report.html#pkg=symfony%2Fyaml");

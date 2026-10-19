@@ -55,7 +55,10 @@ export function gateHeadline({ gate, run }: Report2): GateHeadline | null {
 /** The header's words as one line: "this run fails · --fail-on=high". The fact's tooltip and the
  *  copy summary read it. */
 export function gateHeadlineLine({ who, verb, flags, unapplied }: GateHeadline): string {
-  const tail = [...flags.map((flag) => flag.text), ...(unapplied === null ? [] : [`${unapplied} not applied`])];
+  const tail = [
+    ...flags.map((flag) => flag.text),
+    ...(unapplied === null ? [] : [`${unapplied} not applied`]),
+  ];
   return [`${who} ${verb}`, ...tail].join(" · ");
 }
 

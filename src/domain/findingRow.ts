@@ -198,6 +198,13 @@ export function reachLine(f: Finding): ReachLine {
 /** The count after a capped list (accepted derivations 2 and 3). */
 export const moreWord = (n: number): string => `and ${n} more`;
 
+/** The reach cell as text: "via {name} and {n} more", the reach id, then " · dev". */
+export function reachText(f: Finding): string {
+  const { lead, through, more, dev } = reachLine(f);
+  const way = through === null ? lead : `${lead} ${through}${more > 0 ? ` ${moreWord(more)}` : ""}`;
+  return dev ? `${way} · dev` : way;
+}
+
 export function reachWord(f: Finding): string {
   const way = f.reach === "transitive" ? `via ${namesCapped(f.direct_dependents)}` : f.reach;
   return f.dev ? `${way} · dev` : way;
@@ -369,10 +376,10 @@ export function rowCommandArgv(f: Finding): readonly string[] | null {
   return argvs.find((argv) => ROW_STEPS.has(argv[1] ?? "")) ?? null;
 }
 
-/** Accepted derivation 9: what is left after the lead move, with the Composer caveat left to the
- *  column head; null without `if_applied`. */
+/** What is left after the lead move, with G139's Composer caveat only when its `assumes` holds
+ *  `composer_resolves`; null without `if_applied` (SPEC §7.9.5). */
 export const rowAfter = (f: Finding): string | null =>
-  f.next_step === null ? null : afterIt(f.next_step.if_applied, false);
+  f.next_step === null ? null : afterIt(f.next_step.if_applied);
 
 /** Accepted derivation 11: the lead move crosses a major (`next_step.crosses_major`), in the
  *  sheet's Composer note words without their reason, which the sheet keeps. Null otherwise. */
@@ -522,4 +529,15 @@ export function cappedPackages(packages: readonly string[]): {
 } {
   const rest = packages.length - NAMES_SHOWN;
   return { shown: packages.slice(0, NAMES_SHOWN), more: rest > 0 ? `and ${rest} more` : null };
+}
+
+/** The Findings groups: the graded findings by grade, each run of one verdict in list order. */
+export function gradeGroups(findings: readonly Finding[]): { verdict: string; findings: Finding[] }[] {
+  const groups: { verdict: string; findings: Finding[] }[] = [];
+  for (const finding of findings) {
+    const current = groups.at(-1);
+    if (current?.verdict === finding.verdict) current.findings.push(finding);
+    else groups.push({ verdict: finding.verdict, findings: [finding] });
+  }
+  return groups;
 }

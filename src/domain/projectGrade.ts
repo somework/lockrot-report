@@ -17,7 +17,6 @@ export const WEIGHS_SHOWN = 10;
 export const WEIGHS_WORDS = {
   head: "Weighs most",
   note: "highest score first",
-  transitive: "transitive",
   dev: "dev",
 } as const;
 
@@ -142,12 +141,10 @@ export interface WeighsRow {
   total: number;
   /** "points" or "point", the total's unit for a screen reader. */
   unit: string;
-  /** "transitive" when `direct` is false, then "dev" when `dev` is true. */
-  reach: string[];
-  /** Each `score.terms[]` entry as "{flag} {contribution}", in term order: the row's one-line reason. */
-  terms: string;
-  /** The same terms one by one, so the page can break the line only between two terms. */
-  termParts: readonly string[];
+  /** `reach` unless direct, then "dev" when `dev` is true, joined " · ". */
+  reach: string;
+  /** Each `score.terms[]` entry as "{flag} {contribution}", in term order; the page joins them " · ". */
+  terms: readonly string[];
   /** "(score {total})" when the terms do not sum to `score.total`, else null; no term is adjusted. */
   termsTotal: string | null;
   segments: readonly BarSegment[];
@@ -157,15 +154,16 @@ export interface WeighsRow {
 }
 
 export interface WeighsMost {
+  caption: string;
   rows: WeighsRow[];
   /** "{n} more flagged packages hold {points} points", or null when every graded finding is drawn. */
   rest: string | null;
-  restLink: LinkTarget;
+  restLink: LinkTarget | null;
 }
 
 /** The graded findings with the highest `score.total`, highest first, ties in `findings[]` order. */
 export function weighsMost(report: Report2): WeighsMost | null {
-  if (report.packages_checked === 0) return null;
+  if (graded(report).length === 0) return null;
   const ranked = [...graded(report)].sort((a, b) => total(b) - total(a));
   const shown = ranked.slice(0, WEIGHS_SHOWN);
   const others = ranked.slice(WEIGHS_SHOWN);
@@ -177,13 +175,10 @@ export function weighsMost(report: Report2): WeighsMost | null {
       grade: f.verdict,
       total: total(f),
       unit: pluralNoun(total(f), "point", "points"),
-      reach: [...(f.direct ? [] : [WEIGHS_WORDS.transitive]), ...(f.dev ? [WEIGHS_WORDS.dev] : [])],
-      termParts: isScoreGraded(f.score)
+      reach: [...(f.direct ? [] : [f.reach]), ...(f.dev ? [WEIGHS_WORDS.dev] : [])].join(" · "),
+      terms: isScoreGraded(f.score)
         ? f.score.terms.map((t) => `${t.flag} ${pointsNumber(t.contribution)}`)
         : [],
-      terms: isScoreGraded(f.score)
-        ? f.score.terms.map((t) => `${t.flag} ${pointsNumber(t.contribution)}`).join(" · ")
-        : "",
       termsTotal:
         isScoreGraded(f.score) && sum(f.score.terms.map((t) => t.contribution)) !== f.score.total
           ? `(score ${String(f.score.total)})`
@@ -197,5 +192,5 @@ export function weighsMost(report: Report2): WeighsMost | null {
     others.length === 0
       ? null
       : `${plural(others.length, "more flagged package holds", "more flagged packages hold")} ${String(sum(others.map(total)))} points`;
-  return { rows, rest, restLink: { view: "findings" } };
+  return { caption: WEIGHS_WORDS.note, rows, rest, restLink: rest === null ? null : { view: "findings" } };
 }

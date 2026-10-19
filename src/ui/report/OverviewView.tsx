@@ -47,14 +47,14 @@ function WeighsItem({ row, model }: { row: WeighsRow; model: ScoreModel }) {
       <span className="wm-grade">
         <span className="ov-tag">{row.grade}</span>
       </span>
-      <span className="wm-reach">{row.reach.join(" · ")}</span>
+      <span className="wm-reach">{row.reach}</span>
       <WeighsBar row={row} />
       <span className="wm-total">
         {row.total}
         <span className="vh"> {row.unit}:</span>
       </span>
       <span className="wm-terms">
-        {row.termParts.map((part, i) => (
+        {row.terms.map((part, i) => (
           <Fragment key={i}>
             {i > 0 && " · "}
             <span className="nb">{part}</span>
@@ -84,7 +84,7 @@ function WeighsMostBlock({ report }: { report: Report2 }) {
           <WeighsItem key={row.package} row={row} model={report.run.score_model} />
         ))}
       </ol>
-      {chart.rest !== null && (
+      {chart.rest !== null && chart.restLink !== null && (
         <p className="ledger-note">
           <TabLink target={chart.restLink} className="ov-link">
             {chart.rest} <span aria-hidden="true">›</span>

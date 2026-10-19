@@ -15,7 +15,8 @@ export interface StatePart {
 
 export interface StateLine {
   readonly kind: StateKind;
-  readonly head: string;
+  /** The bold head before ": "; the allowlist line has none. */
+  readonly head: string | null;
   readonly parts: readonly StatePart[];
   readonly more: { readonly text: string; readonly link: LinkTarget } | null;
 }
@@ -56,7 +57,7 @@ function allowlistLine(report: Report2): StateLine | null {
   const listed = Array.isArray(entries) ? entries.length : 0;
   return {
     kind: "allowlist",
-    head: "Allowlist",
+    head: null,
     parts: [
       plain("extra.lockrot.ignore accepts maintenance flags, not advisories"),
       ...(listed > 0
@@ -103,3 +104,7 @@ export function stateLines(report: Report2): StateLine[] {
     (line): line is StateLine => line !== null,
   );
 }
+
+/** A state line as one string: the head and ": ", the clauses joined " · ", ".", then the link words. */
+export const stateLineText = ({ head, parts, more }: StateLine): string =>
+  `${head === null ? "" : `${head}: `}${parts.map(({ text }) => text).join(" · ")}.${more === null ? "" : ` ${more.text}`}`;

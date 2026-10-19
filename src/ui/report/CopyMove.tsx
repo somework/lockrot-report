@@ -151,9 +151,7 @@ export function CopyMove({
   return (
     <div className={className === undefined ? "d2-copy" : `d2-copy ${className}`}>
       <div className="d2-copy-bar">
-        <span className="eyebrow">
-          {label ?? commandLabel(argvs)}
-        </span>
+        <span className="eyebrow">{label ?? commandLabel(argvs)}</span>
         {printable && (
           <button type="button" className="d2-btn d2-copy-btn" onClick={copy}>
             {LABELS[status]}

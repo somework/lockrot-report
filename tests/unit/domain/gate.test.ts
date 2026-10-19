@@ -77,9 +77,15 @@ describe("gateHeadlineLine", () => {
     };
     expect(words("composite")).toBe("this run fails · --fail-on=high");
     expect(words("F")).toBe("this run passes · --fail-on=high");
-    expect(gateHeadlineLine({ who: "baseline run", verb: "passes", flags: [], unapplied: "--fail-on", said: false })).toBe(
-      "baseline run passes · --fail-on not applied",
-    );
+    expect(
+      gateHeadlineLine({
+        who: "baseline run",
+        verb: "passes",
+        flags: [],
+        unapplied: "--fail-on",
+        said: false,
+      }),
+    ).toBe("baseline run passes · --fail-on not applied");
   });
 });
 

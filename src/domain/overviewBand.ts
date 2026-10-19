@@ -12,6 +12,9 @@ import { flagPoints, pointsText } from "./projectGrade";
 
 export const OVERVIEW_WORDS = {
   band: "Overview",
+  /** Fixed page text about the tool, not the run, so no run can make it false. */
+  kicker:
+    "lockrot grades each package in composer.lock by its security advisories and its maintenance signals.",
   emptyLock: "No packages in this lock",
   grades: "Grade",
   perPackage: "One square per package",
@@ -37,11 +40,12 @@ export interface GradeCount {
   count: number;
 }
 
-/** One chip per graded verdict, a zero kept so the whole scale shows; none for an empty lock. */
-export function gradeChips({ counts, run, packages_checked: checked }: Report2): GradeCount[] {
-  if (checked === 0) return [];
+/** One chip per graded verdict with a count above 0. */
+export function gradeChips({ counts, run }: Report2): GradeCount[] {
   const byGrade: Readonly<Record<string, number>> = counts;
-  return run.graded_verdicts.map((grade) => ({ grade, count: byGrade[grade] ?? 0 }));
+  return run.graded_verdicts
+    .map((grade) => ({ grade, count: byGrade[grade] ?? 0 }))
+    .filter(({ count }) => count > 0);
 }
 
 export interface FlagBar {
@@ -173,4 +177,3 @@ export function securityBlock(report: Report2): SecurityBlock {
     fixes: fixCounts(report),
   };
 }
-

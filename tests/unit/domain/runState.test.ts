@@ -20,7 +20,11 @@ describe("stateLines", () => {
 
   it("states an offline run from its note code, the check and the unknown count", () => {
     const [line] = stateLines(
-      report({ note_details: [{ code: "offline", data: {} }], security: { check: "not_run" }, counts: { unknown: 7 } }),
+      report({
+        note_details: [{ code: "offline", data: {} }],
+        security: { check: "not_run" },
+        counts: { unknown: 7 },
+      }),
     );
     expect(line?.head).toBe("Offline run");
     expect(line?.parts.map((p) => p.text)).toEqual([

@@ -134,7 +134,11 @@ describe("j / k walk the rendered rows", () => {
 describe("Up and Down on a row", () => {
   test("move focus to the next or previous row while nothing is open", () => {
     const on = { rowPkg: "a/two", rowIndex: 1 };
-    expect(decideKey(input({ key: "ArrowDown", ...on }))).toEqual({ type: "focusRow", pkg: "a/three", index: 2 });
+    expect(decideKey(input({ key: "ArrowDown", ...on }))).toEqual({
+      type: "focusRow",
+      pkg: "a/three",
+      index: 2,
+    });
     expect(decideKey(input({ key: "ArrowUp", ...on }))).toEqual({ type: "focusRow", pkg: "a/one", index: 0 });
   });
 
@@ -158,7 +162,9 @@ describe("Up and Down on a row", () => {
 
   test("are left to the browser off a row and on a control inside one", () => {
     expect(decideKey(input({ key: "ArrowDown" }))).toEqual({ type: "ignore" });
-    expect(decideKey(input({ key: "ArrowDown", rowPkg: "a/two", onControl: true }))).toEqual({ type: "ignore" });
+    expect(decideKey(input({ key: "ArrowDown", rowPkg: "a/two", onControl: true }))).toEqual({
+      type: "ignore",
+    });
   });
 });
 

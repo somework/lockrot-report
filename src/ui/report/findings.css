@@ -355,9 +355,9 @@ span.f2-unit {
 /* ---------- two lines under a two-row head (beside an open package, a tablet) ---------- */
 @container fledger (min-width: 600px) {
   .f2 {
-  container: f2 / inline-size;
-}
-.f2-caveat {
+    container: f2 / inline-size;
+  }
+  .f2-caveat {
     display: none;
   }
   /* The score's number with the gate slot under it: the bar's parts are the open package's Why. */

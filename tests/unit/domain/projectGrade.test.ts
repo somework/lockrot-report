@@ -342,7 +342,7 @@ describe("Weighs most", () => {
     expect(chart?.rows[0] === undefined ? null : linkHref(chart.rows[0].link)).toBe(
       "#view=findings&pkg=plank%2Flaravel-mediable",
     );
-    expect(chart === null ? null : linkHref(chart.restLink)).toBe("#view=findings");
+    expect(chart?.restLink == null ? null : linkHref(chart.restLink)).toBe("#view=findings");
   });
 
   test("says dev beside a packages-dev finding and transitive beside an indirect one", () => {
@@ -373,10 +373,7 @@ describe("Weighs most", () => {
   });
 
   test("names its block and its order, with no count that a short list would belie", () => {
-    expect([WEIGHS_WORDS.head, WEIGHS_WORDS.note]).toEqual([
-      "Weighs most",
-      "highest score first",
-    ]);
+    expect([WEIGHS_WORDS.head, WEIGHS_WORDS.note]).toEqual(["Weighs most", "highest score first"]);
   });
 });
 
