@@ -2,10 +2,14 @@
 
 import type { Report2, Run } from "../model/report";
 import { day, plural, pluralNoun } from "./format";
-import { causeWord, feedAnswerWord, wordFor } from "./pageVocabulary";
+import { causeWord, checkReasonRich, feedAnswerWord, wordFor } from "./pageVocabulary";
+import type { Rich } from "./rich";
 
 export const RUN_WORDS = {
   tab: "Run data",
+  facts: "This run",
+  baseline: "Baseline",
+  stale: "Entries for packages that left the lock",
   scoreLink: "How the score works ›",
   rules: (n: number): string => `The ${n} rules`,
   fixes: "Fixes, easiest first",
@@ -40,8 +44,9 @@ export function advisoryLookup({ advisory_lookup: lookup }: Run): AdvisoryLookup
       records: repository.records,
       reason: repository.reason,
     });
+    const outcome = repository.outcome === "answered" ? `answered · ${answer}` : answer;
     const parts = [
-      `${repository.registry ?? repository.composer_repository}: ${answer}`,
+      `${repository.registry ?? repository.composer_repository}: ${outcome}`,
       ...(repository.packages_with_records === null
         ? []
         : [`${plural(repository.packages_with_records, "package", "packages")} with records`]),
@@ -61,6 +66,59 @@ export function advisoryLookup({ advisory_lookup: lookup }: Run): AdvisoryLookup
   };
 }
 
+const MODE_WORDS = {
+  check: "check",
+  generate_baseline: "generate baseline",
+};
+
+/** `activity_cache_age_hours` as lockrot rounded it; null when no answer came from the cache. */
+function activityCache({
+  activity_cache_age_hours: hours,
+  activity_cache_oldest_at: oldest,
+}: Report2): string {
+  if (hours === null || oldest === null) return "no cached answer read";
+  return `from lockrot's cache, up to ${String(hours)} h old (oldest ${day(oldest)})`;
+}
+
+export function runFacts(report: Report2): { key: string; value: string | Rich }[] {
+  const { run } = report;
+  const moveCheck = moveCheckFact(report);
+  return [
+    { key: "mode", value: wordFor(MODE_WORDS, run.mode) },
+    { key: "lock file", value: run.lock_file ?? "—" },
+    { key: "require-dev", value: run.include_dev ? "checked" : "not checked" },
+    { key: "repository activity", value: activityCache(report) },
+    ...(moveCheck === null ? [] : [{ key: "moves", value: moveCheck }]),
+  ];
+}
+
+/** `run.move_check` in the words of lockrot's text footer (`RunFooter::moveCheck`), or null when the
+ *  run checked no move. */
+export function moveCheckFact({ run }: Report2): Rich | null {
+  const check = run.move_check;
+  if (check === null) return null;
+  switch (check.baseline) {
+    case "resolves":
+      // `ignores_extensions` is always true: the solve ignores ext-* requirements (§5.6).
+      return [
+        `checked with the solver of Composer${check.composer === null ? "" : ` ${check.composer}`} against the lock · ext-* requirements not checked`,
+      ];
+    case "refused":
+      return ["not checked, because Composer's solver refuses the lock itself"];
+    default:
+      return ["not checked (", ...checkReasonRich(check.reason ?? ""), ")"];
+  }
+}
+
+export function baselineFacts({ baseline }: Report2): { head: string; stale: readonly string[] } | null {
+  if (baseline === null) return null;
+  const { path, known, worsened, stale } = baseline;
+  return {
+    head: `${path}: ${known} known · ${baseline.new} new · ${worsened} worsened · ${stale.length} stale`,
+    stale,
+  };
+}
+
 export interface NoteRow {
   text: string;
   docs: string | null;
@@ -75,6 +133,9 @@ export function noteRows({ note_details: notes }: Report2): NoteRow[] {
     return { text: `${note.text}${asked}`, docs: note.docs_url };
   });
 }
+
+/** The Run tab's note lines (golden `run_notes`). */
+export const runNotes = (report: Report2): string[] => noteRows(report).map(({ text }) => text);
 
 export function acceptedUnchecked(report: Report2): { head: string; rows: string[] } | null {
   const count = report.packages_unchecked_accepted;

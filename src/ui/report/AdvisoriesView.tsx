@@ -1,11 +1,13 @@
+import { Fragment } from "preact";
 import type { Run } from "../../model/report";
 import {
   ADVISORY_HEAD,
   advisoryAnswer2,
   advisoryBand,
-  advisoryFixNote,
+  advisoryFixPhp,
   advisoryFixWords,
   advisoryGroups2,
+  advisoryIds,
   advisoryLookupHedge,
   advisoryPairs2,
   advisoryRowLabel2,
@@ -15,9 +17,10 @@ import {
   type AdvisoryGroup2,
   type AdvisoryPair2,
 } from "../../domain/advisories";
-import { gradeTone, reachWord } from "../../domain/findingRow";
+import { advisoryCheckMark } from "../../domain/copySummary";
+import { gradeTone, heldByLine, moreWord, reachLine } from "../../domain/findingRow";
+import { advisoryAffects } from "../../domain/securityBlock";
 import { applyFilters2, population2 } from "../../domain/list";
-import { cveUrl, safeHref } from "../../domain/links";
 import { day, plural } from "../../domain/format";
 import type { Report2 } from "../../model/report";
 import { EMPTY_FILTERS } from "../../state/types";
@@ -30,6 +33,7 @@ import { openInteractions } from "../rowOpen";
 import { usePrinted } from "../print/printContext";
 import { EmptyState } from "../views/EmptyState";
 import { SecurityBlock } from "./Overview";
+import { PackageWord, Version } from "./PackageWord";
 import { useReport2 } from "./useReport";
 import "../views/views.css";
 import "../views/advisories.css";
@@ -37,30 +41,46 @@ import "./advisories.css";
 
 const pairKey = ({ finding, row }: AdvisoryPair2): string => `${finding.package}:${row.id}`;
 
-function Ids({ pair, tabIndex }: { pair: AdvisoryPair2; tabIndex: -1 | undefined }) {
+/** The CVE as text; the advisory's own `link`, as lockrot gives it, on its id. */
+function Ids({
+  pair,
+  sameAs,
+  tabIndex,
+}: {
+  pair: AdvisoryPair2;
+  sameAs: string | null;
+  tabIndex: -1 | undefined;
+}) {
   const { row } = pair;
-  const cve = cveUrl(row);
-  const link = safeHref(row.link);
-  const showId = row.cve === null || row.id !== row.cve;
   return (
     <span className="ac-ids">
-      {cve !== null ? (
-        <a className="ac-id lnk" href={cve} target="_blank" rel="noopener noreferrer" tabIndex={tabIndex}>
-          {row.cve}
-        </a>
-      ) : row.cve !== null ? (
-        <span className="ac-id">{row.cve}</span>
-      ) : (
-        <span className="ac-nocve">{ADVISORY_HEAD.noCve}</span>
-      )}
-      {showId &&
-        (link !== null ? (
-          <a className="ac-id lnk" href={link} target="_blank" rel="noopener noreferrer" tabIndex={tabIndex}>
-            {row.id}
+      {advisoryIds(row).map(({ text, href, noCve }) =>
+        noCve ? (
+          <span key={text} className="ac-nocve">
+            {text}
+          </span>
+        ) : href !== null ? (
+          <a
+            key={text}
+            className="ac-id lnk"
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            tabIndex={tabIndex}
+          >
+            {text}
           </a>
         ) : (
-          <span className="ac-id">{row.id}</span>
-        ))}
+          <span key={text} className="ac-id">
+            {text}
+          </span>
+        ),
+      )}
+      {sameAs !== null && (
+        <span className="ac-same">
+          {ADVISORY_HEAD.sameAs} <span className="ac-id">{sameAs}</span>
+        </span>
+      )}
       {row.reported_at !== null && (
         <span className="ac-reported">
           {ADVISORY_HEAD.reported} {day(row.reported_at)}
@@ -70,14 +90,79 @@ function Ids({ pair, tabIndex }: { pair: AdvisoryPair2; tabIndex: -1 | undefined
   );
 }
 
-function AdvisoryRow2({ pair, run, first }: { pair: AdvisoryPair2; run: Run; first: boolean }) {
+/** Severity, Advisory, Affects, Fixed by: the cells of a row, in order. */
+const ADVISORY_COLUMNS = 4;
+
+/** A long range folds behind its count; the fold is a native disclosure the keyboard opens. On
+ *  paper, where nothing opens, every range prints under its count. */
+function Affects({ range, tabIndex }: { range: string | null; tabIndex: -1 | undefined }) {
+  const printed = usePrinted();
+  const affects = advisoryAffects(range);
+  if (printed && affects?.folded != null) {
+    return (
+      <span className="ac-aff" role="cell">
+        <span className="ac-lbl" aria-hidden="true">
+          {ADVISORY_HEAD.affects}{" "}
+        </span>
+        <span className="ac2-count">{affects.folded}</span>
+        {/* One line that wraps only after a range's own `|`. */}
+        <span className="mono ac2-range ac2-flow">
+          {affects.parts.map((part, i) => (
+            <Fragment key={i}>
+              <span className="ac2-r">{part}</span>
+              <wbr />
+            </Fragment>
+          ))}
+        </span>
+      </span>
+    );
+  }
+  return (
+    <span className="ac-aff" role="cell">
+      <span className="ac-lbl" aria-hidden="true">
+        {ADVISORY_HEAD.affects}{" "}
+      </span>
+      {affects === null ? (
+        <span className="mono">?</span>
+      ) : affects.folded === null ? (
+        <span className="mono ac2-range">{affects.range}</span>
+      ) : (
+        <details className="ac2-fold" data-no-open>
+          <summary tabIndex={tabIndex}>{affects.folded}</summary>
+          <span className="mono ac2-range">
+            {affects.parts.map((part, i) => (
+              <span key={i} className="ac2-part">
+                {part}
+              </span>
+            ))}
+          </span>
+        </details>
+      )}
+    </span>
+  );
+}
+
+function AdvisoryRow2({
+  pair,
+  run,
+  first,
+  sameAs,
+}: {
+  pair: AdvisoryPair2;
+  run: Run;
+  first: boolean;
+  sameAs: string | null;
+}) {
   const { state, dispatch, cursor } = useReport();
   const { finding, row } = pair;
   const fix = advisoryFixWords(row.fix, finding);
   const countedAs = advisoryCountedAs(run, row.severity);
-  const note = advisoryFixNote(row.fix);
+  const php = advisoryFixPhp(row.fix);
+  const held = heldByLine(row.fix.held_by, run);
+  const inner = innerTabIndex(finding.package, cursor, first);
   return (
-    <li
+    <div
+      role="row"
       tabIndex={rowTabIndex(finding.package, cursor, first)}
       aria-current={state.pkg === finding.package ? "true" : undefined}
       aria-label={advisoryRowLabel2(pair)}
@@ -85,50 +170,81 @@ function AdvisoryRow2({ pair, run, first }: { pair: AdvisoryPair2; run: Run; fir
       className={`adv ${toneClass(gradeTone(advisoryBand(run, row.severity)))}`}
       {...openInteractions(finding.package, dispatch)}
     >
-      <span className="ac-sev" title={countedAs === null ? undefined : `${row.severity}${countedAs}`}>
+      <span className="ac-sev" role="cell">
+        <span className="ac-lbl ac-sev-lbl" aria-hidden="true">
+          {ADVISORY_HEAD.sev}{" "}
+        </span>
         {row.severity}
-        {countedAs !== null && <span className="vh">{countedAs}</span>}
+        {countedAs !== null && <span className="ac-counted">{countedAs.replace(/^, /, "")}</span>}
       </span>
-      <span className="ac-title">{row.title ?? row.id}</span>
-      <Ids pair={pair} tabIndex={innerTabIndex(finding.package, cursor, first)} />
-      <span className="ac-pkg">
-        <span className="ac-name" title={`${finding.package} ${finding.version}`}>
-          <b>{finding.package}</b> <span className="ac-ver">{finding.version}</span>
-        </span>
-        <span className="ac-reach">{reachWord(finding)}</span>
+      {/* One cell under the Advisory head: the title and the ids keep grid places of their own. */}
+      <span className="ac-adv" role="cell">
+        <span className="ac-title">{row.title ?? row.id}</span>
+        <Ids pair={pair} sameAs={sameAs} tabIndex={inner} />
       </span>
-      <span className="ac-aff">
-        <span className="ac-lbl">{ADVISORY_HEAD.affects} </span>
-        <span className="mono ac2-range" title={row.affected_versions ?? undefined}>
-          {row.affected_versions ?? "?"}
-        </span>
-      </span>
-      <span className={fix.version === null ? "ac-fix is-none" : "ac-fix"}>
+      <Affects range={row.affected_versions} tabIndex={inner} />
+      <span className={fix.version === null ? "ac-fix is-none" : "ac-fix"} role="cell">
         {fix.version !== null && (
           <>
-            <span className="ac-lbl">{ADVISORY_HEAD.fixedBy} </span>
+            <span className="ac-lbl" aria-hidden="true">
+              {ADVISORY_HEAD.fixedBy}{" "}
+            </span>
             <span className="ac-fixver">{fix.version}</span>{" "}
           </>
         )}
         <span className="ac-where">{fix.where}</span>
-        {note !== null && <span className="ac2-note">{note}</span>}
+        {(php !== null || held !== null) && (
+          <span className="ac2-note">
+            {php}
+            {php !== null && held !== null && " · "}
+            {held !== null && (
+              <>
+                held by <PackageWord name={held.name} />
+                {held.more > 0 && <span className="f2-more"> {moreWord(held.more)}</span>}
+              </>
+            )}
+          </span>
+        )}
       </span>
-    </li>
+    </div>
   );
 }
 
 function Group({ group, run, first }: { group: AdvisoryGroup2; run: Run; first: ReadonlySet<string> }) {
+  const { finding } = group;
+  const reach = reachLine(finding);
   return (
-    <section className={`advgroup is-${group.kind}`}>
-      <header className="al-group-head">
-        <h2>{group.heading}</h2>
-        <span className="al-group-count">{plural(group.pairs.length, "advisory", "advisories")}</span>
-      </header>
-      <ul className="adv-list" aria-label={group.heading}>
-        {group.pairs.map((pair) => (
-          <AdvisoryRow2 key={pairKey(pair)} pair={pair} run={run} first={first.has(pairKey(pair))} />
+    <section className={`advgroup ${toneClass(gradeTone(finding.verdict))}`}>
+      <div className="al-group-head" role="row">
+        <span className="al-span-cell" role="cell" aria-colspan={ADVISORY_COLUMNS}>
+          <h2>
+            {finding.package} <Version version={finding.version} className="ac-ver" />
+          </h2>
+          <span className="al-group-count">{plural(group.pairs.length, "advisory", "advisories")}</span>
+          <span className="al-group-reach">
+            {reach.lead}
+            {reach.through !== null && (
+              <>
+                {" "}
+                <PackageWord name={reach.through} />
+              </>
+            )}
+            {reach.more > 0 && <span className="f2-more"> {moreWord(reach.more)}</span>}
+            {reach.dev && " · dev"}
+          </span>
+        </span>
+      </div>
+      <div className="adv-list" role="rowgroup" aria-label={`${finding.package} advisories`}>
+        {group.pairs.map((pair, i) => (
+          <AdvisoryRow2
+            key={pairKey(pair)}
+            pair={pair}
+            run={run}
+            first={first.has(pairKey(pair))}
+            sameAs={group.sameAs[i] ?? null}
+          />
         ))}
-      </ul>
+      </div>
     </section>
   );
 }
@@ -136,10 +252,11 @@ function Group({ group, run, first }: { group: AdvisoryGroup2; run: Run; first: 
 function NoAdvisories2() {
   const { report } = useReport2();
   const line = noAdvisoryLine(report);
-  if (advisoryLookupHedge(report) !== null) {
+  const mark = advisoryCheckMark(report);
+  if (mark !== null) {
     return (
       <div className="empty al-empty">
-        <CheckIncompleteTag />
+        <CheckIncompleteTag mark={mark} />
         <p className="al-answer">{line}</p>
       </div>
     );
@@ -158,12 +275,13 @@ function NoAdvisories2() {
  *  beside it count. */
 function Answer({ report, answer, counted }: { report: Report2; answer: AdvisoryAnswer2; counted: boolean }) {
   const hedge = advisoryLookupHedge(report);
+  const mark = advisoryCheckMark(report);
   return (
     <>
       <p className="al-answer">{counted ? answer.head : answer.text}</p>
-      {hedge !== null && (
+      {hedge !== null && mark !== null && (
         <p className="al-partial">
-          <CheckIncompleteTag /> <span>{hedge}</span>
+          <CheckIncompleteTag mark={mark} /> <span>{hedge}</span>
         </p>
       )}
       {answer.narrowed !== null && <p className="al-scope">{answer.narrowed}</p>}
@@ -188,7 +306,7 @@ export function AdvisoriesView2() {
 
   const pairs = advisoryPairs2(applyFilters2(report, state, "advisories"), state.filters);
   const unfiltered = advisoryPairs2(population2(report, "advisories"), EMPTY_FILTERS).length;
-  const groups = advisoryGroups2(run, pairs);
+  const groups = advisoryGroups2(pairs);
   const answer = advisoryAnswer2(run, pairs, unfiltered);
   const shown = groups.flatMap((group) => group.pairs);
   const first = firstRows(shown, (pair) => pair.finding.package, pairKey);
@@ -217,16 +335,23 @@ export function AdvisoriesView2() {
               <Answer report={report} answer={answer} counted={false} />
             </div>
           )}
-          <div className="aledger no-axis">
-            <div className="al-head" aria-hidden="true">
-              <span className="al-col al-col-sev">{ADVISORY_HEAD.sev}</span>
-              <span className="al-col al-col-adv">{ADVISORY_HEAD.adv}</span>
-              <span className="al-col al-col-pkg">{ADVISORY_HEAD.pkg}</span>
-              <span className="al-col al-col-aff">{ADVISORY_HEAD.aff}</span>
-              <span className="al-col al-col-fix">{ADVISORY_HEAD.fix}</span>
+          <div className="aledger no-axis" role="table" aria-label="Advisories">
+            <div className="al-head" role="row">
+              <span className="al-col al-col-sev" role="columnheader">
+                {ADVISORY_HEAD.sev}
+              </span>
+              <span className="al-col al-col-adv" role="columnheader">
+                {ADVISORY_HEAD.adv}
+              </span>
+              <span className="al-col al-col-aff" role="columnheader">
+                {ADVISORY_HEAD.aff}
+              </span>
+              <span className="al-col al-col-fix" role="columnheader">
+                {ADVISORY_HEAD.fix}
+              </span>
             </div>
             {groups.map((group) => (
-              <Group key={`${group.kind}:${group.toBranch ?? ""}`} group={group} run={run} first={first} />
+              <Group key={group.finding.package} group={group} run={run} first={first} />
             ))}
           </div>
         </>

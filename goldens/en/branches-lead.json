@@ -1,0 +1,335 @@
+{
+  "A": [
+    "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
+  ],
+  "A-baselined-dagger": [
+    "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
+  ],
+  "A-blocked-dagger": [
+    "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
+  ],
+  "A-gate-critical": [
+    "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
+  ],
+  "A-gate-vulnerable": [
+    "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
+  ],
+  "A-php-star-dagger": [
+    "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
+  ],
+  "B": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "B-accepted-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "B-also-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The highest branch within reach, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "B-baselined-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "B-dev-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "B-gate-flag": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "B-gate-list": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "B-gate-none": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "B-offline-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "B-offline-high-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "C": [
+    "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
+  ],
+  "C-baselined-dagger": [
+    "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
+  ],
+  "C-bitbucket-dagger": [
+    "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
+  ],
+  "C-gitlab-hosted-dagger": [
+    "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
+  ],
+  "C-offline-dagger": [
+    "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
+  ],
+  "C-tokenless-dagger": [
+    "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
+  ],
+  "D": [
+    "Your branch, 4.x, had its last release, v4.1.1, 8.7 years ago.",
+    "It has no higher branch."
+  ],
+  "D-partial-dagger": [
+    "Your branch, 4.x, had its last release, v4.1.1, 8.7 years ago.",
+    "It has no higher branch."
+  ],
+  "E": [
+    "Your branch, 5.x, had its last release, v5.4.53, 0.4 years ago."
+  ],
+  "E-ignored-dagger": [
+    "Your branch, 5.x, had its last release, v5.4.53, 0.4 years ago."
+  ],
+  "E-ignored-whole-dagger": [
+    "Your branch, 5.x, had its last release, v5.4.53, 0.4 years ago."
+  ],
+  "F": [
+    "Your branch, 1.x, had its last release, v1.43.0, less than three weeks ago.",
+    "It has no higher branch."
+  ],
+  "G": [
+    "A branch snapshot, dev-master, is installed."
+  ],
+  "G-tag-dagger": [
+    "A branch snapshot, dev-master, is installed."
+  ],
+  "abandoned-audit-ignore-dagger": [
+    "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
+  ],
+  "abandoned-ignore-unreadable-dagger": [
+    "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
+  ],
+  "affected-range-unknown-dagger": [
+    "Your branch, 1.x, had its last release, v1.43.0, less than three weeks ago.",
+    "It has no higher branch."
+  ],
+  "cache-subscriber": [
+    "Your branch, 0.2.x, had its last release, 0.2.0, 7.0 years ago.",
+    "It has no higher branch."
+  ],
+  "either-critical-dagger": [
+    "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
+  ],
+  "either-low-dev-dagger": [
+    "Your branch, 1.x, had its last release, v1.0.2, 3.5 years ago.",
+    "It has no higher branch."
+  ],
+  "fail-on-config-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "fail-on-default-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "feeds-drupal-dagger": [
+    "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
+  ],
+  "flysystem": [
+    "Your branch, 1.x, had its last release, 1.1.10, 4.0 years ago.",
+    "The move's branch, 3.x, released 3.36.0 0.1 years ago."
+  ],
+  "gitlab-anon-dagger": [
+    "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
+  ],
+  "guzzle": [
+    "Your branch, 6.x, had its last release, 6.5.8, 4.3 years ago.",
+    "The newest branch, 8.x, released 8.2.0 0.1 years ago."
+  ],
+  "guzzle-5": [
+    "Your branch, 5.x, had its last release, 5.3.4, 6.9 years ago.",
+    "The move's branch, 8.x, released 8.2.0 0.1 years ago."
+  ],
+  "guzzle-mixed": [
+    "Your branch, 5.x, had its last release, 5.3.4, 6.9 years ago.",
+    "The newest branch, 8.x, released 8.2.0 0.1 years ago."
+  ],
+  "hoa": [
+    "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
+  ],
+  "hoa-tokenless-dagger": [
+    "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
+  ],
+  "holder-vuln-dagger": [
+    "Your branch, 2.x, had its last release, 2.0.1, 4.1 years ago.",
+    "The newest branch, 4.x, released 4.0.0 1.2 years ago."
+  ],
+  "ignored-marking-archived-dagger": [
+    "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
+  ],
+  "ignored-marking-only-dagger": [
+    "Your branch, 2.x, had its last release, 2.0.2, 2.1 years ago.",
+    "It has no higher branch."
+  ],
+  "ignored-marking-partial-dagger": [
+    "Your branch, 2.x, had its last release, 2.2.0, 4.4 years ago.",
+    "It has no higher branch."
+  ],
+  "ignored-marking-stale-dagger": [
+    "Your branch, 2.x, had its last release, 2.2.0, 4.4 years ago.",
+    "It has no higher branch."
+  ],
+  "ignored-marking-unchecked-dagger": [
+    "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
+  ],
+  "installed-php-halved": [
+    "Your branch, 2.x, had its last release, v2.1.7, 7.1 years ago.",
+    "The highest branch within reach, 4.x, released 4.9.1 2.2 years ago."
+  ],
+  "joomla-filter": [
+    "Your branch, 2.x, had its last release, 2.0.6, 1.0 years ago."
+  ],
+  "local-path-advisory": [],
+  "lock-only-dagger": [
+    "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
+  ],
+  "long-range-dagger": [
+    "Your branch, 1.x, had its last release, v1.43.0, less than three weeks ago.",
+    "It has no higher branch."
+  ],
+  "many-dependents": [
+    "Your branch, 1.x, had its last release, v1.10.0, 4.2 years ago.",
+    "The move's branch, 2.x, released v2.5.4 2.0 years ago."
+  ],
+  "move-check-dagger": [
+    "Your branch, 2.x, had its last release, v2.3.2, 0.3 years ago.",
+    "It has no higher branch."
+  ],
+  "not-found-dagger": [
+    "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
+  ],
+  "ok-unchecked": [
+    "Your branch, 8.x, has no dated release.",
+    "It has no higher branch."
+  ],
+  "op-update": [
+    "Your branch, 2.x, had its last release, 2.0.3, 0.5 years ago.",
+    "It has no higher branch."
+  ],
+  "pagerfanta": [
+    "Your branch, 3.x, had its last release, v3.8.0, 3.5 years ago.",
+    "The move's branch, 4.x, released v4.9.0 1.6 years ago."
+  ],
+  "partial": [
+    "Your branch, 9.x, had its last release, v9.52.22, 0.1 years ago."
+  ],
+  "partial-op-dagger": [
+    "Your branch, 2.x, had its last release, v2.13.0, 4.2 years ago.",
+    "The move's branch, 3.x, released v3.4.0 0.2 years ago."
+  ],
+  "php-null": [
+    "Your branch, 10.x, had its last release, 10.0.1, 3.5 years ago.",
+    "The move's branch, 12.x, released 12.0.0 1.6 years ago."
+  ],
+  "pinned-unread": [],
+  "policy-off-dagger": [
+    "Your branch, 2.x, had its last release, 2.0.6, 1.0 years ago."
+  ],
+  "psr7": [
+    "Your branch, 1.x, had its last release, 1.9.1, 3.5 years ago.",
+    "The newest branch, 3.x, released 3.1.0 0.1 years ago."
+  ],
+  "replace-graded": [
+    "Your branch, 3.x, has no dated release.",
+    "It has no higher branch."
+  ],
+  "replace-text": [
+    "Your branch, 6.x, had its last release, v6.2.10, 3.6 years ago.",
+    "It has no higher branch."
+  ],
+  "require-dev-name-dagger": [
+    "Your branch, 4.x, had its last release, v4.4.47, 4.0 years ago.",
+    "The move's branch, 5.x, released v5.4.48 1.9 years ago."
+  ],
+  "rounded-dev-dagger": [
+    "Your branch, 2.x, had its last release, 2.0.2, 6.3 years ago."
+  ],
+  "routing": [
+    "Your branch, 4.x, had its last release, v4.4.44, 4.2 years ago.",
+    "The highest branch within reach, 8.x, released v8.1.8 less than three weeks ago."
+  ],
+  "silent": [
+    "Your branch, 1.x, had its last release, v1.0.4, 8.1 years ago.",
+    "It has no higher branch."
+  ],
+  "snapshot-alias": [
+    "A branch snapshot, 5.4.x-dev, is installed."
+  ],
+  "snapshot-dead-line-dagger": [
+    "A branch snapshot, 4.4.x-dev, is installed."
+  ],
+  "snapshot-undated-line-dagger": [
+    "A branch snapshot, 4.4.x-dev, is installed."
+  ],
+  "stale-accepted-dagger": [
+    "Your branch, 1.x, had its last release, 1.0.4, 5.6 years ago.",
+    "It has no higher branch."
+  ],
+  "stale-only": [
+    "Your branch, 2.x, had its last release, 2.1.1, 3.3 years ago.",
+    "It has no higher branch."
+  ],
+  "tie-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "twig-1": [
+    "Your branch, 1.x, had its last release, v1.44.8, 2.1 years ago."
+  ],
+  "twig-dev-dagger": [
+    "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
+  ],
+  "unknown": [],
+  "unknown-origin": [],
+  "unrated-dagger": [
+    "Your branch, 5.x, had its last release, v5.4.53, 0.4 years ago."
+  ],
+  "unreached": [
+    "Your branch, 2.x, had its last release, v2.5.0, 3.8 years ago.",
+    "It has no higher branch."
+  ],
+  "unreached-dev-dagger": [
+    "Your branch, 2.x, had its last release, 2.0.8, 3.8 years ago.",
+    "The move's branch, 3.x, released v3.1.1 0.5 years ago."
+  ],
+  "unreached-move": [
+    "Your branch, 6.x, had its last release, 6.8.0, 4.0 years ago.",
+    "The move's branch, 7.x, released 7.8.1 0.5 years ago."
+  ],
+  "wp-config": [
+    "Your branch, 1.x, had its last release, 1.0.0, 8.1 years ago.",
+    "It has no higher branch."
+  ],
+  "yaml-3.4": [
+    "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago.",
+    "The newest branch, 8.x, released v8.1.8 less than three weeks ago."
+  ],
+  "zero-n": [
+    "Your branch, 0.0.3, had its last release, 0.0.3, 3.5 years ago.",
+    "It has no higher branch."
+  ],
+  "B-accepted-unread-dagger": [],
+  "finished-offline-dagger": [],
+  "host-accept-expired-dagger": [],
+  "host-accepted-dagger": [],
+  "host-unsupported": [],
+  "no-feed-accepted-dagger": [],
+  "no-feed-dagger": [],
+  "no-tag-dagger": [],
+  "ok-ignored-dagger": [],
+  "ok-offline-dagger": [],
+  "psr-log": [],
+  "scope-registries-dagger": [],
+  "unknown-vuln-dagger": [],
+  "unparseable-version-dagger": [],
+  "vcs-accepted-dagger": []
+}

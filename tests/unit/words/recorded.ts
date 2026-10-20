@@ -5,6 +5,7 @@ import { basename, join } from "node:path";
 import { gunzipSync } from "node:zlib";
 
 import type { Finding, Report2, RepositoryMetadata, Run } from "../../../src/model/report";
+import type { BlockKey } from "../blocks/blockGoldens";
 
 const FIXTURES = join(process.cwd(), ".lockrot", "tests", "fixtures");
 const CONTRACT = join(FIXTURES, "contract");
@@ -17,13 +18,11 @@ export interface PhpGoldens {
   commands_cmd: string[];
 }
 
-/** The model's strings for one case (`flags/cases.json`), the reference of the first recording only. */
-export interface ModelGoldens extends PhpGoldens {
-  answer: string;
+/** The model's strings for one case (`flags/cases.json`); the blocks of the detail sheet are `unknown` here and
+ *  typed by the page's own projection (`tests/unit/blocks/blockGoldens.ts`). */
+export interface ModelGoldens extends PhpGoldens, Record<BlockKey, unknown> {
   why: string[];
   checks: string;
-  branches: string | null;
-  security_row: string;
 }
 
 export interface RecordedCase {
@@ -128,21 +127,38 @@ export function multiFindingReports(): { name: string; report: Report2 }[] {
 export interface PageGolden {
   document: string;
   copy_summary: string[];
-  libyears_panel: string | null;
   panel: string[] | null;
   /** The Overview's three lines; null where the page shows no such line. */
   grade_line: string | null;
   figure_line: string | null;
   load_line: string | null;
+  waffle_caption: string | null;
 }
 
 /** The model's report-2 of a golden's document, where lockrot's `PageGoldensTest` reads it. */
-function pageGoldenDocument(document: string): Report2 {
+export function pageGoldenDocument(document: string): Report2 {
+  if (document.startsWith("baselined/")) {
+    return (JSON.parse(readFileSync(join(FIXTURES, document), "utf8")) as { report: Report2 }).report;
+  }
   const documents = join(FIXTURES, "schema", "documents");
-  const raw = document.startsWith("report-2/")
-    ? gunzipSync(readFileSync(join(documents, "corpus", `${basename(document)}.gz`))).toString("utf8")
-    : readFileSync(join(documents, document), "utf8");
+  const path = document.startsWith("contract/")
+    ? join(FIXTURES, document)
+    : document.startsWith("report-2/")
+      ? join(documents, "corpus", basename(document))
+      : join(documents, document);
+  const raw = existsSync(path)
+    ? readFileSync(path, "utf8")
+    : gunzipSync(readFileSync(`${path}.gz`)).toString("utf8");
   return JSON.parse(raw) as Report2;
+}
+
+/** The details of a golden's document, by package: only a baselined bundle records them. */
+export function pageGoldenMetadata(document: string, pkg: string): RepositoryMetadata | null {
+  if (!document.startsWith("baselined/")) return null;
+  const { details } = JSON.parse(readFileSync(join(FIXTURES, document), "utf8")) as {
+    details: Record<string, { metadata: RepositoryMetadata | null } | undefined>;
+  };
+  return details[pkg]?.metadata ?? null;
 }
 
 export function pageGoldens(): { id: string; golden: PageGolden; report: Report2 }[] {

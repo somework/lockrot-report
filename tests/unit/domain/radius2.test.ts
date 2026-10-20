@@ -7,7 +7,7 @@ import {
   gradeMix,
   radiusAnswer2,
   radiusLayout2,
-  radiusRowSay,
+  radiusRowFacts,
   radiusRows2,
 } from "../../../src/domain/radius2";
 import type { Report2, Report2Embed } from "../../../src/model/report";
@@ -28,55 +28,91 @@ const layoutOf = (report: Report2) =>
   radiusLayout2(report, population2(report, "radius"), population2(report, "radius"));
 
 describe("radiusLayout2", () => {
-  it("lists a transitive package under the requirement its chain runs through", () => {
+  it("lists under each requirement the packages its S7 names", () => {
+    // composite: each exposure requirement has a finding, and its S7 names one flagged package.
     const layout = layoutOf(composite);
-    expect(layout.ranked.map((row) => row.package)).toEqual(["guzzlehttp/guzzle"]);
-    expect(layout.ranked[0]?.pulled.map((f) => f.package)).toEqual(["symfony/polyfill-intl-idn"]);
+    expect(layout.rows.map((row) => [row.package, row.count, row.exposure])).toEqual([
+      ["friendsofsymfony/oauth-server-bundle", 1, 1],
+      ["guzzlehttp/guzzle", 1, 1],
+    ]);
+    expect(layout.rows.map((row) => row.pulled.map((f) => f.package))).toEqual([
+      ["friendsofsymfony/oauth2-php"],
+      ["symfony/polyfill-intl-idn"],
+    ]);
+  });
+
+  it("lists nothing under a requirement with no finding, and keeps lockrot's count", () => {
+    const report: Report2 = { ...composite, exposure: [{ package: "acme/absent", flagged: 3 }] };
+    const [row] = layoutOf(report).rows;
+    if (row === undefined) throw new Error("no row");
+    expect([row.count, row.exposure]).toEqual([0, 3]);
+  });
+
+  it("lists nothing under a requirement with a finding but no S7, and keeps lockrot's count", () => {
+    const report: Report2 = { ...composite, exposure: [{ package: "symfony/yaml", flagged: 2 }] };
+    const [row] = layoutOf(report).rows;
+    if (row === undefined) throw new Error("no row");
+    expect([row.count, row.exposure]).toEqual([0, 2]);
+    expect(radiusRowFacts(report, row)).toEqual({ count: 2, mix: null, note: null });
   });
 
   it("puts a graded direct requirement off the exposure list among the unlisted, not a row", () => {
     const layout = layoutOf(composite);
     expect(layout.unlisted.map((f) => f.package)).toContain("twig/twig");
-    expect(layout.selfOnly.map((row) => row.package)).not.toContain("twig/twig");
+    expect(layout.rows.map((row) => row.package)).not.toContain("twig/twig");
   });
 
-  it("orders an open row's packages by rank, never by a grade order of its own", () => {
+  it("orders an open row's packages by rank, never by S7's order or a grade order", () => {
     const polyfill = composite.findings.find((f) => f.package === "symfony/polyfill-intl-idn");
-    if (polyfill === undefined) throw new Error("no polyfill");
+    const bundle = composite.findings.find((f) => f.package === "friendsofsymfony/oauth-server-bundle");
+    if (polyfill === undefined || bundle === undefined) throw new Error("no polyfill or bundle");
+    const parent = bundle.package;
     const sibling = (name: string, rank: number) => ({
       ...polyfill,
       package: name,
       verdict: "high" as const,
       priority: "high" as const,
       rank,
-      chain: ["guzzlehttp/guzzle", name],
     });
+    const member = (name: string) => ({
+      package: name,
+      chain: [parent, name],
+      verdict: "high" as const,
+      lead: null,
+      flag_ids: [],
+    });
+    const withS7 = {
+      ...bundle,
+      signals: bundle.signals.map((signal) =>
+        signal.id === "S7"
+          ? { ...signal, data: { flagged: 2, packages: [member("aaa/second"), member("zzz/first")] } }
+          : signal,
+      ),
+    };
     const report: Report2 = {
       ...composite,
-      findings: [...composite.findings, sibling("zzz/first", 8), sibling("aaa/second", 9)],
+      exposure: [{ package: parent, flagged: 2 }],
+      findings: [
+        ...composite.findings.map((f) => (f.package === parent ? withS7 : f)),
+        sibling("zzz/first", 8),
+        sibling("aaa/second", 9),
+      ],
     };
-    const [row] = layoutOf(report).ranked;
+    const [row] = layoutOf(report).rows;
     if (row === undefined) throw new Error("no row");
-    expect(pulledTree(row).map((node) => node.finding.package)).toEqual([
-      "symfony/polyfill-intl-idn",
-      "zzz/first",
-      "aaa/second",
-    ]);
+    expect(pulledTree(row).map((node) => node.finding.package)).toEqual(["zzz/first", "aaa/second"]);
   });
 
-  it("lists or points to every package of a requirement's S7 signal, vulnerable-only ones too", () => {
+  it("keeps report.exposure's order, and each row counts exposure[].flagged, on a recorded case", () => {
     const layout = layoutOf(wallabag);
-    const placedAll: string[] = [];
-    for (const finding of wallabag.findings) {
-      const s7 = finding.signals.find(({ id }) => id === "S7");
-      const row = [...layout.ranked, ...layout.selfOnly].find((r) => r.package === finding.package);
-      if (s7 === undefined || row === undefined) continue;
-      const listed = (s7.data as { packages: { package: string }[] }).packages.map((p) => p.package);
-      const shared = new Set(wallabag.unattributed.map((entry) => entry.package));
-      const placed = [...row.pulled, ...row.elsewhere.map((entry) => entry.finding)].map((f) => f.package);
-      expect(placed.sort()).toEqual(listed.filter((p) => !shared.has(p)).sort());
-      placedAll.push(...placed);
-    }
+
+    expect(layout.rows.map((row) => row.package)).toEqual(wallabag.exposure.map((entry) => entry.package));
+    expect(layout.rows.map((row) => row.count)).toEqual(wallabag.exposure.map((entry) => entry.flagged));
+  });
+
+  it("lists every package of a requirement's S7 signal, vulnerable-only ones too", () => {
+    const layout = layoutOf(wallabag);
+    const placedAll = layout.rows.flatMap((row) => row.pulled.map((f) => f.package));
     const vulnerableOnly = wallabag.findings.filter(
       (f) => f.flags.length > 0 && f.flags.every(({ id }) => id === "vulnerable"),
     );
@@ -86,14 +122,44 @@ describe("radiusLayout2", () => {
 
 describe("radius words", () => {
   it("answers with the rows that hold the flagged packages", () => {
-    expect(radiusAnswer2(layoutOf(composite))).toBe("1 flagged package pulled in, under guzzlehttp/guzzle.");
+    expect(radiusAnswer2(layoutOf(wallabag))).toMatch(
+      /^\d+ of the \d+ flagged packages pulled in sit under /,
+    );
   });
 
-  it("says what a row lists, by grade in graded_verdicts order", () => {
-    const [row] = layoutOf(composite).ranked;
+  it("answers with the first requirement as published when the rows tie", () => {
+    // composite: two transitive packages, one under each of its two exposure requirements.
+    expect(radiusAnswer2(layoutOf(composite))).toBe(
+      "1 of the 2 flagged packages pulled in sit under friendsofsymfony/oauth-server-bundle.",
+    );
+  });
+
+  it("answers with lockrot's exposure list when no row lists a finding", () => {
+    const report: Report2 = { ...composite, exposure: [{ package: "symfony/yaml", flagged: 2 }] };
+    expect(radiusAnswer2(layoutOf(report))).toBe(
+      "1 direct requirement on lockrot's exposure list pulls in flagged packages.",
+    );
+  });
+
+  it("gives a row's count and its grade split in graded_verdicts order", () => {
+    const row = layoutOf(wallabag).rows.find((r) => r.package === "kphoen/rulerz");
     if (row === undefined) throw new Error("no row");
-    expect(radiusRowSay(composite, row)).toBe("Pulls in 1 flagged package: 1 low.");
-    expect(gradeMix(composite, composite.findings)).toBe("3 critical, 2 high, 2 low");
+    expect(radiusRowFacts(wallabag, row)).toEqual({
+      count: row.count,
+      mix: gradeMix(wallabag, row.pulled),
+      note: null,
+    });
+    expect(gradeMix(composite, composite.findings)).toBe("4 critical, 2 high, 3 low");
+  });
+
+  it("gives no count for a row the filter empties, and says how many it hides", () => {
+    const [row] = layoutOf(composite).rows;
+    if (row === undefined) throw new Error("no row");
+    expect(radiusRowFacts(composite, { ...row, count: 0, unfiltered: 1, pulled: [] })).toEqual({
+      count: null,
+      mix: null,
+      note: "None of the 1 flagged package listed under it match the filter.",
+    });
   });
 
   it("answers an empty tab, and a filtered one", () => {
@@ -108,10 +174,14 @@ describe("radius words", () => {
 
 describe("radiusRows2", () => {
   it("walks the requirement rows, and an open row's packages under it", () => {
-    const layout = layoutOf(composite);
-    expect(radiusRows2(layout, INITIAL_STATE, false)).toEqual(["guzzlehttp/guzzle"]);
-    const open = { ...INITIAL_STATE, disclosure: { "row:guzzlehttp/guzzle": true } };
-    expect(radiusRows2(layout, open, false)).toEqual(["guzzlehttp/guzzle", "symfony/polyfill-intl-idn"]);
+    const layout = layoutOf(wallabag);
+    const row = layout.lead[0];
+    if (row === undefined) throw new Error("no row");
+    const open = { ...INITIAL_STATE, disclosure: { [`row:${row.package}`]: true } };
+    expect(radiusRows2(layout, open, false).slice(0, row.count + 1)).toEqual([
+      row.package,
+      ...pulledTree(row).map((node) => node.finding.package),
+    ]);
   });
 });
 
@@ -119,28 +189,21 @@ describe("radiusRows2 on a recorded case", () => {
   const layout = layoutOf(wallabag);
   const rowsOf = (rows: typeof layout.lead) =>
     rows.flatMap((row) => [row.package, ...pulledTree(row).map((node) => node.finding.package)]);
-  const all = Object.fromEntries(
-    [...layout.ranked, ...layout.selfOnly].map((row) => [`row:${row.package}`, true]),
-  );
+  const all = Object.fromEntries(layout.rows.map((row) => [`row:${row.package}`, true]));
 
-  it("walks lead rows with their packages, then the singles, the self tail and the receipt", () => {
-    const open = { ...INITIAL_STATE, disclosure: { ...all, "fold:self": true, "fold:other": true } };
+  it("walks lead rows with their packages, then the singles", () => {
+    const open = { ...INITIAL_STATE, disclosure: all };
 
-    expect(radiusRows2(layout, open, false)).toEqual([
-      ...rowsOf(layout.lead),
-      ...rowsOf(layout.singles),
-      ...layout.selfOnly.map((row) => row.package),
-      ...layout.receipt.map((entry) => entry.finding.package),
-    ]);
-    expect(radiusRows2(layout, open, false).length).toBeGreaterThan(layout.ranked.length);
+    expect(radiusRows2(layout, open, false)).toEqual([...rowsOf(layout.lead), ...rowsOf(layout.singles)]);
+    expect(radiusRows2(layout, open, false).length).toBeGreaterThan(layout.rows.length);
   });
 
-  it("leaves out a closed tail and the packages of a closed row", () => {
-    const closed = { ...INITIAL_STATE, disclosure: { "fold:self": false, "fold:other": false } };
-
-    expect(radiusRows2(layout, closed, false)).toEqual([
+  it("leaves out the packages of a closed row, and a closed one-each fold", () => {
+    expect(radiusRows2(layout, INITIAL_STATE, false)).toEqual([
       ...layout.lead.map((row) => row.package),
       ...layout.singles.map((row) => row.package),
     ]);
+    const shut = { ...INITIAL_STATE, disclosure: { "fold:singles": false } };
+    expect(radiusRows2(layout, shut, false)).toEqual(layout.lead.map((row) => row.package));
   });
 });

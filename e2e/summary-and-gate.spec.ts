@@ -6,6 +6,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
+import { pageGolden } from "./support/report2/page-goldens";
 import type { Page } from "@playwright/test";
 import {
   figureLine,
@@ -33,14 +34,18 @@ test.describe("report-2: the summary band on Overview", () => {
     page,
   }) => {
     await report.gotoReport2("composite");
+    const golden = pageGolden("composite");
+    await expect(gradeLine(page)).toHaveText(golden.grade_line);
     await expect(gradeLine(page)).toHaveText(
-      "Project grade: critical · 3 critical findings · 5 of 7 packages high or worse",
+      "Project grade: critical · 4 critical findings · 6 of 9 packages high or worse",
     );
-    await expect(figureLine(page)).toHaveText("7 of 7 packages flagged · 0 ok · 0 allowlisted");
-    await expect(gradeChips(page)).toHaveText(["critical 3", "high 2", "medium 0", "low 2"]);
-    await expect(waffleSquares(page)).toHaveCount(7);
+    await expect(figureLine(page)).toHaveText(golden.figure_line);
+    // A grade nothing holds draws no chip.
+    await expect(gradeChips(page)).toHaveText(golden.grade_chips);
+    await expect(gradeChips(page)).toHaveText(["critical 4", "high 2", "low 3"]);
+    await expect(waffleSquares(page)).toHaveCount(9);
     await expect(gateLine(page)).toHaveText(
-      "gate: fails · --fail-on=high · 5 findings fail it · target php 8.4 (--target-php)",
+      "gate: fails · --fail-on=high · 6 findings fail it · target php 8.4 (--target-php)",
     );
   });
 
@@ -51,21 +56,19 @@ test.describe("report-2: the summary band on Overview", () => {
     await expect(flagBars(page)).toHaveText([
       "abandoned 1 graded critical 1 32 pts",
       "pinned 1 graded high 1 16 pts",
-      "left-behind 1 graded critical 1 16 pts",
+      "left-behind 2 graded critical 2 32 pts",
       "old-promise 3 graded critical 2 · high 1 24 pts",
-      "stale 2 graded high 2 4 pts",
-      "vulnerable 4 graded critical 2 · low 2 52 pts",
+      "stale 3 graded high 2 · low 1 8 pts",
+      "vulnerable 5 graded critical 3 · low 2 68 pts",
     ]);
     const band = overviewSurface(page);
-    await expect(band).toContainText("4 carry more than one flag · score model 1");
-    await expect(band).toContainText(
-      "1 of 7 flagged packages is named by no line of composer.json; the deepest, symfony/polyfill-intl-idn, sits 1 hop from the nearest line.",
-    );
-    await expect(band).toContainText("Accepted by the allowlist: none in flagged packages");
+    const golden = pageGolden("composite");
+    for (const note of golden.flags_notes) await expect(band).toContainText(note);
+    await expect(band).toContainText(golden.depth.sentence ?? "");
     await expect(overviewSeverities(page)).toHaveText([
       "critical 1",
-      "high 4",
-      "medium 4",
+      "high 5",
+      "medium 12",
       "unrated 2",
       "low 9",
     ]);
@@ -91,7 +94,11 @@ test.describe("report-2: the summary band on Overview", () => {
       .filter({ hasText: /^stale/ })
       .click();
     await expect.poll(() => report.hash()).toBe("#view=findings&flag=stale");
-    expect(await report.rows()).toEqual(["friendsofsymfony/oauth-server-bundle", "tubalmartin/cssmin"]);
+    expect(await report.rows()).toEqual([
+      "friendsofsymfony/oauth-server-bundle",
+      "tubalmartin/cssmin",
+      "friendsofsymfony/oauth2-php",
+    ]);
   });
 
   test("composite: a grade chip of the Findings strip sets verdict in place", async ({ page }) => {
@@ -137,8 +144,13 @@ test.describe("report-2: the summary band on Overview", () => {
       await report.gotoReport2WithHash(name, hash);
       for (const width of [320, 390, 768, 1024, 1180, 1181, 1440, 1920]) {
         await page.setViewportSize({ width, height: 900 });
-        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-        expect(overflow, `${name} #${hash} at ${width}px`).toBeLessThanOrEqual(0);
+        // WebKit answers a forced layout right after a resize from stale container-query sizes; the
+        // page is judged once it settles.
+        await expect
+          .poll(() => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth), {
+            message: `${name} #${hash} at ${width}px`,
+          })
+          .toBeLessThanOrEqual(0);
       }
     }
   });
@@ -162,13 +174,13 @@ test.describe("report-2: the summary band on Overview", () => {
     await expect(page.locator("header .gate-fact")).toHaveText("this run fails · --fail-on=high");
   });
 
-  test("at 1024×768 the flags and Security sit side by side under the lead, not in a stack", async ({
+  test("at 1024×768 the flags and Libyears sit side by side under Weighs most, not in a stack", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
     await report.gotoReport2("baselined-wallabag-2.6");
     const blocks = await overviewSurface(page)
-      .locator(":scope > .ov-flags, :scope > .ov-security")
+      .locator(":scope > .ov-flags, :scope > .ov-libyears")
       .evaluateAll((items) =>
         items.map((item) => {
           const { left, top } = item.getBoundingClientRect();
@@ -264,7 +276,7 @@ test.describe("report-2: on a phone Overview is one column, nothing folded", () 
 
   test("the Findings strip keeps the grade chips one tap away above the folded rail", async ({ page }) => {
     await report.gotoReport2WithHash("composite", "view=findings");
-    await expect(stripChips(page)).toHaveText(["critical 3", "high 2", "medium 0", "low 2"]);
+    await expect(stripChips(page)).toHaveText(["critical 4", "high 2", "low 3"]);
     const strip = await page.locator(".f2-strip").boundingBox();
     const rail = await page.locator(".rail-fold").boundingBox();
     expect((strip?.y ?? 0) + (strip?.height ?? 0)).toBeLessThanOrEqual(rail?.y ?? 0);

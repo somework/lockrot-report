@@ -1,21 +1,181 @@
-/* The report-2 band parts: ledger.css draws the lead and the blocks; these rules add what report-2 has.
-   overview-tab.css lays them out on the Overview tab. */
+/* The lead of Overview (Overview.tsx `Lead`): what lockrot is, the grade, the gate and the run's
+   state, "Ready to run", then the verdict picture and the Security summary. The DOM order is the
+   reading order at every width: from 1280px the answer and the moves fill the left column, the
+   picture and Security the right one, so Tab never jumps back across the columns. */
+.ov-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+@media (min-width: 1280px) {
+  .ov-top {
+    column-gap: 48px;
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas:
+      "kicker picture"
+      "answer picture"
+      "gate picture"
+      "first security";
+  }
+  .ov-lead-security {
+    grid-area: security;
+  }
+  .ov-kicker {
+    grid-area: kicker;
+  }
+  .ov-answer {
+    grid-area: answer;
+  }
+  .ov-gate-wrap {
+    grid-area: gate;
+  }
+  .ov-first {
+    grid-area: first;
+  }
+  .ov-picture {
+    grid-area: picture;
+  }
+}
+/* Under the 1800px page the answer column keeps a reading measure: the Ready to run card stops at
+   --lead-measure and the picture and Security take the rest. */
+@media (min-width: 1700px) {
+  .ov-top {
+    grid-template-columns: minmax(0, var(--lead-measure)) minmax(0, 1fr);
+  }
+}
 
-/* Inline-size containment keeps a long gate line from widening the lead's max-content columns. */
-.overview2-gate {
-  grid-column: 1 / -1;
-  contain: inline-size;
+/* The advisory count opens Advisories: the figure keeps its type, the link shows on hover. */
+.ledger-fig-link {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  color: inherit;
+  text-decoration: none;
+}
+.ledger-fig-link:hover .ledger-fig-unit {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* The Security summary under the waffle: a rule and a step of space set it apart as its own block. */
+.ov-lead-security {
+  min-width: 0;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+}
+
+/* The fixed line that says what the tool is: running text a cold reader reads, set below the grade
+   in weight but never faint. */
+.ov-kicker {
+  max-width: 62ch;
+  font-size: var(--text-base);
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.ov-answer {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+/* The grade answers "how bad is this project overall": the largest type on the page, in the serif
+   that sets answers apart. Its clauses drop to a second, smaller line of the same sentence. */
+.ov-grade {
+  font: 400 var(--text-2xl)/1.25 var(--serif);
+  color: var(--ink);
+}
+.ov-grade-head {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+.ov-grade.tone-none .ov-grade-head {
+  color: var(--tone);
+}
+.ov-grade-rest {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--text-l);
+  line-height: 1.4;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.ov-grade-sep {
+  color: var(--muted);
+}
+.ov-grade-chip {
+  display: inline-block;
+  padding: 0 10px 3px;
+  border: 1px solid var(--tone);
+  border-radius: var(--radius-s);
+  background: var(--tone-soft);
+  color: var(--tone);
+  font-weight: 600;
+  text-decoration: none;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+  transition: background-color var(--duration-fast) ease;
+}
+.ov-grade-chip:hover {
+  background: color-mix(in srgb, var(--tone) 16%, var(--tone-soft));
+}
+.ov-figure {
+  font-size: var(--text-base);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.ov-empty {
+  font: var(--text-2xl)/1.15 var(--serif);
+  color: var(--ink-2);
+}
+.lead-scope {
+  font-size: var(--text-s);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* ---------- the gate and the state lines ---------- */
+.ov-gate-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.overview2-gate {
+  display: flex;
+  gap: var(--space-2);
   align-items: flex-start;
   margin: 0;
-  padding: 6px 10px;
-  font: 13px/1.45 var(--mono);
+  padding: 7px 12px;
+  font: var(--text-s)/1.5 var(--mono);
   color: var(--ink);
   background: var(--tone-soft);
-  border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent);
-  border-radius: var(--radius-s);
+  border-left: 3px solid var(--tone);
+  border-radius: var(--radius-xs);
   print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+/* Run data shows the same line inside a section of its own width. */
+.sect > .overview2-gate {
+  contain: inline-size;
+}
+.overview2-gate-link {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: var(--space-2);
+  align-items: flex-start;
+  color: inherit;
+  text-decoration: none;
+}
+.overview2-gate-link:hover .overview2-gate-text {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .overview2-gate-mark {
   flex: none;
@@ -24,14 +184,313 @@
 }
 .overview2-gate-text {
   min-width: 0;
+}
+/* A word of gate.text stays whole and breaks inside itself only when it is wider than the line. */
+.overview2-gate-text .nb {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
   overflow-wrap: anywhere;
 }
+.overview2-gate-link:hover .overview2-gate-text .nb {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.overview2-gate-go {
+  margin-left: auto;
+  padding-left: var(--space-2);
+  font-family: var(--sans);
+  font-weight: 600;
+  color: var(--tone);
+}
 
-/* The flag ledger's note is a clause, not a label: it wraps on a phone. */
+.ov-states {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ov-state {
+  padding: 2px 0 2px 12px;
+  border-left: 3px solid var(--border-strong);
+  font-size: var(--text-s);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.ov-state.is-lookup {
+  border-left-color: var(--unk);
+}
+.ov-state-head {
+  font-weight: 600;
+  color: var(--ink);
+}
+.ov-state-more {
+  white-space: nowrap;
+}
+
+/* ---------- "Ready to run" ----------
+   The one panel of the lead: a numbered list of moves, each a package, its grade, the command and
+   what it clears. A surface lifted off the page, because it is the page's call to act. */
+.ov-first {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4) var(--space-4) var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--ink);
+  border-radius: var(--radius-xs);
+}
+.ov-first-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  font: 600 var(--text-l)/1.3 var(--sans);
+  color: var(--ink);
+}
+.ov-first-note {
+  font-size: var(--text-s);
+  font-weight: 400;
+  color: var(--muted);
+}
+.ov-moves {
+  counter-reset: move;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* A move: its package and the Copy and shell buttons on one row, the command alone on the next, so
+   the command keeps the card's full width; then what it clears. */
+.ov-move {
+  counter-increment: move;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  grid-template-areas:
+    "who bar"
+    "cmd cmd"
+    "what what"
+    "also also";
+  align-items: center;
+  gap: 6px var(--space-2);
+  min-width: 0;
+  padding: var(--space-3) 0 var(--space-3) 30px;
+  border-top: 1px solid var(--border);
+}
+.ov-move:first-child {
+  border-top: 0;
+  padding-top: var(--space-1);
+}
+.ov-move::before {
+  content: counter(move);
+  position: absolute;
+  left: 0;
+  top: var(--space-3);
+  font: var(--text-xl)/1 var(--serif);
+  color: var(--muted);
+}
+.ov-move:first-child::before {
+  top: var(--space-1);
+}
+.ov-move-who {
+  grid-area: who;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: var(--text-base);
+}
+.ov-move-pkg {
+  font-weight: 600;
+}
+/* A package name or a command argument breaks only after "/", ":" or "=" (PkgName.tsx), never at
+   a hyphen inside a name. */
+.nb,
+.ov-cmd .d3-arg-part {
+  white-space: nowrap;
+}
+.ov-move-what {
+  grid-area: what;
+  font-size: var(--text-s);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+/* The findings that name this package as a holder: a fact under the move, quieter than what it
+   clears. */
+.ov-move-also {
+  grid-area: also;
+  font-size: var(--text-s);
+  line-height: 1.5;
+  color: var(--muted);
+}
+.ov-move-what b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.ov-sep {
+  color: var(--muted);
+}
+.ov-first-none {
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.ov-first-foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+  font-size: var(--text-s);
+  /* 24px lines: each stacked link keeps the 24px target WCAG 2.2 asks for. */
+  line-height: 1.85;
+}
+.no-moves .ov-first {
+  padding: 0;
+  background: none;
+  border: 0;
+}
+.no-moves .ov-first-foot {
+  padding-top: 0;
+  border-top: 0;
+}
+
+/* The copy control's parts join the move's grid: its buttons beside the package, its command box
+   on a row of its own. */
+.ov-cmd.d2-copy {
+  display: contents;
+}
+.ov-cmd .d2-copy-bar {
+  grid-area: bar;
+  padding: 0;
+  border-bottom: 0;
+}
+.ov-cmd .d2-copy-cmd {
+  grid-area: cmd;
+  padding: 7px 10px;
+  overflow-wrap: normal;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-s);
+  background: var(--bg);
+}
+.ov-cmd .d2-copy-bar .eyebrow {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.ov-cmd .d2-shell-menu {
+  top: 34px;
+  right: 0;
+}
+
+/* A grade or fact beside a package name: a small tag in its tone. */
+.ov-tag {
+  display: inline-block;
+  padding: 1px 6px 2px;
+  border: 1px solid var(--tone);
+  border-radius: var(--radius-xs);
+  background: var(--tone-soft);
+  color: var(--tone);
+  font: 600 var(--text-xs)/1.3 var(--sans);
+  white-space: nowrap;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.ov-tag.ov-tag-plain {
+  border-color: var(--border-strong);
+  background: transparent;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+/* ---------- the verdict picture ---------- */
+.ov-picture {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  margin: 0;
+}
+.lead-waffle-cap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  font-size: var(--text-s);
+  color: var(--muted);
+}
+
+/* The waffle (Waffle.tsx): 25 squares a row on every page, so its width never follows the lock and a
+   row of it is a count a reader can check. Each verdict is a mark: a filled tone for a grade and ok,
+   an outline when allowlisted, a hatch when lockrot had no data. */
+.waffle {
+  display: grid;
+  grid-template-columns: repeat(25, minmax(10px, 1fr));
+  gap: 3px;
+  width: min(100%, 400px);
+}
+/* A phone keeps 25 squares a row at 10px or more: the gap narrows instead of the square. */
+@media (max-width: 759px) {
+  .waffle {
+    gap: 1px;
+  }
+}
+.waffle-cell {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: var(--radius-xs);
+  transition: opacity var(--duration-fast) ease;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.waffle-cell.is-fill {
+  background: var(--tone-mark);
+}
+.waffle-cell.is-soft {
+  background: var(--tone-soft);
+  box-shadow: inset 0 0 0 1.5px var(--tone-mark);
+}
+.waffle-cell.is-ring-dot {
+  background: radial-gradient(circle, var(--tone-mark) 0 18%, transparent 22%);
+  box-shadow: inset 0 0 0 1.5px var(--tone-mark);
+}
+.waffle-cell.is-hatch {
+  background: repeating-linear-gradient(-45deg, var(--tone-mark) 0 1.5px, transparent 1.5px 4px);
+  box-shadow: inset 0 0 0 1px var(--tone-mark);
+}
+.waffle-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.waffle-key li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.waffle-key .waffle-cell {
+  width: 11px;
+}
+.waffle-key-n {
+  font-family: var(--mono);
+  color: var(--ink-2);
+}
+
+/* ---------- the flag ledger's report-2 columns ---------- */
 .ov .ledger-head-note {
   white-space: normal;
 }
-
 /* A fourth column holds each flag bar's split by grade. It keeps room for two lines of it, so a
    long bar shrinks before the split does. */
 .overview2-flag-bars {
@@ -40,12 +499,12 @@
     max-content minmax(min(10em, 22vw), 1fr) max-content;
 }
 .overview2-split {
-  font-size: 11.5px;
+  font-size: var(--text-xs);
   color: var(--muted);
   white-space: normal;
 }
 .overview2-points {
-  font: 600 12px var(--mono);
+  font: 600 var(--text-s) var(--mono);
   color: var(--ink-2);
   text-align: right;
   white-space: nowrap;
@@ -55,22 +514,93 @@
 .advisory-square.is-outlined,
 .legend-btn.is-outlined .swatch {
   background: transparent;
-  box-shadow: inset 0 0 0 2px var(--tone);
+  box-shadow: inset 0 0 0 2px var(--tone-mark);
 }
 
-.overview2-libyears {
-  overflow-wrap: anywhere;
-}
-
+/* A phone keeps the first command in the first screen: the lead's gaps, the gate and the panel's
+   head tighten, and a command takes the small mono step. */
 @media (max-width: 759px) {
+  .ov-top {
+    gap: var(--space-2);
+  }
+  .ov-kicker {
+    font-size: var(--text-s);
+    line-height: 1.35;
+  }
+  .ov-grade-rest {
+    margin-top: 0;
+  }
   .overview2-gate {
-    font-size: 12px;
+    padding: 5px 10px;
+    font-size: var(--text-xs);
+  }
+  .ov-first {
+    gap: var(--space-2);
+  }
+  .ov-first-note {
+    font-size: var(--text-xs);
+  }
+  .ov-move:first-child {
+    padding-top: 0;
+  }
+  .ov-cmd .d2-copy-cmd {
+    padding: 5px 8px;
+    font-size: var(--text-xs);
+  }
+  .ov-move {
+    grid-template-areas:
+      "who who"
+      "cmd cmd"
+      "bar bar"
+      "what what"
+      "also also";
+  }
+  .ov-cmd .d2-copy-bar {
+    justify-content: flex-end;
+  }
+  .ov-grade {
+    font-size: var(--text-xl);
+  }
+  .ov-grade-rest {
+    font-size: var(--text-base);
+  }
+  .ov-first {
+    padding: var(--space-3) var(--space-3) var(--space-4);
+  }
+  .ov-move {
+    padding-left: 26px;
+  }
+  .ov-move::before {
+    font-size: var(--text-l);
+  }
+  .lead-chips .legend-btn {
+    font-size: var(--text-s);
   }
 }
 
 @media (forced-colors: active) {
-  .overview2-gate {
+  .overview2-gate,
+  .ov-state,
+  .ov-first {
     border-color: CanvasText;
+  }
+  .ov-tag {
+    border-color: CanvasText;
+  }
+  .waffle-cell {
+    forced-color-adjust: none;
+  }
+  .waffle-cell.is-soft {
+    background: Canvas;
+    box-shadow: inset 0 0 0 1.5px CanvasText;
+  }
+  .waffle-cell.is-ring-dot {
+    background: radial-gradient(circle, CanvasText 0 18%, Canvas 22%);
+    box-shadow: inset 0 0 0 1.5px CanvasText;
+  }
+  .waffle-cell.is-hatch {
+    background: repeating-linear-gradient(90deg, CanvasText 0 1px, Canvas 1px 4px);
+    box-shadow: inset 0 0 0 1px CanvasText;
   }
   .advisory-square.is-outlined,
   .legend-btn.is-outlined .swatch {
@@ -79,7 +609,30 @@
   }
 }
 
-/* The detail sheet's copy control, at the block's width. */
-.overview2-update .d2-copy {
-  margin: 4px 0 0;
+@media print {
+  /* "Not judged" prints in the vertical bars forced colours use, apart from the high hatch. */
+  .waffle-cell.is-hatch {
+    background: var(--mark-fill);
+    box-shadow: inset 0 0 0 1px var(--tone-mark);
+  }
+  .ov-first,
+  .ov-picture,
+  .advisory-squares {
+    break-inside: avoid;
+  }
+  .ov .ledger-head,
+  .ov .ov-subhead,
+  .ov-first-head {
+    break-after: avoid;
+  }
+  .ov a > span[aria-hidden="true"]:last-child {
+    display: none;
+  }
+  .ov-cmd .d2-copy-bar {
+    display: none;
+  }
+}
+
+.clean-mark {
+  fill: none;
 }

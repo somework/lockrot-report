@@ -1,6 +1,13 @@
 import { describe, expect, test } from "vitest";
 
-import { advisoryLookup, acceptedUnchecked, noteRows, thresholdRows } from "../../../src/domain/runTab";
+import {
+  advisoryLookup,
+  acceptedUnchecked,
+  baselineFacts,
+  noteRows,
+  runFacts,
+  thresholdRows,
+} from "../../../src/domain/runTab";
 import { bandRuler, scorePanelParts, scoreTables } from "../../../src/domain/scorePanel";
 import type { Report2, UncheckedAccepted } from "../../../src/model/report";
 import { pageGoldens, readContractJson, recordedCases } from "../words/recorded";
@@ -22,7 +29,7 @@ describe("the rule rows of How the score works", () => {
       known: true,
       label: "lead in full",
       text: "the strongest maintenance fact counts in full",
-      used: "used on 4",
+      used: "used on 6",
       muted: false,
       href: "https://lockrot.dev/verdicts/model-1/#score-lead-first",
     });
@@ -121,8 +128,8 @@ describe("the advisory lookup", () => {
   test("states the scope, the packages asked and one row per repository", () => {
     expect(advisoryLookup(golden("composite").run)).toEqual({
       scope: "Scope: all · default",
-      asked: "7 packages asked · 0 not asked",
-      repositories: ["packagist.org: 33 on record · 4 packages with records"],
+      asked: "9 packages asked · 0 not asked",
+      repositories: ["packagist.org: answered · 49 on record · 6 packages with records"],
       other: null,
     });
   });
@@ -141,6 +148,61 @@ describe("the advisory lookup", () => {
         "Scope: packages from a Composer repository only (advisory-lookup) · set in extra.lockrot.advisory-lookup",
       other: "1 other repository publishes no advisories",
     });
+  });
+});
+
+describe("the run facts", () => {
+  test("state the mode, the lock file, the dev scope and the age of the cached activity", () => {
+    const report = golden("composite");
+    report.run = { ...report.run, mode: "check", lock_file: "composer.lock", include_dev: false };
+    report.activity_cache_oldest_at = "2026-10-01T16:03:43+00:00";
+    report.activity_cache_age_hours = 21.8;
+
+    expect(runFacts(report)).toEqual([
+      { key: "mode", value: "check" },
+      { key: "lock file", value: "composer.lock" },
+      { key: "require-dev", value: "not checked" },
+      { key: "repository activity", value: "from lockrot's cache, up to 21.8 h old (oldest 2026-10-01)" },
+    ]);
+  });
+
+  test("say require-dev was checked, and that no cached activity was read when the cache age is null", () => {
+    const report = golden("composite");
+    report.run = { ...report.run, mode: "generate_baseline", lock_file: null, include_dev: true };
+    report.activity_cache_oldest_at = null;
+    report.activity_cache_age_hours = null;
+
+    expect(runFacts(report)).toEqual([
+      { key: "mode", value: "generate baseline" },
+      { key: "lock file", value: "—" },
+      { key: "require-dev", value: "checked" },
+      { key: "repository activity", value: "no cached answer read" },
+    ]);
+  });
+});
+
+describe("the baseline facts", () => {
+  test("count known, new, worsened and stale, and list each stale entry", () => {
+    const report = golden("composite");
+    report.baseline = {
+      path: "lockrot-baseline.json",
+      known: 51,
+      new: 6,
+      worsened: 0,
+      stale: ["old/gone-package", "old/other"],
+    };
+
+    expect(baselineFacts(report)).toEqual({
+      head: "lockrot-baseline.json: 51 known · 6 new · 0 worsened · 2 stale",
+      stale: ["old/gone-package", "old/other"],
+    });
+  });
+
+  test("are left out when the run read no baseline", () => {
+    const report = golden("composite");
+    report.baseline = null;
+
+    expect(baselineFacts(report)).toBeNull();
   });
 });
 

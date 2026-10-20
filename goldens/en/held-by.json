@@ -1,0 +1,633 @@
+{
+  "A": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.0",
+          "step": null
+        },
+        {
+          "name": "symfony/twig-bridge v3.4.47",
+          "grade": "high",
+          "meta": "requires ^1.41|^2.10 · itself left-behind · old-promise · vulnerable",
+          "step": "its own step: require ^4.4.51 on 4.x"
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "A-baselined-dagger": [
+    null
+  ],
+  "A-blocked-dagger": [
+    null
+  ],
+  "A-gate-critical": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.0",
+          "step": null
+        },
+        {
+          "name": "symfony/twig-bridge v3.4.47",
+          "grade": "high",
+          "meta": "requires ^1.41|^2.10 · itself left-behind · old-promise · vulnerable",
+          "step": "its own step: require ^4.4.51 on 4.x"
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "A-gate-vulnerable": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.0",
+          "step": null
+        },
+        {
+          "name": "symfony/twig-bridge v3.4.47",
+          "grade": "high",
+          "meta": "requires ^1.41|^2.10 · itself left-behind · old-promise · vulnerable",
+          "step": "its own step: require ^4.4.51 on 4.x"
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "A-php-star-dagger": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.0",
+          "step": null
+        },
+        {
+          "name": "symfony/twig-bridge v3.4.47",
+          "grade": "high",
+          "meta": "requires ^1.41|^2.10 · itself left-behind · old-promise · vulnerable",
+          "step": "its own step: require ^8.1 on 8.x"
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "B": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "B-accepted-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "B-also-dagger": [
+    null,
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "B-baselined-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "B-dev-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "B-gate-flag": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "B-gate-list": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "B-gate-none": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "B-offline-dagger": [
+    null
+  ],
+  "B-offline-high-dagger": [
+    null
+  ],
+  "C": [
+    null
+  ],
+  "C-baselined-dagger": [
+    null
+  ],
+  "C-bitbucket-dagger": [
+    null
+  ],
+  "C-gitlab-hosted-dagger": [
+    null
+  ],
+  "C-offline-dagger": [
+    null
+  ],
+  "C-tokenless-dagger": [
+    null
+  ],
+  "D": [
+    null
+  ],
+  "D-partial-dagger": [
+    null
+  ],
+  "E": [
+    null
+  ],
+  "E-ignored-dagger": [
+    null
+  ],
+  "E-ignored-whole-dagger": [
+    null
+  ],
+  "F": [
+    null
+  ],
+  "G": [
+    null
+  ],
+  "G-tag-dagger": [
+    null
+  ],
+  "abandoned-audit-ignore-dagger": [
+    null
+  ],
+  "abandoned-ignore-unreadable-dagger": [
+    null
+  ],
+  "affected-range-unknown-dagger": [
+    null
+  ],
+  "cache-subscriber": [
+    null
+  ],
+  "either-critical-dagger": [
+    null,
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ~3.4",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "either-low-dev-dagger": [
+    null
+  ],
+  "fail-on-config-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "fail-on-default-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "feeds-drupal-dagger": [
+    null
+  ],
+  "flysystem": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "barryvdh/elfinder-flysystem-driver v0.2.1",
+          "grade": "medium",
+          "meta": "requires ^1.0 · itself left-behind · old-promise",
+          "step": "its own step: require ^0.6.0 on 0.6.x"
+        },
+        {
+          "name": "league/flysystem-cached-adapter 1.1.0",
+          "grade": "low",
+          "meta": "requires ~1.0 · itself stale",
+          "step": "its own step: no move"
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "gitlab-anon-dagger": [
+    null
+  ],
+  "guzzle": [
+    null
+  ],
+  "guzzle-5": [
+    {
+      "count": 3,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^5.3.4",
+          "step": null
+        },
+        {
+          "name": "bdunogier/guzzle-site-authenticator 1.1.0",
+          "grade": "medium",
+          "meta": "requires ^5.3.1 · itself stale",
+          "step": "its own step: no move"
+        },
+        {
+          "name": "php-http/guzzle5-adapter 2.0.0",
+          "grade": "critical",
+          "meta": "requires ^5.1 · itself abandoned",
+          "step": "its own step: replace"
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "guzzle-mixed": [
+    {
+      "count": 5,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ~5.0",
+          "step": null
+        },
+        {
+          "name": "guzzlehttp/cache-subscriber 0.2.0",
+          "grade": "critical",
+          "meta": "requires ~5.0 · itself abandoned · old-promise",
+          "step": "its own step: find alternative"
+        },
+        {
+          "name": "csa/guzzle-bundle dev-compat-php",
+          "grade": "high",
+          "meta": "requires ^5.3 · itself pinned",
+          "step": "its own step: no move"
+        }
+      ],
+      "fold": {
+        "summary": "2 more: 2 graded high",
+        "holders": [
+          {
+            "name": "guzzlehttp/log-subscriber 1.0.1",
+            "grade": "high",
+            "meta": "requires ~4.0 | ~5.0 · itself abandoned · old-promise",
+            "step": "its own step: find alternative"
+          },
+          {
+            "name": "prestashop/circuit-breaker v3.0.0",
+            "grade": "high",
+            "meta": "requires ^5 · itself left-behind · old-promise",
+            "step": "its own step: raise php on 4.x"
+          }
+        ]
+      }
+    }
+  ],
+  "hoa": [
+    null
+  ],
+  "hoa-tokenless-dagger": [
+    null
+  ],
+  "holder-vuln-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "joomla/filter 2.0.5",
+          "grade": "medium",
+          "meta": "requires ^2.0 · itself vulnerable",
+          "step": "its own step: raise php on 3.x"
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "ignored-marking-archived-dagger": [
+    null
+  ],
+  "ignored-marking-only-dagger": [],
+  "ignored-marking-partial-dagger": [],
+  "ignored-marking-stale-dagger": [
+    null
+  ],
+  "ignored-marking-unchecked-dagger": [
+    null
+  ],
+  "installed-php-halved": [
+    null
+  ],
+  "joomla-filter": [
+    null
+  ],
+  "local-path-advisory": [
+    null
+  ],
+  "lock-only-dagger": [
+    null
+  ],
+  "long-range-dagger": [
+    null
+  ],
+  "many-dependents": [
+    null
+  ],
+  "move-check-dagger": [
+    null
+  ],
+  "not-found-dagger": [
+    null
+  ],
+  "ok-unchecked": [],
+  "op-update": [
+    null
+  ],
+  "pagerfanta": [
+    null
+  ],
+  "partial": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^9.0",
+          "step": null
+        },
+        {
+          "name": "pragmarx/google2fa-laravel v2.2.0",
+          "grade": null,
+          "meta": "requires ^5.4.36|^6.0|^7.0|^8.0|^9.0|^10.0|^11.0",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "partial-op-dagger": [
+    null
+  ],
+  "php-null": [
+    null
+  ],
+  "pinned-unread": [
+    null
+  ],
+  "policy-off-dagger": [
+    null
+  ],
+  "psr7": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "guzzlehttp/guzzle 6.5.8",
+          "grade": "critical",
+          "meta": "requires ^1.9 · itself left-behind · vulnerable",
+          "step": "its own step: raise php on 7.x"
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "replace-graded": [
+    null
+  ],
+  "replace-text": [
+    null
+  ],
+  "require-dev-name-dagger": [
+    null
+  ],
+  "rounded-dev-dagger": [
+    null
+  ],
+  "routing": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "mautic/core-lib 4.3.x-dev",
+          "grade": "critical",
+          "meta": "requires ~4.4.0 · itself pinned · vulnerable",
+          "step": "its own step: no move"
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "silent": [
+    null
+  ],
+  "snapshot-alias": [
+    null
+  ],
+  "snapshot-dead-line-dagger": [
+    null
+  ],
+  "snapshot-undated-line-dagger": [
+    null
+  ],
+  "stale-accepted-dagger": [],
+  "stale-only": [
+    null
+  ],
+  "tie-dagger": [
+    null,
+    null
+  ],
+  "twig-1": [
+    {
+      "count": 3,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^1.38",
+          "step": null
+        },
+        {
+          "name": "csa/guzzle-bundle dev-compat-php",
+          "grade": "high",
+          "meta": "requires ^1.34|^2.4 · itself pinned",
+          "step": "its own step: no move"
+        },
+        {
+          "name": "symfony/symfony v3.4.49",
+          "grade": "critical",
+          "meta": "requires ^1.41|^2.10 · itself left-behind · vulnerable",
+          "step": "its own step: raise php on 5.x"
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "twig-dev-dagger": [
+    null
+  ],
+  "unknown": [],
+  "unknown-origin": [],
+  "unrated-dagger": [
+    null
+  ],
+  "unreached": [
+    null
+  ],
+  "unreached-dev-dagger": [
+    null
+  ],
+  "unreached-move": [
+    null
+  ],
+  "wp-config": [
+    null
+  ],
+  "yaml-3.4": [
+    null
+  ],
+  "zero-n": [
+    null
+  ],
+  "B-accepted-unread-dagger": [
+    null
+  ],
+  "finished-offline-dagger": [],
+  "host-accept-expired-dagger": [],
+  "host-accepted-dagger": [],
+  "host-unsupported": [],
+  "no-feed-accepted-dagger": [],
+  "no-feed-dagger": [],
+  "no-tag-dagger": [
+    null
+  ],
+  "ok-ignored-dagger": [],
+  "ok-offline-dagger": [],
+  "psr-log": [],
+  "scope-registries-dagger": [],
+  "unknown-vuln-dagger": [
+    null
+  ],
+  "unparseable-version-dagger": [],
+  "vcs-accepted-dagger": [
+    null
+  ]
+}

@@ -66,6 +66,8 @@ export type KeyDecision =
   | { type: "openRow"; pkg: string }
   /** `index` is the position of the row to move to among the view's rows. */
   | { type: "move"; pkg: string; index: number }
+  /** An arrow key on a row with nothing open: focus moves, no package opens. */
+  | { type: "focusRow"; pkg: string; index: number }
   /** `closeDetail`: the sheet covering the search box closes first (PD-ROWS-12). */
   | { type: "focusSearch"; closeDetail: boolean }
   | { type: "openGlossary" }
@@ -81,6 +83,7 @@ export function decideKey(input: KeyInput): KeyDecision {
   if (input.key === "Escape") return decideEscape(input);
   if (input.dialogOpen) return IGNORE;
 
+  if (isArrow(input.key)) return decideArrow(input);
   if (input.key === "Enter" || input.key === " ") {
     if (input.rowPkg === null || input.onControl || input.typing) return IGNORE;
     return { type: "openRow", pkg: input.rowPkg };
@@ -139,6 +142,25 @@ function decideMove(input: KeyInput, step: 1 | -1): KeyDecision {
   const pkg = input.rendered[next];
 
   return pkg === undefined ? IGNORE : { type: "move", pkg, index: next };
+}
+
+const ARROW_STEPS: Readonly<Record<string, 1 | -1>> = { ArrowDown: 1, ArrowUp: -1 };
+const ENDS: ReadonlySet<string> = new Set(["Home", "End"]);
+const isArrow = (key: string): boolean => key in ARROW_STEPS || ENDS.has(key);
+
+/** Up and Down on a row walk the rows as `j`/`k` do, Home and End go to the first and the last;
+ *  with no package open they move focus only, else the open package follows (§7.9.10). */
+function decideArrow(input: KeyInput): KeyDecision {
+  if (input.rowPkg === null || input.onControl || input.typing) return IGNORE;
+  const move = ENDS.has(input.key) ? decideEnd(input) : decideMove(input, ARROW_STEPS[input.key] ?? 1);
+  if (move.type !== "move" || input.selected !== null) return move;
+  return { type: "focusRow", pkg: move.pkg, index: move.index };
+}
+
+function decideEnd(input: KeyInput): KeyDecision {
+  const index = input.key === "Home" ? 0 : input.rendered.length - 1;
+  const pkg = input.rendered[index];
+  return pkg === undefined ? IGNORE : { type: "move", pkg, index };
 }
 
 /** The focused row's position, when the key landed on one of the view's rows; else null. */
@@ -217,6 +239,7 @@ export function keyInputFrom(event: KeyboardEvent, context: KeyContext): KeyInpu
   const control = target?.closest(CONTROLS) ?? null;
   const active = document.activeElement;
   const key = shortcutKey(event);
+  const walks = key === "j" || key === "k" || (isArrow(key) && row !== null);
 
   return {
     key,
@@ -228,12 +251,12 @@ export function keyInputFrom(event: KeyboardEvent, context: KeyContext): KeyInpu
     // `popover="auto"` natively, without a dispatch either way. Only Escape reads it.
     popoverOpen: event.key === "Escape" && hasOpenPopover(),
     rowPkg: row?.getAttribute("data-pkg") ?? null,
-    rowIndex: row !== null && (key === "j" || key === "k") ? rowPosition(document, row) : null,
+    rowIndex: row !== null && walks ? rowPosition(document, row) : null,
     // A control that contains the row is not "inside" it; a row that is itself a control is, since
     // its native activation already fires its click.
     onControl: control !== null && (row === null || row.contains(control)),
     selected: context.selected,
-    rendered: key === "j" || key === "k" ? context.rendered() : [],
+    rendered: walks ? context.rendered() : [],
     sheetOpen: context.sheetOpen,
     searchAvailable: context.search !== null,
     overview: context.overview,

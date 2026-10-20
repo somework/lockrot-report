@@ -24,7 +24,7 @@ function run(): HTMLElement {
 
 beforeEach(() => {
   window.matchMedia = ((query: string) => ({
-    matches: query.includes("1181"),
+    matches: /1000px|1024px/.test(query),
     media: query,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
@@ -36,16 +36,39 @@ afterEach(() => {
 });
 
 describe("the Run tab of a report-2 document", () => {
-  test("holds How the score works, the advisory lookup, the gate and the thresholds, in that order", () => {
+  test("holds the run facts, How the score works, the advisory lookup, the gate and the thresholds, in that order", () => {
     render(<App model={model()} />);
 
     const headings = [...run().querySelectorAll("h3")].map((heading) => heading.textContent);
     expect(headings).toEqual([
+      "This run",
       "How the score works · score model 1",
       "Advisory lookup",
       "Gate",
       "Thresholds in force",
     ]);
+  });
+
+  test("states the baseline counts and each stale entry after the advisory lookup", () => {
+    render(
+      <App
+        model={model((report) => {
+          report.baseline = {
+            path: "lockrot-baseline.json",
+            known: 51,
+            new: 6,
+            worsened: 0,
+            stale: ["old/gone"],
+          };
+        })}
+      />,
+    );
+
+    const headings = [...run().querySelectorAll("h3")].map((heading) => heading.textContent);
+    expect(headings.indexOf("Baseline")).toBe(headings.indexOf("Advisory lookup") + 1);
+    const section = run().querySelector(".run2-baseline");
+    expect(section?.textContent).toContain("lockrot-baseline.json: 51 known · 6 new · 0 worsened · 1 stale");
+    expect(within(section as HTMLElement).getByRole("listitem").textContent).toBe("old/gone");
   });
 
   test("draws the weight and advisory tables with a row per weighted flag and per severity", () => {
@@ -90,11 +113,9 @@ describe("the Run tab of a report-2 document", () => {
   test("prints gate.text as written", () => {
     render(<App model={model()} />);
 
-    expect(
-      within(run()).getByText(
-        "gate: fails · --fail-on=high · 5 findings fail it · target php 8.4 (--target-php)",
-      ),
-    ).toBeTruthy();
+    expect(run().querySelector(".overview2-gate-text")?.textContent).toBe(
+      "gate: fails · --fail-on=high · 6 findings fail it · target php 8.4 (--target-php)",
+    );
   });
 
   test("lists the notes and the accepted unchecked checks when the run has them", () => {

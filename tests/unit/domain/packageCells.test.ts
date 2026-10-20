@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   dataAsOf,
+  dataCaption,
   installedAge,
   libyearsCell,
   reachedWord,
+  showsDataColumn,
   signalIds,
+  signalKey,
 } from "../../../src/domain/packageCells";
 import type { Finding, Report2 } from "../../../src/model/report";
 import { readContractJson } from "../words/recorded";
@@ -77,5 +80,50 @@ describe("signalIds and dataAsOf", () => {
   it("prints the data date, or a dash", () => {
     expect(dataAsOf({ ...twig, data_date: "2026-09-30T08:00:00Z" })).toBe("2026-09-30");
     expect(dataAsOf({ ...twig, data_date: null })).toBe("—");
+  });
+});
+
+describe("the data date said once (accepted derivation 4)", () => {
+  const at = (data_date: string | null) => ({ ...twig, data_date });
+  const page = (findings: Finding[]): Report2 => ({
+    ...composite,
+    data_date: "2026-10-17T10:00:00+00:00",
+    findings,
+  });
+
+  it("hides the column when every dated row falls on the report's UTC day", () => {
+    const doc = page([at("2026-10-17T23:30:00+00:00"), at("2026-10-18T01:00:00+02:00")]);
+    expect(showsDataColumn(doc)).toBe(false);
+    expect(dataCaption(doc)).toBe("Every row has data as of 2026-10-17");
+  });
+
+  it("counts the rows that read no repository data", () => {
+    const doc = page([at("2026-10-17T15:00:00+00:00"), at(null), at(null)]);
+    expect(dataCaption(doc)).toBe("Every row has data as of 2026-10-17 (2 read no repository data)");
+  });
+
+  it("hides the column when the report has no data date, and says so", () => {
+    const doc = { ...page([at(null)]), data_date: null };
+    expect(showsDataColumn(doc)).toBe(false);
+    expect(dataCaption(doc)).toBe("No row has repository data");
+  });
+
+  it("shows the column, and no caption, when a day differs", () => {
+    const doc = page([at("2026-10-17T15:00:00+00:00"), at("2026-10-01T09:00:00+00:00")]);
+    expect(showsDataColumn(doc)).toBe(true);
+    expect(dataCaption(doc)).toBeNull();
+  });
+});
+
+describe("signalKey", () => {
+  it("lists each code the rows carry once, in id order, with its name", () => {
+    const s9 = twig.signals.find((signal) => signal.id === "S9");
+    if (s9 === undefined) throw new Error("no S9");
+    const rows = [
+      { ...twig, signals: [s9, { ...s9, id: "S10" }] },
+      { ...twig, signals: [{ ...s9, id: "S2" }, s9] },
+    ] as Finding[];
+    expect(signalKey(rows).map((entry) => entry.id)).toEqual(["S2", "S9", "S10"]);
+    expect(signalKey(rows)[1]?.name).toBe("advisories");
   });
 });

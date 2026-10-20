@@ -22,7 +22,8 @@ export function AgeAxis({
 }) {
   const label = `age axis${whose ? ` (${whose})` : ""}: years since the last release, 0 to ${axis.max} and more; warn at ${axis.warn} years, high at ${axis.high} years`;
   return (
-    <span className="fhead-age" role="img" aria-label={label} title={label}>
+    <span className="fhead-age" role="columnheader" title={label}>
+      <span className="vh">{caption}</span>
       <span className="fhead-axis" aria-hidden="true">
         <span className="fhead-axis-label">{caption}</span>
         <span className="fhead-tick is-start">0</span>

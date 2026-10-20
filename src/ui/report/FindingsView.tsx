@@ -3,12 +3,16 @@ import { applyFilters2, HIDE_ACCEPTED, population2 } from "../../domain/list";
 import { ageAxis, type AgeAxis } from "../../domain/age";
 import {
   cappedPackages,
+  FINDINGS_COLUMNS,
   FINDINGS_HEAD,
+  GATE_WORDS,
   gradeListLabel,
   gradeTone,
   ignoredNote,
   packagesCount,
   runNote,
+  majorCount,
+  majorCountWords,
   runSegments,
   uncheckedNote,
   type PackagesNote,
@@ -17,6 +21,7 @@ import { bandTicks } from "../../domain/scoreBar";
 import { gradeChips, OVERVIEW_WORDS } from "../../domain/overviewBand";
 import { OVERVIEW_TAB_WORDS, stripFlagged } from "../../domain/overviewTab";
 import { verdictTone } from "../../domain/findingRow";
+import type { ComponentChildren } from "preact";
 import { useReport } from "../context";
 import { LegendButton, toneClass } from "../common/common";
 import { EmptyState } from "../views/EmptyState";
@@ -65,13 +70,14 @@ function NoteLine({ note }: { note: PackagesNote }) {
   );
 }
 
-/** The score scale's floors over the bars, and the age axis; each row says its own parts. */
+/** The column heads of the Findings table: the score scale's floors over the bars, and the age
+ *  axis. A narrow layout hides them from sight only; each value there carries its own label. */
 function ColumnHead({ run, axis }: { run: Run; axis: AgeAxis | null }) {
   return (
-    <div className="fhead f2-head">
-      <span className="fhead-col f2-head-score" aria-hidden="true">
+    <div className="fhead f2-head" role="row">
+      <span className="fhead-col f2-head-score" role="columnheader">
         <span className="f2-head-label">{FINDINGS_HEAD.score}</span>
-        <span className="f2-head-axis">
+        <span className="f2-head-axis" aria-hidden="true">
           <span className="f2-head-tick">0</span>
           {bandTicks(run).map((tick) => (
             <span key={tick.floor} className="f2-head-tick" style={{ left: `${tick.at * 100}%` }}>
@@ -80,37 +86,36 @@ function ColumnHead({ run, axis }: { run: Run; axis: AgeAxis | null }) {
           ))}
         </span>
       </span>
-      <span className="fhead-col f2-head-pkg" aria-hidden="true">
+      <span className="fhead-col f2-head-pkg" role="columnheader">
         {FINDINGS_HEAD.pkg}
       </span>
-      <span className="fhead-col f2-head-flags" aria-hidden="true">
+      <span className="fhead-col f2-head-flags" role="columnheader">
         {FINDINGS_HEAD.flags}
       </span>
-      {axis ? <AgeAxisHead axis={axis} caption={FINDINGS_HEAD.age} /> : <span className="fhead-age" />}
-      <span className="fhead-col f2-head-reach" aria-hidden="true">
+      {axis ? (
+        <AgeAxisHead axis={axis} caption={FINDINGS_HEAD.age} />
+      ) : (
+        <span className="fhead-age" role="columnheader">
+          <span className="vh">{FINDINGS_HEAD.age}</span>
+        </span>
+      )}
+      <span className="fhead-col f2-head-reach" role="columnheader">
         {FINDINGS_HEAD.reach}
       </span>
-      <span className="fhead-col f2-head-next" aria-hidden="true">
+      <span className="fhead-col f2-head-next" role="columnheader">
         {FINDINGS_HEAD.next}
       </span>
     </div>
   );
 }
 
-/** On paper, over each group: the score floors at the bars' own scale, as the age axis repeats. */
-function PrintedScale({ run }: { run: Run }) {
+/** A line across every column of the table: a group head or a run's note. */
+function SpanRow({ className, children }: { className: string; children: ComponentChildren }) {
   return (
-    <div className="f2-print-scale" aria-hidden="true">
-      <span className="f2-print-gap" />
-      <span className="f2-print-axis">
-        <span className="f2-head-tick">0</span>
-        {bandTicks(run).map((tick) => (
-          <span key={tick.floor} className="f2-head-tick" style={{ left: `${tick.at * 100}%` }}>
-            {tick.floor}
-          </span>
-        ))}
+    <div className={className} role="row">
+      <span className="f2-span-cell" role="cell" aria-colspan={FINDINGS_COLUMNS}>
+        {children}
       </span>
-      <span>{FINDINGS_HEAD.score}</span>
     </div>
   );
 }
@@ -120,6 +125,9 @@ function Group({ verdict, findings, axis }: { verdict: string; findings: Finding
   const { report } = useReport2();
   const printed = usePrinted();
   const hideAccepted = state.filters.accepted.includes(HIDE_ACCEPTED);
+  const failing = findings.filter((finding) => finding.gate.fails).length;
+  const gateWords = GATE_WORDS.group(failing, findings.length, report.gate.fail_on_applied);
+  const majors = majorCountWords(majorCount(findings));
   const rows = (members: readonly Finding[]) =>
     members.map((finding) => (
       <FindingRow2
@@ -128,33 +136,37 @@ function Group({ verdict, findings, axis }: { verdict: string; findings: Finding
         run={report.run}
         axis={axis}
         hideAccepted={hideAccepted}
+        gateQuiet={report.gate.fail_on_applied && failing === findings.length}
       />
     ));
   return (
     // No accessible name: a named <section> is a landmark, and the page's one region is the open
     // package.
     <section className={`fgroup ${toneClass(gradeTone(verdict))}`}>
-      <header className="fgroup-head">
+      <SpanRow className="fgroup-head">
         <h2>{verdict}</h2>
         <span className="fgroup-count">{packagesCount(findings.length)}</span>
-      </header>
-      {printed && <PrintedScale run={report.run} />}
+        {gateWords !== null && <span className="fgroup-gate">{gateWords}</span>}
+        {majors !== null && <span className="fgroup-major">{majors}</span>}
+      </SpanRow>
+      {/* On paper each group repeats the column head, as a printed table repeats its head row. */}
+      {printed && <ColumnHead run={report.run} axis={axis} />}
       {runSegments(findings).map((segment) => {
         const first = segment.findings[0]?.package ?? "";
         if (segment.key === null) {
           return (
-            <ul key={first} className="frows" aria-label={gradeListLabel(verdict)}>
+            <div key={first} className="frows" role="rowgroup" aria-label={gradeListLabel(verdict)}>
               {rows(segment.findings)}
-            </ul>
+            </div>
           );
         }
         const note = runNote(segment.key, segment.findings.length);
         return (
           <div key={first} className="frun">
-            <p className="frun-note">{note}</p>
-            <ul className="frows" aria-label={note}>
+            <SpanRow className="frun-note">{note}</SpanRow>
+            <div className="frows" role="rowgroup" aria-label={note}>
               {rows(segment.findings)}
-            </ul>
+            </div>
           </div>
         );
       })}
@@ -223,18 +235,21 @@ export function FindingsView2() {
   const rows = applyFilters2(report, state, "findings");
   const thresholds = report.run.thresholds;
   const axis = thresholds === null ? null : ageAxis(Object.entries(thresholds));
+  const printed = usePrinted();
   return (
     <section className="f2" data-surface="findings">
       <Notes report={report} />
       {rows.length === 0 ? (
         <EmptyState reason={population2(report, "findings").length === 0 ? "clean" : "filtered"} />
       ) : (
-        <div className="fledger f2-ledger">
-          <ColumnHead run={report.run} axis={axis} />
-          {byGrade(rows).map((group) => (
-            <Group key={group.verdict} verdict={group.verdict} findings={group.findings} axis={axis} />
-          ))}
-        </div>
+        <>
+          <div className="fledger f2-ledger" role="table" aria-label="Findings">
+            {!printed && <ColumnHead run={report.run} axis={axis} />}
+            {byGrade(rows).map((group) => (
+              <Group key={group.verdict} verdict={group.verdict} findings={group.findings} axis={axis} />
+            ))}
+          </div>
+        </>
       )}
     </section>
   );

@@ -65,6 +65,12 @@ const SCOPE_LABELS: Readonly<Record<string, string>> = {
   dev: "require-dev",
   unnamed: "not in composer.json",
 };
+const GATE_LABELS: Readonly<Record<string, string>> = {
+  fails: "Fails this run",
+  ready: "Ready to run",
+  held: "Held",
+  wayout: "Another way out",
+};
 const SINCE_LABELS: Readonly<Record<string, string>> = {
   new: "New",
   worsened: "Worsened",
@@ -81,6 +87,8 @@ function activeLabel(group: FilterGroup, key: string): string {
     }
     case "since":
       return SINCE_LABELS[key] ?? key;
+    case "gate":
+      return GATE_LABELS[key] ?? key;
     default:
       return key;
   }

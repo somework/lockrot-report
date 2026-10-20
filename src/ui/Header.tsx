@@ -1,7 +1,7 @@
 import type { ComponentChildren, RefObject } from "preact";
 import { useId, useLayoutEffect, useRef } from "preact/hooks";
-import { day } from "../domain/format";
 import { gateFact, gateHeadline } from "../domain/gate";
+import { DATA_AS_OF, dataDay } from "../domain/share";
 import { GateHeadlineText } from "./common/GateWords";
 import { useReport } from "./context";
 import { CopySummary } from "./CopySummary";
@@ -34,28 +34,14 @@ function useHeaderHeight() {
   return ref;
 }
 
-/** True when every fact and button of the line sits on one row. */
-function oneRow(meta: Element): boolean {
-  const boxes = [...meta.children].map((el) => el.getBoundingClientRect()).filter((box) => box.width > 0);
-  const first = boxes[0];
-  if (first === undefined) return true;
-  const mid = (box: DOMRect) => box.top + box.height / 2;
-  return boxes.every((box) => Math.abs(mid(box) - mid(first)) < first.height / 2);
-}
-
-/** Hides the gate fact's flags from sight where the summary names them anyway and that saves a line,
- *  or where it brings the page's buttons back onto the facts' row, the summary then saying them too
- *  (gate.css). A phone wraps the buttons either way. */
+/** Hides the gate fact's flags from sight only where the summary names them anyway and that saves a
+ *  line (gate.css). The flags are the gate's source, so a gate that fails keeps them in the header. */
 function fitGateFact(node: HTMLElement): void {
   delete node.dataset["fact"];
-  const meta = node.querySelector(".run-meta");
-  if (meta === null || node.querySelector(".gate-fact-more") === null) return;
-  const said = node.querySelector(".gate-fact[data-said]") !== null;
+  if (node.querySelector(".gate-fact[data-said] .gate-fact-more") === null) return;
   const full = node.getBoundingClientRect().height;
-  if (!said && oneRow(meta)) return;
   node.dataset["fact"] = "short";
-  const kept = said ? node.getBoundingClientRect().height < full : oneRow(meta);
-  if (!kept) delete node.dataset["fact"];
+  if (node.getBoundingClientRect().height >= full) delete node.dataset["fact"];
 }
 
 function useGateFactFit(ref: RefObject<HTMLElement>) {
@@ -92,7 +78,7 @@ export interface HeaderProps {
  */
 export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert = false }: HeaderProps) {
   const { model } = useReport();
-  const { run, lockrot, generated_at } = model.report;
+  const { run, lockrot, data_date } = model.report;
   const ref = useHeaderHeight();
   useGateFactFit(ref);
   // The project names itself; the lock is called composer.lock everywhere, so it is the fallback.
@@ -119,7 +105,7 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
             target PHP <b className="mono">{run.target_php}</b>
           </span>
           <span>
-            data as of <b className="mono">{day(generated_at)}</b>
+            {DATA_AS_OF} <b className="mono">{dataDay(data_date)}</b>
           </span>
           <span>
             lockrot <b className="mono">{lockrot.version}</b>

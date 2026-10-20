@@ -1,0 +1,1898 @@
+{
+  "A": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through symfony/twig-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-46633"
+    ]
+  },
+  "A-baselined-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through symfony/twig-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-46633"
+    ]
+  },
+  "A-blocked-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through symfony/twig-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-46633"
+    ]
+  },
+  "A-gate-critical": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through symfony/twig-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade critical or above",
+      "Tripped by CVE-2026-46633"
+    ]
+  },
+  "A-gate-vulnerable": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through symfony/twig-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: an advisory of high severity or above",
+      "Tripped by CVE-2026-46633, CVE-2026-49981, CVE-2026-47732 and CVE-2026-24425"
+    ]
+  },
+  "A-php-star-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through symfony/twig-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-46633"
+    ]
+  },
+  "B": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-45077"
+    ]
+  },
+  "B-accepted-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [
+      "left-behind and old-promise are accepted by your ignore list",
+      "Kept on 2.x on purpose (‡)",
+      "Entry symfony/monolog-bridge"
+    ],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-45077"
+    ]
+  },
+  "B-also-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-45077"
+    ]
+  },
+  "B-baselined-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-45077"
+    ]
+  },
+  "B-dev-dagger": {
+    "reach": [
+      "Dev only: in packages-dev",
+      "Required directly",
+      "Its whole score counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-45077"
+    ]
+  },
+  "B-gate-flag": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: the old-promise flag",
+      "Tripped by left-behind and old-promise"
+    ]
+  },
+  "B-gate-list": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: the left-behind flag and an advisory of high severity or above",
+      "Tripped by left-behind and CVE-2026-45077"
+    ]
+  },
+  "B-gate-none": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "No gate in this run"
+    ]
+  },
+  "B-offline-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Advisories (S9) not checked (offline)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above and a check that did not run",
+      "Tripped by left-behind and S9"
+    ]
+  },
+  "B-offline-high-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Advisories (S9) not checked (offline)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
+  "C": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "symfony/console",
+      "symfony/http-kernel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "C-baselined-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "symfony/console",
+      "symfony/http-kernel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "reaches the gate, exempt by baseline"
+    ]
+  },
+  "C-bitbucket-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "symfony/console",
+      "symfony/http-kernel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "C-gitlab-hosted-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "symfony/console",
+      "symfony/http-kernel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "C-offline-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "symfony/console",
+      "symfony/http-kernel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Advisories (S9) not checked (offline)"
+    ],
+    "not_run": [
+      "Its repository activity (offline)"
+    ],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above and a check that did not run",
+      "Tripped by abandoned and S9"
+    ]
+  },
+  "C-tokenless-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "symfony/console",
+      "symfony/http-kernel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its repository activity (no token)"
+    ],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "D": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by old-promise"
+    ]
+  },
+  "D-partial-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [
+      "stale is accepted by your ignore list",
+      "A single-file minifier, finished",
+      "Entry tubalmartin/cssmin · expires 2027-03-31"
+    ],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by old-promise"
+    ]
+  },
+  "E": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "E-ignored-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "E-ignored-whole-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its repository activity (allowlisted)"
+    ],
+    "php": null,
+    "accepted": [
+      "Its maintenance is accepted by your ignore list",
+      "Symfony is upgraded on its own schedule (‡)",
+      "Entry symfony/*"
+    ],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "F": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through guzzlehttp/guzzle"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its repository activity (allowlisted)"
+    ],
+    "php": null,
+    "accepted": [
+      "Its maintenance is accepted by lockrot's built-in list",
+      "A Symfony polyfill for a PHP extension, released with Symfony",
+      "Entry symfony/polyfill-*"
+    ],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "G": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
+  "G-tag-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
+  "abandoned-audit-ignore-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "symfony/console",
+      "symfony/http-kernel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "abandoned-ignore-unreadable-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "symfony/console",
+      "symfony/http-kernel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "affected-range-unknown-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through guzzlehttp/guzzle"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its repository activity (allowlisted)"
+    ],
+    "php": null,
+    "accepted": [
+      "Its maintenance is accepted by lockrot's built-in list",
+      "A Symfony polyfill for a PHP extension, released with Symfony",
+      "Entry symfony/polyfill-*"
+    ],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "cache-subscriber": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "either-critical-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "symfony/console",
+      "symfony/http-kernel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned and CVE-2026-00003"
+    ]
+  },
+  "either-low-dev-dagger": {
+    "reach": [
+      "Dev only: in packages-dev",
+      "Not required directly, through akaunting/laravel-apexcharts",
+      "Its maintenance counts half",
+      "Its whole score counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "fail-on-config-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-45077"
+    ]
+  },
+  "fail-on-default-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "No gate in this run"
+    ]
+  },
+  "feeds-drupal-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through symfony/twig-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-46633"
+    ]
+  },
+  "flysystem": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "gitlab-anon-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through lorisleiva/laravel-search-string",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its archived flag (no token)"
+    ],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "guzzle": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-69246"
+    ]
+  },
+  "guzzle-5": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "bdunogier/guzzle-site-authenticator",
+      "php-http/guzzle5-adapter"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2022-31043"
+    ]
+  },
+  "guzzle-mixed": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "csa/guzzle-bundle",
+      "guzzlehttp/cache-subscriber",
+      "prestashop/circuit-breaker"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2022-31043"
+    ]
+  },
+  "hoa": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through lorisleiva/laravel-search-string",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "hoa-tokenless-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through lorisleiva/laravel-search-string",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its repository activity (no token)"
+    ],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "holder-vuln-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "joomla/application",
+      "joomla/console",
+      "joomla/data",
+      "joomla/filter",
+      "joomla/input",
+      "joomla/oauth1",
+      "joomla/oauth2",
+      "joomla/registry",
+      "joomla/utilities"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
+  "ignored-marking-archived-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "symfony/console",
+      "symfony/http-kernel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "ignored-marking-only-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "ignored-marking-partial-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "beberlei/doctrineextensions",
+      "doctrine/doctrine-bundle",
+      "doctrine/orm",
+      "prestashop/ps_distributionapiclient"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [
+      "abandoned is accepted by your ignore list",
+      "Kept until 9.0 (‡)",
+      "Entry doctrine/cache"
+    ],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "ignored-marking-stale-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "beberlei/doctrineextensions",
+      "doctrine/doctrine-bundle",
+      "doctrine/orm",
+      "prestashop/ps_distributionapiclient"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "ignored-marking-unchecked-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "symfony/console",
+      "symfony/http-kernel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Archived repository (S3) and repository activity (S4) not checked (rate limited)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above and a check that did not run",
+      "Tripped by old-promise, S3 and S4"
+    ]
+  },
+  "installed-php-halved": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through web-auth/webauthn-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "joomla-filter": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "joomla/input",
+      "joomla/oauth1",
+      "joomla/oauth2"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "local-path-advisory": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": "It is installed from a local path (your own code); the advisory is published for the package of this name, so check the version your path holds",
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its repository activity and its release metadata (not from a Composer repository)"
+    ],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned and CVE-2022-25768"
+    ]
+  },
+  "lock-only-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "The run read no composer.json, so lockrot found no path to it",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "long-range-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through guzzlehttp/guzzle"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its repository activity (allowlisted)"
+    ],
+    "php": null,
+    "accepted": [
+      "Its maintenance is accepted by lockrot's built-in list",
+      "A Symfony polyfill for a PHP extension, released with Symfony",
+      "Entry symfony/polyfill-*"
+    ],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "many-dependents": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through:",
+      "babdev/pagerfanta-bundle",
+      "bdunogier/guzzle-site-authenticator",
+      "craue/config-bundle",
+      "doctrine/doctrine-bundle",
+      "doctrine/doctrine-migrations-bundle",
+      "friendsofsymfony/jsrouting-bundle",
+      "friendsofsymfony/oauth-server-bundle",
+      "friendsofsymfony/rest-bundle",
+      "friendsofsymfony/user-bundle",
+      "jms/serializer-bundle",
+      "kphoen/rulerz-bundle",
+      "lexik/form-filter-bundle",
+      "nelmio/api-doc-bundle",
+      "nelmio/cors-bundle",
+      "php-amqplib/rabbitmq-bundle",
+      "php-http/httplug-bundle",
+      "scheb/2fa-backup-code",
+      "scheb/2fa-bundle",
+      "scheb/2fa-email",
+      "scheb/2fa-google-authenticator",
+      "scheb/2fa-qr-code",
+      "scheb/2fa-trusted-device",
+      "sensio/framework-extra-bundle",
+      "sentry/sentry-symfony",
+      "stof/doctrine-extensions-bundle",
+      "symfony/event-dispatcher",
+      "symfony/form",
+      "symfony/framework-bundle",
+      "symfony/google-mailer",
+      "symfony/http-kernel",
+      "symfony/mailer",
+      "symfony/monolog-bundle",
+      "symfony/security-bundle",
+      "symfony/security-core",
+      "symfony/security-http",
+      "symfony/twig-bundle",
+      "twig/extra-bundle",
+      "willdurand/hateoas-bundle",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "move-check-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "not-found-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through lorisleiva/laravel-search-string",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its repository activity (repository not found)"
+    ],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "ok-unchecked": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: a check that did not run",
+      "Tripped by S2"
+    ]
+  },
+  "op-update": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by old-promise"
+    ]
+  },
+  "pagerfanta": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
+  "partial": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through pragmarx/google2fa-laravel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by PKSA-3r5d-mb8f-1qw9"
+    ]
+  },
+  "partial-op-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-00011"
+    ]
+  },
+  "php-null": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through genealabs/laravel-model-caching",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "pinned-unread": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2), archived repository (S3), repository activity (S4) and release branch (S8) not checked (not from a Composer repository)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
+  "policy-off-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "joomla/input",
+      "joomla/oauth1",
+      "joomla/oauth2"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above and a check that did not run"
+    ]
+  },
+  "psr7": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through guzzlehttp/guzzle",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-55766"
+    ]
+  },
+  "replace-graded": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "replace-text": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "require-dev-name-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly only in require-dev, which this run did not walk",
+      "In production it comes in through:",
+      "babdev/pagerfanta-bundle",
+      "bdunogier/guzzle-site-authenticator",
+      "craue/config-bundle",
+      "doctrine/doctrine-bundle",
+      "doctrine/doctrine-migrations-bundle",
+      "friendsofsymfony/jsrouting-bundle",
+      "friendsofsymfony/oauth-server-bundle",
+      "friendsofsymfony/rest-bundle",
+      "friendsofsymfony/user-bundle",
+      "jms/serializer-bundle",
+      "kphoen/rulerz-bundle",
+      "lexik/form-filter-bundle",
+      "nelmio/api-doc-bundle",
+      "nelmio/cors-bundle",
+      "php-amqplib/rabbitmq-bundle",
+      "php-http/httplug-bundle",
+      "scheb/2fa-backup-code",
+      "scheb/2fa-bundle",
+      "scheb/2fa-email",
+      "scheb/2fa-google-authenticator",
+      "scheb/2fa-qr-code",
+      "scheb/2fa-trusted-device",
+      "sensio/framework-extra-bundle",
+      "sentry/sentry-symfony",
+      "stof/doctrine-extensions-bundle",
+      "symfony/error-handler",
+      "symfony/framework-bundle",
+      "symfony/http-kernel",
+      "symfony/monolog-bundle",
+      "symfony/security-bundle",
+      "symfony/security-http",
+      "symfony/twig-bundle",
+      "twig/extra-bundle",
+      "willdurand/hateoas-bundle",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "rounded-dev-dagger": {
+    "reach": [
+      "Dev only: in packages-dev",
+      "Not required directly, through jfcherng/php-diff",
+      "Its maintenance counts half",
+      "Its whole score counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "routing": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-48784"
+    ]
+  },
+  "silent": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by silent"
+    ]
+  },
+  "snapshot-alias": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "snapshot-dead-line-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "snapshot-undated-line-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "stale-accepted-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [
+      "stale is accepted by your ignore list",
+      "Feature-complete, kept on purpose",
+      "Entry akaunting/laravel-version"
+    ],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "stale-only": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "tie-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-45077"
+    ]
+  },
+  "twig-1": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "csa/guzzle-bundle",
+      "prestashop/translationtools-bundle",
+      "symfony/symfony"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by old-promise and CVE-2026-46633"
+    ]
+  },
+  "twig-dev-dagger": {
+    "reach": [
+      "Dev only: in packages-dev",
+      "Required directly, and also through symfony/twig-bridge",
+      "Its whole score counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-46633"
+    ]
+  },
+  "unknown": {
+    "reach": [],
+    "origin": null,
+    "not_judged": "Its release age (S2) and release branch (S8) are not judged: lockrot could read no release metadata (it is not installed from a Composer repository)",
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "unknown-origin": {
+    "reach": [],
+    "origin": null,
+    "not_judged": "Its release age (S2) and release branch (S8) are not judged: lockrot could read no release metadata (its origin is unknown)",
+    "unchecked": [
+      "Release age (S2), archived repository (S3), repository activity (S4) and release branch (S8) not checked (origin unknown)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: a check that did not run",
+      "Tripped by S2, S8, S3 and S4"
+    ]
+  },
+  "unrated-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-45305"
+    ]
+  },
+  "unreached": {
+    "reach": [
+      "Production: not in packages-dev",
+      "lockrot found no path from your composer.json's require (require-dev counts only with --dev) to it",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
+  "unreached-dev-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "lockrot found no path from your composer.json's require or require-dev to it",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "unreached-move": {
+    "reach": [
+      "Production: not in packages-dev",
+      "lockrot found no path from your composer.json's require (require-dev counts only with --dev) to it",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "wp-config": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by old-promise"
+    ]
+  },
+  "yaml-3.4": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
+  "zero-n": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "B-accepted-unread-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": "It is installed from vcs; the advisory is published for the package of this name",
+    "not_judged": "Its release age (S2) and release branch (S8) are not judged: lockrot could read no release metadata (it is not installed from a Composer repository)",
+    "unchecked": [
+      "Release age (S2), archived repository (S3), repository activity (S4) and release branch (S8) not checked (not from a Composer repository)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [
+      "old-promise is accepted by your ignore list",
+      "Kept on 2.x on purpose (‡)",
+      "Entry symfony/monolog-bridge"
+    ],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-45077"
+    ]
+  },
+  "finished-offline-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Advisories (S9) not checked (offline)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [
+      "Its maintenance is accepted by lockrot's built-in list",
+      "A PHP-FIG utility package, complete by design",
+      "Entry fig/*"
+    ],
+    "gate": [
+      "fails the run: a check that did not run",
+      "Tripped by S9"
+    ]
+  },
+  "host-accept-expired-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Archived repository (S3) and repository activity (S4) not checked (host not supported: lockrot cannot ask codeberg.org)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: a check that did not run",
+      "Tripped by S3 and S4"
+    ]
+  },
+  "host-accepted-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its repository activity (host not supported: lockrot cannot ask codeberg.org; accepted by your accept-unchecked list: Forgejo has no API lockrot reads; we watch the repository by hand (‡))"
+    ],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above and a check that did not run"
+    ]
+  },
+  "host-unsupported": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Archived repository (S3) and repository activity (S4) not checked (host not supported: lockrot cannot ask codeberg.org)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: a check that did not run",
+      "Tripped by S3 and S4"
+    ]
+  },
+  "no-feed-accepted-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its advisories (no repository publishes advisories; accepted by your accept-unchecked list: the mirror has no advisory feed; composer audit runs against packagist.org in CI (‡))"
+    ],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above and a check that did not run"
+    ]
+  },
+  "no-feed-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Advisories (S9) not checked (no repository publishes advisories)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: a check that did not run",
+      "Tripped by S9"
+    ]
+  },
+  "no-tag-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
+  "ok-ignored-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "ok-offline-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Advisories (S9) not checked (offline)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: a check that did not run",
+      "Tripped by S9"
+    ]
+  },
+  "psr-log": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through:",
+      "symfony/console",
+      "symfony/debug",
+      "symfony/http-kernel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [
+      "Its maintenance is accepted by lockrot's built-in list",
+      "A PHP-FIG interface package, complete by design",
+      "Entry psr/*"
+    ],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "scope-registries-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": "Its release age (S2) and release branch (S8) are not judged: lockrot could read no release metadata (it is not installed from a Composer repository)",
+    "unchecked": [
+      "Release age (S2), archived repository (S3), repository activity (S4) and release branch (S8) not checked (not from a Composer repository)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "unknown-vuln-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "joomla/http",
+      "joomla/oauth1",
+      "joomla/oauth2"
+    ],
+    "origin": null,
+    "not_judged": "Its release age (S2) and release branch (S8) are not judged: lockrot could read no release metadata (its repository could not be read)",
+    "unchecked": [
+      "Advisories (S9) incomplete (releases not read)"
+    ],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-00002"
+    ]
+  },
+  "unparseable-version-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "vcs-accepted-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its repository activity (not from a Composer repository; accepted by your accept-unchecked list: we watch the fork's commits on GitHub by hand (‡))",
+      "Its release metadata (not from a Composer repository; accepted by your accept-unchecked list: joomla's backport fork; we follow its branch (‡))"
+    ],
+    "php": null,
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  }
+}

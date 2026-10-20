@@ -12,6 +12,7 @@ import { acceptedFlagIds, countedFlagIds } from "./countedFlags";
 import { fixLabel } from "./pageVocabulary";
 import { matchesFinding2, parseQuery2, type Term2 } from "./query";
 import type { RailGroup } from "./filters";
+import { isHeld, needsAnotherWayOut, readyToRun } from "./readyToRun";
 
 type Row = readonly [key: string, label: string];
 
@@ -45,6 +46,9 @@ function passesRail2(filters: Filters, f: Finding): boolean {
   const since = f.baseline?.status;
   if (filters.since.length > 0 && (since === undefined || !filters.since.includes(since))) return false;
   if (filters.gate.includes("fails") && !f.gate.fails) return false;
+  if (filters.gate.includes(READY_KEY) && !readyToRun(f)) return false;
+  if (filters.gate.includes(HELD_KEY) && !isHeld(f)) return false;
+  if (filters.gate.includes(WAY_OUT_KEY) && !needsAnotherWayOut(f)) return false;
   // Scope buttons are ANDed, so both halves of a pair select nothing (DESIGN.md §5).
   if (filters.scope.includes("direct") && !f.direct) return false;
   if (filters.scope.includes("transitive") && f.direct) return false;
@@ -120,7 +124,7 @@ export function renderedPackages2(
     );
   if (view === "advisories") {
     const pairs = advisoryPairs2(applyFilters2(report, state, view), state.filters);
-    return advisoryRowPackages(advisoryGroups2(report.run, pairs));
+    return advisoryRowPackages(advisoryGroups2(pairs));
   }
   if (view !== "findings" && view !== "packages") return [];
   return applyFilters2(report, state, view).map((f) => f.package);
@@ -147,8 +151,9 @@ function groupOf(scope: Scope, group: FilterGroup, title: string, rows: readonly
   const shown = rows.flatMap(([key, label]) => {
     const on = selected.includes(key);
     const count = countUnder(scope, on ? scope.filters : { ...scope.filters, [group]: [...selected, key] });
+    // Scope and This run filter by AND, so a row's count is what its click lists.
     const own =
-      on || group === "scope" || selected.length === 0
+      on || group === "scope" || group === "gate" || selected.length === 0
         ? count
         : countUnder(scope, { ...scope.filters, [group]: [key] });
     return on || own > 0 ? [{ key, label, count, on }] : [];
@@ -161,6 +166,12 @@ const SINCE_ROWS: readonly Row[] = [
   ["worsened", "Worsened"],
   ["known", "Known"],
 ];
+/** The This run key of accepted derivation 10. */
+export const READY_KEY = "ready";
+/** The This run key of the held filter (`isHeld`). */
+export const HELD_KEY = "held";
+/** The This run key of the findings that need another way out (`needsAnotherWayOut`). */
+export const WAY_OUT_KEY = "wayout";
 /** The one key of the accepted group: a view toggle that hides the accepted pills (SPEC §7.9.7). */
 export const HIDE_ACCEPTED = "hide";
 const SCOPE_ROWS: readonly Row[] = [
@@ -198,7 +209,12 @@ export function railGroups2(report: Report2, state: State): readonly RailGroup[]
     baseline !== null && here.some((f) => f.baseline !== null)
       ? groupOf(scope, "since", `Since ${baseline.path}`, SINCE_ROWS)
       : null,
-    runFails2(report) ? groupOf(scope, "gate", "This run", [["fails", "Fails this run"]]) : null,
+    groupOf(scope, "gate", "This run", [
+      ...(runFails2(report) ? [["fails", "Fails this run"] as const] : []),
+      [READY_KEY, "Ready to run"],
+      [HELD_KEY, "Held"],
+      ...(runFails2(report) ? [[WAY_OUT_KEY, "Another way out"] as const] : []),
+    ]),
     groupOf(
       scope,
       "verdict",
@@ -246,7 +262,12 @@ const union = (a: readonly string[], b: readonly string[]): string[] => [...new 
 export function fitFilters2(report: Report2, filters: Filters): Filters {
   const flagIds: readonly string[] = report.run.flag_ids;
   const named = filters.verdict.filter((key) => flagIds.includes(key));
-  const gate = runFails2(report) ? filters.gate.filter((key) => key === "fails") : [];
+  const gate = filters.gate.filter(
+    (key) =>
+      key === READY_KEY ||
+      key === HELD_KEY ||
+      ((key === "fails" || key === WAY_OUT_KEY) && runFails2(report)),
+  );
   const accepted = filters.accepted.filter((key) => key === HIDE_ACCEPTED);
   if (
     filters.prio.length === 0 &&

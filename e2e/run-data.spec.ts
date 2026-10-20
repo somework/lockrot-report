@@ -15,11 +15,12 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("report-2: the Run tab of SPEC §7.9.16", () => {
-  test("composite: How the score works, the advisory lookup, the gate and the thresholds, axe-clean in both themes", async ({
+  test("composite: the run facts, How the score works, the advisory lookup, the gate and the thresholds, axe-clean in both themes", async ({
     page,
   }) => {
     await report.gotoReport2WithHash("composite", "view=run");
     await expect(runHeadings(page)).toHaveText([
+      "This run",
       "How the score works · score model 1",
       "Advisory lookup",
       "Gate",
@@ -27,7 +28,9 @@ test.describe("report-2: the Run tab of SPEC §7.9.16", () => {
     ]);
     await expect(runSurface(page).getByRole("table", { name: "Weights" })).toBeVisible();
     await expect(runSurface(page).getByRole("table", { name: "Advisories" })).toBeVisible();
-    await expect(runSurface(page)).toContainText("packagist.org: 33 on record · 4 packages with records");
+    await expect(runSurface(page)).toContainText(
+      "packagist.org: answered · 49 on record · 6 packages with records",
+    );
     await runSurface(page).getByText("The 16 rules").click();
     await expect(ruleRows(page)).toHaveCount(16);
     for (const colorScheme of ["light", "dark"] as const) {
@@ -42,6 +45,13 @@ test.describe("report-2: the Run tab of SPEC §7.9.16", () => {
     }
   });
 
+  test("a baselined run states its counts and every stale entry", async ({ page }) => {
+    await report.gotoReport2WithHash("baselined-wallabag-2.6", "view=run");
+    const baseline = runSurface(page).locator(".run2-baseline");
+    await expect(baseline).toContainText("47 known · 61 new · 6 worsened · 2 stale");
+    await expect(baseline.getByRole("listitem")).toHaveText(["behat/transliterator", "true/punycode"]);
+  });
+
   test("composite: the 16 rule rows open from their fold, each linked to its docs anchor", async ({
     page,
   }) => {
@@ -53,7 +63,7 @@ test.describe("report-2: the Run tab of SPEC §7.9.16", () => {
       "href",
       "https://lockrot.dev/verdicts/model-1/#score-lead-first",
     );
-    await expect(ruleRows(page).nth(1)).toContainText("used on 4");
+    await expect(ruleRows(page).nth(1)).toContainText("used on 6");
   });
 
   test("routing: the not-from-a-Composer-repository note says the advisories were asked", async ({

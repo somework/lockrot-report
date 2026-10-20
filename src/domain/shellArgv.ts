@@ -21,8 +21,12 @@ export const REFUSED_COMMAND = "This command holds characters the page does not 
 const COMMAND_ARGUMENT = /^(?! +$)[A-Za-z0-9/._:@+=,^~*<>| -]+$/;
 // Any other program or subcommand runs what the data names (`composer exec calc`, `iex calc`).
 const SUBCOMMANDS: ReadonlySet<string> = new Set(["update", "require", "why-not"]);
-// Anywhere else, a leading `-` came from data and would pass an option to Composer.
-const LOCKROT_OPTIONS: Readonly<Record<string, string>> = { require: "--no-update" };
+// lockrot writes these after every package argument. Anywhere else, a leading `-` came from data and
+// would pass an option to Composer.
+const LOCKROT_OPTIONS: Readonly<Record<string, ReadonlySet<string>>> = {
+  update: new Set(["--with-dependencies", "--with-all-dependencies"]),
+  require: new Set(["--no-update", "--with-dependencies", "--with-all-dependencies"]),
+};
 
 const POSIX_BARE = /^[A-Za-z0-9/._:@%+=,-]+$/;
 const CMD_SPECIAL = /[ ^|<>]/;
@@ -36,28 +40,37 @@ export const isPrintableName = (name: string): boolean =>
 export function isPrintableArgv(argv: readonly string[]): boolean {
   const [program, subcommand = ""] = argv;
   if (program !== "composer" || !SUBCOMMANDS.has(subcommand)) return false;
-  return argv.every(
-    (argument) =>
-      COMMAND_ARGUMENT.test(argument) &&
-      (!argument.startsWith("-") || LOCKROT_OPTIONS[subcommand] === argument),
+  const args = argv.slice(2);
+  const firstOption = args.findIndex((argument) => argument.startsWith("-"));
+  const packages = firstOption === -1 ? args : args.slice(0, firstOption);
+  const options = firstOption === -1 ? [] : args.slice(firstOption);
+  return (
+    args.every((argument) => COMMAND_ARGUMENT.test(argument)) &&
+    (options.length === 0 ||
+      (packages.length > 0 && options.every((option) => LOCKROT_OPTIONS[subcommand]?.has(option) === true)))
   );
 }
 
 // The rule leaves no quote, `%` or `!` inside an argument, so no quoting below escapes one.
 export const posixArgument = (argument: string): string =>
   POSIX_BARE.test(argument) && !argument.startsWith("=") ? argument : `'${argument}'`;
-const cmdLine = (words: readonly string[]): string =>
-  words.map((word) => (CMD_SPECIAL.test(word) ? `"${word}"` : word)).join(" ");
+const cmdWords = (words: readonly string[]): string[] =>
+  words.map((word) => (CMD_SPECIAL.test(word) ? `"${word}"` : word));
 
 // `composer` is often composer.bat, and PowerShell hands a .bat target's arguments to cmd.exe,
 // which parses `|`, `<`, `>` and `^` again. After `--%` PowerShell passes the rest verbatim.
-const LINE: Readonly<Record<Shell, (argv: readonly string[]) => string>> = {
-  posix: (argv) => argv.map(posixArgument).join(" "),
-  cmd: cmdLine,
-  powershell: ([program, ...rest]) => `${program} --% ${cmdLine(rest)}`,
+const WORDS: Readonly<Record<Shell, (argv: readonly string[]) => string[]>> = {
+  posix: (argv) => argv.map(posixArgument),
+  cmd: cmdWords,
+  powershell: ([program = "", ...rest]) => [program, "--%", ...cmdWords(rest)],
 };
 
-/** `null` when the argv fails the argument rule: no shell gets a line then. */
+/** The words of a command line, each quoted for the shell, so a line breaks only between them.
+ *  `null` when the argv fails the argument rule: no shell gets a line then. */
+export function commandWords(argv: readonly string[], shell: Shell): string[] | null {
+  return isPrintableArgv(argv) ? WORDS[shell](argv) : null;
+}
+
 export function commandLine(argv: readonly string[], shell: Shell): string | null {
-  return isPrintableArgv(argv) ? LINE[shell](argv) : null;
+  return commandWords(argv, shell)?.join(" ") ?? null;
 }

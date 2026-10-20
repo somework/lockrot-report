@@ -1,29 +1,18 @@
-/* The report-2 Findings list (PD-ROWS-14): ledger-rows.css draws the group heads, runs, row frame
-   and age cell; this file adds the row grid. One line from 990px of list, the pills wrapping; three
-   lines below: package and reach, then score and pills, then age and the next step. */
-/* Set on the head and the rows, not the list: a container query never styles its own container. */
+/* The report-2 Findings list: ledger-rows.css draws the group heads, runs, row frame and age cell;
+   this file sets the row grid by the list's own width. Every layout labels every value: a head over
+   every column from 600px (one line from 1440px, the reach under the package from 1100px, two lines
+   under a two-row head from 600px), and under that a stacked row whose values carry their labels.
+   The score column holds a fixed slot for the gate tag, so a tag never moves a row's other cells. */
 .f2-ledger .f2-head,
 .f2-ledger .f2-row {
-  --sbar-w: 96px;
+  --sbar-w: 72px;
+  --gate-w: 64px;
 }
 .f2-ledger .sbar {
   --sbar-w: inherit;
 }
 
-.f2-ledger .f2-head {
-  display: none;
-}
-
-.f2-ledger .f2-row {
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas:
-    "pkg pkg reach"
-    "score flags flags"
-    "age age next";
-  row-gap: 3px;
-  align-items: center;
-}
-
+/* ---------- the parts every layout shares ---------- */
 .f2-score {
   grid-area: score;
   display: flex;
@@ -33,144 +22,550 @@
 .f2-num {
   width: var(--fl-num);
   text-align: right;
-  font: 600 13px var(--mono);
+  font: 600 var(--text-s) var(--mono);
   font-variant-numeric: tabular-nums;
   color: var(--tone);
 }
 .f2-pkg {
   grid-area: pkg;
 }
+/* A name or a holder never breaks inside itself: a line breaks after a vendor's slash. Inline, not
+   an inline block, so a screen reader reads the name whole ("drupal/core"). A name wider than the
+   package or reach cell is cut there with an ellipsis, and the sheet holds it whole. */
+span.f2-unit {
+  display: inline;
+  white-space: nowrap;
+}
+.f2-ledger .f2-pkg,
+.f2-ledger .f2-reach {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The gate's one accent: the critical tone, quiet where the group head already says it. */
+.f2-gate {
+  flex: none;
+  box-sizing: border-box;
+  width: var(--gate-w);
+  padding: 0 3px;
+  border: 1px solid color-mix(in srgb, var(--crit) 55%, transparent);
+  border-radius: var(--radius-s);
+  /* The tags keep their words' case as written: "a new 0.x line" never reads "0.X". */
+  font: 600 var(--text-xs)/15px var(--sans);
+  text-align: center;
+  white-space: nowrap;
+  color: var(--crit);
+}
+.f2-gate.is-quiet {
+  border-color: var(--border);
+  color: var(--muted);
+}
+/* Rule 10's tag: the gate tag's shape in the ok tone, leading the move it is about. */
+.f2-ready {
+  display: block;
+  width: fit-content;
+  margin-bottom: 1px;
+  padding: 0 4px;
+  border: 1px solid color-mix(in srgb, var(--none) 55%, transparent);
+  border-radius: var(--radius-s);
+  background: var(--none-soft);
+  font: 600 var(--text-xs)/15px var(--sans);
+  white-space: nowrap;
+  vertical-align: 1px;
+  color: var(--none);
+}
+@media (forced-colors: active) {
+  .f2-gate,
+  .f2-ready,
+  .f2-major {
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+  .f2-gate.is-quiet {
+    border-style: dashed;
+  }
+  .f2-major {
+    border-style: dotted;
+  }
+}
 .f2-flags {
   grid-area: flags;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 5px;
+  gap: 3px 5px;
+}
+.f2-flags .fp {
+  flex: none;
 }
 .f2-accepted {
-  font-size: 11.5px;
+  flex-basis: 100%;
+  font-size: var(--text-xs);
   color: var(--muted);
 }
 .f2-ledger .f2-age {
-  width: var(--fl-age);
+  grid-area: age;
+}
+.f2-years {
+  color: var(--muted);
 }
 .f2-reach {
   grid-area: reach;
-  justify-self: end;
-  text-align: right;
-  font-size: 12px;
-  color: var(--ink-2);
+  font-size: var(--text-s);
+  color: var(--muted);
+}
+/* The reach is the row's secondary line: name, version and move lead the row. */
+/* The named holder keeps full weight; "and {n} more" is the secondary tone (rule 12: by kind). */
+.f2-held .f2-name {
+  color: var(--ink);
+}
+.f2-more {
+  font-size: var(--text-s);
+  color: var(--muted);
+  white-space: nowrap;
 }
 .f2-next {
   grid-area: next;
-  justify-self: end;
-  text-align: right;
-  font-size: 12.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  font-size: var(--text-s);
   color: var(--ink);
 }
-.f2-pkg .fc-ver {
-  white-space: nowrap;
-}
 .f2-held {
+  font-size: var(--text-s);
   color: var(--muted);
+}
+.f2-cmd {
+  max-width: 100%;
+  padding: 0 5px;
+  border-radius: var(--radius-s);
+  background: var(--surface-2);
+  font: var(--text-xs)/17px var(--mono);
+  color: var(--ink-2);
+  white-space: normal;
+}
+/* The result line, with the major-move tag in a slot at its end, the same slot on every row. */
+.f2-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 8px;
+  align-items: baseline;
+  align-self: stretch;
+}
+.f2-after {
+  font-size: var(--text-s);
+  color: var(--muted);
+}
+.f2-major {
+  padding: 0 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-s);
+  font: 600 var(--text-xs)/15px var(--sans);
+  white-space: nowrap;
+  color: var(--muted);
+}
+.fgroup-major {
+  font-size: var(--text-s);
+  color: var(--muted);
+}
+
+.f2 {
+  container: f2 / inline-size;
+}
+.f2-cmd::before {
+  content: "$ ";
+  color: var(--muted);
+}
+/* The line breaks at the spaces between words. A word breaks inside itself only when it is wider
+   than the cell, so the box never scrolls and takes no Tab stop. */
+.f2-word {
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .f2-note {
   margin: 0 0 10px;
 }
-
-@container fledger (min-width: 990px) {
-  .f2-ledger .f2-head,
-  .f2-ledger .f2-row {
-    --sbar-w: 128px;
-    grid-template-columns:
-      calc(var(--fl-num) + 6px + var(--sbar-w)) minmax(0, 1.1fr) minmax(0, 1.8fr) var(--fl-age)
-      minmax(0, 0.8fr) minmax(0, 1fr);
-    grid-template-areas: "score pkg flags age reach next";
-    column-gap: 14px;
-  }
-  .f2-ledger .f2-head {
-    display: grid;
-    grid-template-rows: none;
-  }
-  .f2-ledger .f2-row {
-    min-height: 36px;
-    padding-block: 4px;
-  }
-  .f2-reach,
-  .f2-next {
-    justify-self: start;
-    text-align: left;
-  }
-  .f2-head-score {
-    grid-area: score;
-    position: relative;
-    align-self: stretch;
-  }
-  .f2-head-label {
-    position: absolute;
-    top: 5px;
-    left: 0;
-  }
-  .f2-head-axis {
-    position: absolute;
-    left: calc(var(--fl-num) + 6px);
-    bottom: 0;
-    width: var(--sbar-w);
-    height: 17px;
-  }
-  .f2-head-tick {
-    position: absolute;
-    bottom: 0;
-    padding-bottom: 7px;
-    transform: translateX(-50%);
-    font: 500 10px/1 var(--mono);
-    letter-spacing: 0;
-    text-transform: none;
-  }
-  .f2-head-pkg {
-    grid-area: pkg;
-  }
-  .f2-head-flags {
-    grid-area: flags;
-  }
-  .f2-head-reach {
-    grid-area: reach;
-  }
-  .f2-head-next {
-    grid-area: next;
-  }
-}
-
-/* The printed scale over each group: the bar's track starts after the score's number. */
-.f2-print-scale {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 16px;
-  margin-top: 4px;
-  padding-left: var(--fl-pad-l, 14px);
-  font: 600 9.5px var(--cond);
+.fgroup-gate {
+  font: 600 var(--text-xs) var(--cond);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--muted);
-  break-after: avoid;
+  color: var(--crit);
 }
-.f2-print-gap {
-  flex: none;
-  width: var(--fl-num);
+
+/* A value's label is for the stacked row only; elsewhere the column head says it, and the words
+   stay for a screen reader. */
+.f2-lbl {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
-.f2-print-axis {
+
+/* ---------- the head: a label over every column ---------- */
+/* Out of sight in the stacked layout, where each value carries its label, but still the table's
+   column heads for a screen reader. */
+.f2-ledger .f2-head {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+/* A group head or a run's note spans every column in one cell. */
+.fgroup-head > .f2-span-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 12px;
+  row-gap: 3px;
+}
+.f2-head-score {
+  grid-area: score;
   position: relative;
-  flex: none;
-  width: var(--sbar-w, 96px);
-  height: 100%;
+  align-self: stretch;
 }
-.f2-print-axis .f2-head-tick {
+.f2-head-label {
+  position: absolute;
+  top: 5px;
+  left: 0;
+}
+.f2-head-axis {
+  position: absolute;
+  left: calc(var(--fl-num) + 6px);
+  bottom: 0;
+  width: var(--sbar-w);
+  height: 17px;
+}
+/* Each floor's caption starts at its tick, as the age axis' captions do, so neighbours never touch. */
+.f2-head-tick {
   position: absolute;
   bottom: 0;
-  transform: translateX(-50%);
-  font: 500 9.5px/1 var(--mono);
+  padding: 0 0 7px 2px;
+  border-left: 1px dashed color-mix(in srgb, var(--muted) 45%, transparent);
+  font: 500 var(--text-xs)/1 var(--mono);
   letter-spacing: 0;
+  text-transform: none;
+}
+.f2-head-tick:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+.f2-head-pkg {
+  grid-area: pkg;
+}
+.f2-head-flags {
+  grid-area: flags;
+}
+.f2-head-reach {
+  grid-area: reach;
+}
+.f2-head-next {
+  grid-area: next;
+}
+
+/* ---------- stacked (a phone): each value under its own label ---------- */
+.f2-ledger .f2-row {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "pkg"
+    "score"
+    "flags"
+    "age"
+    "reach"
+    "next";
+  row-gap: 5px;
+  align-items: center;
+  padding-block: 10px;
+}
+.f2-ledger .f2-row .f2-lbl {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  font: 600 var(--text-xs)/1 var(--cond);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.f2-ledger .f2-row .f2-score .sbar {
+  --sbar-w: 72px;
+}
+.f2-ledger .f2-row .f2-score .f2-num {
+  width: auto;
+}
+.f2-ledger .f2-row .f2-age {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  column-gap: 8px;
+  margin: 0;
+  overflow: visible;
+}
+/* No line for an age nobody measured, but the cell stays under its head for a screen reader. */
+.f2-ledger .f2-row .f2-age.is-empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.f2-ledger .f2-row .f2-age .age-track {
+  grid-column: 2;
+  height: 14px;
+}
+.f2-ledger .f2-row .f2-age .age-num {
+  grid-column: 3;
+}
+.f2-ledger .f2-row .f2-reach .f2-lbl,
+.f2-ledger .f2-row .f2-next .f2-lbl {
+  margin-right: 4px;
+}
+.f2-ledger .f2-row .f2-next {
+  display: block;
+}
+.f2-ledger .f2-row .f2-cmd {
+  display: inline-block;
+  margin-top: 4px;
+}
+
+/* ---------- two lines under a two-row head (beside an open package, a tablet) ---------- */
+@container fledger (min-width: 600px) {
+  .f2 {
+    container: f2 / inline-size;
+  }
+  /* The score's number with the gate slot under it: the bar's parts are the open package's Why. */
+  .f2-ledger .f2-head,
+  .f2-ledger .f2-row {
+    grid-template-columns:
+      var(--gate-w) minmax(0, 1.15fr) minmax(0, 0.85fr)
+      minmax(0, 1.3fr);
+    grid-template-areas:
+      "score pkg flags next"
+      "score reach age next";
+    column-gap: 16px;
+  }
+  .f2-ledger .f2-head {
+    position: sticky;
+    width: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    display: grid;
+    grid-template-rows: 22px 40px;
+    height: auto;
+  }
+  .f2-ledger .f2-head .f2-head-pkg,
+  .f2-ledger .f2-head .f2-head-flags,
+  .f2-ledger .f2-head .f2-head-next {
+    align-self: end;
+    padding-bottom: 2px;
+  }
+  /* The label lines up with its row's other heads, and the caveat note runs on under it. */
+  .f2-ledger .f2-head .f2-head-next {
+    grid-row: 1 / 3;
+    align-self: start;
+    padding-top: 8px;
+  }
+  /* The pills span the name's and the reach's lines, and the age bar sits under them; a tall pill
+     stack or Next step leaves its extra height under the reach, never between it and the name. */
+  .f2-ledger .f2-row {
+    grid-template-areas:
+      "score pkg flags next"
+      "score reach flags next"
+      "score . age next";
+    grid-template-rows: auto 1fr auto;
+    row-gap: 3px;
+    align-items: start;
+    padding-block: 8px;
+  }
+  .f2-ledger .f2-row .f2-lbl,
+  .f2-ledger .f2-row .f2-years {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .f2-ledger .f2-row .f2-score {
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: center;
+    gap: 4px;
+  }
+  .f2-ledger .f2-row .f2-score .f2-num {
+    width: auto;
+  }
+  .f2-ledger .f2-row .f2-score .sbar,
+  .f2-ledger .f2-head .f2-head-axis {
+    display: none;
+  }
+  .f2-ledger .f2-head .f2-head-label {
+    top: 8px;
+  }
+  .f2-ledger .f2-row .f2-age,
+  .f2-ledger .f2-row .f2-age.is-empty {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--fl-num);
+    column-gap: 6px;
+    min-height: 18px;
+  }
+  .f2-ledger .f2-row .f2-age.is-empty {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
+  }
+  .f2-ledger .f2-row .f2-age .age-track {
+    grid-column: 1;
+    height: auto;
+  }
+  .f2-ledger .f2-row .f2-age .age-num {
+    grid-column: 2;
+  }
+  .f2-ledger .f2-row .f2-next {
+    display: flex;
+  }
+}
+
+/* Paper has no open package to hold the bar's parts, so the two-line layout keeps the score bar and
+   the scale there. */
+@media print {
+  @container fledger (min-width: 600px) {
+    .f2-ledger .f2-head,
+    .f2-ledger .f2-row {
+      --sbar-w: 96px;
+      grid-template-columns:
+        calc(var(--fl-num) + 6px + var(--sbar-w) + 8px + var(--gate-w)) minmax(0, 1.15fr)
+        minmax(0, 0.85fr) minmax(0, 1.3fr);
+    }
+    .f2-ledger .f2-row .f2-score {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+    }
+    .f2-ledger .f2-row .f2-score .f2-num {
+      width: var(--fl-num);
+    }
+    .f2-ledger .f2-row .f2-score .sbar {
+      display: inline-block;
+    }
+    .f2-ledger .f2-head .f2-head-axis {
+      display: block;
+    }
+  }
+}
+
+/* ---------- the reach under the package, every other value in its own column ---------- */
+@container fledger (min-width: 1100px) {
+  .f2-ledger .f2-head,
+  .f2-ledger .f2-row {
+    /* Wide enough that the axis captions 8 and 16 keep a gap. */
+    --sbar-w: 84px;
+    /* Room for the axis caption "Years since release" at the 11px label size. */
+    --fl-age: 140px;
+    /* Flags keep room for two pills on one line, the package for its reach line. */
+    grid-template-columns:
+      calc(var(--fl-num) + 6px + var(--sbar-w) + 8px + var(--gate-w)) minmax(0, 1.1fr)
+      minmax(236px, 1fr) var(--fl-age) minmax(0, 1.3fr);
+    grid-template-areas:
+      "score pkg flags age next"
+      "score reach flags age next";
+    column-gap: 18px;
+  }
+  .f2-ledger .f2-head {
+    grid-template-rows: 22px 22px;
+  }
+  .f2-ledger .f2-head .f2-head-flags,
+  .f2-ledger .f2-head .f2-head-next {
+    grid-row: 1 / 3;
+    align-self: end;
+    padding-top: 0;
+    padding-bottom: 7px;
+  }
+  .f2-ledger .f2-head .f2-head-reach {
+    align-self: end;
+    padding-bottom: 7px;
+  }
+  .f2-ledger .f2-head .fhead-age {
+    grid-row: 1 / 3;
+  }
+  .f2-ledger .f2-row {
+    grid-template-rows: auto 1fr;
+    row-gap: 2px;
+    min-height: 48px;
+    padding-block: 7px;
+  }
+  .f2-ledger .f2-row .f2-score {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+  .f2-ledger .f2-row .f2-score .f2-num {
+    width: var(--fl-num);
+  }
+  .f2-ledger .f2-row .f2-score .f2-gate {
+    margin-left: 2px;
+  }
+  .f2-ledger .f2-row .f2-score,
+  .f2-ledger .f2-row .f2-flags {
+    align-self: center;
+  }
+  .f2-ledger .f2-row .f2-score .sbar {
+    display: inline-block;
+  }
+  .f2-ledger .f2-head .f2-head-axis {
+    display: block;
+  }
+  .f2-ledger .f2-head .f2-head-label {
+    top: 5px;
+  }
+  .f2-ledger .f2-row .f2-age,
+  .f2-ledger .f2-row .f2-age.is-empty {
+    align-self: stretch;
+    margin-block: -7px -8px;
+  }
+}
+
+/* ---------- one line under a one-row head (a wide screen, no package open) ---------- */
+@container fledger (min-width: 1440px) {
+  .f2-ledger .f2-head,
+  .f2-ledger .f2-row {
+    --sbar-w: 96px;
+    --fl-age: 160px;
+    /* Next step gets the room for a move and its named holder on one line. */
+    grid-template-columns:
+      calc(var(--fl-num) + 6px + var(--sbar-w) + 8px + var(--gate-w)) minmax(0, 1fr)
+      minmax(236px, 0.9fr) var(--fl-age) minmax(0, 0.85fr) minmax(0, 1.8fr);
+    grid-template-areas: "score pkg flags age reach next";
+  }
+  .f2-ledger .f2-head {
+    grid-template-rows: none;
+    height: 40px;
+  }
+  .f2-ledger .f2-head .f2-head-flags,
+  .f2-ledger .f2-head .f2-head-next,
+  .f2-ledger .f2-head .fhead-age {
+    grid-row: auto;
+  }
+  .f2-ledger .f2-row {
+    grid-template-rows: none;
+    align-items: center;
+    min-height: 38px;
+    padding-block: 6px;
+  }
+  .f2-ledger .f2-row .f2-age,
+  .f2-ledger .f2-row .f2-age.is-empty {
+    margin-block: -6px -7px;
+  }
+}
+
+/* On paper each group repeats the column head; it keeps with the group's first row. */
+.fgroup > .f2-head {
+  break-after: avoid;
 }
 
 /* The one line over the list (FindingsStrip, PD-SUMMARY-16), on the header's surface as the band
@@ -183,7 +578,7 @@
   max-width: var(--page-max);
   margin: 0 auto;
   padding: 10px 20px;
-  font-size: 13.5px;
+  font-size: var(--text-s);
   color: var(--ink-2);
 }
 .f2-strip-figure {
@@ -214,5 +609,11 @@
     position: absolute;
     top: 10px;
     right: 16px;
+  }
+}
+
+@media print {
+  .f2-ledger .f2-head {
+    position: static;
   }
 }

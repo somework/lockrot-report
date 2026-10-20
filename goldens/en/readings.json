@@ -1,0 +1,480 @@
+{
+  "A": [],
+  "A-baselined-dagger": [],
+  "A-blocked-dagger": [],
+  "A-gate-critical": [],
+  "A-gate-vulnerable": [],
+  "A-php-star-dagger": [],
+  "B": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 6.9 years ago, behind 5.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+    }
+  ],
+  "B-accepted-dagger": [],
+  "B-also-dagger": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 6.9 years ago, behind 5.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener)."
+    }
+  ],
+  "B-baselined-dagger": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 6.9 years ago, behind 5.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+    }
+  ],
+  "B-dev-dagger": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 6.9 years ago, behind 5.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+    }
+  ],
+  "B-gate-flag": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 6.9 years ago, behind 5.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+    }
+  ],
+  "B-gate-list": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 6.9 years ago, behind 5.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+    }
+  ],
+  "B-gate-none": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 6.9 years ago, behind 5.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+    }
+  ],
+  "B-offline-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "B-offline-high-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "C": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "C-baselined-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "C-bitbucket-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "C-gitlab-hosted-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "C-offline-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "C-tokenless-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "D": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 8.7 years."
+    }
+  ],
+  "D-partial-dagger": [],
+  "E": [],
+  "E-ignored-dagger": [],
+  "E-ignored-whole-dagger": [],
+  "F": [],
+  "G": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 7.7 years."
+    }
+  ],
+  "G-tag-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 7.7 years."
+    }
+  ],
+  "abandoned-audit-ignore-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "abandoned-ignore-unreadable-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "affected-range-unknown-dagger": [],
+  "cache-subscriber": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "either-critical-dagger": [
+    {
+      "flag": "abandoned",
+      "text": "It is marked abandoned by its registry and its repository is archived on GitHub."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A critical-severity advisory affects your version (CVE-2026-00003: an advisory added to show the either opening (‡)). It is not fixed on 3.x."
+    }
+  ],
+  "either-low-dev-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 3.5 years."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A low-severity advisory affects your version (CVE-2026-00004: an advisory added to show the either opening (‡)). It is not fixed on 1.x."
+    }
+  ],
+  "fail-on-config-dagger": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 6.9 years ago, behind 5.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+    }
+  ],
+  "fail-on-default-dagger": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 6.9 years ago, behind 5.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+    }
+  ],
+  "feeds-drupal-dagger": [],
+  "flysystem": [
+    {
+      "flag": "vulnerable",
+      "text": "A low-severity advisory affects your version (CVE-2026-102601: Flysystem: WhitespacePathNormalizer's control-character (CorruptedPathDetected) check is bypassed by malformed UTF-8 in the path, affecting every adapter). It is not fixed on 1.x."
+    }
+  ],
+  "gitlab-anon-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "guzzle": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 6.x, had its last release 4.3 years ago, behind 8.x. See Release branches."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "9 advisories affect your version. The worst is a high one (CVE-2026-69246: Guzzle: Noncanonical host can bypass host-based checks). None is fixed on 6.x."
+    }
+  ],
+  "guzzle-5": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 5.x, had its last release 6.9 years ago, behind 8.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "14 advisories affect your version. The worst is a high one (CVE-2022-31043: Fix failure to strip Authorization header on HTTP downgrade). None is fixed on 5.x."
+    }
+  ],
+  "guzzle-mixed": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 5.x, had its last release 6.9 years ago, behind 8.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "14 advisories affect your version. The worst is a high one (CVE-2022-31043: Fix failure to strip Authorization header on HTTP downgrade). None is fixed on 5.x."
+    }
+  ],
+  "hoa": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "hoa-tokenless-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "holder-vuln-dagger": [],
+  "ignored-marking-archived-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "ignored-marking-only-dagger": [],
+  "ignored-marking-partial-dagger": [],
+  "ignored-marking-stale-dagger": [],
+  "ignored-marking-unchecked-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 4.2 years (read from releases only)."
+    }
+  ],
+  "installed-php-halved": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 7.1 years ago, behind 4.x. See Release branches."
+    }
+  ],
+  "joomla-filter": [],
+  "local-path-advisory": [
+    {
+      "flag": "pinned",
+      "text": "It is pinned to the branch snapshot 4.3.x-dev."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "5 advisories affect your version. The worst is a high one (CVE-2022-25768: Mautic vulnerable to Improper Access Control in UI upgrade process)."
+    }
+  ],
+  "lock-only-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "long-range-dagger": [],
+  "many-dependents": [],
+  "move-check-dagger": [],
+  "not-found-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
+  "ok-unchecked": [],
+  "op-update": [],
+  "pagerfanta": [],
+  "partial": [],
+  "partial-op-dagger": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 4.2 years ago, behind 3.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "2 advisories affect your version. The worst is a high one (CVE-2026-00011: an advisory only the next major fixes (‡))."
+    }
+  ],
+  "php-null": [],
+  "pinned-unread": [],
+  "policy-off-dagger": [],
+  "psr7": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 1.x, had its last release 3.5 years ago, behind 3.x. See Release branches."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "4 advisories affect your version. The worst is a medium one (CVE-2026-55766: CRLF injection in HTTP start-line serialization). None is fixed on 1.x."
+    }
+  ],
+  "replace-graded": [],
+  "replace-text": [],
+  "require-dev-name-dagger": [],
+  "rounded-dev-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 5.3 years."
+    }
+  ],
+  "routing": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 4.x, had its last release 4.2 years ago, behind 8.x. See Release branches."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "2 advisories affect your version. The worst is a medium one (CVE-2026-48784: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` → Generated URL Collapses Off-Route Under RFC 3986 Normalization). None is fixed on 4.x."
+    }
+  ],
+  "silent": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 7 and admits 8.4 untested."
+    }
+  ],
+  "snapshot-alias": [],
+  "snapshot-dead-line-dagger": [],
+  "snapshot-undated-line-dagger": [],
+  "stale-accepted-dagger": [],
+  "stale-only": [],
+  "tie-dagger": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 6.9 years ago, behind 5.x. See Release branches."
+    },
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A medium-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+    }
+  ],
+  "twig-1": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 7 and admits 8.4 untested."
+    }
+  ],
+  "twig-dev-dagger": [],
+  "unknown": [],
+  "unknown-origin": [],
+  "unrated-dagger": [],
+  "unreached": [],
+  "unreached-dev-dagger": [],
+  "unreached-move": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 7 and admits 8.4 untested."
+    }
+  ],
+  "wp-config": [],
+  "yaml-3.4": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "3 advisories affect your version. The worst is a low one (CVE-2026-45133: YAML Parser Stack Exhaustion via Unbounded Recursion in Nested Blocks, Sequences, and Mappings). None is fixed on 3.x."
+    }
+  ],
+  "zero-n": [],
+  "B-accepted-unread-dagger": [],
+  "finished-offline-dagger": [],
+  "host-accept-expired-dagger": [],
+  "host-accepted-dagger": [],
+  "host-unsupported": [],
+  "no-feed-accepted-dagger": [],
+  "no-feed-dagger": [],
+  "no-tag-dagger": [],
+  "ok-ignored-dagger": [],
+  "ok-offline-dagger": [],
+  "psr-log": [],
+  "scope-registries-dagger": [],
+  "unknown-vuln-dagger": [],
+  "unparseable-version-dagger": [],
+  "vcs-accepted-dagger": []
+}

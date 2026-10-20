@@ -1,7 +1,11 @@
+import { Fragment } from "preact";
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import { DETAIL_WORDS } from "../../domain/detailWords";
+import { Breakable } from "./PkgName";
+import { commandLabel } from "../../domain/moveCards";
 import {
   commandLine,
+  commandWords,
   isPrintableArgv,
   REFUSED_COMMAND,
   SHELL_NAMES,
@@ -67,7 +71,15 @@ const linesFor = (argvs: readonly (readonly string[])[], shell: Shell): string[]
  * argument rule refuses one argv, it prints why in place of every step, on every shell, and offers no
  * copy, so a reader never runs part of a move. `label` replaces the move's own eyebrow.
  */
-export function CopyMove({ argvs, label }: { argvs: readonly (readonly string[])[]; label?: string }) {
+export function CopyMove({
+  argvs,
+  label,
+  className,
+}: {
+  argvs: readonly (readonly string[])[];
+  label?: string;
+  className?: string;
+}) {
   const [shell, setShell] = useState<Shell>(readShell);
   const [menuOpen, setMenuOpen] = useState(false);
   const [status, setStatus] = useCopyStatus();
@@ -137,11 +149,9 @@ export function CopyMove({ argvs, label }: { argvs: readonly (readonly string[])
   };
 
   return (
-    <div className="d2-copy">
+    <div className={className === undefined ? "d2-copy" : `d2-copy ${className}`}>
       <div className="d2-copy-bar">
-        <span className="eyebrow">
-          {label ?? (argvs.length > 1 ? DETAIL_WORDS.moveInOrder : DETAIL_WORDS.move)}
-        </span>
+        <span className="eyebrow">{label ?? commandLabel(argvs)}</span>
         {printable && (
           <button type="button" className="d2-btn d2-copy-btn" onClick={copy}>
             {LABELS[status]}
@@ -192,11 +202,22 @@ export function CopyMove({ argvs, label }: { argvs: readonly (readonly string[])
         ))}
       </div>
       <pre className="d2-copy-cmd">
-        {lines.map((line, i) => (
-          <span key={i} className={printable ? "d2-copy-line" : "d2-copy-line is-refused"}>
-            {line}
-          </span>
-        ))}
+        {printable ? (
+          argvs.map((argv, i) => (
+            <span key={i} className="d2-copy-line">
+              {(commandWords(argv, shell) ?? []).map((word, at) => (
+                <Fragment key={at}>
+                  {at > 0 && " "}
+                  <span className="d3-arg">
+                    <Breakable text={word} className="d3-arg-part" />
+                  </span>
+                </Fragment>
+              ))}
+            </span>
+          ))
+        ) : (
+          <span className="d2-copy-line is-refused">{REFUSED_COMMAND}</span>
+        )}
       </pre>
     </div>
   );

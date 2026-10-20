@@ -1,10 +1,10 @@
 /** The All packages cells of a report-2 document (SPEC §7.9.6). */
 
-import type { Finding } from "../model/report";
+import type { Finding, Report2 } from "../model/report";
 import type { SortKey } from "../state/types";
 import { ago } from "./ago";
 import { day, decimal, plural } from "./format";
-import { causeWord } from "./pageVocabulary";
+import { causeWord, signalName } from "./pageVocabulary";
 
 export interface Cell {
   readonly text: string;
@@ -42,6 +42,35 @@ export function signalIds(f: Finding): string {
 
 export function dataAsOf(f: Finding): string {
   return f.data_date === null ? DASH : day(f.data_date);
+}
+
+/** The UTC calendar day of a datetime. */
+function utcDay(iso: string): string {
+  const time = Date.parse(iso);
+  return Number.isNaN(time) ? iso.slice(0, 10) : new Date(time).toISOString().slice(0, 10);
+}
+
+/** Accepted derivation 4: the column shows when a finding's day differs from the report's. */
+export function showsDataColumn(report: Report2): boolean {
+  if (report.data_date === null) return false;
+  const page = utcDay(report.data_date);
+  return report.findings.some((f) => f.data_date !== null && utcDay(f.data_date) !== page);
+}
+
+/** The caption that stands for the hidden column; null while the column shows. */
+export function dataCaption(report: Report2): string | null {
+  if (report.data_date === null) return "No row has repository data";
+  if (showsDataColumn(report)) return null;
+  const missing = report.findings.filter((f) => f.data_date === null).length;
+  return `Every row has data as of ${utcDay(report.data_date)}${missing > 0 ? ` (${missing} read no repository data)` : ""}`;
+}
+
+/** The signal ids the rows carry, in id order, each with its glossary name. */
+export function signalKey(rows: readonly Finding[]): readonly { id: string; name: string }[] {
+  const ids = [...new Set(rows.flatMap((f) => f.signals.map((signal) => signal.id)))];
+  return ids
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+    .map((id) => ({ id, name: signalName(id) }));
 }
 
 /** The All packages columns in display order, each with the sort key its head sets. */

@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   commandLine,
+  commandWords,
   isPrintableArgv,
   isPrintableName,
   posixArgument,
@@ -65,6 +66,25 @@ describe("an argv in each shell", () => {
   });
 });
 
+describe("the words of a command line", () => {
+  test("keep an argument with spaces as one word, so a line breaks only between arguments", () => {
+    const argv = ["composer", "require", "symfony/yaml:^5.4 || ^6.0"];
+
+    expect(commandWords(argv, "posix")).toEqual(["composer", "require", "'symfony/yaml:^5.4 || ^6.0'"]);
+    expect(commandWords(argv, "powershell")).toEqual([
+      "composer",
+      "--%",
+      "require",
+      '"symfony/yaml:^5.4 || ^6.0"',
+    ]);
+    expect(commandWords(argv, "posix")?.join(" ")).toBe(commandLine(argv, "posix"));
+  });
+
+  test("are null for an argv the rule refuses", () => {
+    expect(commandWords(["composer", "require", "a/b:%PATH%"], "posix")).toBeNull();
+  });
+});
+
 describe("the command argument rule (SPEC §5.6)", () => {
   test.each([
     ["a percent variable", "%PATH%"],
@@ -99,6 +119,24 @@ describe("the command argument rule (SPEC §5.6)", () => {
     expect(isPrintableArgv(["composer", "require", "php:>=8.1", "--no-update"])).toBe(true);
     expect(inEveryShell(["composer", "update", "a/b", "--no-update"])).toEqual(refused);
     expect(inEveryShell(["composer", "why-not", "a/b", "--no-update"])).toEqual(refused);
+  });
+
+  test.each([
+    ["update", "--with-dependencies"],
+    ["update", "--with-all-dependencies"],
+    ["require", "--with-dependencies"],
+    ["require", "--with-all-dependencies"],
+  ])("allows lockrot's %s option %s after the package", (subcommand, option) => {
+    expect(isPrintableArgv(["composer", subcommand, "a/b:^2.0", option])).toBe(true);
+  });
+
+  test.each([
+    ["an option before the package", ["composer", "update", "--with-dependencies", "a/b"]],
+    ["a package after an option", ["composer", "update", "a/b", "--with-dependencies", "c/d"]],
+    ["an option with no package", ["composer", "require", "--no-update"]],
+    ["the option of a why-not step", ["composer", "why-not", "a/b", "--with-dependencies"]],
+  ])("refuses %s on every shell", (_, argv) => {
+    expect(inEveryShell(argv)).toEqual(refused);
   });
 
   test("allows @name, a,b and a/b|c, which PowerShell writes after --%", () => {

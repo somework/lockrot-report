@@ -9,7 +9,6 @@ import {
   leadScope,
   multiFlagLine,
   securityBlock,
-  updateNowArgv,
 } from "../../../src/domain/overviewBand";
 import type { Report2 } from "../../../src/model/report";
 import { pageGoldens } from "../words/recorded";
@@ -23,17 +22,16 @@ function golden(id: string): Report2 {
 describe("the lead of the overview band", () => {
   test("words the scope rollup from rot_depth", () => {
     expect(leadScope(golden("composite"))).toEqual([
-      "all 7 in production",
-      "6 required directly, 1 pulled in",
+      "all 9 in production",
+      "7 required directly, 2 pulled in",
     ]);
   });
 
-  test("gives one chip per graded verdict in run order, zero counts kept", () => {
+  test("gives one chip per graded verdict in run order, leaving out a grade nothing holds", () => {
     expect(gradeChips(golden("composite"))).toEqual([
-      { grade: "critical", count: 3 },
+      { grade: "critical", count: 4 },
       { grade: "high", count: 2 },
-      { grade: "medium", count: 0 },
-      { grade: "low", count: 2 },
+      { grade: "low", count: 3 },
     ]);
   });
 
@@ -49,20 +47,20 @@ describe("the flag ledger", () => {
     expect(bars.map(({ flag, carrying }) => `${flag} ${carrying}`)).toEqual([
       "abandoned 1",
       "pinned 1",
-      "left-behind 1",
+      "left-behind 2",
       "old-promise 3",
-      "stale 2",
-      "vulnerable 4",
+      "stale 3",
+      "vulnerable 5",
     ]);
     expect(bars.find(({ flag }) => flag === "vulnerable")).toEqual({
       flag: "vulnerable",
-      carrying: 4,
+      carrying: 5,
       parts: [
-        { grade: "critical", count: 2 },
+        { grade: "critical", count: 3 },
         { grade: "low", count: 2 },
       ],
-      split: "graded critical 2 · low 2",
-      points: "52 pts",
+      split: "graded critical 3 · low 2",
+      points: "68 pts",
     });
   });
 
@@ -82,7 +80,7 @@ describe("the flag ledger", () => {
   });
 
   test("says how many packages carry more than one flag, with the score model", () => {
-    expect(multiFlagLine(golden("composite"))).toBe("4 carry more than one flag · score model 1");
+    expect(multiFlagLine(golden("composite"))).toBe("5 carry more than one flag · score model 1");
   });
 
   test("takes the singular for one package", () => {
@@ -99,7 +97,7 @@ describe("the flag ledger", () => {
 describe("the depth sentence", () => {
   test("names the unnamed share and the deepest package with its hops", () => {
     expect(depthSentence(golden("composite"))).toBe(
-      "1 of 7 flagged packages is named by no line of composer.json; the deepest, symfony/polyfill-intl-idn, sits 1 hop from the nearest line.",
+      "2 of 9 flagged packages are named by no line of composer.json; the deepest, friendsofsymfony/oauth2-php, symfony/polyfill-intl-idn, sit 1 hop from the nearest line.",
     );
   });
 
@@ -114,15 +112,24 @@ describe("the depth sentence", () => {
     };
 
     expect(depthSentence(report)).toBe(
-      "4 of 7 flagged packages are named by no line of composer.json; the deepest, d/one, d/two, d/three and 2 more, sit 2 hops from the nearest line.",
+      "4 of 9 flagged packages are named by no line of composer.json; the deepest, d/one, d/two, d/three and 2 more, sit 2 hops from the nearest line.",
     );
   });
 
   test("leaves the second clause out when no package is deepest", () => {
     const report = golden("composite");
-    report.rot_depth = { ...report.rot_depth, not_in_composer_json: 0, deepest: [] };
+    report.rot_depth = { ...report.rot_depth, not_in_composer_json: 2, deepest: [] };
 
-    expect(depthSentence(report)).toBe("0 of 7 flagged packages are named by no line of composer.json.");
+    expect(depthSentence(report)).toBe("2 of 9 flagged packages are named by no line of composer.json.");
+  });
+
+  test("says so positively when composer.json names every flagged package, one or many", () => {
+    const report = golden("composite");
+    report.rot_depth = { ...report.rot_depth, not_in_composer_json: 0, deepest: [] };
+    expect(depthSentence(report)).toBe("All 9 flagged packages are named by a line of composer.json.");
+
+    report.rot_depth = { ...report.rot_depth, flagged: 1 };
+    expect(depthSentence(report)).toBe("The flagged package is named by a line of composer.json.");
   });
 
   test("says depth is unknown when the run read no composer.json", () => {
@@ -149,7 +156,7 @@ describe("the accepted line", () => {
     report.flags.stale = { ...report.flags.stale, accepted: { all: 3, in_graded: 2 } };
     report.flags.pinned = { ...report.flags.pinned, accepted: { all: 1, in_graded: 1 } };
 
-    expect(acceptedLine(report)).toBe("Accepted by the allowlist in flagged packages: pinned 1, stale 2");
+    expect(acceptedLine(report)).toBe("Accepted by the allowlist: pinned 1, stale 2");
   });
 
   test("has no accepted line when nothing is flagged", () => {
@@ -160,20 +167,20 @@ describe("the accepted line", () => {
 describe("the Security block", () => {
   test("counts advisories by severity in model order and packages by fix in ease order", () => {
     expect(securityBlock(golden("composite"))).toEqual({
-      figure: "20",
-      unit: "advisories on 4 packages",
+      figure: "29",
+      unit: "advisories on 5 packages",
       note: null,
       severities: [
-        { id: "critical", band: "critical", outlined: false, count: 1 },
-        { id: "high", band: "high", outlined: false, count: 4 },
-        { id: "medium", band: "medium", outlined: false, count: 4 },
-        { id: "unrated", band: "medium", outlined: true, count: 2 },
-        { id: "low", band: "low", outlined: false, count: 9 },
+        { id: "critical", band: "critical", outlined: false, countedAs: null, count: 1 },
+        { id: "high", band: "high", outlined: false, countedAs: null, count: 5 },
+        { id: "medium", band: "medium", outlined: false, countedAs: null, count: 12 },
+        { id: "unrated", band: "medium", outlined: true, countedAs: "unrated, counted as medium", count: 2 },
+        { id: "low", band: "low", outlined: false, countedAs: null, count: 9 },
       ],
       fixes: [
         { kind: "update", label: "composer update", count: 2 },
         { kind: "upgrade", label: "upgrade", count: 1 },
-        { kind: "raise-php", label: "php floor raise", count: 1 },
+        { kind: "raise-php", label: "php floor raise", count: 2 },
       ],
     });
   });
@@ -183,6 +190,13 @@ describe("the Security block", () => {
     report.security = { ...report.security, check: "partial" };
 
     expect(securityBlock(report).note).toBe("advisory check incomplete, so the list may be partial");
+  });
+
+  test("says the advisory check did not run, never that it was incomplete, when it did not run", () => {
+    const report = golden("ok-offline");
+
+    expect(report.security.check).toBe("not_run");
+    expect(securityBlock(report).unit).toBe("the advisory check did not run");
   });
 
   test("words a lock with no counted advisory", () => {
@@ -227,23 +241,5 @@ describe("the gate line's state", () => {
     report.run = { ...report.run, mode: "generate_baseline" };
 
     expect(gateState(report)).toBe("fails");
-  });
-});
-
-describe("updateNowArgv", () => {
-  test("reads the published argv, and null when it is null or holds a non-string", () => {
-    const report = golden("composite");
-    expect(updateNowArgv(report)).toEqual([
-      "composer",
-      "update",
-      "symfony/yaml",
-      "symfony/polyfill-intl-idn",
-    ]);
-    expect(
-      updateNowArgv({ ...report, security: { ...report.security, update_now_command: null } }),
-    ).toBeNull();
-    expect(
-      updateNowArgv({ ...report, security: { ...report.security, update_now_command: ["composer", 3] } }),
-    ).toBeNull();
   });
 });
