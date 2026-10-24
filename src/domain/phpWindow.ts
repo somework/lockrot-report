@@ -140,9 +140,12 @@ function isRootCeiling(fix: TargetFix): boolean {
   );
 }
 
-/** A hold as the `php:` line words it (SPEC §7.0), with the link words of the move card. */
-const holdWords = (h: HeldBy): string =>
-  `${h.source === "root" ? "composer.json" : `${h.package ?? ""} ${h.version ?? ""}`} ${plain(linkWords(h))}`;
+/** A hold as the `php:` line words it (SPEC §7.0), with the link words of the move card; a root
+ *  hold on a require-dev package says so, since its link names no section. */
+function holdWords(h: HeldBy, fix: TargetFix): string {
+  const dev = h.source === "root" && fix.packages.some((p) => p.dev && p.name === h.target);
+  return `${h.source === "root" ? "composer.json" : `${h.package ?? ""} ${h.version ?? ""}`} ${plain(linkWords(h))}${dev ? " (require-dev)" : ""}`;
+}
 
 function packageNames(fix: TargetFix): string[] {
   const names: string[] = [];
@@ -175,7 +178,8 @@ function fixClauses(fix: TargetFix, target: string): string[] {
       ];
     case "refused": {
       const their = packageNames(fix).length === 1 ? "its" : "their";
-      const holds = fix.held_by.length === 0 ? "" : `: ${fix.held_by.map(holdWords).join(" and ")}`;
+      const holds =
+        fix.held_by.length === 0 ? "" : `: ${fix.held_by.map((h) => holdWords(h, fix)).join(" and ")}`;
       return [packagesClause(fix, target), `${solver} refuses ${their} update${holds}`];
     }
     default:

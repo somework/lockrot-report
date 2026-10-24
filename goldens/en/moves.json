@@ -2078,7 +2078,7 @@
       "after": {
         "result": "0, ok",
         "conditions": [
-          "if Composer resolves it (not checked: Composer's solver refuses the lock itself at the target PHP; see the PHP line in the Overview)"
+          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run tab names the cause)"
         ]
       },
       "composer": []

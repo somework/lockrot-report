@@ -39,6 +39,11 @@ export function holderWord({ source, package: name }: Pick<HeldBy, "source" | "p
   return source === "root" || name === null ? "composer.json" : name;
 }
 
+/** G138: each holder once, in first-seen order. */
+const uniqueHolders = (held: readonly Pick<HeldBy, "source" | "package">[]): string[] => [
+  ...new Set(held.map(holderWord)),
+];
+
 /** "after it: {bound}{total}, {verdict}", with its conditions (G139). A move that the check stopped
  *  drops the Composer caveat, and " · " and its short check words end the line. */
 export function afterIt(applied: BranchFixes["if_applied"], stopped: string | null = null): string | null {
@@ -77,17 +82,18 @@ export const rungLines = (r: SecurityRung): string[] => [
 /** One rung per branch row that fixes an advisory, lowest branch first (G137 to G140). */
 export function securityRungs(finding: Finding, metadata: RepositoryMetadata | null): SecurityRung[] {
   const move = finding.next_step;
-  const shown = (move?.held_by ?? []).map(holderWord);
+  const heldCount = move?.held_by.length ?? 0;
+  const shown = uniqueHolders(move?.held_by ?? []);
   const moveBranch = move?.to_branch ?? null;
   const held = (holders: readonly string[]): string =>
     shown.length < 2 || !shown.every((w) => holders.includes(w))
       ? joinAnd(holders)
-      : joinAnd([...holders.filter((w) => !shown.includes(w)), `the ${shown.length} in Held by`]);
+      : joinAnd([...holders.filter((w) => !shown.includes(w)), `the ${heldCount} in Held by`]);
   return [...(metadata?.branches ?? [])].reverse().flatMap((row) => {
     const fixes = row.fixes;
     if (fixes === null || fixes.fixed === 0) return [];
     const isMove = moveBranch !== null && row.branch === moveBranch;
-    const holders = fixes.held_by.map(holderWord);
+    const holders = uniqueHolders(fixes.held_by);
     return [
       {
         branch: row.branch,

@@ -336,6 +336,13 @@
 .ov-sep {
   color: var(--muted);
 }
+.ov-platform {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
 .ov-first-none {
   font-size: var(--text-base);
   line-height: 1.5;

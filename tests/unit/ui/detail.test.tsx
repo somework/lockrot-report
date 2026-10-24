@@ -51,6 +51,24 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("the move card on a lock whose config.platform.php lies outside the target (L5)", () => {
+  test("asks to set config.platform.php before the commands", () => {
+    const sheet = openCase("B", (embed) => {
+      const { run } = embed.report;
+      if (run.php_window === null) throw new Error("B has a PHP window");
+      run.php_window = { ...run.php_window, platform_override: "7.4.29" };
+      return embed;
+    });
+
+    const card = sheet.querySelector(".d3-move");
+    const platform = card?.querySelector(".d3-move-platform");
+    expect(platform?.textContent).toBe(
+      `First set config.platform.php to your PHP 8.4 release: composer.json sets it to 7.4.29.`,
+    );
+    expect(platform?.nextElementSibling?.classList.contains("d3-cmd")).toBe(true);
+  });
+});
+
 describe("the sheet in SPEC §7.9.8's order", () => {
   test("B: header, verdict, the move and its holders, Why, the rows, then the folded references", () => {
     const sheet = openCase("B");

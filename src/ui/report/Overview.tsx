@@ -7,6 +7,7 @@ import {
   type ReadyMove,
   type WordPart,
 } from "../../domain/firstMoves";
+import { platformStep } from "../../domain/moveCards";
 import { libyearsLead } from "../../domain/libyearsLead";
 import {
   acceptedLine,
@@ -216,12 +217,14 @@ function MoveItem({ move, model }: { move: ReadyMove; model: ScoreModel }) {
  *  held count line; no fallback command. */
 function FirstMovesBlock({ report }: { report: Report2 }) {
   const first = firstMoves(report);
+  const platform = platformStep(report.run);
   const headId = useId();
   return (
     <section className="ov-first" aria-labelledby={headId}>
       <h3 className="ov-first-head" id={headId}>
         {FIRST_WORDS.head} {first.note !== null && <span className="ov-first-note">{first.note}</span>}
       </h3>
+      {first.moves.length > 0 && platform !== null && <p className="ov-platform">{platform}</p>}
       {first.moves.length > 0 && (
         <ol className="ov-moves">
           {first.moves.map((move) => (

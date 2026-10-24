@@ -212,6 +212,35 @@ describe("the holds of a refused fix", () => {
     );
   });
 
+  test("mark a root hold on a require-dev package (wallabag 8.4's friendsoftwig/twigcs)", () => {
+    const devFix = fix({
+      packages: [
+        {
+          name: "friendsoftwig/twigcs",
+          version: "v6.1.0",
+          link: "require",
+          target: "php",
+          constraint: "~7.4.0 || ~8.0.0",
+          dev: true,
+        },
+      ],
+      held_by: [
+        hold({
+          source: "root",
+          package: null,
+          version: null,
+          link: "root-require",
+          target: "friendsoftwig/twigcs",
+          constraint: "^6.1",
+        }),
+      ],
+    });
+
+    expect(phpStateClauses(report({ target_fix: devFix }))?.[2]).toBe(
+      "Composer's solver at PHP 8.4 refuses its update: composer.json requires friendsoftwig/twigcs ^6.1 (require-dev)",
+    );
+  });
+
   test("say its update for one package that fails on two links", () => {
     const twoLinks = fix({
       packages: [

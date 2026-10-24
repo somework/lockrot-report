@@ -297,9 +297,12 @@ export interface MoveAfter {
 
 const COMPOSER_KINDS: readonly string[] = ["update", "require", "raise-php", "tag"];
 const RESOLVES_CAVEAT = "if Composer resolves it";
-/** The card names where the fix is, so it does not take the short words of the reason table. */
-const BASELINE_REFUSED_CARD_WORDS =
-  "Composer's solver refuses the lock itself at the target PHP; see the PHP line in the Overview";
+/** The card names where the cause is, so it does not take the short words of the reason table: the
+ *  PHP line when the target lies outside the window, else the Run tab. */
+const BASELINE_REFUSED_CARD_WORDS = {
+  outside: "Composer's solver refuses the lock itself at the target PHP; see the PHP line in the Overview",
+  other: "Composer's solver refuses the lock itself; the Run tab names the cause",
+} as const;
 
 /** The check line of SPEC §7.9.21 "The move", one After condition; null for a kind that runs no
  *  Composer request. An unknown reason prints as written, in a code element. */
@@ -319,7 +322,11 @@ export function checkLine(move: AnyMove, run: Run): Rich | null {
       return [
         `${RESOLVES_CAVEAT} (not checked: `,
         ...(check.reason === "baseline_refused"
-          ? [BASELINE_REFUSED_CARD_WORDS]
+          ? [
+              run.php_window?.target.inside === false
+                ? BASELINE_REFUSED_CARD_WORDS.outside
+                : BASELINE_REFUSED_CARD_WORDS.other,
+            ]
           : checkReasonRich(check.reason ?? "")),
         ")",
       ];
@@ -395,7 +402,7 @@ const ownStep = (step: HolderStep, where: string): string =>
     ? `require ${step.constraint}${where}`
     : `${step.kind.replaceAll("-", " ")}${where}`;
 
-function holderItem(held: HeldBy, run: Run): Holder {
+function holderItem(held: HeldBy, run: Run, finding: Finding): Holder {
   if (held.source === "root") {
     return {
       root: true,
@@ -406,15 +413,17 @@ function holderItem(held: HeldBy, run: Run): Holder {
       step: null,
     };
   }
+  // G118: the release the move installs is not graded in this lock, so it takes no grade or flags.
+  const installs = held.package === finding.package;
   const holder = held.holder ?? null;
-  const flags = holder?.flag_ids ?? [];
+  const flags = installs ? [] : (holder?.flag_ids ?? []);
   const step = holder?.next_step ?? null;
   const where = step?.to_branch ? ` on ${step.to_branch}` : "";
   return {
     root: false,
     name: held.package ?? "",
-    version: held.version ?? "",
-    grade: holder !== null && isGradedHolder(held, run) ? holder.verdict : null,
+    version: `${held.version ?? ""}${installs ? ", the release this move installs" : ""}`,
+    grade: !installs && holder !== null && isGradedHolder(held, run) ? holder.verdict : null,
     meta: [...linkWords(held), ...(flags.length > 0 ? [` · itself ${flags.join(" · ")}`] : [])],
     step:
       step === null
@@ -423,15 +432,18 @@ function holderItem(held: HeldBy, run: Run): Holder {
   };
 }
 
-function foldWords(rest: readonly HeldBy[], run: Run): string {
+function foldWord(held: HeldBy, run: Run, own: string): string {
+  if (held.source === "root") return "in composer.json";
+  if (held.package === own) return "from the release this move installs";
+  const holder = held.holder ?? null;
+  if (isGradedHolder(held, run)) return `graded ${holder?.verdict ?? ""}`;
+  return (holder?.flag_ids ?? []).length === 0 ? "with nothing flagged" : (holder?.verdict ?? "");
+}
+
+function foldWords(rest: readonly HeldBy[], run: Run, own: string): string {
   const counts = new Map<string, number>();
   for (const held of rest) {
-    const holder = held.holder ?? null;
-    const word = isGradedHolder(held, run)
-      ? `graded ${holder?.verdict ?? ""}`
-      : (holder?.flag_ids ?? []).length === 0
-        ? "with nothing flagged"
-        : (holder?.verdict ?? "");
+    const word = foldWord(held, run, own);
     counts.set(word, (counts.get(word) ?? 0) + 1);
   }
   if (counts.size === 1 && counts.has("with nothing flagged"))
@@ -439,19 +451,25 @@ function foldWords(rest: readonly HeldBy[], run: Run): string {
   return `${rest.length} more: ${joinAnd([...counts].map(([word, n]) => `${n} ${word}`))}`;
 }
 
-/** §7.9.13's holder rank, the Held by "More" order: the root first, then by the holder's grade in
- *  `run.graded_verdicts`, then the rest. Lower comes first; equal ranks keep data order. */
-export function holderRank(h: Pick<HeldBy, "source" | "holder">, run: Run): number {
-  if (h.source === "root") return -1;
+/** §7.9.13's holder rank, the Held by "More" order: the root first, then the holds by the release the
+ *  move installs (`own`), then by the holder's grade in `run.graded_verdicts`, then the rest. Lower
+ *  comes first; equal ranks keep data order. */
+export function holderRank(
+  h: Pick<HeldBy, "source" | "package" | "holder">,
+  run: Run,
+  own: string | null = null,
+): number {
+  if (h.source === "root") return -2;
+  if (own !== null && h.package === own) return -1;
   const graded: readonly string[] = run.graded_verdicts;
   const verdict = h.holder?.verdict ?? "";
   return graded.includes(verdict) ? graded.indexOf(verdict) : graded.length;
 }
 
-function heldBy(move: AnyMove, run: Run, then: boolean): HeldByBlock | null {
+function heldBy(finding: Finding, move: AnyMove, run: Run, then: boolean): HeldByBlock | null {
   const holders = move.held_by;
   if (holders.length === 0) return null;
-  const rank = (h: HeldBy): number => holderRank(h, run);
+  const rank = (h: HeldBy): number => holderRank(h, run, finding.package);
   const fold = holders.length > HOLDERS_SHOWN_MAX;
   const ordered = fold
     ? holders
@@ -463,11 +481,14 @@ function heldBy(move: AnyMove, run: Run, then: boolean): HeldByBlock | null {
   const rest = fold ? ordered.slice(HOLDERS_SHOWN) : [];
   return {
     count: holders.length,
-    shown: shown.map((h) => holderItem(h, run)),
+    shown: shown.map((h) => holderItem(h, run, finding)),
     fold:
       rest.length === 0
         ? null
-        : { summary: foldWords(rest, run), holders: rest.map((h) => holderItem(h, run)) },
+        : {
+            summary: foldWords(rest, run, finding.package),
+            holders: rest.map((h) => holderItem(h, run, finding)),
+          },
     then: then ? `, the move to ${move.constraint ?? move.to_branch ?? move.kind}` : null,
   };
 }
@@ -480,6 +501,8 @@ export interface MoveCard {
   readonly then: boolean;
   readonly action: Rich;
   readonly argvs: readonly (readonly string[])[];
+  /** L5: the config.platform.php step that comes before the commands. */
+  readonly platformStep: string | null;
   readonly clears: string | null;
   readonly stays: string | null;
   readonly notChecked: string | null;
@@ -488,6 +511,16 @@ export interface MoveCard {
   readonly after: MoveAfter | null;
   readonly composer: readonly ComposerNote[];
   readonly heldBy: HeldByBlock | null;
+}
+
+const minorOf = (version: string): string => version.split(".").slice(0, 2).join(".");
+
+/** A lock whose config.platform.php lies outside the target's minor makes Composer check every
+ *  command at that PHP, not the target's. */
+export function platformStep(run: Run): string | null {
+  const override = run.php_window?.platform_override ?? null;
+  if (override === null || minorOf(override) === minorOf(run.target_php)) return null;
+  return `First set config.platform.php to your PHP ${run.target_php} release: composer.json sets it to ${override}.`;
 }
 
 /** The POSIX lines of a command box, or the refusal: one refused argv refuses the whole move (§5.6). */
@@ -538,7 +571,8 @@ function moveCard(
     php: movePhp(finding, move, run, then),
     after: moveAfter(finding, move, run),
     composer: composerNotes(finding, move, run, noted),
-    heldBy: heldBy(move, run, then),
+    heldBy: heldBy(finding, move, run, then),
+    platformStep: move.commands.length > 0 ? platformStep(run) : null,
   };
 }
 
