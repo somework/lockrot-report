@@ -389,7 +389,7 @@ export const ROOT_HOLDER_NAME = "your composer.json";
 
 /** A hold's link words (SPEC §7.9.21), with the target it names. A link the page does not know reads
  *  as a requirement. */
-function linkWords({ link, target, constraint, package: holder }: HeldBy): Rich {
+export function linkWords({ link, target, constraint, package: holder }: HeldBy): Rich {
   const named = (verb: string): Rich => [
     verb,
     ...(target === null ? [] : [`${target} `]),

@@ -164,9 +164,9 @@ project is overall, and the other tabs lead with their own part.
   this lock admits: 8.1.0". A move that lands on a capped release adds "capped: it stops below the
   newest PHP", and a package that no release frees reads "No release above 4.7.1 admits PHP 8.5".
   Each constraint prints in full.
-- On a run whose lock Composer's solver refuses at the target PHP, a move card's check reads "not
-  checked: Composer's solver refuses the lock itself at the target PHP; see the PHP line in the
-  Overview".
+- On a run whose lock Composer's solver refuses at the target PHP, a move card's check reads "if
+  Composer resolves it (not checked: Composer's solver refuses the lock itself at the target PHP;
+  see the PHP line in the Overview)".
 
 ### Changed
 

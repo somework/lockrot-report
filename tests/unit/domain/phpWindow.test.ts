@@ -1,7 +1,20 @@
 import { describe, expect, test } from "vitest";
 
-import { minorsWords, phpStateClauses, reqWords, windowRows } from "../../../src/domain/phpWindow";
-import type { Finding, PhpWindowReq, PhpWindowSet, Report2, TargetFix } from "../../../src/model/report";
+import {
+  edgeSetterLines,
+  minorsWords,
+  phpStateClauses,
+  reqWords,
+  windowRows,
+} from "../../../src/domain/phpWindow";
+import type {
+  Finding,
+  HeldBy,
+  PhpWindowReq,
+  PhpWindowSet,
+  Report2,
+  TargetFix,
+} from "../../../src/model/report";
 
 const req = (over: Partial<PhpWindowReq>): PhpWindowReq => ({
   name: "acme/clock",
@@ -139,7 +152,7 @@ describe("the PHP state line", () => {
     ).toBe("not checked (a package it needs is not in Composer's cache)");
   });
 
-  test("names each root link of a root ceiling once", () => {
+  test("names the root link of a root ceiling", () => {
     const hold = {
       source: "root" as const,
       package: null,
@@ -150,9 +163,131 @@ describe("the PHP state line", () => {
       holder: null,
     };
 
-    expect(phpStateClauses(report({ target_fix: fix({ packages: [], held_by: [hold, hold] }) }))).toEqual([
+    expect(phpStateClauses(report({ target_fix: fix({ packages: [], held_by: [hold] }) }))).toEqual([
       "this lock installs on PHP 8.2 to 8.3",
       "your target, 8.4, is excluded, and only a change to require-dev.php can admit it",
     ]);
+  });
+});
+
+const hold = (over: Partial<HeldBy>): HeldBy => ({
+  source: "package",
+  package: "acme/core",
+  version: "2.0.0",
+  link: "require",
+  target: "acme/clock",
+  constraint: "^1.0",
+  holder: null,
+  ...over,
+});
+
+describe("the closest minors of an empty set", () => {
+  test("split across a gap, so no excluded minor reads as closest", () => {
+    const empty = set({
+      minors: [],
+      lower_edge: null,
+      upper_edge: null,
+      closest: { minors: ["7.4", "8.2", "8.3"], set_by: [req({ constraint: "~7.4.0" })] },
+    });
+
+    expect(windowRows(report({ without_dev: empty }))).toEqual([
+      "PHP window: none · 7.4 and 8.2 to 8.3 are excluded only by acme/clock 1.2.0 ~7.4.0",
+    ]);
+  });
+});
+
+describe("the holds of a refused fix", () => {
+  const refused = (held: HeldBy[]): string | undefined =>
+    phpStateClauses(report({ target_fix: fix({ held_by: held }) }))?.[2];
+
+  test("word each link as its move card does", () => {
+    expect(refused([hold({ link: "conflict", constraint: "<2" })])).toBe(
+      "Composer's solver at PHP 8.4 refuses its update: acme/core 2.0.0 conflicts with acme/clock <2",
+    );
+    expect(refused([hold({ source: "root", package: null, version: null, link: "root-require" })])).toBe(
+      "Composer's solver at PHP 8.4 refuses its update: composer.json requires acme/clock ^1.0",
+    );
+  });
+
+  test("say its update for one package that fails on two links", () => {
+    const twoLinks = fix({
+      packages: [
+        {
+          name: "acme/clock",
+          version: "1.2.0",
+          link: "require",
+          target: "php",
+          constraint: "~8.2.0",
+          dev: false,
+        },
+        {
+          name: "acme/clock",
+          version: "1.2.0",
+          link: "require",
+          target: "php-64bit",
+          constraint: "~8.2.0",
+          dev: false,
+        },
+      ],
+    });
+
+    expect(phpStateClauses(report({ target_fix: twoLinks })) ?? []).toEqual([
+      "this lock installs on PHP 8.2 to 8.3, so your target, 8.4, is excluded",
+      "1 package excludes 8.4: acme/clock",
+      "Composer's solver at PHP 8.4 refuses its update",
+    ]);
+  });
+});
+
+describe("the root ceiling", () => {
+  test("names three root links, then the count of the rest", () => {
+    const root = (link: HeldBy["link"], target: string): HeldBy =>
+      hold({ source: "root", package: null, version: null, link, target, constraint: "<8.4" });
+    const held = [
+      root("require", "php"),
+      root("require", "php-64bit"),
+      root("conflict", "php"),
+      root("conflict", "php-64bit"),
+    ];
+
+    expect(phpStateClauses(report({ target_fix: fix({ packages: [], held_by: held }) }))?.[1]).toBe(
+      "your target, 8.4, is excluded, and only a change to require.php, require.php-64bit, conflict.php and 1 more can admit it",
+    );
+  });
+});
+
+describe("the edge setter line (G157)", () => {
+  const finding = (pkg: string): Finding => ({ package: pkg, flags: [] }) as unknown as Finding;
+  const lines =
+    (window: Partial<NonNullable<Report2["run"]["php_window"]>>, run: Record<string, unknown> = {}) =>
+    (pkg: string): string[] => {
+      const r = report(window);
+      return edgeSetterLines(finding(pkg), { ...r.run, project_php_lowest: null, ...run });
+    };
+
+  test("shows no lowest edge that require.php sets as well", () => {
+    expect(lines({}, { project_php_lowest: "8.2.0" })("acme/clock")).toEqual([
+      "It sets the highest PHP this lock admits: it excludes 8.4",
+    ]);
+  });
+
+  test("shows no highest edge that a root link sets too", () => {
+    const rootToo = set({
+      upper_edge: { excludes: "8.4", set_by: [req({}), req({ name: null, version: null })] },
+    });
+
+    expect(lines({ without_dev: rootToo })("acme/clock")).toEqual([
+      "It sets the lowest PHP this lock admits: 8.2.0",
+    ]);
+  });
+
+  test("reads the set with require-dev under --dev, and without it when the lock has no packages-dev key", () => {
+    const dev = set({ lower_edge: { php: "8.3.0", set_by: [req({ name: "acme/dev" })] }, upper_edge: null });
+
+    expect(lines({ with_dev: dev }, { include_dev: true })("acme/dev")).toEqual([
+      "It sets the lowest PHP this lock admits: 8.3.0",
+    ]);
+    expect(lines({ with_dev: dev }, { include_dev: false })("acme/dev")).toEqual([]);
+    expect(lines({ with_dev: null }, { include_dev: true })("acme/clock")).toHaveLength(2);
   });
 });

@@ -143,8 +143,10 @@ describe("the PHP cap and the PHP window on the sheet (SPEC §7.9.8.14)", () => 
     ]);
   });
 
-  test("prints no edge line on a package that sets no edge", () => {
-    expect(qualifier(openCase("B"), "PHP")).toEqual([]);
+  test("prints no PHP row on a package that sets no edge and runs on the target", () => {
+    const sheet = openCase("B");
+
+    expect([...sheet.querySelectorAll(".d3-q dt")].map((dt) => dt.textContent)).not.toContain("PHP");
   });
 
   test("reads capped with its full constraint while the target runs it (G158)", () => {

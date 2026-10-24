@@ -8,6 +8,7 @@ import type { Finding, HeldBy, PhpWindowReq, PhpWindowSet, Report2, Run, TargetF
 import { NAMES_SHOWN, newestPhpWords, signalData } from "./findingWords";
 import { plural, pluralNoun } from "./format";
 import { joinAnd } from "./joinWords";
+import { linkWords } from "./moveCards";
 import { checkReasonRich } from "./pageVocabulary";
 import { plain } from "./rich";
 import { commandLine } from "./shellArgv";
@@ -69,7 +70,7 @@ const reqList = (reqs: readonly PhpWindowReq[], withVersion = false): string =>
   joinAndCapped([...new Set(reqs.map((req) => reqWords(req, withVersion)))]);
 
 function closestWords({ minors, set_by: setBy }: NonNullable<PhpWindowSet["closest"]>): string {
-  return `${minorsWords(minors, false)} ${pluralNoun(minors.length, "is", "are")} excluded only by ${reqList(setBy, true)}`;
+  return `${minorsWords(minors, true)} ${pluralNoun(minors.length, "is", "are")} excluded only by ${reqList(setBy, true)}`;
 }
 
 /** One Run tab row's cells (SPEC §7.9.16): the minors, the lowest edge and the excluded minor. */
@@ -139,23 +140,28 @@ function isRootCeiling(fix: TargetFix): boolean {
   );
 }
 
-/** A hold as the `php:` line words it (SPEC §7.0). */
+/** A hold as the `php:` line words it (SPEC §7.0), with the link words of the move card. */
 const holdWords = (h: HeldBy): string =>
-  `${h.source === "root" ? "composer.json" : `${h.package ?? ""} ${h.version ?? ""}`} requires ${h.target ?? ""} ${h.constraint}`;
+  `${h.source === "root" ? "composer.json" : `${h.package ?? ""} ${h.version ?? ""}`} ${plain(linkWords(h))}`;
 
-function packagesClause(fix: TargetFix, target: string): string {
+function packageNames(fix: TargetFix): string[] {
   const names: string[] = [];
   for (const { name, dev } of fix.packages) {
     const word = dev ? `${name} (require-dev)` : name;
     if (!names.includes(word)) names.push(word);
   }
+  return names;
+}
+
+function packagesClause(fix: TargetFix, target: string): string {
+  const names = packageNames(fix);
   return `${plural(names.length, "package excludes", "packages exclude")} ${target}: ${joinAndCapped(names)}`;
 }
 
 function fixClauses(fix: TargetFix, target: string): string[] {
   if (isRootCeiling(fix)) {
-    const links = [...new Set(fix.held_by.map((h) => `${h.link}.${h.target ?? ""}`))];
-    return [`your target, ${target}, is excluded, and only a change to ${joinAnd(links)} can admit it`];
+    const links = fix.held_by.map((h) => `${h.link}.${h.target ?? ""}`);
+    return [`your target, ${target}, is excluded, and only a change to ${joinAndCapped(links)} can admit it`];
   }
   const solver = `Composer's solver at PHP ${target}`;
   const command = fix.command === null ? null : commandLine(fix.command, "posix");
@@ -168,7 +174,7 @@ function fixClauses(fix: TargetFix, target: string): string[] {
           : `${solver} resolves this update: ${command ?? ""}`,
       ];
     case "refused": {
-      const their = fix.packages.length === 1 ? "its" : "their";
+      const their = packageNames(fix).length === 1 ? "its" : "their";
       const holds = fix.held_by.length === 0 ? "" : `: ${fix.held_by.map(holdWords).join(" and ")}`;
       return [packagesClause(fix, target), `${solver} refuses ${their} update${holds}`];
     }
