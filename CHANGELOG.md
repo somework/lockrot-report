@@ -150,6 +150,23 @@ project is overall, and the other tabs lead with their own part.
   `<` and `=`).
 - A report the page cannot read, or one that breaks the page as it draws, shows a screen that says
   so instead of a blank page.
+- The PHP window. When the target PHP is outside it, when `config.platform.php` sets the PHP that
+  Composer checks, or when a package carries `capped`, a "PHP" state line follows the gate line:
+  "PHP: this lock installs on PHP 7.4, so your target, 8.4, is excluded · 3 packages exclude 8.4:
+  … · Composer's solver at PHP 8.4 refuses their update: composer.json requires
+  php-http/guzzle5-adapter ^2.0. The PHP window ›". It names the update that admits the target
+  and Composer's answer, or the root link that alone excludes it. The Run tab lists both windows
+  in full: the minors, the lowest PHP and what sets it, and the minor that the lock excludes.
+- The flag `capped` and its signal S11, "PHP cap". The open package reads "It requires php
+  ~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0: it stops at 8.4, so the newest PHP, 8.5, is excluded", and
+  drops the constraint when the target's own PHP line already names it. A package that sets an
+  edge of the PHP window, stricter than require.php, says so under PHP: "It sets the lowest PHP
+  this lock admits: 8.1.0". A move that lands on a capped release adds "capped: it stops below the
+  newest PHP", and a package that no release frees reads "No release above 4.7.1 admits PHP 8.5".
+  Each constraint prints in full.
+- On a run whose lock Composer's solver refuses at the target PHP, a move card's check reads "not
+  checked: Composer's solver refuses the lock itself at the target PHP; see the PHP line in the
+  Overview".
 
 ### Changed
 
