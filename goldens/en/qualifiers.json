@@ -9,6 +9,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -25,6 +26,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -41,6 +43,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -57,6 +60,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade critical or above",
@@ -73,6 +77,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: an advisory of high severity or above",
@@ -89,6 +94,9 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 7.1.3"
+    ],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -105,6 +113,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -121,6 +130,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [
       "left-behind and old-promise are accepted by your ignore list",
       "Kept on 2.x on purpose (‡)",
@@ -141,6 +151,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -157,6 +168,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -174,6 +186,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -190,6 +203,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: the old-promise flag",
@@ -206,6 +220,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: the left-behind flag and an advisory of high severity or above",
@@ -222,6 +237,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "No gate in this run"
@@ -239,6 +255,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above and a check that did not run",
@@ -257,6 +274,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -275,6 +293,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -293,6 +312,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "reaches the gate, exempt by baseline"
@@ -310,6 +330,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -328,6 +349,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -350,6 +372,7 @@
       "Its repository activity (offline)"
     ],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above and a check that did not run",
@@ -370,6 +393,7 @@
       "Its repository activity (no token)"
     ],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -386,6 +410,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -402,6 +427,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [
       "stale is accepted by your ignore list",
       "A single-file minifier, finished",
@@ -422,6 +448,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -437,6 +464,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -454,6 +482,7 @@
       "Its repository activity (allowlisted)"
     ],
     "php": null,
+    "php_edge": [],
     "accepted": [
       "Its maintenance is accepted by your ignore list",
       "Symfony is upgraded on its own schedule (‡)",
@@ -475,6 +504,7 @@
       "Its repository activity (allowlisted)"
     ],
     "php": null,
+    "php_edge": [],
     "accepted": [
       "Its maintenance is accepted by lockrot's built-in list",
       "A Symfony polyfill for a PHP extension, released with Symfony",
@@ -494,6 +524,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -510,6 +541,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -528,6 +560,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -546,10 +579,91 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
       "Tripped by abandoned"
+    ]
+  },
+  "adds-capped-raise-php": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "scheb/2fa-backup-code",
+      "scheb/2fa-email",
+      "scheb/2fa-google-authenticator",
+      "scheb/2fa-qr-code",
+      "scheb/2fa-trusted-device"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
+  "adds-capped-require-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "scheb/2fa-backup-code",
+      "scheb/2fa-email",
+      "scheb/2fa-google-authenticator",
+      "scheb/2fa-qr-code",
+      "scheb/2fa-trusted-device"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
+  "adds-capped-tag-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
+  "adds-capped-update": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 7.3.0"
+    ],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-34084"
     ]
   },
   "affected-range-unknown-dagger": {
@@ -564,6 +678,7 @@
       "Its repository activity (allowlisted)"
     ],
     "php": null,
+    "php_edge": [],
     "accepted": [
       "Its maintenance is accepted by lockrot's built-in list",
       "A Symfony polyfill for a PHP extension, released with Symfony",
@@ -583,10 +698,85 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
       "Tripped by abandoned"
+    ]
+  },
+  "capped-covered-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through symfony/proxy-manager-bridge",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-local-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": "It is installed from a local path (your own code); the advisory is published for the package of this name, so check the version your path holds",
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its repository activity and its release metadata (not from a Composer repository)"
+    ],
+    "php": null,
+    "php_edge": [],
+    "accepted": [
+      "pinned is accepted by your ignore list",
+      "Our own package",
+      "Entry mautic/core-lib"
+    ],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by capped and CVE-2022-25768"
+    ]
+  },
+  "capped-require-php": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
+  "capped-tag-unverified-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
     ]
   },
   "either-critical-dagger": {
@@ -601,6 +791,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -619,6 +810,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -634,6 +826,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -650,6 +843,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "No gate in this run"
@@ -665,6 +859,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -682,6 +877,9 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 7.2.5"
+    ],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -700,6 +898,7 @@
       "Its archived flag (no token)"
     ],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -716,6 +915,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -734,6 +934,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -753,6 +954,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -770,6 +972,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -789,6 +992,7 @@
       "Its repository activity (no token)"
     ],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -814,6 +1018,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -832,6 +1037,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -845,6 +1051,9 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 7.2.0"
+    ],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -864,6 +1073,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [
       "abandoned is accepted by your ignore list",
       "Kept until 9.0 (‡)",
@@ -887,6 +1097,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -906,6 +1117,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above and a check that did not run",
@@ -923,6 +1135,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -942,6 +1155,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -959,6 +1173,7 @@
       "Its repository activity and its release metadata (not from a Composer repository)"
     ],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -976,6 +1191,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -994,6 +1210,7 @@
       "Its repository activity (allowlisted)"
     ],
     "php": null,
+    "php_edge": [],
     "accepted": [
       "Its maintenance is accepted by lockrot's built-in list",
       "A Symfony polyfill for a PHP extension, released with Symfony",
@@ -1052,9 +1269,181 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "mc-baseline-refused-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-47345"
+    ]
+  },
+  "mc-dev-update-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly only in require-dev, which this run did not walk",
+      "In production it comes in through guzzlehttp/guzzle"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-59882"
+    ]
+  },
+  "mc-inline-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-47345"
+    ]
+  },
+  "mc-package-hold-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-45068"
+    ]
+  },
+  "mc-pass-cap-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-45068"
+    ]
+  },
+  "mc-raise-php-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-45304"
+    ]
+  },
+  "mc-replan-major-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-69246"
+    ]
+  },
+  "mc-root-hold-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-69246"
+    ]
+  },
+  "mc-with-all-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-48736"
+    ]
+  },
+  "mc-with-deps-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-48784"
     ]
   },
   "move-check-dagger": {
@@ -1067,6 +1456,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1085,6 +1475,7 @@
       "Its repository activity (repository not found)"
     ],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1100,6 +1491,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: a check that did not run",
@@ -1116,6 +1508,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1134,6 +1527,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1150,6 +1544,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1166,10 +1561,81 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
       "Tripped by left-behind and CVE-2026-00011"
+    ]
+  },
+  "php-edge-equal-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "scheb/2fa-backup-code",
+      "scheb/2fa-email",
+      "scheb/2fa-google-authenticator",
+      "scheb/2fa-qr-code",
+      "scheb/2fa-trusted-device"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
+  "php-edge-lower-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "scheb/2fa-backup-code",
+      "scheb/2fa-email",
+      "scheb/2fa-google-authenticator",
+      "scheb/2fa-qr-code",
+      "scheb/2fa-trusted-device"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 8.1.0"
+    ],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
+  "php-edge-upper-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "scheb/2fa-backup-code",
+      "scheb/2fa-email",
+      "scheb/2fa-google-authenticator",
+      "scheb/2fa-qr-code",
+      "scheb/2fa-trusted-device"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [
+      "It sets the highest PHP this lock admits: it excludes 8.5"
+    ],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
     ]
   },
   "php-null": {
@@ -1183,6 +1649,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1200,6 +1667,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1219,6 +1687,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above and a check that did not run"
@@ -1235,6 +1704,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1251,6 +1721,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1267,6 +1738,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1319,6 +1791,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1336,6 +1809,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1352,6 +1826,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1368,6 +1843,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1385,6 +1861,9 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 7.2.5"
+    ],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1401,6 +1880,9 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 7.2.5"
+    ],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1417,6 +1899,9 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 7.2.5"
+    ],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1432,11 +1917,29 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [
       "stale is accepted by your ignore list",
       "Feature-complete, kept on purpose",
       "Entry akaunting/laravel-version"
     ],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "stale-capped": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through symfony/proxy-manager-bridge",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
     ]
@@ -1451,6 +1954,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1466,6 +1970,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1485,6 +1990,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1502,6 +2008,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1515,6 +2022,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1529,6 +2037,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: a check that did not run",
@@ -1545,6 +2054,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1562,6 +2072,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1579,6 +2090,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1595,6 +2107,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1610,6 +2123,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1626,6 +2140,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1642,6 +2157,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1659,6 +2175,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [
       "old-promise is accepted by your ignore list",
       "Kept on 2.x on purpose (‡)",
@@ -1667,6 +2184,424 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by CVE-2026-45077"
+    ]
+  },
+  "capped-accepted-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": "Its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there",
+    "php_edge": [],
+    "accepted": [
+      "capped is accepted by your ignore list",
+      "The cap is tested, kept on purpose",
+      "Entry laminas/laminas-code"
+    ],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-blocked-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-dev-dagger": {
+    "reach": [
+      "Dev only: in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge",
+      "Its whole score counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-held-update-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-htmlpurifier-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-known-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-money-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through laravel/cashier"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-nette-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through:",
+      "laravel/framework",
+      "pragmarx/google2fa-laravel",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-new-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-no-php-newest-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-no-release-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-platform-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-project-blocked-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-raise-php": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-recapped-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-require-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-require-higher-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-snapshot-alias-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-snapshot-backport-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-snapshot-dev-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-unread-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-update-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
     ]
   },
   "finished-offline-dagger": {
@@ -1681,6 +2616,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [
       "Its maintenance is accepted by lockrot's built-in list",
       "A PHP-FIG utility package, complete by design",
@@ -1700,6 +2636,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: a check that did not run",
@@ -1715,6 +2652,7 @@
       "Its repository activity (host not supported: lockrot cannot ask codeberg.org; accepted by your accept-unchecked list: Forgejo has no API lockrot reads; we watch the repository by hand (‡))"
     ],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above and a check that did not run"
@@ -1729,6 +2667,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: a check that did not run",
@@ -1744,6 +2683,7 @@
       "Its advisories (no repository publishes advisories; accepted by your accept-unchecked list: the mirror has no advisory feed; composer audit runs against packagist.org in CI (‡))"
     ],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above and a check that did not run"
@@ -1758,6 +2698,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: a check that did not run",
@@ -1774,6 +2715,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1787,6 +2729,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1801,6 +2744,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: a check that did not run",
@@ -1820,6 +2764,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [
       "Its maintenance is accepted by lockrot's built-in list",
       "A PHP-FIG interface package, complete by design",
@@ -1838,6 +2783,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1858,6 +2804,7 @@
     ],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -1871,6 +2818,7 @@
     "unchecked": [],
     "not_run": [],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
@@ -1889,6 +2837,7 @@
       "Its release metadata (not from a Composer repository; accepted by your accept-unchecked list: joomla's backport fork; we follow its branch (‡))"
     ],
     "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",

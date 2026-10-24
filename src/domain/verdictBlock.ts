@@ -13,6 +13,7 @@ import {
   countsAs,
   isAre,
   lowerFirst,
+  newestPhpWords,
   oneDecimal,
   printedModifiers,
   signalData,
@@ -216,6 +217,13 @@ function flagReading(finding: Finding, flag: FindingFlag, run: Run, ctx: SheetCo
         flag.id,
         `It was written for PHP ${s5?.written_for_php ?? ""} and admits ${s5?.target_php ?? run.target_php} untested`,
       );
+    }
+    case "capped": {
+      const s11 = signalData(finding, "S11");
+      if (!s11) return reading(id, summary);
+      // G59 or G102 already names the constraint when the target is excluded.
+      const head = s11.excludes_target ? "It stops" : `It requires php ${s11.requires}: it stops`;
+      return reading(id, `${head} at ${s11.stops_at}, so ${newestPhpWords(s11)}, is excluded`);
     }
     case "vulnerable":
       return vulnerableReading(finding, flag, run, ctx);

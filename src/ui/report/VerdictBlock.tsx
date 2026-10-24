@@ -81,7 +81,9 @@ function QualifierRows({ q }: { q: Qualifiers }) {
     q.notJudged === null ? null : ([DETAIL_WORDS.notJudged, q.notJudged] as const),
     q.unchecked.length === 0 ? null : ([DETAIL_WORDS.unchecked, <Lines lines={q.unchecked} />] as const),
     q.notRun.length === 0 ? null : ([DETAIL_WORDS.notRun, <Lines lines={q.notRun} />] as const),
-    q.php === null ? null : ([DETAIL_WORDS.php, q.php] as const),
+    q.php === null && q.phpEdge.length === 0
+      ? null
+      : ([DETAIL_WORDS.php, <Lines lines={[...(q.php === null ? [] : [q.php]), ...q.phpEdge]} />] as const),
     accepted === null
       ? null
       : ([

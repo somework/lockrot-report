@@ -201,8 +201,8 @@ describe("the three lines of the page-golden documents", () => {
     [
       "wallabag",
       "Project grade: critical · 15 critical findings · 84 of 210 packages high or worse",
-      "110 of 210 packages flagged · 81 ok · 19 allowlisted",
-      "1849 points on 110 flagged packages · 1664 (89 %) from high or worse · score model 1",
+      "111 of 210 packages flagged · 80 ok · 19 allowlisted",
+      "1859 points on 111 flagged packages · 1666 (89 %) from high or worse · score model 1",
     ],
   ])("%s", (id, grade, figure, load) => {
     expect(lines(golden(id))).toEqual([grade, figure, load]);
@@ -246,9 +246,9 @@ describe("the grade line", () => {
 
   test("counts the graded findings known to the baseline, after the other qualifiers", () => {
     expect(lines(baselined("baselined/wallabag-2.6"))).toEqual([
-      "Project grade: critical · 15 critical findings · 84 of 210 packages high or worse · 45 known to the baseline",
-      "112 of 210 packages flagged · 79 ok · 19 allowlisted",
-      "1861 points on 112 flagged packages · 1664 (89 %) from high or worse · score model 1",
+      "Project grade: critical · 15 critical findings · 84 of 210 packages high or worse · 46 known to the baseline",
+      "113 of 210 packages flagged · 78 ok · 19 allowlisted",
+      "1871 points on 113 flagged packages · 1666 (89 %) from high or worse · score model 1",
     ]);
   });
 
@@ -263,7 +263,7 @@ describe("the grade line", () => {
 describe("the load line", () => {
   test("adds the points from packages-dev", () => {
     expect(lines(baselined("baselined/wallabag-main"))[2]).toBe(
-      "898 points on 71 flagged packages · 738 (82 %) from high or worse · score model 1 · 88 from packages-dev",
+      "902 points on 72 flagged packages · 738 (81 %) from high or worse · score model 1 · 88 from packages-dev",
     );
   });
 

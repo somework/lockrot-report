@@ -68,6 +68,7 @@ export function blockGolden(
         unchecked: q.unchecked,
         not_run: q.notRun,
         php: q.php,
+        php_edge: q.phpEdge,
         accepted:
           q.accepted === null
             ? []

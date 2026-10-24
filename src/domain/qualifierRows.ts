@@ -19,6 +19,7 @@ import { day } from "./format";
 import { joinAnd } from "./joinWords";
 import { allowlistBy, causeWord, signalName, skippedCheckWord } from "./pageVocabulary";
 import { phpConstraintWord } from "./phpAlternatives";
+import { edgeSetterLines } from "./phpWindow";
 import type { Rich } from "./rich";
 
 const HALVING_REASONS: readonly string[] = ["transitive", "unreached", "dev"];
@@ -264,6 +265,8 @@ export interface Qualifiers {
   readonly unchecked: readonly string[];
   readonly notRun: readonly string[];
   readonly php: string | null;
+  /** G157: the edges of the PHP window that this package sets. */
+  readonly phpEdge: readonly string[];
   readonly accepted: AcceptedRow | null;
   readonly gate: GateRow;
 }
@@ -293,6 +296,7 @@ export function qualifiers(finding: Finding, run: Run): Qualifiers {
       notJudged !== null || move?.reason === "metadata_not_read",
     ),
     php: php === null ? null : capitalize(php),
+    phpEdge: edgeSetterLines(finding, run),
     accepted: acceptedRow(finding),
     gate: gateRow(finding, run),
   };

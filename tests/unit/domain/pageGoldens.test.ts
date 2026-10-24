@@ -23,6 +23,7 @@ import { depthRows, exposureBars, libyearsTop, OVERVIEW_TAB_WORDS } from "../../
 import { gradeLine, gradeLineText, waffleCaption, weighsMost } from "../../../src/domain/projectGrade";
 import { gatePartition, readyCount } from "../../../src/domain/readyToRun";
 import { runNotes } from "../../../src/domain/runTab";
+import { windowRows } from "../../../src/domain/phpWindow";
 import { stateLineText, stateLines } from "../../../src/domain/runState";
 import { waffleRuns } from "../../../src/domain/summary";
 import type { Report2 } from "../../../src/model/report";
@@ -163,6 +164,7 @@ const FIELDS: Readonly<Record<string, (report: Report2) => unknown>> = {
   signals_key: (report) => signalKey(report.findings).map(({ id, name }) => `${id} ${name}`),
   advisory_groups: advisoryGroupNotes,
   run_notes: runNotes,
+  php_rows: windowRows,
 };
 
 /** The sheet's move cards of the packages that the golden names, in the `moves` block shape. */
@@ -246,7 +248,7 @@ describe("every page-golden field equals lockrot's page golden (SPEC §7.9.14)",
         "checked with Composer",
         "Composer refuses the move",
         "if Composer resolves it (not checked: a package it needs could not be loaded)",
-        "if Composer resolves it (not checked: Composer refuses the lock itself)",
+        "if Composer resolves it (not checked: Composer's solver refuses the lock itself at the target PHP; see the PHP line in the Overview)",
       ]),
     );
   });

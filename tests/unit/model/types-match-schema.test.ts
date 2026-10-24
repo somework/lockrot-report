@@ -120,7 +120,7 @@ const DEFINITION = {
     definitionOf("securityClear")(value) || definitionOf("securityUnchecked")(value),
 };
 
-const SIGNAL_IDS = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"] as const;
+const SIGNAL_IDS = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11"] as const;
 const SIGNAL_DATA = Object.fromEntries(SIGNAL_IDS.map((id) => [id, definitionOf(id.toLowerCase())]));
 
 function errorsOf(validate: { errors?: unknown }): unknown {

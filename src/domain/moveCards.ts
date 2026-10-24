@@ -7,7 +7,7 @@ import type { AlsoMove, Finding, HeldBy, Move, Run } from "../model/report";
 import { isScoreGraded } from "../model/report";
 import { advisoryRows } from "./advisoryRows";
 import { countedFlagIds } from "./countedFlags";
-import { capitalize, metadataWords } from "./findingWords";
+import { capitalize, metadataWords, signalData } from "./findingWords";
 import { pluralNoun } from "./format";
 import { joinAnd } from "./joinWords";
 import { safeHref } from "./links";
@@ -146,6 +146,10 @@ function moveAction(finding: Finding, move: AnyMove, run: Run): Rich {
           `lockrot did not read its releases (${metadataWords(finding)}), so it names no move` +
             (move.source === "pinned" ? ": review the snapshot" : ""),
         ];
+      }
+      if (move.reason === "no_release_admits") {
+        const s11 = signalData(finding, "S11");
+        if (s11) return [`No release above ${finding.version} admits PHP ${s11.newest_php}`];
       }
       return [(move.reason !== null && NO_MOVE_WORDS[move.reason]) || unknownMove(move)];
     default:
@@ -292,6 +296,9 @@ export interface MoveAfter {
 
 const COMPOSER_KINDS: readonly string[] = ["update", "require", "raise-php", "tag"];
 const RESOLVES_CAVEAT = "if Composer resolves it";
+/** The card names where the fix is, so it does not take the short words of the reason table. */
+const BASELINE_REFUSED_CARD_WORDS =
+  "Composer's solver refuses the lock itself at the target PHP; see the PHP line in the Overview";
 
 /** The check line of SPEC §7.9.21 "The move", one After condition; null for a kind that runs no
  *  Composer request. An unknown reason prints as written, in a code element. */
@@ -308,7 +315,13 @@ export function checkLine(move: AnyMove, run: Run): Rich | null {
     case "refused":
       return ["Composer refuses the move"];
     default:
-      return [`${RESOLVES_CAVEAT} (not checked: `, ...checkReasonRich(check.reason ?? ""), ")"];
+      return [
+        `${RESOLVES_CAVEAT} (not checked: `,
+        ...(check.reason === "baseline_refused"
+          ? [BASELINE_REFUSED_CARD_WORDS]
+          : checkReasonRich(check.reason ?? "")),
+        ")",
+      ];
   }
 }
 

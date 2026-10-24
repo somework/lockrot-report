@@ -14,6 +14,7 @@ import type {
   S6,
   S8,
   S9,
+  S11,
   SecurityVulnerable,
   Severity,
   SignalId,
@@ -43,6 +44,18 @@ export function namesCapped(names: readonly string[]): string {
   return `${names.slice(0, NAMES_SHOWN).join(", ")} and ${names.length - NAMES_SHOWN} more`;
 }
 
+/** SPEC §5.10's R words, with no trailing comma: "the newest PHP, 8.5". */
+export function newestPhpWords({ newest_php: php, newest_php_source: source }: S11): string {
+  switch (source) {
+    case "require_php":
+      return `${php}, the newest PHP that require.php allows`;
+    case "platform_php":
+      return `${php}, the newest PHP that the lock's platform allows`;
+    default:
+      return `the newest PHP, ${php}`;
+  }
+}
+
 export const oneDecimal = (years: number | null): string => (years === null ? "" : decimal(years, 1));
 
 interface SignalData {
@@ -54,6 +67,7 @@ interface SignalData {
   S6: S6;
   S8: S8;
   S9: S9;
+  S11: S11;
 }
 
 export function signalData<I extends keyof SignalData>(finding: Finding, id: I): SignalData[I] | null {

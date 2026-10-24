@@ -125,6 +125,37 @@ describe("the sheet in SPEC §7.9.8's order", () => {
   });
 });
 
+describe("the PHP cap and the PHP window on the sheet (SPEC §7.9.8.14)", () => {
+  const qualifier = (sheet: HTMLElement, label: string): string[] => {
+    const row = [...sheet.querySelectorAll(".d3-q")].find(
+      (q) => q.querySelector("dt")?.textContent === label,
+    );
+    return [...(row?.querySelectorAll(".d3-q-line") ?? [])].map((line) => line.textContent);
+  };
+
+  test("prints the edge a package sets under PHP (G157)", () => {
+    expect(qualifier(openCase("php-edge-lower-dagger"), "PHP")).toEqual([
+      "It sets the lowest PHP this lock admits: 8.1.0",
+    ]);
+    cleanup();
+    expect(qualifier(openCase("php-edge-upper-dagger"), "PHP")).toEqual([
+      "It sets the highest PHP this lock admits: it excludes 8.5",
+    ]);
+  });
+
+  test("prints no edge line on a package that sets no edge", () => {
+    expect(qualifier(openCase("B"), "PHP")).toEqual([]);
+  });
+
+  test("reads capped with its full constraint while the target runs it (G158)", () => {
+    const sheet = openCase("capped-tag-unverified-dagger");
+
+    expect(sheet.textContent).toContain(
+      "It requires php >=7.2 <8.5: it stops at 8.4, so the newest PHP, 8.5, is excluded.",
+    );
+  });
+});
+
 describe("the header", () => {
   const withLink =
     (link: string | null) =>

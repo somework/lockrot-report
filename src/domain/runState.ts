@@ -1,11 +1,12 @@
 /** Overview's state lines: what limits this run's answer, read from `note_details[].code`,
- *  `security.check`, `counts` and the root `baseline`. One line per state that applies. */
+ *  `security.check`, `counts`, `run.php_window` and the root `baseline`. One line per state that applies. */
 
 import type { Report2 } from "../model/report";
 import type { LinkTarget } from "../state/types";
 import { plural } from "./format";
+import { phpStateClauses } from "./phpWindow";
 
-export type StateKind = "lookup" | "allowlist" | "baseline";
+export type StateKind = "lookup" | "php" | "allowlist" | "baseline";
 
 export interface StatePart {
   readonly text: string;
@@ -46,6 +47,17 @@ function lookupLine(report: Report2): StateLine | null {
     head: offline ? "Offline run" : "Incomplete data",
     parts,
     more: { text: "What this run could not see", link: RUN_DATA },
+  };
+}
+
+function phpLine(report: Report2): StateLine | null {
+  const clauses = phpStateClauses(report);
+  if (clauses === null) return null;
+  return {
+    kind: "php",
+    head: "PHP",
+    parts: clauses.map(plain),
+    more: { text: "The PHP window", link: RUN_DATA },
   };
 }
 
@@ -100,7 +112,7 @@ function baselineLine({ baseline }: Report2): StateLine | null {
 }
 
 export function stateLines(report: Report2): StateLine[] {
-  return [lookupLine(report), allowlistLine(report), baselineLine(report)].filter(
+  return [lookupLine(report), phpLine(report), allowlistLine(report), baselineLine(report)].filter(
     (line): line is StateLine => line !== null,
   );
 }

@@ -18,6 +18,7 @@ import {
   type ScoreTable,
 } from "../../domain/scorePanel";
 import { verdictTone } from "../../domain/findingRow";
+import { windowFacts } from "../../domain/phpWindow";
 import type { Report2 } from "../../model/report";
 import { OutLink, toneClass } from "../common/common";
 import { useReport } from "../context";
@@ -258,6 +259,7 @@ export function RunView2() {
       <ScoreWorks report={report} opened={state.example} />
       <Lookup run={report.run} />
       <Baseline report={report} />
+      <KeyValues head={RUN_WORDS.phpWindow} rows={windowFacts(report)} />
       <Notes report={report} />
       <AcceptedUnchecked report={report} />
       <section className="sect">

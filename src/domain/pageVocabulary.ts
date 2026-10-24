@@ -52,6 +52,7 @@ const SIGNAL_NAMES: Words = {
   S8: "release branch",
   S9: "advisories",
   S10: "unchecked",
+  S11: "PHP cap",
 };
 
 export const signalName = (id: string): string => wordFor(SIGNAL_NAMES, id);
@@ -233,6 +234,7 @@ export const headlineReasonWord = (id: string): string => wordFor(HEADLINE_REASO
 const ADDS_BASIS: Words = {
   released_before_ga: "it was released before your target PHP's major",
   branch_not_releasing: "that line no longer releases while a higher line does",
+  stops_below_newest_php: "it stops below the newest PHP",
 };
 
 export const addsBasisWord = (id: string): string =>
@@ -418,6 +420,7 @@ const FLAG_CLAIMS: Words = {
   "old-promise":
     "The installed release predates the target PHP's major, and its require.php admits the target only because it has no upper bound.",
   stale: "No release for release-warn-years, or no push for push-warn-years, short of silent.",
+  capped: "It stops below the newest PHP.",
   vulnerable: "A counted security advisory affects the installed version.",
 };
 

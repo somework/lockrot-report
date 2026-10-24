@@ -23,6 +23,10 @@
     ],
     "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": [
       "tie-dagger"
+    ],
+    "lockrot's recording and the model's input differ: the case sets the project's require.php (‡); the model keeps the finding's S8 as the corpus judged it, and lockrot judges S8 under the case's require.php": [
+      "adds-capped-require-dagger",
+      "php-edge-equal-dagger"
     ]
   },
   "readings": {
@@ -51,6 +55,12 @@
       "affected-range-unknown-dagger",
       "long-range-dagger",
       "replace-graded"
+    ]
+  },
+  "branches_lead": {
+    "lockrot's recording and the model's input differ: the case sets the project's require.php (‡); the model keeps the finding's S8 as the corpus judged it, and lockrot judges S8 under the case's require.php": [
+      "adds-capped-require-dagger",
+      "php-edge-equal-dagger"
     ]
   }
 }

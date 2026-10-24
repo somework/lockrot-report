@@ -3015,6 +3015,529 @@
     "ignored": [],
     "ladder": []
   },
+  "adds-capped-raise-php": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "adds-capped-require-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "adds-capped-tag-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "adds-capped-update": {
+    "summary": [
+      "28 advisories:",
+      "31 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [
+      "critical 2",
+      "high 15",
+      "medium 11"
+    ],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, 1.23.0."
+    ],
+    "groups": [
+      {
+        "severity": "critical",
+        "count": 2,
+        "words": "advisories",
+        "open": true
+      },
+      {
+        "severity": "high",
+        "count": 15,
+        "words": "advisories",
+        "open": false
+      },
+      {
+        "severity": "medium",
+        "count": 11,
+        "words": "advisories",
+        "open": false
+      }
+    ],
+    "rows": [
+      {
+        "name": "CVE-2026-34084",
+        "source": "PKSA-8cfg-tzhf-fr83",
+        "deciding": true,
+        "severity": "critical",
+        "fix": "fix 1.30.7 on 1.x, your branch (composer update)",
+        "affects": "affects 5 ranges",
+        "ranges": [
+          "<=1.30.2|",
+          ">=2.0.0,<=2.1.14|",
+          ">=2.2.0,<=2.4.3|",
+          ">=3.3.0,<=3.10.3|",
+          ">=4.0.0,<=5.5.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-45034",
+        "source": "PKSA-x678-4z45-v3d5",
+        "deciding": false,
+        "severity": "critical",
+        "fix": "fix 1.30.7 on 1.x, your branch (composer update)",
+        "affects": "affects <=1.30.4",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-56366",
+        "source": "PKSA-285y-y5bt-kvd9",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.29.8 on 1.x, your branch (composer update)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=2.2.0,<=2.3.4|",
+          ">=2.0.0,<=2.1.5|",
+          "<=1.29.6|",
+          ">=3.0.0,<3.7.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2025-54370",
+        "source": "PKSA-64jn-3d9t-gncx",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.30.0 on 1.x, your branch (composer update)",
+        "affects": "affects 7 ranges",
+        "ranges": [
+          "<1.30.0|",
+          ">=2.0.0,<2.1.0|",
+          ">=2.1.0,<2.1.12|",
+          ">=2.2.0,<2.3.0|",
+          ">=2.3.0,<2.4.0|",
+          ">=3.0.0,<3.10.0|",
+          ">=4.0.0,<5.0.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-56408",
+        "source": "PKSA-bcnb-9tc9-bjb8",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.29.8 on 1.x, your branch (composer update)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=2.2.0,<=2.3.4|",
+          ">=2.0.0,<=2.1.5|",
+          "<=1.29.6|",
+          ">=3.0.0,<3.7.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-47873",
+        "source": "PKSA-dbrb-pvhs-h3st",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.29.4 on 1.x, your branch (composer update)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=3.3.0,<3.4.0|",
+          ">=2.2.0,<2.3.2|",
+          ">=2.0.0,<2.1.3|",
+          "<1.29.4"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-59931",
+        "source": "PKSA-dqzt-yst9-1w9y",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.30.7 on 1.x, your branch (composer update)",
+        "affects": "affects 5 ranges",
+        "ranges": [
+          "<=1.30.5|",
+          ">=2.0.0,<=2.1.17|",
+          ">=2.2.0,<=2.4.6|",
+          ">=3.3.0,<=3.10.6|",
+          ">=4.0.0,<=5.8.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-48917",
+        "source": "PKSA-gst3-cdk3-bpqt",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.29.4 on 1.x, your branch (composer update)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=3.3.0,<3.4.0|",
+          ">=2.2.0,<2.3.2|",
+          ">=2.0.0,<2.1.3|",
+          "<1.29.4"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-40902",
+        "source": "PKSA-gz3f-3cz3-3wsw",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.30.7 on 1.x, your branch (composer update)",
+        "affects": "affects 5 ranges",
+        "ranges": [
+          "<=1.30.3|",
+          ">=2.0.0,<=2.1.15|",
+          ">=2.2.0,<=2.4.4|",
+          ">=3.3.0,<=3.10.4|",
+          ">=4.0.0,<=5.6.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-56365",
+        "source": "PKSA-jw5c-q9nd-tzj9",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.29.8 on 1.x, your branch (composer update)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=2.2.0,<=2.3.4|",
+          ">=2.0.0,<=2.1.5|",
+          "<=1.29.6|",
+          ">=3.0.0,<3.7.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-59932",
+        "source": "PKSA-m9cr-9614-rsf7",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.30.7 on 1.x, your branch (composer update)",
+        "affects": "affects 5 ranges",
+        "ranges": [
+          "<=1.30.5|",
+          ">=2.0.0,<=2.1.17|",
+          ">=2.2.0,<=2.4.6|",
+          ">=3.3.0,<=3.10.6|",
+          ">=4.0.0,<=5.8.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-45293",
+        "source": "PKSA-mkg2-1wyw-57y7",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.29.1 on 1.x, your branch (composer update)",
+        "affects": "affects >=2.0.0,<2.1.1|<1.29.1|>=2.2.0,<2.3.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-59933",
+        "source": "PKSA-r22k-87hv-mfk4",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.30.7 on 1.x, your branch (composer update)",
+        "affects": "affects 5 ranges",
+        "ranges": [
+          "<=1.30.5|",
+          ">=2.0.0,<=2.1.17|",
+          ">=2.2.0,<=2.4.6|",
+          ">=3.3.0,<=3.10.6|",
+          ">=4.0.0,<=5.8.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-40863",
+        "source": "PKSA-x13r-n4wc-4gcr",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.30.7 on 1.x, your branch (composer update)",
+        "affects": "affects 5 ranges",
+        "ranges": [
+          "<=1.30.3|",
+          ">=2.0.0,<=2.1.15|",
+          ">=2.2.0,<=2.4.4|",
+          ">=3.3.0,<=3.10.4|",
+          ">=4.0.0,<=5.6.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-45290",
+        "source": "PKSA-xk3k-rd1m-pxmg",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.29.2 on 1.x, your branch (composer update)",
+        "affects": "affects >=2.0.0,<2.1.1|<1.29.2|>=2.2.0,<2.3.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-45048",
+        "source": "PKSA-xp7t-fbrb-qjv4",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.29.1 on 1.x, your branch (composer update)",
+        "affects": "affects >=2.0.0,<2.1.1|>=2.2.0,<2.2.1|<1.29.1",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-56409",
+        "source": "PKSA-ybqb-vyrq-8pdt",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix 1.29.8 on 1.x, your branch (composer update)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=2.2.0,<=2.3.4|",
+          ">=2.0.0,<=2.1.5|",
+          "<=1.29.6|",
+          ">=3.0.0,<3.7.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-56410",
+        "source": "PKSA-4ckb-wpj6-c29d",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix 1.29.8 on 1.x, your branch (composer update)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=2.2.0,<=2.3.4|",
+          ">=2.0.0,<=2.1.5|",
+          "<=1.29.6|",
+          ">=3.0.0,<3.7.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-45291",
+        "source": "PKSA-7f9v-sb8k-krfb",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix 1.29.2 on 1.x, your branch (composer update)",
+        "affects": "affects >=2.0.0,<2.1.1|<1.29.2|>=2.2.0,<2.3.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-56412",
+        "source": "PKSA-7jd6-nb49-bz4v",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix 1.29.8 on 1.x, your branch (composer update)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=2.2.0,<=2.3.4|",
+          ">=2.0.0,<=2.1.5|",
+          "<=1.29.6|",
+          ">=3.0.0,<3.7.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2025-23210",
+        "source": "PKSA-8b16-mcgz-h4cz",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix 1.29.9 on 1.x, your branch (composer update)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=2.0.0,<2.1.8|",
+          ">=2.2.0,<2.3.7|",
+          "<1.29.9|",
+          ">=3.0.0,<3.9.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-45060",
+        "source": "PKSA-dvbq-8ft2-ngrw",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix 1.29.2 on 1.x, your branch (composer update)",
+        "affects": "affects >=2.0.0,<2.1.1|<1.29.2|>=2.2.0,<2.3.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-40296",
+        "source": "PKSA-hznc-gbby-6w16",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix 1.30.7 on 1.x, your branch (composer update)",
+        "affects": "affects 5 ranges",
+        "ranges": [
+          "<=1.30.3|",
+          ">=2.0.0,<=2.1.15|",
+          ">=2.2.0,<=2.4.4|",
+          ">=3.3.0,<=3.10.4|",
+          ">=4.0.0,<=5.6.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-35453",
+        "source": "PKSA-jtdk-dcr5-f11n",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix 1.30.7 on 1.x, your branch (composer update)",
+        "affects": "affects 5 ranges",
+        "ranges": [
+          "<=1.30.3|",
+          ">=2.0.0,<=2.1.15|",
+          ">=2.2.0,<=2.4.4|",
+          ">=3.3.0,<=3.10.4|",
+          ">=4.0.0,<=5.6.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-45046",
+        "source": "PKSA-m4hk-rk8p-4t5p",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix 1.29.1 on 1.x, your branch (composer update)",
+        "affects": "affects <1.29.1|>=2.0.0,<2.1.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-56411",
+        "source": "PKSA-nm34-xhtz-ww9p",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix 1.29.8 on 1.x, your branch (composer update)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=2.2.0,<=2.3.4|",
+          ">=2.0.0,<=2.1.5|",
+          "<=1.29.6|",
+          ">=3.0.0,<3.7.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-45292",
+        "source": "PKSA-p1pj-q951-6f1x",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix 1.29.2 on 1.x, your branch (composer update)",
+        "affects": "affects >=2.0.0,<2.1.1|<1.29.2|>=2.2.0,<2.3.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2025-22131",
+        "source": "PKSA-s99r-9yxm-hjvt",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix 1.29.8 on 1.x, your branch (composer update)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=2.2.0,<2.3.6|",
+          ">=2.0.0,<2.1.7|",
+          "<1.29.8|",
+          ">=3.0.0,<3.8.0"
+        ],
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "1.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "1.x your branch the move clears 28 of 28 from 1.30.7",
+          "composer update",
+          "after it: 4, low"
+        ]
+      },
+      {
+        "branch": "2.x",
+        "marks": [],
+        "lines": [
+          "2.x clears 28 of 28 from 2.4.8",
+          "composer update",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      },
+      {
+        "branch": "3.x",
+        "marks": [],
+        "lines": [
+          "3.x clears 28 of 28 from 3.10.8",
+          "composer update",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      },
+      {
+        "branch": "4.x",
+        "marks": [],
+        "lines": [
+          "4.x clears 19 of 28 from 4.5.0",
+          "composer update",
+          "after it: 32, critical, if Composer resolves it"
+        ]
+      },
+      {
+        "branch": "5.x",
+        "marks": [],
+        "lines": [
+          "5.x clears 28 of 28 from 5.10.0",
+          "composer update",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      }
+    ]
+  },
   "affected-range-unknown-dagger": {
     "summary": [
       "1 low advisory",
@@ -3044,6 +3567,128 @@
     "ladder": []
   },
   "cache-subscriber": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-covered-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-local-dagger": {
+    "summary": [
+      "5 advisories:",
+      "5 on record for this name",
+      "fix: not known",
+      "lookup complete"
+    ],
+    "counts": [
+      "high 1",
+      "medium 4"
+    ],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, 4.3.x-dev."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2022-25768",
+        "source": "PKSA-j4xy-fb9q-x9h7",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix not known",
+        "affects": "affects >=5.0.0-alpha,<5.1.1|>=1.1.3,<4.4.13",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-47058",
+        "source": "PKSA-81ww-1p5d-6c6k",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix not known",
+        "affects": "affects 2 ranges",
+        "ranges": [
+          ">=1.0.0-beta,<4.4.13|",
+          ">=5.0.0-alpha,<5.1.1"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-47050",
+        "source": "PKSA-bxhd-1cmh-djg9",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix not known",
+        "affects": "affects >=5.0.0-alpha,<5.1.1|>=2.6.0,<4.4.13",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2021-27917",
+        "source": "PKSA-krjy-6tb4-skgg",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix not known",
+        "affects": "affects 2 ranges",
+        "ranges": [
+          ">=5.0.0-alpha,<5.1.1|",
+          ">=1.0.0-beta4,<4.4.13"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2022-25770",
+        "source": "PKSA-ydwx-2n98-5dyf",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix not known",
+        "affects": "affects 2 ranges",
+        "ranges": [
+          ">=5.0.0-alpha,<5.1.1|",
+          ">=1.0.0-beta3,<4.4.13"
+        ],
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-require-php": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-tag-unverified-dagger": {
     "summary": [
       "no counted advisory",
       "none on record for this name",
@@ -4511,6 +5156,436 @@
     "ignored": [],
     "ladder": []
   },
+  "mc-baseline-refused-dagger": {
+    "summary": [
+      "1 high advisory",
+      "6 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v2.2.0."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-47345",
+        "source": "PKSA-7jn3-yc49-35c6",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v2.3.2 on 2.x, your branch (composer update)",
+        "affects": "affects <2.3.2",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "2.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "2.x your branch the move clears 1 of 1 from v2.3.2",
+          "composer update",
+          "after it: 0, ok · not checked: Composer refuses the lock itself"
+        ]
+      }
+    ]
+  },
+  "mc-dev-update-dagger": {
+    "summary": [
+      "1 high advisory",
+      "6 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, 2.8.0."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-59882",
+        "source": "PKSA-vznr-tgp9-fd7d",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix 2.12.3 on 2.x, your branch (composer update)",
+        "affects": "affects <2.12.3",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "2.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "2.x your branch the move clears 1 of 1 from 2.12.3",
+          "composer update",
+          "after it: 0, ok"
+        ]
+      }
+    ]
+  },
+  "mc-inline-dagger": {
+    "summary": [
+      "1 high advisory",
+      "6 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v2.2.0."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-47345",
+        "source": "PKSA-7jn3-yc49-35c6",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v2.3.2 on 2.x, your branch (composer update)",
+        "affects": "affects <2.3.2",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "2.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "2.x your branch the move clears 1 of 1 from v2.3.2",
+          "composer update",
+          "after it: 0, ok"
+        ]
+      }
+    ]
+  },
+  "mc-package-hold-dagger": {
+    "summary": [
+      "1 high advisory",
+      "1 on record for this name",
+      "fix: upgrade",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v6.4.27."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-45068",
+        "source": "PKSA-28rh-rzzn-djk4",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v6.4.40 on 6.x, your branch (upgrade)",
+        "affects": "affects >=6.4.0,<6.4.40",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "6.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "6.x your branch the move clears 1 of 1 from v6.4.40",
+          "upgrade · held by the 4 in Held by",
+          "after it: 0, ok · Composer refuses the move"
+        ]
+      }
+    ]
+  },
+  "mc-pass-cap-dagger": {
+    "summary": [
+      "1 high advisory",
+      "1 on record for this name",
+      "fix: upgrade",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v6.4.27."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-45068",
+        "source": "PKSA-28rh-rzzn-djk4",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v6.4.40 on 6.x, your branch (upgrade)",
+        "affects": "affects >=6.4.0,<6.4.40",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "6.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "6.x your branch the move clears 1 of 1 from v6.4.40",
+          "upgrade · held by the 4 in Held by",
+          "after it: 0, ok · not checked: Composer refused each move before it"
+        ]
+      }
+    ]
+  },
+  "mc-raise-php-dagger": {
+    "summary": [
+      "1 high advisory",
+      "5 on record for this name",
+      "fix: php floor raise",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v6.4.26."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-45304",
+        "source": "PKSA-v5yj-8nmz-sk2q",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v6.4.40 on 6.x, your branch (php floor raise)",
+        "affects": "affects >=6.4.0,<6.4.40",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "6.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "6.x your branch the move clears 1 of 1 from v6.4.40",
+          "php floor raise",
+          "after it: 0, ok"
+        ]
+      }
+    ]
+  },
+  "mc-replan-major-dagger": {
+    "summary": [
+      "1 high advisory",
+      "15 on record for this name",
+      "fix: upgrade",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, 7.10.0."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-69246",
+        "source": "PKSA-gcrk-3vtt-1r14",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix 8.0.1 on 8.x (upgrade)",
+        "affects": "affects <7.15.2|>=8.0.0,<8.0.1",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "7.x",
+        "marks": [
+          "your branch"
+        ],
+        "lines": [
+          "7.x your branch clears 1 of 1 from 7.15.2",
+          "upgrade · held by composer.json, composer.json and guzzlehttp/guzzle",
+          "after it: 0, ok · Composer refuses the move"
+        ]
+      },
+      {
+        "branch": "8.x",
+        "marks": [
+          "the move"
+        ],
+        "lines": [
+          "8.x the move clears 1 of 1 from 8.0.1",
+          "upgrade · held by composer.json",
+          "after it: 0, ok"
+        ]
+      }
+    ]
+  },
+  "mc-root-hold-dagger": {
+    "summary": [
+      "1 high advisory",
+      "15 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, 7.10.0."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-69246",
+        "source": "PKSA-gcrk-3vtt-1r14",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix 8.0.1 on 8.x (composer update)",
+        "affects": "affects <7.15.2|>=8.0.0,<8.0.1",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "7.x",
+        "marks": [
+          "your branch"
+        ],
+        "lines": [
+          "7.x your branch clears 1 of 1 from 7.15.2",
+          "upgrade · held by composer.json, composer.json and guzzlehttp/guzzle",
+          "after it: 0, ok · Composer refuses the move"
+        ]
+      },
+      {
+        "branch": "8.x",
+        "marks": [
+          "the move"
+        ],
+        "lines": [
+          "8.x the move clears 1 of 1 from 8.0.1",
+          "composer update",
+          "after it: 0, ok"
+        ]
+      }
+    ]
+  },
+  "mc-with-all-dagger": {
+    "summary": [
+      "1 high advisory",
+      "14 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v6.4.29."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-48736",
+        "source": "PKSA-y6py-qpv1-h52p",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v6.4.41 on 6.x, your branch (composer update)",
+        "affects": "affects >=6.4.0,<6.4.41",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "6.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "6.x your branch the move clears 1 of 1 from v6.4.41",
+          "composer update",
+          "after it: 0, ok"
+        ]
+      }
+    ]
+  },
+  "mc-with-deps-dagger": {
+    "summary": [
+      "1 high advisory",
+      "4 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v6.4.28."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-48784",
+        "source": "PKSA-bf7t-jnpz-492k",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v6.4.41 on 6.x, your branch (composer update)",
+        "affects": "affects >=6.4.0,<6.4.41",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "6.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "6.x your branch the move clears 1 of 1 from v6.4.41",
+          "composer update",
+          "after it: 0, ok"
+        ]
+      }
+    ]
+  },
   "move-check-dagger": {
     "summary": [
       "2 advisories:",
@@ -4834,6 +5909,48 @@
         ]
       }
     ]
+  },
+  "php-edge-equal-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "php-edge-lower-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "php-edge-upper-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
   },
   "php-null": {
     "summary": [
@@ -5235,6 +6352,20 @@
     "ladder": []
   },
   "stale-accepted-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "stale-capped": {
     "summary": [
       "no counted advisory",
       "none on record for this name",
@@ -6294,6 +7425,314 @@
         "same_as": null
       }
     ],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-accepted-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-blocked-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-dev-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-held-update-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-htmlpurifier-dagger": {
+    "summary": [
+      "no counted advisory",
+      "4 on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-known-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-money-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-nette-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-new-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-no-php-newest-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-no-release-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-platform-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-project-blocked-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-raise-php": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-recapped-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-require-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-require-higher-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-snapshot-alias-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-snapshot-backport-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-snapshot-dev-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-unread-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-update-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
     "ignored": [],
     "ladder": []
   },

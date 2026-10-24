@@ -26,6 +26,7 @@ export const SIGNAL_NAMES: Readonly<Record<string, string>> = vocabTable({
   S8: "the installed branch stopped",
   S9: "security advisories",
   S10: "a check could not run",
+  S11: "PHP cap",
 });
 
 export const SIGNAL_DEFS: Readonly<Record<string, string>> = vocabTable({
@@ -39,6 +40,7 @@ export const SIGNAL_DEFS: Readonly<Record<string, string>> = vocabTable({
   S8: "Time since the last stable release on the installed branch, counted only when a higher branch has released since.",
   S9: "Security advisories affecting the installed version. Never a verdict; raises the priority where no fix is coming.",
   S10: "A check lockrot relies on could not run for this package, so a verdict may be missing a signal; the data says which and why.",
+  S11: "The installed version's php requirement stops below the newest PHP that require.php allows.",
 });
 
 export type Thresholds = readonly (readonly [name: string, years: number])[];

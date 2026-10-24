@@ -14,7 +14,7 @@ const composite = readContractJson("report-2", "composite.json") as Report2;
 describe("the report-2 glossary", () => {
   it("heads its sections with the run's own counts", () => {
     expect(verdictsHeading(composite.run)).toBe("The seven verdicts");
-    expect(flagsHeading(composite.run)).toBe("The seven flags");
+    expect(flagsHeading(composite.run)).toBe("The eight flags");
   });
 
   it("words a grade from its band floor and a score-0 verdict from its reason", () => {

@@ -9,6 +9,8 @@ function report(over: Record<string, unknown>): Report2 {
     counts: { unknown: 0 },
     packages_checked: 10,
     baseline: null,
+    run: { php_window: null, target_php: "8.4" },
+    findings: [],
     ...over,
   } as unknown as Report2;
 }

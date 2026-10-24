@@ -99,11 +99,12 @@ describe("the words of SPEC 7.9.9", () => {
   });
 
   test("the signal names", () => {
-    expect(["S1", "S5", "S10", "S11"].map(signalName)).toEqual([
+    expect(["S1", "S5", "S10", "S11", "S12"].map(signalName)).toEqual([
       "marked abandoned",
       "PHP promise",
       "unchecked",
-      "S11",
+      "PHP cap",
+      "S12",
     ]);
   });
 

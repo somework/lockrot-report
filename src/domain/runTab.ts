@@ -14,6 +14,7 @@ export const RUN_WORDS = {
   rules: (n: number): string => `The ${n} rules`,
   fixes: "Fixes, easiest first",
   lookup: "Advisory lookup",
+  phpWindow: "PHP window",
   notes: "What this run could not see",
   acceptedUnchecked: "Accepted unchecked checks",
   gate: "Gate",
