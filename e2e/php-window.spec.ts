@@ -3,6 +3,7 @@
  * the Run tab's window rows (§7.9.16) and the move card on a refused baseline (§7.9.8.14), on the
  * page cases of real locks.
  */
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { report2Url } from "./support/pages";
 import { overviewSurface } from "./support/report2/overview";
@@ -76,3 +77,27 @@ test.describe("at 320 px", () => {
     expect(overflow).toBeLessThanOrEqual(0);
   });
 });
+
+const SHOT_PAGES = [
+  "page-run.W74-dagger",
+  "baselined-wallabag-2.6",
+  "page-run.MON-dagger",
+  "page-run.MAU-dagger",
+  "page-run.LAM-dagger",
+] as const;
+
+for (const name of SHOT_PAGES) {
+  for (const colorScheme of ["light", "dark"] as const) {
+    for (const view of ["overview", "run"] as const) {
+      test(`axe finds no violation on ${name}'s ${view}, ${colorScheme}`, async ({ page }) => {
+        await page.emulateMedia({ colorScheme });
+        await page.goto(`${report2Url(name)}#view=${view}`);
+        await expect(page.locator(`[data-surface="${view}"]`)).toBeVisible();
+        const results = await new AxeBuilder({ page }).include(`[data-surface="${view}"]`).analyze();
+        expect(
+          results.violations.flatMap((v) => v.nodes.map((node) => `${v.id}: ${node.target.join(" ")}`)),
+        ).toEqual([]);
+      });
+    }
+  }
+}
