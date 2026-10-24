@@ -55,4 +55,24 @@ describe("stateLines", () => {
     ]);
     expect(line?.parts[1]?.link).toBeNull();
   });
+
+  it("adds the PHP line after the lookup line when the target is outside the window (PD-PHP-1)", () => {
+    const window = {
+      platform_override: null,
+      host_requires: [],
+      with_dev: null,
+      without_dev: { minors: ["7.4"], gaps: false, lower_edge: null, upper_edge: null, closest: null },
+      target: { php: "8.4.99", inside: false },
+      target_fix: null,
+    };
+    const lines = stateLines(
+      report({ security: { check: "not_run" }, run: { php_window: window, target_php: "8.4" } }),
+    );
+
+    expect(lines.map((line) => line.kind)).toEqual(["lookup", "php"]);
+    expect(lines[1]?.parts.map((p) => p.text)).toEqual([
+      "this lock installs on PHP 7.4, so your target, 8.4, is excluded",
+    ]);
+    expect(lines[1]?.more).toEqual({ text: "The PHP window", link: { view: "run" } });
+  });
 });
