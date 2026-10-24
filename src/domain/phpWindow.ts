@@ -8,7 +8,7 @@ import type { Finding, HeldBy, PhpWindowReq, PhpWindowSet, Report2, Run, TargetF
 import { NAMES_SHOWN, newestPhpWords, signalData } from "./findingWords";
 import { plural, pluralNoun } from "./format";
 import { joinAnd } from "./joinWords";
-import { linkWords } from "./moveCards";
+import { linkWords } from "./linkWords";
 import { checkReasonRich } from "./pageVocabulary";
 import { plain } from "./rich";
 import { commandLine } from "./shellArgv";
@@ -160,7 +160,7 @@ function packagesClause(fix: TargetFix, target: string): string {
 
 function fixClauses(fix: TargetFix, target: string): string[] {
   if (isRootCeiling(fix)) {
-    const links = fix.held_by.map((h) => `${h.link}.${h.target ?? ""}`);
+    const links = [...new Set(fix.held_by.map((h) => `${h.link}.${h.target ?? ""}`))];
     return [`your target, ${target}, is excluded, and only a change to ${joinAndCapped(links)} can admit it`];
   }
   const solver = `Composer's solver at PHP ${target}`;

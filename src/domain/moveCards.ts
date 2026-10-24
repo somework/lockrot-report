@@ -10,6 +10,7 @@ import { countedFlagIds } from "./countedFlags";
 import { capitalize, metadataWords, signalData } from "./findingWords";
 import { pluralNoun } from "./format";
 import { joinAnd } from "./joinWords";
+import { linkWords } from "./linkWords";
 import { safeHref } from "./links";
 import { addsBasisWord, checkReasonRich, phpFloorWord, stoppedCheckWords } from "./pageVocabulary";
 import { phpConstraintWord } from "./phpAlternatives";
@@ -386,26 +387,6 @@ const newLineWords = (toBranch: string | null): string =>
 
 /** The root's name as a holder (§7.9.13): the sheet's Held by and a row's "held by" say it alike. */
 export const ROOT_HOLDER_NAME = "your composer.json";
-
-/** A hold's link words (SPEC §7.9.21), with the target it names. A link the page does not know reads
- *  as a requirement. */
-export function linkWords({ link, target, constraint, package: holder }: HeldBy): Rich {
-  const named = (verb: string): Rich => [
-    verb,
-    ...(target === null ? [] : [`${target} `]),
-    { code: constraint },
-  ];
-  switch (link) {
-    case "conflict":
-      return named("conflicts with ");
-    case "replace":
-      return target === null ? [`replaced by ${holder ?? ""}`] : named("replaces ");
-    case "root-require":
-      return target === null ? ["no release of ", { code: constraint }, " can install"] : named("requires ");
-    default:
-      return named("requires ");
-  }
-}
 
 type HolderStep = NonNullable<NonNullable<HeldBy["holder"]>["next_step"]>;
 

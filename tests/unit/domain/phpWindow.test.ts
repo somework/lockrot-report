@@ -204,6 +204,9 @@ describe("the holds of a refused fix", () => {
     expect(refused([hold({ link: "conflict", constraint: "<2" })])).toBe(
       "Composer's solver at PHP 8.4 refuses its update: acme/core 2.0.0 conflicts with acme/clock <2",
     );
+    expect(refused([hold({ link: "platform", target: "php", constraint: "^7.0" })])).toBe(
+      "Composer's solver at PHP 8.4 refuses its update: acme/core 2.0.0 requires php ^7.0",
+    );
     expect(refused([hold({ source: "root", package: null, version: null, link: "root-require" })])).toBe(
       "Composer's solver at PHP 8.4 refuses its update: composer.json requires acme/clock ^1.0",
     );
@@ -240,6 +243,21 @@ describe("the holds of a refused fix", () => {
 });
 
 describe("the root ceiling", () => {
+  test("names a root link once when two holds give it", () => {
+    const twice = hold({
+      source: "root",
+      package: null,
+      version: null,
+      link: "require-dev",
+      target: "php",
+      constraint: "<8.4",
+    });
+
+    expect(phpStateClauses(report({ target_fix: fix({ packages: [], held_by: [twice, twice] }) }))?.[1]).toBe(
+      "your target, 8.4, is excluded, and only a change to require-dev.php can admit it",
+    );
+  });
+
   test("names three root links, then the count of the rest", () => {
     const root = (link: HeldBy["link"], target: string): HeldBy =>
       hold({ source: "root", package: null, version: null, link, target, constraint: "<8.4" });
