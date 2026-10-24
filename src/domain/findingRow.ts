@@ -340,11 +340,12 @@ export function nextStepWords(f: Finding, run: Run): NextStepWords {
 type Hold = Pick<HeldBy, "source" | "package" | "holder">;
 
 /** Accepted derivation 3: the distinct package holders, sorted by the sheet's holder rank
- *  (`holderRank`), the first named and the rest counted; with only a root hold, the root as the
+ *  (`holderRank`, `own` the finding's package), the first named and the rest counted; with only a root hold, the root as the
  *  sheet's Held by names it. */
 export function heldByLine(
   holds: readonly Hold[],
   run: Run,
+  own: string,
 ): { readonly name: string; readonly more: number } | null {
   const seen = new Set<string>();
   const packages = holds.filter((hold) => {
@@ -353,7 +354,7 @@ export function heldByLine(
     return true;
   });
   const [first, ...rest] = packages
-    .map((hold, at) => ({ hold, at, rank: holderRank(hold, run) }))
+    .map((hold, at) => ({ hold, at, rank: holderRank(hold, run, own) }))
     .sort((a, b) => a.rank - b.rank || a.at - b.at);
   if (first !== undefined) return { name: first.hold.package ?? "", more: rest.length };
   return holds.some((hold) => hold.source === "root") ? { name: ROOT_HOLDER_NAME, more: 0 } : null;

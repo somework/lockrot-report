@@ -57,7 +57,7 @@ export interface RowFacts {
 
 /** A Findings row's facts as text, the golden `findings_rows` entry (SPEC §7.9.5, §7.9.7). */
 export function findingsRowFacts(f: Finding, run: Run): RowFacts {
-  const holder = heldByLine(rowHolds(f), run);
+  const holder = heldByLine(rowHolds(f), run, f.package);
   return {
     package: f.package,
     fails_gate: f.gate.fails,

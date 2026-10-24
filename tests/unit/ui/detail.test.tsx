@@ -63,7 +63,7 @@ describe("the move card on a lock whose config.platform.php lies outside the tar
     const card = sheet.querySelector(".d3-move");
     const platform = card?.querySelector(".d3-move-platform");
     expect(platform?.textContent).toBe(
-      `First set config.platform.php to your PHP 8.4 release: composer.json sets it to 7.4.29.`,
+      `First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29.`,
     );
     expect(platform?.nextElementSibling?.classList.contains("d3-cmd")).toBe(true);
   });

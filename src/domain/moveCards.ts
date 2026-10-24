@@ -402,6 +402,22 @@ const ownStep = (step: HolderStep, where: string): string =>
     ? `require ${step.constraint}${where}`
     : `${step.kind.replaceAll("-", " ")}${where}`;
 
+const RELEASE_WORDS = ", the release this move installs";
+
+/** G118: a hold by the finding's own package. Its holder record is the installed version's, so its
+ *  grade, flags and step are not this release's. */
+function releaseHolder(held: HeldBy): Holder {
+  const version = held.version;
+  return {
+    root: false,
+    name: `${held.package ?? ""}${version === null ? RELEASE_WORDS : ""}`,
+    version: version === null ? null : `${version}${RELEASE_WORDS}`,
+    grade: null,
+    meta: linkWords(held),
+    step: null,
+  };
+}
+
 function holderItem(held: HeldBy, run: Run, finding: Finding): Holder {
   if (held.source === "root") {
     return {
@@ -413,17 +429,16 @@ function holderItem(held: HeldBy, run: Run, finding: Finding): Holder {
       step: null,
     };
   }
-  // G118: the release the move installs is not graded in this lock, so it takes no grade or flags.
-  const installs = held.package === finding.package;
+  if (held.package === finding.package) return releaseHolder(held);
   const holder = held.holder ?? null;
-  const flags = installs ? [] : (holder?.flag_ids ?? []);
+  const flags = holder?.flag_ids ?? [];
   const step = holder?.next_step ?? null;
   const where = step?.to_branch ? ` on ${step.to_branch}` : "";
   return {
     root: false,
     name: held.package ?? "",
-    version: `${held.version ?? ""}${installs ? ", the release this move installs" : ""}`,
-    grade: !installs && holder !== null && isGradedHolder(held, run) ? holder.verdict : null,
+    version: held.version ?? "",
+    grade: holder !== null && isGradedHolder(held, run) ? holder.verdict : null,
     meta: [...linkWords(held), ...(flags.length > 0 ? [` · itself ${flags.join(" · ")}`] : [])],
     step:
       step === null
@@ -513,14 +528,18 @@ export interface MoveCard {
   readonly heldBy: HeldByBlock | null;
 }
 
-const minorOf = (version: string): string => version.split(".").slice(0, 2).join(".");
+/** "8" reads as "8.0", as lockrot normalises `target_php`. */
+const minorOf = (version: string): string => {
+  const [major = "", minor = "0"] = version.split(".");
+  return `${major}.${minor}`;
+};
 
 /** A lock whose config.platform.php lies outside the target's minor makes Composer check every
  *  command at that PHP, not the target's. */
 export function platformStep(run: Run): string | null {
   const override = run.php_window?.platform_override ?? null;
   if (override === null || minorOf(override) === minorOf(run.target_php)) return null;
-  return `First set config.platform.php to your PHP ${run.target_php} release: composer.json sets it to ${override}.`;
+  return `First set config.platform.php to your PHP ${run.target_php} release: the lock records ${override}.`;
 }
 
 /** The POSIX lines of a command box, or the refusal: one refused argv refuses the whole move (§5.6). */

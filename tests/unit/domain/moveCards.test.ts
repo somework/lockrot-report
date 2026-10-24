@@ -170,7 +170,7 @@ describe("S1, §7.9.21: the check line of a refused baseline", () => {
 });
 
 describe("L3, G118: a hold by the release the move installs", () => {
-  test("names that release, with its link words and no grade or flags (wallabag 7.4's symfony/mailer)", () => {
+  test("names that release, with its link words and no grade, flags or own step (wallabag 7.4's symfony/mailer)", () => {
     const { finding, run } = modelCase("holder-vuln-dagger");
     const own: HeldBy = {
       source: "package",
@@ -182,7 +182,7 @@ describe("L3, G118: a hold by the release the move installs", () => {
       holder: {
         verdict: "high",
         flag_ids: ["left-behind", "vulnerable"],
-        next_step: null,
+        next_step: { kind: "require", constraint: "^5.4.52", to_branch: "5.x", check: null },
       } as unknown as HeldBy["holder"],
     };
     if (finding.next_step === null) throw new Error("holder-vuln‡ has a move");
@@ -195,6 +195,31 @@ describe("L3, G118: a hold by the release the move installs", () => {
     );
     expect(shown?.grade).toBeNull();
     expect(plain(shown?.meta ?? [])).toBe("requires symfony/mime ^5.2.6|^6.0");
+    expect(shown?.step).toBeNull();
+  });
+});
+
+describe("L3 with no version", () => {
+  test("names the release without a version", () => {
+    const { finding, run } = modelCase("holder-vuln-dagger");
+    if (finding.next_step === null) throw new Error("holder-vuln‡ has a move");
+    finding.next_step.held_by = [
+      {
+        source: "package",
+        package: finding.package,
+        version: null,
+        link: "require",
+        target: "symfony/mime",
+        constraint: "^6.0",
+        holder: null,
+      },
+    ];
+
+    const shown = moveCards(finding, run)[0]?.heldBy?.shown[0];
+
+    expect(shown === undefined ? null : holderName(shown)).toBe(
+      `${finding.package}, the release this move installs`,
+    );
   });
 });
 
@@ -209,12 +234,34 @@ describe("L5: the platform step of a move card", () => {
 
   test("asks to set config.platform.php first when it lies outside the target's minor (wallabag at 8.4)", () => {
     expect(platformLine("7.4.29", "8.4")[0]).toBe(
-      "First set config.platform.php to your PHP 8.4 release: composer.json sets it to 7.4.29.",
+      "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29.",
     );
   });
 
   test("says nothing when config.platform.php lies inside the target's minor", () => {
     expect(platformLine("8.4.3", "8.4")[0]).toBeNull();
+  });
+
+  test("reads a major alone as its .0 minor", () => {
+    expect(platformLine("8", "8.0")[0]).toBeNull();
+  });
+
+  test("prints on a Then card with commands and on no card without one", () => {
+    const { finding, run } = modelCase("holder-vuln-dagger");
+    const lead = finding.next_step;
+    if (lead === null) throw new Error("holder-vuln‡ has a move");
+    const then = { ...lead, commands: [["composer", "update", "acme/then"]] };
+    finding.next_step = { ...lead, commands: [], also: [then] };
+    const window = { ...(run.php_window ?? {}), platform_override: "7.4.29" } as NonNullable<
+      Run["php_window"]
+    >;
+
+    const cards = moveCards(finding, { ...run, target_php: "8.4", php_window: window });
+
+    expect(cards.map((c) => [c.heading, c.platformStep])).toEqual([
+      ["The move", null],
+      ["Then", "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29."],
+    ]);
   });
 
   test("says nothing when the lock sets no config.platform.php", () => {

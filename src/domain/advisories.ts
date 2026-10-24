@@ -139,8 +139,8 @@ export function noAdvisoryLine(report: Report2): string {
 
 /** What holds a fix and the PHP it needs: "needs PHP >=8.1.0 · held by symfony/twig-bridge", with
  *  the holders as a Findings row says them (accepted derivation 3). */
-export function advisoryFixNote(fix: S9fix, run: Run): string | null {
-  const held = heldByLine(fix.held_by, run);
+export function advisoryFixNote(fix: S9fix, run: Run, own: string): string | null {
+  const held = heldByLine(fix.held_by, run, own);
   const parts = [advisoryFixPhp(fix), held === null ? null : heldByWords(held)].filter((p) => p !== null);
   return parts.length === 0 ? null : parts.join(" · ");
 }
@@ -219,7 +219,9 @@ export function advisoryGroupNotes(report: Report2): AdvisoryGroupNotes[] {
           ? []
           : [`${row.id}: ${ADVISORY_HEAD.sameAs} ${earlier}`];
       }),
-      fix_notes: [...new Set(pairs.flatMap(({ row }) => advisoryFixNote(row.fix, report.run) ?? []))],
+      fix_notes: [
+        ...new Set(pairs.flatMap(({ row }) => advisoryFixNote(row.fix, report.run, finding.package) ?? [])),
+      ],
     }),
   );
 }

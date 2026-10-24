@@ -125,7 +125,7 @@ function NextStep({ finding, run }: { finding: Finding; run: Run }) {
   const words = nextStepWords(finding, run);
   const href = words.href === null ? null : safeHref(words.href);
   const title = words.title ?? undefined;
-  const holder = heldByLine(rowHolds(finding), run);
+  const holder = heldByLine(rowHolds(finding), run, finding.package);
   const after = rowAfter(finding);
   const newLine = rowNewLine(finding);
   const argv = rowCommandArgv(finding);

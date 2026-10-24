@@ -7,7 +7,7 @@ import type { Model } from "../../../src/model/types";
 import { App } from "../../../src/ui/App";
 import { pageGoldens } from "../words/recorded";
 
-const LINE = "First set config.platform.php to your PHP 8.4 release: composer.json sets it to 7.4.29.";
+const LINE = "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29.";
 
 /** snipe-it, a page golden with moves ready to run, on a target of 8.4. */
 function model(override: string | null): Model {

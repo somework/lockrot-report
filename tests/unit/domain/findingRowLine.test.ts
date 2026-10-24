@@ -67,7 +67,7 @@ describe("the holders of a row (accepted derivation 3)", () => {
         also: [{ held_by: [hold("b/two"), hold("b/three")] }],
       }),
     });
-    const line = heldByLine(rowHolds(f), run);
+    const line = heldByLine(rowHolds(f), run, "c/pkg");
     expect(line).toEqual({ name: "b/one", more: 2 });
     expect(line === null ? null : heldByWords(line)).toBe("held by b/one and 2 more");
   });
@@ -78,13 +78,22 @@ describe("the holders of a row (accepted derivation 3)", () => {
       hold("a/medium", "package", "medium"),
       hold("a/high", "package", "high"),
     ];
-    expect(heldByLine(holds, run)).toEqual({ name: "a/high", more: 2 });
+    expect(heldByLine(holds, run, "c/pkg")).toEqual({ name: "a/high", more: 2 });
+  });
+
+  it("names a hold by the finding's own package after the root and before every other package, whatever its grade", () => {
+    const holds = [
+      hold("a/high", "package", "high"),
+      hold(null, "root"),
+      hold("symfony/mailer", "package", "low"),
+    ];
+    expect(heldByLine(holds, run, "symfony/mailer")).toEqual({ name: "symfony/mailer", more: 1 });
   });
 
   it("says the root as the sheet's Held by does when only the root holds", () => {
-    const line = heldByLine([hold(null, "root")], run);
+    const line = heldByLine([hold(null, "root")], run, "c/pkg");
     expect(line === null ? null : heldByWords(line)).toBe("held by your composer.json");
-    expect(heldByLine([], run)).toBeNull();
+    expect(heldByLine([], run, "c/pkg")).toBeNull();
   });
 
   it("counts the rest in words", () => {

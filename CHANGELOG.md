@@ -170,9 +170,10 @@ project is overall, and the other tabs lead with their own part.
   window, it reads "Composer's solver refuses the lock itself; the Run tab names the cause".
 - A lock can set `config.platform.php` outside the minor of the target PHP. Then each move card,
   Ready to run and the Findings tab first print one line. It reads "First set config.platform.php
-  to your PHP 8.4 release: composer.json sets it to 7.4.29." The commands do not change.
-- In Held by, a hold by the release that the move installs takes no grade and no flags. It reads
-  "symfony/mailer v5.4.52, the release this move installs". Those holds rank after the root holds.
+  to your PHP 8.4 release: the lock records 7.4.29." The commands do not change.
+- In Held by, a hold by the release that the move installs takes no grade, no flags and no own
+  step. It reads "symfony/mailer v5.4.52, the release this move installs". Those holds rank after
+  the root holds, in Held by and in the "held by" of a Findings or Advisories row.
   The fold counts them and the root holds apart from the graded holders. It reads "5 more: 1 in
   composer.json, 2 from the release this move installs, 1 graded critical and 1 graded high".
 - A ladder rung names each holder once. The PHP line marks a root hold on a require-dev package:
