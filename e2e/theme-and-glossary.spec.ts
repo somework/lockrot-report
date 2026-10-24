@@ -136,7 +136,7 @@ test.describe("report-2: the theme and the glossary", () => {
     expect(await report.theme()).toBe(after);
   });
 
-  test("opens with the seven verdicts in view and the seven flags open, the rest folded", async ({
+  test("opens with the seven verdicts in view and the eight flags open, the rest folded", async ({
     page,
   }) => {
     await report.gotoReport2WithHash("composite", "view=findings");
@@ -159,6 +159,7 @@ test.describe("report-2: the theme and the glossary", () => {
         "left-behind 2",
         "old-promise 3",
         "stale 3",
+        "capped",
         "vulnerable 5",
       ],
     );

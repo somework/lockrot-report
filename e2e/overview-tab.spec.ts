@@ -219,7 +219,7 @@ test.describe("the project grade", () => {
     await page.goto(report2Url(WALLABAG));
 
     await expect(gradeLine(page)).toHaveText(
-      "Project grade: critical · 15 critical findings · 84 of 210 packages high or worse · 45 known to the baseline",
+      "Project grade: critical · 15 critical findings · 84 of 210 packages high or worse · 46 known to the baseline",
     );
     const before = await gradeLine(page).evaluate(
       (line) =>
