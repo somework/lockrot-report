@@ -77,6 +77,8 @@ test.describe("report-2: the Run tab of SPEC §7.9.16", () => {
   });
 
   test("no sideways scroll on Run data at 320px, on every report-2 page", async ({ page }) => {
+    // One test walks every page, the multi-megabyte locks of the PHP window cases included.
+    test.slow();
     await page.setViewportSize({ width: 320, height: 800 });
     const cases = report2Cases();
     expect(cases).toContain("B-gate-list");
