@@ -646,6 +646,12 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it high"
   ],
+  "platform-step-inside-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
   "policy-off-dagger": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "vulnerable 8: medium advisory CVE-2025-54476; its own fix (php floor raise on 3.x) is reachable, so no × 2",

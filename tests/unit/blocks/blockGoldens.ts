@@ -85,6 +85,7 @@ export function blockGolden(
         heading: c.heading,
         action: plain(c.action),
         platform_step: c.platformStep,
+        command_note: c.checkNote,
         commands: commandLines(c.argvs),
         commands_label: commandLabel(c.argvs),
         clears: c.clears,

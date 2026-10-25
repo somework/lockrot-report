@@ -794,6 +794,11 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "platform-step-inside-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "policy-off-dagger": [
     "1 medium advisory",
     "2 on record for this name",

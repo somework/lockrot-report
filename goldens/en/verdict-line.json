@@ -88,6 +88,7 @@
   "php-null": "Medium: its branch, 10.x, had its last release 3.5 years ago, behind 12.x.",
   "pinned-unread": "High: it is pinned to the branch snapshot dev-joomla-backports.",
   "platform-step-dagger": "High: its branch, 5.x, had its last release 4.5 years ago, behind 8.x.",
+  "platform-step-inside-dagger": "High: its branch, 5.x, had its last release 4.5 years ago, behind 8.x.",
   "policy-off-dagger": "Medium: a medium-severity advisory affects your version (CVE-2025-54476: Joomla! CMS vulnerable to XSS via the input filter).",
   "psr7": "High: two moderate risks at once (maintenance halved for reach), its maintenance (left-behind) and its advisories (vulnerable).",
   "replace-graded": "Critical: it is marked abandoned by its registry.",

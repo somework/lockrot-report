@@ -15,6 +15,7 @@ import {
   rowCommand,
   rowHolds,
   rowNewLine,
+  rowRaiseWords,
 } from "./findingRow";
 import { isHeld, readyToRun } from "./readyToRun";
 
@@ -49,6 +50,7 @@ export interface RowFacts {
   readonly reach: string;
   readonly held: string | null;
   readonly command: string | null;
+  readonly raise_words: string | null;
   readonly after: string | null;
   readonly major: string | null;
   readonly ready: boolean;
@@ -64,6 +66,7 @@ export function findingsRowFacts(f: Finding, run: Run): RowFacts {
     reach: reachText(f),
     held: holder === null ? null : heldByWords(holder),
     command: rowCommand(f),
+    raise_words: rowRaiseWords(f),
     after: rowAfter(f),
     major: rowNewLine(f),
     ready: readyToRun(f),

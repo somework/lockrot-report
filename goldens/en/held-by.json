@@ -485,14 +485,8 @@
   ],
   "mc-package-hold-dagger": [
     {
-      "count": 4,
+      "count": 3,
       "shown": [
-        {
-          "name": "your composer.json",
-          "grade": null,
-          "meta": "requires ^6.4",
-          "step": null
-        },
         {
           "name": "your composer.json",
           "grade": null,
@@ -517,14 +511,8 @@
   ],
   "mc-pass-cap-dagger": [
     {
-      "count": 4,
+      "count": 3,
       "shown": [
-        {
-          "name": "your composer.json",
-          "grade": null,
-          "meta": "requires ^6.4",
-          "step": null
-        },
         {
           "name": "your composer.json",
           "grade": null,
@@ -625,6 +613,9 @@
     null
   ],
   "platform-step-dagger": [
+    null
+  ],
+  "platform-step-inside-dagger": [
     null
   ],
   "policy-off-dagger": [

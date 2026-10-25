@@ -1696,6 +1696,28 @@
       "Tripped by left-behind"
     ]
   },
+  "platform-step-inside-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "scheb/2fa-backup-code",
+      "scheb/2fa-email",
+      "scheb/2fa-google-authenticator",
+      "scheb/2fa-qr-code",
+      "scheb/2fa-trusted-device"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
   "policy-off-dagger": {
     "reach": [
       "Production: not in packages-dev",

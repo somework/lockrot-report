@@ -301,12 +301,8 @@ function kindWords(f: Finding, step: Move, run: Run): string {
   switch (step.kind) {
     case "require":
       return `${where} ${step.constraint ?? ""}`;
-    case "raise-php": {
-      const raiseTo = step.php_check?.raise_to ?? null;
-      return rowCommandArgv(f) !== null || raiseTo === null
-        ? "php floor raise"
-        : `raise require.php to ${raiseTo}`;
-    }
+    case "raise-php":
+      return rowRaiseWords(f) ?? "php floor raise";
     case "update":
       return "composer update";
     case "tag": {
@@ -378,6 +374,15 @@ const ROW_STEPS: ReadonlySet<string> = new Set(["update", "require"]);
 /** An update or require step that names the finding's package, bare or with a constraint. */
 const namesPackage = (argv: readonly string[], pkg: string): boolean =>
   ROW_STEPS.has(argv[1] ?? "") && argv.slice(2).some((arg) => arg === pkg || arg.startsWith(`${pkg}:`));
+
+/** A `raise-php` row that shows no command says the raise instead (golden `raise_words`); null on
+ *  any other row, and when lockrot names no `raise_to`. */
+export function rowRaiseWords(f: Finding): string | null {
+  const step = f.next_step;
+  const raiseTo = step?.php_check?.raise_to ?? null;
+  if (step?.kind !== "raise-php" || raiseTo === null || rowCommandArgv(f) !== null) return null;
+  return `raise require.php to ${raiseTo}`;
+}
 
 /** Accepted derivation 8 (§5.6): the first checked step of the move that names the
  *  finding's package; none when one argv fails the check or no step names it. */

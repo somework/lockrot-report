@@ -5994,6 +5994,20 @@
     "ignored": [],
     "ladder": []
   },
+  "platform-step-inside-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
   "policy-off-dagger": {
     "summary": [
       "1 medium advisory",

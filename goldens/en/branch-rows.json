@@ -3841,6 +3841,54 @@
       "folded_in": null
     }
   ],
+  "platform-step-inside-dagger": [
+    {
+      "branch": "8.x",
+      "marks": [
+        "newest"
+      ],
+      "latest": "v8.6.1",
+      "age": "0.2y",
+      "php": "~8.4.0 || ~8.5.0",
+      "php_words": "above your require.php",
+      "bar": "v8.6.1, released 0.2 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "7.x",
+      "marks": [],
+      "latest": "v7.14.0",
+      "age": "0.3y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": "above your require.php",
+      "bar": "v7.14.0, released 0.3 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "6.x",
+      "marks": [
+        "the move"
+      ],
+      "latest": "v6.13.1",
+      "age": "1.8y",
+      "php": "~8.0.0 … ~8.4.0 (5 alternatives)",
+      "php_words": "above your require.php",
+      "bar": "v6.13.1, released 1.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "5.x",
+      "marks": [
+        "yours"
+      ],
+      "latest": "v5.13.2",
+      "age": "4.5y",
+      "php": ">=7.2.5",
+      "php_words": null,
+      "bar": "v5.13.2, released 4.5 years ago",
+      "folded_in": null
+    }
+  ],
   "policy-off-dagger": [
     {
       "branch": "4.x",
