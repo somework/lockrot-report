@@ -79,7 +79,10 @@ describe("needsAnotherWayOut", () => {
     ({ ...finding(step), gate: { fails: true } }) as unknown as Finding;
 
   it("holds a failing finding that only its own release holds, by its refused check (OWN)", () => {
-    const own = failing({ held_by: [hold("package", "a/b")], check: { result: "refused", form: null, reason: null } });
+    const own = failing({
+      held_by: [hold("package", "a/b")],
+      check: { result: "refused", form: null, reason: null },
+    });
 
     expect(isHeld(own)).toBe(false);
     expect(readyToRun(own)).toBe(false);
