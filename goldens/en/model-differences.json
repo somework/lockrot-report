@@ -8,7 +8,7 @@
     ]
   },
   "security_row": {
-    "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest: lockrot names the P2b candidate of each branch, and its if_applied follows from that candidate; the model names none": [
+    "lockrot's recording and the model's input differ: metadata.branches[].fixes.if_applied: the score after a move to the row follows its `fixes.lowest`. The model judges the row's newest tag as an upper bound, and lockrot judges its candidate exactly": [
       "B-also-dagger"
     ]
   },
@@ -41,7 +41,7 @@
     ]
   },
   "security": {
-    "lockrot's recording and the model's input differ: metadata.branches[].fixes.lowest: lockrot names the P2b candidate of each branch, and its if_applied follows from that candidate; the model names none": [
+    "lockrot's recording and the model's input differ: metadata.branches[].fixes.if_applied: the score after a move to the row follows its `fixes.lowest`. The model judges the row's newest tag as an upper bound, and lockrot judges its candidate exactly": [
       "B-also-dagger"
     ]
   },

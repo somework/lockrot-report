@@ -344,7 +344,7 @@ describe("the Findings list when it has no rows", () => {
     render(<App model={withReport(model("composite"), (report) => ({ ...report, findings: [] }))} />);
 
     const surface = document.querySelector('[data-surface="findings"]');
-    expect(surface?.textContent).toContain("Nothing was flagged.");
+    expect(surface?.textContent).toContain("Nothing is flagged.");
     expect(within(surface as HTMLElement).queryByRole("button", { name: "Clear filters" })).toBeNull();
   });
 
@@ -354,7 +354,7 @@ describe("the Findings list when it has no rows", () => {
     fireEvent.input(screen.getByRole("searchbox"), { target: { value: "no-such-package" } });
     const surface = document.querySelector('[data-surface="findings"]') as HTMLElement;
     expect(surface.textContent).toContain("Nothing matches this filter.");
-    expect(surface.textContent).not.toContain("Nothing was flagged.");
+    expect(surface.textContent).not.toContain("Nothing is flagged.");
 
     fireEvent.click(within(surface).getByRole("button", { name: "Clear filters" }));
     expect(document.querySelectorAll('[data-surface="findings"] .f2-row')).toHaveLength(9);
@@ -374,9 +374,7 @@ describe("the Findings list when it has no rows", () => {
     history.replaceState(null, "", "/report.html#view=packages");
     render(<App model={withReport(model("composite"), (report) => ({ ...report, findings: [] }))} />);
 
-    expect(document.querySelector('[data-surface="packages"]')?.textContent).toContain(
-      "Nothing was flagged.",
-    );
+    expect(document.querySelector('[data-surface="packages"]')?.textContent).toContain("Nothing is flagged.");
   });
 });
 

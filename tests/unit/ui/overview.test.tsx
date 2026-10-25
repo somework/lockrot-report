@@ -51,7 +51,7 @@ describe("the Overview tab of a report-2 document", () => {
       "Project grade: critical · 4 critical findings · 6 of 9 packages high or worse",
     );
     expect(band().querySelector(".ov-figure")?.textContent).toBe(
-      "9 of 9 packages flagged · 0 ok · 0 allowlisted",
+      "9 of 9 packages flagged · 0 ok · 0 finished",
     );
     expect(lead.getByRole("link", { name: "critical 4" })).toBeTruthy();
     expect(lead.queryByRole("link", { name: "medium 0" })).toBeNull();

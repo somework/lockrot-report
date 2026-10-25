@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { sharePhrase } from "../../../src/domain/summary";
+import { sharePhrase, waffleRuns } from "../../../src/domain/summary";
+import { pageGoldens } from "../words/recorded";
+
+describe("waffleRuns", () => {
+  it("keys the allowlisted squares by their verdict word, finished (wallabag, SPEC §7.9.4)", () => {
+    const found = pageGoldens().find((entry) => entry.id === "wallabag");
+    if (found === undefined) throw new Error("no page golden wallabag");
+
+    const finished = waffleRuns(found.report).find((run) => run.verdict === "finished");
+
+    expect(finished).toMatchObject({ label: "finished", mark: "ring-dot" });
+  });
+});
 
 describe("sharePhrase", () => {
   it("rounds to a whole percentage", () => {

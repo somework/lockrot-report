@@ -18,7 +18,7 @@ test.describe("report-2: a lock with nothing flagged", () => {
   }) => {
     await expect(page.getByRole("tab", { name: /^Findings/ })).toHaveText("Findings0");
     await expect(findingsRows(page)).toHaveCount(0);
-    await expect(findingsSurface(page)).toContainText("Nothing was flagged.");
+    await expect(findingsSurface(page)).toContainText("Nothing is flagged.");
     await expect(findingsSurface(page)).not.toContainText("matches this filter");
   });
 

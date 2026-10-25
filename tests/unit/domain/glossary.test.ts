@@ -21,7 +21,7 @@ describe("the report-2 glossary", () => {
     const byId = Object.fromEntries(verdictEntries(composite).map((entry) => [entry.id, entry]));
     expect(byId.critical).toEqual({ id: "critical", count: 4, text: "A score from 32: a critical finding." });
     expect(byId.high?.text).toBe("A score from 16: a serious finding.");
-    expect(byId.finished?.text).toBe("A score of 0: accepted by an allowlist.");
+    expect(byId.finished?.text).toBe("A score of 0: the package is allowlisted, so its flags do not count.");
     expect(byId.unknown?.text).toBe("A score of 0: no metadata.");
     expect(byId.ok?.text).toBe("A score of 0, and no flag counts.");
   });

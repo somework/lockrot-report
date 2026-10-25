@@ -84,10 +84,6 @@ const ALLOWLIST_REASONS: Words = {
 export const allowlistReason = (id: string): string | null =>
   Object.hasOwn(ALLOWLIST_REASONS, id) ? (ALLOWLIST_REASONS[id] ?? null) : null;
 
-const ZERO_VERDICT_WHEN: Words = { allowlisted: "allowlisted", no_metadata: "no metadata" };
-
-export const zeroVerdictWhen = (id: string): string => wordFor(ZERO_VERDICT_WHEN, id);
-
 export interface ZeroVerdictMark {
   readonly word: string;
   readonly mark: "soft" | "ring-dot" | "hatch";
@@ -95,7 +91,7 @@ export interface ZeroVerdictMark {
 
 const ZERO_VERDICT_MARKS: Readonly<Record<string, ZeroVerdictMark>> = {
   ok: { word: "ok", mark: "soft" },
-  finished: { word: "allowlisted", mark: "ring-dot" },
+  finished: { word: "finished", mark: "ring-dot" },
   unknown: { word: "not judged", mark: "hatch" },
 };
 

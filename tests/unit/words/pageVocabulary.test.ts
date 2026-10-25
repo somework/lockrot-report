@@ -26,7 +26,6 @@ import {
   skippedCheckWord,
   skipLinkLabel,
   wordFor,
-  zeroVerdictWhen,
 } from "../../../src/domain/pageVocabulary";
 import { readContractJson } from "./recorded";
 
@@ -183,12 +182,7 @@ describe("the small tables", () => {
     expect(allowlistReason("something-new")).toBeNull();
   });
 
-  test("a zero verdict, a skipped check and a headline reason", () => {
-    expect(["allowlisted", "no_metadata", "otherwise"].map(zeroVerdictWhen)).toEqual([
-      "allowlisted",
-      "no metadata",
-      "otherwise",
-    ]);
+  test("a skipped check and a headline reason", () => {
     expect(["release_branch", "repository_archived", "x"].map(skippedCheckWord)).toEqual([
       "its release branch",
       "its archived flag",

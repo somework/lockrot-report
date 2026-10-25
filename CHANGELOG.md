@@ -270,6 +270,17 @@ project is overall, and the other tabs lead with their own part.
   longer slides down when the footer comes into view.
 - The open row of All packages is one highlight with the accent rule down its edge, as on Findings.
   It no longer shows a grey block behind each cell and a short bar beside the name.
+- The baseline state line prints its new, worsened and known counts as text, with no link.
+- The empty Findings tab reads "Nothing is flagged."
+- The Data-as-of caption and the data column read the day of a datetime as written, as the header
+  and the cells do. An offset other than UTC no longer moves the caption to another day.
+- The depth-0 bar reads "direct", as the text formats do. When the run did not walk require-dev, the
+  depth sentence says how many more packages are named only there.
+- The `?` key opens the glossary on its "Keys and search" section, unfolded and in view. The
+  glossary button still opens it at the top.
+- The waffle caption and its key name the allowlisted packages by their verdict, "finished". The
+  glossary entry of `finished` says that it covers allowlisted packages.
+- The empty Advisories tab draws one clean mark on screen, in the Security block.
 
 ### Security
 

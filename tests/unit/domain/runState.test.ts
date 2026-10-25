@@ -29,7 +29,7 @@ describe("stateLines", () => {
       }),
     );
     expect(line?.head).toBe("Offline run");
-    expect(line?.parts.map((p) => p.text)).toEqual([
+    expect(line?.parts).toEqual([
       "no advisory check ran",
       "7 of 10 packages have no grade, because lockrot read no metadata for them",
     ]);
@@ -40,20 +40,19 @@ describe("stateLines", () => {
       report({ note_details: [{ code: "ignore_does_not_cover_advisories", data: { entries: [{}, {}] } }] }),
     );
     expect(line?.kind).toBe("allowlist");
-    expect(line?.parts[1]?.text).toBe("2 packages it lists still count for advisories");
+    expect(line?.parts[1]).toBe("2 packages it lists still count for advisories");
   });
 
-  it("puts new first and names each stale baseline entry", () => {
+  it("puts new first, names each stale baseline entry as text (§7.9.4)", () => {
     const [line] = stateLines(
-      report({ baseline: { path: "b.json", known: 5, new: 2, worsened: 0, stale: ["old/gone"] } }),
+      report({ baseline: { path: "b.json", known: 5, new: 2, worsened: 3, stale: ["old/gone"] } }),
     );
-    expect(line?.parts.map((p) => p.text)).toEqual([
+    expect(line?.parts).toEqual([
       "2 new",
-      "0 worsened",
+      "3 worsened",
       "5 known",
       "1 entry for packages that left the lock: old/gone",
     ]);
-    expect(line?.parts[1]?.link).toBeNull();
   });
 
   it("adds the PHP line after the lookup line when the target is outside the window (PD-PHP-1)", () => {
@@ -70,9 +69,7 @@ describe("stateLines", () => {
     );
 
     expect(lines.map((line) => line.kind)).toEqual(["lookup", "php"]);
-    expect(lines[1]?.parts.map((p) => p.text)).toEqual([
-      "this lock installs on PHP 7.4, so your target, 8.4, is excluded",
-    ]);
+    expect(lines[1]?.parts).toEqual(["this lock installs on PHP 7.4, so your target, 8.4, is excluded"]);
     expect(lines[1]?.more).toEqual({ text: "The PHP window", link: { view: "run" } });
   });
 });

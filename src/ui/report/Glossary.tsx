@@ -33,7 +33,7 @@ function Entries({ entries, toned }: { entries: readonly GlossaryEntry[]; toned:
 }
 
 /** The glossary's sections on a report-2 document: the verdicts in view, every other one folded. */
-export function GlossaryBody2({ onClose }: { onClose: () => void }) {
+export function GlossaryBody2({ onClose, keysOpen = false }: { onClose: () => void; keysOpen?: boolean }) {
   const { report } = useReport2();
   const { run } = report;
   const graded: readonly string[] = run.graded_verdicts;
@@ -87,7 +87,7 @@ export function GlossaryBody2({ onClose }: { onClose: () => void }) {
         </summary>
         <p className="prose">{GLOSSARY2_WORDS.libyears}</p>
       </details>
-      <details className="glossary-sect">
+      <details className="glossary-sect glossary-keys" open={keysOpen}>
         <summary>
           <h3>Keys and search</h3>
         </summary>

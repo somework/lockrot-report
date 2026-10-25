@@ -149,18 +149,7 @@ function StateLines({ report }: { report: Report2 }) {
       {lines.map((line) => (
         <li key={line.kind} className={`ov-state is-${line.kind}`}>
           {line.head !== null && <b className="ov-state-head">{line.head}: </b>}
-          {line.parts.map((part, index) => (
-            <Fragment key={index}>
-              {index > 0 && " · "}
-              {part.link === null ? (
-                part.text
-              ) : (
-                <TabLink target={part.link} className="ov-link">
-                  {part.text}
-                </TabLink>
-              )}
-            </Fragment>
-          ))}
+          {line.parts.join(" · ")}
           {"."}
           {line.more !== null && (
             <>

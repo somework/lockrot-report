@@ -170,6 +170,17 @@ test.describe("report-2: the theme and the glossary", () => {
     }
   });
 
+  test("? opens it on Keys and search, unfolded and in view, as the search hint promises", async ({
+    page,
+  }) => {
+    await report.gotoReport2WithHash("composite", "view=findings");
+    await report.pressQuestion();
+    const dialog = page.getByRole("dialog", { name: /what these words mean/i });
+    const keys = dialog.locator("details", { has: page.getByRole("heading", { name: "Keys and search" }) });
+    await expect(keys).toHaveJSProperty("open", true);
+    await expect(keys.getByText("to search")).toBeInViewport();
+  });
+
   test("a grade's words take its floor from the model and the flags this run's thresholds", async ({
     page,
   }) => {

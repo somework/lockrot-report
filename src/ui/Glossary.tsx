@@ -36,10 +36,27 @@ function useDialog(open: boolean) {
   return { ref, closeRef, fallback };
 }
 
+/** Where the dialog opens: at its top, or at the "Keys and search" section. */
+export type GlossaryAt = "top" | "keys";
+
+interface GlossaryProps {
+  open: boolean;
+  at?: GlossaryAt;
+  onClose: () => void;
+}
+
 /** The glossary: what every verdict and signal means (legacy `fillLegend` plus report.html's prose). */
-export function Glossary({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function Glossary({ open, at = "top", onClose }: GlossaryProps) {
   const titleId = useId();
   const { ref, closeRef, fallback } = useDialog(open);
+
+  useLayoutEffect(() => {
+    const dialog = ref.current;
+    if (!open || dialog === null) return;
+    const keys = dialog.querySelector(".glossary-keys");
+    if (at === "keys" && typeof keys?.scrollIntoView === "function") keys.scrollIntoView({ block: "start" });
+    else dialog.scrollTop = 0;
+  }, [open, at, ref]);
 
   return (
     <dialog
@@ -57,7 +74,7 @@ export function Glossary({ open, onClose }: { open: boolean; onClose: () => void
           Close
         </button>
       </div>
-      <GlossaryBody2 onClose={onClose} />
+      <GlossaryBody2 onClose={onClose} keysOpen={at === "keys"} />
     </dialog>
   );
 }

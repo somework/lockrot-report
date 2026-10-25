@@ -147,8 +147,7 @@ describe("R16: the blocked words of a move that fixes no advisory", () => {
 
   it("say no newer release runs when the move fixes no advisory", () => {
     expect(
-      nextStepWords(blocked([{ kind: "flag", id: "left-behind" }]), { ...run, target_php: "8.4" })
-        .text,
+      nextStepWords(blocked([{ kind: "flag", id: "left-behind" }]), { ...run, target_php: "8.4" }).text,
     ).toBe("3.x needs php >=8.5; target 8.4 runs no newer release");
   });
 

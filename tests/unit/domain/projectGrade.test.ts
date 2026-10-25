@@ -121,7 +121,7 @@ describe("the four recorded runs of the brief", () => {
   test("akaunting, as recorded, reads its three lines", () => {
     expect(lines(golden("akaunting"))).toEqual([
       "Project grade: critical · 3 critical findings · 25 of 183 packages high or worse",
-      "37 of 183 packages flagged · 126 ok · 20 allowlisted",
+      "37 of 183 packages flagged · 126 ok · 20 finished",
       "527 points on 37 flagged packages · 450 (85 %) from high or worse · score model 1",
     ]);
   });
@@ -175,33 +175,33 @@ describe("the three lines of the page-golden documents", () => {
     [
       "composite",
       "Project grade: critical · 4 critical findings · 6 of 9 packages high or worse",
-      "9 of 9 packages flagged · 0 ok · 0 allowlisted",
+      "9 of 9 packages flagged · 0 ok · 0 finished",
       "180 points on 9 flagged packages · 172 (95 %) from high or worse · score model 1",
     ],
-    ["new-symfony", "Project grade: nothing flagged", "0 of 1 package flagged · 1 ok · 0 allowlisted", null],
+    ["new-symfony", "Project grade: nothing flagged", "0 of 1 package flagged · 1 ok · 0 finished", null],
     [
       "ok-offline",
       // Golden change: the grade line no longer repeats "not checked"; the offline state line says it.
       "Project grade: nothing flagged",
-      "0 of 1 package flagged · 1 ok · 0 allowlisted",
+      "0 of 1 package flagged · 1 ok · 0 finished",
       null,
     ],
     [
       "policy-off",
       "Project grade: medium · 1 medium finding · 0 of 1 package high or worse",
-      "1 of 1 package flagged · 0 ok · 0 allowlisted",
+      "1 of 1 package flagged · 0 ok · 0 finished",
       "8 points on 1 flagged package · 0 (0 %) from high or worse · score model 1",
     ],
     [
       "B-dev‡",
       "Project grade: high · 1 high finding · 1 of 1 package high or worse",
-      "1 of 1 package flagged · 0 ok · 0 allowlisted",
+      "1 of 1 package flagged · 0 ok · 0 finished",
       "18 points on 1 flagged package · 18 (100 %) from high or worse · score model 1 · 18 from packages-dev",
     ],
     [
       "wallabag",
       "Project grade: critical · 15 critical findings · 84 of 210 packages high or worse",
-      "111 of 210 packages flagged · 80 ok · 19 allowlisted",
+      "111 of 210 packages flagged · 80 ok · 19 finished",
       "1859 points on 111 flagged packages · 1666 (89 %) from high or worse · score model 1",
     ],
   ])("%s", (id, grade, figure, load) => {
@@ -247,7 +247,7 @@ describe("the grade line", () => {
   test("counts the graded findings known to the baseline, after the other qualifiers", () => {
     expect(lines(baselined("baselined/wallabag-2.6"))).toEqual([
       "Project grade: critical · 15 critical findings · 84 of 210 packages high or worse · 46 known to the baseline",
-      "113 of 210 packages flagged · 78 ok · 19 allowlisted",
+      "113 of 210 packages flagged · 78 ok · 19 finished",
       "1871 points on 113 flagged packages · 1666 (89 %) from high or worse · score model 1",
     ]);
   });
@@ -379,6 +379,6 @@ describe("the waffle caption", () => {
     expect(waffleCaption(report)).toBe(figureLine(report));
 
     report.counts = { ...report.counts, unknown: 2 };
-    expect(waffleCaption(report)).toBe("9 of 9 packages flagged · 2 not judged · 0 ok · 0 allowlisted");
+    expect(waffleCaption(report)).toBe("9 of 9 packages flagged · 2 not judged · 0 ok · 0 finished");
   });
 });

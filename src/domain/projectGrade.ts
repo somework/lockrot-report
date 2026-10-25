@@ -8,7 +8,7 @@ import type { Finding, Report2 } from "../model/report";
 import { isScoreGraded } from "../model/report";
 import type { LinkTarget } from "../state/types";
 import { decimal, plural, pluralNoun } from "./format";
-import { lookupWord, zeroVerdictWhen } from "./pageVocabulary";
+import { lookupWord } from "./pageVocabulary";
 import { scoreBar, type BarSegment } from "./scoreBar";
 
 /** How many findings "Weighs most" draws before its rest line. */
@@ -88,7 +88,7 @@ function figureParts(
     `${String(flagged)} of ${plural(checked, "package", "packages")} flagged`,
     ...(keyed && counts.unknown > 0 ? [`${String(counts.unknown)} not judged`] : []),
     `${String(counts.ok)} ok`,
-    `${String(counts.finished)} ${zeroVerdictWhen("allowlisted")}`,
+    `${String(counts.finished)} finished`,
   ];
 }
 

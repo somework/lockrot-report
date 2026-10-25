@@ -249,7 +249,8 @@ function Group({ group, run, first }: { group: AdvisoryGroup2; run: Run; first: 
   );
 }
 
-function NoAdvisories2() {
+/** `marked` draws the clean mark, which on screen the Security block above already carries. */
+function NoAdvisories2({ marked }: { marked: boolean }) {
   const { report } = useReport2();
   const line = noAdvisoryLine(report);
   const mark = advisoryCheckMark(report);
@@ -264,7 +265,7 @@ function NoAdvisories2() {
   return (
     <div className="empty al-empty">
       <p className={`al-answer al-clean ${toneClass("none")}`}>
-        <CleanMark size={20} />
+        {marked && <CleanMark size={20} />}
         <span>{line}</span>
       </p>
     </div>
@@ -305,7 +306,7 @@ export function AdvisoriesView2() {
             <SecurityBlock report={report} />
           </div>
         )}
-        <NoAdvisories2 />
+        <NoAdvisories2 marked={printed} />
       </section>
     );
 
