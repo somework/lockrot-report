@@ -51,6 +51,51 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("G160: a why-not check on a move that holders hold", () => {
+  const NOTE = "This shows which package holds the move.";
+  const withChecks = (commands: string[][]) => (embed: Report2Embed) => {
+    const [first] = embed.report.findings;
+    if (first?.next_step == null) throw new Error("B has a move");
+    first.next_step = { ...first.next_step, commands, composer_moves_because: ["holders"] };
+    return embed;
+  };
+
+  test("prints the note once, right under the command box", () => {
+    const sheet = openCase("B", withChecks([["composer", "why-not", "knuckleswtf/scribe", "5.11.0"]]));
+
+    const notes = [...sheet.querySelectorAll(".d3-move .d3-move-note")];
+    expect(notes.map((note) => note.textContent)).toEqual([NOTE]);
+    expect(notes[0]?.previousElementSibling?.classList.contains("d3-cmd")).toBe(true);
+  });
+
+  test("prints it when other steps share the box", () => {
+    const sheet = openCase(
+      "B",
+      withChecks([
+        ["composer", "require", "symfony/monolog-bridge:^5.4"],
+        ["composer", "why-not", "knuckleswtf/scribe", "5.11.0"],
+      ]),
+    );
+
+    expect([...sheet.querySelectorAll(".d3-move .d3-move-note")].map((note) => note.textContent)).toEqual([
+      NOTE,
+    ]);
+  });
+
+  test("never prints it on a Findings row", () => {
+    const embed = withChecks([
+      ["composer", "require", "symfony/monolog-bridge:^5.4"],
+      ["composer", "why-not", "knuckleswtf/scribe", "5.11.0"],
+    ])(assembleEmbed("B"));
+    history.replaceState(null, "", "/report.html#view=findings");
+    render(<App model={modelOf(embed)} />);
+
+    const findings = document.querySelector('[data-surface="findings"]');
+    expect(findings?.querySelector("[data-pkg]")).not.toBeNull();
+    expect(findings?.textContent).not.toContain(NOTE);
+  });
+});
+
 describe("the move card on a lock whose config.platform.php lies outside the target (L5)", () => {
   test("asks to set config.platform.php before the commands", () => {
     const sheet = openCase("B", (embed) => {
