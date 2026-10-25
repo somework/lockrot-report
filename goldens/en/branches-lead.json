@@ -307,6 +307,10 @@
     "The move's branch, 12.x, released 12.0.0 1.6 years ago."
   ],
   "pinned-unread": [],
+  "platform-step-dagger": [
+    "Your branch, 5.x, had its last release, v5.13.2, 4.5 years ago.",
+    "The newest branch, 8.x, released v8.6.1 0.2 years ago."
+  ],
   "policy-off-dagger": [
     "Your branch, 2.x, had its last release, 2.0.6, 1.0 years ago."
   ],

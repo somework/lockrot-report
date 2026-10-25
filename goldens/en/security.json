@@ -5314,7 +5314,7 @@
         ],
         "lines": [
           "6.x your branch the move clears 1 of 1 from v6.4.40",
-          "upgrade · held by the 4 in Held by",
+          "upgrade · held by the 3 in Held by",
           "after it: 0, ok · Composer refuses the move"
         ]
       }
@@ -5355,7 +5355,7 @@
         ],
         "lines": [
           "6.x your branch the move clears 1 of 1 from v6.4.40",
-          "upgrade · held by the 4 in Held by",
+          "upgrade · held by the 3 in Held by",
           "after it: 0, ok · not checked: Composer refused each move before it"
         ]
       }
@@ -5967,6 +5967,20 @@
     "ladder": []
   },
   "pinned-unread": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "platform-step-dagger": {
     "summary": [
       "no counted advisory",
       "none on record for this name",

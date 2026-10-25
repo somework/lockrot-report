@@ -84,6 +84,7 @@ export function blockGolden(
       return moveCards(finding, run).map((c) => ({
         heading: c.heading,
         action: plain(c.action),
+        platform_step: c.platformStep,
         commands: commandLines(c.argvs),
         commands_label: commandLabel(c.argvs),
         clears: c.clears,

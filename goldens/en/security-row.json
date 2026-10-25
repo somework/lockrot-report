@@ -637,7 +637,7 @@
     "fix: upgrade",
     "lookup complete",
     "6.x your branch the move clears 1 of 1 from v6.4.40",
-    "upgrade · held by the 4 in Held by",
+    "upgrade · held by the 3 in Held by",
     "after it: 0, ok · Composer refuses the move"
   ],
   "mc-pass-cap-dagger": [
@@ -646,7 +646,7 @@
     "fix: upgrade",
     "lookup complete",
     "6.x your branch the move clears 1 of 1 from v6.4.40",
-    "upgrade · held by the 4 in Held by",
+    "upgrade · held by the 3 in Held by",
     "after it: 0, ok · not checked: Composer refused each move before it"
   ],
   "mc-raise-php-dagger": [
@@ -785,6 +785,11 @@
     "lookup complete"
   ],
   "pinned-unread": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "platform-step-dagger": [
     "no counted advisory",
     "none on record for this name",
     "lookup complete"

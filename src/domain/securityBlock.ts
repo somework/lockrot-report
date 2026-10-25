@@ -82,13 +82,12 @@ export const rungLines = (r: SecurityRung): string[] => [
 /** One rung per branch row that fixes an advisory, lowest branch first (G137 to G140). */
 export function securityRungs(finding: Finding, metadata: RepositoryMetadata | null): SecurityRung[] {
   const move = finding.next_step;
-  const heldCount = move?.held_by.length ?? 0;
   const shown = uniqueHolders(move?.held_by ?? []);
   const moveBranch = move?.to_branch ?? null;
   const held = (holders: readonly string[]): string =>
     shown.length < 2 || !shown.every((w) => holders.includes(w))
       ? joinAnd(holders)
-      : joinAnd([...holders.filter((w) => !shown.includes(w)), `the ${heldCount} in Held by`]);
+      : joinAnd([...holders.filter((w) => !shown.includes(w)), `the ${shown.length} in Held by`]);
   return [...(metadata?.branches ?? [])].reverse().flatMap((row) => {
     const fixes = row.fixes;
     if (fixes === null || fixes.fixed === 0) return [];

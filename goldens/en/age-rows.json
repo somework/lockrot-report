@@ -1303,6 +1303,20 @@
       "value": "last push not read (not from a Composer repository)"
     }
   ],
+  "platform-step-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.13.2 · 2022-04-16 · 4.5 years ago · the newest on 5.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.6.1 · 2026-07-10 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-10 · 0.2 years ago"
+    }
+  ],
   "policy-off-dagger": [
     {
       "label": "installed",

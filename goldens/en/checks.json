@@ -87,6 +87,7 @@
   "php-edge-upper-dagger": "1 fired (S8) · 10 quiet · every check ran",
   "php-null": "1 fired (S8) · 10 quiet · every check ran",
   "pinned-unread": "2 fired (S6, S10) · 5 quiet · S2, S3, S4, S8 not checked (not from a Composer repository)",
+  "platform-step-dagger": "1 fired (S8) · 10 quiet · every check ran",
   "policy-off-dagger": "1 fired (S9) · 10 quiet · every check ran",
   "psr7": "2 fired (S8, S9) · 9 quiet · every check ran",
   "replace-graded": "2 fired (S1, S7) · 9 quiet · every check ran",
