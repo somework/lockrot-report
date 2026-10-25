@@ -111,13 +111,28 @@ describe("applyFilters2", () => {
     ]);
   });
 
-  it("keeps a finding with an advisory row of a selected severity or fix kind", () => {
+  it("keeps a finding with an advisory row of a selected severity, or of a selected fix kind", () => {
     expect(names(applyFilters2(composite, state({}, { sev: ["critical"] }), "findings"))).toEqual([
       "twig/twig",
     ]);
     expect(names(applyFilters2(composite, state({}, { fix: ["update", "upgrade"] }), "findings"))).toEqual([
       "symfony/monolog-bridge",
       "symfony/yaml",
+      "symfony/polyfill-intl-idn",
+    ]);
+  });
+
+  it("M4: keeps a finding by its security.fix_kind, as the Overview fix counts do (monica)", () => {
+    const report = structuredClone(composite);
+    const yaml = report.findings.find((f) => f.package === "symfony/yaml");
+    if (yaml?.security.status !== "vulnerable") throw new Error("symfony/yaml is vulnerable");
+    yaml.security.fix_kind = "upgrade";
+
+    expect(names(applyFilters2(report, state({}, { fix: ["upgrade"] }), "findings"))).toEqual([
+      "symfony/monolog-bridge",
+      "symfony/yaml",
+    ]);
+    expect(names(applyFilters2(report, state({}, { fix: ["update"] }), "findings"))).toEqual([
       "symfony/polyfill-intl-idn",
     ]);
   });

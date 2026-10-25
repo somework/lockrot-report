@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   GATE_WORDS,
+  nextStepWords,
   heldByLine,
   heldByWords,
   moreWord,
@@ -87,7 +88,7 @@ describe("the holders of a row (accepted derivation 3)", () => {
       hold(null, "root"),
       hold("symfony/mailer", "package", "low"),
     ];
-    expect(heldByLine(holds, run, "symfony/mailer")).toEqual({ name: "symfony/mailer", more: 1 });
+    expect(heldByLine(holds, run, "symfony/mailer")).toEqual({ name: "its own release", more: 1 });
   });
 
   it("says the root as the sheet's Held by does when only the root holds", () => {
@@ -104,6 +105,7 @@ describe("the holders of a row (accepted derivation 3)", () => {
 describe("rowCommand (accepted derivation 8)", () => {
   it("shows the first update or require step as a POSIX line", () => {
     const f = finding({
+      package: "a/b",
       next_step: step({
         commands: [
           ["composer", "why-not", "a/b", "2.0"],
@@ -115,12 +117,16 @@ describe("rowCommand (accepted derivation 8)", () => {
   });
 
   it("shows no command when every step is a why-not", () => {
-    const f = finding({ next_step: step({ commands: [["composer", "why-not", "a/b", "2.0"]] }) });
+    const f = finding({
+      package: "a/b",
+      next_step: step({ commands: [["composer", "why-not", "a/b", "2.0"]] }),
+    });
     expect(rowCommand(f)).toBeNull();
   });
 
   it("shows no step of a move when one argv fails the check (SPEC §5.6)", () => {
     const f = finding({
+      package: "a/b",
       next_step: step({
         commands: [
           ["composer", "update", "a/b"],
@@ -129,6 +135,64 @@ describe("rowCommand (accepted derivation 8)", () => {
       }),
     });
     expect(rowCommand(f)).toBeNull();
+  });
+});
+
+describe("W2: the row's command names the finding's package", () => {
+  const otphp = () =>
+    finding({
+      package: "spomky-labs/otphp",
+      direct: true,
+      next_step: step({
+        kind: "raise-php",
+        commands: [["composer", "require", "php:>=8.1", "--no-update"]],
+        php_check: { raise_to: ">=8.1" },
+      }),
+    });
+
+  it("shows no command and says the raise when no step names the package (wallabag 8.4's spomky-labs/otphp)", () => {
+    expect(rowCommand(otphp())).toBeNull();
+    expect(nextStepWords(otphp(), run).text).toBe("raise require.php to >=8.1");
+  });
+
+  it("shows the step that names the package and keeps php floor raise when the move has one", () => {
+    const f = finding({
+      package: "a/b",
+      direct: true,
+      next_step: step({
+        kind: "raise-php",
+        commands: [
+          ["composer", "require", "php:>=8.1", "--no-update"],
+          ["composer", "require", "a/b:^2.0"],
+        ],
+        php_check: { raise_to: ">=8.1" },
+      }),
+    });
+    expect(rowCommand(f)).toBe("composer require 'a/b:^2.0'");
+    expect(nextStepWords(f, run).text).toBe("php floor raise");
+  });
+});
+
+describe("OWN and RANK on a row's holders", () => {
+  it("names its own release first after the root, never the package (monica's laravel/framework)", () => {
+    const holds = [
+      hold(null, "root"),
+      hold("league/commonmark", "package", "critical"),
+      hold("laravel/framework", "package", "high"),
+    ];
+    const line = heldByLine(holds, run, "laravel/framework");
+    expect(line === null ? null : heldByWords(line)).toBe("held by its own release and 1 more");
+  });
+
+  it("names a hold on the finding's package before a graded hold on another (monica's firebase/php-jwt)", () => {
+    const on = (name: string, target: string | null, verdict: string): Hold =>
+      ({ source: "package", package: name, target, holder: { verdict } }) as Hold;
+    const holds = [
+      on("socialiteproviders/manager", "laravel/socialite", "ok"),
+      on("socialiteproviders/facebook", "socialiteproviders/manager", "medium"),
+      on("laravel/socialite", null, "ok"),
+    ];
+    expect(heldByLine(holds, run, "firebase/php-jwt")).toEqual({ name: "laravel/socialite", more: 2 });
   });
 });
 
@@ -189,6 +253,23 @@ describe("rowAfter (SPEC §7.9.5, After it)", () => {
   it("reads no caveat for a move whose check resolves, which drops composer_resolves", () => {
     const f = finding({ next_step: step({ if_applied: applied({ assumes: ["clears_hold"] }) }) });
     expect(rowAfter(f)).toBe("after it: 0, ok");
+  });
+
+  it("W1: drops the caveat and ends with the short words of a refused check (wallabag 7.4's guzzlehttp/guzzle)", () => {
+    const f = finding({
+      next_step: step({ if_applied: applied({}), check: { result: "refused", form: null, reason: null } }),
+    });
+    expect(rowAfter(f)).toBe("after it: 0, ok · Composer refuses the move");
+  });
+
+  it("W1: ends with the reason of a check that did not run (wallabag 8.4's symfony/monolog-bridge)", () => {
+    const f = finding({
+      next_step: step({
+        if_applied: applied({ assumes: ["clears_hold"] }),
+        check: { result: "not_checked", form: null, reason: "baseline_refused" },
+      }),
+    });
+    expect(rowAfter(f)).toBe("after it: 0, ok · not checked: Composer refuses the lock itself");
   });
 
   it("says nothing when if_applied is null, or there is no move", () => {

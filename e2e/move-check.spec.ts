@@ -46,7 +46,7 @@ test.describe("snipe-it, lockrot's engine run with a move check", () => {
       "composer require 'pragmarx/google2fa-laravel:^2.3'",
     );
     const refused = await findingsRowCell(page, "bacon/bacon-qr-code", "next");
-    expect(refused).toContain("held by pragmarx/google2fa-laravel and 1 more");
+    expect(refused).toContain("held by pragmarx/google2fa-qrcode and 1 more");
     expect(refused).not.toContain("composer require");
   });
 

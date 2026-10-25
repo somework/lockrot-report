@@ -16,6 +16,7 @@ import type {
 import { isScoreGraded, isSecurityVulnerable } from "../model/report";
 import { advisoryRows } from "./advisoryRows";
 import { pluralNoun } from "./format";
+import { compareHolds } from "./holdRank";
 import { joinAnd } from "./joinWords";
 import { safeHref } from "./links";
 import { fixLabel, lookupWord, stoppedCheckWords } from "./pageVocabulary";
@@ -35,13 +36,19 @@ const securityFixWord = (kind: string): string => SECURITY_FIX_WORDS[kind] ?? fi
 /** The fix label of a ladder rung and an advisory row, which name what blocks a blocked fix. */
 export const ladderFixWord = (kind: string): string => (kind === "blocked" ? BLOCKED : fixLabel(kind));
 
-export function holderWord({ source, package: name }: Pick<HeldBy, "source" | "package">): string {
-  return source === "root" || name === null ? "composer.json" : name;
+/** A holder on a one-line surface: the root as composer.json, the finding's own package as its own
+ *  release (OWN). */
+export function holderWord(
+  { source, package: name }: Pick<HeldBy, "source" | "package">,
+  own: string,
+): string {
+  if (source === "root" || name === null) return "composer.json";
+  return name === own ? "its own release" : name;
 }
 
-/** G138: each holder once, in first-seen order. */
-const uniqueHolders = (held: readonly Pick<HeldBy, "source" | "package">[]): string[] => [
-  ...new Set(held.map(holderWord)),
+/** G138: each holder once, in RANK order. */
+const uniqueHolders = (held: readonly HeldBy[], run: Run, own: string): string[] => [
+  ...new Set([...held].sort((a, b) => compareHolds(a, b, run, own)).map((h) => holderWord(h, own))),
 ];
 
 /** "after it: {bound}{total}, {verdict}", with its conditions (G139). A move that the check stopped
@@ -80,19 +87,23 @@ export const rungLines = (r: SecurityRung): string[] => [
 ];
 
 /** One rung per branch row that fixes an advisory, lowest branch first (G137 to G140). */
-export function securityRungs(finding: Finding, metadata: RepositoryMetadata | null): SecurityRung[] {
+export function securityRungs(
+  finding: Finding,
+  run: Run,
+  metadata: RepositoryMetadata | null,
+): SecurityRung[] {
   const move = finding.next_step;
-  const shown = uniqueHolders(move?.held_by ?? []);
+  const shown = uniqueHolders(move?.held_by ?? [], run, finding.package);
   const moveBranch = move?.to_branch ?? null;
   const held = (holders: readonly string[]): string =>
     shown.length < 2 || !shown.every((w) => holders.includes(w))
       ? joinAnd(holders)
-      : joinAnd([...holders.filter((w) => !shown.includes(w)), `the ${shown.length} in Held by`]);
+      : joinAnd([...holders.filter((w) => !shown.includes(w)), "every holder in Held by"]);
   return [...(metadata?.branches ?? [])].reverse().flatMap((row) => {
     const fixes = row.fixes;
     if (fixes === null || fixes.fixed === 0) return [];
     const isMove = moveBranch !== null && row.branch === moveBranch;
-    const holders = uniqueHolders(fixes.held_by);
+    const holders = uniqueHolders(fixes.held_by, run, finding.package);
     return [
       {
         branch: row.branch,
@@ -326,7 +337,7 @@ export function securityBlock(
             `${cve ?? id} (${severity}) ignored by ${by}${reason === null ? ", no reason given" : `: ${reason}`}`,
         )
       : [],
-    ladder: securityRungs(finding, metadata),
+    ladder: securityRungs(finding, run, metadata),
   };
 }
 

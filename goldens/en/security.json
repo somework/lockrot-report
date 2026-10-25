@@ -264,7 +264,7 @@
         ],
         "lines": [
           "3.x the move clears 15 of 15 from v3.27.0",
-          "php floor raise · held by the 2 in Held by",
+          "php floor raise · held by every holder in Held by",
           "after it: 0, ok, if Composer resolves it"
         ]
       }
@@ -1076,7 +1076,7 @@
         ],
         "lines": [
           "3.x the move clears 15 of 15 from v3.27.0",
-          "php floor raise · held by the 2 in Held by",
+          "php floor raise · held by every holder in Held by",
           "after it: 0, ok, if Composer resolves it"
         ]
       }
@@ -1347,7 +1347,7 @@
         ],
         "lines": [
           "3.x the move clears 15 of 15 from v3.27.0",
-          "php floor raise · held by the 2 in Held by",
+          "php floor raise · held by every holder in Held by",
           "after it: 0, ok, if Composer resolves it"
         ]
       }
@@ -1618,7 +1618,7 @@
         ],
         "lines": [
           "3.x the move clears 15 of 15 from v3.27.0",
-          "upgrade · held by the 2 in Held by",
+          "upgrade · held by every holder in Held by",
           "after it: 0, ok, if Composer resolves it"
         ]
       }
@@ -4247,7 +4247,7 @@
         ],
         "lines": [
           "3.x the move clears 1 of 1 from 3.36.0",
-          "upgrade · held by the 2 in Held by",
+          "upgrade · held by every holder in Held by",
           "after it: 0, ok, if Composer resolves it"
         ]
       }
@@ -4590,7 +4590,7 @@
         "marks": [],
         "lines": [
           "6.x clears 5 of 14 from 6.5.8",
-          "upgrade · held by the 3 in Held by",
+          "upgrade · held by every holder in Held by",
           "after it: 32, critical, if Composer resolves it"
         ]
       },
@@ -4599,7 +4599,7 @@
         "marks": [],
         "lines": [
           "7.x clears 14 of 14 from 7.15.2",
-          "upgrade · held by the 3 in Held by",
+          "upgrade · held by every holder in Held by",
           "after it: at most 16, high, if Composer resolves it"
         ]
       },
@@ -4610,7 +4610,7 @@
         ],
         "lines": [
           "8.x the move clears 14 of 14 from 8.0.1",
-          "upgrade · held by the 3 in Held by",
+          "upgrade · held by every holder in Held by",
           "after it: at most 16, high, if Composer resolves it"
         ]
       }
@@ -4794,7 +4794,7 @@
         "marks": [],
         "lines": [
           "6.x clears 5 of 14 from 6.5.8",
-          "upgrade · held by the 5 in Held by",
+          "upgrade · held by every holder in Held by",
           "after it: 32, critical, if Composer resolves it"
         ]
       },
@@ -4805,7 +4805,7 @@
         ],
         "lines": [
           "7.x the move clears 14 of 14 from 7.15.2",
-          "php floor raise · held by the 5 in Held by",
+          "php floor raise · held by every holder in Held by",
           "after it: at most 16, high, if Composer resolves it"
         ]
       },
@@ -4814,7 +4814,7 @@
         "marks": [],
         "lines": [
           "8.x clears 14 of 14 from 8.0.1",
-          "php floor raise · held by the 5 in Held by",
+          "php floor raise · held by every holder in Held by",
           "after it: at most 16, high, if Composer resolves it"
         ]
       }
@@ -5314,7 +5314,7 @@
         ],
         "lines": [
           "6.x your branch the move clears 1 of 1 from v6.4.40",
-          "upgrade · held by the 3 in Held by",
+          "upgrade · held by every holder in Held by",
           "after it: 0, ok · Composer refuses the move"
         ]
       }
@@ -5355,7 +5355,7 @@
         ],
         "lines": [
           "6.x your branch the move clears 1 of 1 from v6.4.40",
-          "upgrade · held by the 3 in Held by",
+          "upgrade · held by every holder in Held by",
           "after it: 0, ok · not checked: Composer refused each move before it"
         ]
       }
@@ -5436,7 +5436,7 @@
         ],
         "lines": [
           "7.x your branch clears 1 of 1 from 7.15.2",
-          "upgrade · held by composer.json and guzzlehttp/guzzle",
+          "upgrade · held by composer.json and its own release",
           "after it: 0, ok · Composer refuses the move"
         ]
       },
@@ -5487,7 +5487,7 @@
         ],
         "lines": [
           "7.x your branch clears 1 of 1 from 7.15.2",
-          "upgrade · held by composer.json and guzzlehttp/guzzle",
+          "upgrade · held by composer.json and its own release",
           "after it: 0, ok · Composer refuses the move"
         ]
       },
@@ -5831,7 +5831,7 @@
         ],
         "lines": [
           "12.x the move clears 6 of 6 from v12.69.0",
-          "php floor raise · held by the 2 in Held by",
+          "php floor raise · held by every holder in Held by",
           "after it: 0, ok, if Composer resolves it"
         ]
       },
@@ -5840,7 +5840,7 @@
         "marks": [],
         "lines": [
           "13.x clears 6 of 6 from v13.30.0",
-          "php floor raise · held by the 2 in Held by",
+          "php floor raise · held by every holder in Held by",
           "after it: 0, ok, if Composer resolves it"
         ]
       }
@@ -6294,7 +6294,7 @@
         "marks": [],
         "lines": [
           "7.x clears 2 of 2 from v7.4.13",
-          "upgrade · held by friendsofsymfony/rest-bundle, mautic/core-lib and symfony/framework-bundle",
+          "upgrade · held by mautic/core-lib, symfony/framework-bundle and friendsofsymfony/rest-bundle",
           "after it: 0, ok, if Composer resolves it"
         ]
       },
@@ -6303,7 +6303,7 @@
         "marks": [],
         "lines": [
           "8.x clears 2 of 2 from v8.0.13",
-          "upgrade · held by friendsofsymfony/rest-bundle, mautic/core-lib and symfony/framework-bundle",
+          "upgrade · held by mautic/core-lib, symfony/framework-bundle and friendsofsymfony/rest-bundle",
           "after it: 0, ok, if Composer resolves it"
         ]
       }
@@ -6739,7 +6739,7 @@
         ],
         "lines": [
           "3.x the move clears 16 of 16 from v3.27.0",
-          "php floor raise · held by the 3 in Held by",
+          "php floor raise · held by every holder in Held by",
           "after it: at most 16, high, if Composer resolves it"
         ]
       }

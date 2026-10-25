@@ -143,7 +143,8 @@ function isRootCeiling(fix: TargetFix): boolean {
 /** A hold as the `php:` line words it (SPEC §7.0), with the link words of the move card; a root
  *  hold on a require-dev package says so, since its link names no section. */
 function holdWords(h: HeldBy, fix: TargetFix): string {
-  const dev = h.source === "root" && fix.packages.some((p) => p.dev && p.name === h.target);
+  const dev =
+    h.source === "root" && h.link !== "require-dev" && fix.packages.some((p) => p.dev && p.name === h.target);
   return `${h.source === "root" ? "composer.json" : `${h.package ?? ""} ${h.version ?? ""}`} ${plain(linkWords(h))}${dev ? " (require-dev)" : ""}`;
 }
 

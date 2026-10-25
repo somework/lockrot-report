@@ -129,12 +129,12 @@ describe("the report-2 Findings tab", () => {
     expect(text(bridge, ".f2-major")).toBe("a new major");
   });
 
-  test("prints a row's command as the POSIX line of its first update or require step, spaces kept (§5.6)", () => {
+  test("prints a row's command as the POSIX line of its first step that names the package, spaces kept (§5.6, W2)", () => {
     const composite = model("composite");
     render(<App model={composite} />);
 
     const twig = row("twig/twig").querySelector(".f2-cmd");
-    expect(twig?.textContent).toBe("composer require 'php:>=8.1' --no-update");
+    expect(twig?.textContent).toBe("composer require 'twig/twig:^3.27.0'");
     expect(row("symfony/yaml").querySelector(".f2-cmd")?.textContent).toBe("composer update symfony/yaml");
     // The prompt is CSS, never text a copy would take.
     expect(twig?.querySelector("[aria-hidden]")).toBeNull();

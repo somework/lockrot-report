@@ -40,7 +40,11 @@ function passesRail2(filters: Filters, f: Finding): boolean {
   if (filters.flag.length > 0 && !countedFlagIds(f).some((id) => filters.flag.includes(id))) return false;
   const rows = advisoryRows(f);
   if (filters.sev.length > 0 && !rows.some((row) => filters.sev.includes(row.severity))) return false;
-  if (filters.fix.length > 0 && !rows.some((row) => filters.fix.includes(row.fix.kind))) return false;
+  if (
+    filters.fix.length > 0 &&
+    !(isSecurityVulnerable(f.security) && filters.fix.includes(f.security.fix_kind))
+  )
+    return false;
   if (filters.signal.length > 0 && !f.signals.some((signal) => filters.signal.includes(signal.id)))
     return false;
   const since = f.baseline?.status;

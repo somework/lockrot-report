@@ -9,6 +9,7 @@ const RESOLVES = { result: "resolves", form: "inline", reason: null };
 
 function finding(step: Record<string, unknown> | null): Finding {
   return {
+    package: "a/b",
     next_step:
       step === null
         ? null

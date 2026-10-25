@@ -14,10 +14,11 @@ import {
   oneDecimal,
 } from "./findingWords";
 import { plural, pluralNoun } from "./format";
-import { holderRank, newLineTag, ROOT_HOLDER_NAME } from "./moveCards";
-import { afterIt } from "./securityBlock";
+import { compareHolds } from "./holdRank";
+import { newLineTag, ROOT_HOLDER_NAME } from "./moveCards";
+import { afterIt, holderWord } from "./securityBlock";
 import { commandLine } from "./shellArgv";
-import { allowlistByInWhy, allowlistReason, headlineReasonWord } from "./pageVocabulary";
+import { allowlistByInWhy, allowlistReason, headlineReasonWord, stoppedCheckWords } from "./pageVocabulary";
 import { vocabTable, type Tone } from "./vocab";
 
 export interface BaselineMark {
@@ -301,7 +302,9 @@ function kindWords(f: Finding, step: Move, run: Run): string {
     case "require":
       return `${where} ${step.constraint ?? ""}`;
     case "raise-php":
-      return "php floor raise";
+      return step.commands.some((argv) => namesPackage(argv, f.package))
+        ? "php floor raise"
+        : `raise require.php to ${step.php_check?.raise_to ?? ""}`;
     case "update":
       return "composer update";
     case "tag": {
@@ -337,11 +340,11 @@ export function nextStepWords(f: Finding, run: Run): NextStepWords {
   return { text: kindWords(f, step, run), title: null, href: null, held };
 }
 
-type Hold = Pick<HeldBy, "source" | "package" | "holder">;
+type Hold = Pick<HeldBy, "source" | "package" | "target" | "holder">;
 
-/** Accepted derivation 3: the distinct package holders, sorted by the sheet's holder rank
- *  (`holderRank`, `own` the finding's package), the first named and the rest counted; with only a root hold, the root as the
- *  sheet's Held by names it. */
+/** Accepted derivation 3: the distinct package holders in RANK order (`compareHolds`, `own` the
+ *  finding's package), the first named and the rest counted; its own release reads as such (OWN).
+ *  With only a root hold, the root as the sheet's Held by names it. */
 export function heldByLine(
   holds: readonly Hold[],
   run: Run,
@@ -353,10 +356,8 @@ export function heldByLine(
     seen.add(hold.package);
     return true;
   });
-  const [first, ...rest] = packages
-    .map((hold, at) => ({ hold, at, rank: holderRank(hold, run, own) }))
-    .sort((a, b) => a.rank - b.rank || a.at - b.at);
-  if (first !== undefined) return { name: first.hold.package ?? "", more: rest.length };
+  const [first, ...rest] = [...packages].sort((a, b) => compareHolds(a, b, run, own));
+  if (first !== undefined) return { name: holderWord(first, own), more: rest.length };
   return holds.some((hold) => hold.source === "root") ? { name: ROOT_HOLDER_NAME, more: 0 } : null;
 }
 
@@ -369,18 +370,22 @@ export const rowHolds = (f: Finding): readonly Hold[] =>
 
 const ROW_STEPS: ReadonlySet<string> = new Set(["update", "require"]);
 
-/** Accepted derivation 8 (§5.6): the first checked `update` or `require` step of the move; none
- *  when one argv fails the check or every step is a `why-not`. */
+/** W2: an update or require step that names the finding's package, bare or with a constraint. */
+const namesPackage = (argv: readonly string[], pkg: string): boolean =>
+  ROW_STEPS.has(argv[1] ?? "") && argv.slice(2).some((arg) => arg === pkg || arg.startsWith(`${pkg}:`));
+
+/** Accepted derivation 8 (§5.6) with W2: the first checked step of the move that names the
+ *  finding's package; none when one argv fails the check or no step names it. */
 export function rowCommandArgv(f: Finding): readonly string[] | null {
   const argvs = f.next_step?.commands ?? [];
   if (argvs.some((argv) => commandLine(argv, "posix") === null)) return null;
-  return argvs.find((argv) => ROW_STEPS.has(argv[1] ?? "")) ?? null;
+  return argvs.find((argv) => namesPackage(argv, f.package)) ?? null;
 }
 
 /** What is left after the lead move, with G139's Composer caveat only when its `assumes` holds
  *  `composer_resolves`; null without `if_applied` (SPEC §7.9.5). */
 export const rowAfter = (f: Finding): string | null =>
-  f.next_step === null ? null : afterIt(f.next_step.if_applied);
+  f.next_step === null ? null : afterIt(f.next_step.if_applied, stoppedCheckWords(f.next_step.check ?? null));
 
 /** Accepted derivation 11: the lead move crosses a major (`next_step.crosses_major`), in the
  *  sheet's Composer note words without their reason, which the sheet keeps. Null otherwise. */

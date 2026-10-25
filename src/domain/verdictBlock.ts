@@ -37,13 +37,13 @@ export interface SheetContext {
   readonly replacementInMove: boolean;
 }
 
-export function sheetContext(finding: Finding, metadata: RepositoryMetadata | null): SheetContext {
+export function sheetContext(finding: Finding, run: Run, metadata: RepositoryMetadata | null): SheetContext {
   const rows = metadata?.branches ?? [];
   const move = finding.next_step;
   return {
     hasBranchRows: rows.length > 0,
     higherRelease: (branch) => rows.find((r) => r.branch === branch)?.highest ?? null,
-    installedRung: securityRungs(finding, metadata).some((r) => r.installed),
+    installedRung: securityRungs(finding, run, metadata).some((r) => r.installed),
     replacementInMove:
       move?.kind === "replace" &&
       finding.replacement !== null &&
@@ -323,7 +323,7 @@ export function verdictBlock(finding: Finding, run: Run, metadata: RepositoryMet
       readings: [],
     };
   const { head, inline } = opening(finding, score, run);
-  const ctx = sheetContext(finding, metadata);
+  const ctx = sheetContext(finding, run, metadata);
   const flags = countedFlags(finding, score).map((flag) => flagReading(finding, flag, run, ctx));
   const colon = head.indexOf(":") + 1;
   const [first, ...rest] = flags;

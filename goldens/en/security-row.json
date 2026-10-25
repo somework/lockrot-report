@@ -5,7 +5,7 @@
     "fix: php floor raise",
     "lookup complete",
     "3.x the move clears 15 of 15 from v3.27.0",
-    "php floor raise · held by the 2 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
   "A-baselined-dagger": [
@@ -31,7 +31,7 @@
     "fix: php floor raise",
     "lookup complete",
     "3.x the move clears 15 of 15 from v3.27.0",
-    "php floor raise · held by the 2 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
   "A-gate-vulnerable": [
@@ -40,7 +40,7 @@
     "fix: php floor raise",
     "lookup complete",
     "3.x the move clears 15 of 15 from v3.27.0",
-    "php floor raise · held by the 2 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
   "A-php-star-dagger": [
@@ -49,7 +49,7 @@
     "fix: upgrade",
     "lookup complete",
     "3.x the move clears 15 of 15 from v3.27.0",
-    "upgrade · held by the 2 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
   "B": [
@@ -470,7 +470,7 @@
     "fix: upgrade",
     "lookup complete",
     "3.x the move clears 1 of 1 from 3.36.0",
-    "upgrade · held by the 2 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
   "gitlab-anon-dagger": [
@@ -496,13 +496,13 @@
     "fix: upgrade",
     "lookup complete",
     "6.x clears 5 of 14 from 6.5.8",
-    "upgrade · held by the 3 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: 32, critical, if Composer resolves it",
     "7.x clears 14 of 14 from 7.15.2",
-    "upgrade · held by the 3 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: at most 16, high, if Composer resolves it",
     "8.x the move clears 14 of 14 from 8.0.1",
-    "upgrade · held by the 3 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: at most 16, high, if Composer resolves it"
   ],
   "guzzle-mixed": [
@@ -511,13 +511,13 @@
     "fix: php floor raise",
     "lookup complete",
     "6.x clears 5 of 14 from 6.5.8",
-    "upgrade · held by the 5 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: 32, critical, if Composer resolves it",
     "7.x the move clears 14 of 14 from 7.15.2",
-    "php floor raise · held by the 5 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: at most 16, high, if Composer resolves it",
     "8.x clears 14 of 14 from 8.0.1",
-    "php floor raise · held by the 5 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: at most 16, high, if Composer resolves it"
   ],
   "hoa": [
@@ -637,7 +637,7 @@
     "fix: upgrade",
     "lookup complete",
     "6.x your branch the move clears 1 of 1 from v6.4.40",
-    "upgrade · held by the 3 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: 0, ok · Composer refuses the move"
   ],
   "mc-pass-cap-dagger": [
@@ -646,7 +646,7 @@
     "fix: upgrade",
     "lookup complete",
     "6.x your branch the move clears 1 of 1 from v6.4.40",
-    "upgrade · held by the 3 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: 0, ok · not checked: Composer refused each move before it"
   ],
   "mc-raise-php-dagger": [
@@ -664,7 +664,7 @@
     "fix: upgrade",
     "lookup complete",
     "7.x your branch clears 1 of 1 from 7.15.2",
-    "upgrade · held by composer.json and guzzlehttp/guzzle",
+    "upgrade · held by composer.json and its own release",
     "after it: 0, ok · Composer refuses the move",
     "8.x the move clears 1 of 1 from 8.0.1",
     "upgrade · held by composer.json",
@@ -676,7 +676,7 @@
     "fix: composer update",
     "lookup complete",
     "7.x your branch clears 1 of 1 from 7.15.2",
-    "upgrade · held by composer.json and guzzlehttp/guzzle",
+    "upgrade · held by composer.json and its own release",
     "after it: 0, ok · Composer refuses the move",
     "8.x the move clears 1 of 1 from 8.0.1",
     "composer update",
@@ -745,10 +745,10 @@
     "php floor raise · held by composer.json",
     "after it: 16, high, if Composer resolves it",
     "12.x the move clears 6 of 6 from v12.69.0",
-    "php floor raise · held by the 2 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it",
     "13.x clears 6 of 6 from v13.30.0",
-    "php floor raise · held by the 2 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
   "partial-op-dagger": [
@@ -852,10 +852,10 @@
     "upgrade · held by mautic/core-lib and symfony/framework-bundle",
     "after it: 0, ok, if Composer resolves it",
     "7.x clears 2 of 2 from v7.4.13",
-    "upgrade · held by friendsofsymfony/rest-bundle, mautic/core-lib and symfony/framework-bundle",
+    "upgrade · held by mautic/core-lib, symfony/framework-bundle and friendsofsymfony/rest-bundle",
     "after it: 0, ok, if Composer resolves it",
     "8.x clears 2 of 2 from v8.0.13",
-    "upgrade · held by friendsofsymfony/rest-bundle, mautic/core-lib and symfony/framework-bundle",
+    "upgrade · held by mautic/core-lib, symfony/framework-bundle and friendsofsymfony/rest-bundle",
     "after it: 0, ok, if Composer resolves it"
   ],
   "silent": [
@@ -911,7 +911,7 @@
     "upgrade · held by composer.json",
     "after it: at most 48, critical, if Composer resolves it",
     "3.x the move clears 16 of 16 from v3.27.0",
-    "php floor raise · held by the 3 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: at most 16, high, if Composer resolves it"
   ],
   "twig-dev-dagger": [

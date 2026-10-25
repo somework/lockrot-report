@@ -169,6 +169,7 @@
 .d3-move-action .out {
   font: inherit;
 }
+.d3-move-note,
 .d3-move-platform {
   margin: 0;
   color: var(--ink-2);

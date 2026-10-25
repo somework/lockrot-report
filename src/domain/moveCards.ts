@@ -10,6 +10,7 @@ import { countedFlagIds } from "./countedFlags";
 import { capitalize, metadataWords, signalData } from "./findingWords";
 import { pluralNoun } from "./format";
 import { joinAnd } from "./joinWords";
+import { compareHolds } from "./holdRank";
 import { linkWords } from "./linkWords";
 import { safeHref } from "./links";
 import { addsBasisWord, checkReasonRich, phpFloorWord, stoppedCheckWords } from "./pageVocabulary";
@@ -402,7 +403,7 @@ const ownStep = (step: HolderStep, where: string): string =>
     ? `require ${step.constraint}${where}`
     : `${step.kind.replaceAll("-", " ")}${where}`;
 
-const RELEASE_WORDS = ", the release this move installs";
+const RELEASE_WORDS = ", its own release";
 
 /** G118: a hold by the finding's own package. Its holder record is the installed version's, so its
  *  grade, flags and step are not this release's. */
@@ -449,7 +450,7 @@ function holderItem(held: HeldBy, run: Run, finding: Finding): Holder {
 
 function foldWord(held: HeldBy, run: Run, own: string): string {
   if (held.source === "root") return "in composer.json";
-  if (held.package === own) return "from the release this move installs";
+  if (held.package === own) return "of its own releases";
   const holder = held.holder ?? null;
   if (isGradedHolder(held, run)) return `graded ${holder?.verdict ?? ""}`;
   return (holder?.flag_ids ?? []).length === 0 ? "with nothing flagged" : (holder?.verdict ?? "");
@@ -466,32 +467,11 @@ function foldWords(rest: readonly HeldBy[], run: Run, own: string): string {
   return `${rest.length} more: ${joinAnd([...counts].map(([word, n]) => `${n} ${word}`))}`;
 }
 
-/** §7.9.13's holder rank, the Held by "More" order: the root first, then the holds by the release the
- *  move installs (`own`), then by the holder's grade in `run.graded_verdicts`, then the rest. Lower
- *  comes first; equal ranks keep data order. */
-export function holderRank(
-  h: Pick<HeldBy, "source" | "package" | "holder">,
-  run: Run,
-  own: string | null = null,
-): number {
-  if (h.source === "root") return -2;
-  if (own !== null && h.package === own) return -1;
-  const graded: readonly string[] = run.graded_verdicts;
-  const verdict = h.holder?.verdict ?? "";
-  return graded.includes(verdict) ? graded.indexOf(verdict) : graded.length;
-}
-
 function heldBy(finding: Finding, move: AnyMove, run: Run, then: boolean): HeldByBlock | null {
   const holders = move.held_by;
   if (holders.length === 0) return null;
-  const rank = (h: HeldBy): number => holderRank(h, run, finding.package);
   const fold = holders.length > HOLDERS_SHOWN_MAX;
-  const ordered = fold
-    ? holders
-        .map((h, at) => ({ h, at }))
-        .sort((a, b) => rank(a.h) - rank(b.h) || a.at - b.at)
-        .map(({ h }) => h)
-    : holders;
+  const ordered = [...holders].sort((a, b) => compareHolds(a, b, run, finding.package));
   const shown = fold ? ordered.slice(0, HOLDERS_SHOWN) : ordered;
   const rest = fold ? ordered.slice(HOLDERS_SHOWN) : [];
   return {
@@ -518,6 +498,8 @@ export interface MoveCard {
   readonly argvs: readonly (readonly string[])[];
   /** L5: the config.platform.php step that comes before the commands. */
   readonly platformStep: string | null;
+  /** M7: what a why-not check in the command box shows, on a move that holders hold. */
+  readonly checkNote: string | null;
   readonly clears: string | null;
   readonly stays: string | null;
   readonly notChecked: string | null;
@@ -534,12 +516,20 @@ const minorOf = (version: string): string => {
   return `${major}.${minor}`;
 };
 
+/** W3: setting the platform does not help when Composer refuses the lock for another cause. */
+function stillRefused(run: Run): string {
+  if (run.move_check?.baseline !== "refused") return "";
+  return run.php_window?.target.inside === false
+    ? " Composer still refuses the lock itself: the PHP line names the packages."
+    : " Composer still refuses the lock itself: the Run tab names the cause.";
+}
+
 /** A lock whose config.platform.php lies outside the target's minor makes Composer check every
  *  command at that PHP, not the target's. */
 export function platformStep(run: Run): string | null {
   const override = run.php_window?.platform_override ?? null;
   if (override === null || minorOf(override) === minorOf(run.target_php)) return null;
-  return `First set config.platform.php to your PHP ${run.target_php} release: the lock records ${override}.`;
+  return `First set config.platform.php to your PHP ${run.target_php} release: the lock records ${override}.${stillRefused(run)}`;
 }
 
 /** The POSIX lines of a command box, or the refusal: one refused argv refuses the whole move (§5.6). */
@@ -592,6 +582,10 @@ function moveCard(
     composer: composerNotes(finding, move, run, noted),
     heldBy: heldBy(finding, move, run, then),
     platformStep: move.commands.length > 0 ? platformStep(run) : null,
+    checkNote:
+      move.commands.some((argv) => argv[1] === "why-not") && move.composer_moves_because.includes("holders")
+        ? "This shows which package holds the move."
+        : null,
   };
 }
 
