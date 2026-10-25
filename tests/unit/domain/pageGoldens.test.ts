@@ -47,7 +47,7 @@ function ready(report: Report2): unknown {
       package: move.package,
       link: href(move.link),
       grade: move.grade,
-      new_major: move.newMajor,
+      new_major: move.newLine !== null,
       command: move.command,
       clears: move.clears,
       after: move.after,

@@ -111,6 +111,43 @@ describe("readyFindings (the Ready to run block)", () => {
   });
 });
 
+describe("Ready to run on a refused baseline (R14)", () => {
+  it("says that Composer refuses the lock itself, so no move was checked", () => {
+    const stopped = finding("b/b", 2, true);
+    const r = {
+      ...report([stopped], true),
+      packages_flagged: 1,
+      run: { graded_verdicts: ["critical", "high", "medium", "low"], move_check: { baseline: "refused" } },
+    } as unknown as Report2;
+    if (stopped.next_step !== null)
+      stopped.next_step.check = { result: "not_checked", form: null, reason: "baseline_refused" };
+
+    expect(firstMoves(r).none).toBe(
+      "No move is ready to run: Composer refuses the lock itself, so no move was checked.",
+    );
+  });
+});
+
+describe("the new-line tag of a ready move (R8)", () => {
+  const ready = (toBranch: string): string | null | undefined => {
+    const found = pageGoldens().find((entry) => entry.id === "snipe-it");
+    if (found === undefined) throw new Error("no page golden snipe-it");
+    const report = structuredClone(found.report);
+    const [first] = readyFindings(report);
+    if (first?.next_step == null) throw new Error("snipe-it has a ready move");
+    first.next_step = { ...first.next_step, crosses_major: true, to_branch: toBranch };
+    return firstMoves(report).moves.find((move) => move.package === first.package)?.newLine;
+  };
+
+  it("says a new 0.x line for a 0.x move, as the Findings row does (mautic)", () => {
+    expect(ready("0.6.x")).toBe("a new 0.x line");
+  });
+
+  it("says a new major for another move across a major", () => {
+    expect(ready("3.x")).toBe("a new major");
+  });
+});
+
 describe("heldLine", () => {
   it("counts the failing findings a package holds, against gate.failing", () => {
     const r = report([finding("b/b", 2, true, "package"), finding("c/c", 3, true, "root")], true);

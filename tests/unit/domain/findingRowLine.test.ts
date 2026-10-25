@@ -138,6 +138,27 @@ describe("rowCommand (accepted derivation 8)", () => {
   });
 });
 
+describe("R16: the blocked words of a move that fixes no advisory", () => {
+  const blocked = (clears: { kind: string; id: string }[]) =>
+    finding({
+      package: "a/b",
+      next_step: step({ kind: "blocked", to_branch: "3.x", php_check: { requires: ">=8.5" }, clears }),
+    });
+
+  it("say no newer release runs when the move fixes no advisory", () => {
+    expect(
+      nextStepWords(blocked([{ kind: "flag", id: "left-behind" }]), { ...run, target_php: "8.4" })
+        .text,
+    ).toBe("3.x needs php >=8.5; target 8.4 runs no newer release");
+  });
+
+  it("say no fixing release runs when the move fixes an advisory", () => {
+    expect(
+      nextStepWords(blocked([{ kind: "advisory", id: "GHSA-1" }]), { ...run, target_php: "8.4" }).text,
+    ).toBe("3.x needs php >=8.5; target 8.4 runs no fixing release");
+  });
+});
+
 describe("W2: the row's command names the finding's package", () => {
   const otphp = () =>
     finding({
@@ -341,7 +362,10 @@ describe("rowNewLine and the group count (accepted derivation 11)", () => {
       finding({}),
     ];
     expect(majorCount(rows)).toEqual({ n: 1, m: 2 });
-    expect(majorCountWords(majorCount(rows))).toBe("1 of 2 moves cross a major");
+    expect(majorCountWords({ n: 1, m: 1 })).toBe("1 of 1 move crosses a major");
+    expect(majorCountWords({ n: 1, m: 3 })).toBe("1 of 3 moves crosses a major");
+    expect(majorCountWords({ n: 2, m: 3 })).toBe("2 of 3 moves cross a major");
+    expect(majorCountWords(majorCount(rows))).toBe("1 of 2 moves crosses a major");
   });
 
   it("says nothing when no set move crosses (n = 0), or when no move says either way (m = 0)", () => {

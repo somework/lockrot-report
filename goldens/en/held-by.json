@@ -149,7 +149,7 @@
         {
           "name": "your composer.json",
           "grade": null,
-          "meta": "requires ^2.6 (require-dev)",
+          "meta": "requires ^2.6 in require-dev",
           "step": null
         }
       ],

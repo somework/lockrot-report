@@ -76,7 +76,7 @@ test.describe("wallabag-2.6, whose baseline Composer's solver refuses", () => {
 
     await expect(block.locator(".ov-move")).toHaveCount(0);
     await expect(block.locator(".ov-first-none")).toHaveText(
-      "No move is ready to run for the findings that fail the gate: none has a checked command that no other package holds.",
+      "No move is ready to run: Composer refuses the lock itself, so no move was checked.",
     );
     await expect(block.locator(".ov-first-foot")).toContainText(
       "28 not checked: Composer refuses the lock itself",

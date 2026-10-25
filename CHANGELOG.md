@@ -180,9 +180,13 @@ project is overall, and the other tabs lead with their own part.
   fold counts these holds and the root holds apart from the graded holders. It reads "5 more: 1 in
   composer.json, 2 of its own releases, 1 graded critical and 1 graded high". Ready to run does not
   count such a finding as held by other packages.
-- A root hold from require-dev says so: "requires ^4.4.47 (require-dev)". The PHP line marks a
-  root hold on a require-dev package: "composer.json requires friendsoftwig/twigcs ^6.1
-  (require-dev)".
+- A root hold from require-dev says so: "requires ^4.4.47 in require-dev". The PHP line marks a
+  root hold on a require-dev package: "composer.json requires friendsoftwig/twigcs ^6.1 in
+  require-dev".
+- The Held by fold counts a holder at a release other than its locked one as such, not as a
+  holder with nothing flagged.
+- When a package also excludes the target at the root ceiling, the PHP line names it: "your
+  target, 8.4, is excluded by require.php and by 1 package: laminas/laminas-skeleton-installer".
 - A ladder rung names each holder once. A rung held by every holder of Held by says "held by every
   holder in Held by".
 - A Findings row shows the move's first command that names the package. A PHP floor raise with no
@@ -191,6 +195,15 @@ project is overall, and the other tabs lead with their own part.
 - The Overview fix counts and the Fix filter of the package tabs read the same field, the
   package's fix. A `composer why-not` check on a held move adds "This shows which package holds
   the move."
+- Ready to run tags a move to a 0.x line as "a new 0.x line", as its Findings row does. On a run
+  whose baseline Composer refuses, it reads "No move is ready to run: Composer refuses the lock
+  itself, so no move was checked."
+- Blast radius leads with the depth sentence, then "52 flagged packages pulled in.", how many sit
+  under no direct requirement, and the rows that hold them.
+- Counts agree with their total: "1 of 113 flagged packages", "1 of 1 move crosses a major".
+  Provenance words its origin and each source's status. An empty Advisories tab still leads with
+  the Security summary. Libyears reads "Not measured: 1, a branch snapshot with no release branch".
+  A blocked move that fixes no advisory reads "runs no newer release".
 
 ### Changed
 

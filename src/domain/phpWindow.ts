@@ -145,7 +145,7 @@ function isRootCeiling(fix: TargetFix): boolean {
 function holdWords(h: HeldBy, fix: TargetFix): string {
   const dev =
     h.source === "root" && h.link !== "require-dev" && fix.packages.some((p) => p.dev && p.name === h.target);
-  return `${h.source === "root" ? "composer.json" : `${h.package ?? ""} ${h.version ?? ""}`} ${plain(linkWords(h))}${dev ? " (require-dev)" : ""}`;
+  return `${h.source === "root" ? "composer.json" : `${h.package ?? ""} ${h.version ?? ""}`} ${plain(linkWords(h))}${dev ? " in require-dev" : ""}`;
 }
 
 function packageNames(fix: TargetFix): string[] {
@@ -164,8 +164,14 @@ function packagesClause(fix: TargetFix, target: string): string {
 
 function fixClauses(fix: TargetFix, target: string): string[] {
   if (isRootCeiling(fix)) {
-    const links = [...new Set(fix.held_by.map((h) => `${h.link}.${h.target ?? ""}`))];
-    return [`your target, ${target}, is excluded, and only a change to ${joinAndCapped(links)} can admit it`];
+    const links = joinAndCapped([...new Set(fix.held_by.map((h) => `${h.link}.${h.target ?? ""}`))]);
+    const names = packageNames(fix);
+    // A package that also excludes the target makes "only a change to the root" false.
+    if (names.length > 0)
+      return [
+        `your target, ${target}, is excluded by ${links} and by ${plural(names.length, "package", "packages")}: ${joinAndCapped(names)}`,
+      ];
+    return [`your target, ${target}, is excluded, and only a change to ${links} can admit it`];
   }
   const solver = `Composer's solver at PHP ${target}`;
   const command = fix.command === null ? null : commandLine(fix.command, "posix");

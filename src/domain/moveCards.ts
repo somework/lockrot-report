@@ -452,8 +452,9 @@ function foldWord(held: HeldBy, run: Run, own: string): string {
   if (held.source === "root") return "in composer.json";
   if (held.package === own) return "of its own releases";
   const holder = held.holder ?? null;
-  if (isGradedHolder(held, run)) return `graded ${holder?.verdict ?? ""}`;
-  return (holder?.flag_ids ?? []).length === 0 ? "with nothing flagged" : (holder?.verdict ?? "");
+  if (holder === null) return "at a release other than its locked one";
+  if (isGradedHolder(held, run)) return `graded ${holder.verdict}`;
+  return holder.flag_ids.length === 0 ? "with nothing flagged" : holder.verdict;
 }
 
 function foldWords(rest: readonly HeldBy[], run: Run, own: string): string {

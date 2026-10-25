@@ -85,20 +85,28 @@ export function gradeMix(report: Report2, findings: readonly Finding[]): string 
   return counts.join(", ");
 }
 
-export function radiusAnswer2(layout: RadiusLayout2): string {
+/** The lead lines of §7.9.20 after the depth sentence: the flagged packages pulled in
+ *  (`rot_depth.by_reach.transitive`), how many sit under no direct requirement, then the rows that
+ *  hold them. */
+export function radiusAnswer2(report: Report2, layout: RadiusLayout2): string[] {
   const answer = radiusAnswer(layout);
   if (answer === null) {
-    if (layout.narrowed) return "No direct requirement lists a flagged package that matches the filter.";
+    if (layout.narrowed) return ["No direct requirement lists a flagged package that matches the filter."];
     const n = layout.rows.length;
-    return n === 0
-      ? "No direct requirement pulls in a flagged package."
-      : `${plural(n, "direct requirement", "direct requirements")} on lockrot's exposure list ${pluralNoun(n, "pulls", "pull")} in flagged packages.`;
+    return [
+      n === 0
+        ? "No direct requirement pulls in a flagged package."
+        : `${plural(n, "direct requirement", "direct requirements")} on lockrot's exposure list ${pluralNoun(n, "pulls", "pull")} in flagged packages.`,
+    ];
   }
   const names = answer.top.map((row) => row.package);
   const named = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
-  const flagged = plural(answer.total, "flagged package", "flagged packages");
-  if (answer.top.length === answer.rows) return `${flagged} pulled in, under ${named}.`;
-  return `${answer.held} of the ${flagged} pulled in sit under ${named}.`;
+  const unattributed = new Set(report.unattributed.map((entry) => entry.package)).size;
+  return [
+    `${plural(report.rot_depth.by_reach.transitive, "flagged package", "flagged packages")} pulled in.`,
+    ...(unattributed > 0 ? [`${String(unattributed)} of them sit under no direct requirement.`] : []),
+    `${String(answer.held)} of them sit under ${named ?? ""}.`,
+  ];
 }
 
 /** A requirement row's facts: the count it lists and its grade split; lockrot's count alone when

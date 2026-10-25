@@ -237,7 +237,7 @@ describe("the holds of a refused fix", () => {
     });
 
     expect(phpStateClauses(report({ target_fix: devFix }))?.[2]).toBe(
-      "Composer's solver at PHP 8.4 refuses its update: composer.json requires friendsoftwig/twigcs ^6.1 (require-dev)",
+      "Composer's solver at PHP 8.4 refuses its update: composer.json requires friendsoftwig/twigcs ^6.1 in require-dev",
     );
   });
 
@@ -266,7 +266,7 @@ describe("the holds of a refused fix", () => {
     });
 
     expect(phpStateClauses(report({ target_fix: devFix }))?.[2]).toBe(
-      "Composer's solver at PHP 8.4 refuses its update: composer.json requires friendsoftwig/twigcs ^6.1 (require-dev)",
+      "Composer's solver at PHP 8.4 refuses its update: composer.json requires friendsoftwig/twigcs ^6.1 in require-dev",
     );
   });
 
@@ -296,6 +296,34 @@ describe("the holds of a refused fix", () => {
       "this lock installs on PHP 8.2 to 8.3, so your target, 8.4, is excluded",
       "1 package excludes 8.4: acme/clock",
       "Composer's solver at PHP 8.4 refuses its update",
+    ]);
+  });
+});
+
+describe("the root ceiling with packages that also exclude the target (R3)", () => {
+  test("names require.php and the packages, and drops the only-a-change clause (laminas)", () => {
+    const ceiling = hold({
+      source: "root",
+      package: null,
+      version: null,
+      link: "require",
+      target: "php",
+      constraint: "~8.1.0 || ~8.2.0 || ~8.3.0",
+    });
+    const installer = {
+      name: "laminas/laminas-skeleton-installer",
+      version: "1.3.0",
+      link: "require",
+      target: "php",
+      constraint: "~8.1.0 || ~8.2.0 || ~8.3.0",
+      dev: false,
+    } as TargetFix["packages"][number];
+
+    expect(
+      phpStateClauses(report({ target_fix: fix({ packages: [installer], held_by: [ceiling] }) })),
+    ).toEqual([
+      "this lock installs on PHP 8.2 to 8.3",
+      "your target, 8.4, is excluded by require.php and by 1 package: laminas/laminas-skeleton-installer",
     ]);
   });
 });

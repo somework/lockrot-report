@@ -13,6 +13,7 @@ import { day } from "../../domain/format";
 import { headerLinks, safeHref } from "../../domain/links";
 import { HIDE_ACCEPTED, hiddenByFilters2 } from "../../domain/list";
 import { moveCards } from "../../domain/moveCards";
+import { activityProvenanceWord, metadataProvenanceWord, originKindWord } from "../../domain/pageVocabulary";
 import { repositoryLine } from "../../domain/repositoryLine";
 import { advisoryRows } from "../../domain/advisoryRows";
 import { OutLink, toneClass } from "../common/common";
@@ -73,13 +74,16 @@ function lockRows(finding: Finding, entry: DetailsEntry | null): readonly KeyVal
 
 function provenanceRows(finding: Finding, entry: DetailsEntry | null): readonly KeyValueRow[] {
   const { origin, metadata, activity } = finding;
-  const status = (id: string, reason: string | null): string =>
-    reason === null ? id : `${id} (${checkReasonWords(finding, reason)})`;
+  const status = (word: string, reason: string | null): string =>
+    reason === null ? word : `${word} (${checkReasonWords(finding, reason)})`;
   return presentRows([
-    { label: REFERENCE_WORDS.origin, value: origin.kind },
+    { label: REFERENCE_WORDS.origin, value: originKindWord(origin.kind) },
     { label: REFERENCE_WORDS.registry, value: origin.registry },
     { label: REFERENCE_WORDS.local, value: origin.local ? REFERENCE_WORDS.yes : null },
-    { label: REFERENCE_WORDS.metadata, value: status(metadata.status, metadata.reason) },
+    {
+      label: REFERENCE_WORDS.metadata,
+      value: status(metadataProvenanceWord(metadata.status), metadata.reason),
+    },
     {
       label: REFERENCE_WORDS.metadataAsOf,
       value: entry?.metadata?.data_date ? day(entry.metadata.data_date) : null,
@@ -88,7 +92,10 @@ function provenanceRows(finding: Finding, entry: DetailsEntry | null): readonly 
       label: REFERENCE_WORDS.releases,
       value: entry?.metadata ? String(entry.metadata.releases_listed) : null,
     },
-    { label: REFERENCE_WORDS.activity, value: status(activity.status, activity.reason) },
+    {
+      label: REFERENCE_WORDS.activity,
+      value: status(activityProvenanceWord(activity.status), activity.reason),
+    },
     { label: REFERENCE_WORDS.fetched, value: activity.fetched_at ? day(activity.fetched_at) : null },
     { label: REFERENCE_WORDS.cached, value: activity.cached_at ? day(activity.cached_at) : null },
   ]);

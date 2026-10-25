@@ -189,7 +189,7 @@ function MoveItem({ move, model }: { move: ReadyMove; model: ScoreModel }) {
           <PkgName name={move.package} />
         </TabLink>{" "}
         <span className={`ov-tag ${toneClass(verdictTone(model, move.grade))}`}>{move.grade}</span>
-        {move.newMajor && <span className="ov-tag ov-tag-plain">{FIRST_WORDS.newMajor}</span>}
+        {move.newLine !== null && <span className="ov-tag ov-tag-plain">{move.newLine}</span>}
       </p>
       <CopyMove argvs={[move.argv]} className="ov-cmd" />
       {(move.clears !== null || move.after !== null) && (

@@ -291,7 +291,7 @@ describe("the Overview tab of a report-2 document", () => {
     const libyears = band().querySelector(".ledger-libyears")?.textContent ?? "";
     expect(libyears).toContain("22.06 libyears");
     expect(libyears).toContain("over 7 packages · 22.06 from direct requirements");
-    expect(libyears).toContain("Not measured: 1 a branch snapshot has no release branch · 1 no date");
+    expect(libyears).toContain("Not measured: 1, a branch snapshot with no release branch · 1, no date");
     expect(libyears).toContain("symfony/monolog-bridge v2.6.13");
   });
 
@@ -371,6 +371,19 @@ describe("the Overview's three lines equal lockrot's page goldens on the page", 
       golden.waffle_caption,
       golden.load_line,
     ]);
+  });
+});
+
+describe("an Advisories tab with no advisory (R14)", () => {
+  test("still leads with the Security summary", () => {
+    const embed = assembleEmbed("C-baselined-dagger");
+    const result = normalize(embed);
+    if (!result.ok) throw new Error(result.error.message);
+    history.replaceState(null, "", "/report.html#view=advisories");
+    render(<App model={result.model} />);
+
+    const tab = document.querySelector('[data-surface="advisories"]');
+    expect(tab?.querySelector(".al-lead")).not.toBeNull();
   });
 });
 

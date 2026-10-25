@@ -227,6 +227,32 @@ export function metadataStatusWord(status: string, originKind: string): string {
   return wordFor(METADATA_STATUS, status);
 }
 
+const ORIGIN_KINDS: Words = {
+  packagist: "Packagist",
+  composer: "a Composer repository",
+  path: "a local path",
+  vcs: "a VCS repository",
+  artifact: "an artifact",
+  package: "an inline package in composer.json",
+  unknown: "unknown",
+};
+
+export const originKindWord = (kind: string): string => wordFor(ORIGIN_KINDS, kind);
+
+const PROVENANCE_STATUS: Words = {
+  read: "read",
+  not_from_composer_repository: "not from a Composer repository",
+  unavailable: "its repository could not be read",
+  not_found: "its repository does not list it",
+  not_read: "not read",
+};
+
+const ACTIVITY_STATUS: Words = { read: "read", not_found: "repository not found", not_read: "not read" };
+
+/** Provenance's metadata and activity status, a closed id in words. */
+export const metadataProvenanceWord = (status: string): string => wordFor(PROVENANCE_STATUS, status);
+export const activityProvenanceWord = (status: string): string => wordFor(ACTIVITY_STATUS, status);
+
 const HEADLINE_REASONS: Words = { archived: "archived", marked: "marked", branch_snapshot: "snapshot" };
 
 export const headlineReasonWord = (id: string): string => wordFor(HEADLINE_REASONS, id);

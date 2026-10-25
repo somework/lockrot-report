@@ -51,6 +51,38 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("Provenance prints words for every closed id (R14)", () => {
+  const provenance = (sheet: HTMLElement): string[] => {
+    const section = [...sheet.querySelectorAll("details")].find(
+      (d) => d.querySelector("h3")?.textContent === "Provenance",
+    );
+    return [...(section?.querySelectorAll("dd") ?? [])].map((dd) => dd.textContent);
+  };
+
+  test("words the origin, the metadata and the activity status", () => {
+    const sheet = openCase("B", (embed) => {
+      const [first] = embed.report.findings;
+      if (first === undefined) throw new Error("B has a finding");
+      first.origin = { ...first.origin, kind: "package" };
+      first.metadata = { ...first.metadata, status: "not_from_composer_repository", reason: null };
+      first.activity = { ...first.activity, status: "not_read" } as typeof first.activity;
+      return embed;
+    });
+
+    const values = provenance(sheet);
+    expect(values).toContain("an inline package in composer.json");
+    expect(values).toContain("not from a Composer repository");
+    expect(values.some((v) => v.startsWith("not read"))).toBe(true);
+    expect(values).not.toContain("package");
+  });
+
+  test("words packagist and read", () => {
+    const values = provenance(openCase("B"));
+    expect(values).toContain("Packagist");
+    expect(values).not.toContain("packagist");
+  });
+});
+
 describe("G160: a why-not check on a move that holders hold", () => {
   const NOTE = "This shows which package holds the move.";
   const withChecks = (commands: string[][]) => (embed: Report2Embed) => {

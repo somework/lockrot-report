@@ -3,7 +3,7 @@
 
 import type { Finding, Report2 } from "../model/report";
 import type { LinkTarget } from "../state/types";
-import { rowCommand, rowCommandArgv } from "./findingRow";
+import { rowCommand, rowCommandArgv, rowNewLine } from "./findingRow";
 import { plural } from "./format";
 import { HELD_KEY, READY_KEY, WAY_OUT_KEY } from "./list";
 import { moveCards } from "./moveCards";
@@ -26,9 +26,10 @@ export const FIRST_WORDS = {
   noteGate: "for findings that fail the gate, in lockrot's rank order",
   clears: "clears",
   after: "score after it",
-  newMajor: "new major",
+
   noneFlagged: "Nothing to run: no package is flagged.",
   noneReady: "No move is ready to run: no flagged package has a checked command that no other package holds.",
+  noneRefused: "No move is ready to run: Composer refuses the lock itself, so no move was checked.",
   noneReadyGate:
     "No move is ready to run for the findings that fail the gate: none has a checked command that no other package holds.",
   holders: "Their holders are in each sheet's Held by.",
@@ -44,7 +45,8 @@ export interface ReadyMove {
   readonly clears: string | null;
   /** The move card's After: "{total}, {verdict}" and its G104 conditions, or null without `if_applied`. */
   readonly after: { readonly result: string | null; readonly conditions: readonly string[] } | null;
-  readonly newMajor: boolean;
+  /** "a new major" or "a new 0.x line" when the move crosses a major, as its Findings row says. */
+  readonly newLine: string | null;
   /** "Also holds: {name} ({grade}), …", or null when no finding names this package as a holder. */
   readonly alsoHolds: string | null;
   readonly link: LinkTarget;
@@ -98,7 +100,7 @@ function readyMove(f: Finding, report: Report2, argv: readonly string[], command
     command,
     clears: card?.clears ?? null,
     after: after === null ? null : { result: after.result, conditions: after.conditions.map(plain) },
-    newMajor: f.next_step?.crosses_major ?? false,
+    newLine: rowNewLine(f),
     alsoHolds: alsoHolds(report, f.package),
     link: { view: "findings", pkg: f.package },
   };
@@ -316,9 +318,11 @@ export function firstMoves(report: Report2): FirstMoves {
       ? null
       : report.packages_flagged === 0
         ? FIRST_WORDS.noneFlagged
-        : forGate
-          ? FIRST_WORDS.noneReadyGate
-          : FIRST_WORDS.noneReady;
+        : report.run.move_check?.baseline === "refused"
+          ? FIRST_WORDS.noneRefused
+          : forGate
+            ? FIRST_WORDS.noneReadyGate
+            : FIRST_WORDS.noneReady;
   return {
     forGate,
     note: moves.length === 0 ? null : forGate ? FIRST_WORDS.noteGate : FIRST_WORDS.noteAll,

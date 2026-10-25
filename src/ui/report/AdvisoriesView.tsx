@@ -300,6 +300,11 @@ export function AdvisoriesView2() {
   if (population2(report, "advisories").length === 0)
     return (
       <section className="advisories2" data-surface="advisories" aria-label="Advisories">
+        {!printed && (
+          <div className="al-lead">
+            <SecurityBlock report={report} />
+          </div>
+        )}
         <NoAdvisories2 />
       </section>
     );

@@ -330,12 +330,28 @@ describe("RANK, §7.9.13: root, its own releases, holds on the package, then the
   });
 });
 
+describe("R10, G121: the fold counts a hold whose holder is null", () => {
+  test("as at a release other than its locked one (wallabag 7.4's twig/twig v3.28.0 on twig-bundle)", () => {
+    const { finding, run } = heldCase([
+      root("a/one", "^1"),
+      root("a/two", "^1"),
+      root("a/three", "^1"),
+      pkgHold("twig/twig", "symfony/twig-bridge", "^3.0", null),
+      pkgHold("acme/ok", "x/y", "^1", { verdict: "ok", flags: [] }),
+    ]);
+
+    expect(moveCards(finding, run)[0]?.heldBy?.fold?.summary).toBe(
+      "2 more: 1 with nothing flagged and 1 at a release other than its locked one",
+    );
+  });
+});
+
 describe("REQ-DEV: a root hold on require-dev", () => {
-  test("adds (require-dev) to its link words (wallabag 7.4's symfony/var-dumper)", () => {
+  test("adds in require-dev to its link words (wallabag 7.4's symfony/var-dumper)", () => {
     const { finding, run } = heldCase([root(null, "^4.4.47", "require-dev")]);
 
     expect(plain(moveCards(finding, run)[0]?.heldBy?.shown[0]?.meta ?? [])).toBe(
-      "requires ^4.4.47 (require-dev)",
+      "requires ^4.4.47 in require-dev",
     );
   });
 });

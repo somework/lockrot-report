@@ -195,20 +195,10 @@ describe("radiusCountPhrase", () => {
   const everything = [...listed, ...left];
   const model = source(everything, [entry("a/p", [["x/1"]]), entry("b/p", [["y/1"]])]);
 
-  it("says which list it counts and adds the flagged direct requirements with nothing flagged counted under them", () => {
+  it("counts the direct requirements on the exposure list alone (R12)", () => {
     const layout = radiusLayout(model, everything, everything);
 
-    expect(radiusCountPhrase(layout)).toBe(
-      "2 of 2 direct requirements on the exposure list, plus 2 of 2 flagged ones with nothing flagged counted under them",
-    );
-  });
-
-  it("counts the left-out ones a filter keeps against all of them", () => {
-    const layout = radiusLayout(model, [left[0] as RadiusFinding], everything);
-
-    expect(radiusCountPhrase(layout)).toMatch(
-      /, plus 1 of 2 flagged ones with nothing flagged counted under them$/,
-    );
+    expect(radiusCountPhrase(layout)).toBe("2 of 2 direct requirements");
   });
 });
 

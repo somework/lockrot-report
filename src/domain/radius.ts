@@ -163,20 +163,9 @@ function unattributedOf<F extends RadiusFinding>(
   });
 }
 
-/** `exposure` lists only requirements with something flagged counted under them, so the line also
- *  counts the flagged ones it leaves out. */
+/** The search bar's count on Blast radius: the direct requirements on `exposure` it shows. */
 export function radiusCountPhrase<F extends RadiusFinding>(layout: RadiusLayout<F>): string {
-  const head = countPhrase(
-    layout.rows.length,
-    layout.exposureCount,
-    "direct requirement",
-    "direct requirements",
-  );
-  if (layout.unfilteredUnlisted === 0) return head;
-  const ones = layout.unfilteredUnlisted === 1 ? "flagged one" : "flagged ones";
-  return `${head} on the exposure list, plus ${String(layout.unlisted.length)} of ${String(
-    layout.unfilteredUnlisted,
-  )} ${ones} with nothing flagged counted under ${layout.unfilteredUnlisted === 1 ? "it" : "them"}`;
+  return countPhrase(layout.rows.length, layout.exposureCount, "direct requirement", "direct requirements");
 }
 
 // ---------------------------------------------------------------------------------------------

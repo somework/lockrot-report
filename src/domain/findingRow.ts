@@ -293,7 +293,7 @@ function blockedWords(step: Move, run: Run): string {
   const requires = step.php_check?.requires ?? null;
   return requires === null
     ? `${step.to_branch ?? ""} does not run on ${run.target_php}`
-    : `${step.to_branch ?? ""} needs php ${requires}; target ${run.target_php} runs no fixing release`;
+    : `${step.to_branch ?? ""} needs php ${requires}; target ${run.target_php} runs no ${step.clears.some((c) => c.kind === "advisory") ? "fixing" : "newer"} release`;
 }
 
 function kindWords(f: Finding, step: Move, run: Run): string {
@@ -417,7 +417,9 @@ export function majorCount(findings: readonly Finding[]): { readonly n: number; 
 }
 
 export const majorCountWords = ({ n, m }: { n: number; m: number }): string | null =>
-  m === 0 || n === 0 ? null : `${n} of ${m} moves cross a major`;
+  m === 0 || n === 0
+    ? null
+    : `${n} of ${m} ${m === 1 ? "move" : "moves"} ${n === 1 ? "crosses" : "cross"} a major`;
 
 /** That step as one POSIX line. */
 export function rowCommand(f: Finding): string | null {
