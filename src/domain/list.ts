@@ -35,16 +35,21 @@ export function population2(report: Report2, view: View): readonly Finding[] {
   }
 }
 
-function passesRail2(filters: Filters, f: Finding): boolean {
+/** The Fix filter: a package view admits a finding by its `security.fix_kind`, as the Overview fix
+ *  counts read it. The Advisories tab admits it when one of its rows has the fix, then narrows the
+ *  rows one by one (`advisoryPairs2`). */
+function passesFix(filters: Filters, f: Finding, view: View): boolean {
+  if (filters.fix.length === 0) return true;
+  if (view === "advisories") return advisoryRows(f).some((row) => filters.fix.includes(row.fix.kind));
+  return isSecurityVulnerable(f.security) && filters.fix.includes(f.security.fix_kind);
+}
+
+function passesRail2(filters: Filters, f: Finding, view: View): boolean {
   if (filters.verdict.length > 0 && !filters.verdict.includes(f.verdict)) return false;
   if (filters.flag.length > 0 && !countedFlagIds(f).some((id) => filters.flag.includes(id))) return false;
   const rows = advisoryRows(f);
   if (filters.sev.length > 0 && !rows.some((row) => filters.sev.includes(row.severity))) return false;
-  if (
-    filters.fix.length > 0 &&
-    !(isSecurityVulnerable(f.security) && filters.fix.includes(f.security.fix_kind))
-  )
-    return false;
+  if (!passesFix(filters, f, view)) return false;
   if (filters.signal.length > 0 && !f.signals.some((signal) => filters.signal.includes(signal.id)))
     return false;
   const since = f.baseline?.status;
@@ -100,7 +105,7 @@ function compare(a: Finding, b: Finding, key: SortKey): number {
 export function applyFilters2(report: Report2, state: State, view: View): readonly Finding[] {
   const terms = parseQuery2(state.q);
   const kept = byRank(population2(report, view)).filter(
-    (f) => matchesFinding2(f, terms) && passesRail2(state.filters, f),
+    (f) => matchesFinding2(f, terms) && passesRail2(state.filters, f, view),
   );
   if (view !== "packages") return kept;
   const sign = state.sortDesc ? -1 : 1;
@@ -139,13 +144,15 @@ export function renderedPackages2(
 // -------------------------------------------------------------------------------------------
 
 interface Scope {
+  readonly view: View;
   readonly filters: Filters;
   readonly here: readonly Finding[];
   readonly terms: readonly Term2[];
 }
 
 function countUnder(scope: Scope, filters: Filters): number {
-  return scope.here.filter((f) => matchesFinding2(f, scope.terms) && passesRail2(filters, f)).length;
+  return scope.here.filter((f) => matchesFinding2(f, scope.terms) && passesRail2(filters, f, scope.view))
+    .length;
 }
 
 /** The list a click on the row gives: ANDed in Scope, the union in every other group (PD-RAIL-2).
@@ -207,7 +214,7 @@ function acceptedToggle(scope: Scope): RailGroup {
 /** Since, This run, Grade, Flag, Severity, Fix, Accepted flags and Scope, each where it has a row. */
 export function railGroups2(report: Report2, state: State): readonly RailGroup[] {
   const here = population2(report, state.view);
-  const scope: Scope = { filters: state.filters, here, terms: parseQuery2(state.q) };
+  const scope: Scope = { view: state.view, filters: state.filters, here, terms: parseQuery2(state.q) };
   const baseline = report.baseline;
   const groups = [
     baseline !== null && here.some((f) => f.baseline !== null)

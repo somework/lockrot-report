@@ -155,6 +155,34 @@ describe("W2: the row's command names the finding's package", () => {
     expect(nextStepWords(otphp(), run).text).toBe("raise require.php to >=8.1");
   });
 
+  it("keeps php floor raise when the move names no raise_to", () => {
+    const f = finding({
+      package: "a/b",
+      next_step: step({
+        kind: "raise-php",
+        commands: [["composer", "require", "php:>=8.1", "--no-update"]],
+        php_check: { raise_to: null },
+      }),
+    });
+    expect(nextStepWords(f, run).text).toBe("php floor raise");
+  });
+
+  it("says the raise when the step that names the package fails the §5.6 check, as no command shows", () => {
+    const f = finding({
+      package: "a/b",
+      next_step: step({
+        kind: "raise-php",
+        commands: [
+          ["composer", "require", "php:>=8.1", "--no-update"],
+          ["composer", "require", "a/b:^2.0", "$(id)"],
+        ],
+        php_check: { raise_to: ">=8.1" },
+      }),
+    });
+    expect(rowCommand(f)).toBeNull();
+    expect(nextStepWords(f, run).text).toBe("raise require.php to >=8.1");
+  });
+
   it("shows the step that names the package and keeps php floor raise when the move has one", () => {
     const f = finding({
       package: "a/b",
@@ -182,6 +210,13 @@ describe("OWN and RANK on a row's holders", () => {
     ];
     const line = heldByLine(holds, run, "laravel/framework");
     expect(line === null ? null : heldByWords(line)).toBe("held by its own release and 1 more");
+  });
+
+  it("ranks a holder by its best hold, when it has two", () => {
+    const on = (name: string, target: string | null, verdict: string): Hold =>
+      ({ source: "package", package: name, target, holder: { verdict } }) as Hold;
+    const holds = [on("x/high", "y/z", "high"), on("a/two", "y/z", "low"), on("a/two", null, "low")];
+    expect(heldByLine(holds, run, "c/pkg")).toEqual({ name: "a/two", more: 1 });
   });
 
   it("names a hold on the finding's package before a graded hold on another (monica's firebase/php-jwt)", () => {

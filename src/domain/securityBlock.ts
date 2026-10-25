@@ -37,7 +37,7 @@ const securityFixWord = (kind: string): string => SECURITY_FIX_WORDS[kind] ?? fi
 export const ladderFixWord = (kind: string): string => (kind === "blocked" ? BLOCKED : fixLabel(kind));
 
 /** A holder on a one-line surface: the root as composer.json, the finding's own package as its own
- *  release (OWN). */
+ *  release. */
 export function holderWord(
   { source, package: name }: Pick<HeldBy, "source" | "package">,
   own: string,
@@ -46,7 +46,7 @@ export function holderWord(
   return name === own ? "its own release" : name;
 }
 
-/** G138: each holder once, in RANK order. */
+/** G138: each holder once, in the holder rank. */
 const uniqueHolders = (held: readonly HeldBy[], run: Run, own: string): string[] => [
   ...new Set([...held].sort((a, b) => compareHolds(a, b, run, own)).map((h) => holderWord(h, own))),
 ];

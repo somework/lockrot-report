@@ -2,7 +2,7 @@ import type { HeldBy, Run } from "../model/report";
 
 export type RankedHold = Pick<HeldBy, "source" | "package" | "target" | "holder">;
 
-/** RANK's group: the root, its own releases, the holds on the finding's package, then the rest. A
+/** The holder group: the root, its own releases, the holds on the finding's package, then the rest. A
  *  null `target` names the finding's package. */
 function holdGroup(h: RankedHold, own: string): number {
   if (h.source === "root") return 0;
@@ -19,7 +19,7 @@ function holdGrade(h: RankedHold, run: Run, own: string): number {
 
 const byName = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
-/** §7.9.13's holder rank (RANK), on every surface: by group, then by grade in
+/** §7.9.13's holder rank, on every surface: by group, then by grade in
  *  `run.graded_verdicts`, then by name. `own` is the finding's package. Array sort is stable, so
  *  equal holds keep data order. */
 export function compareHolds(a: RankedHold, b: RankedHold, run: Run, own: string): number {

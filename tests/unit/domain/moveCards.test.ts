@@ -438,6 +438,18 @@ describe("M7: a why-not check on a held move", () => {
     ).toBe("This shows which package holds the move.");
   });
 
+  test("says nothing when the box shows the refusal instead of the commands", () => {
+    expect(
+      note(
+        [
+          ["composer", "why-not", "acme/y", "1.0"],
+          ["composer", "exec", "calc"],
+        ],
+        ["holders"],
+      ),
+    ).toBeNull();
+  });
+
   test("says nothing without a why-not, or when no holder is the reason", () => {
     expect(note([["composer", "require", "acme/x:^2"]], ["holders"])).toBeNull();
     expect(note([["composer", "why-not", "acme/y", "1.0"]], ["transitive"])).toBeNull();

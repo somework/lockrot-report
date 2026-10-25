@@ -178,7 +178,8 @@ project is overall, and the other tabs lead with their own part.
 - In Held by, a hold by the package's own release takes no grade, no flags and no own step. It
   reads "symfony/mailer v5.4.52, its own release". A one-line surface says "its own release". The
   fold counts these holds and the root holds apart from the graded holders. It reads "5 more: 1 in
-  composer.json, 2 of its own releases, 1 graded critical and 1 graded high".
+  composer.json, 2 of its own releases, 1 graded critical and 1 graded high". Ready to run does not
+  count such a finding as held by other packages.
 - A root hold from require-dev says so: "requires ^4.4.47 (require-dev)". The PHP line marks a
   root hold on a require-dev package: "composer.json requires friendsoftwig/twigcs ^6.1
   (require-dev)".

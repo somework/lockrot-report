@@ -78,6 +78,14 @@ describe("needsAnotherWayOut", () => {
   const failing = (step: Record<string, unknown> | null): Finding =>
     ({ ...finding(step), gate: { fails: true } }) as unknown as Finding;
 
+  it("holds a failing finding that only its own release holds, by its refused check (OWN)", () => {
+    const own = failing({ held_by: [hold("package", "a/b")], check: { result: "refused", form: null, reason: null } });
+
+    expect(isHeld(own)).toBe(false);
+    expect(readyToRun(own)).toBe(false);
+    expect(needsAnotherWayOut(own)).toBe(true);
+  });
+
   it("holds a failing finding that is neither ready nor held", () => {
     expect(needsAnotherWayOut(failing({ kind: "raise-php" }))).toBe(true);
     expect(needsAnotherWayOut(failing({ held_by: [hold("root")], commands: [] }))).toBe(true);

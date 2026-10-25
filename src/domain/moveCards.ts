@@ -498,7 +498,7 @@ export interface MoveCard {
   readonly argvs: readonly (readonly string[])[];
   /** L5: the config.platform.php step that comes before the commands. */
   readonly platformStep: string | null;
-  /** M7: what a why-not check in the command box shows, on a move that holders hold. */
+  /** What a why-not check in the command box shows, on a move that holders hold. */
   readonly checkNote: string | null;
   readonly clears: string | null;
   readonly stays: string | null;
@@ -516,7 +516,7 @@ const minorOf = (version: string): string => {
   return `${major}.${minor}`;
 };
 
-/** W3: setting the platform does not help when Composer refuses the lock for another cause. */
+/** Setting the platform does not help when Composer refuses the lock for another cause. */
 function stillRefused(run: Run): string {
   if (run.move_check?.baseline !== "refused") return "";
   return run.php_window?.target.inside === false
@@ -583,7 +583,9 @@ function moveCard(
     heldBy: heldBy(finding, move, run, then),
     platformStep: move.commands.length > 0 ? platformStep(run) : null,
     checkNote:
-      move.commands.some((argv) => argv[1] === "why-not") && move.composer_moves_because.includes("holders")
+      move.commands.some((argv) => argv[1] === "why-not") &&
+      move.composer_moves_because.includes("holders") &&
+      commandLines(move.commands)[0] !== REFUSED_COMMAND
         ? "This shows which package holds the move."
         : null,
   };

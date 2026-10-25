@@ -137,6 +137,20 @@ describe("applyFilters2", () => {
     ]);
   });
 
+  it("M4: keeps an advisory on the Advisories tab by its own fix kind, whatever its package's", () => {
+    const mixed = readContractJson("report-2", "guzzle-mixed.json") as Report2;
+    const guzzle = mixed.findings.find((f) => f.package === "guzzlehttp/guzzle");
+    if (guzzle?.security.status !== "vulnerable") throw new Error("guzzle-mixed has a vulnerable guzzle");
+    expect(guzzle.security.fix_kind).toBe("raise-php");
+
+    expect(names(applyFilters2(mixed, state({}, { fix: ["upgrade"] }), "advisories"))).toContain(
+      "guzzlehttp/guzzle",
+    );
+    expect(names(applyFilters2(mixed, state({}, { fix: ["upgrade"] }), "findings"))).not.toContain(
+      "guzzlehttp/guzzle",
+    );
+  });
+
   it("filters by verdict, the gate and the search box", () => {
     expect(names(applyFilters2(composite, state({}, { verdict: ["low"] }), "findings"))).toEqual([
       "symfony/yaml",

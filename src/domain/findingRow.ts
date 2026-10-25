@@ -301,10 +301,12 @@ function kindWords(f: Finding, step: Move, run: Run): string {
   switch (step.kind) {
     case "require":
       return `${where} ${step.constraint ?? ""}`;
-    case "raise-php":
-      return step.commands.some((argv) => namesPackage(argv, f.package))
+    case "raise-php": {
+      const raiseTo = step.php_check?.raise_to ?? null;
+      return rowCommandArgv(f) !== null || raiseTo === null
         ? "php floor raise"
-        : `raise require.php to ${step.php_check?.raise_to ?? ""}`;
+        : `raise require.php to ${raiseTo}`;
+    }
     case "update":
       return "composer update";
     case "tag": {
@@ -342,21 +344,24 @@ export function nextStepWords(f: Finding, run: Run): NextStepWords {
 
 type Hold = Pick<HeldBy, "source" | "package" | "target" | "holder">;
 
-/** Accepted derivation 3: the distinct package holders in RANK order (`compareHolds`, `own` the
- *  finding's package), the first named and the rest counted; its own release reads as such (OWN).
+/** Accepted derivation 3: the distinct package holders in the holder rank (`compareHolds`, `own`
+ *  the finding's package), the first named and the rest counted; its own release reads as such.
  *  With only a root hold, the root as the sheet's Held by names it. */
 export function heldByLine(
   holds: readonly Hold[],
   run: Run,
   own: string,
 ): { readonly name: string; readonly more: number } | null {
+  // Sorted before the duplicates go, so a holder with two holds ranks by its best one.
   const seen = new Set<string>();
-  const packages = holds.filter((hold) => {
-    if (hold.source !== "package" || hold.package === null || seen.has(hold.package)) return false;
-    seen.add(hold.package);
-    return true;
-  });
-  const [first, ...rest] = [...packages].sort((a, b) => compareHolds(a, b, run, own));
+  const [first, ...rest] = holds
+    .filter((hold) => hold.source === "package" && hold.package !== null)
+    .sort((a, b) => compareHolds(a, b, run, own))
+    .filter((hold) => {
+      if (seen.has(hold.package ?? "")) return false;
+      seen.add(hold.package ?? "");
+      return true;
+    });
   if (first !== undefined) return { name: holderWord(first, own), more: rest.length };
   return holds.some((hold) => hold.source === "root") ? { name: ROOT_HOLDER_NAME, more: 0 } : null;
 }
@@ -370,11 +375,11 @@ export const rowHolds = (f: Finding): readonly Hold[] =>
 
 const ROW_STEPS: ReadonlySet<string> = new Set(["update", "require"]);
 
-/** W2: an update or require step that names the finding's package, bare or with a constraint. */
+/** An update or require step that names the finding's package, bare or with a constraint. */
 const namesPackage = (argv: readonly string[], pkg: string): boolean =>
   ROW_STEPS.has(argv[1] ?? "") && argv.slice(2).some((arg) => arg === pkg || arg.startsWith(`${pkg}:`));
 
-/** Accepted derivation 8 (§5.6) with W2: the first checked step of the move that names the
+/** Accepted derivation 8 (§5.6): the first checked step of the move that names the
  *  finding's package; none when one argv fails the check or no step names it. */
 export function rowCommandArgv(f: Finding): readonly string[] | null {
   const argvs = f.next_step?.commands ?? [];
@@ -382,8 +387,9 @@ export function rowCommandArgv(f: Finding): readonly string[] | null {
   return argvs.find((argv) => namesPackage(argv, f.package)) ?? null;
 }
 
-/** What is left after the lead move, with G139's Composer caveat only when its `assumes` holds
- *  `composer_resolves`; null without `if_applied` (SPEC §7.9.5). */
+/** What is left after the lead move, in G139's words: the Composer caveat only when its `assumes`
+ *  holds `composer_resolves` and the check did not stop it, else the check's short words. Without
+ *  `if_applied` only those words show, and nothing shows when the check did not stop it either. */
 export const rowAfter = (f: Finding): string | null =>
   f.next_step === null ? null : afterIt(f.next_step.if_applied, stoppedCheckWords(f.next_step.check ?? null));
 
