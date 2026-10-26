@@ -7,6 +7,7 @@ import {
   moreWord,
   reachLine,
   rowAfter,
+  rowBlockedWords,
   rowCommand,
   rowHolds,
   majorCount,
@@ -139,22 +140,42 @@ describe("rowCommand (accepted derivation 8)", () => {
 });
 
 describe("R16: the blocked words of a move that fixes no advisory", () => {
-  const blocked = (clears: { kind: string; id: string }[]) =>
+  const blocked = (fixKind: "blocked" | null, clears: { kind: string; id: string }[] = []) =>
     finding({
       package: "a/b",
-      next_step: step({ kind: "blocked", to_branch: "3.x", php_check: { requires: ">=8.5" }, clears }),
+      next_step: step({
+        kind: "blocked",
+        fix_kind: fixKind,
+        to_branch: "3.x",
+        php_check: { requires: ">=8.5" },
+        clears,
+      }),
     });
 
-  it("say no newer release runs when the move fixes no advisory", () => {
+  it("say no newer release runs when the move has no fix kind", () => {
     expect(
-      nextStepWords(blocked([{ kind: "flag", id: "left-behind" }]), { ...run, target_php: "8.4" }).text,
+      nextStepWords(blocked(null, [{ kind: "advisory", id: "GHSA-1" }]), { ...run, target_php: "8.4" }).text,
     ).toBe("3.x needs php >=8.5; target 8.4 runs no newer release");
   });
 
-  it("say no fixing release runs when the move fixes an advisory", () => {
-    expect(
-      nextStepWords(blocked([{ kind: "advisory", id: "GHSA-1" }]), { ...run, target_php: "8.4" }).text,
-    ).toBe("3.x needs php >=8.5; target 8.4 runs no fixing release");
+  it("say no fixing release runs when the move has a fix kind, though it clears nothing", () => {
+    expect(nextStepWords(blocked("blocked"), { ...run, target_php: "8.4" }).text).toBe(
+      "3.x needs php >=8.5; target 8.4 runs no fixing release",
+    );
+  });
+
+  it("are the row's blocked words, which a pinned move and a move of another kind leave null", () => {
+    const pinned = finding({
+      package: "a/b",
+      next_step: step({ kind: "blocked", source: "pinned", fix_kind: null }),
+    });
+    const update = finding({ package: "a/b", next_step: step({ kind: "update" }) });
+
+    expect(rowBlockedWords(blocked("blocked"), { ...run, target_php: "8.4" })).toBe(
+      "3.x needs php >=8.5; target 8.4 runs no fixing release",
+    );
+    expect(rowBlockedWords(pinned, run)).toBeNull();
+    expect(rowBlockedWords(update, run)).toBeNull();
   });
 });
 

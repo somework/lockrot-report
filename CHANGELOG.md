@@ -199,11 +199,12 @@ project is overall, and the other tabs lead with their own part.
   whose baseline Composer refuses, it reads "No move is ready to run: Composer refuses the lock
   itself, so no move was checked."
 - Blast radius leads with the depth sentence, then "52 flagged packages pulled in.", how many sit
-  under no direct requirement, and the rows that hold them.
+  under no direct requirement, and the rows that hold them. The rows are named until they hold half
+  of the packages pulled in. With none pulled in, the depth sentence stands alone.
 - Counts agree with their total: "1 of 113 flagged packages", "1 of 1 move crosses a major".
   Provenance words its origin and each source's status. An empty Advisories tab still leads with
   the Security summary. Libyears reads "Not measured: 1, a branch snapshot with no release branch".
-  A blocked move that fixes no advisory reads "runs no newer release".
+  A blocked move with no fix kind reads "runs no newer release".
 
 ### Changed
 
@@ -287,8 +288,9 @@ project is overall, and the other tabs lead with their own part.
 - The copy control prints a command only when every argument passes lockrot's
   command argument rule. The rule takes `composer` with `update`, `require` or `why-not`, and
   each argument from a fixed set of characters. The only arguments that start with a dash are
-  lockrot's own `--no-update`, `--with-dependencies` and `--with-all-dependencies`, after every
-  package argument.
+  lockrot's own options, after every package argument: `--no-update` and `--dev` in a `require`
+  step, `--with-dependencies` and `--with-all-dependencies` in an `update` or `require` step, and
+  `--locked` in a `why-not` step.
 - The release workflow refuses a tag whose commit is on neither main nor a release branch. It
   runs the unit, contract and e2e tests before it builds and attests the page, so a red test
   stops the release.

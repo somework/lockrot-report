@@ -9,7 +9,8 @@ import { dataCaption, showsDataColumn, signalKey } from "../../../src/domain/pac
 import { findingsGroups, findingsRowFacts } from "../../../src/domain/findingsRows";
 import { firstMoves, gateLineTarget } from "../../../src/domain/firstMoves";
 import { libyearsLead } from "../../../src/domain/libyearsLead";
-import { applyFilters2 } from "../../../src/domain/list";
+import { provenanceWords } from "../../../src/domain/findingWords";
+import { applyFilters2, population2 } from "../../../src/domain/list";
 import {
   acceptedLine,
   depthSentence,
@@ -21,6 +22,7 @@ import {
 } from "../../../src/domain/overviewBand";
 import { depthRows, exposureBars, libyearsTop, OVERVIEW_TAB_WORDS } from "../../../src/domain/overviewTab";
 import { gradeLine, gradeLineText, waffleCaption, weighsMost } from "../../../src/domain/projectGrade";
+import { radiusAnswer2, radiusLayout2 } from "../../../src/domain/radius2";
 import { gatePartition, readyCount } from "../../../src/domain/readyToRun";
 import { runNotes } from "../../../src/domain/runTab";
 import { windowRows } from "../../../src/domain/phpWindow";
@@ -47,7 +49,7 @@ function ready(report: Report2): unknown {
       package: move.package,
       link: href(move.link),
       grade: move.grade,
-      new_major: move.newLine !== null,
+      major: move.newLine,
       command: move.command,
       clears: move.clears,
       after: move.after,
@@ -165,6 +167,8 @@ const FIELDS: Readonly<Record<string, (report: Report2) => unknown>> = {
   advisory_groups: advisoryGroupNotes,
   run_notes: runNotes,
   php_rows: windowRows,
+  radius_lead: radiusLead,
+  advisories_lead: security,
 };
 
 /** The sheet's move cards of the packages that the golden names, in the `moves` block shape. */
@@ -175,6 +179,21 @@ function sheetMoves(report: Report2, packages: readonly string[]): unknown {
       .map((f) => [f.package, blockGolden("moves", f, report.run, null)]),
   );
 }
+/** The Blast radius lead of the whole list: the depth sentence, then the lead lines. */
+function radiusLead(report: Report2): string[] {
+  if (report.packages_flagged === 0) return [];
+  const all = population2(report, "radius");
+  const depth = depthSentence(report);
+  return [...(depth === null ? [] : [depth]), ...radiusAnswer2(report, radiusLayout2(report, all, all))];
+}
+
+/** The sheet's Provenance words of the packages that the golden names. */
+function sheetProvenance(report: Report2, packages: readonly string[]): unknown {
+  return Object.fromEntries(
+    report.findings.filter((f) => packages.includes(f.package)).map((f) => [f.package, provenanceWords(f)]),
+  );
+}
+
 function abandonedNote(report: Report2): string | null {
   return report.abandoned.total > 0
     ? OVERVIEW_WORDS.abandoned(report.abandoned.total, report.abandoned.with_replacement)
@@ -234,6 +253,12 @@ describe("every page-golden field equals lockrot's page golden (SPEC §7.9.14)",
     const expected = (golden as unknown as { sheet_moves: Record<string, unknown> }).sheet_moves;
 
     expect(sheetMoves(report, Object.keys(expected))).toEqual(expected);
+  });
+
+  test.each(pageGoldens())("$id: sheet_provenance", ({ golden, report }) => {
+    const expected = (golden as unknown as { sheet_provenance: Record<string, unknown> }).sheet_provenance;
+
+    expect(sheetProvenance(report, Object.keys(expected))).toEqual(expected);
   });
 
   test("sheet_moves covers the four check lines of SPEC §7.9.21", () => {

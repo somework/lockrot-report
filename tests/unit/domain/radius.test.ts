@@ -256,6 +256,20 @@ describe("radiusAnswer", () => {
     expect(answer).toMatchObject({ held: 5, total: 7, rows: 3, exposureCount: 3 });
   });
 
+  it("names rows until they hold half of the pulled-in count it is given (SPEC §7.9.20)", () => {
+    const flagged = ["a/1", "a/2", "a/3", "b/1", "b/2", "c/1", "c/2"].map((name) => pulled(name));
+    const model = source(flagged, [
+      entry("a/p", [["a/1"], ["a/2"], ["a/3"]]),
+      entry("b/p", [["b/1"], ["b/2"]]),
+      entry("c/p", [["c/1"], ["c/2"]]),
+    ]);
+
+    const answer = radiusAnswer(radiusLayout(model, flagged), 12);
+
+    expect(answer?.top.map((r) => r.package)).toEqual(["a/p", "b/p", "c/p"]);
+    expect(answer).toMatchObject({ held: 7 });
+  });
+
   it("is null when no row lists a finding", () => {
     expect(radiusAnswer(radiusLayout(source([], [entry("a/p", [["x/1"]])]), []))).toBeNull();
   });

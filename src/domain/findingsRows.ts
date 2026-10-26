@@ -12,6 +12,7 @@ import {
   packagesCount,
   reachText,
   rowAfter,
+  rowBlockedWords,
   rowCommand,
   rowHolds,
   rowNewLine,
@@ -53,6 +54,7 @@ export interface RowFacts {
   readonly raise_words: string | null;
   readonly after: string | null;
   readonly major: string | null;
+  readonly blocked: string | null;
   readonly ready: boolean;
   readonly held_filter: boolean;
 }
@@ -69,6 +71,7 @@ export function findingsRowFacts(f: Finding, run: Run): RowFacts {
     raise_words: rowRaiseWords(f),
     after: rowAfter(f),
     major: rowNewLine(f),
+    blocked: rowBlockedWords(f, run),
     ready: readyToRun(f),
     held_filter: isHeld(f),
   };

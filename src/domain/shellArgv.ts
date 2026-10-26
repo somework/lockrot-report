@@ -25,7 +25,8 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set(["update", "require", "why-not"
 // would pass an option to Composer.
 const LOCKROT_OPTIONS: Readonly<Record<string, ReadonlySet<string>>> = {
   update: new Set(["--with-dependencies", "--with-all-dependencies"]),
-  require: new Set(["--no-update", "--with-dependencies", "--with-all-dependencies"]),
+  require: new Set(["--no-update", "--dev", "--with-dependencies", "--with-all-dependencies"]),
+  "why-not": new Set(["--locked"]),
 };
 
 const POSIX_BARE = /^[A-Za-z0-9/._:@%+=,-]+$/;

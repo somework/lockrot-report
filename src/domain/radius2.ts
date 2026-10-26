@@ -4,6 +4,7 @@
 import type { Finding, Report2, S7 } from "../model/report";
 import type { State } from "../state/types";
 import { plural, pluralNoun } from "./format";
+import { joinAnd } from "./joinWords";
 import {
   isRowOpen,
   isSinglesOpen,
@@ -86,27 +87,34 @@ export function gradeMix(report: Report2, findings: readonly Finding[]): string 
 }
 
 /** The lead lines of §7.9.20 after the depth sentence: the flagged packages pulled in
- *  (`rot_depth.by_reach.transitive`), how many sit under no direct requirement, then the rows that
- *  hold them. */
+ *  (`rot_depth.by_reach.transitive`), how many no exposure S7 lists, then the rows that hold them. */
 export function radiusAnswer2(report: Report2, layout: RadiusLayout2): string[] {
-  const answer = radiusAnswer(layout);
-  if (answer === null) {
-    if (layout.narrowed) return ["No direct requirement lists a flagged package that matches the filter."];
-    const n = layout.rows.length;
-    return [
-      n === 0
-        ? "No direct requirement pulls in a flagged package."
-        : `${plural(n, "direct requirement", "direct requirements")} on lockrot's exposure list ${pluralNoun(n, "pulls", "pull")} in flagged packages.`,
-    ];
+  const pulled = report.rot_depth.by_reach.transitive;
+  const answer = radiusAnswer(layout, pulled);
+  if (answer === null && layout.narrowed) {
+    return ["No direct requirement lists a flagged package that matches the filter."];
   }
-  const names = answer.top.map((row) => row.package);
-  const named = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
-  const unattributed = new Set(report.unattributed.map((entry) => entry.package)).size;
+  if (pulled === 0) return [];
+  const unlisted = pulled - listedTransitive(report);
+  const sit = (n: number): string => `${String(n)} of them ${pluralNoun(n, "sits", "sit")} under`;
+  const names = answer?.top.map((row) => row.package) ?? [];
   return [
-    `${plural(report.rot_depth.by_reach.transitive, "flagged package", "flagged packages")} pulled in.`,
-    ...(unattributed > 0 ? [`${String(unattributed)} of them sit under no direct requirement.`] : []),
-    `${String(answer.held)} of them sit under ${named ?? ""}.`,
+    `${plural(pulled, "flagged package", "flagged packages")} pulled in.`,
+    ...(unlisted > 0 ? [`${sit(unlisted)} no direct requirement.`] : []),
+    ...(answer !== null && answer.held > 0 ? [`${sit(answer.held)} ${joinAnd(names)}.`] : []),
   ];
+}
+
+/** The graded transitive findings that the S7 of an `exposure[]` entry lists. */
+function listedTransitive(report: Report2): number {
+  const graded: readonly string[] = report.run.graded_verdicts;
+  const byName = new Map(report.findings.map((f) => [f.package, f]));
+  const listed = new Set(
+    report.exposure.flatMap((entry) => members(byName.get(entry.package)).map((m) => m.package)),
+  );
+  return report.findings.filter(
+    (f) => f.reach === "transitive" && graded.includes(f.verdict) && listed.has(f.package),
+  ).length;
 }
 
 /** A requirement row's facts: the count it lists and its grade split; lockrot's count alone when

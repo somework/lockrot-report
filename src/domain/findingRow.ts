@@ -288,12 +288,16 @@ function replaceWords(step: Move): Pick<NextStepWords, "text" | "title" | "href"
   };
 }
 
+/** The needs-php words of a `blocked` row (golden `blocked`); null on a pinned row and any other kind. */
+export const rowBlockedWords = (f: Finding, run: Run): string | null =>
+  f.next_step?.kind === "blocked" && f.next_step.source !== "pinned" ? blockedWords(f.next_step, run) : null;
+
 function blockedWords(step: Move, run: Run): string {
   if (step.source === "pinned") return `no tag runs on ${run.target_php}`;
   const requires = step.php_check?.requires ?? null;
   return requires === null
     ? `${step.to_branch ?? ""} does not run on ${run.target_php}`
-    : `${step.to_branch ?? ""} needs php ${requires}; target ${run.target_php} runs no ${step.clears.some((c) => c.kind === "advisory") ? "fixing" : "newer"} release`;
+    : `${step.to_branch ?? ""} needs php ${requires}; target ${run.target_php} runs no ${step.fix_kind === null ? "newer" : "fixing"} release`;
 }
 
 function kindWords(f: Finding, step: Move, run: Run): string {

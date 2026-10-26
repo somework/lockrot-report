@@ -135,14 +135,15 @@ describe("radius words", () => {
     // composite: two transitive packages, one under each of its two exposure requirements.
     expect(radiusAnswer2(composite, layoutOf(composite))).toEqual([
       "2 flagged packages pulled in.",
-      "1 of them sit under friendsofsymfony/oauth-server-bundle.",
+      "1 of them sits under friendsofsymfony/oauth-server-bundle.",
     ]);
   });
 
-  it("answers with lockrot's exposure list when no row lists a finding", () => {
+  it("counts every package pulled in as under no direct requirement when no row lists one", () => {
     const report: Report2 = { ...composite, exposure: [{ package: "symfony/yaml", flagged: 2 }] };
     expect(radiusAnswer2(report, layoutOf(report))).toEqual([
-      "1 direct requirement on lockrot's exposure list pulls in flagged packages.",
+      "2 flagged packages pulled in.",
+      "2 of them sit under no direct requirement.",
     ]);
   });
 
@@ -167,11 +168,12 @@ describe("radius words", () => {
     });
   });
 
-  it("answers an empty tab, and a filtered one", () => {
-    const empty: Report2 = { ...composite, exposure: [] };
-    expect(radiusAnswer2(empty, layoutOf(empty))).toEqual([
-      "No direct requirement pulls in a flagged package.",
-    ]);
+  it("ends the lead when nothing is pulled in, and answers a filtered tab", () => {
+    const direct: Report2 = {
+      ...composite,
+      rot_depth: { ...composite.rot_depth, by_reach: { ...composite.rot_depth.by_reach, transitive: 0 } },
+    };
+    expect(radiusAnswer2(direct, layoutOf(direct))).toEqual([]);
     const narrowed = radiusLayout2(composite, [], population2(composite, "radius"));
     expect(radiusAnswer2(composite, narrowed)).toEqual([
       "No direct requirement lists a flagged package that matches the filter.",

@@ -23,10 +23,13 @@ import { advisoryRows } from "./advisoryRows";
 import { decimal, pluralNoun } from "./format";
 import { joinAnd } from "./joinWords";
 import {
+  activityProvenanceWord,
   allowlistReason,
   causeWord,
   halvingWord,
+  metadataProvenanceWord,
   metadataStatusWord,
+  originKindWord,
   signalName,
   skippedCheckWord,
 } from "./pageVocabulary";
@@ -86,6 +89,18 @@ export function countsAs(run: Run, severity: Severity): Severity | null {
 
 export function checkReasonWords(finding: Finding, reason: string | null): string {
   return reason === null ? "" : causeWord(reason, finding.origin.kind);
+}
+
+/** The Provenance words of SPEC §7.9.8.13: a word for every closed id, and a reason as its cause words. */
+export function provenanceWords(finding: Finding): { origin: string; metadata: string; activity: string } {
+  const { origin, metadata, activity } = finding;
+  const status = (word: string, reason: string | null): string =>
+    reason === null ? word : `${word} (${checkReasonWords(finding, reason)})`;
+  return {
+    origin: originKindWord(origin.kind),
+    metadata: status(metadataProvenanceWord(metadata.status), metadata.reason),
+    activity: status(activityProvenanceWord(activity.status), activity.reason),
+  };
 }
 
 export const metadataWords = (finding: Finding): string =>

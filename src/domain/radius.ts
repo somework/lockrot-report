@@ -245,16 +245,21 @@ export interface RadiusAnswer<F extends RadiusFinding = RadiusFinding> {
 
 export const ANSWER_MAX_ROWS = 3;
 
-export function radiusAnswer<F extends RadiusFinding>(layout: RadiusLayout<F>): RadiusAnswer<F> | null {
+/** `pulled` is the count the named rows must hold half of; the distinct listed packages by default. */
+export function radiusAnswer<F extends RadiusFinding>(
+  layout: RadiusLayout<F>,
+  pulled?: number,
+): RadiusAnswer<F> | null {
   const listing = layout.rows.filter((r) => r.count > 0);
   if (listing.length === 0) return null;
   const total = new Set(listing.flatMap((r) => r.pulled.map((f) => f.package))).size;
+  const half = pulled ?? total;
   const top: RadiusRow<F>[] = [];
   const held = new Set<string>();
   for (const row of listing) {
     top.push(row);
     for (const f of row.pulled) held.add(f.package);
-    if (held.size * 2 >= total || top.length === ANSWER_MAX_ROWS) break;
+    if (held.size * 2 >= half || top.length === ANSWER_MAX_ROWS) break;
   }
   return { top, held: held.size, total, rows: listing.length, exposureCount: layout.exposureCount };
 }
