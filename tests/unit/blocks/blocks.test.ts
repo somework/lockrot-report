@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 
+import type { Finding } from "../../../src/model/report";
 import { differencesFromModel, listedDifferences } from "../words/modelDifferences";
 import { modelCases, recordedCases } from "../words/recorded";
 import { BLOCK_KEYS, blockGolden } from "./blockGoldens";
@@ -21,6 +22,49 @@ describe("on lockrot's recording a block differs from the model's golden only wh
 
     expect(differing.map(({ name }) => name).sort()).toEqual([...listedDifferences(key).keys()].sort());
   });
+});
+
+/** The recorded moves without the why-not step that lockrot ends an unresolved move with, where the
+ *  model left `version` null and so wrote no such step (SPEC §5.6). */
+function withoutVersionStep(recorded: Finding, model: Finding): Finding {
+  type AnyMove = NonNullable<Finding["next_step"]> | NonNullable<Finding["next_step"]>["also"][number];
+  const modelMoves: (AnyMove | undefined)[] = model.next_step
+    ? [model.next_step, ...model.next_step.also]
+    : [];
+  const strip = <M extends AnyMove>(move: M, at: number): M =>
+    move.check?.result !== "resolves" &&
+    move.version !== null &&
+    modelMoves[at]?.version === null &&
+    move.commands.at(-1)?.[1] === "why-not"
+      ? { ...move, commands: move.commands.slice(0, -1) }
+      : move;
+  const lead = recorded.next_step;
+  return lead === null
+    ? recorded
+    : { ...recorded, next_step: { ...strip(lead, 0), also: lead.also.map((m, i) => strip(m, i + 1)) } };
+}
+
+describe("a MOVE_VERSION difference is only the why-not step of a move that does not resolve", () => {
+  const listed = [...listedDifferences("moves")]
+    .filter(([, reason]) => reason.includes("MOVE_VERSION"))
+    .map(([name]) => name);
+  const models = new Map(modelCases().map((model) => [model.name, model]));
+
+  test("the list names such cases", () => {
+    expect(listed.length).toBeGreaterThan(0);
+  });
+
+  test.each(recordedCases().filter(({ name }) => listed.includes(name)))(
+    "$name",
+    ({ name, finding, run, metadata }) => {
+      const model = models.get(name);
+      if (model === undefined) throw new Error(`no model case ${name}`);
+
+      expect(blockGolden("moves", withoutVersionStep(finding, model.finding), run, metadata)).toEqual(
+        model.golden.moves,
+      );
+    },
+  );
 });
 
 describe("the cases the block goldens are written from", () => {

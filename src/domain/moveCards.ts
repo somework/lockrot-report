@@ -606,7 +606,10 @@ export function commandLabel(argvs: readonly (readonly string[])[]): string | nu
 function movesWithLine(move: AnyMove): string | null {
   if (move.moves_with.length === 0) return null;
   return `It also updates ${joinAnd(
-    move.moves_with.map((m) => `${m.package} from ${m.installed_version ?? ""} to ${m.version}`),
+    move.moves_with.map(
+      (m) =>
+        `${m.package}${m.installed_version === null ? "" : ` from ${m.installed_version}`} to ${m.version}`,
+    ),
   )}`;
 }
 

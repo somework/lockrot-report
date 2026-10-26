@@ -492,6 +492,14 @@ describe("R1, G161: the packages a joint request also moves", () => {
     );
   });
 
+  test("leaves out the from part for a package the lock does not hold", () => {
+    const { finding, run } = modelCase("mc-joint-dagger");
+    if (finding.next_step === null) throw new Error("mc-joint‡ has a move");
+    finding.next_step.moves_with = [{ package: "acme/new", installed_version: null, version: "1.1.0" }];
+
+    expect(moveCards(finding, run)[0]?.movesWith).toBe("It also updates acme/new to 1.1.0");
+  });
+
   test("prints nothing on a move that moves no other package", () => {
     const { finding, run } = modelCase("mc-inline-dagger");
 
