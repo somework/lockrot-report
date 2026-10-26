@@ -645,3 +645,35 @@ describe("R9: a self.version hold", () => {
     );
   });
 });
+
+describe("§5.6, the joint request: an unreached move that moves what requires it", () => {
+  function unreachedNotes(movesWith: boolean, said: boolean): string[] {
+    const { finding, run } = modelCase("unreached-move");
+    const lead = finding.next_step;
+    if (lead === null) throw new Error("unreached-move has a move");
+    if (!said) finding.flags = [];
+    lead.composer_moves_because = ["unreached"];
+    lead.moves_with = movesWith
+      ? [{ package: "acme/holder", installed_version: "1.0.0", version: "1.1.0" }]
+      : [];
+    return (moveCards(finding, run)[0]?.composer ?? []).map((n) => plain(n.text));
+  }
+
+  test("reads what lockrot found alone (G111)", () => {
+    expect(unreachedNotes(true, false)).toEqual([
+      expect.stringMatching(/^lockrot found no path from .+ to it$/),
+    ]);
+  });
+
+  test("says nothing more when the Reach row already says what lockrot found", () => {
+    expect(unreachedNotes(true, true)).toEqual([]);
+  });
+
+  test("keeps what requires it must allow it on a move that moves no other package", () => {
+    expect(unreachedNotes(false, false)).toEqual([
+      expect.stringMatching(
+        /, so what requires it must allow it \(composer why with this package's name names what requires it\)$/,
+      ),
+    ]);
+  });
+});

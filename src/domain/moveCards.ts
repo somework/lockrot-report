@@ -283,7 +283,9 @@ function composerNotes(finding: Finding, move: AnyMove, run: Run, noted: readonl
       case "unreached": {
         const said = finding.flags.length > 0;
         const found = foundWords(finding, run);
-        if (RESOLVED_KINDS.includes(move.kind)) {
+        if (RESOLVED_KINDS.includes(move.kind) && move.moves_with.length > 0) {
+          if (!said) note([capNote(found)]);
+        } else if (RESOLVED_KINDS.includes(move.kind)) {
           const lead = said
             ? "what requires it must allow it"
             : `${found}, so what requires it must allow it`;
