@@ -61,7 +61,13 @@ const checked: Report2 = {
   findings: composite.findings.map((f) =>
     f.next_step === null
       ? f
-      : { ...f, next_step: { ...f.next_step, check: { result: "resolves", form: "inline", reason: null } } },
+      : {
+          ...f,
+          next_step: {
+            ...f.next_step,
+            check: { result: "resolves", form: "inline", reason: null, installs: null },
+          },
+        },
   ),
 };
 

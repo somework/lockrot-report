@@ -181,6 +181,7 @@ function MoveItem({ move, model }: { move: ReadyMove; model: ScoreModel }) {
         {move.newLine !== null && <span className="ov-tag ov-tag-plain">{move.newLine}</span>}
       </p>
       <CopyMove argvs={[move.argv]} className="ov-cmd" />
+      {move.movesWith !== null && <p className="ov-move-with">{move.movesWith}</p>}
       {(move.clears !== null || move.after !== null) && (
         <p className="ov-move-what">
           {move.clears !== null && (

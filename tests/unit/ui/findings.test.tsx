@@ -100,7 +100,10 @@ describe("the report-2 Findings tab", () => {
         f.package === "symfony/monolog-bridge" && f.next_step !== null
           ? {
               ...f,
-              next_step: { ...f.next_step, check: { result: "resolves", form: "inline", reason: null } },
+              next_step: {
+                ...f.next_step,
+                check: { result: "resolves", form: "inline", reason: null, installs: null },
+              },
             }
           : f,
       ),

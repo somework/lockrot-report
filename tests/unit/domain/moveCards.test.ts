@@ -471,3 +471,169 @@ describe("M7: a why-not check on a held move", () => {
     expect(note([["composer", "why-not", "acme/y", "1.0"]], ["transitive"])).toBeNull();
   });
 });
+
+describe("R1, G161: the packages a joint request also moves", () => {
+  test("names each one under the command box (mc-joint‡)", () => {
+    const { finding, run } = modelCase("mc-joint-dagger");
+
+    expect(moveCards(finding, run)[0]?.movesWith).toBe("It also updates acme/gz-client from 1.0.0 to 1.1.0");
+  });
+
+  test("joins several as a list (monica's firebase/php-jwt)", () => {
+    const { finding, run } = modelCase("mc-joint-dagger");
+    if (finding.next_step === null) throw new Error("mc-joint‡ has a move");
+    finding.next_step.moves_with = [
+      { package: "laravel/socialite", installed_version: "v5.23.0", version: "v5.30.0" },
+      { package: "socialiteproviders/manager", installed_version: "v4.8.1", version: "4.10.0" },
+    ];
+
+    expect(moveCards(finding, run)[0]?.movesWith).toBe(
+      "It also updates laravel/socialite from v5.23.0 to v5.30.0 and socialiteproviders/manager from v4.8.1 to 4.10.0",
+    );
+  });
+
+  test("prints nothing on a move that moves no other package", () => {
+    const { finding, run } = modelCase("mc-inline-dagger");
+
+    expect(moveCards(finding, run)[0]?.movesWith).toBeNull();
+  });
+});
+
+describe("§5.6, the joint request: a transitive move that moves what requires it", () => {
+  function transitiveNotes(movesWith: number): string[] {
+    const { finding, run } = modelCase("mc-joint-dagger");
+    if (finding.next_step === null) throw new Error("mc-joint‡ has a move");
+    finding.direct = false;
+    finding.direct_dependents = ["laravel/socialite"];
+    finding.next_step.composer_moves_because = ["transitive"];
+    finding.next_step.moves_with = finding.next_step.moves_with.slice(0, movesWith);
+    return (moveCards(finding, run)[0]?.composer ?? []).map((n) => plain(n.text));
+  }
+
+  test("drops what requires it must allow it (monica's firebase/php-jwt)", () => {
+    expect(transitiveNotes(1)).not.toContain("What requires it must allow it");
+  });
+
+  test("keeps it on a move that moves no other package", () => {
+    expect(transitiveNotes(0)).toContain("What requires it must allow it");
+  });
+});
+
+describe("R6, G108: the action on the packages it comes in through", () => {
+  const transitiveNote = (name: string): string | undefined => {
+    const { finding, run } = modelCase(name);
+    return moveCards(finding, run)
+      .flatMap((c) => c.composer)
+      .map((n) => plain(n.text))
+      .find((text) => text.includes("requires it)") || text.startsWith("Replace"));
+  };
+
+  test("changes the project's own path package (mautic's voku/stop-words)", () => {
+    expect(transitiveNote("through-own")).toBe(
+      "Change your own package mautic/core-lib (jbroadway/urlify requires it)",
+    );
+  });
+
+  test("replaces a dependent whose newest release is installed (akaunting's hoa/consistency)", () => {
+    expect(transitiveNote("hoa")).toBe("Replace lorisleiva/laravel-search-string (hoa/compiler requires it)");
+  });
+
+  test("joins the groups with , or in the order of their first entry", () => {
+    const { finding, run } = modelCase("through-own");
+    const lead = finding.next_step;
+    const [entry] = lead?.through ?? [];
+    if (lead === null || entry === undefined) throw new Error("through-own has a through entry");
+    finding.chain = ["acme/own", finding.package];
+    finding.direct_dependents = ["acme/own", "acme/old", "acme/lib"];
+    lead.through = [
+      { ...entry, package: "acme/own", local: true, newest_is_installed: null },
+      { ...entry, package: "acme/old", local: false, newest_is_installed: true },
+      { ...entry, package: "acme/lib", local: false, newest_is_installed: false },
+    ];
+
+    const notes = moveCards(finding, run)[0]?.composer.map((n) => plain(n.text)) ?? [];
+
+    expect(notes).toContain(
+      "Change your own package acme/own, or replace acme/old, or replace or update acme/lib",
+    );
+  });
+});
+
+describe("R2, G70: an update that Composer installs below its newest release", () => {
+  const action = (installs: string | null): string => {
+    const { finding, run } = modelCase("mc-gets-below-dagger");
+    const check = finding.next_step?.check;
+    if (check == null) throw new Error("mc-gets-below‡ has a checked move");
+    check.installs = installs;
+    return plain(moveCards(finding, run)[0]?.action ?? []);
+  };
+
+  test("names the release it installs and the one it stops below (mc-gets-below‡)", () => {
+    expect(action("v6.4.40")).toBe("Update to v6.4.40 on 6.x, below the newest v6.4.41");
+  });
+
+  test("reads as before when it installs the newest release", () => {
+    expect(action("v6.4.41")).toBe("Update to v6.4.41 on 6.x");
+  });
+
+  test("reads as before when the check names no release", () => {
+    expect(action(null)).toBe("Update to v6.4.41 on 6.x");
+  });
+});
+
+describe("R7, G119: a holder's own step", () => {
+  const step = (direct: boolean): string | null => {
+    const { finding, run } = heldCase([
+      {
+        source: "package",
+        package: "acme/holder",
+        version: "1.0.0",
+        link: "require",
+        target: null,
+        constraint: "^1.0",
+        holder: {
+          verdict: "low",
+          lead: null,
+          flag_ids: [],
+          direct,
+          replacement: null,
+          next_step: { kind: "require", to_branch: "2.x", constraint: "^2.0", check: null },
+        },
+      },
+    ]);
+    return moveCards(finding, run)[0]?.heldBy?.shown[0]?.step ?? null;
+  };
+
+  test("requires the constraint when composer.json requires the holder", () => {
+    expect(step(true)).toBe("require ^2.0 on 2.x");
+  });
+
+  test("moves a transitive holder to the constraint (drupal/core at 8.3)", () => {
+    expect(step(false)).toBe("move to ^2.0 on 2.x");
+  });
+});
+
+describe("R9: a self.version hold", () => {
+  test("names the holder's version (wallabag 2.6's scheb/2fa-bundle)", () => {
+    const { finding, run } = heldCase([
+      {
+        ...pkgHold("scheb/2fa-trusted-device", "scheb/2fa-bundle", "self.version", null),
+        version: "v5.13.2",
+      },
+    ]);
+
+    expect(plain(moveCards(finding, run)[0]?.heldBy?.shown[0]?.meta ?? [])).toBe(
+      "requires scheb/2fa-bundle self.version (v5.13.2)",
+    );
+  });
+
+  test("reads as written when the holder has no version", () => {
+    const { finding, run } = heldCase([
+      { ...pkgHold("scheb/2fa-trusted-device", "scheb/2fa-bundle", "self.version", null), version: null },
+    ]);
+
+    expect(plain(moveCards(finding, run)[0]?.heldBy?.shown[0]?.meta ?? [])).toBe(
+      "requires scheb/2fa-bundle self.version",
+    );
+  });
+});

@@ -205,6 +205,15 @@ project is overall, and the other tabs lead with their own part.
   Provenance words its origin and each source's status. An empty Advisories tab still leads with
   the Security summary. Libyears reads "Not measured: 1, a branch snapshot with no release branch".
   A blocked move with no fix kind reads "runs no newer release".
+- A move that a joint request resolves names the other packages it updates. The line sits under
+  the command box and in Ready to run. Such a transitive move drops "What requires it must allow
+  it".
+- The Composer note of a transitive replace, alternative or test names one action per group of
+  dependents. The project's own path package reads "Change your own package". A dependent at its
+  newest release reads "Replace", and any other dependent reads "Replace or update".
+- An update that Composer installs below its newest release names both releases. A holder that
+  composer.json does not require reads "its own step: move to". A `self.version` hold names the
+  holder's version.
 
 ### Changed
 

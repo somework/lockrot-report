@@ -54,6 +54,7 @@ function ready(report: Report2): unknown {
       clears: move.clears,
       after: move.after,
       also_holds: move.alsoHolds,
+      moves_with: move.movesWith,
     })),
     more: block.more,
     more_link: href(block.moreLink),

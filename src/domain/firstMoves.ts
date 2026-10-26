@@ -49,6 +49,8 @@ export interface ReadyMove {
   readonly newLine: string | null;
   /** "Also holds: {name} ({grade}), …", or null when no finding names this package as a holder. */
   readonly alsoHolds: string | null;
+  /** The lead card's G161 line, or null when the move updates no other package. */
+  readonly movesWith: string | null;
   readonly link: LinkTarget;
 }
 
@@ -102,6 +104,7 @@ function readyMove(f: Finding, report: Report2, argv: readonly string[], command
     after: after === null ? null : { result: after.result, conditions: after.conditions.map(plain) },
     newLine: rowNewLine(f),
     alsoHolds: alsoHolds(report, f.package),
+    movesWith: card?.movesWith ?? null,
     link: { view: "findings", pkg: f.package },
   };
 }

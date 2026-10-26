@@ -55,16 +55,33 @@ function unknownMove(move: AnyMove): string {
   return `Next step: ${move.kind.replaceAll("-", " ")}${move.reason ? ` (${move.reason.replaceAll("_", " ")})` : ""}`;
 }
 
+/** Numeric versions only ("v6.4.40" < "v6.4.41"); any other form is never below, so it adds no words. */
+export function isBelow(version: string, than: string): boolean {
+  const parts = (v: string): number[] | null =>
+    /^v?\d+(\.\d+)*$/.test(v) ? v.replace(/^v/, "").split(".").map(Number) : null;
+  const a = parts(version);
+  const b = parts(than);
+  if (a === null || b === null) return false;
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const d = (a[i] ?? 0) - (b[i] ?? 0);
+    if (d !== 0) return d < 0;
+  }
+  return false;
+}
+
 /** G70 to G93: the move's action. */
 function moveAction(finding: Finding, move: AnyMove, run: Run): Rich {
   const php = move.php_check;
   const hasDependents = finding.direct_dependents.length > 0;
   const latest = move.latest?.version ?? "";
   switch (move.kind) {
-    case "update":
-      return [
-        `Update to ${move.newest ?? move.version ?? ""}${move.to_branch ? ` on ${move.to_branch}` : ""}`,
-      ];
+    case "update": {
+      const on = move.to_branch ? ` on ${move.to_branch}` : "";
+      const installs = move.check?.installs ?? null;
+      return move.newest !== null && installs !== null && isBelow(installs, move.newest)
+        ? [`Update to ${installs}${on}, below the newest ${move.newest}`]
+        : [`Update to ${move.newest ?? move.version ?? ""}${on}`];
+    }
     case "require":
     case "raise-php": {
       const raise = move.kind === "raise-php" ? `Raise require.php to ${php?.raise_to ?? ""}, then ` : "";
@@ -182,6 +199,41 @@ function clearsWords(finding: Finding, move: AnyMove): string | null {
   return joinAnd([...flags, ...advisories]);
 }
 
+type ThroughGroup = "local" | "replace" | "update";
+
+const THROUGH_VERBS: Readonly<Record<ThroughGroup, (n: number) => string>> = {
+  local: (n) => pluralNoun(n, "change your own package", "change your own packages"),
+  replace: () => "replace",
+  update: () => "replace or update",
+};
+
+/** Ruling R6: one action per group of dependents, groups in `through[]` order, joined with ", or ". */
+function throughActions(finding: Finding, move: AnyMove): string {
+  const through = "through" in move ? move.through : [];
+  const all = dependentNames(finding);
+  const groups = new Map<ThroughGroup, string[]>();
+  for (const name of all) {
+    const entry = through.find((e) => e.package === name);
+    const group: ThroughGroup = entry?.local
+      ? "local"
+      : entry?.newest_is_installed === true
+        ? "replace"
+        : "update";
+    groups.set(group, [...(groups.get(group) ?? []), name]);
+  }
+  const requirer = finding.chain.length >= 3 ? (finding.chain.at(-2) ?? null) : null;
+  const names = (group: readonly string[]): string => {
+    const [one] = group;
+    if (group.length === 1 && one !== undefined) {
+      return requirer !== null && one === finding.chain[0] ? `${one} (${requirer} requires it)` : one;
+    }
+    return group.length === all.length ? dependents(finding) : namesShown(group);
+  };
+  return [...groups]
+    .map(([group, list]) => `${THROUGH_VERBS[group](list.length)} ${names(list)}`)
+    .join(", or ");
+}
+
 export interface ComposerNote {
   readonly text: Rich;
   readonly items: readonly string[];
@@ -213,11 +265,9 @@ function composerNotes(finding: Finding, move: AnyMove, run: Run, noted: readonl
         break;
       }
       case "transitive": {
-        note([
-          RESOLVED_KINDS.includes(move.kind)
-            ? "What requires it must allow it"
-            : `Replace or update ${dependents(finding)}`,
-        ]);
+        // The joint request moves what requires it (§5.6, the joint request).
+        if (!RESOLVED_KINDS.includes(move.kind)) note([capitalize(throughActions(finding, move))]);
+        else if (move.moves_with.length === 0) note(["What requires it must allow it"]);
         const through = "through" in move ? move.through : [];
         const gone = through.filter((e) => e.newest_requires === false);
         const kept = through.filter((e) => e.newest_requires === true);
@@ -398,9 +448,9 @@ export const ROOT_HOLDER_NAME = "your composer.json";
 
 type HolderStep = NonNullable<NonNullable<HeldBy["holder"]>["next_step"]>;
 
-const ownStep = (step: HolderStep, where: string): string =>
+const ownStep = (step: HolderStep, direct: boolean, where: string): string =>
   step.kind === "require" && step.constraint
-    ? `require ${step.constraint}${where}`
+    ? `${direct ? "require" : "move to"} ${step.constraint}${where}`
     : `${step.kind.replaceAll("-", " ")}${where}`;
 
 const RELEASE_WORDS = ", its own release";
@@ -444,7 +494,9 @@ function holderItem(held: HeldBy, run: Run, finding: Finding): Holder {
     step:
       step === null
         ? null
-        : [ownStep(step, where), stoppedCheckWords(step.check)].filter((w) => w !== null).join(" · "),
+        : [ownStep(step, holder?.direct ?? true, where), stoppedCheckWords(step.check)]
+            .filter((w) => w !== null)
+            .join(" · "),
   };
 }
 
@@ -501,6 +553,8 @@ export interface MoveCard {
   readonly platformStep: string | null;
   /** What a why-not check in the command box shows, on a move that holders hold. */
   readonly checkNote: string | null;
+  /** G161: the packages the joint request also updates, one line under the command box. */
+  readonly movesWith: string | null;
   readonly clears: string | null;
   readonly stays: string | null;
   readonly notChecked: string | null;
@@ -549,6 +603,13 @@ export function commandLabel(argvs: readonly (readonly string[])[]): string | nu
   return argvs.length > 1 ? COMMAND_WORDS.several : COMMAND_WORDS.one;
 }
 
+function movesWithLine(move: AnyMove): string | null {
+  if (move.moves_with.length === 0) return null;
+  return `It also updates ${joinAnd(
+    move.moves_with.map((m) => `${m.package} from ${m.installed_version ?? ""} to ${m.version}`),
+  )}`;
+}
+
 function moveCard(
   finding: Finding,
   move: AnyMove,
@@ -589,6 +650,7 @@ function moveCard(
       commandLines(move.commands)[0] !== REFUSED_COMMAND
         ? "This shows which package holds the move."
         : null,
+    movesWith: movesWithLine(move),
   };
 }
 

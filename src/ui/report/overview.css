@@ -275,6 +275,7 @@
   grid-template-areas:
     "who bar"
     "cmd cmd"
+    "with with"
     "what what"
     "also also";
   align-items: center;
@@ -328,6 +329,13 @@
   font-size: var(--text-s);
   line-height: 1.5;
   color: var(--muted);
+}
+/* G161: the packages the joint request also updates, a line under the command box. */
+.ov-move-with {
+  grid-area: with;
+  font-size: var(--text-s);
+  line-height: 1.5;
+  color: var(--ink-2);
 }
 .ov-move-what b {
   font-weight: 600;
@@ -559,6 +567,7 @@
       "who who"
       "cmd cmd"
       "bar bar"
+      "with with"
       "what what"
       "also also";
   }

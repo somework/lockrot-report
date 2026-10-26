@@ -8,11 +8,13 @@ export function linkWords(hold: HeldBy): Rich {
   return hold.source === "root" && hold.link === "require-dev" ? [...words, " in require-dev"] : words;
 }
 
-function baseLinkWords({ link, target, constraint, package: holder }: HeldBy): Rich {
+function baseLinkWords({ link, target, constraint, package: holder, version }: HeldBy): Rich {
+  // Ruling R9: self.version means the holder's own version, so the page names it.
   const named = (verb: string): Rich => [
     verb,
     ...(target === null ? [] : [`${target} `]),
     { code: constraint },
+    ...(constraint === "self.version" && version !== null ? [` (${version})`] : []),
   ];
   switch (link) {
     case "conflict":

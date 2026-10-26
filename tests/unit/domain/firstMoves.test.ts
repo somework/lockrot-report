@@ -35,7 +35,7 @@ function finding(
     next_step: {
       kind: "update",
       commands: [["composer", "update", name]],
-      check: { result: "resolves", form: "inline", reason: null },
+      check: { result: "resolves", form: "inline", reason: null, installs: null },
       held_by: held === "none" ? [] : [hold(held)],
       also: [],
     },
@@ -76,7 +76,7 @@ function raisePhp(name: string, raiseTo: string | null): Finding {
         ["composer", "require", `${name}:^2.0`],
       ],
       php_check: { raise_to: raiseTo },
-      check: { result: "resolves", form: "inline", reason: null },
+      check: { result: "resolves", form: "inline", reason: null, installs: null },
       held_by: [],
       also: [],
     },
@@ -120,7 +120,12 @@ describe("Ready to run on a refused baseline (R14)", () => {
       run: { graded_verdicts: ["critical", "high", "medium", "low"], move_check: { baseline: "refused" } },
     } as unknown as Report2;
     if (stopped.next_step !== null)
-      stopped.next_step.check = { result: "not_checked", form: null, reason: "baseline_refused" };
+      stopped.next_step.check = {
+        result: "not_checked",
+        form: null,
+        reason: "baseline_refused",
+        installs: null,
+      };
 
     expect(firstMoves(r).none).toBe(
       "No move is ready to run: Composer refuses the lock itself, so no move was checked.",

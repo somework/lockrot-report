@@ -279,14 +279,14 @@ describe("G106: the new-major note and the move check", () => {
   const SOLVE = ", which lockrot does not solve";
 
   test.each([
-    ["resolves", { result: "resolves", form: "inline", reason: null }],
-    ["refused", { result: "refused", form: null, reason: null }],
+    ["resolves", { result: "resolves", form: "inline", reason: null, installs: null }],
+    ["refused", { result: "refused", form: null, reason: null, installs: null }],
   ])("drops the clause when the check %s", (_, check) => {
     expect(noteOf(check)).toContain("A new major brings its own requirements");
   });
 
   test.each([
-    ["not_checked", { result: "not_checked", form: null, reason: "offline" }],
+    ["not_checked", { result: "not_checked", form: null, reason: "offline", installs: null }],
     ["null", null],
   ])("keeps the clause when the check is %s", (_, check) => {
     expect(noteOf(check)).toContain(`A new major brings its own requirements${SOLVE}`);
@@ -338,7 +338,7 @@ describe("the check line (SPEC §7.9.21)", () => {
     if (finding.next_step === null) throw new Error("B has a move");
     finding.next_step = {
       ...finding.next_step,
-      check: { result: "not_checked", form: null, reason: "a_later_reason" },
+      check: { result: "not_checked", form: null, reason: "a_later_reason", installs: null },
     };
     const conditions = moveCards(finding, { ...run, move_check: null })[0]?.after?.conditions ?? [];
     expect(conditions).toContainEqual([
@@ -373,12 +373,15 @@ describe("the move check in Held by and on the ladder (coordinator rulings on #4
   };
 
   test.each([
-    [{ result: "refused", form: null, reason: null }, "require ^2.0 on 2.x · Composer refuses the move"],
     [
-      { result: "not_checked", form: null, reason: "offline" },
+      { result: "refused", form: null, reason: null, installs: null },
+      "require ^2.0 on 2.x · Composer refuses the move",
+    ],
+    [
+      { result: "not_checked", form: null, reason: "offline", installs: null },
       "require ^2.0 on 2.x · not checked: a package it needs is not in Composer's cache",
     ],
-    [{ result: "resolves", form: "inline", reason: null }, "require ^2.0 on 2.x"],
+    [{ result: "resolves", form: "inline", reason: null, installs: null }, "require ^2.0 on 2.x"],
     [null, "require ^2.0 on 2.x"],
   ])("a holder's own step with check %j reads %s", (check, step) => {
     expect(holderStep(check)).toBe(step);
