@@ -30,7 +30,8 @@ function useDialog(open: boolean) {
       dialog.setAttribute("open", "");
       setFallback(true);
     }
-    closeRef.current?.focus();
+    // Close sits in the sticky head, always in view: a focus scroll would undo the opening scroll in WebKit.
+    closeRef.current?.focus({ preventScroll: true });
   }, [open, fallback]);
 
   return { ref, closeRef, fallback };
@@ -54,8 +55,10 @@ export function Glossary({ open, at = "top", onClose }: GlossaryProps) {
     const dialog = ref.current;
     if (!open || dialog === null) return;
     const keys = dialog.querySelector(".glossary-keys");
-    if (at === "keys" && typeof keys?.scrollIntoView === "function") keys.scrollIntoView({ block: "start" });
-    else dialog.scrollTop = 0;
+    // An opening jump, not the smooth scroll of the CSS, which headless WebKit never runs.
+    if (at === "keys" && typeof keys?.scrollIntoView === "function")
+      keys.scrollIntoView({ block: "start", behavior: "instant" });
+    else dialog.scrollTo({ top: 0, behavior: "instant" });
   }, [open, at, ref]);
 
   return (
