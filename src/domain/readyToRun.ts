@@ -16,7 +16,8 @@ export function isHeld(f: Finding): boolean {
 const READY_KINDS: readonly string[] = ["update", "require"];
 
 /** An `update` or `require` move whose `commands[]` hold such a step and whose check resolves
- *  (§5.6), not held. A `raise-php` move is never ready: raising the project's own PHP floor is the
+ *  (§5.6), held by the root alone or by nothing: a hold by the finding's own release also keeps it
+ *  from ready. A `raise-php` move is never ready: raising the project's own PHP floor is the
  *  project's decision. A run that checked no move has no `check`, so nothing in it is ready. */
 export function readyToRun(f: Finding): boolean {
   const step = f.next_step;
@@ -25,7 +26,7 @@ export function readyToRun(f: Finding): boolean {
     READY_KINDS.includes(step.kind) &&
     step.check?.result === "resolves" &&
     rowCommandArgv(f) !== null &&
-    !isHeld(f)
+    step.held_by.every((hold) => hold.source === "root")
   );
 }
 
