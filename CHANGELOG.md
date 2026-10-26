@@ -187,6 +187,10 @@ project is overall, and the other tabs lead with their own part.
   holder with nothing flagged.
 - When a package also excludes the target at the root ceiling, the PHP line names it: "your
   target, 8.4, is excluded by require.php and by 1 package: laminas/laminas-skeleton-installer".
+- A root php link that only the lock's platform records closes the PHP line: "the lock records
+  require.php >=7.4 <8.1, which composer.json does not have: composer update --lock rewrites it".
+- A move check that the advisory lookup did not cover reads "not checked: the advisory lookup did
+  not cover a package it installs".
 - A ladder rung names each holder once. A rung held by every holder of Held by says "held by every
   holder in Held by".
 - A Findings row shows the move's first command that names the package. A PHP floor raise with no
@@ -299,7 +303,7 @@ project is overall, and the other tabs lead with their own part.
   each argument from a fixed set of characters. The only arguments that start with a dash are
   lockrot's own options, after every package argument: `--no-update` and `--dev` in a `require`
   step, `--with-dependencies` and `--with-all-dependencies` in an `update` or `require` step, and
-  `--locked` in a `why-not` step.
+  `--locked` in a `why-not` step. `--lock` passes only as the one argument of an `update` step.
 - The release workflow refuses a tag whose commit is on neither main nor a release branch. It
   runs the unit, contract and e2e tests before it builds and attests the page, so a red test
   stops the release.
