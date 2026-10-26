@@ -126,7 +126,7 @@ describe("radius words", () => {
 
     expect(lines.slice(0, 2)).toEqual([
       "52 flagged packages pulled in.",
-      "7 of them sit under more than 8 direct requirements and are listed below.",
+      "7 of them sit under more than 8 direct requirements.",
     ]);
     expect(lines[2]).toMatch(/^\d+ of them sit under /);
   });
@@ -139,11 +139,11 @@ describe("radius words", () => {
     ]);
   });
 
-  it("counts every package pulled in as listed below when no row lists one", () => {
+  it("counts every package pulled in as shared by too many requirements when no row lists one", () => {
     const report: Report2 = { ...composite, exposure: [{ package: "symfony/yaml", flagged: 2 }] };
     expect(radiusAnswer2(report, layoutOf(report))).toEqual([
       "2 flagged packages pulled in.",
-      "2 of them sit under more than 8 direct requirements and are listed below.",
+      "2 of them sit under more than 8 direct requirements.",
     ]);
   });
 
@@ -155,7 +155,7 @@ describe("radius words", () => {
       rot_depth: { ...composite.rot_depth, by_reach: { ...composite.rot_depth.by_reach, transitive: 1 } },
     };
     expect(radiusAnswer2(report, layoutOf(report))[1]).toBe(
-      "1 of them sits under more than 3 direct requirements and is listed below.",
+      "1 of them sits under more than 3 direct requirements.",
     );
   });
 

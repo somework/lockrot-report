@@ -206,7 +206,7 @@ project is overall, and the other tabs lead with their own part.
   whose baseline Composer refuses, it reads "No move is ready to run: Composer refuses the lock
   itself, so no move was checked."
 - Blast radius leads with the depth sentence, then "52 flagged packages pulled in.", "7 of them
-  sit under more than 8 direct requirements and are listed below.", and the rows that hold them. The rows are named until they hold half
+  sit under more than 8 direct requirements.", and the rows that hold them. The rows are named until they hold half
   of the packages pulled in. With none pulled in, the depth sentence stands alone.
 - Counts agree with their total: "1 of 113 flagged packages", "1 of 1 move crosses a major".
   Provenance words its origin and each source's status. An empty Advisories tab still leads with
