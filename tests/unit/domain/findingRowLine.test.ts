@@ -276,7 +276,8 @@ describe("GATE_WORDS.group (accepted derivation 1)", () => {
   it("says the gate on the group head from gate.fails", () => {
     expect(GATE_WORDS.group(3, 3, true)).toBe("all fail the gate");
     expect(GATE_WORDS.group(1, 1, true)).toBe("all fail the gate");
-    expect(GATE_WORDS.group(1, 3, true)).toBe("1 fail the gate");
+    expect(GATE_WORDS.group(1, 3, true)).toBe("1 fails the gate");
+    expect(GATE_WORDS.group(2, 3, true)).toBe("2 fail the gate");
     expect(GATE_WORDS.group(0, 3, true)).toBeNull();
     expect(GATE_WORDS.group(3, 3, false)).toBeNull();
   });
@@ -386,6 +387,16 @@ describe("rowNewLine and the group count (accepted derivation 11)", () => {
     expect(majorCountWords({ n: 1, m: 3 })).toBe("1 of 3 moves crosses a major");
     expect(majorCountWords({ n: 2, m: 3 })).toBe("2 of 3 moves cross a major");
     expect(majorCountWords(majorCount(rows))).toBe("1 of 2 moves crosses a major");
+  });
+
+  it("R2-43: does not count a move to a new 0.x line as crossing a major, as its row tag says", () => {
+    const rows = [
+      finding({ next_step: step({ crosses_major: true, to_branch: "3.x" }) }),
+      finding({ next_step: step({ crosses_major: true, to_branch: "0.11.x" }) }),
+      finding({ next_step: step({ crosses_major: false }) }),
+    ];
+    expect(majorCount(rows)).toEqual({ n: 1, m: 3 });
+    expect(majorCountWords(majorCount(rows.slice(1)))).toBeNull();
   });
 
   it("says nothing when no set move crosses (n = 0), or when no move says either way (m = 0)", () => {
