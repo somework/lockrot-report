@@ -289,6 +289,9 @@ project is overall, and the other tabs lead with their own part.
   each argument from a fixed set of characters. The only arguments that start with a dash are
   lockrot's own `--no-update`, `--with-dependencies` and `--with-all-dependencies`, after every
   package argument.
+- The release workflow refuses a tag whose commit is on neither main nor a release branch. It
+  runs the unit, contract and e2e tests before it builds and attests the page, so a red test
+  stops the release.
 - A report file can be edited. So a command that fails the rule shows "This command holds
   characters the page does not print." in place of every step, on every shell. The menu previews
   nothing, and the Copy button is hidden. PowerShell always reads `composer --%` and the cmd.exe
