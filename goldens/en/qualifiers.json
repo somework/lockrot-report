@@ -1310,6 +1310,40 @@
       "Tripped by CVE-2026-59882"
     ]
   },
+  "mc-gets-below-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-48784"
+    ]
+  },
+  "mc-gets-next-form-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-48784"
+    ]
+  },
   "mc-inline-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -1325,6 +1359,23 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by CVE-2026-47345"
+    ]
+  },
+  "mc-joint-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-69246"
     ]
   },
   "mc-package-hold-dagger": {
@@ -1877,6 +1928,24 @@
       "Tripped by left-behind and CVE-2026-48784"
     ]
   },
+  "routing-self-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-48784"
+    ]
+  },
   "silent": {
     "reach": [
       "Production: not in packages-dev",
@@ -1999,6 +2068,25 @@
     "not_run": [],
     "php": null,
     "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "through-own": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 7.0.0"
+    ],
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"

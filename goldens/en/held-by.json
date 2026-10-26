@@ -339,7 +339,7 @@
           "name": "barryvdh/elfinder-flysystem-driver v0.2.1",
           "grade": "medium",
           "meta": "requires ^1.0 · itself left-behind · old-promise",
-          "step": "its own step: require ^0.6.0 on 0.6.x"
+          "step": "its own step: move to ^0.6.0 on 0.6.x"
         },
         {
           "name": "league/flysystem-cached-adapter 1.1.0",
@@ -480,19 +480,22 @@
   "mc-dev-update-dagger": [
     null
   ],
+  "mc-gets-below-dagger": [
+    null
+  ],
+  "mc-gets-next-form-dagger": [
+    null
+  ],
   "mc-inline-dagger": [
+    null
+  ],
+  "mc-joint-dagger": [
     null
   ],
   "mc-package-hold-dagger": [
     {
-      "count": 3,
+      "count": 2,
       "shown": [
-        {
-          "name": "your composer.json",
-          "grade": null,
-          "meta": "requires acme/ml-widget ^1.0",
-          "step": null
-        },
         {
           "name": "symfony/mailer v6.4.40, its own release",
           "grade": null,
@@ -511,14 +514,8 @@
   ],
   "mc-pass-cap-dagger": [
     {
-      "count": 3,
+      "count": 2,
       "shown": [
-        {
-          "name": "your composer.json",
-          "grade": null,
-          "meta": "requires acme/ml-widget ^1.0",
-          "step": null
-        },
         {
           "name": "symfony/mailer v6.4.40, its own release",
           "grade": null,
@@ -661,6 +658,26 @@
       "fold": null
     }
   ],
+  "routing-self-dagger": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "mautic/core-lib 4.3.x-dev",
+          "grade": "critical",
+          "meta": "requires ~4.4.0 · itself pinned · capped · vulnerable",
+          "step": "its own step: no move"
+        },
+        {
+          "name": "acme/routing-bridge v4.4.41",
+          "grade": null,
+          "meta": "requires self.version (v4.4.41)",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
   "silent": [
     null
   ],
@@ -678,6 +695,9 @@
     null
   ],
   "stale-only": [
+    null
+  ],
+  "through-own": [
     null
   ],
   "tie-dagger": [

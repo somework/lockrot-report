@@ -5238,6 +5238,88 @@
       }
     ]
   },
+  "mc-gets-below-dagger": {
+    "summary": [
+      "1 high advisory",
+      "4 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v6.4.28."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-48784",
+        "source": "PKSA-bf7t-jnpz-492k",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v6.4.40 on 6.x, your branch (composer update)",
+        "affects": "affects >=6.4.0,<6.4.40",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "6.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "6.x your branch the move clears 1 of 1 from v6.4.40",
+          "composer update",
+          "after it: 0, ok"
+        ]
+      }
+    ]
+  },
+  "mc-gets-next-form-dagger": {
+    "summary": [
+      "1 high advisory",
+      "4 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v6.4.28."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-48784",
+        "source": "PKSA-bf7t-jnpz-492k",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v6.4.40 on 6.x, your branch (composer update)",
+        "affects": "affects >=6.4.0,<6.4.40",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "6.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "6.x your branch the move clears 1 of 1 from v6.4.40",
+          "composer update",
+          "after it: 0, ok"
+        ]
+      }
+    ]
+  },
   "mc-inline-dagger": {
     "summary": [
       "1 high advisory",
@@ -5273,6 +5355,46 @@
         ],
         "lines": [
           "2.x your branch the move clears 1 of 1 from v2.3.2",
+          "composer update",
+          "after it: 0, ok"
+        ]
+      }
+    ]
+  },
+  "mc-joint-dagger": {
+    "summary": [
+      "1 high advisory",
+      "15 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, 7.10.0."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-69246",
+        "source": "PKSA-gcrk-3vtt-1r14",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix 8.0.1 on 8.x (composer update)",
+        "affects": "affects <8.0.1",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "8.x",
+        "marks": [
+          "the move"
+        ],
+        "lines": [
+          "8.x the move clears 1 of 1 from 8.0.1",
           "composer update",
           "after it: 0, ok"
         ]
@@ -6323,6 +6445,125 @@
       }
     ]
   },
+  "routing-self-dagger": {
+    "summary": [
+      "2 advisories:",
+      "4 on record for this name",
+      "fix: upgrade",
+      "lookup complete"
+    ],
+    "counts": [
+      "medium 2"
+    ],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v4.4.41."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-48784",
+        "source": "PKSA-bf7t-jnpz-492k",
+        "deciding": true,
+        "severity": "medium",
+        "fix": "fix v5.4.53 on 5.x (upgrade)",
+        "affects": "affects 19 ranges",
+        "ranges": [
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<4.0.0|",
+          ">=4.0.0,<5.0.0|",
+          ">=5.0.0,<5.1.0|",
+          ">=5.1.0,<5.2.0|",
+          ">=5.2.0,<5.3.0|",
+          ">=5.3.0,<5.4.0|",
+          ">=5.4.0,<5.4.53|",
+          ">=6.0.0,<6.1.0|",
+          ">=6.1.0,<6.2.0|",
+          ">=6.2.0,<6.3.0|",
+          ">=6.3.0,<6.4.0|",
+          ">=6.4.0,<6.4.41|",
+          ">=7.0.0,<7.1.0|",
+          ">=7.1.0,<7.2.0|",
+          ">=7.2.0,<7.3.0|",
+          ">=7.3.0,<7.4.0|",
+          ">=7.4.0,<7.4.13|",
+          ">=8.0.0,<8.0.13"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-45065",
+        "source": "PKSA-yc7t-91v9-99xs",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v5.4.52 on 5.x (upgrade)",
+        "affects": "affects 19 ranges",
+        "ranges": [
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<4.0.0|",
+          ">=4.0.0,<5.0.0|",
+          ">=5.0.0,<5.1.0|",
+          ">=5.1.0,<5.2.0|",
+          ">=5.2.0,<5.3.0|",
+          ">=5.3.0,<5.4.0|",
+          ">=5.4.0,<5.4.52|",
+          ">=6.0.0,<6.1.0|",
+          ">=6.1.0,<6.2.0|",
+          ">=6.2.0,<6.3.0|",
+          ">=6.3.0,<6.4.0|",
+          ">=6.4.0,<6.4.40|",
+          ">=7.0.0,<7.1.0|",
+          ">=7.1.0,<7.2.0|",
+          ">=7.2.0,<7.3.0|",
+          ">=7.3.0,<7.4.0|",
+          ">=7.4.0,<7.4.12|",
+          ">=8.0.0,<8.0.12"
+        ],
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "5.x",
+        "marks": [
+          "the move"
+        ],
+        "lines": [
+          "5.x the move clears 2 of 2 from v5.4.53",
+          "upgrade · held by every holder in Held by",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      },
+      {
+        "branch": "6.x",
+        "marks": [],
+        "lines": [
+          "6.x clears 2 of 2 from v6.4.41",
+          "upgrade · held by symfony/framework-bundle and every holder in Held by",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      },
+      {
+        "branch": "7.x",
+        "marks": [],
+        "lines": [
+          "7.x clears 2 of 2 from v7.4.13",
+          "upgrade · held by symfony/framework-bundle, friendsofsymfony/rest-bundle and every holder in Held by",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      },
+      {
+        "branch": "8.x",
+        "marks": [],
+        "lines": [
+          "8.x clears 2 of 2 from v8.0.13",
+          "upgrade · held by symfony/framework-bundle, friendsofsymfony/rest-bundle and every holder in Held by",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      }
+    ]
+  },
   "silent": {
     "summary": [
       "no counted advisory",
@@ -6408,6 +6649,20 @@
     "ladder": []
   },
   "stale-only": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "through-own": {
     "summary": [
       "no counted advisory",
       "none on record for this name",

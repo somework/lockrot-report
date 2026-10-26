@@ -520,9 +520,24 @@
     "transitive: no maintenance to halve; security is never halved for reach",
     "the advisory alone makes it high"
   ],
+  "mc-gets-below-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-gets-next-form-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
   "mc-inline-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-joint-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-69246; its own fix (composer update on 8.x) is reachable, so no × 2",
     "the advisory alone makes it high"
   ],
   "mc-package-hold-dagger": [
@@ -701,6 +716,14 @@
     "maintenance (left-behind, halved for reach) alone grades it medium, the advisories alone grade it medium: together high",
     "without left-behind: 8, medium · without the advisories: 8, medium · without CVE-2026-48784: 16, high (tied: the others weigh the same)"
   ],
+  "routing-self-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "vulnerable 8: medium advisory CVE-2026-48784, the worst of 2 (tied with CVE-2026-45065); its own fix (upgrade on 5.x) is reachable, so no × 2",
+    "transitive: maintenance 16 ÷ 2 = 8",
+    "maintenance (left-behind, halved for reach) alone grades it medium, the advisories alone grade it medium: together high",
+    "without left-behind: 8, medium · without the advisories: 8, medium · without CVE-2026-48784: 16, high (tied: the others weigh the same)"
+  ],
   "silent": [
     "36 · critical from 32 · ages as of 2026-10-01",
     "silent 32 leads: the strongest maintenance fact counts in full",
@@ -744,6 +767,14 @@
     "stale 8 leads: the strongest maintenance fact counts in full",
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it medium"
+  ],
+  "through-own": [
+    "9 · medium from 8 · 7 points short of high · ages as of 2026-10-01",
+    "old-promise 16 leads: the strongest maintenance fact counts in full",
+    "stale 2: ¼ of 8, beside old-promise (correlated evidence)",
+    "transitive: maintenance 18 ÷ 2 = 9",
+    "maintenance alone makes it medium",
+    "without old-promise: 4, low (stale would lead) · without stale: 8, medium"
   ],
   "tie-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",

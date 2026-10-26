@@ -384,7 +384,10 @@
   "many-dependents": [],
   "mc-baseline-refused-dagger": [],
   "mc-dev-update-dagger": [],
+  "mc-gets-below-dagger": [],
+  "mc-gets-next-form-dagger": [],
   "mc-inline-dagger": [],
+  "mc-joint-dagger": [],
   "mc-package-hold-dagger": [],
   "mc-pass-cap-dagger": [],
   "mc-raise-php-dagger": [],
@@ -454,6 +457,16 @@
       "text": "2 advisories affect your version. The worst is a medium one (CVE-2026-48784: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` → Generated URL Collapses Off-Route Under RFC 3986 Normalization). None is fixed on 4.x."
     }
   ],
+  "routing-self-dagger": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 4.x, had its last release 4.2 years ago, behind 8.x. See Release branches."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "2 advisories affect your version. The worst is a medium one (CVE-2026-48784: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` → Generated URL Collapses Off-Route Under RFC 3986 Normalization). None is fixed on 4.x."
+    }
+  ],
   "silent": [
     {
       "flag": "old-promise",
@@ -471,6 +484,12 @@
     }
   ],
   "stale-only": [],
+  "through-own": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 7.9 years."
+    }
+  ],
   "tie-dagger": [
     {
       "flag": "left-behind",
