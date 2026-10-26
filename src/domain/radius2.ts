@@ -100,7 +100,11 @@ export function radiusAnswer2(report: Report2, layout: RadiusLayout2): string[] 
   const names = answer?.top.map((row) => row.package) ?? [];
   return [
     `${plural(pulled, "flagged package", "flagged packages")} pulled in.`,
-    ...(unlisted > 0 ? [`${sit(unlisted)} no direct requirement.`] : []),
+    ...(unlisted > 0
+      ? [
+          `${sit(unlisted)} more than ${String(report.exposure_rule.max_fan_in)} direct requirements and ${pluralNoun(unlisted, "is", "are")} listed below.`,
+        ]
+      : []),
     ...(answer !== null && answer.held > 0 ? [`${sit(answer.held)} ${joinAnd(names)}.`] : []),
   ];
 }

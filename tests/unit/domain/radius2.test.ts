@@ -121,12 +121,12 @@ describe("radiusLayout2", () => {
 });
 
 describe("radius words", () => {
-  it("R12: counts the packages pulled in, those under no direct requirement, then the rows that hold them (wallabag)", () => {
+  it("R12: counts the packages pulled in, those shared by too many requirements, then the rows that hold them (wallabag)", () => {
     const lines = radiusAnswer2(wallabag, layoutOf(wallabag));
 
     expect(lines.slice(0, 2)).toEqual([
       "52 flagged packages pulled in.",
-      "7 of them sit under no direct requirement.",
+      "7 of them sit under more than 8 direct requirements and are listed below.",
     ]);
     expect(lines[2]).toMatch(/^\d+ of them sit under /);
   });
@@ -139,12 +139,24 @@ describe("radius words", () => {
     ]);
   });
 
-  it("counts every package pulled in as under no direct requirement when no row lists one", () => {
+  it("counts every package pulled in as listed below when no row lists one", () => {
     const report: Report2 = { ...composite, exposure: [{ package: "symfony/yaml", flagged: 2 }] };
     expect(radiusAnswer2(report, layoutOf(report))).toEqual([
       "2 flagged packages pulled in.",
-      "2 of them sit under no direct requirement.",
+      "2 of them sit under more than 8 direct requirements and are listed below.",
     ]);
+  });
+
+  it("R2-41: names the fan-in limit, and agrees in number for one package", () => {
+    const report: Report2 = {
+      ...composite,
+      exposure: [{ package: "symfony/yaml", flagged: 2 }],
+      exposure_rule: { max_fan_in: 3 },
+      rot_depth: { ...composite.rot_depth, by_reach: { ...composite.rot_depth.by_reach, transitive: 1 } },
+    };
+    expect(radiusAnswer2(report, layoutOf(report))[1]).toBe(
+      "1 of them sits under more than 3 direct requirements and is listed below.",
+    );
   });
 
   it("gives a row's count and its grade split in graded_verdicts order", () => {
