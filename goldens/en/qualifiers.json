@@ -1275,7 +1275,7 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
-  "mc-baseline-refused-dagger": {
+  "mc-blocking-off-both-dagger": {
     "reach": [
       "Production: not in packages-dev",
       "Required directly"
@@ -1292,25 +1292,7 @@
       "Tripped by CVE-2026-47345"
     ]
   },
-  "mc-dev-update-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly only in require-dev, which this run did not walk",
-      "In production it comes in through guzzlehttp/guzzle"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "fails the run: grade high or above",
-      "Tripped by CVE-2026-59882"
-    ]
-  },
-  "mc-gets-below-dagger": {
+  "mc-blocking-off-dagger": {
     "reach": [
       "Production: not in packages-dev",
       "Required directly"
@@ -1324,24 +1306,7 @@
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
-      "Tripped by CVE-2026-48784"
-    ]
-  },
-  "mc-gets-next-form-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "fails the run: grade high or above",
-      "Tripped by CVE-2026-48784"
+      "Tripped by CVE-2026-47345"
     ]
   },
   "mc-inline-dagger": {
@@ -1361,7 +1326,7 @@
       "Tripped by CVE-2026-47345"
     ]
   },
-  "mc-joint-dagger": {
+  "mc-lookup-incomplete-dagger": {
     "reach": [
       "Production: not in packages-dev",
       "Required directly"
@@ -1375,41 +1340,7 @@
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
-      "Tripped by CVE-2026-69246"
-    ]
-  },
-  "mc-package-hold-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "fails the run: grade high or above",
-      "Tripped by CVE-2026-45068"
-    ]
-  },
-  "mc-pass-cap-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "fails the run: grade high or above",
-      "Tripped by CVE-2026-45068"
+      "Tripped by CVE-2026-47345"
     ]
   },
   "mc-raise-php-dagger": {
@@ -1427,74 +1358,6 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by CVE-2026-45304"
-    ]
-  },
-  "mc-replan-major-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "fails the run: grade high or above",
-      "Tripped by CVE-2026-69246"
-    ]
-  },
-  "mc-root-hold-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "fails the run: grade high or above",
-      "Tripped by CVE-2026-69246"
-    ]
-  },
-  "mc-with-all-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "fails the run: grade high or above",
-      "Tripped by CVE-2026-48736"
-    ]
-  },
-  "mc-with-deps-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "fails the run: grade high or above",
-      "Tripped by CVE-2026-48784"
     ]
   },
   "move-check-dagger": {
@@ -1767,6 +1630,42 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by left-behind"
+    ]
+  },
+  "platform-step-no-command-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
+  "platform-step-why-not-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through:",
+      "incenteev/composer-parameter-handler",
+      "nelmio/api-doc-bundle",
+      "php-amqplib/rabbitmq-bundle"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
     ]
   },
   "policy-off-dagger": {

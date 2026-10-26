@@ -226,53 +226,24 @@
     "Your branch, 1.x, had its last release, v1.10.0, 4.2 years ago.",
     "The move's branch, 2.x, released v2.5.4 2.0 years ago."
   ],
-  "mc-baseline-refused-dagger": [
-    "Your branch, 2.x, had its last release, v2.3.2, 0.2 years ago.",
+  "mc-blocking-off-both-dagger": [
+    "Your branch, 2.x, had its last release, v2.3.2, 0.3 years ago.",
     "It has no higher branch."
   ],
-  "mc-dev-update-dagger": [
-    "Your branch, 2.x, had its last release, 2.12.3, 0.3 years ago.",
-    "It has no higher branch."
-  ],
-  "mc-gets-below-dagger": [
-    "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
-    "It has no higher branch."
-  ],
-  "mc-gets-next-form-dagger": [
-    "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
+  "mc-blocking-off-dagger": [
+    "Your branch, 2.x, had its last release, v2.3.2, 0.3 years ago.",
     "It has no higher branch."
   ],
   "mc-inline-dagger": [
     "Your branch, 2.x, had its last release, v2.3.2, 0.3 years ago.",
     "It has no higher branch."
   ],
-  "mc-joint-dagger": [
-    "Your branch, 7.x, had its last release, 7.15.2, 0.2 years ago."
-  ],
-  "mc-package-hold-dagger": [
-    "Your branch, 6.x, had its last release, v6.4.40, 0.2 years ago.",
-    "It has no higher branch."
-  ],
-  "mc-pass-cap-dagger": [
-    "Your branch, 6.x, had its last release, v6.4.40, 0.2 years ago.",
+  "mc-lookup-incomplete-dagger": [
+    "Your branch, 2.x, had its last release, v2.3.2, 0.3 years ago.",
     "It has no higher branch."
   ],
   "mc-raise-php-dagger": [
     "Your branch, 6.x, had its last release, v6.4.40, 0.3 years ago.",
-    "It has no higher branch."
-  ],
-  "mc-replan-major-dagger": [
-    "Your branch, 7.x, had its last release, 7.15.2, 0.2 years ago."
-  ],
-  "mc-root-hold-dagger": [
-    "Your branch, 7.x, had its last release, 7.15.2, 0.2 years ago."
-  ],
-  "mc-with-all-dagger": [
-    "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
-    "It has no higher branch."
-  ],
-  "mc-with-deps-dagger": [
-    "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
     "It has no higher branch."
   ],
   "move-check-dagger": [
@@ -325,6 +296,12 @@
   "platform-step-inside-dagger": [
     "Your branch, 5.x, had its last release, v5.13.2, 4.5 years ago.",
     "The newest branch, 8.x, released v8.6.1 0.2 years ago."
+  ],
+  "platform-step-no-command-dagger": [
+    "A branch snapshot, dev-master, is installed."
+  ],
+  "platform-step-why-not-dagger": [
+    "Your branch, 5.x, had its last release, v5.4.53, 0.4 years ago."
   ],
   "policy-off-dagger": [
     "Your branch, 2.x, had its last release, 2.0.6, 1.0 years ago."

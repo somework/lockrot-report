@@ -2282,7 +2282,7 @@
       ]
     }
   ],
-  "mc-baseline-refused-dagger": [
+  "mc-blocking-off-both-dagger": [
     {
       "heading": "The move",
       "action": "Update to v2.3.2 on 2.x",
@@ -2290,10 +2290,9 @@
       "command_note": null,
       "moves_with": null,
       "commands": [
-        "composer update 'typo3/html-sanitizer:^2.3.2'",
-        "composer why-not typo3/html-sanitizer v2.3.2 --locked"
+        "composer update 'typo3/html-sanitizer:^2.3.2'"
       ],
-      "commands_label": "Commands, in order",
+      "commands_label": "Command",
       "clears": "the advisory",
       "stays": null,
       "not_checked": null,
@@ -2314,58 +2313,21 @@
       "after": {
         "result": "0, ok",
         "conditions": [
-          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run tab names the cause)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "mc-dev-update-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to 2.12.3 on 2.x",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update 'guzzlehttp/psr7:^2.12.3'"
-      ],
-      "commands_label": "Command",
-      "clears": "the advisory",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "2.x needs php ^7.2.5 || ^8.0",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
           "checked with Composer"
         ]
       },
       "composer": []
     }
   ],
-  "mc-gets-below-dagger": [
+  "mc-blocking-off-dagger": [
     {
       "heading": "The move",
-      "action": "Update to v6.4.40 on 6.x, below the newest v6.4.41",
+      "action": "Update to v2.3.2 on 2.x",
       "platform_step": null,
       "command_note": null,
       "moves_with": null,
       "commands": [
-        "composer update 'symfony/routing:^6.4.40'"
+        "composer update 'typo3/html-sanitizer:^2.3.2'"
       ],
       "commands_label": "Command",
       "clears": "the advisory",
@@ -2373,44 +2335,7 @@
       "not_checked": null,
       "adds": [],
       "php": {
-        "head": "6.x needs php >=8.1",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "checked with Composer"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "mc-gets-next-form-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to v6.4.41 on 6.x",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update 'symfony/routing:^6.4.40' --with-dependencies"
-      ],
-      "commands_label": "Command",
-      "clears": "the advisory",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "6.x needs php >=8.1",
+        "head": "2.x needs php ^7.2 || ^8.0",
         "lines": [
           {
             "answer": "yes",
@@ -2468,16 +2393,16 @@
       "composer": []
     }
   ],
-  "mc-joint-dagger": [
+  "mc-lookup-incomplete-dagger": [
     {
       "heading": "The move",
-      "action": "Require ^8.0.1",
+      "action": "Update to v2.3.2 on 2.x",
       "platform_step": null,
       "command_note": null,
-      "moves_with": "It also updates acme/gz-client from 1.0.0 to 1.1.0",
+      "moves_with": null,
       "commands": [
-        "composer require 'guzzlehttp/guzzle:^8.0.1' --no-update",
-        "composer update guzzlehttp/guzzle acme/gz-client"
+        "composer update 'typo3/html-sanitizer:^2.3.2'",
+        "composer why-not typo3/html-sanitizer v2.3.2 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "the advisory",
@@ -2485,7 +2410,7 @@
       "not_checked": null,
       "adds": [],
       "php": {
-        "head": "8.x needs php ^8.1",
+        "head": "2.x needs php ^7.2 || ^8.0",
         "lines": [
           {
             "answer": "yes",
@@ -2500,100 +2425,10 @@
       "after": {
         "result": "0, ok",
         "conditions": [
-          "checked with Composer"
+          "if Composer resolves it (not checked: the advisory lookup did not cover a package it installs)"
         ]
       },
-      "composer": [
-        {
-          "text": "A new major brings its own requirements",
-          "items": []
-        }
-      ]
-    }
-  ],
-  "mc-package-hold-dagger": [
-    {
-      "heading": "The move",
-      "action": "Require ^6.4.40",
-      "platform_step": null,
-      "command_note": "This shows which package holds the move.",
-      "moves_with": null,
-      "commands": [
-        "composer why-not symfony/mailer v6.4.40 --locked"
-      ],
-      "commands_label": "Check",
-      "clears": "the advisory",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "6.x needs php >=8.1",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "Composer refuses the move"
-        ]
-      },
-      "composer": [
-        {
-          "text": "The packages that hold it may need to move too",
-          "items": []
-        }
-      ]
-    }
-  ],
-  "mc-pass-cap-dagger": [
-    {
-      "heading": "The move",
-      "action": "Require ^6.4.40",
-      "platform_step": null,
-      "command_note": "This shows which package holds the move.",
-      "moves_with": null,
-      "commands": [
-        "composer require 'symfony/mailer:^6.4.40'",
-        "composer why-not symfony/mailer v6.4.40 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "the advisory",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "6.x needs php >=8.1",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: Composer refused each move before it)"
-        ]
-      },
-      "composer": [
-        {
-          "text": "The packages that hold it may need to move too",
-          "items": []
-        }
-      ]
+      "composer": []
     }
   ],
   "mc-raise-php-dagger": [
@@ -2618,164 +2453,6 @@
           {
             "answer": "no",
             "text": "your require.php still allows 8.1 (a minor raise)"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "checked with Composer"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "mc-replan-major-dagger": [
-    {
-      "heading": "The move",
-      "action": "Require ^8.0.1",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer require 'guzzlehttp/guzzle:^8.0.1'"
-      ],
-      "commands_label": "Command",
-      "clears": "the advisory",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "8.x needs php ^8.1",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "checked with Composer"
-        ]
-      },
-      "composer": [
-        {
-          "text": "A new major brings its own requirements",
-          "items": []
-        }
-      ]
-    }
-  ],
-  "mc-root-hold-dagger": [
-    {
-      "heading": "The move",
-      "action": "Require ^8.0.1",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer require 'guzzlehttp/guzzle:^8.0.1'"
-      ],
-      "commands_label": "Command",
-      "clears": "the advisory",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "8.x needs php ^8.1",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "checked with Composer"
-        ]
-      },
-      "composer": [
-        {
-          "text": "A new major brings its own requirements",
-          "items": []
-        }
-      ]
-    }
-  ],
-  "mc-with-all-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to v6.4.41 on 6.x",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update 'symfony/http-foundation:^6.4.41' --with-all-dependencies"
-      ],
-      "commands_label": "Command",
-      "clears": "the advisory",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "6.x needs php >=8.1",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "checked with Composer"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "mc-with-deps-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to v6.4.41 on 6.x",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update 'symfony/routing:^6.4.41' --with-dependencies"
-      ],
-      "commands_label": "Command",
-      "clears": "the advisory",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "6.x needs php >=8.1",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
           },
           {
             "answer": "yes",
@@ -3312,6 +2989,78 @@
       "composer": [
         {
           "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "platform-step-no-command-dagger": [
+    {
+      "heading": "Next step",
+      "action": "Its newest tag, 1.6.2, needs php ^5.5|^7.0, which your target, 8.4, does not run: replace it",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "1.x needs php ^5.5|^7.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "no",
+            "text": "your target, 8.4, does not run it"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "platform-step-why-not-dagger": [
+    {
+      "heading": "The move",
+      "action": "Move it to ^5.4.52 through the 3 packages in Reach",
+      "platform_step": "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29.",
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/yaml v5.4.52 --locked"
+      ],
+      "commands_label": "Check",
+      "clears": "all 3 advisories",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "Composer refuses the move"
+        ]
+      },
+      "composer": [
+        {
+          "text": "The packages that hold it may need to move too",
           "items": []
         }
       ]

@@ -5156,7 +5156,7 @@
     "ignored": [],
     "ladder": []
   },
-  "mc-baseline-refused-dagger": {
+  "mc-blocking-off-both-dagger": {
     "summary": [
       "1 high advisory",
       "6 on record for this name",
@@ -5192,12 +5192,12 @@
         "lines": [
           "2.x your branch the move clears 1 of 1 from v2.3.2",
           "composer update",
-          "after it: 0, ok · not checked: Composer refuses the lock itself"
+          "after it: 0, ok"
         ]
       }
     ]
   },
-  "mc-dev-update-dagger": {
+  "mc-blocking-off-dagger": {
     "summary": [
       "1 high advisory",
       "6 on record for this name",
@@ -5207,17 +5207,17 @@
     "counts": [],
     "meanwhile": null,
     "caption": [
-      "By severity. Each affects your version, 2.8.0."
+      "By severity. Each affects your version, v2.2.0."
     ],
     "groups": [],
     "rows": [
       {
-        "name": "CVE-2026-59882",
-        "source": "PKSA-vznr-tgp9-fd7d",
+        "name": "CVE-2026-47345",
+        "source": "PKSA-7jn3-yc49-35c6",
         "deciding": true,
         "severity": "high",
-        "fix": "fix 2.12.3 on 2.x, your branch (composer update)",
-        "affects": "affects <2.12.3",
+        "fix": "fix v2.3.2 on 2.x, your branch (composer update)",
+        "affects": "affects <2.3.2",
         "ranges": null,
         "same_as": null
       }
@@ -5231,89 +5231,7 @@
           "the move"
         ],
         "lines": [
-          "2.x your branch the move clears 1 of 1 from 2.12.3",
-          "composer update",
-          "after it: 0, ok"
-        ]
-      }
-    ]
-  },
-  "mc-gets-below-dagger": {
-    "summary": [
-      "1 high advisory",
-      "4 on record for this name",
-      "fix: composer update",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [
-      "By severity. Each affects your version, v6.4.28."
-    ],
-    "groups": [],
-    "rows": [
-      {
-        "name": "CVE-2026-48784",
-        "source": "PKSA-bf7t-jnpz-492k",
-        "deciding": true,
-        "severity": "high",
-        "fix": "fix v6.4.40 on 6.x, your branch (composer update)",
-        "affects": "affects >=6.4.0,<6.4.40",
-        "ranges": null,
-        "same_as": null
-      }
-    ],
-    "ignored": [],
-    "ladder": [
-      {
-        "branch": "6.x",
-        "marks": [
-          "your branch",
-          "the move"
-        ],
-        "lines": [
-          "6.x your branch the move clears 1 of 1 from v6.4.40",
-          "composer update",
-          "after it: 0, ok"
-        ]
-      }
-    ]
-  },
-  "mc-gets-next-form-dagger": {
-    "summary": [
-      "1 high advisory",
-      "4 on record for this name",
-      "fix: composer update",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [
-      "By severity. Each affects your version, v6.4.28."
-    ],
-    "groups": [],
-    "rows": [
-      {
-        "name": "CVE-2026-48784",
-        "source": "PKSA-bf7t-jnpz-492k",
-        "deciding": true,
-        "severity": "high",
-        "fix": "fix v6.4.40 on 6.x, your branch (composer update)",
-        "affects": "affects >=6.4.0,<6.4.40",
-        "ranges": null,
-        "same_as": null
-      }
-    ],
-    "ignored": [],
-    "ladder": [
-      {
-        "branch": "6.x",
-        "marks": [
-          "your branch",
-          "the move"
-        ],
-        "lines": [
-          "6.x your branch the move clears 1 of 1 from v6.4.40",
+          "2.x your branch the move clears 1 of 1 from v2.3.2",
           "composer update",
           "after it: 0, ok"
         ]
@@ -5361,27 +5279,27 @@
       }
     ]
   },
-  "mc-joint-dagger": {
+  "mc-lookup-incomplete-dagger": {
     "summary": [
       "1 high advisory",
-      "15 on record for this name",
+      "6 on record for this name",
       "fix: composer update",
       "lookup complete"
     ],
     "counts": [],
     "meanwhile": null,
     "caption": [
-      "By severity. Each affects your version, 7.10.0."
+      "By severity. Each affects your version, v2.2.0."
     ],
     "groups": [],
     "rows": [
       {
-        "name": "CVE-2026-69246",
-        "source": "PKSA-gcrk-3vtt-1r14",
+        "name": "CVE-2026-47345",
+        "source": "PKSA-7jn3-yc49-35c6",
         "deciding": true,
         "severity": "high",
-        "fix": "fix 8.0.1 on 8.x (composer update)",
-        "affects": "affects <8.0.1",
+        "fix": "fix v2.3.2 on 2.x, your branch (composer update)",
+        "affects": "affects <2.3.2",
         "ranges": null,
         "same_as": null
       }
@@ -5389,96 +5307,15 @@
     "ignored": [],
     "ladder": [
       {
-        "branch": "8.x",
+        "branch": "2.x",
         "marks": [
+          "your branch",
           "the move"
         ],
         "lines": [
-          "8.x the move clears 1 of 1 from 8.0.1",
+          "2.x your branch the move clears 1 of 1 from v2.3.2",
           "composer update",
-          "after it: 0, ok"
-        ]
-      }
-    ]
-  },
-  "mc-package-hold-dagger": {
-    "summary": [
-      "1 high advisory",
-      "1 on record for this name",
-      "fix: upgrade",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [
-      "By severity. Each affects your version, v6.4.27."
-    ],
-    "groups": [],
-    "rows": [
-      {
-        "name": "CVE-2026-45068",
-        "source": "PKSA-28rh-rzzn-djk4",
-        "deciding": true,
-        "severity": "high",
-        "fix": "fix v6.4.40 on 6.x, your branch (upgrade)",
-        "affects": "affects >=6.4.0,<6.4.40",
-        "ranges": null,
-        "same_as": null
-      }
-    ],
-    "ignored": [],
-    "ladder": [
-      {
-        "branch": "6.x",
-        "marks": [
-          "your branch",
-          "the move"
-        ],
-        "lines": [
-          "6.x your branch the move clears 1 of 1 from v6.4.40",
-          "upgrade · held by every holder in Held by",
-          "after it: 0, ok · Composer refuses the move"
-        ]
-      }
-    ]
-  },
-  "mc-pass-cap-dagger": {
-    "summary": [
-      "1 high advisory",
-      "1 on record for this name",
-      "fix: upgrade",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [
-      "By severity. Each affects your version, v6.4.27."
-    ],
-    "groups": [],
-    "rows": [
-      {
-        "name": "CVE-2026-45068",
-        "source": "PKSA-28rh-rzzn-djk4",
-        "deciding": true,
-        "severity": "high",
-        "fix": "fix v6.4.40 on 6.x, your branch (upgrade)",
-        "affects": "affects >=6.4.0,<6.4.40",
-        "ranges": null,
-        "same_as": null
-      }
-    ],
-    "ignored": [],
-    "ladder": [
-      {
-        "branch": "6.x",
-        "marks": [
-          "your branch",
-          "the move"
-        ],
-        "lines": [
-          "6.x your branch the move clears 1 of 1 from v6.4.40",
-          "upgrade · held by every holder in Held by",
-          "after it: 0, ok · not checked: Composer refused each move before it"
+          "after it: 0, ok · not checked: the advisory lookup did not cover a package it installs"
         ]
       }
     ]
@@ -5519,190 +5356,6 @@
         "lines": [
           "6.x your branch the move clears 1 of 1 from v6.4.40",
           "php floor raise",
-          "after it: 0, ok"
-        ]
-      }
-    ]
-  },
-  "mc-replan-major-dagger": {
-    "summary": [
-      "1 high advisory",
-      "15 on record for this name",
-      "fix: upgrade",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [
-      "By severity. Each affects your version, 7.10.0."
-    ],
-    "groups": [],
-    "rows": [
-      {
-        "name": "CVE-2026-69246",
-        "source": "PKSA-gcrk-3vtt-1r14",
-        "deciding": true,
-        "severity": "high",
-        "fix": "fix 8.0.1 on 8.x (upgrade)",
-        "affects": "affects <7.15.2|>=8.0.0,<8.0.1",
-        "ranges": null,
-        "same_as": null
-      }
-    ],
-    "ignored": [],
-    "ladder": [
-      {
-        "branch": "7.x",
-        "marks": [
-          "your branch"
-        ],
-        "lines": [
-          "7.x your branch clears 1 of 1 from 7.15.2",
-          "upgrade · held by composer.json and its own release",
-          "after it: 0, ok · Composer refuses the move"
-        ]
-      },
-      {
-        "branch": "8.x",
-        "marks": [
-          "the move"
-        ],
-        "lines": [
-          "8.x the move clears 1 of 1 from 8.0.1",
-          "upgrade · held by composer.json",
-          "after it: 0, ok"
-        ]
-      }
-    ]
-  },
-  "mc-root-hold-dagger": {
-    "summary": [
-      "1 high advisory",
-      "15 on record for this name",
-      "fix: composer update",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [
-      "By severity. Each affects your version, 7.10.0."
-    ],
-    "groups": [],
-    "rows": [
-      {
-        "name": "CVE-2026-69246",
-        "source": "PKSA-gcrk-3vtt-1r14",
-        "deciding": true,
-        "severity": "high",
-        "fix": "fix 8.0.1 on 8.x (composer update)",
-        "affects": "affects <7.15.2|>=8.0.0,<8.0.1",
-        "ranges": null,
-        "same_as": null
-      }
-    ],
-    "ignored": [],
-    "ladder": [
-      {
-        "branch": "7.x",
-        "marks": [
-          "your branch"
-        ],
-        "lines": [
-          "7.x your branch clears 1 of 1 from 7.15.2",
-          "upgrade · held by composer.json and its own release",
-          "after it: 0, ok · Composer refuses the move"
-        ]
-      },
-      {
-        "branch": "8.x",
-        "marks": [
-          "the move"
-        ],
-        "lines": [
-          "8.x the move clears 1 of 1 from 8.0.1",
-          "composer update",
-          "after it: 0, ok"
-        ]
-      }
-    ]
-  },
-  "mc-with-all-dagger": {
-    "summary": [
-      "1 high advisory",
-      "14 on record for this name",
-      "fix: composer update",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [
-      "By severity. Each affects your version, v6.4.29."
-    ],
-    "groups": [],
-    "rows": [
-      {
-        "name": "CVE-2026-48736",
-        "source": "PKSA-y6py-qpv1-h52p",
-        "deciding": true,
-        "severity": "high",
-        "fix": "fix v6.4.41 on 6.x, your branch (composer update)",
-        "affects": "affects >=6.4.0,<6.4.41",
-        "ranges": null,
-        "same_as": null
-      }
-    ],
-    "ignored": [],
-    "ladder": [
-      {
-        "branch": "6.x",
-        "marks": [
-          "your branch",
-          "the move"
-        ],
-        "lines": [
-          "6.x your branch the move clears 1 of 1 from v6.4.41",
-          "composer update",
-          "after it: 0, ok"
-        ]
-      }
-    ]
-  },
-  "mc-with-deps-dagger": {
-    "summary": [
-      "1 high advisory",
-      "4 on record for this name",
-      "fix: composer update",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [
-      "By severity. Each affects your version, v6.4.28."
-    ],
-    "groups": [],
-    "rows": [
-      {
-        "name": "CVE-2026-48784",
-        "source": "PKSA-bf7t-jnpz-492k",
-        "deciding": true,
-        "severity": "high",
-        "fix": "fix v6.4.41 on 6.x, your branch (composer update)",
-        "affects": "affects >=6.4.0,<6.4.41",
-        "ranges": null,
-        "same_as": null
-      }
-    ],
-    "ignored": [],
-    "ladder": [
-      {
-        "branch": "6.x",
-        "marks": [
-          "your branch",
-          "the move"
-        ],
-        "lines": [
-          "6.x your branch the move clears 1 of 1 from v6.4.41",
-          "composer update",
           "after it: 0, ok"
         ]
       }
@@ -6129,6 +5782,170 @@
     "rows": [],
     "ignored": [],
     "ladder": []
+  },
+  "platform-step-no-command-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "platform-step-why-not-dagger": {
+    "summary": [
+      "3 advisories:",
+      "5 on record for this name",
+      "fix: upgrade",
+      "lookup complete"
+    ],
+    "counts": [
+      "low 3"
+    ],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v5.3.14."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-45133",
+        "source": "PKSA-b14r-zh1d-vdrc",
+        "deciding": true,
+        "severity": "low",
+        "fix": "fix v5.4.52 on 5.x, your branch (upgrade)",
+        "affects": "affects 19 ranges",
+        "ranges": [
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<4.0.0|",
+          ">=4.0.0,<5.0.0|",
+          ">=5.0.0,<5.1.0|",
+          ">=5.1.0,<5.2.0|",
+          ">=5.2.0,<5.3.0|",
+          ">=5.3.0,<5.4.0|",
+          ">=5.4.0,<5.4.52|",
+          ">=6.0.0,<6.1.0|",
+          ">=6.1.0,<6.2.0|",
+          ">=6.2.0,<6.3.0|",
+          ">=6.3.0,<6.4.0|",
+          ">=6.4.0,<6.4.40|",
+          ">=7.0.0,<7.1.0|",
+          ">=7.1.0,<7.2.0|",
+          ">=7.2.0,<7.3.0|",
+          ">=7.3.0,<7.4.0|",
+          ">=7.4.0,<7.4.12|",
+          ">=8.0.0,<8.0.12"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-45305",
+        "source": "PKSA-ft77-7h5f-p3r6",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v5.4.52 on 5.x, your branch (upgrade)",
+        "affects": "affects 19 ranges",
+        "ranges": [
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<4.0.0|",
+          ">=4.0.0,<5.0.0|",
+          ">=5.0.0,<5.1.0|",
+          ">=5.1.0,<5.2.0|",
+          ">=5.2.0,<5.3.0|",
+          ">=5.3.0,<5.4.0|",
+          ">=5.4.0,<5.4.52|",
+          ">=6.0.0,<6.1.0|",
+          ">=6.1.0,<6.2.0|",
+          ">=6.2.0,<6.3.0|",
+          ">=6.3.0,<6.4.0|",
+          ">=6.4.0,<6.4.40|",
+          ">=7.0.0,<7.1.0|",
+          ">=7.1.0,<7.2.0|",
+          ">=7.2.0,<7.3.0|",
+          ">=7.3.0,<7.4.0|",
+          ">=7.4.0,<7.4.12|",
+          ">=8.0.0,<8.0.12"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-45304",
+        "source": "PKSA-v5yj-8nmz-sk2q",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v5.4.52 on 5.x, your branch (upgrade)",
+        "affects": "affects 19 ranges",
+        "ranges": [
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<4.0.0|",
+          ">=4.0.0,<5.0.0|",
+          ">=5.0.0,<5.1.0|",
+          ">=5.1.0,<5.2.0|",
+          ">=5.2.0,<5.3.0|",
+          ">=5.3.0,<5.4.0|",
+          ">=5.4.0,<5.4.52|",
+          ">=6.0.0,<6.1.0|",
+          ">=6.1.0,<6.2.0|",
+          ">=6.2.0,<6.3.0|",
+          ">=6.3.0,<6.4.0|",
+          ">=6.4.0,<6.4.40|",
+          ">=7.0.0,<7.1.0|",
+          ">=7.1.0,<7.2.0|",
+          ">=7.2.0,<7.3.0|",
+          ">=7.3.0,<7.4.0|",
+          ">=7.4.0,<7.4.12|",
+          ">=8.0.0,<8.0.12"
+        ],
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "5.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "5.x your branch the move clears 3 of 3 from v5.4.52",
+          "upgrade · held by incenteev/composer-parameter-handler",
+          "after it: 0, ok · Composer refuses the move"
+        ]
+      },
+      {
+        "branch": "6.x",
+        "marks": [],
+        "lines": [
+          "6.x clears 3 of 3 from v6.4.40",
+          "php floor raise · held by incenteev/composer-parameter-handler",
+          "after it: 0, ok · Composer refuses the move"
+        ]
+      },
+      {
+        "branch": "7.x",
+        "marks": [],
+        "lines": [
+          "7.x clears 3 of 3 from v7.4.12",
+          "php floor raise · held by incenteev/composer-parameter-handler",
+          "after it: 0, ok · Composer refuses the move"
+        ]
+      },
+      {
+        "branch": "8.x",
+        "marks": [],
+        "lines": [
+          "8.x clears 3 of 3 from v8.0.12",
+          "php floor raise · held by incenteev/composer-parameter-handler",
+          "after it: 0, ok · Composer refuses the move"
+        ]
+      }
+    ]
   },
   "policy-off-dagger": {
     "summary": [

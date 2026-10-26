@@ -382,19 +382,11 @@
   ],
   "long-range-dagger": [],
   "many-dependents": [],
-  "mc-baseline-refused-dagger": [],
-  "mc-dev-update-dagger": [],
-  "mc-gets-below-dagger": [],
-  "mc-gets-next-form-dagger": [],
+  "mc-blocking-off-both-dagger": [],
+  "mc-blocking-off-dagger": [],
   "mc-inline-dagger": [],
-  "mc-joint-dagger": [],
-  "mc-package-hold-dagger": [],
-  "mc-pass-cap-dagger": [],
+  "mc-lookup-incomplete-dagger": [],
   "mc-raise-php-dagger": [],
-  "mc-replan-major-dagger": [],
-  "mc-root-hold-dagger": [],
-  "mc-with-all-dagger": [],
-  "mc-with-deps-dagger": [],
   "move-check-dagger": [],
   "not-found-dagger": [
     {
@@ -427,6 +419,13 @@
   "pinned-unread": [],
   "platform-step-dagger": [],
   "platform-step-inside-dagger": [],
+  "platform-step-no-command-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 7.7 years."
+    }
+  ],
+  "platform-step-why-not-dagger": [],
   "policy-off-dagger": [],
   "psr7": [
     {
