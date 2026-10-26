@@ -164,7 +164,7 @@ function packagesClause(fix: TargetFix, target: string): string {
 
 /** The `lock_platform` clause (SPEC §7.0); with no package listed it carries the fix's answer. */
 function lockPlatformClause(fix: TargetFix, target: string, answers: boolean): string {
-  const links = joinAnd([...new Set(fix.lock_platform.map((l) => `${l.link}.${l.target} ${l.constraint}`))]);
+  const links = joinAnd([...new Set(fix.lock_platform.map((l) => reqWords(l)))]);
   const records = `the lock records ${links}, which composer.json does not have`;
   const command = fix.command === null ? "" : commandLine(fix.command, "posix");
   if (fix.check === "resolves") {

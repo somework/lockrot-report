@@ -229,6 +229,24 @@ describe("wayOutLine", () => {
     expect(firstMoves(r).wayOutParts).toContainEqual({ text: "a_later_reason", code: true });
   });
 
+  it("words an advisory_lookup_incomplete check from the reason table, after solver_error", () => {
+    const stopped = (name: string, reason: string): Finding =>
+      ({
+        ...stuck(name, "update"),
+        next_step: {
+          kind: "update",
+          commands: [],
+          held_by: [],
+          also: [],
+          check: { result: "not_checked", form: null, reason },
+        },
+      }) as unknown as Finding;
+    const r = report([stopped("a/a", "advisory_lookup_incomplete"), stopped("b/b", "solver_error")], true);
+    expect(wayOutLine(r)).toBe(
+      "2 need another way out: 1 not checked: Composer's solver failed on it, 1 not checked: the advisory lookup did not cover a package it installs",
+    );
+  });
+
   it("counts every Composer move as not checked when the run checked no move", () => {
     const r = {
       ...report(

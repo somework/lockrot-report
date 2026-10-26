@@ -253,6 +253,60 @@ describe("the lock_platform clause of the PHP state line (SPEC §7.9.4, §7.0)",
       "the lock records require.php >=7.4 <8.1, which composer.json does not have: composer update acme/clock --with-all-dependencies rewrites it",
     );
   });
+  test("names a link that the lock's platform-dev records as require-dev.php", () => {
+    const dev = [req({ name: null, version: null, dev: true, constraint: ">=7.4 <8.1" })];
+
+    expect(
+      phpStateClauses(
+        report({
+          target_fix: fix({ packages: [], lock_platform: dev, check: "resolves", command: rewrite }),
+        }),
+      )?.[1],
+    ).toBe(
+      "the lock records require-dev.php >=7.4 <8.1, which composer.json does not have: composer update --lock rewrites it",
+    );
+  });
+
+  test("adds no platform step and no answer to the clause when a package excludes the target", () => {
+    const command = ["composer", "update", "acme/clock", "--with-all-dependencies"];
+
+    expect(
+      phpStateClauses(
+        report({
+          target_fix: fix({ lock_platform: recorded, check: "resolves", command, platform_step: true }),
+        }),
+      )?.[3],
+    ).toBe(
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have: composer update acme/clock --with-all-dependencies rewrites it",
+    );
+    expect(
+      phpStateClauses(
+        report({ target_fix: fix({ lock_platform: recorded, check: "not_checked", reason: null }) }),
+      )?.[3],
+    ).toBe("the lock records require.php >=7.4 <8.1, which composer.json does not have");
+  });
+
+  test("follows the root ceiling's clause with the plain records clause, as lockrot's php line does", () => {
+    const ceiling: HeldBy = {
+      source: "root",
+      package: null,
+      version: null,
+      link: "require-dev",
+      target: "php",
+      constraint: "<8.4",
+      holder: null,
+    };
+
+    expect(
+      phpStateClauses(
+        report({ target_fix: fix({ packages: [], lock_platform: recorded, held_by: [ceiling] }) }),
+      ),
+    ).toEqual([
+      "this lock installs on PHP 8.2 to 8.3",
+      "your target, 8.4, is excluded, and only a change to require-dev.php can admit it",
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have",
+    ]);
+  });
 });
 
 const hold = (over: Partial<HeldBy>): HeldBy => ({
