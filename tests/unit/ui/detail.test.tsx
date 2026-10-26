@@ -394,9 +394,19 @@ describe("the Security row", () => {
 describe("the copy control of design 5C", () => {
   const commandText = (sheet: HTMLElement): string[] =>
     [...sheet.querySelectorAll(".d2-copy-line")].map((line) => line.textContent);
+  const withCommands =
+    (commands: string[][]) =>
+    (embed: Report2Embed): Report2Embed => {
+      const [finding] = embed.report.findings;
+      if (!finding?.next_step) throw new Error("the case has a move");
+      const next_step = { ...finding.next_step, commands };
+      return { ...embed, report: { ...embed.report, findings: [{ ...finding, next_step }] } };
+    };
+
+  const oneCommand = withCommands([["composer", "require", "symfony/monolog-bridge:^5.4.52"]]);
 
   test("prints the POSIX line first, and the menu switches the shell and keeps the choice", () => {
-    const sheet = openCase("B");
+    const sheet = openCase("B", oneCommand);
 
     expect(commandText(sheet)).toEqual(["composer require 'symfony/monolog-bridge:^5.4.52'"]);
     fireEvent.click(within(sheet).getByRole("button", { name: "Shell: POSIX" }));
@@ -416,7 +426,7 @@ describe("the copy control of design 5C", () => {
   test("reads the saved shell on the next sheet", () => {
     window.localStorage.setItem("lockrot-shell", "powershell");
 
-    const sheet = openCase("B");
+    const sheet = openCase("B", oneCommand);
 
     expect(commandText(sheet)).toEqual(['composer --% require "symfony/monolog-bridge:^5.4.52"']);
     expect(within(sheet).getByRole("button", { name: "Shell: PowerShell" })).toBeTruthy();
@@ -427,13 +437,13 @@ describe("the copy control of design 5C", () => {
       throw new Error("blocked");
     });
 
-    const sheet = openCase("B");
+    const sheet = openCase("B", oneCommand);
 
     expect(within(sheet).getByRole("button", { name: "Shell: POSIX" })).toBeTruthy();
   });
 
   test("Escape closes the menu and leaves the sheet open", () => {
-    const sheet = openCase("B");
+    const sheet = openCase("B", oneCommand);
     fireEvent.click(within(sheet).getByRole("button", { name: "Shell: POSIX" }));
     const menu = within(sheet).getByRole("menu", { name: "Shell" });
 
@@ -454,15 +464,6 @@ describe("the copy control of design 5C", () => {
     expect(commandText(sheet)).toEqual(["This command holds characters the page does not print."]);
     expect(within(sheet).queryByRole("button", { name: "Copy" })).toBeNull();
   });
-
-  const withCommands =
-    (commands: string[][]) =>
-    (embed: Report2Embed): Report2Embed => {
-      const [finding] = embed.report.findings;
-      if (!finding?.next_step) throw new Error("the case has a move");
-      const next_step = { ...finding.next_step, commands };
-      return { ...embed, report: { ...embed.report, findings: [{ ...finding, next_step }] } };
-    };
 
   test("one refused argv hides every step of the move on every shell, and the menu previews none", () => {
     const sheet = openCase(
@@ -498,7 +499,7 @@ describe("the copy control of design 5C", () => {
   });
 
   test("names one command by its eyebrow, and several as commands in order", () => {
-    const one = openCase("B");
+    const one = openCase("B", oneCommand);
     expect(one.querySelector(".d2-copy-bar .eyebrow")?.textContent).toBe("Command");
     cleanup();
 
