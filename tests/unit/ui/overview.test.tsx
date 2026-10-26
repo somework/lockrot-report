@@ -449,6 +449,18 @@ describe("the tabs that lead without the band", () => {
     );
   });
 
+  test("R2-37: heads the depth part when a lock-only run has no depth rows, only the sentence", () => {
+    const result = normalize(assembleEmbed("lock-only-dagger"));
+    if (!result.ok) throw new Error(result.error.message);
+    render(<App model={result.model} />);
+
+    const head = within(band()).getByRole("heading", { name: "How deep the flagged packages sit" });
+    expect(head.tagName).toBe("H3");
+    expect(head.parentElement?.querySelector(".ledger-note")?.textContent).toBe(
+      "lockrot did not read composer.json, so it does not know how deep the 1 flagged package sits.",
+    );
+  });
+
   test("All packages starts with its table", () => {
     history.replaceState(null, "", "/report.html#view=packages");
     render(<App model={model()} />);
