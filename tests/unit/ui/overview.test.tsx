@@ -461,6 +461,23 @@ describe("the tabs that lead without the band", () => {
     );
   });
 
+  test("R2-37: heads the depth part with an h4 under Blast radius when the run has no depth rows", () => {
+    render(
+      <App
+        model={model((report) => {
+          report.rot_depth = {
+            ...report.rot_depth,
+            unmeasured: { ...report.rot_depth.unmeasured, no_composer_json: 1 },
+          };
+        })}
+      />,
+    );
+
+    expect(within(band()).getByRole("heading", { name: "How deep the flagged packages sit" }).tagName).toBe(
+      "H4",
+    );
+  });
+
   test("All packages starts with its table", () => {
     history.replaceState(null, "", "/report.html#view=packages");
     render(<App model={model()} />);

@@ -37,8 +37,8 @@ project is overall, and the other tabs lead with their own part.
 - Beside the lead: "37 of 183 packages flagged · 126 ok · 20 finished", the scope line, a chip
   per grade that a package holds, and the waffle, one square per package. Its key names each mark
   of a score of 0: ok, finished and not judged.
-- "Ready to run" lists up to 3 moves whose command Composer's solver checked and no other package
-  holds, in lockrot's rank order, each with its command, what it clears and the score after it.
+- "Ready to run" lists up to 3 moves whose command Composer's solver checked and that only your
+  composer.json holds, if anything does, in lockrot's rank order, each with its command, what it clears and the score after it.
   When the run fails, it lists only findings that fail the gate. "Also holds" names the findings
   whose move the ready package holds. One line counts the failing findings that other packages
   hold, and one counts those that need another way out, by kind or by the move check: "Composer
@@ -57,9 +57,8 @@ project is overall, and the other tabs lead with their own part.
   the fix takes. No tab shows an "Update now" command: "Ready to run" takes its place.
 - The exposure bars take the first 8 direct requirements in lockrot's order. Each bar counts the
   flagged packages its requirement pulls in and opens Blast radius. "{n} more in Blast radius ›"
-  closes the list when lockrot lists more. "How deep the flagged packages sit" follows in the same
-  Blast radius block: a bar per depth, then the depth sentence. A lock-only run keeps the head
-  over the sentence alone.
+  closes the list when lockrot lists more. "How deep the flagged packages sit" follows the bars: a
+  bar per depth, then the depth sentence. A lock-only run keeps the head over the sentence alone.
 - Libyears leads with the total, its measured count and the direct requirements' share, then what
   was not measured, by cause.
 - The libyears table lists the 8 packages furthest behind, leaving out a row that rounds to 0.0, with "≥" before a lower bound. Each row
