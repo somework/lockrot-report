@@ -143,6 +143,24 @@ describe("the command argument rule (SPEC §5.6)", () => {
     expect(inEveryShell(argv)).toEqual(refused);
   });
 
+  test("allows --lock as the one argument of an update step, which target_fix.command writes", () => {
+    expect(inEveryShell(["composer", "update", "--lock"])).toEqual({
+      posix: "composer update --lock",
+      cmd: "composer update --lock",
+      powershell: "composer --% update --lock",
+    });
+  });
+
+  test.each([
+    ["--lock after a package", ["composer", "update", "a/b", "--lock"]],
+    ["--lock before a package", ["composer", "update", "--lock", "a/b"]],
+    ["--lock twice", ["composer", "update", "--lock", "--lock"]],
+    ["--lock in a require step", ["composer", "require", "--lock"]],
+    ["--lock in a why-not step", ["composer", "why-not", "--lock"]],
+  ])("refuses %s on every shell", (_, argv) => {
+    expect(inEveryShell(argv)).toEqual(refused);
+  });
+
   test("allows @name, a,b and a/b|c, which PowerShell writes after --%", () => {
     expect(commandLine(["composer", "require", "@name", "a,b", "a/b|c"], "powershell")).toBe(
       'composer --% require @name a,b "a/b|c"',

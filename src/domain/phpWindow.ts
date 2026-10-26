@@ -162,7 +162,36 @@ function packagesClause(fix: TargetFix, target: string): string {
   return `${plural(names.length, "package excludes", "packages exclude")} ${target}: ${joinAndCapped(names)}`;
 }
 
+/** The `lock_platform` clause (SPEC §7.0); with no package listed it carries the fix's answer. */
+function lockPlatformClause(fix: TargetFix, target: string, answers: boolean): string {
+  const links = joinAnd([...new Set(fix.lock_platform.map((l) => `${l.link}.${l.target} ${l.constraint}`))]);
+  const records = `the lock records ${links}, which composer.json does not have`;
+  const command = fix.command === null ? "" : commandLine(fix.command, "posix");
+  if (fix.check === "resolves") {
+    const step =
+      answers && fix.platform_step ? `set config.platform.php to your PHP ${target} release, then ` : "";
+    return `${records}: ${step}${command} rewrites it`;
+  }
+  if (!answers) return records;
+  if (fix.check === "refused") {
+    const holds =
+      fix.held_by.length === 0 ? "" : `: ${fix.held_by.map((h) => holdWords(h, fix)).join(" and ")}`;
+    return `${records}, and Composer's solver at PHP ${target} refuses the update that rewrites it${holds}`;
+  }
+  return `${records}, and the update that rewrites it is not checked (${reasonWords(fix)})`;
+}
+
+const reasonWords = (fix: TargetFix): string =>
+  fix.reason === null ? "the run checked no move" : plain(checkReasonRich(fix.reason));
+
 function fixClauses(fix: TargetFix, target: string): string[] {
+  if (fix.lock_platform.length === 0) return answerClauses(fix, target);
+  const ceiling = isRootCeiling(fix);
+  if (fix.packages.length === 0 && !ceiling) return [lockPlatformClause(fix, target, true)];
+  return [...answerClauses(fix, target), lockPlatformClause(fix, target, false)];
+}
+
+function answerClauses(fix: TargetFix, target: string): string[] {
   if (isRootCeiling(fix)) {
     const links = joinAndCapped([...new Set(fix.held_by.map((h) => `${h.link}.${h.target ?? ""}`))]);
     const names = packageNames(fix);
@@ -190,10 +219,7 @@ function fixClauses(fix: TargetFix, target: string): string[] {
       return [packagesClause(fix, target), `${solver} refuses ${their} update${holds}`];
     }
     default:
-      return [
-        packagesClause(fix, target),
-        `not checked (${fix.reason === null ? "the run checked no move" : plain(checkReasonRich(fix.reason))})`,
-      ];
+      return [packagesClause(fix, target), `not checked (${reasonWords(fix)})`];
   }
 }
 

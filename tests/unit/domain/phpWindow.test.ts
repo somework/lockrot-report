@@ -46,6 +46,7 @@ const fix = (over: Partial<TargetFix>): TargetFix => ({
       dev: false,
     },
   ],
+  lock_platform: [],
   command: null,
   check: "refused",
   reason: null,
@@ -167,6 +168,90 @@ describe("the PHP state line", () => {
       "this lock installs on PHP 8.2 to 8.3",
       "your target, 8.4, is excluded, and only a change to require-dev.php can admit it",
     ]);
+  });
+});
+
+describe("the lock_platform clause of the PHP state line (SPEC §7.9.4, §7.0)", () => {
+  const recorded = [req({ name: null, version: null, constraint: ">=7.4 <8.1" })];
+  const rewrite = ["composer", "update", "--lock"];
+
+  test("is the only clause after the window, naming the command that rewrites the link, when no package excludes the target", () => {
+    expect(
+      phpStateClauses(
+        report({
+          target_fix: fix({ packages: [], lock_platform: recorded, check: "resolves", command: rewrite }),
+        }),
+      ),
+    ).toEqual([
+      "this lock installs on PHP 8.2 to 8.3, so your target, 8.4, is excluded",
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have: composer update --lock rewrites it",
+    ]);
+  });
+
+  test("puts the platform step before the command when no package excludes the target", () => {
+    expect(
+      phpStateClauses(
+        report({
+          target_fix: fix({
+            packages: [],
+            lock_platform: recorded,
+            check: "resolves",
+            command: rewrite,
+            platform_step: true,
+          }),
+        }),
+      )?.[1],
+    ).toBe(
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have: set config.platform.php to your PHP 8.4 release, then composer update --lock rewrites it",
+    );
+  });
+
+  test("names the refusal of the rewriting update and its holds when no package excludes the target", () => {
+    const refused = (held: HeldBy[]): string | undefined =>
+      phpStateClauses(
+        report({ target_fix: fix({ packages: [], lock_platform: recorded, held_by: held }) }),
+      )?.[1];
+
+    expect(refused([hold({})])).toBe(
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have, and Composer's solver at PHP 8.4 refuses the update that rewrites it: acme/core 2.0.0 requires acme/clock ^1.0",
+    );
+    expect(refused([])).toBe(
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have, and Composer's solver at PHP 8.4 refuses the update that rewrites it",
+    );
+  });
+
+  test("says the rewriting update is not checked when no package excludes the target", () => {
+    expect(
+      phpStateClauses(
+        report({
+          target_fix: fix({ packages: [], lock_platform: recorded, check: "not_checked", reason: null }),
+        }),
+      )?.[1],
+    ).toBe(
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have, and the update that rewrites it is not checked (the run checked no move)",
+    );
+  });
+
+  test("comes last after the fix clauses of the packages that exclude the target", () => {
+    expect(phpStateClauses(report({ target_fix: fix({ lock_platform: recorded }) }))).toEqual([
+      "this lock installs on PHP 8.2 to 8.3, so your target, 8.4, is excluded",
+      "1 package excludes 8.4: acme/clock",
+      "Composer's solver at PHP 8.4 refuses its update",
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have",
+    ]);
+    expect(
+      phpStateClauses(
+        report({
+          target_fix: fix({
+            lock_platform: recorded,
+            check: "resolves",
+            command: ["composer", "update", "acme/clock", "--with-all-dependencies"],
+          }),
+        }),
+      )?.[3],
+    ).toBe(
+      "the lock records require.php >=7.4 <8.1, which composer.json does not have: composer update acme/clock --with-all-dependencies rewrites it",
+    );
   });
 });
 
