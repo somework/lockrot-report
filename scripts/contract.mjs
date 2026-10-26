@@ -36,6 +36,7 @@ const PAGE_GOLDEN_DOCUMENTS = [
   "tests/fixtures/schema/documents/cases/mc-composite-dagger.json",
   "tests/fixtures/schema/documents/cases/mc-gets-below-dagger.json",
   "tests/fixtures/schema/documents/cases/mc-joint-dagger.json",
+  "tests/fixtures/schema/documents/cases/mc-split-dagger.json",
   "tests/fixtures/schema/documents/cases/ok-offline-dagger.json",
   "tests/fixtures/schema/documents/cases/ok-unchecked.json",
   "tests/fixtures/schema/documents/cases/pagerfanta.json",
