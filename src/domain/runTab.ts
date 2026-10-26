@@ -3,7 +3,7 @@
 import type { Report2, Run } from "../model/report";
 import { day, plural, pluralNoun } from "./format";
 import { causeWord, checkReasonRich, feedAnswerWord, wordFor } from "./pageVocabulary";
-import type { Rich } from "./rich";
+import type { Piece, Rich } from "./rich";
 
 export const RUN_WORDS = {
   tab: "Run data",
@@ -99,11 +99,17 @@ export function moveCheckFact({ run }: Report2): Rich | null {
   const check = run.move_check;
   if (check === null) return null;
   switch (check.baseline) {
-    case "resolves":
+    case "resolves": {
+      const lock = `checked with the solver of Composer${check.composer === null ? "" : ` ${check.composer}`} against the lock`;
+      const names = check.blocking_disabled_by.flatMap((name, i): Piece[] => [
+        ...(i > 0 ? [" and "] : []),
+        { code: name },
+      ]);
       // `ignores_extensions` is always true: the solve ignores ext-* requirements (§5.6).
-      return [
-        `checked with the solver of Composer${check.composer === null ? "" : ` ${check.composer}`} against the lock · ext-* requirements not checked`,
-      ];
+      return names.length === 0
+        ? [`${lock} · ext-* requirements not checked`]
+        : [`${lock}, with advisory blocking turned off by `, ...names, " · ext-* requirements not checked"];
+    }
     case "refused":
       return ["not checked, because Composer's solver refuses the lock itself"];
     default:
