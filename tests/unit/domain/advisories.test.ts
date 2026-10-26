@@ -127,7 +127,7 @@ describe("row words", () => {
 
   it("names the PHP a fix needs when lockrot says the project's floor does not admit it, then the holders", () => {
     // composite twig/twig: a php floor raise to >=8.1.0 that require.php does not admit, held by symfony/twig-bridge.
-    expect(advisoryFixNote(pair.row.fix, composite.run)).toBe(
+    expect(advisoryFixNote(pair.row.fix, composite.run, "c/pkg")).toBe(
       "needs PHP >=8.1.0 · held by symfony/twig-bridge",
     );
   });
@@ -147,7 +147,7 @@ describe("row words", () => {
       admits_project_php: project,
       held_by: [],
     };
-    expect(advisoryFixNote(fix, composite.run)).toBe(note);
+    expect(advisoryFixNote(fix, composite.run, "c/pkg")).toBe(note);
   });
 
   it("says the holders as a Findings row does", () => {
@@ -159,7 +159,9 @@ describe("row words", () => {
       admits_project_php: true,
       held_by: [hold("a/a"), hold("b/b"), hold("c/c")],
     };
-    expect(advisoryFixNote(fix as typeof pair.row.fix, composite.run)).toBe("held by a/a and 2 more");
+    expect(advisoryFixNote(fix as typeof pair.row.fix, composite.run, "c/pkg")).toBe(
+      "held by a/a and 2 more",
+    );
   });
 
   it("says what an unrated severity counts as, from the model", () => {

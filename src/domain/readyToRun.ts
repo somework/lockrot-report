@@ -6,10 +6,11 @@ import { rowCommandArgv } from "./findingRow";
 
 export const READY_WORD = "ready to run";
 
-/** The lead move's own `held_by[]` names something other than the root. An `also[]` move's
- *  holders do not count. The rail's "Held" filter and Overview's held line read this. */
+/** The lead move's own `held_by[]` names another package: not the root, and not the finding's own
+ *  release. An `also[]` move's holders do not count. The rail's "Held" filter and Overview's held
+ *  line read this. */
 export function isHeld(f: Finding): boolean {
-  return f.next_step?.held_by.some((hold) => hold.source !== "root") ?? false;
+  return f.next_step?.held_by.some((hold) => hold.source !== "root" && hold.package !== f.package) ?? false;
 }
 
 const READY_KINDS: readonly string[] = ["update", "require"];

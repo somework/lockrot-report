@@ -221,7 +221,7 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
       "Project grade: critical · 4 critical findings · 6 of 9 packages high or worse",
     );
     expect(doc.querySelector(".pd-summary .ov-figure")?.textContent).toBe(
-      "9 of 9 packages flagged · 0 ok · 0 allowlisted",
+      "9 of 9 packages flagged · 0 ok · 0 finished",
     );
     expect(doc.querySelector(".pd-summary .wm-load")?.textContent).toBe(
       "180 points on 9 flagged packages · 172 (95 %) from high or worse · score model 1",

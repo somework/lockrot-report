@@ -12,9 +12,11 @@ import {
   packagesCount,
   reachText,
   rowAfter,
+  rowBlockedWords,
   rowCommand,
   rowHolds,
   rowNewLine,
+  rowRaiseWords,
 } from "./findingRow";
 import { isHeld, readyToRun } from "./readyToRun";
 
@@ -49,23 +51,27 @@ export interface RowFacts {
   readonly reach: string;
   readonly held: string | null;
   readonly command: string | null;
+  readonly raise_words: string | null;
   readonly after: string | null;
   readonly major: string | null;
+  readonly blocked: string | null;
   readonly ready: boolean;
   readonly held_filter: boolean;
 }
 
 /** A Findings row's facts as text, the golden `findings_rows` entry (SPEC §7.9.5, §7.9.7). */
 export function findingsRowFacts(f: Finding, run: Run): RowFacts {
-  const holder = heldByLine(rowHolds(f), run);
+  const holder = heldByLine(rowHolds(f), run, f.package);
   return {
     package: f.package,
     fails_gate: f.gate.fails,
     reach: reachText(f),
     held: holder === null ? null : heldByWords(holder),
     command: rowCommand(f),
+    raise_words: rowRaiseWords(f),
     after: rowAfter(f),
     major: rowNewLine(f),
+    blocked: rowBlockedWords(f, run),
     ready: readyToRun(f),
     held_filter: isHeld(f),
   };

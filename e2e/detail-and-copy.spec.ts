@@ -38,7 +38,7 @@ test.describe("report-2: the detail sheet and its copy control", () => {
     await expect(sheet.locator(".d3-move-action")).toHaveText(move?.action ?? "");
   });
 
-  test("names the package and its grade, the golden verdict line, then the move's command", async ({
+  test("names the package and its grade, the golden verdict line, then the move's commands", async ({
     page,
   }) => {
     const sheet = await openDetail2(page, "B", B);
@@ -48,7 +48,7 @@ test.describe("report-2: the detail sheet and its copy control", () => {
     await expect(sheet.locator(".d2-asof")).toHaveText("Ages as of 2026-10-01");
     await expect(sheet.locator(".d3-verdict-line")).toHaveText(golden("verdict-line", "B"));
     await expect(sheet.locator(".d3-move .eyebrow").first()).toHaveText("The move");
-    expect(await commandLines(sheet)).toEqual(["composer require 'symfony/monolog-bridge:^5.4.52'"]);
+    expect(await commandLines(sheet)).toEqual(phpGolden("B").commands_posix);
   });
 
   test("dates a branch snapshot's lock time as a snapshot, never as a release", async ({ page }) => {
@@ -77,7 +77,7 @@ test.describe("report-2: the detail sheet and its copy control", () => {
     await expect(detailSurface(page)).toHaveCount(0);
   });
 
-  test("copies the move as written for POSIX, says so, and reverts", async ({ page }) => {
+  test("copies the move's steps as written for POSIX, says so, and reverts", async ({ page }) => {
     await page.addInitScript(stubClipboard, "resolve");
     const sheet = await openDetail2(page, "B", B);
     const copy = sheet.locator(".d2-copy-btn");
@@ -86,7 +86,7 @@ test.describe("report-2: the detail sheet and its copy control", () => {
 
     await expect(copy).toHaveText("Copied");
     expect(await page.evaluate(() => (window as unknown as { __copied: string[] }).__copied)).toEqual([
-      "composer require 'symfony/monolog-bridge:^5.4.52'",
+      phpGolden("B").commands_posix.join("\n"),
     ]);
     await expect(copy).toHaveText("Copy", { timeout: 3000 });
   });

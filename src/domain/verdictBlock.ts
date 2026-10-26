@@ -13,6 +13,7 @@ import {
   countsAs,
   isAre,
   lowerFirst,
+  newestPhpWords,
   oneDecimal,
   printedModifiers,
   signalData,
@@ -36,13 +37,13 @@ export interface SheetContext {
   readonly replacementInMove: boolean;
 }
 
-export function sheetContext(finding: Finding, metadata: RepositoryMetadata | null): SheetContext {
+export function sheetContext(finding: Finding, run: Run, metadata: RepositoryMetadata | null): SheetContext {
   const rows = metadata?.branches ?? [];
   const move = finding.next_step;
   return {
     hasBranchRows: rows.length > 0,
     higherRelease: (branch) => rows.find((r) => r.branch === branch)?.highest ?? null,
-    installedRung: securityRungs(finding, metadata).some((r) => r.installed),
+    installedRung: securityRungs(finding, run, metadata).some((r) => r.installed),
     replacementInMove:
       move?.kind === "replace" &&
       finding.replacement !== null &&
@@ -217,6 +218,13 @@ function flagReading(finding: Finding, flag: FindingFlag, run: Run, ctx: SheetCo
         `It was written for PHP ${s5?.written_for_php ?? ""} and admits ${s5?.target_php ?? run.target_php} untested`,
       );
     }
+    case "capped": {
+      const s11 = signalData(finding, "S11");
+      if (!s11) return reading(id, summary);
+      // G59 or G102 already names the constraint when the target is excluded.
+      const head = s11.excludes_target ? "It stops" : `It requires php ${s11.requires}: it stops`;
+      return reading(id, `${head} at ${s11.stops_at}, so ${newestPhpWords(s11)}, is excluded`);
+    }
     case "vulnerable":
       return vulnerableReading(finding, flag, run, ctx);
     default:
@@ -315,7 +323,7 @@ export function verdictBlock(finding: Finding, run: Run, metadata: RepositoryMet
       readings: [],
     };
   const { head, inline } = opening(finding, score, run);
-  const ctx = sheetContext(finding, metadata);
+  const ctx = sheetContext(finding, run, metadata);
   const flags = countedFlags(finding, score).map((flag) => flagReading(finding, flag, run, ctx));
   const colon = head.indexOf(":") + 1;
   const [first, ...rest] = flags;

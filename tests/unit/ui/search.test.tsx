@@ -138,12 +138,10 @@ describe("SearchBar", () => {
     expect(countLine()).toBe("29 of 29 advisories");
   });
 
-  it("counts the Blast radius tab in direct requirements, and the flagged ones the exposure list leaves out", () => {
+  it("counts the Blast radius tab in the direct requirements on the exposure list (R12)", () => {
     renderBar(composite(), { ...FINDINGS, view: "radius" });
 
-    expect(countLine()).toBe(
-      "2 of 2 direct requirements on the exposure list, plus 5 of 5 flagged ones with nothing flagged counted under them",
-    );
+    expect(countLine()).toBe("2 of 2 direct requirements");
   });
 
   it("hides the search box and hint, but keeps the count line, on a report with nothing flagged", () => {

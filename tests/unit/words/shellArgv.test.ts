@@ -126,6 +126,8 @@ describe("the command argument rule (SPEC §5.6)", () => {
     ["update", "--with-all-dependencies"],
     ["require", "--with-dependencies"],
     ["require", "--with-all-dependencies"],
+    ["require", "--dev"],
+    ["why-not", "--locked"],
   ])("allows lockrot's %s option %s after the package", (subcommand, option) => {
     expect(isPrintableArgv(["composer", subcommand, "a/b:^2.0", option])).toBe(true);
   });
@@ -135,6 +137,26 @@ describe("the command argument rule (SPEC §5.6)", () => {
     ["a package after an option", ["composer", "update", "a/b", "--with-dependencies", "c/d"]],
     ["an option with no package", ["composer", "require", "--no-update"]],
     ["the option of a why-not step", ["composer", "why-not", "a/b", "--with-dependencies"]],
+    ["--locked outside a why-not step", ["composer", "update", "a/b", "--locked"]],
+    ["--dev outside a require step", ["composer", "update", "a/b", "--dev"]],
+  ])("refuses %s on every shell", (_, argv) => {
+    expect(inEveryShell(argv)).toEqual(refused);
+  });
+
+  test("allows --lock as the one argument of an update step, which target_fix.command writes", () => {
+    expect(inEveryShell(["composer", "update", "--lock"])).toEqual({
+      posix: "composer update --lock",
+      cmd: "composer update --lock",
+      powershell: "composer --% update --lock",
+    });
+  });
+
+  test.each([
+    ["--lock after a package", ["composer", "update", "a/b", "--lock"]],
+    ["--lock before a package", ["composer", "update", "--lock", "a/b"]],
+    ["--lock twice", ["composer", "update", "--lock", "--lock"]],
+    ["--lock in a require step", ["composer", "require", "--lock"]],
+    ["--lock in a why-not step", ["composer", "why-not", "--lock"]],
   ])("refuses %s on every shell", (_, argv) => {
     expect(inEveryShell(argv)).toEqual(refused);
   });

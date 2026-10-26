@@ -26,7 +26,6 @@ import {
   skippedCheckWord,
   skipLinkLabel,
   wordFor,
-  zeroVerdictWhen,
 } from "../../../src/domain/pageVocabulary";
 import { readContractJson } from "./recorded";
 
@@ -99,11 +98,12 @@ describe("the words of SPEC 7.9.9", () => {
   });
 
   test("the signal names", () => {
-    expect(["S1", "S5", "S10", "S11"].map(signalName)).toEqual([
+    expect(["S1", "S5", "S10", "S11", "S12"].map(signalName)).toEqual([
       "marked abandoned",
       "PHP promise",
       "unchecked",
-      "S11",
+      "PHP cap",
+      "S12",
     ]);
   });
 
@@ -182,12 +182,7 @@ describe("the small tables", () => {
     expect(allowlistReason("something-new")).toBeNull();
   });
 
-  test("a zero verdict, a skipped check and a headline reason", () => {
-    expect(["allowlisted", "no_metadata", "otherwise"].map(zeroVerdictWhen)).toEqual([
-      "allowlisted",
-      "no metadata",
-      "otherwise",
-    ]);
+  test("a skipped check and a headline reason", () => {
     expect(["release_branch", "repository_archived", "x"].map(skippedCheckWord)).toEqual([
       "its release branch",
       "its archived flag",

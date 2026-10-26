@@ -176,6 +176,20 @@
   display: contents;
 }
 
+/* A window row is a sentence of constraints, too long for the key column: its label sits above it. */
+.run2-window.kv {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+}
+.run2-window dd {
+  font-family: inherit;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.run2-window .run2-kv-row + .run2-kv-row dt {
+  margin-top: var(--space-2);
+}
+
 @media (max-width: 759px) {
   .run2-rule {
     grid-template-columns: 2.2em minmax(0, 1fr);

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { assembleEmbed } from "../../../scripts/report2-embed";
 import {
+  depthRows,
   exposureBars,
   exposureUnit,
   libyearsTop,
@@ -21,6 +22,29 @@ function withFinding(report: Report2, pkg: string, edit: (f: Finding) => void): 
   edit(found);
   return report;
 }
+
+describe("the depth bars (SPEC §7.9.4)", () => {
+  test("name depth 0 direct, as the text formats do, and count each hop", () => {
+    const report = composite();
+    report.rot_depth = {
+      ...report.rot_depth,
+      flagged: 5,
+      unmeasured: { unreached: 0, no_composer_json: 0 },
+      by_reach: { direct: 3, transitive: 2, unreached: 0 },
+      by_depth: [
+        { depth: 0, flagged: 3 },
+        { depth: 1, flagged: 1 },
+        { depth: 2, flagged: 1 },
+      ],
+    };
+
+    expect(depthRows(report)).toEqual([
+      { label: "direct", flagged: 3 },
+      { label: "1 hop away", flagged: 1 },
+      { label: "2 hops away", flagged: 1 },
+    ]);
+  });
+});
 
 describe("the exposure bars", () => {
   test("show the rows as published, on a track of the flagged set, with nothing more", () => {

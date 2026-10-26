@@ -211,6 +211,7 @@ export function RadiusView2() {
   const printed = usePrinted();
   const depth = printed ? null : depthSentence(report);
   const layout = radiusLayout2(report, applyFilters2(report, state, "radius"), population2(report, "radius"));
+  const answer = radiusAnswer2(report, layout);
   const input: OpenInput = { disclosure: state.disclosure, pkg: state.pkg, narrow };
   const first = firstRows(
     radiusKeys2(layout, input),
@@ -233,7 +234,7 @@ export function RadiusView2() {
   return (
     <section className="radius2" data-surface="radius" aria-label="Blast radius">
       {depth !== null && <p className="r2-depth">{depth}</p>}
-      <p className="r2-answer">{radiusAnswer2(layout)}</p>
+      {answer.length > 0 && <p className="r2-answer">{answer.join(" ")}</p>}
       {layout.lead.length > 0 && (
         <ul className="r2-list" aria-label={RADIUS_WORDS.list}>
           {rows(layout.lead, 1)}

@@ -141,6 +141,33 @@ describe("the depth sentence", () => {
     );
   });
 
+  test("adds the require-dev sentence of the text line after the deepest clause (wallabag 7.4)", () => {
+    const report = golden("composite");
+    report.rot_depth = { ...report.rot_depth, require_dev_not_walked: 1 };
+
+    expect(depthSentence(report)).toBe(
+      "2 of 9 flagged packages are named by no line of composer.json; the deepest, friendsofsymfony/oauth2-php, symfony/polyfill-intl-idn, sit 1 hop from the nearest line. 1 more is named only in require-dev, which this run did not walk (pass --dev).",
+    );
+  });
+
+  test("adds the require-dev sentence after every form, with a plural verb", () => {
+    const report = golden("composite");
+    report.rot_depth = {
+      ...report.rot_depth,
+      not_in_composer_json: 0,
+      deepest: [],
+      require_dev_not_walked: 3,
+    };
+    expect(depthSentence(report)).toBe(
+      "All 9 flagged packages are named by a line of composer.json. 3 more are named only in require-dev, which this run did not walk (pass --dev).",
+    );
+
+    report.rot_depth = { ...report.rot_depth, not_in_composer_json: 2 };
+    expect(depthSentence(report)).toBe(
+      "2 of 9 flagged packages are named by no line of composer.json. 3 more are named only in require-dev, which this run did not walk (pass --dev).",
+    );
+  });
+
   test("has no sentence when nothing is flagged", () => {
     expect(depthSentence(golden("new-symfony"))).toBeNull();
   });

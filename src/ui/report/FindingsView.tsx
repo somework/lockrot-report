@@ -32,6 +32,7 @@ import { useReport2 } from "./useReport";
 import "../views/views.css";
 import "../views/ledger-rows.css";
 import "./findings.css";
+import { platformStep } from "../../domain/moveCards";
 
 /** `applyFilters2` keeps `rank` order, which runs grade by grade, so a boundary is enough. */
 function byGrade(findings: readonly Finding[]): { verdict: string; findings: Finding[] }[] {
@@ -236,6 +237,7 @@ export function FindingsView2() {
   const thresholds = report.run.thresholds;
   const axis = thresholds === null ? null : ageAxis(Object.entries(thresholds));
   const printed = usePrinted();
+  const platform = platformStep(report.run);
   return (
     <section className="f2" data-surface="findings">
       <Notes report={report} />
@@ -243,6 +245,7 @@ export function FindingsView2() {
         <EmptyState reason={population2(report, "findings").length === 0 ? "clean" : "filtered"} />
       ) : (
         <>
+          {platform !== null && <p className="f2-platform">{platform}</p>}
           <div className="fledger f2-ledger" role="table" aria-label="Findings">
             {!printed && <ColumnHead run={report.run} axis={axis} />}
             {byGrade(rows).map((group) => (

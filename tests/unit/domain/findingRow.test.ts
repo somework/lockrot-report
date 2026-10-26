@@ -206,7 +206,7 @@ describe("nextStepWords", () => {
 
   it("words a blocked move that is not a snapshot's by its branch and the php it needs", () => {
     expect(words("A-blocked-dagger").text).toMatch(
-      /^\S+ (needs php \S+; target \S+ runs no fixing release|does not run on \S+)$/,
+      /^\S+ (needs php \S+; target \S+ runs no (fixing|newer) release|does not run on \S+)$/,
     );
   });
 

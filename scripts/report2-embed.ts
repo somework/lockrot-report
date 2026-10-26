@@ -110,14 +110,28 @@ export function sheetPages(): Report2Page[] {
     });
 }
 
-/** The page cases of `page-goldens.json` that carry a real move check: lockrot's engine run of
- *  snipe-it, and the model's ‡ document derived from it. Neither has an explain-2, so no details. */
+const modelPage = (name: string): { name: string; path: string[] } => ({
+  name: `page-${name}`,
+  path: ["schema", "documents", "page", `${name}.json`],
+});
+
+/** The page cases of `page-goldens.json` that carry a real move check or a PHP window state: lockrot's
+ *  engine runs of snipe-it and drupal-site, and the model's ‡ documents of real locks. None has an
+ *  explain-2, so no details. */
 const PAGE_CASES = [
   { name: "page-snipe-it", path: ["contract", "page", "snipe-it.json"] },
-  {
-    name: "page-snipe-it.unloaded-dagger",
-    path: ["schema", "documents", "page", "snipe-it.unloaded-dagger.json"],
-  },
+  { name: "page-drupal-site", path: ["contract", "page", "drupal-site.json"] },
+  { name: "page-mc-composite-dagger", path: ["schema", "documents", "cases", "mc-composite-dagger.json"] },
+  ...[
+    "snipe-it.unloaded-dagger",
+    "run.W74-dagger",
+    "run.MON-dagger",
+    "run.MON-8.5-dagger",
+    "run.MAU-dagger",
+    "run.LAM-dagger",
+    "composite.php-empty-with-dev-dagger",
+    "composite.php-override-dagger",
+  ].map(modelPage),
 ];
 
 function pageCasePages(): Report2Page[] {

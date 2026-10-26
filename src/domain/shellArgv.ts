@@ -25,7 +25,8 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set(["update", "require", "why-not"
 // would pass an option to Composer.
 const LOCKROT_OPTIONS: Readonly<Record<string, ReadonlySet<string>>> = {
   update: new Set(["--with-dependencies", "--with-all-dependencies"]),
-  require: new Set(["--no-update", "--with-dependencies", "--with-all-dependencies"]),
+  require: new Set(["--no-update", "--dev", "--with-dependencies", "--with-all-dependencies"]),
+  "why-not": new Set(["--locked"]),
 };
 
 const POSIX_BARE = /^[A-Za-z0-9/._:@%+=,-]+$/;
@@ -41,6 +42,8 @@ export function isPrintableArgv(argv: readonly string[]): boolean {
   const [program, subcommand = ""] = argv;
   if (program !== "composer" || !SUBCOMMANDS.has(subcommand)) return false;
   const args = argv.slice(2);
+  // `composer update --lock` rewrites a lock-only platform link (target_fix, SPEC §5.9).
+  if (subcommand === "update" && args.length === 1 && args[0] === "--lock") return true;
   const firstOption = args.findIndex((argument) => argument.startsWith("-"));
   const packages = firstOption === -1 ? args : args.slice(0, firstOption);
   const options = firstOption === -1 ? [] : args.slice(firstOption);

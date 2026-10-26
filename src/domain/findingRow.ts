@@ -14,10 +14,11 @@ import {
   oneDecimal,
 } from "./findingWords";
 import { plural, pluralNoun } from "./format";
-import { holderRank, newLineTag, ROOT_HOLDER_NAME } from "./moveCards";
-import { afterIt } from "./securityBlock";
+import { compareHolds } from "./holdRank";
+import { newLineTag, ROOT_HOLDER_NAME } from "./moveCards";
+import { afterIt, holderWord } from "./securityBlock";
 import { commandLine } from "./shellArgv";
-import { allowlistByInWhy, allowlistReason, headlineReasonWord } from "./pageVocabulary";
+import { allowlistByInWhy, allowlistReason, headlineReasonWord, stoppedCheckWords } from "./pageVocabulary";
 import { vocabTable, type Tone } from "./vocab";
 
 export interface BaselineMark {
@@ -287,12 +288,16 @@ function replaceWords(step: Move): Pick<NextStepWords, "text" | "title" | "href"
   };
 }
 
+/** The needs-php words of a `blocked` row (golden `blocked`); null on a pinned row and any other kind. */
+export const rowBlockedWords = (f: Finding, run: Run): string | null =>
+  f.next_step?.kind === "blocked" && f.next_step.source !== "pinned" ? blockedWords(f.next_step, run) : null;
+
 function blockedWords(step: Move, run: Run): string {
   if (step.source === "pinned") return `no tag runs on ${run.target_php}`;
   const requires = step.php_check?.requires ?? null;
   return requires === null
     ? `${step.to_branch ?? ""} does not run on ${run.target_php}`
-    : `${step.to_branch ?? ""} needs php ${requires}; target ${run.target_php} runs no fixing release`;
+    : `${step.to_branch ?? ""} needs php ${requires}; target ${run.target_php} runs no ${step.fix_kind === null ? "newer" : "fixing"} release`;
 }
 
 function kindWords(f: Finding, step: Move, run: Run): string {
@@ -301,7 +306,7 @@ function kindWords(f: Finding, step: Move, run: Run): string {
     case "require":
       return `${where} ${step.constraint ?? ""}`;
     case "raise-php":
-      return "php floor raise";
+      return rowRaiseWords(f) ?? "php floor raise";
     case "update":
       return "composer update";
     case "tag": {
@@ -337,25 +342,27 @@ export function nextStepWords(f: Finding, run: Run): NextStepWords {
   return { text: kindWords(f, step, run), title: null, href: null, held };
 }
 
-type Hold = Pick<HeldBy, "source" | "package" | "holder">;
+type Hold = Pick<HeldBy, "source" | "package" | "target" | "holder">;
 
-/** Accepted derivation 3: the distinct package holders, sorted by the sheet's holder rank
- *  (`holderRank`), the first named and the rest counted; with only a root hold, the root as the
- *  sheet's Held by names it. */
+/** Accepted derivation 3: the distinct package holders in the holder rank (`compareHolds`, `own`
+ *  the finding's package), the first named and the rest counted; its own release reads as such.
+ *  With only a root hold, the root as the sheet's Held by names it. */
 export function heldByLine(
   holds: readonly Hold[],
   run: Run,
+  own: string,
 ): { readonly name: string; readonly more: number } | null {
+  // Sorted before the duplicates go, so a holder with two holds ranks by its best one.
   const seen = new Set<string>();
-  const packages = holds.filter((hold) => {
-    if (hold.source !== "package" || hold.package === null || seen.has(hold.package)) return false;
-    seen.add(hold.package);
-    return true;
-  });
-  const [first, ...rest] = packages
-    .map((hold, at) => ({ hold, at, rank: holderRank(hold, run) }))
-    .sort((a, b) => a.rank - b.rank || a.at - b.at);
-  if (first !== undefined) return { name: first.hold.package ?? "", more: rest.length };
+  const [first, ...rest] = holds
+    .filter((hold) => hold.source === "package" && hold.package !== null)
+    .sort((a, b) => compareHolds(a, b, run, own))
+    .filter((hold) => {
+      if (seen.has(hold.package ?? "")) return false;
+      seen.add(hold.package ?? "");
+      return true;
+    });
+  if (first !== undefined) return { name: holderWord(first, own), more: rest.length };
   return holds.some((hold) => hold.source === "root") ? { name: ROOT_HOLDER_NAME, more: 0 } : null;
 }
 
@@ -368,18 +375,32 @@ export const rowHolds = (f: Finding): readonly Hold[] =>
 
 const ROW_STEPS: ReadonlySet<string> = new Set(["update", "require"]);
 
-/** Accepted derivation 8 (§5.6): the first checked `update` or `require` step of the move; none
- *  when one argv fails the check or every step is a `why-not`. */
+/** An update or require step that names the finding's package, bare or with a constraint. */
+const namesPackage = (argv: readonly string[], pkg: string): boolean =>
+  ROW_STEPS.has(argv[1] ?? "") && argv.slice(2).some((arg) => arg === pkg || arg.startsWith(`${pkg}:`));
+
+/** A `raise-php` row that shows no command says the raise instead (golden `raise_words`); null on
+ *  any other row, and when lockrot names no `raise_to`. */
+export function rowRaiseWords(f: Finding): string | null {
+  const step = f.next_step;
+  const raiseTo = step?.php_check?.raise_to ?? null;
+  if (step?.kind !== "raise-php" || raiseTo === null || rowCommandArgv(f) !== null) return null;
+  return `raise require.php to ${raiseTo}`;
+}
+
+/** Accepted derivation 8 (§5.6): the first checked step of the move that names the
+ *  finding's package; none when one argv fails the check or no step names it. */
 export function rowCommandArgv(f: Finding): readonly string[] | null {
   const argvs = f.next_step?.commands ?? [];
   if (argvs.some((argv) => commandLine(argv, "posix") === null)) return null;
-  return argvs.find((argv) => ROW_STEPS.has(argv[1] ?? "")) ?? null;
+  return argvs.find((argv) => namesPackage(argv, f.package)) ?? null;
 }
 
-/** What is left after the lead move, with G139's Composer caveat only when its `assumes` holds
- *  `composer_resolves`; null without `if_applied` (SPEC §7.9.5). */
+/** What is left after the lead move, in G139's words: the Composer caveat only when its `assumes`
+ *  holds `composer_resolves` and the check did not stop it, else the check's short words. Without
+ *  `if_applied` only those words show, and nothing shows when the check did not stop it either. */
 export const rowAfter = (f: Finding): string | null =>
-  f.next_step === null ? null : afterIt(f.next_step.if_applied);
+  f.next_step === null ? null : afterIt(f.next_step.if_applied, stoppedCheckWords(f.next_step.check ?? null));
 
 /** Accepted derivation 11: the lead move crosses a major (`next_step.crosses_major`), in the
  *  sheet's Composer note words without their reason, which the sheet keeps. Null otherwise. */
@@ -400,7 +421,9 @@ export function majorCount(findings: readonly Finding[]): { readonly n: number; 
 }
 
 export const majorCountWords = ({ n, m }: { n: number; m: number }): string | null =>
-  m === 0 || n === 0 ? null : `${n} of ${m} moves cross a major`;
+  m === 0 || n === 0
+    ? null
+    : `${n} of ${m} ${m === 1 ? "move" : "moves"} ${n === 1 ? "crosses" : "cross"} a major`;
 
 /** That step as one POSIX line. */
 export function rowCommand(f: Finding): string | null {

@@ -3,6 +3,8 @@ name: Release
 # A tag vX.Y.Z builds dist/, attests every file, and attaches them to a GitHub release. lockrot
 # vendors report.html and manifest.json from that release after `gh attestation verify`. A tag with
 # a pre-release suffix (vX.Y.Z-rc.N) publishes a pre-release that is never the Latest release.
+# A tag outside main and the release branches, or a red unit or e2e test, stops the release before
+# anything is attested.
 
 on:
   push:
@@ -19,7 +21,18 @@ jobs:
       id-token: write # build provenance attestation
       attestations: write
     steps:
+      # Full history: the branch check reads every remote branch.
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      # A tag on another commit would publish an attested page that no reviewed branch holds.
+      - name: the tagged commit is on main or a release branch
+        run: |
+          for branch in $(git for-each-ref --format='%(refname)' refs/remotes/origin/main refs/remotes/origin/release/); do
+            git merge-base --is-ancestor "$GITHUB_SHA" "$branch" && exit 0
+          done
+          echo "::error::$GITHUB_REF_NAME is on neither main nor a release branch"
+          exit 1
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
@@ -28,8 +41,18 @@ jobs:
       - name: the tag names the version package.json builds
         run: |
           test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
+      # The same gates as ci.yml: the unit and contract tests, then the e2e suite on the built page.
+      - run: npm run contract:fetch
+      - run: npm test
       - run: npm run build
       - run: npx vitest run tests/build
+      - run: npx playwright install --with-deps chromium firefox webkit
+      # Pinned so the layout budgets measure the same fonts as ci.yml.
+      - run: sudo apt-get install -y --no-install-recommends fonts-dejavu-core
+      - run: node scripts/pages.mjs
+      - run: npx playwright test
+        env:
+          CI: "true"
       - name: release notes
         run: node scripts/release-notes.mjs "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
       - uses: actions/attest-build-provenance@v4

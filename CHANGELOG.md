@@ -150,6 +150,74 @@ project is overall, and the other tabs lead with their own part.
   `<` and `=`).
 - A report the page cannot read, or one that breaks the page as it draws, shows a screen that says
   so instead of a blank page.
+- The PHP window. When the target PHP is outside it, when `config.platform.php` sets the PHP that
+  Composer checks, or when a package carries `capped`, a "PHP" state line follows the gate line:
+  "PHP: this lock installs on PHP 7.4, so your target, 8.4, is excluded · 3 packages exclude 8.4:
+  … · Composer's solver at PHP 8.4 refuses their update: composer.json requires
+  php-http/guzzle5-adapter ^2.0. The PHP window ›". It names the update that admits the target
+  and Composer's answer, or the root link that alone excludes it. The Run tab lists both windows
+  in full: the minors, the lowest PHP and what sets it, and the minor that the lock excludes.
+- The flag `capped` and its signal S11, "PHP cap". The open package reads "It requires php
+  ~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0: it stops at 8.4, so the newest PHP, 8.5, is excluded", and
+  drops the constraint when the target's own PHP line already names it. A package that sets an
+  edge of the PHP window, stricter than require.php, says so under PHP: "It sets the lowest PHP
+  this lock admits: 8.1.0". A move that lands on a capped release adds "capped: it stops below the
+  newest PHP", and a package that no release frees reads "No release above 4.7.1 admits PHP 8.5".
+  Each constraint prints in full.
+- On a run whose lock Composer's solver refuses at the target PHP, a move card's check reads "if
+  Composer resolves it (not checked: Composer's solver refuses the lock itself at the target PHP;
+  see the PHP line in the Overview)". When the target lies inside the PHP window, or the run has no
+  window, it reads "Composer's solver refuses the lock itself; the Run tab names the cause".
+- A lock can set `config.platform.php` outside the minor of the target PHP. Then each move card,
+  Ready to run and the Findings tab first print one line. It reads "First set config.platform.php
+  to your PHP 8.4 release: the lock records 7.4.29." The commands do not change. When Composer
+  also refuses the lock itself, the line goes on: "Composer still refuses the lock itself: the PHP
+  line names the packages."
+- Holders keep one order on every surface: the root, then the package's own releases, then the
+  packages that require the package, then the rest. A group goes by grade, then by name.
+- In Held by, a hold by the package's own release takes no grade, no flags and no own step. It
+  reads "symfony/mailer v5.4.52, its own release". A one-line surface says "its own release". The
+  fold counts these holds and the root holds apart from the graded holders. It reads "5 more: 1 in
+  composer.json, 2 of its own releases, 1 graded critical and 1 graded high". Ready to run does not
+  count such a finding as held by other packages.
+- A root hold from require-dev says so: "requires ^4.4.47 in require-dev". The PHP line marks a
+  root hold on a require-dev package: "composer.json requires friendsoftwig/twigcs ^6.1 in
+  require-dev".
+- The Held by fold counts a holder at a release other than its locked one as such, not as a
+  holder with nothing flagged.
+- When a package also excludes the target at the root ceiling, the PHP line names it: "your
+  target, 8.4, is excluded by require.php and by 1 package: laminas/laminas-skeleton-installer".
+- A root php link that only the lock's platform records closes the PHP line: "the lock records
+  require.php >=7.4 <8.1, which composer.json does not have: composer update --lock rewrites it".
+- A move check that the advisory lookup did not cover reads "not checked: the advisory lookup did
+  not cover a package it installs".
+- A ladder rung names each holder once. A rung held by every holder of Held by says "held by every
+  holder in Held by".
+- A Findings row shows the move's first command that names the package. A PHP floor raise with no
+  such command reads "raise require.php to >=8.1" and shows no command. Its "after it" ends with
+  the check's short words when the check refused the move or did not run.
+- The Overview fix counts and the Fix filter of the package tabs read the same field, the
+  package's fix. A `composer why-not` check on a held move adds "This shows which package holds
+  the move."
+- Ready to run tags a move to a 0.x line as "a new 0.x line", as its Findings row does. On a run
+  whose baseline Composer refuses, it reads "No move is ready to run: Composer refuses the lock
+  itself, so no move was checked."
+- Blast radius leads with the depth sentence, then "52 flagged packages pulled in.", how many sit
+  under no direct requirement, and the rows that hold them. The rows are named until they hold half
+  of the packages pulled in. With none pulled in, the depth sentence stands alone.
+- Counts agree with their total: "1 of 113 flagged packages", "1 of 1 move crosses a major".
+  Provenance words its origin and each source's status. An empty Advisories tab still leads with
+  the Security summary. Libyears reads "Not measured: 1, a branch snapshot with no release branch".
+  A blocked move with no fix kind reads "runs no newer release".
+- A move that a joint request resolves names the other packages it updates. The line sits under
+  the command box and in Ready to run. Such a transitive move drops "What requires it must allow
+  it".
+- The Composer note of a transitive replace, alternative or test names one action per group of
+  dependents. The project's own path package reads "Change your own package". A dependent at its
+  newest release reads "Replace", and any other dependent reads "Replace or update".
+- An update that Composer installs below its newest release names both releases. A holder that
+  composer.json does not require reads "its own step: move to". A `self.version` hold names the
+  holder's version.
 
 ### Changed
 
@@ -216,14 +284,29 @@ project is overall, and the other tabs lead with their own part.
   longer slides down when the footer comes into view.
 - The open row of All packages is one highlight with the accent rule down its edge, as on Findings.
   It no longer shows a grey block behind each cell and a short bar beside the name.
+- The baseline state line prints its new, worsened and known counts as text, with no link.
+- The empty Findings tab reads "Nothing is flagged."
+- The Data-as-of caption and the data column read the day of a datetime as written, as the header
+  and the cells do. An offset other than UTC no longer moves the caption to another day.
+- The depth-0 bar reads "direct", as the text formats do. When the run did not walk require-dev, the
+  depth sentence says how many more packages are named only there.
+- The `?` key opens the glossary on its "Keys and search" section, unfolded and in view. The
+  glossary button still opens it at the top.
+- The waffle caption and its key name the allowlisted packages by their verdict, "finished". The
+  glossary entry of `finished` says that it covers allowlisted packages.
+- The empty Advisories tab draws one clean mark on screen, in the Security block.
 
 ### Security
 
 - The copy control prints a command only when every argument passes lockrot's
   command argument rule. The rule takes `composer` with `update`, `require` or `why-not`, and
   each argument from a fixed set of characters. The only arguments that start with a dash are
-  lockrot's own `--no-update`, `--with-dependencies` and `--with-all-dependencies`, after every
-  package argument.
+  lockrot's own options, after every package argument: `--no-update` and `--dev` in a `require`
+  step, `--with-dependencies` and `--with-all-dependencies` in an `update` or `require` step, and
+  `--locked` in a `why-not` step. `--lock` passes only as the one argument of an `update` step.
+- The release workflow refuses a tag whose commit is on neither main nor a release branch. It
+  runs the unit, contract and e2e tests before it builds and attests the page, so a red test
+  stops the release.
 - A report file can be edited. So a command that fails the rule shows "This command holds
   characters the page does not print." in place of every step, on every shell. The menu previews
   nothing, and the Copy button is hidden. PowerShell always reads `composer --%` and the cmd.exe

@@ -91,10 +91,21 @@ describe("the data date said once (accepted derivation 4)", () => {
     findings,
   });
 
-  it("hides the column when every dated row falls on the report's UTC day", () => {
-    const doc = page([at("2026-10-17T23:30:00+00:00"), at("2026-10-18T01:00:00+02:00")]);
+  it("hides the column when every dated row falls on the report's day(t)", () => {
+    const doc = page([at("2026-10-17T23:30:00+00:00"), at("2026-10-17T01:00:00+02:00")]);
     expect(showsDataColumn(doc)).toBe(false);
     expect(dataCaption(doc)).toBe("Every row has data as of 2026-10-17");
+  });
+
+  it("reads the day as written, not in UTC, under a non-UTC offset (§7.9.13)", () => {
+    const doc = { ...page([at("2026-10-01T00:30:00+00:00")]), data_date: "2026-10-01T01:00:00+03:00" };
+    expect(showsDataColumn(doc)).toBe(false);
+    expect(dataCaption(doc)).toBe("Every row has data as of 2026-10-01");
+  });
+
+  it("shows the column when a row's day(t) differs, though both name one UTC day", () => {
+    const doc = page([at("2026-10-18T01:00:00+02:00")]);
+    expect(showsDataColumn(doc)).toBe(true);
   });
 
   it("counts the rows that read no repository data", () => {

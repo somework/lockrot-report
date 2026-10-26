@@ -52,6 +52,7 @@ const SIGNAL_NAMES: Words = {
   S8: "release branch",
   S9: "advisories",
   S10: "unchecked",
+  S11: "PHP cap",
 };
 
 export const signalName = (id: string): string => wordFor(SIGNAL_NAMES, id);
@@ -83,10 +84,6 @@ const ALLOWLIST_REASONS: Words = {
 export const allowlistReason = (id: string): string | null =>
   Object.hasOwn(ALLOWLIST_REASONS, id) ? (ALLOWLIST_REASONS[id] ?? null) : null;
 
-const ZERO_VERDICT_WHEN: Words = { allowlisted: "allowlisted", no_metadata: "no metadata" };
-
-export const zeroVerdictWhen = (id: string): string => wordFor(ZERO_VERDICT_WHEN, id);
-
 export interface ZeroVerdictMark {
   readonly word: string;
   readonly mark: "soft" | "ring-dot" | "hatch";
@@ -94,7 +91,7 @@ export interface ZeroVerdictMark {
 
 const ZERO_VERDICT_MARKS: Readonly<Record<string, ZeroVerdictMark>> = {
   ok: { word: "ok", mark: "soft" },
-  finished: { word: "allowlisted", mark: "ring-dot" },
+  finished: { word: "finished", mark: "ring-dot" },
   unknown: { word: "not judged", mark: "hatch" },
 };
 
@@ -131,6 +128,7 @@ export const CHECK_REASON_WORDS: readonly (readonly [reason: string, words: stri
   ["no_release_read", "no release of the row was read"],
   ["pass_cap", "Composer refused each move before it"],
   ["solver_error", "Composer's solver failed on it"],
+  ["advisory_lookup_incomplete", "the advisory lookup did not cover a package it installs"],
 ];
 
 /** A reason's words; an unknown reason as written, in a code element (SPEC §7.9.21). */
@@ -226,6 +224,32 @@ export function metadataStatusWord(status: string, originKind: string): string {
   return wordFor(METADATA_STATUS, status);
 }
 
+const ORIGIN_KINDS: Words = {
+  packagist: "Packagist",
+  composer: "a Composer repository",
+  path: "a local path",
+  vcs: "a VCS repository",
+  artifact: "an artifact",
+  package: "an inline package in composer.json",
+  unknown: "unknown",
+};
+
+export const originKindWord = (kind: string): string => wordFor(ORIGIN_KINDS, kind);
+
+const PROVENANCE_STATUS: Words = {
+  read: "read",
+  not_from_composer_repository: "not from a Composer repository",
+  unavailable: "its repository could not be read",
+  not_found: "its repository does not list it",
+  not_read: "not read",
+};
+
+const ACTIVITY_STATUS: Words = { read: "read", not_found: "repository not found", not_read: "not read" };
+
+/** Provenance's metadata and activity status, a closed id in words. */
+export const metadataProvenanceWord = (status: string): string => wordFor(PROVENANCE_STATUS, status);
+export const activityProvenanceWord = (status: string): string => wordFor(ACTIVITY_STATUS, status);
+
 const HEADLINE_REASONS: Words = { archived: "archived", marked: "marked", branch_snapshot: "snapshot" };
 
 export const headlineReasonWord = (id: string): string => wordFor(HEADLINE_REASONS, id);
@@ -233,6 +257,7 @@ export const headlineReasonWord = (id: string): string => wordFor(HEADLINE_REASO
 const ADDS_BASIS: Words = {
   released_before_ga: "it was released before your target PHP's major",
   branch_not_releasing: "that line no longer releases while a higher line does",
+  stops_below_newest_php: "it stops below the newest PHP",
 };
 
 export const addsBasisWord = (id: string): string =>
@@ -418,6 +443,7 @@ const FLAG_CLAIMS: Words = {
   "old-promise":
     "The installed release predates the target PHP's major, and its require.php admits the target only because it has no upper bound.",
   stale: "No release for release-warn-years, or no push for push-warn-years, short of silent.",
+  capped: "It stops below the newest PHP.",
   vulnerable: "A counted security advisory affects the installed version.",
 };
 

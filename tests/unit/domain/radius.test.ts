@@ -195,20 +195,10 @@ describe("radiusCountPhrase", () => {
   const everything = [...listed, ...left];
   const model = source(everything, [entry("a/p", [["x/1"]]), entry("b/p", [["y/1"]])]);
 
-  it("says which list it counts and adds the flagged direct requirements with nothing flagged counted under them", () => {
+  it("counts the direct requirements on the exposure list alone (R12)", () => {
     const layout = radiusLayout(model, everything, everything);
 
-    expect(radiusCountPhrase(layout)).toBe(
-      "2 of 2 direct requirements on the exposure list, plus 2 of 2 flagged ones with nothing flagged counted under them",
-    );
-  });
-
-  it("counts the left-out ones a filter keeps against all of them", () => {
-    const layout = radiusLayout(model, [left[0] as RadiusFinding], everything);
-
-    expect(radiusCountPhrase(layout)).toMatch(
-      /, plus 1 of 2 flagged ones with nothing flagged counted under them$/,
-    );
+    expect(radiusCountPhrase(layout)).toBe("2 of 2 direct requirements");
   });
 });
 
@@ -264,6 +254,20 @@ describe("radiusAnswer", () => {
 
     expect(answer?.top.map((r) => r.package)).toEqual(["a/p", "b/p"]);
     expect(answer).toMatchObject({ held: 5, total: 7, rows: 3, exposureCount: 3 });
+  });
+
+  it("names rows until they hold half of the pulled-in count it is given (SPEC §7.9.20)", () => {
+    const flagged = ["a/1", "a/2", "a/3", "b/1", "b/2", "c/1", "c/2"].map((name) => pulled(name));
+    const model = source(flagged, [
+      entry("a/p", [["a/1"], ["a/2"], ["a/3"]]),
+      entry("b/p", [["b/1"], ["b/2"]]),
+      entry("c/p", [["c/1"], ["c/2"]]),
+    ]);
+
+    const answer = radiusAnswer(radiusLayout(model, flagged), 12);
+
+    expect(answer?.top.map((r) => r.package)).toEqual(["a/p", "b/p", "c/p"]);
+    expect(answer).toMatchObject({ held: 7 });
   });
 
   it("is null when no row lists a finding", () => {

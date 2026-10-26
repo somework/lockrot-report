@@ -123,7 +123,7 @@ export const exposureUnit = (flagged: number): string =>
   pluralNoun(flagged, "flagged package", "flagged packages");
 
 export interface DepthRow {
-  /** "in composer.json" at depth 0, else "{n} hop(s) away". */
+  /** "direct" at depth 0, else "{n} hop(s) away". */
   readonly label: string;
   readonly flagged: number;
 }
@@ -133,7 +133,7 @@ export function depthRows({ rot_depth: depth }: Report2): DepthRow[] {
   if (depth.flagged === 0 || depth.unmeasured.no_composer_json > 0) return [];
   return [
     ...depth.by_depth.map(({ depth: hops, flagged }) => ({
-      label: hops === 0 ? "in composer.json" : `${plural(hops, "hop", "hops")} away`,
+      label: hops === 0 ? "direct" : `${plural(hops, "hop", "hops")} away`,
       flagged,
     })),
     ...(depth.by_reach.unreached > 0 ? [{ label: "not reached", flagged: depth.by_reach.unreached }] : []),

@@ -35,7 +35,7 @@ function finding(
     next_step: {
       kind: "update",
       commands: [["composer", "update", name]],
-      check: { result: "resolves", form: "inline", reason: null },
+      check: { result: "resolves", form: "inline", reason: null, installs: null },
       held_by: held === "none" ? [] : [hold(held)],
       also: [],
     },
@@ -76,7 +76,7 @@ function raisePhp(name: string, raiseTo: string | null): Finding {
         ["composer", "require", `${name}:^2.0`],
       ],
       php_check: { raise_to: raiseTo },
-      check: { result: "resolves", form: "inline", reason: null },
+      check: { result: "resolves", form: "inline", reason: null, installs: null },
       held_by: [],
       also: [],
     },
@@ -108,6 +108,48 @@ describe("readyFindings (the Ready to run block)", () => {
       true,
     );
     expect(readyFindings(r).map((f) => f.package)).toEqual(["c/c"]);
+  });
+});
+
+describe("Ready to run on a refused baseline (R14)", () => {
+  it("says that Composer refuses the lock itself, so no move was checked", () => {
+    const stopped = finding("b/b", 2, true);
+    const r = {
+      ...report([stopped], true),
+      packages_flagged: 1,
+      run: { graded_verdicts: ["critical", "high", "medium", "low"], move_check: { baseline: "refused" } },
+    } as unknown as Report2;
+    if (stopped.next_step !== null)
+      stopped.next_step.check = {
+        result: "not_checked",
+        form: null,
+        reason: "baseline_refused",
+        installs: null,
+      };
+
+    expect(firstMoves(r).none).toBe(
+      "No move is ready to run: Composer refuses the lock itself, so no move was checked.",
+    );
+  });
+});
+
+describe("the new-line tag of a ready move (R8)", () => {
+  const ready = (toBranch: string): string | null | undefined => {
+    const found = pageGoldens().find((entry) => entry.id === "snipe-it");
+    if (found === undefined) throw new Error("no page golden snipe-it");
+    const report = structuredClone(found.report);
+    const [first] = readyFindings(report);
+    if (first?.next_step == null) throw new Error("snipe-it has a ready move");
+    first.next_step = { ...first.next_step, crosses_major: true, to_branch: toBranch };
+    return firstMoves(report).moves.find((move) => move.package === first.package)?.newLine;
+  };
+
+  it("says a new 0.x line for a 0.x move, as the Findings row does (mautic)", () => {
+    expect(ready("0.6.x")).toBe("a new 0.x line");
+  });
+
+  it("says a new major for another move across a major", () => {
+    expect(ready("3.x")).toBe("a new major");
   });
 });
 
@@ -185,6 +227,24 @@ describe("wayOutLine", () => {
       "5 need another way out: 1 test, 1 Composer refuses the move, 1 not checked: Composer refuses the lock itself, 1 not checked: a package it needs is not in Composer's cache, 1 not checked: a_later_reason",
     );
     expect(firstMoves(r).wayOutParts).toContainEqual({ text: "a_later_reason", code: true });
+  });
+
+  it("words an advisory_lookup_incomplete check from the reason table, after solver_error", () => {
+    const stopped = (name: string, reason: string): Finding =>
+      ({
+        ...stuck(name, "update"),
+        next_step: {
+          kind: "update",
+          commands: [],
+          held_by: [],
+          also: [],
+          check: { result: "not_checked", form: null, reason },
+        },
+      }) as unknown as Finding;
+    const r = report([stopped("a/a", "advisory_lookup_incomplete"), stopped("b/b", "solver_error")], true);
+    expect(wayOutLine(r)).toBe(
+      "2 need another way out: 1 not checked: Composer's solver failed on it, 1 not checked: the advisory lookup did not cover a package it installs",
+    );
   });
 
   it("counts every Composer move as not checked when the run checked no move", () => {

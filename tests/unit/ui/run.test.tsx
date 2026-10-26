@@ -36,7 +36,7 @@ afterEach(() => {
 });
 
 describe("the Run tab of a report-2 document", () => {
-  test("holds the run facts, How the score works, the advisory lookup, the gate and the thresholds, in that order", () => {
+  test("holds the run facts, How the score works, the advisory lookup, the PHP window, the gate and the thresholds, in that order", () => {
     render(<App model={model()} />);
 
     const headings = [...run().querySelectorAll("h3")].map((heading) => heading.textContent);
@@ -44,9 +44,48 @@ describe("the Run tab of a report-2 document", () => {
       "This run",
       "How the score works · score model 1",
       "Advisory lookup",
+      "PHP window",
       "Gate",
       "Thresholds in force",
     ]);
+  });
+
+  test("lists the PHP window of each set, with the override and the host features (SPEC §7.9.16)", () => {
+    render(
+      <App
+        model={model((report) => {
+          const window = report.run.php_window;
+          if (window === null) throw new Error("the composite has a PHP window");
+          report.run.php_window = { ...window, platform_override: "7.4.29", host_requires: ["php-zts"] };
+        })}
+      />,
+    );
+
+    const section = [...run().querySelectorAll("section")].find(
+      (s) => s.querySelector("h3")?.textContent === "PHP window",
+    );
+    const rows = [...(section?.querySelectorAll(".run2-kv-row") ?? [])].map((row) =>
+      [row.querySelector("dt")?.textContent, row.querySelector("dd")?.textContent].join(": "),
+    );
+    expect(rows).toEqual([
+      "PHP window, with require-dev: 7.2 to 8.5 · lowest 7.2.5, set by symfony/yaml >=7.2.5",
+      "PHP window, without require-dev: 7.2 to 8.5 · lowest 7.2.5, set by symfony/yaml >=7.2.5",
+      "Composer checks the lock at: 7.4.29 (config.platform.php)",
+      "Host features required: php-zts",
+    ]);
+  });
+
+  test("has no PHP window section when the run has no window", () => {
+    render(
+      <App
+        model={model((report) => {
+          report.run.php_window = null;
+        })}
+      />,
+    );
+
+    const headings = [...run().querySelectorAll("h3")].map((heading) => heading.textContent);
+    expect(headings).not.toContain("PHP window");
   });
 
   test("states the baseline counts and each stale entry after the advisory lookup", () => {
@@ -75,7 +114,7 @@ describe("the Run tab of a report-2 document", () => {
     render(<App model={model()} />);
 
     const weights = within(run()).getByRole("table", { name: "Weights" });
-    expect(within(weights).getAllByRole("row")).toHaveLength(7);
+    expect(within(weights).getAllByRole("row")).toHaveLength(8);
     const advisories = within(run()).getByRole("table", { name: "Advisories" });
     expect(within(advisories).getByRole("rowheader", { name: "unrated (counts as medium)" })).toBeTruthy();
   });

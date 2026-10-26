@@ -51,6 +51,101 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("Provenance prints words for every closed id (R14)", () => {
+  const provenance = (sheet: HTMLElement): string[] => {
+    const section = [...sheet.querySelectorAll("details")].find(
+      (d) => d.querySelector("h3")?.textContent === "Provenance",
+    );
+    return [...(section?.querySelectorAll("dd") ?? [])].map((dd) => dd.textContent);
+  };
+
+  test("words the origin, the metadata and the activity status", () => {
+    const sheet = openCase("B", (embed) => {
+      const [first] = embed.report.findings;
+      if (first === undefined) throw new Error("B has a finding");
+      first.origin = { ...first.origin, kind: "package" };
+      first.metadata = { ...first.metadata, status: "not_from_composer_repository", reason: null };
+      first.activity = { ...first.activity, status: "not_read" } as typeof first.activity;
+      return embed;
+    });
+
+    const values = provenance(sheet);
+    expect(values).toContain("an inline package in composer.json");
+    expect(values).toContain("not from a Composer repository");
+    expect(values.some((v) => v.startsWith("not read"))).toBe(true);
+    expect(values).not.toContain("package");
+  });
+
+  test("words packagist and read", () => {
+    const values = provenance(openCase("B"));
+    expect(values).toContain("Packagist");
+    expect(values).not.toContain("packagist");
+  });
+});
+
+describe("G160: a why-not check on a move that holders hold", () => {
+  const NOTE = "This shows which package holds the move.";
+  const withChecks = (commands: string[][]) => (embed: Report2Embed) => {
+    const [first] = embed.report.findings;
+    if (first?.next_step == null) throw new Error("B has a move");
+    first.next_step = { ...first.next_step, commands, composer_moves_because: ["holders"] };
+    return embed;
+  };
+
+  test("prints the note once, right under the command box", () => {
+    const sheet = openCase("B", withChecks([["composer", "why-not", "knuckleswtf/scribe", "5.11.0"]]));
+
+    const notes = [...sheet.querySelectorAll(".d3-move .d3-move-note")];
+    expect(notes.map((note) => note.textContent)).toEqual([NOTE]);
+    expect(notes[0]?.previousElementSibling?.classList.contains("d3-cmd")).toBe(true);
+  });
+
+  test("prints it when other steps share the box", () => {
+    const sheet = openCase(
+      "B",
+      withChecks([
+        ["composer", "require", "symfony/monolog-bridge:^5.4"],
+        ["composer", "why-not", "knuckleswtf/scribe", "5.11.0"],
+      ]),
+    );
+
+    expect([...sheet.querySelectorAll(".d3-move .d3-move-note")].map((note) => note.textContent)).toEqual([
+      NOTE,
+    ]);
+  });
+
+  test("never prints it on a Findings row", () => {
+    const embed = withChecks([
+      ["composer", "require", "symfony/monolog-bridge:^5.4"],
+      ["composer", "why-not", "knuckleswtf/scribe", "5.11.0"],
+    ])(assembleEmbed("B"));
+    history.replaceState(null, "", "/report.html#view=findings");
+    render(<App model={modelOf(embed)} />);
+
+    const findings = document.querySelector('[data-surface="findings"]');
+    expect(findings?.querySelector("[data-pkg]")).not.toBeNull();
+    expect(findings?.textContent).not.toContain(NOTE);
+  });
+});
+
+describe("the move card on a lock whose config.platform.php lies outside the target (L5)", () => {
+  test("asks to set config.platform.php before the commands", () => {
+    const sheet = openCase("B", (embed) => {
+      const { run } = embed.report;
+      if (run.php_window === null) throw new Error("B has a PHP window");
+      run.php_window = { ...run.php_window, platform_override: "7.4.29" };
+      return embed;
+    });
+
+    const card = sheet.querySelector(".d3-move");
+    const platform = card?.querySelector(".d3-move-platform");
+    expect(platform?.textContent).toBe(
+      `First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29.`,
+    );
+    expect(platform?.nextElementSibling?.classList.contains("d3-cmd")).toBe(true);
+  });
+});
+
 describe("the sheet in SPEC §7.9.8's order", () => {
   test("B: header, verdict, the move and its holders, Why, the rows, then the folded references", () => {
     const sheet = openCase("B");
@@ -122,6 +217,39 @@ describe("the sheet in SPEC §7.9.8's order", () => {
     const sheet = openCase("B-baselined-dagger");
 
     expect([...sheet.querySelectorAll(".d2-row h3")].map((h) => h.textContent)).toContain("Baseline");
+  });
+});
+
+describe("the PHP cap and the PHP window on the sheet (SPEC §7.9.8.14)", () => {
+  const qualifier = (sheet: HTMLElement, label: string): string[] => {
+    const row = [...sheet.querySelectorAll(".d3-q")].find(
+      (q) => q.querySelector("dt")?.textContent === label,
+    );
+    return [...(row?.querySelectorAll(".d3-q-line") ?? [])].map((line) => line.textContent);
+  };
+
+  test("prints the edge a package sets under PHP (G157)", () => {
+    expect(qualifier(openCase("php-edge-lower-dagger"), "PHP")).toEqual([
+      "It sets the lowest PHP this lock admits: 8.1.0",
+    ]);
+    cleanup();
+    expect(qualifier(openCase("php-edge-upper-dagger"), "PHP")).toEqual([
+      "It sets the highest PHP this lock admits: it excludes 8.5",
+    ]);
+  });
+
+  test("prints no PHP row on a package that sets no edge and runs on the target", () => {
+    const sheet = openCase("B");
+
+    expect([...sheet.querySelectorAll(".d3-q dt")].map((dt) => dt.textContent)).not.toContain("PHP");
+  });
+
+  test("reads capped with its full constraint while the target runs it (G158)", () => {
+    const sheet = openCase("capped-tag-unverified-dagger");
+
+    expect(sheet.textContent).toContain(
+      "It requires php >=7.2 <8.5: it stops at 8.4, so the newest PHP, 8.5, is excluded.",
+    );
   });
 });
 
@@ -266,9 +394,19 @@ describe("the Security row", () => {
 describe("the copy control of design 5C", () => {
   const commandText = (sheet: HTMLElement): string[] =>
     [...sheet.querySelectorAll(".d2-copy-line")].map((line) => line.textContent);
+  const withCommands =
+    (commands: string[][]) =>
+    (embed: Report2Embed): Report2Embed => {
+      const [finding] = embed.report.findings;
+      if (!finding?.next_step) throw new Error("the case has a move");
+      const next_step = { ...finding.next_step, commands };
+      return { ...embed, report: { ...embed.report, findings: [{ ...finding, next_step }] } };
+    };
+
+  const oneCommand = withCommands([["composer", "require", "symfony/monolog-bridge:^5.4.52"]]);
 
   test("prints the POSIX line first, and the menu switches the shell and keeps the choice", () => {
-    const sheet = openCase("B");
+    const sheet = openCase("B", oneCommand);
 
     expect(commandText(sheet)).toEqual(["composer require 'symfony/monolog-bridge:^5.4.52'"]);
     fireEvent.click(within(sheet).getByRole("button", { name: "Shell: POSIX" }));
@@ -288,7 +426,7 @@ describe("the copy control of design 5C", () => {
   test("reads the saved shell on the next sheet", () => {
     window.localStorage.setItem("lockrot-shell", "powershell");
 
-    const sheet = openCase("B");
+    const sheet = openCase("B", oneCommand);
 
     expect(commandText(sheet)).toEqual(['composer --% require "symfony/monolog-bridge:^5.4.52"']);
     expect(within(sheet).getByRole("button", { name: "Shell: PowerShell" })).toBeTruthy();
@@ -299,13 +437,13 @@ describe("the copy control of design 5C", () => {
       throw new Error("blocked");
     });
 
-    const sheet = openCase("B");
+    const sheet = openCase("B", oneCommand);
 
     expect(within(sheet).getByRole("button", { name: "Shell: POSIX" })).toBeTruthy();
   });
 
   test("Escape closes the menu and leaves the sheet open", () => {
-    const sheet = openCase("B");
+    const sheet = openCase("B", oneCommand);
     fireEvent.click(within(sheet).getByRole("button", { name: "Shell: POSIX" }));
     const menu = within(sheet).getByRole("menu", { name: "Shell" });
 
@@ -326,15 +464,6 @@ describe("the copy control of design 5C", () => {
     expect(commandText(sheet)).toEqual(["This command holds characters the page does not print."]);
     expect(within(sheet).queryByRole("button", { name: "Copy" })).toBeNull();
   });
-
-  const withCommands =
-    (commands: string[][]) =>
-    (embed: Report2Embed): Report2Embed => {
-      const [finding] = embed.report.findings;
-      if (!finding?.next_step) throw new Error("the case has a move");
-      const next_step = { ...finding.next_step, commands };
-      return { ...embed, report: { ...embed.report, findings: [{ ...finding, next_step }] } };
-    };
 
   test("one refused argv hides every step of the move on every shell, and the menu previews none", () => {
     const sheet = openCase(
@@ -370,7 +499,7 @@ describe("the copy control of design 5C", () => {
   });
 
   test("names one command by its eyebrow, and several as commands in order", () => {
-    const one = openCase("B");
+    const one = openCase("B", oneCommand);
     expect(one.querySelector(".d2-copy-bar .eyebrow")?.textContent).toBe("Command");
     cleanup();
 

@@ -161,11 +161,11 @@ describe("Rail on a document with a baseline", () => {
   it("counts the graded findings in each baseline state", () => {
     renderIn(<Rail />, wallabagBaselined(), FINDINGS);
 
-    // Of the document's 112 graded findings: 61 new, 6 worsened, 45 known (the root `baseline.known`
-    // of 47 also counts two ungraded `ok` packages).
+    // Of the document's 113 graded findings: 61 new, 6 worsened, 46 known (the root `baseline.known`
+    // of 48 also counts two ungraded `ok` packages).
     expect(screen.getByRole("button", { name: "New 61" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Worsened 6" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Known 45" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Known 46" })).toBeTruthy();
   });
 
   it("puts Fails this run under the Since eyebrow, not under an eyebrow of its own", () => {

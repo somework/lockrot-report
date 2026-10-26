@@ -3,9 +3,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then require ^3.27.0",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=8.1' --no-update",
-        "composer require 'twig/twig:^3.27.0'"
+        "composer require 'twig/twig:^3.27.0'",
+        "composer why-not twig/twig v3.27.0 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "all 15 advisories",
@@ -47,9 +51,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then require ^3.27.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=8.1' --no-update",
-        "composer require 'twig/twig:^3.27.0'"
+        "composer require 'twig/twig:^3.27.0'",
+        "composer why-not twig/twig v3.27.0 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "all 15 advisories",
@@ -87,6 +95,9 @@
     {
       "heading": "Next step",
       "action": "3.x fixes it but needs php >=8.1.0, which your target, 8.0, does not run",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -114,9 +125,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then require ^3.27.0",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=8.1' --no-update",
-        "composer require 'twig/twig:^3.27.0'"
+        "composer require 'twig/twig:^3.27.0'",
+        "composer why-not twig/twig v3.27.0 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "all 15 advisories",
@@ -158,9 +173,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then require ^3.27.0",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=8.1' --no-update",
-        "composer require 'twig/twig:^3.27.0'"
+        "composer require 'twig/twig:^3.27.0'",
+        "composer why-not twig/twig v3.27.0 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "all 15 advisories",
@@ -202,10 +221,14 @@
     {
       "heading": "The move",
       "action": "Require ^3.27.0",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
       "commands": [
-        "composer require 'twig/twig:^3.27.0'"
+        "composer require 'twig/twig:^3.27.0'",
+        "composer why-not twig/twig v3.27.0 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "all 15 advisories",
       "stays": null,
       "not_checked": null,
@@ -245,10 +268,14 @@
     {
       "heading": "The move",
       "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/monolog-bridge:^5.4.52'"
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "all three",
       "stays": null,
       "not_checked": null,
@@ -284,10 +311,14 @@
     {
       "heading": "The move",
       "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/monolog-bridge:^5.4.52'"
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "the advisory",
       "stays": null,
       "not_checked": null,
@@ -323,10 +354,14 @@
     {
       "heading": "The move",
       "action": "Update to v2.8.52 on 2.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer update symfony/monolog-bridge"
+        "composer update symfony/monolog-bridge",
+        "composer why-not symfony/monolog-bridge v2.8.52 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "the advisory",
       "stays": "left-behind, old-promise",
       "not_checked": null,
@@ -355,10 +390,14 @@
     {
       "heading": "Then",
       "action": "Require ^5.4",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/monolog-bridge:^5.4'"
+        "composer require 'symfony/monolog-bridge:^5.4'",
+        "composer why-not symfony/monolog-bridge v5.4.0 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "left-behind and the advisory",
       "stays": null,
       "not_checked": "old-promise",
@@ -394,10 +433,14 @@
     {
       "heading": "The move",
       "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/monolog-bridge:^5.4.52'"
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "all three",
       "stays": null,
       "not_checked": null,
@@ -433,10 +476,14 @@
     {
       "heading": "The move",
       "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/monolog-bridge:^5.4.52'"
+        "composer require 'symfony/monolog-bridge:^5.4.52' --dev",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "all three",
       "stays": null,
       "not_checked": null,
@@ -472,10 +519,14 @@
     {
       "heading": "The move",
       "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/monolog-bridge:^5.4.52'"
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "all three",
       "stays": null,
       "not_checked": null,
@@ -511,10 +562,14 @@
     {
       "heading": "The move",
       "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/monolog-bridge:^5.4.52'"
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "all three",
       "stays": null,
       "not_checked": null,
@@ -550,10 +605,14 @@
     {
       "heading": "The move",
       "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/monolog-bridge:^5.4.52'"
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "all three",
       "stays": null,
       "not_checked": null,
@@ -589,10 +648,14 @@
     {
       "heading": "The move",
       "action": "Require ^5.4",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/monolog-bridge:^5.4'"
+        "composer require 'symfony/monolog-bridge:^5.4'",
+        "composer why-not symfony/monolog-bridge v5.4.0 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "left-behind",
       "stays": null,
       "not_checked": "old-promise",
@@ -629,10 +692,14 @@
     {
       "heading": "The move",
       "action": "Require ^5.4",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/monolog-bridge:^5.4'"
+        "composer require 'symfony/monolog-bridge:^5.4'",
+        "composer why-not symfony/monolog-bridge v5.4.0 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "left-behind",
       "stays": null,
       "not_checked": "old-promise",
@@ -669,6 +736,9 @@
     {
       "heading": "The move",
       "action": "Replace it with symfony/error-handler ↗, the replacement it names",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -684,6 +754,9 @@
     {
       "heading": "The move",
       "action": "Replace it with symfony/error-handler ↗, the replacement it names",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -699,6 +772,9 @@
     {
       "heading": "The move",
       "action": "Replace it with symfony/error-handler ↗, the replacement it names",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -714,6 +790,9 @@
     {
       "heading": "The move",
       "action": "Replace it with symfony/error-handler ↗, the replacement it names",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -729,6 +808,9 @@
     {
       "heading": "The move",
       "action": "Replace it with symfony/error-handler ↗, the replacement it names",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -744,6 +826,9 @@
     {
       "heading": "The move",
       "action": "Replace it with symfony/error-handler ↗, the replacement it names",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -759,6 +844,9 @@
     {
       "heading": "Next step",
       "action": "v4.1.1 is its newest release: test it on PHP 8.4, or replace it",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -774,6 +862,9 @@
     {
       "heading": "Next step",
       "action": "v4.1.1 is its newest release: test it on PHP 8.4, or replace it",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -789,10 +880,14 @@
     {
       "heading": "The move",
       "action": "Update to v5.4.53 on 5.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer update symfony/yaml"
+        "composer update symfony/yaml",
+        "composer why-not symfony/yaml v5.4.52 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "all 3 advisories",
       "stays": null,
       "not_checked": null,
@@ -823,10 +918,14 @@
     {
       "heading": "The move",
       "action": "Update to v5.4.53 on 5.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer update symfony/yaml"
+        "composer update symfony/yaml",
+        "composer why-not symfony/yaml v5.4.52 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "all 3 advisories",
       "stays": null,
       "not_checked": null,
@@ -857,10 +956,14 @@
     {
       "heading": "The move",
       "action": "Update to v5.4.53 on 5.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer update symfony/yaml"
+        "composer update symfony/yaml",
+        "composer why-not symfony/yaml v5.4.52 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "all 3 advisories",
       "stays": null,
       "not_checked": null,
@@ -891,9 +994,12 @@
     {
       "heading": "The move",
       "action": "Update to v1.43.0 on 1.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
         "composer update symfony/polyfill-intl-idn",
-        "composer why-not guzzlehttp/guzzle 8.2.0"
+        "composer why-not symfony/polyfill-intl-idn v1.38.1 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "the advisory",
@@ -926,6 +1032,9 @@
     {
       "heading": "Next step",
       "action": "Its newest tag, 1.6.2, needs php ^5.5|^7.0, which your target, 8.4, does not run: replace it",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -953,10 +1062,14 @@
     {
       "heading": "The move",
       "action": "Require its newest tag, 1.6.2",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'friendsofsymfony/oauth-server-bundle:^1.6.2'"
+        "composer require 'friendsofsymfony/oauth-server-bundle:^1.6.2'",
+        "composer why-not friendsofsymfony/oauth-server-bundle 1.6.2 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "pinned",
       "stays": "stale",
       "not_checked": null,
@@ -990,6 +1103,9 @@
     {
       "heading": "The move",
       "action": "Replace it with symfony/error-handler ↗, the replacement it names",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -1005,6 +1121,9 @@
     {
       "heading": "The move",
       "action": "Replace it with symfony/error-handler ↗, the replacement it names",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -1016,14 +1135,186 @@
       "composer": []
     }
   ],
-  "affected-range-unknown-dagger": [
+  "adds-capped-raise-php": [
     {
       "heading": "The move",
-      "action": "No advisory names the versions it affects, so lockrot names no fix",
+      "action": "Raise require.php to >=8.0, then require ^6.13",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer why-not guzzlehttp/guzzle 8.2.0"
+        "composer require 'php:>=8.0' --no-update",
+        "composer require 'scheb/2fa-bundle:^6.13'",
+        "composer why-not scheb/2fa-bundle v6.13.0 --locked"
       ],
-      "commands_label": "Check",
+      "commands_label": "Commands, in order",
+      "clears": "left-behind",
+      "stays": null,
+      "not_checked": null,
+      "adds": [
+        "capped: it stops below the newest PHP"
+      ],
+      "php": {
+        "head": "6.x needs php ~8.0.0 … ~8.4.0 (5 alternatives)",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "8, medium",
+        "conditions": [
+          "adds capped",
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "adds-capped-require-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^6.13",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'scheb/2fa-bundle:^6.13'",
+        "composer why-not scheb/2fa-bundle v6.13.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "left-behind",
+      "stays": null,
+      "not_checked": null,
+      "adds": [
+        "capped: it stops below the newest PHP"
+      ],
+      "php": {
+        "head": "6.x needs php ~8.0.0 … ~8.4.0 (5 alternatives)",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "8, medium",
+        "conditions": [
+          "adds capped",
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "adds-capped-tag-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, 4.0.5",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'matomo/referrer-spam-list:^4.0.5'",
+        "composer why-not matomo/referrer-spam-list 4.0.5 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": null,
+      "not_checked": null,
+      "adds": [
+        "capped: it stops below the newest PHP"
+      ],
+      "php": {
+        "head": "4.x needs php >=7.2 <8.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "8, medium",
+        "conditions": [
+          "adds capped",
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "adds-capped-update": [
+    {
+      "heading": "The move",
+      "action": "Update to 1.30.7 on 1.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update phpoffice/phpspreadsheet",
+        "composer why-not phpoffice/phpspreadsheet 1.30.7 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "all 28 advisories",
+      "stays": null,
+      "not_checked": null,
+      "adds": [
+        "capped: it stops below the newest PHP"
+      ],
+      "php": {
+        "head": "1.x needs php >=7.4.0 <8.5.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "4, low",
+        "conditions": [
+          "adds capped",
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "affected-range-unknown-dagger": [
+    {
+      "heading": "Next step",
+      "action": "No advisory names the versions it affects, so lockrot names no fix",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
       "clears": null,
       "stays": null,
       "not_checked": null,
@@ -1037,6 +1328,9 @@
     {
       "heading": "Next step",
       "action": "Find a replacement; none is named",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -1048,10 +1342,139 @@
       "composer": []
     }
   ],
+  "capped-covered-dagger": [
+    {
+      "heading": "Next step",
+      "action": "It has no recent release to move to",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": null,
+        "lines": [
+          {
+            "answer": "no",
+            "text": "its installed release, 2.2.4, needs php ^7.2.0, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "capped-local-dagger": [
+    {
+      "heading": "Next step",
+      "action": "It is installed from a local path, your own package, so lockrot names no move",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": null,
+        "lines": [
+          {
+            "answer": "no",
+            "text": "its installed release, 4.3.x-dev, needs php >=7.4.0 <8.1, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "capped-require-php": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=7.3, then require ^7.3",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=7.3' --no-update",
+        "composer require 'pelago/emogrifier:^7.3'",
+        "composer why-not pelago/emogrifier v7.3.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "both",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "7.x needs php ~7.3.0 … ~8.4.0 (7 alternatives)",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.1.3 (a minor raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, v2.2.0, needs php ^5.5.0 … ~7.3.0 (5 alternatives), which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "capped-tag-unverified-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, 4.0.5",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'matomo/referrer-spam-list:^4.0.5'",
+        "composer why-not matomo/referrer-spam-list 4.0.5 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": null,
+      "not_checked": "capped",
+      "adds": [],
+      "php": null,
+      "after": {
+        "result": "at most 8, medium",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
   "either-critical-dagger": [
     {
       "heading": "The move",
       "action": "Replace it with symfony/error-handler ↗, the replacement it names",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -1065,10 +1488,14 @@
     {
       "heading": "Then",
       "action": "Require ^4.4.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/debug:^4.4.0'"
+        "composer require 'symfony/debug:^4.4.0'",
+        "composer why-not symfony/debug v4.4.0 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "the advisory",
       "stays": "abandoned",
       "not_checked": "old-promise",
@@ -1104,6 +1531,9 @@
     {
       "heading": "Next step",
       "action": "No release fixes it",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -1119,10 +1549,14 @@
     {
       "heading": "The move",
       "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/monolog-bridge:^5.4.52'"
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "all three",
       "stays": null,
       "not_checked": null,
@@ -1158,10 +1592,14 @@
     {
       "heading": "The move",
       "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/monolog-bridge:^5.4.52'"
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "all three",
       "stays": null,
       "not_checked": null,
@@ -1197,9 +1635,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then require ^3.27.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=8.1' --no-update",
-        "composer require 'twig/twig:^3.27.0'"
+        "composer require 'twig/twig:^3.27.0'",
+        "composer why-not twig/twig v3.27.0 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "all 15 advisories",
@@ -1237,8 +1679,13 @@
     {
       "heading": "The move",
       "action": "Move it to ^3.36 through mautic/core-lib",
-      "commands": [],
-      "commands_label": null,
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
+      "commands": [
+        "composer why-not league/flysystem 3.36.0 --locked"
+      ],
+      "commands_label": "Check",
       "clears": "both",
       "stays": null,
       "not_checked": null,
@@ -1274,6 +1721,9 @@
     {
       "heading": "Next step",
       "action": "Find a replacement; none is named",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -1284,7 +1734,7 @@
       "after": null,
       "composer": [
         {
-          "text": "Replace or update lorisleiva/laravel-search-string",
+          "text": "Replace lorisleiva/laravel-search-string (hoa/compiler requires it)",
           "items": []
         }
       ]
@@ -1294,9 +1744,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=7.2.5, then require ^7.15.2",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=7.2.5' --no-update",
-        "composer require 'guzzlehttp/guzzle:^7.15.2'"
+        "composer require 'guzzlehttp/guzzle:^7.15.2'",
+        "composer why-not guzzlehttp/guzzle 7.15.2 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "left-behind and all 9 advisories",
@@ -1334,10 +1788,14 @@
     {
       "heading": "The move",
       "action": "Require ^8.2",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
       "commands": [
-        "composer require 'guzzlehttp/guzzle:^8.2'"
+        "composer require 'guzzlehttp/guzzle:^8.2'",
+        "composer why-not guzzlehttp/guzzle 8.2.0 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "left-behind, old-promise and all 14 advisories",
       "stays": null,
       "not_checked": null,
@@ -1377,9 +1835,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=7.2.5, then require ^7.15.2",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=7.2.5' --no-update",
-        "composer require 'guzzlehttp/guzzle:^7.15.2'"
+        "composer require 'guzzlehttp/guzzle:^7.15.2'",
+        "composer why-not guzzlehttp/guzzle 7.15.2 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "left-behind and all 14 advisories",
@@ -1421,6 +1883,9 @@
     {
       "heading": "Next step",
       "action": "Find a replacement; none is named",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -1431,7 +1896,7 @@
       "after": null,
       "composer": [
         {
-          "text": "Replace or update lorisleiva/laravel-search-string",
+          "text": "Replace lorisleiva/laravel-search-string (hoa/compiler requires it)",
           "items": []
         }
       ]
@@ -1441,6 +1906,9 @@
     {
       "heading": "Next step",
       "action": "Find a replacement; none is named",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -1451,7 +1919,7 @@
       "after": null,
       "composer": [
         {
-          "text": "Replace or update lorisleiva/laravel-search-string",
+          "text": "Replace lorisleiva/laravel-search-string (hoa/compiler requires it)",
           "items": []
         }
       ]
@@ -1461,9 +1929,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then require ^3.0",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=8.1' --no-update",
-        "composer require 'joomla/string:^3.0'"
+        "composer require 'joomla/string:^3.0'",
+        "composer why-not joomla/string 3.0.0 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "left-behind",
@@ -1509,6 +1981,9 @@
     {
       "heading": "Next step",
       "action": "Find a replacement; none is named",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -1526,6 +2001,9 @@
     {
       "heading": "Next step",
       "action": "It has no recent release to move to",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -1541,10 +2019,14 @@
     {
       "heading": "The move",
       "action": "Require ^4.4.44",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/debug:^4.4.44'"
+        "composer require 'symfony/debug:^4.4.44'",
+        "composer why-not symfony/debug v4.4.44 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "old-promise",
       "stays": "stale",
       "not_checked": null,
@@ -1580,10 +2062,11 @@
     {
       "heading": "The move",
       "action": "Replace it with web-auth/webauthn-lib ↗, the replacement it names, itself high (left-behind) in this lock",
-      "commands": [
-        "composer why-not web-auth/webauthn-lib 5.3.9"
-      ],
-      "commands_label": "Check",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
       "clears": null,
       "stays": null,
       "not_checked": null,
@@ -1614,9 +2097,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then require ^3.0.5",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=8.1' --no-update",
-        "composer require 'joomla/filter:^3.0.5'"
+        "composer require 'joomla/filter:^3.0.5'",
+        "composer why-not joomla/filter 3.0.5 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "the advisory",
@@ -1658,6 +2145,9 @@
     {
       "heading": "Next step",
       "action": "It is installed from a local path, your own package, so lockrot names no move",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -1681,6 +2171,9 @@
     {
       "heading": "The move",
       "action": "Replace it with symfony/error-handler ↗, the replacement it names",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -1701,9 +2194,12 @@
     {
       "heading": "The move",
       "action": "Update to v1.43.0 on 1.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
         "composer update symfony/polyfill-intl-idn",
-        "composer why-not guzzlehttp/guzzle 8.2.0"
+        "composer why-not symfony/polyfill-intl-idn v1.38.1 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "the advisory",
@@ -1736,8 +2232,13 @@
     {
       "heading": "The move",
       "action": "Move it to ^2.5 through the 38 packages in Reach",
-      "commands": [],
-      "commands_label": null,
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/event-dispatcher-contracts v2.5.0 --locked"
+      ],
+      "commands_label": "Check",
       "clears": "left-behind",
       "stays": null,
       "not_checked": null,
@@ -1781,10 +2282,200 @@
       ]
     }
   ],
+  "mc-blocking-off-both-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v2.3.2 on 2.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update 'typo3/html-sanitizer:^2.3.2'"
+      ],
+      "commands_label": "Command",
+      "clears": "the advisory",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "2.x needs php ^7.2 || ^8.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "checked with Composer"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "mc-blocking-off-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v2.3.2 on 2.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update 'typo3/html-sanitizer:^2.3.2'"
+      ],
+      "commands_label": "Command",
+      "clears": "the advisory",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "2.x needs php ^7.2 || ^8.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "checked with Composer"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "mc-inline-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v2.3.2 on 2.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update 'typo3/html-sanitizer:^2.3.2'"
+      ],
+      "commands_label": "Command",
+      "clears": "the advisory",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "2.x needs php ^7.2 || ^8.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "checked with Composer"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "mc-lookup-incomplete-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v2.3.2 on 2.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update 'typo3/html-sanitizer:^2.3.2'",
+        "composer why-not typo3/html-sanitizer v2.3.2 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "the advisory",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "2.x needs php ^7.2 || ^8.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the advisory lookup did not cover a package it installs)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "mc-raise-php-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^6.4.40",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'symfony/yaml:^6.4.40'"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "the advisory",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "6.x needs php >=8.2",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 8.1 (a minor raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "checked with Composer"
+        ]
+      },
+      "composer": []
+    }
+  ],
   "move-check-dagger": [
     {
       "heading": "The move",
       "action": "Update to v2.3.2 on 2.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
         "composer update 'typo3/html-sanitizer:^2.3.2' --with-dependencies"
       ],
@@ -1819,6 +2510,9 @@
     {
       "heading": "Next step",
       "action": "Find a replacement; none is named",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -1829,7 +2523,7 @@
       "after": null,
       "composer": [
         {
-          "text": "Replace or update lorisleiva/laravel-search-string",
+          "text": "Replace lorisleiva/laravel-search-string (hoa/compiler requires it)",
           "items": []
         }
       ]
@@ -1840,10 +2534,14 @@
     {
       "heading": "The move",
       "action": "Update to 2.0.3 on 2.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer update matomo/network"
+        "composer update matomo/network",
+        "composer why-not matomo/network 2.0.3 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "old-promise",
       "stays": null,
       "not_checked": null,
@@ -1874,9 +2572,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then require ^4.9",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=8.1' --no-update",
-        "composer require 'pagerfanta/twig:^4.9'"
+        "composer require 'pagerfanta/twig:^4.9'",
+        "composer why-not pagerfanta/twig v4.9.0 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "left-behind",
@@ -1914,9 +2616,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.2, then require ^12.69.0",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=8.2' --no-update",
-        "composer require 'laravel/framework:^12.69.0'"
+        "composer require 'laravel/framework:^12.69.0'",
+        "composer why-not laravel/framework v12.69.0 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "all 6 advisories",
@@ -1958,9 +2664,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then require ^3.4",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=8.1' --no-update",
-        "composer require 'geoip2/geoip2:^3.4'"
+        "composer require 'geoip2/geoip2:^3.4'",
+        "composer why-not geoip2/geoip2 v3.4.0 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "left-behind, old-promise and both advisories",
@@ -1994,12 +2704,155 @@
       ]
     }
   ],
+  "php-edge-equal-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^6.13",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'scheb/2fa-bundle:^6.13'",
+        "composer why-not scheb/2fa-bundle v6.13.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "left-behind",
+      "stays": null,
+      "not_checked": null,
+      "adds": [
+        "capped: it stops below the newest PHP"
+      ],
+      "php": {
+        "head": "6.x needs php ~8.0.0 … ~8.4.0 (5 alternatives)",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "8, medium",
+        "conditions": [
+          "adds capped",
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "php-edge-lower-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.0, then require ^6.13",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.0' --no-update",
+        "composer require 'scheb/2fa-bundle:^6.13'",
+        "composer why-not scheb/2fa-bundle v6.13.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "left-behind",
+      "stays": null,
+      "not_checked": null,
+      "adds": [
+        "capped: it stops below the newest PHP"
+      ],
+      "php": {
+        "head": "6.x needs php ~8.0.0 … ~8.4.0 (5 alternatives)",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "8, medium",
+        "conditions": [
+          "adds capped",
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "php-edge-upper-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.0, then require ^6.13",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.0' --no-update",
+        "composer require 'scheb/2fa-bundle:^6.13'",
+        "composer why-not scheb/2fa-bundle v6.13.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "left-behind",
+      "stays": null,
+      "not_checked": null,
+      "adds": [
+        "capped: it stops below the newest PHP"
+      ],
+      "php": {
+        "head": "6.x needs php ~8.0.0 … ~8.4.0 (5 alternatives)",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "8, medium",
+        "conditions": [
+          "adds capped",
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
   "php-null": [
     {
       "heading": "The move",
       "action": "Move it to ^12.0 through genealabs/laravel-model-caching",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer why-not genealabs/laravel-model-caching 13.1.11"
+        "composer why-not genealabs/laravel-pivot-events 12.0.0 --locked"
       ],
       "commands_label": "Check",
       "clears": "left-behind",
@@ -2033,6 +2886,9 @@
     {
       "heading": "Next step",
       "action": "lockrot did not read its releases (it is not installed from a Composer repository), so it names no move: review the snapshot",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -2044,13 +2900,183 @@
       "composer": []
     }
   ],
+  "platform-step-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.0, then require ^6.13",
+      "platform_step": "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29. Composer still refuses the lock itself: the PHP line names the packages.",
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.0' --no-update",
+        "composer require 'scheb/2fa-bundle:^6.13'",
+        "composer why-not scheb/2fa-bundle v6.13.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "left-behind",
+      "stays": null,
+      "not_checked": null,
+      "adds": [
+        "capped: it stops below the newest PHP"
+      ],
+      "php": {
+        "head": "6.x needs php ~8.0.0 … ~8.4.0 (5 alternatives)",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "8, medium",
+        "conditions": [
+          "adds capped",
+          "if Composer resolves it (not checked: Composer's solver refuses the lock itself at the target PHP; see the PHP line in the Overview)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "platform-step-inside-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.0, then require ^6.13",
+      "platform_step": "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29. Composer still refuses the lock itself: the Run tab names the cause.",
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.0' --no-update",
+        "composer require 'scheb/2fa-bundle:^6.13'",
+        "composer why-not scheb/2fa-bundle v6.13.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "left-behind",
+      "stays": null,
+      "not_checked": null,
+      "adds": [
+        "capped: it stops below the newest PHP"
+      ],
+      "php": {
+        "head": "6.x needs php ~8.0.0 … ~8.4.0 (5 alternatives)",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "8, medium",
+        "conditions": [
+          "adds capped",
+          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run tab names the cause)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "platform-step-no-command-dagger": [
+    {
+      "heading": "Next step",
+      "action": "Its newest tag, 1.6.2, needs php ^5.5|^7.0, which your target, 8.4, does not run: replace it",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "1.x needs php ^5.5|^7.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "no",
+            "text": "your target, 8.4, does not run it"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "platform-step-why-not-dagger": [
+    {
+      "heading": "The move",
+      "action": "Move it to ^5.4.52 through the 3 packages in Reach",
+      "platform_step": "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29.",
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/yaml v5.4.52 --locked"
+      ],
+      "commands_label": "Check",
+      "clears": "all 3 advisories",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "Composer refuses the move"
+        ]
+      },
+      "composer": [
+        {
+          "text": "The packages that hold it may need to move too",
+          "items": []
+        }
+      ]
+    }
+  ],
   "policy-off-dagger": [
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then require ^3.0.5",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=8.1' --no-update",
-        "composer require 'joomla/filter:^3.0.5'"
+        "composer require 'joomla/filter:^3.0.5'",
+        "composer why-not joomla/filter 3.0.5 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "the advisory",
@@ -2092,10 +3118,14 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=7.2.5, then move it to ^2.13 through guzzlehttp/guzzle",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
       "commands": [
-        "composer require 'php:>=7.2.5' --no-update"
+        "composer require 'php:>=7.2.5' --no-update",
+        "composer why-not guzzlehttp/psr7 2.13.0 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "left-behind and all 4 advisories",
       "stays": null,
       "not_checked": null,
@@ -2135,6 +3165,9 @@
     {
       "heading": "The move",
       "action": "Replace it with web-token/jwt-library ↗, the replacement it names, itself high (vulnerable) in this lock",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -2150,6 +3183,9 @@
     {
       "heading": "The move",
       "action": "Find a replacement: the suggestion names no package to require",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -2165,8 +3201,14 @@
     {
       "heading": "The move",
       "action": "Move it to ^5.4 through the 34 packages in Reach",
-      "commands": [],
-      "commands_label": null,
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'symfony/var-dumper:^5.4' --dev",
+        "composer why-not symfony/var-dumper v5.4.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
       "clears": "left-behind",
       "stays": null,
       "not_checked": null,
@@ -2210,8 +3252,13 @@
     {
       "heading": "The move",
       "action": "Move it to ^3.0.0 through jfcherng/php-diff",
-      "commands": [],
-      "commands_label": null,
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer why-not jfcherng/php-color-output 3.0.0 --locked"
+      ],
+      "commands_label": "Check",
       "clears": "old-promise",
       "stays": "stale",
       "not_checked": null,
@@ -2255,8 +3302,55 @@
     {
       "heading": "The move",
       "action": "Move it to ^5.4.53 through mautic/core-lib",
-      "commands": [],
-      "commands_label": null,
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/routing v5.4.53 --locked"
+      ],
+      "commands_label": "Check",
+      "clears": "left-behind and both advisories",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "The packages that hold it may need to move too",
+          "items": []
+        },
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "routing-self-dagger": [
+    {
+      "heading": "The move",
+      "action": "Move it to ^5.4.53 through mautic/core-lib",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/routing v5.4.53 --locked"
+      ],
+      "commands_label": "Check",
       "clears": "left-behind and both advisories",
       "stays": null,
       "not_checked": null,
@@ -2292,6 +3386,9 @@
     {
       "heading": "Next step",
       "action": "Find a maintained alternative",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -2307,8 +3404,13 @@
     {
       "heading": "The move",
       "action": "Move it to the newest tag on its own line, v5.4.45, through mautic/core-lib",
-      "commands": [],
-      "commands_label": null,
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/event-dispatcher v5.4.45 --locked"
+      ],
+      "commands_label": "Check",
       "clears": "pinned",
       "stays": null,
       "not_checked": null,
@@ -2340,8 +3442,13 @@
     {
       "heading": "The move",
       "action": "Move it to the newest tag on its own line, v4.4.44, through mautic/core-lib; that tag is older than your snapshot: review it first, or replace the package",
-      "commands": [],
-      "commands_label": null,
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/event-dispatcher v4.4.44 --locked"
+      ],
+      "commands_label": "Check",
       "clears": "pinned",
       "stays": null,
       "not_checked": null,
@@ -2376,8 +3483,13 @@
     {
       "heading": "The move",
       "action": "Move it to the newest tag on its own line, v4.4.44, through mautic/core-lib",
-      "commands": [],
-      "commands_label": null,
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/event-dispatcher v4.4.44 --locked"
+      ],
+      "commands_label": "Check",
       "clears": "pinned",
       "stays": null,
       "not_checked": "left-behind, old-promise",
@@ -2408,10 +3520,39 @@
     }
   ],
   "stale-accepted-dagger": [],
+  "stale-capped": [
+    {
+      "heading": "Next step",
+      "action": "It has no recent release to move to",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": null,
+        "lines": [
+          {
+            "answer": "no",
+            "text": "its installed release, 2.2.4, needs php ^7.2.0, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
   "stale-only": [
     {
       "heading": "Next step",
       "action": "It has no recent release to move to",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -2423,14 +3564,41 @@
       "composer": []
     }
   ],
+  "through-own": [
+    {
+      "heading": "Next step",
+      "action": "2.0.1 is its newest release: test it on PHP 8.4, or replace it",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": null,
+      "composer": [
+        {
+          "text": "Change your own package mautic/core-lib (jbroadway/urlify requires it)",
+          "items": []
+        }
+      ]
+    }
+  ],
   "tie-dagger": [
     {
       "heading": "The move",
       "action": "Require ^5.4",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'symfony/monolog-bridge:^5.4'"
+        "composer require 'symfony/monolog-bridge:^5.4'",
+        "composer why-not symfony/monolog-bridge v5.4.0 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "left-behind",
       "stays": "1 advisory",
       "not_checked": "old-promise",
@@ -2464,6 +3632,9 @@
     {
       "heading": "Then",
       "action": "No release fixes it",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -2479,9 +3650,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then require ^3.27.0",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=8.1' --no-update",
-        "composer require 'twig/twig:^3.27.0'"
+        "composer require 'twig/twig:^3.27.0'",
+        "composer why-not twig/twig v3.27.0 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "all 16 advisories",
@@ -2523,9 +3698,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then require ^3.27.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=8.1' --no-update",
-        "composer require 'twig/twig:^3.27.0'"
+        "composer require 'twig/twig:^3.27.0' --dev",
+        "composer why-not twig/twig v3.27.0 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "all 15 advisories",
@@ -2565,6 +3744,9 @@
     {
       "heading": "Next step",
       "action": "No single release fixes every advisory; see each advisory's fix",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -2580,6 +3762,9 @@
     {
       "heading": "Next step",
       "action": "Find a replacement; none is named",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -2600,10 +3785,14 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then move it to ^3.1",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'php:>=8.1' --no-update"
+        "composer require 'php:>=8.1' --no-update",
+        "composer why-not bacon/bacon-qr-code v3.1.0 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "left-behind",
       "stays": null,
       "not_checked": null,
@@ -2643,10 +3832,14 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.1, then move it to ^7.8",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
-        "composer require 'php:>=8.1' --no-update"
+        "composer require 'php:>=8.1' --no-update",
+        "composer why-not league/uri 7.8.0 --locked"
       ],
-      "commands_label": "Command",
+      "commands_label": "Commands, in order",
       "clears": "left-behind",
       "stays": null,
       "not_checked": "old-promise",
@@ -2686,6 +3879,9 @@
     {
       "heading": "Next step",
       "action": "Test it on PHP 8.4",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -2701,9 +3897,13 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=7.2.5, then require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [
         "composer require 'php:>=7.2.5' --no-update",
-        "composer require 'symfony/yaml:^5.4.52'"
+        "composer require 'symfony/yaml:^5.4.52'",
+        "composer why-not symfony/yaml v5.4.52 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "left-behind and all 3 advisories",
@@ -2741,6 +3941,9 @@
     {
       "heading": "Next step",
       "action": "It has no recent release to move to",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -2756,6 +3959,9 @@
     {
       "heading": "Next step",
       "action": "lockrot did not read its releases (it is not installed from a Composer repository), so it names no move",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -2764,6 +3970,822 @@
       "adds": [],
       "php": null,
       "after": null,
+      "composer": []
+    }
+  ],
+  "capped-accepted-dagger": [],
+  "capped-blocked-dagger": [
+    {
+      "heading": "Next step",
+      "action": "4.x fixes it but needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0, which your target, 7.4, does not run",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your target, 7.4, does not run it"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "capped-dev-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0' --dev",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-held-update-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-htmlpurifier-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v4.19.1 on 4.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update ezyang/htmlpurifier",
+        "composer why-not ezyang/htmlpurifier v4.19.1 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~5.6.0 … ~8.5.0 (12 alternatives)",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, v4.17.0, needs php ~5.6.0 … ~8.3.0 (10 alternatives), which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-known-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-money-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v4.9.0 on 4.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update moneyphp/money",
+        "composer why-not moneyphp/money v4.9.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.1.0 … ~8.5.0 (5 alternatives)",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-nette-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v1.3.6 on 1.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update nette/schema",
+        "composer why-not nette/schema v1.3.6 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "1.x needs php 8.1 - 8.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-new-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-no-php-newest-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to 4.18.0 on 4.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update laminas/laminas-code",
+        "composer why-not laminas/laminas-code 4.18.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": null,
+      "stays": null,
+      "not_checked": "capped",
+      "adds": [],
+      "php": {
+        "head": null,
+        "lines": [
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": null,
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-no-release-dagger": [
+    {
+      "heading": "Next step",
+      "action": "No release above 4.7.1 admits PHP 8.5",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": null,
+        "lines": [
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "capped-platform-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to 4.17.0 on 4.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update laminas/laminas-code",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-project-blocked-dagger": [
+    {
+      "heading": "Next step",
+      "action": "4.x fixes it but needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0, which your target, 7.4, does not run",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "no",
+            "text": "your target, 7.4, does not run it"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "capped-raise-php": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-recapped-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^5.0.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'laminas/laminas-code:^5.0.0'",
+        "composer why-not laminas/laminas-code 5.0.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "capped-require-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to 4.17.0 on 4.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update laminas/laminas-code",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-require-higher-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^5.0.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'laminas/laminas-code:^5.0.0'",
+        "composer why-not laminas/laminas-code 5.0.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "capped-snapshot-alias-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.x-dev, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-snapshot-backport-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, dev-main, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-snapshot-dev-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, dev-main, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-unread-dagger": [
+    {
+      "heading": "Next step",
+      "action": "lockrot did not read its releases (its repository could not be read), so it names no move",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": null,
+        "lines": [
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "capped-update-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to 4.17.0 on 4.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update laminas/laminas-code",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
       "composer": []
     }
   ],
@@ -2777,6 +4799,9 @@
     {
       "heading": "Next step",
       "action": "It has no tagged release to move to: review the snapshot, or replace it",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -2796,6 +4821,9 @@
     {
       "heading": "Next step",
       "action": "lockrot could not read its releases, so it names no fix",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,
@@ -2812,6 +4840,9 @@
     {
       "heading": "Next step",
       "action": "lockrot did not read its releases (it is not installed from a Composer repository), so it names no move: review the snapshot",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
       "commands": [],
       "commands_label": null,
       "clears": null,

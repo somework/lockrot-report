@@ -68,6 +68,7 @@ export function blockGolden(
         unchecked: q.unchecked,
         not_run: q.notRun,
         php: q.php,
+        php_edge: q.phpEdge,
         accepted:
           q.accepted === null
             ? []
@@ -83,6 +84,9 @@ export function blockGolden(
       return moveCards(finding, run).map((c) => ({
         heading: c.heading,
         action: plain(c.action),
+        platform_step: c.platformStep,
+        command_note: c.checkNote,
+        moves_with: c.movesWith,
         commands: commandLines(c.argvs),
         commands_label: commandLabel(c.argvs),
         clears: c.clears,

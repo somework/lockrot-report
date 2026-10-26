@@ -40,7 +40,10 @@ export function MoveCard({ card, run }: { card: Card; run: Run }) {
       <p className="d3-move-action">
         <RichText rich={card.action} />
       </p>
+      {card.platformStep !== null && <p className="d3-move-platform">{card.platformStep}</p>}
       {card.argvs.length > 0 && <CopyMove argvs={card.argvs} className="d3-cmd" />}
+      {card.checkNote !== null && <p className="d3-move-note">{card.checkNote}</p>}
+      {card.movesWith !== null && <p className="d3-move-note">{card.movesWith}</p>}
       <dl className="d3-move-facts">
         {card.clears !== null && <Fact label={DETAIL_WORDS.clears}>{card.clears}</Fact>}
         {card.stays !== null && <Fact label={DETAIL_WORDS.stays}>{card.stays}</Fact>}

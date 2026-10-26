@@ -9,6 +9,7 @@ const RESOLVES = { result: "resolves", form: "inline", reason: null };
 
 function finding(step: Record<string, unknown> | null): Finding {
   return {
+    package: "a/b",
     next_step:
       step === null
         ? null
@@ -76,6 +77,17 @@ describe("isHeld", () => {
 describe("needsAnotherWayOut", () => {
   const failing = (step: Record<string, unknown> | null): Finding =>
     ({ ...finding(step), gate: { fails: true } }) as unknown as Finding;
+
+  it("holds a failing finding that only its own release holds, by its refused check (OWN)", () => {
+    const own = failing({
+      held_by: [hold("package", "a/b")],
+      check: { result: "refused", form: null, reason: null },
+    });
+
+    expect(isHeld(own)).toBe(false);
+    expect(readyToRun(own)).toBe(false);
+    expect(needsAnotherWayOut(own)).toBe(true);
+  });
 
   it("holds a failing finding that is neither ready nor held", () => {
     expect(needsAnotherWayOut(failing({ kind: "raise-php" }))).toBe(true);

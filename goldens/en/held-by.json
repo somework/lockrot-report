@@ -149,7 +149,7 @@
         {
           "name": "your composer.json",
           "grade": null,
-          "meta": "requires ^2.6",
+          "meta": "requires ^2.6 in require-dev",
           "step": null
         }
       ],
@@ -252,10 +252,34 @@
   "abandoned-ignore-unreadable-dagger": [
     null
   ],
+  "adds-capped-raise-php": [
+    null
+  ],
+  "adds-capped-require-dagger": [
+    null
+  ],
+  "adds-capped-tag-dagger": [
+    null
+  ],
+  "adds-capped-update": [
+    null
+  ],
   "affected-range-unknown-dagger": [
     null
   ],
   "cache-subscriber": [
+    null
+  ],
+  "capped-covered-dagger": [
+    null
+  ],
+  "capped-local-dagger": [
+    null
+  ],
+  "capped-require-php": [
+    null
+  ],
+  "capped-tag-unverified-dagger": [
     null
   ],
   "either-critical-dagger": [
@@ -315,7 +339,7 @@
           "name": "barryvdh/elfinder-flysystem-driver v0.2.1",
           "grade": "medium",
           "meta": "requires ^1.0 · itself left-behind · old-promise",
-          "step": "its own step: require ^0.6.0 on 0.6.x"
+          "step": "its own step: move to ^0.6.0 on 0.6.x"
         },
         {
           "name": "league/flysystem-cached-adapter 1.1.0",
@@ -344,16 +368,16 @@
           "step": null
         },
         {
+          "name": "php-http/guzzle5-adapter 2.0.0",
+          "grade": "critical",
+          "meta": "requires ^5.1 · itself abandoned · capped",
+          "step": "its own step: replace"
+        },
+        {
           "name": "bdunogier/guzzle-site-authenticator 1.1.0",
           "grade": "medium",
           "meta": "requires ^5.3.1 · itself stale",
           "step": "its own step: no move"
-        },
-        {
-          "name": "php-http/guzzle5-adapter 2.0.0",
-          "grade": "critical",
-          "meta": "requires ^5.1 · itself abandoned",
-          "step": "its own step: replace"
         }
       ],
       "fold": null
@@ -450,6 +474,21 @@
   "many-dependents": [
     null
   ],
+  "mc-blocking-off-both-dagger": [
+    null
+  ],
+  "mc-blocking-off-dagger": [
+    null
+  ],
+  "mc-inline-dagger": [
+    null
+  ],
+  "mc-lookup-incomplete-dagger": [
+    null
+  ],
+  "mc-raise-php-dagger": [
+    null
+  ],
   "move-check-dagger": [
     null
   ],
@@ -486,11 +525,43 @@
   "partial-op-dagger": [
     null
   ],
+  "php-edge-equal-dagger": [
+    null
+  ],
+  "php-edge-lower-dagger": [
+    null
+  ],
+  "php-edge-upper-dagger": [
+    null
+  ],
   "php-null": [
     null
   ],
   "pinned-unread": [
     null
+  ],
+  "platform-step-dagger": [
+    null
+  ],
+  "platform-step-inside-dagger": [
+    null
+  ],
+  "platform-step-no-command-dagger": [
+    null
+  ],
+  "platform-step-why-not-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "incenteev/composer-parameter-handler v2.1.5",
+          "grade": null,
+          "meta": "requires 5.3.*",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
   ],
   "policy-off-dagger": [
     null
@@ -528,8 +599,28 @@
         {
           "name": "mautic/core-lib 4.3.x-dev",
           "grade": "critical",
-          "meta": "requires ~4.4.0 · itself pinned · vulnerable",
+          "meta": "requires ~4.4.0 · itself pinned · capped · vulnerable",
           "step": "its own step: no move"
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "routing-self-dagger": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "mautic/core-lib 4.3.x-dev",
+          "grade": "critical",
+          "meta": "requires ~4.4.0 · itself pinned · capped · vulnerable",
+          "step": "its own step: no move"
+        },
+        {
+          "name": "acme/routing-bridge v4.4.41",
+          "grade": null,
+          "meta": "requires self.version (v4.4.41)",
+          "step": null
         }
       ],
       "fold": null
@@ -548,7 +639,13 @@
     null
   ],
   "stale-accepted-dagger": [],
+  "stale-capped": [
+    null
+  ],
   "stale-only": [
+    null
+  ],
+  "through-own": [
     null
   ],
   "tie-dagger": [
@@ -566,16 +663,16 @@
           "step": null
         },
         {
-          "name": "csa/guzzle-bundle dev-compat-php",
-          "grade": "high",
-          "meta": "requires ^1.34|^2.4 · itself pinned",
-          "step": "its own step: no move"
-        },
-        {
           "name": "symfony/symfony v3.4.49",
           "grade": "critical",
           "meta": "requires ^1.41|^2.10 · itself left-behind · vulnerable",
           "step": "its own step: raise php on 5.x"
+        },
+        {
+          "name": "csa/guzzle-bundle dev-compat-php",
+          "grade": "high",
+          "meta": "requires ^1.34|^2.4 · itself pinned",
+          "step": "its own step: no move"
         }
       ],
       "fold": null
@@ -608,6 +705,70 @@
     null
   ],
   "B-accepted-unread-dagger": [
+    null
+  ],
+  "capped-accepted-dagger": [],
+  "capped-blocked-dagger": [
+    null
+  ],
+  "capped-dev-dagger": [
+    null
+  ],
+  "capped-held-update-dagger": [
+    null
+  ],
+  "capped-htmlpurifier-dagger": [
+    null
+  ],
+  "capped-known-dagger": [
+    null
+  ],
+  "capped-money-dagger": [
+    null
+  ],
+  "capped-nette-dagger": [
+    null
+  ],
+  "capped-new-dagger": [
+    null
+  ],
+  "capped-no-php-newest-dagger": [
+    null
+  ],
+  "capped-no-release-dagger": [
+    null
+  ],
+  "capped-platform-dagger": [
+    null
+  ],
+  "capped-project-blocked-dagger": [
+    null
+  ],
+  "capped-raise-php": [
+    null
+  ],
+  "capped-recapped-dagger": [
+    null
+  ],
+  "capped-require-dagger": [
+    null
+  ],
+  "capped-require-higher-dagger": [
+    null
+  ],
+  "capped-snapshot-alias-dagger": [
+    null
+  ],
+  "capped-snapshot-backport-dagger": [
+    null
+  ],
+  "capped-snapshot-dev-dagger": [
+    null
+  ],
+  "capped-unread-dagger": [
+    null
+  ],
+  "capped-update-dagger": [
     null
   ],
   "finished-offline-dagger": [],

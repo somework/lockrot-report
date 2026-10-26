@@ -101,7 +101,14 @@ export function multiFlagLine({
   return `${multi} ${pluralNoun(multi, "carries", "carry")} more than one flag · score model ${run.score_model.id}`;
 }
 
-export function depthSentence({ rot_depth: depth }: Report2): string | null {
+export function depthSentence(report: Report2): string | null {
+  const head = depthHead(report);
+  const notWalked = report.rot_depth.require_dev_not_walked;
+  if (head === null || notWalked === 0) return head;
+  return `${head} ${String(notWalked)} more ${isAre(notWalked)} named only in require-dev, which this run did not walk (pass --dev).`;
+}
+
+function depthHead({ rot_depth: depth }: Report2): string | null {
   if (depth.flagged === 0) return null;
   const lockOnly = depth.unmeasured.no_composer_json;
   if (lockOnly > 0) {

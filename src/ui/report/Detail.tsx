@@ -5,7 +5,7 @@ import { ageRows } from "../../domain/ageRows";
 import { baselineSuffix } from "../../domain/baselineSuffix";
 import { branchesLead } from "../../domain/branchTimeline";
 import { verdictTone } from "../../domain/findingRow";
-import { checkReasonWords } from "../../domain/findingWords";
+import { provenanceWords } from "../../domain/findingWords";
 import { checksItems } from "../../domain/checksLine";
 import { DETAIL_WORDS, detailReach, REFERENCE_WORDS } from "../../domain/detailWords";
 import { feedsLine } from "../../domain/feedsLine";
@@ -72,14 +72,16 @@ function lockRows(finding: Finding, entry: DetailsEntry | null): readonly KeyVal
 }
 
 function provenanceRows(finding: Finding, entry: DetailsEntry | null): readonly KeyValueRow[] {
-  const { origin, metadata, activity } = finding;
-  const status = (id: string, reason: string | null): string =>
-    reason === null ? id : `${id} (${checkReasonWords(finding, reason)})`;
+  const { origin, activity } = finding;
+  const words = provenanceWords(finding);
   return presentRows([
-    { label: REFERENCE_WORDS.origin, value: origin.kind },
+    { label: REFERENCE_WORDS.origin, value: words.origin },
     { label: REFERENCE_WORDS.registry, value: origin.registry },
     { label: REFERENCE_WORDS.local, value: origin.local ? REFERENCE_WORDS.yes : null },
-    { label: REFERENCE_WORDS.metadata, value: status(metadata.status, metadata.reason) },
+    {
+      label: REFERENCE_WORDS.metadata,
+      value: words.metadata,
+    },
     {
       label: REFERENCE_WORDS.metadataAsOf,
       value: entry?.metadata?.data_date ? day(entry.metadata.data_date) : null,
@@ -88,7 +90,10 @@ function provenanceRows(finding: Finding, entry: DetailsEntry | null): readonly 
       label: REFERENCE_WORDS.releases,
       value: entry?.metadata ? String(entry.metadata.releases_listed) : null,
     },
-    { label: REFERENCE_WORDS.activity, value: status(activity.status, activity.reason) },
+    {
+      label: REFERENCE_WORDS.activity,
+      value: words.activity,
+    },
     { label: REFERENCE_WORDS.fetched, value: activity.fetched_at ? day(activity.fetched_at) : null },
     { label: REFERENCE_WORDS.cached, value: activity.cached_at ? day(activity.cached_at) : null },
   ]);

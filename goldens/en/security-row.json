@@ -5,7 +5,7 @@
     "fix: php floor raise",
     "lookup complete",
     "3.x the move clears 15 of 15 from v3.27.0",
-    "php floor raise · held by the 2 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
   "A-baselined-dagger": [
@@ -31,7 +31,7 @@
     "fix: php floor raise",
     "lookup complete",
     "3.x the move clears 15 of 15 from v3.27.0",
-    "php floor raise · held by the 2 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
   "A-gate-vulnerable": [
@@ -40,7 +40,7 @@
     "fix: php floor raise",
     "lookup complete",
     "3.x the move clears 15 of 15 from v3.27.0",
-    "php floor raise · held by the 2 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
   "A-php-star-dagger": [
@@ -49,7 +49,7 @@
     "fix: upgrade",
     "lookup complete",
     "3.x the move clears 15 of 15 from v3.27.0",
-    "upgrade · held by the 2 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
   "B": [
@@ -336,6 +336,42 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "adds-capped-raise-php": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "adds-capped-require-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "adds-capped-tag-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "adds-capped-update": [
+    "28 advisories: critical 2, high 15, medium 11",
+    "31 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "1.x your branch the move clears 28 of 28 from 1.30.7",
+    "composer update",
+    "after it: 4, low",
+    "2.x clears 28 of 28 from 2.4.8",
+    "composer update",
+    "after it: 0, ok, if Composer resolves it",
+    "3.x clears 28 of 28 from 3.10.8",
+    "composer update",
+    "after it: 0, ok, if Composer resolves it",
+    "4.x clears 19 of 28 from 4.5.0",
+    "composer update",
+    "after it: 32, critical, if Composer resolves it",
+    "5.x clears 28 of 28 from 5.10.0",
+    "composer update",
+    "after it: 0, ok, if Composer resolves it"
+  ],
   "affected-range-unknown-dagger": [
     "1 low advisory",
     "1 on record for this name",
@@ -343,6 +379,27 @@
     "lookup complete"
   ],
   "cache-subscriber": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-covered-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-local-dagger": [
+    "5 advisories: high 1, medium 4",
+    "5 on record for this name",
+    "fix: not known",
+    "lookup complete"
+  ],
+  "capped-require-php": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-tag-unverified-dagger": [
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
@@ -413,7 +470,7 @@
     "fix: upgrade",
     "lookup complete",
     "3.x the move clears 1 of 1 from 3.36.0",
-    "upgrade · held by the 2 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
   "gitlab-anon-dagger": [
@@ -439,13 +496,13 @@
     "fix: upgrade",
     "lookup complete",
     "6.x clears 5 of 14 from 6.5.8",
-    "upgrade · held by the 3 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: 32, critical, if Composer resolves it",
     "7.x clears 14 of 14 from 7.15.2",
-    "upgrade · held by the 3 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: at most 16, high, if Composer resolves it",
     "8.x the move clears 14 of 14 from 8.0.1",
-    "upgrade · held by the 3 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: at most 16, high, if Composer resolves it"
   ],
   "guzzle-mixed": [
@@ -454,13 +511,13 @@
     "fix: php floor raise",
     "lookup complete",
     "6.x clears 5 of 14 from 6.5.8",
-    "upgrade · held by the 5 in Held by",
+    "upgrade · held by every holder in Held by",
     "after it: 32, critical, if Composer resolves it",
     "7.x the move clears 14 of 14 from 7.15.2",
-    "php floor raise · held by the 5 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: at most 16, high, if Composer resolves it",
     "8.x clears 14 of 14 from 8.0.1",
-    "php floor raise · held by the 5 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: at most 16, high, if Composer resolves it"
   ],
   "hoa": [
@@ -547,6 +604,51 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "mc-blocking-off-both-dagger": [
+    "1 high advisory",
+    "6 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 1 of 1 from v2.3.2",
+    "composer update",
+    "after it: 0, ok"
+  ],
+  "mc-blocking-off-dagger": [
+    "1 high advisory",
+    "6 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 1 of 1 from v2.3.2",
+    "composer update",
+    "after it: 0, ok"
+  ],
+  "mc-inline-dagger": [
+    "1 high advisory",
+    "6 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 1 of 1 from v2.3.2",
+    "composer update",
+    "after it: 0, ok"
+  ],
+  "mc-lookup-incomplete-dagger": [
+    "1 high advisory",
+    "6 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 1 of 1 from v2.3.2",
+    "composer update",
+    "after it: 0, ok · not checked: the advisory lookup did not cover a package it installs"
+  ],
+  "mc-raise-php-dagger": [
+    "1 high advisory",
+    "5 on record for this name",
+    "fix: php floor raise",
+    "lookup complete",
+    "6.x your branch the move clears 1 of 1 from v6.4.40",
+    "php floor raise",
+    "after it: 0, ok"
+  ],
   "move-check-dagger": [
     "2 advisories: medium 1, low 1",
     "6 on record for this name",
@@ -592,10 +694,10 @@
     "php floor raise · held by composer.json",
     "after it: 16, high, if Composer resolves it",
     "12.x the move clears 6 of 6 from v12.69.0",
-    "php floor raise · held by the 2 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it",
     "13.x clears 6 of 6 from v13.30.0",
-    "php floor raise · held by the 2 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
   "partial-op-dagger": [
@@ -611,6 +713,21 @@
     "php floor raise",
     "after it: at most 16, high, if Composer resolves it"
   ],
+  "php-edge-equal-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "php-edge-lower-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "php-edge-upper-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "php-null": [
     "no counted advisory",
     "none on record for this name",
@@ -620,6 +737,39 @@
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
+  ],
+  "platform-step-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "platform-step-inside-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "platform-step-no-command-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "platform-step-why-not-dagger": [
+    "3 advisories: low 3",
+    "5 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "5.x your branch the move clears 3 of 3 from v5.4.52",
+    "upgrade · held by incenteev/composer-parameter-handler",
+    "after it: 0, ok · Composer refuses the move",
+    "6.x clears 3 of 3 from v6.4.40",
+    "php floor raise · held by incenteev/composer-parameter-handler",
+    "after it: 0, ok · Composer refuses the move",
+    "7.x clears 3 of 3 from v7.4.12",
+    "php floor raise · held by incenteev/composer-parameter-handler",
+    "after it: 0, ok · Composer refuses the move",
+    "8.x clears 3 of 3 from v8.0.12",
+    "php floor raise · held by incenteev/composer-parameter-handler",
+    "after it: 0, ok · Composer refuses the move"
   ],
   "policy-off-dagger": [
     "1 medium advisory",
@@ -679,10 +829,28 @@
     "upgrade · held by mautic/core-lib and symfony/framework-bundle",
     "after it: 0, ok, if Composer resolves it",
     "7.x clears 2 of 2 from v7.4.13",
-    "upgrade · held by friendsofsymfony/rest-bundle, mautic/core-lib and symfony/framework-bundle",
+    "upgrade · held by mautic/core-lib, symfony/framework-bundle and friendsofsymfony/rest-bundle",
     "after it: 0, ok, if Composer resolves it",
     "8.x clears 2 of 2 from v8.0.13",
-    "upgrade · held by friendsofsymfony/rest-bundle, mautic/core-lib and symfony/framework-bundle",
+    "upgrade · held by mautic/core-lib, symfony/framework-bundle and friendsofsymfony/rest-bundle",
+    "after it: 0, ok, if Composer resolves it"
+  ],
+  "routing-self-dagger": [
+    "2 advisories: medium 2",
+    "4 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "5.x the move clears 2 of 2 from v5.4.53",
+    "upgrade · held by every holder in Held by",
+    "after it: 0, ok, if Composer resolves it",
+    "6.x clears 2 of 2 from v6.4.41",
+    "upgrade · held by symfony/framework-bundle and every holder in Held by",
+    "after it: 0, ok, if Composer resolves it",
+    "7.x clears 2 of 2 from v7.4.13",
+    "upgrade · held by symfony/framework-bundle, friendsofsymfony/rest-bundle and every holder in Held by",
+    "after it: 0, ok, if Composer resolves it",
+    "8.x clears 2 of 2 from v8.0.13",
+    "upgrade · held by symfony/framework-bundle, friendsofsymfony/rest-bundle and every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
   "silent": [
@@ -710,7 +878,17 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "stale-capped": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "stale-only": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "through-own": [
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
@@ -733,7 +911,7 @@
     "upgrade · held by composer.json",
     "after it: at most 48, critical, if Composer resolves it",
     "3.x the move clears 16 of 16 from v3.27.0",
-    "php floor raise · held by the 3 in Held by",
+    "php floor raise · held by every holder in Held by",
     "after it: at most 16, high, if Composer resolves it"
   ],
   "twig-dev-dagger": [
@@ -821,6 +999,116 @@
     "1 high advisory",
     "1 on record for this name",
     "fix: not known",
+    "lookup complete"
+  ],
+  "capped-accepted-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-blocked-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-dev-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-held-update-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-htmlpurifier-dagger": [
+    "no counted advisory",
+    "4 on record for this name",
+    "lookup complete"
+  ],
+  "capped-known-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-money-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-nette-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-new-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-no-php-newest-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-no-release-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-platform-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-project-blocked-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-raise-php": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-recapped-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-require-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-require-higher-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-snapshot-alias-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-snapshot-backport-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-snapshot-dev-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-unread-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-update-dagger": [
+    "no counted advisory",
+    "none on record for this name",
     "lookup complete"
   ],
   "finished-offline-dagger": [

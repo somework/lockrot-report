@@ -44,17 +44,11 @@ export function dataAsOf(f: Finding): string {
   return f.data_date === null ? DASH : day(f.data_date);
 }
 
-/** The UTC calendar day of a datetime. */
-function utcDay(iso: string): string {
-  const time = Date.parse(iso);
-  return Number.isNaN(time) ? iso.slice(0, 10) : new Date(time).toISOString().slice(0, 10);
-}
-
 /** Accepted derivation 4: the column shows when a finding's day differs from the report's. */
 export function showsDataColumn(report: Report2): boolean {
   if (report.data_date === null) return false;
-  const page = utcDay(report.data_date);
-  return report.findings.some((f) => f.data_date !== null && utcDay(f.data_date) !== page);
+  const page = day(report.data_date);
+  return report.findings.some((f) => f.data_date !== null && day(f.data_date) !== page);
 }
 
 /** The caption that stands for the hidden column; null while the column shows. */
@@ -62,7 +56,7 @@ export function dataCaption(report: Report2): string | null {
   if (report.data_date === null) return "No row has repository data";
   if (showsDataColumn(report)) return null;
   const missing = report.findings.filter((f) => f.data_date === null).length;
-  return `Every row has data as of ${utcDay(report.data_date)}${missing > 0 ? ` (${missing} read no repository data)` : ""}`;
+  return `Every row has data as of ${day(report.data_date)}${missing > 0 ? ` (${missing} read no repository data)` : ""}`;
 }
 
 /** The signal ids the rows carry, in id order, each with its glossary name. */

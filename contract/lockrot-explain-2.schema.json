@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "id": "https://lockrot.dev/schema/explain-2.json",
     "title": "lockrot explanation",
-    "description": "The document `composer lockrot --explain=vendor/package --format=json` prints (explain-2, lockrot 0.14): the finding exactly as report-2 carries it, everything it was read from, and the run block every field of `run.score_model` refers to. Every human string in it is a rendering of fields in the same object or in `run`: strings carry `x-rendered-from`, and no consumer parses them. Objects are open: a field added later validates against this file unchanged; the number in the id changes only when a field is removed or renamed. Open sets carry a `pattern` and `x-known-values`; closed sets are enums.",
+    "description": "The document `composer lockrot --explain=vendor/package --format=json` prints (explain-2, lockrot 0.14): the finding exactly as report-2 carries it, everything it was read from, and the run block every field of `run.score_model` refers to. Every human string in it is a rendering of fields in the same object or in `run`: strings carry `x-rendered-from`, and no consumer parses them. Objects are open: a field added later validates against this file unchanged. The number in the id changes only when a field is removed, renamed, made required or narrowed, or a closed set changes. Open sets carry a `pattern` and `x-known-values`; closed sets are enums.",
     "type": "object",
     "required": [
         "$schema",
@@ -477,12 +477,13 @@
                     "minLength": 1
                 },
                 "basis": {
-                    "description": "Why the move raises it: `released_before_ga` (a tag released before the target major's GA, with an open `require.php`, adds old-promise), `branch_not_releasing` (a tag on a line that has not released in `release-warn-years` while a higher line has, S8's own rule, adds left-behind). An open set: read an unknown basis as another reason.",
+                    "description": "Why the move raises it: `released_before_ga` (a tag released before the target major's GA, with an open `require.php`, adds old-promise), `branch_not_releasing` (a tag on a line that has not released in `release-warn-years` while a higher line has, S8's own rule, adds left-behind), `stops_below_newest_php` (an `update`, `require`, `raise-php` or `tag` move to a release whose `require.php` stops below the newest PHP minor that the project allows, S11's own rule, adds capped). An open set: read an unknown basis as another reason.",
                     "type": "string",
                     "pattern": "^[a-z][a-z0-9_]*$",
                     "x-known-values": [
                         "released_before_ga",
-                        "branch_not_releasing"
+                        "branch_not_releasing",
+                        "stops_below_newest_php"
                     ]
                 }
             }
@@ -1404,6 +1405,7 @@
                 "clears_all",
                 "if_applied",
                 "check",
+                "moves_with",
                 "composer_moves_because",
                 "commands",
                 "text"
@@ -1452,7 +1454,7 @@
                     ]
                 },
                 "reason": {
-                    "description": "Set exactly on `no-move`: `package_quiet` (stale), `no_higher_release` and `higher_undated` (left-behind), `releases_unknown` (vulnerable), `affected_range_unknown` (vulnerable: the releases were read, but no counted advisory names the versions it affects), `metadata_not_read` (pinned: its releases were never read, so lockrot cannot say whether a tag exists) and `local_package` (pinned: installed from a local path, the project's own package). An open set.",
+                    "description": "Set exactly on `no-move`: `package_quiet` (stale), `no_higher_release` and `higher_undated` (left-behind), `releases_unknown` (vulnerable), `affected_range_unknown` (vulnerable: the releases were read, but no counted advisory names the versions it affects), `metadata_not_read` (pinned or capped: its releases were never read, so lockrot cannot say whether a tag exists or a release admits the newest PHP), `local_package` (pinned or capped: installed from a local path, the project's own package) and `no_release_admits` (capped: no stable release above the installed one admits S11's `newest_php`). An open set.",
                     "oneOf": [
                         {
                             "type": "string",
@@ -1464,7 +1466,8 @@
                                 "releases_unknown",
                                 "affected_range_unknown",
                                 "metadata_not_read",
-                                "local_package"
+                                "local_package",
+                                "no_release_admits"
                             ]
                         },
                         {
@@ -1543,7 +1546,7 @@
                     ]
                 },
                 "held_by": {
-                    "description": "The links that exclude the move; `upgrade` ⇒ not empty where lockrot read the links.",
+                    "description": "The links that exclude the move; `upgrade` ⇒ not empty where lockrot read the links, except where the joint request resolves the move (`moves_with` not empty).",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/heldBy"
@@ -1587,6 +1590,38 @@
                 "check": {
                     "$ref": "#/definitions/moveCheck"
                 },
+                "moves_with": {
+                    "description": "The holders that move beside the package when Composer refuses the move alone and resolves one joint request of the package and its holders. Each entry names a holder whose release the joint request changes. Not empty only when `check` resolves and `held_by` is empty.",
+                    "type": "array",
+                    "items": {
+                        "description": "A holder that moves with the package.",
+                        "type": "object",
+                        "required": [
+                            "package",
+                            "installed_version",
+                            "version"
+                        ],
+                        "properties": {
+                            "package": {
+                                "description": "The holder.",
+                                "$ref": "#/definitions/packageName"
+                            },
+                            "installed_version": {
+                                "description": "Its locked version, or null when lockrot reads no locked version.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "minLength": 1
+                            },
+                            "version": {
+                                "description": "The version that the joint request installs.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        }
+                    }
+                },
                 "composer_moves_because": {
                     "description": "Why the move needs more than the project's own command, one clause each: `holders` (`held_by` names a package), `crosses_major` (a `require`, `raise-php` or `tag` move to a new major), `transitive` (not direct, `direct_dependents` not empty, and `held_by` names none of them), `unreached` (not direct and no direct dependent: lockrot found no path from the requirements it walked). `transitive` and `unreached` are set on every kind that names an action on the package (`require raise-php tag replace find-alternative test`): the packages that require it act, or the project replaces them. Closed.",
                     "type": "array",
@@ -1602,7 +1637,7 @@
                     "uniqueItems": true
                 },
                 "commands": {
-                    "description": "The ordered commands a user runs, each an argv list, rendered per shell by the quoting rules of https://lockrot.dev/schema/ (POSIX, cmd.exe, PowerShell). The kinds without a command have `[]`. A transitive `require`, `raise-php` or `tag` move has no step for its package unless `check` resolves it. Then the step is `composer update vendor/pkg:<constraint>` with the form's option, on a Composer that takes an inline constraint there. A `raise-php` move starts with its php step (`composer require php:>=8.1 --no-update`). The lead move of a transitive package then adds one `composer why-not <dependent> <version>` per `through` entry whose `newest_requires` is false. The command argument rule: each argument matches `^[A-Za-z0-9/._:@+=,^~*<>| -]+$` and holds more than spaces. An `update` step names its constraint inline (`vendor/pkg:^1.2`), except on a Composer that refuses an inline constraint on a package composer.json does not require. A move that `check` resolves only with its dependencies ends its step with `--with-dependencies` or `--with-all-dependencies`, and a move that `check` refuses has no `update` or `require` step. Only lockrot's own options start with `-`: `--no-update` in a `require` step, and `--with-dependencies` and `--with-all-dependencies` in an `update` or `require` step. The first argument is `composer`, and the second is `update`, `require` or `why-not`. lockrot leaves out a step that breaks this rule. The move keeps its `constraint`, `text` and other steps. `text` shows a command only as the POSIX rendering of a step here. A page renders it as written and never builds a command from `constraint`. A page that reads an argv that breaks this rule renders none of that move's steps, on any shell.",
+                    "description": "The ordered commands a user runs, each an argv list, rendered per shell by the quoting rules of https://lockrot.dev/schema/ (POSIX, cmd.exe, PowerShell). The kinds without a command have `[]`. A transitive `require`, `raise-php` or `tag` move has no step for its package unless `check` resolves it. Then the step is `composer update vendor/pkg:<constraint>` with the form's option, on a Composer that takes an inline constraint there. A `raise-php` move starts with its php step (`composer require php:>=8.1 --no-update`). An `update`, `require`, `raise-php` or `tag` move whose `check` does not resolve it ends with `composer why-not vendor/pkg <version> --locked`. A move with `moves_with` entries runs the joint request: `composer update vendor/pkg:<constraint>` followed by the holders. A root requirement writes it in two steps: `composer require vendor/pkg:<constraint> --no-update`, then `composer update vendor/pkg` followed by the holders. A `require` step on a package that composer.json lists only in `require-dev` adds `--dev`. The command argument rule: each argument matches `^[A-Za-z0-9/._:@+=,^~*<>| -]+$` and holds more than spaces. An `update` step names its constraint inline (`vendor/pkg:^1.2`), except on a Composer that refuses an inline constraint on a package composer.json does not require. A move that `check` resolves only with its dependencies ends its step with `--with-dependencies` or `--with-all-dependencies`, and a move that `check` refuses has no `update` or `require` step. Only lockrot's own options start with `-`: `--no-update` and `--dev` in a `require` step, `--with-dependencies` and `--with-all-dependencies` in an `update` or `require` step, and `--locked` in a `why-not` step. The first argument is `composer`, and the second is `update`, `require` or `why-not`. lockrot leaves out a step that breaks this rule. The move keeps its `constraint`, `text` and other steps. `text` shows a command only as the POSIX rendering of a step here. A page renders it as written and never builds a command from `constraint`. A page that reads an argv that breaks this rule renders none of that move's steps, on any shell.",
                     "type": "array",
                     "items": {
                         "description": "One command as its argument list (`[\"composer\", \"require\", \"php:>=8.1\", \"--no-update\"]`).",
@@ -1622,8 +1657,13 @@
                         "package",
                         "direct",
                         "direct_dependents",
+                        "chain",
+                        "named_in",
                         "run.target_php",
-                        "run.project_php_lowest"
+                        "run.project_php_lowest",
+                        "run.php_window.platform_override",
+                        "run.php_window.target.inside",
+                        "run.move_check.baseline"
                     ],
                     "minLength": 1
                 }
@@ -2218,6 +2258,34 @@
                             "properties": {
                                 "to_branch": {
                                     "type": "string"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "description": "`moves_with` is empty unless `check.result` is `resolves`, and a move with entries has an empty `held_by`.",
+                    "anyOf": [
+                        {
+                            "properties": {
+                                "moves_with": {
+                                    "maxItems": 0
+                                }
+                            }
+                        },
+                        {
+                            "properties": {
+                                "check": {
+                                    "properties": {
+                                        "result": {
+                                            "enum": [
+                                                "resolves"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "held_by": {
+                                    "maxItems": 0
                                 }
                             }
                         }
@@ -3078,14 +3146,15 @@
                     "minLength": 1
                 },
                 "basis": {
-                    "description": "Why it is cleared: `branch_releasing` (left-behind: the branch released within `release-warn-years`), `released_after_ga` (old-promise: the lowest admitted release came out after the target major's GA), `outside_range` (an advisory: no admitted version is inside its range), `tags_only` (pinned: the constraint admits only tags). An open set: read an unknown basis as another reason the fact is cleared.",
+                    "description": "Why it is cleared: `branch_releasing` (left-behind: the branch released within `release-warn-years`), `released_after_ga` (old-promise: the lowest admitted release came out after the target major's GA), `outside_range` (an advisory: no admitted version is inside its range), `tags_only` (pinned: the constraint admits only tags), `admits_newest_php` (capped: the release the move installs admits the newest PHP minor that the project allows). An open set: read an unknown basis as another reason the fact is cleared.",
                     "type": "string",
                     "pattern": "^[a-z][a-z0-9_]*$",
                     "x-known-values": [
                         "branch_releasing",
                         "released_after_ga",
                         "outside_range",
-                        "tags_only"
+                        "tags_only",
+                        "admits_newest_php"
                     ]
                 }
             }
@@ -3204,7 +3273,7 @@
             }
         },
         "explainRun": {
-            "description": "What an `--explain` run read, and every field `score_model` refers to: the explain text renders from this block and the finding alone. Each key is report-2's `run` key of the same name, typed by the same schema.",
+            "description": "What an `--explain` run read, and every field `score_model` refers to: the explain text renders from this block and the finding alone. Each key is report-2's `run` key of the same name, typed by the same schema, except `php_window`, which holds only report-2's `platform_override` and `target`.",
             "type": "object",
             "required": [
                 "target_php",
@@ -3224,7 +3293,8 @@
                 "text_grammar",
                 "score_model",
                 "advisory_lookup",
-                "move_check"
+                "move_check",
+                "php_window"
             ],
             "properties": {
                 "target_php": {
@@ -3299,7 +3369,7 @@
                     ]
                 },
                 "flag_ids": {
-                    "description": "The seven flag ids in flag order (the vocabulary used, not a setting).",
+                    "description": "The eight flag ids in flag order (the vocabulary used, not a setting).",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/flag"
@@ -3326,7 +3396,7 @@
                     "uniqueItems": true
                 },
                 "signal_ids": {
-                    "description": "The ten check ids, for the Checks strip (\"3 fired · 7 quiet\").",
+                    "description": "The eleven check ids, for the Checks strip (\"3 fired · 8 quiet\").",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/signalId"
@@ -3381,6 +3451,7 @@
                             "required": [
                                 "composer",
                                 "blocks_advisories",
+                                "blocking_disabled_by",
                                 "ignores_extensions",
                                 "baseline",
                                 "reason"
@@ -3397,6 +3468,18 @@
                                 "blocks_advisories": {
                                     "description": "Whether the solve removed the versions that an advisory affects, as Composer 2.9 and later do in an update.",
                                     "type": "boolean"
+                                },
+                                "blocking_disabled_by": {
+                                    "description": "The environment variables that turned off the blocking of the Composer that solved: each one that this Composer reads and that holds a true value, in this order. Composer 2.10 and later read both, and 2.9.2 to 2.9.x read `COMPOSER_NO_SECURITY_BLOCKING`. Closed.",
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "COMPOSER_NO_BLOCKING",
+                                            "COMPOSER_NO_SECURITY_BLOCKING"
+                                        ]
+                                    },
+                                    "uniqueItems": true
                                 },
                                 "ignores_extensions": {
                                     "description": "Always true: the solve ignores every `ext-*` requirement, as `--ignore-platform-req=ext-*` does, so the extensions of the machine that runs lockrot decide no move.",
@@ -3435,6 +3518,27 @@
                             },
                             "allOf": [
                                 {
+                                    "description": "A run whose blocking an environment variable turned off blocks no advisory.",
+                                    "anyOf": [
+                                        {
+                                            "properties": {
+                                                "blocking_disabled_by": {
+                                                    "maxItems": 0
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "properties": {
+                                                "blocks_advisories": {
+                                                    "enum": [
+                                                        false
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
                                     "description": "`reason` is set exactly on a `baseline` of `not_checked`.",
                                     "anyOf": [
                                         {
@@ -3470,6 +3574,51 @@
                             "type": "null"
                         }
                     ]
+                },
+                "php_window": {
+                    "description": "The keys of report-2's `run.php_window` that `next_step.text` reads; null when report-2's `php_window` is null.",
+                    "oneOf": [
+                        {
+                            "description": "The platform PHP of the lock and the target PHP against the window.",
+                            "type": "object",
+                            "required": [
+                                "platform_override",
+                                "target"
+                            ],
+                            "properties": {
+                                "platform_override": {
+                                    "description": "The lock's `platform-overrides.php`: the PHP at which `composer install` checks the lock.",
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "minLength": 1
+                                },
+                                "target": {
+                                    "description": "The target PHP against the window.",
+                                    "type": "object",
+                                    "required": [
+                                        "php",
+                                        "inside"
+                                    ],
+                                    "properties": {
+                                        "php": {
+                                            "description": "The php that the move check solves at: `config.platform.php` when it lies in the target minor, else the minor at patch 99.",
+                                            "type": "string",
+                                            "pattern": "^[0-9]+(\\.[0-9]+)*$"
+                                        },
+                                        "inside": {
+                                            "description": "Whether the set with require-dev (`without_dev` when `with_dev` is null) admits that point.",
+                                            "type": "boolean"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
                 }
             },
             "allOf": [
@@ -3499,6 +3648,75 @@
                                 },
                                 "gates": {
                                     "minItems": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "description": "`run.php_window.target_fix.reason` is null on a `not_checked` fix exactly when `move_check` is null: a run that checks no move names no reason.",
+                    "anyOf": [
+                        {
+                            "not": {
+                                "properties": {
+                                    "php_window": {
+                                        "properties": {
+                                            "target_fix": {
+                                                "properties": {
+                                                    "check": {
+                                                        "enum": [
+                                                            "not_checked"
+                                                        ]
+                                                    }
+                                                },
+                                                "required": [
+                                                    "check"
+                                                ]
+                                            }
+                                        },
+                                        "required": [
+                                            "target_fix"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "php_window"
+                                ]
+                            }
+                        },
+                        {
+                            "properties": {
+                                "move_check": {
+                                    "type": "null"
+                                },
+                                "php_window": {
+                                    "properties": {
+                                        "target_fix": {
+                                            "properties": {
+                                                "reason": {
+                                                    "type": "null"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "properties": {
+                                "move_check": {
+                                    "type": "object"
+                                },
+                                "php_window": {
+                                    "properties": {
+                                        "target_fix": {
+                                            "properties": {
+                                                "reason": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -3572,18 +3790,19 @@
                                     "left-behind",
                                     "old-promise",
                                     "stale",
+                                    "capped",
                                     "vulnerable"
                                 ]
                             ],
-                            "description": "The seven flags, in flag order."
+                            "description": "The eight flags, in flag order."
                         }
                     },
-                    "description": "`flag_ids` is the seven flags in flag order."
+                    "description": "`flag_ids` is the eight flags in flag order."
                 },
                 {
                     "properties": {
                         "signal_ids": {
-                            "description": "S1 to S10 first, in order.",
+                            "description": "S1 to S11 first, in order.",
                             "items": [
                                 {
                                     "enum": [
@@ -3634,12 +3853,17 @@
                                     "enum": [
                                         "S10"
                                     ]
+                                },
+                                {
+                                    "enum": [
+                                        "S11"
+                                    ]
                                 }
                             ],
-                            "minItems": 10
+                            "minItems": 11
                         }
                     },
-                    "description": "`signal_ids` begins with S1 to S10 in order (a later check is appended)."
+                    "description": "`signal_ids` begins with S1 to S11 in order (a later check is appended)."
                 },
                 {
                     "description": "`none` stands alone in `fail_on`.",
@@ -4123,7 +4347,7 @@
                     }
                 },
                 "signals": {
-                    "description": "S1–S10 that fired, as report-1 orders them.",
+                    "description": "S1–S11 that fired, in id order.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/signal"
@@ -4657,6 +4881,40 @@
                                                         "flag": {
                                                             "enum": [
                                                                 "stale"
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "properties": {
+                                "lead": {
+                                    "enum": [
+                                        "capped"
+                                    ]
+                                },
+                                "score": {
+                                    "required": [
+                                        "terms"
+                                    ],
+                                    "properties": {
+                                        "terms": {
+                                            "items": [
+                                                {
+                                                    "properties": {
+                                                        "part": {
+                                                            "enum": [
+                                                                "maintenance"
+                                                            ]
+                                                        },
+                                                        "flag": {
+                                                            "enum": [
+                                                                "capped"
                                                             ]
                                                         }
                                                     }
@@ -7673,6 +7931,25 @@
                                                                         "properties": {
                                                                             "part": {
                                                                                 "enum": [
+                                                                                    "maintenance"
+                                                                                ]
+                                                                            },
+                                                                            "flag": {
+                                                                                "enum": [
+                                                                                    "capped"
+                                                                                ]
+                                                                            },
+                                                                            "weight": {
+                                                                                "enum": [
+                                                                                    8
+                                                                                ]
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    {
+                                                                        "properties": {
+                                                                            "part": {
+                                                                                "enum": [
                                                                                     "security"
                                                                                 ]
                                                                             },
@@ -8195,6 +8472,50 @@
                                     }
                                 }
                             ]
+                        },
+                        {
+                            "anyOf": [
+                                {
+                                    "properties": {
+                                        "score": {
+                                            "properties": {
+                                                "accepted": {
+                                                    "items": {
+                                                        "not": {
+                                                            "properties": {
+                                                                "flag": {
+                                                                    "enum": [
+                                                                        "capped"
+                                                                    ]
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "properties": {
+                                        "flags": {
+                                            "not": {
+                                                "items": {
+                                                    "not": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "enum": [
+                                                                    "capped"
+                                                                ]
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     ],
                     "description": "An accepted flag fired: each `score.accepted[].flag` has its `flags[]` entry."
@@ -8319,7 +8640,7 @@
                     ]
                 },
                 {
-                    "description": "A transitive or unreached package's `require` or `tag` move writes no `composer require` command (the package itself is never required at the root); its only commands are `composer why-not` checks.",
+                    "description": "A `require` or `tag` move of a transitive or unreached package that composer.json does not list writes no `composer require` command: the root does not require the package (ruling R13).",
                     "anyOf": [
                         {
                             "properties": {
@@ -8327,6 +8648,13 @@
                                     "enum": [
                                         true
                                     ]
+                                }
+                            }
+                        },
+                        {
+                            "properties": {
+                                "named_in": {
+                                    "minItems": 1
                                 }
                             }
                         },
@@ -8375,7 +8703,7 @@
                     ]
                 },
                 {
-                    "description": "Each `also[]` move of a transitive or unreached package's `require` or `tag` kind writes no command.",
+                    "description": "Each `also[]` move of the `require` or `tag` kind of a transitive or unreached package that composer.json does not list writes no `composer require` command.",
                     "anyOf": [
                         {
                             "properties": {
@@ -8383,6 +8711,13 @@
                                     "enum": [
                                         true
                                     ]
+                                }
+                            }
+                        },
+                        {
+                            "properties": {
+                                "named_in": {
+                                    "minItems": 1
                                 }
                             }
                         },
@@ -8408,7 +8743,22 @@
                                                     {
                                                         "properties": {
                                                             "commands": {
-                                                                "maxItems": 0
+                                                                "items": {
+                                                                    "not": {
+                                                                        "items": [
+                                                                            {
+                                                                                "enum": [
+                                                                                    "composer"
+                                                                                ]
+                                                                            },
+                                                                            {
+                                                                                "enum": [
+                                                                                    "require"
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                }
                                                             }
                                                         }
                                                     }
@@ -8634,6 +8984,20 @@
                                                             "flag": {
                                                                 "enum": [
                                                                     "stale"
+                                                                ]
+                                                            },
+                                                            "weight": {
+                                                                "enum": [
+                                                                    8
+                                                                ]
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "properties": {
+                                                            "flag": {
+                                                                "enum": [
+                                                                    "capped"
                                                                 ]
                                                             },
                                                             "weight": {
@@ -10599,6 +10963,19 @@
                                                                     "$ref": "#/definitions/date"
                                                                 }
                                                             }
+                                                        },
+                                                        "capped": {
+                                                            "description": "One recorded flag.",
+                                                            "type": "object",
+                                                            "required": [
+                                                                "known_since"
+                                                            ],
+                                                            "properties": {
+                                                                "known_since": {
+                                                                    "description": "The date it was first known (baseline-2 stores a date for every fact).",
+                                                                    "$ref": "#/definitions/date"
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 },
@@ -11179,6 +11556,28 @@
                     }
                 },
                 {
+                    "description": "`capped`: headline `php_minor`.",
+                    "properties": {
+                        "id": {
+                            "enum": [
+                                "capped"
+                            ]
+                        },
+                        "degree": {
+                            "type": "null"
+                        },
+                        "headline": {
+                            "properties": {
+                                "unit": {
+                                    "enum": [
+                                        "php_minor"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
                     "description": "`vulnerable`: no degree, its baseline is null (its advisories carry theirs), headline `advisories`; its role is not constrained (open).",
                     "properties": {
                         "id": {
@@ -11206,7 +11605,7 @@
             ],
             "allOf": [
                 {
-                    "description": "A flag names only the signals that raise or date it: abandoned S1 S3 S2 S4, silent and stale S2 S4, pinned S6, left-behind S8, old-promise S5, vulnerable S9; a signal id this schema does not list is not constrained.",
+                    "description": "A flag names only the signals that raise or date it: abandoned S1 S3 S2 S4, silent and stale S2 S4, pinned S6, left-behind S8, old-promise S5, capped S11, vulnerable S9; a signal id this schema does not list is not constrained.",
                     "anyOf": [
                         {
                             "properties": {
@@ -11238,7 +11637,8 @@
                                                         "S7",
                                                         "S8",
                                                         "S9",
-                                                        "S10"
+                                                        "S10",
+                                                        "S11"
                                                     ]
                                                 }
                                             }
@@ -11275,7 +11675,8 @@
                                                         "S7",
                                                         "S8",
                                                         "S9",
-                                                        "S10"
+                                                        "S10",
+                                                        "S11"
                                                     ]
                                                 }
                                             }
@@ -11312,7 +11713,8 @@
                                                         "S7",
                                                         "S8",
                                                         "S9",
-                                                        "S10"
+                                                        "S10",
+                                                        "S11"
                                                     ]
                                                 }
                                             }
@@ -11348,7 +11750,8 @@
                                                         "S7",
                                                         "S8",
                                                         "S9",
-                                                        "S10"
+                                                        "S10",
+                                                        "S11"
                                                     ]
                                                 }
                                             }
@@ -11384,7 +11787,8 @@
                                                         "S7",
                                                         "S8",
                                                         "S9",
-                                                        "S10"
+                                                        "S10",
+                                                        "S11"
                                                     ]
                                                 }
                                             }
@@ -11420,7 +11824,45 @@
                                                         "S7",
                                                         "S8",
                                                         "S9",
-                                                        "S10"
+                                                        "S10",
+                                                        "S11"
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "properties": {
+                                "id": {
+                                    "enum": [
+                                        "capped"
+                                    ]
+                                },
+                                "signal_ids": {
+                                    "items": {
+                                        "anyOf": [
+                                            {
+                                                "enum": [
+                                                    "S11"
+                                                ]
+                                            },
+                                            {
+                                                "not": {
+                                                    "enum": [
+                                                        "S1",
+                                                        "S2",
+                                                        "S3",
+                                                        "S4",
+                                                        "S5",
+                                                        "S6",
+                                                        "S7",
+                                                        "S8",
+                                                        "S9",
+                                                        "S10",
+                                                        "S11"
                                                     ]
                                                 }
                                             }
@@ -11456,7 +11898,8 @@
                                                         "S7",
                                                         "S8",
                                                         "S9",
-                                                        "S10"
+                                                        "S10",
+                                                        "S11"
                                                     ]
                                                 }
                                             }
@@ -11876,7 +12319,7 @@
             ]
         },
         "flag": {
-            "description": "A flag id, in the frozen flag order `abandoned silent pinned left-behind old-promise stale vulnerable`. Closed: a new flag is a report-3 event.",
+            "description": "A flag id, in the frozen flag order `abandoned silent pinned left-behind old-promise stale capped vulnerable`. Closed: a new flag is a report-3 event.",
             "type": "string",
             "enum": [
                 "abandoned",
@@ -11885,6 +12328,7 @@
                 "left-behind",
                 "old-promise",
                 "stale",
+                "capped",
                 "vulnerable"
             ]
         },
@@ -12040,7 +12484,7 @@
             ],
             "allOf": [
                 {
-                    "description": "A value's kind follows the value: the four grades are `grade`, the six maintenance flags `flag`, `vulnerable` and `vulnerable-<severity>` `vulnerable`, `unchecked` `unchecked`; a value or a kind this schema does not list is not constrained.",
+                    "description": "A value's kind follows the value: the four grades are `grade`, the seven maintenance flags `flag`, `vulnerable` and `vulnerable-<severity>` `vulnerable`, `unchecked` `unchecked`; a value or a kind this schema does not list is not constrained.",
                     "anyOf": [
                         {
                             "properties": {
@@ -12068,7 +12512,8 @@
                                         "pinned",
                                         "left-behind",
                                         "old-promise",
-                                        "stale"
+                                        "stale",
+                                        "capped"
                                     ]
                                 },
                                 "kind": {
@@ -12138,7 +12583,8 @@
                                                     "pinned",
                                                     "left-behind",
                                                     "old-promise",
-                                                    "stale"
+                                                    "stale",
+                                                    "capped"
                                                 ]
                                             },
                                             {
@@ -12303,6 +12749,20 @@
                             "properties": {
                                 "value": {
                                     "enum": [
+                                        "capped"
+                                    ]
+                                },
+                                "threshold": {
+                                    "enum": [
+                                        "capped"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "properties": {
+                                "value": {
+                                    "enum": [
                                         "vulnerable"
                                     ]
                                 },
@@ -12382,6 +12842,7 @@
                                             "left-behind",
                                             "old-promise",
                                             "stale",
+                                            "capped",
                                             "vulnerable",
                                             "vulnerable-medium",
                                             "vulnerable-high",
@@ -12427,12 +12888,13 @@
                     "enum": [
                         "years",
                         "php",
+                        "php_minor",
                         "reason",
                         "advisories"
                     ]
                 },
                 "value": {
-                    "description": "A years field (`years`, null for a liveness word with no dated reading), the PHP major the release was written for (`php`), a reason id worded by the page (`reason`), or the count of counted advisories (`advisories`).",
+                    "description": "A years field (`years`, null for a liveness word with no dated reading), the PHP major the release was written for (`php`), the PHP minor the installed `require.php` stops at (`php_minor`), a reason id worded by the page (`reason`), or the count of counted advisories (`advisories`).",
                     "type": [
                         "number",
                         "string",
@@ -12549,6 +13011,23 @@
                             "type": "null"
                         }
                     }
+                },
+                {
+                    "description": "`php_minor` (capped: S11 `stops_at`).",
+                    "properties": {
+                        "unit": {
+                            "enum": [
+                                "php_minor"
+                            ]
+                        },
+                        "value": {
+                            "type": "string",
+                            "pattern": "^[0-9]+\\.[0-9]+$"
+                        },
+                        "source": {
+                            "type": "null"
+                        }
+                    }
                 }
             ]
         },
@@ -12659,7 +13138,7 @@
             ]
         },
         "holder": {
-            "description": "The holder's own finding in this report, for display only (no score reads it): `{verdict, lead, flag_ids[], replacement, next_step}`. Null for the root, and for a holder that is not a finding of this report.",
+            "description": "The holder's own finding in this report, for display only (no score reads it): `{verdict, lead, flag_ids[], replacement, next_step}`. Null for the root, for a holder that is not a finding of this report, and for a hold whose `version` is not the holder's locked version.",
             "oneOf": [
                 {
                     "description": "A holder's finding, restated.",
@@ -12668,6 +13147,7 @@
                         "verdict",
                         "lead",
                         "flag_ids",
+                        "direct",
                         "replacement",
                         "next_step"
                     ],
@@ -12693,6 +13173,10 @@
                                 "$ref": "#/definitions/flag"
                             },
                             "uniqueItems": true
+                        },
+                        "direct": {
+                            "description": "The holder's own `direct`: whether the run requires the holder directly.",
+                            "type": "boolean"
                         },
                         "replacement": {
                             "description": "The holder's `replacement` (a Composer package name), so an abandoned holder reads \"held by abandoned symfony/x (replacement: …)\".",
@@ -13156,7 +13640,8 @@
                 "pinned",
                 "left-behind",
                 "old-promise",
-                "stale"
+                "stale",
+                "capped"
             ]
         },
         "metadata": {
@@ -13332,6 +13817,7 @@
                 "clears_all",
                 "if_applied",
                 "check",
+                "moves_with",
                 "composer_moves_because",
                 "commands",
                 "through",
@@ -13382,7 +13868,7 @@
                     ]
                 },
                 "reason": {
-                    "description": "Set exactly on `no-move`: `package_quiet` (stale), `no_higher_release` and `higher_undated` (left-behind), `releases_unknown` (vulnerable), `affected_range_unknown` (vulnerable: the releases were read, but no counted advisory names the versions it affects), `metadata_not_read` (pinned: its releases were never read, so lockrot cannot say whether a tag exists) and `local_package` (pinned: installed from a local path, the project's own package). An open set.",
+                    "description": "Set exactly on `no-move`: `package_quiet` (stale), `no_higher_release` and `higher_undated` (left-behind), `releases_unknown` (vulnerable), `affected_range_unknown` (vulnerable: the releases were read, but no counted advisory names the versions it affects), `metadata_not_read` (pinned or capped: its releases were never read, so lockrot cannot say whether a tag exists or a release admits the newest PHP), `local_package` (pinned or capped: installed from a local path, the project's own package) and `no_release_admits` (capped: no stable release above the installed one admits S11's `newest_php`). An open set.",
                     "oneOf": [
                         {
                             "type": "string",
@@ -13394,7 +13880,8 @@
                                 "releases_unknown",
                                 "affected_range_unknown",
                                 "metadata_not_read",
-                                "local_package"
+                                "local_package",
+                                "no_release_admits"
                             ]
                         },
                         {
@@ -13473,7 +13960,7 @@
                     ]
                 },
                 "held_by": {
-                    "description": "The links that exclude the move; `upgrade` ⇒ not empty where lockrot read the links.",
+                    "description": "The links that exclude the move; `upgrade` ⇒ not empty where lockrot read the links, except where the joint request resolves the move (`moves_with` not empty).",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/heldBy"
@@ -13517,6 +14004,38 @@
                 "check": {
                     "$ref": "#/definitions/moveCheck"
                 },
+                "moves_with": {
+                    "description": "The holders that move beside the package when Composer refuses the move alone and resolves one joint request of the package and its holders. Each entry names a holder whose release the joint request changes. Not empty only when `check` resolves and `held_by` is empty.",
+                    "type": "array",
+                    "items": {
+                        "description": "A holder that moves with the package.",
+                        "type": "object",
+                        "required": [
+                            "package",
+                            "installed_version",
+                            "version"
+                        ],
+                        "properties": {
+                            "package": {
+                                "description": "The holder.",
+                                "$ref": "#/definitions/packageName"
+                            },
+                            "installed_version": {
+                                "description": "Its locked version, or null when lockrot reads no locked version.",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "minLength": 1
+                            },
+                            "version": {
+                                "description": "The version that the joint request installs.",
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        }
+                    }
+                },
                 "composer_moves_because": {
                     "description": "Why the move needs more than the project's own command, one clause each: `holders` (`held_by` names a package), `crosses_major` (a `require`, `raise-php` or `tag` move to a new major), `transitive` (not direct, `direct_dependents` not empty, and `held_by` names none of them), `unreached` (not direct and no direct dependent: lockrot found no path from the requirements it walked). `transitive` and `unreached` are set on every kind that names an action on the package (`require raise-php tag replace find-alternative test`): the packages that require it act, or the project replaces them. Closed.",
                     "type": "array",
@@ -13532,7 +14051,7 @@
                     "uniqueItems": true
                 },
                 "commands": {
-                    "description": "The ordered commands a user runs, each an argv list, rendered per shell by the quoting rules of https://lockrot.dev/schema/ (POSIX, cmd.exe, PowerShell). The kinds without a command have `[]`. A transitive `require`, `raise-php` or `tag` move has no step for its package unless `check` resolves it. Then the step is `composer update vendor/pkg:<constraint>` with the form's option, on a Composer that takes an inline constraint there. A `raise-php` move starts with its php step (`composer require php:>=8.1 --no-update`). The lead move of a transitive package then adds one `composer why-not <dependent> <version>` per `through` entry whose `newest_requires` is false. The command argument rule: each argument matches `^[A-Za-z0-9/._:@+=,^~*<>| -]+$` and holds more than spaces. An `update` step names its constraint inline (`vendor/pkg:^1.2`), except on a Composer that refuses an inline constraint on a package composer.json does not require. A move that `check` resolves only with its dependencies ends its step with `--with-dependencies` or `--with-all-dependencies`, and a move that `check` refuses has no `update` or `require` step. Only lockrot's own options start with `-`: `--no-update` in a `require` step, and `--with-dependencies` and `--with-all-dependencies` in an `update` or `require` step. The first argument is `composer`, and the second is `update`, `require` or `why-not`. lockrot leaves out a step that breaks this rule. The move keeps its `constraint`, `text` and other steps. `text` shows a command only as the POSIX rendering of a step here. A page renders it as written and never builds a command from `constraint`. A page that reads an argv that breaks this rule renders none of that move's steps, on any shell.",
+                    "description": "The ordered commands a user runs, each an argv list, rendered per shell by the quoting rules of https://lockrot.dev/schema/ (POSIX, cmd.exe, PowerShell). The kinds without a command have `[]`. A transitive `require`, `raise-php` or `tag` move has no step for its package unless `check` resolves it. Then the step is `composer update vendor/pkg:<constraint>` with the form's option, on a Composer that takes an inline constraint there. A `raise-php` move starts with its php step (`composer require php:>=8.1 --no-update`). An `update`, `require`, `raise-php` or `tag` move whose `check` does not resolve it ends with `composer why-not vendor/pkg <version> --locked`. A move with `moves_with` entries runs the joint request: `composer update vendor/pkg:<constraint>` followed by the holders. A root requirement writes it in two steps: `composer require vendor/pkg:<constraint> --no-update`, then `composer update vendor/pkg` followed by the holders. A `require` step on a package that composer.json lists only in `require-dev` adds `--dev`. The command argument rule: each argument matches `^[A-Za-z0-9/._:@+=,^~*<>| -]+$` and holds more than spaces. An `update` step names its constraint inline (`vendor/pkg:^1.2`), except on a Composer that refuses an inline constraint on a package composer.json does not require. A move that `check` resolves only with its dependencies ends its step with `--with-dependencies` or `--with-all-dependencies`, and a move that `check` refuses has no `update` or `require` step. Only lockrot's own options start with `-`: `--no-update` and `--dev` in a `require` step, `--with-dependencies` and `--with-all-dependencies` in an `update` or `require` step, and `--locked` in a `why-not` step. The first argument is `composer`, and the second is `update`, `require` or `why-not`. lockrot leaves out a step that breaks this rule. The move keeps its `constraint`, `text` and other steps. `text` shows a command only as the POSIX rendering of a step here. A page renders it as written and never builds a command from `constraint`. A page that reads an argv that breaks this rule renders none of that move's steps, on any shell.",
                     "type": "array",
                     "items": {
                         "description": "One command as its argument list (`[\"composer\", \"require\", \"php:>=8.1\", \"--no-update\"]`).",
@@ -13545,7 +14064,7 @@
                     }
                 },
                 "through": {
-                    "description": "On the lead move only: one entry per direct dependent of a transitive package, in `direct_dependents` order; `[]` when the package is direct or has no direct dependent. For each dependent whose newest release no longer requires the package, `commands` ends with `composer why-not <dependent> <version>`, which says what holds the dependent back.",
+                    "description": "On the lead move only: one entry per direct dependent of a transitive package, in `direct_dependents` order; `[]` when the package is direct or has no direct dependent. `text` names one action per group of dependents: `local`, `newest_is_installed`, then the others.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/throughEntry"
@@ -13566,8 +14085,13 @@
                         "package",
                         "direct",
                         "direct_dependents",
+                        "chain",
+                        "named_in",
                         "run.target_php",
-                        "run.project_php_lowest"
+                        "run.project_php_lowest",
+                        "run.php_window.platform_override",
+                        "run.php_window.target.inside",
+                        "run.move_check.baseline"
                     ],
                     "minLength": 1
                 }
@@ -14168,6 +14692,34 @@
                     ]
                 },
                 {
+                    "description": "`moves_with` is empty unless `check.result` is `resolves`, and a move with entries has an empty `held_by`.",
+                    "anyOf": [
+                        {
+                            "properties": {
+                                "moves_with": {
+                                    "maxItems": 0
+                                }
+                            }
+                        },
+                        {
+                            "properties": {
+                                "check": {
+                                    "properties": {
+                                        "result": {
+                                            "enum": [
+                                                "resolves"
+                                            ]
+                                        }
+                                    }
+                                },
+                                "held_by": {
+                                    "maxItems": 0
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
                     "description": "A security move carries its fix kind: `source` or `merged` holds `vulnerable`.",
                     "anyOf": [
                         {
@@ -14508,7 +15060,8 @@
                     "required": [
                         "result",
                         "form",
-                        "reason"
+                        "reason",
+                        "installs"
                     ],
                     "properties": {
                         "result": {
@@ -14552,18 +15105,27 @@
                                         "composer_json_invalid",
                                         "no_release_read",
                                         "pass_cap",
-                                        "solver_error"
+                                        "solver_error",
+                                        "advisory_lookup_incomplete"
                                     ]
                                 },
                                 {
                                     "type": "null"
                                 }
                             ]
+                        },
+                        "installs": {
+                            "description": "The release of the moved package that the resolving form installs, as its repository lists it. Null unless `result` is `resolves`, and null when the check was recorded without it.",
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "minLength": 1
                         }
                     },
                     "allOf": [
                         {
-                            "description": "`form` is set exactly on `resolves`, and `reason` exactly on `not_checked`.",
+                            "description": "`form` is set exactly on `resolves`, `reason` exactly on `not_checked`, and `installs` only on `resolves`.",
                             "anyOf": [
                                 {
                                     "properties": {
@@ -14592,6 +15154,9 @@
                                         },
                                         "reason": {
                                             "type": "null"
+                                        },
+                                        "installs": {
+                                            "type": "null"
                                         }
                                     }
                                 },
@@ -14607,6 +15172,9 @@
                                         },
                                         "reason": {
                                             "type": "string"
+                                        },
+                                        "installs": {
+                                            "type": "null"
                                         }
                                     }
                                 }
@@ -15647,7 +16215,8 @@
                         "composer_json_invalid",
                         "no_release_read",
                         "pass_cap",
-                        "solver_error"
+                        "solver_error",
+                        "advisory_lookup_incomplete"
                     ]
                 },
                 "packages": {
@@ -16038,7 +16607,7 @@
             ]
         },
         "phpCheck": {
-            "description": "What the release a move names needs from PHP: set on every move that names a branch or a tag (`update require raise-php blocked tag`) and on `security.gets`. A sentence prints its php clause only when `requires` is set; it names the project's lowest PHP from `run.project_php_lowest`.",
+            "description": "What the release a move names needs from PHP; on a move, the branch's highest release, or for `blocked` the release that blocks it. Set on every move that names a branch or a tag (`update require raise-php blocked tag`) and on `security.gets`. A sentence prints its php clause only when `requires` is set; it names the project's lowest PHP from `run.project_php_lowest`.",
             "type": "object",
             "required": [
                 "requires",
@@ -16662,6 +17231,90 @@
                 }
             }
         },
+        "s11": {
+            "description": "S11: the installed release's `require.php` has a finite upper bound and admits no PHP at or above the newest minor that the root php allows; it raises `capped`. A `release_metadata` entry beside it lists S11 in `blocks`, and only `admits_newest` is unread.",
+            "type": "object",
+            "required": [
+                "newest_php",
+                "newest_php_source",
+                "requires",
+                "stops_at",
+                "excludes_target",
+                "admits_newest"
+            ],
+            "properties": {
+                "newest_php": {
+                    "description": "R: the newest known PHP minor that the root php (composer.json `require.php`, else the lock's `platform.php`) admits.",
+                    "type": "string",
+                    "pattern": "^[0-9]+\\.[0-9]+$"
+                },
+                "newest_php_source": {
+                    "description": "Why `newest_php` is R: `known` when R is the newest known minor, with a root php or without; `require_php` when composer.json's `require.php` limits R below it; `platform_php` when the lock's `platform.php` limits it in a run with no root `require.php`. Closed.",
+                    "type": "string",
+                    "enum": [
+                        "known",
+                        "require_php",
+                        "platform_php"
+                    ]
+                },
+                "requires": {
+                    "description": "The installed release's `require.php`, as `installed_php.requires`.",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "stops_at": {
+                    "description": "The newest known PHP minor that `requires` admits.",
+                    "type": "string",
+                    "pattern": "^[0-9]+\\.[0-9]+$"
+                },
+                "excludes_target": {
+                    "description": "Exactly `installed_php.target_runs` false: no patch of the target minor meets `requires`.",
+                    "type": "boolean"
+                },
+                "admits_newest": {
+                    "description": "The newest release of the lowest branch whose newest release admits `newest_php` in its `require.php` or states no php. The releases above the installed one count, and https://lockrot.dev/verdicts/#capped says which count above a snapshot. Null when none admits `newest_php`, or when lockrot did not read the release metadata.",
+                    "oneOf": [
+                        {
+                            "description": "A release that admits the newest PHP.",
+                            "type": "object",
+                            "required": [
+                                "version",
+                                "branch",
+                                "blocking"
+                            ],
+                            "properties": {
+                                "version": {
+                                    "description": "The release.",
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "branch": {
+                                    "$ref": "#/definitions/branchLabel"
+                                },
+                                "blocking": {
+                                    "description": "What holds the release back: `project` (the project's lowest PHP is outside its `require.php`), `target` (no patch of the target minor is inside it); null when nothing does. Closed.",
+                                    "oneOf": [
+                                        {
+                                            "type": "string",
+                                            "enum": [
+                                                "project",
+                                                "target"
+                                            ]
+                                        },
+                                        {
+                                            "type": "null"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ]
+                }
+            }
+        },
         "s2": {
             "description": "S2: no release for years (report-1, unchanged).",
             "type": "object",
@@ -17260,7 +17913,7 @@
                     ]
                 },
                 "held_by": {
-                    "description": "The links that exclude the fixing release; `upgrade` ⇒ not empty where lockrot read the links.",
+                    "description": "The links that exclude the fixing release; `upgrade` ⇒ not empty where lockrot read the links, except where the joint request resolves the move to this release.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/heldBy"
@@ -18010,7 +18663,7 @@
                     ]
                 },
                 {
-                    "description": "Under score model 1 each term carries model 1's weight for its flag (abandoned 32, silent 32, pinned 16, left-behind 16, old-promise 16, stale 8) or for its severity (critical 32, high 16, medium 8, unrated 8, low 2).",
+                    "description": "Under score model 1 each term carries model 1's weight for its flag (abandoned 32, silent 32, pinned 16, left-behind 16, old-promise 16, stale 8, capped 8) or for its severity (critical 32, high 16, medium 8, unrated 8, low 2).",
                     "anyOf": [
                         {
                             "properties": {
@@ -18133,6 +18786,25 @@
                                                     "flag": {
                                                         "enum": [
                                                             "stale"
+                                                        ]
+                                                    },
+                                                    "weight": {
+                                                        "enum": [
+                                                            8
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "properties": {
+                                                    "part": {
+                                                        "enum": [
+                                                            "maintenance"
+                                                        ]
+                                                    },
+                                                    "flag": {
+                                                        "enum": [
+                                                            "capped"
                                                         ]
                                                     },
                                                     "weight": {
@@ -18563,7 +19235,7 @@
                                 ],
                                 "properties": {
                                     "v013_base": {
-                                        "description": "The 0.13 band it is anchored to; null for `vulnerable`.",
+                                        "description": "The 0.13 band it is anchored to; null for `capped` (0.13 had no such verdict) and `vulnerable`.",
                                         "oneOf": [
                                             {
                                                 "$ref": "#/definitions/grade"
@@ -18574,7 +19246,7 @@
                                         ]
                                     },
                                     "points": {
-                                        "description": "`band_floor` (its points are that band's floor) or `severities`. Open.",
+                                        "description": "`band_floor` (its points are the floor of its 0.13 band, or of its own `band` when `v013_base` is null) or `severities`. Open.",
                                         "type": "string",
                                         "pattern": "^[a-z][a-z0-9_]*$",
                                         "x-known-values": [
@@ -18833,7 +19505,8 @@
                                     "liveness",
                                     "branch",
                                     "release_age",
-                                    "release_push"
+                                    "release_push",
+                                    "php_bound"
                                 ]
                             },
                             "flag_ids": {
@@ -20674,7 +21347,7 @@
             ]
         },
         "signal": {
-            "description": "A signal: S1–S10 as in report-1, with the data keys report-2 adds; typed per id by the branches below.",
+            "description": "A signal: S1–S10 as in report-1 and S11 (report-2), with the data keys report-2 adds; typed per id by the branches below.",
             "type": "object",
             "required": [
                 "id",
@@ -20690,7 +21363,7 @@
                     "$ref": "#/definitions/level"
                 },
                 "summary": {
-                    "description": "The signal sentence, `SignalSentence`: S1–S6 and S8 from their `data`, S7 from `data.packages[]`, S9 from `security` and the S9 rows, S10 from `data.unchecked[]` and, for `host_not_supported`, `activity.host`. Prose, not contract; key on the fields it is rendered from.",
+                    "description": "The signal sentence, `SignalSentence`: S1–S6, S8 and S11 from their `data`, S7 from `data.packages[]`, S9 from `security` and the S9 rows, S10 from `data.unchecked[]` and, for `host_not_supported`, `activity.host`. Prose, not contract; key on the fields it is rendered from.",
                     "type": "string",
                     "x-rendered-from": [
                         "signals[].data",
@@ -20826,6 +21499,18 @@
                     }
                 },
                 {
+                    "properties": {
+                        "id": {
+                            "enum": [
+                                "S11"
+                            ]
+                        },
+                        "data": {
+                            "$ref": "#/definitions/s11"
+                        }
+                    }
+                },
+                {
                     "description": "A signal whose id this schema does not list, from a later release or not from lockrot: its data is any object.",
                     "not": {
                         "properties": {
@@ -20840,7 +21525,8 @@
                                     "S7",
                                     "S8",
                                     "S9",
-                                    "S10"
+                                    "S10",
+                                    "S11"
                                 ]
                             }
                         }
@@ -20862,7 +21548,8 @@
                 "S7",
                 "S8",
                 "S9",
-                "S10"
+                "S10",
+                "S11"
             ]
         },
         "term": {
@@ -21017,7 +21704,9 @@
                 "installed_requires",
                 "newest_stable",
                 "newest_requires",
-                "newest_requires_unmeasured"
+                "newest_requires_unmeasured",
+                "local",
+                "newest_is_installed"
             ],
             "properties": {
                 "package": {
@@ -21091,6 +21780,17 @@
                             "type": "null"
                         }
                     ]
+                },
+                "local": {
+                    "description": "The dependent's own `origin.local`: the project's own path package. A move then changes that package instead of replacing it.",
+                    "type": "boolean"
+                },
+                "newest_is_installed": {
+                    "description": "Whether its locked release is `newest_stable`, so only a replacement moves it; null when `newest_stable` is null.",
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
                 }
             },
             "allOf": [
@@ -21114,6 +21814,31 @@
                                 },
                                 "newest_requires_unmeasured": {
                                     "type": "null"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "description": "`newest_is_installed` is null exactly when `newest_stable` is null.",
+                    "anyOf": [
+                        {
+                            "properties": {
+                                "newest_stable": {
+                                    "type": "null"
+                                },
+                                "newest_is_installed": {
+                                    "type": "null"
+                                }
+                            }
+                        },
+                        {
+                            "properties": {
+                                "newest_stable": {
+                                    "type": "object"
+                                },
+                                "newest_is_installed": {
+                                    "type": "boolean"
                                 }
                             }
                         }

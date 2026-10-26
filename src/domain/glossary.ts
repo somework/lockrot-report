@@ -24,6 +24,7 @@ export const flagsHeading = (run: Run): string => `The ${countWord(run.flag_ids.
 export const VERDICTS_DOCS = `${DOCS_URL}#the-nine-verdicts`;
 
 function zeroText(when: string): string {
+  if (when === "allowlisted") return "A score of 0: the package is allowlisted, so its flags do not count.";
   const reason = zeroVerdictReason(when);
   return reason === null ? "A score of 0, and no flag counts." : `A score of 0: ${reason}.`;
 }

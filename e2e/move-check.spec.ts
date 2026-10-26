@@ -30,10 +30,10 @@ test.describe("snipe-it, lockrot's engine run with a move check", () => {
       "Also holds: bacon/bacon-qr-code (high), pragmarx/google2fa-qrcode (medium)",
     );
     await expect(block.locator(".ov-first-foot")).toContainText(
-      "2 of 14 findings that fail the gate are held by other packages.",
+      "1 of 14 findings that fail the gate is held by other packages.",
     );
     await expect(block.locator(".ov-first-foot")).toContainText(
-      "9 need another way out: 6 find an alternative, 1 raise PHP >=8.4, 1 test, 1 no move",
+      "10 need another way out: 6 find an alternative, 1 raise PHP >=8.4, 1 test, 1 no move, 1 Composer refuses the move",
     );
   });
 
@@ -46,7 +46,7 @@ test.describe("snipe-it, lockrot's engine run with a move check", () => {
       "composer require 'pragmarx/google2fa-laravel:^2.3'",
     );
     const refused = await findingsRowCell(page, "bacon/bacon-qr-code", "next");
-    expect(refused).toContain("held by pragmarx/google2fa-laravel and 1 more");
+    expect(refused).toContain("held by pragmarx/google2fa-qrcode and 1 more");
     expect(refused).not.toContain("composer require");
   });
 
@@ -56,7 +56,7 @@ test.describe("snipe-it, lockrot's engine run with a move check", () => {
       .getByRole("link", { name: /need another way out/ })
       .click();
 
-    await expect(page.locator('[data-surface="findings"] [role="row"][data-pkg]')).toHaveCount(9);
+    await expect(page.locator('[data-surface="findings"] [role="row"][data-pkg]')).toHaveCount(10);
   });
 });
 
@@ -65,7 +65,7 @@ test("snipe-it.unloaded‡ counts the move that was not checked by its reason", 
 
   await expect(readyBlock(page).locator(".ov-move")).toHaveCount(2);
   await expect(readyBlock(page).locator(".ov-first-foot")).toContainText(
-    "10 need another way out: 6 find an alternative, 1 raise PHP >=8.4, 1 test, 1 no move, 1 not checked: a package it needs could not be loaded",
+    "11 need another way out: 6 find an alternative, 1 raise PHP >=8.4, 1 test, 1 no move, 1 Composer refuses the move, 1 not checked: a package it needs could not be loaded",
   );
 });
 
@@ -76,7 +76,7 @@ test.describe("wallabag-2.6, whose baseline Composer's solver refuses", () => {
 
     await expect(block.locator(".ov-move")).toHaveCount(0);
     await expect(block.locator(".ov-first-none")).toHaveText(
-      "No move is ready to run for the findings that fail the gate: none has a checked command that no other package holds.",
+      "No move is ready to run: Composer refuses the lock itself, so no move was checked.",
     );
     await expect(block.locator(".ov-first-foot")).toContainText(
       "28 not checked: Composer refuses the lock itself",

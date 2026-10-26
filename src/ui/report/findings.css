@@ -184,6 +184,11 @@ span.f2-unit {
   max-width: 100%;
   overflow-wrap: anywhere;
 }
+.f2-platform {
+  margin: 0 0 10px;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
 .f2-note {
   margin: 0 0 10px;
 }

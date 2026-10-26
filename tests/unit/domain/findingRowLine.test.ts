@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   GATE_WORDS,
+  nextStepWords,
   heldByLine,
   heldByWords,
   moreWord,
   reachLine,
   rowAfter,
+  rowBlockedWords,
   rowCommand,
   rowHolds,
   majorCount,
@@ -67,7 +69,7 @@ describe("the holders of a row (accepted derivation 3)", () => {
         also: [{ held_by: [hold("b/two"), hold("b/three")] }],
       }),
     });
-    const line = heldByLine(rowHolds(f), run);
+    const line = heldByLine(rowHolds(f), run, "c/pkg");
     expect(line).toEqual({ name: "b/one", more: 2 });
     expect(line === null ? null : heldByWords(line)).toBe("held by b/one and 2 more");
   });
@@ -78,13 +80,22 @@ describe("the holders of a row (accepted derivation 3)", () => {
       hold("a/medium", "package", "medium"),
       hold("a/high", "package", "high"),
     ];
-    expect(heldByLine(holds, run)).toEqual({ name: "a/high", more: 2 });
+    expect(heldByLine(holds, run, "c/pkg")).toEqual({ name: "a/high", more: 2 });
+  });
+
+  it("names a hold by the finding's own package after the root and before every other package, whatever its grade", () => {
+    const holds = [
+      hold("a/high", "package", "high"),
+      hold(null, "root"),
+      hold("symfony/mailer", "package", "low"),
+    ];
+    expect(heldByLine(holds, run, "symfony/mailer")).toEqual({ name: "its own release", more: 1 });
   });
 
   it("says the root as the sheet's Held by does when only the root holds", () => {
-    const line = heldByLine([hold(null, "root")], run);
+    const line = heldByLine([hold(null, "root")], run, "c/pkg");
     expect(line === null ? null : heldByWords(line)).toBe("held by your composer.json");
-    expect(heldByLine([], run)).toBeNull();
+    expect(heldByLine([], run, "c/pkg")).toBeNull();
   });
 
   it("counts the rest in words", () => {
@@ -95,6 +106,7 @@ describe("the holders of a row (accepted derivation 3)", () => {
 describe("rowCommand (accepted derivation 8)", () => {
   it("shows the first update or require step as a POSIX line", () => {
     const f = finding({
+      package: "a/b",
       next_step: step({
         commands: [
           ["composer", "why-not", "a/b", "2.0"],
@@ -106,12 +118,16 @@ describe("rowCommand (accepted derivation 8)", () => {
   });
 
   it("shows no command when every step is a why-not", () => {
-    const f = finding({ next_step: step({ commands: [["composer", "why-not", "a/b", "2.0"]] }) });
+    const f = finding({
+      package: "a/b",
+      next_step: step({ commands: [["composer", "why-not", "a/b", "2.0"]] }),
+    });
     expect(rowCommand(f)).toBeNull();
   });
 
   it("shows no step of a move when one argv fails the check (SPEC §5.6)", () => {
     const f = finding({
+      package: "a/b",
       next_step: step({
         commands: [
           ["composer", "update", "a/b"],
@@ -120,6 +136,139 @@ describe("rowCommand (accepted derivation 8)", () => {
       }),
     });
     expect(rowCommand(f)).toBeNull();
+  });
+});
+
+describe("R16: the blocked words of a move that fixes no advisory", () => {
+  const blocked = (fixKind: "blocked" | null, clears: { kind: string; id: string }[] = []) =>
+    finding({
+      package: "a/b",
+      next_step: step({
+        kind: "blocked",
+        fix_kind: fixKind,
+        to_branch: "3.x",
+        php_check: { requires: ">=8.5" },
+        clears,
+      }),
+    });
+
+  it("say no newer release runs when the move has no fix kind", () => {
+    expect(
+      nextStepWords(blocked(null, [{ kind: "advisory", id: "GHSA-1" }]), { ...run, target_php: "8.4" }).text,
+    ).toBe("3.x needs php >=8.5; target 8.4 runs no newer release");
+  });
+
+  it("say no fixing release runs when the move has a fix kind, though it clears nothing", () => {
+    expect(nextStepWords(blocked("blocked"), { ...run, target_php: "8.4" }).text).toBe(
+      "3.x needs php >=8.5; target 8.4 runs no fixing release",
+    );
+  });
+
+  it("are the row's blocked words, which a pinned move and a move of another kind leave null", () => {
+    const pinned = finding({
+      package: "a/b",
+      next_step: step({ kind: "blocked", source: "pinned", fix_kind: null }),
+    });
+    const update = finding({ package: "a/b", next_step: step({ kind: "update" }) });
+
+    expect(rowBlockedWords(blocked("blocked"), { ...run, target_php: "8.4" })).toBe(
+      "3.x needs php >=8.5; target 8.4 runs no fixing release",
+    );
+    expect(rowBlockedWords(pinned, run)).toBeNull();
+    expect(rowBlockedWords(update, run)).toBeNull();
+  });
+});
+
+describe("W2: the row's command names the finding's package", () => {
+  const otphp = () =>
+    finding({
+      package: "spomky-labs/otphp",
+      direct: true,
+      next_step: step({
+        kind: "raise-php",
+        commands: [["composer", "require", "php:>=8.1", "--no-update"]],
+        php_check: { raise_to: ">=8.1" },
+      }),
+    });
+
+  it("shows no command and says the raise when no step names the package (wallabag 8.4's spomky-labs/otphp)", () => {
+    expect(rowCommand(otphp())).toBeNull();
+    expect(nextStepWords(otphp(), run).text).toBe("raise require.php to >=8.1");
+  });
+
+  it("keeps php floor raise when the move names no raise_to", () => {
+    const f = finding({
+      package: "a/b",
+      next_step: step({
+        kind: "raise-php",
+        commands: [["composer", "require", "php:>=8.1", "--no-update"]],
+        php_check: { raise_to: null },
+      }),
+    });
+    expect(nextStepWords(f, run).text).toBe("php floor raise");
+  });
+
+  it("says the raise when the step that names the package fails the §5.6 check, as no command shows", () => {
+    const f = finding({
+      package: "a/b",
+      next_step: step({
+        kind: "raise-php",
+        commands: [
+          ["composer", "require", "php:>=8.1", "--no-update"],
+          ["composer", "require", "a/b:^2.0", "$(id)"],
+        ],
+        php_check: { raise_to: ">=8.1" },
+      }),
+    });
+    expect(rowCommand(f)).toBeNull();
+    expect(nextStepWords(f, run).text).toBe("raise require.php to >=8.1");
+  });
+
+  it("shows the step that names the package and keeps php floor raise when the move has one", () => {
+    const f = finding({
+      package: "a/b",
+      direct: true,
+      next_step: step({
+        kind: "raise-php",
+        commands: [
+          ["composer", "require", "php:>=8.1", "--no-update"],
+          ["composer", "require", "a/b:^2.0"],
+        ],
+        php_check: { raise_to: ">=8.1" },
+      }),
+    });
+    expect(rowCommand(f)).toBe("composer require 'a/b:^2.0'");
+    expect(nextStepWords(f, run).text).toBe("php floor raise");
+  });
+});
+
+describe("OWN and RANK on a row's holders", () => {
+  it("names its own release first after the root, never the package (monica's laravel/framework)", () => {
+    const holds = [
+      hold(null, "root"),
+      hold("league/commonmark", "package", "critical"),
+      hold("laravel/framework", "package", "high"),
+    ];
+    const line = heldByLine(holds, run, "laravel/framework");
+    expect(line === null ? null : heldByWords(line)).toBe("held by its own release and 1 more");
+  });
+
+  it("ranks a holder by its best hold, when it has two", () => {
+    const on = (name: string, target: string | null, verdict: string): Hold =>
+      ({ source: "package", package: name, target, holder: { verdict } }) as Hold;
+    const holds = [on("x/high", "y/z", "high"), on("a/two", "y/z", "low"), on("a/two", null, "low")];
+    expect(heldByLine(holds, run, "c/pkg")).toEqual({ name: "a/two", more: 1 });
+  });
+
+  it("names a hold on the finding's package before a graded hold on another (monica's firebase/php-jwt)", () => {
+    const on = (name: string, target: string | null, verdict: string): Hold =>
+      ({ source: "package", package: name, target, holder: { verdict } }) as Hold;
+    const holds = [
+      on("socialiteproviders/manager", "laravel/socialite", "ok"),
+      on("socialiteproviders/facebook", "socialiteproviders/manager", "medium"),
+      on("laravel/socialite", null, "ok"),
+    ];
+    expect(heldByLine(holds, run, "firebase/php-jwt")).toEqual({ name: "laravel/socialite", more: 2 });
   });
 });
 
@@ -182,6 +331,23 @@ describe("rowAfter (SPEC §7.9.5, After it)", () => {
     expect(rowAfter(f)).toBe("after it: 0, ok");
   });
 
+  it("W1: drops the caveat and ends with the short words of a refused check (wallabag 7.4's guzzlehttp/guzzle)", () => {
+    const f = finding({
+      next_step: step({ if_applied: applied({}), check: { result: "refused", form: null, reason: null } }),
+    });
+    expect(rowAfter(f)).toBe("after it: 0, ok · Composer refuses the move");
+  });
+
+  it("W1: ends with the reason of a check that did not run (wallabag 8.4's symfony/monolog-bridge)", () => {
+    const f = finding({
+      next_step: step({
+        if_applied: applied({ assumes: ["clears_hold"] }),
+        check: { result: "not_checked", form: null, reason: "baseline_refused" },
+      }),
+    });
+    expect(rowAfter(f)).toBe("after it: 0, ok · not checked: Composer refuses the lock itself");
+  });
+
   it("says nothing when if_applied is null, or there is no move", () => {
     expect(rowAfter(finding({ next_step: step({ if_applied: null }) }))).toBeNull();
     expect(rowAfter(finding({}))).toBeNull();
@@ -216,7 +382,10 @@ describe("rowNewLine and the group count (accepted derivation 11)", () => {
       finding({}),
     ];
     expect(majorCount(rows)).toEqual({ n: 1, m: 2 });
-    expect(majorCountWords(majorCount(rows))).toBe("1 of 2 moves cross a major");
+    expect(majorCountWords({ n: 1, m: 1 })).toBe("1 of 1 move crosses a major");
+    expect(majorCountWords({ n: 1, m: 3 })).toBe("1 of 3 moves crosses a major");
+    expect(majorCountWords({ n: 2, m: 3 })).toBe("2 of 3 moves cross a major");
+    expect(majorCountWords(majorCount(rows))).toBe("1 of 2 moves crosses a major");
   });
 
   it("says nothing when no set move crosses (n = 0), or when no move says either way (m = 0)", () => {

@@ -34,12 +34,16 @@ export interface LibyearsLead {
   readonly unmeasured: string | null;
 }
 
+/** A cause after its count: a noun phrase, where a reason elsewhere is a clause. */
+const unmeasuredWord = (cause: string): string =>
+  cause === "branch_snapshot" ? "a branch snapshot with no release branch" : causeWord(cause, "");
+
 /** The Libyears block's lead: one number, then its scope; the furthest package is the table's first row. */
 export function libyearsLead({ libyears }: Pick<Report2, "libyears">): LibyearsLead {
   const unmeasured = Object.entries(libyears.unmeasured)
     .filter(([, count]) => count > 0)
     .sort(([a], [b]) => schemaRank(a) - schemaRank(b))
-    .map(([cause, count]) => `${count} ${causeWord(cause, "")}`);
+    .map(([cause, count]) => `${count}, ${unmeasuredWord(cause)}`);
   const tail = unmeasured.length === 0 ? null : `Not measured: ${unmeasured.join(SEPARATOR)}`;
   if (libyears.measured === 0)
     return { figure: null, bound: "", sub: "no package measured", unmeasured: tail };

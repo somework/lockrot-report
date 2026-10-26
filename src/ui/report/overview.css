@@ -275,6 +275,7 @@
   grid-template-areas:
     "who bar"
     "cmd cmd"
+    "with with"
     "what what"
     "also also";
   align-items: center;
@@ -329,12 +330,26 @@
   line-height: 1.5;
   color: var(--muted);
 }
+/* G161: the packages the joint request also updates, a line under the command box. */
+.ov-move-with {
+  grid-area: with;
+  font-size: var(--text-s);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
 .ov-move-what b {
   font-weight: 600;
   color: var(--ink);
 }
 .ov-sep {
   color: var(--muted);
+}
+.ov-platform {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: 1.5;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
 }
 .ov-first-none {
   font-size: var(--text-base);
@@ -552,6 +567,7 @@
       "who who"
       "cmd cmd"
       "bar bar"
+      "with with"
       "what what"
       "also also";
   }

@@ -61,7 +61,13 @@ const checked: Report2 = {
   findings: composite.findings.map((f) =>
     f.next_step === null
       ? f
-      : { ...f, next_step: { ...f.next_step, check: { result: "resolves", form: "inline", reason: null } } },
+      : {
+          ...f,
+          next_step: {
+            ...f.next_step,
+            check: { result: "resolves", form: "inline", reason: null, installs: null },
+          },
+        },
   ),
 };
 
@@ -111,7 +117,7 @@ describe("applyFilters2", () => {
     ]);
   });
 
-  it("keeps a finding with an advisory row of a selected severity or fix kind", () => {
+  it("keeps a finding with an advisory row of a selected severity, or of a selected fix kind", () => {
     expect(names(applyFilters2(composite, state({}, { sev: ["critical"] }), "findings"))).toEqual([
       "twig/twig",
     ]);
@@ -120,6 +126,35 @@ describe("applyFilters2", () => {
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
     ]);
+  });
+
+  it("M4: keeps a finding by its security.fix_kind, as the Overview fix counts do (monica)", () => {
+    const report = structuredClone(composite);
+    const yaml = report.findings.find((f) => f.package === "symfony/yaml");
+    if (yaml?.security.status !== "vulnerable") throw new Error("symfony/yaml is vulnerable");
+    yaml.security.fix_kind = "upgrade";
+
+    expect(names(applyFilters2(report, state({}, { fix: ["upgrade"] }), "findings"))).toEqual([
+      "symfony/monolog-bridge",
+      "symfony/yaml",
+    ]);
+    expect(names(applyFilters2(report, state({}, { fix: ["update"] }), "findings"))).toEqual([
+      "symfony/polyfill-intl-idn",
+    ]);
+  });
+
+  it("M4: keeps an advisory on the Advisories tab by its own fix kind, whatever its package's", () => {
+    const mixed = readContractJson("report-2", "guzzle-mixed.json") as Report2;
+    const guzzle = mixed.findings.find((f) => f.package === "guzzlehttp/guzzle");
+    if (guzzle?.security.status !== "vulnerable") throw new Error("guzzle-mixed has a vulnerable guzzle");
+    expect(guzzle.security.fix_kind).toBe("raise-php");
+
+    expect(names(applyFilters2(mixed, state({}, { fix: ["upgrade"] }), "advisories"))).toContain(
+      "guzzlehttp/guzzle",
+    );
+    expect(names(applyFilters2(mixed, state({}, { fix: ["upgrade"] }), "findings"))).not.toContain(
+      "guzzlehttp/guzzle",
+    );
   });
 
   it("filters by verdict, the gate and the search box", () => {

@@ -7,6 +7,7 @@ import {
   type ReadyMove,
   type WordPart,
 } from "../../domain/firstMoves";
+import { platformStep } from "../../domain/moveCards";
 import { libyearsLead } from "../../domain/libyearsLead";
 import {
   acceptedLine,
@@ -148,18 +149,7 @@ function StateLines({ report }: { report: Report2 }) {
       {lines.map((line) => (
         <li key={line.kind} className={`ov-state is-${line.kind}`}>
           {line.head !== null && <b className="ov-state-head">{line.head}: </b>}
-          {line.parts.map((part, index) => (
-            <Fragment key={index}>
-              {index > 0 && " · "}
-              {part.link === null ? (
-                part.text
-              ) : (
-                <TabLink target={part.link} className="ov-link">
-                  {part.text}
-                </TabLink>
-              )}
-            </Fragment>
-          ))}
+          {line.parts.join(" · ")}
           {"."}
           {line.more !== null && (
             <>
@@ -188,9 +178,10 @@ function MoveItem({ move, model }: { move: ReadyMove; model: ScoreModel }) {
           <PkgName name={move.package} />
         </TabLink>{" "}
         <span className={`ov-tag ${toneClass(verdictTone(model, move.grade))}`}>{move.grade}</span>
-        {move.newMajor && <span className="ov-tag ov-tag-plain">{FIRST_WORDS.newMajor}</span>}
+        {move.newLine !== null && <span className="ov-tag ov-tag-plain">{move.newLine}</span>}
       </p>
       <CopyMove argvs={[move.argv]} className="ov-cmd" />
+      {move.movesWith !== null && <p className="ov-move-with">{move.movesWith}</p>}
       {(move.clears !== null || move.after !== null) && (
         <p className="ov-move-what">
           {move.clears !== null && (
@@ -216,12 +207,14 @@ function MoveItem({ move, model }: { move: ReadyMove; model: ScoreModel }) {
  *  held count line; no fallback command. */
 function FirstMovesBlock({ report }: { report: Report2 }) {
   const first = firstMoves(report);
+  const platform = platformStep(report.run);
   const headId = useId();
   return (
     <section className="ov-first" aria-labelledby={headId}>
       <h3 className="ov-first-head" id={headId}>
         {FIRST_WORDS.head} {first.note !== null && <span className="ov-first-note">{first.note}</span>}
       </h3>
+      {first.moves.length > 0 && platform !== null && <p className="ov-platform">{platform}</p>}
       {first.moves.length > 0 && (
         <ol className="ov-moves">
           {first.moves.map((move) => (

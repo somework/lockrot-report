@@ -21,7 +21,7 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     // friendsofsymfony/oauth2-php (low) through friendsofsymfony/oauth-server-bundle: the two
     // exposure rows, one flagged package each, so the first holds half of the 2.
     await expect(radiusSurface(page).locator(".r2-answer")).toHaveText(
-      "1 of the 2 flagged packages pulled in sit under friendsofsymfony/oauth-server-bundle.",
+      "2 flagged packages pulled in. 1 of them sits under friendsofsymfony/oauth-server-bundle.",
     );
     for (const pkg of ["friendsofsymfony/oauth-server-bundle", "guzzlehttp/guzzle"]) {
       await expect(radiusRow(page, pkg).locator(".r2-count")).toHaveText("1 flagged");

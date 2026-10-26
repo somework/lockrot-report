@@ -18,7 +18,7 @@ describe("Waffle", () => {
     { verdict: "critical", label: "critical", tone: "crit", mark: "fill", count: 1 },
     { verdict: "high", label: "high", tone: "high", mark: "fill", count: 2 },
     { verdict: "unknown", label: "not judged", tone: "unk", mark: "hatch", count: 1 },
-    { verdict: "finished", label: "allowlisted", tone: "none", mark: "ring-dot", count: 1 },
+    { verdict: "finished", label: "finished", tone: "none", mark: "ring-dot", count: 1 },
     { verdict: "ok", label: "ok", tone: "none", mark: "soft", count: 2 },
   ];
 
@@ -47,7 +47,7 @@ describe("Waffle", () => {
 
     expect([...container.querySelectorAll("li")].map((li) => li.textContent)).toEqual([
       "not judged 1",
-      "allowlisted 1",
+      "finished 1",
       "ok 2",
     ]);
   });

@@ -229,5 +229,10 @@ test("drupal/core at target PHP 8.1: the move card and Held by say what Composer
 
   await expect(card.locator(".d3-after-cond")).toContainText(["Composer refuses the move"]);
   await holders.locator(".d3-fold > summary").click();
-  await expect(holders).toContainText("its own step: require ^10.6.19 on 10.x · Composer refuses the move");
+  await expect(holders).toContainText("its own step: require ^10.3.9 on 10.x · Composer refuses the move");
+  const release = holders.locator(".d3-holder", {
+    hasText: "drupal/core 10.6.19, its own release",
+  });
+  await expect(release.first()).toBeVisible();
+  await expect(release.locator(".d3-holder-step")).toHaveCount(0);
 });

@@ -669,6 +669,45 @@ describe("glossary", () => {
     expect(detailName()).toBeNull();
   });
 
+  test("? opens it with Keys and search unfolded and scrolled into view", async () => {
+    const scrolled: Element[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this);
+    };
+    render(<App model={load()} />);
+
+    key("?");
+
+    const dialog = await screen.findByRole("dialog", { name: "What these words mean" });
+    const keys = within(dialog).getByRole("heading", { name: "Keys and search" }).closest("details");
+    expect(keys?.open).toBe(true);
+    expect(scrolled).toContain(keys);
+    delete (Element.prototype as Partial<Element>).scrollIntoView;
+  });
+
+  test("its header button opens it at the top, with Keys and search folded", async () => {
+    const scrolled: Element[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this);
+    };
+    render(<App model={load()} />);
+    key("?");
+    key("Escape");
+    scrolled.length = 0;
+
+    fireEvent.click(screen.getByRole("button", { name: "What these words mean" }));
+
+    const dialog = await screen.findByRole("dialog", { name: "What these words mean" });
+    await waitFor(() => {
+      expect((dialog as HTMLDialogElement).open).toBe(true);
+    });
+    const keys = within(dialog).getByRole("heading", { name: "Keys and search" }).closest("details");
+    expect(keys?.open).toBe(false);
+    expect(dialog.scrollTop).toBe(0);
+    expect(scrolled).not.toContain(keys);
+    delete (Element.prototype as Partial<Element>).scrollIntoView;
+  });
+
   test("closing it hands focus back to the button that opened it", async () => {
     render(<App model={load()} />);
     const opener = screen.getByRole("button", { name: "What these words mean" });

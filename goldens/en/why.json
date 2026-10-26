@@ -248,6 +248,31 @@
     "maintenance alone makes it critical",
     "without abandoned: 18, high (stale would show) · without old-promise: 32, critical"
   ],
+  "adds-capped-raise-php": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
+  "adds-capped-require-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
+  "adds-capped-tag-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
+  "adds-capped-update": [
+    "32 · critical from 32 · ages as of 2026-10-01",
+    "vulnerable 32: critical advisory CVE-2026-34084, the worst of 28 (tied with CVE-2026-45034); its own fix (composer update on 1.x) is reachable, so no × 2",
+    "transitive: no maintenance to halve; security is never halved for reach",
+    "the advisories alone make it critical",
+    "without CVE-2026-34084: 32, critical (tied: the others weigh the same)"
+  ],
   "affected-range-unknown-dagger": [
     "2 · low from 1 · 6 points short of medium · ages as of 2026-10-01",
     "vulnerable 2: low advisory CVE-2026-46644; its fix is unknown: no × 2",
@@ -262,6 +287,40 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it critical",
     "without abandoned: 36, critical (silent would show) · without old-promise: 32, critical"
+  ],
+  "capped-covered-dagger": [
+    "5 · low from 1 · 3 points short of medium · ages as of 2026-10-01",
+    "stale 8 leads: the strongest maintenance fact counts in full",
+    "capped 2: ¼ of 8, beside stale (correlated evidence)",
+    "transitive: maintenance 10 ÷ 2 = 5",
+    "maintenance alone makes it low",
+    "without stale: 4, low (capped would lead) · without capped: 4, low"
+  ],
+  "capped-local-dagger": [
+    "24 · high from 16 · 8 points short of critical · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "vulnerable 16: high advisory CVE-2022-25768, the worst of 5; its fix is unknown: no × 2",
+    "direct requirement: maintenance not halved for reach",
+    "the advisories alone make it high",
+    "without capped: 16, high · without the advisories: 8, medium · without CVE-2022-25768: 16, high",
+    "checks not run: its repository activity and its release metadata (not from a Composer repository)",
+    "pinned accepted by your ignore list: counting it would make this 34, critical"
+  ],
+  "capped-require-php": [
+    "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "capped 2: ¼ of 8, beside left-behind (correlated evidence)",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "without left-behind: 8, medium (capped would lead) · without capped: 16, high"
+  ],
+  "capped-tag-unverified-dagger": [
+    "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "capped 2: ¼ of 8, beside pinned (correlated evidence)",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "without pinned: 8, medium (capped would lead) · without capped: 16, high"
   ],
   "either-critical-dagger": [
     "68 · critical from 32 · ages as of 2026-10-01",
@@ -420,12 +479,13 @@
     "the advisory alone makes it medium"
   ],
   "local-path-advisory": [
-    "32 · critical from 32 · ages as of 2026-10-01",
+    "34 · critical from 32 · ages as of 2026-10-01",
     "pinned 16 leads: the strongest maintenance fact counts in full",
+    "capped 2: ¼ of 8, beside pinned (correlated evidence)",
     "vulnerable 16: high advisory CVE-2022-25768, the worst of 5; its fix is unknown: no × 2",
     "direct requirement: maintenance not halved for reach",
-    "pinned alone grades it high, the advisories alone grade it high: together critical",
-    "without pinned: at least 16, high · without the advisories: 16, high · without CVE-2022-25768: 24, high",
+    "maintenance (pinned, 1 corroborating) alone grades it high, the advisories alone grade it high: together critical",
+    "without pinned: at least 24, high (capped would lead) · without capped: 32, critical · without the advisories: 18, high · without CVE-2022-25768: 26, high",
     "checks not run: its repository activity and its release metadata (not from a Composer repository)"
   ],
   "lock-only-dagger": [
@@ -448,6 +508,31 @@
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "transitive: maintenance 16 ÷ 2 = 8",
     "maintenance alone makes it medium"
+  ],
+  "mc-blocking-off-both-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-blocking-off-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-inline-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-lookup-incomplete-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-raise-php-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-45304; its own fix (php floor raise on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
   ],
   "move-check-dagger": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
@@ -498,6 +583,24 @@
     "without left-behind: 32, critical (old-promise would lead) · without old-promise: 32, critical · without the advisories: 20, high · without CVE-2026-00011: 28, high",
     "composer update alone: 32, critical (it clears old-promise and 1 of its 2 advisories)"
   ],
+  "php-edge-equal-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
+  "php-edge-lower-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
+  "php-edge-upper-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
   "php-null": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
@@ -510,6 +613,33 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it high",
     "checks missing: release age (S2), archived repository (S3), repository activity (S4) and release branch (S8) not checked (not from a Composer repository)"
+  ],
+  "platform-step-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
+  "platform-step-inside-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
+  "platform-step-no-command-dagger": [
+    "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "stale 2: ¼ of 8, beside pinned (correlated evidence)",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "without pinned: 8, medium (stale would lead) · without stale: 16, high"
+  ],
+  "platform-step-why-not-dagger": [
+    "2 · low from 1 · 6 points short of medium · ages as of 2026-10-01",
+    "vulnerable 2: low advisory CVE-2026-45133, the worst of 3 (tied with CVE-2026-45305, CVE-2026-45304); its own fix (upgrade on 5.x) is reachable, so no × 2",
+    "transitive: no maintenance to halve; security is never halved for reach",
+    "the advisories alone make it low",
+    "without CVE-2026-45133: 2, low (tied: the others weigh the same)"
   ],
   "policy-off-dagger": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
@@ -560,6 +690,14 @@
     "maintenance (left-behind, halved for reach) alone grades it medium, the advisories alone grade it medium: together high",
     "without left-behind: 8, medium · without the advisories: 8, medium · without CVE-2026-48784: 16, high (tied: the others weigh the same)"
   ],
+  "routing-self-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "vulnerable 8: medium advisory CVE-2026-48784, the worst of 2 (tied with CVE-2026-45065); its own fix (upgrade on 5.x) is reachable, so no × 2",
+    "transitive: maintenance 16 ÷ 2 = 8",
+    "maintenance (left-behind, halved for reach) alone grades it medium, the advisories alone grade it medium: together high",
+    "without left-behind: 8, medium · without the advisories: 8, medium · without CVE-2026-48784: 16, high (tied: the others weigh the same)"
+  ],
   "silent": [
     "36 · critical from 32 · ages as of 2026-10-01",
     "silent 32 leads: the strongest maintenance fact counts in full",
@@ -590,11 +728,27 @@
     "0 · finished · ages as of 2026-10-01",
     "stale accepted by your ignore list: counting it would make this 8, medium"
   ],
+  "stale-capped": [
+    "5 · low from 1 · 3 points short of medium · ages as of 2026-10-01",
+    "stale 8 leads: the strongest maintenance fact counts in full",
+    "capped 2: ¼ of 8, beside stale (correlated evidence)",
+    "transitive: maintenance 10 ÷ 2 = 5",
+    "maintenance alone makes it low",
+    "without stale: 4, low (capped would lead) · without capped: 4, low"
+  ],
   "stale-only": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "stale 8 leads: the strongest maintenance fact counts in full",
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it medium"
+  ],
+  "through-own": [
+    "9 · medium from 8 · 7 points short of high · ages as of 2026-10-01",
+    "old-promise 16 leads: the strongest maintenance fact counts in full",
+    "stale 2: ¼ of 8, beside old-promise (correlated evidence)",
+    "transitive: maintenance 18 ÷ 2 = 9",
+    "maintenance alone makes it medium",
+    "without old-promise: 4, low (stale would lead) · without stale: 8, medium"
   ],
   "tie-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -684,6 +838,138 @@
     "the advisory alone makes it high",
     "checks missing: release age (S2), archived repository (S3), repository activity (S4) and release branch (S8) not checked (not from a Composer repository)",
     "old-promise accepted by your ignore list: counting it would make this 32, critical"
+  ],
+  "capped-accepted-dagger": [
+    "0 · finished · ages as of 2026-10-01",
+    "capped accepted by your ignore list: counting it would make this 8, medium"
+  ],
+  "capped-blocked-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-dev-dagger": [
+    "4 · low from 1 · 4 points short of medium · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "packages-dev: total 8 ÷ 2 = 4",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it low"
+  ],
+  "capped-held-update-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-htmlpurifier-dagger": [
+    "4 · low from 1 · 4 points short of medium · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "transitive: maintenance 8 ÷ 2 = 4",
+    "maintenance alone makes it low"
+  ],
+  "capped-known-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-money-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-nette-dagger": [
+    "4 · low from 1 · 4 points short of medium · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "transitive: maintenance 8 ÷ 2 = 4",
+    "maintenance alone makes it low"
+  ],
+  "capped-new-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-no-php-newest-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-no-release-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-platform-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-project-blocked-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-raise-php": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-recapped-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-require-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-require-higher-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-snapshot-alias-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-snapshot-backport-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-snapshot-dev-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
+  ],
+  "capped-unread-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium",
+    "checks not run: its release metadata (metadata unavailable)"
+  ],
+  "capped-update-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium"
   ],
   "finished-offline-dagger": [
     "0 · finished · ages as of 2026-10-01",

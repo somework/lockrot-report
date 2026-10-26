@@ -10,7 +10,7 @@ import { ReportContext, useReport } from "./context";
 import { Detail2 } from "./report/Detail";
 import { FindingsStrip } from "./report/FindingsView";
 import { Footer } from "./Footer";
-import { Glossary } from "./Glossary";
+import { Glossary, type GlossaryAt } from "./Glossary";
 import { Header } from "./Header";
 import { decideKey, findRow, keyInputFrom, prevents, rowAt, rowPosition, type KeyDecision } from "./keyboard";
 import { NewerSchemaBanner } from "./NewerSchemaBanner";
@@ -91,10 +91,9 @@ interface ShortcutDeps {
   dispatch: (action: Action) => void;
   search: RefObject<HTMLInputElement>;
   glossaryOpen: boolean;
-  /** Opens with no term to highlight — the "?" shortcut, unlike a verdict pill's "In the glossary",
-   *  never names one (PD-GLOSSARY-7, DESIGN.md §5). Also clears whatever term a previous open left
-   *  behind, the same reset `Header`'s own glossary button already gets through this callback. */
-  openGlossary: () => void;
+  /** The "?" key's open, with no term to highlight (PD-GLOSSARY-7): the "Keys and search" section
+   *  unfolded and in view, where the search box's hint points. */
+  openGlossaryKeys: () => void;
   setGlossaryOpen: (open: boolean) => void;
   focusRequest: { current: FocusRequest };
   lastRow: { current: RowSpot | null };
@@ -108,7 +107,7 @@ interface ShortcutDeps {
 
 /** Carries out what keyboard.ts decided. */
 function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
-  const { dispatch, search, openGlossary, setGlossaryOpen, focusRequest, lastRow } = deps;
+  const { dispatch, search, openGlossaryKeys, setGlossaryOpen, focusRequest, lastRow } = deps;
   switch (decision.type) {
     case "openRow":
       dispatch({ type: "select", pkg: decision.pkg });
@@ -147,7 +146,7 @@ function applyKey(decision: KeyDecision, deps: ShortcutDeps): void {
       leaveSearch(deps);
       break;
     case "openGlossary":
-      openGlossary();
+      openGlossaryKeys();
       break;
     case "closeGlossary":
       setGlossaryOpen(false);
@@ -304,7 +303,13 @@ export function App({ model }: { model: Model }) {
   );
   const theme = useTheme();
   const [glossaryOpen, setGlossaryOpen] = useState(false);
+  const [glossaryAt, setGlossaryAt] = useState<GlossaryAt>("top");
   const openGlossary = useCallback(() => {
+    setGlossaryAt("top");
+    setGlossaryOpen(true);
+  }, []);
+  const openGlossaryKeys = useCallback(() => {
+    setGlossaryAt("keys");
     setGlossaryOpen(true);
   }, []);
   const search = useRef<HTMLInputElement>(null);
@@ -335,7 +340,7 @@ export function App({ model }: { model: Model }) {
     dispatch,
     search,
     glossaryOpen,
-    openGlossary,
+    openGlossaryKeys,
     setGlossaryOpen,
     focusRequest,
     lastRow,
@@ -539,6 +544,7 @@ export function App({ model }: { model: Model }) {
       <Footer inert={sheet} />
       <Glossary
         open={glossaryOpen}
+        at={glossaryAt}
         onClose={() => {
           setGlossaryOpen(false);
         }}
