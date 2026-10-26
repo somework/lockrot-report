@@ -165,3 +165,14 @@ test.describe("report-2: the Advisories tab groups the S9 rows by package", () =
     });
   }
 });
+
+test.describe("report-2: the rail names its unit beside a list of advisories (R2-42)", () => {
+  test("titles the Severity and Fix groups as package counts on Advisories only", async ({ page }) => {
+    await page.goto(report2Url("composite") + "#view=advisories");
+    await expect(page.getByRole("group", { name: "Severity (packages)", exact: true })).toBeVisible();
+    await expect(page.getByRole("group", { name: "Fix (packages)", exact: true })).toBeVisible();
+
+    await page.goto(report2Url("composite") + "#view=findings");
+    await expect(page.getByRole("group", { name: "Severity", exact: true })).toBeVisible();
+  });
+});

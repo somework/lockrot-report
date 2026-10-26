@@ -216,6 +216,8 @@ export function railGroups2(report: Report2, state: State): readonly RailGroup[]
   const here = population2(report, state.view);
   const scope: Scope = { view: state.view, filters: state.filters, here, terms: parseQuery2(state.q) };
   const baseline = report.baseline;
+  // The Advisories tab lists advisories, while every rail count is of packages.
+  const unit = state.view === "advisories" ? " (packages)" : "";
   const groups = [
     baseline !== null && here.some((f) => f.baseline !== null)
       ? groupOf(scope, "since", `Since ${baseline.path}`, SINCE_ROWS)
@@ -241,13 +243,13 @@ export function railGroups2(report: Report2, state: State): readonly RailGroup[]
     groupOf(
       scope,
       "sev",
-      "Severity",
+      `Severity${unit}`,
       report.run.score_model.severities.map(({ id }): Row => [id, id]),
     ),
     groupOf(
       scope,
       "fix",
-      "Fix",
+      `Fix${unit}`,
       [...report.run.score_model.fix_kinds]
         .sort((a, b) => a.ease - b.ease)
         .map(({ id }): Row => [id, fixLabel(id)]),
