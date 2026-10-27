@@ -358,14 +358,10 @@ export function App({ model }: { model: Model }) {
   const currentView = useRef(state.view);
   currentView.current = state.view;
   const listFocused = useRef(false);
-  const landOn = useRef<string | null>(null);
   const dispatchTracked = useCallback(
     (action: Action) => {
       if (action.type === "view" && action.view !== currentView.current) tabChangedByReader.current = true;
-      if (action.type === "focus") {
-        listFocused.current = true;
-        landOn.current = action.section ?? null;
-      }
+      if (action.type === "focus") listFocused.current = true;
       dispatch(action);
     },
     [dispatch],
@@ -378,13 +374,7 @@ export function App({ model }: { model: Model }) {
   useEffect(() => {
     if (!listFocused.current) return;
     listFocused.current = false;
-    const section = landOn.current === null ? null : document.getElementById(landOn.current);
-    landOn.current = null;
-    if (section !== null) {
-      if (typeof section.scrollIntoView === "function") section.scrollIntoView({ block: "start" });
-      section.focus({ preventScroll: true });
-      return;
-    }
+    if (state.section !== null) return;
     const panel = document.getElementById(`${idBase}-panel`);
     if (typeof panel?.scrollIntoView === "function") panel.scrollIntoView({ block: "start" });
     const active = document.activeElement;
@@ -403,6 +393,16 @@ export function App({ model }: { model: Model }) {
     // first row directly under it, on every width.
     window.scrollTo(0, 0);
   }, [state.view]);
+
+  // The `section` key opens Run data at that section, from a link, a pasted address or a
+  // `hashchange` (SPEC §7.9.16). It does nothing when the run has no such section.
+  useEffect(() => {
+    if (state.view !== "run" || state.section === null) return;
+    const heading = document.getElementById(state.section)?.querySelector<HTMLElement>("h3");
+    if (heading == null) return;
+    if (typeof heading.scrollIntoView === "function") heading.scrollIntoView({ block: "start" });
+    heading.focus({ preventScroll: true });
+  }, [state.view, state.section]);
 
   // A layout effect, so the row is focused in the same task as the render that follows the key or
   // click. A plain effect waits for the next frame, and a reader (or a test) who moves focus in

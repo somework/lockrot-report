@@ -54,20 +54,31 @@ for (const width of [1440, 375]) {
   test.describe(`at ${String(width)} px`, () => {
     test.use({ viewport: { width, height: width === 375 ? 812 : 900 } });
 
-    test("The PHP window opens Run data at its PHP window section (R4-29)", async ({ page }) => {
-      await page.goto(report2Url("baselined-wallabag-2.6"));
-
-      await phpLine(page)
-        .getByRole("link", { name: /The PHP window/ })
-        .click();
-
+    const landsOnTheWindow = async (page: Page): Promise<void> => {
       const heading = runSurface(page).getByRole("heading", { name: "PHP window", exact: true });
-      await expect(page.locator(":focus")).toContainText("PHP window");
+      await expect(heading).toBeFocused();
       const header = await page.locator("header").first().boundingBox();
       const landed = await heading.boundingBox();
       const clear = Math.max(0, (header?.y ?? 0) + (header?.height ?? 0));
       expect(landed?.y).toBeGreaterThanOrEqual(clear);
       expect(landed?.y).toBeLessThan((page.viewportSize()?.height ?? 0) / 2);
+    };
+
+    test("The PHP window opens Run data at its PHP window section (R4-29)", async ({ page }) => {
+      await page.goto(report2Url("baselined-wallabag-2.6"));
+      const link = phpLine(page).getByRole("link", { name: /The PHP window/ });
+
+      await expect(link).toHaveAttribute("href", "#view=run&section=php-window");
+      await link.click();
+
+      await landsOnTheWindow(page);
+      expect(new URL(page.url()).hash).toBe("#view=run&section=php-window");
+    });
+
+    test("an address with section=php-window opens Run data at that section (R4-29)", async ({ page }) => {
+      await page.goto(report2Url("baselined-wallabag-2.6") + "#view=run&section=php-window");
+
+      await landsOnTheWindow(page);
     });
   });
 }

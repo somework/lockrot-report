@@ -600,22 +600,42 @@ describe("one shell choice for every command box on the page (R4-30)", () => {
 });
 
 describe("the PHP state line's link (R4-29)", () => {
-  test("opens Run data at its PHP window section, with focus on that section", async () => {
+  afterEach(() => {
+    history.replaceState(null, "", "/report.html");
+  });
+
+  const wallabag = () => {
     const golden = pageGoldens().find(({ id }) => id === "wallabag-2.6");
     if (golden === undefined) throw new Error("no wallabag-2.6 page golden");
     const result = normalize(golden.report);
     if (!result.ok) throw new Error(result.error.message);
-    render(<App model={result.model} />);
+    return result.model;
+  };
+
+  test("opens Run data at its PHP window section, with focus on the section's heading", async () => {
+    render(<App model={wallabag()} />);
     const link = within(band().querySelector(".ov-state.is-php") as HTMLElement).getByRole("link", {
       name: /The PHP window/,
     });
 
-    expect(link.getAttribute("href")).toBe("#view=run");
+    expect(link.getAttribute("href")).toBe("#view=run&section=php-window");
     fireEvent.click(link);
 
     expect(screen.getByRole("tab", { selected: true }).textContent).toMatch(/^Run data/);
     await waitFor(() => {
-      expect(document.activeElement?.querySelector("h3")?.textContent).toBe("PHP window");
+      expect(document.activeElement).toBe(screen.getByRole("heading", { name: "PHP window", level: 3 }));
+    });
+    expect(location.hash).toBe("#view=run&section=php-window");
+  });
+
+  test("a pasted address with the section opens Run data at that heading", async () => {
+    history.replaceState(null, "", "/report.html#view=run&section=php-window");
+
+    render(<App model={wallabag()} />);
+
+    expect(screen.getByRole("tab", { selected: true }).textContent).toMatch(/^Run data/);
+    await waitFor(() => {
+      expect(document.activeElement).toBe(screen.getByRole("heading", { name: "PHP window", level: 3 }));
     });
   });
 });

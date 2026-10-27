@@ -279,3 +279,20 @@ describe("focus, onto another tab", () => {
     expect(reducer(start, { type: "focus", filters })).toMatchObject({ view: "findings", q: "" });
   });
 });
+
+describe("the section of a tab (R4-29)", () => {
+  it("a focus that names a section opens its tab at that section", () => {
+    expect(
+      reducer(INITIAL_STATE, { type: "focus", filters: EMPTY_FILTERS, view: "run", section: "php-window" }),
+    ).toMatchObject({ view: "run", section: "php-window" });
+  });
+
+  it("a tab switch and a focus without a section leave no section", () => {
+    const atSection: State = { ...INITIAL_STATE, view: "run", section: "php-window" };
+
+    expect(reducer(atSection, { type: "view", view: "overview" }).section).toBeNull();
+    expect(
+      reducer(atSection, { type: "focus", filters: EMPTY_FILTERS, view: "packages" }).section,
+    ).toBeNull();
+  });
+});

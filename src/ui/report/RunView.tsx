@@ -221,8 +221,8 @@ function KeyValues({
 }) {
   if (rows.length === 0) return null;
   return (
-    <section className="sect" id={id} tabIndex={id === undefined ? undefined : -1}>
-      <h3>{head}</h3>
+    <section className="sect" id={id}>
+      <h3 tabIndex={id === undefined ? undefined : -1}>{head}</h3>
       <dl className={`kv ${className}`.trim()}>
         {rows.map(({ key, value, note }) => (
           <div key={key} className="run2-kv-row">

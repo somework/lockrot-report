@@ -59,6 +59,9 @@ export interface State {
   /** The package open when the reader last changed tab: the Run tab's score example (SPEC §7.9.12).
    *  Not part of the fragment. */
   example: string | null;
+  /** The id of a Run data section that the page opens at, as the fragment's `section` key holds it
+   *  (SPEC §7.9.16). Null on every other view. */
+  section: string | null;
 }
 
 /** Where a chart mark on Overview leads: a tab and the fragment keys it sets, nothing else. */
@@ -67,7 +70,7 @@ export interface LinkTarget {
   filters?: Partial<Filters>;
   q?: string;
   pkg?: string;
-  /** The id of a section of `view` that a click moves to. The fragment does not hold it. */
+  /** The id of a Run data section that the link opens at. */
   section?: string;
 }
 
@@ -116,4 +119,5 @@ export const INITIAL_STATE: State = {
   filters: EMPTY_FILTERS,
   disclosure: {},
   example: null,
+  section: null,
 };
