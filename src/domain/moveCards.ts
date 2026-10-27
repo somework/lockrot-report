@@ -15,6 +15,7 @@ import { linkWords } from "./linkWords";
 import { safeHref } from "./links";
 import { addsBasisWord, checkReasonRich, phpFloorWord, stoppedCheckWords } from "./pageVocabulary";
 import { phpConstraintWord } from "./phpAlternatives";
+import { overrideOutsideTarget } from "./phpWindow";
 import { dependentNames, foundWords, installedPhpWords } from "./qualifierRows";
 import { newTab, type Rich } from "./rich";
 import { commandLine, REFUSED_COMMAND } from "./shellArgv";
@@ -594,12 +595,6 @@ export interface MoveCard {
   readonly heldBy: HeldByBlock | null;
 }
 
-/** "8" reads as "8.0", as lockrot normalises `target_php`. */
-const minorOf = (version: string): string => {
-  const [major = "", minor = "0"] = version.split(".");
-  return `${major}.${minor}`;
-};
-
 /** Setting the platform does not help when Composer refuses the lock for another cause. */
 function stillRefused(run: Run): string {
   if (run.move_check?.baseline !== "refused") return "";
@@ -611,8 +606,8 @@ function stillRefused(run: Run): string {
 /** A lock whose config.platform.php lies outside the target's minor makes Composer check every
  *  command at that PHP, not the target's. */
 export function platformStep(run: Run): string | null {
-  const override = run.php_window?.platform_override ?? null;
-  if (override === null || minorOf(override) === minorOf(run.target_php)) return null;
+  const override = overrideOutsideTarget(run);
+  if (override === null) return null;
   return `First set config.platform.php to your PHP ${run.target_php} release: the lock records ${override}.${stillRefused(run)}`;
 }
 

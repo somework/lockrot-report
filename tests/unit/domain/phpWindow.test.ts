@@ -129,6 +129,29 @@ describe("the Run tab rows", () => {
     expect(rows).toEqual(["PHP window: 8.2 to 8.3 · lowest 8.2.0"]);
   });
 
+  const overridden = (target_php: string, move_check: unknown): Report2 => {
+    const base = report({ platform_override: "7.4.29", host_requires: ["php-zts"] });
+    return { ...base, run: { ...base.run, target_php, move_check } } as Report2;
+  };
+
+  test("say that composer install and the move check read different PHPs when the override lies outside the target minor (ruling R3-35)", () => {
+    expect(windowRows(overridden("8.4", { baseline: "resolves" })).slice(1)).toEqual([
+      "Composer checks the lock at: 7.4.29 (config.platform.php)",
+      "composer install reads 7.4.29, and the move check solves at the target PHP 8.4.99.",
+      "Host features required: php-zts",
+    ]);
+  });
+
+  test.each([
+    ["no move check ran", "8.4", null],
+    ["the override lies in the target minor", "7.4", { baseline: "resolves" }],
+  ])("print no solve row when %s", (_, target, moveCheck) => {
+    expect(windowRows(overridden(target, moveCheck)).slice(1)).toEqual([
+      "Composer checks the lock at: 7.4.29 (config.platform.php)",
+      "Host features required: php-zts",
+    ]);
+  });
+
   test("print nothing without a window", () => {
     expect(windowRows({ run: { php_window: null } } as unknown as Report2)).toEqual([]);
   });

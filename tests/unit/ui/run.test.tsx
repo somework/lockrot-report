@@ -75,6 +75,39 @@ describe("the Run tab of a report-2 document", () => {
     ]);
   });
 
+  test("puts the solve sentence under the override's label, as a second description (ruling R3-35)", () => {
+    render(
+      <App
+        model={model((report) => {
+          const window = report.run.php_window;
+          if (window === null) throw new Error("the composite has a PHP window");
+          report.run.php_window = {
+            ...window,
+            platform_override: "7.4.29",
+            target: { php: "8.4.99", inside: true },
+          };
+          report.run.target_php = "8.4";
+          report.run.move_check ??= {
+            composer: "2.10.3",
+            blocks_advisories: true,
+            blocking_disabled_by: [],
+            ignores_extensions: true,
+            baseline: "resolves",
+            reason: null,
+          };
+        })}
+      />,
+    );
+
+    const row = [...run().querySelectorAll(".run2-kv-row")].find(
+      (r) => r.querySelector("dt")?.textContent === "Composer checks the lock at",
+    );
+    expect([...(row?.querySelectorAll("dd") ?? [])].map((dd) => dd.textContent)).toEqual([
+      "7.4.29 (config.platform.php)",
+      "composer install reads 7.4.29, and the move check solves at the target PHP 8.4.99.",
+    ]);
+  });
+
   test("has no PHP window section when the run has no window", () => {
     render(
       <App

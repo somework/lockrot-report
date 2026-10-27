@@ -61,6 +61,8 @@ project is overall, and the other tabs lead with their own part.
   bar per depth, then the depth sentence. A lock-only run keeps the head over the sentence alone.
 - Libyears leads with the total, its measured count and the direct requirements' share, then what
   was not measured, by cause.
+- "Copy summary" says "at least" before the libyears total when any package is measured as a lower
+  bound, as the Libyears block does: "at least 388.8 libyears behind".
 - The libyears table lists the 8 packages furthest behind, leaving out a row that rounds to 0.0, with "≥" before a lower bound. Each row
   shows the package's most recent release with its date ("v5.3.0 (2026-08-11)"), or why it was not
   measured. A date never breaks across lines. That release can be older than the installed version, so no arrow joins the two. The table shows no grade, because a grade beside a
@@ -176,6 +178,8 @@ project is overall, and the other tabs lead with their own part.
   to your PHP 8.4 release: the lock records 7.4.29." The commands do not change. When Composer
   also refuses the lock itself, the line goes on: "Composer still refuses the lock itself: the PHP
   line names the packages."
+  When a move check ran, the Run tab says under the override which PHP each step reads:
+  "composer install reads 7.4.29, and the move check solves at the target PHP 8.4.99."
 - Holders keep one order on every surface: the root, then the package's own releases, then the
   packages that require the package, then the rest. A group goes by grade, then by name.
 - In Held by, a hold by the package's own release takes no grade, no flags and no own step. It
