@@ -40,7 +40,8 @@ project is overall, and the other tabs lead with their own part.
   of a score of 0: ok, finished and not judged.
 - "Ready to run" lists up to 3 moves whose command Composer's solver checked and that only your
   composer.json holds, if anything does, in lockrot's rank order, each with its command, what it clears and the score after it.
-  When the run fails, it lists only findings that fail the gate. "Also holds" names the findings
+  When a finding fails the gate, it lists only findings that fail the gate. A run that only
+  `--strict-network` fails lists its ready moves as a passing run does. "Also holds" names the findings
   whose move the ready package holds. One line counts the failing findings that other packages
   hold, and one counts those that need another way out, by kind or by the move check: "Composer
   refuses the move" or "not checked: {reason}". Each count opens exactly the rows it counts.

@@ -111,6 +111,39 @@ describe("readyFindings (the Ready to run block)", () => {
   });
 });
 
+describe("Ready to run on a run that only --strict-network fails (R5-26)", () => {
+  const recorded = readContractJson("report-2", "mc-composite-dagger.json") as Report2;
+  const r: Report2 = {
+    ...recorded,
+    gate: { ...recorded.gate, fails: true, failing: 0, tripped_by: ["strict_network"] },
+    findings: recorded.findings.map((f) => ({ ...f, gate: { ...f.gate, fails: false } })),
+  };
+
+  it("lists the ready moves under the note of a passing gate", () => {
+    const moves = firstMoves(r);
+
+    expect(moves.forGate).toBe(false);
+    expect(moves.note).toBe("checked commands no other package holds, in lockrot's rank order");
+    expect(moves.moves).toHaveLength(READY_SHOWN);
+    expect(moves.none).toBeNull();
+  });
+
+  it("links All ready to run to the ready filter alone, which the rail keeps", () => {
+    const target = firstMoves(r).moreLink;
+
+    expect(target?.filters).toEqual({ gate: ["ready"] });
+    expect(target === null ? null : fitFilters2(r, linkState(target).filters).gate).toEqual(["ready"]);
+  });
+
+  it("says the sentence of a passing gate when no move is ready", () => {
+    const held: Report2 = { ...report([finding("a/a", 1, false, "package")], true), packages_flagged: 1 };
+
+    expect(firstMoves(held).none).toBe(
+      "No move is ready to run: no flagged package has a checked command that no other package holds.",
+    );
+  });
+});
+
 describe("Ready to run on a refused baseline (R14)", () => {
   it("says that Composer refuses the lock itself, so no move was checked", () => {
     const stopped = finding("b/b", 2, true);

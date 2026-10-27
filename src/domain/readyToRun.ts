@@ -36,6 +36,11 @@ export function needsAnotherWayOut(f: Finding): boolean {
   return f.gate.fails && !readyToRun(f) && !isHeld(f);
 }
 
+/** Some finding fails the gate. A run that only `--strict-network` fails has none, so its lists
+ *  and their words read as on a passing run. */
+export const findingsFailGate = ({ gate, findings }: Report2): boolean =>
+  gate.fails && findings.some((f) => f.gate.fails);
+
 /** Every finding whose lead move is ready to run, graded or not, whatever the gate (golden `ready_count`). */
 export const readyCount = ({ findings }: Report2): number => findings.filter(readyToRun).length;
 

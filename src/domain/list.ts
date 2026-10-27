@@ -12,7 +12,7 @@ import { acceptedFlagIds, countedFlagIds } from "./countedFlags";
 import { fixLabel } from "./pageVocabulary";
 import { matchesFinding2, parseQuery2, type Term2 } from "./query";
 import type { RailGroup } from "./filters";
-import { isHeld, needsAnotherWayOut, readyToRun } from "./readyToRun";
+import { findingsFailGate, isHeld, needsAnotherWayOut, readyToRun } from "./readyToRun";
 
 type Row = readonly [key: string, label: string];
 
@@ -193,10 +193,6 @@ const SCOPE_ROWS: readonly Row[] = [
   ["unnamed", "not in composer.json"],
 ];
 
-function runFails2(report: Report2): boolean {
-  return report.gate.fails && report.findings.some((f) => f.gate.fails);
-}
-
 /** Filters no package, so its count is the listed rows whose pills it shows or hides. */
 function acceptedToggle(scope: Scope): RailGroup {
   const listed = countUnder(
@@ -223,10 +219,10 @@ export function railGroups2(report: Report2, state: State): readonly RailGroup[]
       ? groupOf(scope, "since", `Since ${baseline.path}`, SINCE_ROWS)
       : null,
     groupOf(scope, "gate", "This run", [
-      ...(runFails2(report) ? [["fails", "Fails this run"] as const] : []),
+      ...(findingsFailGate(report) ? [["fails", "Fails this run"] as const] : []),
       [READY_KEY, "Ready to run"],
       [HELD_KEY, "Held"],
-      ...(runFails2(report) ? [[WAY_OUT_KEY, "Another way out"] as const] : []),
+      ...(findingsFailGate(report) ? [[WAY_OUT_KEY, "Another way out"] as const] : []),
     ]),
     groupOf(
       scope,
@@ -279,7 +275,7 @@ export function fitFilters2(report: Report2, filters: Filters): Filters {
     (key) =>
       key === READY_KEY ||
       key === HELD_KEY ||
-      ((key === "fails" || key === WAY_OUT_KEY) && runFails2(report)),
+      ((key === "fails" || key === WAY_OUT_KEY) && findingsFailGate(report)),
   );
   const accepted = filters.accepted.filter((key) => key === HIDE_ACCEPTED);
   if (

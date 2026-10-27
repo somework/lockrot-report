@@ -16,7 +16,7 @@ import {
   MOVE_KIND_WORDS,
   skippedCheckWord,
 } from "./pageVocabulary";
-import { isHeld, needsAnotherWayOut, readyToRun } from "./readyToRun";
+import { findingsFailGate, isHeld, needsAnotherWayOut, readyToRun } from "./readyToRun";
 
 export const READY_SHOWN = 3;
 
@@ -109,11 +109,12 @@ function readyMove(f: Finding, report: Report2, argv: readonly string[], command
   };
 }
 
-/** The graded findings whose lead move is ready to run, gate-failing only when the gate fails, by rank. */
+/** The graded findings whose lead move is ready to run, gate-failing only when some finding fails the gate, by rank. */
 export function readyFindings(report: Report2): Finding[] {
   const graded: readonly string[] = report.run.graded_verdicts;
+  const forGate = findingsFailGate(report);
   return report.findings
-    .filter((f) => graded.includes(f.verdict) && readyToRun(f) && (!report.gate.fails || f.gate.fails))
+    .filter((f) => graded.includes(f.verdict) && readyToRun(f) && (!forGate || f.gate.fails))
     .sort((a, b) => a.rank - b.rank);
 }
 
@@ -318,7 +319,7 @@ export const gateLineTarget = (report: Report2): LinkTarget | null =>
     : null;
 
 export function firstMoves(report: Report2): FirstMoves {
-  const forGate = report.gate.fails;
+  const forGate = findingsFailGate(report);
   const ready = readyFindings(report);
   const moves = ready.slice(0, READY_SHOWN).flatMap((f) => {
     const argv = rowCommandArgv(f);
