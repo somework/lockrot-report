@@ -275,12 +275,14 @@
     }
   ],
   "feeds-drupal-dagger": [],
+  "fix-newest-held-dagger": [],
   "flysystem": [
     {
       "flag": "vulnerable",
       "text": "A low-severity advisory affects your version (CVE-2026-102601: Flysystem: WhitespacePathNormalizer's control-character (CorruptedPathDetected) check is bypassed by malformed UTF-8 in the path, affecting every adapter). It is not fixed on 1.x."
     }
   ],
+  "gets-below-clears-left-behind-dagger": [],
   "gets-below-clears-nothing-dagger": [],
   "gitlab-anon-dagger": [
     {
@@ -386,6 +388,7 @@
   "mc-blocking-off-both-dagger": [],
   "mc-blocking-off-dagger": [],
   "mc-inline-dagger": [],
+  "mc-joint-dev-dagger": [],
   "mc-lookup-incomplete-dagger": [],
   "mc-raise-php-dagger": [],
   "move-check-dagger": [],

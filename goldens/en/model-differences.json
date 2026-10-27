@@ -43,6 +43,7 @@
       "capped-require-php",
       "holder-vuln-dagger",
       "many-dependents",
+      "mc-joint-dev-dagger",
       "pagerfanta",
       "partial-op-dagger",
       "php-edge-equal-dagger",
@@ -59,6 +60,9 @@
   "held_by": {
     "lockrot's recording and the model's input differ: the case sets require.php to *, under which lockrot judges the holder's own step to its newest line; the model keeps the holder's own step of case A": [
       "A-php-star-dagger"
+    ],
+    "lockrot's recording and the model's input differ: lockrot records the holder's own step as not checked, because a package it needs could not be loaded, and the model's input has no such check": [
+      "mc-joint-dev-dagger"
     ]
   },
   "security": {

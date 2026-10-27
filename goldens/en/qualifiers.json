@@ -866,6 +866,25 @@
       "Tripped by CVE-2026-46633"
     ]
   },
+  "fix-newest-held-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through:",
+      "incenteev/composer-parameter-handler",
+      "nelmio/api-doc-bundle",
+      "php-amqplib/rabbitmq-bundle"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
   "flysystem": {
     "reach": [
       "Production: not in packages-dev",
@@ -885,7 +904,7 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
-  "gets-below-clears-nothing-dagger": {
+  "gets-below-clears-left-behind-dagger": {
     "reach": [
       "Production: not in packages-dev",
       "Required directly"
@@ -900,6 +919,25 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by left-behind"
+    ]
+  },
+  "gets-below-clears-nothing-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 5.6.0"
+    ],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
     ]
   },
   "gitlab-anon-dagger": {
@@ -1341,6 +1379,23 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by CVE-2026-47345"
+    ]
+  },
+  "mc-joint-dev-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through friendsofsymfony/user-bundle",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
     ]
   },
   "mc-lookup-incomplete-dagger": {
