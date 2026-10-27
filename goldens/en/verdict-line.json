@@ -47,6 +47,7 @@
   "fail-on-default-dagger": "Critical: two serious risks at once, its maintenance (left-behind and old-promise) and its advisory (vulnerable).",
   "feeds-drupal-dagger": "Critical: 15 advisories affect your version. The worst is a critical one (CVE-2026-46633: PHP code injection via `{% use %}` template name). None is fixed on 2.x.",
   "flysystem": "Medium: its branch, 1.x, had its last release 4.0 years ago, behind 3.x.",
+  "gets-below-clears-nothing-dagger": "High: its branch, 4.x, had its last release 4.5 years ago, behind 5.x.",
   "gitlab-anon-dagger": "High: it is marked abandoned by its registry. No replacement is named.",
   "guzzle": "Critical: two serious risks at once, its maintenance (left-behind) and its advisories (vulnerable).",
   "guzzle-5": "Critical: two serious risks at once, its maintenance (left-behind and old-promise) and its advisories (vulnerable).",

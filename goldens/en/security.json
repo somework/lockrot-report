@@ -4253,6 +4253,20 @@
       }
     ]
   },
+  "gets-below-clears-nothing-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
   "gitlab-anon-dagger": {
     "summary": [
       "no counted advisory",

@@ -466,3 +466,16 @@ describe("the Since filter (M19)", () => {
     }
   });
 });
+
+describe("the rail's unit on the Advisories tab (R2-42)", () => {
+  const titles = (view: State["view"]) =>
+    Object.fromEntries(railGroups2(composite, state({ view })).map((group) => [group.group, group.title]));
+
+  it("names packages in the Severity and Fix titles, since the tab lists advisories", () => {
+    expect(titles("advisories")).toMatchObject({ sev: "Severity (packages)", fix: "Fix (packages)" });
+  });
+
+  it("keeps the plain titles on a tab that lists packages", () => {
+    expect(titles("findings")).toMatchObject({ sev: "Severity", fix: "Fix" });
+  });
+});

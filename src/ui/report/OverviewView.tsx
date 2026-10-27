@@ -115,23 +115,21 @@ function ExposureBlock({ report }: { report: Report2 }) {
   const depthScale = Math.max(1, report.rot_depth.flagged);
   const depthPart = (depth.length > 0 || sentence !== null) && (
     <div className="ov-part">
+      {exposure ? (
+        <h4 className="ov-subhead">{OVERVIEW_TAB_WORDS.depth}</h4>
+      ) : (
+        <h3 className="eyebrow ledger-head">{OVERVIEW_TAB_WORDS.depth}</h3>
+      )}
       {depth.length > 0 && (
-        <>
-          {exposure ? (
-            <h4 className="ov-subhead">{OVERVIEW_TAB_WORDS.depth}</h4>
-          ) : (
-            <h3 className="eyebrow ledger-head">{OVERVIEW_TAB_WORDS.depth}</h3>
-          )}
-          <ul className="ov-ex is-static">
-            {depth.map((row) => (
-              <li key={row.label} className="ov-ex-row">
-                <span className="ov-ex-name">{row.label}</span>
-                <CountBar value={row.flagged} scale={depthScale} />
-                <span className="ov-ex-count">{row.flagged}</span>
-              </li>
-            ))}
-          </ul>
-        </>
+        <ul className="ov-ex is-static">
+          {depth.map((row) => (
+            <li key={row.label} className="ov-ex-row">
+              <span className="ov-ex-name">{row.label}</span>
+              <CountBar value={row.flagged} scale={depthScale} />
+              <span className="ov-ex-count">{row.flagged}</span>
+            </li>
+          ))}
+        </ul>
       )}
       {sentence !== null && <p className="ledger-note">{sentence}</p>}
     </div>

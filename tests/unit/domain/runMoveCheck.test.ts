@@ -18,6 +18,23 @@ describe("the Run tab's move check (SPEC §7.9.16)", () => {
     );
   });
 
+  test("names the variables that turned advisory blocking off, after the lock", () => {
+    const report = golden("snipe-it");
+    if (report.run.move_check === null) throw new Error("snipe-it checks its moves");
+    report.run.move_check = {
+      ...report.run.move_check,
+      blocks_advisories: false,
+      blocking_disabled_by: ["COMPOSER_NO_BLOCKING", "COMPOSER_NO_SECURITY_BLOCKING"],
+    };
+    expect(moveCheckFact(report)).toEqual([
+      "checked with the solver of Composer 2.10.3 against the lock, with advisory blocking turned off by ",
+      { code: "COMPOSER_NO_BLOCKING" },
+      " and ",
+      { code: "COMPOSER_NO_SECURITY_BLOCKING" },
+      " · ext-* requirements not checked",
+    ]);
+  });
+
   test("says that Composer's solver refuses the lock itself", () => {
     expect(plain(moveCheckFact(golden("wallabag-2.6")) ?? [])).toBe(
       "not checked, because Composer's solver refuses the lock itself",
@@ -33,6 +50,16 @@ describe("the Run tab's move check (SPEC §7.9.16)", () => {
       reason: "install_time_budget",
     };
     expect(plain(moveCheckFact(report) ?? [])).toBe("not checked (the install-time budget ran out)");
+  });
+
+  test.each([
+    ["unloaded_name", "not checked (a package the lock needs could not be loaded)"],
+    ["offline", "not checked (a package the lock needs is not in Composer's cache)"],
+  ])("R2-4: names the lock when the baseline could not load a package (%s)", (reason, words) => {
+    const report = golden("snipe-it");
+    if (report.run.move_check === null) throw new Error("snipe-it checks its moves");
+    report.run.move_check = { ...report.run.move_check, baseline: "not_checked", reason };
+    expect(moveCheckFact(report)).toEqual([words]);
   });
 
   test("prints an unknown reason as written, in a code element", () => {

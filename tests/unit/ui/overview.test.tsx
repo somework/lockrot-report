@@ -449,6 +449,35 @@ describe("the tabs that lead without the band", () => {
     );
   });
 
+  test("R2-37: heads the depth part when a lock-only run has no depth rows, only the sentence", () => {
+    const result = normalize(assembleEmbed("lock-only-dagger"));
+    if (!result.ok) throw new Error(result.error.message);
+    render(<App model={result.model} />);
+
+    const head = within(band()).getByRole("heading", { name: "How deep the flagged packages sit" });
+    expect(head.tagName).toBe("H3");
+    expect(head.parentElement?.querySelector(".ledger-note")?.textContent).toBe(
+      "lockrot did not read composer.json, so it does not know how deep the 1 flagged package sits.",
+    );
+  });
+
+  test("R2-37: heads the depth part with an h4 under Blast radius when the run has no depth rows", () => {
+    render(
+      <App
+        model={model((report) => {
+          report.rot_depth = {
+            ...report.rot_depth,
+            unmeasured: { ...report.rot_depth.unmeasured, no_composer_json: 1 },
+          };
+        })}
+      />,
+    );
+
+    expect(within(band()).getByRole("heading", { name: "How deep the flagged packages sit" }).tagName).toBe(
+      "H4",
+    );
+  });
+
   test("All packages starts with its table", () => {
     history.replaceState(null, "", "/report.html#view=packages");
     render(<App model={model()} />);

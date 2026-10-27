@@ -3,7 +3,7 @@
 import type { Report2, Run } from "../model/report";
 import { day, plural, pluralNoun } from "./format";
 import { causeWord, checkReasonRich, feedAnswerWord, wordFor } from "./pageVocabulary";
-import type { Rich } from "./rich";
+import type { Piece, Rich } from "./rich";
 
 export const RUN_WORDS = {
   tab: "Run data",
@@ -93,21 +93,37 @@ export function runFacts(report: Report2): { key: string; value: string | Rich }
   ];
 }
 
+const LOCK_LOAD_WORDS: Readonly<Record<string, string>> = {
+  unloaded_name: "a package the lock needs could not be loaded",
+  offline: "a package the lock needs is not in Composer's cache",
+};
+
 /** `run.move_check` in the words of lockrot's text footer (`RunFooter::moveCheck`), or null when the
  *  run checked no move. */
 export function moveCheckFact({ run }: Report2): Rich | null {
   const check = run.move_check;
   if (check === null) return null;
   switch (check.baseline) {
-    case "resolves":
+    case "resolves": {
+      const lock = `checked with the solver of Composer${check.composer === null ? "" : ` ${check.composer}`} against the lock`;
+      const names = check.blocking_disabled_by.flatMap((name, i): Piece[] => [
+        ...(i > 0 ? [" and "] : []),
+        { code: name },
+      ]);
       // `ignores_extensions` is always true: the solve ignores ext-* requirements (§5.6).
-      return [
-        `checked with the solver of Composer${check.composer === null ? "" : ` ${check.composer}`} against the lock · ext-* requirements not checked`,
-      ];
+      return names.length === 0
+        ? [`${lock} · ext-* requirements not checked`]
+        : [`${lock}, with advisory blocking turned off by `, ...names, " · ext-* requirements not checked"];
+    }
     case "refused":
       return ["not checked, because Composer's solver refuses the lock itself"];
-    default:
-      return ["not checked (", ...checkReasonRich(check.reason ?? ""), ")"];
+    default: {
+      // The baseline solve has no move, so a load reason names the lock (ruling R2-4).
+      const lockWords = check.reason === null ? undefined : LOCK_LOAD_WORDS[check.reason];
+      return lockWords === undefined
+        ? ["not checked (", ...checkReasonRich(check.reason ?? ""), ")"]
+        : [`not checked (${lockWords})`];
+    }
   }
 }
 

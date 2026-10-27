@@ -351,6 +351,9 @@
       "fold": null
     }
   ],
+  "gets-below-clears-nothing-dagger": [
+    null
+  ],
   "gitlab-anon-dagger": [
     null
   ],

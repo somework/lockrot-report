@@ -435,7 +435,7 @@ export interface HeldByBlock {
 const isGradedHolder = (held: HeldBy, run: Run): boolean =>
   (run.graded_verdicts as readonly string[]).includes(held.holder?.verdict ?? "");
 
-const isZeroLine = (toBranch: string | null): boolean => (toBranch ?? "").startsWith("0.");
+export const isZeroLine = (toBranch: string | null): boolean => (toBranch ?? "").startsWith("0.");
 
 /** A Findings row's tag for a move that crosses a major: the words the sheet's note opens with. */
 export const newLineTag = (toBranch: string | null): string =>

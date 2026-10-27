@@ -372,6 +372,12 @@
     "maintenance alone makes it medium",
     "without left-behind: 2, low · without the advisory: 8, medium"
   ],
+  "gets-below-clears-nothing-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
   "gitlab-anon-dagger": [
     "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
     "abandoned 32 leads: the strongest maintenance fact counts in full",

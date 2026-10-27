@@ -31,6 +31,13 @@ describe("readyToRun (SPEC §7.9.7)", () => {
     expect(readyToRun(finding({ held_by: [hold("root"), hold("package", "c/d")] }))).toBe(false);
   });
 
+  it("R2-40: is neither ready nor held when only the finding's own release holds the lead move", () => {
+    const f = { ...finding({ held_by: [hold("package", "a/b")] }), gate: { fails: true } } as Finding;
+    expect(readyToRun(f)).toBe(false);
+    expect(isHeld(f)).toBe(false);
+    expect(needsAnotherWayOut(f)).toBe(true);
+  });
+
   it("reads the lead move's holders only, not an also move's", () => {
     expect(readyToRun(finding({ also: [{ held_by: [hold("package", "c/d")] }] }))).toBe(true);
   });

@@ -281,6 +281,7 @@
       "text": "A low-severity advisory affects your version (CVE-2026-102601: Flysystem: WhitespacePathNormalizer's control-character (CorruptedPathDetected) check is bypassed by malformed UTF-8 in the path, affecting every adapter). It is not fixed on 1.x."
     }
   ],
+  "gets-below-clears-nothing-dagger": [],
   "gitlab-anon-dagger": [
     {
       "flag": "old-promise",

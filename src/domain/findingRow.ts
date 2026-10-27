@@ -15,7 +15,7 @@ import {
 } from "./findingWords";
 import { plural, pluralNoun } from "./format";
 import { compareHolds } from "./holdRank";
-import { newLineTag, ROOT_HOLDER_NAME } from "./moveCards";
+import { isZeroLine, newLineTag, ROOT_HOLDER_NAME } from "./moveCards";
 import { afterIt, holderWord } from "./securityBlock";
 import { commandLine } from "./shellArgv";
 import { allowlistByInWhy, allowlistReason, headlineReasonWord, stoppedCheckWords } from "./pageVocabulary";
@@ -411,13 +411,14 @@ export function rowNewLine(f: Finding): string | null {
 }
 
 /** Accepted derivation 11's group count: of the lead moves whose `crosses_major` is set (true or
- *  false), how many are true. A null value counts in neither; the head says nothing when either
- *  number is 0. */
+ *  false), how many are true and tagged "a new major", not "a new 0.x line". A null value counts in
+ *  neither; the head says nothing when either number is 0. */
 export function majorCount(findings: readonly Finding[]): { readonly n: number; readonly m: number } {
-  const known = findings.flatMap((f) =>
-    f.next_step?.crosses_major == null ? [] : [f.next_step.crosses_major],
-  );
-  return { n: known.filter((crosses) => crosses).length, m: known.length };
+  const known = findings.flatMap((f) => (f.next_step?.crosses_major == null ? [] : [f.next_step]));
+  return {
+    n: known.filter((step) => step.crosses_major === true && !isZeroLine(step.to_branch)).length,
+    m: known.length,
+  };
 }
 
 export const majorCountWords = ({ n, m }: { n: number; m: number }): string | null =>
@@ -529,7 +530,7 @@ export const GATE_WORDS = {
   row: "fails gate",
   group: (failing: number, rows: number, applied: boolean): string | null => {
     if (!applied || failing === 0) return null;
-    return failing === rows ? "all fail the gate" : `${failing} fail the gate`;
+    return failing === rows ? "all fail the gate" : `${failing} ${failing === 1 ? "fails" : "fail"} the gate`;
   },
 } as const;
 

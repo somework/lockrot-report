@@ -164,6 +164,10 @@
     "Your branch, 1.x, had its last release, 1.1.10, 4.0 years ago.",
     "The move's branch, 3.x, released 3.36.0 0.1 years ago."
   ],
+  "gets-below-clears-nothing-dagger": [
+    "Your branch, 4.x, had its last release, v4.4.41, 4.5 years ago.",
+    "The move's branch, 5.x, released v5.4.45 2.0 years ago."
+  ],
   "gitlab-anon-dagger": [
     "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
   ],

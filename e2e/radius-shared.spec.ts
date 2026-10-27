@@ -1,13 +1,13 @@
 /**
- * The flagged packages lockrot counts under no direct requirement (`unattributed`, fan_in above
- * `exposure_rule.max_fan_in`) are named in one note under the Blast radius rows.
+ * The flagged packages shared by more than `exposure_rule.max_fan_in` direct requirements
+ * (`unattributed`) are named in one note under the Blast radius rows.
  */
 import { expect, test } from "@playwright/test";
 import { report2Url } from "./support/pages";
 import { radiusSurface } from "./support/report2/radius";
 import { report2Pages } from "../scripts/report2-embed.ts";
 
-test.describe("report-2: the packages lockrot counts under no requirement", () => {
+test.describe("report-2: the packages shared by too many requirements", () => {
   test("are named in one note under the rows, each once, in unattributed order", async ({ page }) => {
     const embed = report2Pages().find((p) => p.name === "report2-baselined-wallabag-2.6")?.embed;
     const names = (embed?.report.unattributed ?? []).map((entry) => entry.package);

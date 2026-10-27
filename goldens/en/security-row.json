@@ -473,6 +473,11 @@
     "upgrade · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
+  "gets-below-clears-nothing-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "gitlab-anon-dagger": [
     "no counted advisory",
     "none on record for this name",

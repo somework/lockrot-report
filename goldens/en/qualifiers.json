@@ -885,6 +885,23 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
+  "gets-below-clears-nothing-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
   "gitlab-anon-dagger": {
     "reach": [
       "Production: not in packages-dev",

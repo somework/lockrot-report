@@ -34,11 +34,11 @@ project is overall, and the other tabs lead with their own part.
   to the baseline" when they apply. lockrot's own gate sentence follows, marked "✓" or "✕", and
   links to the findings that fail it. A line per state that limits the run follows: an offline or
   incomplete run, the allowlist that does not cover advisories, and the baseline.
-- Beside the lead: "37 of 183 packages flagged · 126 ok · 20 allowlisted", the scope line, a chip
+- Beside the lead: "37 of 183 packages flagged · 126 ok · 20 finished", the scope line, a chip
   per grade that a package holds, and the waffle, one square per package. Its key names each mark
-  of a score of 0: ok, allowlisted and not judged.
-- "Ready to run" lists up to 3 moves whose command Composer's solver checked and no other package
-  holds, in lockrot's rank order, each with its command, what it clears and the score after it.
+  of a score of 0: ok, finished and not judged.
+- "Ready to run" lists up to 3 moves whose command Composer's solver checked and that only your
+  composer.json holds, if anything does, in lockrot's rank order, each with its command, what it clears and the score after it.
   When the run fails, it lists only findings that fail the gate. "Also holds" names the findings
   whose move the ready package holds. One line counts the failing findings that other packages
   hold, and one counts those that need another way out, by kind or by the move check: "Composer
@@ -51,14 +51,14 @@ project is overall, and the other tabs lead with their own part.
 - The flag ledger: one bar per flag that fired, in lockrot's flag order. Each bar splits by the
   grades of its packages ("graded critical 2 · low 2"), adds the points the flag brings to the
   scores ("abandoned … 288 pts") and filters the list. Under the ledger the band says how many
-  packages carry more than one flag, how deep the flagged packages sit, and what the allowlist
-  accepts.
+  packages carry more than one flag and what the allowlist accepts.
 - The Security block counts the advisories and the packages they sit on. It draws a square per
   advisory in its severity's tone under "Advisories by severity", and counts the packages by what
   the fix takes. No tab shows an "Update now" command: "Ready to run" takes its place.
 - The exposure bars take the first 8 direct requirements in lockrot's order. Each bar counts the
   flagged packages its requirement pulls in and opens Blast radius. "{n} more in Blast radius ›"
-  closes the list when lockrot lists more.
+  closes the list when lockrot lists more. "How deep the flagged packages sit" follows the bars: a
+  bar per depth, then the depth sentence. A lock-only run keeps the head over the sentence alone.
 - Libyears leads with the total, its measured count and the direct requirements' share, then what
   was not measured, by cause.
 - The libyears table lists the 8 packages furthest behind, leaving out a row that rounds to 0.0, with "≥" before a lower bound. Each row
@@ -74,13 +74,15 @@ project is overall, and the other tabs lead with their own part.
   hatched for a flag that corroborates and dotted for an advisory. Its tone is the band lockrot
   gives it. A score past the scale ends in "›", and the number beside the bar is the total. The
   bar's tooltip is lockrot's own score sentence. The grade is the group's head and the score's
-  tone, so the row has no verdict column. From 990px of list a row is one line, below it three.
+  tone, so the row has no verdict column. From 1440 px of list a row is one line. From 1100 px
+  the reach goes under the package, from 600 px a row takes two lines, and below 600 px each
+  value stacks with its label.
 - A Findings row names its reach ("via {name} and {n} more"), its holders ("held by {name} and {n}
   more", worst graded first), the first checked command of its move and the score after it. The
   score after it ends with "if Composer resolves it" only when the move assumes it. A move that
-  crosses a major gets the tag "a new major" in a fixed slot. A row tags "fails gate" and "ready to
-  run". A group head says how many of its packages fail the gate and how many of its moves cross a
-  major.
+  crosses a major gets the tag "a new major", or "a new 0.x line", in a fixed slot. A row tags "fails gate" and "ready to
+  run". A group head says how many of its packages fail the gate ("1 fails the gate") and how many
+  of its moves cross a major. A move to a new 0.x line does not count as one.
 - The rail's "This run" group filters "Ready to run", "Held" and "Another way out", each with its
   count. The last shows only when the run fails.
 - All packages hides its "Data as of" column when every row has the report's date, and says so in
@@ -143,7 +145,8 @@ project is overall, and the other tabs lead with their own part.
   nothing flagged it says "No package is flagged in this report.". "How the score works ›" leads
   there from an open package and from the glossary.
 - The rail gains "Grade" (`#verdict=`), "Severity" (`#sev=`) and "Fix" (`#fix=`) groups, each row
-  counting the packages it lists. It also gains "Accepted flags", a toggle that hides the accepted pills and filters
+  counting the packages it lists. On Advisories, a list of advisories, the two read "Severity
+  (packages)" and "Fix (packages)". It also gains "Accepted flags", a toggle that hides the accepted pills and filters
   no package (`#accepted=hide`). Flags filter the list too (`#flag=stale`). The phone's "Filters"
   summary also counts the grade and severity filters that are on.
 - Search reads `flag:`, `lead:`, `verdict:` (`priority:` alike) and `score:>=16` (also `>`, `<=`,
@@ -202,8 +205,8 @@ project is overall, and the other tabs lead with their own part.
 - Ready to run tags a move to a 0.x line as "a new 0.x line", as its Findings row does. On a run
   whose baseline Composer refuses, it reads "No move is ready to run: Composer refuses the lock
   itself, so no move was checked."
-- Blast radius leads with the depth sentence, then "52 flagged packages pulled in.", how many sit
-  under no direct requirement, and the rows that hold them. The rows are named until they hold half
+- Blast radius leads with the depth sentence, then "52 flagged packages pulled in.", "7 of them
+  sit under more than 8 direct requirements.", and the rows that hold them. The rows are named until they hold half
   of the packages pulled in. With none pulled in, the depth sentence stands alone.
 - Counts agree with their total: "1 of 113 flagged packages", "1 of 1 move crosses a major".
   Provenance words its origin and each source's status. An empty Advisories tab still leads with
@@ -260,7 +263,10 @@ project is overall, and the other tabs lead with their own part.
   prints each affected range in full and fits the Run data tables to the page width. With a
   package's sheet open, print prints that sheet alone.
 - Run data opens with the run's facts: the mode, the lock file, whether require-dev was checked,
-  how old the cached repository activity is, and whether Composer's solver checked the moves.
+  how old the cached repository activity is, and whether Composer's solver checked the moves. When
+  an environment variable turned advisory blocking off, the line names it: "with advisory blocking
+  turned off by COMPOSER_NO_SECURITY_BLOCKING". When the lock's own solve could not load a
+  package, the line names the lock: "not checked (a package the lock needs could not be loaded)".
   Its notes print each run note as lockrot wrote it, the move check's notes included. Each advisory registry row names its outcome. A
   run against a baseline gets a Baseline block with its known, new, worsened and stale counts and
   each stale entry.
