@@ -464,6 +464,24 @@
     "php floor raise",
     "after it: 0, ok, if Composer resolves it"
   ],
+  "fix-newest-held-dagger": [
+    "3 advisories: low 3",
+    "5 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "5.x your branch the move clears 3 of 3 from v5.4.52",
+    "upgrade · held by incenteev/composer-parameter-handler",
+    "after it: 0, ok · Composer refuses the move",
+    "6.x clears 3 of 3 from v6.4.40",
+    "php floor raise · held by incenteev/composer-parameter-handler",
+    "after it: 0, ok · Composer refuses the move",
+    "7.x clears 3 of 3 from v7.4.12",
+    "php floor raise · held by incenteev/composer-parameter-handler",
+    "after it: 0, ok · Composer refuses the move",
+    "8.x clears 3 of 3 from v8.0.12",
+    "php floor raise · held by incenteev/composer-parameter-handler",
+    "after it: 0, ok · Composer refuses the move"
+  ],
   "flysystem": [
     "1 low advisory",
     "2 on record for this name",
@@ -472,6 +490,11 @@
     "3.x the move clears 1 of 1 from 3.36.0",
     "upgrade · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
+  ],
+  "gets-below-clears-left-behind-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
   ],
   "gets-below-clears-nothing-dagger": [
     "no counted advisory",
@@ -635,6 +658,11 @@
     "2.x your branch the move clears 1 of 1 from v2.3.2",
     "composer update",
     "after it: 0, ok"
+  ],
+  "mc-joint-dev-dagger": [
+    "no counted advisory",
+    "1 on record for this name",
+    "lookup complete"
   ],
   "mc-lookup-incomplete-dagger": [
     "1 high advisory",

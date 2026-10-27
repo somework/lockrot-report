@@ -364,6 +364,13 @@
     "the advisories alone make it critical",
     "without CVE-2026-46633: 16, high"
   ],
+  "fix-newest-held-dagger": [
+    "2 · low from 1 · 6 points short of medium · ages as of 2026-10-01",
+    "vulnerable 2: low advisory CVE-2026-45133, the worst of 3 (tied with CVE-2026-45305, CVE-2026-45304); its own fix (upgrade on 5.x) is reachable, so no × 2",
+    "transitive: no maintenance to halve; security is never halved for reach",
+    "the advisories alone make it low",
+    "without CVE-2026-45133: 2, low (tied: the others weigh the same)"
+  ],
   "flysystem": [
     "10 · medium from 8 · 6 points short of high · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
@@ -372,11 +379,17 @@
     "maintenance alone makes it medium",
     "without left-behind: 2, low · without the advisory: 8, medium"
   ],
-  "gets-below-clears-nothing-dagger": [
+  "gets-below-clears-left-behind-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it high"
+  ],
+  "gets-below-clears-nothing-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "old-promise 16 leads: the strongest maintenance fact counts in full",
+    "transitive: maintenance 16 ÷ 2 = 8",
+    "maintenance alone makes it medium"
   ],
   "gitlab-anon-dagger": [
     "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
@@ -529,6 +542,12 @@
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
     "the advisory alone makes it high"
+  ],
+  "mc-joint-dev-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "transitive: maintenance 16 ÷ 2 = 8",
+    "maintenance alone makes it medium"
   ],
   "mc-lookup-incomplete-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",

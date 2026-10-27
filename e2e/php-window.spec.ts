@@ -41,7 +41,10 @@ for (const { page: name, golden } of CASES) {
       .locator(".run2-kv-row");
     await expect(rows.first()).toBeVisible();
     const texts = await rows.evaluateAll((items) =>
-      items.map((row) => `${row.querySelector("dt")?.textContent}: ${row.querySelector("dd")?.textContent}`),
+      items.flatMap((row) => {
+        const [value, ...notes] = [...row.querySelectorAll("dd")].map((dd) => dd.textContent);
+        return [`${row.querySelector("dt")?.textContent}: ${value}`, ...notes];
+      }),
     );
     expect(texts).toEqual(pageGolden(golden).php_rows);
   });

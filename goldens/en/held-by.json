@@ -331,6 +331,20 @@
   "feeds-drupal-dagger": [
     null
   ],
+  "fix-newest-held-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "incenteev/composer-parameter-handler v2.1.5",
+          "grade": null,
+          "meta": "conflicts with ^5.4",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
   "flysystem": [
     {
       "count": 2,
@@ -350,6 +364,9 @@
       ],
       "fold": null
     }
+  ],
+  "gets-below-clears-left-behind-dagger": [
+    null
   ],
   "gets-below-clears-nothing-dagger": [
     null
@@ -485,6 +502,20 @@
   ],
   "mc-inline-dagger": [
     null
+  ],
+  "mc-joint-dev-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "symfony/validator v4.4.48",
+          "grade": "high",
+          "meta": "conflicts with >=5.0 · itself left-behind · vulnerable",
+          "step": "its own step: require ^5.4.43 on 5.x · not checked: a package it needs could not be loaded"
+        }
+      ],
+      "fold": null
+    }
   ],
   "mc-lookup-incomplete-dagger": [
     null

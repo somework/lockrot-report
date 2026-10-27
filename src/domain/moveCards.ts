@@ -15,6 +15,7 @@ import { linkWords } from "./linkWords";
 import { safeHref } from "./links";
 import { addsBasisWord, checkReasonRich, phpFloorWord, stoppedCheckWords } from "./pageVocabulary";
 import { phpConstraintWord } from "./phpAlternatives";
+import { overrideOutsideTarget } from "./phpWindow";
 import { dependentNames, foundWords, installedPhpWords } from "./qualifierRows";
 import { newTab, type Rich } from "./rich";
 import { commandLine, REFUSED_COMMAND } from "./shellArgv";
@@ -55,18 +56,45 @@ function unknownMove(move: AnyMove): string {
   return `Next step: ${move.kind.replaceAll("-", " ")}${move.reason ? ` (${move.reason.replaceAll("_", " ")})` : ""}`;
 }
 
-/** Numeric versions only ("v6.4.40" < "v6.4.41"); any other form is never below, so it adds no words. */
+const STABILITY: Readonly<Record<string, number>> = {
+  dev: 0,
+  alpha: 1,
+  a: 1,
+  beta: 2,
+  b: 2,
+  rc: 3,
+  stable: 4,
+  patch: 5,
+  pl: 5,
+  p: 5,
+};
+const COMPOSER_VERSION =
+  /^v?(\d+(?:\.\d+){0,3})(?:[._-]?(stable|beta|b|rc|alpha|a|patch|pl|p)(\d*(?:[.-]\d+)*))?(?:[.-]?(dev))?(?:\+\S+)?$/i;
+const SUFFIX_NUMBERS = 3;
+
+/** Composer's `VersionParser::normalize` order, as lockrot's `MoveCheck::installsBelow` reads it. */
+function orderKey(version: string): number[] | null {
+  const match = COMPOSER_VERSION.exec(version);
+  if (match === null) return null;
+  const [, release = "", modifier, numbers = "", dev] = match;
+  const parts = release.split(".").map(Number);
+  const suffix = (numbers.match(/\d+/g) ?? []).map(Number);
+  const stability = STABILITY[modifier?.toLowerCase() ?? (dev ? "dev" : "stable")] ?? 0;
+  return [
+    ...Array.from({ length: 4 }, (_, at) => parts[at] ?? 0),
+    stability,
+    ...Array.from({ length: SUFFIX_NUMBERS }, (_, at) => suffix[at] ?? 0),
+    modifier && dev ? 0 : 1,
+  ];
+}
+
+/** A form Composer cannot normalize, such as a branch, is never below, so it adds no words. */
 export function isBelow(version: string, than: string): boolean {
-  const parts = (v: string): number[] | null =>
-    /^v?\d+(\.\d+)*$/.test(v) ? v.replace(/^v/, "").split(".").map(Number) : null;
-  const a = parts(version);
-  const b = parts(than);
+  const a = orderKey(version);
+  const b = orderKey(than);
   if (a === null || b === null) return false;
-  for (let i = 0; i < Math.max(a.length, b.length); i++) {
-    const d = (a[i] ?? 0) - (b[i] ?? 0);
-    if (d !== 0) return d < 0;
-  }
-  return false;
+  const at = a.findIndex((part, index) => part !== b[index]);
+  return at !== -1 && (a[at] ?? 0) < (b[at] ?? 0);
 }
 
 /** G70 to G93: the move's action. */
@@ -567,12 +595,6 @@ export interface MoveCard {
   readonly heldBy: HeldByBlock | null;
 }
 
-/** "8" reads as "8.0", as lockrot normalises `target_php`. */
-const minorOf = (version: string): string => {
-  const [major = "", minor = "0"] = version.split(".");
-  return `${major}.${minor}`;
-};
-
 /** Setting the platform does not help when Composer refuses the lock for another cause. */
 function stillRefused(run: Run): string {
   if (run.move_check?.baseline !== "refused") return "";
@@ -584,8 +606,8 @@ function stillRefused(run: Run): string {
 /** A lock whose config.platform.php lies outside the target's minor makes Composer check every
  *  command at that PHP, not the target's. */
 export function platformStep(run: Run): string | null {
-  const override = run.php_window?.platform_override ?? null;
-  if (override === null || minorOf(override) === minorOf(run.target_php)) return null;
+  const override = overrideOutsideTarget(run);
+  if (override === null) return null;
   return `First set config.platform.php to your PHP ${run.target_php} release: the lock records ${override}.${stillRefused(run)}`;
 }
 

@@ -184,6 +184,23 @@ function ExposureBlock({ report }: { report: Report2 }) {
   );
 }
 
+/** A browser breaks a line after a hyphen, so a "(Y-m-d)" day goes in a span that does not wrap. */
+function UnbrokenDays({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(/(\(\d{4}-\d{2}-\d{2}\))/).map((part, at) =>
+        at % 2 === 1 ? (
+          <span key={at} className="ov-ly-day">
+            {part}
+          </span>
+        ) : (
+          part
+        ),
+      )}
+    </>
+  );
+}
+
 /** PD-OVERVIEW-6: the packages furthest behind, each linked to its row. */
 function LibyearsTable({ report }: { report: Report2 }) {
   const rows = libyearsTop(report);
@@ -217,7 +234,7 @@ function LibyearsTable({ report }: { report: Report2 }) {
               {row.libyears}
             </td>
             <td className="ov-ly-release" data-label={OVERVIEW_TAB_WORDS.release}>
-              {row.release}
+              <UnbrokenDays text={row.release} />
             </td>
           </tr>
         ))}

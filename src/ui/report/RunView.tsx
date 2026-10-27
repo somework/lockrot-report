@@ -213,7 +213,7 @@ function KeyValues({
   className = "",
 }: {
   head: string;
-  rows: readonly { key: string; value: string | Rich }[];
+  rows: readonly { key: string; value: string | Rich; note?: string }[];
   className?: string;
 }) {
   if (rows.length === 0) return null;
@@ -221,10 +221,11 @@ function KeyValues({
     <section className="sect">
       <h3>{head}</h3>
       <dl className={`kv ${className}`.trim()}>
-        {rows.map(({ key, value }) => (
+        {rows.map(({ key, value, note }) => (
           <div key={key} className="run2-kv-row">
             <dt>{key}</dt>
             <dd>{typeof value === "string" ? value : <RichText rich={value} />}</dd>
+            {note !== undefined && <dd>{note}</dd>}
           </div>
         ))}
       </dl>

@@ -203,9 +203,10 @@ interface WayOutItem {
 
 const firstSeen = (values: readonly string[]): string[] => [...new Set(values)];
 
-/** The way-out items: the kinds in `x-known-values` order, the unknown kinds as written, the no-move
- *  findings by `gate.by[]` kind, refused, not checked by reason in the table's order, "the run
- *  checked no move", then the unknown reasons. Never "other". */
+/** The way-out items: the move kinds in `x-known-values` order, then the unknown move kinds, the
+ *  no-move findings by `gate.by[]` kind, then the unknown gate kinds, refused, not checked by reason
+ *  in the table's order, "the run checked no move", then the unknown reasons. An unknown id prints
+ *  as written, in a code element. Never "other". */
 function wayOutItems(rest: readonly Finding[], report: Report2): WayOutItem[] {
   const slotted = rest.map((f) => ({ f, slot: slotOf(f, report) }));
   const pick = (test: (slot: Slot) => boolean): Finding[] =>
@@ -218,6 +219,8 @@ function wayOutItems(rest: readonly Finding[], report: Report2): WayOutItem[] {
   const knownReasons = CHECK_REASON_WORDS.map(([reason]) => reason);
   const kinds = slotted.map(({ slot }) => kindOf(slot)).filter((kind) => kind !== null);
   const reasons = slotted.map(({ slot }) => reasonOf(slot)).filter((reason) => reason !== null);
+  const knownGates = GATE_KIND_WORDS.map(([kind]) => kind);
+  const gateKinds = slotted.flatMap(({ slot }) => (slot.by === "gate" ? [slot.kind] : []));
   return [
     ...MOVE_KIND_WORDS.flatMap(([kind, words]) => {
       const group = pick((slot) => kindOf(slot) === kind);
@@ -226,13 +229,19 @@ function wayOutItems(rest: readonly Finding[], report: Report2): WayOutItem[] {
     ...firstSeen(kinds.filter((kind) => !known.includes(kind))).flatMap((kind) =>
       item(
         pick((slot) => kindOf(slot) === kind),
-        [{ text: kind }],
+        [{ text: kind, code: true }],
       ),
     ),
     ...GATE_KIND_WORDS.flatMap(([kind, words]) => {
       const group = pick((slot) => slot.by === "gate" && slot.kind === kind);
       return item(group, kind === "unchecked" ? uncheckedItemParts(group) : [{ text: words }]);
     }),
+    ...firstSeen(gateKinds.filter((kind) => !knownGates.includes(kind))).flatMap((kind) =>
+      item(
+        pick((slot) => slot.by === "gate" && slot.kind === kind),
+        [{ text: kind, code: true }],
+      ),
+    ),
     ...item(
       pick((slot) => slot.by === "refused"),
       [{ text: REFUSED }],

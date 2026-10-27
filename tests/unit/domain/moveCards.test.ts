@@ -2,7 +2,7 @@
 // lock that showed it.
 import { describe, expect, test } from "vitest";
 
-import { checkLine, holderName, moveCards } from "../../../src/domain/moveCards";
+import { checkLine, holderName, isBelow, moveCards } from "../../../src/domain/moveCards";
 import { plain } from "../../../src/domain/rich";
 import { securityRungs } from "../../../src/domain/securityBlock";
 import type { Finding, HeldBy, RepositoryMetadata, Run } from "../../../src/model/report";
@@ -580,6 +580,22 @@ describe("R2, G70: an update that Composer installs below its newest release", (
     expect(action("v6.4.40")).toBe("Update to v6.4.40 on 6.x, below the newest v6.4.41");
   });
 
+  test("names the release it installs when that release has a suffix that is not numeric", () => {
+    expect(action("v6.4.40-p3")).toBe("Update to v6.4.40-p3 on 6.x, below the newest v6.4.41");
+  });
+
+  test("names the release it installs when that release carries build metadata", () => {
+    expect(action("v6.4.40+build.7")).toBe("Update to v6.4.40+build.7 on 6.x, below the newest v6.4.41");
+  });
+
+  test("reads as before when it installs the newest release without its v prefix", () => {
+    expect(action("6.4.41")).toBe("Update to v6.4.41 on 6.x");
+  });
+
+  test("reads as before when it installs a release above the newest", () => {
+    expect(action("v6.4.42")).toBe("Update to v6.4.41 on 6.x");
+  });
+
   test("reads as before when it installs the newest release", () => {
     expect(action("v6.4.41")).toBe("Update to v6.4.41 on 6.x");
   });
@@ -676,4 +692,40 @@ describe("§5.6, the joint request: an unreached move that moves what requires i
       ),
     ]);
   });
+});
+
+describe("isBelow orders versions as Composer does", () => {
+  test.each([
+    ["2.4.6-p3", "2.4.7"],
+    ["v6.4.40", "v6.4.41"],
+    ["1.0", "1.0.1"],
+    ["2.0.0-RC1", "2.0.0"],
+    ["2.0.0-beta2", "2.0.0-RC1"],
+    ["2.0.0-alpha1", "2.0.0-beta1"],
+    ["2.0.0-dev", "2.0.0-alpha1"],
+    ["2.0.0", "2.0.0-p1"],
+    ["2.4.7-p1", "2.4.7-p2"],
+    ["1.0.0+build", "1.0.1"],
+  ])("%s is below %s", (version, than) => {
+    expect(isBelow(version, than)).toBe(true);
+  });
+
+  test.each([
+    ["6.4.41", "v6.4.41"],
+    ["1.0", "1.0.0"],
+    ["v6.4.42", "v6.4.41"],
+    ["2.4.7-p1", "2.4.7"],
+    ["dev-main", "2.0.0"],
+    ["2.0.0", "dev-main"],
+    ["1.0.1+build", "1.0.1"],
+    ["1.0.0+", "1.0.1"],
+  ])("%s is not below %s", (version, than) => {
+    expect(isBelow(version, than)).toBe(false);
+  });
+});
+
+test("isBelow reads a long run of suffix digits that ends in a stray character in linear time", () => {
+  const version = `1.0.0-p${"1".repeat(40)}!`;
+
+  expect(isBelow(version, "2.0.0")).toBe(false);
 });

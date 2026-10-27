@@ -3,8 +3,10 @@ import { describe, expect, test } from "vitest";
 import { branchTimeline, laneWords, xOfYears } from "../../../src/domain/branchTimeline";
 import { recordedCases } from "./recorded";
 
+const cases = recordedCases();
+
 const byName = (name: string) => {
-  const recorded = recordedCases().find((c) => c.name === name);
+  const recorded = cases.find((c) => c.name === name);
   if (recorded === undefined) throw new Error(`no recorded case ${name}`);
   return recorded;
 };

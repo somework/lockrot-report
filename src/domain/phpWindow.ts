@@ -87,10 +87,24 @@ function setCells(set: PhpWindowSet): string {
   ].join(" · ");
 }
 
-/** The Run tab's PHP window rows as label and value; empty when `run.php_window` is null. */
-export function windowFacts({ run }: Pick<Report2, "run">): { key: string; value: string }[] {
+/** "8" reads as "8.0", as lockrot normalises `target_php`. */
+const minorOf = (version: string): string => {
+  const [major = "", minor = "0"] = version.split(".");
+  return `${major}.${minor}`;
+};
+
+/** The lock's config.platform.php when it lies outside the target's minor (ruling L5), else null. */
+export function overrideOutsideTarget(run: Pick<Run, "php_window" | "target_php">): string | null {
+  const override = run.php_window?.platform_override ?? null;
+  return override === null || minorOf(override) === minorOf(run.target_php) ? null : override;
+}
+
+/** The Run tab's PHP window rows as label and value, a `note` row under its label; empty when
+ *  `run.php_window` is null. */
+export function windowFacts({ run }: Pick<Report2, "run">): { key: string; value: string; note?: string }[] {
   const window = run.php_window;
   if (window === null) return [];
+  const solvesApart = run.move_check !== null && overrideOutsideTarget(run) !== null;
   return [
     ...(window.with_dev === null
       ? [{ key: "PHP window", value: setCells(window.without_dev) }]
@@ -100,7 +114,17 @@ export function windowFacts({ run }: Pick<Report2, "run">): { key: string; value
         ]),
     ...(window.platform_override === null
       ? []
-      : [{ key: "Composer checks the lock at", value: `${window.platform_override} (config.platform.php)` }]),
+      : [
+          {
+            key: "Composer checks the lock at",
+            value: `${window.platform_override} (config.platform.php)`,
+            ...(solvesApart
+              ? {
+                  note: `composer install reads ${window.platform_override}, and the move check solves at the target PHP ${window.target.php}.`,
+                }
+              : {}),
+          },
+        ]),
     ...(window.host_requires.length === 0
       ? []
       : [{ key: "Host features required", value: window.host_requires.join(", ") }]),
@@ -109,7 +133,10 @@ export function windowFacts({ run }: Pick<Report2, "run">): { key: string; value
 
 /** The rows as one string each (golden `php_rows`). */
 export const windowRows = (report: Pick<Report2, "run">): string[] =>
-  windowFacts(report).map(({ key, value }) => `${key}: ${value}`);
+  windowFacts(report).flatMap(({ key, value, note }) => [
+    `${key}: ${value}`,
+    ...(note === undefined ? [] : [note]),
+  ]);
 
 const sameMinors = (a: PhpWindowSet, b: PhpWindowSet): boolean =>
   a.minors.length === b.minors.length && a.minors.every((minor, i) => minor === b.minors[i]);

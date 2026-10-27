@@ -134,7 +134,9 @@ export function copySummary(report: Report2): string[] {
   const clauses = [
     ...scopeClauses(report),
     ...securityClauses(report),
-    ...(libyears === null ? [] : [`${libyears} libyears behind`]),
+    ...(libyears === null
+      ? []
+      : [`${report.libyears.at_least_count > 0 ? "at least " : ""}${libyears} libyears behind`]),
   ];
   return [headLine(report), countLine(report), `${capitalise(clauses.join(DOT))}.`];
 }

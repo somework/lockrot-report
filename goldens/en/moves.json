@@ -1675,6 +1675,48 @@
       ]
     }
   ],
+  "fix-newest-held-dagger": [
+    {
+      "heading": "The move",
+      "action": "Move it to ^5.4.52 through the 3 packages in Reach",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/yaml v5.4.52 --locked"
+      ],
+      "commands_label": "Check",
+      "clears": "all 3 advisories",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "Composer refuses the move"
+        ]
+      },
+      "composer": [
+        {
+          "text": "The packages that hold it may need to move too",
+          "items": []
+        }
+      ]
+    }
+  ],
   "flysystem": [
     {
       "heading": "The move",
@@ -1717,7 +1759,7 @@
       ]
     }
   ],
-  "gets-below-clears-nothing-dagger": [
+  "gets-below-clears-left-behind-dagger": [
     {
       "heading": "The move",
       "action": "Require ^5.4",
@@ -1728,8 +1770,8 @@
         "composer require 'symfony/google-mailer:^5.4'"
       ],
       "commands_label": "Command",
-      "clears": null,
-      "stays": "left-behind",
+      "clears": "left-behind",
+      "stays": null,
       "not_checked": null,
       "adds": [],
       "php": {
@@ -1746,7 +1788,7 @@
         ]
       },
       "after": {
-        "result": null,
+        "result": "0, ok",
         "conditions": [
           "checked with Composer"
         ]
@@ -1757,6 +1799,39 @@
           "items": []
         }
       ]
+    }
+  ],
+  "gets-below-clears-nothing-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v3.6.0 on 3.x, below the newest v3.11.2",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update 'symfony/monolog-bundle:^3.11.2'"
+      ],
+      "commands_label": "Command",
+      "clears": null,
+      "stays": "old-promise",
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "3.x needs php >=8.1",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": null,
+        "conditions": [
+          "checked with Composer"
+        ]
+      },
+      "composer": []
     }
   ],
   "gitlab-anon-dagger": [
@@ -2433,6 +2508,52 @@
         ]
       },
       "composer": []
+    }
+  ],
+  "mc-joint-dev-dagger": [
+    {
+      "heading": "The move",
+      "action": "Move it to ^5.4 through friendsofsymfony/user-bundle",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/translation v5.4.0 --locked"
+      ],
+      "commands_label": "Check",
+      "clears": "left-behind",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "Composer refuses the move"
+        ]
+      },
+      "composer": [
+        {
+          "text": "The packages that hold it may need to move too",
+          "items": []
+        },
+        {
+          "text": "A new major brings its own requirements",
+          "items": []
+        }
+      ]
     }
   ],
   "mc-lookup-incomplete-dagger": [

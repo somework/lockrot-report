@@ -302,6 +302,9 @@ a.ov-ex-row:hover {
   font: var(--text-s) var(--mono);
   color: var(--ink-2);
 }
+.ov-ly-day {
+  white-space: nowrap;
+}
 @media (min-width: 760px) {
   .ov-ly-release {
     white-space: nowrap;

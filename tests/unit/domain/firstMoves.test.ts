@@ -196,6 +196,23 @@ describe("wayOutLine", () => {
     expect(wayOutLine(r)).toBe(
       "4 need another way out: 1 no fix, 1 vendor:teleport, 1 no move for its grade, 1 unchecked: the advisory check did not run",
     );
+    expect(firstMoves(r).wayOutParts).toContainEqual({ text: "vendor:teleport", code: true });
+  });
+
+  it("counts a finding with no move and only unknown gate kinds by its first kind as written, so the items sum to k", () => {
+    const r = report(
+      [
+        stuck("a/a", "update"),
+        stuck("b/b", null, [{ kind: "vendor:baseline", facts: [] }]),
+        stuck("c/c", null, [{ kind: "grade", facts: [{ kind: "flag", id: "abandoned" }] }]),
+      ],
+      true,
+    );
+
+    expect(wayOutLine(r)).toBe(
+      "3 need another way out: 1 composer update, 1 no move for its grade, 1 vendor:baseline",
+    );
+    expect(firstMoves(r).wayOutParts).toContainEqual({ text: "vendor:baseline", code: true });
   });
 
   it("counts a raise-php move by its kind, with the target when every one names the same floor", () => {

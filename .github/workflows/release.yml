@@ -3,8 +3,8 @@ name: Release
 # A tag vX.Y.Z builds dist/, attests every file, and attaches them to a GitHub release. lockrot
 # vendors report.html and manifest.json from that release after `gh attestation verify`. A tag with
 # a pre-release suffix (vX.Y.Z-rc.N) publishes a pre-release that is never the Latest release.
-# A tag outside main and the release branches, or a red unit or e2e test, stops the release before
-# anything is attested.
+# A tag outside main and the release branches, a lockrot pin outside lockrot's main and tags, or a
+# red gate of ci.yml stops the release before anything is attested.
 
 on:
   push:
@@ -37,15 +37,28 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+      # A pin that only a lockrot branch holds can vanish, and the attested page could then no
+      # longer be rebuilt from its pin.
+      - name: the lockrot pin is on lockrot's main or a lockrot tag
+        run: node scripts/contract.mjs reachable
       - run: npm ci
       - name: the tag names the version package.json builds
         run: |
           test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
-      # The same gates as ci.yml: the unit and contract tests, then the e2e suite on the built page.
+      # The same gates as ci.yml, in its order, all three browsers in one job.
       - run: npm run contract:fetch
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run typecheck:contract
       - run: npm test
       - run: npm run build
       - run: npx vitest run tests/build
+      - name: the build is reproducible
+        run: |
+          cp -r dist "$RUNNER_TEMP/first"
+          npm run build
+          diff -r "$RUNNER_TEMP/first" dist
       - run: npx playwright install --with-deps chromium firefox webkit
       # Pinned so the layout budgets measure the same fonts as ci.yml.
       - run: sudo apt-get install -y --no-install-recommends fonts-dejavu-core

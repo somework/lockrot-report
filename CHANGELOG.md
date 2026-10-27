@@ -61,9 +61,11 @@ project is overall, and the other tabs lead with their own part.
   bar per depth, then the depth sentence. A lock-only run keeps the head over the sentence alone.
 - Libyears leads with the total, its measured count and the direct requirements' share, then what
   was not measured, by cause.
+- "Copy summary" says "at least" before the libyears total when any package is measured as a lower
+  bound, as the Libyears block does: "at least 388.8 libyears behind".
 - The libyears table lists the 8 packages furthest behind, leaving out a row that rounds to 0.0, with "≥" before a lower bound. Each row
   shows the package's most recent release with its date ("v5.3.0 (2026-08-11)"), or why it was not
-  measured. That release can be older than the installed version, so no arrow joins the two. The table shows no grade, because a grade beside a
+  measured. A date never breaks across lines. That release can be older than the installed version, so no arrow joins the two. The table shows no grade, because a grade beside a
   libyears number read as a grade of the lag. A row opens its package.
 - On Overview the grades, the flag bars, the severity chips and the fix counts are links. So are
   the packages of "Weighs most", the exposure bars and the libyears rows. A grade, a flag bar and
@@ -176,6 +178,8 @@ project is overall, and the other tabs lead with their own part.
   to your PHP 8.4 release: the lock records 7.4.29." The commands do not change. When Composer
   also refuses the lock itself, the line goes on: "Composer still refuses the lock itself: the PHP
   line names the packages."
+  When a move check ran, the Run tab says under the override which PHP each step reads:
+  "composer install reads 7.4.29, and the move check solves at the target PHP 8.4.99."
 - Holders keep one order on every surface: the root, then the package's own releases, then the
   packages that require the package, then the rest. A group goes by grade, then by name.
 - In Held by, a hold by the package's own release takes no grade, no flags and no own step. It
@@ -310,9 +314,10 @@ project is overall, and the other tabs lead with their own part.
   lockrot's own options, after every package argument: `--no-update` and `--dev` in a `require`
   step, `--with-dependencies` and `--with-all-dependencies` in an `update` or `require` step, and
   `--locked` in a `why-not` step. `--lock` passes only as the one argument of an `update` step.
-- The release workflow refuses a tag whose commit is on neither main nor a release branch. It
-  runs the unit, contract and e2e tests before it builds and attests the page, so a red test
-  stops the release.
+- The release workflow refuses a tag whose commit is on neither main nor a release branch, and a
+  lockrot pin that neither lockrot's main nor a lockrot tag holds. It runs every gate of ci.yml
+  before it attests the page: format, lint, the type checks, the unit, contract and e2e tests, and
+  the reproducible build. A red gate stops the release.
 - A report file can be edited. So a command that fails the rule shows "This command holds
   characters the page does not print." in place of every step, on every shell. The menu previews
   nothing, and the Copy button is hidden. PowerShell always reads `composer --%` and the cmd.exe

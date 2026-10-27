@@ -697,6 +697,24 @@
       "value": "2026-09-30 · less than three weeks ago"
     }
   ],
+  "fix-newest-held-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.3.14 · 2022-01-26 · 4.7 years ago"
+    },
+    {
+      "label": "5.x last",
+      "value": "v5.4.53 · 2026-05-20 · 0.4 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.8 · 2026-09-26 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
   "flysystem": [
     {
       "label": "installed",
@@ -715,7 +733,7 @@
       "value": "2026-09-02 · 0.1 years ago"
     }
   ],
-  "gets-below-clears-nothing-dagger": [
+  "gets-below-clears-left-behind-dagger": [
     {
       "label": "installed",
       "value": "v4.4.41 · 2022-04-12 · 4.5 years ago · the newest on 4.x"
@@ -727,6 +745,24 @@
     {
       "label": "last push",
       "value": "2026-08-02 · 0.2 years ago"
+    }
+  ],
+  "gets-below-clears-nothing-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.5.0 · 2019-11-13 · 6.9 years ago"
+    },
+    {
+      "label": "3.x last",
+      "value": "v3.11.2 · 2026-04-02 · 0.5 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v4.1.0 · 2026-09-10 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-12 · 0.1 years ago"
     }
   ],
   "gitlab-anon-dagger": [
@@ -1025,6 +1061,20 @@
     {
       "label": "last push",
       "value": "2026-07-02 · 0.3 years ago"
+    }
+  ],
+  "mc-joint-dev-dagger": [
+    {
+      "label": "installed",
+      "value": "v4.4.47 · 2022-10-03 · 4.0 years ago · the newest on 4.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.5 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-28 · less than three weeks ago"
     }
   ],
   "mc-lookup-incomplete-dagger": [

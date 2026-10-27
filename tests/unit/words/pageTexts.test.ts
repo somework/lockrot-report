@@ -80,6 +80,20 @@ describe("the copy summary at its edges", () => {
     );
   });
 
+  test("bounds the libyears total from below when a package is measured at least (SPEC §7.9.15, ruling R3-36)", () => {
+    const report = composite();
+    report.libyears = { ...report.libyears, total: 22.08, at_least_count: 1 };
+
+    expect(copySummary(report)[2]).toMatch(/ · at least 22\.1 libyears behind\.$/);
+  });
+
+  test("prints the libyears total bare when every package is measured in full", () => {
+    const report = composite();
+    report.libyears = { ...report.libyears, total: 22.08, at_least_count: 0 };
+
+    expect(copySummary(report)[2]).toMatch(/ · 22\.1 libyears behind\.$/);
+  });
+
   test("says all dev-only packages are dev-only", () => {
     const report = composite();
     report.rot_depth = { ...report.rot_depth, production: 0, development: 7 };
