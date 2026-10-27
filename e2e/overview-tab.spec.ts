@@ -229,6 +229,32 @@ test.describe("the project grade", () => {
     expect(before).toBe(true);
   });
 
+  test("at 375 each date in Furthest behind stays on one line", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto(report2Url(WALLABAG));
+
+    const lines = await overviewSurface(page)
+      .locator(".ov-ly-release")
+      .evaluateAll((cells) =>
+        cells.flatMap((cell) => {
+          const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+          const found: [string, number][] = [];
+          for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+            const match = /\d{4}-\d{2}-\d{2}/.exec(node.textContent ?? "");
+            if (match === null) continue;
+            const range = document.createRange();
+            range.setStart(node, match.index);
+            range.setEnd(node, match.index + match[0].length);
+            const tops = new Set([...range.getClientRects()].map((rect) => Math.round(rect.top)));
+            found.push([match[0], tops.size]);
+          }
+          return found;
+        }),
+      );
+    expect(lines.length).toBeGreaterThan(0);
+    expect(lines.filter(([, count]) => count !== 1)).toEqual([]);
+  });
+
   test("nothing scrolls sideways at 320", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto(report2Url(WALLABAG));
