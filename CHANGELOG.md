@@ -323,7 +323,9 @@ project is overall, and the other tabs lead with their own part.
   lockrot pin that neither lockrot's main nor a lockrot tag holds. It runs every gate of ci.yml
   before it attests the page: format, lint, the type checks, the unit, contract and e2e tests, and
   the reproducible build. A red gate stops the release. Those gates run with a read-only token.
-  A separate job attests and publishes the built files, and only it holds the tokens to do so.
+  The shipped files come from a build that runs no install script, and they must match the tested
+  build byte for byte. A separate job attests and publishes them, and only it holds the tokens to
+  do so.
 - A report file can be edited. So a command that fails the rule shows "This command holds
   characters the page does not print." in place of every step, on every shell. The menu previews
   nothing, and the Copy button is hidden. PowerShell always reads `composer --%` and the cmd.exe

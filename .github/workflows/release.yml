@@ -5,8 +5,9 @@ name: Release
 # a pre-release suffix (vX.Y.Z-rc.N) publishes a pre-release that is never the Latest release.
 # A tag outside main and the release branches, a lockrot pin outside lockrot's main and tags, or a
 # red gate of ci.yml stops the release before anything is attested.
-# The gates job installs and runs the repository's code with a read-only token. Only the publish
-# job, which runs none of it, holds the tokens that attest and publish.
+# The gates and build jobs run the repository's code with a read-only token. The build job runs no
+# install script, and the publish job checks its files against the gates job's own build. Only the
+# publish job, which runs none of that code, holds the tokens that attest and publish.
 
 on:
   push:
@@ -65,6 +66,28 @@ jobs:
       - run: npx playwright test
         env:
           CI: "true"
+      - name: the digests of the tested build
+        run: |
+          mkdir digests
+          (cd dist && sha256sum report.html lockrot-report.js lockrot-report.css manifest.json) > digests/sha256.txt
+      - uses: actions/upload-artifact@v7
+        with:
+          name: digests
+          path: digests/
+          if-no-files-found: error
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build
       - name: the release files and notes
         run: |
           mkdir release
@@ -77,7 +100,7 @@ jobs:
           if-no-files-found: error
 
   publish:
-    needs: gates
+    needs: [gates, build]
     runs-on: ubuntu-latest
     permissions:
       contents: write # create the release
@@ -88,6 +111,13 @@ jobs:
         with:
           name: release
           path: release/
+      - uses: actions/download-artifact@v8
+        with:
+          name: digests
+          path: digests/
+      # The build is reproducible, so a file that differs from the tested build was changed.
+      - name: the files are the bytes the gates job tested
+        run: cd release && sha256sum --check ../digests/sha256.txt
       - uses: actions/attest-build-provenance@v4
         with:
           subject-path: |

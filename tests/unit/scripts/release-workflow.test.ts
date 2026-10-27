@@ -39,3 +39,13 @@ test("the job that attests and publishes runs no repository code and keeps no ch
     WORKFLOW.match(/persist-credentials: false/g)?.length,
   );
 });
+
+test("the published files come from a build that ran no install script, and match the gates' own build", () => {
+  const all = jobs();
+  const builders = [...all].filter(([, job]) => /upload-artifact[\s\S]*name: release\n/.test(job));
+  const publish = [...all].find(([, job]) => job.includes("attest-build-provenance"))?.[1] ?? "";
+
+  expect(builders.map(([, job]) => /npm ci --ignore-scripts/.test(job))).toEqual([true]);
+  expect(publish).toMatch(/sha256sum --check/);
+  expect(publish.indexOf("sha256sum --check")).toBeLessThan(publish.indexOf("attest-build-provenance"));
+});
