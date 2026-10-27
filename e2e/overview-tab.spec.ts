@@ -186,7 +186,10 @@ test.describe("one shell choice for the page (R4-30)", () => {
     await expect(boxes).toHaveCount(3);
 
     await boxes.nth(1).getByRole("button", { name: "Shell: POSIX" }).click();
-    await boxes.nth(1).getByRole("menuitemradio", { name: /^cmd\.exe/ }).click();
+    await boxes
+      .nth(1)
+      .getByRole("menuitemradio", { name: /^cmd\.exe/ })
+      .click();
 
     for (const box of await boxes.all()) {
       await expect(box.getByRole("button", { name: "Shell: cmd.exe" })).toBeVisible();
