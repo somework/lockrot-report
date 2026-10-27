@@ -68,7 +68,7 @@ const STABILITY: Readonly<Record<string, number>> = {
   p: 5,
 };
 const COMPOSER_VERSION =
-  /^v?(\d+(?:\.\d+){0,3})(?:[._-]?(stable|beta|b|rc|alpha|a|patch|pl|p)((?:[.-]?\d+)*))?(?:[.-]?(dev))?$/i;
+  /^v?(\d+(?:\.\d+){0,3})(?:[._-]?(stable|beta|b|rc|alpha|a|patch|pl|p)(\d*(?:[.-]\d+)*))?(?:[.-]?(dev))?$/i;
 const SUFFIX_NUMBERS = 3;
 
 /** Composer's `VersionParser::normalize` order, as lockrot's `MoveCheck::installsBelow` reads it. */

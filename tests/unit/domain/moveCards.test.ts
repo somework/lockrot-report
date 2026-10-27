@@ -716,3 +716,9 @@ describe("isBelow orders versions as Composer does", () => {
     expect(isBelow(version, than)).toBe(false);
   });
 });
+
+test("isBelow reads a long run of suffix digits that ends in a stray character in linear time", () => {
+  const version = `1.0.0-p${"1".repeat(40)}!`;
+
+  expect(isBelow(version, "2.0.0")).toBe(false);
+});
