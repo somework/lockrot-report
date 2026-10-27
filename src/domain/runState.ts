@@ -18,6 +18,8 @@ export interface StateLine {
 }
 
 const RUN_DATA: LinkTarget = { view: "run" };
+/** The id of Run data's PHP window section, where "The PHP window" lands (R4-29). */
+export const PHP_WINDOW_SECTION = "php-window";
 const hasNote = ({ note_details: notes }: Report2, code: string): boolean =>
   notes.some((n) => n.code === code);
 
@@ -49,7 +51,7 @@ function phpLine(report: Report2): StateLine | null {
     kind: "php",
     head: "PHP",
     parts: clauses,
-    more: { text: "The PHP window", link: RUN_DATA },
+    more: { text: "The PHP window", link: { ...RUN_DATA, section: PHP_WINDOW_SECTION } },
   };
 }
 

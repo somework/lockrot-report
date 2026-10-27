@@ -19,6 +19,7 @@ import {
 } from "../../domain/scorePanel";
 import { verdictTone } from "../../domain/findingRow";
 import { windowFacts } from "../../domain/phpWindow";
+import { PHP_WINDOW_SECTION } from "../../domain/runState";
 import type { Report2 } from "../../model/report";
 import { OutLink, toneClass } from "../common/common";
 import { useReport } from "../context";
@@ -211,14 +212,16 @@ function KeyValues({
   head,
   rows,
   className = "",
+  id,
 }: {
   head: string;
   rows: readonly { key: string; value: string | Rich; note?: string }[];
   className?: string;
+  id?: string;
 }) {
   if (rows.length === 0) return null;
   return (
-    <section className="sect">
+    <section className="sect" id={id} tabIndex={id === undefined ? undefined : -1}>
       <h3>{head}</h3>
       <dl className={`kv ${className}`.trim()}>
         {rows.map(({ key, value, note }) => (
@@ -268,7 +271,12 @@ export function RunView2() {
       <ScoreWorks report={report} opened={state.example} />
       <Lookup run={report.run} />
       <Baseline report={report} />
-      <KeyValues head={RUN_WORDS.phpWindow} rows={windowFacts(report)} className="run2-window" />
+      <KeyValues
+        head={RUN_WORDS.phpWindow}
+        rows={windowFacts(report)}
+        className="run2-window"
+        id={PHP_WINDOW_SECTION}
+      />
       <Notes report={report} />
       <AcceptedUnchecked report={report} />
       <section className="sect">

@@ -70,6 +70,6 @@ describe("stateLines", () => {
 
     expect(lines.map((line) => line.kind)).toEqual(["lookup", "php"]);
     expect(lines[1]?.parts).toEqual(["this lock installs on PHP 7.4, so your target, 8.4, is excluded"]);
-    expect(lines[1]?.more).toEqual({ text: "The PHP window", link: { view: "run" } });
+    expect(lines[1]?.more).toEqual({ text: "The PHP window", link: { view: "run", section: "php-window" } });
   });
 });

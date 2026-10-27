@@ -67,6 +67,8 @@ export interface LinkTarget {
   filters?: Partial<Filters>;
   q?: string;
   pkg?: string;
+  /** The id of a section of `view` that a click moves to. The fragment does not hold it. */
+  section?: string;
 }
 
 export type Action =

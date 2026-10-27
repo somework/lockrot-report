@@ -598,3 +598,24 @@ describe("one shell choice for every command box on the page (R4-30)", () => {
     expect(sheet?.querySelector(".d2-shell-btn")?.textContent).toBe("cmd.exe");
   });
 });
+
+describe("the PHP state line's link (R4-29)", () => {
+  test("opens Run data at its PHP window section, with focus on that section", async () => {
+    const golden = pageGoldens().find(({ id }) => id === "wallabag-2.6");
+    if (golden === undefined) throw new Error("no wallabag-2.6 page golden");
+    const result = normalize(golden.report);
+    if (!result.ok) throw new Error(result.error.message);
+    render(<App model={result.model} />);
+    const link = within(band().querySelector(".ov-state.is-php") as HTMLElement).getByRole("link", {
+      name: /The PHP window/,
+    });
+
+    expect(link.getAttribute("href")).toBe("#view=run");
+    fireEvent.click(link);
+
+    expect(screen.getByRole("tab", { selected: true }).textContent).toMatch(/^Run data/);
+    await waitFor(() => {
+      expect(document.activeElement?.querySelector("h3")?.textContent).toBe("PHP window");
+    });
+  });
+});

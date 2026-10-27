@@ -6,6 +6,16 @@
 .run2 .sect {
   min-width: 0;
 }
+/* A section a link lands on starts clear of the header, which is sticky from 760px up. */
+.run2 .sect[id] {
+  scroll-margin-top: 12px;
+}
+@media (min-width: 760px) {
+  .run2 .sect[id] {
+    scroll-margin-top: calc(var(--topbar-h) + 12px);
+  }
+}
+.run2 .sect[id]:focus-visible,
 .run2-score:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;

@@ -50,6 +50,24 @@ for (const { page: name, golden } of CASES) {
   });
 }
 
+for (const width of [1440, 375]) {
+  test.describe(`at ${String(width)} px`, () => {
+    test.use({ viewport: { width, height: width === 375 ? 812 : 900 } });
+
+    test("The PHP window opens Run data at its PHP window section (R4-29)", async ({ page }) => {
+      await page.goto(report2Url("baselined-wallabag-2.6"));
+
+      await phpLine(page)
+        .getByRole("link", { name: /The PHP window/ })
+        .click();
+
+      const heading = runSurface(page).getByRole("heading", { name: "PHP window", exact: true });
+      await expect(heading).toBeInViewport();
+      await expect(page.locator(":focus")).toContainText("PHP window");
+    });
+  });
+}
+
 test("a run whose target is inside the window, with no cap and no override, shows no PHP state line", async ({
   page,
 }) => {
