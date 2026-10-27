@@ -97,7 +97,7 @@ project is overall, and the other tabs lead with their own part.
   Home and End move it along the rows. Below 1000 px it is a modal sheet over the page.
 - Band ticks: the floor of each grade runs down every bar as a dashed guide, and the column head
   captions them ("Score 0 8 16 32"). In an open package the ruler draws every floor with its
-  grade's word under it.
+  grade's word under it. On a narrow ruler every other word drops a line, so no two words touch.
 - Flag pills: one pill per flag that fired, the flag in its tone, then what it rests on ("6.9 y",
   "PHP 5", "archived", "snapshot", the advisory count). A vulnerable package with no fixing release,
   or none that runs on the target PHP, says so on its pill. It names the advisory that decides.
@@ -145,7 +145,7 @@ project is overall, and the other tabs lead with their own part.
   branches above yours, the runs between the newest and yours fold, on each side of the move's
   branch.
 - "How the score works" opens the Run tab, from the run's score model. It shows the ruler with the
-  grade words, the weights, the advisory table and the fix kinds. "The N rules" lists each rule
+  grade words, each in full on a phone too, the weights, the advisory table and the fix kinds. "The N rules" lists each rule
   with a link to its lockrot.dev page, muted where no package used it.
 - A live example under "How the score works" gives a package's score in words and with its bar.
   It takes the package that was open when you changed tab, else the highest ranked one. With

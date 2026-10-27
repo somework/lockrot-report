@@ -32,6 +32,7 @@
 .run2-ruler {
   display: grid;
   gap: 4px;
+  container: run2-ruler / inline-size;
   print-color-adjust: exact;
 }
 .run2-ruler-bands {
@@ -54,6 +55,21 @@
   color: var(--tone);
   background: var(--tone-soft);
   border-right: 1px solid var(--bg);
+}
+/* Below this width the medium band is narrower than its name, so every other name drops a line and
+   may run past its band, above the next band's fill. */
+@container run2-ruler (max-width: 479px) {
+  .run2-ruler-bands {
+    height: 40px;
+  }
+  .run2-ruler-bands > i {
+    overflow: visible;
+    line-height: 20px;
+  }
+  .run2-ruler-bands > i:nth-child(even) {
+    z-index: 1;
+    padding-top: 20px;
+  }
 }
 .run2-ruler-ticks {
   position: relative;
