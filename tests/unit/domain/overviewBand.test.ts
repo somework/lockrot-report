@@ -116,7 +116,7 @@ describe("the depth sentence", () => {
     );
   });
 
-  test('joins three deepest names with "and" before the last, as the text format does (R4-28)', () => {
+  test('joins three deepest names with "and" before the last, as the text format does (PD-SUMMARY-13, R4-28)', () => {
     const report = golden("composite");
     const deep = (name: string) => ({ package: name, chain: ["a/root", name] });
     report.rot_depth = {
