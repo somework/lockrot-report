@@ -10,7 +10,7 @@ import {
   readyFindings,
   wayOutLine,
 } from "../../../src/domain/firstMoves";
-import { applyFilters2, fitFilters2 } from "../../../src/domain/list";
+import { applyFilters2, fitFilters2, railGroups2 } from "../../../src/domain/list";
 import { isHeld, needsAnotherWayOut } from "../../../src/domain/readyToRun";
 import { linkState } from "../../../src/state/hash";
 import type { LinkTarget } from "../../../src/state/types";
@@ -128,11 +128,14 @@ describe("Ready to run on a run that only --strict-network fails (R5-26)", () =>
     expect(moves.none).toBeNull();
   });
 
-  it("links All ready to run to the ready filter alone, which the rail keeps", () => {
-    const target = firstMoves(r).moreLink;
+  it("links All ready to run to the ready filter alone, as the rail offers no failing rows", () => {
+    const gate = railGroups2(r, { ...INITIAL_STATE, view: "findings" }).find(
+      (group) => group.group === "gate",
+    );
 
-    expect(target?.filters).toEqual({ gate: ["ready"] });
-    expect(target === null ? null : fitFilters2(r, linkState(target).filters).gate).toEqual(["ready"]);
+    expect(firstMoves(r).moreLink?.filters).toEqual({ gate: ["ready"] });
+    expect(gate?.rows.map((row) => row.key)).not.toContain("fails");
+    expect(gate?.rows.map((row) => row.key)).not.toContain("wayout");
   });
 
   it("says the sentence of a passing gate when no move is ready", () => {

@@ -208,9 +208,10 @@ project is overall, and the other tabs lead with their own part.
 - A ladder rung names each holder once. A rung held by every holder of Held by says "held by every
   holder in Held by".
 - A Findings row shows the move's first command that names the package. A PHP floor raise reads
-  "raise require.php to >=8.1", with that command or with none. "php floor raise" on Findings is
-  then only the Fix filter, which selects the packages whose advisory fix needs the raise. Its "after it" ends with
-  the check's short words when the check refused the move or did not run.
+  "raise require.php to >=8.1", with that command or with none. On Findings, "php floor raise"
+  is then only the Fix filter, which selects the packages whose advisory fix needs the raise, and a
+  row whose move names no PHP target. A row's "after it" ends with the check's short words when
+  the check refused the move or did not run.
 - The Overview fix counts and the Fix filter of the package tabs read the same field, the
   package's fix. A `composer why-not` check on a held move adds "This shows which package holds
   the move."

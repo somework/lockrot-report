@@ -1,13 +1,9 @@
-/**
- * The band names of the two score rulers stay whole and apart at every width (R5-30, R5-31): the
- * ruler under "Why {grade}" in the package sheet, and the band strip of "How the score works".
- */
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { report2Url } from "./support/pages";
 import { openDetail2 } from "./support/report2/detail";
 import { runSurface } from "./support/report2/run";
 
-const WIDTHS = [320, 375, 414, 768, 1024, 1440];
+const WIDTHS = [320, 375, 414, 500, 560, 640, 768, 1024, 1440];
 
 interface Drawn {
   readonly text: string;
@@ -76,6 +72,21 @@ for (const width of WIDTHS) {
     await page.goto(`${report2Url("composite")}#view=run`);
     await expect(runSurface(page)).toBeVisible();
 
+    await expect(page.locator(".run2-ruler-bands > i")).toHaveText(["low", "medium", "high", "critical"]);
     await expectWholeAndApart(page.locator(".run2-ruler-bands > i"), `${String(width)} px`);
   });
 }
+
+test("in forced colours the narrow sheet ruler still holds its dropped names", async ({ page }) => {
+  await page.emulateMedia({ forcedColors: "active" });
+  await at(page, 375);
+  const sheet = await openDetail2(page, "B", "symfony/monolog-bridge");
+  const ruler = sheet.locator(".d2-ruler");
+  const names = await drawn(ruler.locator(".d2-ruler-tick em"));
+  const box = await ruler.boundingBox();
+
+  expect(box).not.toBeNull();
+  expect(
+    names.filter(({ bottom }) => bottom > (box?.y ?? 0) + (box?.height ?? 0)).map(({ text }) => text),
+  ).toEqual([]);
+});

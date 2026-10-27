@@ -45,6 +45,9 @@ export interface ModelCase {
   golden: ModelGoldens;
 }
 
+/** The recordings of a whole project rather than of one case: `multiFindingReports()` reads them. */
+const NOT_A_CASE: readonly string[] = ["composite"];
+
 export function readContractJson(...parts: string[]): unknown {
   const path = join(CONTRACT, ...parts);
   if (!existsSync(path)) throw new Error(`${path} is missing: run \`npm run contract:fetch\` first`);
@@ -81,7 +84,10 @@ export function recordedCases(): RecordedCase[] {
   ].flatMap((path) => {
     const name = path.slice(path.indexOf("/") + 1);
     const pkg = packages.get(name);
-    if (pkg === undefined) return [];
+    if (pkg === undefined) {
+      if (NOT_A_CASE.includes(name)) return [];
+      throw new Error(`${path} has no model case in flags/cases.json`);
+    }
     const report = readContractJson(`${path}.json`) as Report2;
     const php = existsSync(join(CONTRACT, "goldens", `${name}.json`))
       ? (readContractJson("goldens", `${name}.json`) as PhpGoldens)

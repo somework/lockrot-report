@@ -58,7 +58,7 @@
 }
 /* Below this width the medium band is narrower than its name, so every other name drops a line and
    may run past its band, above the next band's fill. */
-@container run2-ruler (max-width: 479px) {
+@container run2-ruler (max-width: 599px) {
   .run2-ruler-bands {
     height: 40px;
   }
