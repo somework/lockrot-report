@@ -45,4 +45,14 @@ describe("activeFilters (PD-RAIL-4)", () => {
       expect(activeFilters(withFilters({ signal: [id] }))[0]?.label).toBe(id);
     }
   });
+
+  it("names no value from a prototype key (R5-28)", () => {
+    expect(
+      activeFilters(withFilters({ scope: ["constructor"], since: ["toString"], gate: ["valueOf"] })),
+    ).toEqual([
+      { group: "scope", key: "constructor", groupLabel: "Scope", label: "constructor" },
+      { group: "since", key: "toString", groupLabel: "Since baseline", label: "toString" },
+      { group: "gate", key: "valueOf", groupLabel: "This run", label: "valueOf" },
+    ]);
+  });
 });

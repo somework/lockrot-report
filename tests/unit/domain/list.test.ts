@@ -281,6 +281,24 @@ describe("ready to run (accepted derivation 10)", () => {
   });
 });
 
+describe("fitFilters2 on scope and since values (R5-28)", () => {
+  it("drops a value that is no key of the group, a prototype name included", () => {
+    const fitted = fitFilters2(composite, {
+      ...EMPTY_FILTERS,
+      scope: ["constructor", "dev", "x"],
+      since: ["toString", "new", "x"],
+    });
+
+    expect([fitted.scope, fitted.since]).toEqual([["dev"], ["new"]]);
+  });
+
+  it("returns the filters unchanged when every value is a key of its group", () => {
+    const filters: Filters = { ...EMPTY_FILTERS, scope: ["direct", "unnamed"], since: ["worsened"] };
+
+    expect(fitFilters2(composite, filters)).toBe(filters);
+  });
+});
+
 describe("railGroups2", () => {
   it("offers each graded verdict with a package under the title Grade, in run.graded_verdicts order", () => {
     const grade = railGroups2(composite, state()).find((group) => group.group === "verdict");
