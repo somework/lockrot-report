@@ -492,6 +492,10 @@ key is the error screen (§2).
 
 - A tag `vX.Y.Z` builds `dist/`, attests it (`actions/attest-build-provenance`) and attaches the four
   files to a GitHub release.
+- The release runs in two jobs. The gates job installs, tests and builds with a read-only token and
+  keeps no checkout credentials. The publish job runs none of the repository's code. It downloads
+  the four files and the notes, attests them and creates the release, and only it holds `id-token`
+  and write permission.
 - A tag with a pre-release suffix (`vX.Y.Z-rc.N`) takes the same path and publishes a pre-release
   that never becomes the Latest release. Its notes are the `## [X.Y.Z-rc.N]` CHANGELOG section, else
   the `## [X.Y.Z]` one; with neither, the release fails. `package.json` carries the rc version, so

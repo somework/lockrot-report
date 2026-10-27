@@ -5,6 +5,8 @@ name: Release
 # a pre-release suffix (vX.Y.Z-rc.N) publishes a pre-release that is never the Latest release.
 # A tag outside main and the release branches, a lockrot pin outside lockrot's main and tags, or a
 # red gate of ci.yml stops the release before anything is attested.
+# The gates job installs and runs the repository's code with a read-only token. Only the publish
+# job, which runs none of it, holds the tokens that attest and publish.
 
 on:
   push:
@@ -14,17 +16,14 @@ permissions:
   contents: read
 
 jobs:
-  release:
+  gates:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # create the release
-      id-token: write # build provenance attestation
-      attestations: write
     steps:
       # Full history: the branch check reads every remote branch.
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: false
       # A tag on another commit would publish an attested page that no reviewed branch holds.
       - name: the tagged commit is on main or a release branch
         run: |
@@ -66,15 +65,36 @@ jobs:
       - run: npx playwright test
         env:
           CI: "true"
-      - name: release notes
-        run: node scripts/release-notes.mjs "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
+      - name: the release files and notes
+        run: |
+          mkdir release
+          cp dist/report.html dist/lockrot-report.js dist/lockrot-report.css dist/manifest.json release/
+          node scripts/release-notes.mjs "$GITHUB_REF_NAME" > release/notes.md
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release
+          path: release/
+          if-no-files-found: error
+
+  publish:
+    needs: gates
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release
+      id-token: write # build provenance attestation
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: release
+          path: release/
       - uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
-            dist/report.html
-            dist/lockrot-report.js
-            dist/lockrot-report.css
-            dist/manifest.json
+            release/report.html
+            release/lockrot-report.js
+            release/lockrot-report.css
+            release/manifest.json
       - name: publish
         env:
           GH_TOKEN: ${{ github.token }}
@@ -84,6 +104,7 @@ jobs:
             *-*) channel=(--prerelease --latest=false) ;;
           esac
           gh release create "$GITHUB_REF_NAME" \
-            dist/report.html dist/lockrot-report.js dist/lockrot-report.css dist/manifest.json \
-            --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md" \
+            release/report.html release/lockrot-report.js release/lockrot-report.css \
+            release/manifest.json \
+            --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file release/notes.md \
             "${channel[@]}"
