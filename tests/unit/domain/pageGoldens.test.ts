@@ -20,13 +20,19 @@ import {
   OVERVIEW_WORDS,
   securityBlock,
 } from "../../../src/domain/overviewBand";
-import { depthRows, exposureBars, libyearsTop, OVERVIEW_TAB_WORDS } from "../../../src/domain/overviewTab";
+import {
+  depthRows,
+  exposureBars,
+  libyearsCaption,
+  libyearsTop,
+  OVERVIEW_TAB_WORDS,
+} from "../../../src/domain/overviewTab";
 import { gradeLine, gradeLineText, waffleCaption, weighsMost } from "../../../src/domain/projectGrade";
 import { radiusAnswer2, radiusLayout2 } from "../../../src/domain/radius2";
 import { gatePartition, readyCount } from "../../../src/domain/readyToRun";
 import { runNotes } from "../../../src/domain/runTab";
 import { windowRows } from "../../../src/domain/phpWindow";
-import { stateLineText, stateLines } from "../../../src/domain/runState";
+import { stateLineText, stateLines, type CountClause } from "../../../src/domain/runState";
 import { waffleRuns } from "../../../src/domain/summary";
 import type { Report2 } from "../../../src/model/report";
 import { linkHref, linkState } from "../../../src/state/hash";
@@ -123,6 +129,7 @@ function libyears(report: Report2): unknown {
   return {
     ...lead,
     top: top.map((row) => [`${row.package} ${row.version}`, row.libyears, row.release]),
+    heading: top.length === 0 ? null : libyearsCaption(top.length),
     none: report.libyears.measured > 0 && top.length === 0 ? OVERVIEW_TAB_WORDS.libyearsNone : null,
   };
 }
@@ -136,6 +143,15 @@ const FIELDS: Readonly<Record<string, (report: Report2) => unknown>> = {
   gate_link: (report) => href(gateLineTarget(report)),
   gate_link_rows: (report) => rows(report, gateLineTarget(report)),
   state_lines: (report) => stateLines(report).map(stateLineText),
+  state_links: (report) =>
+    stateLines(report).map(({ parts, more }) => {
+      const count = parts.find((part): part is CountClause => typeof part !== "string");
+      return {
+        link: more?.text ?? null,
+        href: href(more?.link ?? null),
+        count: count === undefined ? null : { text: count.count, href: linkHref(count.link) },
+      };
+    }),
   waffle_caption: waffleCaption,
   lead_scope: (report) => (report.packages_flagged === 0 ? null : leadScope(report).join(" · ")),
   grade_chips: (report) => gradeChips(report).map(({ grade, count }) => `${grade} ${count}`),

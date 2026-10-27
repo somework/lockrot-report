@@ -66,7 +66,7 @@ project is overall, and the other tabs lead with their own part.
 - "Copy summary" says "at least" before the libyears total when any package is measured as a lower
   bound, as the Libyears block does: "at least 388.8 libyears behind".
 - The libyears table lists up to 8 packages furthest behind, and its caption names how many it
-  lists: "Furthest behind, top 5". It leaves out a row that rounds to 0.0, with "≥" before a lower bound. Each row
+  lists: "Furthest behind, top 5", or "Furthest behind" over one row. It leaves out a row that rounds to 0.0, with "≥" before a lower bound. Each row
   shows the package's most recent release with its date ("v5.3.0 (2026-08-11)"), or why it was not
   measured. A date never breaks across lines. That release can be older than the installed version, so no arrow joins the two. The table shows no grade, because a grade beside a
   libyears number read as a grade of the lag. A row opens its package.
@@ -163,8 +163,9 @@ project is overall, and the other tabs lead with their own part.
   Composer checks, or when a package carries `capped`, a "PHP" state line follows the gate line:
   "PHP: this lock installs on PHP 7.4, so your target, 8.4, is excluded · 3 packages exclude 8.4:
   … · Composer's solver at PHP 8.4 refuses their update: composer.json requires
-  php-http/guzzle5-adapter ^2.0. The PHP window ›". "The PHP window ›" opens the Run tab at its PHP
-  window section. It names the update that admits the target
+  php-http/guzzle5-adapter ^2.0. The PHP window ›". "The PHP window ›" links to
+  `#view=run&section=php-window`, which opens the Run tab at its PHP window section with focus on its
+  heading, from a click and from a pasted address alike. It names the update that admits the target
   and Composer's answer, or the root link that alone excludes it. The Run tab lists both windows
   in full: the minors, the lowest PHP and what sets it, and the minor that the lock excludes.
 - The flag `capped` and its signal S11, "PHP cap". The open package reads "It requires php
