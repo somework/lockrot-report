@@ -445,7 +445,7 @@ describe("the tabs that lead without the band", () => {
     render(<App model={model()} />);
 
     expect(surface("radius").firstElementChild?.textContent).toBe(
-      "2 of 9 flagged packages are named by no line of composer.json; the deepest, friendsofsymfony/oauth2-php, symfony/polyfill-intl-idn, sit 1 hop from the nearest line.",
+      "2 of 9 flagged packages are named by no line of composer.json; the deepest, friendsofsymfony/oauth2-php and symfony/polyfill-intl-idn, sit 1 hop from the nearest line.",
     );
   });
 
