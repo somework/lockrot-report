@@ -265,7 +265,8 @@ project is overall, and the other tabs lead with their own part.
 - Run data opens with the run's facts: the mode, the lock file, whether require-dev was checked,
   how old the cached repository activity is, and whether Composer's solver checked the moves. When
   an environment variable turned advisory blocking off, the line names it: "with advisory blocking
-  turned off by COMPOSER_NO_SECURITY_BLOCKING".
+  turned off by COMPOSER_NO_SECURITY_BLOCKING". When the lock's own solve could not load a
+  package, the line names the lock: "not checked (a package the lock needs could not be loaded)".
   Its notes print each run note as lockrot wrote it, the move check's notes included. Each advisory registry row names its outcome. A
   run against a baseline gets a Baseline block with its known, new, worsened and stale counts and
   each stale entry.

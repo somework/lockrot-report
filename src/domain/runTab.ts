@@ -93,6 +93,11 @@ export function runFacts(report: Report2): { key: string; value: string | Rich }
   ];
 }
 
+const LOCK_LOAD_WORDS: Readonly<Record<string, string>> = {
+  unloaded_name: "a package the lock needs could not be loaded",
+  offline: "a package the lock needs is not in Composer's cache",
+};
+
 /** `run.move_check` in the words of lockrot's text footer (`RunFooter::moveCheck`), or null when the
  *  run checked no move. */
 export function moveCheckFact({ run }: Report2): Rich | null {
@@ -112,8 +117,13 @@ export function moveCheckFact({ run }: Report2): Rich | null {
     }
     case "refused":
       return ["not checked, because Composer's solver refuses the lock itself"];
-    default:
-      return ["not checked (", ...checkReasonRich(check.reason ?? ""), ")"];
+    default: {
+      // The baseline solve has no move, so a load reason names the lock (ruling R2-4).
+      const lockWords = check.reason === null ? undefined : LOCK_LOAD_WORDS[check.reason];
+      return lockWords === undefined
+        ? ["not checked (", ...checkReasonRich(check.reason ?? ""), ")"]
+        : [`not checked (${lockWords})`];
+    }
   }
 }
 
