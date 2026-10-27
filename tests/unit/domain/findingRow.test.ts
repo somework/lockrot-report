@@ -172,7 +172,7 @@ describe("nextStepWords", () => {
 
   it("words each kind of the composite", () => {
     expect(nextStepWords(finding(composite, "twig/twig"), run)).toEqual({
-      text: "php floor raise",
+      text: "raise require.php to >=8.1",
       title: null,
       href: null,
       held: true,

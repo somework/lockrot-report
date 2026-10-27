@@ -224,7 +224,7 @@ describe("W2: the row's command names the finding's package", () => {
     expect(nextStepWords(f, run).text).toBe("raise require.php to >=8.1");
   });
 
-  it("shows the step that names the package and keeps php floor raise when the move has one", () => {
+  it("shows the step that names the package and says the raise beside it (R5-29)", () => {
     const f = finding({
       package: "a/b",
       direct: true,
@@ -238,7 +238,7 @@ describe("W2: the row's command names the finding's package", () => {
       }),
     });
     expect(rowCommand(f)).toBe("composer require 'a/b:^2.0'");
-    expect(nextStepWords(f, run).text).toBe("php floor raise");
+    expect(nextStepWords(f, run).text).toBe("raise require.php to >=8.1");
   });
 });
 

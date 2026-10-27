@@ -306,7 +306,9 @@ function kindWords(f: Finding, step: Move, run: Run): string {
     case "require":
       return `${where} ${step.constraint ?? ""}`;
     case "raise-php":
-      return rowRaiseWords(f) ?? "php floor raise";
+      return step.php_check?.raise_to == null
+        ? "php floor raise"
+        : `raise require.php to ${step.php_check.raise_to}`;
     case "update":
       return "composer update";
     case "tag": {
