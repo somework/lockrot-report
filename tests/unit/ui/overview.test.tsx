@@ -230,7 +230,7 @@ describe("the Overview tab of a report-2 document", () => {
   test("tables the packages furthest behind, each linked to its row", () => {
     render(<App model={model()} />);
 
-    const table = within(band()).getByRole("table", { name: "Furthest behind, top 8" });
+    const table = within(band()).getByRole("table", { name: "Furthest behind, top 5" });
     const [head, ...rows] = within(table).getAllByRole("row");
     expect(
       within(head as HTMLElement)

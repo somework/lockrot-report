@@ -4,6 +4,7 @@ import {
   depthRows,
   exposureBars,
   exposureUnit,
+  libyearsCaption,
   libyearsTop,
   OVERVIEW_TAB_WORDS,
   stripFlagged,
@@ -199,8 +200,9 @@ describe("the libyears table", () => {
     expect(OVERVIEW_TAB_WORDS.release).toBe("Most recent release");
   });
 
-  test("names its caption after the cut", () => {
-    expect(OVERVIEW_TAB_WORDS.libyearsTop).toBe("Furthest behind, top 8");
+  test("names in its caption the count of rows it shows (R4-31)", () => {
+    expect(libyearsCaption(5)).toBe("Furthest behind, top 5");
+    expect(libyearsCaption(8)).toBe("Furthest behind, top 8");
   });
 });
 

@@ -18,7 +18,6 @@ export const OVERVIEW_TAB_WORDS = {
   exposure: "Blast radius",
   exposureNote: "flagged packages each direct requirement pulls in",
   depth: "How deep the flagged packages sit",
-  libyearsTop: `Furthest behind, top ${LIBYEARS_SHOWN}`,
   libyearsNone: "Every measured package rounds to 0.0 libyears.",
   requirement: "Direct requirement",
   package: "Package",
@@ -26,6 +25,9 @@ export const OVERVIEW_TAB_WORDS = {
   release: "Most recent release",
   overview: "Overview",
 } as const;
+
+/** The libyears table's caption: it names the rows it shows, which can be fewer than `LIBYEARS_SHOWN`. */
+export const libyearsCaption = (shown: number): string => `Furthest behind, top ${String(shown)}`;
 
 /** A link to one tab, filtered by the existing fragment keys. */
 export const findingsLink = (filters: Partial<Filters>): LinkTarget => ({ view: "findings", filters });
