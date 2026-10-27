@@ -21,7 +21,7 @@ function saveShell(shell: Shell): void {
   }
 }
 
-/** The page's one shell: a pick in any command box changes every box (R4-30). */
+/** The page's one shell: a pick in any command box changes every box. */
 export function useShell(): [Shell, (shell: Shell) => void] {
   const [shell, setShell] = useState<Shell>(readShell);
   const pick = useCallback((next: Shell) => {

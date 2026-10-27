@@ -14,7 +14,7 @@ function jobs(): Map<string, string> {
 }
 
 const runsCode = (job: string): boolean => /\b(npm|npx|node)\b/.test(job) || job.includes("actions/checkout");
-const holdsWrite = (job: string): boolean => /id-token: write|attestations: write|contents: write/.test(job);
+const holdsWrite = (job: string): boolean => /: write\b|write-all/.test(job);
 
 test("the workflow grants nothing beyond read at its top", () => {
   const top = WORKFLOW.slice(0, WORKFLOW.indexOf("\njobs:\n"));

@@ -30,10 +30,6 @@ export function TabLink({
       onClick={(event) => {
         if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
-        if (target.section !== undefined) {
-          dispatch({ type: "view", view: target.view, section: target.section });
-          return;
-        }
         const next = linkState(target);
         dispatch({
           type: "focus",
@@ -41,6 +37,7 @@ export function TabLink({
           filters: next.filters,
           q: next.q,
           ...(next.pkg === null ? {} : { pkg: next.pkg }),
+          ...(target.section === undefined ? {} : { section: target.section }),
         });
       }}
     >

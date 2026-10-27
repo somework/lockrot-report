@@ -30,7 +30,7 @@ export const clauseText = (clause: StateClause): string =>
 
 const RUN_DATA: LinkTarget = { view: "run" };
 const UNKNOWN_GRADE: LinkTarget = { view: "packages", filters: { verdict: ["unknown"] } };
-/** The id of Run data's PHP window section, where "The PHP window" lands (R4-29). */
+/** The id of Run data's PHP window section, where "The PHP window" lands. */
 export const PHP_WINDOW_SECTION = "php-window";
 const hasNote = ({ note_details: notes }: Report2, code: string): boolean =>
   notes.some((n) => n.code === code);

@@ -72,14 +72,22 @@ export interface LinkTarget {
 }
 
 export type Action =
-  /** `section`: the id that the new tab opens at, in place of its top. */
-  | { type: "view"; view: View; keepDetail?: boolean; section?: string }
+  | { type: "view"; view: View; keepDetail?: boolean }
   | { type: "query"; q: string }
   | { type: "toggle"; group: FilterGroup; key: string }
   | { type: "clear" }
   /** A tab (Findings unless named) listed through exactly these rail filters; the query box set to
-   *  `q`, else kept with `keepQuery`, else emptied; `pkg` open, else no detail. */
-  | { type: "focus"; filters: Filters; view?: View; keepQuery?: boolean; q?: string; pkg?: string }
+   *  `q`, else kept with `keepQuery`, else emptied; `pkg` open, else no detail. `section`: the id
+   *  that the tab opens at, in place of its list. */
+  | {
+      type: "focus";
+      filters: Filters;
+      view?: View;
+      keepQuery?: boolean;
+      q?: string;
+      pkg?: string;
+      section?: string;
+    }
   | { type: "sort"; key: SortKey }
   | { type: "select"; pkg: string | null }
   | { type: "disclose"; key: string; open: boolean }

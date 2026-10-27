@@ -351,33 +351,21 @@ export function App({ model }: { model: Model }) {
     narrow,
   });
 
-  // A tab switch a reader clicked (or the quiet note's "See the advisories") used to leave the
-  // page's scroll wherever it was on the tab just left — a Findings list scrolled down to
-  // "hoa/compiler" handed the next tab's much shorter content the same scroll offset, landing mid
-  // list with no sign why. `dispatchTracked` marks every `"view"` action this ref sees; the effect
-  // below fires only for those, never for the boot state or a `hashchange` restore (`useHashState`
-  // reaches the reducer directly for both, through `restore`/the lazy initial state, and never
-  // dispatches `"view"` at all), so a pasted link that restores a tab does not fight a reader's own
-  // scroll position.
+  // Only a tab switch the reader dispatched scrolls to the top: the boot state and a `hashchange`
+  // restore reach the reducer without a "view" action, so a pasted link keeps its scroll.
   const tabChangedByReader = useRef(false);
-  // Tabs.tsx dispatches "view" even for the tab already selected (on purpose: it closes the open
-  // detail), so the flag above must only latch when the view actually moves — comparing against a
-  // ref, not `state.view` itself, keeps `dispatchTracked`'s identity tied to `dispatch` alone rather
-  // than recreating it on every state change. Written directly in the render body: it is always
-  // current before an event handler can fire, no effect needed. Missing this comparison left the
-  // flag set after a same-tab click, so the *next* view change for any reason — including a
-  // hashchange restore — scrolled to 0 regardless of who caused it (regression review).
+  // Tabs.tsx dispatches "view" for the open tab too, so the flag latches only when the view moves.
   const currentView = useRef(state.view);
   currentView.current = state.view;
   const listFocused = useRef(false);
   const landOn = useRef<string | null>(null);
   const dispatchTracked = useCallback(
     (action: Action) => {
-      if (action.type === "view" && action.view !== currentView.current) {
-        tabChangedByReader.current = true;
+      if (action.type === "view" && action.view !== currentView.current) tabChangedByReader.current = true;
+      if (action.type === "focus") {
+        listFocused.current = true;
         landOn.current = action.section ?? null;
       }
-      if (action.type === "focus") listFocused.current = true;
       dispatch(action);
     },
     [dispatch],
@@ -390,6 +378,13 @@ export function App({ model }: { model: Model }) {
   useEffect(() => {
     if (!listFocused.current) return;
     listFocused.current = false;
+    const section = landOn.current === null ? null : document.getElementById(landOn.current);
+    landOn.current = null;
+    if (section !== null) {
+      if (typeof section.scrollIntoView === "function") section.scrollIntoView({ block: "start" });
+      section.focus({ preventScroll: true });
+      return;
+    }
     const panel = document.getElementById(`${idBase}-panel`);
     if (typeof panel?.scrollIntoView === "function") panel.scrollIntoView({ block: "start" });
     const active = document.activeElement;
@@ -402,13 +397,6 @@ export function App({ model }: { model: Model }) {
   useEffect(() => {
     if (!tabChangedByReader.current) return;
     tabChangedByReader.current = false;
-    const section = landOn.current === null ? null : document.getElementById(landOn.current);
-    landOn.current = null;
-    if (section !== null) {
-      section.scrollIntoView({ block: "start" });
-      section.focus({ preventScroll: true });
-      return;
-    }
     // The topbar (brand, run facts, tabs) is the page's first element and sticky from 760px up
     // (DESIGN.md §8), so it already sits at the top of the viewport the instant the page scrolls at
     // all; scrolling the window itself back to 0 is what puts the tab row and the new tab's own

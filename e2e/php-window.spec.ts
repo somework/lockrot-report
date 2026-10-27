@@ -62,8 +62,12 @@ for (const width of [1440, 375]) {
         .click();
 
       const heading = runSurface(page).getByRole("heading", { name: "PHP window", exact: true });
-      await expect(heading).toBeInViewport();
       await expect(page.locator(":focus")).toContainText("PHP window");
+      const header = await page.locator("header").first().boundingBox();
+      const landed = await heading.boundingBox();
+      const clear = Math.max(0, (header?.y ?? 0) + (header?.height ?? 0));
+      expect(landed?.y).toBeGreaterThanOrEqual(clear);
+      expect(landed?.y).toBeLessThan((page.viewportSize()?.height ?? 0) / 2);
     });
   });
 }
