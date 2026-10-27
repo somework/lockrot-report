@@ -258,6 +258,7 @@
     }
   ],
   "capped-update-dagger": [],
+  "commonmark": [],
   "either-critical-dagger": [
     {
       "flag": "abandoned",
@@ -420,12 +421,54 @@
   ],
   "long-range-dagger": [],
   "many-dependents": [],
+  "mc-baseline-refused-dagger": [],
   "mc-blocking-off-both-dagger": [],
   "mc-blocking-off-dagger": [],
+  "mc-composite-dagger": [],
+  "mc-dev-update-dagger": [],
+  "mc-filter-only-dagger": [],
+  "mc-gets-below-dagger": [],
+  "mc-gets-next-form-dagger": [],
   "mc-inline-dagger": [],
+  "mc-joint-dagger": [],
   "mc-joint-dev-dagger": [],
+  "mc-joint-down-dagger": [],
+  "mc-joint-retag-dagger": [],
+  "mc-link-newest-dagger": [],
   "mc-lookup-incomplete-dagger": [],
+  "mc-package-hold-dagger": [],
+  "mc-pass-cap-dagger": [],
   "mc-raise-php-dagger": [],
+  "mc-replan-major-dagger": [],
+  "mc-root-hold-dagger": [],
+  "mc-split-both-refused-dagger": [
+    {
+      "flag": "capped",
+      "text": "It requires php >=8.1 <8.5: it stops at 8.4, so the newest PHP, 8.5, is excluded."
+    }
+  ],
+  "mc-split-dagger": [
+    {
+      "flag": "capped",
+      "text": "It requires php >=8.1 <8.5: it stops at 8.4, so the newest PHP, 8.5, is excluded."
+    }
+  ],
+  "mc-split-maintenance-larger-dagger": [
+    {
+      "flag": "vulnerable",
+      "text": "A low-severity advisory affects your version (CVE-2026-48784: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` → Generated URL Collapses Off-Route Under RFC 3986 Normalization)."
+    }
+  ],
+  "mc-split-not-checked-dagger": [
+    {
+      "flag": "capped",
+      "text": "It requires php >=8.1 <8.5: it stops at 8.4, so the newest PHP, 8.5, is excluded."
+    }
+  ],
+  "mc-update-now-reduced-dagger": [],
+  "mc-update-now-refused-dagger": [],
+  "mc-with-all-dagger": [],
+  "mc-with-deps-dagger": [],
   "move-check-dagger": [],
   "not-found-dagger": [
     {
@@ -562,6 +605,12 @@
     }
   ],
   "wp-config": [],
+  "xmlseclibs": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
   "yaml-3.4": [
     {
       "flag": "old-promise",

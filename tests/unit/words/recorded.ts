@@ -71,29 +71,33 @@ export function modelOnlyNames(): string[] {
   return caseNames("model-only");
 }
 
-/** Every recorded document of exactly one finding, with the release branches of its package when lockrot wrote them. */
+/** Every recorded case document, with the case package's finding picked by name as lockrot's
+ *  HydratedCasesMatchTheModelTest does: a case recording also holds the findings of its `parents`. */
 export function recordedCases(): RecordedCase[] {
+  const packages = new Map(modelCases().map(({ name, finding }) => [name, finding.package]));
   return [
     ...caseNames("report-2").map((name) => `report-2/${name}`),
     ...caseNames("model-only").map((name) => `model-only/${name}`),
-  ]
-    .map((path) => {
-      const name = path.slice(path.indexOf("/") + 1);
-      const report = readContractJson(`${path}.json`) as Report2;
-      const php = existsSync(join(CONTRACT, "goldens", `${name}.json`))
-        ? (readContractJson("goldens", `${name}.json`) as PhpGoldens)
-        : null;
-      return {
-        name,
-        report,
-        finding: report.findings[0] as Finding,
-        run: report.run,
-        metadata: metadataOf(name),
-        php,
-        recordedBy: path.startsWith("model-only/") ? "model" : "lockrot",
-      } satisfies RecordedCase;
-    })
-    .filter(({ report }) => report.findings.length === 1);
+  ].flatMap((path) => {
+    const name = path.slice(path.indexOf("/") + 1);
+    const pkg = packages.get(name);
+    if (pkg === undefined) return [];
+    const report = readContractJson(`${path}.json`) as Report2;
+    const php = existsSync(join(CONTRACT, "goldens", `${name}.json`))
+      ? (readContractJson("goldens", `${name}.json`) as PhpGoldens)
+      : null;
+    const finding = report.findings.find((each) => each.package === pkg);
+    if (finding === undefined) throw new Error(`${path} holds no finding of ${pkg}`);
+    return {
+      name,
+      report,
+      finding,
+      run: report.run,
+      metadata: metadataOf(name),
+      php,
+      recordedBy: path.startsWith("model-only/") ? "model" : "lockrot",
+    } satisfies RecordedCase;
+  });
 }
 
 /** The recorded cases whose document lockrot wrote: only these can differ from the model's golden. */

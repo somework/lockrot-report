@@ -509,6 +509,15 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "commonmark": [
+    "3 advisories: high 2, medium 1",
+    "18 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 3 of 3 from 2.10.3",
+    "composer update",
+    "after it: 0, ok"
+  ],
   "either-critical-dagger": [
     "1 critical advisory",
     "1 on record for this name",
@@ -732,6 +741,15 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "mc-baseline-refused-dagger": [
+    "1 high advisory",
+    "6 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 1 of 1 from v2.3.2",
+    "composer update",
+    "after it: 0, ok · not checked: Composer refuses the lock itself"
+  ],
   "mc-blocking-off-both-dagger": [
     "1 high advisory",
     "6 on record for this name",
@@ -750,6 +768,51 @@
     "composer update",
     "after it: 0, ok"
   ],
+  "mc-composite-dagger": [
+    "1 high advisory",
+    "6 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 1 of 1 from v2.3.2",
+    "composer update",
+    "after it: 0, ok"
+  ],
+  "mc-dev-update-dagger": [
+    "1 high advisory",
+    "6 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 1 of 1 from 2.12.3",
+    "composer update",
+    "after it: 0, ok"
+  ],
+  "mc-filter-only-dagger": [
+    "1 high advisory",
+    "6 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 1 of 1 from v2.3.2",
+    "composer update",
+    "after it: 0, ok"
+  ],
+  "mc-gets-below-dagger": [
+    "1 high advisory",
+    "4 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "6.x your branch the move clears 1 of 1 from v6.4.40",
+    "composer update",
+    "after it: 0, ok"
+  ],
+  "mc-gets-next-form-dagger": [
+    "1 high advisory",
+    "4 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "6.x your branch the move clears 1 of 1 from v6.4.40",
+    "composer update",
+    "after it: 0, ok"
+  ],
   "mc-inline-dagger": [
     "1 high advisory",
     "6 on record for this name",
@@ -759,10 +822,46 @@
     "composer update",
     "after it: 0, ok"
   ],
+  "mc-joint-dagger": [
+    "1 high advisory",
+    "15 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "8.x the move clears 1 of 1 from 8.0.1",
+    "upgrade",
+    "after it: 0, ok"
+  ],
   "mc-joint-dev-dagger": [
     "no counted advisory",
     "1 on record for this name",
     "lookup complete"
+  ],
+  "mc-joint-down-dagger": [
+    "1 high advisory",
+    "15 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "8.x the move clears 1 of 1 from 8.0.1",
+    "upgrade · held by acme/gz-down",
+    "after it: 0, ok · Composer refuses the move"
+  ],
+  "mc-joint-retag-dagger": [
+    "1 high advisory",
+    "15 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "8.x the move clears 1 of 1 from 8.0.1",
+    "upgrade · held by acme/h",
+    "after it: 0, ok · Composer refuses the move"
+  ],
+  "mc-link-newest-dagger": [
+    "1 high advisory",
+    "6 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 1 of 1 from v2.3.2",
+    "composer update",
+    "after it: 0, ok"
   ],
   "mc-lookup-incomplete-dagger": [
     "1 high advisory",
@@ -773,6 +872,24 @@
     "composer update",
     "after it: 0, ok · not checked: the advisory lookup did not cover a package it installs"
   ],
+  "mc-package-hold-dagger": [
+    "1 high advisory",
+    "1 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "6.x your branch the move clears 1 of 1 from v6.4.40",
+    "upgrade · held by every holder in Held by",
+    "after it: 0, ok · Composer refuses the move"
+  ],
+  "mc-pass-cap-dagger": [
+    "1 high advisory",
+    "1 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "6.x your branch the move clears 1 of 1 from v6.4.40",
+    "upgrade · held by every holder in Held by",
+    "after it: 0, ok · not checked: Composer refused each move before it"
+  ],
   "mc-raise-php-dagger": [
     "1 high advisory",
     "5 on record for this name",
@@ -780,6 +897,102 @@
     "lookup complete",
     "6.x your branch the move clears 1 of 1 from v6.4.40",
     "php floor raise",
+    "after it: 0, ok"
+  ],
+  "mc-replan-major-dagger": [
+    "1 high advisory",
+    "15 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "7.x your branch clears 1 of 1 from 7.15.2",
+    "upgrade · held by composer.json and its own release",
+    "after it: 0, ok · Composer refuses the move",
+    "8.x the move clears 1 of 1 from 8.0.1",
+    "upgrade · held by composer.json",
+    "after it: 0, ok"
+  ],
+  "mc-root-hold-dagger": [
+    "1 high advisory",
+    "15 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "7.x your branch clears 1 of 1 from 7.15.2",
+    "upgrade · held by composer.json and its own release",
+    "after it: 0, ok · Composer refuses the move",
+    "8.x the move clears 1 of 1 from 8.0.1",
+    "composer update",
+    "after it: 0, ok"
+  ],
+  "mc-split-both-refused-dagger": [
+    "1 high advisory",
+    "4 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "6.x your branch the move clears 1 of 1 from v6.4.40",
+    "upgrade · held by every holder in Held by",
+    "after it: 0, ok · Composer refuses the move"
+  ],
+  "mc-split-dagger": [
+    "1 high advisory",
+    "4 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "6.x your branch the move clears 1 of 1 from v6.4.40",
+    "composer update",
+    "after it: 8, medium"
+  ],
+  "mc-split-maintenance-larger-dagger": [
+    "1 low advisory",
+    "4 on record for this name",
+    "fix: php floor raise",
+    "lookup complete",
+    "6.x your branch the move clears 1 of 1 from v6.4.40",
+    "php floor raise",
+    "after it: 8, medium"
+  ],
+  "mc-split-not-checked-dagger": [
+    "1 high advisory",
+    "4 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "6.x your branch the move clears 1 of 1 from v6.4.40",
+    "composer update",
+    "after it: 0, ok · not checked: Composer refuses the lock itself"
+  ],
+  "mc-update-now-reduced-dagger": [
+    "1 high advisory",
+    "4 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "6.x your branch the move clears 1 of 1 from v6.4.41",
+    "composer update",
+    "after it: 0, ok"
+  ],
+  "mc-update-now-refused-dagger": [
+    "1 high advisory",
+    "6 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "2.x your branch the move clears 1 of 1 from v2.3.2",
+    "composer update",
+    "after it: 0, ok"
+  ],
+  "mc-with-all-dagger": [
+    "1 high advisory",
+    "14 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "6.x your branch the move clears 1 of 1 from v6.4.41",
+    "composer update",
+    "after it: 0, ok"
+  ],
+  "mc-with-deps-dagger": [
+    "1 high advisory",
+    "4 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "6.x your branch the move clears 1 of 1 from v6.4.41",
+    "composer update",
     "after it: 0, ok"
   ],
   "move-check-dagger": [
@@ -1118,6 +1331,18 @@
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
+  ],
+  "xmlseclibs": [
+    "2 advisories: high 1, medium 1",
+    "4 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "3.x your branch the move clears 2 of 2 from 3.1.5",
+    "composer update",
+    "after it: 0, ok",
+    "4.x clears 2 of 2 from 4.0.0",
+    "composer update",
+    "after it: 0, ok, if Composer resolves it"
   ],
   "yaml-3.4": [
     "3 advisories: low 3",

@@ -354,6 +354,9 @@
   "capped-update-dagger": [
     null
   ],
+  "commonmark": [
+    null
+  ],
   "either-critical-dagger": [
     null,
     {
@@ -563,13 +566,34 @@
   "many-dependents": [
     null
   ],
+  "mc-baseline-refused-dagger": [
+    null
+  ],
   "mc-blocking-off-both-dagger": [
     null
   ],
   "mc-blocking-off-dagger": [
     null
   ],
+  "mc-composite-dagger": [
+    null
+  ],
+  "mc-dev-update-dagger": [
+    null
+  ],
+  "mc-filter-only-dagger": [
+    null
+  ],
+  "mc-gets-below-dagger": [
+    null
+  ],
+  "mc-gets-next-form-dagger": [
+    null
+  ],
   "mc-inline-dagger": [
+    null
+  ],
+  "mc-joint-dagger": [
     null
   ],
   "mc-joint-dev-dagger": [
@@ -586,10 +610,175 @@
       "fold": null
     }
   ],
+  "mc-joint-down-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "acme/gz-down 2.0.0",
+          "grade": null,
+          "meta": "requires ^7.10",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "mc-joint-retag-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "acme/h 1.0.0",
+          "grade": null,
+          "meta": "requires ^7.10",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "mc-link-newest-dagger": [
+    null
+  ],
   "mc-lookup-incomplete-dagger": [
     null
   ],
+  "mc-package-hold-dagger": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "symfony/mailer v6.4.40, its own release",
+          "grade": null,
+          "meta": "requires acme/ml-transport ^2.0",
+          "step": null
+        },
+        {
+          "name": "acme/ml-widget 1.0.0",
+          "grade": null,
+          "meta": "conflicts with acme/ml-transport >=2.0",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "mc-pass-cap-dagger": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "symfony/mailer v6.4.40, its own release",
+          "grade": null,
+          "meta": "requires acme/ml-transport ^2.0",
+          "step": null
+        },
+        {
+          "name": "acme/ml-widget 1.0.0",
+          "grade": null,
+          "meta": "conflicts with acme/ml-transport >=2.0",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
   "mc-raise-php-dagger": [
+    null
+  ],
+  "mc-replan-major-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^7.10",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "mc-root-hold-dagger": [
+    null
+  ],
+  "mc-split-both-refused-dagger": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires acme/rt-kernel ^1.0",
+          "step": null
+        },
+        {
+          "name": "symfony/routing v6.4.40, its own release",
+          "grade": null,
+          "meta": "requires acme/rt-kernel ^2.0",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "mc-split-dagger": [
+    null,
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires acme/rt-kernel ^1.0",
+          "step": null
+        },
+        {
+          "name": "symfony/routing v6.4.41, its own release",
+          "grade": null,
+          "meta": "requires acme/rt-kernel ^2.0",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "mc-split-maintenance-larger-dagger": [
+    null,
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires acme/rt-kernel ^1.0",
+          "step": null
+        },
+        {
+          "name": "symfony/routing v6.4.41, its own release",
+          "grade": null,
+          "meta": "requires acme/rt-kernel ^2.0",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "mc-split-not-checked-dagger": [
+    null
+  ],
+  "mc-update-now-reduced-dagger": [
+    null
+  ],
+  "mc-update-now-refused-dagger": [
+    null
+  ],
+  "mc-with-all-dagger": [
+    null
+  ],
+  "mc-with-deps-dagger": [
     null
   ],
   "move-check-dagger": [
@@ -802,6 +991,9 @@
     null
   ],
   "wp-config": [
+    null
+  ],
+  "xmlseclibs": [
     null
   ],
   "yaml-3.4": [
