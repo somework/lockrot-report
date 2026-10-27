@@ -200,9 +200,11 @@ describe("the libyears table", () => {
     expect(OVERVIEW_TAB_WORDS.release).toBe("Most recent release");
   });
 
-  test("names in its caption the count of rows it shows (R4-31)", () => {
+  test("names in its caption the count of rows it shows, and no count for one row (R4-31)", () => {
     expect(libyearsCaption(5)).toBe("Furthest behind, top 5");
     expect(libyearsCaption(8)).toBe("Furthest behind, top 8");
+    expect(libyearsCaption(2)).toBe("Furthest behind, top 2");
+    expect(libyearsCaption(1)).toBe("Furthest behind");
   });
 });
 

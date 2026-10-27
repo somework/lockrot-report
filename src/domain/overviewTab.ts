@@ -27,7 +27,8 @@ export const OVERVIEW_TAB_WORDS = {
 } as const;
 
 /** The libyears table's caption: it names the rows it shows, which can be fewer than `LIBYEARS_SHOWN`. */
-export const libyearsCaption = (shown: number): string => `Furthest behind, top ${String(shown)}`;
+export const libyearsCaption = (shown: number): string =>
+  shown === 1 ? "Furthest behind" : `Furthest behind, top ${String(shown)}`;
 
 /** A link to one tab, filtered by the existing fragment keys. */
 export const findingsLink = (filters: Partial<Filters>): LinkTarget => ({ view: "findings", filters });
