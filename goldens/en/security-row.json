@@ -383,7 +383,37 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "capped-accepted-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-blocked-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "capped-covered-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-dev-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-held-update-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-htmlpurifier-dagger": [
+    "no counted advisory",
+    "4 on record for this name",
+    "lookup complete"
+  ],
+  "capped-known-dagger": [
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
@@ -394,12 +424,87 @@
     "fix: not known",
     "lookup complete"
   ],
+  "capped-money-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-nette-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-new-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-no-php-newest-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-no-release-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-platform-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-project-blocked-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-raise-php": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-recapped-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-require-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-require-higher-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "capped-require-php": [
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
   ],
+  "capped-snapshot-alias-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-snapshot-backport-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-snapshot-dev-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "capped-tag-unverified-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "capped-update-dagger": [
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
@@ -492,11 +597,6 @@
     "after it: 0, ok, if Composer resolves it"
   ],
   "gets-below-clears-left-behind-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "gets-below-clears-nothing-dagger": [
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
@@ -804,6 +904,20 @@
     "php floor raise · held by incenteev/composer-parameter-handler",
     "after it: 0, ok · Composer refuses the move"
   ],
+  "policy-audit-ignore-dagger": [
+    "1 medium advisory",
+    "2 on record for this name",
+    "fix: php floor raise",
+    "lookup complete",
+    "2.x your branch clears 1 of 1 from 2.0.6",
+    "needs a PHP your target does not run",
+    "3.x the move clears 1 of 1 from 3.0.5",
+    "php floor raise",
+    "after it: 0, ok, if Composer resolves it",
+    "4.x clears 1 of 1 from 4.1.1",
+    "php floor raise",
+    "after it: 0, ok, if Composer resolves it"
+  ],
   "policy-off-dagger": [
     "1 medium advisory",
     "2 on record for this name",
@@ -1034,112 +1148,7 @@
     "fix: not known",
     "lookup complete"
   ],
-  "capped-accepted-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-blocked-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-dev-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-held-update-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-htmlpurifier-dagger": [
-    "no counted advisory",
-    "4 on record for this name",
-    "lookup complete"
-  ],
-  "capped-known-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-money-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-nette-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-new-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-no-php-newest-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-no-release-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-platform-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-project-blocked-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-raise-php": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-recapped-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-require-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-require-higher-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-snapshot-alias-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-snapshot-backport-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-snapshot-dev-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
   "capped-unread-dagger": [
-    "no counted advisory",
-    "none on record for this name",
-    "lookup complete"
-  ],
-  "capped-update-dagger": [
     "no counted advisory",
     "none on record for this name",
     "lookup complete"

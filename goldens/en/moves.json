@@ -1342,6 +1342,33 @@
       "composer": []
     }
   ],
+  "capped-accepted-dagger": [],
+  "capped-blocked-dagger": [
+    {
+      "heading": "Next step",
+      "action": "4.x fixes it but needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0, which your target, 7.4, does not run",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your target, 7.4, does not run it"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
   "capped-covered-dagger": [
     {
       "heading": "Next step",
@@ -1365,6 +1392,172 @@
         ]
       },
       "after": null,
+      "composer": []
+    }
+  ],
+  "capped-dev-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0' --dev",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-held-update-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-htmlpurifier-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v4.19.1 on 4.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update ezyang/htmlpurifier",
+        "composer why-not ezyang/htmlpurifier v4.19.1 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~5.6.0 … ~8.5.0 (12 alternatives)",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, v4.17.0, needs php ~5.6.0 … ~8.3.0 (10 alternatives), which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-known-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
       "composer": []
     }
   ],
@@ -1392,6 +1585,432 @@
       },
       "after": null,
       "composer": []
+    }
+  ],
+  "capped-money-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v4.9.0 on 4.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update moneyphp/money",
+        "composer why-not moneyphp/money v4.9.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.1.0 … ~8.5.0 (5 alternatives)",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-nette-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v1.3.6 on 1.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update nette/schema",
+        "composer why-not nette/schema v1.3.6 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "1.x needs php 8.1 - 8.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-new-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-no-php-newest-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to 4.18.0 on 4.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update laminas/laminas-code",
+        "composer why-not laminas/laminas-code 4.18.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": null,
+      "stays": null,
+      "not_checked": "capped",
+      "adds": [],
+      "php": {
+        "head": null,
+        "lines": [
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": null,
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-no-release-dagger": [
+    {
+      "heading": "Next step",
+      "action": "No release above 4.7.1 admits PHP 8.5",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": null,
+        "lines": [
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "capped-platform-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to 4.17.0 on 4.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update laminas/laminas-code",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-project-blocked-dagger": [
+    {
+      "heading": "Next step",
+      "action": "4.x fixes it but needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0, which your target, 7.4, does not run",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "no",
+            "text": "your target, 7.4, does not run it"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "capped-raise-php": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-recapped-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^5.0.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'laminas/laminas-code:^5.0.0'",
+        "composer why-not laminas/laminas-code 5.0.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "capped-require-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to 4.17.0 on 4.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update laminas/laminas-code",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-require-higher-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^5.0.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'laminas/laminas-code:^5.0.0'",
+        "composer why-not laminas/laminas-code 5.0.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
     }
   ],
   "capped-require-php": [
@@ -1442,6 +2061,135 @@
       ]
     }
   ],
+  "capped-snapshot-alias-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require the newest tag on its own line, 4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "both",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.x-dev, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-snapshot-backport-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, 4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "both",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, dev-main, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-snapshot-dev-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, 4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "both",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, dev-main, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
   "capped-tag-unverified-dagger": [
     {
       "heading": "The move",
@@ -1461,6 +2209,48 @@
       "php": null,
       "after": {
         "result": "at most 8, medium",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-update-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to 4.17.0 on 4.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update laminas/laminas-code",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
         "conditions": [
           "if Composer resolves it (not checked: the run checked no move)"
         ]
@@ -1799,39 +2589,6 @@
           "items": []
         }
       ]
-    }
-  ],
-  "gets-below-clears-nothing-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to v3.6.0 on 3.x, below the newest v3.11.2",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update 'symfony/monolog-bundle:^3.11.2'"
-      ],
-      "commands_label": "Command",
-      "clears": null,
-      "stays": "old-promise",
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "3.x needs php >=8.1",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": null,
-        "conditions": [
-          "checked with Composer"
-        ]
-      },
-      "composer": []
     }
   ],
   "gitlab-anon-dagger": [
@@ -3229,6 +3986,54 @@
       ]
     }
   ],
+  "policy-audit-ignore-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.1, then require ^3.0.5",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.1' --no-update",
+        "composer require 'joomla/filter:^3.0.5'",
+        "composer why-not joomla/filter 3.0.5 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "the advisory",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "3.x needs php ^8.1.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.2.5 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 2.0.5, needs php ^7.2.5|~8.0.0|~8.1.0, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
   "policy-off-dagger": [
     {
       "heading": "The move",
@@ -4136,754 +4941,6 @@
       "composer": []
     }
   ],
-  "capped-accepted-dagger": [],
-  "capped-blocked-dagger": [
-    {
-      "heading": "Next step",
-      "action": "4.x fixes it but needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0, which your target, 7.4, does not run",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [],
-      "commands_label": null,
-      "clears": null,
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "no",
-            "text": "your target, 7.4, does not run it"
-          }
-        ]
-      },
-      "after": null,
-      "composer": []
-    }
-  ],
-  "capped-dev-dagger": [
-    {
-      "heading": "The move",
-      "action": "Raise require.php to >=8.2, then require ^4.17.0",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer require 'php:>=8.2' --no-update",
-        "composer require 'laminas/laminas-code:^4.17.0' --dev",
-        "composer why-not laminas/laminas-code 4.17.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "no",
-            "text": "your require.php still allows 7.4 (a major raise)"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "capped-held-update-dagger": [
-    {
-      "heading": "The move",
-      "action": "Require ^4.17.0",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer require 'laminas/laminas-code:^4.17.0'",
-        "composer why-not laminas/laminas-code 4.17.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "capped-htmlpurifier-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to v4.19.1 on 4.x",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update ezyang/htmlpurifier",
-        "composer why-not ezyang/htmlpurifier v4.19.1 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~5.6.0 … ~8.5.0 (12 alternatives)",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, v4.17.0, needs php ~5.6.0 … ~8.3.0 (10 alternatives), which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "capped-known-dagger": [
-    {
-      "heading": "The move",
-      "action": "Raise require.php to >=8.2, then require ^4.17.0",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer require 'php:>=8.2' --no-update",
-        "composer require 'laminas/laminas-code:^4.17.0'",
-        "composer why-not laminas/laminas-code 4.17.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "no",
-            "text": "your require.php still allows 7.4 (a major raise)"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "capped-money-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to v4.9.0 on 4.x",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update moneyphp/money",
-        "composer why-not moneyphp/money v4.9.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.1.0 … ~8.5.0 (5 alternatives)",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "capped-nette-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to v1.3.6 on 1.x",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update nette/schema",
-        "composer why-not nette/schema v1.3.6 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "1.x needs php 8.1 - 8.5",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "capped-new-dagger": [
-    {
-      "heading": "The move",
-      "action": "Raise require.php to >=8.2, then require ^4.17.0",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer require 'php:>=8.2' --no-update",
-        "composer require 'laminas/laminas-code:^4.17.0'",
-        "composer why-not laminas/laminas-code 4.17.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "no",
-            "text": "your require.php still allows 7.4 (a major raise)"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "capped-no-php-newest-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to 4.18.0 on 4.x",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update laminas/laminas-code",
-        "composer why-not laminas/laminas-code 4.18.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": null,
-      "stays": null,
-      "not_checked": "capped",
-      "adds": [],
-      "php": {
-        "head": null,
-        "lines": [
-          {
-            "answer": "no",
-            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": null,
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "capped-no-release-dagger": [
-    {
-      "heading": "Next step",
-      "action": "No release above 4.7.1 admits PHP 8.5",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [],
-      "commands_label": null,
-      "clears": null,
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": null,
-        "lines": [
-          {
-            "answer": "no",
-            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": null,
-      "composer": []
-    }
-  ],
-  "capped-platform-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to 4.17.0 on 4.x",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update laminas/laminas-code",
-        "composer why-not laminas/laminas-code 4.17.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "capped-project-blocked-dagger": [
-    {
-      "heading": "Next step",
-      "action": "4.x fixes it but needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0, which your target, 7.4, does not run",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [],
-      "commands_label": null,
-      "clears": null,
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "no",
-            "text": "your require.php still allows 7.4 (a major raise)"
-          },
-          {
-            "answer": "no",
-            "text": "your target, 7.4, does not run it"
-          }
-        ]
-      },
-      "after": null,
-      "composer": []
-    }
-  ],
-  "capped-raise-php": [
-    {
-      "heading": "The move",
-      "action": "Raise require.php to >=8.2, then require ^4.17.0",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer require 'php:>=8.2' --no-update",
-        "composer require 'laminas/laminas-code:^4.17.0'",
-        "composer why-not laminas/laminas-code 4.17.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "no",
-            "text": "your require.php still allows 7.4 (a major raise)"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "capped-recapped-dagger": [
-    {
-      "heading": "The move",
-      "action": "Require ^5.0.0",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer require 'laminas/laminas-code:^5.0.0'",
-        "composer why-not laminas/laminas-code 5.0.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "5.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": [
-        {
-          "text": "A new major brings its own requirements, which lockrot does not solve",
-          "items": []
-        }
-      ]
-    }
-  ],
-  "capped-require-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to 4.17.0 on 4.x",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update laminas/laminas-code",
-        "composer why-not laminas/laminas-code 4.17.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "capped-require-higher-dagger": [
-    {
-      "heading": "The move",
-      "action": "Require ^5.0.0",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer require 'laminas/laminas-code:^5.0.0'",
-        "composer why-not laminas/laminas-code 5.0.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "5.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": [
-        {
-          "text": "A new major brings its own requirements, which lockrot does not solve",
-          "items": []
-        }
-      ]
-    }
-  ],
-  "capped-snapshot-alias-dagger": [
-    {
-      "heading": "The move",
-      "action": "Raise require.php to >=8.2, then require ^4.17.0",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer require 'php:>=8.2' --no-update",
-        "composer require 'laminas/laminas-code:^4.17.0'",
-        "composer why-not laminas/laminas-code 4.17.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "no",
-            "text": "your require.php still allows 7.4 (a major raise)"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, 4.7.x-dev, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "capped-snapshot-backport-dagger": [
-    {
-      "heading": "The move",
-      "action": "Raise require.php to >=8.2, then require ^4.17.0",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer require 'php:>=8.2' --no-update",
-        "composer require 'laminas/laminas-code:^4.17.0'",
-        "composer why-not laminas/laminas-code 4.17.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "no",
-            "text": "your require.php still allows 7.4 (a major raise)"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, dev-main, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "capped-snapshot-dev-dagger": [
-    {
-      "heading": "The move",
-      "action": "Raise require.php to >=8.2, then require ^4.17.0",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer require 'php:>=8.2' --no-update",
-        "composer require 'laminas/laminas-code:^4.17.0'",
-        "composer why-not laminas/laminas-code 4.17.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "no",
-            "text": "your require.php still allows 7.4 (a major raise)"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, dev-main, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
-      "composer": []
-    }
-  ],
   "capped-unread-dagger": [
     {
       "heading": "Next step",
@@ -4907,48 +4964,6 @@
         ]
       },
       "after": null,
-      "composer": []
-    }
-  ],
-  "capped-update-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to 4.17.0 on 4.x",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update laminas/laminas-code",
-        "composer why-not laminas/laminas-code 4.17.0 --locked"
-      ],
-      "commands_label": "Commands, in order",
-      "clears": "capped",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          },
-          {
-            "answer": "no",
-            "text": "its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "if Composer resolves it (not checked: the run checked no move)"
-        ]
-      },
       "composer": []
     }
   ],

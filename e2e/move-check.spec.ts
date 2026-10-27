@@ -33,7 +33,7 @@ test.describe("snipe-it, lockrot's engine run with a move check", () => {
       "1 of 14 findings that fail the gate is held by other packages.",
     );
     await expect(block.locator(".ov-first-foot")).toContainText(
-      "10 need another way out: 6 find an alternative, 1 raise PHP >=8.4, 1 test, 1 no move, 1 Composer refuses the move",
+      "10 need another way out: 6 find an alternative, 1 raise PHP >=8.4, 1 test, 1 no move, 1 not checked: a package it needs could not be loaded",
     );
   });
 
@@ -65,7 +65,7 @@ test("snipe-it.unloaded‡ counts the move that was not checked by its reason", 
 
   await expect(readyBlock(page).locator(".ov-move")).toHaveCount(2);
   await expect(readyBlock(page).locator(".ov-first-foot")).toContainText(
-    "11 need another way out: 6 find an alternative, 1 raise PHP >=8.4, 1 test, 1 no move, 1 Composer refuses the move, 1 not checked: a package it needs could not be loaded",
+    "11 need another way out: 6 find an alternative, 1 raise PHP >=8.4, 1 test, 1 no move, 2 not checked: a package it needs could not be loaded",
   );
 });
 
