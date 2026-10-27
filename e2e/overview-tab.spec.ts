@@ -179,6 +179,25 @@ test.describe("from a chart to a list", () => {
   });
 });
 
+test.describe("one shell choice for the page (R4-30)", () => {
+  test("a pick in one Ready to run box changes every box on the page", async ({ page }) => {
+    await page.goto(report2Url("mc-composite-dagger"));
+    const boxes = overviewSurface(page).locator(".ov-cmd");
+    expect(await boxes.count()).toBeGreaterThan(1);
+
+    await boxes.nth(1).getByRole("button", { name: "Shell: POSIX" }).click();
+    await boxes
+      .nth(1)
+      .getByRole("menuitemradio", { name: /^cmd\.exe/ })
+      .click();
+
+    for (const box of await boxes.all()) {
+      await expect(box.getByRole("button", { name: "Shell: cmd.exe" })).toBeVisible();
+      await expect(box.locator(".d2-copy-cmd")).not.toContainText("'");
+    }
+  });
+});
+
 test.describe("keys on Overview", () => {
   test("/, j and k do nothing: no key moves the reader to another tab", async ({ page }) => {
     await page.goto(report2Url("composite"));

@@ -130,17 +130,94 @@
     "Your branch, 0.2.x, had its last release, 0.2.0, 7.0 years ago.",
     "It has no higher branch."
   ],
+  "capped-accepted-dagger": [
+    "Your branch, 4.x, had its last release, 4.17.0, 0.9 years ago.",
+    "It has no higher branch."
+  ],
+  "capped-blocked-dagger": [
+    "Your branch, 4.x, had its last release, 4.17.0, 0.9 years ago.",
+    "It has no higher branch."
+  ],
   "capped-covered-dagger": [
     "Your branch, 2.x, had its last release, 2.14.1, 4.6 years ago.",
     "It has no higher branch."
   ],
+  "capped-dev-dagger": [
+    "Your branch, 4.x, had its last release, 4.17.0, 0.9 years ago.",
+    "It has no higher branch."
+  ],
+  "capped-held-update-dagger": [
+    "Your branch, 4.x, had its last release, 4.17.0, 0.9 years ago.",
+    "It has no higher branch."
+  ],
+  "capped-htmlpurifier-dagger": [
+    "Your branch, 4.x, had its last release, v4.19.1, less than three weeks ago.",
+    "It has no higher branch."
+  ],
+  "capped-known-dagger": [
+    "Your branch, 4.x, had its last release, 4.17.0, 0.9 years ago.",
+    "It has no higher branch."
+  ],
   "capped-local-dagger": [],
+  "capped-money-dagger": [
+    "Your branch, 4.x, had its last release, v4.9.0, 0.4 years ago.",
+    "It has no higher branch."
+  ],
+  "capped-nette-dagger": [
+    "Your branch, 1.x, had its last release, v1.3.6, 0.1 years ago.",
+    "It has no higher branch."
+  ],
+  "capped-new-dagger": [
+    "Your branch, 4.x, had its last release, 4.17.0, 0.9 years ago.",
+    "It has no higher branch."
+  ],
+  "capped-no-php-newest-dagger": [
+    "Your branch, 4.x, had its last release, 4.18.0, 0.4 years ago."
+  ],
+  "capped-no-release-dagger": [
+    "Your branch, 4.x, had its last release, 4.16.0, 1.9 years ago.",
+    "It has no higher branch."
+  ],
+  "capped-platform-dagger": [
+    "Your branch, 4.x, had its last release, 4.17.0, 0.9 years ago.",
+    "It has no higher branch."
+  ],
+  "capped-project-blocked-dagger": [
+    "Your branch, 4.x, had its last release, 4.17.0, 0.9 years ago.",
+    "It has no higher branch."
+  ],
+  "capped-raise-php": [
+    "Your branch, 4.x, had its last release, 4.17.0, 0.9 years ago.",
+    "It has no higher branch."
+  ],
+  "capped-recapped-dagger": [
+    "Your branch, 4.x, had its last release, 4.18.0, 0.4 years ago."
+  ],
+  "capped-require-dagger": [
+    "Your branch, 4.x, had its last release, 4.17.0, 0.9 years ago."
+  ],
+  "capped-require-higher-dagger": [
+    "Your branch, 4.x, had its last release, 4.16.0, 1.9 years ago."
+  ],
   "capped-require-php": [
     "Your branch, 2.x, had its last release, v2.2.0, 7.1 years ago.",
     "The newest branch, 8.x, released v8.2.0 0.8 years ago."
   ],
+  "capped-snapshot-alias-dagger": [
+    "A branch snapshot, 4.7.x-dev, is installed."
+  ],
+  "capped-snapshot-backport-dagger": [
+    "A branch snapshot, dev-main, is installed."
+  ],
+  "capped-snapshot-dev-dagger": [
+    "A branch snapshot, dev-main, is installed."
+  ],
   "capped-tag-unverified-dagger": [
     "A branch snapshot, dev-master, is installed."
+  ],
+  "capped-update-dagger": [
+    "Your branch, 4.x, had its last release, 4.17.0, 0.9 years ago.",
+    "It has no higher branch."
   ],
   "either-critical-dagger": [
     "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
@@ -170,9 +247,6 @@
   "gets-below-clears-left-behind-dagger": [
     "Your branch, 4.x, had its last release, v4.4.41, 4.5 years ago.",
     "The move's branch, 5.x, released v5.4.45 2.0 years ago."
-  ],
-  "gets-below-clears-nothing-dagger": [
-    "Your branch, 3.x, had its last release, v3.11.2, 0.5 years ago."
   ],
   "gitlab-anon-dagger": [
     "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
@@ -317,6 +391,9 @@
   "platform-step-why-not-dagger": [
     "Your branch, 5.x, had its last release, v5.4.53, 0.4 years ago."
   ],
+  "policy-audit-ignore-dagger": [
+    "Your branch, 2.x, had its last release, 2.0.6, 1.0 years ago."
+  ],
   "policy-off-dagger": [
     "Your branch, 2.x, had its last release, 2.0.6, 1.0 years ago."
   ],
@@ -416,28 +493,7 @@
     "It has no higher branch."
   ],
   "B-accepted-unread-dagger": [],
-  "capped-accepted-dagger": [],
-  "capped-blocked-dagger": [],
-  "capped-dev-dagger": [],
-  "capped-held-update-dagger": [],
-  "capped-htmlpurifier-dagger": [],
-  "capped-known-dagger": [],
-  "capped-money-dagger": [],
-  "capped-nette-dagger": [],
-  "capped-new-dagger": [],
-  "capped-no-php-newest-dagger": [],
-  "capped-no-release-dagger": [],
-  "capped-platform-dagger": [],
-  "capped-project-blocked-dagger": [],
-  "capped-raise-php": [],
-  "capped-recapped-dagger": [],
-  "capped-require-dagger": [],
-  "capped-require-higher-dagger": [],
-  "capped-snapshot-alias-dagger": [],
-  "capped-snapshot-backport-dagger": [],
-  "capped-snapshot-dev-dagger": [],
   "capped-unread-dagger": [],
-  "capped-update-dagger": [],
   "finished-offline-dagger": [],
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],

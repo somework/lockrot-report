@@ -1,5 +1,6 @@
 import { createContext } from "preact";
 import { useContext } from "preact/hooks";
+import type { Shell } from "../domain/shellArgv";
 import type { Model } from "../model/types";
 import type { Action, State } from "../state/types";
 
@@ -24,6 +25,9 @@ export interface ReportContextValue {
    *  `document.activeElement` at the moment it opens — the "?" key's row, the header's own
    *  button). */
   openGlossary: () => void;
+  /** The shell of every command box on the page (`useShell.ts`). */
+  shell: Shell;
+  pickShell: (shell: Shell) => void;
 }
 
 export const ReportContext = createContext<ReportContextValue | null>(null);

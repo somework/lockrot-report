@@ -27,6 +27,8 @@ function renderTabs(
         wide: true,
         cursor: null,
         openGlossary: vi.fn(),
+        shell: "posix",
+        pickShell: vi.fn(),
       }}
     >
       <Tabs idBase="t" panelId="panel" />

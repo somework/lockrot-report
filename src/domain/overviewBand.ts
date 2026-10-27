@@ -6,7 +6,8 @@
 import type { Report2 } from "../model/report";
 import { advisoryCountedAs } from "./advisories";
 import { advisoryListPartial, fixCounts, noAdvisoryWords, PARTIAL_HEDGE, scopeClauses } from "./copySummary";
-import { isAre, namesCapped } from "./findingWords";
+import { isAre, NAMES_SHOWN, namesCapped } from "./findingWords";
+import { joinAnd } from "./joinWords";
 import { plural, pluralNoun } from "./format";
 import { flagPoints, pointsText } from "./projectGrade";
 
@@ -122,7 +123,8 @@ function depthHead({ rot_depth: depth }: Report2): string | null {
   const head = `${unnamed} of ${plural(depth.flagged, "flagged package", "flagged packages")} ${isAre(unnamed)} named by no line of composer.json`;
   const { deepest, max_depth: hops } = depth;
   if (deepest.length === 0 || hops === null) return `${head}.`;
-  const names = namesCapped(deepest.map(({ package: name }) => name));
+  const listed = deepest.map(({ package: name }) => name);
+  const names = listed.length > NAMES_SHOWN ? namesCapped(listed) : joinAnd(listed);
   return `${head}; the deepest, ${names}, ${pluralNoun(deepest.length, "sits", "sit")} ${plural(hops, "hop", "hops")} from the nearest line.`;
 }
 

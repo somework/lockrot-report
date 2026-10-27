@@ -36,6 +36,8 @@ function glossary({ open, onClose = vi.fn(), dispatch = vi.fn(), model = composi
         wide: true,
         cursor: null,
         openGlossary: vi.fn(),
+        shell: "posix",
+        pickShell: vi.fn(),
       }}
     >
       <button type="button">trigger</button>

@@ -4,6 +4,7 @@ import {
   depthRows,
   exposureBars,
   exposureUnit,
+  libyearsCaption,
   libyearsTop,
   OVERVIEW_TAB_WORDS,
 } from "../../domain/overviewTab";
@@ -211,7 +212,7 @@ function LibyearsTable({ report }: { report: Report2 }) {
 
   return (
     <table className="ov-ly">
-      <caption className="eyebrow">{OVERVIEW_TAB_WORDS.libyearsTop}</caption>
+      <caption className="eyebrow">{libyearsCaption(rows.length)}</caption>
       <thead>
         <tr>
           <th scope="col">{OVERVIEW_TAB_WORDS.package}</th>

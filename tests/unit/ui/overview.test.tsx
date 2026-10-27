@@ -230,7 +230,7 @@ describe("the Overview tab of a report-2 document", () => {
   test("tables the packages furthest behind, each linked to its row", () => {
     render(<App model={model()} />);
 
-    const table = within(band()).getByRole("table", { name: "Furthest behind, top 8" });
+    const table = within(band()).getByRole("table", { name: "Furthest behind, top 5" });
     const [head, ...rows] = within(table).getAllByRole("row");
     expect(
       within(head as HTMLElement)
@@ -445,7 +445,7 @@ describe("the tabs that lead without the band", () => {
     render(<App model={model()} />);
 
     expect(surface("radius").firstElementChild?.textContent).toBe(
-      "2 of 9 flagged packages are named by no line of composer.json; the deepest, friendsofsymfony/oauth2-php, symfony/polyfill-intl-idn, sit 1 hop from the nearest line.",
+      "2 of 9 flagged packages are named by no line of composer.json; the deepest, friendsofsymfony/oauth2-php and symfony/polyfill-intl-idn, sit 1 hop from the nearest line.",
     );
   });
 
@@ -553,5 +553,110 @@ describe("a grade line with nothing graded above a failing gate", () => {
     const grade = band().querySelector(".ov-grade");
     expect(grade?.classList.contains("tone-none")).toBe(true);
     expect(grade?.querySelector(".clean-mark")).not.toBeNull();
+  });
+});
+
+describe("one shell choice for every command box on the page (R4-30)", () => {
+  function moveCheckModel(): Model {
+    const result = normalize(assembleEmbed("mc-composite-dagger"));
+    if (!result.ok) throw new Error(result.error.message);
+    return result.model;
+  }
+  const shellButtons = (): string[] =>
+    [...document.querySelectorAll(".d2-shell-btn")].map((button) => button.textContent);
+  const pickCmdIn = (box: HTMLElement): void => {
+    fireEvent.click(within(box).getByRole("button", { name: "Shell: POSIX" }));
+    fireEvent.click(within(within(box).getByRole("menu")).getByRole("menuitemradio", { name: /cmd\.exe/ }));
+  };
+  afterEach(() => {
+    vi.restoreAllMocks();
+    window.localStorage.clear();
+  });
+
+  test("a pick in one Ready to run box changes every box", () => {
+    render(<App model={moveCheckModel()} />);
+    const boxes = [...band().querySelectorAll<HTMLElement>(".ov-cmd")];
+    expect(boxes.length).toBeGreaterThan(1);
+
+    pickCmdIn(boxes[1] as HTMLElement);
+
+    expect(shellButtons()).toEqual(boxes.map(() => "cmd.exe"));
+    for (const box of boxes) expect(box.querySelector(".d2-copy-cmd")?.textContent).not.toContain("'");
+  });
+
+  test("holds the pick for a box opened later when storage refuses it", () => {
+    vi.spyOn(window, "localStorage", "get").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    render(<App model={moveCheckModel()} />);
+    const [first] = [...band().querySelectorAll<HTMLElement>(".ov-cmd")];
+    pickCmdIn(first as HTMLElement);
+
+    fireEvent.click(within(first?.closest(".ov-move") as HTMLElement).getAllByRole("link")[0] as HTMLElement);
+
+    const sheet = document.querySelector<HTMLElement>('[data-surface="detail"]');
+    expect(sheet?.querySelector(".d2-shell-btn")?.textContent).toBe("cmd.exe");
+  });
+});
+
+describe("the PHP state line's link (R4-29)", () => {
+  afterEach(() => {
+    history.replaceState(null, "", "/report.html");
+  });
+
+  const wallabag = () => {
+    const golden = pageGoldens().find(({ id }) => id === "wallabag-2.6");
+    if (golden === undefined) throw new Error("no wallabag-2.6 page golden");
+    const result = normalize(golden.report);
+    if (!result.ok) throw new Error(result.error.message);
+    return result.model;
+  };
+
+  test("opens Run data at its PHP window section, with focus on the section's heading", async () => {
+    render(<App model={wallabag()} />);
+    const link = within(band().querySelector(".ov-state.is-php") as HTMLElement).getByRole("link", {
+      name: /The PHP window/,
+    });
+
+    expect(link.getAttribute("href")).toBe("#view=run&section=php-window");
+    fireEvent.click(link);
+
+    expect(screen.getByRole("tab", { selected: true }).textContent).toMatch(/^Run data/);
+    await waitFor(() => {
+      expect(document.activeElement).toBe(screen.getByRole("heading", { name: "PHP window", level: 3 }));
+    });
+    expect(location.hash).toBe("#view=run&section=php-window");
+  });
+
+  test("a pasted address with the section opens Run data at that heading", async () => {
+    history.replaceState(null, "", "/report.html#view=run&section=php-window");
+
+    render(<App model={wallabag()} />);
+
+    expect(screen.getByRole("tab", { selected: true }).textContent).toMatch(/^Run data/);
+    await waitFor(() => {
+      expect(document.activeElement).toBe(screen.getByRole("heading", { name: "PHP window", level: 3 }));
+    });
+  });
+});
+
+describe("a count in a state line links to its list (R4-27)", () => {
+  test("the lookup count opens All packages under the unknown grade, with exactly the rows it counts", () => {
+    const golden = pageGoldens().find(({ id }) => id === "unknown.offline‡");
+    if (golden === undefined) throw new Error("no unknown.offline‡ page golden");
+    const result = normalize(golden.report);
+    if (!result.ok) throw new Error(result.error.message);
+    render(<App model={result.model} />);
+    const line = band().querySelector<HTMLElement>(".ov-state.is-lookup");
+    const [count] = within(line as HTMLElement)
+      .getAllByRole("link")
+      .filter((link) => link.getAttribute("href") === "#view=packages&verdict=unknown");
+
+    const [goldenLine] = (golden.golden as unknown as { state_lines: string[] }).state_lines;
+    expect(line?.textContent).toBe(`${goldenLine ?? ""} ›`);
+    fireEvent.click(count as HTMLElement);
+
+    expect(screen.getByRole("tab", { selected: true }).textContent).toMatch(/^All packages/);
+    expect(document.querySelectorAll("[data-pkg]")).toHaveLength(golden.report.counts.unknown);
   });
 });

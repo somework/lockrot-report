@@ -97,7 +97,7 @@ describe("the flag ledger", () => {
 describe("the depth sentence", () => {
   test("names the unnamed share and the deepest package with its hops", () => {
     expect(depthSentence(golden("composite"))).toBe(
-      "2 of 9 flagged packages are named by no line of composer.json; the deepest, friendsofsymfony/oauth2-php, symfony/polyfill-intl-idn, sit 1 hop from the nearest line.",
+      "2 of 9 flagged packages are named by no line of composer.json; the deepest, friendsofsymfony/oauth2-php and symfony/polyfill-intl-idn, sit 1 hop from the nearest line.",
     );
   });
 
@@ -113,6 +113,21 @@ describe("the depth sentence", () => {
 
     expect(depthSentence(report)).toBe(
       "4 of 9 flagged packages are named by no line of composer.json; the deepest, d/one, d/two, d/three and 2 more, sit 2 hops from the nearest line.",
+    );
+  });
+
+  test('joins three deepest names with "and" before the last, as the text format does (PD-SUMMARY-13, R4-28)', () => {
+    const report = golden("composite");
+    const deep = (name: string) => ({ package: name, chain: ["a/root", name] });
+    report.rot_depth = {
+      ...report.rot_depth,
+      not_in_composer_json: 3,
+      max_depth: 2,
+      deepest: ["d/one", "d/two", "d/three"].map(deep),
+    };
+
+    expect(depthSentence(report)).toBe(
+      "3 of 9 flagged packages are named by no line of composer.json; the deepest, d/one, d/two and d/three, sit 2 hops from the nearest line.",
     );
   });
 
@@ -146,7 +161,7 @@ describe("the depth sentence", () => {
     report.rot_depth = { ...report.rot_depth, require_dev_not_walked: 1 };
 
     expect(depthSentence(report)).toBe(
-      "2 of 9 flagged packages are named by no line of composer.json; the deepest, friendsofsymfony/oauth2-php, symfony/polyfill-intl-idn, sit 1 hop from the nearest line. 1 more is named only in require-dev, which this run did not walk (pass --dev).",
+      "2 of 9 flagged packages are named by no line of composer.json; the deepest, friendsofsymfony/oauth2-php and symfony/polyfill-intl-idn, sit 1 hop from the nearest line. 1 more is named only in require-dev, which this run did not walk (pass --dev).",
     );
   });
 

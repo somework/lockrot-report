@@ -3580,7 +3580,91 @@
     "ignored": [],
     "ladder": []
   },
+  "capped-accepted-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-blocked-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
   "capped-covered-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-dev-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-held-update-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-htmlpurifier-dagger": {
+    "summary": [
+      "no counted advisory",
+      "4 on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-known-dagger": {
     "summary": [
       "no counted advisory",
       "none on record for this name",
@@ -3674,6 +3758,160 @@
     "ignored": [],
     "ladder": []
   },
+  "capped-money-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-nette-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-new-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-no-php-newest-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-no-release-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-platform-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-project-blocked-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-raise-php": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-recapped-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-require-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-require-higher-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
   "capped-require-php": {
     "summary": [
       "no counted advisory",
@@ -3688,7 +3926,63 @@
     "ignored": [],
     "ladder": []
   },
+  "capped-snapshot-alias-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-snapshot-backport-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-snapshot-dev-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
   "capped-tag-unverified-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-update-dagger": {
     "summary": [
       "no counted advisory",
       "none on record for this name",
@@ -4404,20 +4698,6 @@
     ]
   },
   "gets-below-clears-left-behind-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "gets-below-clears-nothing-dagger": {
     "summary": [
       "no counted advisory",
       "none on record for this name",
@@ -6139,6 +6419,65 @@
       }
     ]
   },
+  "policy-audit-ignore-dagger": {
+    "summary": [
+      "1 medium advisory",
+      "2 on record for this name",
+      "fix: php floor raise",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, 2.0.5."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2025-54476",
+        "source": "PKSA-5x9t-bkbj-vmgp",
+        "deciding": true,
+        "severity": "medium",
+        "fix": "fix 3.0.5 on 3.x (php floor raise)",
+        "affects": "affects <2.0.6|>=3.0.0,<3.0.5|=4.0.0",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "2.x",
+        "marks": [
+          "your branch"
+        ],
+        "lines": [
+          "2.x your branch clears 1 of 1 from 2.0.6",
+          "needs a PHP your target does not run"
+        ]
+      },
+      {
+        "branch": "3.x",
+        "marks": [
+          "the move"
+        ],
+        "lines": [
+          "3.x the move clears 1 of 1 from 3.0.5",
+          "php floor raise",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      },
+      {
+        "branch": "4.x",
+        "marks": [],
+        "lines": [
+          "4.x clears 1 of 1 from 4.1.1",
+          "php floor raise",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      }
+    ]
+  },
   "policy-off-dagger": {
     "summary": [
       "1 medium advisory",
@@ -7720,301 +8059,7 @@
     "ignored": [],
     "ladder": []
   },
-  "capped-accepted-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-blocked-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-dev-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-held-update-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-htmlpurifier-dagger": {
-    "summary": [
-      "no counted advisory",
-      "4 on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-known-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-money-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-nette-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-new-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-no-php-newest-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-no-release-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-platform-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-project-blocked-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-raise-php": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-recapped-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-require-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-require-higher-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-snapshot-alias-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-snapshot-backport-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-snapshot-dev-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
   "capped-unread-dagger": {
-    "summary": [
-      "no counted advisory",
-      "none on record for this name",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [],
-    "groups": [],
-    "rows": [],
-    "ignored": [],
-    "ladder": []
-  },
-  "capped-update-dagger": {
     "summary": [
       "no counted advisory",
       "none on record for this name",

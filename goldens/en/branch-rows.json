@@ -1803,6 +1803,75 @@
       "folded_in": null
     }
   ],
+  "capped-accepted-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": "above your require.php",
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-blocked-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours",
+        "the move"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": "your target does not run it",
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": null,
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": null,
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
   "capped-covered-dagger": [
     {
       "branch": "2.x",
@@ -1877,7 +1946,511 @@
       "folded_in": "older"
     }
   ],
+  "capped-dev-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours",
+        "the move"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": "above your require.php",
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-held-update-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours",
+        "the move"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": null,
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-htmlpurifier-dagger": [],
+  "capped-known-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours",
+        "the move"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": "above your require.php",
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
   "capped-local-dagger": [],
+  "capped-money-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours",
+        "the move"
+      ],
+      "latest": "v4.9.0",
+      "age": "0.4y",
+      "php": "~8.1.0 … ~8.5.0 (5 alternatives)",
+      "php_words": null,
+      "bar": "v4.9.0, released 0.4 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "v3.3.3",
+      "age": "4.0y",
+      "php": ">=5.6",
+      "php_words": null,
+      "bar": "v3.3.3, released 4.0 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "1.x",
+      "marks": [],
+      "latest": "v1.3.0",
+      "age": "10.7y",
+      "php": ">=5.3.3",
+      "php_words": null,
+      "bar": "v1.3.0, released 10.7 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-nette-dagger": [],
+  "capped-new-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours",
+        "the move"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": "above your require.php",
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-no-php-newest-dagger": [
+    {
+      "branch": "5.x",
+      "marks": [
+        "newest"
+      ],
+      "latest": "5.0.0",
+      "age": "0.3y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": null,
+      "bar": "5.0.0, released 0.3 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours",
+        "the move"
+      ],
+      "latest": "4.18.0",
+      "age": "0.4y",
+      "php": null,
+      "php_words": null,
+      "bar": "4.18.0, released 0.4 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-no-release-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours"
+      ],
+      "latest": "4.16.0",
+      "age": "1.9y",
+      "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
+      "php_words": "above your require.php",
+      "bar": "4.16.0, released 1.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-platform-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours",
+        "the move"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": null,
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-project-blocked-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours",
+        "the move"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": "your target does not run it",
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": null,
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": null,
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-raise-php": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours",
+        "the move"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": "above your require.php",
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-recapped-dagger": [
+    {
+      "branch": "5.x",
+      "marks": [
+        "the move",
+        "newest"
+      ],
+      "latest": "5.0.0",
+      "age": "0.3y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": null,
+      "bar": "5.0.0, released 0.3 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours"
+      ],
+      "latest": "4.18.0",
+      "age": "0.4y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
+      "php_words": null,
+      "bar": "4.18.0, released 0.4 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-require-dagger": [
+    {
+      "branch": "5.x",
+      "marks": [
+        "newest"
+      ],
+      "latest": "5.0.0",
+      "age": "0.3y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": null,
+      "bar": "5.0.0, released 0.3 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours",
+        "the move"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": null,
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-require-higher-dagger": [
+    {
+      "branch": "5.x",
+      "marks": [
+        "the move",
+        "newest"
+      ],
+      "latest": "5.0.0",
+      "age": "0.3y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": null,
+      "bar": "5.0.0, released 0.3 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours"
+      ],
+      "latest": "4.16.0",
+      "age": "1.9y",
+      "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
+      "php_words": null,
+      "bar": "4.16.0, released 1.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
   "capped-require-php": [
     {
       "branch": "8.x",
@@ -1986,6 +2559,111 @@
       "folded_in": "older"
     }
   ],
+  "capped-snapshot-alias-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "the move",
+        "newest"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": "above your require.php",
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-snapshot-backport-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "the move",
+        "newest"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": "above your require.php",
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.6.0",
+      "age": "1.7y",
+      "php": ">=7.4",
+      "php_words": null,
+      "bar": "3.6.0, released 1.7 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-snapshot-dev-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "the move",
+        "newest"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": "above your require.php",
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
+      "folded_in": null
+    }
+  ],
   "capped-tag-unverified-dagger": [
     {
       "branch": "4.x",
@@ -2018,6 +2696,41 @@
       "php": null,
       "php_words": null,
       "bar": "1.1.2, released 8.1 years ago",
+      "folded_in": null
+    }
+  ],
+  "capped-update-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "yours",
+        "the move"
+      ],
+      "latest": "4.17.0",
+      "age": "0.9y",
+      "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+      "php_words": null,
+      "bar": "4.17.0, released 0.9 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [],
+      "latest": "3.5.1",
+      "age": "5.8y",
+      "php": "^7.3 || ~8.0.0",
+      "php_words": "your target does not run it",
+      "bar": "3.5.1, released 5.8 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [],
+      "latest": "2.6.3",
+      "age": "6.8y",
+      "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
+      "php_words": "your target does not run it",
+      "bar": "2.6.3, released 6.8 years ago",
       "folded_in": null
     }
   ],
@@ -2470,43 +3183,6 @@
       "php": ">=7.1.3",
       "php_words": null,
       "bar": "v4.4.41, released 4.5 years ago",
-      "folded_in": null
-    }
-  ],
-  "gets-below-clears-nothing-dagger": [
-    {
-      "branch": "4.x",
-      "marks": [
-        "newest"
-      ],
-      "latest": "v4.1.0",
-      "age": "0.1y",
-      "php": ">=8.2",
-      "php_words": null,
-      "bar": "v4.1.0, released 0.1 years ago",
-      "folded_in": null
-    },
-    {
-      "branch": "3.x",
-      "marks": [
-        "yours",
-        "the move"
-      ],
-      "latest": "v3.11.2",
-      "age": "0.5y",
-      "php": ">=8.1",
-      "php_words": null,
-      "bar": "v3.11.2, released 0.5 years ago",
-      "folded_in": null
-    },
-    {
-      "branch": "2.x",
-      "marks": [],
-      "latest": "v2.12.1",
-      "age": "9.7y",
-      "php": ">=5.3.2",
-      "php_words": null,
-      "bar": "v2.12.1, released 9.7 years ago",
       "folded_in": null
     }
   ],
@@ -4160,6 +4836,54 @@
       "folded_in": "older"
     }
   ],
+  "policy-audit-ignore-dagger": [
+    {
+      "branch": "4.x",
+      "marks": [
+        "newest"
+      ],
+      "latest": "4.1.1",
+      "age": "< 3 wk",
+      "php": "^8.3.0",
+      "php_words": "above your require.php",
+      "bar": "4.1.1, released less than three weeks ago",
+      "folded_in": null
+    },
+    {
+      "branch": "3.x",
+      "marks": [
+        "the move"
+      ],
+      "latest": "3.0.7",
+      "age": "< 3 wk",
+      "php": "^8.1.0",
+      "php_words": "above your require.php",
+      "bar": "3.0.7, released less than three weeks ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [
+        "yours"
+      ],
+      "latest": "2.0.6",
+      "age": "1.0y",
+      "php": "^7.2.5|~8.0.0|~8.1.0",
+      "php_words": "your target does not run it",
+      "bar": "2.0.6, released 1.0 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "1.x",
+      "marks": [],
+      "latest": "1.4.7",
+      "age": "2.1y",
+      "php": "^5.3.10|~7.0|^8.0",
+      "php_words": null,
+      "bar": "1.4.7, released 2.1 years ago",
+      "folded_in": null
+    }
+  ],
   "policy-off-dagger": [
     {
       "branch": "4.x",
@@ -5542,28 +6266,7 @@
     }
   ],
   "B-accepted-unread-dagger": [],
-  "capped-accepted-dagger": [],
-  "capped-blocked-dagger": [],
-  "capped-dev-dagger": [],
-  "capped-held-update-dagger": [],
-  "capped-htmlpurifier-dagger": [],
-  "capped-known-dagger": [],
-  "capped-money-dagger": [],
-  "capped-nette-dagger": [],
-  "capped-new-dagger": [],
-  "capped-no-php-newest-dagger": [],
-  "capped-no-release-dagger": [],
-  "capped-platform-dagger": [],
-  "capped-project-blocked-dagger": [],
-  "capped-raise-php": [],
-  "capped-recapped-dagger": [],
-  "capped-require-dagger": [],
-  "capped-require-higher-dagger": [],
-  "capped-snapshot-alias-dagger": [],
-  "capped-snapshot-backport-dagger": [],
-  "capped-snapshot-dev-dagger": [],
   "capped-unread-dagger": [],
-  "capped-update-dagger": [],
   "finished-offline-dagger": [],
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],

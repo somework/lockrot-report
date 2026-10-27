@@ -33,7 +33,8 @@ project is overall, and the other tabs lead with their own part.
   the worst grade a package holds. The line adds "lookup partial", "{n} not judged" and "{n} known
   to the baseline" when they apply. lockrot's own gate sentence follows, marked "✓" or "✕", and
   links to the findings that fail it. A line per state that limits the run follows: an offline or
-  incomplete run, the allowlist that does not cover advisories, and the baseline.
+  incomplete run, the allowlist that does not cover advisories, and the baseline. On the offline
+  or incomplete line, "{n} of {m} packages" opens All packages under the unknown grade.
 - Beside the lead: "37 of 183 packages flagged · 126 ok · 20 finished", the scope line, a chip
   per grade that a package holds, and the waffle, one square per package. Its key names each mark
   of a score of 0: ok, finished and not judged.
@@ -59,11 +60,13 @@ project is overall, and the other tabs lead with their own part.
   flagged packages its requirement pulls in and opens Blast radius. "{n} more in Blast radius ›"
   closes the list when lockrot lists more. "How deep the flagged packages sit" follows the bars: a
   bar per depth, then the depth sentence. A lock-only run keeps the head over the sentence alone.
+  The sentence joins the deepest names as the text format does: "hoa/ustring and hoa/zformat".
 - Libyears leads with the total, its measured count and the direct requirements' share, then what
   was not measured, by cause.
 - "Copy summary" says "at least" before the libyears total when any package is measured as a lower
   bound, as the Libyears block does: "at least 388.8 libyears behind".
-- The libyears table lists the 8 packages furthest behind, leaving out a row that rounds to 0.0, with "≥" before a lower bound. Each row
+- The libyears table lists up to 8 packages furthest behind, and its caption names how many it
+  lists: "Furthest behind, top 5", or "Furthest behind" over one row. It leaves out a row that rounds to 0.0, with "≥" before a lower bound. Each row
   shows the package's most recent release with its date ("v5.3.0 (2026-08-11)"), or why it was not
   measured. A date never breaks across lines. That release can be older than the installed version, so no arrow joins the two. The table shows no grade, because a grade beside a
   libyears number read as a grade of the lag. A row opens its package.
@@ -127,7 +130,8 @@ project is overall, and the other tabs lead with their own part.
   follows as a "Then" card with its own holders.
 - A command box in each move card. "Copy" puts the move's commands on the clipboard. The shell
   button opens a menu of POSIX, cmd.exe and PowerShell, and each item previews the command quoted
-  for that shell. The page keeps the choice for the next visit. A screen reader hears "Copied"
+  for that shell. One choice applies to every command box on the page, and the page keeps it for
+  the next visit. A screen reader hears "Copied"
   once. A command line breaks only between its arguments.
 - The Security row lists every advisory: up to six as a flat list, more in groups by severity, the
   worst group open. Each severity count opens its group. A range string longer than 40 characters
@@ -159,7 +163,9 @@ project is overall, and the other tabs lead with their own part.
   Composer checks, or when a package carries `capped`, a "PHP" state line follows the gate line:
   "PHP: this lock installs on PHP 7.4, so your target, 8.4, is excluded · 3 packages exclude 8.4:
   … · Composer's solver at PHP 8.4 refuses their update: composer.json requires
-  php-http/guzzle5-adapter ^2.0. The PHP window ›". It names the update that admits the target
+  php-http/guzzle5-adapter ^2.0. The PHP window ›". "The PHP window ›" links to
+  `#view=run&section=php-window`, which opens the Run tab at its PHP window section with focus on its
+  heading, from a click and from a pasted address alike. It names the update that admits the target
   and Composer's answer, or the root link that alone excludes it. The Run tab lists both windows
   in full: the minors, the lowest PHP and what sets it, and the minor that the lock excludes.
 - The flag `capped` and its signal S11, "PHP cap". The open package reads "It requires php
@@ -317,7 +323,10 @@ project is overall, and the other tabs lead with their own part.
 - The release workflow refuses a tag whose commit is on neither main nor a release branch, and a
   lockrot pin that neither lockrot's main nor a lockrot tag holds. It runs every gate of ci.yml
   before it attests the page: format, lint, the type checks, the unit, contract and e2e tests, and
-  the reproducible build. A red gate stops the release.
+  the reproducible build. A red gate stops the release. Those gates run with a read-only token.
+  The shipped files come from a build that runs no install script, and they must match the tested
+  build byte for byte. A separate job attests and publishes them, and only it holds the tokens to
+  do so.
 - A report file can be edited. So a command that fails the rule shows "This command holds
   characters the page does not print." in place of every step, on every shell. The menu previews
   nothing, and the Copy button is hidden. PowerShell always reads `composer --%` and the cmd.exe

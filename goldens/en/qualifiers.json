@@ -705,11 +705,128 @@
       "Tripped by abandoned"
     ]
   },
+  "capped-accepted-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": "Its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there",
+    "php_edge": [],
+    "accepted": [
+      "capped is accepted by your ignore list",
+      "The cap is tested, kept on purpose",
+      "Entry laminas/laminas-code"
+    ],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-blocked-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
   "capped-covered-dagger": {
     "reach": [
       "Production: not in packages-dev",
       "Not required directly, through symfony/proxy-manager-bridge",
       "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-dev-dagger": {
+    "reach": [
+      "Dev only: in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge",
+      "Its whole score counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-held-update-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-htmlpurifier-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-known-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
     ],
     "origin": null,
     "not_judged": null,
@@ -745,6 +862,212 @@
       "Tripped by capped and CVE-2022-25768"
     ]
   },
+  "capped-money-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through laravel/cashier"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-nette-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through:",
+      "laravel/framework",
+      "pragmarx/google2fa-laravel",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-new-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-no-php-newest-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-no-release-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-platform-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-project-blocked-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-raise-php": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-recapped-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-require-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "capped-require-higher-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
   "capped-require-php": {
     "reach": [
       "Production: not in packages-dev",
@@ -762,6 +1085,66 @@
       "Tripped by left-behind"
     ]
   },
+  "capped-snapshot-alias-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
+  "capped-snapshot-backport-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
+  "capped-snapshot-dev-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
   "capped-tag-unverified-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -777,6 +1160,25 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by pinned"
+    ]
+  },
+  "capped-update-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
     ]
   },
   "either-critical-dagger": {
@@ -919,25 +1321,6 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by left-behind"
-    ]
-  },
-  "gets-below-clears-nothing-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Not required directly, through mautic/core-lib",
-      "Its maintenance counts half"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [
-      "It sets the lowest PHP this lock admits: 5.6.0"
-    ],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
     ]
   },
   "gitlab-anon-dagger": {
@@ -1740,6 +2123,25 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
+  "policy-audit-ignore-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "joomla/input",
+      "joomla/oauth1",
+      "joomla/oauth2"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above and a check that did not run"
+    ]
+  },
   "policy-off-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -2289,406 +2691,7 @@
       "Tripped by CVE-2026-45077"
     ]
   },
-  "capped-accepted-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": "Its installed release, 4.7.1, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there",
-    "php_edge": [],
-    "accepted": [
-      "capped is accepted by your ignore list",
-      "The cap is tested, kept on purpose",
-      "Entry laminas/laminas-code"
-    ],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-blocked-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-dev-dagger": {
-    "reach": [
-      "Dev only: in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge",
-      "Its whole score counts half"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-held-update-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-htmlpurifier-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Not required directly, through mautic/core-lib",
-      "Its maintenance counts half"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-known-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-money-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through laravel/cashier"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-nette-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Not required directly, through:",
-      "laravel/framework",
-      "pragmarx/google2fa-laravel",
-      "Its maintenance counts half"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-new-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-no-php-newest-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-no-release-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-platform-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-project-blocked-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-raise-php": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-recapped-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-require-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-require-higher-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-snapshot-alias-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-snapshot-backport-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-snapshot-dev-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
   "capped-unread-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Required directly, and also through:",
-      "doctrine/doctrine-migrations-bundle",
-      "doctrine/migrations",
-      "symfony/proxy-manager-bridge"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "does not reach the run's gate: grade high or above"
-    ]
-  },
-  "capped-update-dagger": {
     "reach": [
       "Production: not in packages-dev",
       "Required directly, and also through:",

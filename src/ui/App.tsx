@@ -21,6 +21,7 @@ import { pickCursor } from "./rowCursor";
 import { SearchBar } from "./search/SearchBar";
 import { tabId, Tabs } from "./Tabs";
 import { useHashState } from "./useHashState";
+import { useShell } from "./useShell";
 import { useTheme } from "./useTheme";
 import { useNarrow, useRailRoom, useWide } from "./useWide";
 import { CurrentView } from "./views/Views";
@@ -302,6 +303,7 @@ export function App({ model }: { model: Model }) {
     [anchoredDispatch],
   );
   const theme = useTheme();
+  const [shell, pickShell] = useShell();
   const [glossaryOpen, setGlossaryOpen] = useState(false);
   const [glossaryAt, setGlossaryAt] = useState<GlossaryAt>("top");
   const openGlossary = useCallback(() => {
@@ -349,22 +351,10 @@ export function App({ model }: { model: Model }) {
     narrow,
   });
 
-  // A tab switch a reader clicked (or the quiet note's "See the advisories") used to leave the
-  // page's scroll wherever it was on the tab just left — a Findings list scrolled down to
-  // "hoa/compiler" handed the next tab's much shorter content the same scroll offset, landing mid
-  // list with no sign why. `dispatchTracked` marks every `"view"` action this ref sees; the effect
-  // below fires only for those, never for the boot state or a `hashchange` restore (`useHashState`
-  // reaches the reducer directly for both, through `restore`/the lazy initial state, and never
-  // dispatches `"view"` at all), so a pasted link that restores a tab does not fight a reader's own
-  // scroll position.
+  // Only a tab switch the reader dispatched scrolls to the top: the boot state and a `hashchange`
+  // restore reach the reducer without a "view" action, so a pasted link keeps its scroll.
   const tabChangedByReader = useRef(false);
-  // Tabs.tsx dispatches "view" even for the tab already selected (on purpose: it closes the open
-  // detail), so the flag above must only latch when the view actually moves — comparing against a
-  // ref, not `state.view` itself, keeps `dispatchTracked`'s identity tied to `dispatch` alone rather
-  // than recreating it on every state change. Written directly in the render body: it is always
-  // current before an event handler can fire, no effect needed. Missing this comparison left the
-  // flag set after a same-tab click, so the *next* view change for any reason — including a
-  // hashchange restore — scrolled to 0 regardless of who caused it (regression review).
+  // Tabs.tsx dispatches "view" for the open tab too, so the flag latches only when the view moves.
   const currentView = useRef(state.view);
   currentView.current = state.view;
   const listFocused = useRef(false);
@@ -384,6 +374,7 @@ export function App({ model }: { model: Model }) {
   useEffect(() => {
     if (!listFocused.current) return;
     listFocused.current = false;
+    if (state.section !== null) return;
     const panel = document.getElementById(`${idBase}-panel`);
     if (typeof panel?.scrollIntoView === "function") panel.scrollIntoView({ block: "start" });
     const active = document.activeElement;
@@ -402,6 +393,16 @@ export function App({ model }: { model: Model }) {
     // first row directly under it, on every width.
     window.scrollTo(0, 0);
   }, [state.view]);
+
+  // The `section` key opens Run data at that section, from a link, a pasted address or a
+  // `hashchange` (SPEC §7.9.16). It does nothing when the run has no such section.
+  useEffect(() => {
+    if (state.view !== "run" || state.section === null) return;
+    const heading = document.getElementById(state.section)?.querySelector<HTMLElement>("h3");
+    if (heading == null) return;
+    if (typeof heading.scrollIntoView === "function") heading.scrollIntoView({ block: "start" });
+    heading.focus({ preventScroll: true });
+  }, [state.view, state.section]);
 
   // A layout effect, so the row is focused in the same task as the render that follows the key or
   // click. A plain effect waits for the next frame, and a reader (or a test) who moves focus in
@@ -468,8 +469,8 @@ export function App({ model }: { model: Model }) {
 
   const now = useMemo(() => new Date(model.report.generated_at), [model]);
   const value = useMemo(
-    () => ({ model, state, dispatch: dispatchTracked, now, wide, cursor, openGlossary }),
-    [model, state, dispatchTracked, now, wide, cursor, openGlossary],
+    () => ({ model, state, dispatch: dispatchTracked, now, wide, cursor, openGlossary, shell, pickShell }),
+    [model, state, dispatchTracked, now, wide, cursor, openGlossary, shell, pickShell],
   );
   // The printed report (print/PrintDocument.tsx): mounted into `printHost` only while the page prints.
   const printHost = useRef<HTMLDivElement>(null);

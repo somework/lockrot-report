@@ -6,6 +6,7 @@
 .run2 .sect {
   min-width: 0;
 }
+.run2 .sect[id] > h3:focus-visible,
 .run2-score:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;

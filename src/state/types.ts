@@ -59,6 +59,9 @@ export interface State {
   /** The package open when the reader last changed tab: the Run tab's score example (SPEC §7.9.12).
    *  Not part of the fragment. */
   example: string | null;
+  /** The id of a Run data section that the page opens at, as the fragment's `section` key holds it
+   *  (SPEC §7.9.16). Null on every other view. */
+  section: string | null;
 }
 
 /** Where a chart mark on Overview leads: a tab and the fragment keys it sets, nothing else. */
@@ -67,6 +70,8 @@ export interface LinkTarget {
   filters?: Partial<Filters>;
   q?: string;
   pkg?: string;
+  /** The id of a Run data section that the link opens at. */
+  section?: string;
 }
 
 export type Action =
@@ -75,8 +80,17 @@ export type Action =
   | { type: "toggle"; group: FilterGroup; key: string }
   | { type: "clear" }
   /** A tab (Findings unless named) listed through exactly these rail filters; the query box set to
-   *  `q`, else kept with `keepQuery`, else emptied; `pkg` open, else no detail. */
-  | { type: "focus"; filters: Filters; view?: View; keepQuery?: boolean; q?: string; pkg?: string }
+   *  `q`, else kept with `keepQuery`, else emptied; `pkg` open, else no detail. `section`: the id
+   *  that the tab opens at, in place of its list. */
+  | {
+      type: "focus";
+      filters: Filters;
+      view?: View;
+      keepQuery?: boolean;
+      q?: string;
+      pkg?: string;
+      section?: string;
+    }
   | { type: "sort"; key: SortKey }
   | { type: "select"; pkg: string | null }
   | { type: "disclose"; key: string; open: boolean }
@@ -105,4 +119,5 @@ export const INITIAL_STATE: State = {
   filters: EMPTY_FILTERS,
   disclosure: {},
   example: null,
+  section: null,
 };

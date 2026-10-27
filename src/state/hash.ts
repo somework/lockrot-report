@@ -23,8 +23,9 @@ function isFilterGroup(key: string): key is FilterGroup {
  * Builds the fragment for `state`, without a leading `#`. Order and encoding follow js-4.md §3a
  * steps 1-6 exactly: `view` (raw, unencoded), `q` (skipped when the trimmed value is empty — the
  * one deliberate difference from legacy's plain truthiness check), each of `FILTER_GROUPS` in that
- * fixed order, then `pkg`. The legacy page left out a `pkg` it had opened by itself; this page never
- * opens one by itself (PD-ROWS-9), so an open package is always written.
+ * fixed order, then `pkg`, then `section` on the Run tab (SPEC §7.9.16). The legacy page left out
+ * a `pkg` it had opened by itself; this page never opens one by itself (PD-ROWS-9), so an open
+ * package is always written.
  */
 export function serializeHash(state: State): string {
   const parts: string[] = [];
@@ -44,6 +45,10 @@ export function serializeHash(state: State): string {
     parts.push("pkg=" + encodeURIComponent(state.pkg));
   }
 
+  if (state.view === "run" && state.section !== null) {
+    parts.push("section=" + encodeURIComponent(state.section));
+  }
+
   // Rule R1: a fragment with list keys and no `view` reads back as Findings.
   if (state.view !== "overview" || parts.length > 0) {
     parts.unshift("view=" + state.view);
@@ -60,6 +65,7 @@ export function linkState(target: LinkTarget): State {
     q: target.q ?? "",
     pkg: target.pkg ?? null,
     filters: { ...EMPTY_FILTERS, ...target.filters },
+    section: target.view === "run" ? (target.section ?? null) : null,
   };
 }
 
@@ -82,7 +88,7 @@ function addFilterKey(filters: Filters, group: FilterGroup, key: string): Filter
  *   legacy bug M12, which let one bad escape blank the entire page);
  * - `view` is applied only when it names a known view, otherwise ignored (the DESIGN.md fix — the
  *   legacy code assigned it verbatim and silently fell through to the Run tab's rendering);
- * - `q` and `pkg` are taken verbatim;
+ * - `q` and `pkg` are taken verbatim, and `section` too under `view=run` (R4-29);
  * - a `FILTER_GROUPS` key adds its comma-separated, non-empty entries to that group, on top of
  *   whatever `base` already had, exactly like legacy's additive/idempotent merge;
  * - any other key, including one that looks like a filter group but is not in `FILTER_GROUPS`, is
@@ -96,6 +102,7 @@ export function parseHash(fragment: string, base: State): State {
   let q = base.q;
   let pkg = base.pkg;
   let filters: Filters = base.filters;
+  let section: string | null = null;
 
   for (const piece of h === "" ? [] : h.split("&")) {
     const i = piece.indexOf("=");
@@ -122,6 +129,10 @@ export function parseHash(fragment: string, base: State): State {
       q = value;
       continue;
     }
+    if (key === "section") {
+      section = value;
+      continue;
+    }
     if (key === "pkg") {
       // A package named in the hash round-trips straight back into the next `writeHash()`.
       pkg = value;
@@ -137,7 +148,8 @@ export function parseHash(fragment: string, base: State): State {
     // Any other key — including an unrecognised group name — is ignored.
   }
 
-  return { ...base, view: view ?? (listKey ? "findings" : "overview"), q, pkg, filters };
+  const opened = view ?? (listKey ? "findings" : "overview");
+  return { ...base, view: opened, q, pkg, filters, section: opened === "run" ? section : null };
 }
 
 /** The minimal `window` surface `writeHash` needs; lets tests pass a fake instead of jsdom. */
