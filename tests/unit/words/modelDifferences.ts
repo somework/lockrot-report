@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { ModelGoldens, RecordedCase } from "./recorded";
-import { modelCases, recordedCases } from "./recorded";
+import { lockrotRecordings, modelCases } from "./recorded";
 
 const FILE = join(process.cwd(), "goldens", "en", "model-differences.json");
 
@@ -24,13 +24,13 @@ export interface Difference {
   model: unknown;
 }
 
-/** The recorded cases whose line or block is not the model's golden. */
+/** The cases lockrot recorded whose line or block is not the model's golden. */
 export function differencesFromModel(
   field: keyof Omit<ModelGoldens, "why" | "commands_posix" | "commands_cmd" | "age_line">,
   line: (recorded: RecordedCase) => unknown,
 ): Difference[] {
   const models = new Map(modelCases().map(({ name, golden }) => [name, golden[field]]));
-  return recordedCases()
+  return lockrotRecordings()
     .filter(({ name }) => models.has(name))
     .map((recorded) => ({
       name: recorded.name,

@@ -32,6 +32,8 @@ export interface RecordedCase {
   run: Run;
   metadata: RepositoryMetadata | null;
   php: PhpGoldens | null;
+  /** "model" for a document the model wrote because the hydrator cannot rebuild it. */
+  recordedBy: "lockrot" | "model";
 }
 
 export interface ModelCase {
@@ -58,7 +60,7 @@ function caseNames(dir: string): string[] {
 
 function metadataOf(name: string): RepositoryMetadata | null {
   if (!existsSync(join(CONTRACT, "explain-2", `${name}.json`))) {
-    // The 15 model-only documents have no explain-2: the model's own details stand in for them.
+    // A model-only document has no explain-2: the model's own details stand in for it.
     return modelCases().find((model) => model.name === name)?.metadata ?? null;
   }
   return (readContractJson("explain-2", `${name}.json`) as { metadata: RepositoryMetadata | null }).metadata;
@@ -88,9 +90,15 @@ export function recordedCases(): RecordedCase[] {
         run: report.run,
         metadata: metadataOf(name),
         php,
-      };
+        recordedBy: path.startsWith("model-only/") ? "model" : "lockrot",
+      } satisfies RecordedCase;
     })
     .filter(({ report }) => report.findings.length === 1);
+}
+
+/** The recorded cases whose document lockrot wrote: only these can differ from the model's golden. */
+export function lockrotRecordings(): RecordedCase[] {
+  return recordedCases().filter(({ recordedBy }) => recordedBy === "lockrot");
 }
 
 /** The model's own inputs, each case under the name lockrot records it by. */
