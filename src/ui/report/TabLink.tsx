@@ -2,7 +2,6 @@ import type { ComponentChildren } from "preact";
 import { linkHref, linkState } from "../../state/hash";
 import type { LinkTarget } from "../../state/types";
 import { useReport } from "../context";
-import { jumpTo } from "./RichText";
 
 /**
  * A chart mark on Overview: a real link to the fragment it opens, so a reader can copy it or open
@@ -30,12 +29,11 @@ export function TabLink({
       aria-label={label}
       onClick={(event) => {
         if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
         if (target.section !== undefined) {
-          dispatch({ type: "view", view: target.view });
-          jumpTo(event, target.section);
+          dispatch({ type: "view", view: target.view, section: target.section });
           return;
         }
-        event.preventDefault();
         const next = linkState(target);
         dispatch({
           type: "focus",

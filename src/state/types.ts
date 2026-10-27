@@ -72,7 +72,8 @@ export interface LinkTarget {
 }
 
 export type Action =
-  | { type: "view"; view: View; keepDetail?: boolean }
+  /** `section`: the id that the new tab opens at, in place of its top. */
+  | { type: "view"; view: View; keepDetail?: boolean; section?: string }
   | { type: "query"; q: string }
   | { type: "toggle"; group: FilterGroup; key: string }
   | { type: "clear" }

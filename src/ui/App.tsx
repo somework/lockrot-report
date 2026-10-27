@@ -370,9 +370,13 @@ export function App({ model }: { model: Model }) {
   const currentView = useRef(state.view);
   currentView.current = state.view;
   const listFocused = useRef(false);
+  const landOn = useRef<string | null>(null);
   const dispatchTracked = useCallback(
     (action: Action) => {
-      if (action.type === "view" && action.view !== currentView.current) tabChangedByReader.current = true;
+      if (action.type === "view" && action.view !== currentView.current) {
+        tabChangedByReader.current = true;
+        landOn.current = action.section ?? null;
+      }
       if (action.type === "focus") listFocused.current = true;
       dispatch(action);
     },
@@ -398,6 +402,13 @@ export function App({ model }: { model: Model }) {
   useEffect(() => {
     if (!tabChangedByReader.current) return;
     tabChangedByReader.current = false;
+    const section = landOn.current === null ? null : document.getElementById(landOn.current);
+    landOn.current = null;
+    if (section !== null) {
+      section.scrollIntoView({ block: "start" });
+      section.focus({ preventScroll: true });
+      return;
+    }
     // The topbar (brand, run facts, tabs) is the page's first element and sticky from 760px up
     // (DESIGN.md §8), so it already sits at the top of the viewport the instant the page scrolls at
     // all; scrolling the window itself back to 0 is what puts the tab row and the new tab's own
