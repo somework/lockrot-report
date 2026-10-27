@@ -584,6 +584,10 @@ describe("R2, G70: an update that Composer installs below its newest release", (
     expect(action("v6.4.40-p3")).toBe("Update to v6.4.40-p3 on 6.x, below the newest v6.4.41");
   });
 
+  test("names the release it installs when that release carries build metadata", () => {
+    expect(action("v6.4.40+build.7")).toBe("Update to v6.4.40+build.7 on 6.x, below the newest v6.4.41");
+  });
+
   test("reads as before when it installs the newest release without its v prefix", () => {
     expect(action("6.4.41")).toBe("Update to v6.4.41 on 6.x");
   });
@@ -701,6 +705,7 @@ describe("isBelow orders versions as Composer does", () => {
     ["2.0.0-dev", "2.0.0-alpha1"],
     ["2.0.0", "2.0.0-p1"],
     ["2.4.7-p1", "2.4.7-p2"],
+    ["1.0.0+build", "1.0.1"],
   ])("%s is below %s", (version, than) => {
     expect(isBelow(version, than)).toBe(true);
   });
@@ -712,6 +717,8 @@ describe("isBelow orders versions as Composer does", () => {
     ["2.4.7-p1", "2.4.7"],
     ["dev-main", "2.0.0"],
     ["2.0.0", "dev-main"],
+    ["1.0.1+build", "1.0.1"],
+    ["1.0.0+", "1.0.1"],
   ])("%s is not below %s", (version, than) => {
     expect(isBelow(version, than)).toBe(false);
   });
