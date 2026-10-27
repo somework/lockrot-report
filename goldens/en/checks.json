@@ -47,6 +47,7 @@
   "fail-on-default-dagger": "3 fired (S5, S8, S9) · 8 quiet · every check ran",
   "feeds-drupal-dagger": "1 fired (S9) · 10 quiet · every check ran",
   "flysystem": "2 fired (S8, S9) · 9 quiet · every check ran",
+  "gets-below-clears-nothing-dagger": "1 fired (S8) · 10 quiet · every check ran",
   "gitlab-anon-dagger": "4 fired (S1, S2, S4, S5) · 6 quiet · S3 not run (no token)",
   "guzzle": "3 fired (S7, S8, S9) · 8 quiet · every check ran",
   "guzzle-5": "4 fired (S5, S7, S8, S9) · 7 quiet · every check ran",

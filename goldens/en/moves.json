@@ -1717,6 +1717,48 @@
       ]
     }
   ],
+  "gets-below-clears-nothing-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^5.4",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'symfony/google-mailer:^5.4'"
+      ],
+      "commands_label": "Command",
+      "clears": null,
+      "stays": "left-behind",
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": null,
+        "conditions": [
+          "checked with Composer"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements",
+          "items": []
+        }
+      ]
+    }
+  ],
   "gitlab-anon-dagger": [
     {
       "heading": "Next step",

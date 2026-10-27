@@ -715,6 +715,20 @@
       "value": "2026-09-02 · 0.1 years ago"
     }
   ],
+  "gets-below-clears-nothing-dagger": [
+    {
+      "label": "installed",
+      "value": "v4.4.41 · 2022-04-12 · 4.5 years ago · the newest on 4.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.0 · 2026-05-29 · 0.3 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-08-02 · 0.2 years ago"
+    }
+  ],
   "gitlab-anon-dagger": [
     {
       "label": "installed",

@@ -47,6 +47,7 @@
   "fail-on-default-dagger": null,
   "feeds-drupal-dagger": null,
   "flysystem": null,
+  "gets-below-clears-nothing-dagger": "checked with the solver of Composer 2.10.3 against the lock · ext-* requirements not checked",
   "gitlab-anon-dagger": null,
   "guzzle": null,
   "guzzle-5": null,
