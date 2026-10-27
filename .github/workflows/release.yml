@@ -37,7 +37,8 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      # A pin that only a lockrot branch holds can vanish, and the attested page with it.
+      # A pin that only a lockrot branch holds can vanish, and the attested page could then no
+      # longer be rebuilt from its pin.
       - name: the lockrot pin is on lockrot's main or a lockrot tag
         run: node scripts/contract.mjs reachable
       - run: npm ci

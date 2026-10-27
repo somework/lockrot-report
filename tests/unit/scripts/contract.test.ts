@@ -44,9 +44,25 @@ function lockrotRemote(): { remote: string; onMain: string; tagged: string; bran
   const remote = mkdtempSync(join(tmpdir(), "lockrot-remote-"));
   roots.push(remote);
   const git = (...args: string[]): string =>
-    execFileSync("git", ["-C", remote, "-c", "user.name=t", "-c", "user.email=t@example.com", ...args], {
-      encoding: "utf8",
-    }).trim();
+    execFileSync(
+      "git",
+      [
+        "-C",
+        remote,
+        "-c",
+        "user.name=t",
+        "-c",
+        "user.email=t@example.com",
+        "-c",
+        "commit.gpgsign=false",
+        "-c",
+        "tag.gpgsign=false",
+        ...args,
+      ],
+      {
+        encoding: "utf8",
+      },
+    ).trim();
   const commit = (message: string): string => {
     git("commit", "--quiet", "--allow-empty", "-m", message);
     return git("rev-parse", "HEAD");
@@ -92,4 +108,13 @@ test("reachable refuses a pin that only a lockrot branch holds", () => {
 
   expect(run.status).toBe(1);
   expect(run.stderr).toContain(`lockrot ${branchOnly} is on neither lockrot's main nor a lockrot tag`);
+});
+
+test("reachable says that it could not fetch lockrot, not that the pin is unkept", () => {
+  const { remote, onMain } = lockrotRemote();
+
+  const run = reachable(onMain, join(remote, "missing"));
+
+  expect(run.status).toBe(1);
+  expect(run.stderr).toContain("could not fetch lockrot's main and tags");
 });
