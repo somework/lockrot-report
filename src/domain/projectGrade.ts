@@ -112,7 +112,7 @@ export function loadLine(report: Report2): string | null {
   const share = load === 0 ? "" : ` (${String(Math.floor((100 * high) / load))} %)`;
   const dev = findings.filter((f) => f.dev);
   return [
-    `${String(load)} points on ${plural(report.packages_flagged, "flagged package", "flagged packages")}`,
+    `${plural(load, "point", "points")} on ${plural(report.packages_flagged, "flagged package", "flagged packages")}`,
     `${String(high)}${share} from high or worse`,
     `score model ${String(report.run.score_model.id)}`,
     ...(dev.length === 0 ? [] : [`${String(sum(dev.map(total)))} from packages-dev`]),
@@ -156,7 +156,7 @@ export interface WeighsRow {
 export interface WeighsMost {
   caption: string;
   rows: WeighsRow[];
-  /** "{n} more flagged packages hold {points} points", or null when every graded finding is drawn. */
+  /** "{n} more flagged packages hold {points} point(s)", or null when every graded finding is drawn. */
   rest: string | null;
   restLink: LinkTarget | null;
 }
@@ -191,6 +191,6 @@ export function weighsMost(report: Report2): WeighsMost | null {
   const rest =
     others.length === 0
       ? null
-      : `${plural(others.length, "more flagged package holds", "more flagged packages hold")} ${String(sum(others.map(total)))} points`;
+      : `${plural(others.length, "more flagged package holds", "more flagged packages hold")} ${plural(sum(others.map(total)), "point", "points")}`;
   return { caption: WEIGHS_WORDS.note, rows, rest, restLink: rest === null ? null : { view: "findings" } };
 }
