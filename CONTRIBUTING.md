@@ -77,7 +77,9 @@ the report-1 screen.
 
 1. Move the `Unreleased` section of CHANGELOG.md under the new version, and set `version` in
    `package.json` to the same number.
-2. Merge, then tag `vX.Y.Z` on main, or tag a pre-release on its release branch. The release
-   workflow refuses a tag on any other commit. It runs the unit, contract and e2e tests, then
-   builds, attests and publishes.
-3. In lockrot, run `tools/report/update-renderer vX.Y.Z` and open a pull request.
+2. Repin the contract to a lockrot commit that lockrot's main or a lockrot tag holds:
+   `node scripts/contract.mjs reachable` says whether the pin is one.
+3. Merge, then tag `vX.Y.Z` on main, or tag a pre-release on its release branch. The release
+   workflow refuses a tag on any other commit, and a pin that the check above refuses. It runs
+   the gates of ci.yml, then builds, attests and publishes.
+4. In lockrot, run `tools/report/update-renderer vX.Y.Z` and open a pull request.
