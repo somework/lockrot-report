@@ -55,6 +55,47 @@ function unknownMove(move: AnyMove): string {
   return `Next step: ${move.kind.replaceAll("-", " ")}${move.reason ? ` (${move.reason.replaceAll("_", " ")})` : ""}`;
 }
 
+const STABILITY: Readonly<Record<string, number>> = {
+  dev: 0,
+  alpha: 1,
+  a: 1,
+  beta: 2,
+  b: 2,
+  rc: 3,
+  stable: 4,
+  patch: 5,
+  pl: 5,
+  p: 5,
+};
+const COMPOSER_VERSION =
+  /^v?(\d+(?:\.\d+){0,3})(?:[._-]?(stable|beta|b|rc|alpha|a|patch|pl|p)((?:[.-]?\d+)*))?(?:[.-]?(dev))?$/i;
+const SUFFIX_NUMBERS = 3;
+
+/** Composer's `VersionParser::normalize` order, as lockrot's `MoveCheck::installsBelow` reads it. */
+function orderKey(version: string): number[] | null {
+  const match = COMPOSER_VERSION.exec(version);
+  if (match === null) return null;
+  const [, release = "", modifier, numbers = "", dev] = match;
+  const parts = release.split(".").map(Number);
+  const suffix = (numbers.match(/\d+/g) ?? []).map(Number);
+  const stability = STABILITY[modifier?.toLowerCase() ?? (dev ? "dev" : "stable")] ?? 0;
+  return [
+    ...Array.from({ length: 4 }, (_, at) => parts[at] ?? 0),
+    stability,
+    ...Array.from({ length: SUFFIX_NUMBERS }, (_, at) => suffix[at] ?? 0),
+    modifier && dev ? 0 : 1,
+  ];
+}
+
+/** A form Composer cannot normalize, such as a branch, is never below, so it adds no words. */
+export function isBelow(version: string, than: string): boolean {
+  const a = orderKey(version);
+  const b = orderKey(than);
+  if (a === null || b === null) return false;
+  const at = a.findIndex((part, index) => part !== b[index]);
+  return at !== -1 && (a[at] ?? 0) < (b[at] ?? 0);
+}
+
 /** G70 to G93: the move's action. */
 function moveAction(finding: Finding, move: AnyMove, run: Run): Rich {
   const php = move.php_check;
@@ -64,8 +105,7 @@ function moveAction(finding: Finding, move: AnyMove, run: Run): Rich {
     case "update": {
       const on = move.to_branch ? ` on ${move.to_branch}` : "";
       const installs = move.check?.installs ?? null;
-      // `newest` is the highest release, so a solve that installs another one installs below it.
-      return move.newest !== null && installs !== null && installs !== move.newest
+      return move.newest !== null && installs !== null && isBelow(installs, move.newest)
         ? [`Update to ${installs}${on}, below the newest ${move.newest}`]
         : [`Update to ${move.newest ?? move.version ?? ""}${on}`];
     }
