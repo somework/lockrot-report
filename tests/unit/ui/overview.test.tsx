@@ -555,3 +555,46 @@ describe("a grade line with nothing graded above a failing gate", () => {
     expect(grade?.querySelector(".clean-mark")).not.toBeNull();
   });
 });
+
+describe("one shell choice for every command box on the page (R4-30)", () => {
+  function moveCheckModel(): Model {
+    const result = normalize(assembleEmbed("mc-composite-dagger"));
+    if (!result.ok) throw new Error(result.error.message);
+    return result.model;
+  }
+  const shellButtons = (): string[] =>
+    [...document.querySelectorAll(".d2-shell-btn")].map((button) => button.textContent);
+  const pickCmdIn = (box: HTMLElement): void => {
+    fireEvent.click(within(box).getByRole("button", { name: "Shell: POSIX" }));
+    fireEvent.click(within(within(box).getByRole("menu")).getByRole("menuitemradio", { name: /cmd\.exe/ }));
+  };
+  afterEach(() => {
+    vi.restoreAllMocks();
+    window.localStorage.clear();
+  });
+
+  test("a pick in one Ready to run box changes every box", () => {
+    render(<App model={moveCheckModel()} />);
+    const boxes = [...band().querySelectorAll<HTMLElement>(".ov-cmd")];
+    expect(boxes.length).toBeGreaterThan(1);
+
+    pickCmdIn(boxes[1] as HTMLElement);
+
+    expect(shellButtons()).toEqual(boxes.map(() => "cmd.exe"));
+    for (const box of boxes) expect(box.querySelector(".d2-copy-cmd")?.textContent).not.toContain("'");
+  });
+
+  test("holds the pick for a box opened later when storage refuses it", () => {
+    vi.spyOn(window, "localStorage", "get").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    render(<App model={moveCheckModel()} />);
+    const [first] = [...band().querySelectorAll<HTMLElement>(".ov-cmd")];
+    pickCmdIn(first as HTMLElement);
+
+    fireEvent.click(within(first?.closest(".ov-move") as HTMLElement).getAllByRole("link")[0] as HTMLElement);
+
+    const sheet = document.querySelector<HTMLElement>('[data-surface="detail"]');
+    expect(sheet?.querySelector(".d2-shell-btn")?.textContent).toBe("cmd.exe");
+  });
+});

@@ -52,6 +52,8 @@ function renderIn(
         wide: true,
         cursor: null,
         openGlossary: vi.fn(),
+        shell: "posix",
+        pickShell: vi.fn(),
       }}
     >
       {ui}

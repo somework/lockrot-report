@@ -95,6 +95,8 @@ describe("ActiveFilters (PD-RAIL-4)", () => {
           wide: true,
           cursor: null,
           openGlossary: vi.fn(),
+          shell: "posix",
+          pickShell: vi.fn(),
         }}
       >
         <input ref={input} aria-label="search" />

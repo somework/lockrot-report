@@ -21,6 +21,7 @@ import { pickCursor } from "./rowCursor";
 import { SearchBar } from "./search/SearchBar";
 import { tabId, Tabs } from "./Tabs";
 import { useHashState } from "./useHashState";
+import { useShell } from "./useShell";
 import { useTheme } from "./useTheme";
 import { useNarrow, useRailRoom, useWide } from "./useWide";
 import { CurrentView } from "./views/Views";
@@ -302,6 +303,7 @@ export function App({ model }: { model: Model }) {
     [anchoredDispatch],
   );
   const theme = useTheme();
+  const [shell, pickShell] = useShell();
   const [glossaryOpen, setGlossaryOpen] = useState(false);
   const [glossaryAt, setGlossaryAt] = useState<GlossaryAt>("top");
   const openGlossary = useCallback(() => {
@@ -468,8 +470,8 @@ export function App({ model }: { model: Model }) {
 
   const now = useMemo(() => new Date(model.report.generated_at), [model]);
   const value = useMemo(
-    () => ({ model, state, dispatch: dispatchTracked, now, wide, cursor, openGlossary }),
-    [model, state, dispatchTracked, now, wide, cursor, openGlossary],
+    () => ({ model, state, dispatch: dispatchTracked, now, wide, cursor, openGlossary, shell, pickShell }),
+    [model, state, dispatchTracked, now, wide, cursor, openGlossary, shell, pickShell],
   );
   // The printed report (print/PrintDocument.tsx): mounted into `printHost` only while the page prints.
   const printHost = useRef<HTMLDivElement>(null);

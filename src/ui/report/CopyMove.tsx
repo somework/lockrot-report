@@ -12,31 +12,12 @@ import {
   SHELLS,
   type Shell,
 } from "../../domain/shellArgv";
-
-/** Beside `lockrot-theme`: one viewer's choice, kept in their own browser only. */
-export const SHELL_KEY = "lockrot-shell";
+import { useReport } from "../context";
 
 const COPIED_MS = 1400;
 const FAILED_MS = 2600;
 
 type Status = "idle" | "copied" | "manual";
-
-function readShell(): Shell {
-  try {
-    const saved = window.localStorage.getItem(SHELL_KEY);
-    return SHELLS.find((shell) => shell === saved) ?? "posix";
-  } catch {
-    return "posix";
-  }
-}
-
-function saveShell(shell: Shell): void {
-  try {
-    window.localStorage.setItem(SHELL_KEY, shell);
-  } catch {
-    // Not persisted: the choice still holds for this page view.
-  }
-}
 
 function useCopyStatus(): [Status, (status: Status) => void] {
   const [status, setStatus] = useState<Status>("idle");
@@ -80,7 +61,7 @@ export function CopyMove({
   label?: string;
   className?: string;
 }) {
-  const [shell, setShell] = useState<Shell>(readShell);
+  const { shell, pickShell } = useReport();
   const [menuOpen, setMenuOpen] = useState(false);
   const [status, setStatus] = useCopyStatus();
   const menuId = `${useId()}-shells`;
@@ -109,8 +90,7 @@ export function CopyMove({
     shellButton.current?.focus();
   };
   const pick = (next: Shell): void => {
-    setShell(next);
-    saveShell(next);
+    pickShell(next);
     closeMenu();
   };
   const copy = (): void => {
