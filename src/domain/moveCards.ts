@@ -55,20 +55,6 @@ function unknownMove(move: AnyMove): string {
   return `Next step: ${move.kind.replaceAll("-", " ")}${move.reason ? ` (${move.reason.replaceAll("_", " ")})` : ""}`;
 }
 
-/** Numeric versions only ("v6.4.40" < "v6.4.41"); any other form is never below, so it adds no words. */
-export function isBelow(version: string, than: string): boolean {
-  const parts = (v: string): number[] | null =>
-    /^v?\d+(\.\d+)*$/.test(v) ? v.replace(/^v/, "").split(".").map(Number) : null;
-  const a = parts(version);
-  const b = parts(than);
-  if (a === null || b === null) return false;
-  for (let i = 0; i < Math.max(a.length, b.length); i++) {
-    const d = (a[i] ?? 0) - (b[i] ?? 0);
-    if (d !== 0) return d < 0;
-  }
-  return false;
-}
-
 /** G70 to G93: the move's action. */
 function moveAction(finding: Finding, move: AnyMove, run: Run): Rich {
   const php = move.php_check;
@@ -78,7 +64,8 @@ function moveAction(finding: Finding, move: AnyMove, run: Run): Rich {
     case "update": {
       const on = move.to_branch ? ` on ${move.to_branch}` : "";
       const installs = move.check?.installs ?? null;
-      return move.newest !== null && installs !== null && isBelow(installs, move.newest)
+      // `newest` is the highest release, so a solve that installs another one installs below it.
+      return move.newest !== null && installs !== null && installs !== move.newest
         ? [`Update to ${installs}${on}, below the newest ${move.newest}`]
         : [`Update to ${move.newest ?? move.version ?? ""}${on}`];
     }
