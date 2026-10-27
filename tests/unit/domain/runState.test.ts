@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { stateLines } from "../../../src/domain/runState";
+import { clauseText, stateLines } from "../../../src/domain/runState";
 import type { Report2 } from "../../../src/model/report";
 
 function report(over: Record<string, unknown>): Report2 {
@@ -29,9 +29,21 @@ describe("stateLines", () => {
       }),
     );
     expect(line?.head).toBe("Offline run");
-    expect(line?.parts).toEqual([
+    expect(line?.parts.map(clauseText)).toEqual([
       "no advisory check ran",
       "7 of 10 packages have no grade, because lockrot read no metadata for them",
+    ]);
+  });
+
+  it("links the lookup count to the packages of the unknown grade (R4-27)", () => {
+    const [line] = stateLines(report({ counts: { unknown: 7 } }));
+
+    expect(line?.parts).toEqual([
+      {
+        count: "7 of 10 packages",
+        link: { view: "packages", filters: { verdict: ["unknown"] } },
+        rest: " have no grade, because lockrot read no metadata for them",
+      },
     ]);
   });
 

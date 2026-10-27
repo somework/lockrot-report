@@ -619,3 +619,24 @@ describe("the PHP state line's link (R4-29)", () => {
     });
   });
 });
+
+describe("a count in a state line links to its list (R4-27)", () => {
+  test("the lookup count opens All packages under the unknown grade, with exactly the rows it counts", () => {
+    const golden = pageGoldens().find(({ id }) => id === "unknown.offline‡");
+    if (golden === undefined) throw new Error("no unknown.offline‡ page golden");
+    const result = normalize(golden.report);
+    if (!result.ok) throw new Error(result.error.message);
+    render(<App model={result.model} />);
+    const line = band().querySelector<HTMLElement>(".ov-state.is-lookup");
+    const [count] = within(line as HTMLElement)
+      .getAllByRole("link")
+      .filter((link) => link.getAttribute("href") === "#view=packages&verdict=unknown");
+
+    const [goldenLine] = (golden.golden as unknown as { state_lines: string[] }).state_lines;
+    expect(line?.textContent).toBe(`${goldenLine ?? ""} ›`);
+    fireEvent.click(count as HTMLElement);
+
+    expect(screen.getByRole("tab", { selected: true }).textContent).toMatch(/^All packages/);
+    expect(document.querySelectorAll("[data-pkg]")).toHaveLength(golden.report.counts.unknown);
+  });
+});

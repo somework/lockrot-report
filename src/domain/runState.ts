@@ -8,16 +8,28 @@ import { phpStateClauses } from "./phpWindow";
 
 export type StateKind = "lookup" | "php" | "allowlist" | "baseline";
 
+/** A clause that opens with a count of a list, as a link to that list (SPEC §7.9.4). */
+export interface CountClause {
+  readonly count: string;
+  readonly link: LinkTarget;
+  readonly rest: string;
+}
+export type StateClause = string | CountClause;
+
 export interface StateLine {
   readonly kind: StateKind;
   /** The bold head before ": "; the allowlist line has none. */
   readonly head: string | null;
-  /** The clauses, joined " · "; the line links nothing but its `more` words. */
-  readonly parts: readonly string[];
+  /** The clauses, joined " · ". */
+  readonly parts: readonly StateClause[];
   readonly more: { readonly text: string; readonly link: LinkTarget } | null;
 }
 
+export const clauseText = (clause: StateClause): string =>
+  typeof clause === "string" ? clause : `${clause.count}${clause.rest}`;
+
 const RUN_DATA: LinkTarget = { view: "run" };
+const UNKNOWN_GRADE: LinkTarget = { view: "packages", filters: { verdict: ["unknown"] } };
 /** The id of Run data's PHP window section, where "The PHP window" lands (R4-29). */
 export const PHP_WINDOW_SECTION = "php-window";
 const hasNote = ({ note_details: notes }: Report2, code: string): boolean =>
@@ -26,12 +38,16 @@ const hasNote = ({ note_details: notes }: Report2, code: string): boolean =>
 function lookupLine(report: Report2): StateLine | null {
   const { security, counts, packages_checked: checked } = report;
   const offline = hasNote(report, "offline");
-  const parts = [
+  const parts: StateClause[] = [
     ...(security.check === "not_run" ? ["no advisory check ran"] : []),
     ...(security.check === "partial" ? ["the advisory lookup was partial"] : []),
     ...(counts.unknown > 0
       ? [
-          `${String(counts.unknown)} of ${plural(checked, "package", "packages")} ${counts.unknown === 1 ? "has" : "have"} no grade, because lockrot read no metadata for ${counts.unknown === 1 ? "it" : "them"}`,
+          {
+            count: `${String(counts.unknown)} of ${plural(checked, "package", "packages")}`,
+            link: UNKNOWN_GRADE,
+            rest: ` ${counts.unknown === 1 ? "has" : "have"} no grade, because lockrot read no metadata for ${counts.unknown === 1 ? "it" : "them"}`,
+          },
         ]
       : []),
   ];
@@ -103,4 +119,4 @@ export function stateLines(report: Report2): StateLine[] {
 
 /** A state line as one string: the head and ": ", the clauses joined " · ", ".", then the link words. */
 export const stateLineText = ({ head, parts, more }: StateLine): string =>
-  `${head === null ? "" : `${head}: `}${parts.join(" · ")}.${more === null ? "" : ` ${more.text}`}`;
+  `${head === null ? "" : `${head}: `}${parts.map(clauseText).join(" · ")}.${more === null ? "" : ` ${more.text}`}`;

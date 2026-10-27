@@ -26,7 +26,7 @@ import {
 import { figureLine, GRADE_HEAD, gradeLine, gradeLineHead, waffleCaption } from "../../domain/projectGrade";
 import { verdictTone } from "../../domain/findingRow";
 import { findingsLink } from "../../domain/overviewTab";
-import { stateLines } from "../../domain/runState";
+import { stateLines, type StateClause } from "../../domain/runState";
 import { waffleRuns } from "../../domain/summary";
 import { lookupWord } from "../../domain/pageVocabulary";
 import type { Tone } from "../../domain/vocab";
@@ -140,6 +140,18 @@ export function GateLine({
   return <p className={classes}>{body}</p>;
 }
 
+function StateClauseText({ clause }: { clause: StateClause }) {
+  if (typeof clause === "string") return <>{clause}</>;
+  return (
+    <>
+      <TabLink target={clause.link} className="ov-link ov-state-count">
+        {clause.count}
+      </TabLink>
+      {clause.rest}
+    </>
+  );
+}
+
 /** One state line: a bold head, then its clauses, each count a link where it has a list. */
 function StateLines({ report }: { report: Report2 }) {
   const lines = stateLines(report);
@@ -149,7 +161,12 @@ function StateLines({ report }: { report: Report2 }) {
       {lines.map((line) => (
         <li key={line.kind} className={`ov-state is-${line.kind}`}>
           {line.head !== null && <b className="ov-state-head">{line.head}: </b>}
-          {line.parts.join(" · ")}
+          {line.parts.map((clause, at) => (
+            <Fragment key={at}>
+              {at > 0 && " · "}
+              <StateClauseText clause={clause} />
+            </Fragment>
+          ))}
           {"."}
           {line.more !== null && (
             <>
