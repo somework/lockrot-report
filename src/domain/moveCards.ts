@@ -106,9 +106,13 @@ function moveAction(finding: Finding, move: AnyMove, run: Run): Rich {
     case "update": {
       const on = move.to_branch ? ` on ${move.to_branch}` : "";
       const installs = move.check?.installs ?? null;
-      return move.newest !== null && installs !== null && isBelow(installs, move.newest)
-        ? [`Update to ${installs}${on}, below the newest ${move.newest}`]
-        : [`Update to ${move.newest ?? move.version ?? ""}${on}`];
+      if (move.newest === null || installs === null)
+        return [`Update to ${move.newest ?? move.version ?? ""}${on}`];
+      if (isBelow(installs, move.newest))
+        return [`Update to ${installs}${on}, below the newest ${move.newest}`];
+      // A plain `composer update` solve can leave the branch, so the branch would mislead.
+      if (isBelow(move.newest, installs)) return [`Update to ${installs}`];
+      return [`Update to ${move.newest}${on}`];
     }
     case "require":
     case "raise-php": {

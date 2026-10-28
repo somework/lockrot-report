@@ -86,6 +86,9 @@
   "E": [
     "Your branch, 5.x, had its last release, v5.4.53, 0.4 years ago."
   ],
+  "E-dev-dagger": [
+    "Your branch, 5.x, had its last release, v5.4.53, 0.4 years ago."
+  ],
   "E-ignored-dagger": [
     "Your branch, 5.x, had its last release, v5.4.53, 0.4 years ago."
   ],
@@ -244,6 +247,10 @@
   "fix-newest-held-dagger": [
     "Your branch, 5.x, had its last release, v5.4.53, 0.4 years ago."
   ],
+  "fix-newest-two-fixes-dagger": [
+    "Your branch, 2.x, had its last release, 2.10.3, less than three weeks ago.",
+    "It has no higher branch."
+  ],
   "flysystem": [
     "Your branch, 1.x, had its last release, 1.1.10, 4.0 years ago.",
     "The move's branch, 3.x, released 3.36.0 0.1 years ago."
@@ -326,6 +333,18 @@
     "Your branch, 2.x, had its last release, v2.3.2, 0.3 years ago.",
     "It has no higher branch."
   ],
+  "mc-canonical-package-dagger": [
+    "Your branch, 6.x, had its last release, v6.4.41, 0.3 years ago.",
+    "It has no higher branch."
+  ],
+  "mc-canonical-vcs-dagger": [
+    "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
+    "It has no higher branch."
+  ],
+  "mc-canonical-vcs-unmatched-dagger": [
+    "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
+    "It has no higher branch."
+  ],
   "mc-composite-dagger": [
     "Your branch, 2.x, had its last release, v2.3.2, 0.2 years ago.",
     "It has no higher branch."
@@ -371,6 +390,14 @@
     "Your branch, 2.x, had its last release, v2.3.2, 0.3 years ago.",
     "It has no higher branch."
   ],
+  "mc-minimal-changes-dagger": [
+    "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
+    "It has no higher branch."
+  ],
+  "mc-newest-above-row-dagger": [
+    "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
+    "It has no higher branch."
+  ],
   "mc-package-hold-dagger": [
     "Your branch, 6.x, had its last release, v6.4.40, 0.2 years ago.",
     "It has no higher branch."
@@ -388,6 +415,10 @@
   ],
   "mc-root-hold-dagger": [
     "Your branch, 7.x, had its last release, 7.15.2, 0.2 years ago."
+  ],
+  "mc-root-version-dagger": [
+    "Your branch, 6.x, had its last release, v6.4.41, 0.3 years ago.",
+    "It has no higher branch."
   ],
   "mc-split-both-refused-dagger": [
     "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
@@ -429,6 +460,10 @@
     "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
   ],
   "ok-unchecked": [
+    "Your branch, 8.x, has no dated release.",
+    "It has no higher branch."
+  ],
+  "ok-unchecked-entry-dagger": [
     "Your branch, 8.x, has no dated release.",
     "It has no higher branch."
   ],
@@ -588,6 +623,18 @@
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],
   "host-unsupported": [],
+  "mc-plain-update-dagger": [
+    "Your branch, 2.x, had its last release, 2.12.3, 0.3 years ago.",
+    "It has no higher branch."
+  ],
+  "mc-update-now-below-dagger": [
+    "Your branch, 2.x, had its last release, 2.12.3, 0.3 years ago.",
+    "It has no higher branch."
+  ],
+  "mc-update-now-plain-dagger": [
+    "Your branch, 2.x, had its last release, 2.12.3, 0.3 years ago.",
+    "It has no higher branch."
+  ],
   "no-feed-accepted-dagger": [],
   "no-feed-dagger": [],
   "no-tag-dagger": [],

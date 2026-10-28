@@ -196,6 +196,13 @@
     "the advisories alone make it low",
     "without CVE-2026-45133: 2, low (tied: the others weigh the same)"
   ],
+  "E-dev-dagger": [
+    "1 · low from 1 · 7 points short of medium · ages as of 2026-10-01",
+    "vulnerable 2: low advisory CVE-2026-45133, the worst of 3 (tied with CVE-2026-45305, CVE-2026-45304); its own fix (composer update on 5.x) is reachable, so no × 2",
+    "packages-dev: total 2 ÷ 2 = 1",
+    "the advisories (halved: packages-dev) alone make it low",
+    "without CVE-2026-45133: 1, low (tied: the others weigh the same)"
+  ],
   "E-ignored-dagger": [
     "2 · low from 1 · 6 points short of medium · ages as of 2026-10-01",
     "vulnerable 2: low advisory CVE-2026-45133, the worst of 3 (tied with CVE-2026-45305, CVE-2026-45304); its own fix (composer update on 5.x) is reachable, so no × 2",
@@ -509,6 +516,13 @@
     "the advisories alone make it low",
     "without CVE-2026-45133: 2, low (tied: the others weigh the same)"
   ],
+  "fix-newest-two-fixes-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory PKSA-m4t9-vsgq-8khn, the worst of 3 (tied with PKSA-zyf5-hrxv-hrd7); its own fix (upgrade on 2.x) is reachable, so no × 2",
+    "transitive: no maintenance to halve; security is never halved for reach",
+    "the advisories alone make it high",
+    "without PKSA-m4t9-vsgq-8khn: 16, high (tied: the others weigh the same)"
+  ],
   "flysystem": [
     "10 · medium from 8 · 6 points short of high · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
@@ -675,6 +689,21 @@
     "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
     "the advisory alone makes it high"
   ],
+  "mc-canonical-package-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (upgrade on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-canonical-vcs-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-canonical-vcs-unmatched-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
   "mc-composite-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
@@ -737,6 +766,19 @@
     "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
     "the advisory alone makes it high"
   ],
+  "mc-minimal-changes-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-newest-above-row-dagger": [
+    "24 · high from 16 · 8 points short of critical · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
+    "direct requirement: maintenance not halved for reach",
+    "the advisory alone makes it high",
+    "without capped: 16, high · without the advisory: 8, medium"
+  ],
   "mc-package-hold-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory CVE-2026-45068; its own fix (upgrade on 6.x) is reachable, so no × 2",
@@ -760,6 +802,11 @@
   "mc-root-hold-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory CVE-2026-69246; its own fix (composer update on 8.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
+  "mc-root-version-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (upgrade on 6.x) is reachable, so no × 2",
     "the advisory alone makes it high"
   ],
   "mc-split-both-refused-dagger": [
@@ -830,6 +877,10 @@
     "checks not run: its repository activity (repository not found)"
   ],
   "ok-unchecked": [
+    "0 · ok · ages as of 2026-10-01",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "ok-unchecked-entry-dagger": [
     "0 · ok · ages as of 2026-10-01",
     "checks missing: release age (S2) not checked (undated releases)"
   ],
@@ -1155,6 +1206,24 @@
   "host-unsupported": [
     "0 · ok · ages as of 2026-10-01",
     "checks missing: archived repository (S3) and repository activity (S4) not checked (host not supported: lockrot cannot ask codeberg.org)"
+  ],
+  "mc-plain-update-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-59882; its own fix (composer update on 2.x) is reachable, so no × 2",
+    "transitive: no maintenance to halve; security is never halved for reach",
+    "the advisory alone makes it high"
+  ],
+  "mc-update-now-below-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-59882; its own fix (composer update on 2.x) is reachable, so no × 2",
+    "transitive: no maintenance to halve; security is never halved for reach",
+    "the advisory alone makes it high"
+  ],
+  "mc-update-now-plain-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-59882; its own fix (composer update on 2.x) is reachable, so no × 2",
+    "transitive: no maintenance to halve; security is never halved for reach",
+    "the advisory alone makes it high"
   ],
   "no-feed-accepted-dagger": [
     "0 · ok · ages as of 2026-10-01",

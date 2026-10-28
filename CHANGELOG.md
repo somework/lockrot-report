@@ -214,6 +214,9 @@ project is overall, and the other tabs lead with their own part.
   is then only the Fix filter, which selects the packages whose advisory fix needs the raise, and a
   row whose move names no PHP target. A row's "after it" ends with the check's short words when
   the check refused the move or did not run.
+- When Composer's plain `composer update` installs a release above the newest of the branch, the
+  move card reads "Update to 3.0.0", with no branch.
+- A baselined package that has no grade shows the baseline suffix too: "(baseline: known)".
 - The Overview fix counts and the Fix filter of the package tabs read the same field, the
   package's fix. A `composer why-not` check on a held move adds "This shows which package holds
   the move."

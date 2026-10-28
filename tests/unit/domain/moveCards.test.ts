@@ -592,8 +592,8 @@ describe("R2, G70: an update that Composer installs below its newest release", (
     expect(action("6.4.41")).toBe("Update to v6.4.41 on 6.x");
   });
 
-  test("reads as before when it installs a release above the newest", () => {
-    expect(action("v6.4.42")).toBe("Update to v6.4.41 on 6.x");
+  test("names only the release it installs when that release lies above the newest (ruling R5-3)", () => {
+    expect(action("v7.0.0")).toBe("Update to v7.0.0");
   });
 
   test("reads as before when it installs the newest release", () => {

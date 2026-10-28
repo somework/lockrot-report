@@ -160,6 +160,7 @@
   ],
   "D-partial-dagger": [],
   "E": [],
+  "E-dev-dagger": [],
   "E-ignored-dagger": [],
   "E-ignored-whole-dagger": [],
   "F": [],
@@ -313,6 +314,7 @@
   ],
   "feeds-drupal-dagger": [],
   "fix-newest-held-dagger": [],
+  "fix-newest-two-fixes-dagger": [],
   "flysystem": [
     {
       "flag": "vulnerable",
@@ -424,6 +426,9 @@
   "mc-baseline-refused-dagger": [],
   "mc-blocking-off-both-dagger": [],
   "mc-blocking-off-dagger": [],
+  "mc-canonical-package-dagger": [],
+  "mc-canonical-vcs-dagger": [],
+  "mc-canonical-vcs-unmatched-dagger": [],
   "mc-composite-dagger": [],
   "mc-dev-update-dagger": [],
   "mc-filter-only-dagger": [],
@@ -436,11 +441,19 @@
   "mc-joint-retag-dagger": [],
   "mc-link-newest-dagger": [],
   "mc-lookup-incomplete-dagger": [],
+  "mc-minimal-changes-dagger": [],
+  "mc-newest-above-row-dagger": [
+    {
+      "flag": "capped",
+      "text": "It requires php >=8.1 <8.5: it stops at 8.4, so the newest PHP, 8.5, is excluded."
+    }
+  ],
   "mc-package-hold-dagger": [],
   "mc-pass-cap-dagger": [],
   "mc-raise-php-dagger": [],
   "mc-replan-major-dagger": [],
   "mc-root-hold-dagger": [],
+  "mc-root-version-dagger": [],
   "mc-split-both-refused-dagger": [
     {
       "flag": "capped",
@@ -477,6 +490,7 @@
     }
   ],
   "ok-unchecked": [],
+  "ok-unchecked-entry-dagger": [],
   "op-update": [],
   "pagerfanta": [],
   "partial": [],
@@ -628,6 +642,9 @@
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],
   "host-unsupported": [],
+  "mc-plain-update-dagger": [],
+  "mc-update-now-below-dagger": [],
+  "mc-update-now-plain-dagger": [],
   "no-feed-accepted-dagger": [],
   "no-feed-dagger": [],
   "no-tag-dagger": [],
