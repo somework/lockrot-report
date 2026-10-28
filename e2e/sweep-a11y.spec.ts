@@ -1,6 +1,6 @@
 /**
- * PD-A11Y-SWEEP-1..3 (DESIGN.md §5): what a cross-cutting sweep of every tab (768 and 1024, light at
- * 1440, forced colours, keyboard only, the names a screen reader reads) found and fixed.
+ * PD-A11Y-SWEEP-1..3 (DESIGN.md §5): what a cross-cutting sweep of every tab (forced colours, keyboard
+ * only, the names a screen reader reads, axe at a phone, a tablet and a desktop width) found and fixed.
  */
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
@@ -107,14 +107,40 @@ test.describe("report-2: the sweep over every tab", () => {
     await expect(sorted.getByRole("button")).toContainText("↑");
   });
 
-  for (const view of ["overview", "findings", "advisories", "packages", "radius", "run"] as const) {
-    test(`axe finds no violation on ${view}`, async ({ page }) => {
-      await page.goto(`${report2Url(CASE)}#view=${view}`);
-      await expect(page.locator(`[data-surface="${view}"]`)).toBeVisible();
-      const results = await new AxeBuilder({ page }).include(`[data-surface="${view}"]`).analyze();
-      expect(
-        results.violations.flatMap((v) => v.nodes.map((node) => `${v.id}: ${node.target.join(" ")}`)),
-      ).toEqual([]);
-    });
+  /** Every axe rule broken on the page, as "rule: target". */
+  async function axeViolations(page: Page): Promise<string[]> {
+    // The sheet fades in: a contrast read mid-fade sees a colour that never rests on screen.
+    await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== "running"));
+    const results = await new AxeBuilder({ page }).analyze();
+    return results.violations.flatMap((v) => v.nodes.map((node) => `${v.id}: ${node.target.join(" ")}`));
+  }
+
+  for (const width of [375, 768, 1440]) {
+    for (const colorScheme of ["light", "dark"] as const) {
+      test.describe(`at ${width}px, ${colorScheme}`, () => {
+        test.use({ viewport: { width, height: 900 }, colorScheme });
+
+        for (const view of ["overview", "findings", "advisories", "packages", "radius", "run"] as const) {
+          test(`axe finds no violation on ${view}`, async ({ page }) => {
+            await page.goto(`${report2Url(CASE)}#view=${view}`);
+            await expect(page.locator(`[data-surface="${view}"]`)).toBeVisible();
+            expect(await axeViolations(page)).toEqual([]);
+          });
+        }
+
+        test("axe finds no violation with a package open", async ({ page }) => {
+          await page.goto(`${report2Url(CASE)}#view=findings&pkg=twig%2Ftwig`);
+          await expect(page.locator('[data-surface="detail"]')).toBeVisible();
+          expect(await axeViolations(page)).toEqual([]);
+        });
+
+        test("axe finds no violation with the glossary open", async ({ page }) => {
+          await page.goto(`${report2Url(CASE)}#view=findings`);
+          await page.keyboard.press("?");
+          await expect(page.locator("dialog.glossary")).toBeVisible();
+          expect(await axeViolations(page)).toEqual([]);
+        });
+      });
+    }
   }
 });

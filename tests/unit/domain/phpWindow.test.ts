@@ -176,6 +176,14 @@ describe("the PHP state line", () => {
     ).toBe("not checked (a package it needs is not in Composer's cache)");
   });
 
+  test("names a fix that the advisory lookup did not cover in the reason words of SPEC §7.9.21", () => {
+    expect(
+      phpStateClauses(
+        report({ target_fix: fix({ check: "not_checked", reason: "advisory_lookup_incomplete" }) }),
+      )?.[2],
+    ).toBe("not checked (the advisory lookup did not cover a package it installs)");
+  });
+
   test("names the root link of a root ceiling", () => {
     const hold = {
       source: "root" as const,

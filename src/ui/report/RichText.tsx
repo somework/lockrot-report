@@ -1,5 +1,6 @@
 import type { JumpTarget, Rich } from "../../domain/rich";
 import { OutLink } from "../common/common";
+import { jumpInDetail } from "./jumpInDetail";
 
 /** Scrolls to an element of the sheet. The page keeps its state in the URL fragment, so a jump
  *  never sets the fragment: `#id` would drop the open package. */
@@ -10,7 +11,7 @@ export function jumpTo(event: MouseEvent, id: string): void {
     const target = document.getElementById(id);
     if (target === null) return;
     if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
-    if (typeof target.scrollIntoView === "function") target.scrollIntoView({ block: "start" });
+    jumpInDetail(target);
     target.focus({ preventScroll: true });
   });
 }

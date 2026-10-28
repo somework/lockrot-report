@@ -341,7 +341,7 @@
   }
   .al-head {
     position: sticky;
-    top: var(--topbar-h);
+    top: var(--stuck-top);
     z-index: 3;
     width: auto;
     overflow: visible;

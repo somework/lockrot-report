@@ -578,7 +578,14 @@ export class NewReportPage implements ReportPage {
       [label, group ?? null] as const,
     );
     if (index < 0) throw new Error(`no rail row "${label}"`);
-    await buttons.nth(index).click();
+    const row = await buttons.nth(index).elementHandle();
+    const was = await row.getAttribute("aria-pressed");
+    await row.click();
+    // The click returns before the rail re-renders, and the next read must see the new rows.
+    await this.page.waitForFunction(([el, before]) => el.getAttribute("aria-pressed") !== before, [
+      row,
+      was,
+    ] as const);
   }
 
   async listedPackageCount(): Promise<number> {

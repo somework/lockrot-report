@@ -53,11 +53,6 @@
   font-size: var(--text-s);
   color: var(--muted);
 }
-/* A jump lands below the sticky header. */
-.d3-row-wide,
-.d2-branches-line {
-  scroll-margin-top: 172px;
-}
 .d3-verdict-line a.lnk,
 .d3-reading a.lnk {
   border-bottom-style: dotted;
@@ -410,7 +405,6 @@
   border-bottom: 1px solid var(--border);
   font-size: var(--text-s);
   line-height: 1.45;
-  scroll-margin-top: 172px;
 }
 .d3-adv:last-child {
   border-bottom: 0;

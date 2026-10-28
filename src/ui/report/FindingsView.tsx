@@ -33,6 +33,7 @@ import "../views/views.css";
 import "../views/ledger-rows.css";
 import "./findings.css";
 import { platformStep } from "../../domain/moveCards";
+import { LIST_HEAD_H, useMeasuredHeight } from "../useMeasuredHeight";
 
 /** `applyFilters2` keeps `rank` order, which runs grade by grade, so a boundary is enough. */
 function byGrade(findings: readonly Finding[]): { verdict: string; findings: Finding[] }[] {
@@ -73,9 +74,10 @@ function NoteLine({ note }: { note: PackagesNote }) {
 
 /** The column heads of the Findings table: the score scale's floors over the bars, and the age
  *  axis. A narrow layout hides them from sight only; each value there carries its own label. */
-function ColumnHead({ run, axis }: { run: Run; axis: AgeAxis | null }) {
+function ColumnHead({ run, axis, onScreen }: { run: Run; axis: AgeAxis | null; onScreen: boolean }) {
+  const ref = useMeasuredHeight<HTMLDivElement>(LIST_HEAD_H);
   return (
-    <div className="fhead f2-head" role="row">
+    <div className="fhead f2-head" role="row" ref={onScreen ? ref : null}>
       <span className="fhead-col f2-head-score" role="columnheader">
         <span className="f2-head-label">{FINDINGS_HEAD.score}</span>
         <span className="f2-head-axis" aria-hidden="true">
@@ -151,7 +153,7 @@ function Group({ verdict, findings, axis }: { verdict: string; findings: Finding
         {majors !== null && <span className="fgroup-major">{majors}</span>}
       </SpanRow>
       {/* On paper each group repeats the column head, as a printed table repeats its head row. */}
-      {printed && <ColumnHead run={report.run} axis={axis} />}
+      {printed && <ColumnHead run={report.run} axis={axis} onScreen={false} />}
       {runSegments(findings).map((segment) => {
         const first = segment.findings[0]?.package ?? "";
         if (segment.key === null) {
@@ -247,7 +249,7 @@ export function FindingsView2() {
         <>
           {platform !== null && <p className="f2-platform">{platform}</p>}
           <div className="fledger f2-ledger" role="table" aria-label="Findings">
-            {!printed && <ColumnHead run={report.run} axis={axis} />}
+            {!printed && <ColumnHead run={report.run} axis={axis} onScreen />}
             {byGrade(rows).map((group) => (
               <Group key={group.verdict} verdict={group.verdict} findings={group.findings} axis={axis} />
             ))}

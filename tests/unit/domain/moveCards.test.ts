@@ -729,3 +729,89 @@ test("isBelow reads a long run of suffix digits that ends in a stray character i
 
   expect(isBelow(version, "2.0.0")).toBe(false);
 });
+
+describe("R6-3: a require step that moves the package out of require-dev", () => {
+  function directRequire(): { finding: Finding; run: Run } {
+    const found = modelCases().find((c) => c.finding.direct && c.finding.next_step?.kind === "require");
+    if (found === undefined) throw new Error("no recorded direct require move");
+    return structuredClone({ finding: found.finding, run: found.run });
+  }
+
+  test("says it removes the package from require-dev when the step passes --no-interaction", () => {
+    const { finding, run } = directRequire();
+    const move = finding.next_step;
+    if (move === null) throw new Error("the case has a move");
+    move.commands = [
+      ["composer", "require", `${finding.package}:${move.constraint ?? ""}`, "--no-interaction"],
+    ];
+
+    const card = moveCards(finding, run)[0];
+
+    expect(plain(card?.action ?? [])).toMatch(/^Require \S+, which removes it from require-dev/);
+    expect(card?.argvs).toEqual(move.commands);
+  });
+
+  test("names no section when the require step passes no --no-interaction", () => {
+    const { finding, run } = directRequire();
+    const move = finding.next_step;
+    if (move === null) throw new Error("the case has a move");
+    move.commands = [["composer", "require", `${finding.package}:${move.constraint ?? ""}`]];
+
+    expect(plain(moveCards(finding, run)[0]?.action ?? [])).not.toContain("require-dev");
+  });
+
+  test("names no removal when the step also passes --dev, which keeps the package in require-dev", () => {
+    const { finding, run } = directRequire();
+    const move = finding.next_step;
+    if (move === null) throw new Error("the case has a move");
+    move.commands = [
+      ["composer", "require", `${finding.package}:${move.constraint ?? ""}`, "--no-interaction", "--dev"],
+    ];
+
+    expect(plain(moveCards(finding, run)[0]?.action ?? [])).not.toContain("require-dev");
+  });
+
+  function raisePhp(phpOptions: readonly string[]): { finding: Finding; run: Run } {
+    const { finding, run } = directRequire();
+    const move = finding.next_step;
+    if (move === null) throw new Error("the case has a move");
+    const raised: unknown = {
+      ...move,
+      kind: "raise-php",
+      php_check: { ...move.php_check, raise_to: ">=8.1" },
+      commands: [
+        ["composer", "require", "php:>=8.1", ...phpOptions],
+        ["composer", "require", `${finding.package}:${move.constraint ?? ""}`],
+      ],
+    };
+    return { finding: { ...finding, next_step: raised as typeof move }, run };
+  }
+
+  test("says the php step removes php from require-dev when it passes --no-interaction", () => {
+    const { finding, run } = raisePhp(["--no-interaction", "--no-update"]);
+
+    expect(plain(moveCards(finding, run)[0]?.action ?? [])).toMatch(
+      /^Raise require\.php to >=8\.1, which removes it from require-dev, then require /,
+    );
+  });
+
+  test("names no removal on the php step that also passes --dev", () => {
+    const { finding, run } = raisePhp(["--no-interaction", "--dev", "--no-update"]);
+
+    expect(plain(moveCards(finding, run)[0]?.action ?? [])).toMatch(
+      /^Raise require\.php to >=8\.1, then require /,
+    );
+  });
+
+  test("takes --no-interaction on the php step as no removal of the package", () => {
+    const { finding, run } = directRequire();
+    const move = finding.next_step;
+    if (move === null) throw new Error("the case has a move");
+    move.commands = [
+      ["composer", "require", "php:>=8.1", "--no-interaction", "--no-update"],
+      ["composer", "require", `${finding.package}:${move.constraint ?? ""}`],
+    ];
+
+    expect(plain(moveCards(finding, run)[0]?.action ?? [])).not.toContain("require-dev");
+  });
+});

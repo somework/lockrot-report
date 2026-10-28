@@ -35,6 +35,49 @@ describe("the Run tab's move check (SPEC §7.9.16)", () => {
     ]);
   });
 
+  test("lists three or more variables with commas and 'and' before the last", () => {
+    const report = golden("snipe-it");
+    if (report.run.move_check === null) throw new Error("snipe-it checks its moves");
+    report.run.move_check = {
+      ...report.run.move_check,
+      blocks_advisories: false,
+      blocking_disabled_by: ["COMPOSER_POLICY", "config.policy", "config.policy.advisories"],
+    };
+    expect(moveCheckFact(report)).toEqual([
+      "checked with the solver of Composer 2.10.3 against the lock, with advisory blocking turned off by ",
+      { code: "COMPOSER_POLICY" },
+      ", ",
+      { code: "config.policy" },
+      " and ",
+      { code: "config.policy.advisories" },
+      " · ext-* requirements not checked",
+    ]);
+  });
+
+  test("names each pattern of ignored_platform, the list that replaces ignores_extensions (§7.9.16)", () => {
+    const report = golden("snipe-it");
+    if (report.run.move_check === null) throw new Error("snipe-it checks its moves");
+    const { ignores_extensions: _, ...rest } = report.run.move_check;
+    const emitted: unknown = {
+      ...rest,
+      ignored_platform: ["ext-*", "lib-*", "php-debug", "php-ipv6", "php-zts"],
+    };
+    report.run.move_check = emitted as typeof report.run.move_check;
+    expect(plain(moveCheckFact(report) ?? [])).toBe(
+      "checked with the solver of Composer 2.10.3 against the lock · ext-*, lib-*, php-debug, php-ipv6 and php-zts requirements not checked",
+    );
+  });
+
+  test("names no ignored requirement when ignored_platform is empty", () => {
+    const report = golden("snipe-it");
+    if (report.run.move_check === null) throw new Error("snipe-it checks its moves");
+    const emitted: unknown = { ...report.run.move_check, ignored_platform: [] };
+    report.run.move_check = emitted as typeof report.run.move_check;
+    expect(plain(moveCheckFact(report) ?? [])).toBe(
+      "checked with the solver of Composer 2.10.3 against the lock",
+    );
+  });
+
   test("says that Composer's solver refuses the lock itself", () => {
     expect(plain(moveCheckFact(golden("wallabag-2.6")) ?? [])).toBe(
       "not checked, because Composer's solver refuses the lock itself",

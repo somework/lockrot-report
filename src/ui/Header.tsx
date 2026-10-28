@@ -1,38 +1,12 @@
 import type { ComponentChildren, RefObject } from "preact";
-import { useId, useLayoutEffect, useRef } from "preact/hooks";
+import { useId, useLayoutEffect } from "preact/hooks";
 import { gateFact, gateHeadline } from "../domain/gate";
 import { DATA_AS_OF, dataDay } from "../domain/share";
 import { GateHeadlineText } from "./common/GateWords";
 import { useReport } from "./context";
 import { CopySummary } from "./CopySummary";
+import { useMeasuredHeight } from "./useMeasuredHeight";
 import { themeButtonLabel, type Theme } from "./useTheme";
-
-/**
- * Publishes the header's rendered height as `--topbar-h`, which the sticky rail and detail column
- * sit under. The legacy page hard-coded 196px (css-html.md §10.4), and a long project name or a
- * wrapped meta line pushed the real header past it. Set through the CSSOM, which the page's CSP
- * allows (DESIGN.md §1.3).
- */
-function useHeaderHeight() {
-  const ref = useRef<HTMLElement>(null);
-
-  useLayoutEffect(() => {
-    const node = ref.current;
-    if (node === null || typeof ResizeObserver === "undefined") return undefined;
-    const root = document.documentElement;
-    const observer = new ResizeObserver(() => {
-      root.style.setProperty("--topbar-h", `${Math.ceil(node.getBoundingClientRect().height)}px`);
-    });
-    observer.observe(node);
-
-    return () => {
-      observer.disconnect();
-      root.style.removeProperty("--topbar-h");
-    };
-  }, []);
-
-  return ref;
-}
 
 /** Hides the gate fact's flags from sight only where the summary names them anyway and that saves a
  *  line (gate.css). The flags are the gate's source, so a gate that fails keeps them in the header. */
@@ -79,7 +53,7 @@ export interface HeaderProps {
 export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert = false }: HeaderProps) {
   const { model } = useReport();
   const { run, lockrot, data_date } = model.report;
-  const ref = useHeaderHeight();
+  const ref = useMeasuredHeight<HTMLElement>("--topbar-h");
   useGateFactFit(ref);
   // The project names itself; the lock is called composer.lock everywhere, so it is the fallback.
   const project = run.project ?? run.lock_file ?? "composer.lock";

@@ -195,10 +195,9 @@ export interface KeyContext {
 }
 
 /** Whether any native popover (a verdict pill's, Header's gate fact) is currently open. Read from the DOM, not
- *  application state: `popover="auto"` opens and closes without either (DESIGN.md §8). Guarded
- *  the same way `useHeaderHeight` guards `ResizeObserver` — an engine that does not know the
- *  `:popover-open` pseudo-class must read as "no popover open", never throw out of a keydown
- *  handler. */
+ *  application state: `popover="auto"` opens and closes without either (DESIGN.md §8). An engine
+ *  that does not know the `:popover-open` pseudo-class must read as "no popover open", never throw
+ *  out of a keydown handler. */
 function hasOpenPopover(): boolean {
   try {
     return document.querySelector(":popover-open") !== null;

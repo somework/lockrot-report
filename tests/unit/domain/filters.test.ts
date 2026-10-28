@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { activeFilters } from "../../../src/domain/filters";
-import { EMPTY_FILTERS } from "../../../src/state/types";
+import { railGroups2 } from "../../../src/domain/list";
+import { EMPTY_FILTERS, INITIAL_STATE } from "../../../src/state/types";
+import type { View } from "../../../src/model/types";
 import type { Filters } from "../../../src/state/types";
+import { multiFindingReports } from "../words/recorded";
 
 function withFilters(filters: Partial<Filters>): Filters {
   return { ...EMPTY_FILTERS, ...filters };
@@ -18,9 +21,9 @@ describe("activeFilters (PD-RAIL-4)", () => {
     });
 
     expect(activeFilters(filters)).toEqual([
-      { group: "verdict", key: "high", groupLabel: "Verdict", label: "high" },
+      { group: "verdict", key: "high", groupLabel: "Grade", label: "high" },
       { group: "scope", key: "dev", groupLabel: "Scope", label: "require-dev" },
-      { group: "signal", key: "S4", groupLabel: "Signal", label: "S4 no recent push" },
+      { group: "signal", key: "S4", groupLabel: "Signal", label: "S4 repository activity" },
       { group: "fix", key: "upgrade", groupLabel: "Fix", label: "upgrade" },
       { group: "since", key: "new", groupLabel: "Since baseline", label: "New" },
     ]);
@@ -55,4 +58,41 @@ describe("activeFilters (PD-RAIL-4)", () => {
       { group: "gate", key: "valueOf", groupLabel: "This run", label: "valueOf" },
     ]);
   });
+
+  it("names a signal by its SPEC §7.9.9 name, and a fix kind by its rail word (R6-32)", () => {
+    expect(activeFilters(withFilters({ signal: ["S2"], fix: ["update"] }))).toEqual([
+      { group: "signal", key: "S2", groupLabel: "Signal", label: "S2 release age" },
+      { group: "fix", key: "update", groupLabel: "Fix", label: "composer update" },
+    ]);
+  });
+});
+
+describe("an active filter chip and the rail row that set it (R6-32)", () => {
+  const cases = multiFindingReports().flatMap(({ name, report }) =>
+    (["findings", "advisories"] as const satisfies readonly View[]).map((view) => ({ name, view, report })),
+  );
+
+  it.each(cases)(
+    "$name on $view: each chip names its value in the words of its rail row",
+    ({ report, view }) => {
+      const groups = railGroups2(report, { ...INITIAL_STATE, view }).filter((g) => g.group !== "accepted");
+      const pairs = groups.flatMap((g) =>
+        g.rows.map((row) => [activeFilters(withFilters({ [g.group]: [row.key] }))[0]?.label, row.label]),
+      );
+      expect(pairs.length).toBeGreaterThan(0);
+      expect(pairs.filter(([chip, rail]) => chip !== rail)).toEqual([]);
+    },
+  );
+
+  it.each(cases)(
+    "$name on $view: each chip group is the rail title without its unit or path",
+    ({ report, view }) => {
+      const groups = railGroups2(report, { ...INITIAL_STATE, view }).filter((g) => g.group !== "accepted");
+      const titles = groups.map((g) => [
+        activeFilters(withFilters({ [g.group]: [g.rows[0]?.key ?? ""] }))[0]?.groupLabel,
+        g.group === "since" ? "Since baseline" : g.title.replace(/ \(packages\)$/, ""),
+      ]);
+      expect(titles.filter(([chip, rail]) => chip !== rail)).toEqual([]);
+    },
+  );
 });

@@ -122,7 +122,7 @@ describe("ActiveFilters (PD-RAIL-4)", () => {
 
     const chips = within(screen.getByRole("group", { name: "Filtered by" })).getAllByRole("button");
     expect(chips.map((chip) => chip.getAttribute("aria-label"))).toEqual([
-      "Remove filter: Verdict high",
+      "Remove filter: Grade high",
       "Remove filter: Scope Direct",
       "Remove filter: Search “symfony”",
     ]);

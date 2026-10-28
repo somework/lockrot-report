@@ -12,31 +12,12 @@ import {
   SHELLS,
   type Shell,
 } from "../../domain/shellArgv";
+import { useCopy, type CopyStatus } from "../common/useCopy";
 import { useReport } from "../context";
 
-const COPIED_MS = 1400;
-const FAILED_MS = 2600;
+const TIMES = { copiedMs: 1400, manualMs: 2600 } as const;
 
-type Status = "idle" | "copied" | "manual";
-
-function useCopyStatus(): [Status, (status: Status) => void] {
-  const [status, setStatus] = useState<Status>("idle");
-  useEffect(() => {
-    if (status === "idle") return undefined;
-    const timer = window.setTimeout(
-      () => {
-        setStatus("idle");
-      },
-      status === "copied" ? COPIED_MS : FAILED_MS,
-    );
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [status]);
-  return [status, setStatus];
-}
-
-const LABELS: Readonly<Record<Status, string>> = {
+const LABELS: Readonly<Record<CopyStatus, string>> = {
   idle: DETAIL_WORDS.copy,
   copied: DETAIL_WORDS.copied,
   manual: DETAIL_WORDS.copyByHand,
@@ -63,10 +44,13 @@ export function CopyMove({
 }) {
   const { shell, pickShell } = useReport();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [status, setStatus] = useCopyStatus();
+  const { status, copy: copyText, reset } = useCopy(TIMES);
+  const pre = useRef<HTMLPreElement>(null);
   const menuId = `${useId()}-shells`;
   const shellButton = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLDivElement>(null);
+
+  useEffect(reset, [shell]);
 
   useEffect(() => {
     if (!menuOpen) return undefined;
@@ -94,19 +78,12 @@ export function CopyMove({
     closeMenu();
   };
   const copy = (): void => {
-    const clipboard = (navigator as { clipboard?: Clipboard }).clipboard;
-    if (!clipboard) {
-      setStatus("manual");
-      return;
-    }
-    clipboard.writeText(lines.join("\n")).then(
-      () => {
-        setStatus("copied");
-      },
-      () => {
-        setStatus("manual");
-      },
-    );
+    copyText(lines.join("\n"), () => {
+      const box = pre.current;
+      if (box === null) return;
+      box.focus();
+      document.getSelection()?.selectAllChildren(box);
+    });
   };
   const onMenuKey = (event: KeyboardEvent): void => {
     const items = [...(menu.current?.querySelectorAll<HTMLElement>('[role="menuitemradio"]') ?? [])];
@@ -152,7 +129,7 @@ export function CopyMove({
           {SHELL_NAMES[shell]}
         </button>
         <span className="vh" aria-live="polite">
-          {status === "copied" ? DETAIL_WORDS.copied : ""}
+          {status === "idle" ? "" : LABELS[status]}
         </span>
       </div>
       <div
@@ -181,7 +158,7 @@ export function CopyMove({
           </button>
         ))}
       </div>
-      <pre className="d2-copy-cmd">
+      <pre ref={pre} className="d2-copy-cmd" tabIndex={-1}>
         {printable ? (
           argvs.map((argv, i) => (
             <span key={i} className="d2-copy-line">

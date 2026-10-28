@@ -123,6 +123,6 @@ describe("a report-2 document routes every slot to its report-2 surface", () => 
     render(<App model={composite()} />);
 
     expect(rowNames()).toEqual(["symfony/yaml", "symfony/polyfill-intl-idn", "friendsofsymfony/oauth2-php"]);
-    expect(screen.getByRole("button", { name: "Remove filter: Verdict low" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Remove filter: Grade low" })).toBeTruthy();
   });
 });

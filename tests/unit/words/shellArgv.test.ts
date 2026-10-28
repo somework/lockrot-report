@@ -127,6 +127,7 @@ describe("the command argument rule (SPEC §5.6)", () => {
     ["require", "--with-dependencies"],
     ["require", "--with-all-dependencies"],
     ["require", "--dev"],
+    ["require", "--no-interaction"],
     ["why-not", "--locked"],
   ])("allows lockrot's %s option %s after the package", (subcommand, option) => {
     expect(isPrintableArgv(["composer", subcommand, "a/b:^2.0", option])).toBe(true);
@@ -139,8 +140,17 @@ describe("the command argument rule (SPEC §5.6)", () => {
     ["the option of a why-not step", ["composer", "why-not", "a/b", "--with-dependencies"]],
     ["--locked outside a why-not step", ["composer", "update", "a/b", "--locked"]],
     ["--dev outside a require step", ["composer", "update", "a/b", "--dev"]],
+    ["--no-interaction before the package", ["composer", "require", "--no-interaction", "a/b:^2.0"]],
+    ["--no-interaction in an update step", ["composer", "update", "a/b", "--no-interaction"]],
+    ["--no-interaction in a why-not step", ["composer", "why-not", "a/b", "--no-interaction"]],
   ])("refuses %s on every shell", (_, argv) => {
     expect(inEveryShell(argv)).toEqual(refused);
+  });
+
+  test("allows the php step that also moves php out of require-dev", () => {
+    expect(isPrintableArgv(["composer", "require", "php:>=8.1", "--no-interaction", "--no-update"])).toBe(
+      true,
+    );
   });
 
   test("allows --lock as the one argument of an update step, which target_fix.command writes", () => {

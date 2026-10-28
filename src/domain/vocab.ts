@@ -14,21 +14,6 @@ export function vocabTable<T extends object>(entries: T): Readonly<T> {
   return Object.assign(Object.create(null) as T, entries);
 }
 
-export const SIGNAL_NAMES: Readonly<Record<string, string>> = vocabTable({
-  S1: "marked abandoned",
-  S2: "no recent release",
-  S3: "repository archived",
-  S4: "no push to the repository",
-  S5: "release predates the target PHP",
-  // PD-S6-1: S2 is an age; S6 is a snapshot or a repository with no tag at all.
-  S6: "branch snapshot or never tagged",
-  S7: "pulls in flagged packages",
-  S8: "the installed branch stopped",
-  S9: "security advisories",
-  S10: "a check could not run",
-  S11: "PHP cap",
-});
-
 export const SIGNAL_DEFS: Readonly<Record<string, string>> = vocabTable({
   S1: "The Composer repository marks the package abandoned, sometimes naming a replacement.",
   S2: "Time since the newest dated release, pre-releases included, against release-warn-years / release-high-years.",

@@ -7,6 +7,8 @@
  * allowlisted drawn outlined); --unk carries "no data" (the unknown verdict, a gate that was not
  * set). --accent marks interaction only: links, focus and the selected control. Every tone keeps
  * 4.5:1 as text on --bg, --surface, --surface-2 and its own -soft fill, in both themes.
+ * --control-border draws the boundary of a field, which keeps 3:1 on --bg, --surface and
+ * --surface-2 in both themes (WCAG 1.4.11). --border and --border-strong only divide.
  *
  * Theming, as the legacy page does it: light lives on bare :root; the OS dark preference applies
  * unless the reader pinned light (data-theme="light"); an explicit data-theme="dark" applies
@@ -21,6 +23,7 @@
   --surface-3: #dfe7e4;
   --border: #d3ddda;
   --border-strong: #b4c3bf;
+  --control-border: #6f817d;
   --ink: #0f1a19;
   --ink-2: #3a4b49;
   --muted: #536562;
@@ -118,6 +121,7 @@
     --surface-3: #1e2c2a;
     --border: #253331;
     --border-strong: #374846;
+    --control-border: #647874;
     --ink: #e4edea;
     --ink-2: #c3d2ce;
     --muted: #8fa39f;
@@ -153,6 +157,7 @@
   --surface-3: #1e2c2a;
   --border: #253331;
   --border-strong: #374846;
+  --control-border: #647874;
   --ink: #e4edea;
   --ink-2: #c3d2ce;
   --muted: #8fa39f;

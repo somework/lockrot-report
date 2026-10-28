@@ -11,10 +11,20 @@ import { radiusLayout2, radiusRows2 } from "./radius2";
 import { acceptedFlagIds, countedFlagIds } from "./countedFlags";
 import { fixLabel } from "./pageVocabulary";
 import { matchesFinding2, parseQuery2, type Term2 } from "./query";
-import type { RailGroup } from "./filters";
+import {
+  FAILS_ROW,
+  HELD_KEY,
+  HELD_ROW,
+  READY_KEY,
+  READY_ROW,
+  SCOPE_ROWS,
+  SINCE_ROWS,
+  WAY_OUT_KEY,
+  WAY_OUT_ROW,
+  type RailGroup,
+  type Row,
+} from "./filters";
 import { findingsFailGate, isHeld, needsAnotherWayOut, readyToRun } from "./readyToRun";
-
-type Row = readonly [key: string, label: string];
 
 const byRank = (findings: readonly Finding[]): Finding[] => [...findings].sort((a, b) => a.rank - b.rank);
 
@@ -172,26 +182,8 @@ function groupOf(scope: Scope, group: FilterGroup, title: string, rows: readonly
   return shown.length === 0 ? null : { group, title, rows: shown };
 }
 
-const SINCE_ROWS: readonly Row[] = [
-  ["new", "New"],
-  ["worsened", "Worsened"],
-  ["known", "Known"],
-];
-/** The This run key of accepted derivation 10. */
-export const READY_KEY = "ready";
-/** The This run key of the held filter (`isHeld`). */
-export const HELD_KEY = "held";
-/** The This run key of the findings that need another way out (`needsAnotherWayOut`). */
-export const WAY_OUT_KEY = "wayout";
 /** The one key of the accepted group: a view toggle that hides the accepted pills (SPEC §7.9.7). */
 export const HIDE_ACCEPTED = "hide";
-const SCOPE_ROWS: readonly Row[] = [
-  ["direct", "Direct"],
-  ["transitive", "Transitive"],
-  ["prod", "require"],
-  ["dev", "require-dev"],
-  ["unnamed", "not in composer.json"],
-];
 
 /** Filters no package, so its count is the listed rows whose pills it shows or hides. */
 function acceptedToggle(scope: Scope): RailGroup {
@@ -219,10 +211,10 @@ export function railGroups2(report: Report2, state: State): readonly RailGroup[]
       ? groupOf(scope, "since", `Since ${baseline.path}`, SINCE_ROWS)
       : null,
     groupOf(scope, "gate", "This run", [
-      ...(findingsFailGate(report) ? [["fails", "Fails this run"] as const] : []),
-      [READY_KEY, "Ready to run"],
-      [HELD_KEY, "Held"],
-      ...(findingsFailGate(report) ? [[WAY_OUT_KEY, "Another way out"] as const] : []),
+      ...(findingsFailGate(report) ? [FAILS_ROW] : []),
+      READY_ROW,
+      HELD_ROW,
+      ...(findingsFailGate(report) ? [WAY_OUT_ROW] : []),
     ]),
     groupOf(
       scope,

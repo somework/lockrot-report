@@ -2,7 +2,7 @@
  *  findings each tab lists lives in `list.ts`. */
 
 import { FILTER_GROUPS, type Filters, type FilterGroup } from "../state/types";
-import { SIGNAL_NAMES, vocabTable } from "./vocab";
+import { fixLabel, signalName } from "./pageVocabulary";
 
 export interface RailRow {
   readonly key: string;
@@ -17,25 +17,6 @@ export interface RailGroup {
   readonly rows: readonly RailRow[];
 }
 
-/** Short enough for the rail's width (PD-RAIL-3). A `vocabTable`, so an id such as `toString`
- *  finds nothing. */
-const RAIL_SIGNAL_LABELS: Readonly<Record<string, string>> = vocabTable({
-  S1: "marked abandoned",
-  S2: "no recent release",
-  S3: "repository archived",
-  S4: "no recent push",
-  S5: "predates target PHP",
-  S6: "snapshot or untagged",
-  S7: "pulls in flagged",
-  S8: "branch stopped",
-  S9: "security advisories",
-  S10: "a check did not run",
-});
-
-function signalLabel(id: string): string {
-  return RAIL_SIGNAL_LABELS[id] ?? SIGNAL_NAMES[id] ?? "";
-}
-
 export interface ActiveFilter {
   readonly group: FilterGroup;
   readonly key: string;
@@ -45,9 +26,10 @@ export interface ActiveFilter {
   readonly label: string;
 }
 
+/** The rail titles without their dynamic parts: no " (packages)" unit and no baseline path. */
 const GROUP_LABELS: Readonly<Record<FilterGroup, string>> = {
   prio: "Priority",
-  verdict: "Verdict",
+  verdict: "Grade",
   scope: "Scope",
   signal: "Signal",
   sev: "Severity",
@@ -58,37 +40,49 @@ const GROUP_LABELS: Readonly<Record<FilterGroup, string>> = {
   accepted: "Accepted flags",
 };
 
-const SCOPE_LABELS: Readonly<Record<string, string>> = vocabTable({
-  direct: "Direct",
-  transitive: "Transitive",
-  prod: "require",
-  dev: "require-dev",
-  unnamed: "not in composer.json",
-});
-const GATE_LABELS: Readonly<Record<string, string>> = vocabTable({
-  fails: "Fails this run",
-  ready: "Ready to run",
-  held: "Held",
-  wayout: "Another way out",
-});
-const SINCE_LABELS: Readonly<Record<string, string>> = vocabTable({
-  new: "New",
-  worsened: "Worsened",
-  known: "Known",
-});
+/** A rail row: the fragment key, then the words the row and its chip print. */
+export type Row = readonly [key: string, label: string];
+
+export const SCOPE_ROWS: readonly Row[] = [
+  ["direct", "Direct"],
+  ["transitive", "Transitive"],
+  ["prod", "require"],
+  ["dev", "require-dev"],
+  ["unnamed", "not in composer.json"],
+];
+export const SINCE_ROWS: readonly Row[] = [
+  ["new", "New"],
+  ["worsened", "Worsened"],
+  ["known", "Known"],
+];
+/** The This run key of accepted derivation 10. */
+export const READY_KEY = "ready";
+/** The This run key of the held filter (`isHeld`). */
+export const HELD_KEY = "held";
+/** The This run key of the findings that need another way out (`needsAnotherWayOut`). */
+export const WAY_OUT_KEY = "wayout";
+export const FAILS_ROW: Row = ["fails", "Fails this run"];
+export const READY_ROW: Row = [READY_KEY, "Ready to run"];
+export const HELD_ROW: Row = [HELD_KEY, "Held"];
+export const WAY_OUT_ROW: Row = [WAY_OUT_KEY, "Another way out"];
+const GATE_ROWS: readonly Row[] = [FAILS_ROW, READY_ROW, HELD_ROW, WAY_OUT_ROW];
+
+const rowLabel = (rows: readonly Row[], key: string): string => rows.find(([id]) => id === key)?.[1] ?? key;
 
 function activeLabel(group: FilterGroup, key: string): string {
   switch (group) {
     case "scope":
-      return SCOPE_LABELS[key] ?? key;
+      return rowLabel(SCOPE_ROWS, key);
     case "signal": {
-      const label = signalLabel(key);
-      return label === "" ? key : `${key} ${label}`;
+      const name = signalName(key);
+      return name === key ? key : `${key} ${name}`;
     }
     case "since":
-      return SINCE_LABELS[key] ?? key;
+      return rowLabel(SINCE_ROWS, key);
     case "gate":
-      return GATE_LABELS[key] ?? key;
+      return rowLabel(GATE_ROWS, key);
+    case "fix":
+      return fixLabel(key);
     default:
       return key;
   }

@@ -604,16 +604,26 @@ span.f2-unit {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-/* On a phone "Overview ›" shares the figure's line, so the chips' wrap costs no third line. */
+/* On a phone "Overview ›" takes its own column on the chips' last row: no control covers another,
+   and the visual order stays the DOM order at every width. */
 @media (max-width: 759px) {
   .f2-strip {
-    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "figure figure"
+      "chips back";
     padding: 10px 16px;
   }
+  .f2-strip-figure {
+    grid-area: figure;
+  }
+  .f2-strip-chips {
+    grid-area: chips;
+  }
   .f2-strip-back {
-    position: absolute;
-    top: 10px;
-    right: 16px;
+    grid-area: back;
+    align-self: end;
   }
 }
 
