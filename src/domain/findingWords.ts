@@ -192,7 +192,7 @@ export function checksSkippedBody(
     else groups.push({ words, checks: [check] });
   }
   if (groups.length === 0) return null;
-  return groups.map((g) => `${g.checks.join(" and ")} (${g.words})`).join("; ");
+  return groups.map((g) => `${joinAnd(g.checks)} (${g.words})`).join("; ");
 }
 
 /** The checks the `release_metadata` gap blocks, named as the Checks strip names them, and how many. */

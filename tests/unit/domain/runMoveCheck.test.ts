@@ -35,6 +35,45 @@ describe("the Run tab's move check (SPEC §7.9.16)", () => {
     ]);
   });
 
+  test("lists three or more variables with commas and 'and' before the last", () => {
+    const report = golden("snipe-it");
+    if (report.run.move_check === null) throw new Error("snipe-it checks its moves");
+    report.run.move_check = {
+      ...report.run.move_check,
+      blocks_advisories: false,
+      blocking_disabled_by: ["COMPOSER_POLICY", "config.policy", "config.policy.advisories"],
+    };
+    expect(moveCheckFact(report)).toEqual([
+      "checked with the solver of Composer 2.10.3 against the lock, with advisory blocking turned off by ",
+      { code: "COMPOSER_POLICY" },
+      ", ",
+      { code: "config.policy" },
+      " and ",
+      { code: "config.policy.advisories" },
+      " · ext-* requirements not checked",
+    ]);
+  });
+
+  test("names each requirement pattern the solve ignores, when the run lists them", () => {
+    const report = golden("snipe-it");
+    if (report.run.move_check === null) throw new Error("snipe-it checks its moves");
+    const patterns: unknown = ["ext-*", "lib-*", "php-zts"];
+    report.run.move_check = { ...report.run.move_check, ignores_extensions: patterns as true };
+    expect(plain(moveCheckFact(report) ?? [])).toBe(
+      "checked with the solver of Composer 2.10.3 against the lock · ext-*, lib-* and php-zts requirements not checked",
+    );
+  });
+
+  test("names no ignored requirement when the solve ignores none", () => {
+    const report = golden("snipe-it");
+    if (report.run.move_check === null) throw new Error("snipe-it checks its moves");
+    const patterns: unknown = [];
+    report.run.move_check = { ...report.run.move_check, ignores_extensions: patterns as true };
+    expect(plain(moveCheckFact(report) ?? [])).toBe(
+      "checked with the solver of Composer 2.10.3 against the lock",
+    );
+  });
+
   test("says that Composer's solver refuses the lock itself", () => {
     expect(plain(moveCheckFact(golden("wallabag-2.6")) ?? [])).toBe(
       "not checked, because Composer's solver refuses the lock itself",

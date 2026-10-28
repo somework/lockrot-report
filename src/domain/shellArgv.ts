@@ -25,7 +25,13 @@ const SUBCOMMANDS: ReadonlySet<string> = new Set(["update", "require", "why-not"
 // would pass an option to Composer.
 const LOCKROT_OPTIONS: Readonly<Record<string, ReadonlySet<string>>> = {
   update: new Set(["--with-dependencies", "--with-all-dependencies"]),
-  require: new Set(["--no-update", "--dev", "--with-dependencies", "--with-all-dependencies"]),
+  require: new Set([
+    "--no-update",
+    "--dev",
+    "--no-interaction",
+    "--with-dependencies",
+    "--with-all-dependencies",
+  ]),
   "why-not": new Set(["--locked"]),
 };
 

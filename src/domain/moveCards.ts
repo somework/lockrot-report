@@ -97,6 +97,16 @@ export function isBelow(version: string, than: string): boolean {
   return at !== -1 && (a[at] ?? 0) < (b[at] ?? 0);
 }
 
+/** Composer moves a package that both sections list into require under `--no-interaction` (ruling R6-3).
+ *  The argument keeps the require-dev key's spelling, so names compare without case. */
+const leavesRequireDev = (name: string, argvs: readonly (readonly string[])[]): boolean =>
+  argvs.some(
+    ([, subcommand, argument = "", ...options]) =>
+      subcommand === "require" &&
+      argument.split(":")[0]?.toLowerCase() === name.toLowerCase() &&
+      options.includes("--no-interaction"),
+  );
+
 /** G70 to G93: the move's action. */
 function moveAction(finding: Finding, move: AnyMove, run: Run): Rich {
   const php = move.php_check;
@@ -118,7 +128,7 @@ function moveAction(finding: Finding, move: AnyMove, run: Run): Rich {
     case "raise-php": {
       const raise = move.kind === "raise-php" ? `Raise require.php to ${php?.raise_to ?? ""}, then ` : "";
       const head = finding.direct
-        ? `require ${move.constraint ?? ""}`
+        ? `require ${move.constraint ?? ""}${leavesRequireDev(finding.package, move.commands) ? " and removes it from require-dev" : ""}`
         : `move it to ${move.constraint ?? ""}${hasDependents ? ` through ${dependents(finding)}` : ""}`;
       return [capitalize(raise + head)];
     }

@@ -30,8 +30,24 @@ import {
 import { readContractJson } from "./recorded";
 
 describe("every table with a recorded twin equals it", () => {
-  test("cause words equal en/reason-words.json", () => {
-    expect(CAUSE_WORDS).toEqual((readContractJson("en", "reason-words.json") as { words: unknown }).words);
+  // lockrot 0.14 needs Composer 2.10, so the pinned bundle's composer_too_old leaves the contract at the next repin.
+  const LEFT_THE_CONTRACT: readonly string[] = ["composer_too_old"];
+  const reasonWords = (): Record<string, string> =>
+    (readContractJson("en", "reason-words.json") as { words: Record<string, string> }).words;
+
+  test("cause words equal en/reason-words.json, without the reasons that left the contract", () => {
+    const recorded = Object.fromEntries(
+      Object.entries(reasonWords()).filter(([id]) => !LEFT_THE_CONTRACT.includes(id)),
+    );
+    expect(CAUSE_WORDS).toEqual(recorded);
+  });
+
+  test("the pinned bundle still records each reason that left the contract; empty the list at the repin", () => {
+    expect(LEFT_THE_CONTRACT.filter((id) => !Object.hasOwn(reasonWords(), id))).toEqual([]);
+  });
+
+  test("reads a reason that left the contract as an unknown reason", () => {
+    expect(causeWord("composer_too_old", "packagist")).toBe("composer too old");
   });
 
   test("activity words equal en/activity-words.json", () => {

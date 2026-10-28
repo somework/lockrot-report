@@ -2,6 +2,7 @@
 
 import type { Report2, Run } from "../model/report";
 import { day, plural, pluralNoun } from "./format";
+import { joinAnd, listParts } from "./joinWords";
 import { causeWord, checkReasonRich, feedAnswerWord, wordFor } from "./pageVocabulary";
 import type { Piece, Rich } from "./rich";
 
@@ -98,6 +99,10 @@ const LOCK_LOAD_WORDS: Readonly<Record<string, string>> = {
   offline: "a package the lock needs is not in Composer's cache",
 };
 
+/** `true` names ext-* alone; a list names every requirement pattern the solve ignores (§5.6). */
+const ignoredPatterns = (ignores: unknown): readonly string[] =>
+  Array.isArray(ignores) ? ignores.filter((p): p is string => typeof p === "string") : ["ext-*"];
+
 /** `run.move_check` in the words of lockrot's text footer (`RunFooter::moveCheck`), or null when the
  *  run checked no move. */
 export function moveCheckFact({ run }: Report2): Rich | null {
@@ -106,14 +111,12 @@ export function moveCheckFact({ run }: Report2): Rich | null {
   switch (check.baseline) {
     case "resolves": {
       const lock = `checked with the solver of Composer${check.composer === null ? "" : ` ${check.composer}`} against the lock`;
-      const names = check.blocking_disabled_by.flatMap((name, i): Piece[] => [
-        ...(i > 0 ? [" and "] : []),
-        { code: name },
-      ]);
-      // `ignores_extensions` is always true: the solve ignores ext-* requirements (§5.6).
+      const names = listParts(check.blocking_disabled_by.map((name): Piece => ({ code: name })));
+      const ignored = ignoredPatterns(check.ignores_extensions);
+      const unchecked = ignored.length === 0 ? [] : [` · ${joinAnd(ignored)} requirements not checked`];
       return names.length === 0
-        ? [`${lock} · ext-* requirements not checked`]
-        : [`${lock}, with advisory blocking turned off by `, ...names, " · ext-* requirements not checked"];
+        ? [lock, ...unchecked]
+        : [`${lock}, with advisory blocking turned off by `, ...names, ...unchecked];
     }
     case "refused":
       return ["not checked, because Composer's solver refuses the lock itself"];
