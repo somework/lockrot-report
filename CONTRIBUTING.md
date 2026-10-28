@@ -7,7 +7,7 @@ Node 26 (`.nvmrc`). Everything below is an npm script:
 | `npm ci`                                                                                  | install exactly what `package-lock.json` pins                    |
 | `npm run contract:fetch`                                                                  | get lockrot's recorded bundle into `.lockrot/`, before the tests |
 | `npm run build`                                                                           | typecheck, bundle, and assemble `dist/`                          |
-| `npm test`                                                                                | unit and component tests (vitest)                                |
+| `npm test`                                                                                | unit and component tests (vitest), and the coverage gate         |
 | `npm run test:e2e`                                                                        | the browser suite (Playwright); needs `build/pages/`, see below  |
 | `npm run lint`, `npm run typecheck`, `npm run typecheck:contract`, `npm run format:check` | what CI runs before the tests, after `contract:fetch`            |
 
@@ -17,6 +17,12 @@ Node 26 (`.nvmrc`). Everything below is an npm script:
 `contract/lockrot.json` pins. Run `npm run contract:fetch` once before them, and again after the pin
 moves. It needs no network when `.lockrot/` holds the pinned commit unchanged. DESIGN.md §7 says
 how to re-pin.
+
+## Coverage
+
+`npm test` measures the coverage of `src/` and fails below the floors in `vitest.config.ts`. A floor
+holds the measured value of its folder. Raise it when a change lifts the folder, and never lower it.
+CSS counts toward no number (`css: false`), so the browser suite carries the layout rules.
 
 ## The browser suite
 
