@@ -82,7 +82,10 @@ test("in forced colours the narrow sheet ruler still holds its dropped names", a
   await at(page, 375);
   const sheet = await openDetail2(page, "B", "symfony/monolog-bridge");
   const ruler = sheet.locator(".d2-ruler");
-  const names = await drawn(ruler.locator(".d2-ruler-tick em"));
+  const labels = ruler.locator(".d2-ruler-tick em");
+  await expect(labels).toHaveText(["medium", "high", "critical"]);
+  for (const label of await labels.all()) await expect(label).toBeVisible();
+  const names = await drawn(labels);
   const box = await ruler.boundingBox();
 
   expect(box).not.toBeNull();
