@@ -39,6 +39,7 @@ const PAGE_GOLDEN_DOCUMENTS = [
   "tests/fixtures/schema/documents/cases/B-accepted-dagger.json",
   "tests/fixtures/schema/documents/cases/B-dev-dagger.json",
   "tests/fixtures/schema/documents/cases/B-gate-none.json",
+  "tests/fixtures/schema/documents/cases/E-dev-dagger.json",
   "tests/fixtures/schema/documents/cases/E-ignored-whole-dagger.json",
   "tests/fixtures/schema/documents/cases/composite-generate-baseline.json",
   "tests/fixtures/schema/documents/cases/composite.json",
