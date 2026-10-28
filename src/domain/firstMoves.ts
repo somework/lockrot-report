@@ -5,7 +5,7 @@ import type { Finding, Report2 } from "../model/report";
 import type { LinkTarget } from "../state/types";
 import { rowCommand, rowCommandArgv, rowNewLine } from "./findingRow";
 import { plural } from "./format";
-import { HELD_KEY, READY_KEY, WAY_OUT_KEY } from "./list";
+import { HELD_KEY, READY_KEY, WAY_OUT_KEY } from "./filters";
 import { moveCards } from "./moveCards";
 import { plain } from "./rich";
 import {
