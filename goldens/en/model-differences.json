@@ -74,10 +74,5 @@
       "long-range-dagger",
       "replace-graded"
     ]
-  },
-  "baseline_suffix": {
-    "lockrot's recording and the model's input differ: lockrot writes no baseline on the ok finding, while the model's input keeps the entry that an incomplete lookup carried forward, so the page prints no suffix where the model's golden reads (baseline: known)": [
-      "ok-unchecked-entry-dagger"
-    ]
   }
 }
