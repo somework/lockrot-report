@@ -3,8 +3,9 @@ name: Release
 # A tag vX.Y.Z builds dist/, attests every file, and attaches them to a GitHub release. lockrot
 # vendors report.html and manifest.json from that release after `gh attestation verify`. A tag with
 # a pre-release suffix (vX.Y.Z-rc.N) publishes a pre-release that is never the Latest release.
-# A tag outside main and the release branches, a lockrot pin outside lockrot's main and tags, or a
-# red gate of ci.yml stops the release before anything is attested.
+# A final tag outside main, a pre-release outside main and the release branches, a lockrot pin
+# outside lockrot's main and tags or with no green lockrot run, or a red gate of ci.yml stops the
+# release before anything is attested.
 # The gates and build jobs run the repository's code with a read-only token. The build job runs no
 # install script, and the publish job checks its files against the gates job's own build. Only the
 # publish job, which runs none of that code, holds the tokens that attest and publish.
@@ -25,13 +26,18 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      # A tag on another commit would publish an attested page that no reviewed branch holds.
-      - name: the tagged commit is on main or a release branch
+      # A tag on another commit would publish an attested page that no reviewed branch holds, and a
+      # final release that main does not hold is one that lockrot's release can vendor unseen.
+      - name: a final tag is on main, and a pre-release on main or a release branch
         run: |
-          for branch in $(git for-each-ref --format='%(refname)' refs/remotes/origin/main refs/remotes/origin/release/); do
+          case "$GITHUB_REF_NAME" in
+            *-*) refs='refs/remotes/origin/main refs/remotes/origin/release/' where='main or a release branch' ;;
+            *) refs='refs/remotes/origin/main' where='main' ;;
+          esac
+          for branch in $(git for-each-ref --format='%(refname)' $refs); do
             git merge-base --is-ancestor "$GITHUB_SHA" "$branch" && exit 0
           done
-          echo "::error::$GITHUB_REF_NAME is on neither main nor a release branch"
+          echo "::error::$GITHUB_REF_NAME is not on $where"
           exit 1
       - uses: actions/setup-node@v7
         with:
@@ -41,6 +47,17 @@ jobs:
       # longer be rebuilt from its pin.
       - name: the lockrot pin is on lockrot's main or a lockrot tag
         run: node scripts/contract.mjs reachable
+      # The renderer must not publish against a lockrot commit whose own gates did not pass: a full
+      # check (the rc tag runs one), or CI on a push to main.
+      - name: lockrot's gates passed on the pinned commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pin=$(node -p 'require("./contract/lockrot.json").commit')
+          gh run list --repo somework/lockrot --commit "$pin" --event push --status success \
+            --json workflowName,headBranch \
+            | jq -e 'any(.[]; .workflowName == "full-check" or (.workflowName == "CI" and .headBranch == "main"))' >/dev/null \
+            || { echo "::error::lockrot $pin has no successful full-check run, and no successful CI run on main"; exit 1; }
       - run: npm ci
       - name: the tag names the version package.json builds
         run: |
