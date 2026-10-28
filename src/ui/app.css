@@ -129,7 +129,7 @@
   width: 100%;
   resize: vertical;
   padding: 8px 10px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--control-border);
   border-radius: var(--radius-s);
   background: var(--surface-2);
   color: var(--ink);

@@ -11,7 +11,8 @@ import { ActiveFilters } from "./ActiveFilters";
 import { EMPTY_FILTERS, type State } from "../../state/types";
 import "./search.css";
 
-const PLACEHOLDER = "Filter: guzzle, flag:left-behind, verdict:critical, score:>=16";
+// Fits the field at 320px, the narrowest width the page supports (DESIGN.md §6); `?` lists every key.
+const PLACEHOLDER = "flag:stale score:>=16";
 
 /**
  * "N of M …", read off the same domain functions each tab uses to decide what it lists, so this line
