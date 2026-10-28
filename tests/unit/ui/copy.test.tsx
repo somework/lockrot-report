@@ -159,10 +159,10 @@ describe("useCopy", () => {
     const onManual = vi.fn();
     const { result } = renderHook(() => useCopy({ copiedMs: 1000, manualMs: 1000 }));
 
-    act(() => {
+    await act(() => {
       result.current.copy("composer update", onManual);
     });
-    act(() => {
+    await act(() => {
       result.current.reset();
     });
     await act(async () => {
