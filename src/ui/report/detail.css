@@ -232,7 +232,8 @@
 
 .d2-ruler {
   position: relative;
-  height: 36px;
+  min-height: 36px;
+  container: d2-ruler / inline-size;
   print-color-adjust: exact;
   -webkit-print-color-adjust: exact;
 }
@@ -270,6 +271,19 @@
   border-left: 0;
   border-right: 1px solid var(--border-strong);
   padding: 6px 3px 0 0;
+}
+/* Below this width two neighbouring band names collide, so every other one drops a line. Each tick
+   then ends at its own name, and a dropped name passes under the next tick instead of across it. */
+@container d2-ruler (max-width: 479px) {
+  .d2-ruler-zones {
+    height: 50px;
+  }
+  .d2-ruler-tick {
+    bottom: auto;
+  }
+  .d2-ruler-tick.is-lower em {
+    margin-top: 1.3em;
+  }
 }
 
 .d2-why-lines {
@@ -418,7 +432,7 @@
 
 /* ---------- forced colours: borders by role, no colour-only state ---------- */
 @media (forced-colors: active) {
-  .d2-ruler-zones {
+  .d2-ruler-zones i {
     display: none;
   }
   .d2-ruler-tick,

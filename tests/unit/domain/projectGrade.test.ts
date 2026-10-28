@@ -382,3 +382,25 @@ describe("the waffle caption", () => {
     expect(waffleCaption(report)).toBe("9 of 9 packages flagged · 2 not judged · 0 ok · 0 finished");
   });
 });
+
+describe("one point (R5-27)", () => {
+  test("the load line says 1 point", () => {
+    const report = run({ checked: 3, flagged: 1, counts: { low: 1, ok: 2 }, findings: [["low", 1, 1]] });
+
+    expect(loadLine(report)?.split(" · ")[0]).toBe("1 point on 1 flagged package");
+  });
+
+  test("the rest line says 1 point", () => {
+    const report = run({
+      checked: 11,
+      flagged: 11,
+      counts: { high: 10, low: 1 },
+      findings: [
+        ["high", 16, 10],
+        ["low", 1, 1],
+      ],
+    });
+
+    expect(weighsMost(report)?.rest).toBe("1 more flagged package holds 1 point");
+  });
+});

@@ -60,7 +60,7 @@ test.describe("report-2: the Findings row leads with the score, then the pills, 
 
     expect(await rowAge(page, "twig/twig")).toBeNull();
     const next = await findingsNextStep(page, "twig/twig");
-    expect(next.move).toBe("php floor raise");
+    expect(next.move).toBe("raise require.php to >=8.1");
     expect(next.held).toBe(
       pageGolden("composite").findings_rows.find((row) => row.package === "twig/twig")?.held,
     );

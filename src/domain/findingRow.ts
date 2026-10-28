@@ -379,12 +379,12 @@ const ROW_STEPS: ReadonlySet<string> = new Set(["update", "require"]);
 const namesPackage = (argv: readonly string[], pkg: string): boolean =>
   ROW_STEPS.has(argv[1] ?? "") && argv.slice(2).some((arg) => arg === pkg || arg.startsWith(`${pkg}:`));
 
-/** A `raise-php` row that shows no command says the raise instead (golden `raise_words`); null on
+/** The words of a `raise-php` row, with its command or without one (golden `raise_words`); null on
  *  any other row, and when lockrot names no `raise_to`. */
 export function rowRaiseWords(f: Finding): string | null {
   const step = f.next_step;
   const raiseTo = step?.php_check?.raise_to ?? null;
-  if (step?.kind !== "raise-php" || raiseTo === null || rowCommandArgv(f) !== null) return null;
+  if (step?.kind !== "raise-php" || raiseTo === null) return null;
   return `raise require.php to ${raiseTo}`;
 }
 

@@ -40,7 +40,8 @@ project is overall, and the other tabs lead with their own part.
   of a score of 0: ok, finished and not judged.
 - "Ready to run" lists up to 3 moves whose command Composer's solver checked and that only your
   composer.json holds, if anything does, in lockrot's rank order, each with its command, what it clears and the score after it.
-  When the run fails, it lists only findings that fail the gate. "Also holds" names the findings
+  When a finding fails the gate, it lists only findings that fail the gate. A run that only
+  `--strict-network` fails lists its ready moves as a passing run does. "Also holds" names the findings
   whose move the ready package holds. One line counts the failing findings that other packages
   hold, and one counts those that need another way out, by kind or by the move check: "Composer
   refuses the move" or "not checked: {reason}". Each count opens exactly the rows it counts.
@@ -90,13 +91,15 @@ project is overall, and the other tabs lead with their own part.
   of its moves cross a major. A move to a new 0.x line does not count as one.
 - The rail's "This run" group filters "Ready to run", "Held" and "Another way out", each with its
   count. The last shows only when the run fails.
+- A link drops a filter value that the page does not know, so it never shows an empty chip or an
+  empty list. A Since value is dropped on a run with no baseline.
 - All packages hides its "Data as of" column when every row has the report's date, and says so in
   a caption. A key under the table names each signal id the rows carry.
 - From 1000 px an open package is a column beside the list, and the list stays in view. Up, Down,
   Home and End move it along the rows. Below 1000 px it is a modal sheet over the page.
 - Band ticks: the floor of each grade runs down every bar as a dashed guide, and the column head
   captions them ("Score 0 8 16 32"). In an open package the ruler draws every floor with its
-  grade's word under it.
+  grade's word under it. On a narrow ruler every other word drops a line, so no two words touch.
 - Flag pills: one pill per flag that fired, the flag in its tone, then what it rests on ("6.9 y",
   "PHP 5", "archived", "snapshot", the advisory count). A vulnerable package with no fixing release,
   or none that runs on the target PHP, says so on its pill. It names the advisory that decides.
@@ -144,7 +147,7 @@ project is overall, and the other tabs lead with their own part.
   branches above yours, the runs between the newest and yours fold, on each side of the move's
   branch.
 - "How the score works" opens the Run tab, from the run's score model. It shows the ruler with the
-  grade words, the weights, the advisory table and the fix kinds. "The N rules" lists each rule
+  grade words, each in full on a phone too, the weights, the advisory table and the fix kinds. "The N rules" lists each rule
   with a link to its lockrot.dev page, muted where no package used it.
 - A live example under "How the score works" gives a package's score in words and with its bar.
   It takes the package that was open when you changed tab, else the highest ranked one. With
@@ -206,9 +209,14 @@ project is overall, and the other tabs lead with their own part.
   not cover a package it installs".
 - A ladder rung names each holder once. A rung held by every holder of Held by says "held by every
   holder in Held by".
-- A Findings row shows the move's first command that names the package. A PHP floor raise with no
-  such command reads "raise require.php to >=8.1" and shows no command. Its "after it" ends with
-  the check's short words when the check refused the move or did not run.
+- A Findings row shows the move's first command that names the package. A PHP floor raise reads
+  "raise require.php to >=8.1", with that command or with none. On Findings, "php floor raise"
+  is then only the Fix filter, which selects the packages whose advisory fix needs the raise, and a
+  row whose move names no PHP target. A row's "after it" ends with the check's short words when
+  the check refused the move or did not run.
+- When Composer's plain `composer update` installs a release above the newest of the branch, the
+  move card reads "Update to 3.0.0", with no branch.
+- A baselined package that has no grade shows the baseline suffix too: "(baseline: known)".
 - The Overview fix counts and the Fix filter of the package tabs read the same field, the
   package's fix. A `composer why-not` check on a held move adds "This shows which package holds
   the move."

@@ -58,24 +58,24 @@ const GROUP_LABELS: Readonly<Record<FilterGroup, string>> = {
   accepted: "Accepted flags",
 };
 
-const SCOPE_LABELS: Readonly<Record<string, string>> = {
+const SCOPE_LABELS: Readonly<Record<string, string>> = vocabTable({
   direct: "Direct",
   transitive: "Transitive",
   prod: "require",
   dev: "require-dev",
   unnamed: "not in composer.json",
-};
-const GATE_LABELS: Readonly<Record<string, string>> = {
+});
+const GATE_LABELS: Readonly<Record<string, string>> = vocabTable({
   fails: "Fails this run",
   ready: "Ready to run",
   held: "Held",
   wayout: "Another way out",
-};
-const SINCE_LABELS: Readonly<Record<string, string>> = {
+});
+const SINCE_LABELS: Readonly<Record<string, string>> = vocabTable({
   new: "New",
   worsened: "Worsened",
   known: "Known",
-};
+});
 
 function activeLabel(group: FilterGroup, key: string): string {
   switch (group) {

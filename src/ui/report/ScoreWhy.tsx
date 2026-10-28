@@ -55,10 +55,10 @@ function Bar({ finding, report }: { finding: Finding; report: Report2 }) {
             ))}
           </div>
           <span className="d2-ruler-tick is-start">0</span>
-          {ruler.ticks.map((tick) => (
+          {ruler.ticks.map((tick, i) => (
             <span
               key={tick.floor}
-              className={`d2-ruler-tick ${toneClass(gradeTone(tick.verdict))}`}
+              className={`d2-ruler-tick ${toneClass(gradeTone(tick.verdict))}${i % 2 === 0 ? " is-lower" : ""}`}
               style={at("--at", tick.at)}
             >
               {tick.floor} <em>{tick.verdict}</em>

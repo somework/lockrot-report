@@ -200,7 +200,7 @@ describe("the report-2 Findings tab", () => {
     render(<App model={model("composite")} />);
 
     const twig = row("twig/twig");
-    expect(text(twig, ".f2-move")).toMatch(/^php floor raise · held by symfony\/twig-bridge/);
+    expect(text(twig, ".f2-move")).toMatch(/^raise require\.php to >=8\.1 · held by symfony\/twig-bridge/);
     expect(twig.querySelector(".f2-age")?.classList.contains("is-empty")).toBe(true);
   });
 

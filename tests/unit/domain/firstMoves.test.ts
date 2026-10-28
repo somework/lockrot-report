@@ -10,7 +10,7 @@ import {
   readyFindings,
   wayOutLine,
 } from "../../../src/domain/firstMoves";
-import { applyFilters2, fitFilters2 } from "../../../src/domain/list";
+import { applyFilters2, fitFilters2, railGroups2 } from "../../../src/domain/list";
 import { isHeld, needsAnotherWayOut } from "../../../src/domain/readyToRun";
 import { linkState } from "../../../src/state/hash";
 import type { LinkTarget } from "../../../src/state/types";
@@ -108,6 +108,42 @@ describe("readyFindings (the Ready to run block)", () => {
       true,
     );
     expect(readyFindings(r).map((f) => f.package)).toEqual(["c/c"]);
+  });
+});
+
+describe("Ready to run on a run that only --strict-network fails (R5-26)", () => {
+  const recorded = readContractJson("report-2", "mc-composite-dagger.json") as Report2;
+  const r: Report2 = {
+    ...recorded,
+    gate: { ...recorded.gate, fails: true, failing: 0, tripped_by: ["strict_network"] },
+    findings: recorded.findings.map((f) => ({ ...f, gate: { ...f.gate, fails: false } })),
+  };
+
+  it("lists the ready moves under the note of a passing gate", () => {
+    const moves = firstMoves(r);
+
+    expect(moves.forGate).toBe(false);
+    expect(moves.note).toBe("checked commands no other package holds, in lockrot's rank order");
+    expect(moves.moves).toHaveLength(READY_SHOWN);
+    expect(moves.none).toBeNull();
+  });
+
+  it("links All ready to run to the ready filter alone, as the rail offers no failing rows", () => {
+    const gate = railGroups2(r, { ...INITIAL_STATE, view: "findings" }).find(
+      (group) => group.group === "gate",
+    );
+
+    expect(firstMoves(r).moreLink?.filters).toEqual({ gate: ["ready"] });
+    expect(gate?.rows.map((row) => row.key)).not.toContain("fails");
+    expect(gate?.rows.map((row) => row.key)).not.toContain("wayout");
+  });
+
+  it("says the sentence of a passing gate when no move is ready", () => {
+    const held: Report2 = { ...report([finding("a/a", 1, false, "package")], true), packages_flagged: 1 };
+
+    expect(firstMoves(held).none).toBe(
+      "No move is ready to run: no flagged package has a checked command that no other package holds.",
+    );
   });
 });
 

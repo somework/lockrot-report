@@ -84,13 +84,13 @@ export async function findingsNextStep(page: Page, pkg: string): Promise<NextSte
   const text = async (selector: string, copied = false): Promise<string | null> => {
     const part = cell.locator(selector);
     if ((await part.count()) === 0) return null;
-    // A copy keeps the space at a soft wrap, which WebKit's innerText drops.
+    // The DOM text keeps the space at a soft wrap, which WebKit's innerText drops.
     const raw = copied
       ? await part.first().evaluate((node) => node.textContent)
       : await part.first().innerText();
     return raw.replace(/\s+/g, " ").trim();
   };
-  const held = await text(".f2-held");
+  const held = await text(".f2-held", true);
   const move = await cell.locator(".f2-move").evaluate((node) => {
     const copy = node.cloneNode(true) as HTMLElement;
     for (const part of copy.querySelectorAll(".f2-held")) part.remove();
