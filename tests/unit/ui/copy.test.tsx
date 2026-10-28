@@ -1,9 +1,19 @@
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/preact";
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/preact";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { assembleEmbed } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
 import type { Model } from "../../../src/model/types";
 import { App } from "../../../src/ui/App";
+import { useCopy } from "../../../src/ui/common/useCopy";
 
 const MANUAL_SUMMARY =
   "The clipboard is not available. The summary is selected: press Ctrl+C or Command+C to copy it.";
@@ -134,5 +144,33 @@ describe("the Copy summary whose clipboard refuses (R6-51, PD-PRINT-3)", () => {
     });
 
     expect(screen.queryByText(MANUAL_SUMMARY)).toBeNull();
+  });
+});
+
+describe("useCopy", () => {
+  test("ignores a clipboard refusal that arrives after a reset", async () => {
+    let refuse: (error: Error) => void = () => undefined;
+    stubClipboard({
+      writeText: () =>
+        new Promise<void>((_, reject) => {
+          refuse = reject;
+        }),
+    });
+    const onManual = vi.fn();
+    const { result } = renderHook(() => useCopy({ copiedMs: 1000, manualMs: 1000 }));
+
+    act(() => {
+      result.current.copy("composer update", onManual);
+    });
+    act(() => {
+      result.current.reset();
+    });
+    await act(async () => {
+      refuse(new Error("denied"));
+      await new Promise((settle) => setTimeout(settle, 20));
+    });
+
+    expect(result.current.status).toBe("idle");
+    expect(onManual).not.toHaveBeenCalled();
   });
 });

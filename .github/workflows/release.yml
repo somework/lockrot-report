@@ -56,8 +56,8 @@ jobs:
           pin=$(node -p 'require("./contract/lockrot.json").commit')
           gh run list --repo somework/lockrot --commit "$pin" --event push --status success \
             --json workflowName,headBranch \
-            | jq -e 'any(.[]; .workflowName == "full-check" or (.workflowName == "CI" and .headBranch == "main"))' >/dev/null \
-            || { echo "::error::lockrot $pin has no successful full-check run, and no successful CI run on main"; exit 1; }
+            | jq -e 'any(.[]; (.workflowName == "full-check" and (.headBranch | test("^release/full-check-[0-9a-f]+$"))) or (.workflowName == "CI" and .headBranch == "main"))' >/dev/null \
+            || { echo "::error::lockrot $pin has no successful full check of the whole tree, and no successful CI run on main"; exit 1; }
       - run: npm ci
       - name: the tag names the version package.json builds
         run: |

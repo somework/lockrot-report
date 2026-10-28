@@ -20,6 +20,8 @@ export interface Copy {
 export function useCopy({ copiedMs, manualMs }: CopyTimes): Copy {
   const [status, setStatus] = useState<CopyStatus>("idle");
   const pending = useRef<number | undefined>(undefined);
+  // Each copy and reset starts a new attempt, so a clipboard answer to an earlier one is dropped.
+  const attempt = useRef(0);
 
   useEffect(() => {
     if (status === "idle") return undefined;
@@ -53,6 +55,7 @@ export function useCopy({ copiedMs, manualMs }: CopyTimes): Copy {
 
   const copy = (text: string, onManual: () => void): void => {
     setStatus("idle");
+    const mine = ++attempt.current;
     const clipboard = (navigator as { clipboard?: Clipboard }).clipboard;
     if (clipboard === undefined) {
       settle("manual", onManual);
@@ -60,15 +63,16 @@ export function useCopy({ copiedMs, manualMs }: CopyTimes): Copy {
     }
     clipboard.writeText(text).then(
       () => {
-        settle("copied");
+        if (mine === attempt.current) settle("copied");
       },
       () => {
-        settle("manual", onManual);
+        if (mine === attempt.current) settle("manual", onManual);
       },
     );
   };
 
   const reset = (): void => {
+    attempt.current++;
     window.clearTimeout(pending.current);
     setStatus("idle");
   };

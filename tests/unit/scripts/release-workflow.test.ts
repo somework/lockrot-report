@@ -152,11 +152,16 @@ describe("the lockrot pin has a green lockrot run (R6-29, decision 35)", () => {
   });
 
   test.each([
-    ["a full check", [{ workflowName: "full-check", headBranch: "v0.14.0-rc.7" }], 0],
+    ["a full check", [{ workflowName: "full-check", headBranch: "release/full-check-97e3121d" }], 0],
+    [
+      "a full check of some shards only",
+      [{ workflowName: "full-check", headBranch: "release/full-check-97e3121d--solver,verdicts" }],
+      1,
+    ],
     ["CI on main", [{ workflowName: "CI", headBranch: "main" }], 0],
     ["CI on a release branch only", [{ workflowName: "CI", headBranch: "release/0.14.0" }], 1],
     ["no run", [], 1],
-  ])("passes on %s", (_, runs, status) => {
+  ])("on %s, the step exits %i", (_, runs, status) => {
     expect(withRuns(runs).status).toBe(status);
   });
 });

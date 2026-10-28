@@ -89,6 +89,6 @@ the report-1 screen.
 3. Merge, then tag `vX.Y.Z` on main, or tag a pre-release on main or its release branch. The
    release workflow refuses a final tag that main does not hold, and a pre-release tag that neither
    main nor a release branch holds. It also refuses a pin that the check above refuses, and a pin
-   with no successful lockrot run: a full check, or CI on a push to main. It runs the gates of
+   with no successful lockrot run: a full check of the whole tree, or CI on a push to main. It runs the gates of
    ci.yml, then builds, attests and publishes.
 4. In lockrot, run `tools/report/update-renderer vX.Y.Z` and open a pull request.

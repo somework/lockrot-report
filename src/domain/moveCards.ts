@@ -97,14 +97,16 @@ export function isBelow(version: string, than: string): boolean {
   return at !== -1 && (a[at] ?? 0) < (b[at] ?? 0);
 }
 
-/** Composer moves a package that both sections list into require under `--no-interaction` (ruling R6-3).
- *  The argument keeps the require-dev key's spelling, so names compare without case. */
+/** Composer moves a package that both sections list into require under `--no-interaction`, and
+ *  into require-dev with `--dev` (ruling R6-3). The argument keeps the require-dev key's spelling,
+ *  so names compare without case. */
 const leavesRequireDev = (name: string, argvs: readonly (readonly string[])[]): boolean =>
   argvs.some(
     ([, subcommand, argument = "", ...options]) =>
       subcommand === "require" &&
       argument.split(":")[0]?.toLowerCase() === name.toLowerCase() &&
-      options.includes("--no-interaction"),
+      options.includes("--no-interaction") &&
+      !options.includes("--dev"),
   );
 
 /** G70 to G93: the move's action. */

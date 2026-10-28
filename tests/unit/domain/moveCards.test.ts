@@ -760,6 +760,17 @@ describe("R6-3: a require step that moves the package out of require-dev", () =>
     expect(plain(moveCards(finding, run)[0]?.action ?? [])).not.toContain("require-dev");
   });
 
+  test("names no removal when the step also passes --dev, which keeps the package in require-dev", () => {
+    const { finding, run } = directRequire();
+    const move = finding.next_step;
+    if (move === null) throw new Error("the case has a move");
+    move.commands = [
+      ["composer", "require", `${finding.package}:${move.constraint ?? ""}`, "--no-interaction", "--dev"],
+    ];
+
+    expect(plain(moveCards(finding, run)[0]?.action ?? [])).not.toContain("require-dev");
+  });
+
   test("takes --no-interaction on the php step as no removal of the package", () => {
     const { finding, run } = directRequire();
     const move = finding.next_step;
