@@ -13,6 +13,7 @@ import {
   majorCount,
   majorCountWords,
   rowNewLine,
+  rowRaiseWords,
 } from "../../../src/domain/findingRow";
 import { commandLabel } from "../../../src/domain/moveCards";
 import type { Finding, Run } from "../../../src/model/report";
@@ -239,6 +240,7 @@ describe("W2: the row's command names the finding's package", () => {
     });
     expect(rowCommand(f)).toBe("composer require 'a/b:^2.0'");
     expect(nextStepWords(f, run).text).toBe("raise require.php to >=8.1");
+    expect(rowRaiseWords(f)).toBe("raise require.php to >=8.1");
   });
 });
 
