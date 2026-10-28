@@ -17,7 +17,8 @@ interface Miss {
   readonly what: string;
 }
 
-/** Why the focused element's top corners do not show, or null when they show. */
+/** Why the focused element's first line does not show at its two ends, or null when it shows.
+ *  Firefox may leave a wrapped link's top few pixels under a head, which still shows the focus. */
 async function missOfFocus(page: Page): Promise<Miss | null> {
   return page.evaluate(() => {
     const el = document.activeElement;
@@ -29,11 +30,12 @@ async function missOfFocus(page: Page): Promise<Miss | null> {
       scroller = scroller.parentElement;
     const view = scroller?.getBoundingClientRect() ?? new DOMRect(0, 0, innerWidth, innerHeight);
     const name = `${el.tagName} "${el.textContent.trim().slice(0, 40)}"`;
-    const y = box.top + 2;
+    const y = box.top + box.height / 2;
     if (y < view.top || y > view.bottom) return { kind: "clipped", what: name };
     for (const x of [box.left + 2, box.right - 2]) {
       const hit = document.elementFromPoint(x, y);
-      if (hit !== null && hit !== el && !el.contains(hit))
+      // An ancestor answers at a rounded corner of the element: it shows through, it does not cover.
+      if (hit !== null && !el.contains(hit) && !hit.contains(el))
         return { kind: "under", what: `${name} under ${hit.className || hit.tagName}` };
     }
     return null;
@@ -55,12 +57,13 @@ async function walk(
     (at === "first" ? visible[0] : visible.at(-1))?.focus();
   }, start);
   const misses: Miss[] = [];
+  // The start is the test's own focus() call, whose scroll differs between engines: only keys count.
   for (let step = 0; step < 40; step++) {
+    await page.keyboard.press(key);
     const inside = await root.evaluate((node) => node.contains(document.activeElement));
     if (!inside) break;
     const miss = await missOfFocus(page);
     if (miss !== null) misses.push(miss);
-    await page.keyboard.press(key);
   }
   return misses;
 }
