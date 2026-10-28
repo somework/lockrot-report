@@ -109,6 +109,8 @@ test.describe("report-2: the sweep over every tab", () => {
 
   /** Every axe rule broken on the page, as "rule: target". */
   async function axeViolations(page: Page): Promise<string[]> {
+    // The sheet fades in: a contrast read mid-fade sees a colour that never rests on screen.
+    await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== "running"));
     const results = await new AxeBuilder({ page }).analyze();
     return results.violations.flatMap((v) => v.nodes.map((node) => `${v.id}: ${node.target.join(" ")}`));
   }
