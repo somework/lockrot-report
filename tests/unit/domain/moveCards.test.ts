@@ -747,7 +747,7 @@ describe("R6-3: a require step that moves the package out of require-dev", () =>
 
     const card = moveCards(finding, run)[0];
 
-    expect(plain(card?.action ?? [])).toMatch(/^Require \S+ and removes it from require-dev/);
+    expect(plain(card?.action ?? [])).toMatch(/^Require \S+, which removes it from require-dev/);
     expect(card?.argvs).toEqual(move.commands);
   });
 
@@ -769,6 +769,38 @@ describe("R6-3: a require step that moves the package out of require-dev", () =>
     ];
 
     expect(plain(moveCards(finding, run)[0]?.action ?? [])).not.toContain("require-dev");
+  });
+
+  function raisePhp(phpOptions: readonly string[]): { finding: Finding; run: Run } {
+    const { finding, run } = directRequire();
+    const move = finding.next_step;
+    if (move === null) throw new Error("the case has a move");
+    const raised: unknown = {
+      ...move,
+      kind: "raise-php",
+      php_check: { ...move.php_check, raise_to: ">=8.1" },
+      commands: [
+        ["composer", "require", "php:>=8.1", ...phpOptions],
+        ["composer", "require", `${finding.package}:${move.constraint ?? ""}`],
+      ],
+    };
+    return { finding: { ...finding, next_step: raised as typeof move }, run };
+  }
+
+  test("says the php step removes php from require-dev when it passes --no-interaction", () => {
+    const { finding, run } = raisePhp(["--no-interaction", "--no-update"]);
+
+    expect(plain(moveCards(finding, run)[0]?.action ?? [])).toMatch(
+      /^Raise require\.php to >=8\.1, which removes it from require-dev, then require /,
+    );
+  });
+
+  test("names no removal on the php step that also passes --dev", () => {
+    const { finding, run } = raisePhp(["--no-interaction", "--dev", "--no-update"]);
+
+    expect(plain(moveCards(finding, run)[0]?.action ?? [])).toMatch(
+      /^Raise require\.php to >=8\.1, then require /,
+    );
   });
 
   test("takes --no-interaction on the php step as no removal of the package", () => {

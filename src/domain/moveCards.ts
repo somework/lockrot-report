@@ -109,6 +109,9 @@ const leavesRequireDev = (name: string, argvs: readonly (readonly string[])[]): 
       !options.includes("--dev"),
   );
 
+const fromRequireDev = (name: string, argvs: readonly (readonly string[])[]): string =>
+  leavesRequireDev(name, argvs) ? ", which removes it from require-dev" : "";
+
 /** G70 to G93: the move's action. */
 function moveAction(finding: Finding, move: AnyMove, run: Run): Rich {
   const php = move.php_check;
@@ -128,9 +131,12 @@ function moveAction(finding: Finding, move: AnyMove, run: Run): Rich {
     }
     case "require":
     case "raise-php": {
-      const raise = move.kind === "raise-php" ? `Raise require.php to ${php?.raise_to ?? ""}, then ` : "";
+      const raise =
+        move.kind === "raise-php"
+          ? `Raise require.php to ${php?.raise_to ?? ""}${fromRequireDev("php", move.commands)}, then `
+          : "";
       const head = finding.direct
-        ? `require ${move.constraint ?? ""}${leavesRequireDev(finding.package, move.commands) ? " and removes it from require-dev" : ""}`
+        ? `require ${move.constraint ?? ""}${fromRequireDev(finding.package, move.commands)}`
         : `move it to ${move.constraint ?? ""}${hasDependents ? ` through ${dependents(finding)}` : ""}`;
       return [capitalize(raise + head)];
     }
