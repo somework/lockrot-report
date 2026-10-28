@@ -55,7 +55,7 @@ export function Glossary({ open, at = "top", onClose }: GlossaryProps) {
     if (!open || dialog === null) return;
     const keys = dialog.querySelector(".glossary-keys");
     if (at === "keys" && typeof keys?.scrollIntoView === "function") keys.scrollIntoView({ block: "start" });
-    else dialog.scrollTop = 0;
+    else dialog.querySelector(".glossary-body")?.scrollTo({ top: 0 });
   }, [open, at, ref]);
 
   return (

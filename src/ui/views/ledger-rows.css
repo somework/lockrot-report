@@ -23,7 +23,7 @@
 /* ---------- the column head ---------- */
 .fhead {
   position: sticky;
-  top: 0;
+  top: var(--stuck-top);
   z-index: 3;
   display: grid;
   /* Phone: the head captions the third line of every row — the age bar and the reach — with the
@@ -47,11 +47,6 @@
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
-}
-@media (min-width: 760px) {
-  .fhead {
-    top: var(--topbar-h);
-  }
 }
 .fhead-col {
   min-width: 0;

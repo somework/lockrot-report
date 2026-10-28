@@ -1,5 +1,6 @@
 import { Fragment, type ComponentChildren } from "preact";
 import { useEffect, useId, useRef } from "preact/hooks";
+import { useMeasuredHeight } from "../useMeasuredHeight";
 import type { DetailsEntry, Finding } from "../../model/report";
 import { ageRows } from "../../domain/ageRows";
 import { baselineSuffix } from "../../domain/baselineSuffix";
@@ -149,6 +150,7 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
   // `dispatch` unmounts the Clear-filters button, so focus goes to Close, which every state keeps.
   const closeRef = useRef<HTMLButtonElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const headRef = useMeasuredHeight<HTMLDivElement>("--detail-head-h");
   usePrintOpen(sheetRef);
   const base = useId();
   const branchesId = `${base}-branches`;
@@ -177,7 +179,7 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
       aria-label={finding.package}
       data-surface="detail"
     >
-      <div className="detail-head">
+      <div className="detail-head" ref={headRef}>
         <div className="detail-head-top">
           <div className="detail-head-name">
             <h2 className="detail-title" tabIndex={-1} data-detail-focus="">

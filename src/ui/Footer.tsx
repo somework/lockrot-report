@@ -1,7 +1,8 @@
-import type { ComponentChildren } from "preact";
-import { useLayoutEffect, useRef } from "preact/hooks";
+import type { ComponentChildren, RefObject } from "preact";
+import { useLayoutEffect } from "preact/hooks";
 import { day } from "../domain/format";
 import { useReport } from "./context";
+import { useMeasuredHeight } from "./useMeasuredHeight";
 
 /** A footer link: always to a fixed lockrot address, never to anything from the document. */
 function Lnk({ href, children }: { href: string; children: ComponentChildren }) {
@@ -12,45 +13,23 @@ function Lnk({ href, children }: { href: string; children: ComponentChildren }) 
   );
 }
 
-/**
- * Publishes the footer's rendered height as `--footer-h`, the same discipline `Header.tsx#useHeaderHeight`
- * keeps for `--topbar-h`. `.shell`'s sticky rail and detail column (`ui/app.css`) need it: the footer
- * renders straight after `.shell` with nothing sized to hold it away, so the page's true maximum scroll
- * always leaves exactly `--footer-h` of the footer standing between a stuck panel's lowest reachable
- * point and the viewport's own bottom edge, whatever `.shell`'s own row height happens to be (DESIGN.md
- * §8, PD-DETAIL-5). Set through the CSSOM, which the page's CSP allows (DESIGN.md §1.3).
- */
-function useFooterHeight() {
-  const ref = useRef<HTMLElement>(null);
-
+/** The sticky columns give up `--footer-h` only while the footer is on screen: sized against it all
+ *  the time, a short viewport left them a sliver of the page (DESIGN.md §8, PD-DETAIL-5). */
+function useFooterInView(ref: RefObject<HTMLElement>): void {
   useLayoutEffect(() => {
     const node = ref.current;
-    if (node === null || typeof ResizeObserver === "undefined") return undefined;
+    if (node === null || typeof IntersectionObserver === "undefined") return undefined;
     const root = document.documentElement;
-    const observer = new ResizeObserver(() => {
-      root.style.setProperty("--footer-h", `${Math.ceil(node.getBoundingClientRect().height)}px`);
+    const visible = new IntersectionObserver(([entry]) => {
+      root.classList.toggle("footer-in-view", entry?.isIntersecting === true);
     });
-    observer.observe(node);
-    // The sticky columns give up the footer's height only while the footer is on screen: sized
-    // against it all the time, a short viewport (a laptop at 125% zoom, devtools open) left them a
-    // sliver for the whole page to protect the last screenful of it (DESIGN.md §8, PD-DETAIL-5).
-    const visible =
-      typeof IntersectionObserver === "undefined"
-        ? null
-        : new IntersectionObserver(([entry]) => {
-            root.classList.toggle("footer-in-view", entry?.isIntersecting === true);
-          });
-    visible?.observe(node);
+    visible.observe(node);
 
     return () => {
-      observer.disconnect();
-      visible?.disconnect();
-      root.style.removeProperty("--footer-h");
+      visible.disconnect();
       root.classList.remove("footer-in-view");
     };
-  }, []);
-
-  return ref;
+  }, [ref]);
 }
 
 /**
@@ -61,7 +40,8 @@ function useFooterHeight() {
 export function Footer({ inert = false }: { inert?: boolean }) {
   const { model } = useReport();
   const { lockrot, generated_at } = model.report;
-  const ref = useFooterHeight();
+  const ref = useMeasuredHeight<HTMLElement>("--footer-h");
+  useFooterInView(ref);
 
   return (
     <footer className="colophon" ref={ref} inert={inert}>

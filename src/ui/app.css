@@ -10,11 +10,18 @@
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
+/* Where a list head sticks: under the header where the header sticks, at the top below 760px. */
+:root {
+  --stuck-top: 0px;
+}
 @media (min-width: 760px) {
   .topbar {
     position: sticky;
     top: env(safe-area-inset-top, 0px);
     z-index: 20;
+  }
+  :root {
+    --stuck-top: var(--topbar-h);
   }
 }
 .topbar-in {
@@ -363,23 +370,12 @@
 }
 
 /* ---------- layout ---------- */
-/* What a row brought into view — by `j`/`k`, a `#pkg=` link on load, or a focus — must clear: the
-   Findings list's sticky 40px column head, and from 760px up the sticky header above it
-   (PD-ROWS-10). Without it a `j` past the top edge left its row under the head.
-
-   `scroll-padding-bottom` (PD-SEARCH-1 polish item 8) keeps the same one-row clearance at the
-   bottom edge: without it, `j`'s `scrollIntoView({block: "nearest"})` (App.tsx#focusRow) is free to
-   land the newly focused row flush against the viewport's own bottom edge, with nothing of the row
-   below it in view to show there is more list to walk to. Nothing sticky sits at the bottom to clear
-   the way the head does at the top, so this is one flat value at every width. */
+/* What focus, a jump or `j`/`k` brings into view lands below every sticky layer of its scroller:
+   the stuck header and the one list head on screen, both measured (PD-ROWS-10). Nothing sticks at
+   the bottom, so `scroll-padding-bottom` only keeps a row of the list in view below the focused one. */
 html {
-  scroll-padding-top: 48px;
+  scroll-padding-top: calc(var(--stuck-top) + var(--list-head-h, 0px) + 8px);
   scroll-padding-bottom: 48px;
-}
-@media (min-width: 760px) {
-  html {
-    scroll-padding-top: calc(var(--topbar-h) + 48px);
-  }
 }
 .shell {
   max-width: var(--page-max);
@@ -420,14 +416,6 @@ html {
 }
 .shell-main {
   min-width: 0;
-  /* Where a "focus" press scrolls the list to: its top just clear of the header, which is sticky
-     from 760px up and scrolls away below that. */
-  scroll-margin-top: 12px;
-}
-@media (min-width: 760px) {
-  .shell-main {
-    scroll-margin-top: calc(var(--topbar-h) + 12px);
-  }
 }
 
 .shell-rail {
@@ -438,11 +426,6 @@ html {
   overscroll-behavior: contain;
   scrollbar-width: thin;
 }
-/* The column scrolls and sticks; the rail inside it must not stick a second time against a guessed
-   offset of its own. */
-.shell-rail > .rail {
-  position: static;
-}
 .rail-fold {
   margin-bottom: 12px;
 }
@@ -451,7 +434,6 @@ html {
 }
 /* Folded, the rail's groups lie side by side and their options run along a line. */
 .rail-fold .rail {
-  position: static;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 14px 22px;
@@ -465,6 +447,10 @@ html {
 /* ---------- detail: a column beside the list, or a sheet over the page ---------- */
 .shell-detail:empty {
   display: none;
+}
+/* The sheet scrolls under its own sticky head. */
+.shell-detail {
+  scroll-padding-top: calc(var(--detail-head-h, 0px) + 8px);
 }
 /* PD-DETAIL-5 (DESIGN.md §5/§8): `max-height` is measured against the stuck position
    (`--topbar-h` + 16px), but a sticky element sits at its normal in-flow position — lower down the
@@ -542,8 +528,7 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   width: min(760px, calc(100% - 32px));
   max-width: none;
   max-height: 84vh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  overflow: hidden;
   padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-l);
@@ -558,6 +543,11 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   background-color: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow);
+}
+/* The body scrolls and the head stays above it, so the head covers nothing. */
+.glossary[open] {
+  display: flex;
+  flex-direction: column;
 }
 .glossary::backdrop {
   background: var(--backdrop);
@@ -575,9 +565,7 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   }
 }
 .glossary-head {
-  position: sticky;
-  top: 0;
-  z-index: 1;
+  flex: none;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   padding: 14px 18px;
@@ -591,6 +579,9 @@ body.detail-open:has(.shell-detail.is-sheet > *) {
   margin-right: auto;
 }
 .glossary-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 16px 18px 22px;
   display: flex;
   flex-direction: column;

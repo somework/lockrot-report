@@ -25,6 +25,7 @@ import { day, plural } from "../../domain/format";
 import type { Report2 } from "../../model/report";
 import { EMPTY_FILTERS } from "../../state/types";
 import { useReport } from "../context";
+import { LIST_HEAD_H, useMeasuredHeight } from "../useMeasuredHeight";
 import { toneClass } from "../common/common";
 import { CheckIncompleteTag } from "../common/CheckIncompleteTag";
 import { CleanMark } from "../ledger/CleanMark";
@@ -290,6 +291,26 @@ function Answer({ report, answer, counted }: { report: Report2; answer: Advisory
   );
 }
 
+function AdvisoryHead() {
+  const ref = useMeasuredHeight<HTMLDivElement>(LIST_HEAD_H);
+  return (
+    <div className="al-head" role="row" ref={ref}>
+      <span className="al-col al-col-sev" role="columnheader">
+        {ADVISORY_HEAD.sev}
+      </span>
+      <span className="al-col al-col-adv" role="columnheader">
+        {ADVISORY_HEAD.adv}
+      </span>
+      <span className="al-col al-col-aff" role="columnheader">
+        {ADVISORY_HEAD.aff}
+      </span>
+      <span className="al-col al-col-fix" role="columnheader">
+        {ADVISORY_HEAD.fix}
+      </span>
+    </div>
+  );
+}
+
 /** The Advisories tab of a report-2 document: on screen the Security block with the tab's answer,
  *  on paper the answer alone (the printed summary holds the block); then every S9 row, grouped by
  *  the fix it takes. Rows keep `applyFilters2` order inside a group. */
@@ -342,20 +363,7 @@ export function AdvisoriesView2() {
             </div>
           )}
           <div className="aledger no-axis" role="table" aria-label="Advisories">
-            <div className="al-head" role="row">
-              <span className="al-col al-col-sev" role="columnheader">
-                {ADVISORY_HEAD.sev}
-              </span>
-              <span className="al-col al-col-adv" role="columnheader">
-                {ADVISORY_HEAD.adv}
-              </span>
-              <span className="al-col al-col-aff" role="columnheader">
-                {ADVISORY_HEAD.aff}
-              </span>
-              <span className="al-col al-col-fix" role="columnheader">
-                {ADVISORY_HEAD.fix}
-              </span>
-            </div>
+            <AdvisoryHead />
             {groups.map((group) => (
               <Group key={group.finding.package} group={group} run={run} first={first} />
             ))}
