@@ -266,8 +266,8 @@ const union = (a: readonly string[], b: readonly string[]): string[] => [...new 
  * The filters a report-2 address may carry. A 0.13 link opens on report-2 terms (SPEC §7.9.7):
  * `prio=` as `verdict=`, and a flag named in `verdict=` as `flag=`. A `gate` key stays only when
  * some package fails the run, `accepted` keeps only its toggle, and `scope` and `since` only their
- * own keys. Returns `filters` itself when
- * nothing changes.
+ * own keys. A run with no baseline keeps no `since` value. Returns `filters` itself when nothing
+ * changes.
  */
 export function fitFilters2(report: Report2, filters: Filters): Filters {
   const flagIds: readonly string[] = report.run.flag_ids;
@@ -280,7 +280,8 @@ export function fitFilters2(report: Report2, filters: Filters): Filters {
   );
   const accepted = filters.accepted.filter((key) => key === HIDE_ACCEPTED);
   const scope = filters.scope.filter((key) => SCOPE_ROWS.some(([own]) => own === key));
-  const since = filters.since.filter((key) => SINCE_ROWS.some(([own]) => own === key));
+  const since =
+    report.baseline === null ? [] : filters.since.filter((key) => SINCE_ROWS.some(([own]) => own === key));
   if (
     filters.prio.length === 0 &&
     named.length === 0 &&

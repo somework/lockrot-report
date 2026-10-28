@@ -11,7 +11,7 @@ import type { Finding, Report2 } from "../../../src/model/report";
 import { EMPTY_FILTERS, INITIAL_STATE, type Filters, type State } from "../../../src/state/types";
 import { advisoryRows } from "../../../src/domain/advisoryRows";
 import { fixLabel } from "../../../src/domain/pageVocabulary";
-import { readContractJson } from "../words/recorded";
+import { multiFindingReports, readContractJson } from "../words/recorded";
 
 const composite = readContractJson("report-2", "composite.json") as Report2;
 const partial = readContractJson("report-2", "D-partial-dagger.json") as Report2;
@@ -282,8 +282,11 @@ describe("ready to run (accepted derivation 10)", () => {
 });
 
 describe("fitFilters2 on scope and since values (R5-28)", () => {
+  const baselined = multiFindingReports().find(({ name }) => name === "baselined/wallabag-2.6")?.report;
+  if (baselined?.baseline == null) throw new Error("no baselined report");
+
   it("drops a value that is no key of the group, a prototype name included", () => {
-    const fitted = fitFilters2(composite, {
+    const fitted = fitFilters2(baselined, {
       ...EMPTY_FILTERS,
       scope: ["constructor", "dev", "x"],
       since: ["toString", "new", "x"],
@@ -295,7 +298,17 @@ describe("fitFilters2 on scope and since values (R5-28)", () => {
   it("returns the filters unchanged when every value is a key of its group", () => {
     const filters: Filters = { ...EMPTY_FILTERS, scope: ["direct", "unnamed"], since: ["worsened"] };
 
-    expect(fitFilters2(composite, filters)).toBe(filters);
+    expect(fitFilters2(baselined, filters)).toBe(filters);
+  });
+
+  it("drops every since value on a run with no baseline, so the list does not empty", () => {
+    const fitted = fitFilters2(composite, { ...EMPTY_FILTERS, since: ["new", "known"] });
+
+    expect(composite.baseline).toBeNull();
+    expect(fitted.since).toEqual([]);
+    expect(applyFilters2(composite, { ...state(), filters: fitted }, "findings")).toEqual(
+      applyFilters2(composite, state(), "findings"),
+    );
   });
 });
 

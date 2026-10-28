@@ -91,6 +91,8 @@ project is overall, and the other tabs lead with their own part.
   of its moves cross a major. A move to a new 0.x line does not count as one.
 - The rail's "This run" group filters "Ready to run", "Held" and "Another way out", each with its
   count. The last shows only when the run fails.
+- A link drops a filter value that the page does not know, so it never shows an empty chip or an
+  empty list. A Since value is dropped on a run with no baseline.
 - All packages hides its "Data as of" column when every row has the report's date, and says so in
   a caption. A key under the table names each signal id the rows carry.
 - From 1000 px an open package is a column beside the list, and the list stays in view. Up, Down,
