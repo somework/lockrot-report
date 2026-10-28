@@ -11,7 +11,12 @@ function block(selector: string): Tokens {
   const at = CSS.indexOf(`${selector} {`);
   if (at === -1) throw new Error(`tokens.css has no ${selector} block`);
   const body = CSS.slice(at, CSS.indexOf("}", at));
-  return Object.fromEntries([...body.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})\b/gi)].map((m) => [m[1], m[2]]));
+  return Object.fromEntries(
+    [...body.matchAll(/--([\w-]+):\s*(#[0-9a-f]{6})\b/gi)].map((m): [string, string] => [
+      m[1] ?? "",
+      m[2] ?? "",
+    ]),
+  );
 }
 
 const LIGHT = block(":root");
