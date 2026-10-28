@@ -53,4 +53,13 @@ describe("useMeasuredHeight", () => {
     next.unmount();
     expect(root()).toBe("");
   });
+
+  test("gives the variable back to the older owner when the newer one unmounts first, as after a print", () => {
+    const screen = render(<Head h={63} />);
+    const printed = render(<Head h={40} />);
+    printed.unmount();
+    expect(root()).toBe("63px");
+    screen.unmount();
+    expect(root()).toBe("");
+  });
 });

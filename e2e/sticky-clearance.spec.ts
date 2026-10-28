@@ -25,7 +25,8 @@ async function missOfFocus(page: Page): Promise<Miss | null> {
     const box = el.getClientRects()[0];
     if (box === undefined || box.width < 4 || box.height < 4) return null;
     let scroller = el.parentElement;
-    while (scroller !== null && !/auto|scroll/.test(getComputedStyle(scroller).overflowY)) scroller = scroller.parentElement;
+    while (scroller !== null && !/auto|scroll/.test(getComputedStyle(scroller).overflowY))
+      scroller = scroller.parentElement;
     const view = scroller?.getBoundingClientRect() ?? new DOMRect(0, 0, innerWidth, innerHeight);
     const name = `${el.tagName} "${el.textContent.trim().slice(0, 40)}"`;
     const y = box.top + 2;
@@ -40,9 +41,16 @@ async function missOfFocus(page: Page): Promise<Miss | null> {
 }
 
 /** Walks focus through `root` with `key`, from the element `start` focuses, and lists each miss. */
-async function walk(page: Page, root: Locator, start: "first" | "last", key: "Tab" | "Shift+Tab"): Promise<Miss[]> {
+async function walk(
+  page: Page,
+  root: Locator,
+  start: "first" | "last",
+  key: "Tab" | "Shift+Tab",
+): Promise<Miss[]> {
   await root.evaluate((node, at) => {
-    const all = [...node.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), [tabindex='0'], summary")];
+    const all = [
+      ...node.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), [tabindex='0'], summary"),
+    ];
     const visible = all.filter((el) => el.getClientRects().length > 0);
     (at === "first" ? visible[0] : visible.at(-1))?.focus();
   }, start);
@@ -111,7 +119,9 @@ for (const width of [375, 600, 768, 1440]) {
 test.describe("the list heads", () => {
   test.use({ reducedMotion: "reduce" });
 
-  test("j and k keep each row below the Findings column head, with a package open at 1440px", async ({ page }) => {
+  test("j and k keep each row below the Findings column head, with a package open at 1440px", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 800 });
     await page.goto(`${report2Url(LIST)}#view=findings`);
     const first = page.locator("[data-pkg]").first();

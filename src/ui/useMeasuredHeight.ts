@@ -4,8 +4,19 @@ import { useLayoutEffect, useRef } from "preact/hooks";
 /** The one list head on screen: the Findings column head or the Advisories head. */
 export const LIST_HEAD_H = "--list-head-h";
 
-// An unmount can run after the next owner of the same variable has set it.
-const owners = new Map<string, object>();
+interface Owner {
+  height: string | null;
+}
+
+// Mount order, newest last: the newest owner writes the variable, and when it unmounts the variable
+// goes back to the one before it (the print document mounts a second head and unmounts it first).
+const owners = new Map<string, Owner[]>();
+
+function publish(varName: string): void {
+  const height = owners.get(varName)?.at(-1)?.height ?? null;
+  if (height === null) document.documentElement.style.removeProperty(varName);
+  else document.documentElement.style.setProperty(varName, height);
+}
 
 /** Publishes the ceiling of the element's height as `varName` on the root, while it is mounted, so
  *  CSS can clear a sticky element by its measured height (DESIGN.md §8). */
@@ -15,20 +26,21 @@ export function useMeasuredHeight<T extends Element>(varName: string): RefObject
   useLayoutEffect(() => {
     const node = ref.current;
     if (node === null || typeof ResizeObserver === "undefined") return undefined;
-    const root = document.documentElement;
-    const owner = {};
-    owners.set(varName, owner);
+    const owner: Owner = { height: null };
+    owners.set(varName, [...(owners.get(varName) ?? []), owner]);
     const observer = new ResizeObserver(() => {
-      if (owners.get(varName) !== owner) return;
-      root.style.setProperty(varName, `${Math.ceil(node.getBoundingClientRect().height)}px`);
+      owner.height = `${Math.ceil(node.getBoundingClientRect().height)}px`;
+      publish(varName);
     });
     observer.observe(node);
 
     return () => {
       observer.disconnect();
-      if (owners.get(varName) !== owner) return;
-      owners.delete(varName);
-      root.style.removeProperty(varName);
+      owners.set(
+        varName,
+        (owners.get(varName) ?? []).filter((other) => other !== owner),
+      );
+      publish(varName);
     };
   }, [varName]);
 

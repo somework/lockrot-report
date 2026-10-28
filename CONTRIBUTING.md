@@ -23,6 +23,7 @@ how to re-pin.
 `npm test` measures the coverage of `src/` and fails below the floors in `vitest.config.ts`. A floor
 holds the measured value of its folder. Raise it when a change lifts the folder, and never lower it.
 CSS counts toward no number (`css: false`), so the browser suite carries the layout rules.
+The floors hold for the whole suite only, so run one file with `npx vitest run <file>`.
 
 ## The browser suite
 

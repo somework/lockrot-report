@@ -582,7 +582,10 @@ export class NewReportPage implements ReportPage {
     const was = await row.getAttribute("aria-pressed");
     await row.click();
     // The click returns before the rail re-renders, and the next read must see the new rows.
-    await this.page.waitForFunction(([el, before]) => el.getAttribute("aria-pressed") !== before, [row, was] as const);
+    await this.page.waitForFunction(([el, before]) => el.getAttribute("aria-pressed") !== before, [
+      row,
+      was,
+    ] as const);
   }
 
   async listedPackageCount(): Promise<number> {

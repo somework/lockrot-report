@@ -54,21 +54,25 @@ describe("the Run tab's move check (SPEC §7.9.16)", () => {
     ]);
   });
 
-  test("names each requirement pattern the solve ignores, when the run lists them", () => {
+  test("names each pattern of ignored_platform, the list that replaces ignores_extensions (§7.9.16)", () => {
     const report = golden("snipe-it");
     if (report.run.move_check === null) throw new Error("snipe-it checks its moves");
-    const patterns: unknown = ["ext-*", "lib-*", "php-zts"];
-    report.run.move_check = { ...report.run.move_check, ignores_extensions: patterns as true };
+    const { ignores_extensions: _, ...rest } = report.run.move_check;
+    const emitted: unknown = {
+      ...rest,
+      ignored_platform: ["ext-*", "lib-*", "php-debug", "php-ipv6", "php-zts"],
+    };
+    report.run.move_check = emitted as typeof report.run.move_check;
     expect(plain(moveCheckFact(report) ?? [])).toBe(
-      "checked with the solver of Composer 2.10.3 against the lock · ext-*, lib-* and php-zts requirements not checked",
+      "checked with the solver of Composer 2.10.3 against the lock · ext-*, lib-*, php-debug, php-ipv6 and php-zts requirements not checked",
     );
   });
 
-  test("names no ignored requirement when the solve ignores none", () => {
+  test("names no ignored requirement when ignored_platform is empty", () => {
     const report = golden("snipe-it");
     if (report.run.move_check === null) throw new Error("snipe-it checks its moves");
-    const patterns: unknown = [];
-    report.run.move_check = { ...report.run.move_check, ignores_extensions: patterns as true };
+    const emitted: unknown = { ...report.run.move_check, ignored_platform: [] };
+    report.run.move_check = emitted as typeof report.run.move_check;
     expect(plain(moveCheckFact(report) ?? [])).toBe(
       "checked with the solver of Composer 2.10.3 against the lock",
     );

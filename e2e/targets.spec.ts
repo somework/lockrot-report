@@ -17,12 +17,18 @@ const OVERLAYS = ".tabs-scroll";
 async function overlaps(page: Page, view: string): Promise<string[]> {
   return page.evaluate(
     ([selector, overlay, surface]) => {
-      const roots = [document.querySelector(".topbar"), document.querySelector(`[data-surface="${surface}"]`)];
+      const roots = [
+        document.querySelector(".topbar"),
+        document.querySelector(`[data-surface="${surface}"]`),
+      ];
       // One box per line fragment: a link that wraps has an L-shaped hit area, not its bounding box.
       const controls = roots
         .flatMap((root) => (root === null ? [] : [...root.querySelectorAll<HTMLElement>(selector)]))
         .filter((el) => !el.matches(overlay) && getComputedStyle(el).visibility !== "hidden")
-        .map((el) => ({ el, boxes: [...el.getClientRects()].filter((box) => box.width > 0 && box.height > 0) }))
+        .map((el) => ({
+          el,
+          boxes: [...el.getClientRects()].filter((box) => box.width > 0 && box.height > 0),
+        }))
         .filter(({ boxes }) => boxes.some((box) => box.top < innerHeight * 2));
       const meet = (a: DOMRect, b: DOMRect): boolean =>
         Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
