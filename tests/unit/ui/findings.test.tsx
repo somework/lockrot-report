@@ -637,7 +637,7 @@ describe("the row hint of a list", () => {
     const hints = containers.map((node) => {
       const id = node.getAttribute("aria-describedby") ?? "";
       const hint = document.getElementById(id);
-      return { text: hint?.textContent, hidden: hint?.classList.contains("vh") };
+      return { text: hint?.textContent, hidden: hint?.hidden };
     });
 
     expect(containers.length).toBeGreaterThan(0);

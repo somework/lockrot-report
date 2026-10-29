@@ -236,7 +236,7 @@ export function RadiusView2() {
     <section className="radius2" data-surface="radius" aria-label="Blast radius">
       {depth !== null && <p className="r2-depth">{depth}</p>}
       {answer.length > 0 && <p className="r2-answer">{answer.join(" ")}</p>}
-      <RowHint id={hintId} />
+      {(layout.lead.length > 0 || layout.singles.length > 0) && <RowHint id={hintId} />}
       {layout.lead.length > 0 && (
         <ul className="r2-list" aria-label={RADIUS_WORDS.list} aria-describedby={hintId}>
           {rows(layout.lead, 1)}

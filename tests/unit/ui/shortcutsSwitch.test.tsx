@@ -77,6 +77,9 @@ describe("the Keyboard shortcuts switch in the glossary", () => {
 
     expect(box.checked).toBe(true);
     fireEvent.click(box);
-    expect(box.checked).toBe(false);
+    fireEvent.keyDown(document.body, { key: "Escape" });
+    fireEvent.keyDown(document.body, { key: "j" });
+
+    expect(openPackage()).toBeNull();
   });
 });

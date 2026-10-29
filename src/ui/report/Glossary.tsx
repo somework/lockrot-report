@@ -98,7 +98,7 @@ export function GlossaryBody2({ onClose, keysOpen = false, shortcutsOn, onShortc
         <summary>
           <h3>Keys and search</h3>
         </summary>
-        <label className="prose glossary-switch">
+        <label className="prose">
           <input
             type="checkbox"
             checked={shortcutsOn}

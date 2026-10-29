@@ -10,10 +10,10 @@ import "./common.css";
  * (DESIGN.md §1.3). The tone classes are defined once, in styles/base.css.
  */
 
-/** The hidden sentence a list names in `aria-describedby`. */
+/** The sentence a list names in `aria-describedby`. `hidden`, so browse mode does not read it twice. */
 export function RowHint({ id }: { id: string }) {
   return (
-    <p id={id} className="vh">
+    <p id={id} hidden>
       {ROW_HINT}
     </p>
   );

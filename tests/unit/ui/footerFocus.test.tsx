@@ -48,21 +48,50 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+/** The rail's first button, focused, reading `:focus-visible` as `visible` says, its scroll spied. */
+function focusRailButton(visible: boolean): ReturnType<typeof vi.fn> {
+  const button = document.querySelector<HTMLElement>(".shell-rail button");
+  if (button === null) throw new Error("no rail button");
+  const matches = button.matches.bind(button);
+  button.matches = ((selector: string) =>
+    selector === ":focus-visible" ? visible : matches(selector)) as typeof button.matches;
+  const scroll = vi.fn();
+  button.scrollIntoView = scroll;
+  button.focus();
+  return scroll;
+}
+
 // WCAG 2.4.11: the footer shortens the sticky rail, which can leave the focused control under it.
 describe("the footer coming into view", () => {
-  test("brings a focused control of the rail back into view", () => {
+  test("brings a keyboard-focused control of the rail back into view", () => {
     const show = stubObserver();
     render(<App model={composite()} />);
-    const button = document.querySelector<HTMLElement>(".shell-rail button");
-    if (button === null) throw new Error("no rail button");
-    const scroll = vi.fn();
-    button.scrollIntoView = scroll;
-    button.focus();
+    const scroll = focusRailButton(true);
 
     show(true);
 
     expect(document.documentElement.classList.contains("footer-in-view")).toBe(true);
     expect(scroll).toHaveBeenCalledWith({ block: "nearest" });
+  });
+
+  test("scrolls nothing when the footer leaves view and the columns grow", () => {
+    const show = stubObserver();
+    render(<App model={composite()} />);
+    const scroll = focusRailButton(true);
+
+    show(false);
+
+    expect(scroll).not.toHaveBeenCalled();
+  });
+
+  test("leaves a control focused by a click where the reader scrolled", () => {
+    const show = stubObserver();
+    render(<App model={composite()} />);
+    const scroll = focusRailButton(false);
+
+    show(true);
+
+    expect(scroll).not.toHaveBeenCalled();
   });
 
   test("leaves focus outside the sticky columns where it is", () => {

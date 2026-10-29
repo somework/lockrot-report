@@ -31,7 +31,7 @@ const withBreaks = (parts: readonly string[]) =>
     </Fragment>
   ));
 
-/** `advisory` ends the folded range button's name: every advisory row has one (WCAG 2.4.6). */
+/** `advisory` ends the folded range button's name: the row's own id, since two rows can share a CVE. */
 function Affects({ affects, advisory }: { affects: AdvisoryAffects; advisory: string }) {
   const [opened, setOpen] = useState(false);
   const printed = usePrinted();
@@ -117,7 +117,7 @@ function AdvisoryRow({ row, rowId, at, run, withTag, reveal }: RowProps) {
         {row.affects !== null && (
           <>
             <span className="d3-adv-sep">{SECURITY_WORDS.separator}</span>
-            <Affects affects={row.affects} advisory={row.name} />
+            <Affects affects={row.affects} advisory={row.source ?? row.name} />
           </>
         )}
         {sameAs !== null && (

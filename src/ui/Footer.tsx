@@ -18,10 +18,21 @@ function Lnk({ href, children }: { href: string; children: ComponentChildren }) 
 /** A sticky column the footer shortens; a control focused in it can end up under the footer. */
 const STICKY_COLUMNS = ".shell-rail, .shell-detail";
 
-/** Once the columns have shrunk, the focused control in one is scrolled back into sight (WCAG 2.4.11). */
+/** An engine without `:focus-visible` reads every focus as the keyboard's. */
+function focusVisible(element: Element): boolean {
+  try {
+    return element.matches(":focus-visible");
+  } catch {
+    return true;
+  }
+}
+
+/** Once the columns have shrunk, the control Tab focused in one is scrolled back into sight (WCAG
+ *  2.4.11). A clicked control is left alone, so a column the reader scrolled stays put. */
 function keepFocusInView(): void {
   const active = document.activeElement;
   if (!(active instanceof HTMLElement) || active.closest(STICKY_COLUMNS) === null) return;
+  if (!focusVisible(active)) return;
   requestAnimationFrame(() => {
     if (typeof active.scrollIntoView === "function") active.scrollIntoView({ block: "nearest" });
   });
@@ -35,8 +46,9 @@ function useFooterInView(ref: RefObject<HTMLElement>): void {
     if (node === null || typeof IntersectionObserver === "undefined") return undefined;
     const root = document.documentElement;
     const visible = new IntersectionObserver(([entry]) => {
-      root.classList.toggle("footer-in-view", entry?.isIntersecting === true);
-      keepFocusInView();
+      const inView = entry?.isIntersecting === true;
+      root.classList.toggle("footer-in-view", inView);
+      if (inView) keepFocusInView();
     });
     visible.observe(node);
 

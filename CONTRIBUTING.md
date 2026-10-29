@@ -91,10 +91,14 @@ the report-1 screen.
    green full check of the whole tree. A full check that an rc tag starts does not count, because
    its branch is the tag. The release workflow also accepts a green CI run of a push to lockrot's
    main.
-3. Run `node scripts/contract.mjs repin <pin>`. For a final tag, commit only the version and the pin.
-   Merge that commit into main.
-4. Before the first final tag, run `gh api repos/somework/lockrot-report/rulesets`. Confirm that a
-   ruleset on `refs/tags/v*` blocks deletion and update. If it is missing, create it. A moved tag
+3. Run `node scripts/contract.mjs repin <pin>`. For a final tag, commit only the version and the pin:
+   `package.json`, the CHANGELOG heading and `contract/lockrot.json`. If `repin` changed another
+   file under `contract/`, V does not vendor the same bundle, so stop. Merge the commit into main for
+   a final tag, or into its release branch for a pre-release.
+4. Before the first final tag, list the rulesets with `gh api repos/somework/lockrot-report/rulesets`.
+   The list leaves out each ruleset's conditions and rules, so read each one with
+   `gh api repos/somework/lockrot-report/rulesets/<id>`. Confirm that a tag ruleset on
+   `refs/tags/v*` has the `deletion` and `update` rules. If it is missing, create it. A moved tag
    gets a second attestation, and lockrot's `update-renderer` then cannot name one source commit.
    Then tag `vX.Y.Z` on main, or tag a pre-release on main or its release branch. The release
    workflow refuses a final tag that main does not hold, and a pre-release tag that neither main

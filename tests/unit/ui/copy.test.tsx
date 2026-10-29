@@ -9,7 +9,7 @@ import {
   within,
 } from "@testing-library/preact";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { assembleEmbed } from "../../../scripts/report2-embed";
+import { assembleEmbed, report2Pages } from "../../../scripts/report2-embed";
 import { normalize } from "../../../src/model/normalize";
 import type { Model } from "../../../src/model/types";
 import { App } from "../../../src/ui/App";
@@ -196,10 +196,26 @@ describe("the name of each copy control", () => {
     });
   });
 
+  test("two advisories under one CVE give their folded ranges two names", () => {
+    const page = report2Pages().find(({ name }) => name === "report2-page-drupal-site");
+    if (page === undefined) throw new Error("no drupal-site page");
+    const result = normalize(page.embed);
+    if (!result.ok) throw new Error(result.error.message);
+    history.replaceState(null, "", `/report.html#pkg=${encodeURIComponent("drupal/core")}`);
+    render(<App model={result.model} />);
+    const names = [...document.querySelectorAll(".d3-range-btn")].map(accessibleName);
+
+    expect(names.filter((name) => name.endsWith("CVE-2023-5256"))).toEqual([]);
+    expect(names.length).toBeGreaterThan(1);
+    expect(names.length - new Set(names).size).toBe(0);
+  });
+
   test("the folded Affects range names its advisory", () => {
     const sheet = openSheet();
     const button = sheet.querySelector(".d3-range-btn");
-    const advisory = button?.closest(".d3-adv")?.querySelector(".d3-adv-id")?.textContent ?? "";
+    const head = button?.closest(".d3-adv");
+    const advisory =
+      (head?.querySelector(".d3-adv-src") ?? head?.querySelector(".d3-adv-id"))?.textContent ?? "";
 
     expect(advisory).not.toBe("");
     expect(accessibleName(button as Element)).toBe(`${button?.textContent ?? ""} for ${advisory}`);

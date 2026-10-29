@@ -435,7 +435,7 @@ test.describe("report-2: keys on the Findings rows and the detail sheet", () => 
 test.describe("WCAG 2.4.11: the footer never covers the focused filter", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
-  // On this short list, Tab into the Fix group scrolls the footer into view, which shrinks the rail.
+  // The walk must bring the footer into view, the moment the rail shrinks: the last assertion says so.
   test("each rail button is on top at its own centre as Tab walks the rail", async ({ page }) => {
     await page.goto(report2Url("composite") + "#view=findings");
     const buttons = page.locator(".shell-rail button");
@@ -454,6 +454,7 @@ test.describe("WCAG 2.4.11: the footer never covers the focused filter", () => {
       await page.keyboard.press("Tab");
       await expect.poll(coveredBy, { timeout: 2000 }).toBeNull();
     }
+    await expect(page.locator("html.footer-in-view")).toHaveCount(1);
   });
 });
 
@@ -470,9 +471,9 @@ test.describe("WCAG 2.1.4: the Keyboard shortcuts switch", () => {
 
     await page.reload();
     await page.keyboard.press("j");
-    await expect(detailSurface(page)).toHaveCount(0);
     await page.getByRole("button", { name: "What these words mean" }).click();
     await page.getByRole("dialog").getByText("Keys and search").click();
+    await expect(detailSurface(page)).toHaveCount(0);
 
     await expect(
       page.getByRole("dialog").getByRole("checkbox", { name: "Keyboard shortcuts" }),
