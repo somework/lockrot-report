@@ -149,7 +149,7 @@ describe("the Copy summary whose clipboard refuses (R6-51, PD-PRINT-3)", () => {
 
 const accessibleName = (button: Element): string => button.getAttribute("aria-label") ?? button.textContent;
 
-// WCAG 2.4.6, 4.1.2 and 2.5.3: each copy control is told apart by the package it copies for, and
+// PD-DETAIL-18, WCAG 2.4.6, 4.1.2 and 2.5.3: each copy control is told apart by the package it copies for, and
 // its name starts with, or holds, the words a reader sees on it.
 describe("the name of each copy control", () => {
   test("on Overview names each first move's package", () => {

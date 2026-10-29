@@ -185,7 +185,7 @@ describe("the report-2 Findings tab", () => {
     expect(heads[0]).toBe("3 of 3 moves cross a major");
   });
 
-  // WCAG 1.3.1: without a break the result and the tag read as one phrase ("…ok a new major").
+  // PD-ROWS-20, WCAG 1.3.1: without a break the result and the tag read as one phrase ("…ok a new major").
   test("separates the result from the major-move tag for a screen reader only", () => {
     render(<App model={model("composite")} />);
     const meta = row("twig/twig").querySelector(".f2-meta");
@@ -624,7 +624,7 @@ describe("the All packages table as a list", () => {
   });
 });
 
-// Unverified with a screen reader: a row's role does not say that Enter opens it, so the list says so.
+// PD-ROWS-20, unverified with a screen reader: a row's role does not say that Enter opens it.
 describe("the row hint of a list", () => {
   test.each([
     ["findings", ".fledger"],

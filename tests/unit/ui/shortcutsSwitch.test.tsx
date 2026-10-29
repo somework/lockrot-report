@@ -34,7 +34,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// WCAG 2.1.4: a single-character shortcut must have an off switch.
+// PD-GLOSSARY-12, WCAG 2.1.4: a single-character shortcut must have an off switch.
 describe("the Keyboard shortcuts switch in the glossary", () => {
   test("is on by default, and j opens the first row", () => {
     render(<App model={composite()} />);

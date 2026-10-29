@@ -27,15 +27,16 @@ function focusVisible(element: Element): boolean {
   }
 }
 
-/** Once the columns have shrunk, the control Tab focused in one is scrolled back into sight (WCAG
- *  2.4.11). A clicked control is left alone, so a column the reader scrolled stays put. */
-function keepFocusInView(): void {
+/** The control Tab focused in a sticky column, while the column still shows it whole; else null.
+ *  A clicked control, or one the reader scrolled away from, is left where it is. */
+function shownFocus(): HTMLElement | null {
   const active = document.activeElement;
-  if (!(active instanceof HTMLElement) || active.closest(STICKY_COLUMNS) === null) return;
-  if (!focusVisible(active)) return;
-  requestAnimationFrame(() => {
-    if (typeof active.scrollIntoView === "function") active.scrollIntoView({ block: "nearest" });
-  });
+  if (!(active instanceof HTMLElement)) return null;
+  const column = active.closest(STICKY_COLUMNS);
+  if (column === null || !focusVisible(active)) return null;
+  const box = active.getBoundingClientRect();
+  const room = column.getBoundingClientRect();
+  return box.top >= room.top && box.bottom <= room.bottom ? active : null;
 }
 
 /** The sticky columns give up `--footer-h` only while the footer is on screen: sized against it all
@@ -47,8 +48,13 @@ function useFooterInView(ref: RefObject<HTMLElement>): void {
     const root = document.documentElement;
     const visible = new IntersectionObserver(([entry]) => {
       const inView = entry?.isIntersecting === true;
+      const shown = inView ? shownFocus() : null;
       root.classList.toggle("footer-in-view", inView);
-      if (inView) keepFocusInView();
+      // The columns shrink with the class: the control they showed is scrolled back into sight (WCAG 2.4.11).
+      if (shown !== null)
+        requestAnimationFrame(() => {
+          if (typeof shown.scrollIntoView === "function") shown.scrollIntoView({ block: "nearest" });
+        });
     });
     visible.observe(node);
 

@@ -94,6 +94,21 @@ describe("the footer coming into view", () => {
     expect(scroll).not.toHaveBeenCalled();
   });
 
+  test("leaves a control the reader had already scrolled out of its column", () => {
+    const show = stubObserver();
+    render(<App model={composite()} />);
+    const scroll = focusRailButton(true);
+    const rail = document.querySelector<HTMLElement>(".shell-rail");
+    if (rail === null) throw new Error("no rail");
+    const button = document.activeElement as HTMLElement;
+    rail.getBoundingClientRect = () => new DOMRect(0, 100, 200, 400);
+    button.getBoundingClientRect = () => new DOMRect(0, 600, 200, 30);
+
+    show(true);
+
+    expect(scroll).not.toHaveBeenCalled();
+  });
+
   test("leaves focus outside the sticky columns where it is", () => {
     const show = stubObserver();
     render(<App model={composite()} />);

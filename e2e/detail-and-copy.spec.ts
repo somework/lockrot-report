@@ -125,7 +125,7 @@ test.describe("report-2: the detail sheet and its copy control", () => {
   });
 });
 
-// A wrapped command reads as one command: its later lines start to the right of its first, so a
+// PD-DETAIL-17: a wrapped command reads as one command: its later lines start to the right of its first, so a
 // flag that wraps, such as `--no-update`, does not look like the start of a new command.
 test.describe("report-2: a wrapped command at phone width", () => {
   test.use({ viewport: { width: 375, height: 800 } });
