@@ -42,11 +42,13 @@ export type GlossaryAt = "top" | "keys";
 interface GlossaryProps {
   open: boolean;
   at?: GlossaryAt;
+  shortcutsOn: boolean;
+  onShortcutsChange: (on: boolean) => void;
   onClose: () => void;
 }
 
 /** The glossary: what every verdict and signal means (legacy `fillLegend` plus report.html's prose). */
-export function Glossary({ open, at = "top", onClose }: GlossaryProps) {
+export function Glossary({ open, at = "top", shortcutsOn, onShortcutsChange, onClose }: GlossaryProps) {
   const titleId = useId();
   const { ref, closeRef, fallback } = useDialog(open);
 
@@ -74,7 +76,12 @@ export function Glossary({ open, at = "top", onClose }: GlossaryProps) {
           Close
         </button>
       </div>
-      <GlossaryBody2 onClose={onClose} keysOpen={at === "keys"} />
+      <GlossaryBody2
+        onClose={onClose}
+        keysOpen={at === "keys"}
+        shortcutsOn={shortcutsOn}
+        onShortcutsChange={onShortcutsChange}
+      />
     </dialog>
   );
 }

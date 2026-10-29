@@ -197,7 +197,7 @@ function MoveItem({ move, model }: { move: ReadyMove; model: ScoreModel }) {
         <span className={`ov-tag ${toneClass(verdictTone(model, move.grade))}`}>{move.grade}</span>
         {move.newLine !== null && <span className="ov-tag ov-tag-plain">{move.newLine}</span>}
       </p>
-      <CopyMove argvs={[move.argv]} className="ov-cmd" />
+      <CopyMove argvs={[move.argv]} className="ov-cmd" owner={move.package} />
       {move.movesWith !== null && <p className="ov-move-with">{move.movesWith}</p>}
       {(move.clears !== null || move.after !== null) && (
         <p className="ov-move-what">

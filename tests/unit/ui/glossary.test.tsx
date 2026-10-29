@@ -41,7 +41,7 @@ function glossary({ open, onClose = vi.fn(), dispatch = vi.fn(), model = composi
       }}
     >
       <button type="button">trigger</button>
-      <Glossary open={open} onClose={onClose} />
+      <Glossary open={open} shortcutsOn onShortcutsChange={vi.fn()} onClose={onClose} />
     </ReportContext.Provider>
   );
 }

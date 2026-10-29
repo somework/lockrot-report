@@ -162,7 +162,12 @@ function NextStep({ finding, run }: { finding: Finding; run: Run }) {
       {(after !== null || newLine !== null) && (
         <span className="f2-meta">
           <span className="f2-after">{after}</span>
-          {newLine !== null && <span className="f2-major">{newLine}</span>}
+          {newLine !== null && (
+            <>
+              {after !== null && <span className="vh">; </span>}
+              <span className="f2-major">{newLine}</span>
+            </>
+          )}
         </span>
       )}
       {command !== null && <Command words={command} />}

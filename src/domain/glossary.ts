@@ -88,6 +88,7 @@ export const GLOSSARY2_WORDS = {
     "A package you consider finished can be accepted the way lockrot's built-in list accepts one: an extra.lockrot.ignore entry in composer.json, with a reason. Its accepted flags stay listed and weigh 0.",
   listKeys: "On a tab with a list:",
   everyKeys: "On every tab:",
+  shortcuts: "Keyboard shortcuts",
   search: "Search keys:",
   searchKeys: ["flag:", "lead:", "verdict:", "score:>=N", "priority:"],
 } as const;

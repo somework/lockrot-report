@@ -28,6 +28,7 @@ function input(overrides: Partial<KeyInput>): KeyInput {
     sheetOpen: false,
     searchAvailable: true,
     overview: false,
+    shortcutsOn: true,
     ...overrides,
   };
 }
@@ -217,6 +218,38 @@ describe("/ and ?", () => {
   });
 });
 
+// WCAG 2.1.4: the glossary's "Keyboard shortcuts" switch turns off every single-character key.
+describe("with shortcuts off", () => {
+  test.each(["?", "/", "j", "k"])("%s does nothing and lets the key through", (key) => {
+    const decision = decideKey(input({ key, shortcutsOn: false, selected: "a/one" }));
+
+    expect(decision).toEqual({ type: "ignore" });
+    expect(prevents(decision)).toBe(false);
+  });
+
+  test("Escape, Enter, Space and the arrows still act", () => {
+    const off = { shortcutsOn: false };
+
+    expect(decideKey(input({ ...off, key: "Escape", selected: "a/one" }))).toEqual({
+      type: "closeDetail",
+      restore: "a/one",
+    });
+    expect(decideKey(input({ ...off, key: "Enter", rowPkg: "a/two" }))).toEqual({
+      type: "openRow",
+      pkg: "a/two",
+    });
+    expect(decideKey(input({ ...off, key: " ", rowPkg: "a/two" }))).toEqual({
+      type: "openRow",
+      pkg: "a/two",
+    });
+    expect(decideKey(input({ ...off, key: "ArrowDown", rowPkg: "a/one", rowIndex: 0 }))).toEqual({
+      type: "focusRow",
+      pkg: "a/two",
+      index: 1,
+    });
+  });
+});
+
 describe("Escape closes the topmost thing, one per press", () => {
   test("the glossary first, even over an open detail", () => {
     expect(decideKey(input({ key: "Escape", dialogOpen: true, selected: "a/one" }))).toEqual({
@@ -322,6 +355,7 @@ describe("keyInputFrom reads the page around a key", () => {
       selected: null,
       sheetOpen: false,
       overview: false,
+      shortcutsOn: true,
       rendered: () => {
         computed += 1;
         return ROWS;
@@ -339,6 +373,9 @@ describe("keyInputFrom reads the page around a key", () => {
       rowIndex: 0,
     });
     expect(computed).toBe(1);
+    expect(keyInputFrom(press(row, "j"), { ...context, shortcutsOn: false })).toMatchObject({
+      shortcutsOn: false,
+    });
   });
 
   test("the row's position, the sheet and the search box's presence", () => {
@@ -358,6 +395,7 @@ describe("keyInputFrom reads the page around a key", () => {
       selected: "a/one",
       sheetOpen: true,
       overview: false,
+      shortcutsOn: true,
       rendered: () => ROWS,
     };
 
@@ -366,6 +404,7 @@ describe("keyInputFrom reads the page around a key", () => {
       rowIndex: 2,
       sheetOpen: true,
       overview: false,
+      shortcutsOn: true,
       searchAvailable: false,
     });
     // Read for j/k only.
@@ -386,6 +425,7 @@ describe("keyInputFrom reads the page around a key", () => {
       selected: null,
       sheetOpen: false,
       overview: false,
+      shortcutsOn: true,
       rendered: () => ROWS,
     };
 
@@ -406,6 +446,7 @@ describe("keyInputFrom reads the page around a key", () => {
       selected: null,
       sheetOpen: false,
       overview: false,
+      shortcutsOn: true,
       rendered: () => ROWS,
     });
     expect(read).toMatchObject({ typing: true, searchFocused: true });

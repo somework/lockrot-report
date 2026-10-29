@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { safeHref } from "../../domain/links";
+import { ROW_HINT } from "../../domain/pageVocabulary";
 import type { Tone } from "../../domain/vocab";
 import "./common.css";
 
@@ -8,6 +9,15 @@ import "./common.css";
  * a CSP that pins its one stylesheet by hash, and a `style="…"` attribute in markup would be refused
  * (DESIGN.md §1.3). The tone classes are defined once, in styles/base.css.
  */
+
+/** The hidden sentence a list names in `aria-describedby`. */
+export function RowHint({ id }: { id: string }) {
+  return (
+    <p id={id} className="vh">
+      {ROW_HINT}
+    </p>
+  );
+}
 
 export function toneClass(tone: Tone): string {
   return `tone-${tone}`;

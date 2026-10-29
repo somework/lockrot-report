@@ -15,6 +15,18 @@ function Lnk({ href, children }: { href: string; children: ComponentChildren }) 
   );
 }
 
+/** A sticky column the footer shortens; a control focused in it can end up under the footer. */
+const STICKY_COLUMNS = ".shell-rail, .shell-detail";
+
+/** Once the columns have shrunk, the focused control in one is scrolled back into sight (WCAG 2.4.11). */
+function keepFocusInView(): void {
+  const active = document.activeElement;
+  if (!(active instanceof HTMLElement) || active.closest(STICKY_COLUMNS) === null) return;
+  requestAnimationFrame(() => {
+    if (typeof active.scrollIntoView === "function") active.scrollIntoView({ block: "nearest" });
+  });
+}
+
 /** The sticky columns give up `--footer-h` only while the footer is on screen: sized against it all
  *  the time, a short viewport left them a sliver of the page (DESIGN.md §8, PD-DETAIL-5). */
 function useFooterInView(ref: RefObject<HTMLElement>): void {
@@ -24,6 +36,7 @@ function useFooterInView(ref: RefObject<HTMLElement>): void {
     const root = document.documentElement;
     const visible = new IntersectionObserver(([entry]) => {
       root.classList.toggle("footer-in-view", entry?.isIntersecting === true);
+      keepFocusInView();
     });
     visible.observe(node);
 

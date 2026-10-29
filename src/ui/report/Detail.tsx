@@ -240,7 +240,11 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
         />
         {cards.map((card, i) => (
           <Fragment key={i}>
-            <MoveCard card={card} run={run} />
+            <MoveCard
+              card={card}
+              run={run}
+              owner={i === 0 ? finding.package : `${finding.package}, step ${i + 1}`}
+            />
             {card.heldBy !== null && <HeldBy block={card.heldBy} />}
           </Fragment>
         ))}

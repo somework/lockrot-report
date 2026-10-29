@@ -185,6 +185,18 @@ describe("the report-2 Findings tab", () => {
     expect(heads[0]).toBe("3 of 3 moves cross a major");
   });
 
+  // WCAG 1.3.1: without a break the result and the tag read as one phrase ("…ok a new major").
+  test("separates the result from the major-move tag for a screen reader only", () => {
+    render(<App model={model("composite")} />);
+    const meta = row("twig/twig").querySelector(".f2-meta");
+    const after = meta?.querySelector(".f2-after")?.textContent ?? "";
+    const separator = meta?.querySelector(".f2-after + .vh");
+
+    expect(after).not.toBe("");
+    expect(separator?.textContent).toBe("; ");
+    expect(meta?.textContent).toBe(`${after}; a new major`);
+  });
+
   test("puts the gate tag in the score cell, quiet under a head that says all fail", () => {
     render(<App model={model("composite")} />);
 
@@ -609,5 +621,28 @@ describe("the All packages table as a list", () => {
     expect(scores).toEqual([...scores].sort((a, b) => a - b));
     expect(screen.getByRole("columnheader", { name: /Score/ }).getAttribute("aria-sort")).toBe("ascending");
     expect(screen.getByRole("columnheader", { name: /Package/ }).getAttribute("aria-sort")).toBe("none");
+  });
+});
+
+// Unverified with a screen reader: a row's role does not say that Enter opens it, so the list says so.
+describe("the row hint of a list", () => {
+  test.each([
+    ["findings", ".fledger"],
+    ["packages", "table.p2-table"],
+    ["radius", "ul.r2-list"],
+  ])("the %s list refers to the hidden hint", (view, list) => {
+    history.replaceState(null, "", `/report.html#view=${view}`);
+    render(<App model={model("composite")} />);
+    const containers = [...document.querySelectorAll(list)];
+    const hints = containers.map((node) => {
+      const id = node.getAttribute("aria-describedby") ?? "";
+      const hint = document.getElementById(id);
+      return { text: hint?.textContent, hidden: hint?.classList.contains("vh") };
+    });
+
+    expect(containers.length).toBeGreaterThan(0);
+    expect(new Set(hints.map((hint) => JSON.stringify(hint)))).toEqual(
+      new Set([JSON.stringify({ text: "Press Enter on a row to open its package.", hidden: true })]),
+    );
   });
 });

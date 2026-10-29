@@ -22,6 +22,7 @@ import { SearchBar } from "./search/SearchBar";
 import { tabId, Tabs } from "./Tabs";
 import { useHashState } from "./useHashState";
 import { useShell } from "./useShell";
+import { useShortcutsSwitch } from "./useShortcutsSwitch";
 import { useTheme } from "./useTheme";
 import { useNarrow, useRailRoom, useWide } from "./useWide";
 import { CurrentView } from "./views/Views";
@@ -104,6 +105,7 @@ interface ShortcutDeps {
   cursor: string | null;
   /** Phone widths, where Blast radius starts its one-each rows folded. */
   narrow: boolean;
+  shortcutsOn: boolean;
 }
 
 /** Carries out what keyboard.ts decided. */
@@ -231,6 +233,7 @@ function useShortcuts(deps: ShortcutDeps) {
           rendered: () => renderedPackages2(model.report, state, state.view, current.narrow),
           sheetOpen: current.sheet,
           overview: state.view === "overview",
+          shortcutsOn: current.shortcutsOn,
         }),
       );
       if (prevents(decision)) event.preventDefault();
@@ -304,6 +307,7 @@ export function App({ model }: { model: Model }) {
   );
   const theme = useTheme();
   const [shell, pickShell] = useShell();
+  const [shortcutsOn, setShortcutsOn] = useShortcutsSwitch();
   const [glossaryOpen, setGlossaryOpen] = useState(false);
   const [glossaryAt, setGlossaryAt] = useState<GlossaryAt>("top");
   const openGlossary = useCallback(() => {
@@ -349,6 +353,7 @@ export function App({ model }: { model: Model }) {
     sheet,
     cursor,
     narrow,
+    shortcutsOn,
   });
 
   // Only a tab switch the reader dispatched scrolls to the top: the boot state and a `hashchange`
@@ -546,6 +551,8 @@ export function App({ model }: { model: Model }) {
       <Glossary
         open={glossaryOpen}
         at={glossaryAt}
+        shortcutsOn={shortcutsOn}
+        onShortcutsChange={setShortcutsOn}
         onClose={() => {
           setGlossaryOpen(false);
         }}

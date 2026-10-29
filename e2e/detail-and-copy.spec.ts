@@ -124,3 +124,26 @@ test.describe("report-2: the detail sheet and its copy control", () => {
     await expect(sheet.locator(".d2-copy-btn")).toHaveText("Select it and copy");
   });
 });
+
+// A wrapped command reads as one command: its later lines start to the right of its first, so a
+// flag that wraps, such as `--no-update`, does not look like the start of a new command.
+test.describe("report-2: a wrapped command at phone width", () => {
+  test.use({ viewport: { width: 375, height: 800 } });
+
+  test("hangs its second line to the right of its first", async ({ page }) => {
+    const sheet = await openDetail2(page, "A", "twig/twig");
+    const line = sheet.locator(".d3-move .d2-copy-line").first();
+    await expect(line).toContainText("--no-update");
+
+    const starts = await line.evaluate((node) => {
+      const boxes = [...node.querySelectorAll(".d3-arg")].map((arg) => arg.getBoundingClientRect());
+      const firstTop = Math.min(...boxes.map((box) => box.top));
+      const leftOf = (onFirst: boolean): number =>
+        Math.min(...boxes.filter((box) => box.top <= firstTop + 1 === onFirst).map((box) => box.left));
+      return { first: leftOf(true), second: leftOf(false) };
+    });
+
+    expect(Number.isFinite(starts.second), "the command does not wrap at 375px").toBe(true);
+    expect(starts.second).toBeGreaterThan(starts.first);
+  });
+});

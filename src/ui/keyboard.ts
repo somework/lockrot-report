@@ -59,6 +59,9 @@ export interface KeyInput {
   searchAvailable: boolean;
   /** The current tab is Overview, which draws no row and no search box. */
   overview: boolean;
+  /** The glossary's "Keyboard shortcuts" switch: off, `?`, `/`, `j` and `k` are left to the
+   *  browser (WCAG 2.1.4). */
+  shortcutsOn: boolean;
 }
 
 export type KeyDecision =
@@ -88,7 +91,7 @@ export function decideKey(input: KeyInput): KeyDecision {
     if (input.rowPkg === null || input.onControl || input.typing) return IGNORE;
     return { type: "openRow", pkg: input.rowPkg };
   }
-  if (input.typing) return IGNORE;
+  if (input.typing || !input.shortcutsOn) return IGNORE;
   if (input.key === "?") return { type: "openGlossary" };
   if (input.key === "/") return decideSlash(input);
   if (input.key === "j" || input.key === "k") return decideMove(input, input.key === "j" ? 1 : -1);
@@ -192,6 +195,7 @@ export interface KeyContext {
   rendered: () => readonly string[];
   sheetOpen: boolean;
   overview: boolean;
+  shortcutsOn: boolean;
 }
 
 /** Whether any native popover (a verdict pill's, Header's gate fact) is currently open. Read from the DOM, not
@@ -259,6 +263,7 @@ export function keyInputFrom(event: KeyboardEvent, context: KeyContext): KeyInpu
     sheetOpen: context.sheetOpen,
     searchAvailable: context.search !== null,
     overview: context.overview,
+    shortcutsOn: context.shortcutsOn,
   };
 }
 

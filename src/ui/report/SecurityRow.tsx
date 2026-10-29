@@ -31,7 +31,8 @@ const withBreaks = (parts: readonly string[]) =>
     </Fragment>
   ));
 
-function Affects({ affects }: { affects: AdvisoryAffects }) {
+/** `advisory` ends the folded range button's name: every advisory row has one (WCAG 2.4.6). */
+function Affects({ affects, advisory }: { affects: AdvisoryAffects; advisory: string }) {
   const [opened, setOpen] = useState(false);
   const printed = usePrinted();
   const open = opened || printed;
@@ -51,6 +52,7 @@ function Affects({ affects }: { affects: AdvisoryAffects }) {
         <DisclosureButton
           className="d3-range-btn"
           label={affects.folded}
+          name={`${affects.folded} for ${advisory}`}
           open={open}
           controls={id}
           onToggle={() => {
@@ -115,7 +117,7 @@ function AdvisoryRow({ row, rowId, at, run, withTag, reveal }: RowProps) {
         {row.affects !== null && (
           <>
             <span className="d3-adv-sep">{SECURITY_WORDS.separator}</span>
-            <Affects affects={row.affects} />
+            <Affects affects={row.affects} advisory={row.name} />
           </>
         )}
         {sameAs !== null && (

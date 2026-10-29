@@ -18,8 +18,8 @@ import { useCopy } from "../../../src/ui/common/useCopy";
 const MANUAL_SUMMARY =
   "The clipboard is not available. The summary is selected: press Ctrl+C or Command+C to copy it.";
 
-function model(): Model {
-  const result = normalize(assembleEmbed("B"));
+function model(name = "B"): Model {
+  const result = normalize(assembleEmbed(name));
   if (!result.ok) throw new Error(result.error.message);
   return result.model;
 }
@@ -67,13 +67,13 @@ describe("a command box whose clipboard fails (R6-51)", () => {
       stubClipboard(clipboard);
       const sheet = openSheet();
 
-      fireEvent.click(within(sheet).getByRole("button", { name: "Copy" }));
+      fireEvent.click(within(sheet).getByRole("button", { name: /^Copy / }));
 
       await waitFor(() => {
         expect(liveRegion(sheet)?.textContent).toBe("Select it and copy");
       });
       const pre = sheet.querySelector(".d2-copy-cmd");
-      expect(within(sheet).getByRole("button", { name: "Select it and copy" })).toBeTruthy();
+      expect(within(sheet).getByRole("button", { name: /^Select it and copy / })).toBeTruthy();
       expect(document.activeElement).toBe(pre);
       const selection = document.getSelection();
       expect(selection?.rangeCount).toBe(1);
@@ -95,11 +95,11 @@ describe("a command box whose clipboard fails (R6-51)", () => {
       subtree: true,
     });
 
-    fireEvent.click(within(sheet).getByRole("button", { name: "Copy" }));
+    fireEvent.click(within(sheet).getByRole("button", { name: /^Copy / }));
     await waitFor(() => {
       expect(region.textContent).toBe("Copied");
     });
-    fireEvent.click(within(sheet).getByRole("button", { name: "Copied" }));
+    fireEvent.click(within(sheet).getByRole("button", { name: /^Copied / }));
     await waitFor(() => {
       expect(seen.filter((text) => text === "Copied")).toHaveLength(2);
     });
@@ -144,6 +144,66 @@ describe("the Copy summary whose clipboard refuses (R6-51, PD-PRINT-3)", () => {
     });
 
     expect(screen.queryByText(MANUAL_SUMMARY)).toBeNull();
+  });
+});
+
+const accessibleName = (button: Element): string => button.getAttribute("aria-label") ?? button.textContent;
+
+// WCAG 2.4.6, 4.1.2 and 2.5.3: each copy control is told apart by the package it copies for, and
+// its name starts with, or holds, the words a reader sees on it.
+describe("the name of each copy control", () => {
+  test("on Overview names each first move's package", () => {
+    history.replaceState(null, "", "/report.html");
+    render(<App model={model("mc-composite-dagger")} />);
+    const moves = [...document.querySelectorAll(".ov-move")];
+
+    expect(moves.length).toBeGreaterThan(0);
+    for (const move of moves) {
+      const pkg = move.querySelector(".ov-move-pkg")?.textContent ?? "";
+      const copy = move.querySelector(".d2-copy-btn");
+      const shell = move.querySelector(".d2-shell-btn");
+      expect(accessibleName(copy as Element)).toBe(`Copy ${pkg}`);
+      expect(accessibleName(shell as Element)).toBe(`Shell: POSIX for ${pkg}`);
+      expect(accessibleName(shell as Element)).toContain(shell?.textContent ?? "-");
+    }
+    const names = [...document.querySelectorAll(".d2-copy-btn")].map(accessibleName);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  test("in a detail with a Then card names the package and the step, and no two names match", () => {
+    history.replaceState(null, "", `/report.html#pkg=${encodeURIComponent("symfony/monolog-bridge")}`);
+    render(<App model={model("B-also-dagger")} />);
+    const sheet = document.querySelector<HTMLElement>('[data-surface="detail"]');
+    const names = [...(sheet?.querySelectorAll(".d2-copy-btn") ?? [])].map(accessibleName);
+    const shells = [...(sheet?.querySelectorAll(".d2-shell-btn") ?? [])].map(accessibleName);
+
+    expect(names).toEqual(["Copy symfony/monolog-bridge", "Copy symfony/monolog-bridge, step 2"]);
+    expect(shells).toEqual([
+      "Shell: POSIX for symfony/monolog-bridge",
+      "Shell: POSIX for symfony/monolog-bridge, step 2",
+    ]);
+  });
+
+  test("keeps the package after a copy changes the visible word", async () => {
+    stubClipboard({ writeText: () => Promise.resolve() });
+    const sheet = openSheet();
+    const pkg = model().report.findings[0]?.package ?? "";
+
+    fireEvent.click(within(sheet).getByRole("button", { name: `Copy ${pkg}` }));
+
+    await waitFor(() => {
+      expect(within(sheet).getByRole("button", { name: `Copied ${pkg}` })).toBeTruthy();
+    });
+  });
+
+  test("the folded Affects range names its advisory", () => {
+    const sheet = openSheet();
+    const button = sheet.querySelector(".d3-range-btn");
+    const advisory = button?.closest(".d3-adv")?.querySelector(".d3-adv-id")?.textContent ?? "";
+
+    expect(advisory).not.toBe("");
+    expect(accessibleName(button as Element)).toBe(`${button?.textContent ?? ""} for ${advisory}`);
+    expect(accessibleName(button as Element)).toMatch(/^\d+ ranges for /);
   });
 });
 

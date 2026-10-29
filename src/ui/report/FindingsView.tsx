@@ -22,8 +22,9 @@ import { gradeChips, OVERVIEW_WORDS } from "../../domain/overviewBand";
 import { OVERVIEW_TAB_WORDS, stripFlagged } from "../../domain/overviewTab";
 import { verdictTone } from "../../domain/findingRow";
 import type { ComponentChildren } from "preact";
+import { useId } from "preact/hooks";
 import { useReport } from "../context";
-import { LegendButton, toneClass } from "../common/common";
+import { LegendButton, RowHint, toneClass } from "../common/common";
 import { EmptyState } from "../views/EmptyState";
 import { AgeAxis as AgeAxisHead } from "../views/AgeScale";
 import { FindingRow2 } from "./FindingRow";
@@ -240,6 +241,7 @@ export function FindingsView2() {
   const axis = thresholds === null ? null : ageAxis(Object.entries(thresholds));
   const printed = usePrinted();
   const platform = platformStep(report.run);
+  const hintId = `${useId()}-hint`;
   return (
     <section className="f2" data-surface="findings">
       <Notes report={report} />
@@ -248,12 +250,13 @@ export function FindingsView2() {
       ) : (
         <>
           {platform !== null && <p className="f2-platform">{platform}</p>}
-          <div className="fledger f2-ledger" role="table" aria-label="Findings">
+          <div className="fledger f2-ledger" role="table" aria-label="Findings" aria-describedby={hintId}>
             {!printed && <ColumnHead run={report.run} axis={axis} onScreen />}
             {byGrade(rows).map((group) => (
               <Group key={group.verdict} verdict={group.verdict} findings={group.findings} axis={axis} />
             ))}
           </div>
+          <RowHint id={hintId} />
         </>
       )}
     </section>
