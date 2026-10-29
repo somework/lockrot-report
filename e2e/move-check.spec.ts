@@ -114,6 +114,6 @@ test("snipe-it names the Composer that checked its moves in the Run tab", async 
   await page.goto(report2Url("page-snipe-it") + "#view=run");
 
   await expect(runSurface(page).locator(".run2-kv-row", { hasText: "moves" })).toContainText(
-    "checked with the solver of Composer 2.10.3 against the lock · ext-* requirements not checked",
+    "checked with the solver of Composer 2.10.3 against the lock · ext-*, lib-*, php-debug, php-ipv6 and php-zts requirements not checked",
   );
 });

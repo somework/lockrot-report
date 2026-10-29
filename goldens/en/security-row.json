@@ -25,6 +25,15 @@
     "3.x the move clears 15 of 15 from v3.27.0",
     "needs a PHP your target does not run"
   ],
+  "A-both-sections-dagger": [
+    "15 advisories: critical 1, high 3, medium 4, unrated 2, low 5",
+    "26 on record for this name",
+    "fix: php floor raise",
+    "lookup complete",
+    "3.x the move clears 15 of 15 from v3.27.0",
+    "php floor raise · held by every holder in Held by",
+    "after it: 0, ok, if Composer resolves it"
+  ],
   "A-gate-critical": [
     "15 advisories: critical 1, high 3, medium 4, unrated 2, low 5",
     "26 on record for this name",
@@ -43,7 +52,25 @@
     "php floor raise · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
   ],
+  "A-php-lowest-excluded-dagger": [
+    "15 advisories: critical 1, high 3, medium 4, unrated 2, low 5",
+    "26 on record for this name",
+    "fix: php floor raise",
+    "lookup complete",
+    "3.x the move clears 15 of 15 from v3.27.0",
+    "php floor raise · held by every holder in Held by",
+    "after it: 0, ok, if Composer resolves it"
+  ],
   "A-php-star-dagger": [
+    "15 advisories: critical 1, high 3, medium 4, unrated 2, low 5",
+    "26 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "3.x the move clears 15 of 15 from v3.27.0",
+    "upgrade · held by every holder in Held by",
+    "after it: 0, ok, if Composer resolves it"
+  ],
+  "A-php-unsatisfiable-dagger": [
     "15 advisories: critical 1, high 3, medium 4, unrated 2, low 5",
     "26 on record for this name",
     "fix: upgrade",
@@ -924,7 +951,16 @@
     "lookup complete",
     "2.x your branch the move clears 1 of 1 from v2.3.2",
     "composer update",
-    "after it: 0, ok · not checked: the advisory lookup did not cover a package it installs"
+    "after it: 0, ok · not checked: the advisory lookup did not cover a package in the result"
+  ],
+  "mc-lookup-kept-dagger": [
+    "1 high advisory",
+    "4 on record for this name",
+    "fix: composer update",
+    "lookup complete",
+    "6.x your branch the move clears 1 of 1 from v6.4.41",
+    "composer update",
+    "after it: 0, ok · not checked: the advisory lookup did not cover a package in the result"
   ],
   "mc-minimal-changes-dagger": [
     "1 high advisory",
@@ -1482,33 +1518,6 @@
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
-  ],
-  "mc-plain-update-dagger": [
-    "1 high advisory",
-    "6 on record for this name",
-    "fix: composer update",
-    "lookup complete",
-    "2.x your branch the move clears 1 of 1 from 2.12.3",
-    "composer update",
-    "after it: 0, ok"
-  ],
-  "mc-update-now-below-dagger": [
-    "1 high advisory",
-    "6 on record for this name",
-    "fix: composer update",
-    "lookup complete",
-    "2.x your branch the move clears 1 of 1 from 2.12.3",
-    "composer update",
-    "after it: 0, ok"
-  ],
-  "mc-update-now-plain-dagger": [
-    "1 high advisory",
-    "6 on record for this name",
-    "fix: composer update",
-    "lookup complete",
-    "2.x your branch the move clears 1 of 1 from 2.12.3",
-    "composer update",
-    "after it: 0, ok"
   ],
   "no-feed-accepted-dagger": [
     "advisories not known",

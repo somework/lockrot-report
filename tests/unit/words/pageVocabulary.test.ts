@@ -30,8 +30,8 @@ import {
 import { readContractJson } from "./recorded";
 
 describe("every table with a recorded twin equals it", () => {
-  // lockrot 0.14 needs Composer 2.10, so the pinned bundle's composer_too_old leaves the contract at the next repin.
-  const LEFT_THE_CONTRACT: readonly string[] = ["composer_too_old"];
+  // A reason that a later lockrot drops leaves the contract at the next repin. List it here until then.
+  const LEFT_THE_CONTRACT: readonly string[] = [];
   const reasonWords = (): Record<string, string> =>
     (readContractJson("en", "reason-words.json") as { words: Record<string, string> }).words;
 

@@ -8,13 +8,22 @@
   "A-blocked-dagger": [
     "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
   ],
+  "A-both-sections-dagger": [
+    "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
+  ],
   "A-gate-critical": [
     "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
   ],
   "A-gate-vulnerable": [
     "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
   ],
+  "A-php-lowest-excluded-dagger": [
+    "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
+  ],
   "A-php-star-dagger": [
+    "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
+  ],
+  "A-php-unsatisfiable-dagger": [
     "Your branch, 2.x, had its last release, v2.16.1, 2.1 years ago."
   ],
   "B": [
@@ -390,6 +399,10 @@
     "Your branch, 2.x, had its last release, v2.3.2, 0.3 years ago.",
     "It has no higher branch."
   ],
+  "mc-lookup-kept-dagger": [
+    "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
+    "It has no higher branch."
+  ],
   "mc-minimal-changes-dagger": [
     "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
     "It has no higher branch."
@@ -623,18 +636,6 @@
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],
   "host-unsupported": [],
-  "mc-plain-update-dagger": [
-    "Your branch, 2.x, had its last release, 2.12.3, 0.3 years ago.",
-    "It has no higher branch."
-  ],
-  "mc-update-now-below-dagger": [
-    "Your branch, 2.x, had its last release, 2.12.3, 0.3 years ago.",
-    "It has no higher branch."
-  ],
-  "mc-update-now-plain-dagger": [
-    "Your branch, 2.x, had its last release, 2.12.3, 0.3 years ago.",
-    "It has no higher branch."
-  ],
   "no-feed-accepted-dagger": [],
   "no-feed-dagger": [],
   "no-tag-dagger": [],

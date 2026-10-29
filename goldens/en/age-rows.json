@@ -41,6 +41,20 @@
       "value": "2026-09-30 · less than three weeks ago"
     }
   ],
+  "A-both-sections-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
   "A-gate-critical": [
     {
       "label": "installed",
@@ -69,7 +83,35 @@
       "value": "2026-09-30 · less than three weeks ago"
     }
   ],
+  "A-php-lowest-excluded-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
   "A-php-star-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "A-php-unsatisfiable-dagger": [
     {
       "label": "installed",
       "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
@@ -1611,6 +1653,20 @@
       "value": "2026-07-02 · 0.3 years ago"
     }
   ],
+  "mc-lookup-kept-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-05 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
   "mc-minimal-changes-dagger": [
     {
       "label": "installed",
@@ -2631,60 +2687,6 @@
     {
       "label": null,
       "value": "last push not read (host not supported)"
-    }
-  ],
-  "mc-plain-update-dagger": [
-    {
-      "label": "installed",
-      "value": "2.8.0 · 2025-08-23 · 1.1 years ago"
-    },
-    {
-      "label": "2.x last",
-      "value": "2.12.3 · 2026-07-02 · 0.3 years ago"
-    },
-    {
-      "label": "most recent",
-      "value": "3.0.0 · 2026-07-03 · 0.2 years ago"
-    },
-    {
-      "label": "last push",
-      "value": "2026-08-24 · 0.1 years ago"
-    }
-  ],
-  "mc-update-now-below-dagger": [
-    {
-      "label": "installed",
-      "value": "2.8.0 · 2025-08-23 · 1.1 years ago"
-    },
-    {
-      "label": "2.x last",
-      "value": "2.12.3 · 2026-07-02 · 0.3 years ago"
-    },
-    {
-      "label": "most recent",
-      "value": "3.0.0 · 2026-07-03 · 0.2 years ago"
-    },
-    {
-      "label": "last push",
-      "value": "2026-08-24 · 0.1 years ago"
-    }
-  ],
-  "mc-update-now-plain-dagger": [
-    {
-      "label": "installed",
-      "value": "2.8.0 · 2025-08-23 · 1.1 years ago"
-    },
-    {
-      "label": "2.x last",
-      "value": "2.12.3 · 2026-07-02 · 0.3 years ago"
-    },
-    {
-      "label": "most recent",
-      "value": "3.0.0 · 2026-07-03 · 0.2 years ago"
-    },
-    {
-      "label": "last push",
-      "value": "2026-08-24 · 0.1 years ago"
     }
   ],
   "no-feed-accepted-dagger": [

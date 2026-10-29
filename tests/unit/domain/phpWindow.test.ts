@@ -181,7 +181,7 @@ describe("the PHP state line", () => {
       phpStateClauses(
         report({ target_fix: fix({ check: "not_checked", reason: "advisory_lookup_incomplete" }) }),
       )?.[2],
-    ).toBe("not checked (the advisory lookup did not cover a package it installs)");
+    ).toBe("not checked (the advisory lookup did not cover a package in the result)");
   });
 
   test("names the root link of a root ceiling", () => {

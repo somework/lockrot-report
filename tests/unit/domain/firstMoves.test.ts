@@ -296,7 +296,7 @@ describe("wayOutLine", () => {
       }) as unknown as Finding;
     const r = report([stopped("a/a", "advisory_lookup_incomplete"), stopped("b/b", "solver_error")], true);
     expect(wayOutLine(r)).toBe(
-      "2 need another way out: 1 not checked: Composer's solver failed on it, 1 not checked: the advisory lookup did not cover a package it installs",
+      "2 need another way out: 1 not checked: Composer's solver failed on it, 1 not checked: the advisory lookup did not cover a package in the result",
     );
   });
 

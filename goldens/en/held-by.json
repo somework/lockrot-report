@@ -25,6 +25,26 @@
   "A-blocked-dagger": [
     null
   ],
+  "A-both-sections-dagger": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.0",
+          "step": null
+        },
+        {
+          "name": "symfony/twig-bridge v3.4.47",
+          "grade": "high",
+          "meta": "requires ^1.41|^2.10 · itself left-behind · old-promise · vulnerable",
+          "step": "its own step: require ^4.4.51 on 4.x"
+        }
+      ],
+      "fold": null
+    }
+  ],
   "A-gate-critical": [
     {
       "count": 2,
@@ -65,7 +85,47 @@
       "fold": null
     }
   ],
+  "A-php-lowest-excluded-dagger": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.0",
+          "step": null
+        },
+        {
+          "name": "symfony/twig-bridge v3.4.47",
+          "grade": "high",
+          "meta": "requires ^1.41|^2.10 · itself left-behind · old-promise · vulnerable",
+          "step": "its own step: require ^4.4.51 on 4.x"
+        }
+      ],
+      "fold": null
+    }
+  ],
   "A-php-star-dagger": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.0",
+          "step": null
+        },
+        {
+          "name": "symfony/twig-bridge v3.4.47",
+          "grade": "high",
+          "meta": "requires ^1.41|^2.10 · itself left-behind · old-promise · vulnerable",
+          "step": "its own step: require ^8.1 on 8.x"
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "A-php-unsatisfiable-dagger": [
     {
       "count": 2,
       "shown": [
@@ -681,6 +741,9 @@
   "mc-lookup-incomplete-dagger": [
     null
   ],
+  "mc-lookup-kept-dagger": [
+    null
+  ],
   "mc-minimal-changes-dagger": [
     null
   ],
@@ -1082,15 +1145,6 @@
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],
   "host-unsupported": [],
-  "mc-plain-update-dagger": [
-    null
-  ],
-  "mc-update-now-below-dagger": [
-    null
-  ],
-  "mc-update-now-plain-dagger": [
-    null
-  ],
   "no-feed-accepted-dagger": [],
   "no-feed-dagger": [],
   "no-tag-dagger": [

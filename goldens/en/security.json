@@ -811,6 +811,277 @@
       }
     ]
   },
+  "A-both-sections-dagger": {
+    "summary": [
+      "15 advisories:",
+      "26 on record for this name",
+      "fix: php floor raise",
+      "lookup complete"
+    ],
+    "counts": [
+      "critical 1",
+      "high 3",
+      "medium 4",
+      "unrated 2",
+      "low 5"
+    ],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v2.16.1."
+    ],
+    "groups": [
+      {
+        "severity": "critical",
+        "count": 1,
+        "words": "advisory",
+        "open": true
+      },
+      {
+        "severity": "high",
+        "count": 3,
+        "words": "advisories",
+        "open": false
+      },
+      {
+        "severity": "medium",
+        "count": 4,
+        "words": "advisories",
+        "open": false
+      },
+      {
+        "severity": "unrated",
+        "count": 2,
+        "words": "advisories, counted as medium",
+        "open": false
+      },
+      {
+        "severity": "low",
+        "count": 5,
+        "words": "advisories",
+        "open": false
+      }
+    ],
+    "rows": [
+      {
+        "name": "CVE-2026-46633",
+        "source": "PKSA-h8hf-ytnd-5t9q",
+        "deciding": true,
+        "severity": "critical",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-49981",
+        "source": "PKSA-8zx5-v2nz-58pb",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix v3.27.0 on 3.x (php floor raise)",
+        "affects": "affects <=3.26.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-47732",
+        "source": "PKSA-dpx1-78wg-1kqs",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-24425",
+        "source": "PKSA-gw7n-z4yx-7xjt",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects >=2.16.0,<3.0.0|>=3.9.0,<3.26.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-48806",
+        "source": "PKSA-1tmc-rt7x-12w6",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v3.27.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46638",
+        "source": "PKSA-3mcc-k66d-pydb",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-48808",
+        "source": "PKSA-fbvq-z33h-r2np",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v3.27.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-48807",
+        "source": "PKSA-xx6c-6d96-db2w",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v3.27.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46627",
+        "source": "PKSA-kvv6-36cr-fkzb",
+        "deciding": false,
+        "severity": "unrated",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46636",
+        "source": "PKSA-yd6k-t2gh-1m43",
+        "deciding": false,
+        "severity": "unrated",
+        "fix": "fix v3.27.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-51755",
+        "source": "PKSA-2wrf-1xmk-1pky",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.14.1 on 3.x (php floor raise)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.11.2|",
+          ">=3.12.0,<3.14.1"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-48805",
+        "source": "PKSA-g9zw-qxh8-pq8w",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.27.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46635",
+        "source": "PKSA-n14z-jjjg-g8vd",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46628",
+        "source": "PKSA-sjvz-tbbr-vwth",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-51754",
+        "source": "PKSA-yhcn-xrg3-68b1",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.14.1 on 3.x (php floor raise)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.11.2|",
+          ">=3.12.0,<3.14.1"
+        ],
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "3.x",
+        "marks": [
+          "the move"
+        ],
+        "lines": [
+          "3.x the move clears 15 of 15 from v3.27.0",
+          "php floor raise · held by every holder in Held by",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      }
+    ]
+  },
   "A-gate-critical": {
     "summary": [
       "15 advisories:",
@@ -1353,7 +1624,549 @@
       }
     ]
   },
+  "A-php-lowest-excluded-dagger": {
+    "summary": [
+      "15 advisories:",
+      "26 on record for this name",
+      "fix: php floor raise",
+      "lookup complete"
+    ],
+    "counts": [
+      "critical 1",
+      "high 3",
+      "medium 4",
+      "unrated 2",
+      "low 5"
+    ],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v2.16.1."
+    ],
+    "groups": [
+      {
+        "severity": "critical",
+        "count": 1,
+        "words": "advisory",
+        "open": true
+      },
+      {
+        "severity": "high",
+        "count": 3,
+        "words": "advisories",
+        "open": false
+      },
+      {
+        "severity": "medium",
+        "count": 4,
+        "words": "advisories",
+        "open": false
+      },
+      {
+        "severity": "unrated",
+        "count": 2,
+        "words": "advisories, counted as medium",
+        "open": false
+      },
+      {
+        "severity": "low",
+        "count": 5,
+        "words": "advisories",
+        "open": false
+      }
+    ],
+    "rows": [
+      {
+        "name": "CVE-2026-46633",
+        "source": "PKSA-h8hf-ytnd-5t9q",
+        "deciding": true,
+        "severity": "critical",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-49981",
+        "source": "PKSA-8zx5-v2nz-58pb",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix v3.27.0 on 3.x (php floor raise)",
+        "affects": "affects <=3.26.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-47732",
+        "source": "PKSA-dpx1-78wg-1kqs",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-24425",
+        "source": "PKSA-gw7n-z4yx-7xjt",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects >=2.16.0,<3.0.0|>=3.9.0,<3.26.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-48806",
+        "source": "PKSA-1tmc-rt7x-12w6",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v3.27.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46638",
+        "source": "PKSA-3mcc-k66d-pydb",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-48808",
+        "source": "PKSA-fbvq-z33h-r2np",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v3.27.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-48807",
+        "source": "PKSA-xx6c-6d96-db2w",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v3.27.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46627",
+        "source": "PKSA-kvv6-36cr-fkzb",
+        "deciding": false,
+        "severity": "unrated",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46636",
+        "source": "PKSA-yd6k-t2gh-1m43",
+        "deciding": false,
+        "severity": "unrated",
+        "fix": "fix v3.27.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-51755",
+        "source": "PKSA-2wrf-1xmk-1pky",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.14.1 on 3.x (php floor raise)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.11.2|",
+          ">=3.12.0,<3.14.1"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-48805",
+        "source": "PKSA-g9zw-qxh8-pq8w",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.27.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46635",
+        "source": "PKSA-n14z-jjjg-g8vd",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46628",
+        "source": "PKSA-sjvz-tbbr-vwth",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.26.0 on 3.x (php floor raise)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-51754",
+        "source": "PKSA-yhcn-xrg3-68b1",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.14.1 on 3.x (php floor raise)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.11.2|",
+          ">=3.12.0,<3.14.1"
+        ],
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "3.x",
+        "marks": [
+          "the move"
+        ],
+        "lines": [
+          "3.x the move clears 15 of 15 from v3.27.0",
+          "php floor raise · held by every holder in Held by",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      }
+    ]
+  },
   "A-php-star-dagger": {
+    "summary": [
+      "15 advisories:",
+      "26 on record for this name",
+      "fix: upgrade",
+      "lookup complete"
+    ],
+    "counts": [
+      "critical 1",
+      "high 3",
+      "medium 4",
+      "unrated 2",
+      "low 5"
+    ],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v2.16.1."
+    ],
+    "groups": [
+      {
+        "severity": "critical",
+        "count": 1,
+        "words": "advisory",
+        "open": true
+      },
+      {
+        "severity": "high",
+        "count": 3,
+        "words": "advisories",
+        "open": false
+      },
+      {
+        "severity": "medium",
+        "count": 4,
+        "words": "advisories",
+        "open": false
+      },
+      {
+        "severity": "unrated",
+        "count": 2,
+        "words": "advisories, counted as medium",
+        "open": false
+      },
+      {
+        "severity": "low",
+        "count": 5,
+        "words": "advisories",
+        "open": false
+      }
+    ],
+    "rows": [
+      {
+        "name": "CVE-2026-46633",
+        "source": "PKSA-h8hf-ytnd-5t9q",
+        "deciding": true,
+        "severity": "critical",
+        "fix": "fix v3.26.0 on 3.x (upgrade)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-49981",
+        "source": "PKSA-8zx5-v2nz-58pb",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix v3.27.0 on 3.x (upgrade)",
+        "affects": "affects <=3.26.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-47732",
+        "source": "PKSA-dpx1-78wg-1kqs",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix v3.26.0 on 3.x (upgrade)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-24425",
+        "source": "PKSA-gw7n-z4yx-7xjt",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix v3.26.0 on 3.x (upgrade)",
+        "affects": "affects >=2.16.0,<3.0.0|>=3.9.0,<3.26.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-48806",
+        "source": "PKSA-1tmc-rt7x-12w6",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v3.27.0 on 3.x (upgrade)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46638",
+        "source": "PKSA-3mcc-k66d-pydb",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v3.26.0 on 3.x (upgrade)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-48808",
+        "source": "PKSA-fbvq-z33h-r2np",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v3.27.0 on 3.x (upgrade)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-48807",
+        "source": "PKSA-xx6c-6d96-db2w",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v3.27.0 on 3.x (upgrade)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46627",
+        "source": "PKSA-kvv6-36cr-fkzb",
+        "deciding": false,
+        "severity": "unrated",
+        "fix": "fix v3.26.0 on 3.x (upgrade)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46636",
+        "source": "PKSA-yd6k-t2gh-1m43",
+        "deciding": false,
+        "severity": "unrated",
+        "fix": "fix v3.27.0 on 3.x (upgrade)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-51755",
+        "source": "PKSA-2wrf-1xmk-1pky",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.14.1 on 3.x (upgrade)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.11.2|",
+          ">=3.12.0,<3.14.1"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-48805",
+        "source": "PKSA-g9zw-qxh8-pq8w",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.27.0 on 3.x (upgrade)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.27.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46635",
+        "source": "PKSA-n14z-jjjg-g8vd",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.26.0 on 3.x (upgrade)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-46628",
+        "source": "PKSA-sjvz-tbbr-vwth",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.26.0 on 3.x (upgrade)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.26.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-51754",
+        "source": "PKSA-yhcn-xrg3-68b1",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v3.14.1 on 3.x (upgrade)",
+        "affects": "affects 4 ranges",
+        "ranges": [
+          ">=1.0.0,<2.0.0|",
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<3.11.2|",
+          ">=3.12.0,<3.14.1"
+        ],
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "3.x",
+        "marks": [
+          "the move"
+        ],
+        "lines": [
+          "3.x the move clears 15 of 15 from v3.27.0",
+          "upgrade · held by every holder in Held by",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      }
+    ]
+  },
+  "A-php-unsatisfiable-dagger": {
     "summary": [
       "15 advisories:",
       "26 on record for this name",
@@ -6595,7 +7408,48 @@
         "lines": [
           "2.x your branch the move clears 1 of 1 from v2.3.2",
           "composer update",
-          "after it: 0, ok · not checked: the advisory lookup did not cover a package it installs"
+          "after it: 0, ok · not checked: the advisory lookup did not cover a package in the result"
+        ]
+      }
+    ]
+  },
+  "mc-lookup-kept-dagger": {
+    "summary": [
+      "1 high advisory",
+      "4 on record for this name",
+      "fix: composer update",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v6.4.28."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-48784",
+        "source": "PKSA-bf7t-jnpz-492k",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v6.4.41 on 6.x, your branch (composer update)",
+        "affects": "affects >=6.4.0,<6.4.41",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "6.x",
+        "marks": [
+          "your branch",
+          "the move"
+        ],
+        "lines": [
+          "6.x your branch the move clears 1 of 1 from v6.4.41",
+          "composer update",
+          "after it: 0, ok · not checked: the advisory lookup did not cover a package in the result"
         ]
       }
     ]
@@ -9647,129 +10501,6 @@
     "rows": [],
     "ignored": [],
     "ladder": []
-  },
-  "mc-plain-update-dagger": {
-    "summary": [
-      "1 high advisory",
-      "6 on record for this name",
-      "fix: composer update",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [
-      "By severity. Each affects your version, 2.8.0."
-    ],
-    "groups": [],
-    "rows": [
-      {
-        "name": "CVE-2026-59882",
-        "source": "PKSA-vznr-tgp9-fd7d",
-        "deciding": true,
-        "severity": "high",
-        "fix": "fix 2.12.3 on 2.x, your branch (composer update)",
-        "affects": "affects <2.12.3",
-        "ranges": null,
-        "same_as": null
-      }
-    ],
-    "ignored": [],
-    "ladder": [
-      {
-        "branch": "2.x",
-        "marks": [
-          "your branch",
-          "the move"
-        ],
-        "lines": [
-          "2.x your branch the move clears 1 of 1 from 2.12.3",
-          "composer update",
-          "after it: 0, ok"
-        ]
-      }
-    ]
-  },
-  "mc-update-now-below-dagger": {
-    "summary": [
-      "1 high advisory",
-      "6 on record for this name",
-      "fix: composer update",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [
-      "By severity. Each affects your version, 2.8.0."
-    ],
-    "groups": [],
-    "rows": [
-      {
-        "name": "CVE-2026-59882",
-        "source": "PKSA-vznr-tgp9-fd7d",
-        "deciding": true,
-        "severity": "high",
-        "fix": "fix 2.12.3 on 2.x, your branch (composer update)",
-        "affects": "affects <2.12.3",
-        "ranges": null,
-        "same_as": null
-      }
-    ],
-    "ignored": [],
-    "ladder": [
-      {
-        "branch": "2.x",
-        "marks": [
-          "your branch",
-          "the move"
-        ],
-        "lines": [
-          "2.x your branch the move clears 1 of 1 from 2.12.3",
-          "composer update",
-          "after it: 0, ok"
-        ]
-      }
-    ]
-  },
-  "mc-update-now-plain-dagger": {
-    "summary": [
-      "1 high advisory",
-      "6 on record for this name",
-      "fix: composer update",
-      "lookup complete"
-    ],
-    "counts": [],
-    "meanwhile": null,
-    "caption": [
-      "By severity. Each affects your version, 2.8.0."
-    ],
-    "groups": [],
-    "rows": [
-      {
-        "name": "CVE-2026-59882",
-        "source": "PKSA-vznr-tgp9-fd7d",
-        "deciding": true,
-        "severity": "high",
-        "fix": "fix 2.12.3 on 2.x, your branch (composer update)",
-        "affects": "affects <2.12.3",
-        "ranges": null,
-        "same_as": null
-      }
-    ],
-    "ignored": [],
-    "ladder": [
-      {
-        "branch": "2.x",
-        "marks": [
-          "your branch",
-          "the move"
-        ],
-        "lines": [
-          "2.x your branch the move clears 1 of 1 from 2.12.3",
-          "composer update",
-          "after it: 0, ok"
-        ]
-      }
-    ]
   },
   "no-feed-accepted-dagger": {
     "summary": [

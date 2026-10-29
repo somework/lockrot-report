@@ -17,6 +17,12 @@
     "the advisories alone make it critical",
     "without CVE-2026-46633: 32, critical"
   ],
+  "A-both-sections-dagger": [
+    "32 · critical from 32 · ages as of 2026-10-01",
+    "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (php floor raise on 3.x) is reachable, so no × 2",
+    "the advisories alone make it critical",
+    "without CVE-2026-46633: 16, high"
+  ],
   "A-gate-critical": [
     "32 · critical from 32 · ages as of 2026-10-01",
     "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (php floor raise on 3.x) is reachable, so no × 2",
@@ -29,7 +35,19 @@
     "the advisories alone make it critical",
     "without CVE-2026-46633: 16, high"
   ],
+  "A-php-lowest-excluded-dagger": [
+    "32 · critical from 32 · ages as of 2026-10-01",
+    "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (php floor raise on 3.x) is reachable, so no × 2",
+    "the advisories alone make it critical",
+    "without CVE-2026-46633: 16, high"
+  ],
   "A-php-star-dagger": [
+    "32 · critical from 32 · ages as of 2026-10-01",
+    "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (upgrade on 3.x) is reachable, so no × 2",
+    "the advisories alone make it critical",
+    "without CVE-2026-46633: 16, high"
+  ],
+  "A-php-unsatisfiable-dagger": [
     "32 · critical from 32 · ages as of 2026-10-01",
     "vulnerable 32: critical advisory CVE-2026-46633, the worst of 15; its own fix (upgrade on 3.x) is reachable, so no × 2",
     "the advisories alone make it critical",
@@ -766,6 +784,11 @@
     "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
     "the advisory alone makes it high"
   ],
+  "mc-lookup-kept-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
   "mc-minimal-changes-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
@@ -1206,24 +1229,6 @@
   "host-unsupported": [
     "0 · ok · ages as of 2026-10-01",
     "checks missing: archived repository (S3) and repository activity (S4) not checked (host not supported: lockrot cannot ask codeberg.org)"
-  ],
-  "mc-plain-update-dagger": [
-    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
-    "vulnerable 16: high advisory CVE-2026-59882; its own fix (composer update on 2.x) is reachable, so no × 2",
-    "transitive: no maintenance to halve; security is never halved for reach",
-    "the advisory alone makes it high"
-  ],
-  "mc-update-now-below-dagger": [
-    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
-    "vulnerable 16: high advisory CVE-2026-59882; its own fix (composer update on 2.x) is reachable, so no × 2",
-    "transitive: no maintenance to halve; security is never halved for reach",
-    "the advisory alone makes it high"
-  ],
-  "mc-update-now-plain-dagger": [
-    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
-    "vulnerable 16: high advisory CVE-2026-59882; its own fix (composer update on 2.x) is reachable, so no × 2",
-    "transitive: no maintenance to halve; security is never halved for reach",
-    "the advisory alone makes it high"
   ],
   "no-feed-accepted-dagger": [
     "0 · ok · ages as of 2026-10-01",

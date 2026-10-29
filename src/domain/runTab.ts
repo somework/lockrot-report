@@ -99,13 +99,6 @@ const LOCK_LOAD_WORDS: Readonly<Record<string, string>> = {
   offline: "a package the lock needs is not in Composer's cache",
 };
 
-/** `ignored_platform` lists the patterns the solve ignores (§5.6). A pin that predates it has only
- *  `ignores_extensions: true`, which names ext-* alone. */
-function ignoredPatterns(check: object): readonly string[] {
-  const listed = "ignored_platform" in check ? check.ignored_platform : undefined;
-  return Array.isArray(listed) ? listed.filter((p): p is string => typeof p === "string") : ["ext-*"];
-}
-
 /** `run.move_check` in the words of lockrot's text footer (`RunFooter::moveCheck`), or null when the
  *  run checked no move. */
 export function moveCheckFact({ run }: Report2): Rich | null {
@@ -115,7 +108,8 @@ export function moveCheckFact({ run }: Report2): Rich | null {
     case "resolves": {
       const lock = `checked with the solver of Composer${check.composer === null ? "" : ` ${check.composer}`} against the lock`;
       const names = listParts(check.blocking_disabled_by.map((name): Piece => ({ code: name })));
-      const ignored = ignoredPatterns(check);
+      // The patterns the solve ignores (§5.6).
+      const ignored = check.ignored_platform;
       const unchecked = ignored.length === 0 ? [] : [` · ${joinAnd(ignored)} requirements not checked`];
       return names.length === 0
         ? [lock, ...unchecked]

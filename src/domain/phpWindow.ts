@@ -201,8 +201,7 @@ function lockPlatformClause(fix: TargetFix, target: string, answers: boolean): s
   }
   if (!answers) return records;
   if (fix.check === "refused") {
-    const holds =
-      fix.held_by.length === 0 ? "" : `: ${fix.held_by.map((h) => holdWords(h, fix)).join(" and ")}`;
+    const holds = fix.held_by.length === 0 ? "" : `: ${joinAnd(fix.held_by.map((h) => holdWords(h, fix)))}`;
     return `${records}, and Composer's solver at PHP ${target} refuses the update that rewrites it${holds}`;
   }
   return `${records}, and the update that rewrites it is not checked (${reasonWords(fix)})`;
@@ -241,8 +240,7 @@ function answerClauses(fix: TargetFix, target: string): string[] {
       ];
     case "refused": {
       const their = packageNames(fix).length === 1 ? "its" : "their";
-      const holds =
-        fix.held_by.length === 0 ? "" : `: ${fix.held_by.map((h) => holdWords(h, fix)).join(" and ")}`;
+      const holds = fix.held_by.length === 0 ? "" : `: ${joinAnd(fix.held_by.map((h) => holdWords(h, fix)))}`;
       return [packagesClause(fix, target), `${solver} refuses ${their} update${holds}`];
     }
     default:
