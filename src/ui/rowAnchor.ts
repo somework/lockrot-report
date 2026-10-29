@@ -1,13 +1,7 @@
 import { findRow } from "./keyboard";
 
-/**
- * Keeps a row where the reader saw it while the list reflows under it (PD-ROWS-10, DESIGN.md §5).
- *
- * At `WIDE_QUERY` widths, opening or closing a package changes the list's width, and the Findings
- * rows change height with it (PD-ROWS-4), so every row above the one acted on moves. The shell
- * measures that row before it dispatches the action, and scrolls the page by however far the row
- * moved once the new layout is in, before the browser paints.
- */
+/** Keeps a row where the reader saw it while the list reflows under it (PD-ROWS-10, DESIGN.md §5):
+ *  at `WIDE_QUERY` widths, opening or closing a package changes the height of every row above it. */
 export interface RowAnchor {
   readonly pkg: string;
   /** The row's top edge in the viewport, in CSS pixels. */
