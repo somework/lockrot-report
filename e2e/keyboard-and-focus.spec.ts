@@ -434,6 +434,10 @@ test.describe("report-2: keys on the Findings rows and the detail sheet", () => 
 
 test.describe("WCAG 2.4.11: the footer never covers the focused filter", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
+  test.skip(
+    ({ browserName }) => browserName === "webkit",
+    "WebKit's Tab skips buttons, so it never walks the rail",
+  );
 
   // The walk must bring the footer into view, the moment the rail shrinks: the last assertion says so.
   test("each rail button is on top at its own centre as Tab walks the rail", async ({ page }) => {
