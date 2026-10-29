@@ -4,6 +4,8 @@ import { day } from "../domain/format";
 import { useReport } from "./context";
 import { useMeasuredHeight } from "./useMeasuredHeight";
 
+export const HTML_COMMAND = "composer lockrot --format=html > report.html";
+
 /** A footer link: always to a fixed lockrot address, never to anything from the document. */
 function Lnk({ href, children }: { href: string; children: ComponentChildren }) {
   return (
@@ -52,9 +54,8 @@ export function Footer({ inert = false }: { inert?: boolean }) {
       </p>
       <p className="cta">
         Run it on your own <span className="mono">composer.lock</span>:{" "}
-        <code>composer require --dev somework/lockrot</code>, then{" "}
-        <code>composer lockrot --format=html &gt; report.html</code>. No Composer plugin wanted? The{" "}
-        <Lnk href="https://lockrot.dev/lockrot.phar">PHAR</Lnk> needs nothing installed.
+        <code>composer require --dev somework/lockrot</code>, then <code>{HTML_COMMAND}</code>. No Composer
+        plugin wanted? The <Lnk href="https://lockrot.dev/lockrot.phar">PHAR</Lnk> needs nothing installed.
       </p>
       <p>
         <Lnk href="https://github.com/somework/lockrot">Source</Lnk> &middot;{" "}

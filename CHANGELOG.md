@@ -19,7 +19,8 @@ project is overall, and the other tabs lead with their own part.
 - The page reads lockrot 0.14 reports (report schema 2) only. A report from an older lockrot, or a
   document that names no schema, no longer renders. A screen takes the report's place. It says
   "This report is older than this page", names the lockrot that wrote it, and gives two ways out.
-  "Rerun lockrot 0.14" shows `composer require --dev somework/lockrot` and `composer lockrot`.
+  "Rerun lockrot 0.14" shows `composer require --dev somework/lockrot` and
+  `composer lockrot --format=html > report.html`.
   "Open it with lockrot-report 0.13" links the v0.13.0 release, which reads the report as written.
   `manifest.json` lists `schema.report` as `[2]`, so a vendoring tool sees the change first.
 
