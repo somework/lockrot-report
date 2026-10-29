@@ -5,6 +5,7 @@ import { population2 } from "../../../src/domain/list";
 import { pulledTree } from "../../../src/domain/radius";
 import {
   gradeMix,
+  RADIUS_WORDS,
   radiusAnswer2,
   radiusLayout2,
   radiusRowFacts,
@@ -178,6 +179,21 @@ describe("radius words", () => {
       mix: null,
       note: "None of the 1 flagged package listed under it match the filter.",
     });
+  });
+
+  it("agrees in number when one or more rows do not match the filter", () => {
+    expect(RADIUS_WORDS.filtered(1)).toBe("1 more does not match the filter");
+    expect(RADIUS_WORDS.filtered(2)).toBe("2 more do not match the filter");
+  });
+
+  it("keeps the pulled and unlisted lines under a grade filter, and drops the held line (wallabag)", () => {
+    const all = population2(wallabag, "radius");
+    const high = all.filter((f) => f.verdict === "high");
+
+    expect(radiusAnswer2(wallabag, radiusLayout2(wallabag, high, all))).toEqual([
+      "52 flagged packages pulled in.",
+      "7 of them sit under more than 8 direct requirements.",
+    ]);
   });
 
   it("ends the lead when nothing is pulled in, and answers a filtered tab", () => {

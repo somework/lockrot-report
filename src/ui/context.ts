@@ -16,7 +16,7 @@ export interface ReportContextValue {
   state: State;
   dispatch: (action: Action) => void;
   now: Date;
-  /** The two-column layout (≥ 1181px): the detail sits beside the list instead of over it. */
+  /** The two-column layout (`WIDE_QUERY`): the detail sits beside the list instead of over it. */
   wide: boolean;
   /** The package whose row is the list's one Tab stop (`rowCursor.ts#pickCursor`, PD-ROWS-11), or
    *  null when the view draws no rows. */

@@ -5,6 +5,7 @@ import {
   minorsWords,
   phpStateClauses,
   reqWords,
+  windowFacts,
   windowRows,
 } from "../../../src/domain/phpWindow";
 import type {
@@ -99,6 +100,9 @@ describe("a link of a setter list", () => {
     );
     expect(reqWords(req({ name: null, version: null, target: "php-64bit", constraint: "^8.1" }))).toBe(
       "require.php-64bit ^8.1",
+    );
+    expect(reqWords(req({ name: null, version: null, link: "conflict", constraint: ">=8.5" }))).toBe(
+      "conflict.php >=8.5",
     );
   });
 
@@ -363,6 +367,20 @@ describe("the closest minors of an empty set", () => {
     expect(windowRows(report({ without_dev: empty }))).toEqual([
       "PHP window: none · 7.4 and 8.2 to 8.3 are excluded only by acme/clock 1.2.0 ~7.4.0",
     ]);
+  });
+});
+
+describe("an empty set with no closest minors", () => {
+  const empty = set({ minors: [], lower_edge: null, upper_edge: null, closest: null });
+
+  test("reads none in its Run tab row", () => {
+    expect(windowFacts(report({ without_dev: empty }))).toEqual([{ key: "PHP window", value: "none" }]);
+  });
+
+  test("says the lock installs on no PHP, with no closest minors in parentheses", () => {
+    expect(phpStateClauses(report({ without_dev: empty, target_fix: fix({}) }))?.[0]).toBe(
+      "this lock installs on no PHP, so your target, 8.4, is excluded",
+    );
   });
 });
 

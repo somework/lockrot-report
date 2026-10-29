@@ -19,7 +19,8 @@ project is overall, and the other tabs lead with their own part.
 - The page reads lockrot 0.14 reports (report schema 2) only. A report from an older lockrot, or a
   document that names no schema, no longer renders. A screen takes the report's place. It says
   "This report is older than this page", names the lockrot that wrote it, and gives two ways out.
-  "Rerun lockrot 0.14" shows `composer require --dev somework/lockrot` and `composer lockrot`.
+  "Rerun lockrot 0.14" shows `composer require --dev somework/lockrot` and
+  `composer lockrot --format=html > report.html`.
   "Open it with lockrot-report 0.13" links the v0.13.0 release, which reads the report as written.
   `manifest.json` lists `schema.report` as `[2]`, so a vendoring tool sees the change first.
 
@@ -325,9 +326,9 @@ project is overall, and the other tabs lead with their own part.
 - The copy control prints a command only when every argument passes lockrot's
   command argument rule. The rule takes `composer` with `update`, `require` or `why-not`, and
   each argument from a fixed set of characters. The only arguments that start with a dash are
-  lockrot's own options, after every package argument: `--no-update` and `--dev` in a `require`
-  step, `--with-dependencies` and `--with-all-dependencies` in an `update` or `require` step, and
-  `--locked` in a `why-not` step. `--lock` passes only as the one argument of an `update` step.
+  lockrot's own options, after every package argument: `--no-update`, `--dev` and
+  `--no-interaction` in a `require` step, `--with-dependencies` and `--with-all-dependencies` in
+  an `update` or `require` step, and `--locked` in a `why-not` step. `--lock` passes only as the one argument of an `update` step.
 - The release workflow refuses a tag whose commit is on neither main nor a release branch, and a
   lockrot pin that neither lockrot's main nor a lockrot tag holds. It runs every gate of ci.yml
   before it attests the page: format, lint, the type checks, the unit, contract and e2e tests, and

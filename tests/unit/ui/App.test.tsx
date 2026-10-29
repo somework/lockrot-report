@@ -561,7 +561,7 @@ describe("a sheet over the page takes focus", () => {
   });
 });
 
-// From 1181px up, opening a package narrows the list and closing it widens it again, and the
+// At `WIDE_QUERY` widths, opening a package narrows the list and closing it widens it again, and the
 // Findings rows change height with the list's width, so the clicked row would slide off the screen.
 // happy-dom lays nothing out, so rows report the top a real row would: one place with the list at
 // full width, another with the detail beside it.

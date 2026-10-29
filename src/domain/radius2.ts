@@ -103,7 +103,9 @@ export function radiusAnswer2(report: Report2, layout: RadiusLayout2): string[] 
     ...(unlisted > 0
       ? [`${sit(unlisted)} more than ${String(report.exposure_rule.max_fan_in)} direct requirements.`]
       : []),
-    ...(answer !== null && answer.held > 0 ? [`${sit(answer.held)} ${joinAnd(names)}.`] : []),
+    ...(answer !== null && answer.held > 0 && !layout.narrowed
+      ? [`${sit(answer.held)} ${joinAnd(names)}.`]
+      : []),
   ];
 }
 
@@ -140,7 +142,7 @@ export function radiusRowFacts(report: Report2, row: RadiusRow2): RadiusRowFacts
 export const RADIUS_WORDS = {
   list: "Direct requirements, in the order of lockrot's exposure list",
   itself: (verdict: string): string => `${verdict} itself`,
-  filtered: (n: number): string => `${n} more do not match the filter`,
+  filtered: (n: number): string => `${n} more ${pluralNoun(n, "does", "do")} not match the filter`,
   show: (row: RadiusRow2): string =>
     `Show the ${plural(row.count, "package", "packages")} listed under ${row.package}`,
   listedUnder: (pkg: string): string => `Listed under ${pkg}`,
