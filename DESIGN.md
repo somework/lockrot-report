@@ -660,6 +660,12 @@ segment shows its role by its border's style (PD-SCORE-3). `e2e/forced-colors.sp
   every one of its rows carries `aria-current` while it is open (PD-ROWS-12).
 - Nothing but Escape acts while the glossary is open (M10). Printable shortcuts are ignored while
   focus is in any text field, and every shortcut is ignored with Ctrl, Meta or Alt held.
+- The glossary's "Keys and search" section holds a "Keyboard shortcuts" checkbox, on by default
+  (WCAG 2.1.4). Off, `?`, `/`, `j` and `k` are left to the browser, and Escape, Enter, Space and
+  the arrow keys still act. The header's "What these words mean" button opens the glossary with
+  the shortcuts off. The choice is kept under `lockrot-shortcuts` in `localStorage`, beside
+  `lockrot-theme` and `lockrot-shell` (`ui/useShortcutsSwitch.ts`). Where storage throws, the
+  shortcuts are on, and a change holds for the page view only.
 - Enter/Space toggle a row only when the key lands on the row itself, not on a link or control
   inside it (M5).
 - The undecided gate fact (PD-SUMMARY-2) is a native `popover="auto"` element opened by a
