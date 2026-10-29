@@ -548,12 +548,13 @@ The shell (`src/ui/App.tsx` and its neighbours) keeps the legacy page's visual l
 type, tones, vocabulary) and changes layout only where the legacy page failed a reader.
 
 **Breakpoints.** Three, all driven by `matchMedia` in `ui/useWide.ts` and mirrored in
-`ui/app.css`:
+`ui/app.css`. The rail has a column of its own from 1024px (`RAIL_QUERY`) while no package is open,
+and folds above the list otherwise:
 
 | width       | layout                                                                                                                |
 | ----------- | --------------------------------------------------------------------------------------------------------------------- |
-| ≥ 1000px    | rail · list, plus a detail column once a package is open (the legacy WIDE layout)                                     |
-| 760 – 999px | rail · list; the detail opens as a full-screen sheet                                                                  |
+| ≥ 1000px    | list, plus a detail column once a package is open (the legacy WIDE layout)                                            |
+| 760 – 999px | list; the detail opens as a full-screen sheet                                                                         |
 | < 760px     | one column: on Findings the PD-SUMMARY-16 strip, a "Filters" disclosure, then the list; Overview in its reading order |
 
 The legacy page pushed the findings below the whole ledger and the whole rail at 320px, so a phone
@@ -562,10 +563,10 @@ lives on Overview, the default view, unfolded (PD-OVERVIEW-2). Findings opens wi
 flagged figure and the grade chips (PD-SUMMARY-16). Under 760px the rail becomes a
 closed `<details>` whose summary counts the rail filters that are on. The Findings rows follow the
 list's own width, not the viewport's (a container query, PD-ROWS-4): one line from 990px of list,
-three below that, the list beside an open package (570-790px at 1280-1920) included (PD-ROWS-14).
+three below that, the list beside an open package (662-1040px at 1280-1920) included (PD-ROWS-14).
 With nothing
 open, which is how every page without `#pkg=` loads (PD-ROWS-9), the list is 754-1530px at
-1000-1920 (960-983px until the rail takes a column of its own at 1024px), so a wide screen's first
+1024-1920 and 960-983px below that, where the rail folds above it, so a wide screen's first
 sight is one line a row from 1440px up. At every width a cell
 too narrow for its value wraps it, never an ellipsis.
 Opening a package there switches the list to three lines a row, and closing it back, so every row

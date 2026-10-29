@@ -186,13 +186,14 @@ describe("radius words", () => {
     expect(RADIUS_WORDS.filtered(2)).toBe("2 more do not match the filter");
   });
 
-  it("drops the held line under a grade filter, which the unfiltered pulled count cannot share", () => {
-    const low = population2(composite, "radius").filter((f) => f.verdict === "low");
-    const filtered = radiusLayout2(composite, low, population2(composite, "radius"));
-    expect(radiusAnswer2(composite, filtered)).toEqual(["2 flagged packages pulled in."]);
-    expect(radiusAnswer2(composite, layoutOf(composite))).toContain(
-      "1 of them sits under friendsofsymfony/oauth-server-bundle.",
-    );
+  it("keeps the pulled and unlisted lines under a grade filter, and drops the held line (wallabag)", () => {
+    const all = population2(wallabag, "radius");
+    const high = all.filter((f) => f.verdict === "high");
+
+    expect(radiusAnswer2(wallabag, radiusLayout2(wallabag, high, all))).toEqual([
+      "52 flagged packages pulled in.",
+      "7 of them sit under more than 8 direct requirements.",
+    ]);
   });
 
   it("ends the lead when nothing is pulled in, and answers a filtered tab", () => {

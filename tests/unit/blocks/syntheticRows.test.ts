@@ -243,7 +243,6 @@ describe("the Security row", () => {
 
 describe("the Meanwhile line of a partial update with facts it could not check", () => {
   test("names them after the score it bounds", () => {
-    // partial: laravel/framework, whose composer update clears 1 of its 6 advisories.
     const { finding, run, metadata } = modelCase("partial");
     if (finding.security.status !== "vulnerable" || finding.security.partial === null)
       throw new Error("partial has a partial update");

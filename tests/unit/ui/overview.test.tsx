@@ -663,7 +663,7 @@ describe("a count in a state line links to its list (R4-27)", () => {
 
 describe("the foot of Ready to run", () => {
   test("puts All ready to run first, before the held and way-out lines (SPEC 7.9.4)", () => {
-    // mc-composite‡: 4 ready moves, 1 held finding and 1 that needs another way out, on a failing gate.
+    // mc-composite‡ has more ready moves than READY_SHOWN, a held finding and a way out, on a failing gate.
     const result = normalize(assembleEmbed("mc-composite-dagger"));
     if (!result.ok) throw new Error(result.error.message);
     render(<App model={result.model} />);

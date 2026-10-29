@@ -78,7 +78,6 @@ describe("whyLines", () => {
   });
 
   it("names the facts a partial update could not check, after what it clears", () => {
-    // partial: laravel/framework, whose composer update clears 1 of its 6 advisories.
     const { finding, report } = recorded("partial");
     if (finding.security.status !== "vulnerable" || finding.security.partial === null)
       throw new Error("partial has a partial update");
