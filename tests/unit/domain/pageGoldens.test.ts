@@ -82,6 +82,7 @@ function security(report: Report2): unknown {
     figure: block.figure,
     unit: block.unit,
     lookup_complete: report.security.check === "complete",
+    note: block.note,
     counted_as: block.severities.flatMap(({ countedAs }) => (countedAs === null ? [] : [countedAs])),
   };
 }

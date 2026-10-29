@@ -50,6 +50,23 @@
       "Tripped by CVE-2026-46633"
     ]
   },
+  "A-both-sections-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through symfony/twig-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-46633"
+    ]
+  },
   "A-gate-critical": {
     "reach": [
       "Production: not in packages-dev",
@@ -84,6 +101,23 @@
       "Tripped by CVE-2026-46633, CVE-2026-49981, CVE-2026-47732 and CVE-2026-24425"
     ]
   },
+  "A-php-lowest-excluded-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through symfony/twig-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-46633"
+    ]
+  },
   "A-php-star-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -97,6 +131,23 @@
     "php_edge": [
       "It sets the lowest PHP this lock admits: 7.1.3"
     ],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-46633"
+    ]
+  },
+  "A-php-unsatisfiable-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through symfony/twig-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
     "accepted": [],
     "gate": [
       "fails the run: grade high or above",
@@ -2077,6 +2128,23 @@
       "Tripped by CVE-2026-47345"
     ]
   },
+  "mc-lookup-kept-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-48784"
+    ]
+  },
   "mc-minimal-changes-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -3345,57 +3413,6 @@
     "gate": [
       "fails the run: a check that did not run",
       "Tripped by S3 and S4"
-    ]
-  },
-  "mc-plain-update-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Not required directly, through guzzlehttp/guzzle"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "fails the run: grade high or above",
-      "Tripped by CVE-2026-59882"
-    ]
-  },
-  "mc-update-now-below-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Not required directly, through guzzlehttp/guzzle"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "fails the run: grade high or above",
-      "Tripped by CVE-2026-59882"
-    ]
-  },
-  "mc-update-now-plain-dagger": {
-    "reach": [
-      "Production: not in packages-dev",
-      "Not required directly, through guzzlehttp/guzzle"
-    ],
-    "origin": null,
-    "not_judged": null,
-    "unchecked": [],
-    "not_run": [],
-    "php": null,
-    "php_edge": [],
-    "accepted": [],
-    "gate": [
-      "fails the run: grade high or above",
-      "Tripped by CVE-2026-59882"
     ]
   },
   "no-feed-accepted-dagger": {

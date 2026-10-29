@@ -3,14 +3,38 @@ import { describe, expect, test } from "vitest";
 import type { Finding } from "../../../src/model/report";
 import { differencesFromModel, listedDifferences } from "../words/modelDifferences";
 import { modelCases, recordedCases } from "../words/recorded";
-import { BLOCK_KEYS, blockGolden } from "./blockGoldens";
+import { BLOCK_KEYS, blockGolden, type BlockKey } from "./blockGoldens";
 
 describe("each block equals the model's golden from the model's own inputs (SPEC §7.9.14)", () => {
-  test.each(modelCases())("$name", ({ finding, run, metadata, golden }) => {
-    const page = Object.fromEntries(BLOCK_KEYS.map((key) => [key, blockGolden(key, finding, run, metadata)]));
-    const model = Object.fromEntries(BLOCK_KEYS.map((key) => [key, golden[key]]));
+  // The pinned model's block text lags its own inputs in these blocks.
+  // List a block until the model renders it, then empty the list at the repin.
+  const MODEL_LAGS: Readonly<Record<string, readonly BlockKey[]>> = {
+    // R6-3: the move argv passes --no-interaction, but the model's action omits ", which removes it from require-dev".
+    "A-both-sections-dagger": ["moves"],
+  };
+  const compared = (name: string): readonly BlockKey[] =>
+    BLOCK_KEYS.filter((key) => !(MODEL_LAGS[name] ?? []).includes(key));
+
+  test.each(modelCases())("$name", ({ name, finding, run, metadata, golden }) => {
+    const page = Object.fromEntries(
+      compared(name).map((key) => [key, blockGolden(key, finding, run, metadata)]),
+    );
+    const model = Object.fromEntries(compared(name).map((key) => [key, golden[key]]));
 
     expect(page).toEqual(model);
+  });
+
+  test("the pinned model still lags in each listed block; empty the list at the repin", () => {
+    const cases = new Map(modelCases().map((c) => [c.name, c]));
+    const caught = Object.entries(MODEL_LAGS).flatMap(([name, keys]) => {
+      const c = cases.get(name);
+      const lags = (key: BlockKey): boolean =>
+        c !== undefined &&
+        JSON.stringify(blockGolden(key, c.finding, c.run, c.metadata)) !== JSON.stringify(c.golden[key]);
+      return keys.filter((key) => !lags(key)).map((key) => `${name}: ${key}`);
+    });
+
+    expect(caught).toEqual([]);
   });
 });
 

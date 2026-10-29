@@ -121,6 +121,54 @@
       "composer": []
     }
   ],
+  "A-both-sections-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.1, which removes it from require-dev, then require ^3.27.0, which removes it from require-dev",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.1' --no-interaction --no-update",
+        "composer require 'twig/twig:^3.27.0' --no-interaction",
+        "composer why-not twig/twig v3.27.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "all 15 advisories",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "3.x needs php >=8.1.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.2 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "The packages that hold it may need to move too",
+          "items": []
+        },
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
   "A-gate-critical": [
     {
       "heading": "The move",
@@ -217,6 +265,54 @@
       ]
     }
   ],
+  "A-php-lowest-excluded-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.1, then require ^3.27.0",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.1' --no-update",
+        "composer require 'twig/twig:^3.27.0'",
+        "composer why-not twig/twig v3.27.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "all 15 advisories",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "3.x needs php >=8.1.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.2.1 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "The packages that hold it may need to move too",
+          "items": []
+        },
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
   "A-php-star-dagger": [
     {
       "heading": "The move",
@@ -240,6 +336,49 @@
             "answer": "yes",
             "text": "your require.php allows it"
           },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "The packages that hold it may need to move too",
+          "items": []
+        },
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "A-php-unsatisfiable-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^3.27.0",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
+      "commands": [
+        "composer require 'twig/twig:^3.27.0'",
+        "composer why-not twig/twig v3.27.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "all 15 advisories",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "3.x needs php >=8.1.0",
+        "lines": [
           {
             "answer": "yes",
             "text": "your target, 8.4, runs it"
@@ -3981,6 +4120,44 @@
       "composer": []
     }
   ],
+  "mc-lookup-kept-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v6.4.41 on 6.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update 'symfony/routing:^6.4.41'",
+        "composer why-not symfony/routing v6.4.41 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "the advisory",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "6.x needs php >=8.1",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the advisory lookup did not cover a package in the result)"
+        ]
+      },
+      "composer": []
+    }
+  ],
   "mc-minimal-changes-dagger": [
     {
       "heading": "The move",
@@ -6344,117 +6521,6 @@
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],
   "host-unsupported": [],
-  "mc-plain-update-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to 3.0.0",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update guzzlehttp/psr7"
-      ],
-      "commands_label": "Command",
-      "clears": "the advisory",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "2.x needs php ^7.2.5 || ^8.0",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "checked with Composer"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "mc-update-now-below-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to 3.0.0",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update guzzlehttp/psr7"
-      ],
-      "commands_label": "Command",
-      "clears": "the advisory",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "2.x needs php ^7.2.5 || ^8.0",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "checked with Composer"
-        ]
-      },
-      "composer": []
-    }
-  ],
-  "mc-update-now-plain-dagger": [
-    {
-      "heading": "The move",
-      "action": "Update to 3.0.0",
-      "platform_step": null,
-      "command_note": null,
-      "moves_with": null,
-      "commands": [
-        "composer update guzzlehttp/psr7"
-      ],
-      "commands_label": "Command",
-      "clears": "the advisory",
-      "stays": null,
-      "not_checked": null,
-      "adds": [],
-      "php": {
-        "head": "2.x needs php ^7.2.5 || ^8.0",
-        "lines": [
-          {
-            "answer": "yes",
-            "text": "your require.php allows it"
-          },
-          {
-            "answer": "yes",
-            "text": "your target, 8.4, runs it"
-          }
-        ]
-      },
-      "after": {
-        "result": "0, ok",
-        "conditions": [
-          "checked with Composer"
-        ]
-      },
-      "composer": []
-    }
-  ],
   "no-feed-accepted-dagger": [],
   "no-feed-dagger": [],
   "no-tag-dagger": [

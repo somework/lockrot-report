@@ -110,6 +110,43 @@
       "folded_in": null
     }
   ],
+  "A-both-sections-dagger": [
+    {
+      "branch": "3.x",
+      "marks": [
+        "the move",
+        "newest"
+      ],
+      "latest": "v3.30.0",
+      "age": "< 3 wk",
+      "php": ">=8.1.0",
+      "php_words": "above your require.php",
+      "bar": "v3.30.0, released less than three weeks ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [
+        "yours"
+      ],
+      "latest": "v2.16.1",
+      "age": "2.1y",
+      "php": ">=7.1.3",
+      "php_words": null,
+      "bar": "v2.16.1, released 2.1 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "1.x",
+      "marks": [],
+      "latest": "v1.44.8",
+      "age": "2.1y",
+      "php": ">=7.2.5",
+      "php_words": "above your require.php",
+      "bar": "v1.44.8, released 2.1 years ago",
+      "folded_in": null
+    }
+  ],
   "A-gate-critical": [
     {
       "branch": "3.x",
@@ -184,7 +221,81 @@
       "folded_in": null
     }
   ],
+  "A-php-lowest-excluded-dagger": [
+    {
+      "branch": "3.x",
+      "marks": [
+        "the move",
+        "newest"
+      ],
+      "latest": "v3.30.0",
+      "age": "< 3 wk",
+      "php": ">=8.1.0",
+      "php_words": "above your require.php",
+      "bar": "v3.30.0, released less than three weeks ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [
+        "yours"
+      ],
+      "latest": "v2.16.1",
+      "age": "2.1y",
+      "php": ">=7.1.3",
+      "php_words": null,
+      "bar": "v2.16.1, released 2.1 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "1.x",
+      "marks": [],
+      "latest": "v1.44.8",
+      "age": "2.1y",
+      "php": ">=7.2.5",
+      "php_words": "above your require.php",
+      "bar": "v1.44.8, released 2.1 years ago",
+      "folded_in": null
+    }
+  ],
   "A-php-star-dagger": [
+    {
+      "branch": "3.x",
+      "marks": [
+        "the move",
+        "newest"
+      ],
+      "latest": "v3.30.0",
+      "age": "< 3 wk",
+      "php": ">=8.1.0",
+      "php_words": null,
+      "bar": "v3.30.0, released less than three weeks ago",
+      "folded_in": null
+    },
+    {
+      "branch": "2.x",
+      "marks": [
+        "yours"
+      ],
+      "latest": "v2.16.1",
+      "age": "2.1y",
+      "php": ">=7.1.3",
+      "php_words": null,
+      "bar": "v2.16.1, released 2.1 years ago",
+      "folded_in": null
+    },
+    {
+      "branch": "1.x",
+      "marks": [],
+      "latest": "v1.44.8",
+      "age": "2.1y",
+      "php": ">=7.2.5",
+      "php_words": null,
+      "bar": "v1.44.8, released 2.1 years ago",
+      "folded_in": null
+    }
+  ],
+  "A-php-unsatisfiable-dagger": [
     {
       "branch": "3.x",
       "marks": [
@@ -4638,6 +4749,7 @@
   ],
   "mc-link-newest-dagger": [],
   "mc-lookup-incomplete-dagger": [],
+  "mc-lookup-kept-dagger": [],
   "mc-minimal-changes-dagger": [],
   "mc-newest-above-row-dagger": [],
   "mc-package-hold-dagger": [],
@@ -7051,9 +7163,6 @@
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],
   "host-unsupported": [],
-  "mc-plain-update-dagger": [],
-  "mc-update-now-below-dagger": [],
-  "mc-update-now-plain-dagger": [],
   "no-feed-accepted-dagger": [],
   "no-feed-dagger": [],
   "no-tag-dagger": [],

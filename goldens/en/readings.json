@@ -2,9 +2,12 @@
   "A": [],
   "A-baselined-dagger": [],
   "A-blocked-dagger": [],
+  "A-both-sections-dagger": [],
   "A-gate-critical": [],
   "A-gate-vulnerable": [],
+  "A-php-lowest-excluded-dagger": [],
   "A-php-star-dagger": [],
+  "A-php-unsatisfiable-dagger": [],
   "B": [
     {
       "flag": "left-behind",
@@ -441,6 +444,7 @@
   "mc-joint-retag-dagger": [],
   "mc-link-newest-dagger": [],
   "mc-lookup-incomplete-dagger": [],
+  "mc-lookup-kept-dagger": [],
   "mc-minimal-changes-dagger": [],
   "mc-newest-above-row-dagger": [
     {
@@ -642,9 +646,6 @@
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],
   "host-unsupported": [],
-  "mc-plain-update-dagger": [],
-  "mc-update-now-below-dagger": [],
-  "mc-update-now-plain-dagger": [],
   "no-feed-accepted-dagger": [],
   "no-feed-dagger": [],
   "no-tag-dagger": [],

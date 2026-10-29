@@ -91,7 +91,7 @@ describe("the Run tab of a report-2 document", () => {
             composer: "2.10.3",
             blocks_advisories: true,
             blocking_disabled_by: [],
-            ignores_extensions: true,
+            ignored_platform: ["ext-*"],
             baseline: "resolves",
             reason: null,
           };

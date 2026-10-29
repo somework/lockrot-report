@@ -55,11 +55,17 @@
       "require-dev-name-dagger",
       "unreached-dev-dagger",
       "unreached-move"
+    ],
+    "lockrot's recording and the model's input differ: R6-3. The model's move action omits \", which removes it from require-dev\" when require and require-dev both list the name and php. lockrot and the page add it after each step that passes --no-interaction": [
+      "A-both-sections-dagger"
     ]
   },
   "held_by": {
     "lockrot's recording and the model's input differ: the case sets require.php to *, under which lockrot judges the holder's own step to its newest line; the model keeps the holder's own step of case A": [
       "A-php-star-dagger"
+    ],
+    "lockrot's recording and the model's input differ: the case sets a require.php that no PHP release matches. lockrot reads it as it reads *, so it judges the holder's own step to its newest line; the model keeps the holder's own step of case A": [
+      "A-php-unsatisfiable-dagger"
     ]
   },
   "security": {
