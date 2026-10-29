@@ -31,16 +31,19 @@ const linesFor = (argvs: readonly (readonly string[])[], shell: Shell): string[]
  * The copy control of design 5C: a Copy button and a shell menu, POSIX first. It renders `argvs`
  * as written (a move's `next_step.commands[]`, the overview's `update_now_command`). When the
  * argument rule refuses one argv, it prints why in place of every step, on every shell, and offers no
- * copy, so a reader never runs part of a move. `label` replaces the move's own eyebrow.
+ * copy, so a reader never runs part of a move. `label` replaces the move's own eyebrow. `owner`
+ * ends the name of both buttons, so two boxes on one page are told apart (WCAG 2.4.6).
  */
 export function CopyMove({
   argvs,
   label,
   className,
+  owner,
 }: {
   argvs: readonly (readonly string[])[];
   label?: string;
   className?: string;
+  owner?: string;
 }) {
   const { shell, pickShell } = useReport();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -68,6 +71,7 @@ export function CopyMove({
   if (argvs.length === 0) return null;
   const printable = argvs.every(isPrintableArgv);
   const lines = printable ? linesFor(argvs, shell) : [REFUSED_COMMAND];
+  const named = (name: string): string => (owner === undefined ? name : `${name} for ${owner}`);
 
   const closeMenu = (): void => {
     setMenuOpen(false);
@@ -110,7 +114,12 @@ export function CopyMove({
       <div className="d2-copy-bar">
         <span className="eyebrow">{label ?? commandLabel(argvs)}</span>
         {printable && (
-          <button type="button" className="d2-btn d2-copy-btn" onClick={copy}>
+          <button
+            type="button"
+            className="d2-btn d2-copy-btn"
+            aria-label={owner === undefined ? undefined : `${LABELS[status]} ${owner}`}
+            onClick={copy}
+          >
             {LABELS[status]}
           </button>
         )}
@@ -121,7 +130,7 @@ export function CopyMove({
           aria-haspopup="menu"
           aria-expanded={menuOpen}
           aria-controls={menuId}
-          aria-label={DETAIL_WORDS.shellFor.replace("{shell}", SHELL_NAMES[shell])}
+          aria-label={named(DETAIL_WORDS.shellFor.replace("{shell}", SHELL_NAMES[shell]))}
           onClick={() => {
             setMenuOpen((open) => !open);
           }}

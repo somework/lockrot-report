@@ -320,6 +320,17 @@ project is overall, and the other tabs lead with their own part.
 - The waffle caption and its key name the allowlisted packages by their verdict, "finished". The
   glossary entry of `finished` says that it covers allowlisted packages.
 - The empty Advisories tab draws one clean mark on screen, in the Security block.
+- A "Keyboard shortcuts" checkbox in the glossary's "Keys and search" section turns off `?`, `/`,
+  `j` and `k`. Escape, Enter, Space and the arrow keys still act. The page keeps the choice for the
+  next visit.
+- A filter focused by Tab stays in view when the footer comes into view and the filter column
+  shortens.
+- Each Copy and shell button names its package, and the step on a "Then" card. The folded range
+  button of an advisory names the advisory. Two buttons on one page no longer share a name.
+- A list tells a screen reader that Enter on a row opens its package. A Findings row reads its
+  result and its major-move tag as two phrases.
+- A command that wraps indents its later lines, so a wrapped flag no longer reads like a new
+  command. The copied text does not change.
 
 ### Security
 

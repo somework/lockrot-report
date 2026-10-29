@@ -84,12 +84,26 @@ the report-1 screen.
 
 1. Move the `Unreleased` section of CHANGELOG.md under the new version, and set `version` in
    `package.json` to the same number.
-2. Repin the contract to a lockrot commit that lockrot's main or a lockrot tag holds:
-   `node scripts/contract.mjs reachable` says whether the pin is one.
-3. Merge, then tag `vX.Y.Z` on main, or tag a pre-release on main or its release branch. The
-   release workflow refuses a final tag that main does not hold, and a pre-release tag that neither
-   main nor a release branch holds. It also refuses a pin that the check above refuses. A final
-   tag also needs a successful lockrot run of its pin: a full check of the whole tree, or CI on a
-   push to main. A pre-release does not, because lockrot's renderer test fails on its pin until
-   lockrot vendors it. The workflow runs the gates of ci.yml, then builds, attests and publishes.
-4. In lockrot, run `tools/report/update-renderer vX.Y.Z` and open a pull request.
+2. Pick the pin. A pre-release pins the lockrot commit that changes the contract bundle. A final
+   tag pins the lockrot commit V that vendors an rc of the same bundle. Lockrot's main or a lockrot
+   tag must hold the pin: `node scripts/contract.mjs reachable` says whether it does. For a final
+   tag, a lockrot tag holds V, and a push of V unchanged to `release/full-check-<sha of V>` has a
+   green full check of the whole tree. A full check that an rc tag starts does not count, because
+   its branch is the tag. The release workflow also accepts a green CI run of a push to lockrot's
+   main.
+3. Run `node scripts/contract.mjs repin <pin>`. For a final tag, commit only the version and the pin:
+   `package.json`, the CHANGELOG heading and `contract/lockrot.json`. If `repin` changed another
+   file under `contract/`, V does not vendor the same bundle, so stop. Merge the commit into main for
+   a final tag, or into its release branch for a pre-release.
+4. Before the first final tag, list the rulesets with `gh api repos/somework/lockrot-report/rulesets`.
+   The list leaves out each ruleset's conditions and rules, so read each one with
+   `gh api repos/somework/lockrot-report/rulesets/<id>`. Confirm that a tag ruleset on
+   `refs/tags/v*` has the `deletion` and `update` rules. If it is missing, create it. A moved tag
+   gets a second attestation, and lockrot's `update-renderer` then cannot name one source commit.
+   Then tag `vX.Y.Z` on main, or tag a pre-release on main or its release branch. The release
+   workflow refuses a final tag that main does not hold, and a pre-release tag that neither main
+   nor a release branch holds. It also refuses a pin that the check of step 2 refuses, and a final
+   tag whose pin has no green lockrot run. A pre-release needs no such run, because lockrot's
+   renderer test fails on its pin until lockrot vendors it. The workflow runs the gates of ci.yml,
+   then builds, attests and publishes.
+5. In lockrot, run `tools/report/update-renderer vX.Y.Z` and open a pull request.

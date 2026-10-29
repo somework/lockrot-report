@@ -32,8 +32,15 @@ function Entries({ entries, toned }: { entries: readonly GlossaryEntry[]; toned:
   );
 }
 
+interface BodyProps {
+  onClose: () => void;
+  keysOpen?: boolean;
+  shortcutsOn: boolean;
+  onShortcutsChange: (on: boolean) => void;
+}
+
 /** The glossary's sections on a report-2 document: the verdicts in view, every other one folded. */
-export function GlossaryBody2({ onClose, keysOpen = false }: { onClose: () => void; keysOpen?: boolean }) {
+export function GlossaryBody2({ onClose, keysOpen = false, shortcutsOn, onShortcutsChange }: BodyProps) {
   const { report } = useReport2();
   const { run } = report;
   const graded: readonly string[] = run.graded_verdicts;
@@ -91,6 +98,16 @@ export function GlossaryBody2({ onClose, keysOpen = false }: { onClose: () => vo
         <summary>
           <h3>Keys and search</h3>
         </summary>
+        <label className="prose">
+          <input
+            type="checkbox"
+            checked={shortcutsOn}
+            onChange={(event) => {
+              onShortcutsChange(event.currentTarget.checked);
+            }}
+          />{" "}
+          {GLOSSARY2_WORDS.shortcuts}
+        </label>
         <p className="prose">
           {GLOSSARY2_WORDS.listKeys} <kbd>/</kbd> to search · <kbd>j</kbd> <kbd>k</kbd> to move ·{" "}
           <kbd>Enter</kbd> to open.

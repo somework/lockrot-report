@@ -181,7 +181,7 @@ describe("the sheet in SPEC §7.9.8's order", () => {
     const sheet = openCase("B");
 
     expect(sheet.querySelector(".d2-answer, .d2-lead")).toBeNull();
-    expect(within(sheet).getAllByRole("button", { name: "Copy" })).toHaveLength(1);
+    expect(within(sheet).getAllByRole("button", { name: /^Copy / })).toHaveLength(1);
   });
 
   test("each row prints its golden lines", () => {
@@ -378,7 +378,7 @@ describe("the Security row", () => {
 
   test("folds a range string past RANGE_INLINE_MAX behind its count, and opens it by its button", () => {
     const row = securityRow(openCase("B"));
-    const button = within(row).getByRole("button", { name: "19 ranges" });
+    const button = within(row).getByRole("button", { name: /^19 ranges for / });
     const ranges = document.getElementById(button.getAttribute("aria-controls") ?? "");
     const rows = golden("security", "B") as { rows: { ranges: string[] }[] };
 
@@ -409,7 +409,7 @@ describe("the copy control of design 5C", () => {
     const sheet = openCase("B", oneCommand);
 
     expect(commandText(sheet)).toEqual(["composer require 'symfony/monolog-bridge:^5.4.52'"]);
-    fireEvent.click(within(sheet).getByRole("button", { name: "Shell: POSIX" }));
+    fireEvent.click(within(sheet).getByRole("button", { name: /^Shell: POSIX for / }));
     const menu = within(sheet).getByRole("menu", { name: "Shell" });
     expect(
       within(menu)
@@ -429,7 +429,7 @@ describe("the copy control of design 5C", () => {
     const sheet = openCase("B", oneCommand);
 
     expect(commandText(sheet)).toEqual(['composer --% require "symfony/monolog-bridge:^5.4.52"']);
-    expect(within(sheet).getByRole("button", { name: "Shell: PowerShell" })).toBeTruthy();
+    expect(within(sheet).getByRole("button", { name: /^Shell: PowerShell for / })).toBeTruthy();
   });
 
   test("falls back to POSIX when storage throws", () => {
@@ -439,12 +439,12 @@ describe("the copy control of design 5C", () => {
 
     const sheet = openCase("B", oneCommand);
 
-    expect(within(sheet).getByRole("button", { name: "Shell: POSIX" })).toBeTruthy();
+    expect(within(sheet).getByRole("button", { name: /^Shell: POSIX for / })).toBeTruthy();
   });
 
   test("Escape closes the menu and leaves the sheet open", () => {
     const sheet = openCase("B", oneCommand);
-    fireEvent.click(within(sheet).getByRole("button", { name: "Shell: POSIX" }));
+    fireEvent.click(within(sheet).getByRole("button", { name: /^Shell: POSIX for / }));
     const menu = within(sheet).getByRole("menu", { name: "Shell" });
 
     fireEvent.keyDown(within(menu).getAllByRole("menuitemradio")[0] as HTMLElement, { key: "Escape" });
@@ -462,7 +462,7 @@ describe("the copy control of design 5C", () => {
     });
 
     expect(commandText(sheet)).toEqual(["This command holds characters the page does not print."]);
-    expect(within(sheet).queryByRole("button", { name: "Copy" })).toBeNull();
+    expect(within(sheet).queryByRole("button", { name: /^Copy / })).toBeNull();
   });
 
   test("one refused argv hides every step of the move on every shell, and the menu previews none", () => {
@@ -475,8 +475,8 @@ describe("the copy control of design 5C", () => {
     );
 
     expect(commandText(sheet)).toEqual(["This command holds characters the page does not print."]);
-    expect(within(sheet).queryByRole("button", { name: "Copy" })).toBeNull();
-    fireEvent.click(within(sheet).getByRole("button", { name: "Shell: POSIX" }));
+    expect(within(sheet).queryByRole("button", { name: /^Copy / })).toBeNull();
+    fireEvent.click(within(sheet).getByRole("button", { name: /^Shell: POSIX for / }));
     const menu = within(sheet).getByRole("menu", { name: "Shell" });
     expect(
       within(menu)

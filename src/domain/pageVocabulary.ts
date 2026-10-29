@@ -452,6 +452,9 @@ export const flagClaim = (id: string): string =>
 /** The skip link: to the rows of a tab that lists packages, else to the tab's content. */
 export const skipLinkLabel = (lists: boolean): string => (lists ? "Skip to the list" : "Skip to the content");
 
+/** What a row's role does not announce: Enter opens it. Read through `aria-describedby`. */
+export const ROW_HINT = "Press Enter on a row to open its package.";
+
 /** `next_step.kind` in the schema's `x-known-values` order (`#/definitions/move/properties/kind`),
  *  each with the short words the move cards and the Findings row use for it. */
 export const MOVE_KIND_WORDS: readonly (readonly [kind: string, words: string])[] = [

@@ -1,6 +1,7 @@
 /*
- * The Findings list as a ledger (PD-ROWS-4/5/6). Its layout follows the list's own width (a
- * container query): one line from 990px, two from 480px, three under that. No cell is cut to an
+ * The Findings list as a ledger (PD-ROWS-4/5/6): the group heads, runs, row frame and age cell,
+ * with a default row grid by the list's own width (a container query). The report-2 row grid and
+ * its breakpoints are in report/findings.css, which overrides this file's. No cell is cut to an
  * ellipsis, and every row shares the head's grid so the age bars line up.
  */
 

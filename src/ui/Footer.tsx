@@ -15,6 +15,30 @@ function Lnk({ href, children }: { href: string; children: ComponentChildren }) 
   );
 }
 
+/** A sticky column the footer shortens; a control focused in it can end up under the footer. */
+const STICKY_COLUMNS = ".shell-rail, .shell-detail";
+
+/** An engine without `:focus-visible` reads every focus as the keyboard's. */
+function focusVisible(element: Element): boolean {
+  try {
+    return element.matches(":focus-visible");
+  } catch {
+    return true;
+  }
+}
+
+/** The control Tab focused in a sticky column, while the column still shows it whole; else null.
+ *  A clicked control, or one the reader scrolled away from, is left where it is. */
+function shownFocus(): HTMLElement | null {
+  const active = document.activeElement;
+  if (!(active instanceof HTMLElement)) return null;
+  const column = active.closest(STICKY_COLUMNS);
+  if (column === null || !focusVisible(active)) return null;
+  const box = active.getBoundingClientRect();
+  const room = column.getBoundingClientRect();
+  return box.top >= room.top && box.bottom <= room.bottom ? active : null;
+}
+
 /** The sticky columns give up `--footer-h` only while the footer is on screen: sized against it all
  *  the time, a short viewport left them a sliver of the page (DESIGN.md §8, PD-DETAIL-5). */
 function useFooterInView(ref: RefObject<HTMLElement>): void {
@@ -23,7 +47,14 @@ function useFooterInView(ref: RefObject<HTMLElement>): void {
     if (node === null || typeof IntersectionObserver === "undefined") return undefined;
     const root = document.documentElement;
     const visible = new IntersectionObserver(([entry]) => {
-      root.classList.toggle("footer-in-view", entry?.isIntersecting === true);
+      const inView = entry?.isIntersecting === true;
+      const shown = inView ? shownFocus() : null;
+      root.classList.toggle("footer-in-view", inView);
+      // The columns shrink with the class: the control they showed is scrolled back into sight (WCAG 2.4.11).
+      if (shown !== null)
+        requestAnimationFrame(() => {
+          if (typeof shown.scrollIntoView === "function") shown.scrollIntoView({ block: "nearest" });
+        });
     });
     visible.observe(node);
 

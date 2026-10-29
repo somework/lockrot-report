@@ -25,8 +25,9 @@ function Fact({
   );
 }
 
-/** A Then card's heading is "Then"; the lead card's "The move" or, with no release or command, "Next step". */
-export function MoveCard({ card, run }: { card: Card; run: Run }) {
+/** A Then card's heading is "Then"; the lead card's "The move" or, with no release or command, "Next step".
+ *  `owner` names the card's copy buttons apart from every other card's. */
+export function MoveCard({ card, run, owner }: { card: Card; run: Run; owner: string }) {
   const id = `${useId()}-move`;
   const { php, after } = card;
   const classes = ["d3-move", ...(card.advice ? ["is-advice"] : []), ...(card.then ? ["is-then"] : [])].join(
@@ -41,7 +42,7 @@ export function MoveCard({ card, run }: { card: Card; run: Run }) {
         <RichText rich={card.action} />
       </p>
       {card.platformStep !== null && <p className="d3-move-platform">{card.platformStep}</p>}
-      {card.argvs.length > 0 && <CopyMove argvs={card.argvs} className="d3-cmd" />}
+      {card.argvs.length > 0 && <CopyMove argvs={card.argvs} className="d3-cmd" owner={owner} />}
       {card.checkNote !== null && <p className="d3-move-note">{card.checkNote}</p>}
       {card.movesWith !== null && <p className="d3-move-note">{card.movesWith}</p>}
       <dl className="d3-move-facts">

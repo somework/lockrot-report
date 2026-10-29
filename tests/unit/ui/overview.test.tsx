@@ -565,7 +565,7 @@ describe("one shell choice for every command box on the page (R4-30)", () => {
   const shellButtons = (): string[] =>
     [...document.querySelectorAll(".d2-shell-btn")].map((button) => button.textContent);
   const pickCmdIn = (box: HTMLElement): void => {
-    fireEvent.click(within(box).getByRole("button", { name: "Shell: POSIX" }));
+    fireEvent.click(within(box).getByRole("button", { name: /^Shell: POSIX for / }));
     fireEvent.click(within(within(box).getByRole("menu")).getByRole("menuitemradio", { name: /cmd\.exe/ }));
   };
   afterEach(() => {

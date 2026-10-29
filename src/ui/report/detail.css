@@ -145,10 +145,19 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+/* A hanging indent: a wrapped flag must not read as the start of a new command. */
 .d2-copy-line {
   display: block;
+  padding-left: 2ch;
+  text-indent: -2ch;
+}
+/* text-indent inherits into the inline-block arguments, which would each shift their own first line. */
+.d2-copy-line .d3-arg {
+  text-indent: 0;
 }
 .d2-copy-line.is-refused {
+  padding-left: 0;
+  text-indent: 0;
   font-family: var(--sans);
   color: var(--crit);
 }

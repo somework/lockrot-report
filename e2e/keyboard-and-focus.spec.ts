@@ -431,3 +431,56 @@ test.describe("report-2: keys on the Findings rows and the detail sheet", () => 
     await expect(detailSurface(page)).toHaveCount(0);
   });
 });
+
+test.describe("WCAG 2.4.11: the footer never covers the focused filter", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+  test.skip(
+    ({ browserName }) => browserName === "webkit",
+    "WebKit's Tab skips buttons, so it never walks the rail",
+  );
+
+  // The walk must bring the footer into view, the moment the rail shrinks: the last assertion says so.
+  test("each rail button is on top at its own centre as Tab walks the rail", async ({ page }) => {
+    await page.goto(report2Url("composite") + "#view=findings");
+    const buttons = page.locator(".shell-rail button");
+    const count = await buttons.count();
+    expect(count).toBeGreaterThan(0);
+    await buttons.first().focus();
+    const coveredBy = () =>
+      page.evaluate(() => {
+        const active = document.activeElement as HTMLElement;
+        const box = active.getBoundingClientRect();
+        const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+        return hit !== null && active.contains(hit) ? null : `${active.textContent} under ${hit?.className}`;
+      });
+
+    for (let at = 1; at < count; at += 1) {
+      await page.keyboard.press("Tab");
+      await expect.poll(coveredBy, { timeout: 2000 }).toBeNull();
+    }
+    await expect(page.locator("html.footer-in-view")).toHaveCount(1);
+  });
+});
+
+test.describe("WCAG 2.1.4: the Keyboard shortcuts switch", () => {
+  test("survives a reload, and with it off j opens nothing", async ({ page }) => {
+    await page.goto(report2Url("composite") + "#view=findings");
+    await page.getByRole("button", { name: "What these words mean" }).click();
+    const glossary = page.getByRole("dialog");
+    await glossary.getByText("Keys and search").click();
+    const box = glossary.getByRole("checkbox", { name: "Keyboard shortcuts" });
+    await expect(box).toBeChecked();
+    await box.uncheck();
+    await page.keyboard.press("Escape");
+
+    await page.reload();
+    await page.keyboard.press("j");
+    await page.getByRole("button", { name: "What these words mean" }).click();
+    await page.getByRole("dialog").getByText("Keys and search").click();
+    await expect(detailSurface(page)).toHaveCount(0);
+
+    await expect(
+      page.getByRole("dialog").getByRole("checkbox", { name: "Keyboard shortcuts" }),
+    ).not.toBeChecked();
+  });
+});

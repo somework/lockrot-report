@@ -16,7 +16,7 @@ import {
 import { signalName } from "../../domain/pageVocabulary";
 import { useReport } from "../context";
 import { useOverflowX } from "../useOverflowX";
-import { toneClass } from "../common/common";
+import { RowHint, toneClass } from "../common/common";
 import { usePrinted } from "../print/printContext";
 import { rowTabIndex } from "../rowCursor";
 import { openInteractions } from "../rowOpen";
@@ -164,6 +164,7 @@ export function PackagesView2() {
   const caption = dataCaption(report);
   const columns = PACKAGES_COLUMNS.filter((column) => showData || column.key !== "data");
   const hideAccepted = state.filters.accepted.includes(HIDE_ACCEPTED);
+  const hintId = `${useId()}-hint`;
   if (rows.length === 0) {
     return (
       <section className="p2" data-surface="packages">
@@ -174,6 +175,7 @@ export function PackagesView2() {
   return (
     <section className="p2" data-surface="packages">
       {caption !== null && <p className="p2-caption">{caption}</p>}
+      <RowHint id={hintId} />
       <p className="p2-sortby" aria-hidden="true">
         Sort by
       </p>
@@ -184,7 +186,12 @@ export function PackagesView2() {
           ? { tabIndex: 0, role: "region", "aria-label": "All packages table, scrolls sideways" }
           : {})}
       >
-        <table className={showData ? "p2-table has-data" : "p2-table"} role="table" aria-label="All packages">
+        <table
+          className={showData ? "p2-table has-data" : "p2-table"}
+          role="table"
+          aria-label="All packages"
+          aria-describedby={hintId}
+        >
           <thead role="rowgroup">
             <tr role="row">
               {columns.map((column) => {
