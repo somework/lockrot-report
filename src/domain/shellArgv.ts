@@ -23,7 +23,7 @@ const COMMAND_ARGUMENT = /^(?! +$)[A-Za-z0-9/._:@+=,^~*<>| -]+$/;
 const SUBCOMMANDS: ReadonlySet<string> = new Set(["update", "require", "why-not"]);
 // lockrot writes these after every package argument. Anywhere else, a leading `-` came from data and
 // would pass an option to Composer.
-const LOCKROT_OPTIONS: Readonly<Record<string, ReadonlySet<string>>> = {
+export const LOCKROT_OPTIONS: Readonly<Record<string, ReadonlySet<string>>> = {
   update: new Set(["--with-dependencies", "--with-all-dependencies"]),
   require: new Set([
     "--no-update",

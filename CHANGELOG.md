@@ -326,9 +326,9 @@ project is overall, and the other tabs lead with their own part.
 - The copy control prints a command only when every argument passes lockrot's
   command argument rule. The rule takes `composer` with `update`, `require` or `why-not`, and
   each argument from a fixed set of characters. The only arguments that start with a dash are
-  lockrot's own options, after every package argument: `--no-update` and `--dev` in a `require`
-  step, `--with-dependencies` and `--with-all-dependencies` in an `update` or `require` step, and
-  `--locked` in a `why-not` step. `--lock` passes only as the one argument of an `update` step.
+  lockrot's own options, after every package argument: `--no-update`, `--dev` and
+  `--no-interaction` in a `require` step, `--with-dependencies` and `--with-all-dependencies` in
+  an `update` or `require` step, and `--locked` in a `why-not` step. `--lock` passes only as the one argument of an `update` step.
 - The release workflow refuses a tag whose commit is on neither main nor a release branch, and a
   lockrot pin that neither lockrot's main nor a lockrot tag holds. It runs every gate of ci.yml
   before it attests the page: format, lint, the type checks, the unit, contract and e2e tests, and
