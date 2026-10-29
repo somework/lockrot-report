@@ -47,12 +47,15 @@ jobs:
       # longer be rebuilt from its pin.
       - name: the lockrot pin is on lockrot's main or a lockrot tag
         run: node scripts/contract.mjs reachable
-      # The renderer must not publish against a lockrot commit whose own gates did not pass: a full
-      # check (the rc tag runs one), or CI on a push to main.
+      # A final release must not publish against a lockrot commit whose own gates did not pass: a full
+      # check, or CI on a push to main. A pre-release is exempt. Its pin is the lockrot commit that
+      # changed the contract bundle, and lockrot's renderer test fails there until lockrot vendors
+      # this very pre-release. lockrot's vendoring pull request and its full check gate the pair.
       - name: lockrot's gates passed on the pinned commit
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          case "$GITHUB_REF_NAME" in *-*) echo "$GITHUB_REF_NAME is a pre-release: lockrot's vendoring gates it"; exit 0 ;; esac
           pin=$(node -p 'require("./contract/lockrot.json").commit')
           gh run list --repo somework/lockrot --commit "$pin" --event push --status success \
             --json workflowName,headBranch \
