@@ -660,3 +660,16 @@ describe("a count in a state line links to its list (R4-27)", () => {
     expect(document.querySelectorAll("[data-pkg]")).toHaveLength(golden.report.counts.unknown);
   });
 });
+
+describe("the foot of Ready to run", () => {
+  test("puts All ready to run first, before the held and way-out lines (SPEC 7.9.4)", () => {
+    // mc-composite‡: 4 ready moves, 1 held finding and 1 that needs another way out, on a failing gate.
+    const result = normalize(assembleEmbed("mc-composite-dagger"));
+    if (!result.ok) throw new Error(result.error.message);
+    render(<App model={result.model} />);
+
+    const foot = band().querySelector(".ov-first-foot");
+    expect(foot?.children).toHaveLength(3);
+    expect(foot?.firstElementChild?.textContent).toMatch(/^All 4 ready to run/);
+  });
+});

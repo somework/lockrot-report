@@ -242,6 +242,11 @@ function FirstMovesBlock({ report }: { report: Report2 }) {
       {first.none !== null && <p className="ov-first-none">{first.none}</p>}
       {(first.more !== null || first.held !== null || first.wayOut !== null) && (
         <p className="ov-first-foot">
+          {first.more !== null && first.moreLink !== null && (
+            <TabLink target={first.moreLink} className="ov-link">
+              {first.more} <span aria-hidden="true">›</span>
+            </TabLink>
+          )}
           {first.held !== null &&
             (first.heldLink === null ? (
               <span>{first.held}</span>
@@ -260,11 +265,6 @@ function FirstMovesBlock({ report }: { report: Report2 }) {
                 <PartWords parts={first.wayOutParts} /> <span aria-hidden="true">›</span>
               </TabLink>
             ))}
-          {first.more !== null && first.moreLink !== null && (
-            <TabLink target={first.moreLink} className="ov-link">
-              {first.more} <span aria-hidden="true">›</span>
-            </TabLink>
-          )}
         </p>
       )}
     </section>
