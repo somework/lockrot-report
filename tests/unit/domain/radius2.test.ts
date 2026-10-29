@@ -5,6 +5,7 @@ import { population2 } from "../../../src/domain/list";
 import { pulledTree } from "../../../src/domain/radius";
 import {
   gradeMix,
+  RADIUS_WORDS,
   radiusAnswer2,
   radiusLayout2,
   radiusRowFacts,
@@ -178,6 +179,20 @@ describe("radius words", () => {
       mix: null,
       note: "None of the 1 flagged package listed under it match the filter.",
     });
+  });
+
+  it("agrees in number when one or more rows do not match the filter", () => {
+    expect(RADIUS_WORDS.filtered(1)).toBe("1 more does not match the filter");
+    expect(RADIUS_WORDS.filtered(2)).toBe("2 more do not match the filter");
+  });
+
+  it("drops the held line under a grade filter, which the unfiltered pulled count cannot share", () => {
+    const low = population2(composite, "radius").filter((f) => f.verdict === "low");
+    const filtered = radiusLayout2(composite, low, population2(composite, "radius"));
+    expect(radiusAnswer2(composite, filtered)).toEqual(["2 flagged packages pulled in."]);
+    expect(radiusAnswer2(composite, layoutOf(composite))).toContain(
+      "1 of them sits under friendsofsymfony/oauth-server-bundle.",
+    );
   });
 
   it("ends the lead when nothing is pulled in, and answers a filtered tab", () => {
