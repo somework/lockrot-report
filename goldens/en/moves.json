@@ -3975,7 +3975,7 @@
       "after": {
         "result": "0, ok",
         "conditions": [
-          "if Composer resolves it (not checked: the advisory lookup did not cover a package it installs)"
+          "if Composer resolves it (not checked: the advisory lookup did not cover a package in the result)"
         ]
       },
       "composer": []

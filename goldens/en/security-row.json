@@ -924,7 +924,7 @@
     "lookup complete",
     "2.x your branch the move clears 1 of 1 from v2.3.2",
     "composer update",
-    "after it: 0, ok · not checked: the advisory lookup did not cover a package it installs"
+    "after it: 0, ok · not checked: the advisory lookup did not cover a package in the result"
   ],
   "mc-minimal-changes-dagger": [
     "1 high advisory",
