@@ -550,11 +550,11 @@ type, tones, vocabulary) and changes layout only where the legacy page failed a 
 **Breakpoints.** Three, all driven by `matchMedia` in `ui/useWide.ts` and mirrored in
 `ui/app.css`:
 
-| width        | layout                                                                                                                |
-| ------------ | --------------------------------------------------------------------------------------------------------------------- |
-| ≥ 1181px     | rail · list, plus a detail column once a package is open (the legacy WIDE layout)                                     |
-| 760 – 1180px | rail · list; the detail opens as a full-screen sheet                                                                  |
-| < 760px      | one column: on Findings the PD-SUMMARY-16 strip, a "Filters" disclosure, then the list; Overview in its reading order |
+| width       | layout                                                                                                                |
+| ----------- | --------------------------------------------------------------------------------------------------------------------- |
+| ≥ 1000px    | rail · list, plus a detail column once a package is open (the legacy WIDE layout)                                     |
+| 760 – 999px | rail · list; the detail opens as a full-screen sheet                                                                  |
+| < 760px     | one column: on Findings the PD-SUMMARY-16 strip, a "Filters" disclosure, then the list; Overview in its reading order |
 
 The legacy page pushed the findings below the whole ledger and the whole rail at 320px, so a phone
 reader scrolled past two screens of bars and buttons before the first package. The summary band
@@ -564,8 +564,9 @@ closed `<details>` whose summary counts the rail filters that are on. The Findin
 list's own width, not the viewport's (a container query, PD-ROWS-4): one line from 990px of list,
 three below that, the list beside an open package (570-790px at 1280-1920) included (PD-ROWS-14).
 With nothing
-open, which is how every page without `#pkg=` loads (PD-ROWS-9), the list is 910-1230px at
-1181-1920, so a wide screen's first sight is one line a row from 1440px up. At every width a cell
+open, which is how every page without `#pkg=` loads (PD-ROWS-9), the list is 754-1530px at
+1000-1920 (960-983px until the rail takes a column of its own at 1024px), so a wide screen's first
+sight is one line a row from 1440px up. At every width a cell
 too narrow for its value wraps it, never an ellipsis.
 Opening a package there switches the list to three lines a row, and closing it back, so every row
 above the one acted on changes height. `ui/rowAnchor.ts` measures that row before a `select` is
@@ -646,7 +647,7 @@ segment shows its role by its border's style (PD-SCORE-3). `e2e/forced-colors.sp
   `prefers-reduced-motion: reduce` (checked in script: a CSS `scroll-behavior` would also glide
   PD-ROWS-10's instant `scrollBy`). A row is placed by its position among the view's rows, not its
   name, so a package listed twice is walked row by row (PD-ROWS-12).
-- A sheet (below 1181px) covers the whole page, so a row under it can hold no visible focus
+- A sheet (below 1000px) covers the whole page, so a row under it can hold no visible focus
   (WCAG 2.4.11). A reader's own open (click, Enter, `j`/`k`) puts focus on the sheet's heading
   (`[data-detail-focus]`, `tabindex="-1"`), and the header, summary, rail, list and footer are
   `inert` while it is up: Tab stays in the sheet. `j`/`k` still walk the list under it, re-focusing
