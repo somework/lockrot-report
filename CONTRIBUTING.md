@@ -88,7 +88,8 @@ the report-1 screen.
    `node scripts/contract.mjs reachable` says whether the pin is one.
 3. Merge, then tag `vX.Y.Z` on main, or tag a pre-release on main or its release branch. The
    release workflow refuses a final tag that main does not hold, and a pre-release tag that neither
-   main nor a release branch holds. It also refuses a pin that the check above refuses, and a pin
-   with no successful lockrot run: a full check of the whole tree, or CI on a push to main. It runs the gates of
-   ci.yml, then builds, attests and publishes.
+   main nor a release branch holds. It also refuses a pin that the check above refuses. A final
+   tag also needs a successful lockrot run of its pin: a full check of the whole tree, or CI on a
+   push to main. A pre-release does not, because lockrot's renderer test fails on its pin until
+   lockrot vendors it. The workflow runs the gates of ci.yml, then builds, attests and publishes.
 4. In lockrot, run `tools/report/update-renderer vX.Y.Z` and open a pull request.

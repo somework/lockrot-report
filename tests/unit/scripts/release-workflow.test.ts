@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
@@ -123,9 +123,12 @@ describe("the lockrot pin has a green lockrot run (R6-29, decision 35)", () => {
   const RUN_STEP = "lockrot's gates passed on the pinned commit";
   let bin = "";
 
-  function withRuns(runs: unknown): { status: number; out: string } {
+  function withRuns(runs: unknown, tag = "v0.14.0"): { status: number; out: string } {
     writeFileSync(join(bin, "runs.json"), JSON.stringify(runs));
-    return sh(stepScript(RUN_STEP), process.cwd(), { PATH: `${bin}:${process.env["PATH"] ?? ""}` });
+    return sh(stepScript(RUN_STEP), process.cwd(), {
+      PATH: `${bin}:${process.env["PATH"] ?? ""}`,
+      GITHUB_REF_NAME: tag,
+    });
   }
 
   beforeAll(() => {
@@ -163,5 +166,13 @@ describe("the lockrot pin has a green lockrot run (R6-29, decision 35)", () => {
     ["no run", [], 1],
   ])("on %s, the step exits %i", (_, runs, status) => {
     expect(withRuns(runs).status).toBe(status);
+  });
+
+  // lockrot's renderer test fails on the pin of a pre-release until lockrot vendors it.
+  test("lets a pre-release through with no green lockrot run, and asks lockrot nothing", () => {
+    rmSync(join(bin, "args"), { force: true });
+
+    expect(withRuns([], "v0.14.0-rc.7").status).toBe(0);
+    expect(existsSync(join(bin, "args"))).toBe(false);
   });
 });
