@@ -250,7 +250,7 @@ function answerClauses(fix: TargetFix, target: string): string[] {
 
 const isCapped = (f: Finding): boolean => f.flags.some((flag) => flag.id === "capped");
 
-/** ", so your target, …, is excluded"; a pinned patch outside a window that keeps its minor names the patch (ruling R-e). */
+/** A pinned patch outside a window that keeps its minor names the patch (ruling R-e). */
 function targetClause(window: PhpWindow, target: string): string {
   const keepsMinor = (window.with_dev ?? window.without_dev).minors.includes(minorOf(target));
   return keepsMinor
