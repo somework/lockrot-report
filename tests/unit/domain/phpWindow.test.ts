@@ -174,6 +174,51 @@ describe("the PHP state line", () => {
     ]);
   });
 
+  test("names the pinned patch when the window keeps the target minor (ruling R-e)", () => {
+    const hole = fix({
+      packages: [
+        {
+          name: "acme/conflict-hole",
+          version: "1.0.0",
+          link: "conflict",
+          target: "php",
+          constraint: "8.4.5 - 8.4.6",
+          dev: false,
+        },
+      ],
+      command: ["composer", "update", "acme/conflict-hole"],
+      check: "resolves",
+    });
+
+    expect(
+      phpStateClauses(
+        report({
+          without_dev: set({ minors: ["8.2", "8.3", "8.4", "8.5"], upper_edge: null }),
+          target: { php: "8.4.5", inside: false },
+          target_fix: hole,
+        }),
+      ),
+    ).toEqual([
+      "this lock installs on PHP 8.2 to 8.5, but not on your target, 8.4.5",
+      "1 package excludes 8.4: acme/conflict-hole",
+      "Composer's solver at PHP 8.4 resolves this update: composer update acme/conflict-hole",
+    ]);
+  });
+
+  test("reads the target minor from the set with require-dev, as target.inside does", () => {
+    const head = phpStateClauses(
+      report({
+        with_dev: set({ minors: ["8.2", "8.3", "8.4"], upper_edge: null }),
+        without_dev: set(),
+        target: { php: "8.4.5", inside: false },
+      }),
+    )?.[0];
+
+    expect(head).toBe(
+      "without require-dev this lock installs on PHP 8.2 to 8.3, and with require-dev on PHP 8.2 to 8.4, but not on your target, 8.4.5",
+    );
+  });
+
   test("names the reason of a fix that was not checked", () => {
     expect(
       phpStateClauses(report({ target_fix: fix({ check: "not_checked", reason: "offline" }) }))?.[2],
@@ -203,6 +248,54 @@ describe("the PHP state line", () => {
       "this lock installs on PHP 8.2 to 8.3",
       "your target, 8.4, is excluded, and only a change to require-dev.php can admit it",
     ]);
+  });
+
+  describe("a root ceiling that only the pinned patch fails", () => {
+    const hold: HeldBy = {
+      source: "root",
+      package: null,
+      version: null,
+      link: "require",
+      target: "php",
+      constraint: ">=8.4.6",
+      holder: null,
+    };
+    const ceiling = (minors: string[], packages: TargetFix["packages"] = []): string[] | null =>
+      phpStateClauses(
+        report({
+          without_dev: set({ minors, upper_edge: null }),
+          target: { php: "8.4.5", inside: false },
+          target_fix: fix({ packages, held_by: [hold] }),
+        }),
+      );
+
+    test("names the pinned patch when the window keeps the target minor", () => {
+      expect(ceiling(["8.2", "8.3", "8.4", "8.5"])).toEqual([
+        "this lock installs on PHP 8.2 to 8.5",
+        "your target, 8.4.5, is excluded, and only a change to require.php can admit it",
+      ]);
+    });
+
+    test("names the pinned patch beside a package that also excludes it", () => {
+      const pkg = {
+        name: "acme/clock",
+        version: "1.2.0",
+        link: "require",
+        target: "php",
+        constraint: "<8.4.5",
+        dev: false,
+      } as const;
+
+      expect(ceiling(["8.2", "8.3", "8.4", "8.5"], [pkg])?.[1]).toBe(
+        "your target, 8.4.5, is excluded by require.php and by 1 package: acme/clock",
+      );
+    });
+
+    test("names the target minor when the window leaves it out", () => {
+      expect(ceiling(["8.2", "8.3"])?.[1]).toBe(
+        "your target, 8.4, is excluded, and only a change to require.php can admit it",
+      );
+    });
   });
 });
 

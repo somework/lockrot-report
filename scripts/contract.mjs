@@ -60,6 +60,7 @@ const PAGE_GOLDEN_DOCUMENTS = [
   "tests/fixtures/schema/documents/corpus/new-symfony.json.gz",
   "tests/fixtures/schema/documents/corpus/wallabag.json.gz",
   "tests/fixtures/schema/documents/coverage/baselined/new-slim.json.gz",
+  "tests/fixtures/schema/documents/coverage/variants/target-fix-conflict-hole.json.gz",
   "tests/fixtures/schema/documents/coverage/variants/vulnerable-partial-lookup.json.gz",
   "tests/fixtures/schema/documents/page/B-also.checked-dagger.json",
   "tests/fixtures/schema/documents/page/composite.other-day-same-cve-dagger.json",

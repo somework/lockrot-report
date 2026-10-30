@@ -167,7 +167,9 @@ project is overall, and the other tabs lead with their own part.
   Composer checks, or when a package carries `capped`, a "PHP" state line follows the gate line:
   "PHP: this lock installs on PHP 7.4, so your target, 8.4, is excluded · 3 packages exclude 8.4:
   … · Composer's solver at PHP 8.4 refuses their update: composer.json requires
-  php-http/guzzle5-adapter ^2.0. The PHP window ›". "The PHP window ›" links to
+  php-http/guzzle5-adapter ^2.0. The PHP window ›". When the window keeps the target's minor but
+  not the patch that `config.platform.php` pins, the line names the patch: "this lock installs on
+  PHP 8.2 to 8.5, but not on your target, 8.4.5". "The PHP window ›" links to
   `#view=run&section=php-window`, which opens the Run tab at its PHP window section with focus on its
   heading, from a click and from a pasted address alike. It names the update that admits the target
   and Composer's answer, or the root link that alone excludes it. The Run tab lists both windows
@@ -183,11 +185,12 @@ project is overall, and the other tabs lead with their own part.
   Composer resolves it (not checked: Composer's solver refuses the lock itself at the target PHP;
   see the PHP line in the Overview)". When the target lies inside the PHP window, or the run has no
   window, it reads "Composer's solver refuses the lock itself; the Run tab names the cause".
-- A lock can set `config.platform.php` outside the minor of the target PHP. Then each move card,
+- A lock can set `config.platform.php` to a PHP that is not a stable release of the target's minor,
+  such as 7.4.29 or 8.4.0RC1 at target 8.4. Then each move card,
   Ready to run and the Findings tab first print one line. It reads "First set config.platform.php
   to your PHP 8.4 release: the lock records 7.4.29." The commands do not change. When Composer
   also refuses the lock itself, the line goes on: "Composer still refuses the lock itself: the PHP
-  line names the packages."
+  line in the Overview names the packages."
   When a move check ran, the Run tab says under the override which PHP each step reads:
   "composer install reads 7.4.29, and the move check solves at the target PHP 8.4.99."
 - Holders keep one order on every surface: the root, then the package's own releases, then the

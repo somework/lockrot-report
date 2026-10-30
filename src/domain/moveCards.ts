@@ -621,12 +621,12 @@ export interface MoveCard {
 function stillRefused(run: Run): string {
   if (run.move_check?.baseline !== "refused") return "";
   return run.php_window?.target.inside === false
-    ? " Composer still refuses the lock itself: the PHP line names the packages."
+    ? " Composer still refuses the lock itself: the PHP line in the Overview names the packages."
     : " Composer still refuses the lock itself: the Run tab names the cause.";
 }
 
-/** A lock whose config.platform.php lies outside the target's minor makes Composer check every
- *  command at that PHP, not the target's. */
+/** A lock whose config.platform.php is not a stable release of the target's minor makes Composer
+ *  check every command at that PHP, not the target's. */
 export function platformStep(run: Run): string | null {
   const override = overrideOutsideTarget(run);
   if (override === null) return null;
