@@ -1,53 +1,36 @@
-import { useEffect, useId, useMemo, useRef, useState } from "preact/hooks";
+import { useId, useMemo, useRef } from "preact/hooks";
 import { copySummary } from "../domain/copySummary";
+import { useCopy, type CopyStatus } from "./common/useCopy";
 import { useReport } from "./context";
 
-/** How long the button reads "Copied" before it goes back to its own name. */
-const COPIED_MS = 2000;
+const TIMES = { copiedMs: 2000, manualMs: 2600 } as const;
 
-type Status = "idle" | "copied" | "manual";
+const ANNOUNCED: Readonly<Record<CopyStatus, string>> = {
+  idle: "",
+  copied: "Summary copied to the clipboard",
+  manual: "The clipboard is not available. The summary is selected: press Ctrl+C or Command+C to copy it.",
+};
 
 /**
  * "Copy summary" (Header): the report's answer as three lines of plain text on the clipboard, for a
  * chat or a ticket. Where the Clipboard API is missing or refuses (an older engine, a denied
- * permission), the same text opens in a popover, selected, for the reader to copy themselves —
- * the button never fails silently.
+ * permission), the same text opens in a popover, selected and focused, for the reader to copy
+ * themselves, and the live region says so.
  */
 export function CopySummary() {
   const { model } = useReport();
   const text = useMemo(() => copySummary(model.report).join("\n"), [model]);
-  const [status, setStatus] = useState<Status>("idle");
+  const { status, copy } = useCopy(TIMES);
   const popover = useRef<HTMLDivElement>(null);
   const area = useRef<HTMLTextAreaElement>(null);
   const popoverId = `${useId()}-copy`;
 
-  useEffect(() => {
-    if (status !== "copied") return undefined;
-    const timer = window.setTimeout(() => {
-      setStatus("idle");
-    }, COPIED_MS);
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [status]);
-
   const showManual = (): void => {
-    setStatus("manual");
     const pop = popover.current;
-    if (pop !== null && typeof pop.showPopover === "function") {
-      if (!pop.matches(":popover-open")) pop.showPopover();
-      area.current?.focus();
-      area.current?.select();
-    }
-  };
-
-  const copy = async (): Promise<void> => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setStatus("copied");
-    } catch {
-      showManual();
-    }
+    if (pop !== null && typeof pop.showPopover === "function" && !pop.matches(":popover-open"))
+      pop.showPopover();
+    area.current?.focus();
+    area.current?.select();
   };
 
   return (
@@ -57,14 +40,14 @@ export function CopySummary() {
         type="button"
         title="Copy a three-line summary of this report as plain text"
         onClick={() => {
-          void copy();
+          copy(text, showManual);
         }}
       >
         {status === "copied" ? "Copied" : "Copy summary"}
       </button>
       {/* A live region, not role="status": the search count line is the page's one status. */}
       <span className="copy-status" aria-live="polite">
-        {status === "copied" ? "Summary copied to the clipboard" : ""}
+        {ANNOUNCED[status]}
       </span>
       <div id={popoverId} ref={popover} popover="auto" className="fact-pop copy-pop">
         <label className="copy-pop-label" htmlFor={`${popoverId}-text`}>

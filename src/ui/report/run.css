@@ -6,6 +6,7 @@
 .run2 .sect {
   min-width: 0;
 }
+.run2 .sect[id] > h3:focus-visible,
 .run2-score:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
@@ -13,7 +14,7 @@
 .run2-caption,
 .run2-line {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--text-s);
   color: var(--ink-2);
   overflow-wrap: anywhere;
 }
@@ -24,19 +25,20 @@
   align-items: center;
   gap: 4px 12px;
   margin: 0;
-  font-size: 13px;
+  font-size: var(--text-s);
   overflow-wrap: anywhere;
 }
 
 .run2-ruler {
   display: grid;
   gap: 4px;
+  container: run2-ruler / inline-size;
   print-color-adjust: exact;
 }
 .run2-ruler-bands {
   position: relative;
   height: 22px;
-  border-radius: 3px;
+  border-radius: var(--radius-s);
   overflow: hidden;
 }
 .run2-ruler-bands > i {
@@ -45,7 +47,7 @@
   bottom: 0;
   padding-left: 6px;
   overflow: hidden;
-  font: 600 10.5px/22px var(--cond);
+  font: 600 var(--text-xs)/22px var(--cond);
   font-style: normal;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -54,10 +56,25 @@
   background: var(--tone-soft);
   border-right: 1px solid var(--bg);
 }
+/* Below this width the medium band is narrower than its name, so every other name drops a line and
+   may run past its band, above the next band's fill. */
+@container run2-ruler (max-width: 599px) {
+  .run2-ruler-bands {
+    height: 40px;
+  }
+  .run2-ruler-bands > i {
+    overflow: visible;
+    line-height: 20px;
+  }
+  .run2-ruler-bands > i:nth-child(even) {
+    z-index: 1;
+    padding-top: 20px;
+  }
+}
 .run2-ruler-ticks {
   position: relative;
   height: 14px;
-  font: 10.5px/14px var(--mono);
+  font: var(--text-xs)/14px var(--mono);
   color: var(--muted);
 }
 .run2-ruler-ticks > span {
@@ -81,12 +98,12 @@
 }
 .run2-table {
   border-collapse: collapse;
-  font-size: 12.5px;
+  font-size: var(--text-s);
 }
 .run2-table caption {
   padding-bottom: 6px;
   text-align: left;
-  font: 600 11px var(--cond);
+  font: 600 var(--text-xs) var(--cond);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
@@ -100,7 +117,7 @@
   color: var(--ink-2);
 }
 .run2-table thead th {
-  font: 600 10px var(--cond);
+  font: 600 var(--text-xs) var(--cond);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -113,7 +130,7 @@
   white-space: nowrap;
 }
 .run2-table td.run2-band {
-  font: 600 10.5px var(--cond);
+  font: 600 var(--text-xs) var(--cond);
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--tone);
@@ -121,7 +138,7 @@
 
 .run2-rules > summary {
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--text-s);
   font-weight: 600;
   padding: 4px 0;
 }
@@ -138,10 +155,10 @@
   align-items: baseline;
   padding: 6px 0;
   border-bottom: 1px solid var(--border);
-  font-size: 12.5px;
+  font-size: var(--text-s);
 }
 .run2-rule-no {
-  font: 600 11.5px var(--mono);
+  font: 600 var(--text-xs) var(--mono);
   color: var(--muted);
   text-align: right;
 }
@@ -153,7 +170,7 @@
   color: var(--ink-2);
 }
 .run2-rule-used {
-  font: 11.5px var(--mono);
+  font: var(--text-xs) var(--mono);
   white-space: nowrap;
   color: var(--ink-2);
 }
@@ -167,13 +184,27 @@
   padding-left: 18px;
   display: grid;
   gap: 4px;
-  font-size: 13px;
+  font-size: var(--text-s);
   color: var(--ink-2);
   overflow-wrap: anywhere;
 }
 
 .run2-kv-row {
   display: contents;
+}
+
+/* A window row is a sentence of constraints, too long for the key column: its label sits above it. */
+.run2-window.kv {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+}
+.run2-window dd {
+  font-family: inherit;
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.run2-window .run2-kv-row + .run2-kv-row dt {
+  margin-top: var(--space-2);
 }
 
 @media (max-width: 759px) {

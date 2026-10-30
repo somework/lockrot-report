@@ -1,0 +1,2856 @@
+{
+  "A": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "A-baselined-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "A-blocked-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "A-both-sections-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "A-gate-critical": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "A-gate-vulnerable": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "A-php-lowest-excluded-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "A-php-star-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "A-php-unsatisfiable-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "B": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.8.52 · 2019-11-13 · 6.9 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "most recent",
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
+    }
+  ],
+  "B-accepted-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.8.52 · 2019-11-13 · 6.9 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "most recent",
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
+    }
+  ],
+  "B-also-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.8.52 · 2019-11-13 · 6.9 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "most recent",
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
+    }
+  ],
+  "B-baselined-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.8.52 · 2019-11-13 · 6.9 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "most recent",
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
+    }
+  ],
+  "B-dev-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.8.52 · 2019-11-13 · 6.9 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "most recent",
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
+    }
+  ],
+  "B-gate-flag": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.8.52 · 2019-11-13 · 6.9 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "most recent",
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
+    }
+  ],
+  "B-gate-list": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.8.52 · 2019-11-13 · 6.9 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "most recent",
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
+    }
+  ],
+  "B-gate-none": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.8.52 · 2019-11-13 · 6.9 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "most recent",
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
+    }
+  ],
+  "B-offline-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.8.52 · 2019-11-13 · 6.9 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "most recent",
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
+    }
+  ],
+  "B-offline-high-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.8.52 · 2019-11-13 · 6.9 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "most recent",
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
+    }
+  ],
+  "C": [
+    {
+      "label": "installed",
+      "value": "v3.4.47 · 2020-10-24 · 5.9 years ago · the newest on 3.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v4.4.44 · 2022-07-28 · 4.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2022-07-29 · 4.2 years ago"
+    }
+  ],
+  "C-baselined-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.4.47 · 2020-10-24 · 5.9 years ago · the newest on 3.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v4.4.44 · 2022-07-28 · 4.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2022-07-29 · 4.2 years ago"
+    }
+  ],
+  "C-bitbucket-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.4.47 · 2020-10-24 · 5.9 years ago · the newest on 3.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v4.4.44 · 2022-07-28 · 4.2 years ago"
+    },
+    {
+      "label": "last commit",
+      "value": "2022-07-29 · 4.2 years ago"
+    }
+  ],
+  "C-gitlab-hosted-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.4.47 · 2020-10-24 · 5.9 years ago · the newest on 3.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v4.4.44 · 2022-07-28 · 4.2 years ago"
+    },
+    {
+      "label": "last commit",
+      "value": "2022-07-29 · 4.2 years ago"
+    }
+  ],
+  "C-offline-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.4.47 · 2020-10-24 · 5.9 years ago · the newest on 3.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v4.4.44 · 2022-07-28 · 4.2 years ago"
+    },
+    {
+      "label": null,
+      "value": "last push not read (offline)"
+    }
+  ],
+  "C-tokenless-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.4.47 · 2020-10-24 · 5.9 years ago · the newest on 3.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v4.4.44 · 2022-07-28 · 4.2 years ago"
+    },
+    {
+      "label": null,
+      "value": "last push not read (no token)"
+    }
+  ],
+  "D": [
+    {
+      "label": "installed",
+      "value": "v4.1.1 · 2018-01-15 · 8.7 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2023-12-22 · 2.8 years ago"
+    }
+  ],
+  "D-partial-dagger": [
+    {
+      "label": "installed",
+      "value": "v4.1.1 · 2018-01-15 · 8.7 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2023-12-22 · 2.8 years ago"
+    }
+  ],
+  "E": [
+    {
+      "label": "installed",
+      "value": "v5.4.23 · 2023-04-23 · 3.4 years ago"
+    },
+    {
+      "label": "5.x last",
+      "value": "v5.4.53 · 2026-05-20 · 0.4 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.8 · 2026-09-26 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "E-dev-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.4.23 · 2023-04-23 · 3.4 years ago"
+    },
+    {
+      "label": "5.x last",
+      "value": "v5.4.53 · 2026-05-20 · 0.4 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.8 · 2026-09-26 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "E-ignored-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.4.23 · 2023-04-23 · 3.4 years ago"
+    },
+    {
+      "label": "5.x last",
+      "value": "v5.4.53 · 2026-05-20 · 0.4 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.8 · 2026-09-26 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "E-ignored-whole-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.4.23 · 2023-04-23 · 3.4 years ago"
+    },
+    {
+      "label": "5.x last",
+      "value": "v5.4.53 · 2026-05-20 · 0.4 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.8 · 2026-09-26 · less than three weeks ago"
+    },
+    {
+      "label": null,
+      "value": "last push not read (allowlisted)"
+    }
+  ],
+  "F": [
+    {
+      "label": "installed",
+      "value": "v1.37.0 · release date not known (no date)"
+    },
+    {
+      "label": "1.x last",
+      "value": "v1.43.0 · 2026-09-23 · less than three weeks ago · its most recent release"
+    },
+    {
+      "label": null,
+      "value": "installed not read (no date)"
+    },
+    {
+      "label": null,
+      "value": "last push not read (allowlisted)"
+    }
+  ],
+  "G": [
+    {
+      "label": "most recent",
+      "value": "1.6.2 · 2019-01-23 · 7.7 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2024-01-12 · 2.7 years ago"
+    }
+  ],
+  "G-tag-dagger": [
+    {
+      "label": "most recent",
+      "value": "1.6.2 · 2019-01-23 · 7.7 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2024-01-12 · 2.7 years ago"
+    }
+  ],
+  "abandoned-audit-ignore-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.4.47 · 2020-10-24 · 5.9 years ago · the newest on 3.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v4.4.44 · 2022-07-28 · 4.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2022-07-29 · 4.2 years ago"
+    }
+  ],
+  "abandoned-ignore-unreadable-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.4.47 · 2020-10-24 · 5.9 years ago · the newest on 3.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v4.4.44 · 2022-07-28 · 4.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2022-07-29 · 4.2 years ago"
+    }
+  ],
+  "adds-capped-raise-php": [
+    {
+      "label": "installed",
+      "value": "v5.13.2 · 2022-04-16 · 4.5 years ago · the newest on 5.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.6.1 · 2026-07-10 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-10 · 0.2 years ago"
+    }
+  ],
+  "adds-capped-require-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.13.2 · 2022-04-16 · 4.5 years ago · the newest on 5.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.6.1 · 2026-07-10 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-10 · 0.2 years ago"
+    }
+  ],
+  "adds-capped-tag-dagger": [
+    {
+      "label": "most recent",
+      "value": "4.0.5 · 2026-04-15 · 0.5 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-22 · less than three weeks ago"
+    }
+  ],
+  "adds-capped-update": [
+    {
+      "label": "installed",
+      "value": "1.23.0 · 2022-04-24 · 4.4 years ago"
+    },
+    {
+      "label": "1.x last",
+      "value": "1.30.7 · 2026-09-17 · less than three weeks ago"
+    },
+    {
+      "label": "most recent",
+      "value": "3.10.8 · 2026-09-17 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "affected-range-unknown-dagger": [
+    {
+      "label": "installed",
+      "value": "v1.37.0 · release date not known (no date)"
+    },
+    {
+      "label": "1.x last",
+      "value": "v1.43.0 · 2026-09-23 · less than three weeks ago · its most recent release"
+    },
+    {
+      "label": null,
+      "value": "installed not read (no date)"
+    },
+    {
+      "label": null,
+      "value": "last push not read (allowlisted)"
+    }
+  ],
+  "cache-subscriber": [
+    {
+      "label": "installed",
+      "value": "0.2.0 · 2019-09-16 · 7.0 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2019-09-16 · 7.0 years ago"
+    }
+  ],
+  "capped-accepted-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-blocked-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-covered-dagger": [
+    {
+      "label": "installed",
+      "value": "2.2.4 · 2022-03-05 · 4.6 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "2.14.1 · 2022-03-05 · 4.6 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-25 · less than three weeks ago"
+    }
+  ],
+  "capped-dev-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-held-update-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-htmlpurifier-dagger": [
+    {
+      "label": "installed",
+      "value": "v4.17.0 · 2023-11-17 · 2.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "v4.19.1 · 2026-09-15 · less than three weeks ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-15 · less than three weeks ago"
+    }
+  ],
+  "capped-known-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-local-dagger": [
+    {
+      "label": null,
+      "value": "its branch not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "last push not read (not from a Composer repository)"
+    }
+  ],
+  "capped-money-dagger": [
+    {
+      "label": "installed",
+      "value": "v4.7.1 · 2025-06-06 · 1.3 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "v4.9.0 · 2026-05-04 · 0.4 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-07 · 0.2 years ago"
+    }
+  ],
+  "capped-nette-dagger": [
+    {
+      "label": "installed",
+      "value": "v1.3.2 · 2024-10-06 · 2.0 years ago"
+    },
+    {
+      "label": "1.x last",
+      "value": "v1.3.6 · 2026-08-16 · 0.1 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-10 · 0.1 years ago"
+    }
+  ],
+  "capped-new-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-no-php-newest-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.18.0 · 2026-05-01 · 0.4 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "5.0.0 · 2026-06-01 · 0.3 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-no-release-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.16.0 · 2024-11-20 · 1.9 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-platform-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-project-blocked-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-raise-php": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-recapped-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.18.0 · 2026-05-01 · 0.4 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "5.0.0 · 2026-06-01 · 0.3 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-require-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "5.0.0 · 2026-06-01 · 0.3 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-require-higher-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.16.0 · 2024-11-20 · 1.9 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "5.0.0 · 2026-06-01 · 0.3 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-require-php": [
+    {
+      "label": "installed",
+      "value": "v2.2.0 · 2019-09-04 · 7.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.2.0 · 2025-11-27 · 0.8 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "capped-snapshot-alias-dagger": [
+    {
+      "label": "4.x last",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-snapshot-backport-dagger": [
+    {
+      "label": "most recent",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-snapshot-dev-dagger": [
+    {
+      "label": "most recent",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "capped-tag-unverified-dagger": [
+    {
+      "label": "most recent",
+      "value": "4.0.5 · 2026-04-15 · 0.5 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-22 · less than three weeks ago"
+    }
+  ],
+  "capped-update-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "4.17.0 · 2025-11-01 · 0.9 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "commonmark": [
+    {
+      "label": "installed",
+      "value": "2.9.1 · 2026-08-09 · 0.1 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "2.10.3 · 2026-09-21 · less than three weeks ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "either-critical-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.4.47 · 2020-10-24 · 5.9 years ago · the newest on 3.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v4.4.44 · 2022-07-28 · 4.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2022-07-29 · 4.2 years ago"
+    }
+  ],
+  "either-low-dev-dagger": [
+    {
+      "label": "installed",
+      "value": "v1.0.2 · 2023-03-27 · 3.5 years ago · its most recent release"
+    },
+    {
+      "label": "last commit",
+      "value": "2023-03-27 · 3.5 years ago"
+    }
+  ],
+  "fail-on-config-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.8.52 · 2019-11-13 · 6.9 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "most recent",
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
+    }
+  ],
+  "fail-on-default-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.8.52 · 2019-11-13 · 6.9 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "most recent",
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
+    }
+  ],
+  "feeds-drupal-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "fix-newest-held-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.3.14 · 2022-01-26 · 4.7 years ago"
+    },
+    {
+      "label": "5.x last",
+      "value": "v5.4.53 · 2026-05-20 · 0.4 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.8 · 2026-09-26 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "fix-newest-two-fixes-dagger": [
+    {
+      "label": "installed",
+      "value": "2.9.1 · 2026-08-09 · 0.1 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "2.10.3 · 2026-09-21 · less than three weeks ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "flysystem": [
+    {
+      "label": "installed",
+      "value": "1.1.9 · 2021-12-09 · 4.8 years ago"
+    },
+    {
+      "label": "1.x last",
+      "value": "1.1.10 · 2022-10-04 · 4.0 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "3.36.0 · 2026-09-02 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-02 · 0.1 years ago"
+    }
+  ],
+  "gets-below-clears-left-behind-dagger": [
+    {
+      "label": "installed",
+      "value": "v4.4.41 · 2022-04-12 · 4.5 years ago · the newest on 4.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.0 · 2026-05-29 · 0.3 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-08-02 · 0.2 years ago"
+    }
+  ],
+  "gitlab-anon-dagger": [
+    {
+      "label": "installed",
+      "value": "1.17.05.02 · 2017-05-02 · 9.4 years ago · the newest on 1.x"
+    },
+    {
+      "label": "most recent",
+      "value": "2.17.08.29 · 2017-08-29 · 9.1 years ago"
+    },
+    {
+      "label": "last commit",
+      "value": "2021-04-28 · 5.4 years ago"
+    }
+  ],
+  "guzzle": [
+    {
+      "label": "installed",
+      "value": "6.5.8 · 2022-06-20 · 4.3 years ago · the newest on 6.x"
+    },
+    {
+      "label": "most recent",
+      "value": "8.2.0 · 2026-09-06 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-06 · 0.1 years ago"
+    }
+  ],
+  "guzzle-5": [
+    {
+      "label": "installed",
+      "value": "5.3.4 · 2019-10-30 · 6.9 years ago · the newest on 5.x"
+    },
+    {
+      "label": "most recent",
+      "value": "8.2.0 · 2026-09-06 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-06 · 0.1 years ago"
+    }
+  ],
+  "guzzle-mixed": [
+    {
+      "label": "installed",
+      "value": "5.3.4 · 2019-10-30 · 6.9 years ago · the newest on 5.x"
+    },
+    {
+      "label": "most recent",
+      "value": "8.2.0 · 2026-09-06 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-06 · 0.1 years ago"
+    }
+  ],
+  "hoa": [
+    {
+      "label": "installed",
+      "value": "1.17.05.02 · 2017-05-02 · 9.4 years ago · the newest on 1.x"
+    },
+    {
+      "label": "most recent",
+      "value": "2.17.08.29 · 2017-08-29 · 9.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2021-04-28 · 5.4 years ago"
+    }
+  ],
+  "hoa-tokenless-dagger": [
+    {
+      "label": "installed",
+      "value": "1.17.05.02 · 2017-05-02 · 9.4 years ago · the newest on 1.x"
+    },
+    {
+      "label": "most recent",
+      "value": "2.17.08.29 · 2017-08-29 · 9.1 years ago"
+    },
+    {
+      "label": null,
+      "value": "last push not read (no token)"
+    }
+  ],
+  "holder-vuln-dagger": [
+    {
+      "label": "installed",
+      "value": "2.0.1 · 2022-08-15 · 4.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "4.0.0 · 2025-07-23 · 1.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-08-24 · 0.1 years ago"
+    }
+  ],
+  "ignored-marking-archived-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.4.47 · 2020-10-24 · 5.9 years ago · the newest on 3.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v4.4.44 · 2022-07-28 · 4.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2022-07-29 · 4.2 years ago"
+    }
+  ],
+  "ignored-marking-only-dagger": [
+    {
+      "label": "installed",
+      "value": "2.0.2 · 2024-09-05 · 2.1 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2025-12-11 · 0.8 years ago"
+    }
+  ],
+  "ignored-marking-partial-dagger": [
+    {
+      "label": "installed",
+      "value": "2.1.1 · 2021-07-17 · 5.2 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "2.2.0 · 2022-05-20 · 4.4 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2025-10-08 · 1.0 years ago"
+    }
+  ],
+  "ignored-marking-stale-dagger": [
+    {
+      "label": "installed",
+      "value": "2.1.1 · 2021-07-17 · 5.2 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "2.2.0 · 2022-05-20 · 4.4 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2025-10-08 · 1.0 years ago"
+    }
+  ],
+  "ignored-marking-unchecked-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.4.47 · 2020-10-24 · 5.9 years ago · the newest on 3.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v4.4.44 · 2022-07-28 · 4.2 years ago"
+    },
+    {
+      "label": null,
+      "value": "last push not read (rate limited)"
+    }
+  ],
+  "installed-php-halved": [
+    {
+      "label": "installed",
+      "value": "v2.1.7 · 2019-09-04 · 7.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "4.9.1 · 2024-07-11 · 2.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2024-07-17 · 2.2 years ago"
+    }
+  ],
+  "joomla-filter": [
+    {
+      "label": "installed",
+      "value": "2.0.5 · 2024-08-20 · 2.1 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "2.0.6 · 2025-09-30 · 1.0 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "3.0.7 · 2026-09-29 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "local-path-advisory": [
+    {
+      "label": null,
+      "value": "its branch not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "last push not read (not from a Composer repository)"
+    }
+  ],
+  "lock-only-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.4.47 · 2020-10-24 · 5.9 years ago · the newest on 3.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v4.4.44 · 2022-07-28 · 4.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2022-07-29 · 4.2 years ago"
+    }
+  ],
+  "long-range-dagger": [
+    {
+      "label": "installed",
+      "value": "v1.37.0 · release date not known (no date)"
+    },
+    {
+      "label": "1.x last",
+      "value": "v1.43.0 · 2026-09-23 · less than three weeks ago · its most recent release"
+    },
+    {
+      "label": null,
+      "value": "installed not read (no date)"
+    },
+    {
+      "label": null,
+      "value": "last push not read (allowlisted)"
+    }
+  ],
+  "many-dependents": [
+    {
+      "label": "installed",
+      "value": "v1.10.0 · 2022-07-20 · 4.2 years ago · the newest on 1.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.7.1 · 2026-06-05 · 0.3 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-16 · less than three weeks ago"
+    }
+  ],
+  "mc-baseline-refused-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.2.0 · 2024-07-12 · 2.2 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.3.2 · 2026-07-03 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-03 · 0.2 years ago"
+    }
+  ],
+  "mc-blocking-off-both-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.2.0 · 2024-07-12 · 2.2 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.3.2 · 2026-07-02 · 0.3 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-02 · 0.3 years ago"
+    }
+  ],
+  "mc-blocking-off-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.2.0 · 2024-07-12 · 2.2 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.3.2 · 2026-07-02 · 0.3 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-02 · 0.3 years ago"
+    }
+  ],
+  "mc-canonical-package-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-02 · 0.3 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-canonical-vcs-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-03 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-canonical-vcs-unmatched-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-03 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-composite-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.2.0 · 2024-07-12 · 2.2 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.3.2 · 2026-07-17 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-17 · 0.2 years ago"
+    }
+  ],
+  "mc-dev-update-dagger": [
+    {
+      "label": "installed",
+      "value": "2.8.0 · 2025-08-23 · 1.1 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "2.12.3 · 2026-07-02 · 0.3 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-08-24 · 0.1 years ago"
+    }
+  ],
+  "mc-filter-only-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.2.0 · 2024-07-12 · 2.2 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.3.2 · 2026-07-03 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-03 · 0.2 years ago"
+    }
+  ],
+  "mc-gets-below-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-04 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-gets-next-form-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-04 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-inline-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.2.0 · 2024-07-12 · 2.2 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.3.2 · 2026-07-02 · 0.3 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-02 · 0.3 years ago"
+    }
+  ],
+  "mc-joint-dagger": [
+    {
+      "label": "installed",
+      "value": "7.10.0 · 2025-08-23 · 1.1 years ago"
+    },
+    {
+      "label": "7.x last",
+      "value": "7.15.2 · 2026-07-03 · 0.2 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "8.0.1 · 2026-07-04 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-06 · 0.1 years ago"
+    }
+  ],
+  "mc-joint-dev-dagger": [
+    {
+      "label": "installed",
+      "value": "v4.4.47 · 2022-10-03 · 4.0 years ago · the newest on 4.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.5 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-28 · less than three weeks ago"
+    }
+  ],
+  "mc-joint-down-dagger": [
+    {
+      "label": "installed",
+      "value": "7.10.0 · 2025-08-23 · 1.1 years ago"
+    },
+    {
+      "label": "7.x last",
+      "value": "7.15.2 · 2026-07-03 · 0.2 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "8.0.1 · 2026-07-04 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-06 · 0.1 years ago"
+    }
+  ],
+  "mc-joint-retag-dagger": [
+    {
+      "label": "installed",
+      "value": "7.10.0 · 2025-08-23 · 1.1 years ago"
+    },
+    {
+      "label": "7.x last",
+      "value": "7.15.2 · 2026-07-02 · 0.3 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "8.0.1 · 2026-07-03 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-06 · 0.1 years ago"
+    }
+  ],
+  "mc-link-newest-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.2.0 · 2024-07-12 · 2.2 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.3.5 · 2026-07-03 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-03 · 0.2 years ago"
+    }
+  ],
+  "mc-lookup-incomplete-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.2.0 · 2024-07-12 · 2.2 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.3.2 · 2026-07-02 · 0.3 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-02 · 0.3 years ago"
+    }
+  ],
+  "mc-lookup-kept-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-05 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-minimal-changes-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-05 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-newest-above-row-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-03 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-package-hold-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.27 · 2025-10-24 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.40 · 2026-07-04 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-15 · less than three weeks ago"
+    }
+  ],
+  "mc-pass-cap-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.27 · 2025-10-24 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.40 · 2026-07-04 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-15 · less than three weeks ago"
+    }
+  ],
+  "mc-raise-php-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.26 · 2025-09-26 · 1.0 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.40 · 2026-07-01 · 0.3 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "mc-replan-major-dagger": [
+    {
+      "label": "installed",
+      "value": "7.10.0 · 2025-08-23 · 1.1 years ago"
+    },
+    {
+      "label": "7.x last",
+      "value": "7.15.2 · 2026-07-03 · 0.2 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "8.0.1 · 2026-07-04 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-06 · 0.1 years ago"
+    }
+  ],
+  "mc-root-hold-dagger": [
+    {
+      "label": "installed",
+      "value": "7.10.0 · 2025-08-23 · 1.1 years ago"
+    },
+    {
+      "label": "7.x last",
+      "value": "7.15.2 · 2026-07-03 · 0.2 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "8.0.1 · 2026-07-04 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-06 · 0.1 years ago"
+    }
+  ],
+  "mc-root-version-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-02 · 0.3 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-split-both-refused-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-04 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-split-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-04 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-split-maintenance-larger-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-04 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-split-not-checked-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-06 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-update-now-reduced-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-03 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-update-now-refused-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.2.0 · 2024-07-12 · 2.2 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.3.2 · 2026-07-04 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-04 · 0.2 years ago"
+    }
+  ],
+  "mc-with-all-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.29 · 2025-11-08 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-03 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "mc-with-deps-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-03 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "move-check-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.2.0 · 2024-07-12 · 2.2 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.3.2 · 2026-06-08 · 0.3 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-06-08 · 0.3 years ago"
+    }
+  ],
+  "not-found-dagger": [
+    {
+      "label": "installed",
+      "value": "1.17.05.02 · 2017-05-02 · 9.4 years ago · the newest on 1.x"
+    },
+    {
+      "label": "most recent",
+      "value": "2.17.08.29 · 2017-08-29 · 9.1 years ago"
+    },
+    {
+      "label": null,
+      "value": "last push not read (repository not found)"
+    }
+  ],
+  "ok-unchecked": [
+    {
+      "label": "installed",
+      "value": "v8.6.1 · release date not known (dated only by a commit its tags share)"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-10 · 0.2 years ago"
+    },
+    {
+      "label": null,
+      "value": "installed not read (dated only by a commit its tags share)"
+    },
+    {
+      "label": null,
+      "value": "8.x not read (undated releases)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
+  "ok-unchecked-entry-dagger": [
+    {
+      "label": "installed",
+      "value": "v8.6.1 · release date not known (dated only by a commit its tags share)"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-10 · 0.2 years ago"
+    },
+    {
+      "label": null,
+      "value": "installed not read (dated only by a commit its tags share)"
+    },
+    {
+      "label": null,
+      "value": "8.x not read (undated releases)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
+  "op-update": [
+    {
+      "label": "installed",
+      "value": "2.0.1 · 2020-10-05 · 6.0 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "2.0.3 · 2026-04-17 · 0.5 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-04-17 · 0.5 years ago"
+    }
+  ],
+  "pagerfanta": [
+    {
+      "label": "installed",
+      "value": "v3.8.0 · 2023-04-15 · 3.5 years ago · the newest on 3.x"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-08 · 0.1 years ago"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
+  "partial": [
+    {
+      "label": "installed",
+      "value": "v9.52.16 · 2023-10-03 · 3.0 years ago"
+    },
+    {
+      "label": "9.x last",
+      "value": "v9.52.22 · 2026-08-12 · 0.1 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v11.57.0 · 2026-09-29 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "partial-op-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.4.5 · 2017-01-31 · 9.7 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.13.0 · 2022-08-05 · 4.2 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.4.0 · 2026-07-16 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-28 · less than three weeks ago"
+    }
+  ],
+  "php-edge-equal-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.13.2 · 2022-04-16 · 4.5 years ago · the newest on 5.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.6.1 · 2026-07-10 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-10 · 0.2 years ago"
+    }
+  ],
+  "php-edge-lower-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.13.2 · 2022-04-16 · 4.5 years ago · the newest on 5.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.6.1 · 2026-07-10 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-10 · 0.2 years ago"
+    }
+  ],
+  "php-edge-upper-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.13.2 · 2022-04-16 · 4.5 years ago · the newest on 5.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.6.1 · 2026-07-10 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-10 · 0.2 years ago"
+    }
+  ],
+  "php-null": [
+    {
+      "label": "installed",
+      "value": "10.0.1 · 2023-03-22 · 3.5 years ago · the newest on 10.x"
+    },
+    {
+      "label": "most recent",
+      "value": "13.1.0 · 2026-02-28 · 0.6 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-02-28 · 0.6 years ago"
+    }
+  ],
+  "pinned-unread": [
+    {
+      "label": null,
+      "value": "its branch not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "last push not read (not from a Composer repository)"
+    }
+  ],
+  "platform-step-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.13.2 · 2022-04-16 · 4.5 years ago · the newest on 5.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.6.1 · 2026-07-10 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-10 · 0.2 years ago"
+    }
+  ],
+  "platform-step-inside-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.13.2 · 2022-04-16 · 4.5 years ago · the newest on 5.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.6.1 · 2026-07-10 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-10 · 0.2 years ago"
+    }
+  ],
+  "platform-step-no-command-dagger": [
+    {
+      "label": "most recent",
+      "value": "1.6.2 · 2019-01-23 · 7.7 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2024-01-12 · 2.7 years ago"
+    }
+  ],
+  "platform-step-why-not-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.3.14 · 2022-01-26 · 4.7 years ago"
+    },
+    {
+      "label": "5.x last",
+      "value": "v5.4.53 · 2026-05-20 · 0.4 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.8 · 2026-09-26 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "policy-audit-ignore-dagger": [
+    {
+      "label": "installed",
+      "value": "2.0.5 · 2024-08-20 · 2.1 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "2.0.6 · 2025-09-30 · 1.0 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "3.0.7 · 2026-09-29 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "policy-off-dagger": [
+    {
+      "label": "installed",
+      "value": "2.0.5 · 2024-08-20 · 2.1 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "2.0.6 · 2025-09-30 · 1.0 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "3.0.7 · 2026-09-29 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "psr7": [
+    {
+      "label": "installed",
+      "value": "1.9.1 · 2023-04-17 · 3.5 years ago · the newest on 1.x"
+    },
+    {
+      "label": "most recent",
+      "value": "3.1.0 · 2026-08-24 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-08-24 · 0.1 years ago"
+    }
+  ],
+  "replace-graded": [
+    {
+      "label": "installed",
+      "value": "3.4.3 · release date not known (no date)"
+    },
+    {
+      "label": "last push",
+      "value": "2025-05-07 · 1.4 years ago"
+    },
+    {
+      "label": null,
+      "value": "installed not read (no date)"
+    },
+    {
+      "label": null,
+      "value": "3.x not read (undated releases)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
+  "replace-text": [
+    {
+      "label": "installed",
+      "value": "v6.2.10 · 2023-02-24 · 3.6 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2023-02-24 · 3.6 years ago"
+    }
+  ],
+  "require-dev-name-dagger": [
+    {
+      "label": "installed",
+      "value": "v4.4.47 · 2022-10-03 · 4.0 years ago · the newest on 4.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.7 · 2026-09-03 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-26 · less than three weeks ago"
+    }
+  ],
+  "rounded-dev-dagger": [
+    {
+      "label": "installed",
+      "value": "2.0.2 · 2020-05-27 · 6.3 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "3.0.0 · 2021-05-27 · 5.3 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-08-08 · 0.1 years ago"
+    }
+  ],
+  "routing": [
+    {
+      "label": "installed",
+      "value": "v4.4.41 · 2022-04-12 · 4.5 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "v4.4.44 · 2022-07-20 · 4.2 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.8 · 2026-09-28 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "routing-self-dagger": [
+    {
+      "label": "installed",
+      "value": "v4.4.41 · 2022-04-12 · 4.5 years ago"
+    },
+    {
+      "label": "4.x last",
+      "value": "v4.4.44 · 2022-07-20 · 4.2 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.8 · 2026-09-28 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "silent": [
+    {
+      "label": "installed",
+      "value": "v1.0.4 · 2018-08-08 · 8.1 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2020-08-08 · 6.1 years ago"
+    }
+  ],
+  "snapshot-alias": [
+    {
+      "label": "5.x last",
+      "value": "v5.4.45 · 2024-09-25 · 2.0 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.5 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-25 · less than three weeks ago"
+    }
+  ],
+  "snapshot-dead-line-dagger": [
+    {
+      "label": "4.x last",
+      "value": "v4.4.44 · 2022-07-20 · 4.2 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.5 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-25 · less than three weeks ago"
+    }
+  ],
+  "snapshot-undated-line-dagger": [
+    {
+      "label": "most recent",
+      "value": "v8.1.5 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": null,
+      "value": "its branch not read (undated releases)"
+    }
+  ],
+  "stale-accepted-dagger": [
+    {
+      "label": "installed",
+      "value": "1.0.4 · 2021-03-05 · 5.6 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2023-03-04 · 3.6 years ago"
+    }
+  ],
+  "stale-capped": [
+    {
+      "label": "installed",
+      "value": "2.2.4 · 2022-03-05 · 4.6 years ago"
+    },
+    {
+      "label": "2.x last",
+      "value": "2.14.1 · 2022-03-05 · 4.6 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-25 · less than three weeks ago"
+    }
+  ],
+  "stale-only": [
+    {
+      "label": "installed",
+      "value": "2.1.1 · 2023-06-02 · 3.3 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2023-06-02 · 3.3 years ago"
+    }
+  ],
+  "through-own": [
+    {
+      "label": "installed",
+      "value": "2.0.1 · 2018-11-23 · 7.9 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-08-28 · 0.1 years ago"
+    }
+  ],
+  "tie-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "2.x last",
+      "value": "v2.8.52 · 2019-11-13 · 6.9 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": "most recent",
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-23 · less than three weeks ago"
+    }
+  ],
+  "twig-1": [
+    {
+      "label": "installed",
+      "value": "v1.43.1 · 2020-08-05 · 6.2 years ago"
+    },
+    {
+      "label": "1.x last",
+      "value": "v1.44.8 · 2024-09-09 · 2.1 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "twig-dev-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.16.1 · 2024-09-09 · 2.1 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.30.0 · 2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "unknown": [
+    {
+      "label": "installed",
+      "value": "10.6.18 · 2026-09-26 · less than three weeks ago"
+    },
+    {
+      "label": null,
+      "value": "10.x not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "last push not read (not from a Composer repository)"
+    }
+  ],
+  "unknown-origin": [
+    {
+      "label": "installed",
+      "value": "3.7.1 · release date not known (no date)"
+    },
+    {
+      "label": null,
+      "value": "installed not read (no date)"
+    },
+    {
+      "label": null,
+      "value": "3.x not read (origin unknown)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (origin unknown)"
+    },
+    {
+      "label": null,
+      "value": "last push not read (origin unknown)"
+    }
+  ],
+  "unrated-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.4.23 · 2023-04-23 · 3.4 years ago"
+    },
+    {
+      "label": "5.x last",
+      "value": "v5.4.53 · 2026-05-20 · 0.4 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.8 · 2026-09-26 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "unreached": [
+    {
+      "label": "installed",
+      "value": "v2.5.0 · 2022-12-19 · 3.8 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2023-04-23 · 3.4 years ago"
+    }
+  ],
+  "unreached-dev-dagger": [
+    {
+      "label": "installed",
+      "value": "2.0.8 · 2022-12-07 · 3.8 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v3.1.1 · 2026-04-05 · 0.5 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-16 · less than three weeks ago"
+    }
+  ],
+  "unreached-move": [
+    {
+      "label": "installed",
+      "value": "6.4.0 · 2020-11-22 · 5.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "6.8.0 · 2022-09-13 · 4.0 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "7.8.1 · 2026-03-15 · 0.5 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    }
+  ],
+  "wp-config": [
+    {
+      "label": "installed",
+      "value": "1.0.0 · 2018-08-10 · 8.1 years ago · the newest on 1.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v2.0.0-beta.1 · 2026-03-21 · 0.5 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-03-29 · 0.5 years ago"
+    }
+  ],
+  "xmlseclibs": [
+    {
+      "label": "installed",
+      "value": "3.1.1 · 2020-09-05 · 6.1 years ago"
+    },
+    {
+      "label": "3.x last",
+      "value": "3.1.5 · 2026-03-13 · 0.6 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "4.0.0 · 2026-08-22 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-08-22 · 0.1 years ago"
+    }
+  ],
+  "yaml-3.4": [
+    {
+      "label": "installed",
+      "value": "v3.4.47 · 2020-10-24 · 5.9 years ago · the newest on 3.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.8 · 2026-09-26 · less than three weeks ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "zero-n": [
+    {
+      "label": "installed",
+      "value": "0.0.3 · 2023-04-11 · 3.5 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2024-02-13 · 2.6 years ago"
+    }
+  ],
+  "B-accepted-unread-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.6.13 · 2016-01-14 · 10.7 years ago, dated by symfony/symfony"
+    },
+    {
+      "label": null,
+      "value": "2.x not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "last push not read (not from a Composer repository)"
+    }
+  ],
+  "capped-unread-dagger": [
+    {
+      "label": "installed",
+      "value": "4.7.1 · 2022-11-21 · 3.9 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-30 · less than three weeks ago"
+    },
+    {
+      "label": null,
+      "value": "4.x not read (metadata unavailable)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (metadata unavailable)"
+    }
+  ],
+  "finished-offline-dagger": [
+    {
+      "label": "installed",
+      "value": "1.1.2 · 2021-02-03 · 5.7 years ago"
+    },
+    {
+      "label": "1.x last",
+      "value": "1.2.0 · 2021-03-11 · 5.6 years ago · its most recent release"
+    },
+    {
+      "label": null,
+      "value": "last push not read (allowlisted)"
+    }
+  ],
+  "host-accept-expired-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.0.0 · 2025-07-07 · 1.2 years ago · its most recent release"
+    },
+    {
+      "label": null,
+      "value": "last push not read (host not supported)"
+    }
+  ],
+  "host-accepted-dagger": [
+    {
+      "label": "installed",
+      "value": "v2.0.0 · 2025-07-07 · 1.2 years ago · its most recent release"
+    },
+    {
+      "label": null,
+      "value": "last push not read (host not supported)"
+    }
+  ],
+  "host-unsupported": [
+    {
+      "label": "installed",
+      "value": "v2.0.0 · 2025-07-07 · 1.2 years ago · its most recent release"
+    },
+    {
+      "label": null,
+      "value": "last push not read (host not supported)"
+    }
+  ],
+  "no-feed-accepted-dagger": [
+    {
+      "label": "installed",
+      "value": "1.3.7 · 2023-08-30 · 3.1 years ago"
+    },
+    {
+      "label": "1.x last",
+      "value": "1.5.14 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "1.4.15 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "no-feed-dagger": [
+    {
+      "label": "installed",
+      "value": "1.3.7 · 2023-08-30 · 3.1 years ago"
+    },
+    {
+      "label": "1.x last",
+      "value": "1.5.14 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "1.4.15 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "no-tag-dagger": [
+    {
+      "label": "most recent",
+      "value": "4.0.5 · 2026-04-15 · 0.5 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-22 · less than three weeks ago"
+    }
+  ],
+  "ok-ignored-dagger": [
+    {
+      "label": "installed",
+      "value": "1.3.7 · 2023-08-30 · 3.1 years ago"
+    },
+    {
+      "label": "1.x last",
+      "value": "1.5.14 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "1.4.15 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "ok-offline-dagger": [
+    {
+      "label": "installed",
+      "value": "1.3.7 · 2023-08-30 · 3.1 years ago"
+    },
+    {
+      "label": "1.x last",
+      "value": "1.5.14 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "1.4.15 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "psr-log": [
+    {
+      "label": "installed",
+      "value": "1.1.4 · 2021-05-03 · 5.4 years ago · the newest on 1.x"
+    },
+    {
+      "label": "most recent",
+      "value": "3.0.2 · 2024-09-11 · 2.1 years ago"
+    },
+    {
+      "label": null,
+      "value": "last push not read (allowlisted)"
+    }
+  ],
+  "scope-registries-dagger": [
+    {
+      "label": "installed",
+      "value": "0.12.0 · 2026-09-10 · 0.1 years ago"
+    },
+    {
+      "label": null,
+      "value": "0.12.x not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "last push not read (not from a Composer repository)"
+    }
+  ],
+  "unknown-vuln-dagger": [
+    {
+      "label": "installed",
+      "value": "1.3.7 · 2023-08-30 · 3.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    },
+    {
+      "label": null,
+      "value": "1.x not read (metadata unavailable)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (metadata unavailable)"
+    }
+  ],
+  "unparseable-version-dagger": [
+    {
+      "label": "installed",
+      "value": "1.3.7 · 2023-08-30 · 3.1 years ago"
+    },
+    {
+      "label": "1.x last",
+      "value": "1.5.14 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "1.4.15 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
+    }
+  ],
+  "vcs-accepted-dagger": [
+    {
+      "label": null,
+      "value": "its branch not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (not from a Composer repository)"
+    },
+    {
+      "label": null,
+      "value": "last push not read (not from a Composer repository)"
+    }
+  ]
+}

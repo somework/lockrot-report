@@ -4,28 +4,15 @@
 import type { SignalId } from "../model/types";
 import { SIGNAL_IDS } from "../model/types";
 
-/** The five CSS tone tokens a grade pill, chip or bar segment can carry. */
-export type Tone = "crit" | "high" | "med" | "low" | "none";
+/** The CSS tone tokens a grade pill, chip or bar segment can carry: one per band, "none" for a zero
+ *  score, "unk" for no data. */
+export type Tone = "crit" | "high" | "med" | "low" | "none" | "unk";
 
 /** No prototype, so a key a report chose (`constructor`, `__proto__`, `toString`) finds nothing
  *  rather than an inherited member. */
 export function vocabTable<T extends object>(entries: T): Readonly<T> {
   return Object.assign(Object.create(null) as T, entries);
 }
-
-export const SIGNAL_NAMES: Readonly<Record<string, string>> = vocabTable({
-  S1: "marked abandoned",
-  S2: "no recent release",
-  S3: "repository archived",
-  S4: "no push to the repository",
-  S5: "release predates the target PHP",
-  // PD-S6-1: S2 is an age; S6 is a snapshot or a repository with no tag at all.
-  S6: "branch snapshot or never tagged",
-  S7: "pulls in flagged packages",
-  S8: "the installed branch stopped",
-  S9: "security advisories",
-  S10: "a check could not run",
-});
 
 export const SIGNAL_DEFS: Readonly<Record<string, string>> = vocabTable({
   S1: "The Composer repository marks the package abandoned, sometimes naming a replacement.",
@@ -38,6 +25,7 @@ export const SIGNAL_DEFS: Readonly<Record<string, string>> = vocabTable({
   S8: "Time since the last stable release on the installed branch, counted only when a higher branch has released since.",
   S9: "Security advisories affecting the installed version. Never a verdict; raises the priority where no fix is coming.",
   S10: "A check lockrot relies on could not run for this package, so a verdict may be missing a signal; the data says which and why.",
+  S11: "The installed version's php requirement stops below the newest PHP that require.php allows.",
 });
 
 export type Thresholds = readonly (readonly [name: string, years: number])[];

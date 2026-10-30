@@ -10,19 +10,64 @@
   margin: 0;
 }
 
-/* A published range can list every minor line: two lines here and on paper, the whole range in its
-   title and the detail sheet. */
+/* A short range shows whole; a long one folds behind its count, its parts one per line. */
 .advisories2 .ac2-range {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  overflow: hidden;
   overflow-wrap: anywhere;
+}
+.advisories2 .ac2-fold > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: var(--text-xs) var(--mono);
+  color: var(--ink-2);
+  text-decoration: underline dotted;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 3px;
+}
+.advisories2 .ac2-fold > summary::after {
+  margin-left: 0;
+}
+.advisories2 .ac2-fold .ac2-range {
+  display: block;
+  margin-top: 2px;
+}
+.advisories2 .ac2-part {
+  display: block;
+}
+.advisories2 .ac2-count {
+  font: var(--text-xs) var(--mono);
+  color: var(--ink-2);
+}
+.advisories2 .ac2-count + .ac2-range {
+  display: block;
+  margin-top: 2px;
+}
+/* On paper the ranges run on as the field writes them, breaking only after a `|`. */
+.advisories2 .ac2-flow {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.advisories2 .ac2-r {
+  white-space: nowrap;
+}
+.advisories2 .ac-same {
+  font-style: italic;
+}
+.advisories2 .ac-same .ac-id {
+  font-style: normal;
+}
+.advisories2 .ac-counted {
+  display: block;
+  margin-top: 1px;
+  font: 400 var(--text-xs)/1.3 var(--sans);
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: normal;
+  color: var(--muted);
 }
 
 .advisories2 .ac2-note {
   display: block;
-  font-size: 11.5px;
+  font-size: var(--text-xs);
   color: var(--muted);
 }

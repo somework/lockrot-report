@@ -24,14 +24,30 @@ import {
   shareGlyph,
   signalName,
   skippedCheckWord,
+  skipLinkLabel,
   wordFor,
-  zeroVerdictWhen,
 } from "../../../src/domain/pageVocabulary";
 import { readContractJson } from "./recorded";
 
 describe("every table with a recorded twin equals it", () => {
-  test("cause words equal en/reason-words.json", () => {
-    expect(CAUSE_WORDS).toEqual((readContractJson("en", "reason-words.json") as { words: unknown }).words);
+  // A reason that a later lockrot drops leaves the contract at the next repin. List it here until then.
+  const LEFT_THE_CONTRACT: readonly string[] = [];
+  const reasonWords = (): Record<string, string> =>
+    (readContractJson("en", "reason-words.json") as { words: Record<string, string> }).words;
+
+  test("cause words equal en/reason-words.json, without the reasons that left the contract", () => {
+    const recorded = Object.fromEntries(
+      Object.entries(reasonWords()).filter(([id]) => !LEFT_THE_CONTRACT.includes(id)),
+    );
+    expect(CAUSE_WORDS).toEqual(recorded);
+  });
+
+  test("the pinned bundle still records each reason that left the contract; empty the list at the repin", () => {
+    expect(LEFT_THE_CONTRACT.filter((id) => !Object.hasOwn(reasonWords(), id))).toEqual([]);
+  });
+
+  test("reads a reason that left the contract as an unknown reason", () => {
+    expect(causeWord("composer_too_old", "packagist")).toBe("composer too old");
   });
 
   test("activity words equal en/activity-words.json", () => {
@@ -98,11 +114,12 @@ describe("the words of SPEC 7.9.9", () => {
   });
 
   test("the signal names", () => {
-    expect(["S1", "S5", "S10", "S11"].map(signalName)).toEqual([
+    expect(["S1", "S5", "S10", "S11", "S12"].map(signalName)).toEqual([
       "marked abandoned",
       "PHP promise",
       "unchecked",
-      "S11",
+      "PHP cap",
+      "S12",
     ]);
   });
 
@@ -181,12 +198,7 @@ describe("the small tables", () => {
     expect(allowlistReason("something-new")).toBeNull();
   });
 
-  test("a zero verdict, a skipped check and a headline reason", () => {
-    expect(["allowlisted", "no_metadata", "otherwise"].map(zeroVerdictWhen)).toEqual([
-      "allowlisted",
-      "no metadata",
-      "otherwise",
-    ]);
+  test("a skipped check and a headline reason", () => {
     expect(["release_branch", "repository_archived", "x"].map(skippedCheckWord)).toEqual([
       "its release branch",
       "its archived flag",
@@ -216,5 +228,12 @@ describe("the small tables", () => {
         feedAnswerWord({ answer, records: null, reason: null }),
       ),
     ).toEqual(["publishes no advisories", "network error", "unreadable answer", "new"]);
+  });
+});
+
+describe("skipLinkLabel", () => {
+  test("skips to the list on a tab that lists packages, else to the tab's content", () => {
+    expect(skipLinkLabel(true)).toBe("Skip to the list");
+    expect(skipLinkLabel(false)).toBe("Skip to the content");
   });
 });

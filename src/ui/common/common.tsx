@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { safeHref } from "../../domain/links";
+import { ROW_HINT } from "../../domain/pageVocabulary";
 import type { Tone } from "../../domain/vocab";
 import "./common.css";
 
@@ -8,6 +9,15 @@ import "./common.css";
  * a CSP that pins its one stylesheet by hash, and a `style="…"` attribute in markup would be refused
  * (DESIGN.md §1.3). The tone classes are defined once, in styles/base.css.
  */
+
+/** The sentence a list names in `aria-describedby`. `hidden`, so browse mode does not read it twice. */
+export function RowHint({ id }: { id: string }) {
+  return (
+    <p id={id} hidden>
+      {ROW_HINT}
+    </p>
+  );
+}
 
 export function toneClass(tone: Tone): string {
   return `tone-${tone}`;
@@ -69,12 +79,15 @@ export function OutLink({
   children,
   tabIndex,
   title,
+  label,
 }: {
   href: string | null;
   children: ComponentChildren;
   /** -1 inside a list row that is not the list's Tab stop (PD-ROWS-11, `ui/rowCursor.ts`). */
   tabIndex?: -1 | undefined;
   title?: string;
+  /** The accessible name, when the visible text does not say where the link goes. */
+  label?: string;
 }) {
   const safe = safeHref(href);
   if (safe === null) return <span className="out">{children}</span>;
@@ -87,6 +100,7 @@ export function OutLink({
       rel="noopener noreferrer"
       tabIndex={tabIndex}
       title={title}
+      aria-label={label}
     >
       {children}
     </a>

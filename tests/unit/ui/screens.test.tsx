@@ -32,7 +32,8 @@ describe("Report1Screen (PD-SCHEMA-1)", () => {
 
     const rerun = screen.getByRole("region", { name: "Rerun lockrot 0.14" });
     expect(within(rerun).getByText("composer require --dev somework/lockrot").tagName).toBe("CODE");
-    expect(within(rerun).getByText("composer lockrot").tagName).toBe("CODE");
+    expect(within(rerun).getByText("composer lockrot --format=html > report.html").tagName).toBe("CODE");
+    expect(rerun.querySelector("pre")?.textContent).toContain("--format=html");
     const older = screen.getByRole("region", { name: "Open it with lockrot-report 0.13" });
     expect(within(older).getByRole("link").getAttribute("href")).toBe(
       "https://github.com/somework/lockrot-report/releases/tag/v0.13.0",

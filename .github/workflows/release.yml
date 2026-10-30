@@ -3,6 +3,12 @@ name: Release
 # A tag vX.Y.Z builds dist/, attests every file, and attaches them to a GitHub release. lockrot
 # vendors report.html and manifest.json from that release after `gh attestation verify`. A tag with
 # a pre-release suffix (vX.Y.Z-rc.N) publishes a pre-release that is never the Latest release.
+# A final tag outside main, a pre-release outside main and the release branches, a lockrot pin
+# outside lockrot's main and tags or with no green lockrot run, or a red gate of ci.yml stops the
+# release before anything is attested.
+# The gates and build jobs run the repository's code with a read-only token. The build job runs no
+# install script, and the publish job checks its files against the gates job's own build. Only the
+# publish job, which runs none of that code, holds the tokens that attest and publish.
 
 on:
   push:
@@ -12,33 +18,133 @@ permissions:
   contents: read
 
 jobs:
-  release:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      # Full history: the branch check reads every remote branch.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # A tag on another commit would publish an attested page that no reviewed branch holds, and a
+      # final release that main does not hold is one that lockrot's release can vendor unseen.
+      - name: a final tag is on main, and a pre-release on main or a release branch
+        run: |
+          case "$GITHUB_REF_NAME" in
+            *-*) refs='refs/remotes/origin/main refs/remotes/origin/release/' where='main or a release branch' ;;
+            *) refs='refs/remotes/origin/main' where='main' ;;
+          esac
+          for branch in $(git for-each-ref --format='%(refname)' $refs); do
+            git merge-base --is-ancestor "$GITHUB_SHA" "$branch" && exit 0
+          done
+          echo "::error::$GITHUB_REF_NAME is not on $where"
+          exit 1
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # A pin that only a lockrot branch holds can vanish, and the attested page could then no
+      # longer be rebuilt from its pin.
+      - name: the lockrot pin is on lockrot's main or a lockrot tag
+        run: node scripts/contract.mjs reachable
+      # A final release must not publish against a lockrot commit whose own gates did not pass: a full
+      # check, or CI on a push to main. A pre-release is exempt. Its pin is the lockrot commit that
+      # changed the contract bundle, and lockrot's renderer test fails there until lockrot vendors
+      # this very pre-release. lockrot's vendoring pull request and its full check gate the pair.
+      - name: lockrot's gates passed on the pinned commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          case "$GITHUB_REF_NAME" in *-*) echo "$GITHUB_REF_NAME is a pre-release: lockrot's vendoring gates it"; exit 0 ;; esac
+          pin=$(node -p 'require("./contract/lockrot.json").commit')
+          gh run list --repo somework/lockrot --commit "$pin" --event push --status success \
+            --json workflowName,headBranch \
+            | jq -e 'any(.[]; (.workflowName == "full-check" and (.headBranch | test("^release/full-check-[0-9a-f]+$"))) or (.workflowName == "CI" and .headBranch == "main"))' >/dev/null \
+            || { echo "::error::lockrot $pin has no successful full check of the whole tree, and no successful CI run on main"; exit 1; }
+      - run: npm ci
+      - name: the tag names the version package.json builds
+        run: |
+          test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
+      # The same gates as ci.yml, in its order, all three browsers in one job.
+      - run: npm run contract:fetch
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run typecheck:contract
+      - run: npm test
+      - run: npm run build
+      - run: npx vitest run tests/build
+      - name: the build is reproducible
+        run: |
+          cp -r dist "$RUNNER_TEMP/first"
+          npm run build
+          diff -r "$RUNNER_TEMP/first" dist
+      - run: npx playwright install --with-deps chromium firefox webkit
+      # Pinned so the layout budgets measure the same fonts as ci.yml.
+      - run: sudo apt-get install -y --no-install-recommends fonts-dejavu-core
+      - run: node scripts/pages.mjs
+      - run: npx playwright test
+        env:
+          CI: "true"
+      - name: the digests of the tested build
+        run: |
+          mkdir digests
+          (cd dist && sha256sum report.html lockrot-report.js lockrot-report.css manifest.json) > digests/sha256.txt
+      - uses: actions/upload-artifact@v7
+        with:
+          name: digests
+          path: digests/
+          if-no-files-found: error
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - name: the release files and notes
+        run: |
+          mkdir release
+          cp dist/report.html dist/lockrot-report.js dist/lockrot-report.css dist/manifest.json release/
+          node scripts/release-notes.mjs "$GITHUB_REF_NAME" > release/notes.md
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release
+          path: release/
+          if-no-files-found: error
+
+  publish:
+    needs: [gates, build]
     runs-on: ubuntu-latest
     permissions:
       contents: write # create the release
       id-token: write # build provenance attestation
       attestations: write
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/download-artifact@v8
         with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - name: the tag names the version package.json builds
-        run: |
-          test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
-      - run: npm run build
-      - run: npx vitest run tests/build
-      - name: release notes
-        run: node scripts/release-notes.mjs "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
+          name: release
+          path: release/
+      - uses: actions/download-artifact@v8
+        with:
+          name: digests
+          path: digests/
+      # The build is reproducible, so a file that differs from the tested build was changed.
+      - name: the files are the bytes the gates job tested
+        run: cd release && sha256sum --check ../digests/sha256.txt
       - uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
-            dist/report.html
-            dist/lockrot-report.js
-            dist/lockrot-report.css
-            dist/manifest.json
+            release/report.html
+            release/lockrot-report.js
+            release/lockrot-report.css
+            release/manifest.json
       - name: publish
         env:
           GH_TOKEN: ${{ github.token }}
@@ -48,6 +154,7 @@ jobs:
             *-*) channel=(--prerelease --latest=false) ;;
           esac
           gh release create "$GITHUB_REF_NAME" \
-            dist/report.html dist/lockrot-report.js dist/lockrot-report.css dist/manifest.json \
-            --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md" \
+            release/report.html release/lockrot-report.js release/lockrot-report.css \
+            release/manifest.json \
+            --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file release/notes.md \
             "${channel[@]}"

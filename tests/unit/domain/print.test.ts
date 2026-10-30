@@ -10,13 +10,13 @@ const empty: Report2 = { ...nothing, packages_checked: 0 };
 describe("printLede2", () => {
   it("counts the graded findings, never the report-1 verdicts", () => {
     expect(printLede2("findings", composite)).toBe(
-      "7 flagged packages, by grade, each with every flag that fired.",
+      "9 flagged packages, by grade, each with every flag that fired.",
     );
     expect(printHasBody2("findings", composite)).toBe(true);
   });
 
   it("says nothing is flagged, or that the lock is empty", () => {
-    expect(printLede2("findings", nothing)).toBe("Nothing flagged in 7 packages.");
+    expect(printLede2("findings", nothing)).toBe("Nothing flagged in 9 packages.");
     expect(printLede2("findings", empty)).toBe("No packages in this lock.");
     expect(printLede2("summary", empty)).toBe("No packages in this lock.");
     expect(printHasBody2("summary", empty)).toBe(false);

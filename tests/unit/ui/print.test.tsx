@@ -14,12 +14,12 @@ function load(caseName: string, edit: (embed: Report2Embed) => void = () => unde
   return result.model;
 }
 
-/** 7 graded findings in three grades (3 critical, 2 high, 2 low), no baseline, no project name. */
+/** The composite case: graded findings in three grades, no baseline, no project name. */
 const composite = () => load("composite");
 
 beforeEach(() => {
   window.matchMedia = ((query: string) => ({
-    matches: query.includes("1181"),
+    matches: /1000px|1024px/.test(query),
     media: query,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
@@ -83,12 +83,12 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     const doc = printDoc(container);
     expect(sectionTitles(doc).at(-1)).toBe("6All packages");
     expect(doc.querySelector(".pd-packages .pd-lede")?.textContent).toContain(
-      "Printed because the page was open on All packages: 7 packages",
+      "Printed because the page was open on All packages: 9 packages",
     );
   });
 
   it("prints every finding whatever the screen filters, and says the filters do not apply", () => {
-    // Arrange: a query that leaves one of the seven rows on screen.
+    // Arrange: a query that leaves one of the nine rows on screen.
     window.location.hash = "#q=tubalmartin";
     const { container } = render(<App model={composite()} />);
     expect(container.querySelectorAll("main .shell-main [data-pkg]")).toHaveLength(1);
@@ -104,18 +104,21 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     expect(rows).toEqual([
       "twig/twig",
       "symfony/monolog-bridge",
+      "guzzlehttp/guzzle",
       "symfony/debug",
       "friendsofsymfony/oauth-server-bundle",
       "tubalmartin/cssmin",
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
+      "friendsofsymfony/oauth2-php",
     ]);
     expect(doc.querySelector(".pd-intro-note")?.textContent).toContain("do not apply");
   });
 
-  it("repeats the score scale over each printed grade group, and draws it nowhere on screen", () => {
+  it("repeats the column head over each printed grade group, and once on screen", () => {
+    window.location.hash = "#view=findings";
     const { container } = render(<App model={composite()} />);
-    expect(container.querySelector(".f2-print-scale")).toBeNull();
+    expect(container.querySelectorAll(".f2-head")).toHaveLength(1);
 
     window.dispatchEvent(new Event("beforeprint"));
 
@@ -126,7 +129,28 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
       "high",
       "low",
     ]);
-    for (const group of groups) expect(group.querySelector(".f2-print-scale")).not.toBeNull();
+    for (const group of groups) expect(group.querySelector(":scope > .f2-head")).not.toBeNull();
+    expect(doc.querySelectorAll(".pd-findings .f2-ledger > .f2-head")).toHaveLength(0);
+  });
+
+  it("prints every range of a folded affected_versions, with no disclosure", () => {
+    window.location.hash = "#view=advisories";
+    const { container } = render(<App model={composite()} />);
+
+    window.dispatchEvent(new Event("beforeprint"));
+
+    const doc = printDoc(container);
+    expect(doc.querySelectorAll("details.ac2-fold")).toHaveLength(0);
+    const counts = [...doc.querySelectorAll(".ac2-count")];
+    expect(counts.length).toBeGreaterThan(0);
+    // One line that runs on as the field writes it, and wraps only after a range's own "|".
+    for (const count of counts) {
+      const range = count.nextElementSibling;
+      expect(range?.classList.contains("ac2-flow")).toBe(true);
+      expect(range?.querySelectorAll("wbr").length).toBeGreaterThan(1);
+      expect(range?.querySelectorAll(".ac2-r").length).toBe(range?.querySelectorAll("wbr").length);
+      expect(range?.textContent).toMatch(/\|/);
+    }
   });
 
   it("prints All packages' column heads as words, not sort buttons", () => {
@@ -147,7 +171,6 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
       "Flags",
       "Reached",
       "Signals",
-      "Data as of",
     ]);
     expect(doc.querySelectorAll(".pd-packages thead button")).toHaveLength(0);
   });
@@ -179,7 +202,7 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     expect(doc.querySelectorAll(".ledger-advisories")).toHaveLength(1);
     expect(doc.querySelector(".al-lead")).toBeNull();
     expect(doc.querySelector('[data-surface="advisories"] .al-answer')?.textContent).toBe(
-      "20 advisories on 4 packages, by severity: 1 critical, 4 high, 4 medium, 2 unrated, 9 low.",
+      "29 advisories on 5 packages, by severity: 1 critical, 5 high, 12 medium, 2 unrated, 9 low.",
     );
     expect(doc.querySelector('[data-surface="radius"]')?.textContent).not.toContain(
       "named by no line of composer.json",
@@ -195,19 +218,19 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     const doc = printDoc(container);
     expect(doc.querySelectorAll('[data-surface="overview"]')).toHaveLength(1);
     expect(doc.querySelector(".pd-summary .ov-grade")?.textContent).toBe(
-      "Project grade: critical · 3 critical findings · 5 of 7 packages high or worse",
+      "Project grade: critical · 4 critical findings · 6 of 9 packages high or worse",
     );
     expect(doc.querySelector(".pd-summary .ov-figure")?.textContent).toBe(
-      "7 of 7 packages flagged · 0 ok · 0 allowlisted",
+      "9 of 9 packages flagged · 0 ok · 0 finished",
     );
     expect(doc.querySelector(".pd-summary .wm-load")?.textContent).toBe(
-      "144 points on 7 flagged packages · 140 (97 %) from high or worse · score model 1",
+      "180 points on 9 flagged packages · 172 (95 %) from high or worse · score model 1",
     );
     expect(
-      [...doc.querySelectorAll(".pd-summary .wm-list .wm-text")].map((text) => text.textContent),
-    ).toHaveLength(7);
-    expect(doc.querySelector(".pd-summary .wm-list .wm-text")?.textContent).toBe(
-      "36 = left-behind 16 + old-promise 4 [¼ of 16] + vulnerable 16 [high advisory]",
+      [...doc.querySelectorAll(".pd-summary .wm-list .wm-terms")].map((text) => text.textContent),
+    ).toHaveLength(9);
+    expect(doc.querySelector(".pd-summary .wm-list .wm-terms")?.textContent).toBe(
+      "left-behind 16 · old-promise 4 · vulnerable 16",
     );
   });
 

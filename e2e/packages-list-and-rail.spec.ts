@@ -199,8 +199,8 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
     const grade = page.getByRole("group", { name: "Filters" }).getByRole("group", { name: "Grade" });
     await grade.getByRole("button", { name: /^critical \d+$/ }).click();
     await expect(page).toHaveURL(/[#&]verdict=critical(&|$)/);
-    // composite: `flags.vulnerable.by_verdict` holds 2 critical packages.
-    expect(await report.listedPackageCount()).toBe(2);
+    // composite: `flags.vulnerable.by_verdict` holds 3 critical packages.
+    expect(await report.listedPackageCount()).toBe(3);
 
     await report.gotoReport2WithHash("composite", "view=radius&prio=high");
     await expect(grade.getByRole("button", { name: /^high \d+$/ })).toHaveAttribute("aria-pressed", "true");

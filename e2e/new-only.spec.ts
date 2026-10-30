@@ -157,7 +157,7 @@ test.describe("no horizontal overflow inside the open detail sheet at 320px (reg
     const report = await createReportPage(page);
     await report.openPackage("sensio/framework-extra-bundle");
 
-    const detail = page.getByRole("complementary", { name: "sensio/framework-extra-bundle" });
+    const detail = page.getByRole("dialog", { name: "sensio/framework-extra-bundle" });
     for (const title of ["The lock entry", "Provenance"]) {
       await detail.locator("summary", { hasText: title }).click();
     }

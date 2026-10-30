@@ -2,14 +2,20 @@
 
 import type { Report2, Run } from "../model/report";
 import { day, plural, pluralNoun } from "./format";
-import { causeWord, feedAnswerWord, wordFor } from "./pageVocabulary";
+import { joinAnd, listParts } from "./joinWords";
+import { causeWord, checkReasonRich, feedAnswerWord, wordFor } from "./pageVocabulary";
+import type { Piece, Rich } from "./rich";
 
 export const RUN_WORDS = {
   tab: "Run data",
+  facts: "This run",
+  baseline: "Baseline",
+  stale: "Entries for packages that left the lock",
   scoreLink: "How the score works ›",
   rules: (n: number): string => `The ${n} rules`,
   fixes: "Fixes, easiest first",
   lookup: "Advisory lookup",
+  phpWindow: "PHP window",
   notes: "What this run could not see",
   acceptedUnchecked: "Accepted unchecked checks",
   gate: "Gate",
@@ -40,8 +46,9 @@ export function advisoryLookup({ advisory_lookup: lookup }: Run): AdvisoryLookup
       records: repository.records,
       reason: repository.reason,
     });
+    const outcome = repository.outcome === "answered" ? `answered · ${answer}` : answer;
     const parts = [
-      `${repository.registry ?? repository.composer_repository}: ${answer}`,
+      `${repository.registry ?? repository.composer_repository}: ${outcome}`,
       ...(repository.packages_with_records === null
         ? []
         : [`${plural(repository.packages_with_records, "package", "packages")} with records`]),
@@ -61,6 +68,74 @@ export function advisoryLookup({ advisory_lookup: lookup }: Run): AdvisoryLookup
   };
 }
 
+const MODE_WORDS = {
+  check: "check",
+  generate_baseline: "generate baseline",
+};
+
+/** `activity_cache_age_hours` as lockrot rounded it; null when no answer came from the cache. */
+function activityCache({
+  activity_cache_age_hours: hours,
+  activity_cache_oldest_at: oldest,
+}: Report2): string {
+  if (hours === null || oldest === null) return "no cached answer read";
+  return `from lockrot's cache, up to ${String(hours)} h old (oldest ${day(oldest)})`;
+}
+
+export function runFacts(report: Report2): { key: string; value: string | Rich }[] {
+  const { run } = report;
+  const moveCheck = moveCheckFact(report);
+  return [
+    { key: "mode", value: wordFor(MODE_WORDS, run.mode) },
+    { key: "lock file", value: run.lock_file ?? "—" },
+    { key: "require-dev", value: run.include_dev ? "checked" : "not checked" },
+    { key: "repository activity", value: activityCache(report) },
+    ...(moveCheck === null ? [] : [{ key: "moves", value: moveCheck }]),
+  ];
+}
+
+const LOCK_LOAD_WORDS: Readonly<Record<string, string>> = {
+  unloaded_name: "a package the lock needs could not be loaded",
+  offline: "a package the lock needs is not in Composer's cache",
+};
+
+/** `run.move_check` in the words of lockrot's text footer (`RunFooter::moveCheck`), or null when the
+ *  run checked no move. */
+export function moveCheckFact({ run }: Report2): Rich | null {
+  const check = run.move_check;
+  if (check === null) return null;
+  switch (check.baseline) {
+    case "resolves": {
+      const lock = `checked with the solver of Composer${check.composer === null ? "" : ` ${check.composer}`} against the lock`;
+      const names = listParts(check.blocking_disabled_by.map((name): Piece => ({ code: name })));
+      // The patterns the solve ignores (§5.6).
+      const ignored = check.ignored_platform;
+      const unchecked = ignored.length === 0 ? [] : [` · ${joinAnd(ignored)} requirements not checked`];
+      return names.length === 0
+        ? [lock, ...unchecked]
+        : [`${lock}, with advisory blocking turned off by `, ...names, ...unchecked];
+    }
+    case "refused":
+      return ["not checked, because Composer's solver refuses the lock itself"];
+    default: {
+      // The baseline solve has no move, so a load reason names the lock (ruling R2-4).
+      const lockWords = check.reason === null ? undefined : LOCK_LOAD_WORDS[check.reason];
+      return lockWords === undefined
+        ? ["not checked (", ...checkReasonRich(check.reason ?? ""), ")"]
+        : [`not checked (${lockWords})`];
+    }
+  }
+}
+
+export function baselineFacts({ baseline }: Report2): { head: string; stale: readonly string[] } | null {
+  if (baseline === null) return null;
+  const { path, known, worsened, stale } = baseline;
+  return {
+    head: `${path}: ${known} known · ${baseline.new} new · ${worsened} worsened · ${stale.length} stale`,
+    stale,
+  };
+}
+
 export interface NoteRow {
   text: string;
   docs: string | null;
@@ -75,6 +150,9 @@ export function noteRows({ note_details: notes }: Report2): NoteRow[] {
     return { text: `${note.text}${asked}`, docs: note.docs_url };
   });
 }
+
+/** The Run tab's note lines (golden `run_notes`). */
+export const runNotes = (report: Report2): string[] => noteRows(report).map(({ text }) => text);
 
 export function acceptedUnchecked(report: Report2): { head: string; rows: string[] } | null {
   const count = report.packages_unchecked_accepted;

@@ -172,7 +172,7 @@ describe("nextStepWords", () => {
 
   it("words each kind of the composite", () => {
     expect(nextStepWords(finding(composite, "twig/twig"), run)).toEqual({
-      text: "php floor raise",
+      text: "raise require.php to >=8.1",
       title: null,
       href: null,
       held: true,
@@ -206,7 +206,7 @@ describe("nextStepWords", () => {
 
   it("words a blocked move that is not a snapshot's by its branch and the php it needs", () => {
     expect(words("A-blocked-dagger").text).toMatch(
-      /^\S+ (needs php \S+; target \S+ runs no fixing release|does not run on \S+)$/,
+      /^\S+ (needs php \S+; target \S+ runs no (fixing|newer) release|does not run on \S+)$/,
     );
   });
 
@@ -304,18 +304,18 @@ describe("verdictTone", () => {
     );
   });
 
-  it("gives every score-0 verdict of the model no tone", () => {
+  it("tones a score-0 verdict none, and the unknown verdict unk, by name", () => {
     expect(model.zero_verdicts.map(({ verdict }) => verdictTone(model, verdict))).toEqual(
-      model.zero_verdicts.map(() => "none"),
+      model.zero_verdicts.map(({ verdict }) => (verdict === "unknown" ? "unk" : "none")),
     );
   });
 
-  it("falls back to low for an id the model does not list", () => {
-    expect(verdictTone(model, "dire")).toBe("low");
-    expect(verdictTone(model, "constructor")).toBe("low");
+  it("falls back to unk, never a band's tone, for an id the model does not list", () => {
+    expect(verdictTone(model, "dire")).toBe("unk");
+    expect(verdictTone(model, "constructor")).toBe("unk");
     expect(
       verdictTone({ ...model, bands: model.bands.filter(({ verdict }) => verdict !== "high") }, "high"),
-    ).toBe("low");
+    ).toBe("unk");
   });
 });
 

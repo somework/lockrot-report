@@ -37,6 +37,7 @@ export function TabLink({
           filters: next.filters,
           q: next.q,
           ...(next.pkg === null ? {} : { pkg: next.pkg }),
+          ...(target.section === undefined ? {} : { section: target.section }),
         });
       }}
     >

@@ -1,7 +1,10 @@
-import type { ComponentChildren } from "preact";
-import { useLayoutEffect, useRef } from "preact/hooks";
+import type { ComponentChildren, RefObject } from "preact";
+import { useLayoutEffect } from "preact/hooks";
 import { day } from "../domain/format";
 import { useReport } from "./context";
+import { useMeasuredHeight } from "./useMeasuredHeight";
+
+export const HTML_COMMAND = "composer lockrot --format=html > report.html";
 
 /** A footer link: always to a fixed lockrot address, never to anything from the document. */
 function Lnk({ href, children }: { href: string; children: ComponentChildren }) {
@@ -12,45 +15,54 @@ function Lnk({ href, children }: { href: string; children: ComponentChildren }) 
   );
 }
 
-/**
- * Publishes the footer's rendered height as `--footer-h`, the same discipline `Header.tsx#useHeaderHeight`
- * keeps for `--topbar-h`. `.shell`'s sticky rail and detail column (`ui/app.css`) need it: the footer
- * renders straight after `.shell` with nothing sized to hold it away, so the page's true maximum scroll
- * always leaves exactly `--footer-h` of the footer standing between a stuck panel's lowest reachable
- * point and the viewport's own bottom edge, whatever `.shell`'s own row height happens to be (DESIGN.md
- * §8, PD-DETAIL-5). Set through the CSSOM, which the page's CSP allows (DESIGN.md §1.3).
- */
-function useFooterHeight() {
-  const ref = useRef<HTMLElement>(null);
+/** A sticky column the footer shortens; a control focused in it can end up under the footer. */
+const STICKY_COLUMNS = ".shell-rail, .shell-detail";
 
+/** An engine without `:focus-visible` reads every focus as the keyboard's. */
+function focusVisible(element: Element): boolean {
+  try {
+    return element.matches(":focus-visible");
+  } catch {
+    return true;
+  }
+}
+
+/** The control Tab focused in a sticky column, while the column still shows it whole; else null.
+ *  A clicked control, or one the reader scrolled away from, is left where it is. */
+function shownFocus(): HTMLElement | null {
+  const active = document.activeElement;
+  if (!(active instanceof HTMLElement)) return null;
+  const column = active.closest(STICKY_COLUMNS);
+  if (column === null || !focusVisible(active)) return null;
+  const box = active.getBoundingClientRect();
+  const room = column.getBoundingClientRect();
+  return box.top >= room.top && box.bottom <= room.bottom ? active : null;
+}
+
+/** The sticky columns give up `--footer-h` only while the footer is on screen: sized against it all
+ *  the time, a short viewport left them a sliver of the page (DESIGN.md §8, PD-DETAIL-5). */
+function useFooterInView(ref: RefObject<HTMLElement>): void {
   useLayoutEffect(() => {
     const node = ref.current;
-    if (node === null || typeof ResizeObserver === "undefined") return undefined;
+    if (node === null || typeof IntersectionObserver === "undefined") return undefined;
     const root = document.documentElement;
-    const observer = new ResizeObserver(() => {
-      root.style.setProperty("--footer-h", `${Math.ceil(node.getBoundingClientRect().height)}px`);
+    const visible = new IntersectionObserver(([entry]) => {
+      const inView = entry?.isIntersecting === true;
+      const shown = inView ? shownFocus() : null;
+      root.classList.toggle("footer-in-view", inView);
+      // The columns shrink with the class: the control they showed is scrolled back into sight (WCAG 2.4.11).
+      if (shown !== null)
+        requestAnimationFrame(() => {
+          if (typeof shown.scrollIntoView === "function") shown.scrollIntoView({ block: "nearest" });
+        });
     });
-    observer.observe(node);
-    // The sticky columns give up the footer's height only while the footer is on screen: sized
-    // against it all the time, a short viewport (a laptop at 125% zoom, devtools open) left them a
-    // sliver for the whole page to protect the last screenful of it (DESIGN.md §8, PD-DETAIL-5).
-    const visible =
-      typeof IntersectionObserver === "undefined"
-        ? null
-        : new IntersectionObserver(([entry]) => {
-            root.classList.toggle("footer-in-view", entry?.isIntersecting === true);
-          });
-    visible?.observe(node);
+    visible.observe(node);
 
     return () => {
-      observer.disconnect();
-      visible?.disconnect();
-      root.style.removeProperty("--footer-h");
+      visible.disconnect();
       root.classList.remove("footer-in-view");
     };
-  }, []);
-
-  return ref;
+  }, [ref]);
 }
 
 /**
@@ -61,7 +73,8 @@ function useFooterHeight() {
 export function Footer({ inert = false }: { inert?: boolean }) {
   const { model } = useReport();
   const { lockrot, generated_at } = model.report;
-  const ref = useFooterHeight();
+  const ref = useMeasuredHeight<HTMLElement>("--footer-h");
+  useFooterInView(ref);
 
   return (
     <footer className="colophon" ref={ref} inert={inert}>
@@ -72,9 +85,8 @@ export function Footer({ inert = false }: { inert?: boolean }) {
       </p>
       <p className="cta">
         Run it on your own <span className="mono">composer.lock</span>:{" "}
-        <code>composer require --dev somework/lockrot</code>, then{" "}
-        <code>composer lockrot --format=html &gt; report.html</code>. No Composer plugin wanted? The{" "}
-        <Lnk href="https://lockrot.dev/lockrot.phar">PHAR</Lnk> needs nothing installed.
+        <code>composer require --dev somework/lockrot</code>, then <code>{HTML_COMMAND}</code>. No Composer
+        plugin wanted? The <Lnk href="https://lockrot.dev/lockrot.phar">PHAR</Lnk> needs nothing installed.
       </p>
       <p>
         <Lnk href="https://github.com/somework/lockrot">Source</Lnk> &middot;{" "}

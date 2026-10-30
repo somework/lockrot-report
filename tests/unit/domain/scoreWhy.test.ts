@@ -76,4 +76,31 @@ describe("whyLines", () => {
       "maintenance (left-behind) alone grades it high, the advisory alone grades it high: together critical",
     );
   });
+
+  it("names the facts a partial update could not check, after what it clears", () => {
+    const { finding, report } = recorded("partial");
+    if (finding.security.status !== "vulnerable" || finding.security.partial === null)
+      throw new Error("partial has a partial update");
+    finding.security.partial.if_applied = { at_most: true, total: 12, verdict: "medium", assumes: [] };
+    finding.security.partial.unverified = [
+      { kind: "flag", id: "old-promise", reason: "undated" },
+      { kind: "flag", id: "capped", reason: "no_release_data" },
+    ];
+
+    expect(whyLines(finding, report)).toContain(
+      "composer update alone: at most 12, medium (it clears 1 of its 6 advisories; not checked: old-promise, capped)",
+    );
+  });
+
+  it("adds no not-checked clause when a partial update checked every fact", () => {
+    const { finding, report } = recorded("partial");
+    if (finding.security.status !== "vulnerable" || finding.security.partial === null)
+      throw new Error("partial has a partial update");
+    finding.security.partial.if_applied = { at_most: false, total: 12, verdict: "medium", assumes: [] };
+    finding.security.partial.unverified = [];
+
+    expect(whyLines(finding, report)).toContain(
+      "composer update alone: 12, medium (it clears 1 of its 6 advisories)",
+    );
+  });
 });

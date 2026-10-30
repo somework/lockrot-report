@@ -1,5 +1,15 @@
+import { RichText } from "./RichText";
+import type { Rich } from "../../domain/rich";
 import { useId } from "preact/hooks";
-import { acceptedUnchecked, advisoryLookup, noteRows, RUN_WORDS, thresholdRows } from "../../domain/runTab";
+import {
+  acceptedUnchecked,
+  advisoryLookup,
+  baselineFacts,
+  noteRows,
+  RUN_WORDS,
+  runFacts,
+  thresholdRows,
+} from "../../domain/runTab";
 import {
   bandRuler,
   liveExample,
@@ -8,9 +18,12 @@ import {
   type ScoreTable,
 } from "../../domain/scorePanel";
 import { verdictTone } from "../../domain/findingRow";
+import { windowFacts } from "../../domain/phpWindow";
+import { PHP_WINDOW_SECTION } from "../../domain/runState";
 import type { Report2 } from "../../model/report";
 import { OutLink, toneClass } from "../common/common";
 import { useReport } from "../context";
+import { usePrinted } from "../print/printContext";
 import "../views/views.css";
 import { ScoreBar } from "./ScoreBar";
 import { SCORE_SECTION_ID } from "./ScoreModelLink";
@@ -109,6 +122,7 @@ function ScoreWorks({ report, opened }: { report: Report2; opened: string | null
   const { run } = report;
   const parts = scorePanelParts(run);
   const tables = scoreTables(run.score_model);
+  const printed = usePrinted();
   return (
     <section className="sect run2-score" id={SCORE_SECTION_ID} tabIndex={-1} aria-label={parts.title}>
       <h3>{parts.title}</h3>
@@ -119,7 +133,7 @@ function ScoreWorks({ report, opened }: { report: Report2; opened: string | null
       <Table table={tables.weights} model={run.score_model} />
       <Table table={tables.advisories} model={run.score_model} />
       <p className="run2-caption">{parts.fixes}</p>
-      <details className="run2-rules">
+      <details className="run2-rules" open={printed ? true : undefined}>
         <summary>{RUN_WORDS.rules(parts.rules.length)}</summary>
         <ol className="run2-rule-list">
           {parts.rules.map((rule) => (
@@ -194,20 +208,51 @@ function AcceptedUnchecked({ report }: { report: Report2 }) {
   );
 }
 
-function Thresholds({ run }: { run: Report2["run"] }) {
-  const rows = thresholdRows(run);
+function KeyValues({
+  head,
+  rows,
+  className = "",
+  id,
+}: {
+  head: string;
+  rows: readonly { key: string; value: string | Rich; note?: string }[];
+  className?: string;
+  id?: string;
+}) {
   if (rows.length === 0) return null;
   return (
-    <section className="sect">
-      <h3>{RUN_WORDS.thresholds}</h3>
-      <dl className="kv">
-        {rows.map(({ key, value }) => (
+    <section className="sect" id={id}>
+      <h3 tabIndex={id === undefined ? undefined : -1}>{head}</h3>
+      <dl className={`kv ${className}`.trim()}>
+        {rows.map(({ key, value, note }) => (
           <div key={key} className="run2-kv-row">
             <dt>{key}</dt>
-            <dd>{value}</dd>
+            <dd>{typeof value === "string" ? value : <RichText rich={value} />}</dd>
+            {note !== undefined && <dd>{note}</dd>}
           </div>
         ))}
       </dl>
+    </section>
+  );
+}
+
+function Baseline({ report }: { report: Report2 }) {
+  const baseline = baselineFacts(report);
+  if (baseline === null) return null;
+  return (
+    <section className="sect run2-baseline">
+      <h3>{RUN_WORDS.baseline}</h3>
+      <p className="run2-line">{baseline.head}</p>
+      {baseline.stale.length > 0 && (
+        <>
+          <p className="run2-line">{RUN_WORDS.stale}</p>
+          <ul className="run2-rows">
+            {baseline.stale.map((name) => (
+              <li key={name}>{name}</li>
+            ))}
+          </ul>
+        </>
+      )}
     </section>
   );
 }
@@ -222,15 +267,23 @@ export function RunView2() {
       <h2 className="vh" id={headingId}>
         {RUN_WORDS.tab}
       </h2>
+      <KeyValues head={RUN_WORDS.facts} rows={runFacts(report)} />
       <ScoreWorks report={report} opened={state.example} />
       <Lookup run={report.run} />
+      <Baseline report={report} />
+      <KeyValues
+        head={RUN_WORDS.phpWindow}
+        rows={windowFacts(report)}
+        className="run2-window"
+        id={PHP_WINDOW_SECTION}
+      />
       <Notes report={report} />
       <AcceptedUnchecked report={report} />
       <section className="sect">
         <h3>{RUN_WORDS.gate}</h3>
         <GateLine report={report} className="overview2-gate" />
       </section>
-      <Thresholds run={report.run} />
+      <KeyValues head={RUN_WORDS.thresholds} rows={thresholdRows(report.run)} />
     </section>
   );
 }

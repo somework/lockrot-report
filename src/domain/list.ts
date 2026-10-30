@@ -11,9 +11,20 @@ import { radiusLayout2, radiusRows2 } from "./radius2";
 import { acceptedFlagIds, countedFlagIds } from "./countedFlags";
 import { fixLabel } from "./pageVocabulary";
 import { matchesFinding2, parseQuery2, type Term2 } from "./query";
-import type { RailGroup } from "./filters";
-
-type Row = readonly [key: string, label: string];
+import {
+  FAILS_ROW,
+  HELD_KEY,
+  HELD_ROW,
+  READY_KEY,
+  READY_ROW,
+  SCOPE_ROWS,
+  SINCE_ROWS,
+  WAY_OUT_KEY,
+  WAY_OUT_ROW,
+  type RailGroup,
+  type Row,
+} from "./filters";
+import { findingsFailGate, isHeld, needsAnotherWayOut, readyToRun } from "./readyToRun";
 
 const byRank = (findings: readonly Finding[]): Finding[] => [...findings].sort((a, b) => a.rank - b.rank);
 
@@ -34,17 +45,29 @@ export function population2(report: Report2, view: View): readonly Finding[] {
   }
 }
 
-function passesRail2(filters: Filters, f: Finding): boolean {
+/** The Fix filter: a package view admits a finding by its `security.fix_kind`, as the Overview fix
+ *  counts read it. The Advisories tab admits it when one of its rows has the fix, then narrows the
+ *  rows one by one (`advisoryPairs2`). */
+function passesFix(filters: Filters, f: Finding, view: View): boolean {
+  if (filters.fix.length === 0) return true;
+  if (view === "advisories") return advisoryRows(f).some((row) => filters.fix.includes(row.fix.kind));
+  return isSecurityVulnerable(f.security) && filters.fix.includes(f.security.fix_kind);
+}
+
+function passesRail2(filters: Filters, f: Finding, view: View): boolean {
   if (filters.verdict.length > 0 && !filters.verdict.includes(f.verdict)) return false;
   if (filters.flag.length > 0 && !countedFlagIds(f).some((id) => filters.flag.includes(id))) return false;
   const rows = advisoryRows(f);
   if (filters.sev.length > 0 && !rows.some((row) => filters.sev.includes(row.severity))) return false;
-  if (filters.fix.length > 0 && !rows.some((row) => filters.fix.includes(row.fix.kind))) return false;
+  if (!passesFix(filters, f, view)) return false;
   if (filters.signal.length > 0 && !f.signals.some((signal) => filters.signal.includes(signal.id)))
     return false;
   const since = f.baseline?.status;
   if (filters.since.length > 0 && (since === undefined || !filters.since.includes(since))) return false;
   if (filters.gate.includes("fails") && !f.gate.fails) return false;
+  if (filters.gate.includes(READY_KEY) && !readyToRun(f)) return false;
+  if (filters.gate.includes(HELD_KEY) && !isHeld(f)) return false;
+  if (filters.gate.includes(WAY_OUT_KEY) && !needsAnotherWayOut(f)) return false;
   // Scope buttons are ANDed, so both halves of a pair select nothing (DESIGN.md §5).
   if (filters.scope.includes("direct") && !f.direct) return false;
   if (filters.scope.includes("transitive") && f.direct) return false;
@@ -92,7 +115,7 @@ function compare(a: Finding, b: Finding, key: SortKey): number {
 export function applyFilters2(report: Report2, state: State, view: View): readonly Finding[] {
   const terms = parseQuery2(state.q);
   const kept = byRank(population2(report, view)).filter(
-    (f) => matchesFinding2(f, terms) && passesRail2(state.filters, f),
+    (f) => matchesFinding2(f, terms) && passesRail2(state.filters, f, view),
   );
   if (view !== "packages") return kept;
   const sign = state.sortDesc ? -1 : 1;
@@ -120,7 +143,7 @@ export function renderedPackages2(
     );
   if (view === "advisories") {
     const pairs = advisoryPairs2(applyFilters2(report, state, view), state.filters);
-    return advisoryRowPackages(advisoryGroups2(report.run, pairs));
+    return advisoryRowPackages(advisoryGroups2(pairs));
   }
   if (view !== "findings" && view !== "packages") return [];
   return applyFilters2(report, state, view).map((f) => f.package);
@@ -131,13 +154,15 @@ export function renderedPackages2(
 // -------------------------------------------------------------------------------------------
 
 interface Scope {
+  readonly view: View;
   readonly filters: Filters;
   readonly here: readonly Finding[];
   readonly terms: readonly Term2[];
 }
 
 function countUnder(scope: Scope, filters: Filters): number {
-  return scope.here.filter((f) => matchesFinding2(f, scope.terms) && passesRail2(filters, f)).length;
+  return scope.here.filter((f) => matchesFinding2(f, scope.terms) && passesRail2(filters, f, scope.view))
+    .length;
 }
 
 /** The list a click on the row gives: ANDed in Scope, the union in every other group (PD-RAIL-2).
@@ -147,8 +172,9 @@ function groupOf(scope: Scope, group: FilterGroup, title: string, rows: readonly
   const shown = rows.flatMap(([key, label]) => {
     const on = selected.includes(key);
     const count = countUnder(scope, on ? scope.filters : { ...scope.filters, [group]: [...selected, key] });
+    // Scope and This run filter by AND, so a row's count is what its click lists.
     const own =
-      on || group === "scope" || selected.length === 0
+      on || group === "scope" || group === "gate" || selected.length === 0
         ? count
         : countUnder(scope, { ...scope.filters, [group]: [key] });
     return on || own > 0 ? [{ key, label, count, on }] : [];
@@ -156,24 +182,8 @@ function groupOf(scope: Scope, group: FilterGroup, title: string, rows: readonly
   return shown.length === 0 ? null : { group, title, rows: shown };
 }
 
-const SINCE_ROWS: readonly Row[] = [
-  ["new", "New"],
-  ["worsened", "Worsened"],
-  ["known", "Known"],
-];
 /** The one key of the accepted group: a view toggle that hides the accepted pills (SPEC §7.9.7). */
 export const HIDE_ACCEPTED = "hide";
-const SCOPE_ROWS: readonly Row[] = [
-  ["direct", "Direct"],
-  ["transitive", "Transitive"],
-  ["prod", "require"],
-  ["dev", "require-dev"],
-  ["unnamed", "not in composer.json"],
-];
-
-function runFails2(report: Report2): boolean {
-  return report.gate.fails && report.findings.some((f) => f.gate.fails);
-}
 
 /** Filters no package, so its count is the listed rows whose pills it shows or hides. */
 function acceptedToggle(scope: Scope): RailGroup {
@@ -192,13 +202,20 @@ function acceptedToggle(scope: Scope): RailGroup {
 /** Since, This run, Grade, Flag, Severity, Fix, Accepted flags and Scope, each where it has a row. */
 export function railGroups2(report: Report2, state: State): readonly RailGroup[] {
   const here = population2(report, state.view);
-  const scope: Scope = { filters: state.filters, here, terms: parseQuery2(state.q) };
+  const scope: Scope = { view: state.view, filters: state.filters, here, terms: parseQuery2(state.q) };
   const baseline = report.baseline;
+  // The Advisories tab lists advisories, while every rail count is of packages.
+  const unit = state.view === "advisories" ? " (packages)" : "";
   const groups = [
     baseline !== null && here.some((f) => f.baseline !== null)
       ? groupOf(scope, "since", `Since ${baseline.path}`, SINCE_ROWS)
       : null,
-    runFails2(report) ? groupOf(scope, "gate", "This run", [["fails", "Fails this run"]]) : null,
+    groupOf(scope, "gate", "This run", [
+      ...(findingsFailGate(report) ? [FAILS_ROW] : []),
+      READY_ROW,
+      HELD_ROW,
+      ...(findingsFailGate(report) ? [WAY_OUT_ROW] : []),
+    ]),
     groupOf(
       scope,
       "verdict",
@@ -214,13 +231,13 @@ export function railGroups2(report: Report2, state: State): readonly RailGroup[]
     groupOf(
       scope,
       "sev",
-      "Severity",
+      `Severity${unit}`,
       report.run.score_model.severities.map(({ id }): Row => [id, id]),
     ),
     groupOf(
       scope,
       "fix",
-      "Fix",
+      `Fix${unit}`,
       [...report.run.score_model.fix_kinds]
         .sort((a, b) => a.ease - b.ease)
         .map(({ id }): Row => [id, fixLabel(id)]),
@@ -240,24 +257,37 @@ const union = (a: readonly string[], b: readonly string[]): string[] => [...new 
 /**
  * The filters a report-2 address may carry. A 0.13 link opens on report-2 terms (SPEC §7.9.7):
  * `prio=` as `verdict=`, and a flag named in `verdict=` as `flag=`. A `gate` key stays only when
- * some package fails the run, and `accepted` keeps only its toggle. Returns `filters` itself when
- * nothing changes.
+ * some package fails the run, `accepted` keeps only its toggle, and `scope` and `since` only their
+ * own keys. A run with no baseline keeps no `since` value. Returns `filters` itself when nothing
+ * changes.
  */
 export function fitFilters2(report: Report2, filters: Filters): Filters {
   const flagIds: readonly string[] = report.run.flag_ids;
   const named = filters.verdict.filter((key) => flagIds.includes(key));
-  const gate = runFails2(report) ? filters.gate.filter((key) => key === "fails") : [];
+  const gate = filters.gate.filter(
+    (key) =>
+      key === READY_KEY ||
+      key === HELD_KEY ||
+      ((key === "fails" || key === WAY_OUT_KEY) && findingsFailGate(report)),
+  );
   const accepted = filters.accepted.filter((key) => key === HIDE_ACCEPTED);
+  const scope = filters.scope.filter((key) => SCOPE_ROWS.some(([own]) => own === key));
+  const since =
+    report.baseline === null ? [] : filters.since.filter((key) => SINCE_ROWS.some(([own]) => own === key));
   if (
     filters.prio.length === 0 &&
     named.length === 0 &&
     gate.length === filters.gate.length &&
-    accepted.length === filters.accepted.length
+    accepted.length === filters.accepted.length &&
+    scope.length === filters.scope.length &&
+    since.length === filters.since.length
   )
     return filters;
   return {
     ...filters,
     accepted,
+    scope,
+    since,
     prio: [],
     verdict: union(
       filters.verdict.filter((key) => !flagIds.includes(key)),

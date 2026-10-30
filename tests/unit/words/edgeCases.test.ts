@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 
-import { ageLine } from "../../../src/domain/ageLine";
+import { ageRows } from "../../../src/domain/ageRows";
 import { baselineSuffix } from "../../../src/domain/baselineSuffix";
-import { branchesLine } from "../../../src/domain/branchesLine";
+import { branchesLead, branchTimeline } from "../../../src/domain/branchTimeline";
 import { feedsLine } from "../../../src/domain/feedsLine";
 import type { Finding, FindingBaseline, ReleaseBranch } from "../../../src/model/report";
 import { modelCases } from "./recorded";
@@ -37,79 +37,68 @@ describe("the branch of an alias snapshot", () => {
     const { finding, metadata } = modelCase("snapshot-alias");
     const rows = (metadata?.branches ?? []).map((row) => ({ ...row, highest: `${row.highest}-undated` }));
 
-    expect(ageLine(finding, metadata && { ...metadata, branches: rows })).toMatch(
-      /^5\.x last released v5\.4\.45 /,
+    expect(ageRows(finding, metadata && { ...metadata, branches: rows }).map((r) => r.label)).toContain(
+      "5.x last",
     );
   });
 });
 
-describe("the installed clause of the Release branches line", () => {
-  test("a package on a branch is named by it when no row is marked installed", () => {
+describe("the lead of Release branches", () => {
+  test("names the package's branch when no row is marked installed", () => {
     const { finding, metadata } = modelCase("B");
     const unmarked = metadata && {
       ...metadata,
       branches: metadata.branches.map((row) => ({ ...row, installed: false })),
     };
 
-    expect(branchesLine(finding, unmarked)).toMatch(
-      /^Your branch, 2\.x, had its last release, v2\.8\.52, 6\.9 years ago; /,
+    expect(branchesLead(finding, unmarked)[0]).toBe(
+      "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
     );
   });
 
-  describe("a higher branch's php clause reads the highest tag, not the newest dated release", () => {
-    // 10.x is higher than the installed 9.x; its lowest-tag fields say the opposite of what each test sets.
-    const lineWith = (highest: Partial<ReleaseBranch>): string | null => {
-      const { finding, metadata } = modelCase("partial");
-      const branches = (metadata?.branches ?? []).map((row) =>
-        row.branch === "10.x"
-          ? {
-              ...row,
-              php: "^9.9",
-              admits_target_php: true,
-              admits_project_php: true,
-              misses_project_php: null,
-              ...highest,
-            }
-          : row,
-      );
-      return branchesLine(finding, metadata && { ...metadata, branches });
-    };
-
-    test("prints highest_php and the target answer of highest_php", () => {
-      expect(lineWith({ highest_php: "^7.1.3", highest_admits_target_php: false })).toContain(
-        "10.x released v10.50.3 0.1 years ago and needs php ^7.1.3, which your target does not run;",
-      );
-    });
-
-    test("prints the project answers of highest_php when the target admits it", () => {
-      const above = lineWith({
-        highest_php: "^8.1",
-        highest_admits_target_php: true,
-        highest_admits_project_php: false,
-        highest_misses_project_php: "needs_newer",
-      });
-      const stops = lineWith({
-        highest_php: "^8.1",
-        highest_admits_target_php: true,
-        highest_admits_project_php: false,
-        highest_misses_project_php: "stops_before",
-      });
-
-      expect([above, stops].map((line) => /needs php \^8\.1(, [^;]*);/.exec(line ?? "")?.[1])).toEqual([
-        ", above your require.php",
-        ", which your require.php does not admit",
-      ]);
-    });
-
-    test("leaves the php clause out when highest_php is null", () => {
-      expect(lineWith({ highest_php: null })).toContain("10.x released v10.50.3 0.1 years ago;");
-    });
-  });
-
-  test("a snapshot, which has no branch, is named as one", () => {
+  test("names a snapshot, which has no branch, as one", () => {
     const { finding, metadata } = modelCase("G");
 
-    expect(branchesLine(finding, metadata)).toMatch(/^A branch snapshot, dev-master, is installed; /);
+    expect(branchesLead(finding, metadata)[0]).toBe("A branch snapshot, dev-master, is installed.");
+  });
+});
+
+describe("a timeline row's php words read the highest tag, not the newest dated release (G147)", () => {
+  // 10.x is higher than the installed 9.x; its lowest-tag fields say the opposite of what each test sets.
+  const wordsWith = (highest: Partial<ReleaseBranch>): string | null => {
+    const { finding, run, metadata } = modelCase("partial");
+    const branches = (metadata?.branches ?? []).map((row) =>
+      row.branch === "10.x"
+        ? { ...row, admits_target_php: true, admits_project_php: true, misses_project_php: null, ...highest }
+        : row,
+    );
+    const lanes = branchTimeline(finding, metadata && { ...metadata, branches }, run)?.lanes ?? [];
+    return lanes.find((lane) => lane.branch === "10.x")?.phpWords ?? null;
+  };
+
+  test("the target's answer comes first", () => {
+    expect(wordsWith({ highest_admits_target_php: false, highest_admits_project_php: false })).toBe(
+      "your target does not run it",
+    );
+  });
+
+  test("a require.php below the release's floor reads above it, any other miss does not admit it", () => {
+    const above = wordsWith({
+      highest_admits_target_php: true,
+      highest_admits_project_php: false,
+      highest_misses_project_php: "needs_newer",
+    });
+    const stops = wordsWith({
+      highest_admits_target_php: true,
+      highest_admits_project_php: false,
+      highest_misses_project_php: "stops_before",
+    });
+
+    expect([above, stops]).toEqual(["above your require.php", "your require.php does not admit it"]);
+  });
+
+  test("an admitted release has no words", () => {
+    expect(wordsWith({ highest_admits_target_php: true, highest_admits_project_php: true })).toBeNull();
   });
 });
 

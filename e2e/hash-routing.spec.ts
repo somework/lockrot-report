@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("PD-ROWS-9: only the reader or the address opens a package", () => {
-  // Default Chromium viewport (1280x720) is wide (>=1181px).
+  // Default Chromium viewport (1280x720) is wide enough for the split layout.
   test("a wide screen opens nothing on load, and the address stays bare", async () => {
     await report.gotoReport2("composite");
     expect((await report.detail()).open).toBe(false);
@@ -39,7 +39,7 @@ test.describe("M12: a malformed %-escape must not blank the whole page", () => {
     // unguarded, before anything else rendered, leaving tabs and rows all empty.
     await report.gotoReport2WithHash("composite", "q=%E0%A4%A");
     expect(await report.activeTab()).toBe("findings");
-    expect(await report.rows()).toHaveLength(7);
+    expect(await report.rows()).toHaveLength(9);
   });
 });
 
@@ -56,7 +56,7 @@ test.describe("M13: an unknown pkg= on a narrow screen must not strand a scroll 
 
   test("no scroll lock without a visible reason for it", async () => {
     // M13 (DESIGN.md §5), fixed on purpose: the page used to set the detail-open class off the bare
-    // presence of state.pkg, locking scroll under 1180px with nothing visible to explain it.
+    // presence of state.pkg, locking scroll below the split layout with nothing visible to explain it.
     await report.gotoReport2WithHash("composite", "pkg=does-not-exist-in-this-report");
     const stuck = (await report.isScrollLocked()) && !(await report.detail()).open;
     expect(stuck).toBe(false);
@@ -72,7 +72,7 @@ test.describe("hashchange: a link pasted into an open page", () => {
   test("a pasted link applies live", async () => {
     // Fixed on purpose (DESIGN.md §5): the page used to register no hashchange listener at all.
     await report.gotoReport2WithHash("composite", "view=findings");
-    expect(await report.rows()).toHaveLength(7);
+    expect(await report.rows()).toHaveLength(9);
     await report.setLocationHash("q=cssmin");
     expect(await report.rows()).toEqual(["tubalmartin/cssmin"]);
   });
@@ -111,13 +111,17 @@ test.describe("on a report-2 page", () => {
 
   test("an old prio= fragment opens verdict=", async () => {
     await report.gotoReport2WithHash("composite", "prio=low");
-    expect(await report.rows()).toEqual(["symfony/yaml", "symfony/polyfill-intl-idn"]);
+    expect(await report.rows()).toEqual([
+      "symfony/yaml",
+      "symfony/polyfill-intl-idn",
+      "friendsofsymfony/oauth2-php",
+    ]);
     expect(await report.hash()).toBe("#view=findings&verdict=low");
   });
 
   test("an old verdict=<flag> fragment opens flag=", async () => {
     await report.gotoReport2WithHash("composite", "verdict=left-behind");
-    expect(await report.rows()).toEqual(["symfony/monolog-bridge"]);
+    expect(await report.rows()).toEqual(["symfony/monolog-bridge", "guzzlehttp/guzzle"]);
     expect(await report.hash()).toBe("#view=findings&flag=left-behind");
   });
 });

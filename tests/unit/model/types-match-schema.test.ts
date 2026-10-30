@@ -2,6 +2,7 @@
 // validates, each type guard sends every value to the schema definition of the branch it narrows
 // to, and the hand-typed `details` keys equal explain-2's `required` lists (types are erased, so
 // only the data can tell).
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import Ajv from "ajv-draft-04";
@@ -119,7 +120,7 @@ const DEFINITION = {
     definitionOf("securityClear")(value) || definitionOf("securityUnchecked")(value),
 };
 
-const SIGNAL_IDS = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"] as const;
+const SIGNAL_IDS = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "S11"] as const;
 const SIGNAL_DATA = Object.fromEntries(SIGNAL_IDS.map((id) => [id, definitionOf(id.toLowerCase())]));
 
 function errorsOf(validate: { errors?: unknown }): unknown {
@@ -207,6 +208,29 @@ function guardDecisions(): { guard: string; branch: boolean; valid: boolean; whe
     }),
   );
 }
+
+const SHEETS = join(process.cwd(), "fixtures", "sheets");
+const recordedSheets = readdirSync(SHEETS)
+  .filter((file) => file.endsWith(".json"))
+  .map((file) => ({
+    name: file,
+    sheet: JSON.parse(readFileSync(join(SHEETS, file), "utf8")) as {
+      finding: unknown;
+      details: { lock: unknown; metadata: unknown };
+    },
+  }));
+const validateFinding = ajv.compile({ $ref: `${REPORT_ID}#/definitions/finding` });
+
+describe("each recorded sheet under fixtures/sheets validates against the pinned schemas", () => {
+  test("the folder holds a sheet", () => {
+    expect(recordedSheets.length).toBeGreaterThan(0);
+  });
+
+  test.each(recordedSheets)("$name", ({ sheet }) => {
+    expect(validateFinding(sheet.finding), JSON.stringify(errorsOf(validateFinding))).toBe(true);
+    expect(validateMetadata(sheet.details.metadata), JSON.stringify(errorsOf(validateMetadata))).toBe(true);
+  });
+});
 
 describe("the type guards", () => {
   const decisions = guardDecisions();

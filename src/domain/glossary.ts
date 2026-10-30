@@ -24,6 +24,7 @@ export const flagsHeading = (run: Run): string => `The ${countWord(run.flag_ids.
 export const VERDICTS_DOCS = `${DOCS_URL}#the-nine-verdicts`;
 
 function zeroText(when: string): string {
+  if (when === "allowlisted") return "A score of 0: the package is allowlisted, so its flags do not count.";
   const reason = zeroVerdictReason(when);
   return reason === null ? "A score of 0, and no flag counts." : `A score of 0: ${reason}.`;
 }
@@ -87,6 +88,7 @@ export const GLOSSARY2_WORDS = {
     "A package you consider finished can be accepted the way lockrot's built-in list accepts one: an extra.lockrot.ignore entry in composer.json, with a reason. Its accepted flags stay listed and weigh 0.",
   listKeys: "On a tab with a list:",
   everyKeys: "On every tab:",
+  shortcuts: "Keyboard shortcuts",
   search: "Search keys:",
   searchKeys: ["flag:", "lead:", "verdict:", "score:>=N", "priority:"],
 } as const;

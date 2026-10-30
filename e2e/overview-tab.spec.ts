@@ -6,6 +6,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { report2Url } from "./support/pages";
 import { gradeLine, overviewSurface, weighsMost } from "./support/report2/overview";
+import { findingsRows } from "./support/report2/findings";
 
 const WALLABAG = "baselined-wallabag-2.6";
 
@@ -19,21 +20,21 @@ test.describe("rule R1: the view a fragment opens", () => {
 
     await expect(selectedTab(page)).toHaveText(/^Overview/);
     await expect(overviewSurface(page)).toBeVisible();
-    await expect(page.locator("li[data-pkg]")).toHaveCount(0);
+    await expect(page.locator("[data-pkg]")).toHaveCount(0);
     expect(await page.evaluate(() => location.hash)).toBe("");
   });
 
   for (const [fragment, rows] of [
-    ["#verdict=critical", 3],
-    ["#flag=stale", 2],
-    ["#q=symfony", 5],
-    ["#pkg=symfony%2Fdebug", 7],
+    ["#verdict=critical", 4],
+    ["#flag=stale", 3],
+    ["#q=symfony", 6],
+    ["#pkg=symfony%2Fdebug", 9],
   ] as const) {
     test(`${fragment}, a list key with no view, opens Findings as on rc.1`, async ({ page }) => {
       await page.goto(report2Url("composite") + fragment);
 
       await expect(selectedTab(page)).toHaveText(/^Findings/);
-      await expect(page.locator('[data-surface="findings"] li[data-pkg]')).toHaveCount(rows);
+      await expect(findingsRows(page)).toHaveCount(rows);
       expect(await page.evaluate(() => location.hash)).toBe("#view=findings&" + fragment.slice(1));
     });
   }
@@ -53,27 +54,34 @@ test.describe("rule R1: the view a fragment opens", () => {
 });
 
 test.describe("the Overview layout", () => {
-  test("at 1440 the lead, flags, Security and Libyears sit above the fold, in layout A", async ({ page }) => {
+  test("at 1440 the lead holds the Security summary above the fold, then Weighs most, Flags beside Libyears, and exposure", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(report2Url(WALLABAG));
 
     const box = async (part: string) => {
-      const found = await overviewSurface(page).locator(`.ov-${part}`).boundingBox();
+      const found = await overviewSurface(page).locator(`.${part}`).boundingBox();
       if (found === null) throw new Error(`no ${part}`);
       return found;
     };
-    const [lead, flags, security, libyears, weighs, expo] = await Promise.all(
-      ["lead", "flags", "security", "libyears", "weighs", "expo"].map(box),
+    const [lead, security, weighs, flags, libyears, expo] = await Promise.all(
+      ["ov-lead", "ov-lead-security", "ov-weighs", "ov-flags", "ov-libyears", "ov-expo"].map(box),
     );
-    for (const part of [lead, flags, security, libyears]) expect(part?.y).toBeLessThan(900);
-    // One row of three columns, then Weighs most beside the exposure bars.
-    expect(security?.y).toBe(flags?.y);
+    // The Security summary is part of the lead, in view without a scroll.
+    expect(lead?.y).toBeLessThan(900);
+    expect(security?.y).toBeGreaterThanOrEqual(lead?.y ?? Infinity);
+    expect((security?.y ?? Infinity) + (security?.height ?? Infinity)).toBeLessThanOrEqual(
+      (lead?.y ?? 0) + (lead?.height ?? 0),
+    );
+    expect(security?.y).toBeLessThan(900);
+    // Weighs most spans the width under the lead, then Flags sit beside Libyears, then exposure.
+    expect(weighs?.y).toBeGreaterThanOrEqual((lead?.y ?? 0) + (lead?.height ?? 0));
+    expect(weighs?.width).toBeGreaterThan((flags?.width ?? 0) * 1.5);
+    expect(flags?.y).toBeGreaterThanOrEqual((weighs?.y ?? 0) + (weighs?.height ?? 0));
     expect(libyears?.y).toBe(flags?.y);
-    expect(flags?.x).toBeLessThan(security?.x ?? 0);
-    expect(security?.x).toBeLessThan(libyears?.x ?? 0);
-    expect(weighs?.y).toBe(expo?.y);
-    expect(weighs?.y).toBeGreaterThan(flags?.y ?? 0);
-    expect(weighs?.x).toBeLessThan(expo?.x ?? 0);
+    expect(flags?.x).toBeLessThan(libyears?.x ?? 0);
+    expect(expo?.y).toBeGreaterThanOrEqual((flags?.y ?? 0) + (flags?.height ?? 0));
   });
 
   test("at 390 the parts stack in reading order, with nothing folded and no sideways scroll", async ({
@@ -83,7 +91,7 @@ test.describe("the Overview layout", () => {
     await page.goto(report2Url(WALLABAG));
 
     const tops = await overviewSurface(page)
-      .locator(":scope > *")
+      .locator(":scope > :not(.vh)")
       .evaluateAll((parts) =>
         parts.map((part): [string, number] => [
           part.getAttribute("class") ?? "",
@@ -92,11 +100,10 @@ test.describe("the Overview layout", () => {
       );
     expect(tops.map(([name]) => name)).toEqual([
       "ov-lead",
-      "ov-flags",
-      "ov-security",
       "ov-weighs",
-      "ov-expo",
+      "ov-flags",
       "ov-libyears",
+      "ov-expo",
     ]);
     const ys = tops.map(([, top]) => top);
     expect(ys).toEqual([...ys].sort((a, b) => a - b));
@@ -122,11 +129,11 @@ test.describe("from a chart to a list", () => {
 
     await overviewSurface(page)
       .getByRole("group", { name: "Grade" })
-      .getByRole("link", { name: "critical 3" })
+      .getByRole("link", { name: "critical 4" })
       .click();
 
     await expect(selectedTab(page)).toHaveText(/^Findings/);
-    await expect(page.locator('[data-surface="findings"] li[data-pkg]')).toHaveCount(3);
+    await expect(findingsRows(page)).toHaveCount(4);
     expect(await page.evaluate(() => location.hash)).toBe("#view=findings&verdict=critical");
     await expect(page.getByRole("tabpanel")).toBeFocused();
   });
@@ -137,7 +144,7 @@ test.describe("from a chart to a list", () => {
     await page.goto(report2Url("composite"));
     const band = overviewSurface(page);
 
-    await expect(band.getByRole("link", { name: /^stale 2/ })).toHaveAttribute(
+    await expect(band.getByRole("link", { name: /^stale 3/ })).toHaveAttribute(
       "href",
       "#view=findings&flag=stale",
     );
@@ -149,7 +156,7 @@ test.describe("from a chart to a list", () => {
     await expect(weighsMost(page).locator(".wm-bar a, .wm-bar [tabindex]")).toHaveCount(0);
     await expect(band.getByRole("link", { name: "guzzlehttp/guzzle 1 flagged package" })).toHaveAttribute(
       "href",
-      "#view=radius",
+      "#view=radius&pkg=guzzlehttp%2Fguzzle",
     );
   });
 
@@ -169,6 +176,25 @@ test.describe("from a chart to a list", () => {
 
     await expect(selectedTab(page)).toHaveText(/^Overview/);
     expect(await page.evaluate(() => location.hash)).toBe("");
+  });
+});
+
+test.describe("one shell choice for the page (R4-30)", () => {
+  test("a pick in one Ready to run box changes every box on the page", async ({ page }) => {
+    await page.goto(report2Url("mc-composite-dagger"));
+    const boxes = overviewSurface(page).locator(".ov-cmd");
+    expect(await boxes.count()).toBeGreaterThan(1);
+
+    await boxes.nth(1).getByRole("button", { name: "Shell: POSIX" }).click();
+    await boxes
+      .nth(1)
+      .getByRole("menuitemradio", { name: /^cmd\.exe/ })
+      .click();
+
+    for (const box of await boxes.all()) {
+      await expect(box.getByRole("button", { name: "Shell: cmd.exe" })).toBeVisible();
+      await expect(box.locator(".d2-copy-cmd")).not.toContainText("'");
+    }
   });
 });
 
@@ -212,7 +238,7 @@ test.describe("the project grade", () => {
     await page.goto(report2Url(WALLABAG));
 
     await expect(gradeLine(page)).toHaveText(
-      "Project grade: critical · 15 critical findings · 84 of 210 packages high or worse · 45 known to the baseline",
+      "Project grade: critical · 15 critical findings · 84 of 210 packages high or worse · 46 known to the baseline",
     );
     const before = await gradeLine(page).evaluate(
       (line) =>
@@ -220,6 +246,32 @@ test.describe("the project grade", () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
     );
     expect(before).toBe(true);
+  });
+
+  test("at 375 each date in Furthest behind stays on one line", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto(report2Url(WALLABAG));
+
+    const lines = await overviewSurface(page)
+      .locator(".ov-ly-release")
+      .evaluateAll((cells) =>
+        cells.flatMap((cell) => {
+          const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+          const found: [string, number][] = [];
+          for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+            const match = /\d{4}-\d{2}-\d{2}/.exec(node.textContent ?? "");
+            if (match === null) continue;
+            const range = document.createRange();
+            range.setStart(node, match.index);
+            range.setEnd(node, match.index + match[0].length);
+            const tops = new Set([...range.getClientRects()].map((rect) => Math.round(rect.top)));
+            found.push([match[0], tops.size]);
+          }
+          return found;
+        }),
+      );
+    expect(lines.length).toBeGreaterThan(0);
+    expect(lines.filter(([, count]) => count !== 1)).toEqual([]);
   });
 
   test("nothing scrolls sideways at 320", async ({ page }) => {

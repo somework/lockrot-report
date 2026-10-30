@@ -16,7 +16,7 @@ export function EmptyState({ reason }: { reason: "clean" | "filtered" }) {
   const { dispatch } = useReport();
 
   if (reason === "clean") {
-    return <p className="empty">Nothing was flagged.</p>;
+    return <p className="empty">Nothing is flagged.</p>;
   }
 
   return (

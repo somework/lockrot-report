@@ -1,3 +1,4 @@
+import { HTML_COMMAND } from "./Footer";
 import { ScreenFrame } from "./ScreenFrame";
 
 const OLDER_RELEASE = "https://github.com/somework/lockrot-report/releases/tag/v0.13.0";
@@ -27,7 +28,7 @@ export function Report1Screen({ version }: { version: string | null }) {
           <pre>
             <code>composer require --dev somework/lockrot</code>
             {"\n"}
-            <code>composer lockrot</code>
+            <code>{HTML_COMMAND}</code>
           </pre>
         </section>
         <section className="screen-card" aria-labelledby="report1-older">

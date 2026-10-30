@@ -5,7 +5,7 @@ import { normalize } from "../../../src/model/normalize";
 import { App } from "../../../src/ui/App";
 import { CleanMark } from "../../../src/ui/ledger/CleanMark";
 import type { WaffleRun } from "../../../src/domain/summary";
-import { Waffle } from "../../../src/ui/ledger/Waffle";
+import { Waffle, WaffleKey } from "../../../src/ui/ledger/Waffle";
 
 afterEach(cleanup);
 
@@ -15,63 +15,41 @@ function squares(waffle: Element | null): string[] {
 
 describe("Waffle", () => {
   const runs: readonly WaffleRun[] = [
-    { tone: "crit", count: 1 },
-    { tone: "high", count: 3 },
-    { tone: "med", count: 1 },
-    { tone: "low", count: 2 },
+    { verdict: "critical", label: "critical", tone: "crit", mark: "fill", count: 1 },
+    { verdict: "high", label: "high", tone: "high", mark: "fill", count: 2 },
+    { verdict: "unknown", label: "not judged", tone: "unk", mark: "hatch", count: 1 },
+    { verdict: "finished", label: "finished", tone: "none", mark: "ring-dot", count: 1 },
+    { verdict: "ok", label: "ok", tone: "none", mark: "soft", count: 2 },
   ];
 
-  it("draws one square per package, the flagged ones first in their run's tone, then the rest quiet", () => {
-    const { container } = render(<Waffle runs={runs} total={202} />);
+  it("draws one square per package in run order, each verdict in its own tone and mark", () => {
+    const { container } = render(<Waffle runs={runs} />);
 
-    const cells = squares(container.querySelector(".waffle"));
-    expect(cells).toHaveLength(202);
-    expect(cells.slice(0, 7)).toEqual([
-      "tone-crit",
-      "tone-high",
-      "tone-high",
-      "tone-high",
-      "tone-med",
-      "tone-low",
-      "tone-low",
+    expect(squares(container.querySelector(".waffle"))).toEqual([
+      "is-fill tone-crit",
+      "is-fill tone-high",
+      "is-fill tone-high",
+      "is-hatch tone-unk",
+      "is-ring-dot tone-none",
+      "is-soft tone-none",
+      "is-soft tone-none",
     ]);
-    expect(cells.slice(7).every((cell) => cell === "waffle-rest")).toBe(true);
   });
 
-  it("is hidden from assistive tech, since the figure beside it says every number", () => {
-    const { container } = render(<Waffle runs={runs} total={202} />);
+  it("is hidden from assistive tech, since the grade line, chips and key say every number", () => {
+    const { container } = render(<Waffle runs={runs} />);
 
     expect(container.querySelector(".waffle")?.getAttribute("aria-hidden")).toBe("true");
   });
 
-  it("sets its row counts as numbers, growing rows rather than squares with the lock", () => {
-    const { container } = render(<Waffle runs={runs} total={202} />);
-    const waffle = container.querySelector<HTMLElement>(".waffle");
+  it("keys the squares no grade chip names", () => {
+    const { container } = render(<WaffleKey runs={runs} />);
 
-    // ceil(202 / columns): 26 columns in the narrow and mid budgets, 38 wide, 50 extra wide.
-    expect(
-      ["narrow", "mid", "wide", "xwide"].map((b) => waffle?.style.getPropertyValue(`--rows-${b}`)),
-    ).toEqual(["8", "8", "6", "5"]);
-  });
-
-  it("draws a small lock as one short row", () => {
-    const { container } = render(<Waffle runs={[]} total={4} />);
-    const waffle = container.querySelector<HTMLElement>(".waffle");
-
-    expect(waffle?.querySelectorAll(".waffle-cell")).toHaveLength(4);
-    expect(waffle?.style.getPropertyValue("--rows-xwide")).toBe("1");
-  });
-
-  it("marks a waffle with nothing flagged as clean", () => {
-    const { container } = render(<Waffle runs={[]} total={3} />);
-
-    expect(container.querySelector(".waffle")?.classList.contains("is-clean")).toBe(true);
-  });
-
-  it("never draws fewer squares than the flagged runs add up to", () => {
-    const { container } = render(<Waffle runs={[{ tone: "high", count: 5 }]} total={3} />);
-
-    expect(container.querySelectorAll(".waffle-cell")).toHaveLength(5);
+    expect([...container.querySelectorAll("li")].map((li) => li.textContent)).toEqual([
+      "not judged 1",
+      "finished 1",
+      "ok 2",
+    ]);
   });
 });
 
@@ -88,7 +66,7 @@ describe("CleanMark", () => {
 describe("the Overview tab's grade chips and waffle", () => {
   beforeEach(() => {
     window.matchMedia = ((query: string) => ({
-      matches: query.includes("1181"),
+      matches: /1000px|1024px/.test(query),
       media: query,
       addEventListener: () => undefined,
       removeEventListener: () => undefined,
@@ -102,27 +80,33 @@ describe("the Overview tab's grade chips and waffle", () => {
     return result.model;
   }
 
-  it("keeps a grade nothing holds as a dimmed chip, not a missing one", () => {
+  it("draws a chip only for a grade some package holds, on every page", () => {
     render(<App model={composite()} />);
 
-    // composite grades 3 critical, 2 high, 0 medium, 2 low.
+    // composite grades 4 critical, 2 high, 0 medium, 3 low.
     const band = within(screen.getByRole("region", { name: "Overview" }));
     const grades = within(band.getByRole("group", { name: "Grade" }));
-    expect(grades.getByRole("link", { name: "medium 0" }).className).toContain("legend-btn-dim");
-    expect(grades.getByRole("link", { name: "high 2" }).className).not.toContain("legend-btn-dim");
+    expect(grades.queryByRole("link", { name: "medium 0" })).toBeNull();
+    expect(grades.getAllByRole("link").map((chip) => chip.textContent)).toEqual([
+      "critical 4",
+      "high 2",
+      "low 3",
+    ]);
   });
 
   it("draws the waffle in the grades' tones, most urgent first", () => {
     render(<App model={composite()} />);
 
-    expect(squares(document.querySelector(".ov .waffle"))).toEqual([
-      "tone-crit",
-      "tone-crit",
-      "tone-crit",
-      "tone-high",
-      "tone-high",
-      "tone-low",
-      "tone-low",
+    expect(squares(document.querySelector(".ov .waffle")).slice(0, 9)).toEqual([
+      "is-fill tone-crit",
+      "is-fill tone-crit",
+      "is-fill tone-crit",
+      "is-fill tone-crit",
+      "is-fill tone-high",
+      "is-fill tone-high",
+      "is-fill tone-low",
+      "is-fill tone-low",
+      "is-fill tone-low",
     ]);
   });
 });

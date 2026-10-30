@@ -136,7 +136,7 @@ test.describe("report-2: the theme and the glossary", () => {
     expect(await report.theme()).toBe(after);
   });
 
-  test("opens with the seven verdicts in view and the seven flags open, the rest folded", async ({
+  test("opens with the seven verdicts in view and the eight flags open, the rest folded", async ({
     page,
   }) => {
     await report.gotoReport2WithHash("composite", "view=findings");
@@ -146,20 +146,21 @@ test.describe("report-2: the theme and the glossary", () => {
     await expect(dialog.locator("dt[data-term]")).toHaveText(
       // run.verdicts, then run.flag_ids, each with its count when it has one.
       [
-        "critical 3",
+        "critical 4",
         "high 2",
         "medium",
-        "low 2",
+        "low 3",
         "unknown",
         "finished",
         "ok",
         "abandoned 1",
         "silent",
         "pinned 1",
-        "left-behind 1",
+        "left-behind 2",
         "old-promise 3",
-        "stale 2",
-        "vulnerable 4",
+        "stale 3",
+        "capped",
+        "vulnerable 5",
       ],
     );
     const folded = ["The signals", "One number for the lock: libyears", "Keys and search"];
@@ -167,6 +168,17 @@ test.describe("report-2: the theme and the glossary", () => {
       const details = dialog.locator("summary", { hasText: title }).locator("xpath=ancestor::details[1]");
       expect(await details.evaluate((el) => (el as HTMLDetailsElement).open)).toBe(false);
     }
+  });
+
+  test("? opens it on Keys and search, unfolded and in view, as the search hint promises", async ({
+    page,
+  }) => {
+    await report.gotoReport2WithHash("composite", "view=findings");
+    await report.pressQuestion();
+    const dialog = page.getByRole("dialog", { name: /what these words mean/i });
+    const keys = dialog.locator("details", { has: page.getByRole("heading", { name: "Keys and search" }) });
+    await expect(keys).toHaveJSProperty("open", true);
+    await expect(keys.getByText("to search")).toBeInViewport();
   });
 
   test("a grade's words take its floor from the model and the flags this run's thresholds", async ({

@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/preact";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { assembleEmbed } from "../../../scripts/report2-embed";
+import { ageReading } from "../../../src/domain/findingRow";
 import { normalize } from "../../../src/model/normalize";
 import type { Report2 } from "../../../src/model/report";
 import type { Model } from "../../../src/model/types";
@@ -18,11 +19,16 @@ function withReport(base: Model, edit: (report: Report2) => Report2): Model {
 }
 
 function row(pkg: string): HTMLElement {
-  return screen.getByRole("listitem", { name: pkg });
+  return screen.getByRole("row", { name: pkg });
 }
 
+/** A cell's value, without the labels and units that only the stacked phone row shows. */
 function text(element: Element | null, selector: string): string | null {
-  return element?.querySelector(selector)?.textContent ?? null;
+  const cell = element?.querySelector(selector)?.cloneNode(true) as Element | undefined;
+  cell?.querySelectorAll(".f2-lbl, .f2-years").forEach((node) => {
+    node.remove();
+  });
+  return cell?.textContent ?? null;
 }
 
 function pills(element: Element): string[] {
@@ -31,7 +37,7 @@ function pills(element: Element): string[] {
 
 beforeEach(() => {
   window.matchMedia = ((query: string) => ({
-    matches: query.includes("1181"),
+    matches: /1000px|1024px/.test(query),
     media: query,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
@@ -40,6 +46,36 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+});
+
+describe("the Findings and Advisories tables", () => {
+  test("announce their column heads, and give every row one cell per head", () => {
+    render(<App model={model("composite")} />);
+
+    const findings = screen.getByRole("table", { name: "Findings" });
+    const heads = within(findings).getAllByRole("columnheader");
+    expect(heads).toHaveLength(6);
+    for (const name of ["Score", "Package", "Flags", "Years since release", "Reached", /^Next step/])
+      expect(within(findings).getByRole("columnheader", { name })).toBeTruthy();
+    for (const row of findings.querySelectorAll('[role="row"][data-pkg]'))
+      expect(row.querySelectorAll(':scope > [role="cell"]')).toHaveLength(heads.length);
+  });
+
+  test("Advisories has four heads and four cells a row, the advisory's title and ids in one", () => {
+    history.replaceState(null, "", "/report.html#view=advisories");
+    render(<App model={model("composite")} />);
+
+    const table = screen.getByRole("table", { name: "Advisories" });
+    expect(
+      within(table)
+        .getAllByRole("columnheader")
+        .map((head) => head.textContent),
+    ).toEqual(["Severity", "Advisory", "Affects", "Fixed by"]);
+    for (const row of table.querySelectorAll('[role="row"][data-pkg]')) {
+      expect(row.querySelectorAll(':scope > [role="cell"]')).toHaveLength(4);
+      expect(row.querySelector('.ac-adv[role="cell"] .ac-title')).not.toBeNull();
+    }
+  });
 });
 
 describe("the report-2 Findings tab", () => {
@@ -51,14 +87,27 @@ describe("the report-2 Findings tab", () => {
       text(head, ".fgroup-count"),
     ]);
     expect(heads).toEqual([
-      ["critical", "3 packages"],
+      ["critical", "4 packages"],
       ["high", "2 packages"],
-      ["low", "2 packages"],
+      ["low", "3 packages"],
     ]);
   });
 
   test("draws the score, its hidden bar, the pills, the age, the reach and the next step", () => {
-    const composite = model("composite");
+    const composite = withReport(model("composite"), (report) => ({
+      ...report,
+      findings: report.findings.map((f) =>
+        f.package === "symfony/monolog-bridge" && f.next_step !== null
+          ? {
+              ...f,
+              next_step: {
+                ...f.next_step,
+                check: { result: "resolves", form: "inline", reason: null, installs: null },
+              },
+            }
+          : f,
+      ),
+    }));
     render(<App model={composite} />);
 
     const bridge = row("symfony/monolog-bridge");
@@ -77,14 +126,93 @@ describe("the report-2 Findings tab", () => {
       /^installed branch last released 6\.9 years ago; warn at/,
     );
     expect(text(bridge, ".f2-reach")).toBe("direct");
-    expect(text(bridge, ".f2-next")).toBe("require ^5.4.52");
+    expect(text(bridge, ".f2-ready")).toBe("ready to run");
+    expect(row("symfony/yaml").querySelector(".f2-ready")).toBeNull();
+    expect(text(bridge, ".f2-move")).toBe("require ^5.4.52 · held by your composer.json");
+    expect(text(bridge, ".f2-major")).toBe("a new major");
+  });
+
+  test("prints a row's command as the POSIX line of its first step that names the package, spaces kept (§5.6, W2)", () => {
+    const composite = model("composite");
+    render(<App model={composite} />);
+
+    const twig = row("twig/twig").querySelector(".f2-cmd");
+    expect(twig?.textContent).toBe("composer require 'twig/twig:^3.27.0'");
+    expect(row("symfony/yaml").querySelector(".f2-cmd")?.textContent).toBe("composer update symfony/yaml");
+    // The prompt is CSS, never text a copy would take.
+    expect(twig?.querySelector("[aria-hidden]")).toBeNull();
+  });
+
+  test("prints the age once: the bar drops its number when a pill already says it", () => {
+    render(<App model={model("composite")} />);
+
+    const bridge = row("symfony/monolog-bridge");
+    expect(pills(bridge)).toContain("left-behind·6.9 y");
+    expect(bridge.querySelector(".age-bar")).not.toBeNull();
+    expect(bridge.querySelector(".age-num")).toBeNull();
+  });
+
+  test("ends a row's after text with the Composer caveat when its move assumes it, and the head says none", () => {
+    const composite = model("composite");
+    render(<App model={composite} />);
+
+    expect(document.querySelector(".f2-head-next .f2-head-note")).toBeNull();
+    expect(document.querySelector(".f2-caveat")).toBeNull();
+    const caveat = ", if Composer resolves it";
+    const carried = composite.report.findings.filter(
+      (f) => f.next_step?.if_applied?.assumes.includes("composer_resolves") === true,
+    );
+    expect(carried.length).toBeGreaterThan(0);
+    for (const f of composite.report.findings) {
+      const after = row(f.package).querySelector(".f2-after")?.textContent;
+      if (f.next_step?.if_applied == null) continue;
+      expect({ pkg: f.package, caveat: after?.endsWith(caveat) }).toEqual({
+        pkg: f.package,
+        caveat: carried.includes(f),
+      });
+    }
+    expect(row("symfony/yaml").querySelector(".f2-after")?.textContent).toBe("after it: 0, ok");
+  });
+
+  test("tags a major move at the end of the result line, and counts them in the group head", () => {
+    render(<App model={model("composite")} />);
+
+    for (const pkg of ["twig/twig", "symfony/monolog-bridge", "guzzlehttp/guzzle"])
+      expect(row(pkg).querySelector(".f2-meta > .f2-major")?.textContent).toBe("a new major");
+    expect(row("symfony/yaml").querySelector(".f2-major")).toBeNull();
+    // critical: twig, monolog-bridge and guzzle cross a major; symfony/debug's move does not say (null).
+    const heads = [...document.querySelectorAll(".fgroup-head")].map((head) => text(head, ".fgroup-major"));
+    expect(heads[0]).toBe("3 of 3 moves cross a major");
+  });
+
+  // PD-ROWS-20, WCAG 1.3.1: without a break the result and the tag read as one phrase ("…ok a new major").
+  test("separates the result from the major-move tag for a screen reader only", () => {
+    render(<App model={model("composite")} />);
+    const meta = row("twig/twig").querySelector(".f2-meta");
+    const after = meta?.querySelector(".f2-after")?.textContent ?? "";
+    const separator = meta?.querySelector(".f2-after + .vh");
+
+    expect(after).not.toBe("");
+    expect(separator?.textContent).toBe("; ");
+    expect(meta?.textContent).toBe(`${after}; a new major`);
+  });
+
+  test("puts the gate tag in the score cell, quiet under a head that says all fail", () => {
+    render(<App model={model("composite")} />);
+
+    const tags = [...document.querySelectorAll(".f2-gate")];
+    // composite: every critical and high finding fails, so each group head says "all fail".
+    expect(tags).toHaveLength(6);
+    expect(tags.every((tag) => tag.closest(".f2-score") !== null)).toBe(true);
+    expect(tags.every((tag) => tag.classList.contains("is-quiet"))).toBe(true);
+    expect(text(document.querySelector(".fgroup-head"), ".fgroup-gate")).toBe("all fail the gate");
   });
 
   test("says a package holds the move, and draws no age where no reading was judged", () => {
     render(<App model={model("composite")} />);
 
     const twig = row("twig/twig");
-    expect(text(twig, ".f2-next")).toBe("php floor raise · held");
+    expect(text(twig, ".f2-move")).toMatch(/^raise require\.php to >=8\.1 · held by symfony\/twig-bridge/);
     expect(twig.querySelector(".f2-age")?.classList.contains("is-empty")).toBe(true);
   });
 
@@ -135,7 +263,7 @@ describe("the report-2 Findings tab", () => {
     expect([...document.querySelectorAll(".frun-note")].map((note) => note.textContent)).toEqual([
       "4 packages, all vulnerable",
     ]);
-    expect(screen.getByRole("list", { name: "4 packages, all vulnerable" })).toBeTruthy();
+    expect(screen.getByRole("rowgroup", { name: "4 packages, all vulnerable" })).toBeTruthy();
   });
 
   test("names the packages whose advisories were not checked, each one click from its detail", () => {
@@ -166,10 +294,12 @@ describe("the report-2 All packages tab", () => {
     );
   }
 
-  test("heads its ten columns and opens in rank order", () => {
+  test("heads its columns, Data as of only when a day differs, and opens in rank order", () => {
     openPackages("composite");
 
-    expect(screen.getAllByRole("columnheader").map((th) => th.textContent.replace(/ [↑↓]$/, ""))).toEqual([
+    const head = (th: HTMLElement) =>
+      (th.querySelector(".sort-btn")?.textContent ?? th.textContent).replace(/ ?[↑↓]$/, "");
+    expect(screen.getAllByRole("columnheader").map(head)).toEqual([
       "Package",
       "Version",
       "Libyears",
@@ -179,7 +309,6 @@ describe("the report-2 All packages tab", () => {
       "Flags",
       "Reached",
       "Signals",
-      "Data as of",
     ]);
     expect([...document.querySelectorAll("tr[data-pkg]")].map((tr) => tr.getAttribute("data-pkg"))[0]).toBe(
       "twig/twig",
@@ -230,7 +359,7 @@ describe("the Findings list when it has no rows", () => {
     render(<App model={withReport(model("composite"), (report) => ({ ...report, findings: [] }))} />);
 
     const surface = document.querySelector('[data-surface="findings"]');
-    expect(surface?.textContent).toContain("Nothing was flagged.");
+    expect(surface?.textContent).toContain("Nothing is flagged.");
     expect(within(surface as HTMLElement).queryByRole("button", { name: "Clear filters" })).toBeNull();
   });
 
@@ -240,10 +369,10 @@ describe("the Findings list when it has no rows", () => {
     fireEvent.input(screen.getByRole("searchbox"), { target: { value: "no-such-package" } });
     const surface = document.querySelector('[data-surface="findings"]') as HTMLElement;
     expect(surface.textContent).toContain("Nothing matches this filter.");
-    expect(surface.textContent).not.toContain("Nothing was flagged.");
+    expect(surface.textContent).not.toContain("Nothing is flagged.");
 
     fireEvent.click(within(surface).getByRole("button", { name: "Clear filters" }));
-    expect(document.querySelectorAll('[data-surface="findings"] li.f2-row')).toHaveLength(7);
+    expect(document.querySelectorAll('[data-surface="findings"] .f2-row')).toHaveLength(9);
     expect(screen.getByRole<HTMLInputElement>("searchbox").value).toBe("");
   });
 
@@ -260,9 +389,7 @@ describe("the Findings list when it has no rows", () => {
     history.replaceState(null, "", "/report.html#view=packages");
     render(<App model={withReport(model("composite"), (report) => ({ ...report, findings: [] }))} />);
 
-    expect(document.querySelector('[data-surface="packages"]')?.textContent).toContain(
-      "Nothing was flagged.",
-    );
+    expect(document.querySelector('[data-surface="packages"]')?.textContent).toContain("Nothing is flagged.");
   });
 });
 
@@ -285,14 +412,18 @@ function withLinkRow(): Model {
 }
 
 function linkOf(pkg: string): HTMLAnchorElement {
-  const link = document.querySelector<HTMLAnchorElement>(`[data-surface="findings"] li[data-pkg="${pkg}"] a`);
+  const link = document.querySelector<HTMLAnchorElement>(
+    `[data-surface="findings"] [role="row"][data-pkg="${pkg}"] a`,
+  );
   if (link === null) throw new Error(`no link in ${pkg}`);
   return link;
 }
 
 describe("opening a row", () => {
   const openRow = (pkg: string): HTMLElement => {
-    const found = document.querySelector<HTMLElement>(`[data-surface="findings"] li[data-pkg="${pkg}"]`);
+    const found = document.querySelector<HTMLElement>(
+      `[data-surface="findings"] [role="row"][data-pkg="${pkg}"]`,
+    );
     if (found === null) throw new Error(`no row ${pkg}`);
     return found;
   };
@@ -312,7 +443,7 @@ describe("opening a row", () => {
     history.replaceState(null, "", "/report.html#view=advisories&pkg=symfony%2Fyaml");
     render(<App model={model("composite")} />);
     const rows = document.querySelectorAll<HTMLElement>(
-      '[data-surface="advisories"] li[data-pkg="symfony/yaml"]',
+      '[data-surface="advisories"] [role="row"][data-pkg="symfony/yaml"]',
     );
 
     fireEvent.click(rows[1] as HTMLElement);
@@ -342,7 +473,7 @@ describe("the list's one Tab stop", () => {
   test("is the first Findings row with nothing open, and a link of any other row is out of the Tab order", () => {
     render(<App model={withLinkRow()} />);
 
-    expect(stops('[data-surface="findings"] li.f2-row')).toEqual(["twig/twig"]);
+    expect(stops('[data-surface="findings"] .f2-row')).toEqual(["twig/twig"]);
     expect(linkOf(LINK_ROW).tabIndex).toBe(-1);
   });
 
@@ -350,14 +481,14 @@ describe("the list's one Tab stop", () => {
     history.replaceState(null, "", `/report.html#pkg=${encodeURIComponent(LINK_ROW)}`);
     render(<App model={withLinkRow()} />);
 
-    expect(stops('[data-surface="findings"] li.f2-row')).toEqual([LINK_ROW]);
+    expect(stops('[data-surface="findings"] .f2-row')).toEqual([LINK_ROW]);
     expect(linkOf(LINK_ROW).tabIndex).toBe(0);
   });
 
   test("is the open package's row, on Findings and on All packages", () => {
     history.replaceState(null, "", "/report.html#pkg=symfony%2Fdebug");
     render(<App model={model("composite")} />);
-    expect(stops('[data-surface="findings"] li.f2-row')).toEqual(["symfony/debug"]);
+    expect(stops('[data-surface="findings"] .f2-row')).toEqual(["symfony/debug"]);
 
     fireEvent.click(screen.getByRole("tab", { name: /^All packages/ }));
     expect(stops('[data-surface="packages"] tr[data-pkg]')).toEqual(["symfony/debug"]);
@@ -368,12 +499,14 @@ describe("the list's one Tab stop", () => {
     render(<App model={model("composite")} />);
 
     const rows = [
-      ...document.querySelectorAll<HTMLElement>('[data-surface="advisories"] li[data-pkg="symfony/yaml"]'),
+      ...document.querySelectorAll<HTMLElement>(
+        '[data-surface="advisories"] [role="row"][data-pkg="symfony/yaml"]',
+      ),
     ];
     expect(rows.length).toBeGreaterThan(1);
     expect(rows.map((row) => row.tabIndex)).toEqual(rows.map((_, index) => (index === 0 ? 0 : -1)));
     expect(rows.every((row) => row.getAttribute("aria-current") === "true")).toBe(true);
-    expect(stops('[data-surface="advisories"] li[data-pkg]')).toEqual(["symfony/yaml"]);
+    expect(stops('[data-surface="advisories"] [role="row"][data-pkg]')).toEqual(["symfony/yaml"]);
   });
 });
 
@@ -382,8 +515,8 @@ describe("the age axis in the Findings column head", () => {
     render(<App model={model("composite")} />);
 
     // composite: release-warn-years 3 and release-high-years 5, so the axis runs to 10.
-    const axis = screen.getByRole("img", { name: /^age axis:/ });
-    expect(axis.getAttribute("aria-label")).toBe(
+    const axis = screen.getByRole("columnheader", { name: "Years since release" });
+    expect(axis.getAttribute("title")).toBe(
       "age axis: years since the last release, 0 to 10 and more; warn at 3 years, high at 5 years",
     );
     expect([...axis.querySelectorAll(".fhead-tick")].map((tick) => tick.textContent)).toEqual([
@@ -416,6 +549,20 @@ describe("the age axis in the Findings column head", () => {
     expect(text(row("tubalmartin/cssmin"), ".age-num")).toBe("12.0");
   });
 
+  test("marks the end of a bar whose reading lockrot judged high, and no other", () => {
+    const m = model("composite");
+    render(<App model={m} />);
+
+    const levels = m.report.findings.flatMap((f) => {
+      const bar = row(f.package).querySelector(".age-bar");
+      return bar === null
+        ? []
+        : [[ageReading(f, m.report.run)?.level === "high", bar.classList.contains("is-high")]];
+    });
+    expect(levels.some(([high]) => high)).toBe(true);
+    expect(levels.every(([high, marked]) => high === marked)).toBe(true);
+  });
+
   test("is not drawn, and no row draws a scale, when the run recorded no thresholds", () => {
     const bare = withReport(model("composite"), (report) => ({
       ...report,
@@ -441,8 +588,11 @@ describe("a long package name", () => {
     fireEvent.click(screen.getByRole("tab", { name: /^All packages/ }));
     const cell = document.querySelector('tr[data-pkg="symfony/monolog-bridge"] .p2-name');
     expect(cell?.querySelector("wbr")).not.toBeNull();
-    expect(text(cell, ".p2-unit")).toBe("monolog-bridge");
-    expect(cell?.textContent).toBe("symfony/monolog-bridge");
+    expect([...(cell?.querySelectorAll(".p2-unit") ?? [])].map((unit) => unit.textContent)).toEqual([
+      "symfony/",
+      "monolog-bridge",
+    ]);
+    expect(cell?.querySelector(".pkg-word")?.textContent).toBe("symfony/monolog-bridge");
   });
 });
 
@@ -471,5 +621,28 @@ describe("the All packages table as a list", () => {
     expect(scores).toEqual([...scores].sort((a, b) => a - b));
     expect(screen.getByRole("columnheader", { name: /Score/ }).getAttribute("aria-sort")).toBe("ascending");
     expect(screen.getByRole("columnheader", { name: /Package/ }).getAttribute("aria-sort")).toBe("none");
+  });
+});
+
+// PD-ROWS-20, unverified with a screen reader: a row's role does not say that Enter opens it.
+describe("the row hint of a list", () => {
+  test.each([
+    ["findings", ".fledger"],
+    ["packages", "table.p2-table"],
+    ["radius", "ul.r2-list"],
+  ])("the %s list refers to the hidden hint", (view, list) => {
+    history.replaceState(null, "", `/report.html#view=${view}`);
+    render(<App model={model("composite")} />);
+    const containers = [...document.querySelectorAll(list)];
+    const hints = containers.map((node) => {
+      const id = node.getAttribute("aria-describedby") ?? "";
+      const hint = document.getElementById(id);
+      return { text: hint?.textContent, hidden: hint?.hidden };
+    });
+
+    expect(containers.length).toBeGreaterThan(0);
+    expect(new Set(hints.map((hint) => JSON.stringify(hint)))).toEqual(
+      new Set([JSON.stringify({ text: "Press Enter on a row to open its package.", hidden: true })]),
+    );
   });
 });

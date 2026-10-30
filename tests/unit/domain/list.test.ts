@@ -11,7 +11,7 @@ import type { Finding, Report2 } from "../../../src/model/report";
 import { EMPTY_FILTERS, INITIAL_STATE, type Filters, type State } from "../../../src/state/types";
 import { advisoryRows } from "../../../src/domain/advisoryRows";
 import { fixLabel } from "../../../src/domain/pageVocabulary";
-import { readContractJson } from "../words/recorded";
+import { multiFindingReports, readContractJson } from "../words/recorded";
 
 const composite = readContractJson("report-2", "composite.json") as Report2;
 const partial = readContractJson("report-2", "D-partial-dagger.json") as Report2;
@@ -25,7 +25,7 @@ function only<T>(items: readonly T[]): T {
 /** The composite plus D-partial's cssmin, whose `stale` no term names, under a name of its own. */
 const withAccepted: Report2 = {
   ...composite,
-  findings: [...composite.findings, { ...only(partial.findings), package: "partial/cssmin", rank: 8 }],
+  findings: [...composite.findings, { ...only(partial.findings), package: "partial/cssmin", rank: 10 }],
 };
 
 function state(overrides: Partial<State> = {}, filters: Partial<Filters> = {}): State {
@@ -46,12 +46,30 @@ function names(findings: readonly Finding[]): string[] {
 const BY_RANK = [
   "twig/twig",
   "symfony/monolog-bridge",
+  "guzzlehttp/guzzle",
   "symfony/debug",
   "friendsofsymfony/oauth-server-bundle",
   "tubalmartin/cssmin",
   "symfony/yaml",
   "symfony/polyfill-intl-idn",
+  "friendsofsymfony/oauth2-php",
 ];
+
+/** The composite as a run that checked every move: the recorded document holds no `run.move_check`. */
+const checked: Report2 = {
+  ...composite,
+  findings: composite.findings.map((f) =>
+    f.next_step === null
+      ? f
+      : {
+          ...f,
+          next_step: {
+            ...f.next_step,
+            check: { result: "resolves", form: "inline", reason: null, installs: null },
+          },
+        },
+  ),
+};
 
 describe("population2", () => {
   it("lists the graded findings on Findings and Blast radius", () => {
@@ -66,6 +84,7 @@ describe("population2", () => {
     expect(names(population2(composite, "advisories"))).toEqual([
       "twig/twig",
       "symfony/monolog-bridge",
+      "guzzlehttp/guzzle",
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
     ]);
@@ -94,10 +113,11 @@ describe("applyFilters2", () => {
   it("keeps the findings no line of composer.json names for the unnamed scope", () => {
     expect(names(applyFilters2(composite, state({}, { scope: ["unnamed"] }), "findings"))).toEqual([
       "symfony/polyfill-intl-idn",
+      "friendsofsymfony/oauth2-php",
     ]);
   });
 
-  it("keeps a finding with an advisory row of a selected severity or fix kind", () => {
+  it("keeps a finding with an advisory row of a selected severity, or of a selected fix kind", () => {
     expect(names(applyFilters2(composite, state({}, { sev: ["critical"] }), "findings"))).toEqual([
       "twig/twig",
     ]);
@@ -108,12 +128,42 @@ describe("applyFilters2", () => {
     ]);
   });
 
+  it("M4: keeps a finding by its security.fix_kind, as the Overview fix counts do (monica)", () => {
+    const report = structuredClone(composite);
+    const yaml = report.findings.find((f) => f.package === "symfony/yaml");
+    if (yaml?.security.status !== "vulnerable") throw new Error("symfony/yaml is vulnerable");
+    yaml.security.fix_kind = "upgrade";
+
+    expect(names(applyFilters2(report, state({}, { fix: ["upgrade"] }), "findings"))).toEqual([
+      "symfony/monolog-bridge",
+      "symfony/yaml",
+    ]);
+    expect(names(applyFilters2(report, state({}, { fix: ["update"] }), "findings"))).toEqual([
+      "symfony/polyfill-intl-idn",
+    ]);
+  });
+
+  it("M4: keeps an advisory on the Advisories tab by its own fix kind, whatever its package's", () => {
+    const mixed = readContractJson("report-2", "guzzle-mixed.json") as Report2;
+    const guzzle = mixed.findings.find((f) => f.package === "guzzlehttp/guzzle");
+    if (guzzle?.security.status !== "vulnerable") throw new Error("guzzle-mixed has a vulnerable guzzle");
+    expect(guzzle.security.fix_kind).toBe("raise-php");
+
+    expect(names(applyFilters2(mixed, state({}, { fix: ["upgrade"] }), "advisories"))).toContain(
+      "guzzlehttp/guzzle",
+    );
+    expect(names(applyFilters2(mixed, state({}, { fix: ["upgrade"] }), "findings"))).not.toContain(
+      "guzzlehttp/guzzle",
+    );
+  });
+
   it("filters by verdict, the gate and the search box", () => {
     expect(names(applyFilters2(composite, state({}, { verdict: ["low"] }), "findings"))).toEqual([
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
+      "friendsofsymfony/oauth2-php",
     ]);
-    expect(applyFilters2(composite, state({}, { gate: ["fails"] }), "findings")).toHaveLength(5);
+    expect(applyFilters2(composite, state({}, { gate: ["fails"] }), "findings")).toHaveLength(6);
     expect(names(applyFilters2(composite, state({ q: "flag:stale score:>=18" }), "findings"))).toEqual([
       "friendsofsymfony/oauth-server-bundle",
       "tubalmartin/cssmin",
@@ -130,8 +180,10 @@ describe("applyFilters2", () => {
       "symfony/monolog-bridge",
       "symfony/debug",
       "twig/twig",
+      "guzzlehttp/guzzle",
       "friendsofsymfony/oauth-server-bundle",
       "tubalmartin/cssmin",
+      "friendsofsymfony/oauth2-php",
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
     ]);
@@ -147,6 +199,8 @@ describe("applyFilters2", () => {
       "symfony/monolog-bridge",
       "tubalmartin/cssmin",
       "symfony/debug",
+      "friendsofsymfony/oauth2-php",
+      "guzzlehttp/guzzle",
       "symfony/yaml",
       "twig/twig",
       "friendsofsymfony/oauth-server-bundle",
@@ -155,11 +209,14 @@ describe("applyFilters2", () => {
     const unreached = readContractJson("report-2", "unreached.json") as Report2;
     const withUnreached = {
       ...composite,
-      findings: [...composite.findings, { ...only(unreached.findings), rank: 8 }],
+      findings: [...composite.findings, { ...only(unreached.findings), rank: 10 }],
     };
     expect(names(applyFilters2(withUnreached, state({ sort: "reached" }), "packages"))).toEqual([
-      ...BY_RANK.filter((pkg) => pkg !== "symfony/polyfill-intl-idn"),
+      ...BY_RANK.filter(
+        (pkg) => pkg !== "symfony/polyfill-intl-idn" && pkg !== "friendsofsymfony/oauth2-php",
+      ),
       "symfony/polyfill-intl-idn",
+      "friendsofsymfony/oauth2-php",
       "fgrosse/phpasn1",
     ]);
   });
@@ -171,6 +228,87 @@ describe("hiddenByFilters2", () => {
     expect(hiddenByFilters2(composite, hiding, "twig/twig")).toBe(true);
     expect(hiddenByFilters2(composite, state(), "twig/twig")).toBe(false);
     expect(hiddenByFilters2(composite, hiding, "not/listed")).toBe(false);
+  });
+});
+
+describe("ready to run (accepted derivation 10)", () => {
+  it("lists the findings whose lead move is ready to run, in rank order", () => {
+    expect(applyFilters2(checked, state({}, { gate: ["ready"] }), "findings").map((f) => f.package)).toEqual([
+      "symfony/monolog-bridge",
+      "symfony/yaml",
+      "symfony/polyfill-intl-idn",
+    ]);
+  });
+
+  it("lists nothing as ready when the run checked no move", () => {
+    expect(applyFilters2(composite, state({}, { gate: ["ready"] }), "findings")).toEqual([]);
+  });
+
+  it("ANDs with Fails this run, and the rail row counts what its click lists", () => {
+    const both = applyFilters2(checked, state({}, { gate: ["fails", "ready"] }), "findings");
+    expect(both.map((f) => f.package)).toEqual(["symfony/monolog-bridge"]);
+    const gate = railGroups2(checked, state({}, { gate: ["fails"] })).find((group) => group.group === "gate");
+    expect(gate?.rows.find((row) => row.key === "ready")?.count).toBe(1);
+  });
+
+  it("lists the held findings, and ANDs held with the other This run filters", () => {
+    expect(applyFilters2(composite, state({}, { gate: ["held"] }), "findings").map((f) => f.package)).toEqual(
+      ["twig/twig"],
+    );
+    expect(applyFilters2(checked, state({}, { gate: ["held", "ready"] }), "findings")).toHaveLength(0);
+  });
+
+  it("lists the findings that need another way out, and offers the row only when the run fails", () => {
+    expect(applyFilters2(checked, state({}, { gate: ["wayout"] }), "findings").map((f) => f.package)).toEqual(
+      ["guzzlehttp/guzzle", "symfony/debug", "friendsofsymfony/oauth-server-bundle", "tubalmartin/cssmin"],
+    );
+    const passing = { ...composite, gate: { ...composite.gate, fails: false } };
+    const keys = (report: typeof composite): string[] =>
+      railGroups2(report, state())
+        .find((group) => group.group === "gate")
+        ?.rows.map((row) => row.key) ?? [];
+    expect(keys(composite)).toContain("wayout");
+    expect(keys(passing)).not.toContain("wayout");
+    expect(fitFilters2(passing, { ...EMPTY_FILTERS, gate: ["wayout"] }).gate).toEqual([]);
+  });
+
+  it("keeps the key in an address even on a run that fails nothing", () => {
+    const passing = { ...composite, gate: { ...composite.gate, fails: false } };
+    expect(fitFilters2(passing, { ...EMPTY_FILTERS, gate: ["fails", "ready", "held"] }).gate).toEqual([
+      "ready",
+      "held",
+    ]);
+  });
+});
+
+describe("fitFilters2 on scope and since values (R5-28)", () => {
+  const baselined = multiFindingReports().find(({ name }) => name === "baselined/wallabag-2.6")?.report;
+  if (baselined?.baseline == null) throw new Error("no baselined report");
+
+  it("drops a value that is no key of the group, a prototype name included", () => {
+    const fitted = fitFilters2(baselined, {
+      ...EMPTY_FILTERS,
+      scope: ["constructor", "dev", "x"],
+      since: ["toString", "new", "x"],
+    });
+
+    expect([fitted.scope, fitted.since]).toEqual([["dev"], ["new"]]);
+  });
+
+  it("returns the filters unchanged when every value is a key of its group", () => {
+    const filters: Filters = { ...EMPTY_FILTERS, scope: ["direct", "unnamed"], since: ["worsened"] };
+
+    expect(fitFilters2(baselined, filters)).toBe(filters);
+  });
+
+  it("drops every since value on a run with no baseline, so the list does not empty", () => {
+    const fitted = fitFilters2(composite, { ...EMPTY_FILTERS, since: ["new", "known"] });
+
+    expect(composite.baseline).toBeNull();
+    expect(fitted.since).toEqual([]);
+    expect(applyFilters2(composite, { ...state(), filters: fitted }, "findings")).toEqual(
+      applyFilters2(composite, state(), "findings"),
+    );
   });
 });
 
@@ -210,10 +348,10 @@ describe("railGroups2", () => {
     expect(flag?.rows.map((row) => [row.key, row.count])).toEqual([
       ["abandoned", 1],
       ["pinned", 1],
-      ["left-behind", 1],
+      ["left-behind", 2],
       ["old-promise", 3],
-      ["stale", 2],
-      ["vulnerable", 4],
+      ["stale", 3],
+      ["vulnerable", 5],
     ]);
   });
 
@@ -256,7 +394,7 @@ describe("railGroups2", () => {
     expect(flag?.rows.find((row) => row.key === "abandoned")).toEqual({
       key: "abandoned",
       label: "abandoned",
-      count: 3,
+      count: 4,
       on: false,
     });
   });
@@ -290,7 +428,7 @@ describe("railGroups2", () => {
     expect(scope?.rows.find((row) => row.key === "unnamed")).toEqual({
       key: "unnamed",
       label: "not in composer.json",
-      count: 1,
+      count: 2,
       on: false,
     });
   });
@@ -329,15 +467,20 @@ describe("renderedPackages2", () => {
     expect(renderedPackages2(composite, state({}, { verdict: ["low"] }), "findings")).toEqual([
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
+      "friendsofsymfony/oauth2-php",
     ]);
     expect(renderedPackages2(composite, state(), "packages")).toEqual(BY_RANK);
     expect(renderedPackages2(composite, state(), "advisories")).toEqual([
-      "symfony/polyfill-intl-idn",
-      ...Array<string>(3).fill("symfony/yaml"),
-      "symfony/monolog-bridge",
       ...Array<string>(15).fill("twig/twig"),
+      "symfony/monolog-bridge",
+      ...Array<string>(9).fill("guzzlehttp/guzzle"),
+      ...Array<string>(3).fill("symfony/yaml"),
+      "symfony/polyfill-intl-idn",
     ]);
-    expect(renderedPackages2(composite, state(), "radius")).toEqual(["guzzlehttp/guzzle"]);
+    expect(renderedPackages2(composite, state(), "radius")).toEqual([
+      "friendsofsymfony/oauth-server-bundle",
+      "guzzlehttp/guzzle",
+    ]);
   });
 });
 
@@ -352,5 +495,18 @@ describe("the Since filter (M19)", () => {
       const kept = names(applyFilters2(report, state({}, { since: [since] }), "findings"));
       expect(kept, since).toEqual(since === recorded.baseline?.status ? [recorded.package] : []);
     }
+  });
+});
+
+describe("the rail's unit on the Advisories tab (R2-42)", () => {
+  const titles = (view: State["view"]) =>
+    Object.fromEntries(railGroups2(composite, state({ view })).map((group) => [group.group, group.title]));
+
+  it("names packages in the Severity and Fix titles, since the tab lists advisories", () => {
+    expect(titles("advisories")).toMatchObject({ sev: "Severity (packages)", fix: "Fix (packages)" });
+  });
+
+  it("keeps the plain titles on a tab that lists packages", () => {
+    expect(titles("findings")).toMatchObject({ sev: "Severity", fix: "Fix" });
   });
 });

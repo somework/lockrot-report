@@ -6,21 +6,22 @@ import type { Finding, Report2, Run, S9fix, S9row } from "../model/report";
 import type { Filters } from "../state/types";
 import { advisoryRows } from "./advisoryRows";
 import { advisoryListPartial } from "./copySummary";
+import { safeHref } from "./links";
 import { plural } from "./format";
-import { joinAnd } from "./joinWords";
 import { causeWord, fixLabel, lookupWord } from "./pageVocabulary";
-import { holderWord } from "./securityLine";
+import { heldByLine, heldByWords } from "./findingRow";
 
 export interface AdvisoryPair2 {
   readonly finding: Finding;
   readonly row: S9row;
 }
 
+/** One package's advisories in lockrot's order: a group never mixes packages. */
 export interface AdvisoryGroup2 {
-  readonly kind: string;
-  readonly toBranch: string | null;
-  readonly heading: string;
+  readonly finding: Finding;
   readonly pairs: readonly AdvisoryPair2[];
+  /** Per row, the id of the group's earlier row that carries the same CVE (G135), else null. */
+  readonly sameAs: readonly (string | null)[];
 }
 
 /** The rows of each finding in the order given, narrowed by the sev and fix rail buttons row by row. */
@@ -33,36 +34,23 @@ export function advisoryPairs2(findings: readonly Finding[], filters: Filters): 
   );
 }
 
-const groupKey = ({ kind, to_branch: branch }: S9fix): string => `${kind}\u0000${branch ?? ""}`;
-
-function branchOrder(a: string | null, b: string | null): number {
-  if (a === b) return 0;
-  if (a === null) return 1;
-  if (b === null) return -1;
-  return a.localeCompare(b, undefined, { numeric: true });
-}
-
-/** In `score_model.fix_kinds` order, an unknown kind after them; branches lowest first, none last. */
-export function advisoryGroups2(run: Run, pairs: readonly AdvisoryPair2[]): readonly AdvisoryGroup2[] {
-  const kinds = run.score_model.fix_kinds.map(({ id }) => id);
-  const rank = (kind: string): number => (kinds.includes(kind) ? kinds.indexOf(kind) : kinds.length);
+/** In the order of the rows given, which is `rank` order. */
+export function advisoryGroups2(pairs: readonly AdvisoryPair2[]): readonly AdvisoryGroup2[] {
   const groups = new Map<string, AdvisoryPair2[]>();
   for (const pair of pairs) {
-    const key = groupKey(pair.row.fix);
-    groups.set(key, [...(groups.get(key) ?? []), pair]);
+    const pkg = pair.finding.package;
+    groups.set(pkg, [...(groups.get(pkg) ?? []), pair]);
   }
-  return [...groups.values()]
-    .map((members) => {
-      const { kind, to_branch: toBranch } = (members[0] as AdvisoryPair2).row.fix;
-      const label = fixLabel(kind);
-      return {
-        kind,
-        toBranch,
-        heading: toBranch === null ? label : `${label} · ${toBranch}`,
-        pairs: members,
-      };
-    })
-    .sort((a, b) => rank(a.kind) - rank(b.kind) || branchOrder(a.toBranch, b.toBranch));
+  return [...groups.values()].map((members) => {
+    const first = new Map<string, string>();
+    const sameAs = members.map(({ row }) => {
+      if (row.cve === null) return null;
+      const earlier = first.get(row.cve);
+      if (earlier === undefined) first.set(row.cve, row.id);
+      return earlier ?? null;
+    });
+    return { finding: (members[0] as AdvisoryPair2).finding, pairs: members, sameAs };
+  });
 }
 
 /** The package names the tab draws as rows, top to bottom (`j`/`k`); a package repeats per row. */
@@ -149,18 +137,50 @@ export function noAdvisoryLine(report: Report2): string {
   return word === null ? "No advisory affects this lock." : `No advisory found (${word}).`;
 }
 
-/** What holds a fix and the PHP it needs: "needs PHP >=8.1.0 · held by composer.json and symfony/twig-bridge". */
-export function advisoryFixNote({ kind, php, held_by: heldBy }: S9fix): string | null {
-  const parts = [
-    ...(php !== null && (kind === "raise-php" || kind === "blocked") ? [`needs PHP ${php}`] : []),
-    ...(heldBy.length > 0 ? [`held by ${joinAnd([...new Set(heldBy.map(holderWord))])}`] : []),
-  ];
+/** What holds a fix and the PHP it needs: "needs PHP >=8.1.0 · held by symfony/twig-bridge", with
+ *  the holders as a Findings row says them (accepted derivation 3). */
+export function advisoryFixNote(fix: S9fix, run: Run, own: string): string | null {
+  const held = heldByLine(fix.held_by, run, own);
+  const parts = [advisoryFixPhp(fix), held === null ? null : heldByWords(held)].filter((p) => p !== null);
   return parts.length === 0 ? null : parts.join(" · ");
+}
+
+/** The PHP a fix needs, when lockrot says that the target PHP or the project's PHP floor does not
+ *  admit it. A null answer is no answer. */
+export function advisoryFixPhp({
+  php,
+  admits_target_php: target,
+  admits_project_php: project,
+}: S9fix): string | null {
+  return php !== null && (target === false || project === false) ? `needs PHP ${php}` : null;
 }
 
 /** The band a severity's square and word take, by lookup in the model. */
 export const advisoryBand = (run: Run, severity: string): string | null =>
   run.score_model.severities.find(({ id }) => id === severity)?.band ?? null;
+
+export interface AdvisoryId {
+  readonly text: string;
+  readonly href: string | null;
+  /** The "no CVE assigned" placeholder, which is no id. */
+  readonly noCve: boolean;
+}
+
+/** The ids a row shows. lockrot's `link` belongs to the source id, so only that id links, and a
+ *  different CVE id is text. The page builds no URL. */
+export function advisoryIds({ cve, id, link }: Pick<S9row, "cve" | "id" | "link">): readonly AdvisoryId[] {
+  const href = safeHref(link);
+  if (cve === null)
+    return [
+      { text: ADVISORY_HEAD.noCve, href: null, noCve: true },
+      { text: id, href, noCve: false },
+    ];
+  if (id === cve) return [{ text: cve, href, noCve: false }];
+  return [
+    { text: cve, href: null, noCve: false },
+    { text: id, href, noCve: false },
+  ];
+}
 
 /** A row's accessible name: one package can carry several rows. */
 export const advisoryRowLabel2 = ({ finding, row }: AdvisoryPair2): string =>
@@ -173,7 +193,35 @@ export const ADVISORY_HEAD = {
   aff: "Affects",
   fix: "Fixed by",
   noCve: "no CVE assigned",
+  sameAs: "same CVE as",
   reported: "reported",
   affects: "affects",
   fixedBy: "fixed by",
 } as const;
+
+export interface AdvisoryGroupNotes {
+  readonly package: string;
+  /** "{id}: same CVE as {earlier id}", one per repeating row. */
+  readonly same_cve_as: readonly string[];
+  /** The distinct fix notes, in row order. */
+  readonly fix_notes: readonly string[];
+}
+
+/** Each package group's repeated CVEs and fix notes, with no filter (golden `advisory_groups`). */
+export function advisoryGroupNotes(report: Report2): AdvisoryGroupNotes[] {
+  const findings = report.findings.filter((f) => advisoryRows(f).length > 0).sort((a, b) => a.rank - b.rank);
+  return advisoryGroups2(advisoryPairs2(findings, { sev: [], fix: [] } as unknown as Filters)).map(
+    ({ finding, pairs, sameAs }) => ({
+      package: finding.package,
+      same_cve_as: pairs.flatMap(({ row }, at) => {
+        const earlier = sameAs[at];
+        return earlier === null || earlier === undefined
+          ? []
+          : [`${row.id}: ${ADVISORY_HEAD.sameAs} ${earlier}`];
+      }),
+      fix_notes: [
+        ...new Set(pairs.flatMap(({ row }) => advisoryFixNote(row.fix, report.run, finding.package) ?? [])),
+      ],
+    }),
+  );
+}

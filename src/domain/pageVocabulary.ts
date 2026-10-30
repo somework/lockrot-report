@@ -4,6 +4,9 @@
  * `contract/en/` equals its recording (`PageVocabularyTest`).
  */
 
+import type { MoveCheck } from "../model/report";
+import { plain, type Rich } from "./rich";
+
 type Words = Readonly<Record<string, string>>;
 
 export function wordFor(table: Words, id: string): string {
@@ -49,6 +52,7 @@ const SIGNAL_NAMES: Words = {
   S8: "release branch",
   S9: "advisories",
   S10: "unchecked",
+  S11: "PHP cap",
 };
 
 export const signalName = (id: string): string => wordFor(SIGNAL_NAMES, id);
@@ -80,9 +84,21 @@ const ALLOWLIST_REASONS: Words = {
 export const allowlistReason = (id: string): string | null =>
   Object.hasOwn(ALLOWLIST_REASONS, id) ? (ALLOWLIST_REASONS[id] ?? null) : null;
 
-const ZERO_VERDICT_WHEN: Words = { allowlisted: "allowlisted", no_metadata: "no metadata" };
+export interface ZeroVerdictMark {
+  readonly word: string;
+  readonly mark: "soft" | "ring-dot" | "hatch";
+}
 
-export const zeroVerdictWhen = (id: string): string => wordFor(ZERO_VERDICT_WHEN, id);
+const ZERO_VERDICT_MARKS: Readonly<Record<string, ZeroVerdictMark>> = {
+  ok: { word: "ok", mark: "soft" },
+  finished: { word: "finished", mark: "ring-dot" },
+  unknown: { word: "not judged", mark: "hatch" },
+};
+
+/** The page's word and waffle mark for a score-0 verdict, by the verdict's name; null for a graded
+ *  verdict or one the page does not know, which is filled and named as written. */
+export const zeroVerdictMark = (verdict: string): ZeroVerdictMark | null =>
+  Object.hasOwn(ZERO_VERDICT_MARKS, verdict) ? (ZERO_VERDICT_MARKS[verdict] ?? null) : null;
 
 const SKIPPED_CHECKS: Words = {
   repository_activity: "its repository activity",
@@ -90,9 +106,36 @@ const SKIPPED_CHECKS: Words = {
   release_metadata: "its release metadata",
   advisories: "its advisories",
   release_branch: "its release branch",
+  release_dates: "release dates",
+  releases: "releases",
 };
 
 export const skippedCheckWord = (id: string): string => wordFor(SKIPPED_CHECKS, id);
+
+/** A check id with words of its own; any other prints as written in a code element. */
+export const isKnownCheck = (id: string): boolean => Object.hasOwn(SKIPPED_CHECKS, id);
+
+/** `check.reason` → reason words (SPEC §7.9.21), in the table's order, the order of the way-out items.
+ *  The words are lockrot's `MoveCheck::REASON_WORDS`, so the page and `next_step.text` agree. */
+export const CHECK_REASON_WORDS: readonly (readonly [reason: string, words: string])[] = [
+  ["baseline_refused", "Composer refuses the lock itself"],
+  ["unloaded_name", "a package it needs could not be loaded"],
+  ["offline", "a package it needs is not in Composer's cache"],
+  ["install_time_budget", "the install-time budget ran out"],
+  ["not_from_composer_repository", "no Composer repository serves it"],
+  ["no_composer_json", "the project has no composer.json"],
+  ["composer_json_invalid", "Composer cannot load composer.json"],
+  ["no_release_read", "no release of the row was read"],
+  ["pass_cap", "Composer refused each move before it"],
+  ["solver_error", "Composer's solver failed on it"],
+  ["advisory_lookup_incomplete", "the advisory lookup did not cover a package in the result"],
+];
+
+/** A reason's words; an unknown reason as written, in a code element (SPEC §7.9.21). */
+export function checkReasonRich(reason: string): Rich {
+  const words = CHECK_REASON_WORDS.find(([id]) => id === reason)?.[1];
+  return words === undefined ? [{ code: reason }] : [words];
+}
 
 export const CAUSE_WORDS: Words = {
   above_listed_releases: "installed above every listed release",
@@ -100,7 +143,6 @@ export const CAUSE_WORDS: Words = {
   allowlisted: "allowlisted",
   anonymous_budget: "anonymous request budget spent",
   branch_snapshot: "a branch snapshot has no release branch",
-  composer_too_old: "Composer older than 2.4",
   fetch_failed: "request failed",
   host_not_supported: "host not supported",
   install_time_budget: "install-time budget spent",
@@ -181,6 +223,32 @@ export function metadataStatusWord(status: string, originKind: string): string {
   return wordFor(METADATA_STATUS, status);
 }
 
+const ORIGIN_KINDS: Words = {
+  packagist: "Packagist",
+  composer: "a Composer repository",
+  path: "a local path",
+  vcs: "a VCS repository",
+  artifact: "an artifact",
+  package: "an inline package in composer.json",
+  unknown: "unknown",
+};
+
+export const originKindWord = (kind: string): string => wordFor(ORIGIN_KINDS, kind);
+
+const PROVENANCE_STATUS: Words = {
+  read: "read",
+  not_from_composer_repository: "not from a Composer repository",
+  unavailable: "its repository could not be read",
+  not_found: "its repository does not list it",
+  not_read: "not read",
+};
+
+const ACTIVITY_STATUS: Words = { read: "read", not_found: "repository not found", not_read: "not read" };
+
+/** Provenance's metadata and activity status, a closed id in words. */
+export const metadataProvenanceWord = (status: string): string => wordFor(PROVENANCE_STATUS, status);
+export const activityProvenanceWord = (status: string): string => wordFor(ACTIVITY_STATUS, status);
+
 const HEADLINE_REASONS: Words = { archived: "archived", marked: "marked", branch_snapshot: "snapshot" };
 
 export const headlineReasonWord = (id: string): string => wordFor(HEADLINE_REASONS, id);
@@ -188,6 +256,7 @@ export const headlineReasonWord = (id: string): string => wordFor(HEADLINE_REASO
 const ADDS_BASIS: Words = {
   released_before_ga: "it was released before your target PHP's major",
   branch_not_releasing: "that line no longer releases while a higher line does",
+  stops_below_newest_php: "it stops below the newest PHP",
 };
 
 export const addsBasisWord = (id: string): string =>
@@ -373,8 +442,62 @@ const FLAG_CLAIMS: Words = {
   "old-promise":
     "The installed release predates the target PHP's major, and its require.php admits the target only because it has no upper bound.",
   stale: "No release for release-warn-years, or no push for push-warn-years, short of silent.",
+  capped: "It stops below the newest PHP.",
   vulnerable: "A counted security advisory affects the installed version.",
 };
 
 export const flagClaim = (id: string): string =>
   Object.hasOwn(FLAG_CLAIMS, id) ? wordFor(FLAG_CLAIMS, id) : "A flag this page does not know.";
+
+/** The skip link: to the rows of a tab that lists packages, else to the tab's content. */
+export const skipLinkLabel = (lists: boolean): string => (lists ? "Skip to the list" : "Skip to the content");
+
+/** What a row's role does not announce: Enter opens it. Read through `aria-describedby`. */
+export const ROW_HINT = "Press Enter on a row to open its package.";
+
+/** `next_step.kind` in the schema's `x-known-values` order (`#/definitions/move/properties/kind`),
+ *  each with the short words the move cards and the Findings row use for it. */
+export const MOVE_KIND_WORDS: readonly (readonly [kind: string, words: string])[] = [
+  ["replace", "replace"],
+  ["find-alternative", "find an alternative"],
+  ["tag", "move to a tag"],
+  ["require", "require"],
+  ["update", "composer update"],
+  ["raise-php", "raise PHP"],
+  ["test", "test"],
+  ["blocked", "blocked"],
+  ["no-tag", "no tag"],
+  ["no-move", "no move"],
+  ["no-fix", "no fix"],
+  ["no-single-fix", "see advisories"],
+];
+
+/** The way-out words for a finding with no move, by the `kind` of its `gate.by[]` entry, in that
+ *  field's `x-known-values` order. `unchecked` adds the words of the check that did not run. */
+export const GATE_KIND_WORDS: readonly (readonly [kind: string, words: string])[] = [
+  ["grade", "no move for its grade"],
+  ["flag", "no move for its flag"],
+  ["vulnerable", "no move for its advisories"],
+  ["unchecked", "unchecked"],
+];
+
+/** §7.9.16's words for a check that did not run, by the signal an `unchecked` gate value names. A
+ *  signal without words of its own reads "{signal name} not checked". */
+/** §7.9.16's words for the advisory check that did not run. */
+export const ADVISORY_NOT_RUN = "the advisory check did not run";
+
+const UNCHECKED_SIGNAL_WORDS: Readonly<Record<string, string>> = { S9: ADVISORY_NOT_RUN };
+
+export const uncheckedWords = (signal: string, name: string): string =>
+  Object.hasOwn(UNCHECKED_SIGNAL_WORDS, signal)
+    ? (UNCHECKED_SIGNAL_WORDS[signal] ?? signal)
+    : `${name} not checked`;
+
+/** The short words of a check that stopped a move (SPEC §7.9.21): "Composer refuses the move" or
+ *  "not checked: {reason words}"; null for a resolving check or none. */
+export function stoppedCheckWords(check: MoveCheck): string | null {
+  if (check === null) return null;
+  if (check.result === "refused") return "Composer refuses the move";
+  if (check.result === "not_checked") return `not checked: ${plain(checkReasonRich(check.reason ?? ""))}`;
+  return null;
+}

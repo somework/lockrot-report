@@ -33,6 +33,9 @@ export function report2Cases(): string[] {
 /** A package name of CSS-selector metacharacters, for the planted `report2-metachar` page. */
 export const METACHAR_NAME = `acme/q"u]o[te\\'<x>`;
 
+/** A branch version as long as one a real lock held, for the planted `report2-long-version` page. */
+export const LONG_VERSION = "dev-41542-extra-property-definition-endpoints";
+
 /** The corpus slice: the composite, the offline cases and the baselined embeds (by page case name). */
 export function isCorpusSlice(caseName: string): boolean {
   return caseName === "composite" || caseName.includes("offline") || caseName.startsWith("baselined-");
@@ -66,7 +69,79 @@ function baselinedPages(): Report2Page[] {
     }));
 }
 
+const SHEETS = join(ROOT, "fixtures", "sheets");
+
+/** A recorded sheet: one finding of a real lockrot run, with its run and its details entry. */
+interface RecordedSheet {
+  generated_at: string;
+  run: Report2Embed["report"]["run"];
+  baseline: Report2Embed["report"]["baseline"];
+  finding: Report2Embed["report"]["findings"][number];
+  details: Details[string];
+}
+
+/**
+ * One page per recorded sheet under `fixtures/sheets/`. The sheet reads only its finding, the run,
+ * `generated_at` and its details entry; the other root fields are the composite's, so only the
+ * detail sheet of such a page is meaningful. The slice carries no `run.score_rules_used`, which only
+ * the Run tab reads, so the composite's stands in.
+ */
+export function sheetPages(): Report2Page[] {
+  if (!existsSync(SHEETS)) return [];
+  const composite = assembleEmbed("composite").report;
+  return readdirSync(SHEETS)
+    .filter((file) => file.endsWith(".json"))
+    .sort()
+    .map((file) => {
+      const sheet = JSON.parse(readFileSync(join(SHEETS, file), "utf8")) as RecordedSheet;
+      return {
+        name: `sheet-${file.slice(0, -".json".length)}`,
+        embed: {
+          report: {
+            ...composite,
+            generated_at: sheet.generated_at,
+            run: { ...composite.run, ...sheet.run },
+            baseline: sheet.baseline,
+            findings: [sheet.finding],
+          },
+          details: { [sheet.finding.package]: sheet.details },
+        },
+      };
+    });
+}
+
+const modelPage = (name: string): { name: string; path: string[] } => ({
+  name: `page-${name}`,
+  path: ["schema", "documents", "page", `${name}.json`],
+});
+
+/** The page cases of `page-goldens.json` that carry a real move check or a PHP window state: lockrot's
+ *  engine runs of snipe-it and drupal-site, and the model's ‡ documents of real locks. None has an
+ *  explain-2, so no details. */
+const PAGE_CASES = [
+  { name: "page-snipe-it", path: ["contract", "page", "snipe-it.json"] },
+  { name: "page-drupal-site", path: ["contract", "page", "drupal-site.json"] },
+  { name: "page-mc-composite-dagger", path: ["schema", "documents", "cases", "mc-composite-dagger.json"] },
+  ...[
+    "snipe-it.unloaded-dagger",
+    "run.W74-dagger",
+    "run.MON-dagger",
+    "run.MON-8.5-dagger",
+    "run.MAU-dagger",
+    "run.LAM-dagger",
+    "composite.php-empty-with-dev-dagger",
+    "composite.php-override-dagger",
+  ].map(modelPage),
+];
+
+function pageCasePages(): Report2Page[] {
+  return PAGE_CASES.map(({ name, path }) => ({
+    name: `report2-${name}`,
+    embed: { report: readJson(...path) as Report2Embed["report"], details: {} },
+  }));
+}
+
 export function report2Pages(): Report2Page[] {
   const assembled = report2Cases().map((name) => ({ name: `report2-${name}`, embed: assembleEmbed(name) }));
-  return [...assembled, ...baselinedPages()];
+  return [...assembled, ...baselinedPages(), ...pageCasePages()];
 }

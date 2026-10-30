@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { createReportPage, type ReportPage } from "./support/report";
 import { report2Url } from "./support/pages";
 import { flagBars } from "./support/report2/overview";
+import { pageGolden } from "./support/report2/page-goldens";
 
 /**
  * Print (print.css, print/PrintDocument.tsx): the stylesheet hides the app chrome, and while the
@@ -107,19 +108,67 @@ test("printing from All packages adds it as the last section and says why", asyn
   await expect(page.getByText(/Printed because the page was open on All packages/)).toBeVisible();
 });
 
-test("the printed Blast radius is its top: each ranked row's packages stay folded", async ({ page }) => {
+test("the printed Blast radius opens every row's packages", async ({ page }) => {
   await report.gotoReport2WithHash("composite", "view=radius");
   await page.emulateMedia({ media: "print" });
   await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
 
-  // symfony/polyfill-intl-idn is listed under guzzlehttp/guzzle's row: shown when the tab itself prints.
+  // symfony/polyfill-intl-idn is listed under guzzlehttp/guzzle's row, closed on screen.
   await expect(
     page.locator('.pd [data-surface="radius"] li[data-pkg="symfony/polyfill-intl-idn"]'),
-  ).toHaveCount(0);
+  ).toBeVisible();
+});
+
+test("print opens every fold and prints affected_versions in full", async ({ page }) => {
+  await report.gotoReport2WithHash("composite", "view=run");
+  await page.emulateMedia({ media: "print" });
+  await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
+
+  await expect(page.locator(".pd details:not([open])")).toHaveCount(0);
+  await expect(page.locator(".pd .run2-rule").first()).toBeVisible();
+  // A clamp needs a hidden overflow; an inline box has no client height to compare in every engine.
+  const ranges = page.locator(".pd .ac2-range");
+  expect(await ranges.count()).toBeGreaterThan(0);
+  const clamps = await ranges.evaluateAll(
+    (cells) => cells.filter((cell) => getComputedStyle(cell).overflow !== "visible").length,
+  );
+  expect(clamps).toBe(0);
+});
+
+test("the printed weights table fits the page width", async ({ page }) => {
+  // A4's printable width: 210mm less 2 x 13mm margins at 96 dpi.
+  await page.setViewportSize({ width: 696, height: 1000 });
+  await report.gotoReport2("composite");
+  await page.emulateMedia({ media: "print" });
+  await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
+
+  const wrap = page.locator(".pd .run2-table-wrap").first();
+  const sizes = await wrap.evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+  expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
+});
+
+test("with a sheet open, print prints that package's sheet, its folds open", async ({ page }) => {
+  await report.gotoReport2WithHash("composite", "view=findings&pkg=twig%2Ftwig");
+  await expect(page.locator('main [data-surface="detail"]')).toBeVisible();
+
+  await page.emulateMedia({ media: "print" });
+
+  const sheet = page.locator('.pd [data-surface="detail"]');
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByRole("heading", { level: 2, name: "twig/twig" })).toBeVisible();
+  await expect(page.getByText("Printed from the sheet of twig/twig.", { exact: false })).toBeVisible();
+  expect(await printedSections(page)).toEqual([]);
+  await expect(sheet.locator("details:not([open])")).toHaveCount(0);
+  await expect(sheet.locator('.l1-btn[aria-expanded="false"]')).toHaveCount(0);
+
+  await page.emulateMedia({ media: "screen" });
+  await expect(page.locator(".pd")).toHaveCount(0);
+  await expect(page.locator('main [data-surface="detail"]')).toBeVisible();
 });
 
 test("the overview band carries the production rollup on screen and on paper", async ({ page }) => {
-  const rollup = "all 7 in production · 6 required directly, 1 pulled in";
+  const rollup = pageGolden("composite").lead_scope;
+  expect(rollup).toBe("all 9 in production · 7 required directly, 2 pulled in");
   await expect(page.getByText(rollup, { exact: true })).toBeVisible();
 
   await page.emulateMedia({ media: "print" });
@@ -166,7 +215,7 @@ test("printing from the dark theme prints dark ink on white", async ({ page }) =
   expect(ink).toBe("rgb(15, 26, 25)");
 });
 
-test("printed All packages heads are words, so the repeated head on a continuation page is not blank", async ({
+test("printed All packages heads are words, so the repeated head on a continuation page is not blank (no Data as of column when every row shares one date)", async ({
   page,
 }) => {
   await report.gotoReport2WithHash("composite", "view=packages");
@@ -183,20 +232,20 @@ test("printed All packages heads are words, so the repeated head on a continuati
     /^flags/i,
     /^reached/i,
     /^signals/i,
-    /^data as of/i,
   ]);
   await expect(page.locator(".pd-packages thead button")).toHaveCount(0);
 });
 
-// The scale that repeats over each printed Findings group reads as a scale: its ticks keep apart and
-// in order, at A4's printable width (210mm less 2 x 13mm margins at 96 dpi).
+// The score scale that repeats over each printed Findings group reads as a scale: its ticks keep
+// apart and in order, at A4's printable width (210mm less 2 x 13mm margins at 96 dpi).
 test("the printed Findings scale keeps its tick captions apart", async ({ page }) => {
   await page.setViewportSize({ width: 696, height: 1000 });
   await report.gotoReport2("composite");
   await page.emulateMedia({ media: "print" });
   await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
 
-  const ticks = page.locator(".pd-findings .fgroup").first().locator(".f2-print-scale .f2-head-tick");
+  const ticks = page.locator(".pd-findings .fgroup").first().locator(".f2-head .f2-head-tick");
+  await expect(ticks.first()).toBeVisible();
   const boxes = await ticks.evaluateAll((items) =>
     items.map((item) => {
       const { left, right } = item.getBoundingClientRect();
@@ -221,7 +270,7 @@ test.describe("report-2: the printed report reads the report-2 model", () => {
       await expect(page.locator(`.pd [data-surface="${surface}"]`)).toHaveCount(1);
     }
     await expect(page.locator(".pd .pd-lede").first()).toHaveText(
-      "7 flagged packages, by grade, each with every flag that fired.",
+      "9 flagged packages, by grade, each with every flag that fired.",
     );
   });
 
@@ -233,15 +282,23 @@ test.describe("report-2: the printed report reads the report-2 model", () => {
     await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
 
     await expect(page.locator('[data-surface="overview"]').filter({ visible: true })).toHaveCount(1);
-    await expect(page.locator(".pd .ov-grade")).toHaveText(
-      "Project grade: critical · 3 critical findings · 5 of 7 packages high or worse",
-    );
-    await expect(page.locator(".pd .ov-figure")).toHaveText("7 of 7 packages flagged · 0 ok · 0 allowlisted");
-    await expect(page.locator(".pd .wm-load")).toHaveText(
-      "144 points on 7 flagged packages · 140 (97 %) from high or worse · score model 1",
-    );
-    await expect(page.locator(".pd .wm-list > li .wm-text")).toHaveCount(7);
-    await expect(page.locator(".pd .wm-seg").first()).toHaveCSS("border-top-style", "solid");
+    const golden = pageGolden("composite");
+    await expect(page.locator(".pd .ov-grade")).toHaveText(golden.grade_line);
+    await expect(page.locator(".pd .ov-figure")).toHaveText(golden.figure_line);
+    await expect(page.locator(".pd .wm-load")).toHaveText(golden.load_line);
+    await expect(page.locator(".pd .wm-list > li .wm-terms")).toHaveCount(golden.weighs_most.rows.length);
+    // A grade mark is painted on paper (a solid or its tone's pattern), ringed so it keeps its edge.
+    const seg = await page
+      .locator(".pd .wm-seg")
+      .first()
+      .evaluate((el) => {
+        const style = getComputedStyle(el);
+        return {
+          painted: style.backgroundColor !== "rgba(0, 0, 0, 0)" || style.backgroundImage !== "none",
+          ringed: style.boxShadow !== "none",
+        };
+      });
+    expect(seg).toEqual({ painted: true, ringed: true });
     await expect(page.locator(".pd .f2-strip")).toHaveCount(0);
   });
 
@@ -251,7 +308,7 @@ test.describe("report-2: the printed report reads the report-2 model", () => {
     await page.goto(report2Url("composite"));
     await page.emulateMedia({ media: "print" });
     await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
-    const row = page.locator(`.pd [data-surface="findings"] li[data-pkg="${MONOLOG}"]`);
+    const row = page.locator(`.pd [data-surface="findings"] [role="row"][data-pkg="${MONOLOG}"]`);
     const adjust = await row
       .locator(".sbar-seg")
       .evaluateAll((items) => items.map((item) => getComputedStyle(item).printColorAdjust));
@@ -267,17 +324,20 @@ test.describe("report-2: the printed report reads the report-2 model", () => {
     const groups = page.locator('.pd [data-surface="findings"] .fgroup');
     // composite grades: critical, high and low.
     await expect(groups).toHaveCount(3);
-    await expect(groups.locator(".f2-print-scale")).toHaveCount(3);
-    await expect(groups.first().locator(".f2-print-scale .f2-head-tick")).toHaveText(["0", "8", "16", "32"]);
+    await expect(groups.locator(".f2-head")).toHaveCount(3);
+    await expect(groups.first().locator(".f2-head .f2-head-tick")).toHaveText(["0", "8", "16", "32"]);
     await page.emulateMedia({ media: "screen" });
-    await expect(page.locator(".f2-print-scale")).toHaveCount(0);
+    // The repeated heads belong to the printed document: the Overview on screen draws none.
+    await expect(page.locator(".f2-head")).toHaveCount(0);
   });
 
   test("the Why bar's ruler keeps its tones on paper", async ({ page }) => {
     await page.goto(`${report2Url("composite")}#pkg=${encodeURIComponent(MONOLOG)}`);
-    const ruler = page.locator('[data-surface="detail"] .d2-ruler');
-    await expect(ruler).toBeVisible();
+    await expect(page.locator('main [data-surface="detail"] .d2-ruler')).toBeVisible();
     await page.emulateMedia({ media: "print" });
+    // With a sheet open, the printed document is that sheet.
+    const ruler = page.locator('.pd [data-surface="detail"] .d2-ruler');
+    await expect(ruler).toBeVisible();
     expect(await ruler.evaluate((el) => getComputedStyle(el).printColorAdjust)).toBe("exact");
   });
 
@@ -288,11 +348,11 @@ test.describe("report-2: the printed report reads the report-2 model", () => {
       await page.emulateMedia({ colorScheme });
       await page.goto(report2Url("composite") + "#view=findings");
       const seg = page.locator(
-        `[data-surface="findings"] li[data-pkg="${MONOLOG}"] .sbar-seg.is-corroborating`,
+        `[data-surface="findings"] [role="row"][data-pkg="${MONOLOG}"] .sbar-seg.is-corroborating`,
       );
       const [tone, soft] = await seg.evaluate((el) => {
         const style = getComputedStyle(el);
-        return [style.getPropertyValue("--tone"), style.getPropertyValue("--tone-soft")];
+        return [style.getPropertyValue("--tone-mark"), style.getPropertyValue("--tone-soft")];
       });
       const lightness = (color: string): Promise<number> =>
         page.evaluate((c) => {
@@ -312,7 +372,7 @@ test.describe("report-2: the printed report reads the report-2 model", () => {
       await page.emulateMedia({ colorScheme });
       await page.goto(report2Url("composite") + "#view=findings");
       return page
-        .locator(`[data-surface="findings"] li[data-pkg="${MONOLOG}"] .sbar-seg.is-lead`)
+        .locator(`[data-surface="findings"] [role="row"][data-pkg="${MONOLOG}"] .sbar-seg.is-lead`)
         .evaluate((el) => getComputedStyle(el).backgroundColor);
     };
     expect(await toneIn("light")).not.toBe(await toneIn("dark"));
@@ -325,7 +385,7 @@ const SWEEP = ["A", "B-offline-dagger", "D", "E", "G", "ok-unchecked", "baseline
 
 test.describe("report-2: print across recorded cases", () => {
   for (const name of SWEEP) {
-    test(`${name}: the chrome hides, every section prints, the tones survive`, async ({ page }) => {
+    test(`${name}: the chrome hides, every section prints, the grade marks survive`, async ({ page }) => {
       const problems: string[] = [];
       page.on("console", (message) => {
         if (message.type() === "error") problems.push(`console: ${message.text()}`);
@@ -333,15 +393,22 @@ test.describe("report-2: print across recorded cases", () => {
       page.on("pageerror", (error) => problems.push(`pageerror: ${error.message}`));
       await page.goto(report2Url(name));
       const bar = flagBars(page).first().locator(".legend-seg").first();
-      const before =
-        (await bar.count()) > 0 ? await bar.evaluate((el) => getComputedStyle(el).backgroundColor) : null;
+      const hasBar = (await bar.count()) > 0;
 
       await page.emulateMedia({ media: "print" });
       await expect(page.getByRole("tab", { name: /^Findings/ })).toBeHidden();
       await expect.poll(() => printedSections(page)).toEqual(SECTIONS);
-      if (before !== null) {
-        expect(await bar.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(before);
-        expect(await bar.evaluate((el) => getComputedStyle(el).printColorAdjust)).toBe("exact");
+      if (hasBar) {
+        // On paper a grade takes its tone's pattern: the mark paints a colour or an image, kept by
+        // the print-color-adjust rule.
+        const mark = await bar.evaluate((el) => {
+          const style = getComputedStyle(el);
+          return {
+            painted: style.backgroundColor !== "rgba(0, 0, 0, 0)" || style.backgroundImage !== "none",
+            adjust: style.printColorAdjust,
+          };
+        });
+        expect(mark).toEqual({ painted: true, adjust: "exact" });
       }
 
       await page.emulateMedia({ media: "screen" });

@@ -5,7 +5,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { report2Url } from "./support/pages";
 import { openDetail2 } from "./support/report2/detail";
-import { findingsRow, findingsSurface } from "./support/report2/findings";
+import { findingsRow, findingsRows } from "./support/report2/findings";
 import { report2Pages } from "../scripts/report2-embed.ts";
 
 test.describe("report-2: the baseline on the Findings tab and the rail", () => {
@@ -15,9 +15,7 @@ test.describe("report-2: the baseline on the Findings tab and the rail", () => {
     .filter((f) => (embed?.report.run.graded_verdicts as readonly string[] | undefined)?.includes(f.verdict))
     .sort((a, b) => a.rank - b.rank);
   const rows = (page: Page) =>
-    findingsSurface(page)
-      .locator("li[data-pkg]")
-      .evaluateAll((items) => items.map((item) => item.getAttribute("data-pkg") ?? ""));
+    findingsRows(page).evaluateAll((items) => items.map((item) => item.getAttribute("data-pkg") ?? ""));
 
   test("the rail's Since rows count the graded findings in each baseline state", async ({ page }) => {
     await page.goto(report2Url(CASE) + "#view=findings");
@@ -29,7 +27,7 @@ test.describe("report-2: the baseline on the Findings tab and the rail", () => {
 
   test("a pasted since=new link lists exactly the new findings, in rank order", async ({ page }) => {
     await page.goto(report2Url(CASE) + "#since=new");
-    await expect(findingsSurface(page).locator("li[data-pkg]").first()).toBeVisible();
+    await expect(findingsRows(page).first()).toBeVisible();
     expect(await rows(page)).toEqual(
       graded.filter((f) => f.baseline?.status === "new").map((f) => f.package),
     );

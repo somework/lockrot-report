@@ -8,86 +8,99 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ## [Unreleased]
 
-## [0.14.0-rc.2]
+## [0.14.0]
 
-The page lockrot 0.14.0 writes with `--format=html`, second release candidate. The summary band
-gets a tab of its own, which says how bad the project is overall, and the other tabs lead with
-their own part.
-
-### Added
-
-- An Overview tab, the first tab and the default view. It holds the summary band, unfolded at
-  every width: the lead, then the charts. The charts are the flag ledger, the Security block,
-  "Weighs most", the exposure bars and the libyears table.
-- The lead opens with the project grade, in the largest type: "Project grade: critical · 3
-  critical findings · 25 of 183 packages high or worse". The grade is the worst grade a package
-  holds. The line adds "lookup partial" or "not checked", "{n} not judged" and "{n} known to the
-  baseline" when they apply. Under it: "37 of 183 packages flagged · 126 ok · 20 allowlisted",
-  then the grade chips, the waffle and lockrot's gate sentence.
-- "Weighs most" opens with the score load: "527 points on 37 flagged packages · 450 (85 %) from
-  high or worse". It then draws the 10 highest scores as bars on one scale, one segment per flag,
-  each flag in its own fill with a legend. lockrot's score sentence stands under each bar, and
-  "{n} more flagged packages hold {points} points ›" ends the list. The page shows no percentage
-  of a maximum, no 0 to 100 score and no average.
-- Each flag in the flag ledger adds the points it brings to the scores ("abandoned … 288 pts").
-- The exposure bars take the first 8 direct requirements in lockrot's order. Each bar counts the
-  flagged packages its requirement pulls in and opens Blast radius. "{n} more in Blast radius ›"
-  closes the list when lockrot lists more.
-- The libyears table lists the 8 packages furthest behind, with "≥" before a lower bound. A row
-  opens its package.
-- On Overview the grades, the flag bars, the severity chips and the fix counts are links. So are
-  the packages of "Weighs most", the exposure bars and the libyears rows. A grade, a flag bar and
-  a fix count open Findings under that filter. A severity chip opens
-  Advisories under its severity, and a package opens its sheet.
-
-### Changed
-
-- The other tabs no longer repeat the summary band. Findings opens with one line: the flagged
-  count, the grade chips, which filter the list, and "Overview ›". Advisories leads with its
-  Security block. With no filter on, its count line leaves the severities to the chips beside it.
-  Blast radius leads with the sentence on how deep the flagged packages sit. All
-  packages starts with its table.
-- The rail gains a "Grade" group, each row counting the packages it lists (`#verdict=`). The
-  phone's "Filters" summary also counts the grade and severity filters that are on.
-- Release branches is a section across the open package's sheet, under a "Release branches"
-  heading. lockrot's sentence leads it, and the timeline takes the full width of the sheet.
-- A link from 0.13 or rc.1 with a search, a package or a filter and no `view` still opens
-  Findings. An empty link opens Overview.
-- On Overview the keys `/`, `j` and `k` do nothing and stay with the browser.
-- Printing prints Overview's content once as the summary, from every tab. "Weighs most" prints
-  its bars with borders and lockrot's score sentences.
-
-### Fixed
-
-- The PHP column of Release branches no longer runs past the sheet. At phone width the timeline
-  now takes its narrow layout.
-- A key pressed or a link applied as soon as the page loads is no longer lost.
-
-## [0.14.0-rc.1]
-
-The page lockrot 0.14.0 writes with `--format=html`, first release candidate. lockrot 0.14 grades
-each package by a score built from the flags that fired on it, and this page draws that score.
+The page lockrot 0.14.0 writes with `--format=html`. lockrot 0.14 grades each package by a score built
+from the flags that fired on it, and this page draws that score. An Overview tab says how bad the
+project is overall, and the other tabs lead with their own part.
 
 ### Breaking
 
 - The page reads lockrot 0.14 reports (report schema 2) only. A report from an older lockrot, or a
   document that names no schema, no longer renders. A screen takes the report's place. It says
   "This report is older than this page", names the lockrot that wrote it, and gives two ways out.
-  "Rerun lockrot 0.14" shows `composer require --dev somework/lockrot` and `composer lockrot`.
+  "Rerun lockrot 0.14" shows `composer require --dev somework/lockrot` and
+  `composer lockrot --format=html > report.html`.
   "Open it with lockrot-report 0.13" links the v0.13.0 release, which reads the report as written.
   `manifest.json` lists `schema.report` as `[2]`, so a vendoring tool sees the change first.
 
 ### Added
 
+- An Overview tab, the first tab and the default view. It holds the summary band, unfolded at
+  every width: the lead, then the charts. The charts are the flag ledger, the Security block,
+  "Weighs most", the exposure bars and the libyears table.
+- The lead opens with one line on what lockrot is, then the project grade, in the largest type:
+  "Project grade: critical · 3 critical findings · 25 of 183 packages high or worse". The grade is
+  the worst grade a package holds. The line adds "lookup partial", "{n} not judged" and "{n} known
+  to the baseline" when they apply. lockrot's own gate sentence follows, marked "✓" or "✕", and
+  links to the findings that fail it. A line per state that limits the run follows: an offline or
+  incomplete run, the allowlist that does not cover advisories, and the baseline. On the offline
+  or incomplete line, "{n} of {m} packages" opens All packages under the unknown grade.
+- Beside the lead: "37 of 183 packages flagged · 126 ok · 20 finished", the scope line, a chip
+  per grade that a package holds, and the waffle, one square per package. Its key names each mark
+  of a score of 0: ok, finished and not judged.
+- "Ready to run" lists up to 3 moves whose command Composer's solver checked and that only your
+  composer.json holds, if anything does, in lockrot's rank order, each with its command, what it clears and the score after it.
+  When a finding fails the gate, it lists only findings that fail the gate. A run that only
+  `--strict-network` fails lists its ready moves as a passing run does. "Also holds" names the findings
+  whose move the ready package holds. One line counts the failing findings that other packages
+  hold, and one counts those that need another way out, by kind or by the move check: "Composer
+  refuses the move" or "not checked: {reason}". Each count opens exactly the rows it counts.
+- "Weighs most" opens with the score load: "527 points on 37 flagged packages · 450 (85 %) from
+  high or worse". It then draws the 10 highest scores as bars on one scale, one segment per term
+  in the row grade's tone, with the reach and the terms ("left-behind 16 · vulnerable 16") beside
+  each. "{n} more flagged packages hold {points} points ›" ends the list. The page shows no
+  percentage of a maximum, no 0 to 100 score and no average.
+- The flag ledger: one bar per flag that fired, in lockrot's flag order. Each bar splits by the
+  grades of its packages ("graded critical 2 · low 2"), adds the points the flag brings to the
+  scores ("abandoned … 288 pts") and filters the list. Under the ledger the band says how many
+  packages carry more than one flag and what the allowlist accepts.
+- The Security block counts the advisories and the packages they sit on. It draws a square per
+  advisory in its severity's tone under "Advisories by severity", and counts the packages by what
+  the fix takes. No tab shows an "Update now" command: "Ready to run" takes its place.
+- The exposure bars take the first 8 direct requirements in lockrot's order. Each bar counts the
+  flagged packages its requirement pulls in and opens Blast radius. "{n} more in Blast radius ›"
+  closes the list when lockrot lists more. "How deep the flagged packages sit" follows the bars: a
+  bar per depth, then the depth sentence. A lock-only run keeps the head over the sentence alone.
+  The sentence joins the deepest names as the text format does: "hoa/ustring and hoa/zformat".
+- Libyears leads with the total, its measured count and the direct requirements' share, then what
+  was not measured, by cause.
+- "Copy summary" says "at least" before the libyears total when any package is measured as a lower
+  bound, as the Libyears block does: "at least 388.8 libyears behind".
+- The libyears table lists up to 8 packages furthest behind, and its caption names how many it
+  lists: "Furthest behind, top 5", or "Furthest behind" over one row. It leaves out a row that rounds to 0.0, with "≥" before a lower bound. Each row
+  shows the package's most recent release with its date ("v5.3.0 (2026-08-11)"), or why it was not
+  measured. A date never breaks across lines. That release can be older than the installed version, so no arrow joins the two. The table shows no grade, because a grade beside a
+  libyears number read as a grade of the lag. A row opens its package.
+- On Overview the grades, the flag bars, the severity chips and the fix counts are links. So are
+  the packages of "Weighs most", the exposure bars and the libyears rows. A grade, a flag bar and
+  a fix count open Findings under that filter. A severity chip opens Advisories under its
+  severity, and a package opens its sheet.
 - Each Findings row leads with its score and a score bar. The bar has one segment per term of the
   score, as wide as the term's share of the scale. A segment is solid for the flag that decides,
   hatched for a flag that corroborates and dotted for an advisory. Its tone is the band lockrot
   gives it. A score past the scale ends in "›", and the number beside the bar is the total. The
   bar's tooltip is lockrot's own score sentence. The grade is the group's head and the score's
-  tone, so the row has no verdict column. From 990px of list a row is one line, below it three.
+  tone, so the row has no verdict column. From 1440 px of list a row is one line. From 1100 px
+  the reach goes under the package, from 600 px a row takes two lines, and below 600 px each
+  value stacks with its label.
+- A Findings row names its reach ("via {name} and {n} more"), its holders ("held by {name} and {n}
+  more", worst graded first), the first checked command of its move and the score after it. The
+  score after it ends with "if Composer resolves it" only when the move assumes it. A move that
+  crosses a major gets the tag "a new major", or "a new 0.x line", in a fixed slot. A row tags "fails gate" and "ready to
+  run". A group head says how many of its packages fail the gate ("1 fails the gate") and how many
+  of its moves cross a major. A move to a new 0.x line does not count as one.
+- The rail's "This run" group filters "Ready to run", "Held" and "Another way out", each with its
+  count. The last shows only when the run fails.
+- A link drops a filter value that the page does not know, so it never shows an empty chip or an
+  empty list. A Since value is dropped on a run with no baseline.
+- All packages hides its "Data as of" column when every row has the report's date, and says so in
+  a caption. A key under the table names each signal id the rows carry.
+- From 1000 px an open package is a column beside the list, and the list stays in view. Up, Down,
+  Home and End move it along the rows. Below 1000 px it is a modal sheet over the page.
 - Band ticks: the floor of each grade runs down every bar as a dashed guide, and the column head
   captions them ("Score 0 8 16 32"). In an open package the ruler draws every floor with its
-  grade's word under it.
+  grade's word under it. On a narrow ruler every other word drops a line, so no two words touch.
 - Flag pills: one pill per flag that fired, the flag in its tone, then what it rests on ("6.9 y",
   "PHP 5", "archived", "snapshot", the advisory count). A vulnerable package with no fixing release,
   or none that runs on the target PHP, says so on its pill. It names the advisory that decides.
@@ -96,87 +109,253 @@ each package by a score built from the flags that fired on it, and this page dra
   "maintenance accepted" after its pills.
 - Against a baseline each pill ends with its mark: a tick for known or covered, and a dot with the
   word for "new", "re-rated" and "fix lost".
-- The flag ledger in the summary band: one bar per flag that fired, in lockrot's flag order. Each
-  bar splits by the grades of its packages ("graded critical 2 · low 2") and filters the list.
-  Under the ledger the band says how many packages carry more than one flag, how deep the flagged
-  packages sit, and what the allowlist accepts.
-- The lead counts the packages by grade, with a chip per grade beside the waffle. Under them it
-  prints lockrot's own gate sentence, marked "✓" or "✕".
-- The Security block counts the advisories and the packages they sit on. It draws a square per
-  advisory in its severity's tone under "Advisories by severity", and counts the packages by what
-  the fix takes. It closes with "Update now", the command lockrot publishes for the advisories, in
-  the copy control.
 - The open package explains its score in "Why <grade>". The heading gives the score, the grade's
   floor and the date the ages are counted from. The bar follows at full width with each segment
-  named, then the ruler. The block says first what decides the grade and where the move would
-  leave it.
+  named, then the ruler. The block says first what decides the grade.
 - "Show the arithmetic" opens the rest of the Why block: every term, the halvings, what each flag
   would change if it were gone, and the checks that did not run. A score of 0 shows every line. The
   lines are the bar's text, and a screen reader reads them in the bar's place.
-- A copy control under the open package's answer. "Copy" puts the move's commands on the
-  clipboard. The shell button opens a menu of POSIX, cmd.exe and PowerShell, and each item previews
-  the command quoted for that shell. The page keeps the choice for the next visit. A screen reader
-  hears "Copied" once.
-- The advisory line of an open package lists every branch that fixes it, lowest first. The branch
-  of the move is marked, and each branch says what the package grades after it. Level 0 shows the
-  first branch and "3 more ways out: 6.x, 7.x and 8.x".
+- The open package's header links its repository by host and its registry page by name:
+  "github.com ↗ · packagist.org ↗". An archived repository reads "github.com ↗ (archived)". Each
+  link opens in a new tab and uses the URL lockrot publishes. A package with no flag names its
+  reach before the links ("direct requirement · …").
+- The open package reads as blocks, each fact in one place. The verdict line comes first, in the
+  largest type: "Critical: two serious risks at once, its maintenance (left-behind and
+  old-promise) and its advisory (vulnerable)." One reading per other counted flag follows, then
+  the rows Reach, Origin, Not judged, Unchecked, Not run, PHP, Accepted and Gate.
+- The move card says what to run and what it clears: the action, the command, Clears, Stays, Not
+  checked, Adds, the PHP check with a mark per answer, the grade after the move and Composer's
+  notes. The grade after the move says what Composer's solver found: "checked with Composer",
+  "Composer refuses the move", or "if Composer resolves it (not checked: {reason})". A move that
+  Composer's solver checked no longer says "which lockrot does not solve". Held by hangs off the card and gives each holder's own grade, what it requires, conflicts with or
+  replaces, and its own step. Past four
+  holders three show, your composer.json first and then the worst graded, and the rest fold,
+  counted by grade. Each further move of the plan
+  follows as a "Then" card with its own holders.
+- A command box in each move card. "Copy" puts the move's commands on the clipboard. The shell
+  button opens a menu of POSIX, cmd.exe and PowerShell, and each item previews the command quoted
+  for that shell. One choice applies to every command box on the page, and the page keeps it for
+  the next visit. A screen reader hears "Copied"
+  once. A command line breaks only between its arguments.
+- The Security row lists every advisory: up to six as a flat list, more in groups by severity, the
+  worst group open. Each severity count opens its group. A range string longer than 40 characters
+  folds to "affects 19 ranges" and opens one range per line. A row that repeats a CVE links the
+  earlier row. Under the list every branch that fixes an advisory shows, lowest first, with its
+  class, its holders and the grade after it.
+- Release branches opens with at most two sentences: your branch and its last release, then the
+  branch the check reads against. Every other fact is a row of the timeline, marked "yours" and
+  "the move", each with its latest release's age and why its PHP is out of reach. Past four
+  branches above yours, the runs between the newest and yours fold, on each side of the move's
+  branch.
 - "How the score works" opens the Run tab, from the run's score model. It shows the ruler with the
-  grade words, the weights, the advisory table and the fix kinds. "The N rules" lists each rule
+  grade words, each in full on a phone too, the weights, the advisory table and the fix kinds. "The N rules" lists each rule
   with a link to its lockrot.dev page, muted where no package used it.
 - A live example under "How the score works" gives a package's score in words and with its bar.
   It takes the package that was open when you changed tab, else the highest ranked one. With
   nothing flagged it says "No package is flagged in this report.". "How the score works ›" leads
   there from an open package and from the glossary.
-- The rail gains "Severity" and "Fix" groups, each row counting the packages it lists. It also
-  gains "Accepted flags", a toggle that hides the accepted pills and filters no package
-  (`#accepted=hide`). Flags filter the list too (`#flag=stale`).
+- The rail gains "Grade" (`#verdict=`), "Severity" (`#sev=`) and "Fix" (`#fix=`) groups, each row
+  counting the packages it lists. On Advisories, a list of advisories, the two read "Severity
+  (packages)" and "Fix (packages)". It also gains "Accepted flags", a toggle that hides the accepted pills and filters
+  no package (`#accepted=hide`). Flags filter the list too (`#flag=stale`). The phone's "Filters"
+  summary also counts the grade and severity filters that are on.
 - Search reads `flag:`, `lead:`, `verdict:` (`priority:` alike) and `score:>=16` (also `>`, `<=`,
   `<` and `=`).
 - A report the page cannot read, or one that breaks the page as it draws, shows a screen that says
   so instead of a blank page.
+- The PHP window. When the target PHP is outside it, when `config.platform.php` sets the PHP that
+  Composer checks, or when a package carries `capped`, a "PHP" state line follows the gate line:
+  "PHP: this lock installs on PHP 7.4, so your target, 8.4, is excluded · 3 packages exclude 8.4:
+  … · Composer's solver at PHP 8.4 refuses their update: composer.json requires
+  php-http/guzzle5-adapter ^2.0. The PHP window ›". When the window keeps the target's minor but
+  not the patch that `config.platform.php` pins, the line names the patch: "this lock installs on
+  PHP 8.2 to 8.5, but not on your target, 8.4.5". "The PHP window ›" links to
+  `#view=run&section=php-window`, which opens the Run tab at its PHP window section with focus on its
+  heading, from a click and from a pasted address alike. It names the update that admits the target
+  and Composer's answer, or the root link that alone excludes it. The Run tab lists both windows
+  in full: the minors, the lowest PHP and what sets it, and the minor that the lock excludes.
+- The flag `capped` and its signal S11, "PHP cap". The open package reads "It requires php
+  ~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0: it stops at 8.4, so the newest PHP, 8.5, is excluded", and
+  drops the constraint when the target's own PHP line already names it. A package that sets an
+  edge of the PHP window, stricter than require.php, says so under PHP: "It sets the lowest PHP
+  this lock admits: 8.1.0". A move that lands on a capped release adds "capped: it stops below the
+  newest PHP", and a package that no release frees reads "No release above 4.7.1 admits PHP 8.5".
+  Each constraint prints in full.
+- On a run whose lock Composer's solver refuses at the target PHP, a move card's check reads "if
+  Composer resolves it (not checked: Composer's solver refuses the lock itself at the target PHP;
+  see the PHP line in the Overview)". When the target lies inside the PHP window, or the run has no
+  window, it reads "Composer's solver refuses the lock itself; the Run tab names the cause".
+- A lock can set `config.platform.php` to a PHP that is not a stable release of the target's minor,
+  such as 7.4.29 or 8.4.0RC1 at target 8.4. Then each move card,
+  Ready to run and the Findings tab first print one line. It reads "First set config.platform.php
+  to your PHP 8.4 release: the lock records 7.4.29." The commands do not change. When Composer
+  also refuses the lock itself, the line goes on: "Composer still refuses the lock itself: the PHP
+  line in the Overview names the packages."
+  When a move check ran, the Run tab says under the override which PHP each step reads:
+  "composer install reads 7.4.29, and the move check solves at the target PHP 8.4.99."
+- Holders keep one order on every surface: the root, then the package's own releases, then the
+  packages that require the package, then the rest. A group goes by grade, then by name.
+- In Held by, a hold by the package's own release takes no grade, no flags and no own step. It
+  reads "symfony/mailer v5.4.52, its own release". A one-line surface says "its own release". The
+  fold counts these holds and the root holds apart from the graded holders. It reads "5 more: 1 in
+  composer.json, 2 of its own releases, 1 graded critical and 1 graded high". Ready to run does not
+  count such a finding as held by other packages.
+- A root hold from require-dev says so: "requires ^4.4.47 in require-dev". The PHP line marks a
+  root hold on a require-dev package: "composer.json requires friendsoftwig/twigcs ^6.1 in
+  require-dev".
+- The Held by fold counts a holder at a release other than its locked one as such, not as a
+  holder with nothing flagged.
+- When a package also excludes the target at the root ceiling, the PHP line names it: "your
+  target, 8.4, is excluded by require.php and by 1 package: laminas/laminas-skeleton-installer".
+- A root php link that only the lock's platform records closes the PHP line: "the lock records
+  require.php >=7.4 <8.1, which composer.json does not have: composer update --lock rewrites it".
+- A move check that the advisory lookup did not cover reads "not checked: the advisory lookup did
+  not cover a package it installs".
+- A ladder rung names each holder once. A rung held by every holder of Held by says "held by every
+  holder in Held by".
+- A Findings row shows the move's first command that names the package. A PHP floor raise reads
+  "raise require.php to >=8.1", with that command or with none. On Findings, "php floor raise"
+  is then only the Fix filter, which selects the packages whose advisory fix needs the raise, and a
+  row whose move names no PHP target. A row's "after it" ends with the check's short words when
+  the check refused the move or did not run.
+- When Composer's plain `composer update` installs a release above the newest of the branch, the
+  move card reads "Update to 3.0.0", with no branch.
+- A baselined package that has no grade shows the baseline suffix too: "(baseline: known)".
+- The Overview fix counts and the Fix filter of the package tabs read the same field, the
+  package's fix. A `composer why-not` check on a held move adds "This shows which package holds
+  the move."
+- Ready to run tags a move to a 0.x line as "a new 0.x line", as its Findings row does. On a run
+  whose baseline Composer refuses, it reads "No move is ready to run: Composer refuses the lock
+  itself, so no move was checked."
+- Blast radius leads with the depth sentence, then "52 flagged packages pulled in.", "7 of them
+  sit under more than 8 direct requirements.", and the rows that hold them. The rows are named until they hold half
+  of the packages pulled in. With none pulled in, the depth sentence stands alone.
+- Counts agree with their total: "1 of 113 flagged packages", "1 of 1 move crosses a major".
+  Provenance words its origin and each source's status. An empty Advisories tab still leads with
+  the Security summary. Libyears reads "Not measured: 1, a branch snapshot with no release branch".
+  A blocked move with no fix kind reads "runs no newer release".
+- A move that a joint request resolves names the other packages it updates. The line sits under
+  the command box and in Ready to run. Such a transitive move drops "What requires it must allow
+  it".
+- The Composer note of a transitive replace, alternative or test names one action per group of
+  dependents. The project's own path package reads "Change your own package". A dependent at its
+  newest release reads "Replace", and any other dependent reads "Replace or update".
+- An update that Composer installs below its newest release names both releases. A holder that
+  composer.json does not require reads "its own step: move to". A `self.version` hold names the
+  holder's version.
 
 ### Changed
 
-- Release branches are drawn from what lockrot publishes for each branch: its newest release, how
-  long ago it released, and the PHP it needs. The sentence above the timeline is lockrot's. The
-  page no longer works out which branch your PHP can take.
+- The other tabs no longer repeat the summary band. Findings opens with one line: the flagged
+  count, the grade chips, which filter the list, and "Overview ›". Advisories leads with its
+  Security block. With no filter on, its count line leaves the severities to the chips beside it.
+  Blast radius leads with the sentence on how deep the flagged packages sit. All packages starts
+  with its table.
+- Release branches is a section across the open package's sheet, under a "Release branches"
+  heading. It is drawn from what lockrot publishes for each branch: its newest release, how long
+  ago it released, and the PHP it needs. lockrot's sentence leads it, and the timeline takes the
+  full width of the sheet. At phone width the timeline takes its narrow layout. The page no longer
+  works out which branch your PHP can take.
 - All packages also sorts by score, flags or age. It shows a lower bound as "≥", read as "at
   least", and an unmeasured value as "—" with the reason.
-- The Advisories tab groups advisories by what the fix takes and to which branch. Each fix says
-  the PHP it needs and what holds it. A row gives the date the advisory was reported.
+- The Advisories tab groups advisories by package, in lockrot's rank order. A row that repeats a
+  CVE of the package says "same CVE as {id}". Each fix names what holds it, and the PHP it needs
+  when the target PHP or the project's PHP floor does not admit it. A row gives the date the
+  advisory was reported.
 - "No advisory affects this lock." shows only after a complete lookup. Otherwise the tab says what
-  the lookup missed under a "Check incomplete" tag. The Advisories tab then marks its count with a
-  ring and adds ", check incomplete" to its name.
-- Blast radius places each flagged package under every direct requirement its chain runs through.
-  An open row's tree shows each package's flags and score. One sentence names the flagged packages
-  that too many requirements share to list under one.
-- Libyears reads as one line: the total, the direct requirements' share, the furthest behind, and
-  one "N not measured" per cause. Every number has two decimals. With no package measured it says
-  so.
+  the lookup missed under a "Check incomplete" tag, or "Check not run" when the lookup did not run.
+  The Advisories tab then marks its count with a ring and adds ", check incomplete" or ", check not
+  run" to its name. Overview's Security block says "the advisory check did not run" for such a run.
+- Blast radius lists the direct requirements in the order of lockrot's exposure list, the order of
+  Overview's exposure bars. Each row lists the flagged packages lockrot names under that
+  requirement, so its count is lockrot's. An open row's tree shows each package's flags and score.
+  One sentence names the flagged packages that too many requirements share to list under one.
 - The glossary lists the grades and the flags of the run. Each grade reads "A score from" its
   floor. Each flag names the signals that raise it and this run's thresholds.
 - The header, the footer and paper read the lockrot version, the date and the target PHP of the
   report. The header's gate fact reads lockrot's gate.
-- Printing renders every section as on screen, the score bars included. Each printed Findings group
-  opens with the score scale.
-- In forced colours each score segment keeps a border that says its role. A wide segment prints its
-  number. The ticks and the overflow mark stay visible.
 - A link from the 0.13 page opens on the new terms: `#prio=` as `#verdict=`, and a flag in
-  `#verdict=` as `#flag=`.
+  `#verdict=` as `#flag=`. A link with a search, a package or a filter and no `view` still opens
+  Findings. An empty link opens Overview.
+- On Overview the keys `/`, `j` and `k` do nothing and stay with the browser.
+- Printing renders every section as on screen, the score bars included. It prints Overview's
+  content once as the summary, from every tab. "Weighs most" prints its bars with borders and
+  lockrot's score sentences. Each printed Findings group opens with the score scale.
+- Print opens every fold: the score rules, each Blast radius row and every fold of a sheet. It
+  prints each affected range in full and fits the Run data tables to the page width. With a
+  package's sheet open, print prints that sheet alone.
+- Run data opens with the run's facts: the mode, the lock file, whether require-dev was checked,
+  how old the cached repository activity is, and whether Composer's solver checked the moves. When
+  an environment variable turned advisory blocking off, the line names it: "with advisory blocking
+  turned off by COMPOSER_NO_SECURITY_BLOCKING". When the lock's own solve could not load a
+  package, the line names the lock: "not checked (a package the lock needs could not be loaded)".
+  Its notes print each run note as lockrot wrote it, the move check's notes included. Each advisory registry row names its outcome. A
+  run against a baseline gets a Baseline block with its known, new, worsened and stale counts and
+  each stale entry.
+- In forced colours each score segment keeps a border that says its role, and each flag of
+  "Weighs most" keeps a pattern of its own. A wide segment prints its number. The ticks and the
+  overflow mark stay visible.
 - Numbers round a tie to the even digit, as lockrot does (2.25 reads 2.2).
+
+### Fixed
+
+- The header's "data as of" reads the report's data date. A run that read no repository data, such
+  as an offline run without a cache, shows "—" there and no date.
+- An advisory's source id links to the advisory's own page as lockrot records it. The page no longer
+  builds a link to the NVD. A CVE id beside it, and an id with no recorded link, are text.
+- A long branch version wraps in Findings and in All packages. No tab scrolls sideways at 320 px,
+  and All packages keeps every column in view.
+- A skip link is the page's first Tab stop and moves focus to the list. Below the wide layout the
+  open sheet is a modal dialog to a screen reader. Overview names its blocks in headings.
+- A key pressed or a link applied as soon as the page loads is no longer lost.
+- A row clicked at the end of a short page stays where it was as its package opens. The page no
+  longer slides down when the footer comes into view.
+- The open row of All packages is one highlight with the accent rule down its edge, as on Findings.
+  It no longer shows a grey block behind each cell and a short bar beside the name.
+- The baseline state line prints its new, worsened and known counts as text, with no link.
+- The empty Findings tab reads "Nothing is flagged."
+- The Data-as-of caption and the data column read the day of a datetime as written, as the header
+  and the cells do. An offset other than UTC no longer moves the caption to another day.
+- The depth-0 bar reads "direct", as the text formats do. When the run did not walk require-dev, the
+  depth sentence says how many more packages are named only there.
+- The `?` key opens the glossary on its "Keys and search" section, unfolded and in view. The
+  glossary button still opens it at the top.
+- The waffle caption and its key name the allowlisted packages by their verdict, "finished". The
+  glossary entry of `finished` says that it covers allowlisted packages.
+- The empty Advisories tab draws one clean mark on screen, in the Security block.
+- A "Keyboard shortcuts" checkbox in the glossary's "Keys and search" section turns off `?`, `/`,
+  `j` and `k`. Escape, Enter, Space and the arrow keys still act. The page keeps the choice for the
+  next visit.
+- A filter focused by Tab stays in view when the footer comes into view and the filter column
+  shortens.
+- Each Copy and shell button names its package, and the step on a "Then" card. The folded range
+  button of an advisory names the advisory. Two buttons on one page no longer share a name.
+- A list tells a screen reader that Enter on a row opens its package. A Findings row reads its
+  result and its major-move tag as two phrases.
+- A command that wraps indents its later lines, so a wrapped flag no longer reads like a new
+  command. The copied text does not change.
 
 ### Security
 
-- The copy control and "Update now" print a command only when every argument passes lockrot's
+- The copy control prints a command only when every argument passes lockrot's
   command argument rule. The rule takes `composer` with `update`, `require` or `why-not`, and
-  each argument from a fixed set of characters. `--no-update` is the only argument that starts with
-  a dash.
+  each argument from a fixed set of characters. The only arguments that start with a dash are
+  lockrot's own options, after every package argument: `--no-update`, `--dev` and
+  `--no-interaction` in a `require` step, `--with-dependencies` and `--with-all-dependencies` in
+  an `update` or `require` step, and `--locked` in a `why-not` step. `--lock` passes only as the one argument of an `update` step.
+- The release workflow refuses a tag whose commit is on neither main nor a release branch, and a
+  lockrot pin that neither lockrot's main nor a lockrot tag holds. It runs every gate of ci.yml
+  before it attests the page: format, lint, the type checks, the unit, contract and e2e tests, and
+  the reproducible build. A red gate stops the release. Those gates run with a read-only token.
+  The shipped files come from a build that runs no install script, and they must match the tested
+  build byte for byte. A separate job attests and publishes them, and only it holds the tokens to
+  do so.
 - A report file can be edited. So a command that fails the rule shows "This command holds
   characters the page does not print." in place of every step, on every shell. The menu previews
   nothing, and the Copy button is hidden. PowerShell always reads `composer --%` and the cmd.exe
   form of the rest.
-- A package name goes into a command in the open package's answer only when it passes the same
-  rule. Otherwise the answer keeps its words and names no command.
+- A package name goes into the command of the open package's Meanwhile line only when it passes
+  the same rule. Otherwise the line reads "an update of this package" and names no command.
 
 ## [0.13.0]
 

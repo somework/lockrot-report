@@ -50,6 +50,7 @@ describe("matchesFinding2", () => {
       "tubalmartin/cssmin",
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
+      "friendsofsymfony/oauth2-php",
     ]);
   });
 
@@ -63,12 +64,17 @@ describe("matchesFinding2", () => {
   });
 
   it("matches lead: on the published lead only", () => {
-    expect(matching("lead:left-behind")).toEqual(["symfony/monolog-bridge"]);
+    expect(matching("lead:left-behind")).toEqual(["symfony/monolog-bridge", "guzzlehttp/guzzle"]);
     expect(matching("lead:vulnerable")).toEqual([]);
   });
 
   it("compares score: with the published total", () => {
-    expect(matching("score:>=32")).toEqual(["twig/twig", "symfony/monolog-bridge", "symfony/debug"]);
+    expect(matching("score:>=32")).toEqual([
+      "twig/twig",
+      "symfony/monolog-bridge",
+      "guzzlehttp/guzzle",
+      "symfony/debug",
+    ]);
     expect(matching("score:>32")).toEqual(["symfony/monolog-bridge", "symfony/debug"]);
     expect(matching("score:<=2")).toEqual(["symfony/yaml", "symfony/polyfill-intl-idn"]);
     expect(matching("score:18")).toEqual(["friendsofsymfony/oauth-server-bundle", "tubalmartin/cssmin"]);
@@ -79,7 +85,10 @@ describe("matchesFinding2", () => {
   });
 
   it("takes the last direct: and dev: term", () => {
-    expect(matching("direct:yes direct:no")).toEqual(["symfony/polyfill-intl-idn"]);
+    expect(matching("direct:yes direct:no")).toEqual([
+      "symfony/polyfill-intl-idn",
+      "friendsofsymfony/oauth2-php",
+    ]);
     expect(matching("dev:yes")).toEqual([]);
   });
 

@@ -1,24 +1,28 @@
-import { useRef } from "preact/hooks";
-import type { Finding, Run } from "../../model/report";
+import { useId, useRef } from "preact/hooks";
+import type { Finding, Report2, Run } from "../../model/report";
 import { applyFilters2, HIDE_ACCEPTED, population2 } from "../../domain/list";
 import { gradeTone, shownPills } from "../../domain/findingRow";
 import {
   dataAsOf,
+  dataCaption,
   installedAge,
   libyearsCell,
   PACKAGES_COLUMNS,
   reachedWord,
-  signalIds,
+  showsDataColumn,
+  signalKey,
   type Cell,
 } from "../../domain/packageCells";
+import { signalName } from "../../domain/pageVocabulary";
 import { useReport } from "../context";
 import { useOverflowX } from "../useOverflowX";
-import { toneClass } from "../common/common";
+import { RowHint, toneClass } from "../common/common";
 import { usePrinted } from "../print/printContext";
 import { rowTabIndex } from "../rowCursor";
 import { openInteractions } from "../rowOpen";
 import { EmptyState } from "../views/EmptyState";
 import { FlagPills } from "./FlagPills";
+import { Version } from "./PackageWord";
 import { useReport2 } from "./useReport";
 import "../views/views.css";
 import "./packages.css";
@@ -39,16 +43,37 @@ function PackageName({ name }: { name: string }) {
   const slash = name.indexOf("/");
   if (slash < 0) return <>{name}</>;
   return (
-    <>
-      {name.slice(0, slash + 1)}
+    <span className="pkg-word">
+      <span className="p2-unit">{name.slice(0, slash + 1)}</span>
       <wbr />
       <span className="p2-unit">{name.slice(slash + 1)}</span>
-    </>
+    </span>
   );
 }
 
-function PackageRow({ finding, run, hideAccepted }: { finding: Finding; run: Run; hideAccepted: boolean }) {
+type Column = (typeof PACKAGES_COLUMNS)[number];
+const label = (key: Column["key"]): string => PACKAGES_COLUMNS.find((c) => c.key === key)?.label ?? key;
+
+/** The codes say their names on hover; the head's key lists them all for the keyboard. */
+function Signals({ finding }: { finding: Finding }) {
+  if (finding.signals.length === 0) return <>—</>;
+  const ids = finding.signals.map((signal) => signal.id);
+  return <span title={ids.map((id) => `${id} ${signalName(id)}`).join(", ")}>{ids.join(" ")}</span>;
+}
+
+function PackageRow({
+  finding,
+  report,
+  hideAccepted,
+  showData,
+}: {
+  finding: Finding;
+  report: Report2;
+  hideAccepted: boolean;
+  showData: boolean;
+}) {
   const { state, dispatch, cursor } = useReport();
+  const run: Run = report.run;
   const graded = run.graded_verdicts.some((verdict) => verdict === finding.verdict);
   return (
     <tr
@@ -63,38 +88,65 @@ function PackageRow({ finding, run, hideAccepted }: { finding: Finding; run: Run
       <td role="cell" className="p2-name">
         <PackageName name={finding.package} />
       </td>
-      <td role="cell" className="num p2-ver">
-        {finding.version}
+      <td role="cell" className="num p2-ver" data-label={label("version")}>
+        <Version version={finding.version} className="p2-v" />
       </td>
-      <td role="cell" className="num p2-ly">
+      <td role="cell" className="num p2-ly" data-label={label("libyears")}>
         <Measured cell={libyearsCell(finding)} />
       </td>
-      <td role="cell" className="p2-age">
+      <td role="cell" className="p2-age" data-label={label("age")}>
         <Measured cell={installedAge(finding)} />
       </td>
-      <td role="cell" className="p2-verdict">
+      <td role="cell" className="p2-verdict" data-label={label("verdict")}>
         {finding.verdict}
       </td>
-      <td role="cell" className="num p2-score">
+      <td role="cell" className="num p2-score" data-label={label("score")}>
         {finding.score.total}
       </td>
-      <td role="cell" className="p2-flags">
+      <td role="cell" className="p2-flags" data-label={label("flags")}>
         {shownPills(finding, run, hideAccepted).length === 0 ? (
           "—"
         ) : (
           <FlagPills finding={finding} run={run} hideAccepted={hideAccepted} />
         )}
       </td>
-      <td role="cell" className="p2-reach">
+      <td role="cell" className="p2-reach" data-label={label("reached")}>
         {reachedWord(finding)}
       </td>
-      <td role="cell" className="num p2-sig">
-        {signalIds(finding)}
+      <td role="cell" className="num p2-sig" data-label={label("signals")}>
+        <Signals finding={finding} />
       </td>
-      <td role="cell" className="num p2-data">
-        {dataAsOf(finding)}
-      </td>
+      {showData && (
+        <td role="cell" className="num p2-data" data-label={label("data")}>
+          {dataAsOf(finding)}
+        </td>
+      )}
     </tr>
+  );
+}
+
+/** The codes the rows carry, with their names: a popover the keyboard reaches from the head. */
+function SignalKey({ rows }: { rows: readonly Finding[] }) {
+  const id = `${useId()}-signals`;
+  const key = signalKey(rows);
+  if (key.length === 0) return null;
+  return (
+    <>
+      <button type="button" className="p2-key-btn" popovertarget={id} aria-label="What the signal codes mean">
+        ?
+      </button>
+      <div id={id} popover="auto" className="p2-key-pop">
+        <p className="p2-key-title">Signal codes in this table</p>
+        <dl className="p2-key-list">
+          {key.map((entry) => (
+            <div key={entry.id}>
+              <dt className="mono">{entry.id}</dt>
+              <dd>{entry.name}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </>
   );
 }
 
@@ -108,7 +160,11 @@ export function PackagesView2() {
   const wrap = useRef<HTMLDivElement>(null);
   const scrolls = useOverflowX(wrap);
   const rows = applyFilters2(report, state, "packages");
+  const showData = showsDataColumn(report);
+  const caption = dataCaption(report);
+  const columns = PACKAGES_COLUMNS.filter((column) => showData || column.key !== "data");
   const hideAccepted = state.filters.accepted.includes(HIDE_ACCEPTED);
+  const hintId = `${useId()}-hint`;
   if (rows.length === 0) {
     return (
       <section className="p2" data-surface="packages">
@@ -118,6 +174,11 @@ export function PackagesView2() {
   }
   return (
     <section className="p2" data-surface="packages">
+      {caption !== null && <p className="p2-caption">{caption}</p>}
+      <RowHint id={hintId} />
+      <p className="p2-sortby" aria-hidden="true">
+        Sort by
+      </p>
       <div
         ref={wrap}
         className="tablewrap p2-wrap"
@@ -125,10 +186,15 @@ export function PackagesView2() {
           ? { tabIndex: 0, role: "region", "aria-label": "All packages table, scrolls sideways" }
           : {})}
       >
-        <table className="p2-table" role="table" aria-label="All packages">
+        <table
+          className={showData ? "p2-table has-data" : "p2-table"}
+          role="table"
+          aria-label="All packages"
+          aria-describedby={hintId}
+        >
           <thead role="rowgroup">
             <tr role="row">
-              {PACKAGES_COLUMNS.map((column) => {
+              {columns.map((column) => {
                 const active = column.key === state.sort;
                 const arrow = active ? (state.sortDesc ? " ↓" : " ↑") : "";
                 return (
@@ -155,6 +221,7 @@ export function PackagesView2() {
                         <span aria-hidden="true">{arrow}</span>
                       </button>
                     )}
+                    {column.key === "signals" && !printed && <SignalKey rows={rows} />}
                   </th>
                 );
               })}
@@ -165,8 +232,9 @@ export function PackagesView2() {
               <PackageRow
                 key={finding.package}
                 finding={finding}
-                run={report.run}
+                report={report}
                 hideAccepted={hideAccepted}
+                showData={showData}
               />
             ))}
           </tbody>

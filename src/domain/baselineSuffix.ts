@@ -4,7 +4,6 @@
  */
 
 import type { Finding, FindingBaseline, Run } from "../model/report";
-import { isScoreGraded } from "../model/report";
 import { advisoryRows } from "./advisoryRows";
 
 type Worsened = NonNullable<FindingBaseline>["worsened_by"][number];
@@ -29,10 +28,10 @@ function advisoryItem(finding: Finding, run: Run, entry: Worsened, comparedFixes
   return `${name} re-rated ${entry.recorded.severity} → ${entry.now.severity}${crossed ? `,${lost}` : ""}`;
 }
 
-/** `null` without a baseline, and for a finding with no grade. */
+/** `null` without a baseline. */
 export function baselineSuffix(finding: Finding, run: Run): string | null {
   const { baseline } = finding;
-  if (baseline === null || !isScoreGraded(finding.score)) return null;
+  if (baseline === null) return null;
   if (baseline.recorded === null) return "(baseline: new package)";
 
   const { advisories_now: now, worsened_by: worsened, recorded } = baseline;

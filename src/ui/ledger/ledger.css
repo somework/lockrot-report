@@ -5,106 +5,19 @@
 .ledger {
   max-width: var(--page-max);
   margin: 0 auto;
-  padding: 22px 20px 20px;
+  padding: 28px var(--gutter) 24px;
+}
+@media (max-width: 759px) {
+  .ledger {
+    padding-top: var(--space-3);
+  }
 }
 
 .ledger-block {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-3);
   min-width: 0;
-}
-
-/* ---------- the lead ---------- */
-.ledger-lead {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 18px 32px;
-  align-items: start;
-}
-/* From 760px the waffle sits beside the answer, anchored to it on the left rather than to the
-   band's right edge: its first (flagged) squares then always start at the same distance from the
-   chips that name them, whatever the lock's size. Each width's row budget (Waffle.tsx) is what
-   fits there. */
-@media (min-width: 760px) {
-  .ledger-lead {
-    grid-template-columns: minmax(0, max-content) max-content;
-    justify-content: start;
-  }
-}
-@media (min-width: 1181px) {
-  .ledger-lead {
-    column-gap: 56px;
-  }
-}
-
-.lead-answer {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  min-width: 0;
-}
-
-/* The grade line answers "how bad is this project overall", so it takes the lead's largest type.
-   The serif sets the answer apart from the UI text around it (tokens.css `--serif`). */
-.ov-grade {
-  margin: 0;
-  font: 26px/1.35 var(--serif);
-  color: var(--ink);
-  text-wrap: balance;
-}
-.ov-grade-sep {
-  color: var(--muted);
-}
-.ov-grade .clean-mark {
-  margin-right: 10px;
-  vertical-align: -5px;
-}
-.ov-grade-chip {
-  display: inline-block;
-  padding: 0 9px 2px;
-  border: 1px solid var(--tone);
-  border-radius: var(--radius-m);
-  background: var(--tone-soft);
-  color: var(--tone);
-  font-weight: 600;
-  text-decoration: none;
-  print-color-adjust: exact;
-  -webkit-print-color-adjust: exact;
-  transition: background-color 0.12s ease;
-}
-.ov-grade-chip:hover {
-  background: color-mix(in srgb, var(--tone) 18%, var(--tone-soft));
-}
-.ov-grade.tone-none {
-  color: var(--tone);
-}
-.ov-figure {
-  margin: -4px 0 0;
-  font: 18px/1.3 var(--serif);
-  color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
-}
-.ov-empty {
-  margin: 0;
-  font: 26px/1.15 var(--serif);
-  color: var(--ink-2);
-}
-/* PD-SUMMARY-9: the flagged packages split by install scope and by reach, one quiet line that
-   hangs off the figure (a pulled-up gap) rather than a fourth block in the band. Each clause wraps
-   whole, and a clause that starts a line drops its "·" the way the phone fold's peek does. */
-.lead-scope {
-  margin: -4px 0 0;
-  overflow: hidden;
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--muted);
-}
-.lead-scope b {
-  font-weight: 600;
-  color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
 }
 
 .clean-mark {
@@ -112,14 +25,14 @@
   color: var(--tone);
 }
 
-/* The priority chips are the lead's controls, so a size up from the tier's. Counts take their
+/* The grade chips are the lead's controls, so a size up from the tier's. Counts take their
    chip's tone, so "3" reads as critical before the word does. */
 .lead-chips {
   gap: 6px;
 }
 .lead-chips .legend-btn {
-  font-size: 13.5px;
-  padding: 5px 12px 5px 10px;
+  font-size: var(--text-s);
+  padding: 4px 11px 4px 9px;
   gap: 7px;
 }
 .lead-chips .legend-btn .count {
@@ -129,80 +42,6 @@
 .lead-chips .legend-btn-dim .count {
   color: var(--muted);
   font-weight: 400;
-}
-
-.lead-waffle {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
-}
-.lead-waffle-cap {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 14px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-/* ---------- the waffle (Waffle.tsx) ----------
-   One square per package, filled column by column so it reads left to right like a stacked bar
-   whose units can still be counted. The square size is fixed per width, never per report: the
-   row count is what grows with the lock, passed in as three custom properties (numbers, through
-   the CSSOM — DESIGN.md §1.3) and picked here by the same breakpoints Waffle.tsx budgets for. */
-.waffle {
-  --cell: 14px;
-  --gap: 3px;
-  --rows: var(--rows-xwide);
-  display: grid;
-  grid-auto-flow: column;
-  grid-template-rows: repeat(var(--rows), var(--cell));
-  grid-auto-columns: var(--cell);
-  gap: var(--gap);
-  width: max-content;
-  max-width: 100%;
-}
-@media (max-width: 1439px) {
-  .waffle {
-    --rows: var(--rows-wide);
-  }
-}
-@media (max-width: 1180px) {
-  .waffle {
-    --cell: 10px;
-    --gap: 2px;
-    --rows: var(--rows-mid);
-  }
-}
-@media (max-width: 759px) {
-  .ov-grade {
-    font-size: 22px;
-  }
-  .ov-figure {
-    font-size: 16px;
-  }
-  .lead-chips .legend-btn {
-    font-size: 13px;
-    padding: 4px 10px 4px 9px;
-  }
-  .waffle {
-    --cell: 9px;
-    --gap: 2px;
-    --rows: var(--rows-narrow);
-  }
-}
-.waffle-cell {
-  border-radius: 2px;
-  background: var(--tone);
-  transition: opacity 0.15s ease;
-}
-.waffle-rest {
-  background: var(--surface-3);
-}
-.waffle.is-clean .waffle-rest {
-  background: color-mix(in srgb, var(--none) 32%, var(--surface));
 }
 
 /* A priority chip, its squares and its parts of the verdict bars are one control: hovering or
@@ -243,7 +82,7 @@
 .ledger-head-note {
   white-space: nowrap;
   font-weight: 400;
-  font-size: 12px;
+  font-size: var(--text-s);
   letter-spacing: 0.02em;
   text-transform: none;
 }
@@ -257,23 +96,23 @@
   gap: 2px 8px;
 }
 .ledger-fig-num {
-  font: 600 26px/1 var(--sans);
+  font: 600 var(--text-2xl)/1 var(--sans);
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
 .ledger-fig-unit {
-  font: 15px/1.25 var(--serif);
+  font: var(--text-l)/1.25 var(--serif);
   color: var(--ink-2);
 }
 .ledger-fig-text {
-  font: 16px/1.35 var(--serif);
+  font: var(--text-l)/1.35 var(--serif);
   color: var(--tone);
 }
 
 .ledger-note {
   margin: 0;
-  font-size: 12.5px;
+  font-size: var(--text-s);
   line-height: 1.5;
   color: var(--muted);
 }
@@ -282,7 +121,7 @@
   font-weight: 600;
 }
 .ledger-note .mono {
-  font-size: 12px;
+  font-size: var(--text-s);
   color: var(--ink-2);
 }
 
@@ -319,7 +158,7 @@
   border-radius: var(--radius-s);
   background: transparent;
   border-color: transparent;
-  font-size: 13px;
+  font-size: var(--text-s);
   text-align: left;
   color: var(--ink-2);
 }
@@ -344,16 +183,16 @@
 }
 .legend-fill {
   display: flex;
-  gap: 1px;
+  gap: 2px;
   height: 100%;
   min-width: 3px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   overflow: hidden;
 }
 .legend-seg {
   flex: 1 1 0;
   min-width: 2px;
-  background: var(--tone);
+  background: var(--tone-mark);
   transition: opacity 0.15s ease;
 }
 .ledger-quiet-label {
@@ -369,13 +208,13 @@
 .advisory-squares {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 3px;
 }
 .advisory-square {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-  background: var(--tone);
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-xs);
+  background: var(--tone-mark);
 }
 
 /* ---------- chips (LegendButton) ---------- */
@@ -383,7 +222,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px 6px;
-  font-size: 12px;
+  font-size: var(--text-s);
 }
 
 /* PD-LEDGER-2 (DESIGN.md §5): a legend entry is a filter toggle, not static text ("Anatoly:
@@ -392,7 +231,7 @@
 .legend-btn {
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 3px 10px 3px 8px;
   cursor: pointer;
   display: inline-flex;
@@ -428,13 +267,13 @@
 }
 
 .legend-btn .swatch {
-  background: var(--tone);
+  background: var(--tone-mark);
 }
 
 .swatch {
   width: 9px;
   height: 9px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs);
   display: inline-block;
 }
 
@@ -455,12 +294,10 @@
    normalisation although `getComputedStyle` still reported it, leaving a light-on-light label
    (confirmed by screenshot). `forced-color-adjust: none` turns that off for the pressed rule, so the
    pair it declares is what actually paints; `e2e/forced-colors.spec.ts` reads the label's pixels.
-
-   The waffle keeps its meaning by fill alone: flagged squares solid, the rest outlined. */
+ */
 @media (forced-colors: active) {
   .legend-btn .swatch,
   .legend-seg,
-  .waffle-cell,
   .advisory-square {
     forced-color-adjust: none;
     background: CanvasText;
@@ -468,14 +305,6 @@
   .legend-btn-dim .swatch {
     background: ButtonText;
     opacity: 1;
-  }
-  /* CanvasText, not GrayText: Chromium's light forced palette paints GrayText maroon, which read
-     as a warning colour on the one set of squares that means "fine". */
-  .waffle-rest,
-  .waffle.is-clean .waffle-rest {
-    background: Canvas;
-    outline: 1px solid CanvasText;
-    outline-offset: -1px;
   }
   /* A verdict row is a button, but boxing all six in a system border drew a stack of heavy frames
      around one chart: unpressed rows keep an invisible border until hovered, like on screen. */
@@ -507,5 +336,22 @@
   }
   .legend-btn[aria-pressed="true"] .count {
     color: HighlightText;
+  }
+}
+
+/* Every grade mark takes its tone's pattern on paper and in forced colours (base.css --mark-fill),
+   with a 1px ring so a pattern keeps its edge. An outlined mark (unrated, allowlisted, ok) keeps its
+   outline, and a pressed chip keeps its Highlight swatch. */
+@media print, (forced-colors: active) {
+  :is(.waffle-cell.is-fill, .legend-seg, .advisory-square, .legend-btn .swatch, .wm-seg):not(
+    .is-outlined,
+    .is-outlined *,
+    [aria-pressed="true"] *
+  ) {
+    forced-color-adjust: none;
+    background: var(--mark-fill, var(--tone-mark));
+    box-shadow: inset 0 0 0 1px var(--mark-ring, var(--tone-mark));
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 }

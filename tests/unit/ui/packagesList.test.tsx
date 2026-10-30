@@ -25,7 +25,7 @@ describe("PackagesView2 (PD-PACKAGES-5): the wrap is a keyboard region only whil
   beforeEach(() => {
     observed = [];
     window.matchMedia = ((query: string) => ({
-      matches: query.includes("1181"),
+      matches: /1000px|1024px/.test(query),
       media: query,
       addEventListener: () => undefined,
       removeEventListener: () => undefined,
@@ -95,6 +95,8 @@ describe("ActiveFilters (PD-RAIL-4)", () => {
           wide: true,
           cursor: null,
           openGlossary: vi.fn(),
+          shell: "posix",
+          pickShell: vi.fn(),
         }}
       >
         <input ref={input} aria-label="search" />
@@ -120,7 +122,7 @@ describe("ActiveFilters (PD-RAIL-4)", () => {
 
     const chips = within(screen.getByRole("group", { name: "Filtered by" })).getAllByRole("button");
     expect(chips.map((chip) => chip.getAttribute("aria-label"))).toEqual([
-      "Remove filter: Verdict high",
+      "Remove filter: Grade high",
       "Remove filter: Scope Direct",
       "Remove filter: Search “symfony”",
     ]);

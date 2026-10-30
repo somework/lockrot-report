@@ -1,56 +1,39 @@
+import type { WaffleRun } from "../../domain/summary";
 import { toneClass } from "../common/common";
-import { waffleRows, type WaffleRun } from "../../domain/summary";
 
 /**
- * The most squares one waffle row may hold at each of ledger.css's four waffle widths. The square
- * itself never changes size within a width, so two reports compare at the same scale; a bigger
- * lock grows more rows instead. Each budget is what fits beside (or, on a phone, under) the answer
- * at the narrowest viewport of its range: 26 × 11px under 760px, 26 × 12px to 1180px, 38 × 17px
- * to 1439px, 50 × 17px from 1440px.
+ * One square per package, in `run.verdicts` order, row by row at a fixed column count (ledger.css):
+ * the waffle keeps one width on every page, and a bigger lock grows rows. `aria-hidden`: the grade
+ * line, the chips and the key say every number this draws.
  */
-const COLUMNS = { narrow: 26, mid: 26, wide: 38, xwide: 50 } as const;
-type Budget = keyof typeof COLUMNS;
-const BUDGETS = Object.keys(COLUMNS) as Budget[];
-
-/**
- * One square per package the run checked: the flagged ones first, most urgent first, each in its
- * priority's tone, then every other package in a quiet fill. Filled column by column (ledger.css),
- * so it reads left to right like a stacked bar whose units can still be counted — three critical
- * packages are three squares, not a sliver.
- *
- * The last, partial column fills from the top, like every column before it, so the count ends where
- * reading does: a lone remainder square hanging at the bottom-right corner read as a stray mark.
- *
- * `aria-hidden`: the figure and the chips beside it say every number this draws, in words. Tones
- * are classes and the only inline styles are the row counts, numbers (DESIGN.md §1.3).
- */
-export function Waffle({ runs, total }: { runs: readonly WaffleRun[]; total: number }) {
-  const flagged = runs.reduce((sum, run) => sum + run.count, 0);
-  const squares = Math.max(total, flagged);
-  const tones = runs.flatMap((run) => Array.from({ length: run.count }, () => toneClass(run.tone)));
-  const rows = Object.fromEntries(BUDGETS.map((b) => [b, waffleRows(squares, COLUMNS[b])])) as Record<
-    Budget,
-    number
-  >;
-  const cells = Array.from({ length: squares }, (_, index) => {
-    const tone = tones[index];
-    return (
-      <i key={index} className={tone === undefined ? "waffle-cell waffle-rest" : `waffle-cell ${tone}`} />
-    );
-  });
-
+export function Waffle({ runs }: { runs: readonly WaffleRun[] }) {
+  const cells = runs.flatMap((run) =>
+    Array.from({ length: run.count }, (_, index) => (
+      <i
+        key={`${run.verdict}-${String(index)}`}
+        className={`waffle-cell is-${run.mark} ${toneClass(run.tone)}`}
+      />
+    )),
+  );
   return (
-    <div
-      className={flagged === 0 ? "waffle is-clean" : "waffle"}
-      aria-hidden="true"
-      style={{
-        "--rows-narrow": String(rows.narrow),
-        "--rows-mid": String(rows.mid),
-        "--rows-wide": String(rows.wide),
-        "--rows-xwide": String(rows.xwide),
-      }}
-    >
+    <div className="waffle" aria-hidden="true">
       {cells}
     </div>
+  );
+}
+
+/** The key for the squares the grade chips do not name: allowlisted, no metadata and ok. */
+export function WaffleKey({ runs }: { runs: readonly WaffleRun[] }) {
+  return (
+    <ul className="waffle-key">
+      {runs
+        .filter((run) => run.tone === "none" || run.tone === "unk")
+        .map((run) => (
+          <li key={run.verdict}>
+            <i className={`waffle-cell is-${run.mark} ${toneClass(run.tone)}`} aria-hidden="true" />
+            {run.label} <span className="waffle-key-n">{run.count}</span>
+          </li>
+        ))}
+    </ul>
   );
 }

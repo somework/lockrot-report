@@ -49,6 +49,7 @@ export function reducer(state: State, action: Action): State {
         pkg: keepDetail ? state.pkg : null,
         // A click on the open tab dispatches too: it keeps the example it shows.
         example: action.view === state.view ? state.example : state.pkg,
+        section: null,
       };
     }
 
@@ -72,6 +73,7 @@ export function reducer(state: State, action: Action): State {
         q: action.q ?? (action.keepQuery === true ? state.q : ""),
         pkg: action.pkg ?? null,
         filters: action.filters,
+        section: action.view === "run" ? (action.section ?? null) : null,
       };
 
     case "sort": {

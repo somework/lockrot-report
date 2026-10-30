@@ -36,10 +36,12 @@ function glossary({ open, onClose = vi.fn(), dispatch = vi.fn(), model = composi
         wide: true,
         cursor: null,
         openGlossary: vi.fn(),
+        shell: "posix",
+        pickShell: vi.fn(),
       }}
     >
       <button type="button">trigger</button>
-      <Glossary open={open} onClose={onClose} />
+      <Glossary open={open} shortcutsOn onShortcutsChange={vi.fn()} onClose={onClose} />
     </ReportContext.Provider>
   );
 }
@@ -86,27 +88,28 @@ describe("Glossary focus", () => {
 });
 
 describe("Glossary sections", () => {
-  it("opens with the seven verdicts and the seven flags in view, and the rest folded", () => {
+  it("opens with the seven verdicts and the eight flags in view, and the rest folded", () => {
     const { container } = render(glossary({ open: true }));
 
     expect(screen.getByRole("heading", { name: "The seven verdicts" })).toBeTruthy();
-    expect(screen.getByRole("heading", { name: "The seven flags" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "The eight flags" })).toBeTruthy();
     // The terms are run.verdicts, then run.flag_ids, each with its count when it has one.
     expect([...container.querySelectorAll("dt[data-term]")].map((dt) => dt.textContent)).toEqual([
-      "critical 3",
+      "critical 4",
       "high 2",
       "medium",
-      "low 2",
+      "low 3",
       "unknown",
       "finished",
       "ok",
       "abandoned 1",
       "silent",
       "pinned 1",
-      "left-behind 1",
+      "left-behind 2",
       "old-promise 3",
-      "stale 2",
-      "vulnerable 4",
+      "stale 3",
+      "capped",
+      "vulnerable 5",
     ]);
     expect(fold(container, /flags/).open).toBe(true);
     for (const title of [/signals/, /libyears/, /Keys and search/, /maintainers/])
@@ -191,7 +194,19 @@ describe("Glossary signals", () => {
   it("lists the run's signal ids in the run's order, S9 by its report-2 meaning", () => {
     const { container } = render(glossary({ open: true }));
 
-    expect(signalTerms(container)).toEqual(["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"]);
+    expect(signalTerms(container)).toEqual([
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "S5",
+      "S6",
+      "S7",
+      "S8",
+      "S9",
+      "S10",
+      "S11",
+    ]);
     const s9 = [...fold(container, /signals/).querySelectorAll("dt")].find((dt) =>
       dt.textContent.startsWith("S9"),
     );
@@ -205,14 +220,14 @@ describe("Glossary signals", () => {
     const { container } = render(glossary({ open: true, model }));
 
     const signals = fold(container, /signals/);
-    expect(signalTerms(container).slice(10)).toEqual(["S99", "acme:licence"]);
-    const defs = [...signals.querySelectorAll("dd")].map((dd) => dd.textContent).slice(10);
+    expect(signalTerms(container).slice(11)).toEqual(["S99", "acme:licence"]);
+    const defs = [...signals.querySelectorAll("dd")].map((dd) => dd.textContent).slice(11);
     expect(defs).toEqual([
       "A lockrot check this page does not know.",
       "A check from outside lockrot, which this page does not know.",
     ]);
     // A newer lockrot check links to the list of signals, a check from outside lockrot to nothing.
-    const [lockrot, vendor] = [...signals.querySelectorAll("dt")].slice(10);
+    const [lockrot, vendor] = [...signals.querySelectorAll("dt")].slice(11);
     expect(lockrot?.querySelector("a")?.getAttribute("href")).toBe(
       "https://lockrot.dev/verdicts/#the-signals",
     );

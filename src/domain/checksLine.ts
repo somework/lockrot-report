@@ -58,7 +58,8 @@ function groups(blocked: readonly Blocked[], state: Blocked["state"], order: rea
   });
 }
 
-export function checksLine(finding: Finding, run: Run): string {
+/** The Checks row's items, one per line on the sheet (SPEC §7.9.8.9). */
+export function checksItems(finding: Finding, run: Run): string[] {
   const order = run.signal_ids;
   const fired = new Set(finding.signals.map(({ id }) => id));
   const firedIds = order.filter((id) => fired.has(id));
@@ -85,5 +86,7 @@ export function checksLine(finding: Finding, run: Run): string {
     ...(ignored.length > 0 ? ["S1 ignored (Composer policy)"] : []),
     ...lists,
     ...everyCheckRan,
-  ].join(" · ");
+  ];
 }
+
+export const checksLine = (finding: Finding, run: Run): string => checksItems(finding, run).join(" · ");

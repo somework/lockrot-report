@@ -39,7 +39,7 @@ const visibleText = (items: readonly Element[]): string[] =>
 
 beforeEach(() => {
   window.matchMedia = ((query: string) => ({
-    matches: query.includes("1181"),
+    matches: /1000px|1024px/.test(query),
     media: query,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
@@ -51,13 +51,111 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("Provenance prints words for every closed id (R14)", () => {
+  const provenance = (sheet: HTMLElement): string[] => {
+    const section = [...sheet.querySelectorAll("details")].find(
+      (d) => d.querySelector("h3")?.textContent === "Provenance",
+    );
+    return [...(section?.querySelectorAll("dd") ?? [])].map((dd) => dd.textContent);
+  };
+
+  test("words the origin, the metadata and the activity status", () => {
+    const sheet = openCase("B", (embed) => {
+      const [first] = embed.report.findings;
+      if (first === undefined) throw new Error("B has a finding");
+      first.origin = { ...first.origin, kind: "package" };
+      first.metadata = { ...first.metadata, status: "not_from_composer_repository", reason: null };
+      first.activity = { ...first.activity, status: "not_read" } as typeof first.activity;
+      return embed;
+    });
+
+    const values = provenance(sheet);
+    expect(values).toContain("an inline package in composer.json");
+    expect(values).toContain("not from a Composer repository");
+    expect(values.some((v) => v.startsWith("not read"))).toBe(true);
+    expect(values).not.toContain("package");
+  });
+
+  test("words packagist and read", () => {
+    const values = provenance(openCase("B"));
+    expect(values).toContain("Packagist");
+    expect(values).not.toContain("packagist");
+  });
+});
+
+describe("G160: a why-not check on a move that holders hold", () => {
+  const NOTE = "This shows which package holds the move.";
+  const withChecks = (commands: string[][]) => (embed: Report2Embed) => {
+    const [first] = embed.report.findings;
+    if (first?.next_step == null) throw new Error("B has a move");
+    first.next_step = { ...first.next_step, commands, composer_moves_because: ["holders"] };
+    return embed;
+  };
+
+  test("prints the note once, right under the command box", () => {
+    const sheet = openCase("B", withChecks([["composer", "why-not", "knuckleswtf/scribe", "5.11.0"]]));
+
+    const notes = [...sheet.querySelectorAll(".d3-move .d3-move-note")];
+    expect(notes.map((note) => note.textContent)).toEqual([NOTE]);
+    expect(notes[0]?.previousElementSibling?.classList.contains("d3-cmd")).toBe(true);
+  });
+
+  test("prints it when other steps share the box", () => {
+    const sheet = openCase(
+      "B",
+      withChecks([
+        ["composer", "require", "symfony/monolog-bridge:^5.4"],
+        ["composer", "why-not", "knuckleswtf/scribe", "5.11.0"],
+      ]),
+    );
+
+    expect([...sheet.querySelectorAll(".d3-move .d3-move-note")].map((note) => note.textContent)).toEqual([
+      NOTE,
+    ]);
+  });
+
+  test("never prints it on a Findings row", () => {
+    const embed = withChecks([
+      ["composer", "require", "symfony/monolog-bridge:^5.4"],
+      ["composer", "why-not", "knuckleswtf/scribe", "5.11.0"],
+    ])(assembleEmbed("B"));
+    history.replaceState(null, "", "/report.html#view=findings");
+    render(<App model={modelOf(embed)} />);
+
+    const findings = document.querySelector('[data-surface="findings"]');
+    expect(findings?.querySelector("[data-pkg]")).not.toBeNull();
+    expect(findings?.textContent).not.toContain(NOTE);
+  });
+});
+
+describe("the move card on a lock whose config.platform.php lies outside the target (L5)", () => {
+  test("asks to set config.platform.php before the commands", () => {
+    const sheet = openCase("B", (embed) => {
+      const { run } = embed.report;
+      if (run.php_window === null) throw new Error("B has a PHP window");
+      run.php_window = { ...run.php_window, platform_override: "7.4.29" };
+      return embed;
+    });
+
+    const card = sheet.querySelector(".d3-move");
+    const platform = card?.querySelector(".d3-move-platform");
+    expect(platform?.textContent).toBe(
+      `First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29.`,
+    );
+    expect(platform?.nextElementSibling?.classList.contains("d3-cmd")).toBe(true);
+  });
+});
+
 describe("the sheet in SPEC §7.9.8's order", () => {
-  test("B: header, as-of line, answer, copy, Why, the rows, then the folded references", () => {
+  test("B: header, verdict, the move and its holders, Why, the rows, then the folded references", () => {
     const sheet = openCase("B");
 
     const headings = [...sheet.querySelectorAll("h2, h3")].map((h) => h.textContent);
     expect(headings).toEqual([
       B,
+      "Verdict",
+      "The move",
+      "Held by",
       "Why critical",
       "Checks",
       "Security",
@@ -69,8 +167,7 @@ describe("the sheet in SPEC §7.9.8's order", () => {
       "Provenance",
     ]);
     expect(sheet.querySelector(".d2-asof")?.textContent).toBe("Ages as of 2026-10-01");
-    expect(sheet.querySelector(".d2-answer")?.textContent).toBe(golden("answer", "B"));
-    expect(sheet.querySelector(".d2-reach")?.textContent).toBe("direct requirement");
+    expect(sheet.querySelector(".d3-verdict-line")?.textContent).toBe(golden("verdict-line", "B"));
     expect(sheet.querySelector(".pill")?.textContent).toBe("critical");
     expect([...sheet.querySelectorAll(".d2-pills .fp")].map((p) => p.textContent)).toEqual([
       "left-behind·6.9 y",
@@ -80,30 +177,40 @@ describe("the sheet in SPEC §7.9.8's order", () => {
     expect(sheet.querySelectorAll("details.detail-reference:not([open])")).toHaveLength(2);
   });
 
-  test("each row prints its golden line", () => {
+  test("has no answer paragraph and no copy button for one", () => {
     const sheet = openCase("B");
-    const rowText = (label: string): string[] => {
-      const row = [...sheet.querySelectorAll(".d2-row")].find(
-        (r) => r.querySelector("h3")?.textContent === label,
-      );
-      return [...(row?.querySelectorAll(":scope .d2-row-value > p") ?? [])].map((p) => p.textContent);
-    };
 
-    expect(rowText("Checks")).toEqual([golden("checks", "B")]);
-    expect(rowText("Advisory feeds")).toEqual([golden("feeds", "B")]);
-    expect(rowText("Age")).toEqual([(golden("age", "B") as { line: string }).line]);
-    expect(rowText("Repository")).toEqual([golden("repository", "B")]);
+    expect(sheet.querySelector(".d2-answer, .d2-lead")).toBeNull();
+    expect(within(sheet).getAllByRole("button", { name: /^Copy / })).toHaveLength(1);
   });
 
-  test("Release branches is a section across the sheet, its golden line under the eyebrow", () => {
+  test("each row prints its golden lines", () => {
+    const sheet = openCase("B");
+    const row = (label: string): Element | undefined =>
+      [...sheet.querySelectorAll(".d2-row")].find((r) => r.querySelector("h3")?.textContent === label);
+
+    expect([...(row("Checks")?.querySelectorAll("li") ?? [])].map((li) => li.textContent)).toEqual(
+      (golden("checks", "B") as string).split(" · "),
+    );
+    expect(row("Advisory feeds")?.querySelector("p")?.textContent).toBe(golden("feeds", "B"));
+    expect(
+      [...(row("Age")?.querySelectorAll(".d3-kv > div") ?? [])].map((div) => ({
+        label: div.querySelector("dt")?.textContent,
+        value: div.querySelector("dd")?.textContent,
+      })),
+    ).toEqual(golden("age-rows", "B"));
+    expect(row("Repository")?.querySelector("p")?.textContent).toBe(golden("repository", "B"));
+  });
+
+  test("Release branches is a section across the sheet, its golden lead under the eyebrow", () => {
     const sheet = openCase("B");
     const section = within(sheet).getByRole("region", { name: "Release branches" });
 
     expect(section.closest(".d2-row")).toBeNull();
-    expect([...section.querySelectorAll(":scope > p")].map((p) => p.textContent)).toEqual([
-      golden("branches", "B"),
-    ]);
-    expect(within(section).getByRole("table")).toBeTruthy();
+    expect(section.querySelector(":scope > p")?.textContent).toBe(
+      (golden("branches-lead", "B") as string[]).join(" "),
+    );
+    expect(within(section).getByRole("table", { name: "Release branches" })).toBeTruthy();
   });
 
   test("a baselined finding adds the Baseline row with its suffix", () => {
@@ -113,8 +220,85 @@ describe("the sheet in SPEC §7.9.8's order", () => {
   });
 });
 
+describe("the PHP cap and the PHP window on the sheet (SPEC §7.9.8.14)", () => {
+  const qualifier = (sheet: HTMLElement, label: string): string[] => {
+    const row = [...sheet.querySelectorAll(".d3-q")].find(
+      (q) => q.querySelector("dt")?.textContent === label,
+    );
+    return [...(row?.querySelectorAll(".d3-q-line") ?? [])].map((line) => line.textContent);
+  };
+
+  test("prints the edge a package sets under PHP (G157)", () => {
+    expect(qualifier(openCase("php-edge-lower-dagger"), "PHP")).toEqual([
+      "It sets the lowest PHP this lock admits: 8.1.0",
+    ]);
+    cleanup();
+    expect(qualifier(openCase("php-edge-upper-dagger"), "PHP")).toEqual([
+      "It sets the highest PHP this lock admits: it excludes 8.5",
+    ]);
+  });
+
+  test("prints no PHP row on a package that sets no edge and runs on the target", () => {
+    const sheet = openCase("B");
+
+    expect([...sheet.querySelectorAll(".d3-q dt")].map((dt) => dt.textContent)).not.toContain("PHP");
+  });
+
+  test("reads capped with its full constraint while the target runs it (G158)", () => {
+    const sheet = openCase("capped-tag-unverified-dagger");
+
+    expect(sheet.textContent).toContain(
+      "It requires php >=7.2 <8.5: it stops at 8.4, so the newest PHP, 8.5, is excluded.",
+    );
+  });
+});
+
+describe("the header", () => {
+  const withLink =
+    (link: string | null) =>
+    (embed: Report2Embed): Report2Embed => {
+      const entry = embed.details[B];
+      if (entry === undefined) throw new Error(`no details for ${B}`);
+      return { ...embed, details: { [B]: { ...entry, repository_link: link } } };
+    };
+
+  test("links the repository by host, then the registry, each in a new tab; the Reach row holds the reach", () => {
+    const sheet = openCase("B", withLink("https://www.github.com/symfony/monolog-bridge"));
+    const meta = sheet.querySelector(".d2-meta");
+
+    expect(meta?.textContent).toBe("github.com ↗ · packagist.org ↗");
+    const links = within(sheet.querySelector<HTMLElement>(".d2-meta") ?? sheet).getAllByRole("link");
+    expect(links.map((a) => [a.getAttribute("aria-label"), a.getAttribute("href")])).toEqual([
+      ["github.com repository, opens in a new tab", "https://www.github.com/symfony/monolog-bridge"],
+      [
+        "packagist.org page of this package, opens in a new tab",
+        "https://packagist.org/packages/symfony/monolog-bridge",
+      ],
+    ]);
+    expect(links.map((a) => [a.getAttribute("target"), a.getAttribute("rel")])).toEqual([
+      ["_blank", "noopener noreferrer"],
+      ["_blank", "noopener noreferrer"],
+    ]);
+  });
+
+  test("leaves out a refused repository URL and keeps the registry", () => {
+    const sheet = openCase("B", withLink("javascript:alert(1)"));
+
+    expect(sheet.querySelector(".d2-meta")?.textContent).toBe("packagist.org ↗");
+  });
+
+  test("a sheet with no flag names its reach in the header (G47), then the links", () => {
+    const sheet = openCase("ok-unchecked");
+
+    expect(sheet.querySelector(".d2-meta")?.textContent).toMatch(
+      /^via \S+, \S+, \S+ and 1 more · packagist\.org ↗$/,
+    );
+    expect([...sheet.querySelectorAll(".d3-q > dt")].map((dt) => dt.textContent)).not.toContain("Reach");
+  });
+});
+
 describe("the Why block of design 2A", () => {
-  test("shows the header, the opening and the after-the-move line at once", () => {
+  test("shows the header and the opening at once", () => {
     const sheet = openCase("B");
     const why = sheet.querySelector(".d2-why") as HTMLElement;
     const lines = golden("why", "B") as string[];
@@ -122,7 +306,6 @@ describe("the Why block of design 2A", () => {
     expect(why.querySelector(".d2-why-header")?.textContent).toBe(lines[0]);
     expect(visibleText([...why.querySelectorAll("li")])).toEqual([
       "maintenance (left-behind, 1 corroborating) alone grades it high, the advisory alone grades it high: together critical",
-      "after the move: 0, ok (if Composer resolves it)",
     ]);
   });
 
@@ -167,42 +350,66 @@ describe("the Why block of design 2A", () => {
   });
 });
 
-describe("the Security row of design 5A", () => {
-  test("shows the summary and the first rung, and the others on click, each its golden clause", () => {
-    const sheet = openCase("B");
-    const row = [...sheet.querySelectorAll(".d2-row")].find(
+describe("the Security row", () => {
+  const securityRow = (sheet: HTMLElement): HTMLElement => {
+    const row = [...sheet.querySelectorAll<HTMLElement>(".d2-row")].find(
       (r) => r.querySelector("h3")?.textContent === "Security",
     );
-    const rungs = (): string[] => visibleText([...(row?.querySelectorAll(".d2-rung") ?? [])]);
-    const security = golden("security", "B") as string;
-    const summary = "1 high advisory · 1 on record for this name · fix: upgrade · lookup complete";
+    if (row === undefined) throw new Error("no Security row");
+    return row;
+  };
 
-    expect(security.startsWith(`${summary} · `)).toBe(true);
-    expect(row?.querySelector(".d2-row-text")?.textContent).toBe(summary);
-    expect(rungs()).toEqual([
-      "5.x clears 1 of 1 from v5.4.52 (upgrade; held by composer.json; after it: 0, ok, if Composer resolves it)",
-    ]);
-    expect(row?.querySelector(".d2-rung.is-move")?.getAttribute("data-branch")).toBe("5.x");
+  test("lists the golden summary, the advisory and every rung of the ladder", () => {
+    const row = securityRow(openCase("B"));
+    const security = golden("security", "B") as { summary: string[]; ladder: { lines: string[] }[] };
 
-    fireEvent.click(
-      within(row as HTMLElement).getByRole("button", {
-        name: "3 more ways out: 6.x, 7.x and 8.x (php floor raise)",
-      }),
-    );
+    expect(
+      [...row.querySelectorAll(":scope .d2-row-value > .d3-lines > li")].map((li) => li.textContent),
+    ).toEqual(security.summary);
+    expect(row.querySelectorAll(".d3-adv")).toHaveLength(1);
+    expect(within(row).getByRole("list", { name: "4 ways out" })).toBeTruthy();
+    expect(
+      [...row.querySelectorAll(".d2-rung")].map((rung) =>
+        [...rung.querySelectorAll(":scope > div")].map((line) => line.textContent),
+      ),
+    ).toEqual(security.ladder.map((rung) => rung.lines));
+    expect(row.querySelector(".d2-rung.is-move")?.getAttribute("data-branch")).toBe("5.x");
+  });
 
-    expect([summary, ...rungs()].join(" · ")).toBe(security);
+  test("folds a range string past RANGE_INLINE_MAX behind its count, and opens it by its button", () => {
+    const row = securityRow(openCase("B"));
+    const button = within(row).getByRole("button", { name: /^19 ranges for / });
+    const ranges = document.getElementById(button.getAttribute("aria-controls") ?? "");
+    const rows = golden("security", "B") as { rows: { ranges: string[] }[] };
+
+    expect(ranges?.hidden).toBe(true);
+    fireEvent.click(button);
+
+    expect(button.getAttribute("aria-expanded")).toBe("true");
+    expect(ranges?.hidden).toBe(false);
+    expect([...(ranges?.children ?? [])].map((line) => line.textContent)).toEqual(rows.rows[0]?.ranges);
   });
 });
 
 describe("the copy control of design 5C", () => {
   const commandText = (sheet: HTMLElement): string[] =>
     [...sheet.querySelectorAll(".d2-copy-line")].map((line) => line.textContent);
+  const withCommands =
+    (commands: string[][]) =>
+    (embed: Report2Embed): Report2Embed => {
+      const [finding] = embed.report.findings;
+      if (!finding?.next_step) throw new Error("the case has a move");
+      const next_step = { ...finding.next_step, commands };
+      return { ...embed, report: { ...embed.report, findings: [{ ...finding, next_step }] } };
+    };
+
+  const oneCommand = withCommands([["composer", "require", "symfony/monolog-bridge:^5.4.52"]]);
 
   test("prints the POSIX line first, and the menu switches the shell and keeps the choice", () => {
-    const sheet = openCase("B");
+    const sheet = openCase("B", oneCommand);
 
     expect(commandText(sheet)).toEqual(["composer require 'symfony/monolog-bridge:^5.4.52'"]);
-    fireEvent.click(within(sheet).getByRole("button", { name: "Shell: POSIX" }));
+    fireEvent.click(within(sheet).getByRole("button", { name: /^Shell: POSIX for / }));
     const menu = within(sheet).getByRole("menu", { name: "Shell" });
     expect(
       within(menu)
@@ -219,10 +426,10 @@ describe("the copy control of design 5C", () => {
   test("reads the saved shell on the next sheet", () => {
     window.localStorage.setItem("lockrot-shell", "powershell");
 
-    const sheet = openCase("B");
+    const sheet = openCase("B", oneCommand);
 
     expect(commandText(sheet)).toEqual(['composer --% require "symfony/monolog-bridge:^5.4.52"']);
-    expect(within(sheet).getByRole("button", { name: "Shell: PowerShell" })).toBeTruthy();
+    expect(within(sheet).getByRole("button", { name: /^Shell: PowerShell for / })).toBeTruthy();
   });
 
   test("falls back to POSIX when storage throws", () => {
@@ -230,14 +437,14 @@ describe("the copy control of design 5C", () => {
       throw new Error("blocked");
     });
 
-    const sheet = openCase("B");
+    const sheet = openCase("B", oneCommand);
 
-    expect(within(sheet).getByRole("button", { name: "Shell: POSIX" })).toBeTruthy();
+    expect(within(sheet).getByRole("button", { name: /^Shell: POSIX for / })).toBeTruthy();
   });
 
   test("Escape closes the menu and leaves the sheet open", () => {
-    const sheet = openCase("B");
-    fireEvent.click(within(sheet).getByRole("button", { name: "Shell: POSIX" }));
+    const sheet = openCase("B", oneCommand);
+    fireEvent.click(within(sheet).getByRole("button", { name: /^Shell: POSIX for / }));
     const menu = within(sheet).getByRole("menu", { name: "Shell" });
 
     fireEvent.keyDown(within(menu).getAllByRole("menuitemradio")[0] as HTMLElement, { key: "Escape" });
@@ -255,17 +462,8 @@ describe("the copy control of design 5C", () => {
     });
 
     expect(commandText(sheet)).toEqual(["This command holds characters the page does not print."]);
-    expect(within(sheet).queryByRole("button", { name: "Copy" })).toBeNull();
+    expect(within(sheet).queryByRole("button", { name: /^Copy / })).toBeNull();
   });
-
-  const withCommands =
-    (commands: string[][]) =>
-    (embed: Report2Embed): Report2Embed => {
-      const [finding] = embed.report.findings;
-      if (!finding?.next_step) throw new Error("the case has a move");
-      const next_step = { ...finding.next_step, commands };
-      return { ...embed, report: { ...embed.report, findings: [{ ...finding, next_step }] } };
-    };
 
   test("one refused argv hides every step of the move on every shell, and the menu previews none", () => {
     const sheet = openCase(
@@ -277,8 +475,8 @@ describe("the copy control of design 5C", () => {
     );
 
     expect(commandText(sheet)).toEqual(["This command holds characters the page does not print."]);
-    expect(within(sheet).queryByRole("button", { name: "Copy" })).toBeNull();
-    fireEvent.click(within(sheet).getByRole("button", { name: "Shell: POSIX" }));
+    expect(within(sheet).queryByRole("button", { name: /^Copy / })).toBeNull();
+    fireEvent.click(within(sheet).getByRole("button", { name: /^Shell: POSIX for / }));
     const menu = within(sheet).getByRole("menu", { name: "Shell" });
     expect(
       within(menu)
@@ -290,13 +488,29 @@ describe("the copy control of design 5C", () => {
   });
 
   test.each([
-    ["an update", "E", "`composer update symfony/yaml` installs v5.4.53"],
-    ["a require", "B", "Require ^5.4.52: it clears"],
-  ])("%s move with an empty commands[] shows no copy control and keeps its words", (_, name, words) => {
+    ["an update", "E"],
+    ["a require", "B"],
+  ])("%s move with an empty commands[] shows no copy control and keeps its action", (_, name) => {
     const sheet = openCase(name, withCommands([]));
+    const [move] = golden("moves", name) as { action: string }[];
 
     expect(sheet.querySelector(".d2-copy")).toBeNull();
-    expect(sheet.textContent).toContain(words);
+    expect(sheet.querySelector(".d3-move-action")?.textContent).toBe(move?.action);
+  });
+
+  test("names one command by its eyebrow, and several as commands in order", () => {
+    const one = openCase("B", oneCommand);
+    expect(one.querySelector(".d2-copy-bar .eyebrow")?.textContent).toBe("Command");
+    cleanup();
+
+    const several = openCase(
+      "B",
+      withCommands([
+        ["composer", "require", "php:>=8.1", "--no-update"],
+        ["composer", "require", "symfony/monolog-bridge:^5.4.52"],
+      ]),
+    );
+    expect(several.querySelector(".d2-copy-bar .eyebrow")?.textContent).toBe("Commands, in order");
   });
 
   test("a move with no command draws no copy control", () => {
@@ -307,17 +521,27 @@ describe("the copy control of design 5C", () => {
 });
 
 describe("the Release branches timeline", () => {
-  test("is described by the golden line and draws its rows and both guides", () => {
+  test("is named by its heading, described by the lead, and draws its rows, marks and both guides", () => {
     const sheet = openCase("B");
-    const table = within(sheet).getByRole("table");
+    const table = within(sheet).getByRole("table", { name: "Release branches" });
 
     const described = document.getElementById(table.getAttribute("aria-describedby") ?? "");
-    expect(described?.textContent).toBe(golden("branches", "B"));
+    expect(described?.textContent).toBe((golden("branches-lead", "B") as string[]).join(" "));
     expect(
       within(table)
         .getAllByRole("rowheader")
         .map((h) => h.textContent),
-    ).toEqual(["8.x, the newest", "5 between branches, between the newest and yours", "2.x, yours"]);
+    ).toEqual([
+      "8.x, the newest",
+      "2 between the newest branch and yours",
+      "7.x",
+      "6.x",
+      "5.x the move",
+      "2 between the newest branch and yours",
+      "4.x",
+      "3.x",
+      "2.x yours",
+    ]);
     expect(table.querySelectorAll(".detail-timeline-guide-cap")).toHaveLength(2);
   });
 
@@ -332,12 +556,18 @@ describe("the Release branches timeline", () => {
     ).toHaveLength(0);
   });
 
-  test("opens a fold on click", () => {
+  test("keeps a folded row in the table, and opens the fold on click", () => {
     const sheet = openCase("B");
     const table = within(sheet).getByRole("table");
+    const [first] = within(table).getAllByRole("button", { name: /^2 between/ });
+    const folded = (): string[] =>
+      [...table.querySelectorAll(".is-collapsed")].map((row) => row.getAttribute("data-branch") ?? "");
 
-    fireEvent.click(within(table).getByRole("button", { name: /5 between/ }));
+    expect(folded()).toEqual(["7.x", "6.x", "4.x", "3.x"]);
+    expect(table.querySelector("[aria-hidden='true'][role='row']")).toBeNull();
+    fireEvent.click(first as HTMLElement);
 
-    expect(within(table).getAllByRole("rowheader")).toHaveLength(8);
+    expect(first?.getAttribute("aria-expanded")).toBe("true");
+    expect(folded()).toEqual(["4.x", "3.x"]);
   });
 });

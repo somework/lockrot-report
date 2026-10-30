@@ -40,7 +40,7 @@ function reference(sheet: HTMLElement, title: string): Record<string, string> {
 
 beforeEach(() => {
   window.matchMedia = ((query: string) => ({
-    matches: query.includes("1181"),
+    matches: /1000px|1024px/.test(query),
     media: query,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
@@ -149,7 +149,7 @@ describe("a package with no details entry", () => {
     const sheet = open(TWIG, (e) => e, "composite");
 
     expect(reference(sheet, "Provenance")).toEqual({
-      origin: "packagist",
+      origin: "Packagist",
       registry: "packagist.org",
       "package metadata": "read",
       "repository activity": "read",
@@ -161,7 +161,7 @@ describe("a package with no details entry", () => {
     const sheet = open("symfony/polyfill-intl-idn", (e) => e, "composite");
 
     // composite: its repository activity was not asked because the package is allowlisted.
-    expect(reference(sheet, "Provenance")["repository activity"]).toBe("not_read (allowlisted)");
+    expect(reference(sheet, "Provenance")["repository activity"]).toBe("not read (allowlisted)");
     expect(reference(sheet, "Provenance")).not.toHaveProperty("fetched");
   });
 });
@@ -172,7 +172,7 @@ describe("The provenance reference", () => {
 
     // report-2 B: origin packagist.org, metadata and activity both read, fetched 2026-09-14.
     expect(reference(sheet, "Provenance")).toEqual({
-      origin: "packagist",
+      origin: "Packagist",
       registry: "packagist.org",
       "package metadata": "read",
       "metadata as of": "2026-10-01",
