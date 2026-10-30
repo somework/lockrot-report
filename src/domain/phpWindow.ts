@@ -250,6 +250,12 @@ function answerClauses(fix: TargetFix, target: string): string[] {
 
 const isCapped = (f: Finding): boolean => f.flags.some((flag) => flag.id === "capped");
 
+/** ", so your target, …, is excluded"; a pinned patch outside a window that keeps its minor names the patch (ruling R-e). */
+function targetClause(window: PhpWindow, target: string): string {
+  const keepsMinor = (window.with_dev ?? window.without_dev).minors.includes(minorOf(target));
+  return keepsMinor ? `, but not on your target, ${window.target.php}` : `, so your target, ${target}, is excluded`;
+}
+
 /** The clauses of the PHP state line (SPEC §7.9.4); null when the line does not show. */
 export function phpStateClauses(report: Pick<Report2, "run" | "findings">): string[] | null {
   const { run, findings } = report;
@@ -261,7 +267,7 @@ export function phpStateClauses(report: Pick<Report2, "run" | "findings">): stri
   const fix = window.target_fix;
   const target = run.target_php;
   const ceiling = fix !== null && isRootCeiling(fix);
-  const head = windowClause(window) + (inside || ceiling ? "" : `, so your target, ${target}, is excluded`);
+  const head = windowClause(window) + (inside || ceiling ? "" : targetClause(window, target));
   if (fix !== null) return [head, ...fixClauses(fix, target)];
   const s11 = capped.map((f) => signalData(f, "S11")).find((data) => data !== null) ?? null;
   return [

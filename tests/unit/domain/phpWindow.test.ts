@@ -174,6 +174,51 @@ describe("the PHP state line", () => {
     ]);
   });
 
+  test("names the pinned patch when the window keeps the target minor (ruling R-e)", () => {
+    const hole = fix({
+      packages: [
+        {
+          name: "acme/conflict-hole",
+          version: "1.0.0",
+          link: "conflict",
+          target: "php",
+          constraint: "8.4.5 - 8.4.6",
+          dev: false,
+        },
+      ],
+      command: ["composer", "update", "acme/conflict-hole"],
+      check: "resolves",
+    });
+
+    expect(
+      phpStateClauses(
+        report({
+          without_dev: set({ minors: ["8.2", "8.3", "8.4", "8.5"], upper_edge: null }),
+          target: { php: "8.4.5", inside: false },
+          target_fix: hole,
+        }),
+      ),
+    ).toEqual([
+      "this lock installs on PHP 8.2 to 8.5, but not on your target, 8.4.5",
+      "1 package excludes 8.4: acme/conflict-hole",
+      "Composer's solver at PHP 8.4 resolves this update: composer update acme/conflict-hole",
+    ]);
+  });
+
+  test("reads the target minor from the set with require-dev, as target.inside does", () => {
+    const head = phpStateClauses(
+      report({
+        with_dev: set({ minors: ["8.2", "8.3", "8.4"], upper_edge: null }),
+        without_dev: set(),
+        target: { php: "8.4.5", inside: false },
+      }),
+    )?.[0];
+
+    expect(head).toBe(
+      "without require-dev this lock installs on PHP 8.2 to 8.3, and with require-dev on PHP 8.2 to 8.4, but not on your target, 8.4.5",
+    );
+  });
+
   test("names the reason of a fix that was not checked", () => {
     expect(
       phpStateClauses(report({ target_fix: fix({ check: "not_checked", reason: "offline" }) }))?.[2],
