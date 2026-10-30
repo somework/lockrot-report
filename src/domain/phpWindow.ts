@@ -93,10 +93,19 @@ const minorOf = (version: string): string => {
   return `${major}.${minor}`;
 };
 
-/** The lock's config.platform.php when it lies outside the target's minor (ruling L5), else null. */
+// Composer's VersionParser reads these modifiers as stable, and any other as a pre-release or a dev build.
+const STABLE = /^v?(\d+)(?:\.(\d+))?(?:\.\d+){0,2}(?:[._-]?(?:stable|patch|pl|p)(?:[.-]?\d+)*)?(?:\+.*)?$/i;
+
+const isStableIn = (version: string, minor: string): boolean => {
+  const match = STABLE.exec(version);
+  return match !== null && `${Number(match[1])}.${Number(match[2] ?? 0)}` === minor;
+};
+
+/** The lock's config.platform.php when it is not a stable release of the target's minor (ruling L5),
+ *  else null: the move check then solves at another PHP than `composer install` reads. */
 export function overrideOutsideTarget(run: Pick<Run, "php_window" | "target_php">): string | null {
   const override = run.php_window?.platform_override ?? null;
-  return override === null || minorOf(override) === minorOf(run.target_php) ? null : override;
+  return override === null || isStableIn(override, minorOf(run.target_php)) ? null : override;
 }
 
 /** The Run tab's PHP window rows as label and value, a `note` row under its label; empty when
@@ -210,23 +219,24 @@ function lockPlatformClause(fix: TargetFix, target: string, answers: boolean): s
 const reasonWords = (fix: TargetFix): string =>
   fix.reason === null ? "the run checked no move" : plain(checkReasonRich(fix.reason));
 
-function fixClauses(fix: TargetFix, target: string): string[] {
-  if (fix.lock_platform.length === 0) return answerClauses(fix, target);
+/** `named` is the target as the root ceiling names it (ruling R-e). */
+function fixClauses(fix: TargetFix, target: string, named: string): string[] {
+  if (fix.lock_platform.length === 0) return answerClauses(fix, target, named);
   const ceiling = isRootCeiling(fix);
   if (fix.packages.length === 0 && !ceiling) return [lockPlatformClause(fix, target, true)];
-  return [...answerClauses(fix, target), lockPlatformClause(fix, target, false)];
+  return [...answerClauses(fix, target, named), lockPlatformClause(fix, target, false)];
 }
 
-function answerClauses(fix: TargetFix, target: string): string[] {
+function answerClauses(fix: TargetFix, target: string, named: string): string[] {
   if (isRootCeiling(fix)) {
     const links = joinAndCapped([...new Set(fix.held_by.map((h) => `${h.link}.${h.target ?? ""}`))]);
     const names = packageNames(fix);
     // A package that also excludes the target makes "only a change to the root" false.
     if (names.length > 0)
       return [
-        `your target, ${target}, is excluded by ${links} and by ${plural(names.length, "package", "packages")}: ${joinAndCapped(names)}`,
+        `your target, ${named}, is excluded by ${links} and by ${plural(names.length, "package", "packages")}: ${joinAndCapped(names)}`,
       ];
-    return [`your target, ${target}, is excluded, and only a change to ${links} can admit it`];
+    return [`your target, ${named}, is excluded, and only a change to ${links} can admit it`];
   }
   const solver = `Composer's solver at PHP ${target}`;
   const command = fix.command === null ? null : commandLine(fix.command, "posix");
@@ -250,13 +260,9 @@ function answerClauses(fix: TargetFix, target: string): string[] {
 
 const isCapped = (f: Finding): boolean => f.flags.some((flag) => flag.id === "capped");
 
-/** A pinned patch outside a window that keeps its minor names the patch (ruling R-e). */
-function targetClause(window: PhpWindow, target: string): string {
-  const keepsMinor = (window.with_dev ?? window.without_dev).minors.includes(minorOf(target));
-  return keepsMinor
-    ? `, but not on your target, ${window.target.php}`
-    : `, so your target, ${target}, is excluded`;
-}
+/** The set that `target.inside` reads keeps the target minor, so only the pinned patch fails there. */
+const keepsMinor = (window: PhpWindow, target: string): boolean =>
+  (window.with_dev ?? window.without_dev).minors.includes(minorOf(target));
 
 /** The clauses of the PHP state line (SPEC §7.9.4); null when the line does not show. */
 export function phpStateClauses(report: Pick<Report2, "run" | "findings">): string[] | null {
@@ -269,8 +275,11 @@ export function phpStateClauses(report: Pick<Report2, "run" | "findings">): stri
   const fix = window.target_fix;
   const target = run.target_php;
   const ceiling = fix !== null && isRootCeiling(fix);
-  const head = windowClause(window) + (inside || ceiling ? "" : targetClause(window, target));
-  if (fix !== null) return [head, ...fixClauses(fix, target)];
+  const patch = keepsMinor(window, target);
+  const named = patch ? window.target.php : target;
+  const excluded = patch ? `, but not on your target, ${named}` : `, so your target, ${target}, is excluded`;
+  const head = windowClause(window) + (inside || ceiling ? "" : excluded);
+  if (fix !== null) return [head, ...fixClauses(fix, target, named)];
   const s11 = capped.map((f) => signalData(f, "S11")).find((data) => data !== null) ?? null;
   return [
     head,

@@ -185,7 +185,8 @@ project is overall, and the other tabs lead with their own part.
   Composer resolves it (not checked: Composer's solver refuses the lock itself at the target PHP;
   see the PHP line in the Overview)". When the target lies inside the PHP window, or the run has no
   window, it reads "Composer's solver refuses the lock itself; the Run tab names the cause".
-- A lock can set `config.platform.php` outside the minor of the target PHP. Then each move card,
+- A lock can set `config.platform.php` to a PHP that is not a stable release of the target's minor,
+  such as 7.4.29 or 8.4.0RC1 at target 8.4. Then each move card,
   Ready to run and the Findings tab first print one line. It reads "First set config.platform.php
   to your PHP 8.4 release: the lock records 7.4.29." The commands do not change. When Composer
   also refuses the lock itself, the line goes on: "Composer still refuses the lock itself: the PHP

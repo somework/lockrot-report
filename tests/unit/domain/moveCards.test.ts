@@ -244,6 +244,23 @@ describe("L5: the platform step of a move card", () => {
     expect(platformLine("8", "8.0")[0]).toBeNull();
   });
 
+  test.each([
+    ["a pre-release in the target's minor", "8.4.0RC1", "8.4.0RC1"],
+    ["a release of another minor", "8.3.10", "8.3.10"],
+    ["a dev build in the target's minor", "8.4.x-dev", "8.4.x-dev"],
+  ])("asks to set config.platform.php first when it is %s", (_, override, recorded) => {
+    expect(platformLine(override, "8.4")[0]).toBe(
+      `First set config.platform.php to your PHP 8.4 release: the lock records ${recorded}.`,
+    );
+  });
+
+  test.each(["8.4.5", "v8.4.5", "8.4.5-p1", "8.4.5+build"])(
+    "says nothing when config.platform.php is the stable release %s of the target's minor",
+    (override) => {
+      expect(platformLine(override, "8.4")[0]).toBeNull();
+    },
+  );
+
   test("prints on a Then card with commands and on no card without one", () => {
     const { finding, run } = modelCase("holder-vuln-dagger");
     const lead = finding.next_step;
