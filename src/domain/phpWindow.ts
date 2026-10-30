@@ -253,7 +253,9 @@ const isCapped = (f: Finding): boolean => f.flags.some((flag) => flag.id === "ca
 /** ", so your target, …, is excluded"; a pinned patch outside a window that keeps its minor names the patch (ruling R-e). */
 function targetClause(window: PhpWindow, target: string): string {
   const keepsMinor = (window.with_dev ?? window.without_dev).minors.includes(minorOf(target));
-  return keepsMinor ? `, but not on your target, ${window.target.php}` : `, so your target, ${target}, is excluded`;
+  return keepsMinor
+    ? `, but not on your target, ${window.target.php}`
+    : `, so your target, ${target}, is excluded`;
 }
 
 /** The clauses of the PHP state line (SPEC §7.9.4); null when the line does not show. */

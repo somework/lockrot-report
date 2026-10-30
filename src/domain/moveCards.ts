@@ -621,7 +621,7 @@ export interface MoveCard {
 function stillRefused(run: Run): string {
   if (run.move_check?.baseline !== "refused") return "";
   return run.php_window?.target.inside === false
-    ? " Composer still refuses the lock itself: the PHP line names the packages."
+    ? " Composer still refuses the lock itself: the PHP line in the Overview names the packages."
     : " Composer still refuses the lock itself: the Run tab names the cause.";
 }
 

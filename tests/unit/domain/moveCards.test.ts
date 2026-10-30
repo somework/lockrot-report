@@ -405,9 +405,9 @@ describe("W3: the platform line on a run whose baseline Composer refuses", () =>
     );
   };
 
-  test("adds that the PHP line names the packages when the target lies outside the window (wallabag at 8.4)", () => {
+  test("adds that the PHP line in the Overview names the packages when the target lies outside the window (wallabag at 8.4)", () => {
     expect(line(false, "refused")).toBe(
-      "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29. Composer still refuses the lock itself: the PHP line names the packages.",
+      "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29. Composer still refuses the lock itself: the PHP line in the Overview names the packages.",
     );
   });
 

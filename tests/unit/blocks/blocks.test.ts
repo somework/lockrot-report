@@ -8,10 +8,7 @@ import { BLOCK_KEYS, blockGolden, type BlockKey } from "./blockGoldens";
 describe("each block equals the model's golden from the model's own inputs (SPEC §7.9.14)", () => {
   // The pinned model's block text lags its own inputs in these blocks.
   // List a block until the model renders it, then empty the list at the repin.
-  const MODEL_LAGS: Readonly<Record<string, readonly BlockKey[]>> = {
-    // R6-3: the move argv passes --no-interaction, but the model's action omits ", which removes it from require-dev".
-    "A-both-sections-dagger": ["moves"],
-  };
+  const MODEL_LAGS: Readonly<Record<string, readonly BlockKey[]>> = {};
   const compared = (name: string): readonly BlockKey[] =>
     BLOCK_KEYS.filter((key) => !(MODEL_LAGS[name] ?? []).includes(key));
 
