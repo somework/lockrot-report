@@ -94,7 +94,7 @@ const minorOf = (version: string): string => {
 };
 
 // Composer's VersionParser reads these modifiers as stable, and any other as a pre-release or a dev build.
-const STABLE = /^v?(\d+)(?:\.(\d+))?(?:\.\d+){0,2}(?:[._-]?(?:stable|patch|pl|p)(?:[.-]?\d+)*)?(?:\+.*)?$/i;
+const STABLE = /^v?(\d+)(?:\.(\d+))?(?:\.\d+){0,2}(?:[._-]?(?:stable|patch|pl|p)(?:[.-]?\d+(?:[.-]\d+)*)?)?(?:\+.*)?$/i;
 
 const isStableIn = (version: string, minor: string): boolean => {
   const match = STABLE.exec(version);
