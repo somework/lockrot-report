@@ -536,7 +536,7 @@ describe("the phone's Filters fold", () => {
 
     expect(document.querySelector(".rail-fold > summary")?.textContent).toBe("Filters");
     expect(document.querySelector(".count-line")?.textContent).not.toContain("filters on");
-    expect(document.querySelector<HTMLButtonElement>(".searchbar .icon-btn")?.disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Clear" }).disabled).toBe(true);
   });
 });
 

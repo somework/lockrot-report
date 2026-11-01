@@ -305,6 +305,14 @@ describe("parseHash", () => {
     expect(serializeHash(next)).toBe("view=findings");
   });
 
+  it("reads a whitespace-only pkg as no package open", () => {
+    // Arrange / Act
+    const next = parseHash("view=findings&pkg=%20", { ...INITIAL_STATE, pkg: "other/pkg" });
+
+    // Assert
+    expect(next.pkg).toBeNull();
+  });
+
   it("adds comma-separated keys to a filter group, skipping empty segments", () => {
     // Arrange / Act
     const next = parseHash("verdict=stale,,silent", INITIAL_STATE);
