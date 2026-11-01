@@ -10,7 +10,6 @@ import {
   ignoredNote,
   maintenanceAccepted,
   nextStepWords,
-  reachWord,
   runSegments,
   uncheckedNote,
 } from "../../../src/domain/findingRow";
@@ -133,15 +132,6 @@ describe("maintenanceAccepted", () => {
     );
     expect(maintenanceAccepted(finding(report("D-partial-dagger")))).toBeNull();
     expect(maintenanceAccepted(finding(composite, "twig/twig"))).toBeNull();
-  });
-});
-
-describe("reachWord", () => {
-  it("says direct, via the dependents, or unreached, with dev after", () => {
-    expect(reachWord(finding(composite, "twig/twig"))).toBe("direct");
-    expect(reachWord(finding(composite, "symfony/polyfill-intl-idn"))).toBe("via guzzlehttp/guzzle");
-    expect(reachWord(finding(report("unreached")))).toBe("unreached");
-    expect(reachWord(finding(report("B-dev-dagger")))).toBe("direct · dev");
   });
 });
 

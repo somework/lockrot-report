@@ -5,14 +5,7 @@ import type { Finding, Grade, HeldBy, Move, Report2, Run, TermSecurity } from ".
 import { isScoreGraded, isTermSecurity } from "../model/report";
 import { advisoryRows } from "./advisoryRows";
 import { countedFlagIds } from "./countedFlags";
-import {
-  acceptsWholePackage,
-  advisoryName,
-  isAre,
-  NAMES_SHOWN,
-  namesCapped,
-  oneDecimal,
-} from "./findingWords";
+import { acceptsWholePackage, advisoryName, isAre, NAMES_SHOWN, oneDecimal } from "./findingWords";
 import { plural, pluralNoun } from "./format";
 import { compareHolds } from "./holdRank";
 import { isZeroLine, newLineTag, ROOT_HOLDER_NAME } from "./moveCards";
@@ -204,11 +197,6 @@ export function reachText(f: Finding): string {
   const { lead, through, more, dev } = reachLine(f);
   const way = through === null ? lead : `${lead} ${through}${more > 0 ? ` ${moreWord(more)}` : ""}`;
   return dev ? `${way} · dev` : way;
-}
-
-export function reachWord(f: Finding): string {
-  const way = f.reach === "transitive" ? `via ${namesCapped(f.direct_dependents)}` : f.reach;
-  return f.dev ? `${way} · dev` : way;
 }
 
 export interface AgeReading {

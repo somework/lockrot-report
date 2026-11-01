@@ -127,6 +127,7 @@
   border: 0;
   padding: 0;
   margin: 0;
+  min-block-size: 24px; /* WCAG 2.5.8 target size, also when the head wraps into stacked pairs */
   cursor: pointer;
   font: inherit;
   letter-spacing: inherit;
