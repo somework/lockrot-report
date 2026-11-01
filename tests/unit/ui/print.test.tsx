@@ -252,19 +252,15 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
   });
 
   it("prints a Blast radius line for a lock with nothing flagged, as Findings and Advisories do", () => {
-    const clean = load("composite", (embed) => {
-      embed.report.packages_flagged = 0;
-      embed.report.findings = [];
-      embed.report.exposure = [];
-      embed.report.unattributed = [];
-    });
-    const { container } = render(<App model={clean} />);
+    const { container } = render(<App model={load("ok-unchecked")} />);
 
     window.dispatchEvent(new Event("beforeprint"));
 
-    expect(printDoc(container).querySelector(".pd-radius .pd-lede")?.textContent).toBe(
+    const radius = printDoc(container).querySelector(".pd-radius");
+    expect(radius?.querySelector(".pd-lede")?.textContent).toBe(
       "Nothing flagged, so no direct requirement pulls in a flagged package.",
     );
+    expect(radius?.querySelector(".r2-answer")).toBeNull();
   });
 
   it("sets the running line the @page header prints as a CSS string on <html>", () => {
