@@ -134,8 +134,7 @@ export function parseHash(fragment: string, base: State): State {
       continue;
     }
     if (key === "pkg") {
-      // A package named in the hash round-trips straight back into the next `writeHash()`.
-      pkg = value;
+      pkg = value === "" ? null : value;
       continue;
     }
     if (isFilterGroup(key)) {

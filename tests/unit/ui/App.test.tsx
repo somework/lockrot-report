@@ -559,6 +559,17 @@ describe("a sheet over the page takes focus", () => {
     expect(detailName()).toBe("not/listed");
     expect(screen.getByText("not/listed is not in this report.")).toBeTruthy();
   });
+
+  test("an address with an empty pkg opens no panel and leaves the page usable", () => {
+    media({ wide: false });
+    history.replaceState(null, "", "/report.html#view=findings&pkg=");
+
+    render(<App model={load()} />);
+
+    expect(document.querySelector(".shell-detail")).toBeNull();
+    expect(document.querySelector("[inert]")).toBeNull();
+    expect(location.hash).toBe("#view=findings");
+  });
 });
 
 // At `WIDE_QUERY` widths, opening a package narrows the list and closing it widens it again, and the

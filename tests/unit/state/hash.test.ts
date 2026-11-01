@@ -293,6 +293,18 @@ describe("parseHash", () => {
     expect(next.pkg).toBe("acme/widget");
   });
 
+  it("reads an empty pkg as no package open, so the written address keeps the state", () => {
+    // Arrange
+    const base: State = { ...INITIAL_STATE, pkg: "other/pkg" };
+
+    // Act
+    const next = parseHash("view=findings&pkg=", base);
+
+    // Assert
+    expect(next.pkg).toBeNull();
+    expect(serializeHash(next)).toBe("view=findings");
+  });
+
   it("adds comma-separated keys to a filter group, skipping empty segments", () => {
     // Arrange / Act
     const next = parseHash("verdict=stale,,silent", INITIAL_STATE);
