@@ -1,15 +1,21 @@
 /**
- * WCAG 2.5.8: a sort button of the All packages head is a 24 px target at every list width. The
- * head wraps its labels into stacked pairs between a narrow list and a wide one, which is where a
- * bare-text button sat too close to its neighbour.
+ * WCAG 2.5.8: a sort button of the All packages head is a 24 px target at every list width: the
+ * stacked head of a narrow list, the two-row head between, and the one-line head of a wide list.
  */
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { report2Url } from "./support/pages";
+import { packagesSurface } from "./support/report2/packages";
 
 const MIN_TARGET = 24;
 
 const LAYOUTS = [
+  {
+    label: "375 px, no package open",
+    width: 375,
+    hash: "#view=packages",
+    ready: '[data-surface="packages"]',
+  },
   {
     label: "1024 px, no package open",
     width: 1024,
@@ -22,11 +28,21 @@ const LAYOUTS = [
     hash: "#view=packages&pkg=twig%2Ftwig",
     ready: '[data-surface="detail"]',
   },
+  {
+    label: "1920 px, no package open",
+    width: 1920,
+    hash: "#view=packages",
+    ready: '[data-surface="packages"]',
+  },
 ] as const;
 
+const SORT_NAME = /^(Package|Version|Libyears|Age|Verdict|Score|Flags|Reached|Signals|Data as of)$/;
+
 async function sortButtonHeights(page: Page): Promise<number[]> {
-  const buttons = page.locator("table.p2-table thead .sort-btn");
+  const heads = packagesSurface(page).getByRole("columnheader");
+  const buttons = heads.getByRole("button", { name: SORT_NAME });
   await expect(buttons.first()).toBeVisible();
+  await expect(buttons).toHaveCount(await heads.count());
   return buttons.evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().height));
 }
 
