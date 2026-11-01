@@ -87,6 +87,10 @@ describe("the minors of a window", () => {
     expect(minorsWords(["7.1", "7.4", "8.0"], true)).toBe("7.1 and 7.4 to 8.0");
   });
 
+  test("joins 5.6 to 7.0 across the major step", () => {
+    expect(minorsWords(["5.6", "7.0"], true)).toBe("5.6 to 7.0");
+  });
+
   test("names a lone minor alone", () => {
     expect(minorsWords(["7.4"], false)).toBe("7.4");
   });

@@ -1,4 +1,5 @@
 import { Fragment } from "preact";
+import { useId } from "preact/hooks";
 import type { Run } from "../../model/report";
 import {
   ADVISORY_HEAD,
@@ -26,7 +27,7 @@ import type { Report2 } from "../../model/report";
 import { EMPTY_FILTERS } from "../../state/types";
 import { useReport } from "../context";
 import { LIST_HEAD_H, useMeasuredHeight } from "../useMeasuredHeight";
-import { toneClass } from "../common/common";
+import { RowHint, toneClass } from "../common/common";
 import { CheckIncompleteTag } from "../common/CheckIncompleteTag";
 import { CleanMark } from "../ledger/CleanMark";
 import { firstRows, innerTabIndex, rowTabIndex } from "../rowCursor";
@@ -318,6 +319,7 @@ export function AdvisoriesView2() {
   const { state } = useReport();
   const { report } = useReport2();
   const printed = usePrinted();
+  const hintId = `${useId()}-hint`;
   const { run } = report;
   if (population2(report, "advisories").length === 0)
     return (
@@ -362,7 +364,8 @@ export function AdvisoriesView2() {
               <Answer report={report} answer={answer} counted={false} />
             </div>
           )}
-          <div className="aledger no-axis" role="table" aria-label="Advisories">
+          <RowHint id={hintId} />
+          <div className="aledger no-axis" role="table" aria-label="Advisories" aria-describedby={hintId}>
             <AdvisoryHead />
             {groups.map((group) => (
               <Group key={group.finding.package} group={group} run={run} first={first} />

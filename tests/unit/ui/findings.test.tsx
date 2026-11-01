@@ -630,6 +630,7 @@ describe("the row hint of a list", () => {
     ["findings", ".fledger"],
     ["packages", "table.p2-table"],
     ["radius", "ul.r2-list"],
+    ["advisories", ".aledger"],
   ])("the %s list refers to the hidden hint", (view, list) => {
     history.replaceState(null, "", `/report.html#view=${view}`);
     render(<App model={model("composite")} />);
