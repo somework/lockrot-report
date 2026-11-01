@@ -82,8 +82,9 @@ the report-1 screen.
 
 ## Releasing
 
-1. Move the `Unreleased` section of CHANGELOG.md under the new version, and set `version` in
-   `package.json` to the same number.
+1. Move the `Unreleased` section of CHANGELOG.md under the new version. Set `version` in
+   `package.json` and both `version` fields of `package-lock.json` (the root and `packages[""]`)
+   to the same number.
 2. Pick the pin. A pre-release pins the lockrot commit that changes the contract bundle. A final
    tag pins the lockrot commit V that vendors an rc of the same bundle. Lockrot's main or a lockrot
    tag must hold the pin: `node scripts/contract.mjs reachable` says whether it does. For a final
@@ -92,7 +93,8 @@ the report-1 screen.
    its branch is the tag. The release workflow also accepts a green CI run of a push to lockrot's
    main.
 3. Run `node scripts/contract.mjs repin <pin>`. For a final tag, commit only the version and the pin:
-   `package.json`, the CHANGELOG heading and `contract/lockrot.json`. If `repin` changed another
+   `package.json`, the two `version` fields of `package-lock.json`, the CHANGELOG heading and
+   `contract/lockrot.json`. If `repin` changed another
    file under `contract/`, V does not vendor the same bundle, so stop. Merge the commit into main for
    a final tag, or into its release branch for a pre-release.
 4. Before the first final tag, list the rulesets with `gh api repos/somework/lockrot-report/rulesets`.

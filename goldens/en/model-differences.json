@@ -8,7 +8,7 @@
     ]
   },
   "security_row": {
-    "lockrot's recording and the model's input differ: metadata.branches[].fixes.if_applied: the score after a move to the row follows its `fixes.lowest`. The model judges the row's newest tag as an upper bound, and lockrot judges its candidate exactly": [
+    "lockrot's recording and the model's input differ: metadata.branches[].fixes.if_applied: the model reads no date of a row's release, so old-promise stays unverified (`undated`) and the row's score is an upper bound (`at_most`). lockrot dates the release and judges old-promise exactly": [
       "B-also-dagger"
     ]
   },
@@ -66,7 +66,7 @@
     ]
   },
   "security": {
-    "lockrot's recording and the model's input differ: metadata.branches[].fixes.if_applied: the score after a move to the row follows its `fixes.lowest`. The model judges the row's newest tag as an upper bound, and lockrot judges its candidate exactly": [
+    "lockrot's recording and the model's input differ: metadata.branches[].fixes.if_applied: the model reads no date of a row's release, so old-promise stays unverified (`undated`) and the row's score is an upper bound (`at_most`). lockrot dates the release and judges old-promise exactly": [
       "B-also-dagger"
     ]
   },
