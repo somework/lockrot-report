@@ -2,6 +2,7 @@ import "../styles/tokens.css";
 import "../styles/base.css";
 import type { RefObject } from "preact";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
+import { activeFilters } from "../domain/filters";
 import { fitFilters2, population2, renderedPackages2 } from "../domain/list";
 import { skipLinkLabel } from "../domain/pageVocabulary";
 import type { Model } from "../model/types";
@@ -258,17 +259,7 @@ function RailSlot({ folded, inert }: { folded: boolean; inert: boolean }) {
       </div>
     );
   }
-  const { verdict, scope, signal, sev, fix, since, gate, flag, accepted } = state.filters;
-  const on =
-    verdict.length +
-    scope.length +
-    signal.length +
-    sev.length +
-    fix.length +
-    since.length +
-    gate.length +
-    flag.length +
-    accepted.length;
+  const on = activeFilters(state.filters).length;
 
   return (
     <details className="rail-fold" inert={inert}>
