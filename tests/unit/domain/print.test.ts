@@ -28,8 +28,33 @@ describe("printLede2", () => {
     expect(printHasBody2("advisories", nothing)).toBe(false);
   });
 
-  it("describes the radius top only when something is graded", () => {
-    expect(printLede2("radius", nothing)).toBeNull();
-    expect(printLede2("radius", composite)).toContain("ranked rows");
+  it("describes the radius rows as print shows them, every row open (PD-PRINT-5)", () => {
+    expect(printLede2("radius", composite)).toBe(
+      "Each direct requirement that pulls in a flagged package, in lockrot's order, with every flagged package listed under it.",
+    );
+    expect(printHasBody2("radius", composite)).toBe(true);
+  });
+
+  it.each([
+    ["A", true],
+    ["many-dependents", true],
+    ["unreached", false],
+  ])("says that no row prints when %s grades a finding but exposure lists none", (name, body) => {
+    const report = readContractJson("report-2", `${name}.json`) as Report2;
+
+    expect(printLede2("radius", report)).toBe("No direct requirement lists a flagged package.");
+    expect(printHasBody2("radius", report)).toBe(body);
+  });
+
+  it("says in one line that the radius has no row when nothing is graded", () => {
+    const clean = readContractJson("report-2", "ok-unchecked.json") as Report2;
+
+    expect(printLede2("radius", clean)).toBe(
+      "Nothing flagged, so no direct requirement pulls in a flagged package.",
+    );
+    expect(printHasBody2("radius", clean)).toBe(false);
+    expect(printLede2("radius", { ...clean, packages_checked: 0, findings: [] })).toBe(
+      "No packages in this lock.",
+    );
   });
 });

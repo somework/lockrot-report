@@ -88,7 +88,8 @@ function addFilterKey(filters: Filters, group: FilterGroup, key: string): Filter
  *   legacy bug M12, which let one bad escape blank the entire page);
  * - `view` is applied only when it names a known view, otherwise ignored (the DESIGN.md fix — the
  *   legacy code assigned it verbatim and silently fell through to the Run tab's rendering);
- * - `q` and `pkg` are taken verbatim, and `section` too under `view=run` (R4-29);
+ * - `q` is taken verbatim, and `section` too under `view=run` (R4-29);
+ * - `pkg` is taken verbatim, except that a blank one opens no package, as `serializeHash` writes none;
  * - a `FILTER_GROUPS` key adds its comma-separated, non-empty entries to that group, on top of
  *   whatever `base` already had, exactly like legacy's additive/idempotent merge;
  * - any other key, including one that looks like a filter group but is not in `FILTER_GROUPS`, is
@@ -134,8 +135,7 @@ export function parseHash(fragment: string, base: State): State {
       continue;
     }
     if (key === "pkg") {
-      // A package named in the hash round-trips straight back into the next `writeHash()`.
-      pkg = value;
+      pkg = value.trim() === "" ? null : value;
       continue;
     }
     if (isFilterGroup(key)) {

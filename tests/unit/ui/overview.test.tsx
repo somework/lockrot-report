@@ -528,6 +528,16 @@ describe("the phone's Filters fold", () => {
 
     expect(document.querySelector(".rail-fold > summary")?.textContent).toBe("Filters · 2 on");
   });
+
+  test("agrees with the count line and Clear when only Hide accepted flags is on", () => {
+    viewport(true);
+    history.replaceState(null, "", "/report.html#view=findings&accepted=hide");
+    render(<App model={model()} />);
+
+    expect(document.querySelector(".rail-fold > summary")?.textContent).toBe("Filters");
+    expect(document.querySelector(".count-line")?.textContent).not.toContain("filters on");
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Clear" }).disabled).toBe(true);
+  });
 });
 
 describe("a grade line with nothing graded above a failing gate", () => {
