@@ -2,7 +2,7 @@
  * Print. The header's "Print / PDF" and the browser's own Print both print one document in
  * sections, whatever tab is open (print/PrintDocument.tsx, mounted into `.print-doc` by
  * print/usePrintDocument.ts on `beforeprint` or a print medium): the summary band, Findings,
- * Advisories in full, the top of Blast radius, the run's facts, and All packages only when the
+ * Advisories in full, Blast radius with every row open, the run's facts, and All packages only when the
  * reader printed from that tab. While it holds anything, `<main>` — the tab on screen — is hidden
  * here, so a print never carries the screen's filters, open package or scroll. If it never mounts
  * (an engine that fires neither event), the rules below still print the open tab as before.

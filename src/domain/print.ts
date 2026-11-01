@@ -14,6 +14,7 @@ export function printHasBody2(section: PrintSection, report: Report2): boolean {
   if (section === "summary") return report.packages_checked > 0;
   if (section === "findings") return population2(report, "findings").length > 0;
   if (section === "advisories") return population2(report, "advisories").length > 0;
+  if (section === "radius") return population2(report, "radius").length > 0;
   return true;
 }
 
@@ -31,9 +32,11 @@ export function printLede2(section: PrintSection, report: Report2): string | nul
     case "advisories":
       return population2(report, "advisories").length > 0 ? null : noAdvisoryLine(report);
     case "radius":
-      return population2(report, "radius").length === 0
-        ? null
-        : "The ranked rows from the top of the tab; the folded groups under them print as their counts.";
+      if (population2(report, "radius").length > 0)
+        return "Each direct requirement in lockrot's order, with every package listed under it.";
+      return checked === 0
+        ? "No packages in this lock."
+        : "Nothing flagged, so no direct requirement pulls in a flagged package.";
     case "run":
       return null;
     case "packages":

@@ -28,8 +28,18 @@ describe("printLede2", () => {
     expect(printHasBody2("advisories", nothing)).toBe(false);
   });
 
-  it("describes the radius top only when something is graded", () => {
-    expect(printLede2("radius", nothing)).toBeNull();
-    expect(printLede2("radius", composite)).toContain("ranked rows");
+  it("describes the radius rows as print shows them, every row open (PD-PRINT-5)", () => {
+    expect(printLede2("radius", composite)).toBe(
+      "Each direct requirement in lockrot's order, with every package listed under it.",
+    );
+    expect(printHasBody2("radius", composite)).toBe(true);
+  });
+
+  it("says in one line that the radius has no row when nothing is graded", () => {
+    expect(printLede2("radius", nothing)).toBe(
+      "Nothing flagged, so no direct requirement pulls in a flagged package.",
+    );
+    expect(printHasBody2("radius", nothing)).toBe(false);
+    expect(printLede2("radius", empty)).toBe("No packages in this lock.");
   });
 });
