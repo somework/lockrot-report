@@ -616,7 +616,58 @@
       "Tripped by pinned"
     ]
   },
+  "S10-lock-undated-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "PHP promise (S5) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-45077"
+    ]
+  },
+  "S10-tag-undated-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
   "S5-parent-after-ga-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-45077"
+    ]
+  },
+  "S5-star-dagger": {
     "reach": [
       "Production: not in packages-dev",
       "Required directly"
@@ -1264,6 +1315,25 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by pinned"
+    ]
+  },
+  "capped-solve-pin-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through:",
+      "doctrine/doctrine-migrations-bundle",
+      "doctrine/migrations",
+      "symfony/proxy-manager-bridge"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
     ]
   },
   "capped-tag-unverified-dagger": {
@@ -2502,6 +2572,26 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
+  "not-found-cached-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through lorisleiva/laravel-search-string",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its repository activity (repository not found)"
+    ],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
   "not-found-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -2873,7 +2963,9 @@
     "origin": null,
     "not_judged": null,
     "unchecked": [],
-    "not_run": [],
+    "not_run": [
+      "Its release dates (undated releases)"
+    ],
     "php": null,
     "php_edge": [],
     "accepted": [],

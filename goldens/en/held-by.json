@@ -309,7 +309,36 @@
   "G-tag-dagger": [
     null
   ],
+  "S10-lock-undated-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "S10-tag-undated-dagger": [],
   "S5-parent-after-ga-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "S5-star-dagger": [
     {
       "count": 1,
       "shown": [
@@ -451,6 +480,9 @@
     null
   ],
   "capped-snapshot-dev-dagger": [
+    null
+  ],
+  "capped-solve-pin-dagger": [
     null
   ],
   "capped-tag-unverified-dagger": [
@@ -959,6 +991,9 @@
     null
   ],
   "move-check-dagger": [
+    null
+  ],
+  "not-found-cached-dagger": [
     null
   ],
   "not-found-dagger": [

@@ -1276,6 +1276,50 @@
       "composer": []
     }
   ],
+  "S10-lock-undated-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "both",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "S10-tag-undated-dagger": [],
   "S5-parent-after-ga-dagger": [
     {
       "heading": "The move",
@@ -1289,6 +1333,49 @@
       ],
       "commands_label": "Commands, in order",
       "clears": "both",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "S5-star-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "all three",
       "stays": null,
       "not_checked": null,
       "adds": [],
@@ -2484,6 +2571,49 @@
           {
             "answer": "no",
             "text": "its installed release, dev-main, needs php >=7.4, <8.2, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "capped-solve-pin-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^4.17.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laminas/laminas-code:^4.17.0'",
+        "composer why-not laminas/laminas-code 4.17.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "capped",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, 4.7.1, needs php >=8.4.6 <8.5, which your target, 8.4, does not run: Composer will not install it there"
           }
         ]
       },
@@ -5105,6 +5235,29 @@
         ]
       },
       "composer": []
+    }
+  ],
+  "not-found-cached-dagger": [
+    {
+      "heading": "Next step",
+      "action": "Find a replacement; none is named",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": null,
+      "composer": [
+        {
+          "text": "Replace lorisleiva/laravel-search-string (hoa/compiler requires it)",
+          "items": []
+        }
+      ]
     }
   ],
   "not-found-dagger": [

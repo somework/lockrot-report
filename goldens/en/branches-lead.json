@@ -114,8 +114,20 @@
   "G-tag-dagger": [
     "A branch snapshot, dev-master, is installed."
   ],
+  "S10-lock-undated-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "S10-tag-undated-dagger": [
+    "Your branch, 8.x, has no dated release.",
+    "It has no higher branch."
+  ],
   "S5-parent-after-ga-dagger": [
     "Your branch, 2.x, had its last release, v2.6.13, 5.1 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "S5-star-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
     "The move's branch, 5.x, released v5.4.52 0.4 years ago."
   ],
   "S5-untrusted-dagger": [
@@ -235,6 +247,10 @@
   ],
   "capped-snapshot-dev-dagger": [
     "A branch snapshot, dev-main, is installed."
+  ],
+  "capped-solve-pin-dagger": [
+    "Your branch, 4.x, had its last release, 4.17.0, 0.9 years ago.",
+    "It has no higher branch."
   ],
   "capped-tag-unverified-dagger": [
     "A branch snapshot, dev-master, is installed."
@@ -485,6 +501,9 @@
     "Your branch, 2.x, had its last release, v2.3.2, 0.3 years ago.",
     "It has no higher branch."
   ],
+  "not-found-cached-dagger": [
+    "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
+  ],
   "not-found-dagger": [
     "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
   ],
@@ -502,7 +521,7 @@
   ],
   "pagerfanta": [
     "Your branch, 3.x, had its last release, v3.8.0, 3.5 years ago.",
-    "The move's branch, 4.x, released v4.9.0 1.6 years ago."
+    "The move's branch, 4.x, released v4.9.0 at most 1.6 years ago."
   ],
   "partial": [
     "Your branch, 9.x, had its last release, v9.52.22, 0.1 years ago."
