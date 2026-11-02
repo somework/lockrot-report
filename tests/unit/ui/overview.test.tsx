@@ -291,7 +291,9 @@ describe("the Overview tab of a report-2 document", () => {
     const libyears = band().querySelector(".ledger-libyears")?.textContent ?? "";
     expect(libyears).toContain("22.06 libyears");
     expect(libyears).toContain("over 7 packages · 22.06 from direct requirements");
-    expect(libyears).toContain("Not measured: 1, a branch snapshot with no release branch · 1, dated only by a commit its tags share");
+    expect(libyears).toContain(
+      "Not measured: 1, a branch snapshot with no release branch · 1, dated only by a commit its tags share",
+    );
     expect(libyears).toContain("symfony/monolog-bridge v2.6.13");
   });
 
