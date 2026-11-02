@@ -92,3 +92,48 @@ test.describe("report-2: the Run tab of SPEC §7.9.16", () => {
     }
   });
 });
+
+test.describe("a score-model table is a Tab stop only while it scrolls sideways (PD-A11Y-SWEEP-10)", () => {
+  test("at 1440 px neither table scrolls, so neither wrap is a region or a Tab stop", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await report.gotoReport2WithHash("composite", "view=run");
+    const wraps = runSurface(page).locator(".run2-table-wrap");
+    await expect(wraps).toHaveCount(2);
+
+    for (const wrap of await wraps.all()) {
+      const [scroll, client] = await wrap.evaluate((el) => [el.scrollWidth, el.clientWidth]);
+      expect(scroll).toBeLessThanOrEqual(client);
+      await expect(wrap).not.toHaveAttribute("tabindex");
+      await expect(wrap).not.toHaveAttribute("role");
+    }
+  });
+
+  test("at 375 px both tables scroll, so each wrap is a named region that takes focus", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await report.gotoReport2WithHash("composite", "view=run");
+
+    for (const name of ["Weights", "Advisories"]) {
+      const region = runSurface(page).getByRole("region", { name });
+      await expect(region).toHaveAttribute("tabindex", "0");
+      const [scroll, client] = await region.evaluate((el) => [el.scrollWidth, el.clientWidth]);
+      expect(scroll).toBeGreaterThan(client);
+      await region.focus();
+      await expect(region).toBeFocused();
+    }
+  });
+});
+
+test("the Advisories score table names its two Band columns apart (PD-A11Y-SWEEP-11)", async ({ page }) => {
+  await report.gotoReport2WithHash("composite", "view=run");
+  const table = runSurface(page).getByRole("table", { name: "Advisories" });
+
+  await expect(table.locator("thead th")).toHaveText([
+    "Severity",
+    "Points",
+    "Band",
+    "× 2: no reachable fix",
+    "Band",
+  ]);
+  await expect(table.getByRole("columnheader", { name: "Band", exact: true })).toHaveCount(1);
+  await expect(table.getByRole("columnheader", { name: "Band with no reachable fix" })).toHaveCount(1);
+});

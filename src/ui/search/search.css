@@ -36,6 +36,12 @@
   border-radius: var(--radius-s);
   font-size: var(--text-xs);
 }
+/* A touch-only device has no key to press; the header's glossary button holds the same help. */
+@media (any-pointer: coarse) and (not (any-pointer: fine)) {
+  .hint {
+    display: none;
+  }
+}
 
 .count-line {
   font-size: var(--text-s);

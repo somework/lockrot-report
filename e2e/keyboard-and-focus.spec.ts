@@ -484,3 +484,49 @@ test.describe("WCAG 2.1.4: the Keyboard shortcuts switch", () => {
     ).not.toBeChecked();
   });
 });
+
+test.describe("the rail's focus ring shows whole inside the scrolling rail, wide layout (PD-A11Y-SWEEP-9)", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("no rail control's ring is cut by the rail at any side", async ({ page }) => {
+    await report.gotoReport2WithHash("baselined-wallabag-2.6", "view=findings");
+    const rail = page.locator(".shell-rail");
+    const controls = await rail.locator("button, summary, a[href]").count();
+    expect(controls).toBeGreaterThan(5);
+    await rail.locator("button").first().focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+
+    const cuts: string[] = [];
+    for (let step = 0; step < controls; step += 1) {
+      const cut = await page.evaluate(() => {
+        const el = document.activeElement as HTMLElement | null;
+        const box = el?.closest(".shell-rail");
+        if (!el || !box) return null;
+        const style = getComputedStyle(el);
+        const reach = parseFloat(style.outlineOffset) + parseFloat(style.outlineWidth);
+        const ring = el.getBoundingClientRect();
+        const frame = box.getBoundingClientRect();
+        const left = frame.left + box.clientLeft;
+        const top = frame.top + box.clientTop;
+        const sides = {
+          left: left - (ring.left - reach),
+          right: ring.right + reach - (left + box.clientWidth),
+          top: top - (ring.top - reach),
+          bottom: ring.bottom + reach - (top + box.clientHeight),
+        };
+        const name = el.textContent.trim().slice(0, 24);
+        const over = Object.entries(sides).filter(([, px]) => px > 0.5);
+        return {
+          visible: el.matches(":focus-visible"),
+          text: over.map(([side, px]) => `${name}: ${side} ${px}`),
+        };
+      });
+      if (cut === null) break;
+      expect(cut.visible).toBe(true);
+      cuts.push(...cut.text);
+      await page.keyboard.press("Tab");
+    }
+    expect(cuts).toEqual([]);
+  });
+});

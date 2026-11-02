@@ -218,3 +218,27 @@ test.describe("report-2: the theme and the glossary", () => {
     await expect.poll(() => report.hash()).toContain("view=run");
   });
 });
+
+test.describe("the search hint names a key, so it shows only where a keyboard can press it (PD-A11Y-SWEEP-12)", () => {
+  test.describe("375 px, touch only", () => {
+    test.use({ viewport: { width: 375, height: 812 }, hasTouch: true, isMobile: true });
+
+    test("hides the hint, and the header button still opens the keys and search syntax", async ({ page }) => {
+      await report.gotoReport2WithHash("composite", "view=findings");
+
+      await expect(page.locator(".hint")).toBeHidden();
+      await page.getByRole("button", { name: "What these words mean" }).tap();
+      await expect(page.getByRole("dialog")).toContainText("priority:");
+    });
+  });
+
+  test.describe("375 px with a mouse", () => {
+    test.use({ viewport: { width: 375, height: 812 } });
+
+    test("shows the hint", async ({ page }) => {
+      await report.gotoReport2WithHash("composite", "view=findings");
+
+      await expect(page.locator(".hint")).toBeVisible();
+    });
+  });
+});

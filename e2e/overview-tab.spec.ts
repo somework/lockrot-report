@@ -177,6 +177,18 @@ test.describe("from a chart to a list", () => {
     await expect(selectedTab(page)).toHaveText(/^Overview/);
     expect(await page.evaluate(() => location.hash)).toBe("");
   });
+
+  test("Enter on the Findings strip's Overview link hands focus to the Overview panel (PD-A11Y-SWEEP-8)", async ({
+    page,
+  }) => {
+    await page.goto(report2Url("composite") + "#view=findings");
+    await page.locator(".f2-strip").getByRole("link", { name: "Overview" }).focus();
+
+    await page.keyboard.press("Enter");
+
+    await expect(selectedTab(page)).toHaveText(/^Overview/);
+    await expect(page.getByRole("tabpanel")).toBeFocused();
+  });
 });
 
 test.describe("one shell choice for the page (R4-30)", () => {

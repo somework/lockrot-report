@@ -1,6 +1,7 @@
 import { RichText } from "./RichText";
 import type { Rich } from "../../domain/rich";
-import { useId } from "preact/hooks";
+import { useId, useRef } from "preact/hooks";
+import { useOverflowX } from "../useOverflowX";
 import {
   acceptedUnchecked,
   advisoryLookup,
@@ -65,15 +66,21 @@ function Ruler({ model }: { model: Report2["run"]["score_model"] }) {
 
 function Table({ table, model }: { table: ScoreTable; model: Report2["run"]["score_model"] }) {
   const id = useId();
+  const wrap = useRef<HTMLDivElement>(null);
+  const scrolls = useOverflowX(wrap);
   return (
-    <div className="run2-table-wrap" role="region" aria-labelledby={id} tabIndex={0}>
+    <div
+      ref={wrap}
+      className="run2-table-wrap"
+      {...(scrolls ? { role: "region", "aria-labelledby": id, tabIndex: 0 } : {})}
+    >
       <table className="run2-table">
         <caption id={id}>{table.caption}</caption>
         <thead>
           <tr>
             {table.head.map((cell, index) => (
-              <th key={index} scope="col">
-                {cell}
+              <th key={index} scope="col" aria-label={cell.name}>
+                {cell.text}
               </th>
             ))}
           </tr>

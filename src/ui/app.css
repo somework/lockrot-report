@@ -426,6 +426,10 @@ html {
   overscroll-behavior: contain;
   scrollbar-width: thin;
 }
+/* The rail scrolls, so it clips whatever paints outside it: the ring goes inside each control. */
+.shell-rail :focus-visible {
+  outline-offset: -2px;
+}
 .rail-fold {
   margin-bottom: 12px;
 }

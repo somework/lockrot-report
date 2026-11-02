@@ -388,6 +388,10 @@ export function App({ model }: { model: Model }) {
     // all; scrolling the window itself back to 0 is what puts the tab row and the new tab's own
     // first row directly under it, on every width.
     window.scrollTo(0, 0);
+    // A link that switched the tab left the page with the old tab: focus goes to the new panel.
+    const active = document.activeElement;
+    if (active === null || active === document.body || !document.contains(active))
+      document.getElementById(`${idBase}-panel`)?.focus({ preventScroll: true });
   }, [state.view]);
 
   // The `section` key opens Run data at that section, from a link, a pasted address or a

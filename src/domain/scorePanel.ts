@@ -303,9 +303,15 @@ export interface TableCell {
   band?: string;
 }
 
+/** A column head: the words on screen, and a name for assistive tech where two heads read alike. */
+export interface HeadCell {
+  text: string;
+  name?: string;
+}
+
 export interface ScoreTable {
   caption: string;
-  head: string[];
+  head: HeadCell[];
   rows: TableCell[][];
 }
 
@@ -353,17 +359,19 @@ export function scoreTables(model: Model): { weights: ScoreTable; advisories: Sc
         share === undefined ? "After the lead" : `After the lead, ${shareGlyph(share)}`,
         "The previous release's band",
         "With corroboration, at most",
-      ],
+      ].map((text) => ({ text })),
       rows: weights,
     },
     advisories: {
       caption: "Advisories",
       head: [
-        "Severity",
-        "Points",
-        "Band",
-        `${factor === undefined ? "" : `${fill(PANEL_WORDS.factor, { factor: String(factor) }) ?? ""}: `}no reachable fix`,
-        "Band",
+        { text: "Severity" },
+        { text: "Points" },
+        { text: "Band" },
+        {
+          text: `${factor === undefined ? "" : `${fill(PANEL_WORDS.factor, { factor: String(factor) }) ?? ""}: `}no reachable fix`,
+        },
+        { text: "Band", name: PANEL_WORDS.bandNoReachableFix },
       ],
       rows: advisories,
     },
