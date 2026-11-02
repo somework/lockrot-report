@@ -3,7 +3,8 @@ import { report2Url } from "./support/pages";
 import { advisoryRows } from "./support/report2/advisories";
 import { openDetail2 } from "./support/report2/detail";
 import { findingsRows, findingsSurface } from "./support/report2/findings";
-import { packagesOrder } from "./support/report2/packages";
+import { overviewSurface } from "./support/report2/overview";
+import { packagesOrder, packagesSurface } from "./support/report2/packages";
 
 /** report2-ok-unchecked: five packages checked, one `ok` finding, so nothing is flagged. */
 test.describe("report-2: a lock with nothing flagged", () => {
@@ -35,5 +36,24 @@ test.describe("report-2: a lock with nothing flagged", () => {
     const sheet = await openDetail2(page, "ok-unchecked", PKG);
 
     await expect(sheet.getByRole("heading", { level: 2 })).toHaveText(PKG);
+  });
+});
+
+/** page-empty-lock.offline-dagger: an offline run on a lock with no package (R9-18, R9-19). */
+test.describe("report-2: an offline run on an empty lock", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto(report2Url("page-empty-lock.offline-dagger"));
+  });
+
+  test("the state line names the offline run with no colon and no empty clause", async ({ page }) => {
+    await expect(overviewSurface(page).locator(".ov-state.is-lookup")).toHaveText(
+      "Offline run. What this run could not see ›",
+    );
+  });
+
+  test("All packages says the lock holds no package, not that nothing is flagged", async ({ page }) => {
+    await page.getByRole("tab", { name: /^All packages/ }).click();
+
+    await expect(packagesSurface(page).locator(".empty")).toHaveText("No packages in this lock.");
   });
 });
