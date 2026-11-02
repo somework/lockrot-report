@@ -291,7 +291,7 @@ describe("the Overview tab of a report-2 document", () => {
     const libyears = band().querySelector(".ledger-libyears")?.textContent ?? "";
     expect(libyears).toContain("22.06 libyears");
     expect(libyears).toContain("over 7 packages · 22.06 from direct requirements");
-    expect(libyears).toContain("Not measured: 1, a branch snapshot with no release branch · 1, no date");
+    expect(libyears).toContain("Not measured: 1, a branch snapshot with no release branch · 1, dated only by a commit its tags share");
     expect(libyears).toContain("symfony/monolog-bridge v2.6.13");
   });
 
@@ -668,6 +668,20 @@ describe("a count in a state line links to its list (R4-27)", () => {
 
     expect(screen.getByRole("tab", { selected: true }).textContent).toMatch(/^All packages/);
     expect(document.querySelectorAll("[data-pkg]")).toHaveLength(golden.report.counts.unknown);
+  });
+});
+
+describe("a state line with no clause (R9-18)", () => {
+  test("prints the bold head and a full stop, with no colon", () => {
+    const golden = pageGoldens().find(({ id }) => id === "empty-lock.offline‡");
+    if (golden === undefined) throw new Error("no empty-lock.offline‡ page golden");
+    const result = normalize(golden.report);
+    if (!result.ok) throw new Error(result.error.message);
+    render(<App model={result.model} />);
+    const line = band().querySelector<HTMLElement>(".ov-state.is-lookup");
+
+    expect(line?.querySelector(".ov-state-head")?.textContent).toBe("Offline run");
+    expect(line?.textContent).toBe("Offline run. What this run could not see ›");
   });
 });
 
