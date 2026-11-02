@@ -6,7 +6,7 @@
 import type { Finding, FindingFlag, RepositoryMetadata, Run, ScoreGraded, Severity } from "../model/report";
 import { isScoreGraded, isSecurityVulnerable, isTermSecurity } from "../model/report";
 import { advisoryRows } from "./advisoryRows";
-import { ago } from "./ago";
+import { ago, agoAtMost } from "./ago";
 import { countedFlagIds } from "./countedFlags";
 import {
   capitalize,
@@ -132,10 +132,10 @@ function leftBehindReading(finding: Finding, flag: FindingFlag, ctx: SheetContex
   const s8 = signalData(finding, "S8");
   if (!s8) return reading(flag.id, flag.summary);
   const reached = s8.reachable_branch !== null;
-  const [branch, version, years] = reached
-    ? [s8.reachable_branch, s8.reachable_version, s8.reachable_years]
-    : [s8.newest_branch, s8.newest_version, s8.newest_years];
-  const higher = `${branch} released ${version ?? ""}${years === null ? "" : ` ${ago(years)}`}`;
+  const [branch, version, years, atMost] = reached
+    ? [s8.reachable_branch, s8.reachable_version, s8.reachable_years, s8.reachable_release_at_least === true]
+    : [s8.newest_branch, s8.newest_version, s8.newest_years, s8.newest_release_at_least];
+  const higher = `${branch} released ${version ?? ""}${years === null ? "" : ` ${agoAtMost(years, atMost)}`}`;
   if (ctx.hasBranchRows) {
     const value = flag.headline.value;
     const own = typeof value === "number" ? value : s8.years;
@@ -150,7 +150,7 @@ function leftBehindReading(finding: Finding, flag: FindingFlag, ctx: SheetContex
   const php = s8.newest_php === null ? "" : ` and needs php ${s8.newest_php}`;
   return reading(
     flag.id,
-    `${head}; the newest branch, ${s8.newest_branch}, released ${s8.newest_version} ${ago(s8.newest_years)}${php}`,
+    `${head}; the newest branch, ${s8.newest_branch}, released ${s8.newest_version} ${agoAtMost(s8.newest_years, s8.newest_release_at_least)}${php}`,
   );
 }
 

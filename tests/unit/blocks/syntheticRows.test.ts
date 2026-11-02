@@ -73,6 +73,39 @@ describe("the left-behind reading", () => {
   });
 });
 
+describe("the left-behind reading of a branch dated by a commit its tags share (R9-42)", () => {
+  test("G27: says the reachable branch released at most that long ago", () => {
+    const { finding, run, metadata } = modelCase("B");
+    const row = metadata?.branches.find((r) => r.branch === "5.x");
+    if (row === undefined) throw new Error("B has a 5.x row");
+    row.highest = "v5.4.53";
+    s8Of(finding).reachable_release_at_least = true;
+
+    expect(readingTexts(finding, run, metadata)[0]).toBe(
+      "Its branch, 2.x, had its last release 6.9 years ago, while 5.x released v5.4.52 at most 0.4 years ago. See Release branches.",
+    );
+  });
+
+  test("G29: says the newest branch released at most that long ago", () => {
+    const { finding, run } = modelCase("B");
+    const s8 = s8Of(finding);
+    s8.reachable_branch = null;
+    s8.newest_php = null;
+    s8.newest_release_at_least = true;
+
+    expect(readingTexts(finding, run, null)[0]).toMatch(/released v\S+ at most 0\.1 years ago\.$/);
+  });
+
+  test("reads the bound of the branch it names, not the other one", () => {
+    const { finding, run } = modelCase("B");
+    s8Of(finding).newest_release_at_least = true;
+
+    expect(readingTexts(finding, run, null)[0]).toBe(
+      "Branch 2.x had its last release 6.9 years ago, while 5.x released v5.4.52 0.4 years ago.",
+    );
+  });
+});
+
 describe("G35: the installed branch's fix, when no ladder rung says it", () => {
   test.each([
     [1, 1, "update", "It is fixed on 2.x"],

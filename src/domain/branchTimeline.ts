@@ -6,7 +6,7 @@
 
 import type { Finding, ReleaseBranch, RepositoryMetadata, Run } from "../model/report";
 import { signalData } from "./findingWords";
-import { ago } from "./ago";
+import { ago, agoAtMost } from "./ago";
 import { decimal } from "./format";
 import { phpConstraintWord } from "./phpAlternatives";
 import { TL_BETWEEN_MAX, TL_BETWEEN_RUN_MIN, TL_FOLD_MIN } from "./sheetThresholds";
@@ -27,6 +27,8 @@ export interface BranchLane {
   /** The first row, unless it is the installed one: nothing newer to point at then. */
   readonly newest: boolean;
   readonly datedBy: string | null;
+  /** `years` is an upper bound: the row's highest tag has no date of its own (G146). */
+  readonly atMost: boolean;
   /** The latest release's short age: "{y}y", "< 3 wk" or "undated" (G148). */
   readonly age: string;
   readonly foldedIn: FoldKind | null;
@@ -101,6 +103,7 @@ function lanesOf(finding: Finding, metadata: RepositoryMetadata | null): BranchL
       move: moveBranch !== null && row.branch === moveBranch,
       newest: i === 0 && !row.installed,
       datedBy: row.installed ? (release?.dated_by ?? null) : row.dated_by,
+      atMost: !row.installed && row.highest_released === null,
       age: shortAge(years),
       foldedIn: folded[i] ?? null,
     };
@@ -158,7 +161,8 @@ export function xOfYears(years: number, span: number): number {
 
 /** The bar's text equivalent and tooltip (G146): "v5.4.52, released 0.4 years ago". */
 export function laneWords(l: BranchLane): string {
-  const released = l.years === null ? `${l.version}, undated` : `${l.version}, released ${ago(l.years)}`;
+  const released =
+    l.years === null ? `${l.version}, undated` : `${l.version}, released ${agoAtMost(l.years, l.atMost)}`;
   return l.datedBy === null ? released : `${released}, dated by ${l.datedBy}`;
 }
 
@@ -177,9 +181,9 @@ export function branchesLead(finding: Finding, metadata: RepositoryMetadata | nu
   const s8 = signalData(finding, "S8");
   if (!s8) return [mine];
   const reached = s8.reachable_branch !== null;
-  const [higher, version, years] = reached
-    ? [s8.reachable_branch, s8.reachable_version, s8.reachable_years]
-    : [s8.newest_branch, s8.newest_version, s8.newest_years];
+  const [higher, version, years, atMost] = reached
+    ? [s8.reachable_branch, s8.reachable_version, s8.reachable_years, s8.reachable_release_at_least === true]
+    : [s8.newest_branch, s8.newest_version, s8.newest_years, s8.newest_release_at_least];
   if (higher === null) return [mine];
   const who =
     higher === finding.next_step?.to_branch
@@ -187,7 +191,10 @@ export function branchesLead(finding: Finding, metadata: RepositoryMetadata | nu
       : reached
         ? "The newest releasing branch within reach"
         : "The newest branch";
-  return [mine, `${who}, ${higher}, released ${version ?? ""}${years === null ? "" : ` ${ago(years)}`}.`];
+  return [
+    mine,
+    `${who}, ${higher}, released ${version ?? ""}${years === null ? "" : ` ${agoAtMost(years, atMost)}`}.`,
+  ];
 }
 
 /** The fixed words of the timeline: its column heads, marks, key and fold buttons. */
