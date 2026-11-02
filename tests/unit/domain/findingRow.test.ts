@@ -50,6 +50,12 @@ describe("flagPills", () => {
     ]);
   });
 
+  it("words an old-promise headline with no PHP major by the release's php constraint (S5-star‡)", () => {
+    const pills = pillsOf(report("S5-star-dagger"), "symfony/monolog-bridge");
+
+    expect(pills.find((p) => p.id === "old-promise")?.word).toBe('php "*"');
+  });
+
   it("words a reason headline with the page's word and an advisory headline with its count", () => {
     expect(pillsOf(composite, "symfony/debug")[0]?.word).toBe("archived");
     expect(pillsOf(composite, "friendsofsymfony/oauth-server-bundle")[0]?.word).toBe("snapshot");

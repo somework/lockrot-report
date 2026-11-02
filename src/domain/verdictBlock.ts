@@ -213,10 +213,11 @@ function flagReading(finding: Finding, flag: FindingFlag, run: Run, ctx: SheetCo
       return leftBehindReading(finding, flag, ctx);
     case "old-promise": {
       const s5 = signalData(finding, "S5");
-      return reading(
-        flag.id,
-        `It was written for PHP ${s5?.written_for_php ?? ""} and admits ${s5?.target_php ?? run.target_php} untested`,
-      );
+      const promise =
+        s5?.written_for_php === null
+          ? `released with php "${s5.php_constraint}"`
+          : `written for PHP ${s5?.written_for_php ?? ""}`;
+      return reading(flag.id, `It was ${promise} and admits ${s5?.target_php ?? run.target_php} untested`);
     }
     case "capped": {
       const s11 = signalData(finding, "S11");

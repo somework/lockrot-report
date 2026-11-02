@@ -5,7 +5,14 @@ import type { Finding, Grade, HeldBy, Move, Report2, Run, TermSecurity } from ".
 import { isScoreGraded, isTermSecurity } from "../model/report";
 import { advisoryRows } from "./advisoryRows";
 import { countedFlagIds } from "./countedFlags";
-import { acceptsWholePackage, advisoryName, isAre, NAMES_SHOWN, oneDecimal } from "./findingWords";
+import {
+  acceptsWholePackage,
+  advisoryName,
+  isAre,
+  NAMES_SHOWN,
+  oneDecimal,
+  signalData,
+} from "./findingWords";
 import { plural, pluralNoun } from "./format";
 import { compareHolds } from "./holdRank";
 import { isZeroLine, newLineTag, ROOT_HOLDER_NAME } from "./moveCards";
@@ -48,12 +55,15 @@ export function securityBand(run: Run, term: TermSecurity): Grade | null {
   return term.multiplier === 2 ? severity.band_no_reachable_fix : severity.band;
 }
 
-function headlineWord({ headline }: FindingFlag): string {
+/** An old-promise headline with no PHP major prints the release's php constraint (r12i item 3). */
+function headlineWord({ headline }: FindingFlag, f: Finding): string {
   switch (headline.unit) {
     case "years":
       return headline.value === null ? "" : `${oneDecimal(headline.value as number)} y`;
     case "php":
-      return `PHP ${String(headline.value)}`;
+      return headline.value === null
+        ? `php "${signalData(f, "S5")?.php_constraint ?? ""}"`
+        : `PHP ${String(headline.value)}`;
     case "reason":
       return headlineReasonWord(String(headline.value));
     default:
@@ -142,7 +152,7 @@ export function flagPills(f: Finding, run: Run): readonly FlagPill[] {
     const vulnerable = flag.id === "vulnerable";
     return {
       id: flag.id,
-      word: headlineWord(flag),
+      word: headlineWord(flag, f),
       band: vulnerable ? (term === undefined ? null : securityBand(run, term)) : flagBand(run, flag.id),
       accepted,
       title: null,
