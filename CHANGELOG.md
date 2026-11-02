@@ -210,7 +210,7 @@ project is overall, and the other tabs lead with their own part.
 - A root php link that only the lock's platform records closes the PHP line: "the lock records
   require.php >=7.4 <8.1, which composer.json does not have: composer update --lock rewrites it".
 - A move check that the advisory lookup did not cover reads "not checked: the advisory lookup did
-  not cover a package it installs". A move check that Composer stops on a refused `config.platform`
+  not cover a package in the result". A move check that Composer stops on a refused `config.platform`
   value reads "not checked: Composer refuses a config.platform value".
 - A ladder rung names each holder once. A rung held by every holder of Held by says "held by every
   holder in Held by".
@@ -350,8 +350,8 @@ project is overall, and the other tabs lead with their own part.
   "1 in production · 1 unreached".
 - An open package's branch lead calls S8's branch within reach "The newest releasing branch within
   reach", because S8 picks the branch with the newest release, which can be a lower LTS.
-- A package installed above every stable release of its branch reads "installed above every listed
-  stable release".
+- A stable release installed above every listed stable release of its package reads "installed above
+  every listed stable release".
 - The PHP line says that Composer solves at the `config.platform.php` of Composer's config: "Composer
   solves at 7.4.29, the PHP that config.platform.php sets in Composer's config, not the PHP of the
   machine". The Run tab row reads "Composer's config.platform.php: 7.4.29".

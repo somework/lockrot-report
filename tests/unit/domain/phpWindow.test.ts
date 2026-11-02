@@ -142,7 +142,7 @@ describe("the Run tab rows", () => {
     return { ...base, run: { ...base.run, target_php, move_check } } as Report2;
   };
 
-  test("say that composer install and the move check read different PHPs when the override lies outside the target minor (ruling R3-35)", () => {
+  test("say that composer update and the move check solve at different PHPs when the override lies outside the target minor (ruling R3-35)", () => {
     expect(windowRows(overridden("8.4", { baseline: "resolves" })).slice(1)).toEqual([
       "Composer's config.platform.php: 7.4.29",
       "composer update solves at 7.4.29, and the move check solves at the target PHP 8.4.99.",

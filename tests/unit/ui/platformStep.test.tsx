@@ -51,7 +51,7 @@ describe("Ready to run on a lock whose config.platform.php lies outside the targ
     expect(lines[0]?.nextElementSibling?.classList.contains("ov-moves")).toBe(true);
   });
 
-  test("prints no platform line when the lock sets none", () => {
+  test("prints no platform line when Composer's config sets none", () => {
     history.replaceState(null, "", "/report.html");
     render(<App model={model(null)} />);
 

@@ -279,7 +279,7 @@ describe("L5: the platform step of a move card", () => {
     ]);
   });
 
-  test("says nothing when the lock sets no config.platform.php", () => {
+  test("says nothing when Composer's config sets no config.platform.php", () => {
     expect(platformLine(null, "8.4")[0]).toBeNull();
   });
 });
