@@ -371,8 +371,8 @@ project is overall, and the other tabs lead with their own part.
   "S2 not run (undated releases)". The not run qualifier reads "Its release dates (undated
   releases)", and the Why reads "checks not run: its release dates (undated releases)".
 - When the highest tag of a higher branch has no date of its own, its age is an upper bound. The S8
-  reading and the branch lead read "released v4.9.0 at most 1.6 years ago", and the bar reads
-  "v4.9.0, released at most 1.6 years ago".
+  reading and the branch lead read "released v4.9.0 at most 1.6 years ago". The bar of that branch
+  reads "v4.9.0, released at most 1.6 years ago".
 - An old-promise flag on a release whose php constraint names no PHP major, such as `*`, shows the
   constraint in its pill: `php "*"`. The sheet reads "It was released with php "*" and admits 8.4
   untested."
