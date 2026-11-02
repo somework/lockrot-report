@@ -163,8 +163,8 @@ project is overall, and the other tabs lead with their own part.
   `<` and `=`).
 - A report the page cannot read, or one that breaks the page as it draws, shows a screen that says
   so instead of a blank page.
-- The PHP window. When the target PHP is outside it, when `config.platform.php` sets the PHP that
-  Composer checks, or when a package carries `capped`, a "PHP" state line follows the gate line:
+- The PHP window. When the target PHP is outside it, when `config.platform.php` in Composer's config
+  sets the PHP that Composer solves at, or when a package carries `capped`, a "PHP" state line follows the gate line:
   "PHP: this lock installs on PHP 7.4, so your target, 8.4, is excluded · 3 packages exclude 8.4:
   … · Composer's solver at PHP 8.4 refuses their update: composer.json requires
   php-http/guzzle5-adapter ^2.0. The PHP window ›". When the window keeps the target's minor but
@@ -185,14 +185,14 @@ project is overall, and the other tabs lead with their own part.
   Composer resolves it (not checked: Composer's solver refuses the lock itself at the target PHP;
   see the PHP line in the Overview)". When the target lies inside the PHP window, or the run has no
   window, it reads "Composer's solver refuses the lock itself; the Run tab names the cause".
-- A lock can set `config.platform.php` to a PHP that is not a stable release of the target's minor,
-  such as 7.4.29 or 8.4.0RC1 at target 8.4. Then each move card,
+- Composer's config can set `config.platform.php` to a PHP that is not a stable release of the
+  target's minor, such as 7.4.29 or 8.4.0RC1 at target 8.4. Then each move card,
   Ready to run and the Findings tab first print one line. It reads "First set config.platform.php
-  to your PHP 8.4 release: the lock records 7.4.29." The commands do not change. When Composer
+  to your PHP 8.4 release: Composer's config sets 7.4.29." The commands do not change. When Composer
   also refuses the lock itself, the line goes on: "Composer still refuses the lock itself: the PHP
   line in the Overview names the packages."
   When a move check ran, the Run tab says under the override which PHP each step reads:
-  "composer install reads 7.4.29, and the move check solves at the target PHP 8.4.99."
+  "composer update solves at 7.4.29, and the move check solves at the target PHP 8.4.99."
 - Holders keep one order on every surface: the root, then the package's own releases, then the
   packages that require the package, then the rest. A group goes by grade, then by name.
 - In Held by, a hold by the package's own release takes no grade, no flags and no own step. It
@@ -210,7 +210,8 @@ project is overall, and the other tabs lead with their own part.
 - A root php link that only the lock's platform records closes the PHP line: "the lock records
   require.php >=7.4 <8.1, which composer.json does not have: composer update --lock rewrites it".
 - A move check that the advisory lookup did not cover reads "not checked: the advisory lookup did
-  not cover a package it installs".
+  not cover a package it installs". A move check that Composer stops on a refused `config.platform`
+  value reads "not checked: Composer refuses a config.platform value".
 - A ladder rung names each holder once. A rung held by every holder of Held by says "held by every
   holder in Held by".
 - A Findings row shows the move's first command that names the package. A PHP floor raise reads
@@ -334,6 +335,26 @@ project is overall, and the other tabs lead with their own part.
   result and its major-move tag as two phrases.
 - A command that wraps indents its later lines, so a wrapped flag no longer reads like a new
   command. The copied text does not change.
+- Every All packages sort button is a 24 px target at every list width (WCAG 2.5.8).
+- The Advisories ledger names the 'Press Enter on a row to open its package.' hint, as the other row
+  lists do.
+- An address with an empty `pkg=` opens no package, and the address the page writes back keeps no
+  `pkg`.
+- The printed Blast radius lede reads "Each direct requirement that pulls in a flagged package, in
+  lockrot's order, with every flagged package listed under it." A report with graded packages but no row prints "No direct requirement lists a
+  flagged package." A report with nothing graded prints "Nothing flagged, so no direct requirement
+  pulls in a flagged package.", or "No packages in this lock." for an empty lock.
+- The folded rail counts the filters that the search bar counts, so "Hide accepted flags" alone
+  no longer reads "Filters · 1 on".
+- The Overview scope line names the unreached packages also when no flagged package is reached:
+  "1 in production · 1 unreached".
+- An open package's branch lead calls S8's branch within reach "The newest releasing branch within
+  reach", because S8 picks the branch with the newest release, which can be a lower LTS.
+- A package installed above every stable release of its branch reads "installed above every listed
+  stable release".
+- The PHP line says that Composer solves at the `config.platform.php` of Composer's config: "Composer
+  solves at 7.4.29, the PHP that config.platform.php sets in Composer's config, not the PHP of the
+  machine". The Run tab row reads "Composer's config.platform.php: 7.4.29".
 
 ### Security
 
