@@ -87,7 +87,9 @@ describe("the reason words of a stopped move check (SPEC §7.9.21)", () => {
     const schema = JSON.parse(
       readFileSync(join(process.cwd(), "contract", "lockrot-report-2.schema.json"), "utf8"),
     ) as {
-      definitions: { moveCheck: { oneOf: { properties: { reason: { oneOf: { "x-known-values"?: string[] }[] } } }[] } };
+      definitions: {
+        moveCheck: { oneOf: { properties: { reason: { oneOf: { "x-known-values"?: string[] }[] } } }[] };
+      };
     };
     const known = schema.definitions.moveCheck.oneOf[0]?.properties.reason.oneOf[0]?.["x-known-values"];
 

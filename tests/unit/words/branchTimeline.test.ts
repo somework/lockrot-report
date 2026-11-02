@@ -70,8 +70,8 @@ describe("the age-limit guides", () => {
     const { finding, run, metadata } = byName("B");
 
     expect(branchTimeline(finding, metadata, run)?.guides).toEqual([
-      { years: run.thresholds?.["release-warn-years"], level: "warn" },
-      { years: run.thresholds?.["release-high-years"], level: "high" },
+      { years: run.thresholds["release-warn-years"], level: "warn" },
+      { years: run.thresholds["release-high-years"], level: "high" },
     ]);
   });
 

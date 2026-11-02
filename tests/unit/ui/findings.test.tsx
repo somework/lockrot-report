@@ -562,7 +562,6 @@ describe("the age axis in the Findings column head", () => {
     expect(levels.some(([high]) => high)).toBe(true);
     expect(levels.every(([high, marked]) => high === marked)).toBe(true);
   });
-
 });
 
 describe("a long package name", () => {

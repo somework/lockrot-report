@@ -265,7 +265,6 @@ describe("the thresholds", () => {
       { key: "push-high-years", value: "5 years" },
     ]);
   });
-
 });
 
 describe("the gate view prints gate.text as written", () => {

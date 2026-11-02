@@ -139,7 +139,7 @@ describe("ageReading", () => {
   it("takes the first reading with a level, against the release thresholds", () => {
     const reading = ageReading(finding(composite, "symfony/debug"), run);
     expect(reading).toMatchObject({ kind: "branch_release", level: "high" });
-    expect(reading?.warn).toBe(run.thresholds?.["release-warn-years"]);
+    expect(reading?.warn).toBe(run.thresholds["release-warn-years"]);
     expect(reading && ageScaleLabel(reading)).toMatch(
       /^installed branch last released \d+\.\d years ago; warn at \S+ years, high at \S+$/,
     );
@@ -148,7 +148,6 @@ describe("ageReading", () => {
   it("has no reading when no level is set", () => {
     expect(ageReading(finding(composite, "twig/twig"), run)).toBeNull();
   });
-
 });
 
 describe("nextStepWords", () => {
