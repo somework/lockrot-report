@@ -9,14 +9,18 @@ import "./views.css";
  *
  * - `"clean"`: the view's own population (before any query or rail filter) is empty. Nothing for the
  *   reader to clear.
+ * - `"emptyLock"`: All packages of a lock with no package; that tab lists packages, not flags.
  * - `"filtered"`: the population has rows, but the query box or the rail narrowed them to none. A
  *   Clear-filters action makes sense here, so it is offered.
  */
-export function EmptyState({ reason }: { reason: "clean" | "filtered" }) {
+export function EmptyState({ reason }: { reason: "clean" | "emptyLock" | "filtered" }) {
   const { dispatch } = useReport();
 
   if (reason === "clean") {
     return <p className="empty">Nothing is flagged.</p>;
+  }
+  if (reason === "emptyLock") {
+    return <p className="empty">No packages in this lock.</p>;
   }
 
   return (
