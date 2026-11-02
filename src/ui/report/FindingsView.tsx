@@ -237,8 +237,7 @@ export function FindingsView2() {
   const { state } = useReport();
   const { report } = useReport2();
   const rows = applyFilters2(report, state, "findings");
-  const thresholds = report.run.thresholds;
-  const axis = thresholds === null ? null : ageAxis(Object.entries(thresholds));
+  const axis = ageAxis(Object.entries(report.run.thresholds));
   const printed = usePrinted();
   const platform = platformStep(report.run);
   const hintId = `${useId()}-hint`;

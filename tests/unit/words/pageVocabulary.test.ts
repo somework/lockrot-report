@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { describe, expect, test } from "vitest";
 
 import {
@@ -8,6 +11,8 @@ import {
   allowlistByInWhy,
   allowlistReason,
   CAUSE_WORDS,
+  CHECK_REASON_WORDS,
+  checkReasonRich,
   HALVING_WORDS,
   SORT_WORDS,
   causeWord,
@@ -74,6 +79,23 @@ describe("every table with a recorded twin equals it", () => {
     ).rows,
   )("the php floor $project_php_lowest prints as $printed", ({ project_php_lowest, printed }) => {
     expect(phpFloorWord(project_php_lowest)).toBe(printed);
+  });
+});
+
+describe("the reason words of a stopped move check (SPEC §7.9.21)", () => {
+  test("word every x-known-values reason of moveCheck, in schema order", () => {
+    const schema = JSON.parse(
+      readFileSync(join(process.cwd(), "contract", "lockrot-report-2.schema.json"), "utf8"),
+    ) as {
+      definitions: { moveCheck: { oneOf: { properties: { reason: { oneOf: { "x-known-values"?: string[] }[] } } }[] } };
+    };
+    const known = schema.definitions.moveCheck.oneOf[0]?.properties.reason.oneOf[0]?.["x-known-values"];
+
+    expect(CHECK_REASON_WORDS.map(([reason]) => reason)).toEqual(known);
+  });
+
+  test("say that Composer refuses a config.platform value for platform_config_invalid", () => {
+    expect(checkReasonRich("platform_config_invalid")).toEqual(["Composer refuses a config.platform value"]);
   });
 });
 

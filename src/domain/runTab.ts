@@ -176,6 +176,5 @@ export function acceptedUnchecked(report: Report2): { head: string; rows: string
 }
 
 export function thresholdRows({ thresholds }: Run): { key: string; value: string }[] {
-  if (thresholds === null) return [];
   return Object.entries(thresholds).map(([key, years]) => ({ key, value: plural(years, "year", "years") }));
 }

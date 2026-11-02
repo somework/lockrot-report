@@ -625,12 +625,12 @@ function stillRefused(run: Run): string {
     : " Composer still refuses the lock itself: the Run tab names the cause.";
 }
 
-/** A lock whose config.platform.php is not a stable release of the target's minor makes Composer
- *  check every command at that PHP, not the target's. */
+/** A config.platform.php in Composer's merged config that is not a stable release of the target's
+ *  minor makes `composer update` solve at that PHP, not the target's. */
 export function platformStep(run: Run): string | null {
   const override = overrideOutsideTarget(run);
   if (override === null) return null;
-  return `First set config.platform.php to your PHP ${run.target_php} release: the lock records ${override}.${stillRefused(run)}`;
+  return `First set config.platform.php to your PHP ${run.target_php} release: Composer's config sets ${override}.${stillRefused(run)}`;
 }
 
 /** The POSIX lines of a command box, or the refusal: one refused argv refuses the whole move (§5.6). */

@@ -75,12 +75,6 @@ describe("the age-limit guides", () => {
     ]);
   });
 
-  test("are absent when the run has no thresholds", () => {
-    const { finding, run, metadata } = byName("B");
-
-    expect(branchTimeline(finding, metadata, { ...run, thresholds: null })?.guides).toEqual([]);
-  });
-
   test("are left out past the axis", () => {
     const { finding, run, metadata } = byName("A");
 

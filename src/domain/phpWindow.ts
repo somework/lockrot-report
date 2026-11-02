@@ -102,8 +102,8 @@ const isStableIn = (version: string, minor: string): boolean => {
   return match !== null && `${Number(match[1])}.${Number(match[2] ?? 0)}` === minor;
 };
 
-/** The lock's config.platform.php when it is not a stable release of the target's minor (ruling L5),
- *  else null: the move check then solves at another PHP than `composer install` reads. */
+/** Composer's config.platform.php when it is not a stable release of the target's minor (ruling L5),
+ *  else null: the move check then solves at another PHP than `composer update` does. */
 export function overrideOutsideTarget(run: Pick<Run, "php_window" | "target_php">): string | null {
   const override = run.php_window?.platform_override ?? null;
   return override === null || isStableIn(override, minorOf(run.target_php)) ? null : override;
@@ -126,11 +126,11 @@ export function windowFacts({ run }: Pick<Report2, "run">): { key: string; value
       ? []
       : [
           {
-            key: "Composer checks the lock at",
-            value: `${window.platform_override} (config.platform.php)`,
+            key: "Composer's config.platform.php",
+            value: window.platform_override,
             ...(solvesApart
               ? {
-                  note: `composer install reads ${window.platform_override}, and the move check solves at the target PHP ${window.target.php}.`,
+                  note: `composer update solves at ${window.platform_override}, and the move check solves at the target PHP ${window.target.php}.`,
                 }
               : {}),
           },
@@ -287,7 +287,7 @@ export function phpStateClauses(report: Pick<Report2, "run" | "findings">): stri
     ...(window.platform_override === null
       ? []
       : [
-          `Composer checks it at ${window.platform_override}, the PHP that the lock records from config.platform.php, not the PHP of the machine`,
+          `Composer solves at ${window.platform_override}, the PHP that config.platform.php sets in Composer's config, not the PHP of the machine`,
         ]),
     ...(s11 === null
       ? []

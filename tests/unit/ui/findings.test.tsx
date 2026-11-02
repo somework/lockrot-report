@@ -563,16 +563,6 @@ describe("the age axis in the Findings column head", () => {
     expect(levels.every(([high, marked]) => high === marked)).toBe(true);
   });
 
-  test("is not drawn, and no row draws a scale, when the run recorded no thresholds", () => {
-    const bare = withReport(model("composite"), (report) => ({
-      ...report,
-      run: { ...report.run, thresholds: null },
-    }));
-    render(<App model={bare} />);
-
-    expect(screen.queryByRole("img", { name: /^age axis:/ })).toBeNull();
-    expect(document.querySelectorAll('[data-surface="findings"] .age-guide')).toHaveLength(0);
-  });
 });
 
 describe("a long package name", () => {

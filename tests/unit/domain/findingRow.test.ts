@@ -149,9 +149,6 @@ describe("ageReading", () => {
     expect(ageReading(finding(composite, "twig/twig"), run)).toBeNull();
   });
 
-  it("has no reading when the run has no thresholds", () => {
-    expect(ageReading(finding(composite, "symfony/debug"), { ...run, thresholds: null })).toBeNull();
-  });
 });
 
 describe("nextStepWords", () => {

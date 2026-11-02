@@ -46,7 +46,7 @@ export function verdictEntries(report: Report2): readonly GlossaryEntry[] {
 }
 
 export function thresholdPairs(run: Run): Thresholds {
-  return run.thresholds === null ? [] : Object.entries(run.thresholds);
+  return Object.entries(run.thresholds);
 }
 
 export function flagEntries(report: Report2): readonly GlossaryEntry[] {

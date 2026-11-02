@@ -266,9 +266,6 @@ describe("the thresholds", () => {
     ]);
   });
 
-  test("are empty when the run recorded none", () => {
-    expect(thresholdRows({ ...golden("composite").run, thresholds: null })).toEqual([]);
-  });
 });
 
 describe("the gate view prints gate.text as written", () => {

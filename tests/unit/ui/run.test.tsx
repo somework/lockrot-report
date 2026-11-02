@@ -70,7 +70,7 @@ describe("the Run tab of a report-2 document", () => {
     expect(rows).toEqual([
       "PHP window, with require-dev: 7.2 to 8.5 · lowest 7.2.5, set by symfony/yaml >=7.2.5",
       "PHP window, without require-dev: 7.2 to 8.5 · lowest 7.2.5, set by symfony/yaml >=7.2.5",
-      "Composer checks the lock at: 7.4.29 (config.platform.php)",
+      "Composer's config.platform.php: 7.4.29",
       "Host features required: php-zts",
     ]);
   });
@@ -100,11 +100,11 @@ describe("the Run tab of a report-2 document", () => {
     );
 
     const row = [...run().querySelectorAll(".run2-kv-row")].find(
-      (r) => r.querySelector("dt")?.textContent === "Composer checks the lock at",
+      (r) => r.querySelector("dt")?.textContent === "Composer's config.platform.php",
     );
     expect([...(row?.querySelectorAll("dd") ?? [])].map((dd) => dd.textContent)).toEqual([
-      "7.4.29 (config.platform.php)",
-      "composer install reads 7.4.29, and the move check solves at the target PHP 8.4.99.",
+      "7.4.29",
+      "composer update solves at 7.4.29, and the move check solves at the target PHP 8.4.99.",
     ]);
   });
 

@@ -125,6 +125,7 @@ export const CHECK_REASON_WORDS: readonly (readonly [reason: string, words: stri
   ["not_from_composer_repository", "no Composer repository serves it"],
   ["no_composer_json", "the project has no composer.json"],
   ["composer_json_invalid", "Composer cannot load composer.json"],
+  ["platform_config_invalid", "Composer refuses a config.platform value"],
   ["no_release_read", "no release of the row was read"],
   ["pass_cap", "Composer refused each move before it"],
   ["solver_error", "Composer's solver failed on it"],
@@ -138,7 +139,7 @@ export function checkReasonRich(reason: string): Rich {
 }
 
 export const CAUSE_WORDS: Words = {
-  above_listed_releases: "installed above every listed release",
+  above_listed_releases: "installed above every listed stable release",
   accepted_by_config: "accepted by your accept-unchecked list",
   allowlisted: "allowlisted",
   anonymous_budget: "anonymous request budget spent",
