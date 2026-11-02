@@ -1276,6 +1276,135 @@
       "composer": []
     }
   ],
+  "S5-parent-after-ga-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "both",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "S5-untrusted-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "both",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "S8-prerelease-installed-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "all three",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
   "abandoned-audit-ignore-dagger": [
     {
       "heading": "The move",
@@ -4211,7 +4340,7 @@
       "not_checked": null,
       "adds": [],
       "php": {
-        "head": "6.x needs php >=8.1",
+        "head": "6.x needs php >=8.1 <8.5",
         "lines": [
           {
             "answer": "yes",
@@ -4355,6 +4484,43 @@
           "items": []
         }
       ]
+    }
+  ],
+  "mc-php-newest-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v2.3.2 on 2.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update 'typo3/html-sanitizer:^2.3.2'"
+      ],
+      "commands_label": "Command",
+      "clears": "the advisory",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "2.x needs php >=7.2",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.0, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "checked with Composer"
+        ]
+      },
+      "composer": []
     }
   ],
   "mc-raise-php-dagger": [
@@ -5340,7 +5506,7 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.0, then require ^6.13",
-      "platform_step": "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29. Composer still refuses the lock itself: the PHP line in the Overview names the packages.",
+      "platform_step": "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29. Composer still refuses the lock itself: the PHP line in the Overview names the packages.",
       "command_note": null,
       "moves_with": null,
       "commands": [
@@ -5387,7 +5553,7 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.0, then require ^6.13",
-      "platform_step": "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29. Composer still refuses the lock itself: the Run tab names the cause.",
+      "platform_step": "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29. Composer still refuses the lock itself: the Run tab names the cause.",
       "command_note": null,
       "moves_with": null,
       "commands": [
@@ -5464,7 +5630,7 @@
     {
       "heading": "The move",
       "action": "Move it to ^5.4.52 through the 3 packages in Reach",
-      "platform_step": "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29.",
+      "platform_step": "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29.",
       "command_note": "This shows which package holds the move.",
       "moves_with": null,
       "commands": [

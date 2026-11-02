@@ -309,6 +309,48 @@
   "G-tag-dagger": [
     null
   ],
+  "S5-parent-after-ga-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "S5-untrusted-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
+  "S8-prerelease-installed-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
   "abandoned-audit-ignore-dagger": [
     null
   ],
@@ -801,6 +843,9 @@
       ],
       "fold": null
     }
+  ],
+  "mc-php-newest-dagger": [
+    null
   ],
   "mc-raise-php-dagger": [
     null

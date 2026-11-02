@@ -616,6 +616,59 @@
       "Tripped by pinned"
     ]
   },
+  "S5-parent-after-ga-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-45077"
+    ]
+  },
+  "S5-untrusted-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "PHP promise (S5) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-45077"
+    ]
+  },
+  "S8-prerelease-installed-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind and CVE-2026-45077"
+    ]
+  },
   "abandoned-audit-ignore-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -2213,6 +2266,23 @@
       "Tripped by CVE-2026-45068"
     ]
   },
+  "mc-php-newest-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-47345"
+    ]
+  },
   "mc-raise-php-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -2480,8 +2550,7 @@
     "php_edge": [],
     "accepted": [],
     "gate": [
-      "fails the run: a check that did not run",
-      "Tripped by S2"
+      "reaches the gate, exempt by baseline"
     ]
   },
   "op-update": {
