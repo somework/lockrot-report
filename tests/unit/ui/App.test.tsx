@@ -275,6 +275,37 @@ describe("tabs", () => {
   });
 });
 
+describe("focus after a tab switch (PD-A11Y-SWEEP-8)", () => {
+  test("a mouse click on a tab that does not take focus leaves focus where it was", async () => {
+    vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
+    render(<App model={load()} />);
+    const panel = screen.getByRole("tabpanel");
+
+    fireEvent.click(screen.getByRole("tab", { name: /^Overview/ }));
+
+    await waitFor(() => {
+      expect(selectedTab()).toContain("Overview");
+    });
+    expect(document.activeElement).toBe(document.body);
+    expect(document.activeElement).not.toBe(panel);
+  });
+
+  test("the Findings strip's Overview link, focused when pressed, hands focus to the panel", async () => {
+    vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
+    render(<App model={load()} />);
+    const link = within(document.querySelector(".f2-strip") as HTMLElement).getByRole("link", {
+      name: /Overview/,
+    });
+    link.focus();
+
+    fireEvent.click(link);
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(screen.getByRole("tabpanel"));
+    });
+  });
+});
+
 describe("keyboard", () => {
   test("j and k open nothing on Overview, which draws no row", () => {
     history.replaceState(null, "", "/report.html");

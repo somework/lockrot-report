@@ -221,6 +221,7 @@ export function FindingsStrip() {
         className="ov-link f2-strip-back"
         href="#"
         onClick={(event) => {
+          if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
           event.preventDefault();
           dispatch({ type: "view", view: "overview" });
         }}

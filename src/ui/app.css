@@ -418,10 +418,15 @@ html {
   min-width: 0;
 }
 
+/* The rail scrolls, so it clips what paints outside it: 4 px of room inside it, also where focus
+   scrolls a control to, hold the focus ring. The negative margin keeps the options in place. */
 .shell-rail {
   position: sticky;
-  top: calc(var(--topbar-h) + 16px);
-  max-height: var(--sticky-room);
+  top: calc(var(--topbar-h) + 12px);
+  max-height: calc(var(--sticky-room) + 8px);
+  padding: 4px;
+  margin: -4px;
+  scroll-padding: 4px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;

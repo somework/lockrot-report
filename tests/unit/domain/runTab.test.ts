@@ -91,7 +91,7 @@ describe("the weight and advisory tables", () => {
   test("give each weighted flag its points, band, share after the lead, previous band and limit", () => {
     const { weights } = scoreTables(golden("composite").run.score_model);
 
-    expect(weights.head).toEqual([
+    expect(weights.head.map(({ text }) => text)).toEqual([
       "Flag",
       "Points",
       "Band",
@@ -110,10 +110,23 @@ describe("the weight and advisory tables", () => {
     expect(weights.rows[2]?.[3]).toEqual({ text: "4" });
   });
 
+  test("name the second Band column after the doubling, and keep the words a reader sees", () => {
+    const { advisories } = scoreTables(golden("composite").run.score_model);
+
+    expect(advisories.head[2]).toEqual({ text: "Band" });
+    expect(advisories.head[4]).toEqual({ text: "Band", name: "Band with no reachable fix" });
+  });
+
   test("give each severity its points and band, and both again with no reachable fix", () => {
     const { advisories } = scoreTables(golden("composite").run.score_model);
 
-    expect(advisories.head).toEqual(["Severity", "Points", "Band", "× 2: no reachable fix", "Band"]);
+    expect(advisories.head.map(({ text }) => text)).toEqual([
+      "Severity",
+      "Points",
+      "Band",
+      "× 2: no reachable fix",
+      "Band",
+    ]);
     expect(advisories.rows[3]).toEqual([
       { text: "unrated (counts as medium)" },
       { text: "8" },

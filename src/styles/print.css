@@ -304,7 +304,7 @@
   /* The sections follow on; none forces a page of its own. A heading, a lede, a column head and a
    * group's head each keep to the first row under them instead, so a page never ends on one. */
   .pd .fhead,
-  .pd .advgroup > header {
+  .pd .advgroup > .al-group-head {
     break-after: avoid;
   }
   /* The same rule from the other side: Chromium does not carry a head's break-after into the list
@@ -391,10 +391,6 @@
     margin-top: 0;
     gap: 5px;
     break-inside: avoid;
-  }
-  .pd-run .note {
-    margin: 0;
-    padding: 6px 10px;
   }
   .pd-run .sect h3 {
     margin: 0 0 4px;
