@@ -2,10 +2,8 @@ import { useReport } from "../context";
 import "./views.css";
 
 /**
- * The two shapes a tab's row list can be empty in — DESIGN.md §5 M20. Legacy showed the same
- * "Nothing matches this filter." for both, which reads as a lie on a genuinely clean report (zero
- * flagged packages, zero advisories, an empty lock): nothing was ever filtered out, there was simply
- * nothing to flag. `reason` tells the two apart:
+ * The shapes a tab's row list can be empty in (DESIGN.md §5 M20). Only a filtered list offers
+ * Clear filters, because a clean report has nothing filtered out.
  *
  * - `"clean"`: the view's own population (before any query or rail filter) is empty. Nothing for the
  *   reader to clear.
