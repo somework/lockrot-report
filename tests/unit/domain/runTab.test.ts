@@ -265,10 +265,6 @@ describe("the thresholds", () => {
       { key: "push-high-years", value: "5 years" },
     ]);
   });
-
-  test("are empty when the run recorded none", () => {
-    expect(thresholdRows({ ...golden("composite").run, thresholds: null })).toEqual([]);
-  });
 });
 
 describe("the gate view prints gate.text as written", () => {

@@ -232,7 +232,7 @@ describe("L5: the platform step of a move card", () => {
 
   test("asks to set config.platform.php first when it lies outside the target's minor (wallabag at 8.4)", () => {
     expect(platformLine("7.4.29", "8.4")[0]).toBe(
-      "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29.",
+      "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29.",
     );
   });
 
@@ -250,7 +250,7 @@ describe("L5: the platform step of a move card", () => {
     ["a dev build in the target's minor", "8.4.x-dev", "8.4.x-dev"],
   ])("asks to set config.platform.php first when it is %s", (_, override, recorded) => {
     expect(platformLine(override, "8.4")[0]).toBe(
-      `First set config.platform.php to your PHP 8.4 release: the lock records ${recorded}.`,
+      `First set config.platform.php to your PHP 8.4 release: Composer's config sets ${recorded}.`,
     );
   });
 
@@ -275,11 +275,11 @@ describe("L5: the platform step of a move card", () => {
 
     expect(cards.map((c) => [c.heading, c.platformStep])).toEqual([
       ["The move", null],
-      ["Then", "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29."],
+      ["Then", "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29."],
     ]);
   });
 
-  test("says nothing when the lock sets no config.platform.php", () => {
+  test("says nothing when Composer's config sets no config.platform.php", () => {
     expect(platformLine(null, "8.4")[0]).toBeNull();
   });
 });
@@ -424,19 +424,19 @@ describe("W3: the platform line on a run whose baseline Composer refuses", () =>
 
   test("adds that the PHP line in the Overview names the packages when the target lies outside the window (wallabag at 8.4)", () => {
     expect(line(false, "refused")).toBe(
-      "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29. Composer still refuses the lock itself: the PHP line in the Overview names the packages.",
+      "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29. Composer still refuses the lock itself: the PHP line in the Overview names the packages.",
     );
   });
 
   test("adds that the Run tab names the cause when the target lies inside the window", () => {
     expect(line(true, "refused")).toBe(
-      "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29. Composer still refuses the lock itself: the Run tab names the cause.",
+      "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29. Composer still refuses the lock itself: the Run tab names the cause.",
     );
   });
 
   test("adds nothing when Composer resolves the baseline", () => {
     expect(line(false, "resolves")).toBe(
-      "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29.",
+      "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29.",
     );
   });
 });

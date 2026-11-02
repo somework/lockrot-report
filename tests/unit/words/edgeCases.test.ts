@@ -61,6 +61,14 @@ describe("the lead of Release branches", () => {
 
     expect(branchesLead(finding, metadata)[0]).toBe("A branch snapshot, dev-master, is installed.");
   });
+
+  test("calls S8's branch within reach the newest releasing one, not the highest (S9-4)", () => {
+    const { finding, metadata } = modelCase("installed-php-halved");
+
+    expect(branchesLead(finding, metadata)[1]).toBe(
+      "The newest releasing branch within reach, 4.x, released 4.9.1 2.2 years ago.",
+    );
+  });
 });
 
 describe("a timeline row's php words read the highest tag, not the newest dated release (G147)", () => {

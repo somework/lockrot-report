@@ -7,7 +7,7 @@ import type { Model } from "../../../src/model/types";
 import { App } from "../../../src/ui/App";
 import { pageGoldens } from "../words/recorded";
 
-const LINE = "First set config.platform.php to your PHP 8.4 release: the lock records 7.4.29.";
+const LINE = "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29.";
 
 /** snipe-it, a page golden with moves ready to run, on a target of 8.4. */
 function model(override: string | null): Model {
@@ -51,7 +51,7 @@ describe("Ready to run on a lock whose config.platform.php lies outside the targ
     expect(lines[0]?.nextElementSibling?.classList.contains("ov-moves")).toBe(true);
   });
 
-  test("prints no platform line when the lock sets none", () => {
+  test("prints no platform line when Composer's config sets none", () => {
     history.replaceState(null, "", "/report.html");
     render(<App model={model(null)} />);
 

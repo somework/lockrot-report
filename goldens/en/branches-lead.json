@@ -36,7 +36,7 @@
   ],
   "B-also-dagger": [
     "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
-    "The highest branch within reach, 5.x, released v5.4.52 0.4 years ago."
+    "The newest releasing branch within reach, 5.x, released v5.4.52 0.4 years ago."
   ],
   "B-baselined-dagger": [
     "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
@@ -113,6 +113,18 @@
   ],
   "G-tag-dagger": [
     "A branch snapshot, dev-master, is installed."
+  ],
+  "S5-parent-after-ga-dagger": [
+    "Your branch, 2.x, had its last release, v2.6.13, 5.1 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "S5-untrusted-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
+  "S8-prerelease-installed-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
   ],
   "abandoned-audit-ignore-dagger": [
     "Your branch, 3.x, had its last release, v3.4.47, 5.9 years ago."
@@ -313,7 +325,7 @@
   ],
   "installed-php-halved": [
     "Your branch, 2.x, had its last release, v2.1.7, 7.1 years ago.",
-    "The highest branch within reach, 4.x, released 4.9.1 2.2 years ago."
+    "The newest releasing branch within reach, 4.x, released 4.9.1 2.2 years ago."
   ],
   "joomla-filter": [
     "Your branch, 2.x, had its last release, 2.0.6, 1.0 years ago."
@@ -417,6 +429,10 @@
   ],
   "mc-pass-cap-dagger": [
     "Your branch, 6.x, had its last release, v6.4.40, 0.2 years ago.",
+    "It has no higher branch."
+  ],
+  "mc-php-newest-dagger": [
+    "Your branch, 2.x, had its last release, v2.3.2, 0.3 years ago.",
     "It has no higher branch."
   ],
   "mc-raise-php-dagger": [
@@ -553,11 +569,11 @@
   ],
   "routing": [
     "Your branch, 4.x, had its last release, v4.4.44, 4.2 years ago.",
-    "The highest branch within reach, 8.x, released v8.1.8 less than three weeks ago."
+    "The newest releasing branch within reach, 8.x, released v8.1.8 less than three weeks ago."
   ],
   "routing-self-dagger": [
     "Your branch, 4.x, had its last release, v4.4.44, 4.2 years ago.",
-    "The highest branch within reach, 8.x, released v8.1.8 less than three weeks ago."
+    "The newest releasing branch within reach, 8.x, released v8.1.8 less than three weeks ago."
   ],
   "silent": [
     "Your branch, 1.x, had its last release, v1.0.4, 8.1 years ago.",

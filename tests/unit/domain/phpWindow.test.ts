@@ -142,10 +142,10 @@ describe("the Run tab rows", () => {
     return { ...base, run: { ...base.run, target_php, move_check } } as Report2;
   };
 
-  test("say that composer install and the move check read different PHPs when the override lies outside the target minor (ruling R3-35)", () => {
+  test("say that composer update and the move check solve at different PHPs when the override lies outside the target minor (ruling R3-35)", () => {
     expect(windowRows(overridden("8.4", { baseline: "resolves" })).slice(1)).toEqual([
-      "Composer checks the lock at: 7.4.29 (config.platform.php)",
-      "composer install reads 7.4.29, and the move check solves at the target PHP 8.4.99.",
+      "Composer's config.platform.php: 7.4.29",
+      "composer update solves at 7.4.29, and the move check solves at the target PHP 8.4.99.",
       "Host features required: php-zts",
     ]);
   });
@@ -155,7 +155,7 @@ describe("the Run tab rows", () => {
     ["the override lies in the target minor", "7.4", { baseline: "resolves" }],
   ])("print no solve row when %s", (_, target, moveCheck) => {
     expect(windowRows(overridden(target, moveCheck)).slice(1)).toEqual([
-      "Composer checks the lock at: 7.4.29 (config.platform.php)",
+      "Composer's config.platform.php: 7.4.29",
       "Host features required: php-zts",
     ]);
   });

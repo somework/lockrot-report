@@ -27,6 +27,18 @@ describe("the lead of the overview band", () => {
     ]);
   });
 
+  test("names the unreached count when no flagged package is reached (ruling R8-35)", () => {
+    const report = golden("composite");
+    report.rot_depth = {
+      ...report.rot_depth,
+      production: 2,
+      development: 0,
+      by_reach: { direct: 0, transitive: 0, unreached: 2 },
+    };
+
+    expect(leadScope(report)).toEqual(["all 2 in production", "2 unreached"]);
+  });
+
   test("gives one chip per graded verdict in run order, leaving out a grade nothing holds", () => {
     expect(gradeChips(golden("composite"))).toEqual([
       { grade: "critical", count: 4 },

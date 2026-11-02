@@ -46,7 +46,7 @@ export interface BranchTimeline {
   readonly rows: readonly BranchTimelineRow[];
   /** The axis's left end, in whole years before the run; the right end is the run. */
   readonly span: number;
-  /** The run's release age limits that fall inside the axis; none when the run has no thresholds. */
+  /** The run's release age limits that fall inside the axis. */
   readonly guides: readonly AgeGuide[];
   /** `age.branch_release.level`, which tones the installed row. */
   readonly installedLevel: "warn" | "high" | null;
@@ -138,13 +138,10 @@ export function branchTimeline(
   const dated = lanes.flatMap((l) => (l.years === null ? [] : [l.years]));
   const span = Math.max(1, Math.ceil(Math.max(0, ...dated)));
   const thresholds = run.thresholds;
-  const guides: AgeGuide[] =
-    thresholds === null
-      ? []
-      : [
-          { years: thresholds["release-warn-years"], level: "warn" as const },
-          { years: thresholds["release-high-years"], level: "high" as const },
-        ].filter((guide) => guide.years > 0 && guide.years < span);
+  const guides: AgeGuide[] = [
+    { years: thresholds["release-warn-years"], level: "warn" as const },
+    { years: thresholds["release-high-years"], level: "high" as const },
+  ].filter((guide) => guide.years > 0 && guide.years < span);
   return {
     lanes,
     rows: rowsOf(lanes),
@@ -188,7 +185,7 @@ export function branchesLead(finding: Finding, metadata: RepositoryMetadata | nu
     higher === finding.next_step?.to_branch
       ? "The move's branch"
       : reached
-        ? "The highest branch within reach"
+        ? "The newest releasing branch within reach"
         : "The newest branch";
   return [mine, `${who}, ${higher}, released ${version ?? ""}${years === null ? "" : ` ${ago(years)}`}.`];
 }

@@ -212,7 +212,6 @@ const AGE_KINDS = ["branch_release", "release", "push"] as const;
 /** The reading a fired S8, S2 or S4 judged: the first with a `level`. */
 export function ageReading(f: Finding, run: Run): AgeReading | null {
   const thresholds = run.thresholds;
-  if (thresholds === null) return null;
   for (const kind of AGE_KINDS) {
     const reading = f.age[kind];
     if (reading === null || reading.level === null) continue;
