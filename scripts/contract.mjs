@@ -70,6 +70,7 @@ const PAGE_GOLDEN_DOCUMENTS = [
   "tests/fixtures/schema/documents/page/composite.php-provided-dagger.json",
   "tests/fixtures/schema/documents/page/composite.unknown-rules-dagger.json",
   "tests/fixtures/schema/documents/page/drupal-site.other-release-dagger.json",
+  "tests/fixtures/schema/documents/page/empty-lock.offline-dagger.json",
   "tests/fixtures/schema/documents/page/run.LAM-dagger.json",
   "tests/fixtures/schema/documents/page/run.MAU-dagger.json",
   "tests/fixtures/schema/documents/page/run.MON-8.5-dagger.json",
