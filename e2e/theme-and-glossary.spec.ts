@@ -223,12 +223,16 @@ test.describe("the search hint names a key, so it shows only where a keyboard ca
   test.describe("375 px, touch only", () => {
     test.use({ viewport: { width: 375, height: 812 }, hasTouch: true, isMobile: true });
 
-    test("hides the hint, and the header button still opens the keys and search syntax", async ({ page }) => {
+    test("hides the hint, and the header button's glossary holds the keys and search syntax", async ({
+      page,
+    }) => {
       await report.gotoReport2WithHash("composite", "view=findings");
 
       await expect(page.locator(".hint")).toBeHidden();
       await page.getByRole("button", { name: "What these words mean" }).tap();
-      await expect(page.getByRole("dialog")).toContainText("priority:");
+      const keys = page.getByRole("dialog").locator(".glossary-keys");
+      await keys.locator("summary").tap();
+      await expect(keys.getByText("priority:", { exact: false }).first()).toBeVisible();
     });
   });
 

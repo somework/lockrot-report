@@ -323,7 +323,6 @@ export function zeroVerdictReason(when: string): string | null {
 
 /** The fixed words of the "How the score works" panel (SPEC §7.9.12). `{slot}` takes a value of `run.score_model`. */
 export const PANEL_WORDS = {
-  bandNoReachableFix: "Band with no reachable fix",
   title: "How the score works · score model {id}",
   bands: "Bands: {ruler}",
   bandsCaption: "from {ratio_from} up, each band starts at {ratio} × the one below",

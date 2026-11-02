@@ -354,9 +354,13 @@ export function App({ model }: { model: Model }) {
   const currentView = useRef(state.view);
   currentView.current = state.view;
   const listFocused = useRef(false);
+  const focusedAtSwitch = useRef<Element | null>(null);
   const dispatchTracked = useCallback(
     (action: Action) => {
-      if (action.type === "view" && action.view !== currentView.current) tabChangedByReader.current = true;
+      if (action.type === "view" && action.view !== currentView.current) {
+        tabChangedByReader.current = true;
+        focusedAtSwitch.current = document.activeElement;
+      }
       if (action.type === "focus") listFocused.current = true;
       dispatch(action);
     },
@@ -388,9 +392,11 @@ export function App({ model }: { model: Model }) {
     // all; scrolling the window itself back to 0 is what puts the tab row and the new tab's own
     // first row directly under it, on every width.
     window.scrollTo(0, 0);
-    // A link that switched the tab left the page with the old tab: focus goes to the new panel.
-    const active = document.activeElement;
-    if (active === null || active === document.body || !document.contains(active))
+    // A focused control that switched the tab left the page with the old tab: focus goes to the panel.
+    const switcher = focusedAtSwitch.current;
+    focusedAtSwitch.current = null;
+    const landed = document.activeElement;
+    if (switcher !== null && !switcher.isConnected && (landed === null || landed === document.body))
       document.getElementById(`${idBase}-panel`)?.focus({ preventScroll: true });
   }, [state.view]);
 

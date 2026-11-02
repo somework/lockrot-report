@@ -371,7 +371,7 @@ export function scoreTables(model: Model): { weights: ScoreTable; advisories: Sc
         {
           text: `${factor === undefined ? "" : `${fill(PANEL_WORDS.factor, { factor: String(factor) }) ?? ""}: `}no reachable fix`,
         },
-        { text: "Band", name: PANEL_WORDS.bandNoReachableFix },
+        { text: "Band", name: "Band with no reachable fix" },
       ],
       rows: advisories,
     },

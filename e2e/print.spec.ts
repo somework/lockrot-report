@@ -421,7 +421,7 @@ test.describe("report-2: print across recorded cases", () => {
 test("on paper an Advisories group head keeps with the row under it (PD-PRINT-8)", async ({ page }) => {
   await page.emulateMedia({ media: "print" });
   const heads = page.locator(".pd .advgroup > .al-group-head");
-  expect(await heads.count()).toBeGreaterThan(1);
+  await expect.poll(() => heads.count()).toBeGreaterThan(1);
 
   const breaks = await heads.evaluateAll((els) => els.map((el) => getComputedStyle(el).breakAfter));
 

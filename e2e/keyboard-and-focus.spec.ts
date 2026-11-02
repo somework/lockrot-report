@@ -487,8 +487,14 @@ test.describe("WCAG 2.1.4: the Keyboard shortcuts switch", () => {
 
 test.describe("the rail's focus ring shows whole inside the scrolling rail, wide layout (PD-A11Y-SWEEP-9)", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
+  test.skip(
+    ({ browserName }) => browserName === "webkit",
+    "WebKit's Tab skips buttons, so it never walks the rail",
+  );
 
-  test("no rail control's ring is cut by the rail at any side", async ({ page }) => {
+  test("each rail control's ring is drawn outside it, as elsewhere, and the rail cuts no side", async ({
+    page,
+  }) => {
     await report.gotoReport2WithHash("baselined-wallabag-2.6", "view=findings");
     const rail = page.locator(".shell-rail");
     const controls = await rail.locator("button, summary, a[href]").count();
@@ -497,36 +503,42 @@ test.describe("the rail's focus ring shows whole inside the scrolling rail, wide
     await page.keyboard.press("Shift+Tab");
     await page.keyboard.press("Tab");
 
-    const cuts: string[] = [];
+    const rings: { name: string; visible: boolean; offset: number; cut: string[] }[] = [];
     for (let step = 0; step < controls; step += 1) {
-      const cut = await page.evaluate(() => {
-        const el = document.activeElement as HTMLElement | null;
-        const box = el?.closest(".shell-rail");
-        if (!el || !box) return null;
-        const style = getComputedStyle(el);
-        const reach = parseFloat(style.outlineOffset) + parseFloat(style.outlineWidth);
-        const ring = el.getBoundingClientRect();
-        const frame = box.getBoundingClientRect();
-        const left = frame.left + box.clientLeft;
-        const top = frame.top + box.clientTop;
-        const sides = {
-          left: left - (ring.left - reach),
-          right: ring.right + reach - (left + box.clientWidth),
-          top: top - (ring.top - reach),
-          bottom: ring.bottom + reach - (top + box.clientHeight),
-        };
-        const name = el.textContent.trim().slice(0, 24);
-        const over = Object.entries(sides).filter(([, px]) => px > 0.5);
-        return {
-          visible: el.matches(":focus-visible"),
-          text: over.map(([side, px]) => `${name}: ${side} ${px}`),
-        };
-      });
-      if (cut === null) break;
-      expect(cut.visible).toBe(true);
-      cuts.push(...cut.text);
+      rings.push(
+        await page.evaluate(() => {
+          const el = document.activeElement as HTMLElement;
+          // Firefox's focus scroll can leave a control partly out of the rail: measure it in view.
+          el.scrollIntoView({ block: "nearest" });
+          const box = el.closest(".shell-rail") ?? document.documentElement;
+          const style = getComputedStyle(el);
+          const offset = parseFloat(style.outlineOffset);
+          const reach = offset + parseFloat(style.outlineWidth);
+          const ring = el.getBoundingClientRect();
+          const frame = box.getBoundingClientRect();
+          const left = frame.left + box.clientLeft;
+          const top = frame.top + box.clientTop;
+          const sides = {
+            left: left - (ring.left - reach),
+            right: ring.right + reach - (left + box.clientWidth),
+            top: top - (ring.top - reach),
+            bottom: ring.bottom + reach - (top + box.clientHeight),
+          };
+          return {
+            name: el.textContent.trim().slice(0, 24),
+            visible: el.matches(".shell-rail :focus-visible"),
+            offset,
+            cut: Object.entries(sides)
+              .filter(([, px]) => px > 0.5)
+              .map(([side, px]) => `${side} ${px}`),
+          };
+        }),
+      );
       await page.keyboard.press("Tab");
     }
-    expect(cuts).toEqual([]);
+
+    expect(rings.filter(({ visible }) => !visible)).toEqual([]);
+    expect(rings.filter(({ offset }) => offset <= 0)).toEqual([]);
+    expect(rings.filter(({ cut }) => cut.length > 0)).toEqual([]);
   });
 });

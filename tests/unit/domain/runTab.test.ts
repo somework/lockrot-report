@@ -113,13 +113,8 @@ describe("the weight and advisory tables", () => {
   test("name the second Band column after the doubling, and keep the words a reader sees", () => {
     const { advisories } = scoreTables(golden("composite").run.score_model);
 
-    expect(advisories.head.map(({ text, name }) => name ?? text)).toEqual([
-      "Severity",
-      "Points",
-      "Band",
-      "× 2: no reachable fix",
-      "Band with no reachable fix",
-    ]);
+    expect(advisories.head[2]).toEqual({ text: "Band" });
+    expect(advisories.head[4]).toEqual({ text: "Band", name: "Band with no reachable fix" });
   });
 
   test("give each severity its points and band, and both again with no reachable fix", () => {

@@ -392,10 +392,6 @@
     gap: 5px;
     break-inside: avoid;
   }
-  .pd-run .note {
-    margin: 0;
-    padding: 6px 10px;
-  }
   .pd-run .sect h3 {
     margin: 0 0 4px;
     font-size: var(--text-xs);
