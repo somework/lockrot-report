@@ -106,11 +106,16 @@ const SKIPPED_CHECKS: Words = {
   release_metadata: "its release metadata",
   advisories: "its advisories",
   release_branch: "its release branch",
-  release_dates: "release dates",
+  release_dates: "its release dates",
   releases: "releases",
 };
 
 export const skippedCheckWord = (id: string): string => wordFor(SKIPPED_CHECKS, id);
+
+/** The way-out line names a `checks_missing[]` release-date gap without "its" (SPEC §7.9.4). */
+const MISSING_CHECKS: Words = { ...SKIPPED_CHECKS, release_dates: "release dates" };
+
+export const missingCheckWord = (id: string): string => wordFor(MISSING_CHECKS, id);
 
 /** A check id with words of its own; any other prints as written in a code element. */
 export const isKnownCheck = (id: string): boolean => Object.hasOwn(SKIPPED_CHECKS, id);

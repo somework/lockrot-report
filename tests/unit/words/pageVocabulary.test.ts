@@ -28,6 +28,7 @@ import {
   ruleWhyWord,
   shareGlyph,
   signalName,
+  missingCheckWord,
   skippedCheckWord,
   skipLinkLabel,
   wordFor,
@@ -226,6 +227,12 @@ describe("the small tables", () => {
     expect(["release_branch", "repository_archived", "x"].map(skippedCheckWord)).toEqual([
       "its release branch",
       "its archived flag",
+      "x",
+    ]);
+    expect(skippedCheckWord("release_dates")).toBe("its release dates");
+    expect(["release_dates", "repository_activity", "x"].map(missingCheckWord)).toEqual([
+      "release dates",
+      "its repository activity",
       "x",
     ]);
     expect(["branch_snapshot", "marked", "other"].map(headlineReasonWord)).toEqual([

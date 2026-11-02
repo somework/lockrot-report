@@ -13,8 +13,8 @@ import {
   CHECK_REASON_WORDS,
   GATE_KIND_WORDS,
   isKnownCheck,
+  missingCheckWord,
   MOVE_KIND_WORDS,
-  skippedCheckWord,
 } from "./pageVocabulary";
 import { findingsFailGate, isHeld, needsAnotherWayOut, readyToRun } from "./readyToRun";
 
@@ -137,7 +137,7 @@ function raisePhpWords(findings: readonly Finding[]): string {
 
 const notChecked = (check: string): readonly WordPart[] =>
   isKnownCheck(check)
-    ? [{ text: `${skippedCheckWord(check)} not checked` }]
+    ? [{ text: `${missingCheckWord(check)} not checked` }]
     : [{ text: check, code: true }, { text: " not checked" }];
 
 /** One finding's words for the check that did not run: its `checks_missing[]` entries that block a
