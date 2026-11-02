@@ -5,6 +5,6 @@ export function ago(years: number): string {
   return years === 0 ? "less than three weeks ago" : `${decimal(years, 1)} years ago`;
 }
 
-/** `ago` of an upper bound (R9-42): "at most", except at 0, where "less than three weeks" already bounds it. */
+/** `ago` of an age that is an upper bound (R9-42, G145). */
 export const agoAtMost = (years: number, atMost: boolean): string =>
-  atMost && years !== 0 ? `at most ${ago(years)}` : ago(years);
+  atMost ? `at most ${ago(years)}` : ago(years);

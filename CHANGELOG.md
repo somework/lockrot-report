@@ -370,12 +370,13 @@ project is overall, and the other tabs lead with their own part.
 - When lockrot skips the release dates of an abandoned or allowlisted package, the Checks strip reads
   "S2 not run (undated releases)". The not run qualifier reads "Its release dates (undated
   releases)", and the Why reads "checks not run: its release dates (undated releases)".
-- When the highest tag of a higher branch has no date of its own, its age is an upper bound. The S8
-  reading and the branch lead read "released v4.9.0 at most 1.6 years ago". The bar of that branch
-  reads "v4.9.0, released at most 1.6 years ago".
-- An old-promise flag on a release whose php constraint names no PHP major, such as `*`, shows the
-  constraint in its pill: `php "*"`. The sheet reads "It was released with php "*" and admits 8.4
-  untested."
+- When the highest tag of a higher branch has no date of its own, its age is an upper bound. The
+  branch lead reads "The move's branch, 4.x, released v4.9.0 at most 1.6 years ago.", and so does a
+  left-behind reading that names the age. The bar of that branch reads "v4.9.0, released at most 1.6
+  years ago".
+- An old-promise flag on a release whose php constraint has no lower PHP major, such as `*`, shows
+  the constraint in its pill: `php "*"`. The sheet reads: It was released with php "\*" and admits
+  8.4 untested.
 - The Repository line of a 404 that lockrot served from its cache ends with the cache date: "the host
   answered 404 (private, renamed or removed) (cached 2026-09-28)".
 

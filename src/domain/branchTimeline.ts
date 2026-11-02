@@ -27,7 +27,7 @@ export interface BranchLane {
   /** The first row, unless it is the installed one: nothing newer to point at then. */
   readonly newest: boolean;
   readonly datedBy: string | null;
-  /** `years` is an upper bound: the row's highest tag has no date of its own (G146). */
+  /** `years` is an upper bound above 0: the row's highest tag has no date of its own (G146). */
   readonly atMost: boolean;
   /** The latest release's short age: "{y}y", "< 3 wk" or "undated" (G148). */
   readonly age: string;
@@ -103,7 +103,7 @@ function lanesOf(finding: Finding, metadata: RepositoryMetadata | null): BranchL
       move: moveBranch !== null && row.branch === moveBranch,
       newest: i === 0 && !row.installed,
       datedBy: row.installed ? (release?.dated_by ?? null) : row.dated_by,
-      atMost: !row.installed && row.highest_released === null,
+      atMost: !row.installed && row.highest_released === null && years !== 0,
       age: shortAge(years),
       foldedIn: folded[i] ?? null,
     };

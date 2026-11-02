@@ -55,7 +55,7 @@ export function securityBand(run: Run, term: TermSecurity): Grade | null {
   return term.multiplier === 2 ? severity.band_no_reachable_fix : severity.band;
 }
 
-/** An old-promise headline with no PHP major prints the release's php constraint (r12i item 3). */
+/** An old-promise headline with no lower PHP major prints the release's php constraint. */
 function headlineWord({ headline }: FindingFlag, f: Finding): string {
   switch (headline.unit) {
     case "years":
