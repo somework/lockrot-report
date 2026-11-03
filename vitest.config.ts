@@ -21,7 +21,7 @@ export default defineConfig({
         "src/domain/**": { lines: 98, statements: 98, functions: 99, branches: 89 },
         "src/state/**": { lines: 100, statements: 100, functions: 100, branches: 98 },
         "src/model/**": { lines: 97, statements: 97, functions: 100, branches: 93 },
-        "src/ui/**": { lines: 93, statements: 91, functions: 92, branches: 86 },
+        "src/ui/**": { lines: 94, statements: 92, functions: 93, branches: 86 },
       },
     },
   },
