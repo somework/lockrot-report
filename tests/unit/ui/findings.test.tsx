@@ -6,7 +6,7 @@ import { normalize } from "../../../src/model/normalize";
 import type { Report2 } from "../../../src/model/report";
 import type { Model } from "../../../src/model/types";
 import { App } from "../../../src/ui/App";
-import { readContractJson } from "../words/recorded";
+import { pageGoldens, readContractJson } from "../words/recorded";
 
 function model(caseName: string): Model {
   const result = normalize(assembleEmbed(caseName));
@@ -385,11 +385,17 @@ describe("the Findings list when it has no rows", () => {
     expect(within(surface).getByRole("button", { name: "Clear filters" })).toBeTruthy();
   });
 
-  test("says the same on All packages", () => {
+  test("says on All packages that an empty lock holds no package, not that nothing is flagged (R9-19)", () => {
+    const golden = pageGoldens().find(({ id }) => id === "empty-lock.offline‡");
+    if (golden === undefined) throw new Error("no empty-lock.offline‡ page golden");
+    const result = normalize(golden.report);
+    if (!result.ok) throw new Error(result.error.message);
     history.replaceState(null, "", "/report.html#view=packages");
-    render(<App model={withReport(model("composite"), (report) => ({ ...report, findings: [] }))} />);
+    render(<App model={result.model} />);
 
-    expect(document.querySelector('[data-surface="packages"]')?.textContent).toContain("Nothing is flagged.");
+    const surface = document.querySelector('[data-surface="packages"]') as HTMLElement;
+    expect(surface.querySelector(".empty")?.textContent).toBe("No packages in this lock.");
+    expect(within(surface).queryByRole("button", { name: "Clear filters" })).toBeNull();
   });
 });
 

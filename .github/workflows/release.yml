@@ -62,9 +62,18 @@ jobs:
             | jq -e 'any(.[]; (.workflowName == "full-check" and (.headBranch | test("^release/full-check-[0-9a-f]+$"))) or (.workflowName == "CI" and .headBranch == "main"))' >/dev/null \
             || { echo "::error::lockrot $pin has no successful full check of the whole tree, and no successful CI run on main"; exit 1; }
       - run: npm ci
-      - name: the tag names the version package.json builds
+      # lockrot's release checks the version in the renderer's lock too, so a stale lock stops this
+      # tag and not that later release.
+      - name: the tag names the version package.json and package-lock.json build
         run: |
-          test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
+          same() {
+            test "v$2" = "$GITHUB_REF_NAME" && return
+            echo "::error::$1 is $2, not ${GITHUB_REF_NAME#v}"
+            exit 1
+          }
+          same package.json "$(node -p 'require("./package.json").version')"
+          same 'package-lock.json version' "$(node -p 'require("./package-lock.json").version')"
+          same 'package-lock.json packages[""].version' "$(node -p 'require("./package-lock.json").packages[""].version')"
       # The same gates as ci.yml, in its order, all three browsers in one job.
       - run: npm run contract:fetch
       - run: npm run format:check

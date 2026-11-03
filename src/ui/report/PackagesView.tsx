@@ -168,7 +168,7 @@ export function PackagesView2() {
   if (rows.length === 0) {
     return (
       <section className="p2" data-surface="packages">
-        <EmptyState reason={population2(report, "packages").length === 0 ? "clean" : "filtered"} />
+        <EmptyState reason={population2(report, "packages").length === 0 ? "emptyLock" : "filtered"} />
       </section>
     );
   }

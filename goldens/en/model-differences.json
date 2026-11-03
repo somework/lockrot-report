@@ -69,13 +69,5 @@
     "lockrot's recording and the model's input differ: metadata.branches[].fixes.if_applied: the model reads no date of a row's release, so old-promise stays unverified (`undated`) and the row's score is an upper bound (`at_most`). lockrot dates the release and judges old-promise exactly": [
       "B-also-dagger"
     ]
-  },
-  "age_rows": {
-    "lockrot's recording and the model's input differ: age.installed_unmeasured: the model has no commit date for a shared tag that is not the highest, so lockrot reads the installed release as undated": [
-      "F",
-      "affected-range-unknown-dagger",
-      "long-range-dagger",
-      "replace-graded"
-    ]
   }
 }

@@ -160,7 +160,12 @@ function StateLines({ report }: { report: Report2 }) {
     <ul className="ov-states">
       {lines.map((line) => (
         <li key={line.kind} className={`ov-state is-${line.kind}`}>
-          {line.head !== null && <b className="ov-state-head">{line.head}: </b>}
+          {line.head !== null && (
+            <b className="ov-state-head">
+              {line.head}
+              {line.parts.length > 0 && ": "}
+            </b>
+          )}
           {line.parts.map((clause, at) => (
             <Fragment key={at}>
               {at > 0 && " · "}

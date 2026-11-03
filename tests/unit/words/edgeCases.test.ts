@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { ageRows } from "../../../src/domain/ageRows";
 import { baselineSuffix } from "../../../src/domain/baselineSuffix";
-import { branchesLead, branchTimeline } from "../../../src/domain/branchTimeline";
+import { branchesLead, branchTimeline, laneWords } from "../../../src/domain/branchTimeline";
 import { feedsLine } from "../../../src/domain/feedsLine";
 import type { Finding, FindingBaseline, ReleaseBranch } from "../../../src/model/report";
 import { modelCases } from "./recorded";
@@ -68,6 +68,70 @@ describe("the lead of Release branches", () => {
     expect(branchesLead(finding, metadata)[1]).toBe(
       "The newest releasing branch within reach, 4.x, released 4.9.1 2.2 years ago.",
     );
+  });
+});
+
+describe("a higher branch dated by a commit its tags share (R9-42, SIGNALS-10 Q1)", () => {
+  const lane = (name: string, branch: string, edit: (row: ReleaseBranch) => void = () => undefined) => {
+    const { finding, run, metadata } = structuredClone(modelCase(name));
+    const row = metadata?.branches.find((r) => r.branch === branch);
+    if (row === undefined) throw new Error(`${name} has no ${branch} row`);
+    edit(row);
+    const found = branchTimeline(finding, metadata, run)?.lanes.find((l) => l.branch === branch);
+    if (found === undefined) throw new Error(`${name} draws no ${branch} lane`);
+    return laneWords(found);
+  };
+
+  test("G145: the lead says the move's branch released at most that long ago (pagerfanta)", () => {
+    const { finding, metadata } = modelCase("pagerfanta");
+
+    expect(branchesLead(finding, metadata)[1]).toBe(
+      "The move's branch, 4.x, released v4.9.0 at most 1.6 years ago.",
+    );
+  });
+
+  test("G146: the bar of a row with no date of its highest tag reads at most (pagerfanta)", () => {
+    expect(lane("pagerfanta", "4.x")).toBe("v4.9.0, released at most 1.6 years ago");
+  });
+
+  test("G146: a bar of 0 years keeps less than three weeks ago", () => {
+    expect(
+      lane("pagerfanta", "4.x", (row) => {
+        row.released_years = 0;
+      }),
+    ).toBe("v4.9.0, released less than three weeks ago");
+  });
+
+  test("G145: the lead keeps at most at 0 years, as the SPEC row words it", () => {
+    const { finding, metadata } = structuredClone(modelCase("pagerfanta"));
+    const s8 = finding.signals.find((s) => s.id === "S8")?.data as
+      { reachable_years: number | null; newest_years: number } | undefined;
+    if (s8 === undefined) throw new Error("pagerfanta has no S8");
+    s8.newest_years = 0;
+    if (s8.reachable_years !== null) s8.reachable_years = 0;
+
+    expect(branchesLead(finding, metadata)[1]).toBe(
+      "The move's branch, 4.x, released v4.9.0 at most less than three weeks ago.",
+    );
+  });
+
+  test("G146: the installed row reads no bound, whatever its highest tag", () => {
+    const { finding, run, metadata } = structuredClone(modelCase("pagerfanta"));
+    const installed = metadata?.branches.find((r) => r.installed);
+    if (installed === undefined) throw new Error("pagerfanta has no installed row");
+    installed.highest_released = null;
+    const lane = branchTimeline(finding, metadata, run)?.lanes.find((l) => l.installed);
+    if (lane === undefined) throw new Error("pagerfanta draws no installed lane");
+
+    expect(laneWords(lane)).not.toContain("at most");
+  });
+
+  test("G146: a row whose highest tag has its own date reads no bound", () => {
+    expect(
+      lane("pagerfanta", "4.x", (row) => {
+        row.highest_released = "2025-03-08T00:00:00+00:00";
+      }),
+    ).toBe("v4.9.0, released 1.6 years ago");
   });
 });
 

@@ -302,7 +302,9 @@ test.describe("report-2: the All packages table", () => {
     await report.gotoReport2WithHash("composite", "view=packages");
 
     expect(await packagesCell(page, "symfony/polyfill-intl-idn", "ly")).toBe("—");
-    expect(await packagesCellLabel(page, "symfony/polyfill-intl-idn", "ly")).toBe("no date");
+    expect(await packagesCellLabel(page, "symfony/polyfill-intl-idn", "ly")).toBe(
+      "dated only by a commit its tags share",
+    );
     expect(await packagesCell(page, "symfony/polyfill-intl-idn", "age")).toBe("—");
     expect(await packagesCell(page, "symfony/polyfill-intl-idn", "reach")).toBe("1 hop");
     expect(await packagesCell(page, "twig/twig", "verdict")).toBe("critical");

@@ -18,7 +18,7 @@ export type StateClause = string | CountClause;
 
 export interface StateLine {
   readonly kind: StateKind;
-  /** The bold head before ": "; the allowlist line has none. */
+  /** The bold head, before ": " when a clause follows; the allowlist line has none. */
   readonly head: string | null;
   /** The clauses, joined " · ". */
   readonly parts: readonly StateClause[];
@@ -117,6 +117,7 @@ export function stateLines(report: Report2): StateLine[] {
   );
 }
 
-/** A state line as one string: the head and ": ", the clauses joined " · ", ".", then the link words. */
+/** A state line as one string: the head and ": ", the clauses joined " · ", ".", then the link words.
+ *  A head with no clause drops the ": ". */
 export const stateLineText = ({ head, parts, more }: StateLine): string =>
-  `${head === null ? "" : `${head}: `}${parts.map(clauseText).join(" · ")}.${more === null ? "" : ` ${more.text}`}`;
+  `${head === null ? "" : `${head}${parts.length > 0 ? ": " : ""}`}${parts.map(clauseText).join(" · ")}.${more === null ? "" : ` ${more.text}`}`;

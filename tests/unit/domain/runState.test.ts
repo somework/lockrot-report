@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clauseText, stateLines } from "../../../src/domain/runState";
+import { clauseText, stateLineText, stateLines } from "../../../src/domain/runState";
 import type { Report2 } from "../../../src/model/report";
 
 function report(over: Record<string, unknown>): Report2 {
@@ -33,6 +33,12 @@ describe("stateLines", () => {
       "no advisory check ran",
       "7 of 10 packages have no grade, because lockrot read no metadata for them",
     ]);
+  });
+
+  it("drops the colon of an offline line that has no clause (R9-18, SPEC §7.9.4)", () => {
+    const lines = stateLines(report({ note_details: [{ code: "offline", data: {} }], packages_checked: 0 }));
+
+    expect(lines.map(stateLineText)).toEqual(["Offline run. What this run could not see"]);
   });
 
   it("links the lookup count to the packages of the unknown grade (R4-27)", () => {

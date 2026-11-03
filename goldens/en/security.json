@@ -3950,6 +3950,107 @@
     "ignored": [],
     "ladder": []
   },
+  "S10-lock-undated-dagger": {
+    "summary": [
+      "1 high advisory",
+      "1 on record for this name",
+      "fix: upgrade",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v2.6.13."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-45077",
+        "source": "PKSA-4wjj-gy1p-ft3r",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v5.4.52 on 5.x (upgrade)",
+        "affects": "affects 19 ranges",
+        "ranges": [
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<4.0.0|",
+          ">=4.0.0,<5.0.0|",
+          ">=5.0.0,<5.1.0|",
+          ">=5.1.0,<5.2.0|",
+          ">=5.2.0,<5.3.0|",
+          ">=5.3.0,<5.4.0|",
+          ">=5.4.0,<5.4.52|",
+          ">=6.0.0,<6.1.0|",
+          ">=6.1.0,<6.2.0|",
+          ">=6.2.0,<6.3.0|",
+          ">=6.3.0,<6.4.0|",
+          ">=6.4.0,<6.4.40|",
+          ">=7.0.0,<7.1.0|",
+          ">=7.1.0,<7.2.0|",
+          ">=7.2.0,<7.3.0|",
+          ">=7.3.0,<7.4.0|",
+          ">=7.4.0,<7.4.12|",
+          ">=8.0.0,<8.0.12"
+        ],
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "5.x",
+        "marks": [
+          "the move"
+        ],
+        "lines": [
+          "5.x the move clears 1 of 1 from v5.4.52",
+          "upgrade · held by composer.json",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      },
+      {
+        "branch": "6.x",
+        "marks": [],
+        "lines": [
+          "6.x clears 1 of 1 from v6.4.40",
+          "php floor raise · held by composer.json",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      },
+      {
+        "branch": "7.x",
+        "marks": [],
+        "lines": [
+          "7.x clears 1 of 1 from v7.4.12",
+          "php floor raise · held by composer.json",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      },
+      {
+        "branch": "8.x",
+        "marks": [],
+        "lines": [
+          "8.x clears 1 of 1 from v8.0.12",
+          "php floor raise · held by composer.json",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      }
+    ]
+  },
+  "S10-tag-undated-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
   "S5-parent-after-ga-dagger": {
     "summary": [
       "1 high advisory",
@@ -4033,6 +4134,93 @@
           "8.x clears 1 of 1 from v8.0.12",
           "php floor raise · held by composer.json",
           "after it: 0, ok, if Composer resolves it"
+        ]
+      }
+    ]
+  },
+  "S5-star-dagger": {
+    "summary": [
+      "1 high advisory",
+      "1 on record for this name",
+      "fix: upgrade",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v2.6.13."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-45077",
+        "source": "PKSA-4wjj-gy1p-ft3r",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v5.4.52 on 5.x (upgrade)",
+        "affects": "affects 19 ranges",
+        "ranges": [
+          ">=2.0.0,<3.0.0|",
+          ">=3.0.0,<4.0.0|",
+          ">=4.0.0,<5.0.0|",
+          ">=5.0.0,<5.1.0|",
+          ">=5.1.0,<5.2.0|",
+          ">=5.2.0,<5.3.0|",
+          ">=5.3.0,<5.4.0|",
+          ">=5.4.0,<5.4.52|",
+          ">=6.0.0,<6.1.0|",
+          ">=6.1.0,<6.2.0|",
+          ">=6.2.0,<6.3.0|",
+          ">=6.3.0,<6.4.0|",
+          ">=6.4.0,<6.4.40|",
+          ">=7.0.0,<7.1.0|",
+          ">=7.1.0,<7.2.0|",
+          ">=7.2.0,<7.3.0|",
+          ">=7.3.0,<7.4.0|",
+          ">=7.4.0,<7.4.12|",
+          ">=8.0.0,<8.0.12"
+        ],
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "5.x",
+        "marks": [
+          "the move"
+        ],
+        "lines": [
+          "5.x the move clears 1 of 1 from v5.4.52",
+          "upgrade · held by composer.json",
+          "after it: 0, ok, if Composer resolves it"
+        ]
+      },
+      {
+        "branch": "6.x",
+        "marks": [],
+        "lines": [
+          "6.x clears 1 of 1 from v6.4.40",
+          "php floor raise · held by composer.json",
+          "after it: at most 16, high, if Composer resolves it"
+        ]
+      },
+      {
+        "branch": "7.x",
+        "marks": [],
+        "lines": [
+          "7.x clears 1 of 1 from v7.4.12",
+          "php floor raise · held by composer.json",
+          "after it: at most 16, high, if Composer resolves it"
+        ]
+      },
+      {
+        "branch": "8.x",
+        "marks": [],
+        "lines": [
+          "8.x clears 1 of 1 from v8.0.12",
+          "php floor raise · held by composer.json",
+          "after it: at most 16, high, if Composer resolves it"
         ]
       }
     ]
@@ -5179,6 +5367,20 @@
     "ladder": []
   },
   "capped-snapshot-dev-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "capped-solve-pin-dagger": {
     "summary": [
       "no counted advisory",
       "none on record for this name",
@@ -8485,6 +8687,20 @@
         ]
       }
     ]
+  },
+  "not-found-cached-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
   },
   "not-found-dagger": {
     "summary": [

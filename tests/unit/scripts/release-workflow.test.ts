@@ -176,3 +176,44 @@ describe("the lockrot pin has a green lockrot run (R6-29, decision 35)", () => {
     expect(existsSync(join(bin, "args"))).toBe(false);
   });
 });
+
+describe("the tag names the version of package.json and both version fields of package-lock.json (TOOLS-10)", () => {
+  const VERSION_STEP = "the tag names the version package.json and package-lock.json build";
+  const TAG = "v0.14.0-rc.10";
+  let dir = "";
+
+  function withVersions(pkg: string, lockRoot: string, lockPackage: string): { status: number; out: string } {
+    writeFileSync(join(dir, "package.json"), JSON.stringify({ name: "lockrot-report", version: pkg }));
+    writeFileSync(
+      join(dir, "package-lock.json"),
+      JSON.stringify({
+        name: "lockrot-report",
+        version: lockRoot,
+        packages: { "": { version: lockPackage } },
+      }),
+    );
+    return sh(stepScript(VERSION_STEP), dir, { GITHUB_REF_NAME: TAG });
+  }
+
+  beforeAll(() => {
+    dir = mkdtempSync(join(tmpdir(), "release-version-"));
+  });
+  afterAll(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("passes when all three name the tag's version", () => {
+    expect(withVersions("0.14.0-rc.10", "0.14.0-rc.10", "0.14.0-rc.10").status).toBe(0);
+  });
+
+  test.each([
+    ["package.json", ["0.14.0-rc.9", "0.14.0-rc.10", "0.14.0-rc.10"]],
+    ["package-lock.json version", ["0.14.0-rc.10", "0.14.0-rc.9", "0.14.0-rc.10"]],
+    ['package-lock.json packages[""].version', ["0.14.0-rc.10", "0.14.0-rc.10", "0.14.0-rc.9"]],
+  ] as const)("stops the release and names %s when it differs", (field, [pkg, lockRoot, lockPackage]) => {
+    const result = withVersions(pkg, lockRoot, lockPackage);
+
+    expect(result.status).toBe(1);
+    expect(result.out).toContain(`::error::${field} is 0.14.0-rc.9, not 0.14.0-rc.10`);
+  });
+});

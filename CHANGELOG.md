@@ -355,6 +355,30 @@ project is overall, and the other tabs lead with their own part.
 - The PHP line says that Composer solves at the `config.platform.php` of Composer's config: "Composer
   solves at 7.4.29, the PHP that config.platform.php sets in Composer's config, not the PHP of the
   machine". The Run tab row reads "Composer's config.platform.php: 7.4.29".
+- Enter on the Findings strip's Overview link moves focus to the Overview panel, not to the page
+  body.
+- Each rail filter shows its whole focus ring in the wide layout.
+- A Run tab score-model table is a Tab stop and a named region only while it scrolls sideways.
+- The Run tab's Advisories score table names its second Band column 'Band with no reachable fix' for
+  assistive technology.
+- A touch-only device hides the 'Press ? for keys and search syntax' hint. A tablet with a keyboard
+  and no trackpad hides it too.
+- On paper an Advisories group head keeps with its first row.
+- An Overview state line with no clause drops the colon: "Offline run. What this run could not see".
+- The All packages tab of an empty lock reads "No packages in this lock." in place of "Nothing is
+  flagged.".
+- When lockrot skips the release dates of an abandoned or allowlisted package, the Checks strip reads
+  "S2 not run (undated releases)". The not run qualifier reads "Its release dates (undated
+  releases)", and the Why reads "checks not run: its release dates (undated releases)".
+- When the highest tag of a higher branch has no date of its own, its age is an upper bound. The
+  branch lead reads "The move's branch, 4.x, released v4.9.0 at most 1.6 years ago.", and so does a
+  left-behind reading that names the age. The bar of that branch reads "v4.9.0, released at most 1.6
+  years ago".
+- An old-promise flag on a release whose php constraint has no lower PHP major, such as `*`, shows
+  the constraint in its pill: `php "*"`. The sheet reads: It was released with php "\*" and admits
+  8.4 untested.
+- The Repository line of a 404 that lockrot served from its cache ends with the cache date: "the host
+  answered 404 (private, renamed or removed) (cached 2026-09-28)".
 
 ### Security
 

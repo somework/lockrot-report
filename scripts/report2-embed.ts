@@ -115,8 +115,8 @@ const modelPage = (name: string): { name: string; path: string[] } => ({
   path: ["schema", "documents", "page", `${name}.json`],
 });
 
-/** The page cases of `page-goldens.json` that carry a real move check or a PHP window state: lockrot's
- *  engine runs of snipe-it and drupal-site, and the model's ‡ documents of real locks. None has an
+/** The page cases of `page-goldens.json` that carry a real move check, a PHP window state or an empty
+ *  lock: lockrot's engine runs of snipe-it and drupal-site, and the model's ‡ documents. None has an
  *  explain-2, so no details. */
 const PAGE_CASES = [
   { name: "page-snipe-it", path: ["contract", "page", "snipe-it.json"] },
@@ -131,6 +131,7 @@ const PAGE_CASES = [
     "run.LAM-dagger",
     "composite.php-empty-with-dev-dagger",
     "composite.php-override-dagger",
+    "empty-lock.offline-dagger",
   ].map(modelPage),
 ];
 

@@ -4,3 +4,7 @@ import { decimal } from "./format";
 export function ago(years: number): string {
   return years === 0 ? "less than three weeks ago" : `${decimal(years, 1)} years ago`;
 }
+
+/** `ago` of an age that is an upper bound (R9-42, G145). */
+export const agoAtMost = (years: number, atMost: boolean): string =>
+  atMost ? `at most ${ago(years)}` : ago(years);
