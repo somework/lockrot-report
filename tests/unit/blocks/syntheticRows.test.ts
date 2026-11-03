@@ -104,7 +104,23 @@ describe("the left-behind reading of a branch dated by a commit its tags share (
     s8.newest_release_at_least = true;
     s8.newest_years = 0;
 
-    expect(readingTexts(finding, run, null)[0]).toMatch(/released v\S+ less than three weeks ago\.$/);
+    expect(readingTexts(finding, run, null)[0]).toBe(
+      `Branch 2.x had its last release 6.9 years ago; the newest branch, ${s8.newest_branch}, released ${s8.newest_version} less than three weeks ago.`,
+    );
+  });
+
+  test("G27: drops at most when the reachable branch released 0 years ago (RENDER-10C Q1)", () => {
+    const { finding, run, metadata } = modelCase("B");
+    const row = metadata?.branches.find((r) => r.branch === "5.x");
+    if (row === undefined) throw new Error("B has a 5.x row");
+    row.highest = "v5.4.53";
+    const s8 = s8Of(finding);
+    s8.reachable_release_at_least = true;
+    s8.reachable_years = 0;
+
+    expect(readingTexts(finding, run, metadata)[0]).toBe(
+      "Its branch, 2.x, had its last release 6.9 years ago, while 5.x released v5.4.52 less than three weeks ago. See Release branches.",
+    );
   });
 
   test("reads the bound of the branch it names, not the other one", () => {

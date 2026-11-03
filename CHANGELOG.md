@@ -391,8 +391,6 @@ project is overall, and the other tabs lead with their own part.
   included, so the two counts can differ.
 - An age of less than three weeks has no upper bound to state. The branch lead and the left-behind
   reading read "released v4.9.0 less than three weeks ago" with no "at most", as the bar does.
-- The S10 sentence of undated releases names the cause. It reads "a release it reads carries no
-  date". For a split, it reads "a release it reads is dated by a commit its tags share".
 - A gate line with a finding that the baseline exempts no longer says "is known to the baseline".
   It reads "1 reaches it and the baseline exempts it". For more than one, it reads "2 reach it and
   the baseline exempts them".
