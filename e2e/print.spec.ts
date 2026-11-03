@@ -147,6 +147,20 @@ test("the printed weights table fits the page width", async ({ page }) => {
   expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
 });
 
+for (const caseName of ["composite", "baselined-wallabag-2.6", "baselined-wallabag-main"]) {
+  test(`the printed All packages table of ${caseName} fits the page width`, async ({ page }) => {
+    // A4's printable width, as the weights table's test sets it.
+    await page.setViewportSize({ width: 696, height: 1000 });
+    await report.gotoReport2WithHash(caseName, "view=packages");
+    await page.emulateMedia({ media: "print" });
+    await expect.poll(() => printedSections(page)).toEqual([...SECTIONS, "6 All packages"]);
+
+    const wrap = page.locator('.pd [data-surface="packages"] .tablewrap');
+    const sizes = await wrap.evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+    expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
+  });
+}
+
 test("with a sheet open, print prints that package's sheet, its folds open", async ({ page }) => {
   await report.gotoReport2WithHash("composite", "view=findings&pkg=twig%2Ftwig");
   await expect(page.locator('main [data-surface="detail"]')).toBeVisible();

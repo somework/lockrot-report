@@ -308,25 +308,31 @@
   }
 }
 
-/* On paper the table has a page's width (print.css sets its type and padding): the pills wrap
-   onto lines of their own inside Flags, so no pill crosses into Reached, and a name breaks only
-   after its vendor's slash. `:not(:first-child)` matches print.css's own `.pd .tablewrap td`
-   rules, which keep short values on one line, so these outrank them. */
+/* On paper the table fits A4's printable width whatever the lock holds, so no engine has to shrink
+   the whole document. A name breaks after its vendor's slash, then after a hyphen, and anywhere only
+   when a part is still too long. A version breaks the same way, pills wrap inside their own border,
+   and the reach and the signal codes wrap. `:not(:first-child)` matches print.css's own
+   `.pd .tablewrap td` rules, which keep short values on one line, so these outrank them. */
 @media print {
-  /* Wide enough for the widest single pill, so pills stack whole and none wraps inside. */
-  .pd .tablewrap td.p2-flags:not(:first-child) {
+  .pd .tablewrap td.p2-ver:not(:first-child),
+  .pd .tablewrap td.p2-flags:not(:first-child),
+  .pd .tablewrap td.p2-reach:not(:first-child),
+  .pd .tablewrap td.p2-sig:not(:first-child) {
     white-space: normal;
-    min-width: 15em;
   }
   .pd .tablewrap td.p2-flags .fp {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     margin-block: 1px;
   }
-  .pd .tablewrap td.p2-name:first-child {
-    overflow-wrap: normal;
-  }
   .pd .tablewrap .p2-unit {
-    white-space: nowrap;
+    white-space: normal;
+  }
+  /* A common name or version keeps whole; only an outlier breaks inside a part. */
+  .pd .tablewrap td.p2-name {
+    min-width: 10em;
+  }
+  .pd .tablewrap td.p2-ver {
+    min-width: 7em;
   }
   .pd .tablewrap thead {
     display: table-header-group;
