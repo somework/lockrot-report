@@ -117,7 +117,7 @@ function ParentRow2({
       className={open ? "r2-row is-open" : "r2-row"}
       data-pkg={row.package}
       aria-label={row.package}
-      aria-describedby={described === "" ? undefined : described}
+      aria-describedby={described}
       aria-current={state.pkg === row.package ? "true" : undefined}
       tabIndex={rowTabIndex(row.package, cursor, first.has(parentKey2(row.package)))}
       {...openInteractions(row.package, dispatch)}

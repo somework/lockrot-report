@@ -70,7 +70,7 @@ export function LegendButton({
   );
 }
 
-/** The accessible name: the visible text, or `label` (already cued) when the text is not a string. */
+/** `label` is the whole accessible name, new-tab cue included; without it the visible text is the name. */
 type OutLinkName = { children: string; label?: undefined } | { children: ComponentChildren; label: string };
 
 /**

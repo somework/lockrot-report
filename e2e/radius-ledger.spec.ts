@@ -85,6 +85,7 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
       await go(page, WALLABAG, "", width);
       const row = radiusRow(page, "kphoen/rulerz-bundle");
       const toggle = row.getByRole("button", { name: /Show the \d+ packages/ });
+      await toggle.scrollIntoViewIfNeeded();
       const box = await toggle.boundingBox();
       if (box === null) throw new Error("the toggle has no box");
       expect(box.width).toBeGreaterThanOrEqual(24);
@@ -92,16 +93,17 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
 
       const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
       // The middle of each side, half a pixel in: a rounded corner is not part of the target.
-      for (const [dx, dy] of [
+      const sides = [
         [0, -11.5],
         [11.5, 0],
         [0, 11.5],
         [-11.5, 0],
-      ] as const) {
+      ] as const;
+      for (const [i, [dx, dy]] of sides.entries()) {
         await page.mouse.click(x + dx, y + dy);
+        await expect(toggle).toHaveAttribute("aria-expanded", i % 2 === 0 ? "true" : "false");
       }
 
-      await expect(toggle).toHaveAttribute("aria-expanded", "false");
       await expect(row).not.toHaveAttribute("aria-current", "true");
       await expect.poll(() => page.evaluate(() => location.hash)).not.toContain("pkg=");
     });

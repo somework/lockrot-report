@@ -668,15 +668,17 @@ describe("the PHP state line's link (R4-29)", () => {
     root.id = "lockrot-app";
     const scrolled = vi.spyOn(HTMLElement.prototype, "scrollIntoView").mockImplementation(() => undefined);
     history.replaceState(null, "", "/report.html#view=run&section=lockrot-app");
+    try {
+      render(<App model={wallabag()} />, { container: root });
+      await new Promise((resolve) => requestAnimationFrame(resolve));
 
-    render(<App model={wallabag()} />, { container: root });
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-
-    expect(screen.getByRole("tab", { selected: true }).textContent).toMatch(/^Run data/);
-    expect(document.activeElement?.tagName).not.toBe("H3");
-    expect(scrolled).not.toHaveBeenCalled();
-    scrolled.mockRestore();
-    root.remove();
+      expect(screen.getByRole("tab", { selected: true }).textContent).toMatch(/^Run data/);
+      expect(document.activeElement?.tagName).not.toBe("H3");
+      expect(scrolled).not.toHaveBeenCalled();
+    } finally {
+      scrolled.mockRestore();
+      root.remove();
+    }
   });
 });
 

@@ -308,18 +308,9 @@
   }
 }
 
-/* On paper the table fits A4's printable width whatever the lock holds, so no engine has to shrink
-   the whole document. A name breaks after its vendor's slash, then after a hyphen, and anywhere only
-   when a part is still too long. A version breaks the same way, pills wrap inside their own border,
-   and the reach and the signal codes wrap. `:not(:first-child)` matches print.css's own
-   `.pd .tablewrap td` rules, which keep short values on one line, so these outrank them. */
+/* On paper every cell wraps (print.css), so the table fits A4 whatever the lock holds; a name breaks
+   after its slash, then at a hyphen. */
 @media print {
-  .pd .tablewrap td.p2-ver:not(:first-child),
-  .pd .tablewrap td.p2-flags:not(:first-child),
-  .pd .tablewrap td.p2-reach:not(:first-child),
-  .pd .tablewrap td.p2-sig:not(:first-child) {
-    white-space: normal;
-  }
   .pd .tablewrap td.p2-flags .fp {
     flex-wrap: wrap;
     margin-block: 1px;
@@ -327,11 +318,12 @@
   .pd .tablewrap .p2-unit {
     white-space: normal;
   }
-  /* A common name or version keeps whole; only an outlier breaks inside a part. */
+  /* A common name, version or age keeps to a line or two; only an outlier breaks inside a word. */
   .pd .tablewrap td.p2-name {
     min-width: 10em;
   }
-  .pd .tablewrap td.p2-ver {
+  .pd .tablewrap td.p2-ver,
+  .pd .tablewrap td.p2-age {
     min-width: 7em;
   }
   .pd .tablewrap thead {

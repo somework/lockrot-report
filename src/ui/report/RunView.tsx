@@ -132,7 +132,7 @@ function ScoreWorks({ report, opened }: { report: Report2; opened: string | null
   const printed = usePrinted();
   return (
     <section className="sect run2-score" id={SCORE_SECTION_ID} tabIndex={-1} aria-label={parts.title}>
-      <h3>{parts.title}</h3>
+      <h3 tabIndex={-1}>{parts.title}</h3>
       <Ruler model={run.score_model} />
       <p className="run2-caption">{parts.bands}</p>
       <p className="run2-caption">{parts.zero}</p>
