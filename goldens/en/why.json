@@ -609,6 +609,15 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it high"
   ],
+  "github-archived-unread-dagger": [
+    "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
+    "abandoned 32 leads: the strongest maintenance fact counts in full",
+    "old-promise 4: ¼ of 16, beside abandoned (correlated evidence)",
+    "transitive: maintenance 36 ÷ 2 = 18",
+    "maintenance alone makes it high",
+    "without abandoned: 18, high (silent would show) · without old-promise: 16, high",
+    "checks not run: its archived flag (request failed)"
+  ],
   "gitlab-anon-dagger": [
     "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
     "abandoned 32 leads: the strongest maintenance fact counts in full",
@@ -994,6 +1003,14 @@
     "the advisories alone make it high",
     "without PKSA-3r5d-mb8f-1qw9: 16, high (tied: the others weigh the same)",
     "composer update alone: 16, high (it clears 1 of its 6 advisories)"
+  ],
+  "partial-lookup-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory PKSA-3r5d-mb8f-1qw9, the worst of 6 (tied with CVE-2024-52301); its own fix (php floor raise on 12.x) is reachable, so no × 2",
+    "the advisories alone make it high",
+    "without PKSA-3r5d-mb8f-1qw9: 16, high (tied: the others weigh the same)",
+    "composer update alone: 16, high (it clears 1 of its 6 advisories; advisories on that release not checked)",
+    "checks missing: advisories (S9) incomplete (lookup failed)"
   ],
   "partial-op-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",

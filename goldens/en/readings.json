@@ -385,6 +385,12 @@
     }
   ],
   "gets-below-clears-left-behind-dagger": [],
+  "github-archived-unread-dagger": [
+    {
+      "flag": "old-promise",
+      "text": "It was written for PHP 5 and admits 8.4 untested."
+    }
+  ],
   "gitlab-anon-dagger": [
     {
       "flag": "old-promise",
@@ -565,6 +571,7 @@
   "op-update": [],
   "pagerfanta": [],
   "partial": [],
+  "partial-lookup-dagger": [],
   "partial-op-dagger": [
     {
       "flag": "left-behind",

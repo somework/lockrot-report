@@ -296,6 +296,9 @@
     "Your branch, 4.x, had its last release, v4.4.41, 4.5 years ago.",
     "The move's branch, 5.x, released v5.4.45 2.0 years ago."
   ],
+  "github-archived-unread-dagger": [
+    "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
+  ],
   "gitlab-anon-dagger": [
     "Your branch, 1.x, had its last release, 1.17.05.02, 9.4 years ago."
   ],
@@ -524,6 +527,9 @@
     "The move's branch, 4.x, released v4.9.0 at most 1.6 years ago."
   ],
   "partial": [
+    "Your branch, 9.x, had its last release, v9.52.22, 0.1 years ago."
+  ],
+  "partial-lookup-dagger": [
     "Your branch, 9.x, had its last release, v9.52.22, 0.1 years ago."
   ],
   "partial-op-dagger": [
