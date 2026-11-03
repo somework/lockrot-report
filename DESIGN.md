@@ -182,8 +182,9 @@ so no 0.13 or rc.1 link changes its meaning:
   writes `view=overview` only beside another key, so that fragment reads back as Overview.
 
 `section=<id>` follows `pkg` under `view=run` only: it opens Run data at that section and moves focus
-to its heading (SPEC §7.9.16, PD-PHP-1). A tab switch drops it. On another view, or when the run has
-no such section, the key does nothing.
+to its heading (SPEC §7.9.16, PD-PHP-1). It names a Run data section only: `php-window` or
+`how-the-score-works`. A tab switch drops it. On another view, with any other value, or when the run
+has no such section, the key does nothing.
 
 An Overview chart mark is a link to such a fragment (PD-OVERVIEW-7). Always `history.replaceState`, never `pushState`; a `SecurityError` (an
 opaque-origin frame) switches writing off for the page's life.
