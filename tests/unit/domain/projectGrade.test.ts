@@ -246,7 +246,7 @@ describe("the grade line", () => {
 
   test("counts the graded findings known to the baseline, after the other qualifiers", () => {
     expect(lines(baselined("baselined/wallabag-2.6"))).toEqual([
-      "Project grade: critical · 15 critical findings · 84 of 210 packages high or worse · 46 known to the baseline",
+      "Project grade: critical · 15 critical findings · 84 of 210 packages high or worse · 46 graded findings known to the baseline",
       "113 of 210 packages flagged · 78 ok · 19 finished",
       "1871 points on 113 flagged packages · 1666 (89 %) from high or worse · score model 1",
     ]);

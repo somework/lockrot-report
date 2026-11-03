@@ -53,6 +53,9 @@ test.describe("rule R1: the view a fragment opens", () => {
   });
 });
 
+/** y + height of a box at a fractional offset can miss the next box's y by a float rounding step. */
+const SUBPIXEL = 0.01;
+
 test.describe("the Overview layout", () => {
   test("at 1440 the lead holds the Security summary above the fold, then Weighs most, Flags beside Libyears, and exposure", async ({
     page,
@@ -72,16 +75,16 @@ test.describe("the Overview layout", () => {
     expect(lead?.y).toBeLessThan(900);
     expect(security?.y).toBeGreaterThanOrEqual(lead?.y ?? Infinity);
     expect((security?.y ?? Infinity) + (security?.height ?? Infinity)).toBeLessThanOrEqual(
-      (lead?.y ?? 0) + (lead?.height ?? 0),
+      (lead?.y ?? 0) + (lead?.height ?? 0) + SUBPIXEL,
     );
     expect(security?.y).toBeLessThan(900);
     // Weighs most spans the width under the lead, then Flags sit beside Libyears, then exposure.
-    expect(weighs?.y).toBeGreaterThanOrEqual((lead?.y ?? 0) + (lead?.height ?? 0));
+    expect(weighs?.y).toBeGreaterThanOrEqual((lead?.y ?? 0) + (lead?.height ?? 0) - SUBPIXEL);
     expect(weighs?.width).toBeGreaterThan((flags?.width ?? 0) * 1.5);
-    expect(flags?.y).toBeGreaterThanOrEqual((weighs?.y ?? 0) + (weighs?.height ?? 0));
+    expect(flags?.y).toBeGreaterThanOrEqual((weighs?.y ?? 0) + (weighs?.height ?? 0) - SUBPIXEL);
     expect(libyears?.y).toBe(flags?.y);
     expect(flags?.x).toBeLessThan(libyears?.x ?? 0);
-    expect(expo?.y).toBeGreaterThanOrEqual((flags?.y ?? 0) + (flags?.height ?? 0));
+    expect(expo?.y).toBeGreaterThanOrEqual((flags?.y ?? 0) + (flags?.height ?? 0) - SUBPIXEL);
   });
 
   test("at 390 the parts stack in reading order, with nothing folded and no sideways scroll", async ({
@@ -250,7 +253,7 @@ test.describe("the project grade", () => {
     await page.goto(report2Url(WALLABAG));
 
     await expect(gradeLine(page)).toHaveText(
-      "Project grade: critical · 15 critical findings · 84 of 210 packages high or worse · 46 known to the baseline",
+      "Project grade: critical · 15 critical findings · 84 of 210 packages high or worse · 46 graded findings known to the baseline",
     );
     const before = await gradeLine(page).evaluate(
       (line) =>

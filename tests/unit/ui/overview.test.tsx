@@ -60,6 +60,16 @@ describe("the Overview tab of a report-2 document", () => {
     );
   });
 
+  test("prints a gate line with a baseline exemption as lockrot writes it (finding 34)", () => {
+    const result = normalize(assembleEmbed("C-baselined-dagger"));
+    if (!result.ok) throw new Error(result.error.message);
+    render(<App model={result.model} />);
+
+    expect(band().querySelector(".overview2-gate-text")?.textContent).toBe(
+      "gate: passes · --fail-on=high · no finding fails it; 1 reaches it and the baseline exempts it · target php 8.4 (--target-php)",
+    );
+  });
+
   test("links the grade of the grade line to Findings under it, and reads the line before the waffle", () => {
     render(<App model={model()} />);
 

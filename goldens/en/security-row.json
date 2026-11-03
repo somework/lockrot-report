@@ -764,6 +764,11 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "github-archived-unread-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "gitlab-anon-dagger": [
     "no counted advisory",
     "none on record for this name",
@@ -1281,6 +1286,28 @@
     "13.x clears 6 of 6 from v13.30.0",
     "php floor raise · held by every holder in Held by",
     "after it: 0, ok, if Composer resolves it"
+  ],
+  "partial-lookup-dagger": [
+    "6 advisories: high 2, medium 2, unrated 1, low 1",
+    "28 on record for this name",
+    "fix: php floor raise",
+    "lookup partial (lookup failed)",
+    "Meanwhile, composer update laravel/framework installs v9.52.22, which clears 1 of its 6 advisories (16, high after it, if that release carries no new advisory)",
+    "9.x your branch clears 1 of 6 from v9.52.17",
+    "composer update",
+    "after it: 16, high, advisories on its new versions not checked",
+    "10.x clears 2 of 6 from v10.48.29",
+    "upgrade · held by composer.json",
+    "after it: 16, high, if Composer resolves it, advisories on its new versions not checked",
+    "11.x clears 2 of 6 from v11.44.1",
+    "php floor raise · held by composer.json",
+    "after it: 16, high, if Composer resolves it, advisories on its new versions not checked",
+    "12.x the move clears 6 of 6 from v12.69.0",
+    "php floor raise · held by every holder in Held by",
+    "after it: 0, ok, if Composer resolves it, advisories on its new versions not checked",
+    "13.x clears 6 of 6 from v13.30.0",
+    "php floor raise · held by every holder in Held by",
+    "after it: 0, ok, if Composer resolves it, advisories on its new versions not checked"
   ],
   "partial-op-dagger": [
     "2 advisories: high 1, medium 1",

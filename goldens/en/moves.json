@@ -3107,6 +3107,29 @@
       ]
     }
   ],
+  "github-archived-unread-dagger": [
+    {
+      "heading": "Next step",
+      "action": "Find a replacement; none is named",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": null,
+      "composer": [
+        {
+          "text": "Replace lorisleiva/laravel-search-string (hoa/compiler requires it)",
+          "items": []
+        }
+      ]
+    }
+  ],
   "gitlab-anon-dagger": [
     {
       "heading": "Next step",
@@ -5401,6 +5424,55 @@
         "result": "0, ok",
         "conditions": [
           "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "The packages that hold it may need to move too",
+          "items": []
+        },
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "partial-lookup-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.2, then require ^12.69.0",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.2' --no-update",
+        "composer require 'laravel/framework:^12.69.0'",
+        "composer why-not laravel/framework v12.69.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "all 6 advisories",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "12.x needs php ^8.2",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 8.1 (a minor raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)",
+          "advisories on its new versions not checked"
         ]
       },
       "composer": [

@@ -31,8 +31,8 @@ project is overall, and the other tabs lead with their own part.
   "Weighs most", the exposure bars and the libyears table.
 - The lead opens with one line on what lockrot is, then the project grade, in the largest type:
   "Project grade: critical · 3 critical findings · 25 of 183 packages high or worse". The grade is
-  the worst grade a package holds. The line adds "lookup partial", "{n} not judged" and "{n} known
-  to the baseline" when they apply. lockrot's own gate sentence follows, marked "✓" or "✕", and
+  the worst grade a package holds. The line adds "lookup partial", "{n} not judged" and "{n} graded
+  findings known to the baseline" when they apply. lockrot's own gate sentence follows, marked "✓" or "✕", and
   links to the findings that fail it. A line per state that limits the run follows: an offline or
   incomplete run, the allowlist that does not cover advisories, and the baseline. On the offline
   or incomplete line, "{n} of {m} packages" opens All packages under the unknown grade.
@@ -379,6 +379,23 @@ project is overall, and the other tabs lead with their own part.
   8.4 untested.
 - The Repository line of a 404 that lockrot served from its cache ends with the cache date: "the host
   answered 404 (private, renamed or removed) (cached 2026-09-28)".
+- A focused All packages or Blast radius row gives the package grade to a screen reader, as a
+  Findings row does.
+- Every link that opens a new tab says so in its accessible name: the footer, the glossary, the
+  brand link and the lock entry included.
+- The Blast radius expand toggle is a 24 by 24 px target.
+- The section key of the address opens only a Run data section, and focus moves to its heading.
+- The printed All packages table fits the printable width of A4 without a shrink of the whole page.
+- The grade line counts only graded findings as known to the baseline, and says so: "46 graded
+  findings known to the baseline". The baseline line counts every known finding, ungraded ones
+  included, so the two counts can differ.
+- An age of less than three weeks has no upper bound to state. The branch lead and the left-behind
+  reading read "released v4.9.0 less than three weeks ago" with no "at most", as the bar does.
+- A gate line with a finding that the baseline exempts no longer says "is known to the baseline".
+  It reads "1 reaches it and the baseline exempts it". For more than one, it reads "2 reach it and
+  the baseline exempts them".
+- The note of an advisory lookup that failed names the repository as Composer does: "security
+  advisories unavailable from composer repo (https://repo.example.org): …".
 
 ### Security
 

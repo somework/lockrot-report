@@ -6265,6 +6265,20 @@
     "ignored": [],
     "ladder": []
   },
+  "github-archived-unread-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
   "gitlab-anon-dagger": {
     "summary": [
       "no counted advisory",
@@ -8918,6 +8932,156 @@
           "13.x clears 6 of 6 from v13.30.0",
           "php floor raise · held by every holder in Held by",
           "after it: 0, ok, if Composer resolves it"
+        ]
+      }
+    ]
+  },
+  "partial-lookup-dagger": {
+    "summary": [
+      "6 advisories:",
+      "28 on record for this name",
+      "fix: php floor raise",
+      "lookup partial (lookup failed)"
+    ],
+    "counts": [
+      "high 2",
+      "medium 2",
+      "unrated 1",
+      "low 1"
+    ],
+    "meanwhile": "Meanwhile, composer update laravel/framework installs v9.52.22, which clears 1 of its 6 advisories (16, high after it, if that release carries no new advisory)",
+    "caption": [
+      "By severity. Each affects your version, v9.52.16."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "PKSA-3r5d-mb8f-1qw9",
+        "source": null,
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix v12.60.0 on 12.x (php floor raise)",
+        "affects": "affects <12.60.0|>=13.0.0,<=13.9.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2024-52301",
+        "source": "PKSA-w7xr-vk7n-rstm",
+        "deciding": false,
+        "severity": "high",
+        "fix": "fix v9.52.17 on 9.x, your branch (composer update)",
+        "affects": "affects 6 ranges",
+        "ranges": [
+          "<6.20.45|",
+          ">=7.0.0,<7.30.7|",
+          ">=8.0.0,<8.83.28|",
+          ">=9.0.0,<9.52.17|",
+          ">=10.0.0,<10.48.23|",
+          ">=11.0.0,<11.31.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2025-27515",
+        "source": "PKSA-8qx3-n5y5-vvnd",
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v10.48.29 on 10.x (upgrade)",
+        "affects": "affects 3 ranges",
+        "ranges": [
+          "<10.48.29|",
+          ">=11.0.0,<11.44.1|",
+          ">=12.0.0,<12.1.1"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "PKSA-m5cs-t1y6-qpcs",
+        "source": null,
+        "deciding": false,
+        "severity": "medium",
+        "fix": "fix v12.61.1 on 12.x (php floor raise)",
+        "affects": "affects <12.61.1|>=13.0.0,<13.12.0",
+        "ranges": null,
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-48019",
+        "source": "PKSA-mdq4-51ck-6kdq",
+        "deciding": false,
+        "severity": "unrated",
+        "fix": "fix v12.60.0 on 12.x (php floor raise)",
+        "affects": "affects 5 ranges",
+        "ranges": [
+          ">=9.0.0,<10.0.0|",
+          ">=10.0.0,<11.0.0|",
+          ">=11.0.0,<12.0.0|",
+          ">=12.0.0,<12.60.0|",
+          ">=13.0.0,<13.10.0"
+        ],
+        "same_as": null
+      },
+      {
+        "name": "CVE-2026-102279",
+        "source": "PKSA-d5tc-s1qs-h781",
+        "deciding": false,
+        "severity": "low",
+        "fix": "fix v12.69.0 on 12.x (php floor raise)",
+        "affects": "affects >=13.0.0,<13.30.0|<12.69.0",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "9.x",
+        "marks": [
+          "your branch"
+        ],
+        "lines": [
+          "9.x your branch clears 1 of 6 from v9.52.17",
+          "composer update",
+          "after it: 16, high, advisories on its new versions not checked"
+        ]
+      },
+      {
+        "branch": "10.x",
+        "marks": [],
+        "lines": [
+          "10.x clears 2 of 6 from v10.48.29",
+          "upgrade · held by composer.json",
+          "after it: 16, high, if Composer resolves it, advisories on its new versions not checked"
+        ]
+      },
+      {
+        "branch": "11.x",
+        "marks": [],
+        "lines": [
+          "11.x clears 2 of 6 from v11.44.1",
+          "php floor raise · held by composer.json",
+          "after it: 16, high, if Composer resolves it, advisories on its new versions not checked"
+        ]
+      },
+      {
+        "branch": "12.x",
+        "marks": [
+          "the move"
+        ],
+        "lines": [
+          "12.x the move clears 6 of 6 from v12.69.0",
+          "php floor raise · held by every holder in Held by",
+          "after it: 0, ok, if Composer resolves it, advisories on its new versions not checked"
+        ]
+      },
+      {
+        "branch": "13.x",
+        "marks": [],
+        "lines": [
+          "13.x clears 6 of 6 from v13.30.0",
+          "php floor raise · held by every holder in Held by",
+          "after it: 0, ok, if Composer resolves it, advisories on its new versions not checked"
         ]
       }
     ]

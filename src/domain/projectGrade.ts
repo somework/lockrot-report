@@ -66,7 +66,9 @@ export function gradeLine(report: Report2): GradeLine | null {
         ]),
     ...(security.check === "partial" ? [lookupWord(security.check, null)] : []),
     ...(counts.unknown > 0 ? [`${String(counts.unknown)} not judged`] : []),
-    ...(report.baseline !== null && known > 0 ? [`${String(known)} known to the baseline`] : []),
+    ...(report.baseline !== null && known > 0
+      ? [`${plural(known, "graded finding", "graded findings")} known to the baseline`]
+      : []),
   ];
   return {
     grade,

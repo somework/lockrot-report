@@ -1554,6 +1554,26 @@
       "Tripped by left-behind"
     ]
   },
+  "github-archived-unread-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through lorisleiva/laravel-search-string",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [
+      "Its archived flag (request failed)"
+    ],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by abandoned"
+    ]
+  },
   "gitlab-anon-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -2687,6 +2707,25 @@
     "origin": null,
     "not_judged": null,
     "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by PKSA-3r5d-mb8f-1qw9"
+    ]
+  },
+  "partial-lookup-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly, and also through pragmarx/google2fa-laravel"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Advisories (S9) incomplete (lookup failed)"
+    ],
     "not_run": [],
     "php": null,
     "php_edge": [],
