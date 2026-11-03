@@ -97,8 +97,9 @@ test.describe("the new-tab cue", () => {
       const all = page.locator('a[target="_blank"]');
       const cued = page.getByRole("link", { name: /, opens in a new tab$/, includeHidden: true });
 
-      expect(await all.count()).toBeGreaterThan(10);
-      expect(await cued.count()).toBe(await all.count());
+      const count = await all.count();
+      expect(count).toBeGreaterThan(10);
+      await expect(all.and(cued)).toHaveCount(count);
     });
   }
 });

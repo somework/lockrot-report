@@ -55,7 +55,7 @@ test("the printed All packages table fits A4's printable width with a long versi
   await page.goto(`${pageUrl(FIXTURES.longVersionReport2)}#view=packages`);
   await page.emulateMedia({ media: "print" });
   const wrap = page.locator('.pd [data-surface="packages"] .tablewrap');
-  await expect(wrap.locator('tr[data-pkg="symfony/yaml"] td.p2-ver')).toHaveText(LONG_VERSION);
+  await expect(wrap.getByRole("row", { name: "symfony/yaml", exact: true })).toContainText(LONG_VERSION);
 
   const sizes = await wrap.evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
   expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
