@@ -78,6 +78,46 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     await expect.poll(() => page.evaluate(() => location.hash)).not.toContain("pkg=");
   });
 
+  for (const width of [320, 1440]) {
+    test(`at ${String(width)}px the toggle is a 24 by 24 px target that toggles the row and opens no package`, async ({
+      page,
+    }) => {
+      await go(page, WALLABAG, "", width);
+      const row = radiusRow(page, "kphoen/rulerz-bundle");
+      const toggle = row.getByRole("button", { name: /Show the \d+ packages/ });
+      const box = await toggle.boundingBox();
+      if (box === null) throw new Error("the toggle has no box");
+      expect(box.width).toBeGreaterThanOrEqual(24);
+      expect(box.height).toBeGreaterThanOrEqual(24);
+
+      const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
+      // The middle of each side, half a pixel in: a rounded corner is not part of the target.
+      for (const [dx, dy] of [
+        [0, -11.5],
+        [11.5, 0],
+        [0, 11.5],
+        [-11.5, 0],
+      ] as const) {
+        await page.mouse.click(x + dx, y + dy);
+      }
+
+      await expect(toggle).toHaveAttribute("aria-expanded", "false");
+      await expect(row).not.toHaveAttribute("aria-current", "true");
+      await expect.poll(() => page.evaluate(() => location.hash)).not.toContain("pkg=");
+    });
+  }
+
+  test("a focused requirement row and a listed package describe their grade", async ({ page }) => {
+    await go(page, WALLABAG, "&pkg=hoa%2Fruler");
+    const verdict = wallabag?.findings.find((f) => f.package === "hoa/ruler")?.verdict ?? "";
+    const total = wallabag?.findings.find((f) => f.package === "hoa/ruler")?.score.total;
+
+    await expect(radiusRow(page, "kphoen/rulerz-bundle")).toHaveAccessibleDescription(/\d+ flagged/);
+    await expect(
+      radiusRow(page, "kphoen/rulerz-bundle").locator('li[data-pkg="hoa/ruler"]'),
+    ).toHaveAccessibleDescription(new RegExp(`^score ${String(total)} ${verdict}$`, "i"));
+  });
+
   test("a #pkg= link to a listed package opens the first row that lists it, and only that one", async ({
     page,
   }) => {
