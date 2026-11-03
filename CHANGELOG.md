@@ -31,8 +31,8 @@ project is overall, and the other tabs lead with their own part.
   "Weighs most", the exposure bars and the libyears table.
 - The lead opens with one line on what lockrot is, then the project grade, in the largest type:
   "Project grade: critical · 3 critical findings · 25 of 183 packages high or worse". The grade is
-  the worst grade a package holds. The line adds "lookup partial", "{n} not judged" and "{n} known
-  to the baseline" when they apply. lockrot's own gate sentence follows, marked "✓" or "✕", and
+  the worst grade a package holds. The line adds "lookup partial", "{n} not judged" and "{n} graded
+  findings known to the baseline" when they apply. lockrot's own gate sentence follows, marked "✓" or "✕", and
   links to the findings that fail it. A line per state that limits the run follows: an offline or
   incomplete run, the allowlist that does not cover advisories, and the baseline. On the offline
   or incomplete line, "{n} of {m} packages" opens All packages under the unknown grade.
