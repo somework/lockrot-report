@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact";
 import { safeHref } from "../../domain/links";
 import { ROW_HINT } from "../../domain/pageVocabulary";
+import { newTab } from "../../domain/rich";
 import type { Tone } from "../../domain/vocab";
 import "./common.css";
 
@@ -69,26 +70,23 @@ export function LegendButton({
   );
 }
 
+/** The accessible name: the visible text, or `label` (already cued) when the text is not a string. */
+type OutLinkName = { children: string; label?: undefined } | { children: ComponentChildren; label: string };
+
 /**
- * A link that leaves the page. The URL is checked again here whatever produced it: a document is
- * data, and the one place a value becomes an `href` is where a `javascript:` URL has to stop. When
- * the check fails the text is still shown, unlinked.
+ * A link that leaves the page, in a new tab that its name announces. The URL is checked again here
+ * whatever produced it: a document is data, and the one place a value becomes an `href` is where a
+ * `javascript:` URL has to stop. When the check fails the text is still shown, unlinked.
  */
-export function OutLink({
-  href,
-  children,
-  tabIndex,
-  title,
-  label,
-}: {
-  href: string | null;
-  children: ComponentChildren;
-  /** -1 inside a list row that is not the list's Tab stop (PD-ROWS-11, `ui/rowCursor.ts`). */
-  tabIndex?: -1 | undefined;
-  title?: string;
-  /** The accessible name, when the visible text does not say where the link goes. */
-  label?: string;
-}) {
+export function OutLink(
+  props: OutLinkName & {
+    href: string | null;
+    /** -1 inside a list row that is not the list's Tab stop (PD-ROWS-11, `ui/rowCursor.ts`). */
+    tabIndex?: -1 | undefined;
+    title?: string;
+  },
+) {
+  const { href, children, tabIndex, title } = props;
   const safe = safeHref(href);
   if (safe === null) return <span className="out">{children}</span>;
 
@@ -100,7 +98,7 @@ export function OutLink({
       rel="noopener noreferrer"
       tabIndex={tabIndex}
       title={title}
-      aria-label={label}
+      aria-label={props.label === undefined ? newTab(props.children) : props.label}
     >
       {children}
     </a>

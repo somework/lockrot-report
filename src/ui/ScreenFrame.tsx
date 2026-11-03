@@ -1,4 +1,5 @@
 import type { ComponentChildren } from "preact";
+import { newTab } from "../domain/rich";
 import "../styles/tokens.css";
 import "../styles/base.css";
 import "./app.css";
@@ -21,7 +22,12 @@ export function ScreenFrame({ banner, headingId, children }: ScreenFrameProps) {
           <div className="brand">
             <span className="dot" aria-hidden="true" />
             <p className="screen-brand">
-              <a href="https://lockrot.dev/" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://lockrot.dev/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={newTab("lockrot")}
+              >
                 lockrot
               </a>
             </p>

@@ -1,15 +1,16 @@
-import type { ComponentChildren, RefObject } from "preact";
+import type { RefObject } from "preact";
 import { useLayoutEffect } from "preact/hooks";
 import { day } from "../domain/format";
+import { newTab } from "../domain/rich";
 import { useReport } from "./context";
 import { useMeasuredHeight } from "./useMeasuredHeight";
 
 export const HTML_COMMAND = "composer lockrot --format=html > report.html";
 
 /** A footer link: always to a fixed lockrot address, never to anything from the document. */
-function Lnk({ href, children }: { href: string; children: ComponentChildren }) {
+function Lnk({ href, children }: { href: string; children: string }) {
   return (
-    <a className="lnk" href={href} target="_blank" rel="noopener noreferrer">
+    <a className="lnk" href={href} target="_blank" rel="noopener noreferrer" aria-label={newTab(children)}>
       {children}
     </a>
   );
