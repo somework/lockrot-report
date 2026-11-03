@@ -464,3 +464,51 @@ describe("the move check in Held by and on the ladder (coordinator rulings on #4
     );
   });
 });
+
+describe("the flag readings of an open set that no model case reaches", () => {
+  const readingOf = (finding: Finding, run: Run, flag: string): string => {
+    const block = verdictBlock(finding, run, null);
+    const found = [block.inline, ...block.readings].find((r) => r?.flag === flag);
+    if (found == null) throw new Error(`no ${flag} reading`);
+    return plain(readingRich(found, false));
+  };
+  const dataOf = (finding: Finding, id: string): Record<string, unknown> => {
+    const signal = finding.signals.find((s) => s.id === id);
+    if (signal === undefined) throw new Error(`the case has no ${id}`);
+    return signal.data;
+  };
+
+  test("G18: a marking in composer.lock reads 'in composer.lock'", () => {
+    const { finding, run } = modelCase("hoa-tokenless-dagger");
+    dataOf(finding, "S1").marked_by = "lock";
+
+    expect(readingOf(finding, run, "abandoned")).toMatch(
+      /^[Ii]t is marked abandoned in composer\.lock\. No replacement is named\.$/,
+    );
+  });
+
+  test("G25: a pin with no stable release reads its S6 version as not a tagged release", () => {
+    const { finding, run } = modelCase("no-tag-dagger");
+    const s6 = dataOf(finding, "S6");
+    s6.reason = "no_stable_release";
+    s6.version = "1.0.0-beta3";
+
+    expect(readingOf(finding, run, "pinned")).toMatch(
+      /^[Ii]t is installed as 1\.0\.0-beta3, not a tagged release\.$/,
+    );
+  });
+
+  test.each([
+    ["stale-only", "push"],
+    ["either-low-dev-dagger", "commit"],
+  ])("G23: a stale flag decided by push in %s names the activity event %s", (name, event) => {
+    const { finding, run } = modelCase(name);
+    const stale = finding.flags.find((f) => f.id === "stale");
+    if (stale === undefined) throw new Error(`${name} is stale`);
+    stale.headline = { unit: "years", value: 2.4, source: "push" };
+
+    expect(readingOf(finding, run, "stale")).toMatch(
+      new RegExp(`^[Tt]here has been no ${event} for 2\\.4 years\\.$`),
+    );
+  });
+});
