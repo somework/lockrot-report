@@ -320,11 +320,11 @@
   }
   /* A common name, version or age keeps to a line or two; only an outlier breaks inside a word. */
   .pd .tablewrap td.p2-name {
-    min-width: 10em;
+    min-width: 8em;
   }
   .pd .tablewrap td.p2-ver,
   .pd .tablewrap td.p2-age {
-    min-width: 7em;
+    min-width: 6em;
   }
   .pd .tablewrap thead {
     display: table-header-group;
