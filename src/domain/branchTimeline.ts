@@ -103,7 +103,7 @@ function lanesOf(finding: Finding, metadata: RepositoryMetadata | null): BranchL
       move: moveBranch !== null && row.branch === moveBranch,
       newest: i === 0 && !row.installed,
       datedBy: row.installed ? (release?.dated_by ?? null) : row.dated_by,
-      atMost: !row.installed && row.highest_released === null && years !== 0,
+      atMost: !row.installed && row.highest_released === null,
       age: shortAge(years),
       foldedIn: folded[i] ?? null,
     };

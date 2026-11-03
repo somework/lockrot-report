@@ -102,7 +102,7 @@ describe("a higher branch dated by a commit its tags share (R9-42, SIGNALS-10 Q1
     ).toBe("v4.9.0, released less than three weeks ago");
   });
 
-  test("G145: the lead keeps at most at 0 years, as the SPEC row words it", () => {
+  test("G145: the lead drops at most at 0 years, as G146 does (RENDER-10C Q1)", () => {
     const { finding, metadata } = structuredClone(modelCase("pagerfanta"));
     const s8 = finding.signals.find((s) => s.id === "S8")?.data as
       { reachable_years: number | null; newest_years: number } | undefined;
@@ -111,7 +111,7 @@ describe("a higher branch dated by a commit its tags share (R9-42, SIGNALS-10 Q1
     if (s8.reachable_years !== null) s8.reachable_years = 0;
 
     expect(branchesLead(finding, metadata)[1]).toBe(
-      "The move's branch, 4.x, released v4.9.0 at most less than three weeks ago.",
+      "The move's branch, 4.x, released v4.9.0 less than three weeks ago.",
     );
   });
 

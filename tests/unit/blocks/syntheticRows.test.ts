@@ -96,6 +96,17 @@ describe("the left-behind reading of a branch dated by a commit its tags share (
     expect(readingTexts(finding, run, null)[0]).toMatch(/released v\S+ at most 0\.1 years ago\.$/);
   });
 
+  test("G29: drops at most when the newest branch released 0 years ago (RENDER-10C Q1)", () => {
+    const { finding, run } = modelCase("B");
+    const s8 = s8Of(finding);
+    s8.reachable_branch = null;
+    s8.newest_php = null;
+    s8.newest_release_at_least = true;
+    s8.newest_years = 0;
+
+    expect(readingTexts(finding, run, null)[0]).toMatch(/released v\S+ less than three weeks ago\.$/);
+  });
+
   test("reads the bound of the branch it names, not the other one", () => {
     const { finding, run } = modelCase("B");
     s8Of(finding).newest_release_at_least = true;
