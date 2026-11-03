@@ -103,7 +103,9 @@ describe("The lock entry reference", () => {
     });
 
     const safe = open(B, withLink("https://github.com/symfony/monolog-bridge"));
-    const anchor = within(safe).getByRole("link", { name: "https://github.com/symfony/monolog-bridge" });
+    const anchor = within(safe).getByRole("link", {
+      name: "https://github.com/symfony/monolog-bridge, opens in a new tab",
+    });
     expect(anchor.getAttribute("href")).toBe("https://github.com/symfony/monolog-bridge");
     cleanup();
 

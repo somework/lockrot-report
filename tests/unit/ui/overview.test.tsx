@@ -650,6 +650,36 @@ describe("the PHP state line's link (R4-29)", () => {
       expect(document.activeElement).toBe(screen.getByRole("heading", { name: "PHP window", level: 3 }));
     });
   });
+
+  test("the section key opens How the score works at its heading", async () => {
+    history.replaceState(null, "", "/report.html#view=run&section=how-the-score-works");
+
+    render(<App model={wallabag()} />);
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(
+        screen.getByRole("heading", { name: /^How the score works/, level: 3 }),
+      );
+    });
+  });
+
+  test("a section key that names another element of the page moves neither focus nor scroll", async () => {
+    const root = document.body.appendChild(document.createElement("div"));
+    root.id = "lockrot-app";
+    const scrolled = vi.spyOn(HTMLElement.prototype, "scrollIntoView").mockImplementation(() => undefined);
+    history.replaceState(null, "", "/report.html#view=run&section=lockrot-app");
+    try {
+      render(<App model={wallabag()} />, { container: root });
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
+      expect(screen.getByRole("tab", { selected: true }).textContent).toMatch(/^Run data/);
+      expect(document.activeElement?.tagName).not.toBe("H3");
+      expect(scrolled).not.toHaveBeenCalled();
+    } finally {
+      scrolled.mockRestore();
+      root.remove();
+    }
+  });
 });
 
 describe("a count in a state line links to its list (R4-27)", () => {

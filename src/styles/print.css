@@ -356,10 +356,6 @@
   .pd .tablewrap .lnk {
     border-bottom: 0;
   }
-  /* Short values keep to one line; the package name is the one that wraps. */
-  .pd .tablewrap td:not(:first-child) {
-    white-space: nowrap;
-  }
   .pd .tablewrap .pill {
     font-size: var(--text-xs);
     padding: 1px 4px;

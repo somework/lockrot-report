@@ -308,25 +308,23 @@
   }
 }
 
-/* On paper the table has a page's width (print.css sets its type and padding): the pills wrap
-   onto lines of their own inside Flags, so no pill crosses into Reached, and a name breaks only
-   after its vendor's slash. `:not(:first-child)` matches print.css's own `.pd .tablewrap td`
-   rules, which keep short values on one line, so these outrank them. */
+/* On paper every cell wraps (print.css), so the table fits A4 whatever the lock holds; a name breaks
+   after its slash, then at a hyphen. */
 @media print {
-  /* Wide enough for the widest single pill, so pills stack whole and none wraps inside. */
-  .pd .tablewrap td.p2-flags:not(:first-child) {
-    white-space: normal;
-    min-width: 15em;
-  }
   .pd .tablewrap td.p2-flags .fp {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     margin-block: 1px;
   }
-  .pd .tablewrap td.p2-name:first-child {
-    overflow-wrap: normal;
-  }
   .pd .tablewrap .p2-unit {
-    white-space: nowrap;
+    white-space: normal;
+  }
+  /* A common name, version or age keeps to a line or two; only an outlier breaks inside a word. */
+  .pd .tablewrap td.p2-name {
+    min-width: 8em;
+  }
+  .pd .tablewrap td.p2-ver,
+  .pd .tablewrap td.p2-age {
+    min-width: 6em;
   }
   .pd .tablewrap thead {
     display: table-header-group;

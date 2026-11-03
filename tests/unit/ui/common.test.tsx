@@ -35,7 +35,7 @@ describe("OutLink", () => {
   it("opens a safe address in a new tab without handing the page to it", () => {
     render(<OutLink href="https://lockrot.dev/verdicts/">the docs</OutLink>);
 
-    const link = screen.getByRole("link", { name: "the docs" });
+    const link = screen.getByRole("link", { name: "the docs, opens in a new tab" });
     expect(link.getAttribute("href")).toBe("https://lockrot.dev/verdicts/");
     expect(link.getAttribute("target")).toBe("_blank");
     expect(link.getAttribute("rel")).toBe("noopener noreferrer");

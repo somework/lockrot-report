@@ -2,6 +2,7 @@ import type { ComponentChildren, RefObject } from "preact";
 import { useId, useLayoutEffect } from "preact/hooks";
 import { gateFact, gateHeadline } from "../domain/gate";
 import { DATA_AS_OF, dataDay } from "../domain/share";
+import { newTab } from "../domain/rich";
 import { GateHeadlineText } from "./common/GateWords";
 import { useReport } from "./context";
 import { CopySummary } from "./CopySummary";
@@ -68,7 +69,12 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
         <div className="brand">
           <span className="dot" aria-hidden="true" />
           <h1>
-            <a href="https://lockrot.dev/" target="_blank" rel="noopener noreferrer">
+            <a
+              href="https://lockrot.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={newTab("lockrot")}
+            >
               lockrot
             </a>
           </h1>

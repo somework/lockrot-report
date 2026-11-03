@@ -86,3 +86,20 @@ test.describe("the detail header's out-links", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   });
 });
+
+test.describe("the new-tab cue", () => {
+  for (const view of ["overview", "advisories", "run"]) {
+    test(`every link of the ${view} tab that opens a new tab names it, the sheet, footer and glossary included`, async ({
+      page,
+    }) => {
+      await page.goto(`${report2Url(WALLABAG)}#view=${view}&pkg=${encodeURIComponent(ARCHIVED)}`);
+      await expect(page.locator(`[data-surface="${view}"]`)).toBeVisible();
+      const all = page.locator('a[target="_blank"]');
+      const cued = page.getByRole("link", { name: /, opens in a new tab$/, includeHidden: true });
+
+      const count = await all.count();
+      expect(count).toBeGreaterThan(10);
+      await expect(all.and(cued)).toHaveCount(count);
+    });
+  }
+});

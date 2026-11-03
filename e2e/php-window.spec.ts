@@ -83,6 +83,14 @@ for (const width of [1440, 375]) {
   });
 }
 
+test("an address with section=how-the-score-works opens Run data with focus on that heading", async ({
+  page,
+}) => {
+  await page.goto(report2Url("baselined-wallabag-2.6") + "#view=run&section=how-the-score-works");
+
+  await expect(page.getByRole("heading", { name: /^How the score works/, level: 3 })).toBeFocused();
+});
+
 test("a run whose target is inside the window, with no cap and no override, shows no PHP state line", async ({
   page,
 }) => {

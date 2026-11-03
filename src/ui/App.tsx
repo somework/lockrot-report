@@ -5,11 +5,13 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import { activeFilters } from "../domain/filters";
 import { fitFilters2, population2, renderedPackages2 } from "../domain/list";
 import { skipLinkLabel } from "../domain/pageVocabulary";
+import { PHP_WINDOW_SECTION } from "../domain/runState";
 import type { Model } from "../model/types";
 import type { Action, State } from "../state/types";
 import { ReportContext, useReport } from "./context";
 import { Detail2 } from "./report/Detail";
 import { FindingsStrip } from "./report/FindingsView";
+import { SCORE_SECTION_ID } from "./report/ScoreModelLink";
 import { Footer } from "./Footer";
 import { Glossary, type GlossaryAt } from "./Glossary";
 import { Header } from "./Header";
@@ -29,6 +31,8 @@ import { useNarrow, useRailRoom, useWide } from "./useWide";
 import { CurrentView } from "./views/Views";
 import "./app.css";
 import "../styles/print.css";
+
+const RUN_SECTIONS: readonly string[] = [PHP_WINDOW_SECTION, SCORE_SECTION_ID];
 
 /** Where focus goes once the page re-renders: the row `j`/`k` just walked to, or the one Close or
  *  Escape just closed — by name and position, since a package can have two rows — or the search box
@@ -401,9 +405,9 @@ export function App({ model }: { model: Model }) {
   }, [state.view]);
 
   // The `section` key opens Run data at that section, from a link, a pasted address or a
-  // `hashchange` (SPEC §7.9.16). It does nothing when the run has no such section.
+  // `hashchange` (SPEC §7.9.16). Any other value, or a section the run lacks, does nothing.
   useEffect(() => {
-    if (state.view !== "run" || state.section === null) return;
+    if (state.view !== "run" || state.section === null || !RUN_SECTIONS.includes(state.section)) return;
     const heading = document.getElementById(state.section)?.querySelector<HTMLElement>("h3");
     if (heading == null) return;
     if (typeof heading.scrollIntoView === "function") heading.scrollIntoView({ block: "start" });

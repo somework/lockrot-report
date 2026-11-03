@@ -66,14 +66,17 @@ function PackageRow({
   report,
   hideAccepted,
   showData,
+  scoreHead,
 }: {
   finding: Finding;
   report: Report2;
   hideAccepted: boolean;
   showData: boolean;
+  scoreHead: string;
 }) {
   const { state, dispatch, cursor } = useReport();
   const run: Run = report.run;
+  const id = useId();
   const graded = run.graded_verdicts.some((verdict) => verdict === finding.verdict);
   return (
     <tr
@@ -81,6 +84,7 @@ function PackageRow({
       className={graded ? `p2-row ${toneClass(gradeTone(finding.verdict))}` : "p2-row is-ungraded"}
       data-pkg={finding.package}
       aria-label={finding.package}
+      aria-describedby={`${scoreHead} ${id}-score ${id}-verdict`}
       aria-current={state.pkg === finding.package ? "true" : undefined}
       tabIndex={rowTabIndex(finding.package, cursor)}
       {...openInteractions(finding.package, dispatch)}
@@ -97,10 +101,10 @@ function PackageRow({
       <td role="cell" className="p2-age" data-label={label("age")}>
         <Measured cell={installedAge(finding)} />
       </td>
-      <td role="cell" className="p2-verdict" data-label={label("verdict")}>
+      <td role="cell" className="p2-verdict" id={`${id}-verdict`} data-label={label("verdict")}>
         {finding.verdict}
       </td>
-      <td role="cell" className="num p2-score" data-label={label("score")}>
+      <td role="cell" className="num p2-score" id={`${id}-score`} data-label={label("score")}>
         {finding.score.total}
       </td>
       <td role="cell" className="p2-flags" data-label={label("flags")}>
@@ -165,6 +169,7 @@ export function PackagesView2() {
   const columns = PACKAGES_COLUMNS.filter((column) => showData || column.key !== "data");
   const hideAccepted = state.filters.accepted.includes(HIDE_ACCEPTED);
   const hintId = `${useId()}-hint`;
+  const scoreHead = `${hintId}-score`;
   if (rows.length === 0) {
     return (
       <section className="p2" data-surface="packages">
@@ -201,6 +206,7 @@ export function PackagesView2() {
                   <th
                     key={column.key}
                     role="columnheader"
+                    id={column.key === "score" ? scoreHead : undefined}
                     className={`p2-h-${column.key}`}
                     aria-sort={active ? (state.sortDesc ? "descending" : "ascending") : "none"}
                   >
@@ -235,6 +241,7 @@ export function PackagesView2() {
                 report={report}
                 hideAccepted={hideAccepted}
                 showData={showData}
+                scoreHead={scoreHead}
               />
             ))}
           </tbody>

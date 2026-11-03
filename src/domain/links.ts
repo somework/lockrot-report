@@ -1,6 +1,7 @@
 /** URLs the page may put in an `href`, or `null` when it may not. */
 
 import type { Finding } from "../model/report";
+import { newTab } from "./rich";
 
 /**
  * The scheme allowlist is the control against a `javascript:` URL in data the page did not write;
@@ -18,8 +19,6 @@ export interface HeaderLink {
   text: string;
   name: string;
 }
-
-const NEW_TAB = ", opens in a new tab";
 
 /** The host the browser goes to, as its own URL parser reads it, without `www.`. */
 function hostOf(url: string): string | null {
@@ -43,7 +42,7 @@ export function headerLinks(
   const host = repo === null ? null : hostOf(repo);
   if (repo !== null && host !== null) {
     const archived = activity.archived === true ? " (archived)" : "";
-    links.push({ href: repo, text: `${host} ↗${archived}`, name: `${host} repository${archived}${NEW_TAB}` });
+    links.push({ href: repo, text: `${host} ↗${archived}`, name: newTab(`${host} repository${archived}`) });
   }
   const registry = safeHref(origin.package_url);
   if (registry !== null) {
@@ -51,7 +50,7 @@ export function headerLinks(
     links.push({
       href: registry,
       text: `${origin.registry ?? page} ↗`,
-      name: `${page} of this package${NEW_TAB}`,
+      name: newTab(`${page} of this package`),
     });
   }
   return links;

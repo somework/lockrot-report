@@ -23,6 +23,7 @@ import { gradeTone, heldByLine, moreWord, reachLine } from "../../domain/finding
 import { advisoryAffects } from "../../domain/securityBlock";
 import { applyFilters2, population2 } from "../../domain/list";
 import { day, plural } from "../../domain/format";
+import { newTab } from "../../domain/rich";
 import type { Report2 } from "../../model/report";
 import { EMPTY_FILTERS } from "../../state/types";
 import { useReport } from "../context";
@@ -68,6 +69,7 @@ function Ids({
             href={href}
             target="_blank"
             rel="noopener noreferrer"
+            aria-label={newTab(text)}
             tabIndex={tabIndex}
           >
             {text}

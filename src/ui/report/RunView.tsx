@@ -1,5 +1,5 @@
 import { RichText } from "./RichText";
-import type { Rich } from "../../domain/rich";
+import { newTab, type Rich } from "../../domain/rich";
 import { useId, useRef } from "preact/hooks";
 import { useOverflowX } from "../useOverflowX";
 import {
@@ -132,7 +132,7 @@ function ScoreWorks({ report, opened }: { report: Report2; opened: string | null
   const printed = usePrinted();
   return (
     <section className="sect run2-score" id={SCORE_SECTION_ID} tabIndex={-1} aria-label={parts.title}>
-      <h3>{parts.title}</h3>
+      <h3 tabIndex={-1}>{parts.title}</h3>
       <Ruler model={run.score_model} />
       <p className="run2-caption">{parts.bands}</p>
       <p className="run2-caption">{parts.zero}</p>
@@ -147,7 +147,9 @@ function ScoreWorks({ report, opened }: { report: Report2; opened: string | null
             <li key={rule.id} className={rule.muted ? "run2-rule is-muted" : "run2-rule"}>
               <span className="run2-rule-no">{rule.stage}</span>
               <span className="run2-rule-body">
-                <OutLink href={rule.href}>{rule.known ? rule.label : <code>{rule.label}</code>}</OutLink>
+                <OutLink href={rule.href} label={newTab(rule.label)}>
+                  {rule.known ? rule.label : <code>{rule.label}</code>}
+                </OutLink>
                 {rule.text !== "" && <span className="run2-rule-text"> {rule.text}</span>}
               </span>
               {rule.used !== "" && <span className="run2-rule-used">{rule.used}</span>}

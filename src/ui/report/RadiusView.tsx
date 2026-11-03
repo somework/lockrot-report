@@ -54,18 +54,22 @@ interface ChildProps {
 
 function ChildRow2({ finding, depth, note, report, first }: ChildProps) {
   const { state, dispatch, cursor } = useReport();
+  const id = useId();
   return (
     <li
       className={`r2-kid ${toneClass(gradeTone(finding.verdict))}`}
       style={{ "--depth": String(depth) }}
       data-pkg={finding.package}
       aria-label={finding.package}
+      aria-describedby={`${id}-score ${id}-grade`}
       aria-current={state.pkg === finding.package ? "true" : undefined}
       tabIndex={rowTabIndex(finding.package, cursor, first)}
       {...openInteractions(finding.package, dispatch)}
     >
-      <span className="r2-grade">{finding.verdict}</span>
-      <span className="r2-score">
+      <span className="r2-grade" id={`${id}-grade`}>
+        {finding.verdict}
+      </span>
+      <span className="r2-score" id={`${id}-score`}>
         <span className="r2-lbl">score</span> {finding.score.total}
       </span>
       <Name dev={finding.dev} pkg={finding.package} version={finding.version} />
@@ -96,8 +100,14 @@ function ParentRow2({
   const printed = usePrinted();
   const canOpen = row.count > 0;
   const open = canOpen && (printed || isRowOpen(layout, row, input));
-  const kidsId = `${useId()}-kids`;
+  const id = useId();
+  const kidsId = `${id}-kids`;
   const facts = radiusRowFacts(report, row);
+  const described = [
+    ...(row.self === null ? [] : [`${id}-self`]),
+    ...(facts.count === null ? [] : [`${id}-count`]),
+    ...(facts.mix === null && facts.note === null ? [] : [`${id}-mix`]),
+  ].join(" ");
   const toggle = (event: Event) => {
     event.stopPropagation();
     dispatch({ type: "disclose", key: rowKey(row.package), open: !open });
@@ -107,6 +117,7 @@ function ParentRow2({
       className={open ? "r2-row is-open" : "r2-row"}
       data-pkg={row.package}
       aria-label={row.package}
+      aria-describedby={described}
       aria-current={state.pkg === row.package ? "true" : undefined}
       tabIndex={rowTabIndex(row.package, cursor, first.has(parentKey2(row.package)))}
       {...openInteractions(row.package, dispatch)}
@@ -118,18 +129,18 @@ function ParentRow2({
         <span className="r2-head">
           <Name dev={row.dev} pkg={row.package} version={row.version} />
           {row.self !== null && (
-            <span className={`r2-self ${toneClass(gradeTone(row.self.verdict))}`}>
+            <span className={`r2-self ${toneClass(gradeTone(row.self.verdict))}`} id={`${id}-self`}>
               {RADIUS_WORDS.itself(row.self.verdict)}
             </span>
           )}
         </span>
         {facts.count !== null && (
-          <span className="r2-count">
+          <span className="r2-count" id={`${id}-count`}>
             <span className="r2-n">{facts.count}</span> <span className="r2-unit">flagged</span>
           </span>
         )}
         {(facts.mix !== null || facts.note !== null) && (
-          <span className="r2-mix">
+          <span className="r2-mix" id={`${id}-mix`}>
             {facts.mix ?? facts.note}
             {row.count > 0 && row.unfiltered > row.count && (
               <span className="r2-also"> · {RADIUS_WORDS.filtered(row.unfiltered - row.count)}</span>

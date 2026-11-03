@@ -21,6 +21,7 @@ import {
 } from "../../domain/findingRow";
 import { decimal } from "../../domain/format";
 import { safeHref } from "../../domain/links";
+import { newTab } from "../../domain/rich";
 import { READY_WORD, readyToRun } from "../../domain/readyToRun";
 import { commandWords } from "../../domain/shellArgv";
 import type { AgeAxis } from "../../domain/age";
@@ -143,6 +144,7 @@ function NextStep({ finding, run }: { finding: Finding; run: Run }) {
             className="lnk"
             href={href}
             title={title}
+            aria-label={newTab(words.text)}
             target="_blank"
             rel="noopener noreferrer"
             tabIndex={innerTabIndex(finding.package, cursor)}
