@@ -534,29 +534,40 @@ describe("the Release branches timeline", () => {
     ).toEqual([
       "8.x, the newest",
       "2 between the newest branch and yours",
-      "7.x",
-      "6.x",
       "5.x the move",
       "2 between the newest branch and yours",
-      "4.x",
-      "3.x",
       "2.x yours",
     ]);
     expect(table.querySelectorAll(".detail-timeline-guide-cap")).toHaveLength(2);
   });
 
-  test("keeps a folded row in the table, and opens the fold on click", () => {
+  test("hides a folded row from the accessibility tree and from focus, and one click on its fold shows it", () => {
     const sheet = openCase("B");
     const table = within(sheet).getByRole("table");
     const [first] = within(table).getAllByRole("button", { name: /^2 between/ });
     const folded = (): string[] =>
       [...table.querySelectorAll(".is-collapsed")].map((row) => row.getAttribute("data-branch") ?? "");
+    const named = (): string[] =>
+      within(table)
+        .getAllByRole("rowheader")
+        .map((h) => h.textContent);
 
     expect(folded()).toEqual(["7.x", "6.x", "4.x", "3.x"]);
-    expect(table.querySelector("[aria-hidden='true'][role='row']")).toBeNull();
+    for (const row of table.querySelectorAll(".is-collapsed")) {
+      expect(row.getAttribute("aria-hidden")).toBe("true");
+      expect(row.hasAttribute("inert")).toBe(true);
+    }
+    expect(first?.getAttribute("aria-expanded")).toBe("false");
+    expect(named()).not.toContain("7.x");
+    expect(named()).not.toContain("3.x");
+
     fireEvent.click(first as HTMLElement);
 
     expect(first?.getAttribute("aria-expanded")).toBe("true");
     expect(folded()).toEqual(["4.x", "3.x"]);
+    expect(table.querySelector("[data-branch='7.x']")?.hasAttribute("aria-hidden")).toBe(false);
+    expect(table.querySelector("[data-branch='7.x']")?.hasAttribute("inert")).toBe(false);
+    expect(named()).toContain("7.x");
+    expect(named()).not.toContain("4.x");
   });
 });

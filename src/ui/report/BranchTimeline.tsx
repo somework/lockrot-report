@@ -64,7 +64,13 @@ function LaneRow({ lane, span, guides, level, folded = false, collapsed = false 
   ].join(" ");
   const words = laneWords(lane);
   return (
-    <div role="row" className={classes} data-branch={lane.branch}>
+    <div
+      role="row"
+      className={classes}
+      data-branch={lane.branch}
+      aria-hidden={collapsed || undefined}
+      inert={collapsed || undefined}
+    >
       <span role="rowheader" className="detail-timeline-branch">
         {lane.branch}
         {lane.newest && <Sr>{TIMELINE_WORDS.newest}</Sr>}

@@ -159,7 +159,7 @@ test.describe("symfony/yaml, a range string past RANGE_INLINE_MAX (case E)", () 
 });
 
 test.describe("enshrined/svg-sanitize, a 23-branch timeline (baselined wallabag 2.6)", () => {
-  test("keeps all 23 branches in the table and names each fold by the rows it holds", async ({ page }) => {
+  test("keeps all 23 branches in the markup and names each fold by the rows it holds", async ({ page }) => {
     const sheet = await openDetail2(page, "baselined-wallabag-2.6", "enshrined/svg-sanitize");
     const table = sheet.getByRole("table", { name: "Release branches" });
     const folds = await table.locator(".detail-timeline-fold-btn").evaluateAll((buttons) =>
@@ -181,12 +181,18 @@ test.describe("enshrined/svg-sanitize, a 23-branch timeline (baselined wallabag 
     expect(folds.map(([shown]) => shown)).toEqual(folds.map(([, rows]) => rows));
   });
 
-  test("a fold opens by keyboard, and its rows lose their clip", async ({ page }) => {
+  test("a fold opens by keyboard, and its rows leave the clip and enter the accessibility tree", async ({
+    page,
+  }) => {
     const sheet = await openDetail2(page, "baselined-wallabag-2.6", "enshrined/svg-sanitize");
     const button = sheet.locator(".detail-timeline-fold-btn").first();
     const collapsed = sheet.locator(".detail-timeline-row.is-collapsed");
     const before = await collapsed.count();
     const folded = Number.parseInt((await button.textContent()) ?? "", 10);
+
+    await expect(collapsed.first()).toHaveAttribute("aria-hidden", "true");
+    await expect(collapsed.first()).toHaveAttribute("inert", "");
+    const readBefore = await sheet.getByRole("table", { name: "Release branches" }).getByRole("row").count();
 
     await button.focus();
     await page.keyboard.press("Enter");
@@ -194,6 +200,9 @@ test.describe("enshrined/svg-sanitize, a 23-branch timeline (baselined wallabag 
     await expect(button).toHaveAttribute("aria-expanded", "true");
     await expect(collapsed).toHaveCount(before - folded);
     expect(folded).toBeGreaterThan(0);
+    await expect(sheet.getByRole("table", { name: "Release branches" }).getByRole("row")).toHaveCount(
+      readBefore + folded,
+    );
   });
 });
 
