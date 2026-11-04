@@ -485,6 +485,36 @@ describe("the unchecked words (SPEC §7.9.4, §7.9.9)", () => {
     });
   });
 
+  it("prints a reason shared by two unchecked findings once", () => {
+    const r = report([stuck("a/a", null, unchecked), stuck("b/b", null, unchecked)], true);
+    expect(wayOutLine(r)).toBe("2 need another way out: 2 unchecked: the advisory check did not run");
+  });
+
+  it("prints each distinct reason of the unchecked findings once, in finding order", () => {
+    const r = report(
+      [stuck("a/a", null, unchecked), missing("releases"), stuck("c/c", null, unchecked)],
+      true,
+    );
+    expect(wayOutLine(r)).toBe(
+      "3 need another way out: 3 unchecked: the advisory check did not run, releases not checked",
+    );
+  });
+
+  it.each([
+    ["not_run", "the advisory check did not run"],
+    ["complete", "a check did not run"],
+  ])(
+    "falls back for an unchecked signal no missing check blocks, with the security check %s",
+    (check, words) => {
+      const unmatched = {
+        ...missing("releases"),
+        checks_missing: [{ check: "releases", reason: "undated_releases", blocks: ["S5"] }],
+        security: { check },
+      } as unknown as Finding;
+      expect(wayOutLine(report([unmatched], true))).toBe(`1 needs another way out: 1 unchecked: ${words}`);
+    },
+  );
+
   it("reads lockrot's ok-unchecked recording in the check words", () => {
     const recorded = readContractJson("report-2", "ok-unchecked.json") as Report2;
     expect(wayOutLine(recorded)).toBe("1 fails the gate as unchecked: release dates not checked.");
