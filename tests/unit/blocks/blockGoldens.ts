@@ -112,8 +112,8 @@ export function blockGolden(
         caption: s.caption,
         groups: s.groups.map(({ severity, count, words, open }) => ({ severity, count, words, open })),
         rows: s.rows.map((r) => ({
-          name: r.name,
-          source: r.source,
+          name: r.ids[0]?.text,
+          source: r.ids[1]?.text ?? null,
           deciding: r.deciding,
           severity: r.severity,
           fix: r.fix,

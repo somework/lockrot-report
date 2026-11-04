@@ -14,11 +14,11 @@ import type {
   Severity,
 } from "../model/report";
 import { isScoreGraded, isSecurityVulnerable } from "../model/report";
+import { advisorySourceIds } from "./advisories";
 import { advisoryRows } from "./advisoryRows";
 import { pluralNoun } from "./format";
 import { compareHolds } from "./holdRank";
 import { joinAnd } from "./joinWords";
-import { safeHref } from "./links";
 import { fixLabel, lookupWord, stoppedCheckWords } from "./pageVocabulary";
 import { vocabTable } from "./vocab";
 import { newTab, type Rich } from "./rich";
@@ -229,11 +229,15 @@ export interface AdvisoryAffects {
   readonly parts: readonly string[];
 }
 
-export interface AdvisoryItem {
-  readonly name: string;
+export interface AdvisoryItemId {
+  readonly text: string;
   readonly href: string | null;
   readonly linkName: string;
-  readonly source: string | null;
+}
+
+export interface AdvisoryItem {
+  /** The CVE id, then the source id when it differs: only the id that the advisory's link belongs to links. */
+  readonly ids: readonly AdvisoryItemId[];
   readonly deciding: boolean;
   readonly severity: Severity;
   readonly fix: string;
@@ -302,12 +306,8 @@ export function securityBlock(
   const rows = sorted.map((row, at): AdvisoryItem => {
     const first = row.cve ? firstOfCve.get(row.cve) : undefined;
     if (row.cve && first === undefined) firstOfCve.set(row.cve, at);
-    const name = row.cve ?? row.id;
     return {
-      name,
-      href: safeHref(row.link),
-      linkName: newTab(name),
-      source: row.cve !== null && row.cve !== row.id ? row.id : null,
+      ids: advisorySourceIds(row).map(({ text, href }) => ({ text, href, linkName: newTab(text) })),
       deciding: row.deciding,
       severity: row.severity,
       fix: advisoryFixWords(row.fix),

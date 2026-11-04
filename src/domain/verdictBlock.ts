@@ -5,6 +5,7 @@
 
 import type { Finding, FindingFlag, RepositoryMetadata, Run, ScoreGraded, Severity } from "../model/report";
 import { isScoreGraded, isSecurityVulnerable, isTermSecurity } from "../model/report";
+import { type AdvisoryId, advisorySourceIds } from "./advisories";
 import { advisoryRows } from "./advisoryRows";
 import { ago, agoAtMost } from "./ago";
 import { countedFlagIds } from "./countedFlags";
@@ -57,10 +58,10 @@ export interface Reading {
   /** "62 advisories", which links to the Security row. */
   readonly count: string | null;
   readonly text: string;
+  /** The CVE id, then the source id when it differs: only the id that the advisory's link belongs to links. */
   readonly advisory: {
-    readonly name: string;
+    readonly ids: readonly AdvisoryId[];
     readonly title: string | null;
-    readonly href: string | null;
   } | null;
   readonly after: string | null;
   readonly jump: string | null;
@@ -169,7 +170,7 @@ function vulnerableReading(finding: Finding, flag: FindingFlag, run: Run, ctx: S
       : ` affect your version. The ${worst} is ${severityPhrase(run, term.severity, false)}`,
     {
       count: n === 1 ? null : `${n} advisories`,
-      advisory: { name: deciding.cve ?? deciding.id, title: deciding.title, href: safeHref(deciding.link) },
+      advisory: { ids: advisorySourceIds(deciding), title: deciding.title },
       after: branchFixWords(finding, n, ctx.installedRung),
     },
   );
@@ -243,9 +244,10 @@ export function readingRich(r: Reading, withJump = true): Rich {
       ? []
       : [
           " (",
-          advisory.href === null
-            ? advisory.name
-            : { href: advisory.href, text: advisory.name, name: newTab(advisory.name) },
+          ...advisory.ids.flatMap(({ text, href }, at) => [
+            ...(at > 0 ? [" "] : []),
+            href === null ? text : { href, text, name: newTab(text) },
+          ]),
           advisory.title === null ? ")" : `: ${advisory.title})`,
         ]),
     ...(r.after === null ? [] : [`. ${r.after}`]),

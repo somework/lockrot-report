@@ -802,6 +802,7 @@
     border-bottom: none;
   }
   a.d3-adv-id::after,
+  a.d3-adv-src::after,
   .detail-head-line a.out::after {
     content: " " attr(href);
     font: 400 var(--text-xs) var(--mono);

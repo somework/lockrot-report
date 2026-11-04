@@ -71,6 +71,8 @@ function Affects({ affects, advisory }: { affects: AdvisoryAffects; advisory: st
   );
 }
 
+const idClass = (at: number): string => (at === 0 ? "d3-adv-id" : "d3-adv-src");
+
 interface RowProps {
   row: AdvisoryItem;
   rowId: (at: number) => string;
@@ -86,25 +88,24 @@ function AdvisoryRow({ row, rowId, at, run, withTag, reveal }: RowProps) {
     <li className="d3-adv" id={rowId(at)}>
       <div className="d3-adv-head">
         {withTag && <>{severityTag(run, row.severity)} </>}
-        {row.href === null ? (
-          <span className="d3-adv-id">{row.name}</span>
-        ) : (
-          <a
-            className="lnk d3-adv-id"
-            href={row.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={row.linkName}
-          >
-            {row.name}
-          </a>
-        )}
-        {row.source !== null && (
-          <>
-            {" "}
-            <span className="d3-adv-src">{row.source}</span>
-          </>
-        )}
+        {row.ids.map((id, i) => (
+          <Fragment key={id.text}>
+            {i > 0 && " "}
+            {id.href === null ? (
+              <span className={idClass(i)}>{id.text}</span>
+            ) : (
+              <a
+                className={`lnk ${idClass(i)}`}
+                href={id.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={id.linkName}
+              >
+                {id.text}
+              </a>
+            )}
+          </Fragment>
+        ))}
         {row.deciding && (
           <>
             {" "}
@@ -117,7 +118,7 @@ function AdvisoryRow({ row, rowId, at, run, withTag, reveal }: RowProps) {
         {row.affects !== null && (
           <>
             <span className="d3-adv-sep">{SECURITY_WORDS.separator}</span>
-            <Affects affects={row.affects} advisory={row.source ?? row.name} />
+            <Affects affects={row.affects} advisory={row.ids.at(-1)?.text ?? ""} />
           </>
         )}
         {sameAs !== null && (
