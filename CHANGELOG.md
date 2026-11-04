@@ -400,7 +400,7 @@ project is overall, and the other tabs lead with their own part.
   text. The detail sheet's Security list and the verdict line now follow the rule that the
   Advisories tab follows. Before, they gave the CVE id the link to the source advisory's page. The
   verdict line names the deciding advisory by both ids, as in "(CVE-2026-45077
-  GHSA-…: title)", so the link has a place.
+  PKSA-4wjj-gy1p-ft3r: …)", so the link has a place.
 - A folded row of the Release branches table is out of the accessibility tree while it is folded.
   A screen reader now reads only the rows that an open fold shows.
 - A run where Composer cannot load composer.json checks no advisories, and the page says why: "S9
