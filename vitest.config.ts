@@ -18,7 +18,7 @@ export default defineConfig({
       reporter: ["text-summary", "json-summary"],
       // Floors at the first measurement: raise one when a change lifts its glob, never lower it.
       thresholds: {
-        "src/domain/**": { lines: 98, statements: 98, functions: 99, branches: 89 },
+        "src/domain/**": { lines: 99, statements: 99, functions: 99, branches: 90 },
         "src/state/**": { lines: 100, statements: 100, functions: 100, branches: 98 },
         "src/model/**": { lines: 97, statements: 97, functions: 100, branches: 93 },
         "src/ui/**": { lines: 94, statements: 92, functions: 93, branches: 87 },
