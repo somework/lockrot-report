@@ -12,6 +12,7 @@ import {
 } from "../../domain/branchTimeline";
 import { barParts } from "../../domain/securityBlock";
 import { toneClass } from "../common/common";
+import { usePrinted } from "../print/printContext";
 import "../detail/timeline.css";
 import "../detail/timeline-forced.css";
 
@@ -62,14 +63,17 @@ function LaneRow({ lane, span, guides, level, folded = false, collapsed = false 
     ...(collapsed ? ["is-collapsed"] : []),
     ...(tone === null ? [] : ["is-toned", toneClass(tone)]),
   ].join(" ");
+  const printed = usePrinted();
   const words = laneWords(lane);
+  // Paper prints a folded row in full (sheet.css), so it stays in the tree there.
+  const hidden = collapsed && !printed;
   return (
     <div
       role="row"
       className={classes}
       data-branch={lane.branch}
-      aria-hidden={collapsed || undefined}
-      inert={collapsed || undefined}
+      aria-hidden={hidden || undefined}
+      inert={hidden || undefined}
     >
       <span role="rowheader" className="detail-timeline-branch">
         {lane.branch}

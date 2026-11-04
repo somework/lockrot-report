@@ -7,6 +7,7 @@ import { normalize } from "../../../src/model/normalize";
 import type { Report2Embed } from "../../../src/model/report";
 import type { Model } from "../../../src/model/types";
 import { App } from "../../../src/ui/App";
+import { PrintContext } from "../../../src/ui/print/printContext";
 
 const golden = (stringClass: string, name: string): unknown =>
   (
@@ -569,5 +570,25 @@ describe("the Release branches timeline", () => {
     expect(table.querySelector("[data-branch='7.x']")?.hasAttribute("inert")).toBe(false);
     expect(named()).toContain("7.x");
     expect(named()).not.toContain("4.x");
+  });
+
+  test("keeps every folded row in the accessibility tree on paper, where it prints in full", () => {
+    const embed = assembleEmbed("B");
+    history.replaceState(
+      null,
+      "",
+      `/report.html#pkg=${encodeURIComponent(embed.report.findings[0]?.package ?? "")}`,
+    );
+    render(
+      <PrintContext.Provider value={true}>
+        <App model={modelOf(embed)} />
+      </PrintContext.Provider>,
+    );
+    const table = within(
+      document.querySelector<HTMLElement>('[data-surface="detail"]') as HTMLElement,
+    ).getByRole("table");
+
+    expect(table.querySelectorAll(".is-collapsed")).toHaveLength(4);
+    expect(table.querySelectorAll("[aria-hidden='true'][role='row'], [inert][role='row']")).toHaveLength(0);
   });
 });
