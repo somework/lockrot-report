@@ -47,9 +47,9 @@ jobs:
       # longer be rebuilt from its pin.
       - name: the lockrot pin is on lockrot's main or a lockrot tag
         run: node scripts/contract.mjs reachable
-      # A final release must not publish against a lockrot commit whose own gates did not pass: a full
-      # check, or CI on a push to main. A pre-release is exempt. Its pin is the lockrot commit that
-      # changed the contract bundle, and lockrot's renderer test fails there until lockrot vendors
+      # A final release must not publish against a lockrot commit whose own gates did not pass: a CI
+      # push run on any branch, and either a full check or CI on a push to main. A pre-release is
+      # exempt. Its pin is the lockrot commit that changed the contract bundle, and lockrot's renderer test fails there until lockrot vendors
       # this very pre-release. lockrot's vendoring pull request and its full check gate the pair.
       - name: lockrot's gates passed on the pinned commit
         env:
@@ -59,8 +59,8 @@ jobs:
           pin=$(node -p 'require("./contract/lockrot.json").commit')
           gh run list --repo somework/lockrot --commit "$pin" --event push --status success \
             --json workflowName,headBranch \
-            | jq -e 'any(.[]; (.workflowName == "full-check" and (.headBranch | test("^release/full-check-[0-9a-f]+$"))) or (.workflowName == "CI" and .headBranch == "main"))' >/dev/null \
-            || { echo "::error::lockrot $pin has no successful full check of the whole tree, and no successful CI run on main"; exit 1; }
+            | jq -e 'any(.[]; .workflowName == "CI") and (any(.[]; .workflowName == "full-check" and (.headBranch | test("^release/full-check-[0-9a-f]+$"))) or any(.[]; .workflowName == "CI" and .headBranch == "main"))' >/dev/null \
+            || { echo "::error::lockrot $pin needs a successful CI push run on any branch, and a successful full check of the whole tree or a successful CI run on main"; exit 1; }
       - run: npm ci
       # lockrot's release checks the version in the renderer's lock too, so a stale lock stops this
       # tag and not that later release.
