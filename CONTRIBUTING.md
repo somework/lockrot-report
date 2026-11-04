@@ -90,8 +90,9 @@ the report-1 screen.
    tag must hold the pin: `node scripts/contract.mjs reachable` says whether it does. For a final
    tag, a lockrot tag holds V, and a push of V unchanged to `release/full-check-<sha of V>` has a
    green full check of the whole tree. A full check that an rc tag starts does not count, because
-   its branch is the tag. The release workflow needs a green CI run of a push of V on any
-   branch, and either that full check or a green CI run of a push to lockrot's main.
+   its branch is the tag. The release workflow needs a green CI run of a push of V to any branch
+   where lockrot's `ci.yml` runs on push, such as `main`, `release/**` or `integration/**`. It also
+   needs that full check or a green CI run of a push to lockrot's main.
 3. Run `node scripts/contract.mjs repin <pin>`. For a final tag, commit only the version and the
    pin: `package.json`, the two `version` fields of `package-lock.json`, the CHANGELOG heading and
    `contract/lockrot.json`. If `repin` changed another file under `contract/`, V does not vendor

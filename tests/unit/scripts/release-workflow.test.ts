@@ -156,14 +156,14 @@ describe("the lockrot pin has a green lockrot run (R6-29, decision 35)", () => {
 
   const FULL = { workflowName: "full-check", headBranch: "release/full-check-97e3121d" };
   const SHARDS = { workflowName: "full-check", headBranch: "release/full-check-97e3121d--solver,verdicts" };
-  const CI_FEATURE = { workflowName: "CI", headBranch: "feat/anything" };
+  const CI_INTEGRATION = { workflowName: "CI", headBranch: "integration/0.14-php-window" };
   const CI_MAIN = { workflowName: "CI", headBranch: "main" };
 
   test.each([
     ["a full check only", [FULL], 1],
-    ["a full check and CI on a feature branch", [FULL, CI_FEATURE], 0],
-    ["a full check of some shards only, and CI on a feature branch", [SHARDS, CI_FEATURE], 1],
-    ["CI on a feature branch only", [CI_FEATURE], 1],
+    ["a full check and CI on an integration branch", [FULL, CI_INTEGRATION], 0],
+    ["a full check of some shards only, and CI on an integration branch", [SHARDS, CI_INTEGRATION], 1],
+    ["CI on an integration branch only", [CI_INTEGRATION], 1],
     ["CI on main only", [CI_MAIN], 0],
     ["CI on a release branch only", [{ workflowName: "CI", headBranch: "release/0.14.0" }], 1],
     ["no run", [], 1],

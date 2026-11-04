@@ -492,8 +492,7 @@ export const ADVISORY_NOT_RUN = "the advisory check did not run";
 
 const UNCHECKED_SIGNAL_WORDS: Readonly<Record<string, string>> = { S9: ADVISORY_NOT_RUN };
 
-/** §7.9.16's words for a check that did not run, by the signal an `unchecked` gate value names. A
- *  signal without words of its own reads "{signal name} not checked". */
+/** §7.9.16's words for a check that did not run, by the signal an `unchecked` gate value names. */
 export const uncheckedWords = (signal: string, name: string): string =>
   Object.hasOwn(UNCHECKED_SIGNAL_WORDS, signal)
     ? (UNCHECKED_SIGNAL_WORDS[signal] ?? signal)

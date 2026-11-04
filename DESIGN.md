@@ -34,7 +34,7 @@ documents a `sed` recipe). They are part of the renderer's public interface:
 - no network reference of any kind: no `fetch(`, `XMLHttpRequest`, `@import`, `import(`, no external
   font, script, stylesheet or image. Links (`<a href>`) are fine; they are navigations, not loads.
 
-The payload escaping is the producer's job. lockrot writes each non-ASCII character as `\uXXXX`
+The payload escaping is the producer's job. lockrot writes each non-ASCII UTF-16 unit as `\uXXXX`
 and breaks `</` → `<\/`, `<!--` → `<\u0021--` and `##[` → `#\u0023[`. `scripts/payload.mjs`
 writes the e2e pages the same way.
 

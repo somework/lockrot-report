@@ -14,7 +14,7 @@ tag or the address format, says so under **Breaking** in its entry.
   text. The detail sheet's Security list and the verdict line now follow the rule that the
   Advisories tab follows. Before, they gave the CVE id the link to the source advisory's page.
 - A folded row of the Release branches table is out of the accessibility tree while it is folded.
-  A screen reader now reads only the rows that the "{n} older branches" button shows.
+  A screen reader now reads only the rows that an open fold shows.
 
 ## [0.14.0]
 
