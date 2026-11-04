@@ -149,6 +149,7 @@ export const CAUSE_WORDS: Words = {
   allowlisted: "allowlisted",
   anonymous_budget: "anonymous request budget spent",
   branch_snapshot: "a branch snapshot has no release branch",
+  composer_json_invalid: "Composer cannot load composer.json",
   fetch_failed: "request failed",
   host_not_supported: "host not supported",
   install_time_budget: "install-time budget spent",

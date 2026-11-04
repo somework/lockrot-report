@@ -4051,6 +4051,20 @@
     "ignored": [],
     "ladder": []
   },
+  "S2-shared-newest-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
   "S5-parent-after-ga-dagger": {
     "summary": [
       "1 high advisory",
@@ -4311,6 +4325,48 @@
         ]
       }
     ]
+  },
+  "S8-higher-shared-alive-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "S8-higher-shared-untrusted-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "S8-higher-undated-stale-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
   },
   "S8-prerelease-installed-dagger": {
     "summary": [
@@ -7808,6 +7864,46 @@
       }
     ]
   },
+  "mc-joint-unlocked-dagger": {
+    "summary": [
+      "1 high advisory",
+      "15 on record for this name",
+      "fix: upgrade",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, 7.10.0."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-69246",
+        "source": "PKSA-gcrk-3vtt-1r14",
+        "deciding": true,
+        "severity": "high",
+        "fix": "fix 8.0.1 on 8.x (upgrade)",
+        "affects": "affects <8.0.1",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "8.x",
+        "marks": [
+          "the move"
+        ],
+        "lines": [
+          "8.x the move clears 1 of 1 from 8.0.1",
+          "upgrade · held by every holder in Held by",
+          "after it: 0, ok · Composer refuses the move"
+        ]
+      }
+    ]
+  },
   "mc-link-newest-dagger": {
     "summary": [
       "1 high advisory",
@@ -8480,6 +8576,44 @@
           "6.x your branch the move clears 1 of 1 from v6.4.40",
           "composer update",
           "after it: 0, ok · not checked: Composer refuses the lock itself"
+        ]
+      }
+    ]
+  },
+  "mc-update-now-maintenance-dagger": {
+    "summary": [
+      "1 low advisory",
+      "4 on record for this name",
+      "fix: upgrade",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [
+      "By severity. Each affects your version, v6.4.28."
+    ],
+    "groups": [],
+    "rows": [
+      {
+        "name": "CVE-2026-48784",
+        "source": "PKSA-bf7t-jnpz-492k",
+        "deciding": true,
+        "severity": "low",
+        "fix": "fix v7.0.1 on 7.x (upgrade)",
+        "affects": "affects >=6.0.0,<7.0.1",
+        "ranges": null,
+        "same_as": null
+      }
+    ],
+    "ignored": [],
+    "ladder": [
+      {
+        "branch": "7.x",
+        "marks": [],
+        "lines": [
+          "7.x clears 1 of 1 from v7.0.1",
+          "upgrade · held by composer.json",
+          "after it: 0, ok"
         ]
       }
     ]
@@ -10003,6 +10137,104 @@
     "ignored": [],
     "ladder": []
   },
+  "tag-blocked-highest-php-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "tag-higher-shared-alive-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "tag-higher-shared-stale-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "tag-higher-trusted-stale-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "tag-higher-undated-stale-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "tag-highest-php-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "tag-no-php-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
   "through-own": {
     "summary": [
       "no counted advisory",
@@ -11115,11 +11347,52 @@
     "ignored": [],
     "ladder": []
   },
+  "S8-lower-tag-shared-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "branch-release-shared-dagger": {
+    "summary": [
+      "no counted advisory",
+      "none on record for this name",
+      "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
   "capped-unread-dagger": {
     "summary": [
       "no counted advisory",
       "none on record for this name",
       "lookup complete"
+    ],
+    "counts": [],
+    "meanwhile": null,
+    "caption": [],
+    "groups": [],
+    "rows": [],
+    "ignored": [],
+    "ladder": []
+  },
+  "composer-json-invalid-dagger": {
+    "summary": [
+      "advisories not known",
+      "not checked (Composer cannot load composer.json)"
     ],
     "counts": [],
     "meanwhile": null,

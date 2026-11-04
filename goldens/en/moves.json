@@ -1320,6 +1320,32 @@
     }
   ],
   "S10-tag-undated-dagger": [],
+  "S2-shared-newest-dagger": [
+    {
+      "heading": "Next step",
+      "action": "No release above 2.2.4 admits PHP 8.5",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": null,
+        "lines": [
+          {
+            "answer": "no",
+            "text": "its installed release, 2.2.4, needs php ^7.2.0, which your target, 8.4, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
   "S5-parent-after-ga-dagger": [
     {
       "heading": "The move",
@@ -1449,6 +1475,52 @@
       ]
     }
   ],
+  "S8-higher-shared-alive-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.1, then require ^4.9",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.1' --no-update",
+        "composer require 'pagerfanta/twig:^4.9'",
+        "composer why-not pagerfanta/twig v4.9.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "left-behind",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ^8.1",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "S8-higher-shared-untrusted-dagger": [],
+  "S8-higher-undated-stale-dagger": [],
   "S8-prerelease-installed-dagger": [
     {
       "heading": "The move",
@@ -4327,6 +4399,52 @@
       ]
     }
   ],
+  "mc-joint-unlocked-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^8.0.1",
+      "platform_step": null,
+      "command_note": "This shows which package holds the move.",
+      "moves_with": null,
+      "commands": [
+        "composer why-not guzzlehttp/guzzle 8.0.1 --locked"
+      ],
+      "commands_label": "Check",
+      "clears": "the advisory",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "8.x needs php ^8.1",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "Composer refuses the move"
+        ]
+      },
+      "composer": [
+        {
+          "text": "The packages that hold it may need to move too",
+          "items": []
+        },
+        {
+          "text": "A new major brings its own requirements",
+          "items": []
+        }
+      ]
+    }
+  ],
   "mc-link-newest-dagger": [
     {
       "heading": "The move",
@@ -5073,6 +5191,83 @@
         ]
       },
       "composer": []
+    }
+  ],
+  "mc-update-now-maintenance-dagger": [
+    {
+      "heading": "The move",
+      "action": "Update to v6.4.41 on 6.x",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer update 'symfony/routing:^6.4.41'"
+      ],
+      "commands_label": "Command",
+      "clears": "capped",
+      "stays": "1 advisory",
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "6.x needs php >=8.1",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "2, low",
+        "conditions": [
+          "checked with Composer"
+        ]
+      },
+      "composer": []
+    },
+    {
+      "heading": "Then",
+      "action": "Require ^7.0.1",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'symfony/routing:^7.0.1'"
+      ],
+      "commands_label": "Command",
+      "clears": "both",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "7.x needs php >=8.1",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "checked with Composer"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements",
+          "items": []
+        }
+      ]
     }
   ],
   "mc-update-now-reduced-dagger": [
@@ -6439,6 +6634,245 @@
       "composer": []
     }
   ],
+  "tag-blocked-highest-php-dagger": [
+    {
+      "heading": "Next step",
+      "action": "Its newest tag, 1.6.2, needs php ^7.4, which your target, 8.4, does not run: replace it",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "1.x needs php ^7.4",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "no",
+            "text": "your target, 8.4, does not run it"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "tag-higher-shared-alive-dagger": [
+    {
+      "heading": "The move",
+      "action": "Move it to the newest tag on its own line, v4.4.44, through mautic/core-lib; that tag is older than your snapshot: review it first, or replace the package",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/event-dispatcher v4.4.44 --locked"
+      ],
+      "commands_label": "Check",
+      "clears": "pinned",
+      "stays": null,
+      "not_checked": null,
+      "adds": [
+        "left-behind: that line no longer releases while a higher line does"
+      ],
+      "php": {
+        "head": "4.x needs php >=7.1.3",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "8, medium",
+        "conditions": [
+          "adds left-behind",
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "What requires it must allow it",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "tag-higher-shared-stale-dagger": [
+    {
+      "heading": "The move",
+      "action": "Move it to the newest tag on its own line, v4.4.44, through mautic/core-lib; that tag is older than your snapshot: review it first, or replace the package",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/event-dispatcher v4.4.44 --locked"
+      ],
+      "commands_label": "Check",
+      "clears": "pinned",
+      "stays": null,
+      "not_checked": "left-behind",
+      "adds": [],
+      "php": {
+        "head": "4.x needs php >=7.1.3",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "at most 8, medium",
+        "conditions": [
+          "left-behind not checked",
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "What requires it must allow it",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "tag-higher-trusted-stale-dagger": [
+    {
+      "heading": "The move",
+      "action": "Move it to the newest tag on its own line, v4.4.44, through mautic/core-lib; that tag is older than your snapshot: review it first, or replace the package",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/event-dispatcher v4.4.44 --locked"
+      ],
+      "commands_label": "Check",
+      "clears": "pinned",
+      "stays": "stale",
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php >=7.1.3",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "4, low",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "What requires it must allow it",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "tag-higher-undated-stale-dagger": [
+    {
+      "heading": "The move",
+      "action": "Move it to the newest tag on its own line, v4.4.44, through mautic/core-lib; that tag is older than your snapshot: review it first, or replace the package",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer why-not symfony/event-dispatcher v4.4.44 --locked"
+      ],
+      "commands_label": "Check",
+      "clears": "pinned",
+      "stays": null,
+      "not_checked": "left-behind",
+      "adds": [],
+      "php": {
+        "head": "4.x needs php >=7.1.3",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "at most 8, medium",
+        "conditions": [
+          "left-behind not checked",
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "What requires it must allow it",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "tag-highest-php-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, 1.6.2",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'friendsofsymfony/oauth-server-bundle:^1.6.2'",
+        "composer why-not friendsofsymfony/oauth-server-bundle 1.6.2 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": "stale",
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": {
+        "result": "8, medium",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "tag-no-php-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, 1.6.2",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'friendsofsymfony/oauth-server-bundle:^1.6.2'",
+        "composer why-not friendsofsymfony/oauth-server-bundle 1.6.2 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": "stale",
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": {
+        "result": "8, medium",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
   "through-own": [
     {
       "heading": "Next step",
@@ -6882,6 +7316,50 @@
       "composer": []
     }
   ],
+  "S8-lower-tag-shared-dagger": [
+    {
+      "heading": "The move",
+      "action": "Raise require.php to >=8.1, then require ^4.9",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'php:>=8.1' --no-update",
+        "composer require 'pagerfanta/twig:^4.9'"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "left-behind",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php ^8.1",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
+  "branch-release-shared-dagger": [],
   "capped-unread-dagger": [
     {
       "heading": "Next step",
@@ -6908,6 +7386,7 @@
       "composer": []
     }
   ],
+  "composer-json-invalid-dagger": [],
   "finished-offline-dagger": [],
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],

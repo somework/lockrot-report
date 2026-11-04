@@ -190,6 +190,7 @@
     }
   ],
   "S10-tag-undated-dagger": [],
+  "S2-shared-newest-dagger": [],
   "S5-parent-after-ga-dagger": [
     {
       "flag": "left-behind",
@@ -224,6 +225,9 @@
       "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
+  "S8-higher-shared-alive-dagger": [],
+  "S8-higher-shared-untrusted-dagger": [],
+  "S8-higher-undated-stale-dagger": [],
   "S8-prerelease-installed-dagger": [
     {
       "flag": "left-behind",
@@ -508,6 +512,7 @@
   "mc-joint-dev-dagger": [],
   "mc-joint-down-dagger": [],
   "mc-joint-retag-dagger": [],
+  "mc-joint-unlocked-dagger": [],
   "mc-link-newest-dagger": [],
   "mc-lookup-incomplete-dagger": [],
   "mc-lookup-kept-dagger": [],
@@ -547,6 +552,12 @@
     {
       "flag": "capped",
       "text": "It requires php >=8.1 <8.5: it stops at 8.4, so the newest PHP, 8.5, is excluded."
+    }
+  ],
+  "mc-update-now-maintenance-dagger": [
+    {
+      "flag": "vulnerable",
+      "text": "A low-severity advisory affects your version (CVE-2026-48784 PKSA-bf7t-jnpz-492k: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` → Generated URL Collapses Off-Route Under RFC 3986 Normalization). It is not fixed on 6.x."
     }
   ],
   "mc-update-now-reduced-dagger": [],
@@ -658,6 +669,33 @@
     }
   ],
   "stale-only": [],
+  "tag-blocked-highest-php-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 7.6 years."
+    }
+  ],
+  "tag-higher-shared-alive-dagger": [],
+  "tag-higher-shared-stale-dagger": [],
+  "tag-higher-trusted-stale-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 3.7 years."
+    }
+  ],
+  "tag-higher-undated-stale-dagger": [],
+  "tag-highest-php-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 7.6 years."
+    }
+  ],
+  "tag-no-php-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 7.7 years."
+    }
+  ],
   "through-own": [
     {
       "flag": "stale",
@@ -715,7 +753,10 @@
   ],
   "zero-n": [],
   "B-accepted-unread-dagger": [],
+  "S8-lower-tag-shared-dagger": [],
+  "branch-release-shared-dagger": [],
   "capped-unread-dagger": [],
+  "composer-json-invalid-dagger": [],
   "finished-offline-dagger": [],
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],
