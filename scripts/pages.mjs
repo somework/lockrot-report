@@ -1,12 +1,13 @@
 // Fills the built `dist/report.html` (produced by `npm run build`) with one page per report-2 embed
 // of lockrot's fetched bundle (`scripts/report2-embed.ts`; needs `npm run contract:fetch`), using
-// the same payload escaping as `HtmlFormatter::payload()` (`</` -> `<\/`, `<!--` -> `<\u0021--`).
+// the byte form of `HtmlFormatter::payload()` (`scripts/payload.mjs`).
 // Also plants pages under `planted/`, which the page sweeps do not list: a malformed report-2, a
 // report-1 document, the composite with a hostile package name and one with a long version. Writes `build/pages/`, which is
 // what the e2e suite runs against.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { payload } from "./payload.mjs";
 import { assembleEmbed, LONG_VERSION, METACHAR_NAME, report2Pages, sheetPages } from "./report2-embed.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
@@ -22,8 +23,6 @@ const text = (s) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-// HtmlFormatter::payload(): JSON with unescaped slashes and unicode, then `</` and `<!--` escaped.
-const payload = (bundle) => JSON.stringify(bundle).replace(/<\//g, "<\\/").replace(/<!--/g, "<\\u0021--");
 
 const REPORT2_TITLE = "lockrot report";
 
