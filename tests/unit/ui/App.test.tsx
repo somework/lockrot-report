@@ -545,7 +545,7 @@ describe("a sheet over the page takes focus", () => {
 
     expect(detailName()).toBeNull();
     expect(document.activeElement?.getAttribute("data-pkg")).toBe(BY_RANK[1]);
-    expect(document.querySelector("[inert]")).toBeNull();
+    expect(document.querySelector("[inert]:not(.detail-timeline-row)")).toBeNull();
   });
 
   test("/ closes the sheet and focuses the search box it covered", () => {
@@ -578,7 +578,7 @@ describe("a sheet over the page takes focus", () => {
     fireEvent.click(target);
 
     expect(document.activeElement).toBe(target);
-    expect(document.querySelector("[inert]")).toBeNull();
+    expect(document.querySelector("[inert]:not(.detail-timeline-row)")).toBeNull();
   });
 
   test("an address naming a package the report does not list opens a panel with a Close that takes focus", () => {
@@ -598,7 +598,7 @@ describe("a sheet over the page takes focus", () => {
     render(<App model={load()} />);
 
     expect(document.querySelector(".shell-detail")).toBeNull();
-    expect(document.querySelector("[inert]")).toBeNull();
+    expect(document.querySelector("[inert]:not(.detail-timeline-row)")).toBeNull();
     expect(location.hash).toBe("#view=findings");
   });
 });

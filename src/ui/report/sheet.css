@@ -713,9 +713,8 @@
 .detail-timeline-row.is-folded .d3-tl-age {
   font-size: var(--text-xs);
 }
-/* A folded row is clipped to a hairline, not display:none, so it still sizes the columns; the
-   row carries aria-hidden and inert (BranchTimeline.tsx), so it is out of the accessibility tree
-   and the tab order like the closed fold it belongs to. */
+/* Clipped to a hairline, not display:none, so the row still sizes the columns. Its aria-hidden
+   and inert (BranchTimeline.tsx) keep it out of the accessibility tree while folded. */
 .detail-timeline-row.is-collapsed {
   visibility: visible;
   height: 1px;
