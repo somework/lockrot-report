@@ -254,7 +254,7 @@ describe("the signal filter and the version, flags, signals and data sort keys",
         date: "2026-10-03T00:00:00+00:00",
       }),
       make("b/two", 2, { version: "v1.2.0", flags: 0, signals: ["S2"], date: "2026-10-01T00:00:00+00:00" }),
-      make("c/three", 3, { version: "v1.9.0", flags: 1, signals: [], date: "2026-10-02T00:00:00+00:00" }),
+      make("c/three", 3, { version: "v1.9.0", flags: 1, signals: [], date: "2026-10-04T00:00:00+00:00" }),
       make("d/four", 4, { version: "v1.2.0", flags: 2, signals: ["S3"], date: "2026-10-03T00:00:00+00:00" }),
     ],
   };
@@ -285,8 +285,8 @@ describe("the signal filter and the version, flags, signals and data sort keys",
   });
 
   it("sorts by the data date, ties in rank order", () => {
-    expect(order("data", false)).toEqual(["b/two", "c/three", "a/one", "d/four"]);
-    expect(order("data", true)).toEqual(["a/one", "d/four", "c/three", "b/two"]);
+    expect(order("data", false)).toEqual(["b/two", "a/one", "d/four", "c/three"]);
+    expect(order("data", true)).toEqual(["c/three", "a/one", "d/four", "b/two"]);
   });
 });
 
