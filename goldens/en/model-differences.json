@@ -24,7 +24,7 @@
     "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": [
       "tie-dagger"
     ],
-    "the page and the model's golden differ: R12-22 (pending MODEL r12k). The source id carries the advisory's link on every surface, so the deciding advisory reads its CVE id and then its source id; the model's golden reads the CVE id alone": [
+    "the page and the model's golden differ: rulings R12-22 and R12-22b (pending MODEL r12k.1). The source id carries the advisory's link on every surface, so the deciding advisory reads its CVE id and then its source id; the model's golden reads the CVE id alone": [
       "A",
       "A-baselined-dagger",
       "A-blocked-dagger",
@@ -96,7 +96,7 @@
     "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": [
       "tie-dagger"
     ],
-    "the page and the model's golden differ: R12-22 (pending MODEL r12k). The source id carries the advisory's link on every surface, so the deciding advisory reads its CVE id and then its source id; the model's golden reads the CVE id alone": [
+    "the page and the model's golden differ: rulings R12-22 and R12-22b (pending MODEL r12k.1). The source id carries the advisory's link on every surface, so the deciding advisory reads its CVE id and then its source id; the model's golden reads the CVE id alone": [
       "B",
       "B-also-dagger",
       "B-baselined-dagger",

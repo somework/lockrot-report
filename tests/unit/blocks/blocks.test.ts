@@ -8,8 +8,8 @@ import { BLOCK_KEYS, blockGolden, type BlockKey } from "./blockGoldens";
 describe("each block equals the model's golden from the model's own inputs (SPEC §7.9.14)", () => {
   // The pinned model's block text lags its own inputs in these blocks.
   // List a block until the model renders it, then empty the list at the repin.
-  // R12-22 (pending MODEL r12k): the deciding advisory reads its CVE id and its source id, which
-  // carries the link; the model's golden reads the CVE id alone.
+  // Rulings R12-22 and R12-22b (pending MODEL r12k.1): the deciding advisory reads its CVE id and
+  // its source id, which carries the link, and the model's golden reads the CVE id alone.
   const MODEL_LAGS: Readonly<Record<string, readonly BlockKey[]>> = {
     A: ["verdict_line"],
     "A-baselined-dagger": ["verdict_line"],
