@@ -222,6 +222,74 @@ describe("applyFilters2", () => {
   });
 });
 
+describe("the signal filter and the version, flags, signals and data sort keys", () => {
+  const base = only(partial.findings);
+  const signal = (id: string): Finding["signals"][number] => ({ ...only(base.signals.slice(0, 1)), id });
+  const flagsOf = (count: number): Finding["flags"] =>
+    Array.from({ length: count }, () => only(base.flags.slice(0, 1)));
+
+  function make(
+    pkg: string,
+    rank: number,
+    over: { version: string; flags: number; signals: readonly string[]; date: string },
+  ): Finding {
+    return {
+      ...base,
+      package: pkg,
+      rank,
+      version: over.version,
+      flags: flagsOf(over.flags),
+      signals: over.signals.map(signal),
+      data_date: over.date,
+    };
+  }
+
+  const report: Report2 = {
+    ...composite,
+    findings: [
+      make("a/one", 1, {
+        version: "v1.10.0",
+        flags: 2,
+        signals: ["S1", "S2"],
+        date: "2026-10-03T00:00:00+00:00",
+      }),
+      make("b/two", 2, { version: "v1.2.0", flags: 0, signals: ["S2"], date: "2026-10-01T00:00:00+00:00" }),
+      make("c/three", 3, { version: "v1.9.0", flags: 1, signals: [], date: "2026-10-02T00:00:00+00:00" }),
+      make("d/four", 4, { version: "v1.2.0", flags: 2, signals: ["S3"], date: "2026-10-03T00:00:00+00:00" }),
+    ],
+  };
+  const order = (sort: State["sort"], sortDesc: boolean): string[] =>
+    names(applyFilters2(report, state({ view: "packages", sort, sortDesc }), "packages"));
+
+  it("keeps a finding only when one of its signals is selected, and drops one with none", () => {
+    const kept = (...ids: string[]): string[] =>
+      names(applyFilters2(report, state({ view: "packages" }, { signal: ids }), "packages"));
+    expect(kept("S2")).toEqual(["a/one", "b/two"]);
+    expect(kept("S3", "S1")).toEqual(["a/one", "d/four"]);
+    expect(kept("S9")).toEqual([]);
+  });
+
+  it("sorts by version in natural order, ties in rank order", () => {
+    expect(order("version", false)).toEqual(["b/two", "d/four", "c/three", "a/one"]);
+    expect(order("version", true)).toEqual(["a/one", "c/three", "b/two", "d/four"]);
+  });
+
+  it("sorts by the count of flags, ties in rank order", () => {
+    expect(order("flags", false)).toEqual(["b/two", "c/three", "a/one", "d/four"]);
+    expect(order("flags", true)).toEqual(["a/one", "d/four", "c/three", "b/two"]);
+  });
+
+  it("sorts by signals with the most first when ascending, ties in rank order", () => {
+    expect(order("signals", false)).toEqual(["a/one", "b/two", "d/four", "c/three"]);
+    expect(order("signals", true)).toEqual(["c/three", "b/two", "d/four", "a/one"]);
+  });
+
+  it("sorts by the data date, ties in rank order", () => {
+    expect(order("data", false)).toEqual(["b/two", "c/three", "a/one", "d/four"]);
+    expect(order("data", true)).toEqual(["a/one", "d/four", "c/three", "b/two"]);
+  });
+});
+
 describe("hiddenByFilters2", () => {
   it("is true only for a package the tab lists and the filters keep off", () => {
     const hiding = state({ q: "no-such-package" });
