@@ -8,6 +8,14 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ## [Unreleased]
 
+### Fixed
+
+- One link rule for an advisory: the source id links to the advisory page, and the CVE id is plain
+  text. The detail sheet's Security list and the verdict line now follow the rule that the
+  Advisories tab follows. Before, they gave the CVE id the link to the source advisory's page.
+- A folded row of the Release branches table is out of the accessibility tree while it is folded,
+  so a screen reader reads the rows that the "{n} older branches" button shows, and no more.
+
 ## [0.14.0]
 
 The page lockrot 0.14.0 writes with `--format=html`. lockrot 0.14 grades each package by a score built
