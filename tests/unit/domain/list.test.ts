@@ -269,6 +269,11 @@ describe("the signal filter and the version, flags, signals and data sort keys",
     expect(kept("S9")).toEqual([]);
   });
 
+  it("filters the Findings tab by signal as it filters All packages", () => {
+    const found = names(applyFilters2(report, state({ view: "findings" }, { signal: ["S2"] }), "findings"));
+    expect(found).toEqual(["a/one", "b/two"]);
+  });
+
   it("sorts by version in natural order, ties in rank order", () => {
     expect(order("version", false)).toEqual(["b/two", "d/four", "c/three", "a/one"]);
     expect(order("version", true)).toEqual(["a/one", "c/three", "b/two", "d/four"]);

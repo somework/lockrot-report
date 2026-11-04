@@ -568,6 +568,11 @@ describe("the Release branches timeline", () => {
     expect(folded()).toEqual(["4.x", "3.x"]);
     expect(table.querySelector("[data-branch='7.x']")?.hasAttribute("aria-hidden")).toBe(false);
     expect(table.querySelector("[data-branch='7.x']")?.hasAttribute("inert")).toBe(false);
+    expect(
+      table.querySelectorAll(
+        ".detail-timeline-row:not(.is-collapsed, .detail-timeline-axis-row):is([aria-hidden], [inert])",
+      ),
+    ).toHaveLength(0);
     expect(named()).toContain("7.x");
     expect(named()).not.toContain("4.x");
   });

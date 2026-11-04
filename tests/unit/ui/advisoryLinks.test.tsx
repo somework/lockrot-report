@@ -72,5 +72,12 @@ describe("the deciding advisory on the detail sheet", () => {
     const row = sheet.querySelector(".d3-verdict");
 
     expect(links(row)).toEqual(expected.map(([text, href]) => [text, href, newTab(text)]));
+    expect(
+      [...sheet.querySelectorAll(".d3-verdict-line, .d3-reading-text")].map((p) => p.textContent),
+    ).toContainEqual(
+      expect.stringContaining(
+        [ids.cve, ids.id].filter((id, at, all) => id !== null && all.indexOf(id) === at).join(" "),
+      ),
+    );
   });
 });

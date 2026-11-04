@@ -24,6 +24,10 @@ test.each([
   expect(encode(value)).toBe(`"${written}"`);
 });
 
+test("escapes a non-ASCII property name as it escapes a value", () => {
+  expect(encode({ ключ: 1 })).toBe('{"\\u043a\\u043b\\u044e\\u0447":1}');
+});
+
 test("parses back to the input", () => {
   const document = { a: ["é\u2028</script><!--##[x]\u{1F600}\u007f/"], b: { ключ: 1 } };
 

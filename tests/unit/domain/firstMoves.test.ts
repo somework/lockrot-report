@@ -500,6 +500,19 @@ describe("the unchecked words (SPEC §7.9.4, §7.9.9)", () => {
     );
   });
 
+  it("prints both reasons of one finding with two missing checks, in its own order", () => {
+    const both = {
+      ...missing("releases"),
+      checks_missing: [
+        { check: "releases", reason: "undated_releases", blocks: ["S2"] },
+        { check: "release_dates", reason: "undated_releases", blocks: ["S2"] },
+      ],
+    };
+    expect(wayOutLine(report([both], true))).toBe(
+      "1 needs another way out: 1 unchecked: releases not checked, release dates not checked",
+    );
+  });
+
   it.each([
     ["not_run", "the advisory check did not run"],
     ["complete", "a check did not run"],
