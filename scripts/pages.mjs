@@ -1,6 +1,6 @@
 // Fills the built `dist/report.html` (produced by `npm run build`) with one page per report-2 embed
 // of lockrot's fetched bundle (`scripts/report2-embed.ts`; needs `npm run contract:fetch`), using
-// the byte form of `HtmlFormatter::payload()` (`scripts/payload.mjs`).
+// the string escaping of `HtmlFormatter::payload()` (`scripts/payload.mjs`).
 // Also plants pages under `planted/`, which the page sweeps do not list: a malformed report-2, a
 // report-1 document, the composite with a hostile package name and one with a long version. Writes `build/pages/`, which is
 // what the e2e suite runs against.

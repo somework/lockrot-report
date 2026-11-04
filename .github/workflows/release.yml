@@ -49,8 +49,9 @@ jobs:
         run: node scripts/contract.mjs reachable
       # A final release must not publish against a lockrot commit whose own gates did not pass: a CI
       # push run on any branch, and either a full check or CI on a push to main. A pre-release is
-      # exempt. Its pin is the lockrot commit that changed the contract bundle, and lockrot's renderer test fails there until lockrot vendors
-      # this very pre-release. lockrot's vendoring pull request and its full check gate the pair.
+      # exempt. Its pin is the lockrot commit that changed the contract bundle, and lockrot's
+      # renderer test fails there until lockrot vendors this very pre-release. lockrot's vendoring
+      # pull request and its full check gate the pair.
       - name: lockrot's gates passed on the pinned commit
         env:
           GH_TOKEN: ${{ github.token }}

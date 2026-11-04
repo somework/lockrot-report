@@ -7,8 +7,8 @@ const encode = payload as (document: unknown) => string;
 
 test.each([
   ["é", "\\u00e9"],
-  [" ", "\\u2028"],
-  ["‮", "\\u202e"],
+  ["\u2028", "\\u2028"],
+  ["\u202e", "\\u202e"],
   ["\u{1F600}", "\\ud83d\\ude00"],
   ["\u007f", "\u007f"],
   ["a/b", "a/b"],
@@ -25,7 +25,7 @@ test.each([
 });
 
 test("parses back to the input", () => {
-  const document = { a: ["é </script><!--##[x]\u{1F600}\u007f/"], b: { ключ: 1 } };
+  const document = { a: ["é\u2028</script><!--##[x]\u{1F600}\u007f/"], b: { ключ: 1 } };
 
   expect(JSON.parse(encode(document))).toEqual(document);
 });
