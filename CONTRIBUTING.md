@@ -106,7 +106,6 @@ the report-1 screen.
    workflow refuses a final tag that main does not hold, and a pre-release tag that neither main
    nor a release branch holds. It also refuses a pin that the check of step 2 refuses, and a final
    tag whose pin lacks a green CI push run, or lacks both a green full check and a green CI run on
-   main. A pre-release needs no such run, because lockrot's
-   renderer test fails on its pin until lockrot vendors it. The workflow runs the gates of ci.yml,
-   then builds, attests and publishes.
+   main. A pre-release needs no such run, because lockrot's renderer test fails on its pin until
+   lockrot vendors it. The workflow runs the gates of ci.yml, then builds, attests and publishes.
 5. In lockrot, run `tools/report/update-renderer vX.Y.Z` and open a pull request.
