@@ -324,6 +324,9 @@
     }
   ],
   "S10-tag-undated-dagger": [],
+  "S2-shared-newest-dagger": [
+    null
+  ],
   "S5-parent-after-ga-dagger": [
     {
       "count": 1,
@@ -366,6 +369,11 @@
       "fold": null
     }
   ],
+  "S8-higher-shared-alive-dagger": [
+    null
+  ],
+  "S8-higher-shared-untrusted-dagger": [],
+  "S8-higher-undated-stale-dagger": [],
   "S8-prerelease-installed-dagger": [
     {
       "count": 1,
@@ -812,6 +820,26 @@
       "fold": null
     }
   ],
+  "mc-joint-unlocked-dagger": [
+    {
+      "count": 2,
+      "shown": [
+        {
+          "name": "guzzlehttp/guzzle 8.0.1, its own release",
+          "grade": null,
+          "meta": "requires acme/gz-bridge ^1.0",
+          "step": null
+        },
+        {
+          "name": "acme/gz-bridge 1.0.0",
+          "grade": null,
+          "meta": "requires ^7.10",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
   "mc-link-newest-dagger": [
     null
   ],
@@ -980,6 +1008,21 @@
   ],
   "mc-split-not-checked-dagger": [
     null
+  ],
+  "mc-update-now-maintenance-dagger": [
+    null,
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^6.4",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
   ],
   "mc-update-now-reduced-dagger": [
     null
@@ -1176,6 +1219,27 @@
   "stale-only": [
     null
   ],
+  "tag-blocked-highest-php-dagger": [
+    null
+  ],
+  "tag-higher-shared-alive-dagger": [
+    null
+  ],
+  "tag-higher-shared-stale-dagger": [
+    null
+  ],
+  "tag-higher-trusted-stale-dagger": [
+    null
+  ],
+  "tag-higher-undated-stale-dagger": [
+    null
+  ],
+  "tag-highest-php-dagger": [
+    null
+  ],
+  "tag-no-php-dagger": [
+    null
+  ],
   "through-own": [
     null
   ],
@@ -1241,9 +1305,14 @@
   "B-accepted-unread-dagger": [
     null
   ],
+  "S8-lower-tag-shared-dagger": [
+    null
+  ],
+  "branch-release-shared-dagger": [],
   "capped-unread-dagger": [
     null
   ],
+  "composer-json-invalid-dagger": [],
   "finished-offline-dagger": [],
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],

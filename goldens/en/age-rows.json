@@ -563,6 +563,24 @@
       "value": "most recent not read (undated releases)"
     }
   ],
+  "S2-shared-newest-dagger": [
+    {
+      "label": "installed",
+      "value": "2.2.4 · 2022-03-05 · 4.6 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": null,
+      "value": "2.x not read (undated releases)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
   "S5-parent-after-ga-dagger": [
     {
       "label": "installed",
@@ -615,6 +633,48 @@
     {
       "label": null,
       "value": "installed not read (dated only by a commit its tags share)"
+    }
+  ],
+  "S8-higher-shared-alive-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.8.0 · 2023-04-15 · 3.5 years ago · the newest on 3.x"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-08 · 0.1 years ago"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
+  "S8-higher-shared-untrusted-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.8.0 · 2023-04-15 · 3.5 years ago · the newest on 3.x"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-08 · 0.1 years ago"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
+  "S8-higher-undated-stale-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.8.0 · 2023-04-15 · 3.5 years ago · the newest on 3.x"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-08 · 0.1 years ago"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
     }
   ],
   "S8-prerelease-installed-dagger": [
@@ -1769,6 +1829,24 @@
       "value": "2026-09-06 · 0.1 years ago"
     }
   ],
+  "mc-joint-unlocked-dagger": [
+    {
+      "label": "installed",
+      "value": "7.10.0 · 2025-08-23 · 1.1 years ago"
+    },
+    {
+      "label": "7.x last",
+      "value": "7.15.2 · 2026-07-02 · 0.3 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "8.0.1 · 2026-07-03 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-06 · 0.1 years ago"
+    }
+  ],
   "mc-link-newest-dagger": [
     {
       "label": "installed",
@@ -1995,6 +2073,24 @@
     {
       "label": "6.x last",
       "value": "v6.4.41 · 2026-07-06 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-update-now-maintenance-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-01 · 0.3 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v7.0.1 · 2026-07-02 · 0.3 years ago"
     },
     {
       "label": "last push",
@@ -2583,6 +2679,92 @@
       "value": "2023-06-02 · 3.3 years ago"
     }
   ],
+  "tag-blocked-highest-php-dagger": [
+    {
+      "label": "most recent",
+      "value": "1.4.9 · 2019-03-01 · 7.6 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2024-01-12 · 2.7 years ago"
+    }
+  ],
+  "tag-higher-shared-alive-dagger": [
+    {
+      "label": "4.x last",
+      "value": "v4.4.44 · 2022-07-20 · 4.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
+  "tag-higher-shared-stale-dagger": [
+    {
+      "label": "4.x last",
+      "value": "v4.4.44 · 2022-07-20 · 4.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
+  "tag-higher-trusted-stale-dagger": [
+    {
+      "label": "4.x last",
+      "value": "v4.4.44 · 2022-07-20 · 4.2 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.1.5 · 2023-02-01 · 3.7 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-25 · less than three weeks ago"
+    }
+  ],
+  "tag-higher-undated-stale-dagger": [
+    {
+      "label": "4.x last",
+      "value": "v4.4.44 · 2022-07-20 · 4.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-25 · less than three weeks ago"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
+  "tag-highest-php-dagger": [
+    {
+      "label": "most recent",
+      "value": "1.4.9 · 2019-03-01 · 7.6 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2024-01-12 · 2.7 years ago"
+    }
+  ],
+  "tag-no-php-dagger": [
+    {
+      "label": "most recent",
+      "value": "1.6.2 · 2019-01-23 · 7.7 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2024-01-12 · 2.7 years ago"
+    }
+  ],
   "through-own": [
     {
       "label": "installed",
@@ -2817,6 +2999,38 @@
       "value": "last push not read (not from a Composer repository)"
     }
   ],
+  "S8-lower-tag-shared-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.8.0 · 2023-04-15 · 3.5 years ago · the newest on 3.x"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-08 · 0.1 years ago"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
+  "branch-release-shared-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.8.0 · 2023-04-15 · 3.5 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-08 · 0.1 years ago"
+    },
+    {
+      "label": null,
+      "value": "3.x not read (undated releases)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
   "capped-unread-dagger": [
     {
       "label": "installed",
@@ -2833,6 +3047,24 @@
     {
       "label": null,
       "value": "most recent not read (metadata unavailable)"
+    }
+  ],
+  "composer-json-invalid-dagger": [
+    {
+      "label": "installed",
+      "value": "1.3.7 · 2023-08-30 · 3.1 years ago"
+    },
+    {
+      "label": "1.x last",
+      "value": "1.5.14 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "most recent",
+      "value": "1.4.15 · 2026-08-21 · 0.1 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-10-01 · less than three weeks ago"
     }
   ],
   "finished-offline-dagger": [

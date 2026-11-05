@@ -394,6 +394,11 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "S2-shared-newest-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "S5-parent-after-ga-dagger": [
     "1 high advisory",
     "1 on record for this name",
@@ -447,6 +452,21 @@
     "8.x clears 1 of 1 from v8.0.12",
     "php floor raise · held by composer.json",
     "after it: 0, ok, if Composer resolves it"
+  ],
+  "S8-higher-shared-alive-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "S8-higher-shared-untrusted-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "S8-higher-undated-stale-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
   ],
   "S8-prerelease-installed-dagger": [
     "1 high advisory",
@@ -1040,6 +1060,15 @@
     "upgrade · held by acme/h",
     "after it: 0, ok · Composer refuses the move"
   ],
+  "mc-joint-unlocked-dagger": [
+    "1 high advisory",
+    "15 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "8.x the move clears 1 of 1 from 8.0.1",
+    "upgrade · held by every holder in Held by",
+    "after it: 0, ok · Composer refuses the move"
+  ],
   "mc-link-newest-dagger": [
     "1 high advisory",
     "6 on record for this name",
@@ -1189,6 +1218,15 @@
     "6.x your branch the move clears 1 of 1 from v6.4.40",
     "composer update",
     "after it: 0, ok · not checked: Composer refuses the lock itself"
+  ],
+  "mc-update-now-maintenance-dagger": [
+    "1 low advisory",
+    "4 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "7.x clears 1 of 1 from v7.0.1",
+    "upgrade · held by composer.json",
+    "after it: 0, ok"
   ],
   "mc-update-now-reduced-dagger": [
     "1 high advisory",
@@ -1511,6 +1549,41 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "tag-blocked-highest-php-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "tag-higher-shared-alive-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "tag-higher-shared-stale-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "tag-higher-trusted-stale-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "tag-higher-undated-stale-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "tag-highest-php-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "tag-no-php-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "through-own": [
     "no counted advisory",
     "none on record for this name",
@@ -1636,10 +1709,24 @@
     "fix: not known",
     "lookup complete"
   ],
+  "S8-lower-tag-shared-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "branch-release-shared-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "capped-unread-dagger": [
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
+  ],
+  "composer-json-invalid-dagger": [
+    "advisories not known",
+    "not checked (Composer cannot load composer.json)"
   ],
   "finished-offline-dagger": [
     "advisories not known",

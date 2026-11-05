@@ -65,10 +65,21 @@ function withoutVersionStep(recorded: Finding, model: Finding): Finding {
     : { ...recorded, next_step: { ...strip(lead, 0), also: lead.also.map((m, i) => strip(m, i + 1)) } };
 }
 
+/** A moves block without the words that S5 (old-promise) adds, for a case where only lockrot fires
+ *  it, so the rest of the block is still compared. */
+function withoutOldPromise(moves: unknown): unknown {
+  return (moves as Record<string, unknown>[]).map((move) => ({
+    ...move,
+    not_checked: null,
+    after: move.after === null ? null : { ...(move.after as object), result: null },
+  }));
+}
+
 describe("a MOVE_VERSION difference is only the why-not step of a move that does not resolve", () => {
-  const listed = [...listedDifferences("moves")]
-    .filter(([, reason]) => reason.includes("MOVE_VERSION"))
-    .map(([name]) => name);
+  const reasons = new Map(
+    [...listedDifferences("moves")].filter(([, reason]) => reason.includes("MOVE_VERSION")),
+  );
+  const listed = [...reasons.keys()];
   const models = new Map(modelCases().map((model) => [model.name, model]));
 
   test("the list names such cases", () => {
@@ -81,8 +92,11 @@ describe("a MOVE_VERSION difference is only the why-not step of a move that does
       const model = models.get(name);
       if (model === undefined) throw new Error(`no model case ${name}`);
 
-      expect(blockGolden("moves", withoutVersionStep(finding, model.finding), run, metadata)).toEqual(
-        model.golden.moves,
+      const page = blockGolden("moves", withoutVersionStep(finding, model.finding), run, metadata);
+      const s5 = reasons.get(name)?.includes("S5 (old-promise)") === true;
+
+      expect(s5 ? withoutOldPromise(page) : page).toEqual(
+        s5 ? withoutOldPromise(model.golden.moves) : model.golden.moves,
       );
     },
   );

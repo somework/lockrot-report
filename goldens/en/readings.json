@@ -19,7 +19,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
   "B-accepted-dagger": [],
@@ -34,7 +34,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener)."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener)."
     }
   ],
   "B-baselined-dagger": [
@@ -48,7 +48,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
   "B-dev-dagger": [
@@ -62,7 +62,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
   "B-gate-flag": [
@@ -76,7 +76,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
   "B-gate-list": [
@@ -90,7 +90,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
   "B-gate-none": [
@@ -104,7 +104,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
   "B-offline-dagger": [
@@ -186,10 +186,11 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
   "S10-tag-undated-dagger": [],
+  "S2-shared-newest-dagger": [],
   "S5-parent-after-ga-dagger": [
     {
       "flag": "left-behind",
@@ -197,7 +198,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
   "S5-star-dagger": [
@@ -211,7 +212,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
   "S5-untrusted-dagger": [
@@ -221,9 +222,12 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
+  "S8-higher-shared-alive-dagger": [],
+  "S8-higher-shared-untrusted-dagger": [],
+  "S8-higher-undated-stale-dagger": [],
   "S8-prerelease-installed-dagger": [
     {
       "flag": "left-behind",
@@ -235,7 +239,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
   "abandoned-audit-ignore-dagger": [
@@ -334,7 +338,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A critical-severity advisory affects your version (CVE-2026-00003: an advisory added to show the either opening (‡)). It is not fixed on 3.x."
+      "text": "A critical-severity advisory affects your version (CVE-2026-00003 PKSA-eith-0000-0001: an advisory added to show the either opening (‡)). It is not fixed on 3.x."
     }
   ],
   "either-low-dev-dagger": [
@@ -344,7 +348,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A low-severity advisory affects your version (CVE-2026-00004: an advisory added to show the either opening (‡)). It is not fixed on 1.x."
+      "text": "A low-severity advisory affects your version (CVE-2026-00004 PKSA-eith-0000-0002: an advisory added to show the either opening (‡)). It is not fixed on 1.x."
     }
   ],
   "fail-on-config-dagger": [
@@ -358,7 +362,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
   "fail-on-default-dagger": [
@@ -372,7 +376,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A high-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
   "feeds-drupal-dagger": [],
@@ -381,7 +385,7 @@
   "flysystem": [
     {
       "flag": "vulnerable",
-      "text": "A low-severity advisory affects your version (CVE-2026-102601: Flysystem: WhitespacePathNormalizer's control-character (CorruptedPathDetected) check is bypassed by malformed UTF-8 in the path, affecting every adapter). It is not fixed on 1.x."
+      "text": "A low-severity advisory affects your version (CVE-2026-102601 PKSA-w9tt-7782-78jx: Flysystem: WhitespacePathNormalizer's control-character (CorruptedPathDetected) check is bypassed by malformed UTF-8 in the path, affecting every adapter). It is not fixed on 1.x."
     }
   ],
   "gets-below-clears-left-behind-dagger": [],
@@ -404,7 +408,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "9 advisories affect your version. The worst is a high one (CVE-2026-69246: Guzzle: Noncanonical host can bypass host-based checks). None is fixed on 6.x."
+      "text": "9 advisories affect your version. The worst is a high one (CVE-2026-69246 PKSA-gcrk-3vtt-1r14: Guzzle: Noncanonical host can bypass host-based checks). None is fixed on 6.x."
     }
   ],
   "guzzle-5": [
@@ -418,7 +422,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "14 advisories affect your version. The worst is a high one (CVE-2022-31043: Fix failure to strip Authorization header on HTTP downgrade). None is fixed on 5.x."
+      "text": "14 advisories affect your version. The worst is a high one (CVE-2022-31043 PKSA-2z36-j4q9-rsfy: Fix failure to strip Authorization header on HTTP downgrade). None is fixed on 5.x."
     }
   ],
   "guzzle-mixed": [
@@ -432,7 +436,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "14 advisories affect your version. The worst is a high one (CVE-2022-31043: Fix failure to strip Authorization header on HTTP downgrade). None is fixed on 5.x."
+      "text": "14 advisories affect your version. The worst is a high one (CVE-2022-31043 PKSA-2z36-j4q9-rsfy: Fix failure to strip Authorization header on HTTP downgrade). None is fixed on 5.x."
     }
   ],
   "hoa": [
@@ -481,7 +485,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "5 advisories affect your version. The worst is a high one (CVE-2022-25768: Mautic vulnerable to Improper Access Control in UI upgrade process)."
+      "text": "5 advisories affect your version. The worst is a high one (CVE-2022-25768 PKSA-j4xy-fb9q-x9h7: Mautic vulnerable to Improper Access Control in UI upgrade process)."
     }
   ],
   "lock-only-dagger": [
@@ -508,6 +512,7 @@
   "mc-joint-dev-dagger": [],
   "mc-joint-down-dagger": [],
   "mc-joint-retag-dagger": [],
+  "mc-joint-unlocked-dagger": [],
   "mc-link-newest-dagger": [],
   "mc-lookup-incomplete-dagger": [],
   "mc-lookup-kept-dagger": [],
@@ -540,13 +545,19 @@
   "mc-split-maintenance-larger-dagger": [
     {
       "flag": "vulnerable",
-      "text": "A low-severity advisory affects your version (CVE-2026-48784: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` → Generated URL Collapses Off-Route Under RFC 3986 Normalization)."
+      "text": "A low-severity advisory affects your version (CVE-2026-48784 PKSA-bf7t-jnpz-492k: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` → Generated URL Collapses Off-Route Under RFC 3986 Normalization)."
     }
   ],
   "mc-split-not-checked-dagger": [
     {
       "flag": "capped",
       "text": "It requires php >=8.1 <8.5: it stops at 8.4, so the newest PHP, 8.5, is excluded."
+    }
+  ],
+  "mc-update-now-maintenance-dagger": [
+    {
+      "flag": "vulnerable",
+      "text": "A low-severity advisory affects your version (CVE-2026-48784 PKSA-bf7t-jnpz-492k: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` → Generated URL Collapses Off-Route Under RFC 3986 Normalization). It is not fixed on 6.x."
     }
   ],
   "mc-update-now-reduced-dagger": [],
@@ -583,7 +594,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "2 advisories affect your version. The worst is a high one (CVE-2026-00011: an advisory only the next major fixes (‡))."
+      "text": "2 advisories affect your version. The worst is a high one (CVE-2026-00011 PKSA-part-0000-0001: an advisory only the next major fixes (‡))."
     }
   ],
   "php-edge-equal-dagger": [],
@@ -609,7 +620,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "4 advisories affect your version. The worst is a medium one (CVE-2026-55766: CRLF injection in HTTP start-line serialization). None is fixed on 1.x."
+      "text": "4 advisories affect your version. The worst is a medium one (CVE-2026-55766 PKSA-7qs6-zvnz-h66r: CRLF injection in HTTP start-line serialization). None is fixed on 1.x."
     }
   ],
   "replace-graded": [],
@@ -628,7 +639,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "2 advisories affect your version. The worst is a medium one (CVE-2026-48784: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` → Generated URL Collapses Off-Route Under RFC 3986 Normalization). None is fixed on 4.x."
+      "text": "2 advisories affect your version. The worst is a medium one (CVE-2026-48784 PKSA-bf7t-jnpz-492k: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` → Generated URL Collapses Off-Route Under RFC 3986 Normalization). None is fixed on 4.x."
     }
   ],
   "routing-self-dagger": [
@@ -638,7 +649,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "2 advisories affect your version. The worst is a medium one (CVE-2026-48784: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` → Generated URL Collapses Off-Route Under RFC 3986 Normalization). None is fixed on 4.x."
+      "text": "2 advisories affect your version. The worst is a medium one (CVE-2026-48784 PKSA-bf7t-jnpz-492k: UrlGenerator Dot-Segment Encoding Skips Every Other Chained `../` or `./` → Generated URL Collapses Off-Route Under RFC 3986 Normalization). None is fixed on 4.x."
     }
   ],
   "silent": [
@@ -658,6 +669,33 @@
     }
   ],
   "stale-only": [],
+  "tag-blocked-highest-php-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 7.6 years."
+    }
+  ],
+  "tag-higher-shared-alive-dagger": [],
+  "tag-higher-shared-stale-dagger": [],
+  "tag-higher-trusted-stale-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 3.7 years."
+    }
+  ],
+  "tag-higher-undated-stale-dagger": [],
+  "tag-highest-php-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 7.6 years."
+    }
+  ],
+  "tag-no-php-dagger": [
+    {
+      "flag": "stale",
+      "text": "Nothing has been released for 7.7 years."
+    }
+  ],
   "through-own": [
     {
       "flag": "stale",
@@ -675,7 +713,7 @@
     },
     {
       "flag": "vulnerable",
-      "text": "A medium-severity advisory affects your version (CVE-2026-45077: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+      "text": "A medium-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
   "twig-1": [
@@ -710,12 +748,15 @@
     },
     {
       "flag": "vulnerable",
-      "text": "3 advisories affect your version. The worst is a low one (CVE-2026-45133: YAML Parser Stack Exhaustion via Unbounded Recursion in Nested Blocks, Sequences, and Mappings). None is fixed on 3.x."
+      "text": "3 advisories affect your version. The worst is a low one (CVE-2026-45133 PKSA-b14r-zh1d-vdrc: YAML Parser Stack Exhaustion via Unbounded Recursion in Nested Blocks, Sequences, and Mappings). None is fixed on 3.x."
     }
   ],
   "zero-n": [],
   "B-accepted-unread-dagger": [],
+  "S8-lower-tag-shared-dagger": [],
+  "branch-release-shared-dagger": [],
   "capped-unread-dagger": [],
+  "composer-json-invalid-dagger": [],
   "finished-offline-dagger": [],
   "host-accept-expired-dagger": [],
   "host-accepted-dagger": [],

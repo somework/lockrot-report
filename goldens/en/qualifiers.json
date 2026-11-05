@@ -650,6 +650,25 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
+  "S2-shared-newest-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through symfony/proxy-manager-bridge",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
   "S5-parent-after-ga-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -701,6 +720,55 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by left-behind and CVE-2026-45077"
+    ]
+  },
+  "S8-higher-shared-alive-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
+  "S8-higher-shared-untrusted-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) and release branch (S8) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "S8-higher-undated-stale-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) and release branch (S8) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
     ]
   },
   "S8-prerelease-installed-dagger": {
@@ -2237,6 +2305,23 @@
       "Tripped by CVE-2026-69246"
     ]
   },
+  "mc-joint-unlocked-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-69246"
+    ]
+  },
   "mc-link-newest-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -2506,6 +2591,22 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by capped and CVE-2026-48784"
+    ]
+  },
+  "mc-update-now-maintenance-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
     ]
   },
   "mc-update-now-reduced-dagger": {
@@ -3263,6 +3364,139 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
+  "tag-blocked-highest-php-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
+  "tag-higher-shared-alive-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 7.2.5"
+    ],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "tag-higher-shared-stale-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 7.2.5"
+    ],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "tag-higher-trusted-stale-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 7.2.5"
+    ],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "tag-higher-undated-stale-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Not required directly, through mautic/core-lib",
+      "Its maintenance counts half"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [
+      "It sets the lowest PHP this lock admits: 7.2.5"
+    ],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "tag-highest-php-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
+  "tag-no-php-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
   "through-own": {
     "reach": [
       "Production: not in packages-dev",
@@ -3526,6 +3760,40 @@
       "Tripped by CVE-2026-45077"
     ]
   },
+  "S8-lower-tag-shared-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by left-behind"
+    ]
+  },
+  "branch-release-shared-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Release age (S2) and release branch (S8) not checked (undated releases)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "does not reach the run's gate: grade high or above"
+    ]
+  },
   "capped-unread-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -3543,6 +3811,22 @@
     "accepted": [],
     "gate": [
       "does not reach the run's gate: grade high or above"
+    ]
+  },
+  "composer-json-invalid-dagger": {
+    "reach": [],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [
+      "Advisories (S9) not checked (Composer cannot load composer.json)"
+    ],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: a check that did not run",
+      "Tripped by S9"
     ]
   },
   "finished-offline-dagger": {

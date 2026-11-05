@@ -154,14 +154,17 @@ describe("the lockrot pin has a green lockrot run (R6-29, decision 35)", () => {
     expect(args).toContain("--status success");
   });
 
+  const FULL = { workflowName: "full-check", headBranch: "release/full-check-97e3121d" };
+  const SHARDS = { workflowName: "full-check", headBranch: "release/full-check-97e3121d--solver,verdicts" };
+  const CI_INTEGRATION = { workflowName: "CI", headBranch: "integration/0.14-php-window" };
+  const CI_MAIN = { workflowName: "CI", headBranch: "main" };
+
   test.each([
-    ["a full check", [{ workflowName: "full-check", headBranch: "release/full-check-97e3121d" }], 0],
-    [
-      "a full check of some shards only",
-      [{ workflowName: "full-check", headBranch: "release/full-check-97e3121d--solver,verdicts" }],
-      1,
-    ],
-    ["CI on main", [{ workflowName: "CI", headBranch: "main" }], 0],
+    ["a full check only", [FULL], 1],
+    ["a full check and CI on an integration branch", [FULL, CI_INTEGRATION], 0],
+    ["a full check of some shards only, and CI on an integration branch", [SHARDS, CI_INTEGRATION], 1],
+    ["CI on an integration branch only", [CI_INTEGRATION], 1],
+    ["CI on main only", [CI_MAIN], 0],
     ["CI on a release branch only", [{ workflowName: "CI", headBranch: "release/0.14.0" }], 1],
     ["no run", [], 1],
   ])("on %s, the step exits %i", (_, runs, status) => {

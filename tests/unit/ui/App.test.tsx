@@ -578,7 +578,7 @@ describe("a sheet over the page takes focus", () => {
     fireEvent.click(target);
 
     expect(document.activeElement).toBe(target);
-    expect(document.querySelector("[inert]")).toBeNull();
+    expect(document.querySelector("[inert]:not(.detail-timeline-row)")).toBeNull();
   });
 
   test("an address naming a package the report does not list opens a panel with a Close that takes focus", () => {

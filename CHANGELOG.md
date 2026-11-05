@@ -396,6 +396,16 @@ project is overall, and the other tabs lead with their own part.
   the baseline exempts them".
 - The note of an advisory lookup that failed names the repository as Composer does: "security
   advisories unavailable from composer repo (https://repo.example.org): …".
+- One link rule for an advisory: the source id links to the advisory page, and the CVE id is plain
+  text. The detail sheet's Security list and the verdict line now follow the rule that the
+  Advisories tab follows. Before, they gave the CVE id the link to the source advisory's page. The
+  verdict line names the deciding advisory by both ids, as in "(CVE-2026-45077
+  PKSA-4wjj-gy1p-ft3r: …)", so the link has a place.
+- A folded row of the Release branches table is out of the accessibility tree while it is folded.
+  A screen reader now reads only the rows that an open fold shows.
+- A run where Composer cannot load composer.json checks no advisories, and the page says why: "S9
+  not checked (Composer cannot load composer.json)" on the Checks line, and "not checked (Composer
+  cannot load composer.json)" in the Security block.
 
 ### Security
 

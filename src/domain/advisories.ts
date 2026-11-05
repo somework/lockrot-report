@@ -182,6 +182,10 @@ export function advisoryIds({ cve, id, link }: Pick<S9row, "cve" | "id" | "link"
   ];
 }
 
+/** The ids of `advisoryIds` without the "no CVE assigned" placeholder, for a surface that has no room for it. */
+export const advisorySourceIds = (row: Pick<S9row, "cve" | "id" | "link">): readonly AdvisoryId[] =>
+  advisoryIds(row).filter(({ noCve }) => !noCve);
+
 /** A row's accessible name: one package can carry several rows. */
 export const advisoryRowLabel2 = ({ finding, row }: AdvisoryPair2): string =>
   `${finding.package}, ${row.severity}, ${row.cve ?? row.id}`;

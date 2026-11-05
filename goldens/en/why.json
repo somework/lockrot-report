@@ -270,6 +270,13 @@
     "0 · ok · ages as of 2026-10-01",
     "checks missing: release age (S2) not checked (undated releases)"
   ],
+  "S2-shared-newest-dagger": [
+    "4 · low from 1 · 4 points short of medium · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "transitive: maintenance 8 ÷ 2 = 4",
+    "maintenance alone makes it low",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
   "S5-parent-after-ga-dagger": [
     "32 · critical from 32 · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
@@ -295,6 +302,21 @@
     "left-behind alone grades it high, the advisory alone grades it high: together critical",
     "without left-behind: 16, high · without the advisory: 16, high",
     "checks missing: PHP promise (S5) not checked (undated releases)"
+  ],
+  "S8-higher-shared-alive-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "S8-higher-shared-untrusted-dagger": [
+    "0 · ok · ages as of 2026-10-01",
+    "checks missing: release age (S2) and release branch (S8) not checked (undated releases)"
+  ],
+  "S8-higher-undated-stale-dagger": [
+    "0 · ok · ages as of 2026-10-01",
+    "checks missing: release age (S2) and release branch (S8) not checked (undated releases)"
   ],
   "S8-prerelease-installed-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -837,6 +859,11 @@
     "vulnerable 16: high advisory CVE-2026-69246; its own fix (upgrade on 8.x) is reachable, so no × 2",
     "the advisory alone makes it high"
   ],
+  "mc-joint-unlocked-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-69246; its own fix (upgrade on 8.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
   "mc-link-newest-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
@@ -931,6 +958,14 @@
     "direct requirement: maintenance not halved for reach",
     "the advisory alone makes it high",
     "without capped: 16, high · without the advisory: 8, medium"
+  ],
+  "mc-update-now-maintenance-dagger": [
+    "10 · medium from 8 · 6 points short of high · ages as of 2026-10-01",
+    "capped 8 leads: the strongest maintenance fact counts in full",
+    "vulnerable 2: low advisory CVE-2026-48784; its own fix (upgrade on 7.x) is reachable, so no × 2",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it medium",
+    "without capped: 2, low · without the advisory: 8, medium"
   ],
   "mc-update-now-reduced-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
@@ -1187,6 +1222,59 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it medium"
   ],
+  "tag-blocked-highest-php-dagger": [
+    "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "stale 2: ¼ of 8, beside pinned (correlated evidence)",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "without pinned: 8, medium (stale would lead) · without stale: 16, high"
+  ],
+  "tag-higher-shared-alive-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "transitive: maintenance 16 ÷ 2 = 8",
+    "maintenance alone makes it medium",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "tag-higher-shared-stale-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "transitive: maintenance 16 ÷ 2 = 8",
+    "maintenance alone makes it medium",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "tag-higher-trusted-stale-dagger": [
+    "9 · medium from 8 · 7 points short of high · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "stale 2: ¼ of 8, beside pinned (correlated evidence)",
+    "transitive: maintenance 18 ÷ 2 = 9",
+    "maintenance alone makes it medium",
+    "without pinned: 4, low (stale would lead) · without stale: 8, medium"
+  ],
+  "tag-higher-undated-stale-dagger": [
+    "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "transitive: maintenance 16 ÷ 2 = 8",
+    "maintenance alone makes it medium",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "tag-highest-php-dagger": [
+    "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "stale 2: ¼ of 8, beside pinned (correlated evidence)",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "without pinned: 8, medium (stale would lead) · without stale: 16, high"
+  ],
+  "tag-no-php-dagger": [
+    "18 · high from 16 · 14 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "stale 2: ¼ of 8, beside pinned (correlated evidence)",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "without pinned: 8, medium (stale would lead) · without stale: 16, high"
+  ],
   "through-own": [
     "9 · medium from 8 · 7 points short of high · ages as of 2026-10-01",
     "old-promise 16 leads: the strongest maintenance fact counts in full",
@@ -1292,12 +1380,27 @@
     "checks missing: release age (S2), archived repository (S3), repository activity (S4) and release branch (S8) not checked (not from a Composer repository)",
     "old-promise accepted by your ignore list: counting it would make this 32, critical"
   ],
+  "S8-lower-tag-shared-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "branch-release-shared-dagger": [
+    "0 · ok · ages as of 2026-10-01",
+    "checks missing: release age (S2) and release branch (S8) not checked (undated releases)"
+  ],
   "capped-unread-dagger": [
     "8 · medium from 8 · 8 points short of high · ages as of 2026-10-01",
     "capped 8 leads: the strongest maintenance fact counts in full",
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it medium",
     "checks not run: its release metadata (metadata unavailable)"
+  ],
+  "composer-json-invalid-dagger": [
+    "0 · ok · ages as of 2026-10-01",
+    "checks missing: advisories (S9) not checked (Composer cannot load composer.json)"
   ],
   "finished-offline-dagger": [
     "0 · finished · ages as of 2026-10-01",

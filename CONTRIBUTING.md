@@ -90,8 +90,9 @@ the report-1 screen.
    tag must hold the pin: `node scripts/contract.mjs reachable` says whether it does. For a final
    tag, a lockrot tag holds V, and a push of V unchanged to `release/full-check-<sha of V>` has a
    green full check of the whole tree. A full check that an rc tag starts does not count, because
-   its branch is the tag. The release workflow also accepts a green CI run of a push to lockrot's
-   main.
+   its branch is the tag. The release workflow needs a green CI run of a push of V to any branch
+   where lockrot's `ci.yml` runs on push, such as `main`, `release/**` or `integration/**`. It also
+   needs that full check or a green CI run of a push to lockrot's main.
 3. Run `node scripts/contract.mjs repin <pin>`. For a final tag, commit only the version and the
    pin: `package.json`, the two `version` fields of `package-lock.json`, the CHANGELOG heading and
    `contract/lockrot.json`. If `repin` changed another file under `contract/`, V does not vendor
@@ -105,7 +106,7 @@ the report-1 screen.
    Then tag `vX.Y.Z` on main, or tag a pre-release on main or its release branch. The release
    workflow refuses a final tag that main does not hold, and a pre-release tag that neither main
    nor a release branch holds. It also refuses a pin that the check of step 2 refuses, and a final
-   tag whose pin has no green lockrot run. A pre-release needs no such run, because lockrot's
-   renderer test fails on its pin until lockrot vendors it. The workflow runs the gates of ci.yml,
-   then builds, attests and publishes.
+   tag whose pin lacks a green CI push run, or lacks both a green full check and a green CI run on
+   main. A pre-release needs no such run, because lockrot's renderer test fails on its pin until
+   lockrot vendors it. The workflow runs the gates of ci.yml, then builds, attests and publishes.
 5. In lockrot, run `tools/report/update-renderer vX.Y.Z` and open a pull request.
