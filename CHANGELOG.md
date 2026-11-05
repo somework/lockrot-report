@@ -1086,3 +1086,9 @@ document, same address format, same keys.
 - The timeline no longer drops its first year, and a label no longer pairs one tag's version with
   another tag's date.
 - Ledger filter buttons expose their pressed state to assistive technology.
+
+[Unreleased]: https://github.com/somework/lockrot-report/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/somework/lockrot-report/compare/v0.13.0...v0.14.0
+[0.13.0]: https://github.com/somework/lockrot-report/compare/v0.12.0...v0.13.0
+[0.12.0]: https://github.com/somework/lockrot-report/compare/v0.11.0...v0.12.0
+[0.11.0]: https://github.com/somework/lockrot-report/releases/tag/v0.11.0

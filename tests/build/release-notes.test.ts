@@ -68,6 +68,12 @@ describe("scripts/release-notes.mjs", () => {
     expect(notes("v0.14.0-rc.3", NO_RC_SECTION)).toBe("final notes.");
   });
 
+  it("ends the last section before the link references of the headings", () => {
+    const linked = `${NO_RC_SECTION}\n[0.14.0]: https://example.test/0.14.0\n[0.13.0]: https://example.test/0.13.0\n`;
+
+    expect(notes("v0.13.0", linked)).toBe("plain notes.");
+  });
+
   it("fails when neither the rc nor its X.Y.Z section exists", () => {
     expect(() => notes("v0.15.0-rc.1", CHANGELOG)).toThrow("no section for 0.15.0-rc.1");
   });

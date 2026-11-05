@@ -14,3 +14,20 @@ test("the 0.14.0 Security entry names every option the command argument rule tak
 
   expect(options.filter((option) => !rule.includes(`\`${option}\``))).toEqual([]);
 });
+
+test("each bracketed version heading has a link reference to its tag or compare view", () => {
+  const headings = [...CHANGELOG.matchAll(/^## \[([^\]]+)\]/gm)].map(([, label]) => label);
+  const links = new Map(
+    [...CHANGELOG.matchAll(/^\[([^\]]+)\]: (\S+)$/gm)].map(([, label, url]) => [label, url]),
+  );
+
+  expect(headings.filter((label) => !links.has(label))).toEqual([]);
+  expect(
+    [...links.values()].filter(
+      (url) =>
+        !/^https:\/\/github\.com\/somework\/lockrot-report\/(compare\/v[\w.-]+\.\.\.(v[\w.-]+|HEAD)|releases\/tag\/v[\w.-]+)$/.test(
+          url,
+        ),
+    ),
+  ).toEqual([]);
+});
