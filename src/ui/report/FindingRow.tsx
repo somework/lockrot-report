@@ -32,6 +32,7 @@ import { openInteractions } from "../rowOpen";
 import { FlagPills } from "./FlagPills";
 import { PackageWord, Version } from "./PackageWord";
 import { ScoreBar } from "./ScoreBar";
+import { Wbr } from "./PkgName";
 
 /** 0-100, clamped: a bar past the axis' edge is drawn at the edge. */
 function pct(value: number, max: number): string {
@@ -185,7 +186,7 @@ function PackageName({ finding }: { finding: Finding }) {
         {slash > 0 && (
           <>
             <span className="fc-vendor f2-unit">{finding.package.slice(0, slash + 1)}</span>
-            <wbr />
+            <Wbr />
           </>
         )}
         <span className="fc-name fc-unit f2-unit">{finding.package.slice(slash + 1)}</span>

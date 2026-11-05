@@ -881,6 +881,21 @@ describe("layout", () => {
     expect(document.querySelector(".topbar")?.textContent).toContain("matomo/matomo");
   });
 
+  test("the one level-1 heading names the project, and the lockrot link sits in no heading", () => {
+    render(<App model={load("B")} />);
+
+    expect(screen.getAllByRole("heading", { level: 1 })).toEqual([
+      screen.getByRole("heading", { level: 1, name: "matomo/matomo" }),
+    ]);
+    expect(screen.getByRole("link", { name: /^lockrot/ }).closest("h1, h2, h3, h4, h5, h6")).toBeNull();
+  });
+
+  test("the level-1 heading falls back to the lock's name when the run names no project", () => {
+    render(<App model={load()} />);
+
+    expect(screen.getByRole("heading", { level: 1, name: "composer.lock" })).toBeTruthy();
+  });
+
   test("a document with a newer schema says so", () => {
     render(<App model={{ ...load(), schema: 3, newerSchema: true }} />);
 

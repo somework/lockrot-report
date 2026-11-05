@@ -26,6 +26,7 @@ import { Version } from "./PackageWord";
 import { useReport2 } from "./useReport";
 import "../views/views.css";
 import "./packages.css";
+import { Wbr } from "./PkgName";
 
 /** A dash or a lower bound says what it stands for, to the eye on hover and to a screen reader. */
 function Measured({ cell }: { cell: Cell }) {
@@ -45,7 +46,7 @@ function PackageName({ name }: { name: string }) {
   return (
     <span className="pkg-word">
       <span className="p2-unit">{name.slice(0, slash + 1)}</span>
-      <wbr />
+      <Wbr />
       <span className="p2-unit">{name.slice(slash + 1)}</span>
     </span>
   );

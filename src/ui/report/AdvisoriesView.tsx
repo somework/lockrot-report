@@ -41,6 +41,7 @@ import { useReport2 } from "./useReport";
 import "../views/views.css";
 import "../views/advisories.css";
 import "./advisories.css";
+import { Wbr } from "./PkgName";
 
 const pairKey = ({ finding, row }: AdvisoryPair2): string => `${finding.package}:${row.id}`;
 
@@ -114,7 +115,7 @@ function Affects({ range, tabIndex }: { range: string | null; tabIndex: -1 | und
           {affects.parts.map((part, i) => (
             <Fragment key={i}>
               <span className="ac2-r">{part}</span>
-              <wbr />
+              <Wbr />
             </Fragment>
           ))}
         </span>

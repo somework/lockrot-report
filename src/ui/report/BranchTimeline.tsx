@@ -15,6 +15,7 @@ import { toneClass } from "../common/common";
 import { usePrinted } from "../print/printContext";
 import "../detail/timeline.css";
 import "../detail/timeline-forced.css";
+import { Wbr } from "./PkgName";
 
 // A CSS custom property through CSSOM, never a `style="…"` string the page's CSP would refuse.
 const at = (name: string, x: number): Record<string, string> => ({ [name]: `${x}%` });
@@ -128,7 +129,7 @@ function LaneRow({ lane, span, guides, level, folded = false, collapsed = false 
         ) : (
           barParts(lane.php).map((part, i) => (
             <Fragment key={i}>
-              {i > 0 && <wbr />}
+              {i > 0 && <Wbr />}
               {part}
             </Fragment>
           ))

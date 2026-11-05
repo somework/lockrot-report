@@ -147,8 +147,8 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     for (const count of counts) {
       const range = count.nextElementSibling;
       expect(range?.classList.contains("ac2-flow")).toBe(true);
-      expect(range?.querySelectorAll("wbr").length).toBeGreaterThan(1);
-      expect(range?.querySelectorAll(".ac2-r").length).toBe(range?.querySelectorAll("wbr").length);
+      expect(range?.querySelectorAll(".wbr").length).toBeGreaterThan(1);
+      expect(range?.querySelectorAll(".ac2-r").length).toBe(range?.querySelectorAll(".wbr").length);
       expect(range?.textContent).toMatch(/\|/);
     }
   });
