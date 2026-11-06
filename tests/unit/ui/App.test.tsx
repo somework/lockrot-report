@@ -890,6 +890,26 @@ describe("layout", () => {
     expect(screen.getByRole("link", { name: /^lockrot/ }).closest("h1, h2, h3, h4, h5, h6")).toBeNull();
   });
 
+  const withParentSplit = (count: number): string => {
+    const model = load("composite", (embed) => {
+      embed.report.libyears.unmeasured = { ...embed.report.libyears.unmeasured, parent_split: count };
+    });
+    history.replaceState(null, "", "/report.html#view=overview");
+    render(<App model={model} />);
+    return document.querySelector('[data-surface="overview"] .ledger-libyears')?.textContent ?? "";
+  };
+
+  test("a libyears.unmeasured key the page does not know names its count in words", () => {
+    expect(withParentSplit(2)).toContain("2, parent split");
+  });
+
+  test("a libyears.unmeasured key the page does not know adds nothing at 0", () => {
+    const lead = withParentSplit(0);
+
+    expect(lead).toContain("Libyears");
+    expect(lead).not.toContain("parent split");
+  });
+
   test("the level-1 heading falls back to the lock's name when the run names no project", () => {
     render(<App model={load()} />);
 
