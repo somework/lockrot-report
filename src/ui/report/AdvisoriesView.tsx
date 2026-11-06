@@ -175,7 +175,11 @@ function AdvisoryRow2({
       className={`adv ${toneClass(gradeTone(advisoryBand(run, row.severity)))}`}
       {...openInteractions(finding.package, dispatch)}
     >
-      <span className="ac-sev" role="cell">
+      <span
+        className="ac-sev"
+        role="cell"
+        aria-label={countedAs === null ? row.severity : `${row.severity} ${countedAs.replace(/^, /, "")}`}
+      >
         <span className="ac-lbl ac-sev-lbl" aria-hidden="true">
           {ADVISORY_HEAD.sev}{" "}
         </span>
@@ -299,16 +303,16 @@ function AdvisoryHead() {
   const ref = useMeasuredHeight<HTMLDivElement>(LIST_HEAD_H);
   return (
     <div className="al-head" role="row" ref={ref}>
-      <span className="al-col al-col-sev" role="columnheader">
+      <span className="al-col al-col-sev" role="columnheader" aria-label={ADVISORY_HEAD.sev}>
         {ADVISORY_HEAD.sev}
       </span>
-      <span className="al-col al-col-adv" role="columnheader">
+      <span className="al-col al-col-adv" role="columnheader" aria-label={ADVISORY_HEAD.adv}>
         {ADVISORY_HEAD.adv}
       </span>
-      <span className="al-col al-col-aff" role="columnheader">
+      <span className="al-col al-col-aff" role="columnheader" aria-label={ADVISORY_HEAD.aff}>
         {ADVISORY_HEAD.aff}
       </span>
-      <span className="al-col al-col-fix" role="columnheader">
+      <span className="al-col al-col-fix" role="columnheader" aria-label={ADVISORY_HEAD.fix}>
         {ADVISORY_HEAD.fix}
       </span>
     </div>

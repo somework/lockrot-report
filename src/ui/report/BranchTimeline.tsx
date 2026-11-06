@@ -76,7 +76,11 @@ function LaneRow({ lane, span, guides, level, folded = false, collapsed = false 
       aria-hidden={hidden || undefined}
       inert={hidden || undefined}
     >
-      <span role="rowheader" className="detail-timeline-branch">
+      <span
+        role="rowheader"
+        className="detail-timeline-branch"
+        aria-label={`${lane.branch}${lane.newest ? TIMELINE_WORDS.newest : ""}${lane.installed ? ` ${TIMELINE_WORDS.yours}` : ""}${lane.move ? ` ${TIMELINE_WORDS.move}` : ""}`}
+      >
         {lane.branch}
         {lane.newest && <Sr>{TIMELINE_WORDS.newest}</Sr>}
         {lane.installed && (
@@ -233,8 +237,10 @@ export function BranchTimeline2({
         aria-describedby={summaryId}
       >
         <div role="row" className="detail-timeline-row detail-timeline-head">
-          <span role="columnheader">{TIMELINE_WORDS.branch}</span>
-          <span role="columnheader" className="detail-timeline-strip-head">
+          <span role="columnheader" aria-label={TIMELINE_WORDS.branch}>
+            {TIMELINE_WORDS.branch}
+          </span>
+          <span role="columnheader" className="detail-timeline-strip-head" aria-label={TIMELINE_WORDS.strip}>
             <Sr>{TIMELINE_WORDS.strip}</Sr>
             {guides.map((guide) => (
               <span
@@ -247,8 +253,12 @@ export function BranchTimeline2({
               </span>
             ))}
           </span>
-          <span role="columnheader">{TIMELINE_WORDS.latest}</span>
-          <span role="columnheader">{TIMELINE_WORDS.php}</span>
+          <span role="columnheader" aria-label={TIMELINE_WORDS.latest}>
+            {TIMELINE_WORDS.latest}
+          </span>
+          <span role="columnheader" aria-label={TIMELINE_WORDS.php}>
+            {TIMELINE_WORDS.php}
+          </span>
         </div>
         {timeline.rows.map((row, i) =>
           row.kind === "lane" ? (

@@ -19,7 +19,7 @@ function Fact({
 }) {
   return (
     <div className="d3-mf">
-      <dt>{label}</dt>
+      <dt aria-label={label}>{label}</dt>
       <dd className={lines ? "d3-mf-lines" : undefined}>{children}</dd>
     </div>
   );
@@ -35,7 +35,7 @@ export function MoveCard({ card, run, owner }: { card: Card; run: Run; owner: st
   );
   return (
     <section className={classes} aria-labelledby={id}>
-      <h3 className="eyebrow" id={id}>
+      <h3 className="eyebrow" id={id} aria-label={card.heading}>
         {card.heading}
       </h3>
       <p className="d3-move-action">
@@ -154,7 +154,11 @@ export function HeldBy({ block }: { block: HeldByBlock }) {
   const printed = usePrinted();
   return (
     <section className="d3-holders" aria-labelledby={id}>
-      <h3 className="eyebrow" id={id}>
+      <h3
+        className="eyebrow"
+        id={id}
+        aria-label={`${DETAIL_WORDS.heldBy}${block.count > 1 ? ` · ${block.count}` : ""}${block.then ?? ""}`}
+      >
         {DETAIL_WORDS.heldBy}
         {block.count > 1 && <span className="d3-count">{` · ${block.count}`}</span>}
         {block.then !== null && <span className="vh">{block.then}</span>}

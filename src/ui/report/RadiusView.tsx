@@ -61,15 +61,18 @@ function ChildRow2({ finding, depth, note, report, first }: ChildProps) {
       style={{ "--depth": String(depth) }}
       data-pkg={finding.package}
       aria-label={finding.package}
-      aria-describedby={`${id}-score ${id}-grade`}
+      aria-describedby={`${id}-said`}
       aria-current={state.pkg === finding.package ? "true" : undefined}
       tabIndex={rowTabIndex(finding.package, cursor, first)}
       {...openInteractions(finding.package, dispatch)}
     >
-      <span className="r2-grade" id={`${id}-grade`}>
-        {finding.verdict}
+      {/* The description reads words without the CSS capitals of the spans below, which Chromium
+          would read out. */}
+      <span id={`${id}-said`} hidden>
+        score {finding.score.total} {finding.verdict}
       </span>
-      <span className="r2-score" id={`${id}-score`}>
+      <span className="r2-grade">{finding.verdict}</span>
+      <span className="r2-score">
         <span className="r2-lbl">score</span> {finding.score.total}
       </span>
       <Name dev={finding.dev} pkg={finding.package} version={finding.version} />
@@ -129,9 +132,14 @@ function ParentRow2({
         <span className="r2-head">
           <Name dev={row.dev} pkg={row.package} version={row.version} />
           {row.self !== null && (
-            <span className={`r2-self ${toneClass(gradeTone(row.self.verdict))}`} id={`${id}-self`}>
-              {RADIUS_WORDS.itself(row.self.verdict)}
-            </span>
+            <>
+              <span className={`r2-self ${toneClass(gradeTone(row.self.verdict))}`}>
+                {RADIUS_WORDS.itself(row.self.verdict)}
+              </span>
+              <span id={`${id}-self`} hidden>
+                {RADIUS_WORDS.itself(row.self.verdict)}
+              </span>
+            </>
           )}
         </span>
         {facts.count !== null && (

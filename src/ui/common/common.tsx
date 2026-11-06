@@ -20,6 +20,12 @@ export function RowHint({ id }: { id: string }) {
   );
 }
 
+/** The name of a heading drawn in CSS capitals, which Chromium would read out as written. A note
+ *  shown beside the heading joins it after a comma, so a heading list keeps the two parts apart. */
+export function headLabel(head: string, note: string | null = null): string {
+  return note === null ? head : `${head}, ${note}`;
+}
+
 export function toneClass(tone: Tone): string {
   return `tone-${tone}`;
 }

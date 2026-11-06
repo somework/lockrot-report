@@ -92,3 +92,16 @@ test.describe("report-2: the names Chromium reads out", () => {
     }
   }
 });
+
+test("report-2: an Overview section heading keeps its name and its note apart", async ({ page }) => {
+  await page.goto(report2Url("composite"));
+  const band = page.locator('[data-surface="overview"]');
+
+  for (const name of [
+    "Weighs most, highest score first",
+    "Flags, packages carrying each; a package counts once per flag",
+    "Blast radius, flagged packages each direct requirement pulls in",
+  ]) {
+    await expect(band.getByRole("heading", { name, exact: true })).toBeVisible();
+  }
+});

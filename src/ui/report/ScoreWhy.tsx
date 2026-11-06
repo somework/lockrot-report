@@ -86,7 +86,9 @@ export function ScoreWhy({ finding, report }: { finding: Finding; report: Report
       aria-labelledby={`${listId}-h`}
     >
       <div className="d2-why-head">
-        <h3 id={`${listId}-h`}>{whyTitle(finding.verdict)}</h3>
+        <h3 id={`${listId}-h`} aria-label={whyTitle(finding.verdict)}>
+          {whyTitle(finding.verdict)}
+        </h3>
         <span className="d2-why-header">{header?.text}</span>
       </div>
       <Bar finding={finding} report={report} />

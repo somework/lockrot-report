@@ -102,7 +102,13 @@ function PackageRow({
       <td role="cell" className="p2-age" data-label={label("age")}>
         <Measured cell={installedAge(finding)} />
       </td>
-      <td role="cell" className="p2-verdict" id={`${id}-verdict`} data-label={label("verdict")}>
+      <td
+        role="cell"
+        className="p2-verdict"
+        id={`${id}-verdict`}
+        data-label={label("verdict")}
+        aria-label={finding.verdict}
+      >
         {finding.verdict}
       </td>
       <td role="cell" className="num p2-score" id={`${id}-score`} data-label={label("score")}>
@@ -209,6 +215,7 @@ export function PackagesView2() {
                     role="columnheader"
                     id={column.key === "score" ? scoreHead : undefined}
                     className={`p2-h-${column.key}`}
+                    aria-label={column.label}
                     aria-sort={active ? (state.sortDesc ? "descending" : "ascending") : "none"}
                   >
                     {printed ? (
@@ -220,6 +227,7 @@ export function PackagesView2() {
                       <button
                         type="button"
                         className={active ? "sort-btn active" : "sort-btn"}
+                        aria-label={column.label}
                         onClick={() => {
                           dispatch({ type: "sort", key: column.key });
                         }}

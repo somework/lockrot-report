@@ -12,7 +12,7 @@ import { depthSentence } from "../../domain/overviewBand";
 import { loadLine, weighsMost, WEIGHS_WORDS, type WeighsRow } from "../../domain/projectGrade";
 import { verdictTone } from "../../domain/findingRow";
 import type { Report2 } from "../../model/report";
-import { toneClass } from "../common/common";
+import { headLabel, toneClass } from "../common/common";
 import { FlagsBlock, Lead, LibyearsBlock } from "./Overview";
 import { PkgName } from "./PkgName";
 import { TabLink } from "./TabLink";
@@ -76,7 +76,7 @@ function WeighsMostBlock({ report }: { report: Report2 }) {
 
   return (
     <div className="ledger-block wm">
-      <h3 className="eyebrow ledger-head">
+      <h3 className="eyebrow ledger-head" aria-label={headLabel(WEIGHS_WORDS.head, WEIGHS_WORDS.note)}>
         {WEIGHS_WORDS.head} <span className="ledger-head-note">{WEIGHS_WORDS.note}</span>
       </h3>
       <p className="wm-load">{load}</p>
@@ -117,9 +117,13 @@ function ExposureBlock({ report }: { report: Report2 }) {
   const depthPart = (depth.length > 0 || sentence !== null) && (
     <div className="ov-part">
       {exposure ? (
-        <h4 className="ov-subhead">{OVERVIEW_TAB_WORDS.depth}</h4>
+        <h4 className="ov-subhead" aria-label={headLabel(OVERVIEW_TAB_WORDS.depth)}>
+          {OVERVIEW_TAB_WORDS.depth}
+        </h4>
       ) : (
-        <h3 className="eyebrow ledger-head">{OVERVIEW_TAB_WORDS.depth}</h3>
+        <h3 className="eyebrow ledger-head" aria-label={headLabel(OVERVIEW_TAB_WORDS.depth)}>
+          {OVERVIEW_TAB_WORDS.depth}
+        </h3>
       )}
       {depth.length > 0 && (
         <ul className="ov-ex is-static">
@@ -140,7 +144,10 @@ function ExposureBlock({ report }: { report: Report2 }) {
     <div className="ledger-block ov-exposure">
       {exposure && (
         <div className="ov-part">
-          <h3 className="eyebrow ledger-head">
+          <h3
+            className="eyebrow ledger-head"
+            aria-label={headLabel(OVERVIEW_TAB_WORDS.exposure, OVERVIEW_TAB_WORDS.exposureNote)}
+          >
             {OVERVIEW_TAB_WORDS.exposure}{" "}
             <span className="ledger-head-note">{OVERVIEW_TAB_WORDS.exposureNote}</span>
           </h3>
@@ -211,15 +218,22 @@ function LibyearsTable({ report }: { report: Report2 }) {
     ) : null;
 
   return (
-    <table className="ov-ly">
-      <caption className="eyebrow">{libyearsCaption(rows.length)}</caption>
+    <table className="ov-ly" aria-label={libyearsCaption(rows.length)}>
+      {/* Chromium reads a caption in its CSS capitals, so the table names itself. */}
+      <caption className="eyebrow">
+        <span aria-hidden="true">{libyearsCaption(rows.length)}</span>
+      </caption>
       <thead>
         <tr>
-          <th scope="col">{OVERVIEW_TAB_WORDS.package}</th>
-          <th scope="col" className="num">
+          <th scope="col" aria-label={OVERVIEW_TAB_WORDS.package}>
+            {OVERVIEW_TAB_WORDS.package}
+          </th>
+          <th scope="col" className="num" aria-label={OVERVIEW_TAB_WORDS.libyears}>
             {OVERVIEW_TAB_WORDS.libyears}
           </th>
-          <th scope="col">{OVERVIEW_TAB_WORDS.release}</th>
+          <th scope="col" aria-label={OVERVIEW_TAB_WORDS.release}>
+            {OVERVIEW_TAB_WORDS.release}
+          </th>
         </tr>
       </thead>
       <tbody>

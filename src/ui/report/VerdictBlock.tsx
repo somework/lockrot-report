@@ -113,7 +113,7 @@ function QualifierRows({ q }: { q: Qualifiers }) {
         (row) =>
           row !== null && (
             <div key={row[0]} className="d3-q">
-              <dt>{row[0]}</dt>
+              <dt aria-label={row[0]}>{row[0]}</dt>
               <dd>{row[1]}</dd>
             </div>
           ),

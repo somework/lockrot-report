@@ -65,21 +65,23 @@ function Ruler({ model }: { model: Report2["run"]["score_model"] }) {
 }
 
 function Table({ table, model }: { table: ScoreTable; model: Report2["run"]["score_model"] }) {
-  const id = useId();
   const wrap = useRef<HTMLDivElement>(null);
   const scrolls = useOverflowX(wrap);
   return (
     <div
       ref={wrap}
       className="run2-table-wrap"
-      {...(scrolls ? { role: "region", "aria-labelledby": id, tabIndex: 0 } : {})}
+      {...(scrolls ? { role: "region", "aria-label": table.caption, tabIndex: 0 } : {})}
     >
-      <table className="run2-table">
-        <caption id={id}>{table.caption}</caption>
+      <table className="run2-table" aria-label={table.caption}>
+        {/* Chromium reads a caption in its CSS capitals, so the table names itself. */}
+        <caption>
+          <span aria-hidden="true">{table.caption}</span>
+        </caption>
         <thead>
           <tr>
             {table.head.map((cell, index) => (
-              <th key={index} scope="col" aria-label={cell.name}>
+              <th key={index} scope="col" aria-label={cell.name ?? cell.text}>
                 {cell.text}
               </th>
             ))}
@@ -96,6 +98,7 @@ function Table({ table, model }: { table: ScoreTable; model: Report2["run"]["sco
                 ) : (
                   <td
                     key={index}
+                    aria-label={cell.band === undefined ? undefined : cell.text}
                     className={
                       cell.band === undefined
                         ? undefined
@@ -132,7 +135,9 @@ function ScoreWorks({ report, opened }: { report: Report2; opened: string | null
   const printed = usePrinted();
   return (
     <section className="sect run2-score" id={SCORE_SECTION_ID} tabIndex={-1} aria-label={parts.title}>
-      <h3 tabIndex={-1}>{parts.title}</h3>
+      <h3 tabIndex={-1} aria-label={parts.title}>
+        {parts.title}
+      </h3>
       <Ruler model={run.score_model} />
       <p className="run2-caption">{parts.bands}</p>
       <p className="run2-caption">{parts.zero}</p>
@@ -165,7 +170,7 @@ function Lookup({ run }: { run: Report2["run"] }) {
   const lookup = advisoryLookup(run);
   return (
     <section className="sect">
-      <h3>{RUN_WORDS.lookup}</h3>
+      <h3 aria-label={RUN_WORDS.lookup}>{RUN_WORDS.lookup}</h3>
       <p className="run2-line">{lookup.scope}</p>
       <p className="run2-line">{lookup.asked}</p>
       <ul className="run2-rows">
@@ -183,7 +188,7 @@ function Notes({ report }: { report: Report2 }) {
   if (notes.length === 0) return null;
   return (
     <section className="sect">
-      <h3>{RUN_WORDS.notes}</h3>
+      <h3 aria-label={RUN_WORDS.notes}>{RUN_WORDS.notes}</h3>
       <ul className="run2-rows">
         {notes.map((note, index) => (
           <li key={index}>
@@ -206,7 +211,7 @@ function AcceptedUnchecked({ report }: { report: Report2 }) {
   if (accepted === null) return null;
   return (
     <section className="sect">
-      <h3>{RUN_WORDS.acceptedUnchecked}</h3>
+      <h3 aria-label={RUN_WORDS.acceptedUnchecked}>{RUN_WORDS.acceptedUnchecked}</h3>
       <p className="run2-line">{accepted.head}</p>
       <ul className="run2-rows">
         {accepted.rows.map((row, index) => (
@@ -231,7 +236,9 @@ function KeyValues({
   if (rows.length === 0) return null;
   return (
     <section className="sect" id={id}>
-      <h3 tabIndex={id === undefined ? undefined : -1}>{head}</h3>
+      <h3 tabIndex={id === undefined ? undefined : -1} aria-label={head}>
+        {head}
+      </h3>
       <dl className={`kv ${className}`.trim()}>
         {rows.map(({ key, value, note }) => (
           <div key={key} className="run2-kv-row">
@@ -250,7 +257,7 @@ function Baseline({ report }: { report: Report2 }) {
   if (baseline === null) return null;
   return (
     <section className="sect run2-baseline">
-      <h3>{RUN_WORDS.baseline}</h3>
+      <h3 aria-label={RUN_WORDS.baseline}>{RUN_WORDS.baseline}</h3>
       <p className="run2-line">{baseline.head}</p>
       {baseline.stale.length > 0 && (
         <>
@@ -289,7 +296,7 @@ export function RunView2() {
       <Notes report={report} />
       <AcceptedUnchecked report={report} />
       <section className="sect">
-        <h3>{RUN_WORDS.gate}</h3>
+        <h3 aria-label={RUN_WORDS.gate}>{RUN_WORDS.gate}</h3>
         <GateLine report={report} className="overview2-gate" />
       </section>
       <KeyValues head={RUN_WORDS.thresholds} rows={thresholdRows(report.run)} />
