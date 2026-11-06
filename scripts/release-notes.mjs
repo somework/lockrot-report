@@ -9,10 +9,14 @@ function sectionOf(changelog, version) {
   const start = changelog.search(heading);
   if (start === -1) return null;
   const rest = changelog.slice(start).split("\n").slice(1);
-  const end = rest.findIndex(
-    (line) => line.startsWith("## ") || /^\[(?:Unreleased|\d+\.\d+\.\d+[^\]]*)\]:/.test(line),
-  );
-  return (end === -1 ? rest : rest.slice(0, end)).join("\n").trim();
+  const end = rest.findIndex((line) => line.startsWith("## "));
+  const section = end === -1 ? rest : rest.slice(0, end);
+  const isTail = (line) => line.trim() === "" || /^\[(?:Unreleased|\d+\.\d+\.\d+[^\]]*)\]:/.test(line);
+  const kept = section.findLastIndex((line) => !isTail(line));
+  return section
+    .slice(0, kept + 1)
+    .join("\n")
+    .trim();
 }
 
 export function releaseNotes(tag, changelog) {

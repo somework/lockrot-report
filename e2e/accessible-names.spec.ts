@@ -3,10 +3,16 @@
  * words the page writes. Chromium builds them from the rendered text, so CSS `text-transform` and a
  * line-break opportunity would otherwise reach them; only its own tree (CDP) shows that.
  */
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { report2Url } from "./support/pages";
 import { createReportPage } from "./support/report";
+import { advisoriesSurface } from "./support/report2/advisories";
 import { openDetail2, openEveryFold } from "./support/report2/detail";
+import { findingsSurface } from "./support/report2/findings";
+import { overviewSurface } from "./support/report2/overview";
+import { packagesSurface } from "./support/report2/packages";
+import { radiusSurface } from "./support/report2/radius";
+import { runSurface } from "./support/report2/run";
 
 /** The style the second read lays over the page; the page's CSP admits no inline style. */
 test.use({ bypassCSP: true });
@@ -36,7 +42,14 @@ const SURFACES = [
   { case: "baselined-wallabag-2.6", pkg: "twig/twig" },
 ] as const;
 
-const VIEWS = ["overview", "findings", "packages", "advisories", "radius", "run"] as const;
+const VIEWS: Record<string, (page: Page) => Locator> = {
+  overview: overviewSurface,
+  findings: findingsSurface,
+  packages: packagesSurface,
+  advisories: advisoriesSurface,
+  radius: radiusSurface,
+  run: runSurface,
+};
 
 async function openGlossary(page: Page): Promise<void> {
   await (await createReportPage(page)).openGlossary();
@@ -50,11 +63,11 @@ test.describe("report-2: the names Chromium reads out", () => {
 
   for (const surface of SURFACES) {
     const opens: [string, (page: Page) => Promise<void>][] = [
-      ...VIEWS.map((view): [string, (page: Page) => Promise<void>] => [
+      ...Object.entries(VIEWS).map(([view, band]): [string, (page: Page) => Promise<void>] => [
         view,
         async (page) => {
           await page.goto(`${report2Url(surface.case)}#view=${view}`);
-          await page.locator(`[data-surface="${view}"]`).waitFor();
+          await band(page).waitFor();
         },
       ]),
       [
@@ -97,7 +110,7 @@ test.describe("report-2: the names Chromium reads out", () => {
 
 test("report-2: an Overview section heading keeps its name and its note apart", async ({ page }) => {
   await page.goto(report2Url("composite"));
-  const band = page.locator('[data-surface="overview"]');
+  const band = overviewSurface(page);
 
   for (const name of [
     "Weighs most, highest score first",

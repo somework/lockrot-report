@@ -80,6 +80,14 @@ describe("scripts/release-notes.mjs", () => {
     expect(notes("v0.13.0", linked)).toBe("plain notes.");
   });
 
+  it("keeps a version link reference inside a section and the bullets after it", () => {
+    const linked = `## [0.13.0]\n\n- see [0.12.0].\n\n[0.12.0]: https://example.test/0.12.0\n\n- later.\n\n## [0.12.0]\n\nolder.\n`;
+
+    expect(notes("v0.13.0", linked)).toBe(
+      "- see [0.12.0].\n\n[0.12.0]: https://example.test/0.12.0\n\n- later.",
+    );
+  });
+
   it("keeps a link reference inside a section that names no version", () => {
     const linked = `## [0.13.0]\n\nsee [SPEC].\n\n[SPEC]: https://example.test/spec\n\n## [0.12.0]\n\nolder.\n`;
 
