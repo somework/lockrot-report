@@ -111,7 +111,7 @@ export function loadLine(report: Report2): string | null {
   const worse = highOrWorse(report);
   const load = sum(findings.map(total));
   const high = sum(findings.filter((f) => worse.includes(f.verdict)).map(total));
-  const share = load === 0 ? "" : ` (${String(Math.floor((100 * high) / load))} %)`;
+  const share = load === 0 ? "" : ` (${String(Math.round((100 * high) / load))} %)`;
   const dev = findings.filter((f) => f.dev);
   return [
     `${plural(load, "point", "points")} on ${plural(report.packages_flagged, "flagged package", "flagged packages")}`,

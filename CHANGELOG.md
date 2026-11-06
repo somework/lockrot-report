@@ -413,6 +413,10 @@ project is overall, and the other tabs lead with their own part.
 - The accessible name or description of a heading, a column head, a cell or a row drawn in capitals
   holds the words as the page writes them, so a name does not read a grade word as an acronym.
 - An Overview heading with a note reads its two parts apart: "Weighs most, highest score first".
+- The Overview load line rounds its share half up, as Copy summary does: "172 (96 %) from high or
+  worse", not "(95 %)".
+- Blast radius of an empty lock reads "No packages in this lock.", and Blast radius with no flagged
+  package reads "Nothing is flagged.". Neither it nor the Overview draws a "flagged, of 0" row.
 
 ### Security
 

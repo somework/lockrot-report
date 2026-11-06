@@ -1,3 +1,4 @@
+import { EMPTY_WORDS } from "../../domain/list";
 import { useReport } from "../context";
 import "./views.css";
 
@@ -15,10 +16,10 @@ export function EmptyState({ reason }: { reason: "clean" | "emptyLock" | "filter
   const { dispatch } = useReport();
 
   if (reason === "clean") {
-    return <p className="empty">Nothing is flagged.</p>;
+    return <p className="empty">{EMPTY_WORDS.clean}</p>;
   }
   if (reason === "emptyLock") {
-    return <p className="empty">No packages in this lock.</p>;
+    return <p className="empty">{EMPTY_WORDS.emptyLock}</p>;
   }
 
   return (

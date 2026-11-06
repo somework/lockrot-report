@@ -181,7 +181,7 @@ describe("the Overview tab of a report-2 document", () => {
 
     const block = band().querySelector<HTMLElement>(".ov-weighs");
     expect(block?.querySelector(".wm-load")?.textContent).toBe(
-      "180 points on 9 flagged packages · 172 (95 %) from high or worse · score model 1",
+      "180 points on 9 flagged packages · 172 (96 %) from high or worse · score model 1",
     );
     const items = [...(block?.querySelectorAll("ol > li") ?? [])];
     expect(items.map((item) => item.querySelector(".wm-label a")?.textContent)).toEqual([

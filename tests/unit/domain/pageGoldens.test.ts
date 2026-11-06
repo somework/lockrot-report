@@ -10,7 +10,7 @@ import { findingsGroups, findingsRowFacts } from "../../../src/domain/findingsRo
 import { firstMoves, gateLineTarget } from "../../../src/domain/firstMoves";
 import { libyearsLead } from "../../../src/domain/libyearsLead";
 import { provenanceWords } from "../../../src/domain/findingWords";
-import { applyFilters2, population2 } from "../../../src/domain/list";
+import { applyFilters2, population2, radiusEmpty } from "../../../src/domain/list";
 import {
   acceptedLine,
   depthSentence,
@@ -199,7 +199,8 @@ function sheetMoves(report: Report2, packages: readonly string[]): unknown {
 }
 /** The Blast radius lead of the whole list: the depth sentence, then the lead lines. */
 function radiusLead(report: Report2): string[] {
-  if (report.packages_flagged === 0) return [];
+  const empty = radiusEmpty(report);
+  if (empty !== null) return [empty];
   const all = population2(report, "radius");
   const depth = depthSentence(report);
   return [...(depth === null ? [] : [depth]), ...radiusAnswer2(report, radiusLayout2(report, all, all))];

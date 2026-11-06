@@ -3,7 +3,7 @@ import { useId } from "preact/hooks";
 import type { Report2 } from "../../model/report";
 import { gradeTone } from "../../domain/findingRow";
 import { depthSentence } from "../../domain/overviewBand";
-import { applyFilters2, population2 } from "../../domain/list";
+import { applyFilters2, population2, radiusEmpty } from "../../domain/list";
 import {
   FOLD_SINGLES,
   isRowOpen,
@@ -228,6 +228,7 @@ export function RadiusView2() {
   const { report } = useReport2();
   const narrow = useNarrow();
   const printed = usePrinted();
+  const empty = radiusEmpty(report);
   const depth = printed ? null : depthSentence(report);
   const layout = radiusLayout2(report, applyFilters2(report, state, "radius"), population2(report, "radius"));
   const answer = radiusAnswer2(report, layout);
@@ -250,6 +251,14 @@ export function RadiusView2() {
         first={first}
       />
     ));
+
+  if (empty !== null) {
+    return (
+      <section className="radius2" data-surface="radius" aria-label="Blast radius">
+        <p className="empty">{empty}</p>
+      </section>
+    );
+  }
 
   return (
     <section className="radius2" data-surface="radius" aria-label="Blast radius">
