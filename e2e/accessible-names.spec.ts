@@ -5,6 +5,7 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 import { report2Url } from "./support/pages";
+import { createReportPage } from "./support/report";
 import { openDetail2, openEveryFold } from "./support/report2/detail";
 
 /** The style the second read lays over the page; the page's CSP admits no inline style. */
@@ -38,7 +39,7 @@ const SURFACES = [
 const VIEWS = ["overview", "findings", "packages", "advisories", "radius", "run"] as const;
 
 async function openGlossary(page: Page): Promise<void> {
-  await page.getByRole("button", { name: "What these words mean" }).click();
+  await (await createReportPage(page)).openGlossary();
   await page.getByRole("dialog").evaluate((dialog) => {
     for (const details of dialog.querySelectorAll("details")) details.open = true;
   });

@@ -74,6 +74,12 @@ describe("scripts/release-notes.mjs", () => {
     expect(notes("v0.13.0", linked)).toBe("plain notes.");
   });
 
+  it("ends the last section before a version link reference with no space after the colon", () => {
+    const linked = `${NO_RC_SECTION}\n[0.13.0]:https://example.test/0.13.0\n`;
+
+    expect(notes("v0.13.0", linked)).toBe("plain notes.");
+  });
+
   it("keeps a link reference inside a section that names no version", () => {
     const linked = `## [0.13.0]\n\nsee [SPEC].\n\n[SPEC]: https://example.test/spec\n\n## [0.12.0]\n\nolder.\n`;
 
