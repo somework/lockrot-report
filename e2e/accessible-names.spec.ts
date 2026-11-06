@@ -1,5 +1,5 @@
 /**
- * PD-A11Y-NAMES (DESIGN.md §5): the names and descriptions Chromium hands a screen reader match the
+ * PD-A11Y-SWEEP-13 to 16 (DESIGN.md §5): the names and descriptions Chromium hands a screen reader match the
  * words the page writes. Chromium builds them from the rendered text, so CSS `text-transform` and a
  * line-break opportunity would otherwise reach them; only its own tree (CDP) shows that.
  */

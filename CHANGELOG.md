@@ -406,6 +406,13 @@ project is overall, and the other tabs lead with their own part.
 - A run where Composer cannot load composer.json checks no advisories, and the page says why: "S9
   not checked (Composer cannot load composer.json)" on the Checks line, and "not checked (Composer
   cannot load composer.json)" in the Security block.
+- The page's heading names the project the report covers. The lockrot link beside it is no longer
+  the page's only heading.
+- A package name that may break after its "/" keeps its accessible name whole: a screen reader no
+  longer hears "guzzlehttp/ guzzle".
+- A heading, a column head, a cell or a row description drawn in capitals gives a screen reader its
+  words as the page writes them, so a grade word is not read out as an acronym.
+- An Overview heading with a note reads its two parts apart: "Weighs most, highest score first".
 
 ### Security
 
