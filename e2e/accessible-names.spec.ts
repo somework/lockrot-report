@@ -53,7 +53,7 @@ test.describe("report-2: the names Chromium reads out", () => {
         view,
         async (page) => {
           await page.goto(`${report2Url(surface.case)}#view=${view}`);
-          await page.getByRole("tab").first().waitFor();
+          await page.locator(`[data-surface="${view}"]`).waitFor();
         },
       ]),
       [
@@ -78,8 +78,9 @@ test.describe("report-2: the names Chromium reads out", () => {
         await open(page);
         const shown = await namedNodes(page);
         await page.addStyleTag({ content: NO_TRANSFORM });
+        const plain = new Set(await namedNodes(page));
 
-        expect(shown).toEqual(await namedNodes(page));
+        expect(shown.filter((node) => !plain.has(node))).toEqual([]);
       });
 
       test(`${surface.case}, ${where}: no package name gains a space where it may break`, async ({

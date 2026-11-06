@@ -88,7 +88,6 @@ describe("a MOVE_VERSION difference is only the why-not step of a move that does
   });
 
   describe("the step it strips is exactly `composer why-not <package> <version> --locked`", () => {
-    // A lead move that leaves the model's version null and does not resolve.
     const recorded = recordedCases().find(
       ({ name, finding }) =>
         listed.includes(name) &&

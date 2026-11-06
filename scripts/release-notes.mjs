@@ -9,7 +9,9 @@ function sectionOf(changelog, version) {
   const start = changelog.search(heading);
   if (start === -1) return null;
   const rest = changelog.slice(start).split("\n").slice(1);
-  const end = rest.findIndex((line) => line.startsWith("## ") || /^\[[^\]]+\]: /.test(line));
+  const end = rest.findIndex(
+    (line) => line.startsWith("## ") || /^\[(?:Unreleased|\d+\.\d+\.\d+[^\]]*)\]: /.test(line),
+  );
   return (end === -1 ? rest : rest.slice(0, end)).join("\n").trim();
 }
 

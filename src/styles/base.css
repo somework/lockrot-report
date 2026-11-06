@@ -90,6 +90,7 @@ code {
   white-space: nowrap;
 }
 .wbr::before {
+  content: "\200B";
   content: "\200B" / "";
 }
 .eyebrow {

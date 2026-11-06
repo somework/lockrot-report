@@ -161,7 +161,7 @@ function AdvisoryRow2({
   const { state, dispatch, cursor } = useReport();
   const { finding, row } = pair;
   const fix = advisoryFixWords(row.fix, finding);
-  const countedAs = advisoryCountedAs(run, row.severity);
+  const countedAs = advisoryCountedAs(run, row.severity)?.replace(/^, /, "") ?? null;
   const php = advisoryFixPhp(row.fix);
   const held = heldByLine(row.fix.held_by, run, finding.package);
   const inner = innerTabIndex(finding.package, cursor, first);
@@ -178,13 +178,13 @@ function AdvisoryRow2({
       <span
         className="ac-sev"
         role="cell"
-        aria-label={countedAs === null ? row.severity : `${row.severity} ${countedAs.replace(/^, /, "")}`}
+        aria-label={countedAs === null ? row.severity : `${row.severity} ${countedAs}`}
       >
         <span className="ac-lbl ac-sev-lbl" aria-hidden="true">
           {ADVISORY_HEAD.sev}{" "}
         </span>
         {row.severity}
-        {countedAs !== null && <span className="ac-counted">{countedAs.replace(/^, /, "")}</span>}
+        {countedAs !== null && <span className="ac-counted">{countedAs}</span>}
       </span>
       {/* One cell under the Advisory head: the title and the ids keep grid places of their own. */}
       <span className="ac-adv" role="cell">

@@ -74,6 +74,12 @@ describe("scripts/release-notes.mjs", () => {
     expect(notes("v0.13.0", linked)).toBe("plain notes.");
   });
 
+  it("keeps a link reference inside a section that names no version", () => {
+    const linked = `## [0.13.0]\n\nsee [SPEC].\n\n[SPEC]: https://example.test/spec\n\n## [0.12.0]\n\nolder.\n`;
+
+    expect(notes("v0.13.0", linked)).toBe("see [SPEC].\n\n[SPEC]: https://example.test/spec");
+  });
+
   it("fails when neither the rc nor its X.Y.Z section exists", () => {
     expect(() => notes("v0.15.0-rc.1", CHANGELOG)).toThrow("no section for 0.15.0-rc.1");
   });

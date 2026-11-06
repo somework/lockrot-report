@@ -410,8 +410,8 @@ project is overall, and the other tabs lead with their own part.
   the page's only heading.
 - A package name that may break after its "/" keeps its accessible name whole: a screen reader no
   longer hears "guzzlehttp/ guzzle".
-- A heading, a column head, a cell or a row description drawn in capitals gives a screen reader its
-  words as the page writes them, so a grade word is not read out as an acronym.
+- The accessible name or description of a heading, a column head, a cell or a row drawn in capitals
+  holds the words as the page writes them, so a name does not read a grade word as an acronym.
 - An Overview heading with a note reads its two parts apart: "Weighs most, highest score first".
 
 ### Security

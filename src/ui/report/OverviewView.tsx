@@ -117,11 +117,11 @@ function ExposureBlock({ report }: { report: Report2 }) {
   const depthPart = (depth.length > 0 || sentence !== null) && (
     <div className="ov-part">
       {exposure ? (
-        <h4 className="ov-subhead" aria-label={headLabel(OVERVIEW_TAB_WORDS.depth)}>
+        <h4 className="ov-subhead" aria-label={OVERVIEW_TAB_WORDS.depth}>
           {OVERVIEW_TAB_WORDS.depth}
         </h4>
       ) : (
-        <h3 className="eyebrow ledger-head" aria-label={headLabel(OVERVIEW_TAB_WORDS.depth)}>
+        <h3 className="eyebrow ledger-head" aria-label={OVERVIEW_TAB_WORDS.depth}>
           {OVERVIEW_TAB_WORDS.depth}
         </h3>
       )}

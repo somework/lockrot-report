@@ -422,7 +422,7 @@ export function SecurityBlock({
   return (
     <div className="ledger-block ledger-advisories">
       {linked ? (
-        <h3 className="eyebrow ledger-head" aria-label={headLabel(OVERVIEW_WORDS.security)}>
+        <h3 className="eyebrow ledger-head" aria-label={OVERVIEW_WORDS.security}>
           {OVERVIEW_WORDS.security}
         </h3>
       ) : (
@@ -552,7 +552,7 @@ export function LibyearsBlock({ report, children }: { report: Report2; children?
   return (
     <div className="ledger-block ledger-libyears">
       <div className="ov-part">
-        <h3 className="eyebrow ledger-head" aria-label={headLabel(OVERVIEW_WORDS.libyears)}>
+        <h3 className="eyebrow ledger-head" aria-label={OVERVIEW_WORDS.libyears}>
           {OVERVIEW_WORDS.libyears}
         </h3>
         {lead.figure !== null && (
