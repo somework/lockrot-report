@@ -80,3 +80,23 @@ test("a package name wider than its Findings cell is cut there with an ellipsis"
   expect(word).toEqual({ clips: true, ellipsis: true });
   expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
 });
+
+test("a requirement name wider than its Reach cell is cut there with an ellipsis", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(`${pageUrl(FIXTURES.longVersionReport2)}#view=findings`);
+  const cell = page.locator('[role="row"] .f2-reach:has(.pkg-word)').first();
+  await expect(cell).toBeVisible();
+  // The page holds no name this long, so the test writes one into the rendered row.
+  await cell.locator(".pkg-word .f2-unit").last().evaluate((el) => {
+    el.textContent = "package-versions-deprecated-and-longer-still-than-any-reach-cell";
+  });
+
+  const word = await cell.locator(".pkg-word").evaluate((el) => ({
+    clips: el.scrollWidth > el.clientWidth,
+    ellipsis: getComputedStyle(el).textOverflow === "ellipsis",
+  }));
+  const sizes = await cell.evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+
+  expect(word).toEqual({ clips: true, ellipsis: true });
+  expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
+});

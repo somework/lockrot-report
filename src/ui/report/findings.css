@@ -42,7 +42,7 @@ span.f2-unit {
   text-overflow: ellipsis;
 }
 /* The name is an inline block (views.css .pkg-word), so the ellipsis is drawn inside that box. */
-.f2-ledger .f2-pkg .pkg-word {
+.f2-ledger :is(.f2-pkg, .f2-reach) .pkg-word {
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: bottom;
