@@ -123,7 +123,14 @@ test.describe("1440×900 (side): every part of the detail is reachable by wheel 
     await page.evaluate(() => {
       window.scrollTo(0, document.body.scrollHeight);
     });
-    await expect.poll(() => report.detailHeaderClearsTopbar()).toBe(true);
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => Math.ceil(window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight,
+        ),
+      )
+      .toBe(true);
+    expect(await report.detailHeaderClearsTopbar()).toBe(true);
   });
 });
 

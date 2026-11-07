@@ -370,7 +370,9 @@ test.describe("shortcuts work on a non-Latin layout (shortcutKey)", () => {
     // A J that follows opens the first row only if the h moved nothing.
     await pressOnLayout(page, "о", "KeyJ");
     const first = (await page.locator("[data-pkg]").first().getAttribute("data-pkg")) ?? "";
-    await expect.poll(() => page.evaluate(() => location.hash)).toContain(`pkg=${encodeURIComponent(first)}`);
+    await expect
+      .poll(() => page.evaluate(() => new URLSearchParams(location.hash.slice(1)).get("pkg")))
+      .toBe(first);
   });
 
   test("a - on the Slash position (German layout) does not focus search", async ({ page }) => {
