@@ -182,7 +182,6 @@ function groupOf(scope: Scope, group: FilterGroup, title: string, rows: readonly
   return shown.length === 0 ? null : { group, title, rows: shown };
 }
 
-/** The one key of the accepted group: a view toggle that hides the accepted pills (SPEC §7.9.7). */
 /** What a view with no row says, by why it has none (DESIGN.md §5 M20). */
 export const EMPTY_WORDS = {
   clean: "Nothing is flagged.",
@@ -196,6 +195,7 @@ export function radiusEmpty(report: Report2): string | null {
   return report.packages_flagged === 0 ? EMPTY_WORDS.clean : null;
 }
 
+/** The one key of the accepted group: a view toggle that hides the accepted pills (SPEC §7.9.7). */
 export const HIDE_ACCEPTED = "hide";
 
 /** Filters no package, so its count is the listed rows whose pills it shows or hides. */

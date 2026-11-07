@@ -104,6 +104,7 @@ test.describe("report-2: the names Chromium reads out", () => {
         await page.addStyleTag({ content: NO_TRANSFORM });
         const plain = await namedNodes(page);
 
+        expect(shown.size).toBeGreaterThan(0);
         expect([...shown].filter(([id, node]) => plain.get(id) !== node).map(([, node]) => node)).toEqual([]);
       });
 

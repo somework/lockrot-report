@@ -285,6 +285,39 @@ describe("the load line", () => {
     expect(sharePhrase(1, 8)).toBe("13%");
   });
 
+  test.each([
+    [1, 200, "201 points on 2 flagged packages · 1 (1 %) from high or worse · score model 1"],
+    [200, 1, "201 points on 2 flagged packages · 200 (99 %) from high or worse · score model 1"],
+  ])("holds a share of %i high of %i low to 1 to 99 %%", (high, low, line) => {
+    const report = run({
+      checked: 2,
+      flagged: 2,
+      counts: { high: 1, low: 1 },
+      findings: [
+        ["high", high, 1],
+        ["low", low, 1],
+      ],
+    });
+
+    expect(lines(report)[2]).toBe(line);
+  });
+
+  test("reads 0 % when no point is high or worse", () => {
+    const report = run({ checked: 1, flagged: 1, counts: { low: 1 }, findings: [["low", 5, 1]] });
+
+    expect(lines(report)[2]).toBe(
+      "5 points on 1 flagged package · 0 (0 %) from high or worse · score model 1",
+    );
+  });
+
+  test("reads 100 % when every point is high or worse", () => {
+    const report = run({ checked: 1, flagged: 1, counts: { high: 1 }, findings: [["high", 5, 1]] });
+
+    expect(lines(report)[2]).toBe(
+      "5 points on 1 flagged package · 5 (100 %) from high or worse · score model 1",
+    );
+  });
+
   test("leaves the share out when the graded findings hold no point", () => {
     const report = golden("policy-off");
     for (const finding of report.findings) if ("total" in finding.score) finding.score.total = 0;
