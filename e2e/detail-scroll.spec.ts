@@ -108,7 +108,7 @@ test.describe("1440×900 (side): every part of the detail is reachable by wheel 
       for (let i = 0; i < 25 && !(await inViewport()); i++) {
         await page.mouse.wheel(0, 400);
       }
-      await page.waitForTimeout(WHEEL_TRANSACTION_MS);
+      await page.waitForTimeout(WHEEL_TRANSACTION_MS); // fragility-ok: only elapsed time ends a wheel transaction
       if (await inViewport()) break;
     }
 
@@ -123,7 +123,13 @@ test.describe("1440×900 (side): every part of the detail is reachable by wheel 
     await page.evaluate(() => {
       window.scrollTo(0, document.body.scrollHeight);
     });
-    await page.waitForTimeout(250);
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => Math.ceil(window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight,
+        ),
+      )
+      .toBe(true);
     expect(await report.detailHeaderClearsTopbar()).toBe(true);
   });
 });
@@ -143,8 +149,9 @@ test.describe("report-2: the sheet scrolls alone", () => {
         const before = await scrollYAfterHover(page, container);
         // Firefox spends one wheel event's delta in steps, so the gesture is a few events, capped.
         for (let i = 0; i < 10 && (await container.evaluate((el) => el.scrollTop)) < scrollable; i++) {
+          const top = await container.evaluate((el) => el.scrollTop);
           await page.mouse.wheel(0, 1500);
-          await page.waitForTimeout(150);
+          await expect.poll(() => container.evaluate((el) => el.scrollTop)).toBeGreaterThan(top);
         }
 
         await expect.poll(() => container.evaluate((el) => el.scrollTop)).toBe(scrollable);

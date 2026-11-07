@@ -367,8 +367,12 @@ test.describe("shortcuts work on a non-Latin layout (shortcutKey)", () => {
   // layout; both are keys that reader typed on purpose, so neither may act as a shortcut.
   test("a Latin letter on the J position (Dvorak h) does not move the selection", async ({ page }) => {
     await pressOnLayout(page, "h", "KeyJ");
-    await page.waitForTimeout(100);
-    expect(await page.evaluate(() => location.hash)).not.toContain("pkg=");
+    // A J that follows opens the first row only if the h moved nothing.
+    await pressOnLayout(page, "о", "KeyJ");
+    const first = (await page.locator("[data-pkg]").first().getAttribute("data-pkg")) ?? "";
+    await expect
+      .poll(() => page.evaluate(() => new URLSearchParams(location.hash.slice(1)).get("pkg")))
+      .toBe(first);
   });
 
   test("a - on the Slash position (German layout) does not focus search", async ({ page }) => {

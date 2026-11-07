@@ -202,7 +202,9 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
     page,
   }) => {
     await report.gotoReport2WithHash("composite", "view=advisories");
-    const grade = page.getByRole("group", { name: "Filters" }).getByRole("group", { name: "Grade" });
+    const grade = page
+      .getByRole("group", { name: "Filters", exact: true })
+      .getByRole("group", { name: "Grade" });
     await grade.getByRole("button", { name: /^critical \d+$/ }).click();
     await expect(page).toHaveURL(/[#&]verdict=critical(&|$)/);
     // composite: `flags.vulnerable.by_verdict` holds 3 critical packages.
@@ -261,7 +263,7 @@ test.describe("PD-RAIL-2/4: counts under the other filters, and the active-filte
       await page.setViewportSize({ width, height: 900 });
       await report.gotoReport2WithHash("baselined-wallabag-main", "view=findings");
       const tall = await page
-        .getByRole("group", { name: "Filters" })
+        .getByRole("group", { name: "Filters", exact: true })
         .getByRole("button")
         .evaluateAll((els) =>
           els.filter((el) => el.getBoundingClientRect().height > 30).map((el) => el.textContent.trim()),

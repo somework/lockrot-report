@@ -216,7 +216,7 @@ export function FindingsStrip() {
   return (
     <div className="f2-strip">
       <p className="f2-strip-figure">{stripFlagged(report)}</p>
-      <div className="legend f2-strip-chips" role="group" aria-label={OVERVIEW_WORDS.grades}>
+      <div className="legend f2-strip-chips" role="group" aria-label={OVERVIEW_WORDS.stripGrades}>
         {gradeChips(report).map(({ grade, count }) => (
           <LegendButton
             key={grade}

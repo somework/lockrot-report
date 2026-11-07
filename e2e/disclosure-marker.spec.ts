@@ -61,7 +61,7 @@ test.describe("report-2: the glossary and the phone folds draw the one marker", 
     const summary = glossary(page).locator("summary", { hasText: "The signals" });
 
     // Read once the rotate transition has settled: the end state is the point, not a frame mid-flight.
-    await page.waitForTimeout(250);
+    await expect.poll(() => page.evaluate(() => document.getAnimations().length)).toBe(0);
     const closed = await markerRotation(summary);
     await summary.click();
     await expect.poll(() => markerRotation(summary)).not.toBe(closed);

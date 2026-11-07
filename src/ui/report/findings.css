@@ -41,6 +41,12 @@ span.f2-unit {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* The name is an inline block (views.css .pkg-word), so the ellipsis is drawn inside that box. */
+.f2-ledger :is(.f2-pkg, .f2-reach) .pkg-word {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
 /* The gate's one accent: the critical tone, quiet where the group head already says it. */
 .f2-gate {
   flex: none;

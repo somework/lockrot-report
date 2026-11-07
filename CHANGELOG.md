@@ -8,6 +8,33 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ## [Unreleased]
 
+### Added
+
+- The page's script opens with a notice that names each bundled package, Preact among them, with
+  its version and its licence text.
+- A move whose release name holds |, < or > shows no command box and no copy button. It keeps its
+  check line, and one line says why: "lockrot prints no command: the release name holds |, < or >,
+  which a Windows shell runs or redirects." The Run data tab prints lockrot's note.
+
+### Changed
+
+- The page reads the reports of lockrot 0.14.0-rc.14, with the check reason `lock_disabled` and the
+  note `command_argument_unsafe`.
+- An autobooted page titles the document by the open package, the tab and the project, and the
+  title lockrot wrote follows. An embedder's `mount()` leaves its own title alone.
+
+### Fixed
+
+- Blast radius, its tab badge and the printed lede count no exposure when nothing is flagged.
+- The check line of a run whose `config.lock` is false gives the reason. It reads "if Composer
+  resolves it (not checked: config.lock is false, so Composer ignores composer.lock)". The Run
+  data tab names the same reason.
+- A package or requirement name wider than its Package or Reach cell ends in an ellipsis.
+- Below 480 px the Overview flag bars fit a 320 px screen with WCAG 1.4.12 text spacing.
+- The chevron of "How the score works ›" is hidden from screen readers. The Findings strip names
+  its group "Grade, the same filter as under Filters", and the Blast radius toggle reads "The {n}
+  packages listed under {name}".
+
 ## [0.14.0]
 
 The page lockrot 0.14.0 writes with `--format=html`. lockrot 0.14 grades each package by a score built

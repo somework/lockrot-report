@@ -31,10 +31,10 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
 
   test("M25: the toggle states as many packages as the row then lists", async ({ page }) => {
     await go(page, WALLABAG);
-    const toggle = radiusRow(page, "kphoen/rulerz").getByRole("button", { name: /Show the \d+ packages/ });
-    const stated = Number(
-      /Show the (\d+) packages/.exec((await toggle.getAttribute("aria-label")) ?? "")?.[1],
-    );
+    const toggle = radiusRow(page, "kphoen/rulerz").getByRole("button", {
+      name: /^The \d+ packages? listed under/,
+    });
+    const stated = Number(/^The (\d+) packages?/.exec((await toggle.getAttribute("aria-label")) ?? "")?.[1]);
     await toggle.click();
     expect(stated).toBeGreaterThan(0);
     expect((await radiusKids(page, "kphoen/rulerz")).length).toBe(stated);
@@ -61,7 +61,9 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     page,
   }) => {
     await go(page, WALLABAG);
-    const toggle = radiusRow(page, "kphoen/rulerz").getByRole("button", { name: /Show the \d+ packages/ });
+    const toggle = radiusRow(page, "kphoen/rulerz").getByRole("button", {
+      name: /^The \d+ packages? listed under/,
+    });
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await toggle.click();
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
@@ -84,7 +86,7 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     }) => {
       await go(page, WALLABAG, "", width);
       const row = radiusRow(page, "kphoen/rulerz-bundle");
-      const toggle = row.getByRole("button", { name: /Show the \d+ packages/ });
+      const toggle = row.getByRole("button", { name: /^The \d+ packages? listed under/ });
       await toggle.scrollIntoViewIfNeeded();
       const box = await toggle.boundingBox();
       if (box === null) throw new Error("the toggle has no box");
@@ -126,12 +128,11 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     // hoa/ruler is in the S7 of kphoen/rulerz-bundle, first on exposure[], and of kphoen/rulerz.
     await go(page, WALLABAG, "&pkg=hoa%2Fruler");
     await expect(
-      radiusRow(page, "kphoen/rulerz-bundle").getByRole("button", { name: /Show the/ }),
+      radiusRow(page, "kphoen/rulerz-bundle").getByRole("button", { name: /listed under/ }),
     ).toHaveAttribute("aria-expanded", "true");
-    await expect(radiusRow(page, "kphoen/rulerz").getByRole("button", { name: /Show the/ })).toHaveAttribute(
-      "aria-expanded",
-      "false",
-    );
+    await expect(
+      radiusRow(page, "kphoen/rulerz").getByRole("button", { name: /listed under/ }),
+    ).toHaveAttribute("aria-expanded", "false");
     await expect(radiusRow(page, "kphoen/rulerz-bundle").locator('li[data-pkg="hoa/ruler"]')).toHaveAttribute(
       "aria-current",
       "true",
@@ -141,7 +142,7 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
   test("j walks into an open row's packages and never into a folded one", async ({ page }) => {
     await go(page, WALLABAG);
     await radiusRow(page, "kphoen/rulerz")
-      .getByRole("button", { name: /Show the/ })
+      .getByRole("button", { name: /listed under/ })
       .click();
     const [firstKid] = await radiusKids(page, "kphoen/rulerz");
     await radiusRow(page, "kphoen/rulerz").focus();

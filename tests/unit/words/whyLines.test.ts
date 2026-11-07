@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { whyLines } from "../../../src/domain/scoreWhy";
-import { listedDifferences } from "./modelDifferences";
+import { fieldsOf, listedFields } from "./modelDifferences";
 import { lockrotRecordings, modelCases, recordedCases } from "./recorded";
 
 /** SPEC §7.9.8 and §7.9.11 end the header with " · ages as of {date}"; the model's golden stops before it. */
@@ -27,14 +27,16 @@ describe("whyLines against the model (SPEC §7.9.8)", () => {
   );
 
   it("differs from the model's golden on lockrot's recording only where model-differences.json lists", () => {
-    const models = new Map(modelCases().map(({ name, golden }) => [name, JSON.stringify(golden.why)]));
+    const models = new Map(modelCases().map(({ name, golden }) => [name, golden.why]));
     const differing = lockrotRecordings()
-      .filter(
-        ({ name, finding, report }) =>
-          JSON.stringify(comparable(whyLines(finding, report))) !== models.get(name),
-      )
-      .map(({ name }) => name);
+      .filter(({ name }) => models.has(name))
+      .map(({ name, finding, report }) => ({
+        name,
+        page: comparable(whyLines(finding, report)),
+        model: models.get(name),
+      }))
+      .filter(({ page, model }) => JSON.stringify(page) !== JSON.stringify(model));
 
-    expect(differing.sort()).toEqual([...listedDifferences("why").keys()].sort());
+    expect(fieldsOf(differing)).toEqual(listedFields("why"));
   });
 });

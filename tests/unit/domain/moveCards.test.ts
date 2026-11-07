@@ -2,7 +2,7 @@
 // lock that showed it.
 import { describe, expect, test } from "vitest";
 
-import { checkLine, holderName, isBelow, moveCards } from "../../../src/domain/moveCards";
+import { checkLine, holderName, isBelow, moveCards, unsafeMoves } from "../../../src/domain/moveCards";
 import { plain } from "../../../src/domain/rich";
 import { securityRungs } from "../../../src/domain/securityBlock";
 import type { Finding, HeldBy, RepositoryMetadata, Run } from "../../../src/model/report";
@@ -165,6 +165,108 @@ describe("S1, §7.9.21: the check line of a refused baseline", () => {
   test("points to the Run tab when the run has no window", () => {
     expect(refused({ php_window: null })).toBe(
       "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run tab names the cause)",
+    );
+  });
+});
+
+describe("R14-5: a move whose release name holds |, < or >", () => {
+  const NO_COMMAND =
+    "lockrot prints no command: the release name holds |, < or >, which a Windows shell runs or redirects.";
+  const unsafeUpdate = () => {
+    const { finding, run } = modelCase("E");
+    const move = finding.next_step;
+    if (move === null || move.version === null) throw new Error("E updates to a version");
+    return { finding: { ...finding, next_step: { ...move, commands: [] } }, run, version: move.version };
+  };
+
+  test("draws no command and says why, for the move the note names by package and version", () => {
+    const { finding, run, version } = unsafeUpdate();
+
+    const [card] = moveCards(finding, run, [{ package: finding.package, version }]);
+
+    expect(card?.argvs).toEqual([]);
+    expect(card?.noCommand).toBe(NO_COMMAND);
+  });
+
+  test("says nothing for a move the note does not name", () => {
+    const { finding, run } = unsafeUpdate();
+
+    const [card] = moveCards(finding, run, [{ package: finding.package, version: "0.0.0-other" }]);
+
+    expect(card?.noCommand).toBeNull();
+  });
+
+  test("finds a tag move by its newest tag", () => {
+    const { finding, run } = modelCase("G-tag-dagger");
+    const move = finding.next_step;
+    const tag = move?.latest?.version;
+    if (move === null || tag === undefined) throw new Error("G-tag‡ moves to a tag");
+    const unsafe = { ...finding, next_step: { ...move, commands: [] } };
+
+    const [card] = moveCards(unsafe, run, [{ package: finding.package, version: tag }]);
+
+    expect(card?.noCommand).toBe(NO_COMMAND);
+  });
+
+  test("says why on the Then card the note names, and not on the lead", () => {
+    const { finding, run, version } = unsafeUpdate();
+    const lead = finding.next_step;
+    const then = { ...lead, version: "2.0.0|x", commands: [] };
+    const withThen = {
+      ...finding,
+      next_step: { ...lead, commands: [["composer", "update", "a/b"]], also: [then] },
+    };
+
+    const cards = moveCards(withThen, run, [{ package: finding.package, version: "2.0.0|x" }]);
+
+    expect(version).not.toBe("2.0.0|x");
+    expect(cards.map((c) => [c.heading, c.noCommand])).toEqual([
+      ["The move", null],
+      ["Then", NO_COMMAND],
+    ]);
+  });
+
+  test("says nothing for a tag move with no newest tag", () => {
+    const { finding, run } = modelCase("G-tag-dagger");
+    const move = finding.next_step;
+    if (move === null) throw new Error("G-tag‡ moves to a tag");
+    const untagged = { ...finding, next_step: { ...move, commands: [], latest: null } };
+
+    const [card] = moveCards(untagged, run, [{ package: finding.package, version: move.version ?? "" }]);
+
+    expect(card?.noCommand).toBeNull();
+  });
+
+  test.each([
+    ["data that is not an object", "v1|x"],
+    ["data that is null", null],
+    ["moves that is not a list", { moves: { package: "c/d", version: "v2|x" } }],
+  ])("reads no move from a command_argument_unsafe note with %s", (_shape, data) => {
+    expect(unsafeMoves([{ code: "command_argument_unsafe", data }])).toEqual([]);
+  });
+
+  test("reads the moves of the command_argument_unsafe note, and nothing from another note", () => {
+    const notes = [
+      { code: "offline", data: { moves: [{ package: "a/b", version: "1|2" }] } },
+      {
+        code: "command_argument_unsafe",
+        data: { moves: [{ package: "c/d", version: "v2|x" }, { package: 1 }] },
+      },
+    ];
+
+    expect(unsafeMoves(notes)).toEqual([{ package: "c/d", version: "v2|x" }]);
+  });
+});
+
+describe("R14-22: the check line when config.lock is false", () => {
+  test("says Composer ignores composer.lock", () => {
+    const { finding, run } = modelCase("holder-vuln-dagger");
+    const move = finding.next_step;
+    if (move === null) throw new Error("holder-vuln‡ has a move");
+    const unchecked = { ...move, check: { result: "not_checked", reason: "lock_disabled" } } as typeof move;
+
+    expect(plain(checkLine(unchecked, run) ?? [])).toBe(
+      "if Composer resolves it (not checked: config.lock is false, so Composer ignores composer.lock)",
     );
   });
 });

@@ -158,7 +158,7 @@ function ExposureBlock({ report }: { report: Report2 }) {
                 <span>{OVERVIEW_TAB_WORDS.requirement}</span>
                 <span>{bars.scale}</span>
               </p>
-              <ul className="ov-ex" aria-label={`${OVERVIEW_TAB_WORDS.exposureNote}, ${bars.scale}`}>
+              <ul className="ov-ex" aria-label={bars.name}>
                 {bars.rows.map((row) => (
                   <li key={row.package}>
                     <TabLink target={{ ...bars.link, pkg: row.package }} className="ov-ex-row">

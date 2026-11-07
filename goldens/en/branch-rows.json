@@ -3679,6 +3679,7 @@
       "folded_in": null
     }
   ],
+  "command-argument-unsafe-dagger": [],
   "commonmark": [
     {
       "branch": "2.x",
@@ -5568,6 +5569,7 @@
     }
   ],
   "mc-link-newest-dagger": [],
+  "mc-lock-disabled-dagger": [],
   "mc-lookup-incomplete-dagger": [],
   "mc-lookup-kept-dagger": [],
   "mc-minimal-changes-dagger": [],
@@ -5635,6 +5637,7 @@
   "mc-split-dagger": [],
   "mc-split-maintenance-larger-dagger": [],
   "mc-split-not-checked-dagger": [],
+  "mc-unreached-vcs-dagger": [],
   "mc-update-now-maintenance-dagger": [
     {
       "branch": "7.x",

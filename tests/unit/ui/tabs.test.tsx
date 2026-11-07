@@ -6,6 +6,7 @@ import type { Report2Embed } from "../../../src/model/report";
 import { INITIAL_STATE, type State } from "../../../src/state/types";
 import { ReportContext } from "../../../src/ui/context";
 import { tabName, Tabs } from "../../../src/ui/Tabs";
+import { pageGoldens } from "../words/recorded";
 
 afterEach(cleanup);
 
@@ -68,6 +69,17 @@ describe("tab names", () => {
       "Blast radius 0",
       "Run data",
     ]);
+  });
+
+  it("count no direct requirement on Blast radius when nothing is flagged, whatever exposure[] holds (R13-12)", () => {
+    const golden = pageGoldens().find(({ id }) => id === "unknown.offline‡");
+    if (golden === undefined) throw new Error("no unknown.offline‡ page golden");
+    expect(golden.report.packages_flagged).toBe(0);
+    expect(golden.report.exposure.length).toBeGreaterThan(0);
+
+    renderTabs(INITIAL_STATE, "composite", () => golden.report as unknown as Report2Embed);
+
+    expect(tabNames()).toContain("Blast radius 0");
   });
 
   it("give Run data the count of the run's notes", () => {

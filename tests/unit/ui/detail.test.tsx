@@ -597,3 +597,56 @@ describe("the Release branches timeline", () => {
     expect(table.querySelectorAll("[aria-hidden='true'][role='row'], [inert][role='row']")).toHaveLength(0);
   });
 });
+
+describe("R14-5: a move lockrot writes no command for", () => {
+  test("draws no command box and no copy button, keeps the check line, and says why", () => {
+    const sheet = openCase("E", (embed) => {
+      const [first, ...rest] = embed.report.findings;
+      const move = first?.next_step;
+      if (first === undefined || move == null || move.version === null)
+        throw new Error("E updates a version");
+      const unsafe = { ...first, next_step: { ...move, commands: [] } };
+      const note = {
+        code: "command_argument_unsafe",
+        text: "lockrot prints no command for 1 move",
+        docs_url: null,
+        sets_network_failures: false,
+        data: { moves: [{ package: first.package, version: move.version }] },
+      };
+      return {
+        ...embed,
+        report: {
+          ...embed.report,
+          findings: [unsafe, ...rest],
+          note_details: [...embed.report.note_details, note],
+        },
+      };
+    });
+
+    expect(within(sheet).queryByRole("button", { name: /^Copy / })).toBeNull();
+    expect(sheet.querySelector(".d3-cmd")).toBeNull();
+    expect(sheet.textContent).toContain("if Composer resolves it");
+    expect(sheet.textContent).toContain(
+      "lockrot prints no command: the release name holds |, < or >, which a Windows shell runs or redirects.",
+    );
+  });
+
+  test("says why on lockrot's own recording of a tag whose release name holds |", () => {
+    const sheet = openCase("command-argument-unsafe-dagger");
+
+    expect(within(sheet).queryByRole("button", { name: /^Copy / })).toBeNull();
+    expect(sheet.textContent).toContain(
+      "lockrot prints no command: the release name holds |, < or >, which a Windows shell runs or redirects.",
+    );
+  });
+});
+
+describe("R14-22: a run whose config.lock is false", () => {
+  test("names the reason on the check line of lockrot's own recording", () => {
+    const sheet = openCase("mc-lock-disabled-dagger");
+
+    expect(sheet.textContent).toContain(
+      "if Composer resolves it (not checked: config.lock is false, so Composer ignores composer.lock)",
+    );
+  });
+});

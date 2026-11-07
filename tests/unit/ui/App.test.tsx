@@ -290,6 +290,57 @@ describe("focus after a tab switch (PD-A11Y-SWEEP-8)", () => {
     expect(document.activeElement).not.toBe(panel);
   });
 
+  test("titles the document by its tab, its open package and the project", () => {
+    document.title = "lockrot: 9 of 9 packages flagged";
+    const model = load();
+    render(<App model={model} title={document.title} />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /^All packages/ }));
+    const packages = document.title;
+    fireEvent.click(screen.getByRole("tab", { name: /^Findings/ }));
+
+    expect(packages).toMatch(/^All packages · \S+ · lockrot: 9 of 9 packages flagged$/);
+    expect(document.title).toMatch(/^Findings · \S+ · lockrot: 9 of 9 packages flagged$/);
+  });
+
+  test("names no package in the title that the report does not hold", () => {
+    document.title = "lockrot: 9 of 9 packages flagged";
+    history.replaceState(null, "", "/report.html#pkg=Call%20support%20now");
+
+    render(<App model={load()} title={document.title} />);
+
+    expect(document.title).not.toContain("Call support now");
+    expect(document.title).toMatch(/ · lockrot: 9 of 9 packages flagged$/);
+  });
+
+  test("gives the written title back when it unmounts", () => {
+    document.title = "lockrot: 9 of 9 packages flagged";
+    const { unmount } = render(<App model={load()} title={document.title} />);
+
+    unmount();
+
+    expect(document.title).toBe("lockrot: 9 of 9 packages flagged");
+  });
+
+  test("leaves the title alone when it is mounted into an embedder's page", () => {
+    document.title = "An embedder's page";
+    render(<App model={load()} />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /^Findings/ }));
+
+    expect(document.title).toBe("An embedder's page");
+  });
+
+  test("the Findings strip's grade chips are a group of their own name, apart from the rail's Grade", () => {
+    render(<App model={load()} />);
+
+    const strip = within(document.querySelector(".f2-strip") as HTMLElement).getByRole("group");
+    const rail = within(screen.getByRole("group", { name: "Filters" })).getByRole("group", { name: "Grade" });
+
+    expect(strip.getAttribute("aria-label")).toBe("Grade, the same filter as under Filters");
+    expect(strip).not.toBe(rail);
+  });
+
   test("the Findings strip's Overview link, focused when pressed, hands focus to the panel", async () => {
     vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
     render(<App model={load()} />);

@@ -181,6 +181,13 @@ describe("radius words", () => {
     });
   });
 
+  it("names a row's toggle by what it lists, with no verb, since aria-expanded holds its state", () => {
+    const row = { package: "kphoen/rulerz-bundle", count: 15 } as Parameters<typeof RADIUS_WORDS.show>[0];
+
+    expect(RADIUS_WORDS.show(row)).toBe("The 15 packages listed under kphoen/rulerz-bundle");
+    expect(RADIUS_WORDS.show({ ...row, count: 1 })).toBe("The 1 package listed under kphoen/rulerz-bundle");
+  });
+
   it("agrees in number when one or more rows do not match the filter", () => {
     expect(RADIUS_WORDS.filtered(1)).toBe("1 more does not match the filter");
     expect(RADIUS_WORDS.filtered(2)).toBe("2 more do not match the filter");

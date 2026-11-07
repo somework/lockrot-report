@@ -83,7 +83,7 @@ export const GLOSSARY2_WORDS = {
   docs: "The verdicts on lockrot.dev",
   libyears:
     "For each package, the years between the release installed and its newest stable release, summed. It counts every drift, healthy patches included, so it says how far behind the lock is and nothing about why: no flag or gate reads it.",
-  score: "How the score adds the flags up is on the Run tab:",
+  score: "How the score adds the flags up is on the Run data tab:",
   accept:
     "A package you consider finished can be accepted the way lockrot's built-in list accepts one: an extra.lockrot.ignore entry in composer.json, with a reason. Its accepted flags stay listed and weigh 0.",
   listKeys: "On a tab with a list:",

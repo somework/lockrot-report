@@ -527,7 +527,7 @@ export class NewReportPage implements ReportPage {
    *  (PD-DETAIL-6), and a page-wide name match found `vendor/direct` for the rail's "Direct". */
   private railLocator(group: RailGroup, key: string): Locator {
     return this.page
-      .getByRole("group", { name: "Filters" })
+      .getByRole("group", { name: "Filters", exact: true })
       .getByRole("button", { name: railLabel(group, key) });
   }
 
@@ -549,7 +549,7 @@ export class NewReportPage implements ReportPage {
 
   async railRows(): Promise<{ group: string; label: string; count: number; pressed: boolean }[]> {
     await this.openRailFold();
-    const buttons = this.page.getByRole("group", { name: "Filters" }).getByRole("button");
+    const buttons = this.page.getByRole("group", { name: "Filters", exact: true }).getByRole("button");
     return buttons.evaluateAll((els) =>
       els.map((el) => {
         const count = el.querySelector(".c")?.textContent ?? "";
@@ -565,7 +565,7 @@ export class NewReportPage implements ReportPage {
    *  list nothing, so selecting one row can move the others. */
   async toggleRailRow(label: string, group?: string): Promise<void> {
     await this.openRailFold();
-    const buttons = this.page.getByRole("group", { name: "Filters" }).getByRole("button");
+    const buttons = this.page.getByRole("group", { name: "Filters", exact: true }).getByRole("button");
     const index = await buttons.evaluateAll(
       (els, [wanted, inGroup]) =>
         els.findIndex((el) => {

@@ -516,6 +516,9 @@
   "capped-update-dagger": [
     null
   ],
+  "command-argument-unsafe-dagger": [
+    null
+  ],
   "commonmark": [
     null
   ],
@@ -860,6 +863,9 @@
   "mc-link-newest-dagger": [
     null
   ],
+  "mc-lock-disabled-dagger": [
+    null
+  ],
   "mc-lookup-incomplete-dagger": [
     null
   ],
@@ -1024,6 +1030,9 @@
     }
   ],
   "mc-split-not-checked-dagger": [
+    null
+  ],
+  "mc-unreached-vcs-dagger": [
     null
   ],
   "mc-update-now-maintenance-dagger": [

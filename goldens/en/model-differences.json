@@ -1,74 +1,170 @@
 {
   "checks": {
-    "lockrot's recording and the model's input differ: Bitbucket has no archived field, so lockrot raises no S3 and the abandoned flag has no archived reason; the model's input has the repository archived": [
-      "C-bitbucket-dagger"
-    ],
-    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": [
-      "tie-dagger"
-    ]
+    "lockrot's recording and the model's input differ: Bitbucket has no archived field, so lockrot raises no S3 and the abandoned flag has no archived reason; the model's input has the repository archived": {
+      "C-bitbucket-dagger": [
+        "/"
+      ]
+    },
+    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": {
+      "tie-dagger": [
+        "/"
+      ]
+    }
   },
   "security_row": {
-    "lockrot's recording and the model's input differ: metadata.branches[].fixes.if_applied: the model reads no date of a row's release, so old-promise stays unverified (`undated`) and the row's score is an upper bound (`at_most`). lockrot dates the release and judges old-promise exactly": [
-      "B-also-dagger"
-    ]
+    "lockrot's recording and the model's input differ: metadata.branches[].fixes.if_applied: the model reads no date of a row's release, so old-promise stays unverified (`undated`) and the row's score is an upper bound (`at_most`). lockrot dates the release and judges old-promise exactly": {
+      "B-also-dagger": [
+        "/9",
+        "/12",
+        "/18",
+        "/21",
+        "/24"
+      ]
+    }
   },
   "why": {
-    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": [
-      "tie-dagger"
-    ]
+    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": {
+      "tie-dagger": [
+        "/0",
+        "/2",
+        "/3",
+        "/4",
+        "/5",
+        "/6"
+      ]
+    }
   },
   "verdict_line": {
-    "lockrot's recording and the model's input differ: Bitbucket has no archived field, so lockrot raises no S3 and the abandoned flag has no archived reason; the model's input has the repository archived": [
-      "C-bitbucket-dagger"
-    ],
-    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": [
-      "tie-dagger"
-    ]
+    "lockrot's recording and the model's input differ: Bitbucket has no archived field, so lockrot raises no S3 and the abandoned flag has no archived reason; the model's input has the repository archived": {
+      "C-bitbucket-dagger": [
+        "/"
+      ]
+    },
+    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": {
+      "tie-dagger": [
+        "/"
+      ]
+    }
   },
   "readings": {
-    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": [
-      "tie-dagger"
-    ]
+    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5": {
+      "tie-dagger": [
+        "/1/flag",
+        "/1/text",
+        "/2"
+      ]
+    }
   },
   "moves": {
-    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5. The move also differs by MOVE_VERSION: the S8 constraint's lowest release and its why-not step": [
-      "tie-dagger"
-    ],
-    "lockrot's recording and the model's input differ: MOVE_VERSION. The model leaves `version` null on a move whose constraint comes from S8, so it writes no why-not step. lockrot names the lowest release that the constraint admits, and ends a move whose check is not `resolves` with the why-not step of that release": [
-      "B-also-dagger",
-      "B-offline-dagger",
-      "B-offline-high-dagger",
-      "S8-higher-shared-alive-dagger",
-      "adds-capped-raise-php",
-      "adds-capped-require-dagger",
-      "capped-require-php",
-      "holder-vuln-dagger",
-      "many-dependents",
-      "mc-joint-dev-dagger",
-      "pagerfanta",
-      "partial-op-dagger",
-      "php-edge-equal-dagger",
-      "php-edge-lower-dagger",
-      "php-edge-upper-dagger",
-      "platform-step-dagger",
-      "platform-step-inside-dagger",
-      "psr7",
-      "require-dev-name-dagger",
-      "unreached-dev-dagger",
-      "unreached-move"
-    ]
+    "lockrot's recording and the model's input differ: lockrot fires S5 (old-promise), because the installed release requires php >=5.3.3 and predates PHP 8.0; the model removes S5. The move also differs by MOVE_VERSION: the S8 constraint's lowest release and its why-not step": {
+      "tie-dagger": [
+        "/0/after/result",
+        "/0/commands/1",
+        "/0/commands_label",
+        "/0/not_checked"
+      ]
+    },
+    "lockrot's recording and the model's input differ: MOVE_VERSION. The model leaves `version` null on a move whose constraint comes from S8, so it writes no why-not step. lockrot names the lowest release that the constraint admits, and ends a move whose check is not `resolves` with the why-not step of that release": {
+      "B-also-dagger": [
+        "/1/commands/1",
+        "/1/commands_label"
+      ],
+      "B-offline-dagger": [
+        "/0/commands/1",
+        "/0/commands_label"
+      ],
+      "B-offline-high-dagger": [
+        "/0/commands/1",
+        "/0/commands_label"
+      ],
+      "S8-higher-shared-alive-dagger": [
+        "/0/commands/2"
+      ],
+      "adds-capped-raise-php": [
+        "/0/commands/2"
+      ],
+      "adds-capped-require-dagger": [
+        "/0/commands/1",
+        "/0/commands_label"
+      ],
+      "capped-require-php": [
+        "/0/commands/2"
+      ],
+      "holder-vuln-dagger": [
+        "/0/command_note",
+        "/0/commands/2"
+      ],
+      "many-dependents": [
+        "/0/commands/0",
+        "/0/commands_label"
+      ],
+      "mc-joint-dev-dagger": [
+        "/0/command_note",
+        "/0/commands/0",
+        "/0/commands_label"
+      ],
+      "pagerfanta": [
+        "/0/commands/2"
+      ],
+      "partial-op-dagger": [
+        "/0/commands/2"
+      ],
+      "php-edge-equal-dagger": [
+        "/0/commands/1",
+        "/0/commands_label"
+      ],
+      "php-edge-lower-dagger": [
+        "/0/commands/2"
+      ],
+      "php-edge-upper-dagger": [
+        "/0/commands/2"
+      ],
+      "platform-step-dagger": [
+        "/0/commands/2"
+      ],
+      "platform-step-inside-dagger": [
+        "/0/commands/2"
+      ],
+      "psr7": [
+        "/0/command_note",
+        "/0/commands/1",
+        "/0/commands_label"
+      ],
+      "require-dev-name-dagger": [
+        "/0/commands/1",
+        "/0/commands_label"
+      ],
+      "unreached-dev-dagger": [
+        "/0/commands/1",
+        "/0/commands_label"
+      ],
+      "unreached-move": [
+        "/0/commands/1",
+        "/0/commands_label"
+      ]
+    }
   },
   "held_by": {
-    "lockrot's recording and the model's input differ: the case sets require.php to *, under which lockrot judges the holder's own step to its newest line; the model keeps the holder's own step of case A": [
-      "A-php-star-dagger"
-    ],
-    "lockrot's recording and the model's input differ: the case sets a require.php that no PHP release matches. lockrot reads it as it reads *, so it judges the holder's own step to its newest line; the model keeps the holder's own step of case A": [
-      "A-php-unsatisfiable-dagger"
-    ]
+    "lockrot's recording and the model's input differ: the case sets require.php to *, under which lockrot judges the holder's own step to its newest line; the model keeps the holder's own step of case A": {
+      "A-php-star-dagger": [
+        "/0/shown/1/step"
+      ]
+    },
+    "lockrot's recording and the model's input differ: the case sets a require.php that no PHP release matches. lockrot reads it as it reads *, so it judges the holder's own step to its newest line; the model keeps the holder's own step of case A": {
+      "A-php-unsatisfiable-dagger": [
+        "/0/shown/1/step"
+      ]
+    }
   },
   "security": {
-    "lockrot's recording and the model's input differ: metadata.branches[].fixes.if_applied: the model reads no date of a row's release, so old-promise stays unverified (`undated`) and the row's score is an upper bound (`at_most`). lockrot dates the release and judges old-promise exactly": [
-      "B-also-dagger"
-    ]
+    "lockrot's recording and the model's input differ: metadata.branches[].fixes.if_applied: the model reads no date of a row's release, so old-promise stays unverified (`undated`) and the row's score is an upper bound (`at_most`). lockrot dates the release and judges old-promise exactly": {
+      "B-also-dagger": [
+        "/ladder/1/lines/2",
+        "/ladder/2/lines/2",
+        "/ladder/4/lines/2",
+        "/ladder/5/lines/2",
+        "/ladder/6/lines/2"
+      ]
+    }
   }
 }

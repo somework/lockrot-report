@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { printHasBody2, printLede2 } from "../../../src/domain/print";
 import type { Report2 } from "../../../src/model/report";
-import { readContractJson } from "../words/recorded";
+import { pageGoldens, readContractJson } from "../words/recorded";
 
 const composite = readContractJson("report-2", "composite.json") as Report2;
 const nothing: Report2 = { ...composite, packages_flagged: 0, findings: [] };
@@ -33,6 +33,18 @@ describe("printLede2", () => {
       "Each direct requirement that pulls in a flagged package, in lockrot's order, with every flagged package listed under it.",
     );
     expect(printHasBody2("radius", composite)).toBe(true);
+  });
+
+  it("says nothing is flagged on Blast radius when packages_flagged is 0, whatever exposure[] holds (R13-12)", () => {
+    const golden = pageGoldens().find(({ id }) => id === "unknown.offline‡");
+    if (golden === undefined) throw new Error("no unknown.offline‡ page golden");
+    expect(golden.report.packages_flagged).toBe(0);
+    expect(golden.report.exposure.length).toBeGreaterThan(0);
+
+    expect(printLede2("radius", golden.report)).toBe(
+      "Nothing flagged, so no direct requirement pulls in a flagged package.",
+    );
+    expect(printHasBody2("radius", golden.report)).toBe(false);
   });
 
   it.each([

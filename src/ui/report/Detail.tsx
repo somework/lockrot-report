@@ -13,7 +13,7 @@ import { feedsLine } from "../../domain/feedsLine";
 import { day } from "../../domain/format";
 import { headerLinks, safeHref } from "../../domain/links";
 import { HIDE_ACCEPTED, hiddenByFilters2 } from "../../domain/list";
-import { moveCards } from "../../domain/moveCards";
+import { moveCards, unsafeMoves } from "../../domain/moveCards";
 import { repositoryLine } from "../../domain/repositoryLine";
 import { advisoryRows } from "../../domain/advisoryRows";
 import { OutLink, toneClass } from "../common/common";
@@ -164,7 +164,7 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
   const lead = branchesLead(finding, metadata);
   const age = ageRows(finding, metadata);
   const baseline = baselineSuffix(finding, run);
-  const cards = moveCards(finding, run);
+  const cards = moveCards(finding, run, unsafeMoves(report.note_details));
   const hasAdvisories = advisoryRows(finding).length > 0;
   const jumps: JumpIds = {
     ...(lead.length > 0 ? { branches: branchesId } : {}),

@@ -135,7 +135,9 @@ test.describe("drupal/core, 62 advisories in a recorded drupal-site run", () => 
     await more.focus();
     await page.keyboard.press("Space");
 
-    await expect(reach.getByRole("button", { name: "show fewer" })).toHaveAttribute("aria-expanded", "true");
+    // The state is in aria-expanded alone: the label stays, as the "9 more" of Held by does.
+    await expect(more).toHaveAttribute("aria-expanded", "true");
+    await expect(more).toHaveAccessibleName("4 more");
     await expect(reach.locator(".d3-namelist > li:visible")).toHaveCount(7);
   });
 });

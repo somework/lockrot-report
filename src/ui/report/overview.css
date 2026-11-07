@@ -513,6 +513,16 @@
     max-content minmax(0, calc(var(--longest, 1) * var(--unit)))
     max-content minmax(min(10em, 22vw), 1fr) max-content;
 }
+/* On a phone the columns sit closer and the split may shrink to its longest word, so a reader's
+   wider text spacing (WCAG 1.4.12) still fits. */
+@media (max-width: 479px) {
+  .overview2-flag-bars {
+    grid-template-columns:
+      max-content minmax(0, calc(var(--longest, 1) * var(--unit)))
+      max-content minmax(min-content, 1fr) max-content;
+    column-gap: 8px;
+  }
+}
 .overview2-split {
   font-size: var(--text-xs);
   color: var(--muted);
