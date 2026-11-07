@@ -1211,6 +1211,16 @@
       "value": "2026-09-30 · less than three weeks ago"
     }
   ],
+  "command-argument-unsafe-dagger": [
+    {
+      "label": "most recent",
+      "value": "v4.0.0+x|calc · 2025-01-01 · 1.7 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2024-01-12 · 2.7 years ago"
+    }
+  ],
   "commonmark": [
     {
       "label": "installed",
@@ -1901,6 +1911,20 @@
       "value": "2026-07-03 · 0.2 years ago"
     }
   ],
+  "mc-lock-disabled-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-01 · 0.3 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
   "mc-lookup-incomplete-dagger": [
     {
       "label": "installed",
@@ -2113,6 +2137,20 @@
     {
       "label": "6.x last",
       "value": "v6.4.41 · 2026-07-06 · 0.2 years ago · its most recent release"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-29 · less than three weeks ago"
+    }
+  ],
+  "mc-unreached-vcs-dagger": [
+    {
+      "label": "installed",
+      "value": "v6.4.28 · 2025-10-31 · 0.9 years ago"
+    },
+    {
+      "label": "6.x last",
+      "value": "v6.4.41 · 2026-07-01 · 0.3 years ago · its most recent release"
     },
     {
       "label": "last push",

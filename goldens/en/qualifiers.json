@@ -1476,6 +1476,23 @@
       "does not reach the run's gate: grade high or above"
     ]
   },
+  "command-argument-unsafe-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by pinned"
+    ]
+  },
   "commonmark": {
     "reach": [
       "Production: not in packages-dev",
@@ -2375,6 +2392,23 @@
       "Tripped by CVE-2026-47345"
     ]
   },
+  "mc-lock-disabled-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-48784"
+    ]
+  },
   "mc-lookup-incomplete-dagger": {
     "reach": [
       "Production: not in packages-dev",
@@ -2627,6 +2661,23 @@
     "gate": [
       "fails the run: grade high or above",
       "Tripped by capped and CVE-2026-48784"
+    ]
+  },
+  "mc-unreached-vcs-dagger": {
+    "reach": [
+      "Production: not in packages-dev",
+      "Required directly"
+    ],
+    "origin": null,
+    "not_judged": null,
+    "unchecked": [],
+    "not_run": [],
+    "php": null,
+    "php_edge": [],
+    "accepted": [],
+    "gate": [
+      "fails the run: grade high or above",
+      "Tripped by CVE-2026-48784"
     ]
   },
   "mc-update-now-maintenance-dagger": {

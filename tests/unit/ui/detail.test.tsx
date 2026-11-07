@@ -630,4 +630,23 @@ describe("R14-5: a move lockrot writes no command for", () => {
       "lockrot prints no command: the release name holds |, < or >, which a Windows shell runs or redirects.",
     );
   });
+
+  test("says why on lockrot's own recording of a tag whose release name holds |", () => {
+    const sheet = openCase("command-argument-unsafe-dagger");
+
+    expect(within(sheet).queryByRole("button", { name: /^Copy / })).toBeNull();
+    expect(sheet.textContent).toContain(
+      "lockrot prints no command: the release name holds |, < or >, which a Windows shell runs or redirects.",
+    );
+  });
+});
+
+describe("R14-22: a run whose config.lock is false", () => {
+  test("names the reason on the check line of lockrot's own recording", () => {
+    const sheet = openCase("mc-lock-disabled-dagger");
+
+    expect(sheet.textContent).toContain(
+      "if Composer resolves it (not checked: config.lock is false, so Composer ignores composer.lock)",
+    );
+  });
 });

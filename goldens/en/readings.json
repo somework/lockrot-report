@@ -337,6 +337,7 @@
     }
   ],
   "capped-update-dagger": [],
+  "command-argument-unsafe-dagger": [],
   "commonmark": [],
   "either-critical-dagger": [
     {
@@ -525,6 +526,7 @@
   "mc-joint-retag-dagger": [],
   "mc-joint-unlocked-dagger": [],
   "mc-link-newest-dagger": [],
+  "mc-lock-disabled-dagger": [],
   "mc-lookup-incomplete-dagger": [],
   "mc-lookup-kept-dagger": [],
   "mc-minimal-changes-dagger": [],
@@ -565,6 +567,7 @@
       "text": "It requires php >=8.1 <8.5: it stops at 8.4, so the newest PHP, 8.5, is excluded."
     }
   ],
+  "mc-unreached-vcs-dagger": [],
   "mc-update-now-maintenance-dagger": [
     {
       "flag": "vulnerable",

@@ -280,6 +280,9 @@
     "Your branch, 4.x, had its last release, 4.17.0, 0.9 years ago.",
     "It has no higher branch."
   ],
+  "command-argument-unsafe-dagger": [
+    "A branch snapshot, dev-master, is installed."
+  ],
   "commonmark": [
     "Your branch, 2.x, had its last release, 2.10.3, less than three weeks ago.",
     "It has no higher branch."
@@ -450,6 +453,10 @@
     "Your branch, 2.x, had its last release, v2.3.5, 0.2 years ago.",
     "It has no higher branch."
   ],
+  "mc-lock-disabled-dagger": [
+    "Your branch, 6.x, had its last release, v6.4.41, 0.3 years ago.",
+    "It has no higher branch."
+  ],
   "mc-lookup-incomplete-dagger": [
     "Your branch, 2.x, had its last release, v2.3.2, 0.3 years ago.",
     "It has no higher branch."
@@ -506,6 +513,10 @@
   ],
   "mc-split-not-checked-dagger": [
     "Your branch, 6.x, had its last release, v6.4.41, 0.2 years ago.",
+    "It has no higher branch."
+  ],
+  "mc-unreached-vcs-dagger": [
+    "Your branch, 6.x, had its last release, v6.4.41, 0.3 years ago.",
     "It has no higher branch."
   ],
   "mc-update-now-maintenance-dagger": [

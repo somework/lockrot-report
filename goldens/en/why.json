@@ -569,6 +569,12 @@
     "direct requirement: maintenance not halved for reach",
     "maintenance alone makes it medium"
   ],
+  "command-argument-unsafe-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
   "commonmark": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory PKSA-m4t9-vsgq-8khn, the worst of 3 (tied with PKSA-zyf5-hrxv-hrd7); its own fix (composer update on 2.x) is reachable, so no × 2",
@@ -884,6 +890,11 @@
     "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
     "the advisory alone makes it high"
   ],
+  "mc-lock-disabled-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
+  ],
   "mc-lookup-incomplete-dagger": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "vulnerable 16: high advisory CVE-2026-47345; its own fix (composer update on 2.x) is reachable, so no × 2",
@@ -973,6 +984,11 @@
     "direct requirement: maintenance not halved for reach",
     "the advisory alone makes it high",
     "without capped: 16, high · without the advisory: 8, medium"
+  ],
+  "mc-unreached-vcs-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "vulnerable 16: high advisory CVE-2026-48784; its own fix (composer update on 6.x) is reachable, so no × 2",
+    "the advisory alone makes it high"
   ],
   "mc-update-now-maintenance-dagger": [
     "10 · medium from 8 · 6 points short of high · ages as of 2026-10-01",
