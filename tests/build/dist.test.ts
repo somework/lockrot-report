@@ -6,7 +6,7 @@
 // produces byte-identical output is a separate, CI-only check (DESIGN.md §6); this file does not
 // re-run the build, so it cannot assert that itself.
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -37,6 +37,28 @@ function sha256Hex(text: string): string {
 
 function countOccurrences(haystack: string, needle: string): number {
   return haystack.split(needle).length - 1;
+}
+
+/** Each package that rolldown's `//#region node_modules/…` markers name, read independently of the
+ *  build plugin that writes the notice. */
+function bundledPackages(js: string): string[] {
+  const names = [...js.matchAll(/^\s*\/\/#region (?:.*\/)?node_modules\/((?:@[^/]+\/)?[^/]+)\//gm)].map(
+    (match) => match[1] ?? "",
+  );
+  return [...new Set(names)].sort();
+}
+
+function packageVersion(name: string): string {
+  const manifest = JSON.parse(readFileSync(join(ROOT, "node_modules", name, "package.json"), "utf8")) as {
+    version: string;
+  };
+  return manifest.version;
+}
+
+function licenceText(name: string): string {
+  const dir = join(ROOT, "node_modules", name);
+  const file = readdirSync(dir).find((entry) => /^licen[cs]e/i.test(entry));
+  return file === undefined ? `no licence file in ${dir}` : readFileSync(join(dir, file), "utf8").trim();
 }
 
 /** The exact text of the two inline elements CSP hashes are computed over — not the surrounding
@@ -159,6 +181,19 @@ describe.skipIf(!distBuilt)(
       const comments = jsFile.split("\n").filter((line) => /^\s*\/\//.test(line) && !REGION.test(line));
       expect(comments).toEqual([]);
       expect(jsFile).not.toContain("/**");
+      expect(jsFile.split("/*").length - 1).toBe(1);
+    });
+
+    it("opens the bundle with the licence notice of each package it bundles", () => {
+      const packages = bundledPackages(jsFile);
+      expect(packages).toContain("preact");
+      const notice = jsFile.slice(0, jsFile.indexOf("*/"));
+      expect(jsFile.startsWith("/*!")).toBe(true);
+      expect(inlineBlocks(html).scriptText.startsWith(notice)).toBe(true);
+      for (const name of packages) {
+        expect(notice).toContain(`${name} ${packageVersion(name)}`);
+        expect(notice).toContain(licenceText(name));
+      }
     });
 
     it("carries no {{…}} beyond its three placeholders", () => {

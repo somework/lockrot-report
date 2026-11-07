@@ -9,6 +9,8 @@ import { fileURLToPath } from "node:url";
 import preact from "@preact/preset-vite";
 import { defineConfig } from "vite";
 
+import { licenceNotices } from "./scripts/licence-notices.ts";
+
 /**
  * Drops every comment from the stylesheet as it is bundled, and nothing else: the rules keep their
  * formatting, so what ships reads like the source minus the prose. The prose stays in the
@@ -47,7 +49,7 @@ const packageJsonUrl = new URL("./package.json", import.meta.url);
 const packageJson = JSON.parse(readFileSync(fileURLToPath(packageJsonUrl), "utf8")) as { version: string };
 
 export default defineConfig({
-  plugins: [preact(), dropViteCssMarker],
+  plugins: [preact(), dropViteCssMarker, licenceNotices],
   css: { postcss: { plugins: [stripCssComments] } },
   define: {
     // Preact reads this to drop its own dev-only warnings; a leftover "development" build would

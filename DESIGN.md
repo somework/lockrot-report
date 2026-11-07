@@ -22,6 +22,12 @@ repository, in the working notes of the extraction; what matters from it is rest
 Nothing is minified. What lockrot vendors ends up inside a signed PHAR, and a reviewer should be
 able to read it; the size cost is small next to the payload.
 
+The bundle carries one comment only, the `/*! … */` notice at its start. The notice names each
+third-party package in the bundle, with its version and its own licence file word for word.
+`scripts/licence-notices.ts` writes the notice at build time from the files in `node_modules/`, and
+the build fails for a bundled package with no licence file. MIT requires the notice in every copy,
+so `report.html` and `lockrot-report.js` both carry it.
+
 ### 1.1 The template keeps every coupling a consumer relies on
 
 These are depended on by lockrot, by lockrot.dev's scripts and by users' own scripts (`docs/ci.md`
