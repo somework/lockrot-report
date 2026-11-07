@@ -34,7 +34,7 @@ test.describe("report-2: the Blast radius tab reads exposure and S7", () => {
     const toggle = radiusRow(page, "kphoen/rulerz").getByRole("button", {
       name: /^The \d+ packages? listed under/,
     });
-    const stated = Number(/^The (\d+) packages/.exec((await toggle.getAttribute("aria-label")) ?? "")?.[1]);
+    const stated = Number(/^The (\d+) packages?/.exec((await toggle.getAttribute("aria-label")) ?? "")?.[1]);
     await toggle.click();
     expect(stated).toBeGreaterThan(0);
     expect((await radiusKids(page, "kphoen/rulerz")).length).toBe(stated);
