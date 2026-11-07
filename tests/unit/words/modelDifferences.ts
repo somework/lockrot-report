@@ -43,6 +43,9 @@ export function differingFields(page: unknown, model: unknown, at = ""): string[
   return JSON.stringify(page) === JSON.stringify(model) ? [] : [at === "" ? "/" : at];
 }
 
+/** Whether two lines or blocks differ in any field, whatever their key order. */
+export const differs = (page: unknown, model: unknown): boolean => differingFields(page, model).length > 0;
+
 /** Each differing case with the fields at which it differs, in the shape of `listedFields`. */
 export function fieldsOf(differences: readonly Difference[]): Record<string, string[]> {
   return Object.fromEntries(differences.map(({ name, page, model }) => [name, differingFields(page, model)]));
@@ -67,5 +70,5 @@ export function differencesFromModel(
       page: line(recorded),
       model: models.get(recorded.name) ?? null,
     }))
-    .filter(({ page, model }) => JSON.stringify(page) !== JSON.stringify(model));
+    .filter(({ page, model }) => differs(page, model));
 }
