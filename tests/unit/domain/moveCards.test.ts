@@ -169,6 +169,19 @@ describe("S1, §7.9.21: the check line of a refused baseline", () => {
   });
 });
 
+describe("R14-22: the check line when config.lock is false", () => {
+  test("says Composer ignores composer.lock", () => {
+    const { finding, run } = modelCase("holder-vuln-dagger");
+    const move = finding.next_step;
+    if (move === null) throw new Error("holder-vuln‡ has a move");
+    const unchecked = { ...move, check: { result: "not_checked", reason: "lock_disabled" } } as typeof move;
+
+    expect(plain(checkLine(unchecked, run) ?? [])).toBe(
+      "if Composer resolves it (not checked: config.lock is false, so Composer ignores composer.lock)",
+    );
+  });
+});
+
 describe("OWN, G118: a hold by its own release", () => {
   test("names that release, with its link words and no grade, flags or own step (wallabag 7.4's symfony/mailer)", () => {
     const { finding, run } = modelCase("holder-vuln-dagger");

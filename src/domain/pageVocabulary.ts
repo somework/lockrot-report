@@ -128,6 +128,7 @@ export const CHECK_REASON_WORDS: readonly (readonly [reason: string, words: stri
   ["offline", "a package it needs is not in Composer's cache"],
   ["install_time_budget", "the install-time budget ran out"],
   ["not_from_composer_repository", "no Composer repository serves it"],
+  ["lock_disabled", "config.lock is false, so Composer ignores composer.lock"],
   ["no_composer_json", "the project has no composer.json"],
   ["composer_json_invalid", "Composer cannot load composer.json"],
   ["platform_config_invalid", "Composer refuses a config.platform value"],

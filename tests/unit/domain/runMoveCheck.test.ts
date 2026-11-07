@@ -99,6 +99,15 @@ describe("the Run tab's move check (SPEC §7.9.16)", () => {
     expect(moveCheckFact(report)).toEqual([words]);
   });
 
+  test("R14-22: says Composer ignores composer.lock when config.lock is false", () => {
+    const report = golden("snipe-it");
+    if (report.run.move_check === null) throw new Error("snipe-it checks its moves");
+    report.run.move_check = { ...report.run.move_check, baseline: "not_checked", reason: "lock_disabled" };
+    expect(plain(moveCheckFact(report) ?? [])).toBe(
+      "not checked (config.lock is false, so Composer ignores composer.lock)",
+    );
+  });
+
   test("prints an unknown reason as written, in a code element", () => {
     const report = golden("snipe-it");
     if (report.run.move_check === null) throw new Error("snipe-it checks its moves");
