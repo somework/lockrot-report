@@ -70,7 +70,7 @@ test.describe("report-2: tabs and counts on the composite", () => {
     await report.tab("radius");
     // A requirement's packages are folded under it until its toggle opens them.
     expect(await report.rows()).toEqual(["friendsofsymfony/oauth-server-bundle", "guzzlehttp/guzzle"]);
-    await page.getByRole("button", { name: /Show the 1 package listed under guzzlehttp\/guzzle/ }).click();
+    await page.getByRole("button", { name: /^The 1 package listed under guzzlehttp\/guzzle/ }).click();
     expect(await report.rows()).toEqual([
       "friendsofsymfony/oauth-server-bundle",
       "guzzlehttp/guzzle",

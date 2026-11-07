@@ -31,7 +31,7 @@ function Names({ names }: { names: readonly string[] }) {
       </ul>
       {rest > 0 && (
         <DisclosureButton
-          label={open ? DETAIL_WORDS.showFewer : DETAIL_WORDS.more.replace("{n}", String(rest))}
+          label={DETAIL_WORDS.more.replace("{n}", String(rest))}
           open={open}
           controls={listId}
           onToggle={() => {

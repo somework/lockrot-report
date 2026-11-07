@@ -149,7 +149,7 @@ export const RADIUS_WORDS = {
   itself: (verdict: string): string => `${verdict} itself`,
   filtered: (n: number): string => `${n} more ${pluralNoun(n, "does", "do")} not match the filter`,
   show: (row: RadiusRow2): string =>
-    `Show the ${plural(row.count, "package", "packages")} listed under ${row.package}`,
+    `The ${plural(row.count, "package", "packages")} listed under ${row.package}`,
   listedUnder: (pkg: string): string => `Listed under ${pkg}`,
   via: (hops: readonly string[]): string => `via ${hops.join(" → ")}`,
   singles: (n: number): string => `${n} more pull in one flagged package each`,
