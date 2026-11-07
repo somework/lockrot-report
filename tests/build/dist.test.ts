@@ -180,8 +180,9 @@ describe.skipIf(!distBuilt)(
       const REGION = /^\s*\/\/#(region |endregion$)/;
       const comments = jsFile.split("\n").filter((line) => /^\s*\/\//.test(line) && !REGION.test(line));
       expect(comments).toEqual([]);
-      expect(jsFile).not.toContain("/**");
-      expect(jsFile.split("/*").length - 1).toBe(1);
+      const bannerEnd = jsFile.startsWith("/*! Third-party software in this file:") ? jsFile.indexOf("\n*/\n") : -1;
+      expect(bannerEnd).toBeGreaterThan(0);
+      expect(jsFile.slice(bannerEnd)).not.toContain("/*");
     });
 
     it("opens the bundle with the licence notice of each package it bundles", () => {
