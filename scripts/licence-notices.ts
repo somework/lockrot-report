@@ -51,12 +51,3 @@ export function licenceBanner(moduleIds: readonly string[]): string {
   const sections = notices.map((n) => `${n.name} ${n.version} (${n.license})\n\n${n.text}`);
   return `/*! Third-party software in this file:\n\n${sections.join("\n\n")}\n*/\n`;
 }
-
-/** Prepends the licence notice of every package in the chunk, read from the package's own files. */
-export const licenceNotices = {
-  name: "lockrot-licence-notices",
-  enforce: "post" as const,
-  renderChunk(code: string, chunk: { moduleIds: readonly string[] }) {
-    return { code: licenceBanner(chunk.moduleIds) + code, map: null };
-  },
-};
