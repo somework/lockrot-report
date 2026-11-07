@@ -22,7 +22,7 @@ export function ScoreModelLink() {
         });
       }}
     >
-      {RUN_WORDS.scoreLink}
+      {RUN_WORDS.scoreLink} <span aria-hidden="true">›</span>
     </a>
   );
 }

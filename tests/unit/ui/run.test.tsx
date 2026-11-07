@@ -240,7 +240,7 @@ describe("the link to How the score works", () => {
       </ReportContext.Provider>,
     );
 
-    fireEvent.click(screen.getByRole("link", { name: "How the score works ›" }));
+    fireEvent.click(screen.getByRole("link", { name: "How the score works" }));
 
     expect(view).toBe("run");
   });
@@ -261,7 +261,7 @@ describe("the live example of How the score works", () => {
     history.replaceState(null, "", "/report.html#pkg=symfony%2Fyaml");
     render(<App model={model()} />);
 
-    fireEvent.click(screen.getByRole("link", { name: "How the score works ›" }));
+    fireEvent.click(screen.getByRole("link", { name: "How the score works" }));
 
     expect(example()?.textContent).toContain("The finding you opened: symfony/yaml ");
   });
