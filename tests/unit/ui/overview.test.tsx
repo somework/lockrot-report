@@ -237,6 +237,22 @@ describe("the Overview tab of a report-2 document", () => {
     expect(band().querySelector(".ov-ex-head")?.textContent).toBe("Direct requirementflagged, of 9");
   });
 
+  test("names the exposure list by what each item says, out of the flagged count", () => {
+    render(<App model={model()} />);
+
+    expect(
+      within(band()).getByRole("list", {
+        name: "Direct requirements, each with the flagged packages it pulls in, of 9 flagged",
+      }),
+    ).toBeTruthy();
+  });
+
+  test("names the verdict picture by what a screen reader gets from it: the grades and the key", () => {
+    render(<App model={model()} />);
+
+    expect(within(band()).getByRole("figure", { name: "Every package by verdict" })).toBeTruthy();
+  });
+
   test("tables the packages furthest behind, each linked to its row", () => {
     render(<App model={model()} />);
 

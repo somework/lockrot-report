@@ -39,6 +39,8 @@ export interface ExposureBars {
   longest: number;
   /** The count column's head: what the bars run to, `packages_flagged`. */
   scale: string;
+  /** The list's accessible name: what each item reads, and the flagged count the bars scale to. */
+  name: string;
   /** "{n} direct requirement(s) pull(s) in flagged packages": the count of `exposure[]`, with no
    *  threshold; null with fewer than two entries, where the one row says it. */
   count: string | null;
@@ -75,6 +77,7 @@ export function exposureBars(report: Report2): ExposureBars {
       n < 2 ? null : `${plural(n, "direct requirement", "direct requirements")} pull in flagged packages.`,
     longest,
     scale: `flagged, of ${String(report.packages_flagged)}`,
+    name: `Direct requirements, each with the flagged packages it pulls in, of ${String(report.packages_flagged)} flagged`,
     overlap:
       rows.length < 2
         ? null

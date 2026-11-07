@@ -4,6 +4,7 @@ import type { RefObject } from "preact";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import { activeFilters } from "../domain/filters";
 import { fitFilters2, population2, renderedPackages2 } from "../domain/list";
+import { pageTitle, projectName } from "../domain/pageTitle";
 import { skipLinkLabel } from "../domain/pageVocabulary";
 import { PHP_WINDOW_SECTION } from "../domain/runState";
 import type { Model } from "../model/types";
@@ -22,7 +23,7 @@ import { anchorShift, measureRow, roomBelow, type RowAnchor } from "./rowAnchor"
 import { usePrintDocument } from "./print/usePrintDocument";
 import { pickCursor } from "./rowCursor";
 import { SearchBar } from "./search/SearchBar";
-import { tabId, Tabs } from "./Tabs";
+import { TABS, tabId, Tabs } from "./Tabs";
 import { useHashState } from "./useHashState";
 import { useShell } from "./useShell";
 import { useShortcutsSwitch } from "./useShortcutsSwitch";
@@ -476,6 +477,12 @@ export function App({ model }: { model: Model }) {
   useEffect(() => {
     detailScrollRef.current?.scrollTo(0, 0);
   }, [state.pkg]);
+
+  const writtenTitle = useRef(document.title);
+  useEffect(() => {
+    const tab = TABS.find(({ view }) => view === state.view)?.label ?? state.view;
+    document.title = pageTitle(writtenTitle.current, tab, projectName(model.report.run), state.pkg);
+  }, [model, state.view, state.pkg]);
 
   const now = useMemo(() => new Date(model.report.generated_at), [model]);
   const value = useMemo(

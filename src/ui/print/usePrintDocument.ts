@@ -1,5 +1,6 @@
 import { h, render, type RefObject } from "preact";
 import { useEffect, useRef } from "preact/hooks";
+import { projectName } from "../../domain/pageTitle";
 import { cssString, dataDay, runningLine } from "../../domain/share";
 import type { ReportContextValue } from "../context";
 import { PrintDocument } from "./PrintDocument";
@@ -40,7 +41,7 @@ export function usePrintDocument(host: RefObject<HTMLElement>, value: ReportCont
       mounted = true;
       const { model } = latest.current;
       const { run, lockrot, data_date } = model.report;
-      const project = run.project ?? run.lock_file ?? "composer.lock";
+      const project = projectName(run);
       root.style.setProperty(
         RUNNING_HEAD,
         cssString(runningLine(project, dataDay(data_date), lockrot.version)),

@@ -21,6 +21,8 @@ export const OVERVIEW_WORDS = {
   /** The Findings strip repeats the rail's Grade buttons, so its group says that it is the same filter. */
   stripGrades: "Grade, the same filter as under Filters",
   perPackage: "One square per package",
+  /** The squares are hidden from a screen reader, so the picture is named by what it still reads. */
+  picture: "Every package by verdict",
   flags: "Flags",
   flagsNote: "packages carrying each; a package counts once per flag",
   security: "Security advisories",

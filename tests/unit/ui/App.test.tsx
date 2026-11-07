@@ -290,6 +290,19 @@ describe("focus after a tab switch (PD-A11Y-SWEEP-8)", () => {
     expect(document.activeElement).not.toBe(panel);
   });
 
+  test("titles the document by its tab, its open package and the project", () => {
+    document.title = "lockrot: 9 of 9 packages flagged";
+    const model = load();
+    render(<App model={model} />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /^All packages/ }));
+    const packages = document.title;
+    fireEvent.click(screen.getByRole("tab", { name: /^Findings/ }));
+
+    expect(packages).toMatch(/^All packages · \S+ · lockrot: 9 of 9 packages flagged$/);
+    expect(document.title).toMatch(/^Findings · \S+ · lockrot: 9 of 9 packages flagged$/);
+  });
+
   test("the Findings strip's grade chips are a group of their own name, apart from the rail's Grade", () => {
     render(<App model={load()} />);
 
