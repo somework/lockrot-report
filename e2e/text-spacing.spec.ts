@@ -18,10 +18,18 @@ for (const caseName of ["composite", "baselined-wallabag-2.6"]) {
     await expect(page.locator('[data-surface="overview"]')).toBeVisible();
     await page.addStyleTag({ content: TEXT_SPACING });
 
+    // The tab strip scrolls inside itself, so its tabs may pass the edge.
+    const pastTheEdge = await page.evaluate(() => {
+      const width = document.documentElement.clientWidth;
+      return [...document.querySelectorAll("main *")]
+        .filter((el) => el.getBoundingClientRect().right > width + 0.5 && el.closest("nav.tabs") === null)
+        .map((el) => `${el.tagName.toLowerCase()}.${el.className}: ${(el.textContent ?? "").slice(0, 40)}`);
+    });
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
 
+    expect(pastTheEdge).toEqual([]);
     expect(overflow).toBe(0);
   });
 }
