@@ -18,6 +18,8 @@ export const OVERVIEW_WORDS = {
     "lockrot grades each package in composer.lock by its security advisories and its maintenance signals.",
   emptyLock: "No packages in this lock",
   grades: "Grade",
+  /** The Findings strip repeats the rail's Grade buttons, so its group says that it is the same filter. */
+  stripGrades: "Grade, the same filter as under Filters",
   perPackage: "One square per package",
   flags: "Flags",
   flagsNote: "packages carrying each; a package counts once per flag",

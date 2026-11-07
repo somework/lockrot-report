@@ -290,6 +290,16 @@ describe("focus after a tab switch (PD-A11Y-SWEEP-8)", () => {
     expect(document.activeElement).not.toBe(panel);
   });
 
+  test("the Findings strip's grade chips are a group of their own name, apart from the rail's Grade", () => {
+    render(<App model={load()} />);
+
+    const strip = within(document.querySelector(".f2-strip") as HTMLElement).getByRole("group");
+    const rail = within(screen.getByRole("group", { name: "Filters" })).getByRole("group", { name: "Grade" });
+
+    expect(strip.getAttribute("aria-label")).toBe("Grade, the same filter as under Filters");
+    expect(strip).not.toBe(rail);
+  });
+
   test("the Findings strip's Overview link, focused when pressed, hands focus to the panel", async () => {
     vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
     render(<App model={load()} />);
