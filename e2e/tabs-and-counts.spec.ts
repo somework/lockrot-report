@@ -19,6 +19,13 @@ test.describe("report-2: tabs and counts on the composite", () => {
     expect(await report.activeTab()).toBe("findings");
   });
 
+  test("the autobooted page titles the document by the open package and the tab", async ({ page }) => {
+    await report.tab("packages");
+    await expect(page).toHaveTitle(/^Packages · /);
+    await report.openPackage("twig/twig");
+    await expect(page).toHaveTitle(/^twig\/twig · Packages · /);
+  });
+
   test("switching tabs moves the aria-selected tab and closes any open detail", async () => {
     await report.tab("packages");
     expect(await report.activeTab()).toBe("packages");

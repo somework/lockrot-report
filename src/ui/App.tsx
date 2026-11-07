@@ -274,8 +274,9 @@ function RailSlot({ folded, inert }: { folded: boolean; inert: boolean }) {
   );
 }
 
-/** The page: state, address bar, layout, theme, keyboard (DESIGN.md §4, §5, §8). */
-export function App({ model }: { model: Model }) {
+/** The page: state, address bar, layout, theme, keyboard (DESIGN.md §4, §5, §8). `title` is the
+ *  document's written title when the page owns the document; without it the title is left alone. */
+export function App({ model, title }: { model: Model; title?: string | undefined }) {
   const wide = useWide();
   const narrow = useNarrow();
   const railRoom = useRailRoom();
@@ -478,11 +479,14 @@ export function App({ model }: { model: Model }) {
     detailScrollRef.current?.scrollTo(0, 0);
   }, [state.pkg]);
 
-  const writtenTitle = useRef(document.title);
   useEffect(() => {
+    if (title === undefined) return undefined;
     const tab = TABS.find(({ view }) => view === state.view)?.label ?? state.view;
-    document.title = pageTitle(writtenTitle.current, tab, projectName(model.report.run), state.pkg);
-  }, [model, state.view, state.pkg]);
+    document.title = pageTitle(title, tab, projectName(model.report.run), state.pkg);
+    return () => {
+      document.title = title;
+    };
+  }, [title, model, state.view, state.pkg]);
 
   const now = useMemo(() => new Date(model.report.generated_at), [model]);
   const value = useMemo(

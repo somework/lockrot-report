@@ -293,7 +293,7 @@ describe("focus after a tab switch (PD-A11Y-SWEEP-8)", () => {
   test("titles the document by its tab, its open package and the project", () => {
     document.title = "lockrot: 9 of 9 packages flagged";
     const model = load();
-    render(<App model={model} />);
+    render(<App model={model} title={document.title} />);
 
     fireEvent.click(screen.getByRole("tab", { name: /^All packages/ }));
     const packages = document.title;
@@ -301,6 +301,24 @@ describe("focus after a tab switch (PD-A11Y-SWEEP-8)", () => {
 
     expect(packages).toMatch(/^All packages · \S+ · lockrot: 9 of 9 packages flagged$/);
     expect(document.title).toMatch(/^Findings · \S+ · lockrot: 9 of 9 packages flagged$/);
+  });
+
+  test("gives the written title back when it unmounts", () => {
+    document.title = "lockrot: 9 of 9 packages flagged";
+    const { unmount } = render(<App model={load()} title={document.title} />);
+
+    unmount();
+
+    expect(document.title).toBe("lockrot: 9 of 9 packages flagged");
+  });
+
+  test("leaves the title alone when it is mounted into an embedder's page", () => {
+    document.title = "An embedder's page";
+    render(<App model={load()} />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /^Findings/ }));
+
+    expect(document.title).toBe("An embedder's page");
   });
 
   test("the Findings strip's grade chips are a group of their own name, apart from the rail's Grade", () => {

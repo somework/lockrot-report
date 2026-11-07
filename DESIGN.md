@@ -55,6 +55,9 @@ writes the e2e pages the same way.
 `mount` returns `{ update(bundle), unmount() }`. Autoboot keeps the old embedding contract working
 (write the payload into the slot, then load the script); `mount` is what an embedder should use.
 
+An autobooted page owns its document, so each view sets the title: the open package, the tab and
+the project lead, and the title lockrot wrote follows. `mount` leaves an embedder's title alone.
+
 A payload that is not JSON, or not a lockrot document, renders an explained error in place of the
 report — never a blank page.
 
