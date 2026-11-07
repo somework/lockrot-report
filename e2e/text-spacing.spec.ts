@@ -23,7 +23,7 @@ for (const caseName of ["composite", "baselined-wallabag-2.6"]) {
       const width = document.documentElement.clientWidth;
       return [...document.querySelectorAll("main *")]
         .filter((el) => el.getBoundingClientRect().right > width + 0.5 && el.closest("nav.tabs") === null)
-        .map((el) => `${el.tagName.toLowerCase()}.${el.className}: ${(el.textContent ?? "").slice(0, 40)}`);
+        .map((el) => `${el.tagName.toLowerCase()}.${el.className}: ${el.textContent.slice(0, 40)}`);
     });
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

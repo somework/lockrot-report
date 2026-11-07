@@ -87,9 +87,12 @@ test("a requirement name wider than its Reach cell is cut there with an ellipsis
   const cell = page.locator('[role="row"] .f2-reach:has(.pkg-word)').first();
   await expect(cell).toBeVisible();
   // The page holds no name this long, so the test writes one into the rendered row.
-  await cell.locator(".pkg-word .f2-unit").last().evaluate((el) => {
-    el.textContent = "package-versions-deprecated-and-longer-still-than-any-reach-cell";
-  });
+  await cell
+    .locator(".pkg-word .f2-unit")
+    .last()
+    .evaluate((el) => {
+      el.textContent = "package-versions-deprecated-and-longer-still-than-any-reach-cell";
+    });
 
   const word = await cell.locator(".pkg-word").evaluate((el) => ({
     clips: el.scrollWidth > el.clientWidth,
