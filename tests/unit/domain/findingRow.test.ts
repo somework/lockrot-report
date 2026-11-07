@@ -10,7 +10,6 @@ import {
   ignoredNote,
   maintenanceAccepted,
   nextStepWords,
-  reachWord,
   runSegments,
   uncheckedNote,
 } from "../../../src/domain/findingRow";
@@ -49,6 +48,12 @@ describe("flagPills", () => {
       ["old-promise", "PHP 5", run.score_model.flags.find((f) => f.id === "old-promise")?.band],
       ["vulnerable", "1", run.score_model.severities.find((s) => s.id === "high")?.band],
     ]);
+  });
+
+  it("words an old-promise headline with no PHP major by the release's php constraint (S5-star‡)", () => {
+    const pills = pillsOf(report("S5-star-dagger"), "symfony/monolog-bridge");
+
+    expect(pills.find((p) => p.id === "old-promise")?.word).toBe('php "*"');
   });
 
   it("words a reason headline with the page's word and an advisory headline with its count", () => {
@@ -136,20 +141,11 @@ describe("maintenanceAccepted", () => {
   });
 });
 
-describe("reachWord", () => {
-  it("says direct, via the dependents, or unreached, with dev after", () => {
-    expect(reachWord(finding(composite, "twig/twig"))).toBe("direct");
-    expect(reachWord(finding(composite, "symfony/polyfill-intl-idn"))).toBe("via guzzlehttp/guzzle");
-    expect(reachWord(finding(report("unreached")))).toBe("unreached");
-    expect(reachWord(finding(report("B-dev-dagger")))).toBe("direct · dev");
-  });
-});
-
 describe("ageReading", () => {
   it("takes the first reading with a level, against the release thresholds", () => {
     const reading = ageReading(finding(composite, "symfony/debug"), run);
     expect(reading).toMatchObject({ kind: "branch_release", level: "high" });
-    expect(reading?.warn).toBe(run.thresholds?.["release-warn-years"]);
+    expect(reading?.warn).toBe(run.thresholds["release-warn-years"]);
     expect(reading && ageScaleLabel(reading)).toMatch(
       /^installed branch last released \d+\.\d years ago; warn at \S+ years, high at \S+$/,
     );
@@ -157,10 +153,6 @@ describe("ageReading", () => {
 
   it("has no reading when no level is set", () => {
     expect(ageReading(finding(composite, "twig/twig"), run)).toBeNull();
-  });
-
-  it("has no reading when the run has no thresholds", () => {
-    expect(ageReading(finding(composite, "symfony/debug"), { ...run, thresholds: null })).toBeNull();
   });
 });
 
@@ -172,7 +164,7 @@ describe("nextStepWords", () => {
 
   it("words each kind of the composite", () => {
     expect(nextStepWords(finding(composite, "twig/twig"), run)).toEqual({
-      text: "php floor raise",
+      text: "raise require.php to >=8.1",
       title: null,
       href: null,
       held: true,
@@ -206,7 +198,7 @@ describe("nextStepWords", () => {
 
   it("words a blocked move that is not a snapshot's by its branch and the php it needs", () => {
     expect(words("A-blocked-dagger").text).toMatch(
-      /^\S+ (needs php \S+; target \S+ runs no fixing release|does not run on \S+)$/,
+      /^\S+ (needs php \S+; target \S+ runs no (fixing|newer) release|does not run on \S+)$/,
     );
   });
 
@@ -304,18 +296,18 @@ describe("verdictTone", () => {
     );
   });
 
-  it("gives every score-0 verdict of the model no tone", () => {
+  it("tones a score-0 verdict none, and the unknown verdict unk, by name", () => {
     expect(model.zero_verdicts.map(({ verdict }) => verdictTone(model, verdict))).toEqual(
-      model.zero_verdicts.map(() => "none"),
+      model.zero_verdicts.map(({ verdict }) => (verdict === "unknown" ? "unk" : "none")),
     );
   });
 
-  it("falls back to low for an id the model does not list", () => {
-    expect(verdictTone(model, "dire")).toBe("low");
-    expect(verdictTone(model, "constructor")).toBe("low");
+  it("falls back to unk, never a band's tone, for an id the model does not list", () => {
+    expect(verdictTone(model, "dire")).toBe("unk");
+    expect(verdictTone(model, "constructor")).toBe("unk");
     expect(
       verdictTone({ ...model, bands: model.bands.filter(({ verdict }) => verdict !== "high") }, "high"),
-    ).toBe("low");
+    ).toBe("unk");
   });
 });
 

@@ -1,5 +1,6 @@
-/** `a`, `a and b`, `a, b and c`: the list shape of lockrot's sentences. */
-export function joinAnd(items: readonly string[]): string {
-  if (items.length < 2) return items.join("");
-  return `${items.slice(0, -1).join(", ")} and ${items.at(-1) ?? ""}`;
+/** `a`, `a and b`, `a, b and c`: the list shape of lockrot's sentences, for items of any type. */
+export function listParts<T>(items: readonly T[]): (T | string)[] {
+  return items.flatMap((item, i) => [...(i === 0 ? [] : [i === items.length - 1 ? " and " : ", "]), item]);
 }
+
+export const joinAnd = (items: readonly string[]): string => listParts(items).join("");

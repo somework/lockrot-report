@@ -1,5 +1,7 @@
 import type { ComponentChildren } from "preact";
 import { safeHref } from "../../domain/links";
+import { ROW_HINT } from "../../domain/pageVocabulary";
+import { newTab } from "../../domain/rich";
 import type { Tone } from "../../domain/vocab";
 import "./common.css";
 
@@ -8,6 +10,21 @@ import "./common.css";
  * a CSP that pins its one stylesheet by hash, and a `style="…"` attribute in markup would be refused
  * (DESIGN.md §1.3). The tone classes are defined once, in styles/base.css.
  */
+
+/** The sentence a list names in `aria-describedby`. `hidden`, so browse mode does not read it twice. */
+export function RowHint({ id }: { id: string }) {
+  return (
+    <p id={id} hidden>
+      {ROW_HINT}
+    </p>
+  );
+}
+
+/** The name of a heading drawn in CSS capitals, which Chromium would read out as written. A note
+ *  shown beside the heading joins it after a comma, so a heading list keeps the two parts apart. */
+export function headLabel(head: string, note: string | null): string {
+  return note === null ? head : `${head}, ${note}`;
+}
 
 export function toneClass(tone: Tone): string {
   return `tone-${tone}`;
@@ -59,23 +76,23 @@ export function LegendButton({
   );
 }
 
+/** `label` is the whole accessible name, new-tab cue included; without it the visible text is the name. */
+type OutLinkName = { children: string; label?: undefined } | { children: ComponentChildren; label: string };
+
 /**
- * A link that leaves the page. The URL is checked again here whatever produced it: a document is
- * data, and the one place a value becomes an `href` is where a `javascript:` URL has to stop. When
- * the check fails the text is still shown, unlinked.
+ * A link that leaves the page, in a new tab that its name announces. The URL is checked again here
+ * whatever produced it: a document is data, and the one place a value becomes an `href` is where a
+ * `javascript:` URL has to stop. When the check fails the text is still shown, unlinked.
  */
-export function OutLink({
-  href,
-  children,
-  tabIndex,
-  title,
-}: {
-  href: string | null;
-  children: ComponentChildren;
-  /** -1 inside a list row that is not the list's Tab stop (PD-ROWS-11, `ui/rowCursor.ts`). */
-  tabIndex?: -1 | undefined;
-  title?: string;
-}) {
+export function OutLink(
+  props: OutLinkName & {
+    href: string | null;
+    /** -1 inside a list row that is not the list's Tab stop (PD-ROWS-11, `ui/rowCursor.ts`). */
+    tabIndex?: -1 | undefined;
+    title?: string;
+  },
+) {
+  const { href, children, tabIndex, title } = props;
   const safe = safeHref(href);
   if (safe === null) return <span className="out">{children}</span>;
 
@@ -87,6 +104,7 @@ export function OutLink({
       rel="noopener noreferrer"
       tabIndex={tabIndex}
       title={title}
+      aria-label={props.label === undefined ? newTab(props.children) : props.label}
     >
       {children}
     </a>

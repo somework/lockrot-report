@@ -137,6 +137,7 @@ describe("fixed", () => {
 describe("countPhrase", () => {
   test("singularises the noun for exactly one, matching DESIGN.md M21's fix", () => {
     expect(countPhrase(1, 1, "flagged package", "flagged packages")).toBe("1 of 1 flagged package");
+    expect(countPhrase(1, 113, "flagged package", "flagged packages")).toBe("1 of 113 flagged packages");
     expect(countPhrase(3, 7, "flagged package", "flagged packages")).toBe("3 of 7 flagged packages");
   });
 

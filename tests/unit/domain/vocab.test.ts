@@ -2,7 +2,6 @@ import { describe, expect, test } from "vitest";
 import {
   DOCS_URL,
   SIGNAL_DEFS,
-  SIGNAL_NAMES,
   annotateThresholds,
   signalDef,
   signalDocUrl,
@@ -12,16 +11,14 @@ import {
  *  `undefined` — the vocabTable() prototype-pollution regression this file guards against. */
 const POLLUTION_IDS: readonly string[] = ["constructor", "__proto__", "toString", "hasOwnProperty"];
 
-describe("SIGNAL_NAMES / SIGNAL_DEFS", () => {
+describe("SIGNAL_DEFS", () => {
   test("cover S1 through S10", () => {
     for (const id of ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10"]) {
-      expect(SIGNAL_NAMES[id]).toBeTruthy();
       expect(SIGNAL_DEFS[id]).toBeTruthy();
     }
   });
 
-  test("S10 is named, fixing DESIGN.md M2 (the legacy page shipped it with no name at all)", () => {
-    expect(SIGNAL_NAMES.S10).toBe("a check could not run");
+  test("S10 has a definition (DESIGN.md M2: the legacy page shipped none)", () => {
     expect(SIGNAL_DEFS.S10).toBe(
       "A check lockrot relies on could not run for this package, so a verdict may be missing a signal; the data says which and why.",
     );
@@ -30,7 +27,6 @@ describe("SIGNAL_NAMES / SIGNAL_DEFS", () => {
   test("give no inherited Object.prototype member for a prototype-pollution id", () => {
     // A non-literal key reads `.toString` as a plain lookup, as a report's id does at runtime.
     for (const id of POLLUTION_IDS) {
-      expect(SIGNAL_NAMES[id]).toBeUndefined();
       expect(SIGNAL_DEFS[id]).toBeUndefined();
     }
   });
@@ -75,22 +71,20 @@ describe("annotateThresholds (PD-GLOSSARY-8, DESIGN.md §5)", () => {
 
 describe("S2's names (PD-S6-1)", () => {
   test("never say 'stable': S2 counts every tag, a pre-release included", () => {
-    for (const name of [SIGNAL_NAMES.S2, SIGNAL_DEFS.S2]) {
+    for (const name of [SIGNAL_DEFS.S2]) {
       expect(name).toBeTruthy();
       expect(name).not.toMatch(/stable/i);
     }
-    expect(SIGNAL_NAMES.S2).toBe("no recent release");
     expect(SIGNAL_DEFS.S8).toMatch(/stable/);
   });
 });
 
 describe("S6's names (PD-S6-1)", () => {
   test("never reads as S2, and never says 'stable'", () => {
-    for (const name of [SIGNAL_NAMES.S6, SIGNAL_DEFS.S6]) {
+    for (const name of [SIGNAL_DEFS.S6]) {
       expect(name).toBeTruthy();
       expect(name).not.toMatch(/stable/i);
     }
-    expect(SIGNAL_NAMES.S6).toBe("branch snapshot or never tagged");
   });
 });
 

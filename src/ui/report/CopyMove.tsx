@@ -1,57 +1,23 @@
+import { Fragment } from "preact";
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import { DETAIL_WORDS } from "../../domain/detailWords";
+import { Breakable } from "./PkgName";
+import { commandLabel } from "../../domain/moveCards";
 import {
   commandLine,
+  commandWords,
   isPrintableArgv,
   REFUSED_COMMAND,
   SHELL_NAMES,
   SHELLS,
   type Shell,
 } from "../../domain/shellArgv";
+import { useCopy, type CopyStatus } from "../common/useCopy";
+import { useReport } from "../context";
 
-/** Beside `lockrot-theme`: one viewer's choice, kept in their own browser only. */
-export const SHELL_KEY = "lockrot-shell";
+const TIMES = { copiedMs: 1400, manualMs: 2600 } as const;
 
-const COPIED_MS = 1400;
-const FAILED_MS = 2600;
-
-type Status = "idle" | "copied" | "manual";
-
-function readShell(): Shell {
-  try {
-    const saved = window.localStorage.getItem(SHELL_KEY);
-    return SHELLS.find((shell) => shell === saved) ?? "posix";
-  } catch {
-    return "posix";
-  }
-}
-
-function saveShell(shell: Shell): void {
-  try {
-    window.localStorage.setItem(SHELL_KEY, shell);
-  } catch {
-    // Not persisted: the choice still holds for this page view.
-  }
-}
-
-function useCopyStatus(): [Status, (status: Status) => void] {
-  const [status, setStatus] = useState<Status>("idle");
-  useEffect(() => {
-    if (status === "idle") return undefined;
-    const timer = window.setTimeout(
-      () => {
-        setStatus("idle");
-      },
-      status === "copied" ? COPIED_MS : FAILED_MS,
-    );
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [status]);
-  return [status, setStatus];
-}
-
-const LABELS: Readonly<Record<Status, string>> = {
+const LABELS: Readonly<Record<CopyStatus, string>> = {
   idle: DETAIL_WORDS.copy,
   copied: DETAIL_WORDS.copied,
   manual: DETAIL_WORDS.copyByHand,
@@ -65,15 +31,29 @@ const linesFor = (argvs: readonly (readonly string[])[], shell: Shell): string[]
  * The copy control of design 5C: a Copy button and a shell menu, POSIX first. It renders `argvs`
  * as written (a move's `next_step.commands[]`, the overview's `update_now_command`). When the
  * argument rule refuses one argv, it prints why in place of every step, on every shell, and offers no
- * copy, so a reader never runs part of a move. `label` replaces the move's own eyebrow.
+ * copy, so a reader never runs part of a move. `label` replaces the move's own eyebrow. `owner`
+ * ends the name of both buttons, so two boxes on one page are told apart (WCAG 2.4.6).
  */
-export function CopyMove({ argvs, label }: { argvs: readonly (readonly string[])[]; label?: string }) {
-  const [shell, setShell] = useState<Shell>(readShell);
+export function CopyMove({
+  argvs,
+  label,
+  className,
+  owner,
+}: {
+  argvs: readonly (readonly string[])[];
+  label?: string;
+  className?: string;
+  owner?: string;
+}) {
+  const { shell, pickShell } = useReport();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [status, setStatus] = useCopyStatus();
+  const { status, copy: copyText, reset } = useCopy(TIMES);
+  const pre = useRef<HTMLPreElement>(null);
   const menuId = `${useId()}-shells`;
   const shellButton = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLDivElement>(null);
+
+  useEffect(reset, [shell]);
 
   useEffect(() => {
     if (!menuOpen) return undefined;
@@ -91,30 +71,23 @@ export function CopyMove({ argvs, label }: { argvs: readonly (readonly string[])
   if (argvs.length === 0) return null;
   const printable = argvs.every(isPrintableArgv);
   const lines = printable ? linesFor(argvs, shell) : [REFUSED_COMMAND];
+  const named = (name: string): string => (owner === undefined ? name : `${name} for ${owner}`);
 
   const closeMenu = (): void => {
     setMenuOpen(false);
     shellButton.current?.focus();
   };
   const pick = (next: Shell): void => {
-    setShell(next);
-    saveShell(next);
+    pickShell(next);
     closeMenu();
   };
   const copy = (): void => {
-    const clipboard = (navigator as { clipboard?: Clipboard }).clipboard;
-    if (!clipboard) {
-      setStatus("manual");
-      return;
-    }
-    clipboard.writeText(lines.join("\n")).then(
-      () => {
-        setStatus("copied");
-      },
-      () => {
-        setStatus("manual");
-      },
-    );
+    copyText(lines.join("\n"), () => {
+      const box = pre.current;
+      if (box === null) return;
+      box.focus();
+      document.getSelection()?.selectAllChildren(box);
+    });
   };
   const onMenuKey = (event: KeyboardEvent): void => {
     const items = [...(menu.current?.querySelectorAll<HTMLElement>('[role="menuitemradio"]') ?? [])];
@@ -137,13 +110,16 @@ export function CopyMove({ argvs, label }: { argvs: readonly (readonly string[])
   };
 
   return (
-    <div className="d2-copy">
+    <div className={className === undefined ? "d2-copy" : `d2-copy ${className}`}>
       <div className="d2-copy-bar">
-        <span className="eyebrow">
-          {label ?? (argvs.length > 1 ? DETAIL_WORDS.moveInOrder : DETAIL_WORDS.move)}
-        </span>
+        <span className="eyebrow">{label ?? commandLabel(argvs)}</span>
         {printable && (
-          <button type="button" className="d2-btn d2-copy-btn" onClick={copy}>
+          <button
+            type="button"
+            className="d2-btn d2-copy-btn"
+            aria-label={owner === undefined ? undefined : `${LABELS[status]} ${owner}`}
+            onClick={copy}
+          >
             {LABELS[status]}
           </button>
         )}
@@ -154,7 +130,7 @@ export function CopyMove({ argvs, label }: { argvs: readonly (readonly string[])
           aria-haspopup="menu"
           aria-expanded={menuOpen}
           aria-controls={menuId}
-          aria-label={DETAIL_WORDS.shellFor.replace("{shell}", SHELL_NAMES[shell])}
+          aria-label={named(DETAIL_WORDS.shellFor.replace("{shell}", SHELL_NAMES[shell]))}
           onClick={() => {
             setMenuOpen((open) => !open);
           }}
@@ -162,7 +138,7 @@ export function CopyMove({ argvs, label }: { argvs: readonly (readonly string[])
           {SHELL_NAMES[shell]}
         </button>
         <span className="vh" aria-live="polite">
-          {status === "copied" ? DETAIL_WORDS.copied : ""}
+          {status === "idle" ? "" : LABELS[status]}
         </span>
       </div>
       <div
@@ -191,12 +167,23 @@ export function CopyMove({ argvs, label }: { argvs: readonly (readonly string[])
           </button>
         ))}
       </div>
-      <pre className="d2-copy-cmd">
-        {lines.map((line, i) => (
-          <span key={i} className={printable ? "d2-copy-line" : "d2-copy-line is-refused"}>
-            {line}
-          </span>
-        ))}
+      <pre ref={pre} className="d2-copy-cmd" tabIndex={-1}>
+        {printable ? (
+          argvs.map((argv, i) => (
+            <span key={i} className="d2-copy-line">
+              {(commandWords(argv, shell) ?? []).map((word, at) => (
+                <Fragment key={at}>
+                  {at > 0 && " "}
+                  <span className="d3-arg">
+                    <Breakable text={word} className="d3-arg-part" />
+                  </span>
+                </Fragment>
+              ))}
+            </span>
+          ))
+        ) : (
+          <span className="d2-copy-line is-refused">{REFUSED_COMMAND}</span>
+        )}
       </pre>
     </div>
   );

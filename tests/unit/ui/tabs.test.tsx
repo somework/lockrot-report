@@ -27,6 +27,8 @@ function renderTabs(
         wide: true,
         cursor: null,
         openGlossary: vi.fn(),
+        shell: "posix",
+        pickShell: vi.fn(),
       }}
     >
       <Tabs idBase="t" panelId="panel" />
@@ -42,14 +44,14 @@ describe("tab names", () => {
   it("say the label and its count as two words, from the whole report", () => {
     renderTabs();
 
-    // composite: 7 graded findings, 20 counted advisories, 7 packages, 1 exposure entry, no notes.
+    // composite: graded findings, counted advisories, every package and the exposure entries of the document, no notes.
     // Overview, first, lists nothing and has no badge.
     expect(tabNames()).toEqual([
       "Overview",
-      "Findings 7",
-      "Advisories 20",
-      "All packages 7",
-      "Blast radius 1",
+      "Findings 9",
+      "Advisories 29",
+      "All packages 9",
+      "Blast radius 2",
       "Run data",
     ]);
   });
@@ -81,13 +83,13 @@ describe("tab names", () => {
       filters: { ...INITIAL_STATE.filters, flag: ["stale"] },
     });
 
-    expect(tabNames()[1]).toBe("Findings 7");
+    expect(tabNames()[1]).toBe("Findings 9");
   });
 
   it("tabName: a tab with no badge is its label alone", () => {
-    expect(tabName("Run data", "", false)).toBe("Run data");
-    expect(tabName("All packages", "271", false)).toBe("All packages 271");
-    expect(tabName("Advisories", "0", true)).toBe("Advisories 0, check incomplete");
+    expect(tabName("Run data", "", null)).toBe("Run data");
+    expect(tabName("All packages", "271", null)).toBe("All packages 271");
+    expect(tabName("Advisories", "0", "check incomplete")).toBe("Advisories 0, check incomplete");
   });
 });
 
@@ -97,8 +99,8 @@ describe("the Advisories tab's count from an incomplete check (PD-ADV-7)", () =>
     renderTabs(INITIAL_STATE, "C-offline-dagger");
 
     const tab = screen.getByRole("tab", { name: /^Advisories/ });
-    expect(tab.getAttribute("aria-label")).toMatch(/^Advisories \d+, check incomplete$/);
-    expect(tab.querySelector(".tab-flag")?.getAttribute("title")).toBe("advisory check incomplete");
+    expect(tab.getAttribute("aria-label")).toMatch(/^Advisories \d+, check not run$/);
+    expect(tab.querySelector(".tab-flag")?.getAttribute("title")).toBe("advisory check not run");
   });
 
   it("carries none on a lock with no finding, whatever note the run wrote", () => {

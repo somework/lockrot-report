@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/preact";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { assembleEmbed } from "../../../scripts/report2-embed";
+import { copySummary } from "../../../src/domain/copySummary";
 import { normalize } from "../../../src/model/normalize";
 import type { Report2Embed } from "../../../src/model/report";
 import type { Model } from "../../../src/model/types";
@@ -8,7 +9,7 @@ import { INITIAL_STATE } from "../../../src/state/types";
 import { App } from "../../../src/ui/App";
 import { bootState, stateFromHashChange } from "../../../src/ui/useHashState";
 
-/** Seven graded findings, none dev: 6 direct requirements and 1 transitive package. No project name
+/** Nine graded findings, none dev: 7 direct requirements and 2 transitive packages. No project name
  *  and no baseline; the gate fails on `--fail-on=high`. */
 function load(caseName = "composite", edit: (embed: Report2Embed) => void = () => undefined): Model {
   const embed = assembleEmbed(caseName);
@@ -22,17 +23,19 @@ function load(caseName = "composite", edit: (embed: Report2Embed) => void = () =
 const BY_RANK = [
   "twig/twig",
   "symfony/monolog-bridge",
+  "guzzlehttp/guzzle",
   "symfony/debug",
   "friendsofsymfony/oauth-server-bundle",
   "tubalmartin/cssmin",
   "symfony/yaml",
   "symfony/polyfill-intl-idn",
+  "friendsofsymfony/oauth2-php",
 ];
 
 /** Stubs matchMedia: the layout, the OS colour preference and reduced motion, per test. */
 function media({ wide = true, narrow = false, dark = false, reduce = false } = {}) {
   window.matchMedia = ((query: string) => ({
-    matches: query.includes("1181")
+    matches: /1000px|1024px/.test(query)
       ? wide
       : query.includes("759")
         ? narrow
@@ -47,12 +50,13 @@ function media({ wide = true, narrow = false, dark = false, reduce = false } = {
   })) as unknown as typeof window.matchMedia;
 }
 
+/** The open sheet's name: a complementary column when wide, a modal dialog below that. */
 function detailName(): string | null {
-  return screen.queryByRole("complementary")?.getAttribute("aria-label") ?? null;
+  return document.querySelector('[data-surface="detail"]')?.getAttribute("aria-label") ?? null;
 }
 
 function row(pkg: string): HTMLElement {
-  return screen.getByRole("listitem", { name: pkg });
+  return screen.getByRole("row", { name: pkg });
 }
 
 function key(k: string, target: Element = document.body) {
@@ -87,7 +91,7 @@ describe("boot", () => {
     render(<App model={load()} />);
 
     expect(detailName()).toBeNull();
-    expect(shellClasses()).toContain("no-detail");
+    expect(shellClasses()).not.toContain("has-detail");
     expect(document.querySelector(".shell-detail")).toBeNull();
     await waitFor(() => {
       expect(location.hash).toBe("#view=findings");
@@ -112,7 +116,7 @@ describe("boot", () => {
 
     expect(selectedTab()).toContain("Findings");
     expect(detailName()).toBe("symfony/debug");
-    expect(shellClasses()).not.toContain("no-detail");
+    expect(shellClasses()).toContain("has-detail");
     expect(document.querySelector(".shell-detail")?.classList.contains("is-side")).toBe(true);
     await waitFor(() => {
       expect(location.hash).toBe("#view=findings&pkg=symfony%2Fdebug");
@@ -123,7 +127,7 @@ describe("boot", () => {
     render(<App model={load()} />);
     fireEvent.click(row("symfony/yaml"));
     expect(detailName()).toBe("symfony/yaml");
-    expect(shellClasses()).not.toContain("no-detail");
+    expect(shellClasses()).toContain("has-detail");
     await waitFor(() => {
       expect(location.hash).toBe("#view=findings&pkg=symfony%2Fyaml");
     });
@@ -131,7 +135,7 @@ describe("boot", () => {
     fireEvent.click(within(screen.getByRole("complementary")).getByRole("button", { name: "Close" }));
 
     expect(detailName()).toBeNull();
-    expect(shellClasses()).toContain("no-detail");
+    expect(shellClasses()).not.toContain("has-detail");
     await waitFor(() => {
       expect(location.hash).toBe("#view=findings");
     });
@@ -164,7 +168,7 @@ describe("boot", () => {
     await waitFor(() => {
       expect(location.hash).toBe("#view=findings");
     });
-    expect(document.querySelectorAll("li[data-pkg]")).toHaveLength(1);
+    expect(document.querySelectorAll('[role="row"][data-pkg]')).toHaveLength(1);
   });
 
   test("bootState is the address alone: a named package opens, an unnamed one never does", () => {
@@ -198,7 +202,7 @@ describe("tabs", () => {
     fireEvent.click(row("symfony/yaml"));
     expect(detailName()).toBe("symfony/yaml");
 
-    const packages = screen.getByRole("tab", { name: "All packages 7" });
+    const packages = screen.getByRole("tab", { name: "All packages 9" });
     expect(screen.getByRole("tab", { name: "Run data" })).toBeTruthy();
     fireEvent.click(packages);
 
@@ -271,6 +275,37 @@ describe("tabs", () => {
   });
 });
 
+describe("focus after a tab switch (PD-A11Y-SWEEP-8)", () => {
+  test("a mouse click on a tab that does not take focus leaves focus where it was", async () => {
+    vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
+    render(<App model={load()} />);
+    const panel = screen.getByRole("tabpanel");
+
+    fireEvent.click(screen.getByRole("tab", { name: /^Overview/ }));
+
+    await waitFor(() => {
+      expect(selectedTab()).toContain("Overview");
+    });
+    expect(document.activeElement).toBe(document.body);
+    expect(document.activeElement).not.toBe(panel);
+  });
+
+  test("the Findings strip's Overview link, focused when pressed, hands focus to the panel", async () => {
+    vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
+    render(<App model={load()} />);
+    const link = within(document.querySelector(".f2-strip") as HTMLElement).getByRole("link", {
+      name: /Overview/,
+    });
+    link.focus();
+
+    fireEvent.click(link);
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(screen.getByRole("tabpanel"));
+    });
+  });
+});
+
 describe("keyboard", () => {
   test("j and k open nothing on Overview, which draws no row", () => {
     history.replaceState(null, "", "/report.html");
@@ -324,19 +359,20 @@ describe("keyboard", () => {
     render(<App model={load()} />);
 
     const walked: (string | null)[] = [];
-    for (let step = 0; step < 6; step += 1) {
+    for (let step = 0; step < 29; step += 1) {
       key("j", document.activeElement ?? document.body);
       walked.push(document.activeElement?.getAttribute("data-pkg") ?? null);
     }
 
-    // One row for polyfill-intl-idn, three for yaml, one for monolog-bridge, then twig/twig's.
+    // One group per package in rank order, a row for each of its advisories.
     expect(walked).toEqual([
-      "symfony/polyfill-intl-idn",
-      "symfony/yaml",
-      "symfony/yaml",
-      "symfony/yaml",
+      ...Array<string>(15).fill("twig/twig"),
       "symfony/monolog-bridge",
-      "twig/twig",
+      ...Array<string>(9).fill("guzzlehttp/guzzle"),
+      "symfony/yaml",
+      "symfony/yaml",
+      "symfony/yaml",
+      "symfony/polyfill-intl-idn",
     ]);
   });
 
@@ -355,7 +391,7 @@ describe("keyboard", () => {
   test("Enter on a row opens it and a second Enter keeps it open; Enter on a link inside a row does not", () => {
     history.replaceState(null, "", "/report.html#view=advisories");
     render(<App model={load()} />);
-    const first = document.querySelector<HTMLElement>("li[data-pkg]");
+    const first = document.querySelector<HTMLElement>('[role="row"][data-pkg]');
     if (first === null) throw new Error("the Advisories tab lists a row");
     const pkg = first.getAttribute("data-pkg");
 
@@ -450,7 +486,7 @@ describe("keyboard", () => {
     key("j");
     key("j");
 
-    const stops = [...document.querySelectorAll("li[data-pkg]")]
+    const stops = [...document.querySelectorAll('[role="row"][data-pkg]')]
       .filter((item) => item.getAttribute("tabindex") === "0")
       .map((item) => item.getAttribute("data-pkg"));
 
@@ -485,6 +521,7 @@ describe("a sheet over the page takes focus", () => {
     fireEvent.click(target);
 
     expect(detailName()).toBe("symfony/yaml");
+    expect(screen.getByRole("dialog", { name: "symfony/yaml" }).getAttribute("aria-modal")).toBe("true");
     expect(document.activeElement).toBe(sheetHeading());
     expect(document.querySelector(".shell-main")?.hasAttribute("inert")).toBe(true);
     expect(document.querySelector(".topbar")?.hasAttribute("inert")).toBe(true);
@@ -541,7 +578,7 @@ describe("a sheet over the page takes focus", () => {
     fireEvent.click(target);
 
     expect(document.activeElement).toBe(target);
-    expect(document.querySelector("[inert]")).toBeNull();
+    expect(document.querySelector("[inert]:not(.detail-timeline-row)")).toBeNull();
   });
 
   test("an address naming a package the report does not list opens a panel with a Close that takes focus", () => {
@@ -553,9 +590,20 @@ describe("a sheet over the page takes focus", () => {
     expect(detailName()).toBe("not/listed");
     expect(screen.getByText("not/listed is not in this report.")).toBeTruthy();
   });
+
+  test("an address with an empty pkg opens no panel and leaves the page usable", () => {
+    media({ wide: false });
+    history.replaceState(null, "", "/report.html#view=findings&pkg=");
+
+    render(<App model={load()} />);
+
+    expect(document.querySelector(".shell-detail")).toBeNull();
+    expect(document.querySelector("[inert]")).toBeNull();
+    expect(location.hash).toBe("#view=findings");
+  });
 });
 
-// From 1181px up, opening a package narrows the list and closing it widens it again, and the
+// At `WIDE_QUERY` widths, opening a package narrows the list and closing it widens it again, and the
 // Findings rows change height with the list's width, so the clicked row would slide off the screen.
 // happy-dom lays nothing out, so rows report the top a real row would: one place with the list at
 // full width, another with the detail beside it.
@@ -619,6 +667,29 @@ describe("the row a reader acts on keeps its place", () => {
     render(<App model={load()} />);
     expect(scrolled).toEqual(["symfony/yaml"]);
   });
+
+  test("a #pkg= link leaves the page still when its row is already in full view under the header", () => {
+    const scrolled: (string | null)[] = [];
+    vi.spyOn(HTMLElement.prototype, "scrollIntoView").mockImplementation(function (this: HTMLElement) {
+      scrolled.push(this.getAttribute("data-pkg"));
+    });
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      const box = this.matches("[data-pkg]") ? { top: 400, bottom: 440 } : { top: 0, bottom: 160 };
+      return {
+        ...box,
+        height: box.bottom - box.top,
+        left: 0,
+        right: 0,
+        width: 0,
+        x: 0,
+        y: box.top,
+      } as DOMRect;
+    });
+
+    history.replaceState(null, "", "/report.html#pkg=symfony%2Fyaml");
+    render(<App model={load()} />);
+    expect(scrolled).toEqual([]);
+  });
 });
 
 describe("glossary", () => {
@@ -638,6 +709,45 @@ describe("glossary", () => {
       expect((dialog as HTMLDialogElement).open).toBe(false);
     });
     expect(detailName()).toBeNull();
+  });
+
+  test("? opens it with Keys and search unfolded and scrolled into view", async () => {
+    const scrolled: Element[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this);
+    };
+    render(<App model={load()} />);
+
+    key("?");
+
+    const dialog = await screen.findByRole("dialog", { name: "What these words mean" });
+    const keys = within(dialog).getByRole("heading", { name: "Keys and search" }).closest("details");
+    expect(keys?.open).toBe(true);
+    expect(scrolled).toContain(keys);
+    delete (Element.prototype as Partial<Element>).scrollIntoView;
+  });
+
+  test("its header button opens it at the top, with Keys and search folded", async () => {
+    const scrolled: Element[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) {
+      scrolled.push(this);
+    };
+    render(<App model={load()} />);
+    key("?");
+    key("Escape");
+    scrolled.length = 0;
+
+    fireEvent.click(screen.getByRole("button", { name: "What these words mean" }));
+
+    const dialog = await screen.findByRole("dialog", { name: "What these words mean" });
+    await waitFor(() => {
+      expect((dialog as HTMLDialogElement).open).toBe(true);
+    });
+    const keys = within(dialog).getByRole("heading", { name: "Keys and search" }).closest("details");
+    expect(keys?.open).toBe(false);
+    expect(dialog.scrollTop).toBe(0);
+    expect(scrolled).not.toContain(keys);
+    delete (Element.prototype as Partial<Element>).scrollIntoView;
   });
 
   test("closing it hands focus back to the button that opened it", async () => {
@@ -749,7 +859,7 @@ describe("layout", () => {
 
     expect(screen.queryByRole("searchbox")).toBeNull();
     expect(screen.queryByRole("group", { name: "Filters" })).toBeNull();
-    expect(shellClasses()).toContain("no-rail");
+    expect(shellClasses()).not.toContain("has-rail");
   });
 
   test("the header names the lock, the target and the data date; the footer names the version", () => {
@@ -769,6 +879,80 @@ describe("layout", () => {
     render(<App model={load("B")} />);
 
     expect(document.querySelector(".topbar")?.textContent).toContain("matomo/matomo");
+  });
+
+  test("the one level-1 heading names the project, and the lockrot link sits in no heading", () => {
+    render(<App model={load("B")} />);
+
+    expect(screen.getAllByRole("heading", { level: 1 })).toEqual([
+      screen.getByRole("heading", { level: 1, name: "matomo/matomo" }),
+    ]);
+    expect(screen.getByRole("link", { name: /^lockrot/ }).closest("h1, h2, h3, h4, h5, h6")).toBeNull();
+  });
+
+  const withUnmeasured = (key: string, count: number): string => {
+    const model = load("composite", (embed) => {
+      embed.report.libyears.unmeasured = { ...embed.report.libyears.unmeasured, [key]: count };
+    });
+    history.replaceState(null, "", "/report.html#view=overview");
+    render(<App model={model} />);
+    return document.querySelector('[data-surface="overview"] .ledger-libyears')?.textContent ?? "";
+  };
+
+  test("libyears.unmeasured parent_split reads in the model's words", () => {
+    expect(withUnmeasured("parent_split", 2)).toContain("2, a split whose parent dates its newest release");
+  });
+
+  test("a libyears.unmeasured key the page does not know names its count in words", () => {
+    expect(withUnmeasured("future_cause", 2)).toContain("2, future cause");
+  });
+
+  test("a libyears.unmeasured key the page does not know adds nothing at 0", () => {
+    const lead = withUnmeasured("future_cause", 0);
+
+    expect(lead).toContain("Libyears");
+    expect(lead).not.toContain("future cause");
+  });
+
+  const radiusOf = (edit: (embed: Report2Embed) => void): HTMLElement => {
+    history.replaceState(null, "", "/report.html#view=radius");
+    render(<App model={load("composite", edit)} />);
+    const surface = document.querySelector<HTMLElement>('[data-surface="radius"]');
+    if (surface === null) throw new Error("no Blast radius surface");
+    return surface;
+  };
+
+  test("Blast radius of a lock with no package says so and draws no row", () => {
+    const surface = radiusOf((embed) => {
+      embed.report.packages_checked = 0;
+      embed.report.packages_flagged = 0;
+    });
+
+    expect(surface.textContent).toBe("No packages in this lock.");
+  });
+
+  test("Blast radius with packages_flagged 0 says nothing is flagged and draws no row", () => {
+    const surface = radiusOf((embed) => {
+      embed.report.packages_flagged = 0;
+    });
+
+    expect(surface.textContent).toBe("Nothing is flagged.");
+  });
+
+  test("the Overview draws no exposure row when packages_flagged is 0", () => {
+    const model = load("composite", (embed) => {
+      embed.report.packages_flagged = 0;
+    });
+    history.replaceState(null, "", "/report.html#view=overview");
+    render(<App model={model} />);
+
+    expect(document.querySelector('[data-surface="overview"]')?.textContent).not.toContain("flagged, of 0");
+  });
+
+  test("the level-1 heading falls back to the lock's name when the run names no project", () => {
+    render(<App model={load()} />);
+
+    expect(screen.getByRole("heading", { level: 1, name: "composer.lock" })).toBeTruthy();
   });
 
   test("a document with a newer schema says so", () => {
@@ -807,6 +991,8 @@ describe("the header's gate fact", () => {
     render(<App model={model} />);
 
     expect(fact()).toBe("this run fails · --fail-on=high · licence_policy");
+    expect(document.querySelector(".gate-fact code.gate-flag")?.textContent).toBe("licence_policy");
+    expect(copySummary(model.report)[0]).toMatch(/ · this run fails · --fail-on=high · licence_policy$/);
   });
 
   test("says a run that only --strict-network failed fails by that flag, which the summary then repeats", () => {
@@ -842,5 +1028,16 @@ describe("the header's gate fact", () => {
     expect(button.getAttribute("title")).toContain(
       "This run was told --fail-on=none: it fails on no finding",
     );
+  });
+
+  test("for --fail-on=none with --strict-network names that gate in the header and in the copy summary", () => {
+    const model = load("B-gate-none", ({ report }) => {
+      report.run.strict_network = true;
+    });
+    render(<App model={model} />);
+
+    expect(screen.getByRole("button", { name: /^gate: strict network/ })).toBeTruthy();
+    expect(fact()).toBeNull();
+    expect(copySummary(model.report)[0]).toMatch(/ · gate: strict network$/);
   });
 });

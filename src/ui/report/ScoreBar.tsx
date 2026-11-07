@@ -6,8 +6,7 @@ import "./scoreBar.css";
 
 /** One block is two points: the bar's only renderer constant (SPEC §7.9.9). */
 const BLOCK_POINTS = 2;
-/** A segment this many blocks wide prints its number where colour cannot carry it (forced colours,
- *  paper). */
+/** A segment this many blocks wide prints its number on paper, where colour cannot carry it. */
 const LABEL_BLOCKS = 6;
 
 const share = (fraction: number): string => `${fraction * 100}%`;

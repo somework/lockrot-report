@@ -31,6 +31,12 @@ describe("the Repository line", () => {
     );
   });
 
+  test("a 404 served from the cache ends with the date it was cached (not-found-cached‡)", () => {
+    expect(repositoryLine(finding("not-found-cached-dagger"))).toBe(
+      "GitHub github.com/hoaproject/Consistency: the host answered 404 (private, renamed or removed) (cached 2026-09-28)",
+    );
+  });
+
   test("a host lockrot cannot ask is named", () => {
     expect(repositoryLine(finding("host-unsupported"))).toBe(
       "lockrot cannot ask codeberg.org about repository activity",

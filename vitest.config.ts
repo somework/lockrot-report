@@ -11,5 +11,18 @@ export default defineConfig({
     environment: "happy-dom",
     include: ["tests/unit/**/*.test.{ts,tsx}", "tests/build/**/*.test.ts"],
     css: false,
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/main.ts", "src/**/*.d.ts"],
+      reporter: ["text-summary", "json-summary"],
+      // Floors at the first measurement: raise one when a change lifts its glob, never lower it.
+      thresholds: {
+        "src/domain/**": { lines: 99, statements: 99, functions: 99, branches: 90 },
+        "src/state/**": { lines: 100, statements: 100, functions: 100, branches: 98 },
+        "src/model/**": { lines: 97, statements: 97, functions: 100, branches: 93 },
+        "src/ui/**": { lines: 94, statements: 92, functions: 93, branches: 87 },
+      },
+    },
   },
 });

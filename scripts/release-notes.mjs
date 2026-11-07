@@ -10,7 +10,18 @@ function sectionOf(changelog, version) {
   if (start === -1) return null;
   const rest = changelog.slice(start).split("\n").slice(1);
   const end = rest.findIndex((line) => line.startsWith("## "));
-  return (end === -1 ? rest : rest.slice(0, end)).join("\n").trim();
+  const section = end === -1 ? rest : rest.slice(0, end);
+  const isTail = (line) => line.trim() === "" || /^\[(?:Unreleased|\d+\.\d+\.\d+[^\]]*)\]:/.test(line);
+  const kept = section.findLastIndex((line) => !isTail(line));
+  const body = section
+    .slice(0, kept + 1)
+    .join("\n")
+    .trim();
+  // The tail is the file's footer of version links. Keep only a definition that the body uses.
+  const used = section
+    .slice(kept + 1)
+    .filter((line) => line.trim() !== "" && body.includes(line.slice(0, line.indexOf("]") + 1)));
+  return used.length === 0 ? body : `${body}\n\n${used.join("\n")}`;
 }
 
 export function releaseNotes(tag, changelog) {

@@ -148,14 +148,12 @@ test.describe("report-2: 1440×900", () => {
     await page.keyboard.press("Escape");
 
     await expect.poll(() => focusedPkg(page)).toBe("symfony/polyfill-intl-idn");
-    await expect(
-      page.getByRole("listitem", { name: "symfony/polyfill-intl-idn", exact: true }),
-    ).toBeInViewport();
+    await expect(page.getByRole("row", { name: "symfony/polyfill-intl-idn", exact: true })).toBeInViewport();
   });
 
   test("a row clicked in the list stays where the reader saw it as the sheet opens", async ({ page }) => {
     await page.goto(report2Url("composite") + "#view=findings");
-    const row = page.getByRole("listitem", { name: "symfony/yaml", exact: true });
+    const row = page.getByRole("row", { name: "symfony/yaml", exact: true });
     await row.scrollIntoViewIfNeeded();
     const before = (await row.boundingBox())?.y ?? Number.NaN;
 

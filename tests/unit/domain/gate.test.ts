@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { gateFact, gateFlag, gateHeadline } from "../../../src/domain/gate";
+import { gateFact, gateFlag, gateHeadline, gateHeadlineLine } from "../../../src/domain/gate";
 import type { Report2 } from "../../../src/model/report";
 import { readContractJson } from "../words/recorded";
 
@@ -66,6 +66,26 @@ describe("gateHeadline", () => {
       flags: [{ text: "--strict-network", known: true }],
       said: true,
     });
+  });
+});
+
+describe("gateHeadlineLine", () => {
+  it("writes the header's words as one line", () => {
+    const words = (name: string): string | null => {
+      const headline = gateHeadline(report(name));
+      return headline === null ? null : gateHeadlineLine(headline);
+    };
+    expect(words("composite")).toBe("this run fails · --fail-on=high");
+    expect(words("F")).toBe("this run passes · --fail-on=high");
+    expect(
+      gateHeadlineLine({
+        who: "baseline run",
+        verb: "passes",
+        flags: [],
+        unapplied: "--fail-on",
+        said: false,
+      }),
+    ).toBe("baseline run passes · --fail-on not applied");
   });
 });
 

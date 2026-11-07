@@ -73,3 +73,38 @@ describe("dead selectors", () => {
     expect([...new Set(unused)]).toEqual([]);
   });
 });
+
+describe("font sizes and radii come from tokens.css", () => {
+  const sheets = stylesheets(SRC).filter((file) => !file.endsWith("tokens.css"));
+  const declarations = sheets.flatMap((file) =>
+    [
+      ...readFileSync(file, "utf8").matchAll(/(font-size|font|border(?:-[a-z]+)*-radius)\s*:\s*([^;}]+)/g),
+    ].map((match) => ({
+      file: file.slice(SRC.length + 1),
+      property: match[1] ?? "",
+      value: (match[2] ?? "").trim(),
+    })),
+  );
+
+  it("finds the declarations it checks", () => {
+    expect(declarations.filter(({ property }) => property === "font-size").length).toBeGreaterThan(100);
+    expect(declarations.filter(({ property }) => property.endsWith("radius")).length).toBeGreaterThan(30);
+  });
+
+  it("declares no literal font size", () => {
+    const literal = declarations.filter(({ property, value }) => {
+      if (property === "font-size") return /^\d/.test(value) && !/em$/.test(value);
+      // The size of a `font` shorthand is the number before an optional `/line-height`.
+      return property === "font" && /(^|\s)\d+(\.\d+)?(px|pt)(\/|\s|$)/.test(value);
+    });
+    expect(literal).toEqual([]);
+  });
+
+  it("declares no literal radius but 0", () => {
+    const literal = declarations.filter(
+      ({ property, value }) =>
+        property.endsWith("radius") && value.split(/\s+/).some((part) => /^[1-9]/.test(part)),
+    );
+    expect(literal).toEqual([]);
+  });
+});

@@ -1,11 +1,14 @@
 /*
- * The report's design tokens, ported verbatim from legacy/report.css:1-82. Names and values are a
- * contract with every component stylesheet and with the report's look across releases, so a change
- * here is a visual change to every published report. Two light-theme values are a shade darker
- * than legacy's: --muted (#5f726f) and --high (#a95a07) fell just short of 4.5:1 on the tinted
- * surfaces they sit on (--surface-2, --high-soft), which axe reports as a contrast failure. The dark
- * --high (#ec9046, legacy #e0a055) is a step more orange: next to the mustard --med in the waffle
- * the two read as one tone; it keeps at least 5.9:1 on every dark surface.
+ * The report's design tokens. A change here is a visual change to every published report.
+ *
+ * The palette is semantic, one meaning per hue: the four band tones (--crit, --high, --med, --low)
+ * carry the score_model bands and the graded verdicts, as text; their -mark twins fill squares
+ * and bars, critical the most salient against the page in each theme; --none carries a zero score (ok, and
+ * allowlisted drawn outlined); --unk carries "no data" (the unknown verdict, a gate that was not
+ * set). --accent marks interaction only: links, focus and the selected control. Every tone keeps
+ * 4.5:1 as text on --bg, --surface, --surface-2 and its own -soft fill, in both themes.
+ * --control-border draws the boundary of a field, which keeps 3:1 on --bg, --surface and
+ * --surface-2 in both themes (WCAG 1.4.11). --border and --border-strong only divide.
  *
  * Theming, as the legacy page does it: light lives on bare :root; the OS dark preference applies
  * unless the reader pinned light (data-theme="light"); an explicit data-theme="dark" applies
@@ -20,6 +23,7 @@
   --surface-3: #dfe7e4;
   --border: #d3ddda;
   --border-strong: #b4c3bf;
+  --control-border: #6f817d;
   --ink: #0f1a19;
   --ink-2: #3a4b49;
   --muted: #536562;
@@ -34,17 +38,20 @@
   --med-soft: #f4edd2;
   --low: #456472;
   --low-soft: #dfe9ee;
-  --none: #366b4b;
-  --none-soft: #dcebe1;
-  /* One fill per flag for the "Weighs most" bars, a categorical set apart from the band tones:
-     two flags of one band never share a fill. Validated for colour-vision deficiency on --surface. */
-  --flag-abandoned: #2a78d6;
-  --flag-silent: #eb6834;
-  --flag-pinned: #1baf7a;
-  --flag-left-behind: #eda100;
-  --flag-old-promise: #e87ba4;
-  --flag-stale: #008300;
-  --flag-vulnerable: #6250d6;
+  --none: #3a6b2e;
+  --none-soft: #e2eddb;
+  --unk: #5a605f;
+  --unk-soft: #eaedec;
+  /* Mark tones: the fill of a square, a bar or a swatch, never text. Salience against the page
+     follows the grade in each theme: critical stands out most, then high, medium and low, and the
+     no-data and zero-score marks (--unk-mark, --none-mark) least. Each keeps 3:1 against every
+     surface it sits on, the bar tracks (--surface-2) included. */
+  --crit-mark: #770116;
+  --high-mark: #893e01;
+  --med-mark: #8d6d01;
+  --low-mark: #4689aa;
+  --unk-mark: #848484;
+  --none-mark: #639359;
   --shadow: 0 1px 2px rgba(15, 26, 25, 0.06), 0 8px 24px -12px rgba(15, 26, 25, 0.18);
   --backdrop: rgba(4, 12, 11, 0.55);
   /* Nothing is fetched: a report about dependency risk does not phone home, and it has to
@@ -64,11 +71,34 @@
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 28px;
+  --radius-xs: 2px;
   --radius-s: 4px;
   --radius-m: 7px;
   --radius-l: 10px;
+  --radius-round: 50%;
+  --radius-pill: 999px;
+
+  /* The type scale: six steps, each about 1.2 times the one below. The two small ones serve
+     labels, tables and meta text, the base one running text, the three large ones the answers. A
+     rule picks a step; it never invents a size. */
+  --text-xs: 11px;
+  --text-s: 13px;
+  --text-base: 15px;
+  --text-l: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  /* Paper's smallest size, in points as print sets type. */
+  --text-print-xs: 7.5pt;
+  --duration-fast: 120ms;
   --gutter: 20px;
-  --page-max: 1500px;
+  /* Wide enough for the list and an open package side by side; a row wider than this is too long a
+     measure for the eye to cross. */
+  --page-max: 1800px;
+  /* The widest the Overview answer column and its Ready to run card grow. */
+  --lead-measure: 860px;
+  --rail-w: 210px;
+  /* The open package beside the list: wide enough that its verdict sets in two or three lines. */
+  --sheet-w: clamp(460px, 28vw + 200px, 700px);
 
   /* Height of the sticky header, measured by Header at runtime; this is only the first-paint
      guess, close to the brand row plus the tab row. */
@@ -91,6 +121,7 @@
     --surface-3: #1e2c2a;
     --border: #253331;
     --border-strong: #374846;
+    --control-border: #647874;
     --ink: #e4edea;
     --ink-2: #c3d2ce;
     --muted: #8fa39f;
@@ -99,21 +130,22 @@
     --accent-ink: #6fd8ca;
     --crit: #ef8074;
     --crit-soft: #351916;
-    --high: #ec9046;
+    --high: #ec9e42;
     --high-soft: #332412;
     --med: #cdb250;
     --med-soft: #2e2814;
     --low: #93aebb;
     --low-soft: #1b2830;
-    --none: #71b98a;
-    --none-soft: #16291d;
-    --flag-abandoned: #3987e5;
-    --flag-silent: #d95926;
-    --flag-pinned: #199e70;
-    --flag-left-behind: #c98500;
-    --flag-old-promise: #d55181;
-    --flag-stale: #008300;
-    --flag-vulnerable: #9085e9;
+    --none: #8fc27a;
+    --none-soft: #1a2a14;
+    --unk: #a4abaa;
+    --unk-soft: #222928;
+    --crit-mark: #ff958e;
+    --high-mark: #df911a;
+    --med-mark: #947b05;
+    --low-mark: #297497;
+    --unk-mark: #6c6c6c;
+    --none-mark: #49763e;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.8);
     color-scheme: dark;
   }
@@ -125,6 +157,7 @@
   --surface-3: #1e2c2a;
   --border: #253331;
   --border-strong: #374846;
+  --control-border: #647874;
   --ink: #e4edea;
   --ink-2: #c3d2ce;
   --muted: #8fa39f;
@@ -133,21 +166,22 @@
   --accent-ink: #6fd8ca;
   --crit: #ef8074;
   --crit-soft: #351916;
-  --high: #ec9046;
+  --high: #ec9e42;
   --high-soft: #332412;
   --med: #cdb250;
   --med-soft: #2e2814;
   --low: #93aebb;
   --low-soft: #1b2830;
-  --none: #71b98a;
-  --none-soft: #16291d;
-  --flag-abandoned: #3987e5;
-  --flag-silent: #d95926;
-  --flag-pinned: #199e70;
-  --flag-left-behind: #c98500;
-  --flag-old-promise: #d55181;
-  --flag-stale: #008300;
-  --flag-vulnerable: #9085e9;
+  --none: #8fc27a;
+  --none-soft: #1a2a14;
+  --unk: #a4abaa;
+  --unk-soft: #222928;
+  --crit-mark: #ff958e;
+  --high-mark: #df911a;
+  --med-mark: #947b05;
+  --low-mark: #297497;
+  --unk-mark: #6c6c6c;
+  --none-mark: #49763e;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.8);
   color-scheme: dark;
 }

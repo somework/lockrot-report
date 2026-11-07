@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HashSync, parseHash, serializeHash } from "../../../src/state/hash";
+import { HashSync, linkHref, parseHash, serializeHash } from "../../../src/state/hash";
 import type { HashWindow } from "../../../src/state/hash";
 import { EMPTY_FILTERS, INITIAL_STATE } from "../../../src/state/types";
 import type { State } from "../../../src/state/types";
@@ -293,6 +293,26 @@ describe("parseHash", () => {
     expect(next.pkg).toBe("acme/widget");
   });
 
+  it("reads an empty pkg as no package open, so the written address keeps the state", () => {
+    // Arrange
+    const base: State = { ...INITIAL_STATE, pkg: "other/pkg" };
+
+    // Act
+    const next = parseHash("view=findings&pkg=", base);
+
+    // Assert
+    expect(next.pkg).toBeNull();
+    expect(serializeHash(next)).toBe("view=findings");
+  });
+
+  it("reads a whitespace-only pkg as no package open", () => {
+    // Arrange / Act
+    const next = parseHash("view=findings&pkg=%20", { ...INITIAL_STATE, pkg: "other/pkg" });
+
+    // Assert
+    expect(next.pkg).toBeNull();
+  });
+
   it("adds comma-separated keys to a filter group, skipping empty segments", () => {
     // Arrange / Act
     const next = parseHash("verdict=stale,,silent", INITIAL_STATE);
@@ -486,5 +506,35 @@ describe("HashSync.writeHash", () => {
 
     // Assert
     expect(calls2).toEqual(["#view=radius"]);
+  });
+});
+
+describe("the section key: a section of Run data that the address opens at (R4-29)", () => {
+  it("writes section=php-window after view=run", () => {
+    expect(serializeHash({ ...INITIAL_STATE, view: "run", section: "php-window" })).toBe(
+      "view=run&section=php-window",
+    );
+    expect(linkHref({ view: "run", section: "php-window" })).toBe("#view=run&section=php-window");
+  });
+
+  it("writes no section on another view", () => {
+    expect(serializeHash({ ...INITIAL_STATE, view: "findings", section: "php-window" })).toBe(
+      "view=findings",
+    );
+  });
+
+  it("reads the section under view=run only", () => {
+    expect(parseHash("#view=run&section=php-window", INITIAL_STATE).section).toBe("php-window");
+    expect(parseHash("#view=findings&section=php-window", INITIAL_STATE).section).toBeNull();
+    expect(parseHash("#section=php-window", INITIAL_STATE)).toMatchObject({
+      view: "overview",
+      section: null,
+    });
+  });
+
+  it("keeps no section from the state before when the fragment names none", () => {
+    expect(
+      parseHash("#view=run", { ...INITIAL_STATE, view: "run", section: "php-window" }).section,
+    ).toBeNull();
   });
 });

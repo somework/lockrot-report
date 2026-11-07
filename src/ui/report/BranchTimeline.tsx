@@ -1,3 +1,4 @@
+import { Fragment } from "preact";
 import { useState } from "preact/hooks";
 import type { Finding, RepositoryMetadata, Run } from "../../model/report";
 import {
@@ -9,9 +10,12 @@ import {
   type BranchLane,
   type BranchTimelineRow,
 } from "../../domain/branchTimeline";
+import { barParts } from "../../domain/securityBlock";
 import { toneClass } from "../common/common";
+import { usePrinted } from "../print/printContext";
 import "../detail/timeline.css";
 import "../detail/timeline-forced.css";
+import { Wbr } from "./PkgName";
 
 // A CSS custom property through CSSOM, never a `style="…"` string the page's CSP would refuse.
 const at = (name: string, x: number): Record<string, string> => ({ [name]: `${x}%` });
@@ -60,13 +64,37 @@ function LaneRow({ lane, span, guides, level, folded = false, collapsed = false 
     ...(collapsed ? ["is-collapsed"] : []),
     ...(tone === null ? [] : ["is-toned", toneClass(tone)]),
   ].join(" ");
+  const printed = usePrinted();
   const words = laneWords(lane);
+  // Paper prints a folded row in full (sheet.css), so it stays in the tree there.
+  const hidden = collapsed && !printed;
   return (
-    <div role="row" className={classes} data-branch={lane.branch} aria-hidden={collapsed || undefined}>
-      <span role="rowheader" className="detail-timeline-branch">
+    <div
+      role="row"
+      className={classes}
+      data-branch={lane.branch}
+      aria-hidden={hidden || undefined}
+      inert={hidden || undefined}
+    >
+      <span
+        role="rowheader"
+        className="detail-timeline-branch"
+        aria-label={`${lane.branch}${lane.newest ? TIMELINE_WORDS.newest : ""}${lane.installed ? ` ${TIMELINE_WORDS.yours}` : ""}${lane.move ? ` ${TIMELINE_WORDS.move}` : ""}`}
+      >
         {lane.branch}
-        {lane.installed && <Sr>{TIMELINE_WORDS.yours}</Sr>}
         {lane.newest && <Sr>{TIMELINE_WORDS.newest}</Sr>}
+        {lane.installed && (
+          <>
+            {" "}
+            <span className="d3-rung-mark d3-tl-mark">{TIMELINE_WORDS.yours}</span>
+          </>
+        )}
+        {lane.move && (
+          <>
+            {" "}
+            <span className="d3-rung-mark is-move d3-tl-mark">{TIMELINE_WORDS.move}</span>
+          </>
+        )}
       </span>
       <span
         role="cell"
@@ -85,6 +113,9 @@ function LaneRow({ lane, span, guides, level, folded = false, collapsed = false 
       </span>
       <span role="cell" className="detail-timeline-latest">
         {lane.version}
+        <span className="d3-tl-age" aria-hidden="true">
+          {lane.age}
+        </span>
       </span>
       <span
         role="cell"
@@ -94,12 +125,20 @@ function LaneRow({ lane, span, guides, level, folded = false, collapsed = false 
             : "detail-timeline-php"
         }
       >
-        {lane.php ?? (
+        {lane.php === null ? (
           <>
             <span aria-hidden="true">—</span>
             <Sr>{TIMELINE_WORDS.noPhp}</Sr>
           </>
+        ) : (
+          barParts(lane.php).map((part, i) => (
+            <Fragment key={i}>
+              {i > 0 && <Wbr />}
+              {part}
+            </Fragment>
+          ))
         )}
+        {lane.phpWords !== null && <span className="d3-tl-php-note">{lane.phpWords}</span>}
       </span>
     </div>
   );
@@ -126,8 +165,8 @@ function FoldRows({
       <div role="row" className={`detail-timeline-row detail-timeline-fold${open ? " is-open" : ""}`}>
         <span role="rowheader" className="detail-timeline-branch">
           <button type="button" className="detail-timeline-fold-btn" aria-expanded={open} onClick={onToggle}>
-            {fold.lanes.length} {fold.which}
-            <Sr>{` ${fold.which === "older" ? TIMELINE_WORDS.older : TIMELINE_WORDS.between}`}</Sr>
+            {`${fold.lanes.length} ${fold.which}`}
+            <Sr>{fold.which === "older" ? TIMELINE_WORDS.older : TIMELINE_WORDS.between}</Sr>
           </button>
         </span>
         <span role="cell" className="detail-timeline-strip">
@@ -171,11 +210,13 @@ export function BranchTimeline2({
   metadata,
   run,
   summaryId,
+  headId,
 }: {
   finding: Finding;
   metadata: RepositoryMetadata | null;
   run: Run;
   summaryId: string;
+  headId: string;
 }) {
   const [openFolds, setOpenFolds] = useState<readonly string[]>([]);
   const timeline = branchTimeline(finding, metadata, run);
@@ -185,14 +226,21 @@ export function BranchTimeline2({
     setOpenFolds((open) => (open.includes(which) ? open.filter((w) => w !== which) : [...open, which]));
   };
 
-  const lanes = timeline.rows.flatMap((row) => (row.kind === "lane" ? [row.lane] : row.lanes));
+  const lanes = timeline.lanes;
 
   return (
     <>
-      <div role="table" className="detail-timeline-grid d2-timeline" aria-describedby={summaryId}>
+      <div
+        role="table"
+        className="detail-timeline-grid d2-timeline"
+        aria-labelledby={headId}
+        aria-describedby={summaryId}
+      >
         <div role="row" className="detail-timeline-row detail-timeline-head">
-          <span role="columnheader">{TIMELINE_WORDS.branch}</span>
-          <span role="columnheader" className="detail-timeline-strip-head">
+          <span role="columnheader" aria-label={TIMELINE_WORDS.branch}>
+            {TIMELINE_WORDS.branch}
+          </span>
+          <span role="columnheader" className="detail-timeline-strip-head" aria-label={TIMELINE_WORDS.strip}>
             <Sr>{TIMELINE_WORDS.strip}</Sr>
             {guides.map((guide) => (
               <span
@@ -205,10 +253,14 @@ export function BranchTimeline2({
               </span>
             ))}
           </span>
-          <span role="columnheader">{TIMELINE_WORDS.latest}</span>
-          <span role="columnheader">{TIMELINE_WORDS.php}</span>
+          <span role="columnheader" aria-label={TIMELINE_WORDS.latest}>
+            {TIMELINE_WORDS.latest}
+          </span>
+          <span role="columnheader" aria-label={TIMELINE_WORDS.php}>
+            {TIMELINE_WORDS.php}
+          </span>
         </div>
-        {timeline.rows.map((row) =>
+        {timeline.rows.map((row, i) =>
           row.kind === "lane" ? (
             <LaneRow
               key={row.lane.branch}
@@ -219,13 +271,13 @@ export function BranchTimeline2({
             />
           ) : (
             <FoldRows
-              key={row.which}
+              key={`${row.which}-${i}`}
               fold={row}
               span={span}
               guides={guides}
-              open={openFolds.includes(row.which)}
+              open={openFolds.includes(`${row.which}-${i}`)}
               onToggle={() => {
-                toggle(row.which);
+                toggle(`${row.which}-${i}`);
               }}
             />
           ),

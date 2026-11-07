@@ -30,10 +30,10 @@ test.describe("a history.replaceState() that throws must not stop the page", () 
 
   test("tab switching still renders, even though writing the hash now always throws", async () => {
     await report.gotoReport2WithHash("composite", "view=findings");
-    expect(await report.rows()).toHaveLength(7);
+    expect(await report.rows()).toHaveLength(9);
     await report.tab("packages");
     expect(await report.activeTab()).toBe("packages");
-    expect(await report.rows()).toHaveLength(7);
+    expect(await report.rows()).toHaveLength(9);
   });
 });
 
@@ -51,7 +51,7 @@ test.describe("a localStorage that throws must not stop theme switching", () => 
 
   test("the page still boots and the theme still switches for the current view", async () => {
     await report.gotoReport2WithHash("composite", "view=findings");
-    expect(await report.rows()).toHaveLength(7);
+    expect(await report.rows()).toHaveLength(9);
     const before = await report.theme();
     await report.toggleTheme();
     // In-memory state still flips even though persistence silently fails.
@@ -69,7 +69,7 @@ test.describe("bundle shape (history.md item 7)", () => {
 
   test("a document with no baseline state at all still renders (the composite has none)", async () => {
     await report.gotoReport2WithHash("composite", "view=findings");
-    expect(await report.rows()).toHaveLength(7);
+    expect(await report.rows()).toHaveLength(9);
   });
 });
 

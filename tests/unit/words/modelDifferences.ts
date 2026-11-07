@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import type { ModelGoldens, RecordedCase } from "./recorded";
-import { modelCases, recordedCases } from "./recorded";
+import { lockrotRecordings, modelCases } from "./recorded";
 
 const FILE = join(process.cwd(), "goldens", "en", "model-differences.json");
 
@@ -18,32 +18,24 @@ export function listedDifferences(lineClass: string): Map<string, string> {
   );
 }
 
-/** The page writes the Age row without the `age:` prefix of the text formats. */
-const withoutAgePrefix = (line: string | null): string | null => line?.replace(/^age: /, "") ?? null;
-
 export interface Difference {
   name: string;
-  page: string | null;
-  model: string | null;
+  page: unknown;
+  model: unknown;
 }
 
-/** The recorded cases whose line is not the model's golden. */
+/** The cases lockrot recorded whose line or block is not the model's golden. */
 export function differencesFromModel(
-  field: keyof Pick<ModelGoldens, "checks" | "branches" | "security_row" | "age_line" | "baseline_suffix">,
-  line: (recorded: RecordedCase) => string | null,
+  field: keyof Omit<ModelGoldens, "why" | "commands_posix" | "commands_cmd" | "age_line">,
+  line: (recorded: RecordedCase) => unknown,
 ): Difference[] {
-  const models = new Map(
-    modelCases().map(({ name, golden }) => [
-      name,
-      field === "age_line" ? withoutAgePrefix(golden.age_line) : golden[field],
-    ]),
-  );
-  return recordedCases()
+  const models = new Map(modelCases().map(({ name, golden }) => [name, golden[field]]));
+  return lockrotRecordings()
     .filter(({ name }) => models.has(name))
     .map((recorded) => ({
       name: recorded.name,
       page: line(recorded),
       model: models.get(recorded.name) ?? null,
     }))
-    .filter(({ page, model }) => page !== model);
+    .filter(({ page, model }) => JSON.stringify(page) !== JSON.stringify(model));
 }

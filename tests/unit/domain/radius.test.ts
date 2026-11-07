@@ -1,49 +1,50 @@
 import { describe, expect, it } from "vitest";
 import {
-  FOLD_OTHER,
-  FOLD_SELF,
   FOLD_SINGLES,
-  isFoldOpen,
   isRowOpen,
+  isSinglesOpen,
   pulledTree,
   radiusAnswer,
   radiusCountPhrase,
   radiusLayout,
   radiusRows,
   rowKey,
+  type RadiusExposure,
   type RadiusFinding,
   type RadiusSource,
 } from "../../../src/domain/radius";
-
-type Exposure = readonly { package: string; flagged: number }[];
 
 function finding(pkg: string, extra: Partial<RadiusFinding> = {}): RadiusFinding {
   return {
     package: pkg,
     version: "1.0.0",
-    chain: [],
     direct: true,
     dev: false,
-    directDependents: [],
     verdict: "abandoned",
     rank: 1,
     ...extra,
   };
 }
 
-/** A transitive package whose chain runs `chain` and on to itself. */
-function pulled(pkg: string, chain: readonly string[], extra: Partial<RadiusFinding> = {}): RadiusFinding {
-  return finding(pkg, {
-    direct: false,
-    chain: [...chain, pkg],
-    directDependents: chain.slice(0, 1),
-    ...extra,
-  });
+const pulled = (pkg: string, extra: Partial<RadiusFinding> = {}): RadiusFinding =>
+  finding(pkg, { direct: false, ...extra });
+
+/** An `exposure[]` entry whose S7 names `members`, each by its chain from `pkg`. */
+function entry(
+  pkg: string,
+  members: readonly (readonly string[])[],
+  flagged = members.length,
+): RadiusExposure {
+  return {
+    package: pkg,
+    flagged,
+    members: members.map((hops) => ({ package: hops.at(-1) ?? "", chain: [pkg, ...hops] })),
+  };
 }
 
 function source(
   findings: readonly RadiusFinding[],
-  exposure: Exposure,
+  exposure: readonly RadiusExposure[],
   unattributed: readonly string[] = [],
 ): RadiusSource {
   return { report: { exposure, unattributed: unattributed.map((p) => ({ package: p })), findings } };
@@ -52,69 +53,35 @@ function source(
 const CLOSED = { disclosure: {}, pkg: null, narrow: false } as const;
 
 describe("radiusRows", () => {
-  it("counts only the rows it lists, the parent's own flag kept apart (M24/M25)", () => {
-    // Arrange: acme/parent is itself flagged and pulls in one child.
-    const parent = finding("acme/parent", { chain: ["acme/parent"] });
-    const child = pulled("acme/child", ["acme/parent"]);
-    const model = source([parent, child], [{ package: "acme/parent", flagged: 99 }]);
+  it("lists what the requirement's S7 names, its own flag kept apart", () => {
+    const parent = finding("acme/parent");
+    const child = pulled("acme/child");
+    const model = source([parent, child], [entry("acme/parent", [["acme/child"]], 99)]);
 
-    // Act
     const [row] = radiusRows(model, [parent, child]);
 
-    // Assert
-    expect(row?.count).toBe(1);
     expect(row?.pulled.map((f) => f.package)).toEqual(["acme/child"]);
+    expect(row?.count).toBe(1);
     expect(row?.self?.package).toBe("acme/parent");
     expect(row?.exposure).toBe(99);
   });
 
-  it("excludes the direct requirement itself from its own list", () => {
-    const parent = finding("acme/parent", { chain: ["acme/parent"] });
-    const model = source([parent], [{ package: "acme/parent", flagged: 1 }]);
-
-    expect(radiusRows(model, [parent])[0]?.pulled).toEqual([]);
-  });
-
-  it("names what a requirement reaches but another row lists, and which row that is", () => {
-    // Arrange: acme/bundle requires acme/lib; acme/deep's recorded chain starts at acme/lib, but
-    // its direct_dependents name both.
-    const deep = pulled("acme/deep", ["acme/lib"], { directDependents: ["acme/lib", "acme/bundle"] });
+  it("lists under each requirement whose S7 names it, never by the first hop of its own chain", () => {
+    const deep = pulled("acme/deep");
     const model = source(
       [deep],
-      [
-        { package: "acme/bundle", flagged: 1 },
-        { package: "acme/lib", flagged: 1 },
-      ],
+      [entry("acme/bundle", [["acme/lib", "acme/deep"]]), entry("acme/lib", [["acme/deep"]])],
     );
 
-    // Act
     const [bundle, lib] = radiusRows(model, [deep]);
 
-    // Assert
-    expect(bundle?.count).toBe(0);
-    expect(bundle?.elsewhere.map((e) => [e.finding.package, e.listedUnder])).toEqual([
-      ["acme/deep", "acme/lib"],
-    ]);
-    expect(lib?.count).toBe(1);
-    expect(lib?.elsewhere).toEqual([]);
-  });
-
-  it("never counts a flagged direct requirement as reached elsewhere", () => {
-    const other = finding("acme/other", { direct: true, directDependents: ["acme/bundle"] });
-    const model = source([other], [{ package: "acme/bundle", flagged: 0 }]);
-
-    expect(radiusRows(model, [other])[0]?.elsewhere).toEqual([]);
+    expect(bundle?.pulled.map((f) => f.package)).toEqual(["acme/deep"]);
+    expect(lib?.pulled.map((f) => f.package)).toEqual(["acme/deep"]);
   });
 
   it("takes version and dev from the requirement's own finding, and null without one", () => {
     const own = finding("acme/own", { version: "2.3.4", dev: true });
-    const model = source(
-      [own],
-      [
-        { package: "acme/own", flagged: 0 },
-        { package: "acme/none", flagged: 0 },
-      ],
-    );
+    const model = source([own], [entry("acme/own", []), entry("acme/none", [])]);
 
     const [withOwn, without] = radiusRows(model, []);
 
@@ -123,111 +90,29 @@ describe("radiusRows", () => {
   });
 });
 
-describe("unattributed packages (`unattributed`, counted under no requirement)", () => {
-  // acme/shared lies on acme/lib's recorded chain and is reached from acme/bundle too, but lockrot
-  // counts it under no requirement: more than max_fan_in direct requirements reach it.
-  const shared = pulled("acme/shared", ["acme/lib", "acme/mid"], {
-    directDependents: ["acme/lib", "acme/bundle"],
-  });
-  const own = pulled("acme/own", ["acme/lib"]);
-  const exposure = [
-    { package: "acme/lib", flagged: 1 },
-    { package: "acme/bundle", flagged: 0 },
-  ];
-  const before = source([own, shared], exposure);
-  const after = source([own, shared], exposure, ["acme/shared"]);
-
-  it("with nothing unattributed, a shared package is listed under its chain's first row", () => {
-    const [lib, bundle] = radiusRows(before, [own, shared]);
-
-    expect(lib?.pulled.map((f) => f.package)).toEqual(["acme/own", "acme/shared"]);
-    expect(bundle?.elsewhere.map((e) => e.finding.package)).toEqual(["acme/shared"]);
-    expect(radiusLayout(before, [own, shared]).unattributed).toEqual([]);
-  });
-
-  it("is listed under no row and reached elsewhere by none, so each row adds up to exposure[].flagged", () => {
-    const [lib, bundle] = radiusRows(after, [own, shared]);
-
-    expect(lib?.pulled.map((f) => f.package)).toEqual(["acme/own"]);
-    expect([lib?.count, lib?.unfiltered, lib?.elsewhere]).toEqual([1, 1, []]);
-    expect(bundle?.elsewhere).toEqual([]);
-    expect([lib?.count, bundle?.count]).toEqual([1, 0]);
-  });
-
-  it("stays off the receipt and the unfiltered totals, and is on the layout's unattributed list", () => {
-    const layout = radiusLayout(after, [own, shared]);
-
-    expect(layout.receipt).toEqual([]);
-    expect(layout.throughOther).toEqual([]);
-    expect([layout.unfilteredTotal, layout.unfilteredRows]).toEqual([1, 1]);
-    expect(layout.unattributed).toEqual([shared]);
-  });
-
-  it("follows the filter: one the filter hides is not on the layout's list", () => {
-    const layout = radiusLayout(after, [own], [own, shared]);
-
-    expect(layout.unattributed).toEqual([]);
-    expect(layout.narrowed).toBe(true);
-    expect([layout.unfilteredTotal, layout.ranked.map((r) => r.unfiltered)]).toEqual([1, [1]]);
-  });
-
-  it("ignores an entry naming a package the report has no finding for", () => {
-    const stray = source([own, shared], exposure, ["acme/ghost"]);
-
-    expect(radiusLayout(stray, [own, shared]).unattributed).toEqual([]);
-    expect(radiusRows(stray, [own, shared])[0]?.pulled.map((f) => f.package)).toEqual([
-      "acme/own",
-      "acme/shared",
-    ]);
-  });
-
-  it("keeps an unattributed package out of every row, receipt and tail of a fuller layout", () => {
-    const layout = radiusLayout(after, [own, shared], [own, shared]);
-
-    const inRows = [...layout.ranked, ...layout.selfOnly, ...layout.throughOther].flatMap((r) => [
-      ...r.pulled.map((f) => f.package),
-      ...r.elsewhere.map((e) => e.finding.package),
-    ]);
-    expect(inRows).not.toContain("acme/shared");
-    expect(layout.receipt.map((r) => r.finding.package)).not.toContain("acme/shared");
-  });
-});
-
 describe("radiusLayout", () => {
-  it("ranks by count, exposure order on ties, and keeps a short list unfolded", () => {
-    const model = source(
-      [],
-      [
-        { package: "a/parent", flagged: 1 },
-        { package: "b/parent", flagged: 2 },
-        { package: "c/parent", flagged: 1 },
-      ],
-    );
-    const flagged = [
-      pulled("a/1", ["a/parent"]),
-      pulled("b/1", ["b/parent"]),
-      pulled("b/2", ["b/parent"]),
-      pulled("c/1", ["c/parent"]),
-    ];
+  it("keeps exposure[]'s order, never a count of its own", () => {
+    const flagged = ["a/1", "b/1", "b/2", "c/1"].map((name) => pulled(name));
+    const model = source(flagged, [
+      entry("a/parent", [["a/1"]], 1),
+      entry("b/parent", [["b/1"], ["b/2"]], 2),
+      entry("c/parent", [["c/1"]], 1),
+    ]);
 
     const layout = radiusLayout(model, flagged);
 
-    expect(layout.ranked.map((r) => r.package)).toEqual(["b/parent", "a/parent", "c/parent"]);
-    expect(layout.lead).toEqual(layout.ranked);
+    expect(layout.rows.map((r) => r.package)).toEqual(["a/parent", "b/parent", "c/parent"]);
+    expect(layout.lead).toEqual(layout.rows);
     expect(layout.singles).toEqual([]);
   });
 
-  it("folds four or more one-each rows under the rows that list more", () => {
+  it("folds four or more trailing one-each rows under the rows that list more", () => {
     const names = ["p1", "p2", "p3", "p4"];
-    const model = source(
-      [],
-      [{ package: "big/parent", flagged: 2 }, ...names.map((n) => ({ package: `v/${n}`, flagged: 1 }))],
-    );
-    const flagged = [
-      pulled("big/1", ["big/parent"]),
-      pulled("big/2", ["big/parent"]),
-      ...names.map((n) => pulled(`x/${n}`, [`v/${n}`])),
-    ];
+    const flagged = [pulled("big/1"), pulled("big/2"), ...names.map((n) => pulled(`x/${n}`))];
+    const model = source(flagged, [
+      entry("big/parent", [["big/1"], ["big/2"]]),
+      ...names.map((n) => entry(`v/${n}`, [[`x/${n}`]])),
+    ]);
 
     const layout = radiusLayout(model, flagged);
 
@@ -235,126 +120,110 @@ describe("radiusLayout", () => {
     expect(layout.singles.map((r) => r.package)).toEqual(names.map((n) => `v/${n}`));
   });
 
-  it("sorts rows that list nothing into the two tails, and drops those with nothing at all", () => {
-    const lonely = finding("acme/lonely", { chain: ["acme/lonely"] });
-    const deep = pulled("acme/deep", ["acme/lib"], {
-      directDependents: ["acme/lib", "acme/bundle", "acme/kit"],
-    });
-    const alone = finding("acme/alone", { chain: ["acme/alone"] });
-    const model = source(
-      [lonely, deep, alone],
-      [
-        { package: "acme/lib", flagged: 1 },
-        { package: "acme/lonely", flagged: 0 },
-        { package: "acme/bundle", flagged: 1 },
-        { package: "acme/kit", flagged: 1 },
-        { package: "acme/quiet", flagged: 0 },
-      ],
-    );
+  it("keeps a requirement whose S7 names no finding, with lockrot's count", () => {
+    const model = source([], [entry("acme/lib", [["acme/unknown"]], 3)]);
 
-    const layout = radiusLayout(model, [lonely, deep, alone]);
+    const layout = radiusLayout(model, []);
 
-    expect(layout.selfOnly.map((r) => r.package)).toEqual(["acme/lonely"]);
-    expect(layout.throughOther.map((r) => r.package)).toEqual(["acme/bundle", "acme/kit"]);
-    expect(layout.receipt).toEqual([
-      { finding: deep, listedUnder: "acme/lib", behind: ["acme/bundle", "acme/kit"] },
+    expect(layout.rows.map((r) => [r.package, r.count, r.unfiltered, r.exposure])).toEqual([
+      ["acme/lib", 0, 0, 3],
     ]);
+  });
+
+  it("names the flagged direct requirements exposure[] leaves out, and none of them is a row", () => {
+    const alone = finding("acme/alone");
+    const model = source([alone], [entry("acme/lib", [])]);
+
+    const layout = radiusLayout(model, [alone]);
+
     expect(layout.unlisted.map((f) => f.package)).toEqual(["acme/alone"]);
-    expect(layout.exposureCount).toBe(5);
+    expect(layout.exposureCount).toBe(1);
+  });
+
+  it("lists an unattributed package on the layout's list, in its order", () => {
+    const shared = pulled("acme/shared");
+    const model = source([shared], [entry("acme/lib", [])], ["acme/shared", "acme/ghost"]);
+
+    expect(radiusLayout(model, [shared]).unattributed).toEqual([shared]);
+    expect(radiusLayout(model, [], [shared]).unattributed).toEqual([]);
   });
 });
 
 describe("under a filter (PD-RADIUS-6)", () => {
-  const parent = finding("acme/parent", { direct: true, chain: ["acme/parent"] });
-  const a = pulled("acme/a", ["acme/parent"], { verdict: "abandoned" });
-  const b = pulled("acme/b", ["acme/parent"], { verdict: "stale" });
-  const other = pulled("zeta/x", ["zeta/root"]);
+  const parent = finding("acme/parent");
+  const a = pulled("acme/a");
+  const b = pulled("acme/b", { verdict: "stale" });
+  const other = pulled("zeta/x");
   const all = [parent, a, b, other];
   const model = source(all, [
-    { package: "acme/parent", flagged: 2 },
-    { package: "zeta/root", flagged: 1 },
+    entry("acme/parent", [["acme/a"], ["acme/b"]]),
+    entry("zeta/root", [["zeta/x"]]),
   ]);
 
   it("keeps each row's unfiltered count beside the filtered one, and says it is narrowed", () => {
     const layout = radiusLayout(model, [parent, a], all);
 
     expect(layout.narrowed).toBe(true);
-    expect(layout.ranked.map((r) => [r.package, r.count, r.unfiltered])).toEqual([["acme/parent", 1, 2]]);
+    expect(layout.rows.map((r) => [r.package, r.count, r.unfiltered])).toEqual([["acme/parent", 1, 2]]);
     expect([layout.unfilteredTotal, layout.unfilteredRows]).toEqual([3, 2]);
   });
 
-  it("sorts a flagged row whose packages the filter hides into the self tail, still counting them", () => {
+  it("keeps a flagged requirement whose packages the filter hides, still counting them", () => {
     const layout = radiusLayout(model, [parent], all);
 
-    expect(layout.ranked).toEqual([]);
-    expect(layout.selfOnly.map((r) => [r.package, r.count, r.unfiltered])).toEqual([["acme/parent", 0, 2]]);
-    // Nothing ranks above it, so the tail is the list: open by default.
-    expect(isFoldOpen(layout, FOLD_SELF, CLOSED)).toBe(true);
+    expect(layout.rows.map((r) => [r.package, r.count, r.unfiltered])).toEqual([["acme/parent", 0, 2]]);
   });
 
   it("is not narrowed when the filter keeps every flagged package", () => {
     const layout = radiusLayout(model, all, all);
 
     expect(layout.narrowed).toBe(false);
-    expect(layout.ranked.every((r) => r.count === r.unfiltered)).toBe(true);
+    expect(layout.rows.every((r) => r.count === r.unfiltered)).toBe(true);
   });
 });
 
 describe("radiusCountPhrase", () => {
   it("keeps the plain count when exposure[] names every flagged direct requirement", () => {
-    const parent = finding("acme/parent", { direct: true, chain: ["acme/parent"] });
-    const model = source([parent], [{ package: "acme/parent", flagged: 0 }]);
+    const parent = finding("acme/parent");
+    const model = source([parent], [entry("acme/parent", [])]);
 
     expect(radiusCountPhrase(radiusLayout(model, [parent]))).toBe("1 of 1 direct requirement");
   });
 
-  // Two requirements on the exposure list, each listing one package, and two flagged direct
-  // requirements the list leaves out.
-  const listed = [pulled("x/1", ["a/p"]), pulled("y/1", ["b/p"])];
+  const listed = [pulled("x/1"), pulled("y/1")];
   const left = [finding("u/1"), finding("u/2")];
   const everything = [...listed, ...left];
-  const model = source(everything, [
-    { package: "a/p", flagged: 1 },
-    { package: "b/p", flagged: 1 },
-  ]);
+  const model = source(everything, [entry("a/p", [["x/1"]]), entry("b/p", [["y/1"]])]);
 
-  it("says which list it counts and adds the flagged direct requirements with nothing flagged counted under them", () => {
+  it("counts the direct requirements on the exposure list alone (R12)", () => {
     const layout = radiusLayout(model, everything, everything);
 
-    expect(layout.unfilteredUnlisted).toBe(2);
-    expect(layout.unlisted).toHaveLength(2);
-    expect(radiusCountPhrase(layout)).toBe(
-      "2 of 2 direct requirements on the exposure list, plus 2 of 2 flagged ones with nothing flagged counted under them",
-    );
-  });
-
-  it("counts the left-out ones a filter keeps against all of them", () => {
-    const layout = radiusLayout(model, [left[0] as RadiusFinding], everything);
-
-    expect(layout.unfilteredUnlisted).toBe(2);
-    expect(radiusCountPhrase(layout)).toMatch(
-      /, plus 1 of 2 flagged ones with nothing flagged counted under them$/,
-    );
+    expect(radiusCountPhrase(layout)).toBe("2 of 2 direct requirements");
   });
 });
 
 describe("pulledTree", () => {
-  it("hangs each package under the nearest listed hop of its chain, naming unflagged hops as via", () => {
-    // Arrange: root → ruler → compiler → iterator; root → ruler → (unflagged) glue → math.
-    const parent = "w/root";
-    const ruler = pulled("h/ruler", [parent], { rank: 1 });
-    const compiler = pulled("h/compiler", [parent, "h/ruler"], { rank: 2 });
-    const iterator = pulled("h/iterator", [parent, "h/ruler", "h/compiler"], { rank: 3 });
-    const math = pulled("h/math", [parent, "h/ruler", "h/glue"], { rank: 4 });
-    const model = source([], [{ package: parent, flagged: 4 }]);
+  it("hangs each package under the nearest listed hop of its S7 chain, naming unflagged hops as via", () => {
+    // root → ruler → compiler → iterator; root → ruler → (unflagged) glue → math.
+    const ruler = pulled("h/ruler", { rank: 1 });
+    const compiler = pulled("h/compiler", { rank: 2 });
+    const iterator = pulled("h/iterator", { rank: 3 });
+    const math = pulled("h/math", { rank: 4 });
+    const model = source(
+      [],
+      [
+        entry("w/root", [
+          ["h/ruler"],
+          ["h/ruler", "h/compiler"],
+          ["h/ruler", "h/compiler", "h/iterator"],
+          ["h/ruler", "h/glue", "h/math"],
+        ]),
+      ],
+    );
     const [row] = radiusRows(model, [iterator, math, compiler, ruler]);
     if (!row) throw new Error("no row");
 
-    // Act
-    const tree = pulledTree(row);
-
-    // Assert
-    expect(tree.map((n) => [n.finding.package, n.depth, n.via, n.last, n.rails])).toEqual([
+    expect(pulledTree(row).map((n) => [n.finding.package, n.depth, n.via, n.last, n.rails])).toEqual([
       ["h/ruler", 0, [], true, []],
       ["h/compiler", 1, [], false, [false]],
       ["h/iterator", 2, [], true, [false, true]],
@@ -363,9 +232,9 @@ describe("pulledTree", () => {
   });
 
   it("orders siblings by rank, not by name", () => {
-    const first = pulled("zzz/first", ["w/root"], { rank: 1 });
-    const second = pulled("aaa/second", ["w/root"], { rank: 2 });
-    const [row] = radiusRows(source([], [{ package: "w/root", flagged: 2 }]), [second, first]);
+    const first = pulled("zzz/first", { rank: 1 });
+    const second = pulled("aaa/second", { rank: 2 });
+    const [row] = radiusRows(source([], [entry("w/root", [["aaa/second"], ["zzz/first"]])]), [second, first]);
     if (!row) throw new Error("no row");
 
     expect(pulledTree(row).map((n) => n.finding.package)).toEqual(["zzz/first", "aaa/second"]);
@@ -373,59 +242,56 @@ describe("pulledTree", () => {
 });
 
 describe("radiusAnswer", () => {
-  it("names the fewest rows that hold half the listed packages, at most three", () => {
-    const model = source(
-      [],
-      [
-        { package: "a/p", flagged: 3 },
-        { package: "b/p", flagged: 2 },
-        { package: "c/p", flagged: 2 },
-        { package: "d/q", flagged: 0 },
-      ],
-    );
-    const flagged = [
-      pulled("a/1", ["a/p"]),
-      pulled("a/2", ["a/p"]),
-      pulled("a/3", ["a/p"]),
-      pulled("b/1", ["b/p"]),
-      pulled("b/2", ["b/p"]),
-      pulled("c/1", ["c/p"]),
-      pulled("c/2", ["c/p"]),
-    ];
+  it("names the fewest rows, in exposure[] order, that hold half the listed packages, at most three", () => {
+    const flagged = ["a/1", "a/2", "a/3", "b/1", "b/2", "c/1", "c/2"].map((name) => pulled(name));
+    const model = source(flagged, [
+      entry("a/p", [["a/1"], ["a/2"], ["a/3"]]),
+      entry("b/p", [["b/1"], ["b/2"]]),
+      entry("c/p", [["c/1"], ["c/2"]]),
+    ]);
 
     const answer = radiusAnswer(radiusLayout(model, flagged));
 
     expect(answer?.top.map((r) => r.package)).toEqual(["a/p", "b/p"]);
-    expect(answer).toMatchObject({ held: 5, total: 7, rows: 3, exposureCount: 4 });
+    expect(answer).toMatchObject({ held: 5, total: 7, rows: 3, exposureCount: 3 });
   });
 
-  it("is null when no row lists anything", () => {
-    const model = source([], [{ package: "a/p", flagged: 0 }]);
+  it("names rows until they hold half of the pulled-in count it is given (SPEC §7.9.20)", () => {
+    const flagged = ["a/1", "a/2", "a/3", "b/1", "b/2", "c/1", "c/2"].map((name) => pulled(name));
+    const model = source(flagged, [
+      entry("a/p", [["a/1"], ["a/2"], ["a/3"]]),
+      entry("b/p", [["b/1"], ["b/2"]]),
+      entry("c/p", [["c/1"], ["c/2"]]),
+    ]);
 
-    expect(radiusAnswer(radiusLayout(model, []))).toBeNull();
+    const answer = radiusAnswer(radiusLayout(model, flagged), 12);
+
+    expect(answer?.top.map((r) => r.package)).toEqual(["a/p", "b/p", "c/p"]);
+    expect(answer).toMatchObject({ held: 7 });
+  });
+
+  it("is null when no row lists a finding", () => {
+    expect(radiusAnswer(radiusLayout(source([], [entry("a/p", [["x/1"]])]), []))).toBeNull();
   });
 });
 
 describe("what is open (PD-RADIUS-3)", () => {
   const names = ["p1", "p2", "p3", "p4"];
-  const model = source(
-    [],
-    [{ package: "big/parent", flagged: 2 }, ...names.map((n) => ({ package: `v/${n}`, flagged: 1 }))],
+  const flagged = [pulled("big/1"), pulled("big/2"), ...names.map((n) => pulled(`x/${n}`))];
+  const layout = radiusLayout(
+    source(flagged, [
+      entry("big/parent", [["big/1"], ["big/2"]]),
+      ...names.map((n) => entry(`v/${n}`, [[`x/${n}`]])),
+    ]),
+    flagged,
   );
-  const flagged = [
-    pulled("big/1", ["big/parent"]),
-    pulled("big/2", ["big/parent"]),
-    ...names.map((n) => pulled(`x/${n}`, [`v/${n}`])),
-  ];
-  const layout = radiusLayout(model, flagged);
   const bigRow = layout.lead[0];
   if (!bigRow) throw new Error("no row");
 
   it("starts every row closed and the one-each fold open, except on a phone", () => {
-    expect(isRowOpen(bigRow, CLOSED)).toBe(false);
-    expect(layout.singles.some((row) => isRowOpen(row, CLOSED))).toBe(false);
-    expect(isFoldOpen(layout, FOLD_SINGLES, CLOSED)).toBe(true);
-    expect(isFoldOpen(layout, FOLD_SINGLES, { ...CLOSED, narrow: true })).toBe(false);
+    expect(isRowOpen(layout, bigRow, CLOSED)).toBe(false);
+    expect(isSinglesOpen(layout, CLOSED)).toBe(true);
+    expect(isSinglesOpen(layout, { ...CLOSED, narrow: true })).toBe(false);
   });
 
   it("opens the row and fold that list the open package", () => {
@@ -433,9 +299,24 @@ describe("what is open (PD-RADIUS-3)", () => {
     const p3 = layout.singles.find((row) => row.package === "v/p3");
     if (!p3) throw new Error("no row");
 
-    expect(isFoldOpen(layout, FOLD_SINGLES, input)).toBe(true);
-    expect(isRowOpen(p3, input)).toBe(true);
-    expect(isRowOpen(bigRow, input)).toBe(false);
+    expect(isSinglesOpen(layout, input)).toBe(true);
+    expect(isRowOpen(layout, p3, input)).toBe(true);
+    expect(isRowOpen(layout, bigRow, input)).toBe(false);
+  });
+
+  it("opens one row for a package S7 lists under several: one the reader opened, else the first", () => {
+    const shared = pulled("x/shared");
+    const both = radiusLayout(
+      source([shared], [entry("a/first", [["x/shared"]]), entry("b/second", [["x/shared"]])]),
+      [shared],
+    );
+    const [first, second] = both.rows;
+    if (!first || !second) throw new Error("no rows");
+    const byLink = { disclosure: {}, pkg: "x/shared", narrow: false };
+    const opened = { ...byLink, disclosure: { [rowKey("b/second")]: true } };
+
+    expect([isRowOpen(both, first, byLink), isRowOpen(both, second, byLink)]).toEqual([true, false]);
+    expect([isRowOpen(both, first, opened), isRowOpen(both, second, opened)]).toEqual([false, true]);
   });
 
   it("follows what the reader opened or closed over any default", () => {
@@ -445,9 +326,7 @@ describe("what is open (PD-RADIUS-3)", () => {
       narrow: false,
     };
 
-    expect(isRowOpen(bigRow, input)).toBe(true);
-    expect(isFoldOpen(layout, FOLD_SINGLES, input)).toBe(false);
-    expect(isFoldOpen(layout, FOLD_SELF, input)).toBe(false);
-    expect(isFoldOpen(layout, FOLD_OTHER, input)).toBe(false);
+    expect(isRowOpen(layout, bigRow, input)).toBe(true);
+    expect(isSinglesOpen(layout, input)).toBe(false);
   });
 });

@@ -1,3 +1,4 @@
+import { Fragment } from "preact";
 import type { Finding, Run } from "../../model/report";
 import { gradeTone, shownPills, type BaselineMark } from "../../domain/findingRow";
 import { toneClass } from "../common/common";
@@ -40,20 +41,23 @@ export function FlagPills({
   const pills = shownPills(finding, run, hideAccepted);
   return (
     <>
-      {pills.map((pill) => (
-        <span
-          key={pill.id}
-          className={pill.accepted ? "fp is-accepted" : `fp ${toneClass(gradeTone(pill.band))}`}
-          title={pill.title ?? undefined}
-        >
-          <span className="fp-word">{pill.id}</span>
-          <span className="fp-sep" aria-hidden="true">
-            ·
+      {pills.map((pill, i) => (
+        <Fragment key={pill.id}>
+          {/* A space between pills is where a table cell may wrap them; a flex row ignores it. */}
+          {i > 0 && " "}
+          <span
+            className={pill.accepted ? "fp is-accepted" : `fp ${toneClass(gradeTone(pill.band))}`}
+            title={pill.title ?? undefined}
+          >
+            <span className="fp-word">{pill.id}</span>
+            <span className="fp-sep" aria-hidden="true">
+              ·
+            </span>
+            <span className="fp-q">{pill.word}</span>
+            {pill.noFix !== null && <span className="fp-nofix">{pill.noFix}</span>}
+            {pill.mark !== null && <Mark mark={pill.mark} />}
           </span>
-          <span className="fp-q">{pill.word}</span>
-          {pill.noFix !== null && <span className="fp-nofix">{pill.noFix}</span>}
-          {pill.mark !== null && <Mark mark={pill.mark} />}
-        </span>
+        </Fragment>
       ))}
     </>
   );

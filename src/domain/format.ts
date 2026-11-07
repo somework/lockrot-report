@@ -169,11 +169,7 @@ export function decimal(value: number, digits: number): string {
   return value < 0 ? `-${whole}` : whole;
 }
 
-/**
- * `"N of M {noun}"`, the noun singularised when `n` is exactly `1` — `countPhrase(1, 1, "flagged
- * package", "flagged packages")` reads "1 of 1 flagged package". DESIGN.md M21: the legacy page's
- * count line and badges never singularised ("1 of 1 flagged packages"); this is the fix.
- */
+/** `"N of M {noun}"`, the noun agreeing with M: "1 of 1 flagged package", "1 of 113 flagged packages". */
 export function countPhrase(n: number, of: number, noun1: string, nounN: string): string {
-  return `${n} of ${of} ${n === 1 ? noun1 : nounN}`;
+  return `${n} of ${of} ${of === 1 ? noun1 : nounN}`;
 }

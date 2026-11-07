@@ -1,4 +1,4 @@
-/** Words and clauses that a report-2 finding's answer (SPEC §7.9.13) and its Why lines (§7.9.8) share. */
+/** Words and clauses that the detail sheet's blocks (SPEC §7.9.13) and its Why lines (§7.9.8.8) share. */
 
 import type {
   CheckMissing,
@@ -14,6 +14,7 @@ import type {
   S6,
   S8,
   S9,
+  S11,
   SecurityVulnerable,
   Severity,
   SignalId,
@@ -22,10 +23,13 @@ import { advisoryRows } from "./advisoryRows";
 import { decimal, pluralNoun } from "./format";
 import { joinAnd } from "./joinWords";
 import {
+  activityProvenanceWord,
   allowlistReason,
   causeWord,
   halvingWord,
+  metadataProvenanceWord,
   metadataStatusWord,
+  originKindWord,
   signalName,
   skippedCheckWord,
 } from "./pageVocabulary";
@@ -43,6 +47,18 @@ export function namesCapped(names: readonly string[]): string {
   return `${names.slice(0, NAMES_SHOWN).join(", ")} and ${names.length - NAMES_SHOWN} more`;
 }
 
+/** SPEC §5.10's R words, with no trailing comma: "the newest PHP, 8.5". */
+export function newestPhpWords({ newest_php: php, newest_php_source: source }: S11): string {
+  switch (source) {
+    case "require_php":
+      return `${php}, the newest PHP that require.php allows`;
+    case "platform_php":
+      return `${php}, the newest PHP that the lock's platform allows`;
+    default:
+      return `the newest PHP, ${php}`;
+  }
+}
+
 export const oneDecimal = (years: number | null): string => (years === null ? "" : decimal(years, 1));
 
 interface SignalData {
@@ -54,6 +70,7 @@ interface SignalData {
   S6: S6;
   S8: S8;
   S9: S9;
+  S11: S11;
 }
 
 export function signalData<I extends keyof SignalData>(finding: Finding, id: I): SignalData[I] | null {
@@ -74,11 +91,23 @@ export function checkReasonWords(finding: Finding, reason: string | null): strin
   return reason === null ? "" : causeWord(reason, finding.origin.kind);
 }
 
+/** The Provenance words of SPEC §7.9.8.13: a word for every closed id, and a reason as its cause words. */
+export function provenanceWords(finding: Finding): { origin: string; metadata: string; activity: string } {
+  const { origin, metadata, activity } = finding;
+  const status = (word: string, reason: string | null): string =>
+    reason === null ? word : `${word} (${checkReasonWords(finding, reason)})`;
+  return {
+    origin: originKindWord(origin.kind),
+    metadata: status(metadataProvenanceWord(metadata.status), metadata.reason),
+    activity: status(activityProvenanceWord(activity.status), activity.reason),
+  };
+}
+
 export const metadataWords = (finding: Finding): string =>
   metadataStatusWord(finding.metadata.status, finding.origin.kind);
 
 /** One check entry's reason as a sentence words it; an accepted check carries the project's own reason. */
-function entryReasonWords(finding: Finding, entry: CheckMissing | CheckSkipped): string {
+export function entryReasonWords(finding: Finding, entry: CheckMissing | CheckSkipped): string {
   if (entry.reason === "accepted_by_config") {
     const accepted = finding.unchecked_accepted.find((u) => u.check === entry.check);
     if (accepted) {
@@ -163,7 +192,7 @@ export function checksSkippedBody(
     else groups.push({ words, checks: [check] });
   }
   if (groups.length === 0) return null;
-  return groups.map((g) => `${g.checks.join(" and ")} (${g.words})`).join("; ");
+  return groups.map((g) => `${joinAnd(g.checks)} (${g.words})`).join("; ");
 }
 
 /** The checks the `release_metadata` gap blocks, named as the Checks strip names them, and how many. */

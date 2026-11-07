@@ -146,29 +146,29 @@ export interface ReportPage {
   /** The Findings list's age axis captions in its column head (PD-ROWS-4, DESIGN.md §5), e.g.
    *  "Years since release 0 3y 5y 10y+", or null when the tab draws no axis. */
   ageAxisText(): Promise<string | null>;
-  /** The same axis' accessible name, the thresholds spelled out in full. */
-  ageAxisAccessibleName(): Promise<string | null>;
-  /** Whether the row's age scale's track, threshold ticks and dot each paint a colour distinct
-   *  from the page background — the forced-colors a11y fix (PD-ROWS-2, DESIGN.md §5): before it,
-   *  all three computed to the same Canvas colour as the page and the scale effectively vanished. */
+  /** The same axis' accessible description, the thresholds spelled out in full. */
+  ageAxisDescription(): Promise<string | null>;
+  /** Whether the row's age scale's track, warn guide and bar each paint something distinct from the
+   *  page background — the forced-colors a11y fix (PD-ROWS-2, DESIGN.md §5): before it, all three
+   *  computed to the same Canvas colour as the page and the scale effectively vanished. The track's
+   *  hairline is turned off in forced colors on purpose, so only the guide and the bar count there. */
   ageScaleForcedColorsVisible(name: string): Promise<{ track: boolean; tick: boolean; dot: boolean }>;
-  /** Whether the age scale's warn threshold tick is still the topmost element at its own centre
-   *  point in forced-colors mode — the second a11y review on PD-ROWS-2 (DESIGN.md §5): the dot's
-   *  opaque `background: Canvas` used to paint over a tick sitting at nearly the same position,
-   *  which `ageScaleForcedColorsVisible`'s own colour check couldn't catch, since the tick's colour
-   *  was never wrong, only its paint order under the dot was. */
+  /** Whether the age scale's warn guide is still the topmost element at its own centre point in
+   *  forced-colors mode — the second a11y review on PD-ROWS-2 (DESIGN.md §5): the bar's opaque
+   *  `background: Canvas` used to paint over a guide sitting at nearly the same position, which
+   *  `ageScaleForcedColorsVisible`'s own colour check couldn't catch, since the guide's colour was
+   *  never wrong, only its paint order under the bar was. */
   ageScaleWarnTickSurvivesDot(name: string): Promise<boolean>;
-  /** The same check for the scale's other tick (`ageScaleWarnTickSurvivesDot`'s own comment): a dot
-   *  sitting between the two ticks (rather than on either one) can paint over both at once, not just
-   *  the nearer one — a regression review found PD-ROWS-3's own shared maximum bunching the two
-   *  ticks close enough together, in the default colour scheme, that a mid-zone dot's opaque fill
-   *  covered them both, not only in forced-colors mode. */
+  /** The same check for the scale's other guide (`ageScaleWarnTickSurvivesDot`'s own comment): a bar
+   *  ending between the two guides can paint over both at once — a regression review found
+   *  PD-ROWS-3's own shared maximum bunching the two guides close enough together, in the default
+   *  colour scheme, that a mid-zone bar's opaque fill covered them both. */
   ageScaleHighTickSurvivesDot(name: string): Promise<boolean>;
-  /** The summary band's waffle (ledger/Waffle.tsx, PD-SUMMARY-6): how many of its squares are
-   *  flagged and how many in all, or null when it is not drawn or not visible. */
+  /** The Overview waffle (ledger/Waffle.tsx, PD-SUMMARY-6): how many of its squares are graded
+   *  (filled) and how many in all, or null when it is not drawn or not visible. */
   summaryWaffle(): Promise<{ flagged: number; total: number } | null>;
-  /** The waffle's first flagged and first quiet square under the current media: their computed
-   *  fill and outline, against the page's own background (forced colors must keep both visible). */
+  /** The waffle's first graded and first quiet square under the current media: whether the graded
+   *  one paints a fill or pattern, and the quiet one a ring (forced colors must keep both). */
   summaryWaffleForcedColors(): Promise<{ flaggedDistinct: boolean; restOutlined: boolean }>;
 
   /** The header's gate-fact button (Header.tsx): "no gate" or "gate: <value>", or null when the

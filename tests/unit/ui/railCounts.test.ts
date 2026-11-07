@@ -44,7 +44,7 @@ function listedPackages(report: Report2, state: State): ReadonlySet<string> {
       applyFilters2(report, state, "radius"),
       population2(report, "radius"),
     );
-    const rows = [...layout.ranked, ...layout.selfOnly];
+    const rows = layout.rows;
     return new Set([
       ...rows.flatMap((row) => [
         ...(row.self ? [row.self.package] : []),
@@ -166,7 +166,7 @@ describe("a package with several advisories (composite)", () => {
     const vulnerable = flag?.rows.find((row) => row.key === "vulnerable");
 
     // `security.packages.vulnerable` and `security.advisories.counted` of the document.
-    expect(vulnerable?.count).toBe(4);
-    expect(renderedPackages2(report, state, "advisories")).toHaveLength(20);
+    expect(vulnerable?.count).toBe(5);
+    expect(renderedPackages2(report, state, "advisories")).toHaveLength(29);
   });
 });

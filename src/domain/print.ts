@@ -5,15 +5,29 @@ import type { Report2 } from "../model/report";
 import { noAdvisoryLine } from "./advisories";
 import { plural } from "./format";
 import { population2 } from "./list";
+import { radiusAnswer2, radiusLayout2, type RadiusLayout2 } from "./radius2";
 import type { PrintSection } from "./share";
 
 const packages = (n: number): string => plural(n, "package", "packages");
+
+/** Print applies no filter, so the layout is the whole population's. */
+function printedRadius(report: Report2): RadiusLayout2 {
+  const all = population2(report, "radius");
+  return radiusLayout2(report, all, all);
+}
 
 /** Whether a section prints anything under its lede. */
 export function printHasBody2(section: PrintSection, report: Report2): boolean {
   if (section === "summary") return report.packages_checked > 0;
   if (section === "findings") return population2(report, "findings").length > 0;
   if (section === "advisories") return population2(report, "advisories").length > 0;
+  if (section === "radius") {
+    const layout = printedRadius(report);
+    return (
+      layout.rows.length + layout.unlisted.length + layout.unattributed.length > 0 ||
+      radiusAnswer2(report, layout).length > 0
+    );
+  }
   return true;
 }
 
@@ -31,9 +45,12 @@ export function printLede2(section: PrintSection, report: Report2): string | nul
     case "advisories":
       return population2(report, "advisories").length > 0 ? null : noAdvisoryLine(report);
     case "radius":
-      return population2(report, "radius").length === 0
-        ? null
-        : "The ranked rows from the top of the tab; the folded groups under them print as their counts.";
+      if (printedRadius(report).rows.length > 0)
+        return "Each direct requirement that pulls in a flagged package, in lockrot's order, with every flagged package listed under it.";
+      if (population2(report, "radius").length > 0) return "No direct requirement lists a flagged package.";
+      return checked === 0
+        ? "No packages in this lock."
+        : "Nothing flagged, so no direct requirement pulls in a flagged package.";
     case "run":
       return null;
     case "packages":

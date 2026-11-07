@@ -1,12 +1,12 @@
 import type { ComponentChildren } from "preact";
-import { FOLD_SINGLES } from "../../domain/radius";
-import { printSections, type PrintSection } from "../../domain/share";
+import { printSections, printSheetIntro, type PrintSection } from "../../domain/share";
 import type { View } from "../../model/types";
 import { EMPTY_FILTERS, INITIAL_STATE } from "../../state/types";
 import { ReportContext, type ReportContextValue } from "../context";
 import { TABS } from "../Tabs";
 import { printHasBody2, printLede2 } from "../../domain/print";
 import { AdvisoriesView2 } from "../report/AdvisoriesView";
+import { Detail2 } from "../report/Detail";
 import { FindingsView2 } from "../report/FindingsView";
 import { OverviewView2 } from "../report/OverviewView";
 import { PackagesView2 } from "../report/PackagesView";
@@ -34,19 +34,18 @@ function tabLabel(view: View): string {
 /**
  * The page's own context, re-scoped for one printed section: that section's view, no filter, no
  * query, no open package, nothing to dispatch to. Only the All packages table keeps the reader's
- * sort — it is printed because the reader was looking at it, in the order they had it. Blast
- * radius prints its top: the one-each rows' fold stays shut, its head a one-line count.
+ * sort — it is printed because the reader was looking at it, in the order they had it.
  */
-function sectionValue(base: ReportContextValue, view: View): ReportContextValue {
+function sectionValue(base: ReportContextValue, view: View, pkg: string | null = null): ReportContextValue {
   return {
     ...base,
     state: {
       ...INITIAL_STATE,
       view,
+      pkg,
       filters: EMPTY_FILTERS,
       sort: base.state.sort,
       sortDesc: base.state.sortDesc,
-      disclosure: view === "radius" ? { [FOLD_SINGLES]: false } : {},
     },
     dispatch: NOOP,
     cursor: null,
@@ -119,13 +118,27 @@ const SECTION_VIEW: Readonly<Record<PrintSection, View>> = {
 
 /**
  * The printed report (print.css, `usePrintDocument`): one document in sections whatever tab was
- * open — the summary (Overview's content), Findings, Advisories in full, the top of Blast radius, the run's facts,
- * and All packages only when the reader printed from that tab. Mounted only while the page prints,
- * in place of `<main>`, which the print stylesheet hides while this holds anything; the screen's
- * own state (tab, filters, scroll, open package) is left exactly as it was.
+ * open — the summary (Overview's content), Findings, Advisories, Blast radius, the run's facts, and
+ * All packages only when the reader printed from that tab; with a sheet open, that package's sheet
+ * alone. Every fold prints open. Mounted only while the page prints, in place of `<main>`, which
+ * the print stylesheet hides while this holds anything; the screen's own state (tab, filters,
+ * scroll, open package) is left exactly as it was.
  */
 export function PrintDocument({ base }: { base: ReportContextValue }) {
   const { state, model } = base;
+  const sheet = state.pkg !== null && model.report.findings.some((f) => f.package === state.pkg);
+  if (sheet && state.pkg !== null) {
+    return (
+      <PrintContext.Provider value={true}>
+        <div className="pd pd-sheet">
+          <p className="pd-intro">{printSheetIntro(state.pkg)}</p>
+          <ReportContext.Provider value={sectionValue(base, state.view, state.pkg)}>
+            <Detail2 onClose={NOOP} />
+          </ReportContext.Provider>
+        </div>
+      </PrintContext.Provider>
+    );
+  }
   const sections = printSections(state.view);
   const packages = sections.includes("packages");
   // An empty lock has no packages to leave out.
@@ -151,7 +164,6 @@ export function PrintDocument({ base }: { base: ReportContextValue }) {
           {sections.map((s, i) => (
             <span key={s} className="pd-toc-item">
               <span className="pd-toc-num">{i + 1}</span> {TITLES[s]}
-              {s === "radius" ? " (top)" : ""}
             </span>
           ))}
         </p>

@@ -16,7 +16,8 @@ export async function openDetail2(page: Page, caseName: string, pkg: string, has
   return sheet;
 }
 
-function goldenOf(stringClass: string, caseName: string): unknown {
+/** One case's value of a class under `goldens/en/`, such as a block golden. */
+export function goldenOf(stringClass: string, caseName: string): unknown {
   const all = JSON.parse(
     readFileSync(join(REPO_ROOT, "goldens", "en", `${stringClass}.json`), "utf8"),
   ) as Record<string, unknown>;
@@ -52,4 +53,25 @@ export function commandLines(sheet: Locator): Promise<string[]> {
 export function phpGolden(caseName: string): { commands_posix: string[]; commands_cmd: string[] } {
   const path = join(REPO_ROOT, ".lockrot", "tests", "fixtures", "contract", "goldens", `${caseName}.json`);
   return JSON.parse(readFileSync(path, "utf8")) as { commands_posix: string[]; commands_cmd: string[] };
+}
+
+/** Opens every fold of the sheet in the page: each closed fold button, then each `details`. A
+ *  click per fold through the driver is too slow for a sheet of 62 advisories on WebKit. */
+export async function openEveryFold(sheet: Locator): Promise<void> {
+  await sheet.evaluate(async (root) => {
+    const closed = (): HTMLElement[] => [
+      ...root.querySelectorAll<HTMLElement>(
+        '.l1-btn[aria-expanded="false"], .d3-sev-btn[aria-expanded="false"], .detail-timeline-fold-btn[aria-expanded="false"]',
+      ),
+    ];
+    for (let round = 0; round < 10 && closed().length > 0; round++) {
+      for (const button of closed()) button.click();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+    for (const details of root.querySelectorAll("details")) details.open = true;
+  });
+  await sheet
+    .locator('[aria-expanded="false"]:is(.l1-btn, .d3-sev-btn, .detail-timeline-fold-btn)')
+    .first()
+    .waitFor({ state: "detached" });
 }

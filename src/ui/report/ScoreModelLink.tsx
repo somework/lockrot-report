@@ -1,5 +1,6 @@
 import { RUN_WORDS } from "../../domain/runTab";
 import { useReport } from "../context";
+import { jumpInDetail } from "./jumpInDetail";
 
 export const SCORE_SECTION_ID = "how-the-score-works";
 
@@ -15,8 +16,9 @@ export function ScoreModelLink() {
         dispatch({ type: "view", view: "run" });
         requestAnimationFrame(() => {
           const section = document.getElementById(SCORE_SECTION_ID);
-          section?.scrollIntoView({ block: "start" });
-          section?.focus({ preventScroll: true });
+          if (section === null) return;
+          jumpInDetail(section);
+          section.focus({ preventScroll: true });
         });
       }}
     >

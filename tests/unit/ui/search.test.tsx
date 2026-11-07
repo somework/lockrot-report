@@ -44,6 +44,8 @@ function renderIn(
         wide: true,
         cursor: null,
         openGlossary: vi.fn(),
+        shell: "posix",
+        pickShell: vi.fn(),
       }}
     >
       {ui}
@@ -105,7 +107,7 @@ describe("SearchBar", () => {
   it("counts the Findings tab against the graded findings", () => {
     renderBar(composite(), FINDINGS);
 
-    expect(countLine()).toBe("7 of 7 flagged packages");
+    expect(countLine()).toBe("9 of 9 flagged packages");
   });
 
   it("singularises the noun at one", () => {
@@ -119,8 +121,8 @@ describe("SearchBar", () => {
 
     renderBar(composite(), state);
 
-    // `counts.critical` of the document is 3.
-    expect(countLine()).toContain("3 of 7 flagged packages");
+    // `counts.critical` of the document is 4.
+    expect(countLine()).toContain("4 of 9 flagged packages");
     expect(countLine()).toContain("1 filter on");
   });
 
@@ -129,21 +131,19 @@ describe("SearchBar", () => {
 
     renderBar(composite(), state);
 
-    expect(countLine()).toBe("7 of 7 packages");
+    expect(countLine()).toBe("9 of 9 packages");
   });
 
   it("counts the Advisories tab in advisories, against the document's counted total", () => {
     renderBar(composite(), { ...FINDINGS, view: "advisories" });
 
-    expect(countLine()).toBe("20 of 20 advisories");
+    expect(countLine()).toBe("29 of 29 advisories");
   });
 
-  it("counts the Blast radius tab in direct requirements, and the flagged ones the exposure list leaves out", () => {
+  it("counts the Blast radius tab in the direct requirements on the exposure list (R12)", () => {
     renderBar(composite(), { ...FINDINGS, view: "radius" });
 
-    expect(countLine()).toBe(
-      "1 of 1 direct requirement on the exposure list, plus 6 of 6 flagged ones with nothing flagged counted under them",
-    );
+    expect(countLine()).toBe("2 of 2 direct requirements");
   });
 
   it("hides the search box and hint, but keeps the count line, on a report with nothing flagged", () => {
@@ -177,7 +177,7 @@ describe("the open package and the count line", () => {
   it("names the open package once a search term hides it from the tab it belongs to", () => {
     renderBar(composite(), { ...FINDINGS, pkg: "twig/twig", q: "no-such-package" });
 
-    expect(countLine()).toContain("0 of 7 flagged packages");
+    expect(countLine()).toContain("0 of 9 flagged packages");
     expect(countLine()).toContain("twig/twig is hidden by the current filters");
   });
 

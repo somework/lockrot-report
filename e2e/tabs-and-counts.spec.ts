@@ -32,44 +32,50 @@ test.describe("report-2: tabs and counts on the composite", () => {
 
   test("badge counts reflect the whole report, not the current filter", async () => {
     expect(await report.tabCount("overview")).toBe("");
-    expect(await report.tabCount("findings")).toBe("7");
-    expect(await report.tabCount("advisories")).toBe("20");
-    expect(await report.tabCount("packages")).toBe("7");
-    expect(await report.tabCount("radius")).toBe("1");
+    expect(await report.tabCount("findings")).toBe("9");
+    expect(await report.tabCount("advisories")).toBe("29");
+    expect(await report.tabCount("packages")).toBe("9");
+    expect(await report.tabCount("radius")).toBe("2");
 
     await report.search("does-not-exist-anywhere");
-    expect(await report.tabCount("findings")).toBe("7");
+    expect(await report.tabCount("findings")).toBe("9");
   });
 
   test("Findings renders one row per flagged package, grouped by grade (critical before low)", async () => {
     expect(await report.rows()).toEqual([
       "twig/twig",
       "symfony/monolog-bridge",
+      "guzzlehttp/guzzle",
       "symfony/debug",
       "friendsofsymfony/oauth-server-bundle",
       "tubalmartin/cssmin",
       "symfony/yaml",
       "symfony/polyfill-intl-idn",
+      "friendsofsymfony/oauth2-php",
     ]);
   });
 
   test("the count line reads N of the total flagged", async () => {
-    expect(await report.countLine()).toBe("7 of 7 flagged packages");
+    expect(await report.countLine()).toBe("9 of 9 flagged packages");
   });
 
   test("All packages lists every finding, flagged or not", async () => {
     await report.tab("packages");
-    expect(await report.rows()).toHaveLength(7);
+    expect(await report.rows()).toHaveLength(9);
   });
 
-  test("Blast radius lists one row, naming the direct requirement that pulls in the transitive package", async ({
+  test("Blast radius lists the two direct requirements that pull in a flagged package, each folded", async ({
     page,
   }) => {
     await report.tab("radius");
     // A requirement's packages are folded under it until its toggle opens them.
-    expect(await report.rows()).toEqual(["guzzlehttp/guzzle"]);
+    expect(await report.rows()).toEqual(["friendsofsymfony/oauth-server-bundle", "guzzlehttp/guzzle"]);
     await page.getByRole("button", { name: /Show the 1 package listed under guzzlehttp\/guzzle/ }).click();
-    expect(await report.rows()).toEqual(["guzzlehttp/guzzle", "symfony/polyfill-intl-idn"]);
+    expect(await report.rows()).toEqual([
+      "friendsofsymfony/oauth-server-bundle",
+      "guzzlehttp/guzzle",
+      "symfony/polyfill-intl-idn",
+    ]);
   });
 
   // The long recorded lock is tall enough on every tab that scrolling well down one and switching
@@ -96,11 +102,13 @@ test.describe("report-2: tabs and counts on the composite", () => {
     });
     await report.setLocationHash("view=radius");
     await expect.poll(() => report.activeTab()).toBe("radius");
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(500);
+    // Not back at 0. WebKit clamps the offset while the new view's container-query layout settles
+    // (no scrollTo or scrollIntoView runs), so the exact offset is the engine's.
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
   });
 
   test("PD-ADV-7: a count from a complete advisory check carries no ring", async ({ page }) => {
-    await expect(page.getByRole("tab", { name: "Advisories 20" }).locator(".tab-flag")).toHaveCount(0);
+    await expect(page.getByRole("tab", { name: "Advisories 29" }).locator(".tab-flag")).toHaveCount(0);
   });
 
   test("M14: an unrecognised view falls back by rule R1, tab marked selected", async () => {
@@ -109,7 +117,7 @@ test.describe("report-2: tabs and counts on the composite", () => {
     expect(await report.activeTab()).toBe("overview");
     await report.gotoReport2WithHash("composite", "view=not-a-real-view&scope=direct");
     expect(await report.activeTab()).toBe("findings");
-    expect(await report.rows()).toHaveLength(6);
+    expect(await report.rows()).toHaveLength(7);
   });
 });
 
@@ -118,7 +126,7 @@ test("PD-ADV-7: the Advisories count from a lookup that did not run carries a ri
 }) => {
   await report.gotoReport2("B-offline-dagger");
 
-  const tab = page.getByRole("tab", { name: /^Advisories \d+, check incomplete$/ });
+  const tab = page.getByRole("tab", { name: /^Advisories \d+, check not run$/ });
   await expect(tab.locator(".tab-flag")).toBeVisible();
-  await expect(tab.locator(".tab-flag")).toHaveAttribute("title", "advisory check incomplete");
+  await expect(tab.locator(".tab-flag")).toHaveAttribute("title", "advisory check not run");
 });

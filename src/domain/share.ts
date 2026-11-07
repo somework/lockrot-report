@@ -2,15 +2,25 @@
  *  and the sections it carries. */
 
 import type { View } from "../model/types";
+import { day } from "./format";
+
+export const DATA_AS_OF = "data as of";
+
+/** Root `data_date` as a day; null means no finding read repository data, so no date is shown. */
+export const dataDay = (dataDate: string | null): string => (dataDate === null ? "—" : day(dataDate));
 
 /** The line every printed page repeats at its top: the project, the data date, the lockrot. */
-export function runningLine(project: string, generatedDay: string, toolVersion: string | null): string {
+export function runningLine(project: string, dataDate: string, toolVersion: string | null): string {
   return [
     project,
-    `data as of ${generatedDay}`,
+    `${DATA_AS_OF} ${dataDate}`,
     ...(toolVersion !== null ? [`lockrot ${toolVersion}`] : []),
   ].join("  ·  ");
 }
+
+/** The intro of a print made while a sheet is open: that package's sheet alone. */
+export const printSheetIntro = (pkg: string): string =>
+  `Printed from the sheet of ${pkg}. Close the sheet to print the whole report.`;
 
 /**
  * `text` as a CSS string literal, for a custom property a `@page` margin box's `content` reads
