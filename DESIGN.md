@@ -593,7 +593,9 @@ two from 1100px with the reach under the package, and three below that, the list
 package (662-1040px at 1280-1920) included (PD-ROWS-14). With nothing open, which is how every page
 without `#pkg=` loads (PD-ROWS-9), the list is 754-1530px at 1024-1920 and 960-983px below that,
 where the rail folds above it, so a screen's first sight is one line a row from a 1710px viewport
-up. At every width a cell too narrow for its value wraps it, never an ellipsis.
+up. At every width a cell too narrow for its value wraps it, never an ellipsis. One exception: a
+package name never breaks inside itself, so a name wider than its whole Findings cell ends in an
+ellipsis there. Its accessible name and the sheet hold it whole.
 Opening a package there narrows the list to three lines a row, and closing it widens it again, so every row
 above the one acted on changes height. `ui/rowAnchor.ts` measures that row before a `select` is
 dispatched (a click, Enter, `j`/`k`, Close, Escape) and `App` scrolls the page by however far it

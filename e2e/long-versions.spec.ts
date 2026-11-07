@@ -60,3 +60,23 @@ test("the printed All packages table fits A4's printable width with a long versi
   const sizes = await wrap.evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
   expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
 });
+
+test("a package name wider than its Findings cell is cut there with an ellipsis", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(`${pageUrl(FIXTURES.longVersionReport2)}#view=findings&pkg=symfony%2Fyaml`);
+  const cell = page.locator('[role="row"][data-pkg="symfony/yaml"] .fc-pkg');
+  await expect(cell).toBeVisible();
+  // The page holds no name this long, so the test writes one into the rendered row.
+  await cell.locator(".fc-name").evaluate((el) => {
+    el.textContent = "package-versions-deprecated-and-longer-still";
+  });
+
+  const word = await cell.locator(".pkg-word").evaluate((el) => ({
+    clips: el.scrollWidth > el.clientWidth,
+    ellipsis: getComputedStyle(el).textOverflow === "ellipsis",
+  }));
+  const sizes = await cell.evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+
+  expect(word).toEqual({ clips: true, ellipsis: true });
+  expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
+});
