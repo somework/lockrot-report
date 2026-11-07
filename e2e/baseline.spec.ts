@@ -19,7 +19,7 @@ test.describe("report-2: the baseline on the Findings tab and the rail", () => {
 
   test("the rail's Since rows count the graded findings in each baseline state", async ({ page }) => {
     await page.goto(report2Url(CASE) + "#view=findings");
-    const rail = page.getByRole("group", { name: "Filters" });
+    const rail = page.getByRole("group", { name: "Filters", exact: true });
     const newCount = graded.filter((f) => f.baseline?.status === "new").length;
     expect(newCount).toBeGreaterThan(0);
     await expect(rail.getByRole("button", { name: /^New/ })).toContainText(String(newCount));
@@ -32,14 +32,14 @@ test.describe("report-2: the baseline on the Findings tab and the rail", () => {
       graded.filter((f) => f.baseline?.status === "new").map((f) => f.package),
     );
     await expect(
-      page.getByRole("group", { name: "Filters" }).getByRole("button", { name: /^New/ }),
+      page.getByRole("group", { name: "Filters", exact: true }).getByRole("button", { name: /^New/ }),
     ).toHaveAttribute("aria-pressed", "true");
   });
 
   test("the rail's 'Fails this run' lists the findings whose gate fails", async ({ page }) => {
     await page.goto(report2Url(CASE) + "#view=findings");
     await page
-      .getByRole("group", { name: "Filters" })
+      .getByRole("group", { name: "Filters", exact: true })
       .getByRole("button", { name: /^Fails this run/ })
       .click();
     await expect.poll(() => page.evaluate(() => location.hash)).toContain("gate=fails");
