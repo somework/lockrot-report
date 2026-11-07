@@ -610,6 +610,8 @@ export interface MoveCard {
   readonly checkNote: string | null;
   /** G161: the packages the joint request also updates, one line under the command box. */
   readonly movesWith: string | null;
+  /** Why the card has no command, when lockrot wrote none for its release name. */
+  readonly noCommand: string | null;
   readonly clears: string | null;
   readonly stays: string | null;
   readonly notChecked: string | null;
@@ -618,6 +620,36 @@ export interface MoveCard {
   readonly after: MoveAfter | null;
   readonly composer: readonly ComposerNote[];
   readonly heldBy: HeldByBlock | null;
+}
+
+/** A move lockrot writes no command for: its release name holds `|`, `<` or `>` (R14-5). */
+export interface UnsafeMove {
+  readonly package: string;
+  readonly version: string;
+}
+
+export const NO_COMMAND_WORDS =
+  "lockrot prints no command: the release name holds |, < or >, which a Windows shell runs or redirects.";
+
+const isUnsafeMove = (entry: unknown): entry is UnsafeMove =>
+  typeof entry === "object" &&
+  entry !== null &&
+  typeof (entry as Record<string, unknown>)["package"] === "string" &&
+  typeof (entry as Record<string, unknown>)["version"] === "string";
+
+/** The moves the `command_argument_unsafe` note lists; an entry of another shape is skipped. */
+export function unsafeMoves(notes: readonly { code: string; data: unknown }[]): UnsafeMove[] {
+  return notes.flatMap(({ code, data }) => {
+    if (code !== "command_argument_unsafe" || typeof data !== "object" || data === null) return [];
+    const moves = (data as Record<string, unknown>)["moves"];
+    return Array.isArray(moves) ? moves.filter(isUnsafeMove) : [];
+  });
+}
+
+/** The note names a tag move by its newest tag, and any other move by its version. */
+function namedUnsafe(finding: Finding, move: AnyMove, unsafe: readonly UnsafeMove[]): boolean {
+  const release = move.kind === "tag" ? (move.latest?.version ?? null) : move.version;
+  return unsafe.some((u) => u.package === finding.package && u.version === release);
 }
 
 /** Setting the platform does not help when Composer refuses the lock for another cause. */
@@ -668,6 +700,7 @@ function moveCard(
   run: Run,
   then: boolean,
   noted: readonly string[],
+  unsafe: readonly UnsafeMove[],
 ): MoveCard {
   const names = RELEASE_KINDS.includes(move.kind);
   const actionable = names || move.commands.length > 0 || move.kind === "replace";
@@ -703,17 +736,18 @@ function moveCard(
         ? "This shows which package holds the move."
         : null,
     movesWith: movesWithLine(move),
+    noCommand: move.commands.length === 0 && namedUnsafe(finding, move, unsafe) ? NO_COMMAND_WORDS : null,
   };
 }
 
-/** The lead card, then one Then card per `also[]` move, in order. */
-export function moveCards(finding: Finding, run: Run): MoveCard[] {
+/** The lead card, then one Then card per `also[]` move, in order. `unsafe` is `unsafeMoves` of the report. */
+export function moveCards(finding: Finding, run: Run, unsafe: readonly UnsafeMove[] = []): MoveCard[] {
   const lead = finding.next_step;
   if (lead === null) return [];
   const cards: MoveCard[] = [];
   const noted: string[] = [];
   for (const [move, then] of [[lead, false], ...lead.also.map((also) => [also, true] as const)] as const) {
-    cards.push(moveCard(finding, move, run, then, [...noted]));
+    cards.push(moveCard(finding, move, run, then, [...noted], unsafe));
     noted.push(...move.composer_moves_because);
   }
   return cards;

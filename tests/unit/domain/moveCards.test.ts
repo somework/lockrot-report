@@ -2,7 +2,7 @@
 // lock that showed it.
 import { describe, expect, test } from "vitest";
 
-import { checkLine, holderName, isBelow, moveCards } from "../../../src/domain/moveCards";
+import { checkLine, holderName, isBelow, moveCards, unsafeMoves } from "../../../src/domain/moveCards";
 import { plain } from "../../../src/domain/rich";
 import { securityRungs } from "../../../src/domain/securityBlock";
 import type { Finding, HeldBy, RepositoryMetadata, Run } from "../../../src/model/report";
@@ -166,6 +166,58 @@ describe("S1, §7.9.21: the check line of a refused baseline", () => {
     expect(refused({ php_window: null })).toBe(
       "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run tab names the cause)",
     );
+  });
+});
+
+describe("R14-5: a move whose release name holds |, < or >", () => {
+  const NO_COMMAND =
+    "lockrot prints no command: the release name holds |, < or >, which a Windows shell runs or redirects.";
+  const unsafeUpdate = () => {
+    const { finding, run } = modelCase("E");
+    const move = finding.next_step;
+    if (move === null || move.version === null) throw new Error("E updates to a version");
+    return { finding: { ...finding, next_step: { ...move, commands: [] } }, run, version: move.version };
+  };
+
+  test("draws no command and says why, for the move the note names by package and version", () => {
+    const { finding, run, version } = unsafeUpdate();
+
+    const [card] = moveCards(finding, run, [{ package: finding.package, version }]);
+
+    expect(card?.argvs).toEqual([]);
+    expect(card?.noCommand).toBe(NO_COMMAND);
+  });
+
+  test("says nothing for a move the note does not name", () => {
+    const { finding, run } = unsafeUpdate();
+
+    const [card] = moveCards(finding, run, [{ package: finding.package, version: "0.0.0-other" }]);
+
+    expect(card?.noCommand).toBeNull();
+  });
+
+  test("finds a tag move by its newest tag", () => {
+    const { finding, run } = modelCase("G-tag-dagger");
+    const move = finding.next_step;
+    const tag = move?.latest?.version;
+    if (move === null || tag === undefined) throw new Error("G-tag‡ moves to a tag");
+    const unsafe = { ...finding, next_step: { ...move, commands: [] } };
+
+    const [card] = moveCards(unsafe, run, [{ package: finding.package, version: tag }]);
+
+    expect(card?.noCommand).toBe(NO_COMMAND);
+  });
+
+  test("reads the moves of the command_argument_unsafe note, and nothing from another note", () => {
+    const notes = [
+      { code: "offline", data: { moves: [{ package: "a/b", version: "1|2" }] } },
+      {
+        code: "command_argument_unsafe",
+        data: { moves: [{ package: "c/d", version: "v2|x" }, { package: 1 }] },
+      },
+    ];
+
+    expect(unsafeMoves(notes)).toEqual([{ package: "c/d", version: "v2|x" }]);
   });
 });
 
