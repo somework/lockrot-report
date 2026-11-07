@@ -29,6 +29,11 @@ function members(own: Finding | undefined): readonly RadiusMember[] {
 }
 
 /** `visible` is the tab's filtered list, `all` its population. */
+/** `exposure[]` as the page shows it: none when `packages_flagged` is 0 (SPEC §7.9.20, R13-12). */
+export function shownExposure(report: Report2): Report2["exposure"] {
+  return report.packages_flagged === 0 ? [] : report.exposure;
+}
+
 export function radiusLayout2(
   report: Report2,
   visible: readonly Finding[],
@@ -37,7 +42,7 @@ export function radiusLayout2(
   const byName = new Map(report.findings.map((f) => [f.package, f]));
   const source = {
     report: {
-      exposure: report.exposure.map((entry) => ({
+      exposure: shownExposure(report).map((entry) => ({
         ...entry,
         members: members(byName.get(entry.package)),
       })),
