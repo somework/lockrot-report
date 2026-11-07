@@ -303,6 +303,16 @@ describe("focus after a tab switch (PD-A11Y-SWEEP-8)", () => {
     expect(document.title).toMatch(/^Findings · \S+ · lockrot: 9 of 9 packages flagged$/);
   });
 
+  test("names no package in the title that the report does not hold", () => {
+    document.title = "lockrot: 9 of 9 packages flagged";
+    history.replaceState(null, "", "/report.html#pkg=Call%20support%20now");
+
+    render(<App model={load()} title={document.title} />);
+
+    expect(document.title).not.toContain("Call support now");
+    expect(document.title).toMatch(/ · lockrot: 9 of 9 packages flagged$/);
+  });
+
   test("gives the written title back when it unmounts", () => {
     document.title = "lockrot: 9 of 9 packages flagged";
     const { unmount } = render(<App model={load()} title={document.title} />);

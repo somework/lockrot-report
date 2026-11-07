@@ -482,7 +482,8 @@ export function App({ model, title }: { model: Model; title?: string | undefined
   useEffect(() => {
     if (title === undefined) return undefined;
     const tab = TABS.find(({ view }) => view === state.view)?.label ?? state.view;
-    document.title = pageTitle(title, tab, projectName(model.report.run), state.pkg);
+    const held = model.report.findings.some(({ package: name }) => name === state.pkg);
+    document.title = pageTitle(title, tab, projectName(model.report.run), held ? state.pkg : null);
     return () => {
       document.title = title;
     };
