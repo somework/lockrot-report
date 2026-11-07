@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import type { Finding } from "../../../src/model/report";
-import { differencesFromModel, listedDifferences } from "../words/modelDifferences";
+import { differencesFromModel, fieldsOf, listedDifferences, listedFields } from "../words/modelDifferences";
 import { modelCases, recordedCases } from "../words/recorded";
 import { BLOCK_KEYS, blockGolden, type BlockKey } from "./blockGoldens";
 
@@ -41,7 +41,7 @@ describe("on lockrot's recording a block differs from the model's golden only wh
       blockGolden(key, finding, run, metadata),
     );
 
-    expect(differing.map(({ name }) => name).sort()).toEqual([...listedDifferences(key).keys()].sort());
+    expect(fieldsOf(differing)).toEqual(listedFields(key));
   });
 });
 

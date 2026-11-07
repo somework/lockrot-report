@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { checksLine } from "../../../src/domain/checksLine";
-import { differencesFromModel, listedDifferences } from "./modelDifferences";
+import { differencesFromModel, fieldsOf, listedFields } from "./modelDifferences";
 import { modelCases } from "./recorded";
 
 describe("the Checks line", () => {
@@ -15,6 +15,6 @@ describe("the Checks line", () => {
   test("on lockrot's hydration it differs from the model's golden only where the list says so", () => {
     const differing = differencesFromModel("checks", ({ finding, run }) => checksLine(finding, run));
 
-    expect(differing.map(({ name }) => name).sort()).toEqual([...listedDifferences("checks").keys()].sort());
+    expect(fieldsOf(differing)).toEqual(listedFields("checks"));
   });
 });

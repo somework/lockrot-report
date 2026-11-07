@@ -508,6 +508,8 @@ key is the error screen (§2).
   from `flags/cases.json` on the model's own inputs; Repository and Advisory feeds have none and are
   held to SPEC's examples. On lockrot's recording it may differ from the
   model's golden only for a case that `goldens/en/model-differences.json` lists with its reason.
+  The file names each field that differs, as a JSON pointer into the block, and `/` for a whole
+  line. The rest of the block is compared, so a field that the file does not name fails the test.
 - **Page texts** (`copySummary`, `scorePanel` and the page-golden fields of SPEC §7.9.14 in `src/domain/`): pure functions of
   a report-2, held equal to `contract/page-goldens.json` (`tests/unit/words/pageTexts.test.ts`). The
   goldens render the model's documents, which `contract:fetch` gets beside the bundle (the documents
