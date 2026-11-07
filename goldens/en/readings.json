@@ -201,6 +201,16 @@
       "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
     }
   ],
+  "S5-parent-split-dagger": [
+    {
+      "flag": "left-behind",
+      "text": "Its branch, 2.x, had its last release 6.9 years ago, behind 5.x. See Release branches."
+    },
+    {
+      "flag": "vulnerable",
+      "text": "A high-severity advisory affects your version (CVE-2026-45077 PKSA-4wjj-gy1p-ft3r: Unauthenticated PHP Object Deserialization in MonologBridge server:log Listener). It is not fixed on 2.x."
+    }
+  ],
   "S5-star-dagger": [
     {
       "flag": "left-behind",
@@ -259,6 +269,7 @@
   "adds-capped-tag-dagger": [],
   "adds-capped-update": [],
   "affected-range-unknown-dagger": [],
+  "branch-above-undated-dagger": [],
   "cache-subscriber": [
     {
       "flag": "old-promise",
@@ -579,6 +590,10 @@
   ],
   "ok-unchecked": [],
   "ok-unchecked-entry-dagger": [],
+  "old-promise-higher-own-date-dagger": [],
+  "old-promise-highest-installed-dagger": [],
+  "old-promise-installed-undated-dagger": [],
+  "old-promise-newest-shared-dagger": [],
   "op-update": [],
   "pagerfanta": [],
   "partial": [],
@@ -601,6 +616,11 @@
   "php-edge-lower-dagger": [],
   "php-edge-upper-dagger": [],
   "php-null": [],
+  "pinned-alpha-over-shared-dagger": [],
+  "pinned-highest-shared-dagger": [],
+  "pinned-newest-shared-dagger": [],
+  "pinned-prerelease-newest-dagger": [],
+  "pinned-prerelease-no-row-dagger": [],
   "pinned-unread": [],
   "platform-step-dagger": [],
   "platform-step-inside-dagger": [],
@@ -766,6 +786,9 @@
   "no-tag-dagger": [],
   "ok-ignored-dagger": [],
   "ok-offline-dagger": [],
+  "pinned-prerelease-only-blocked-dagger": [],
+  "pinned-prerelease-only-dagger": [],
+  "pinned-prerelease-only-undated-dagger": [],
   "psr-log": [],
   "scope-registries-dagger": [],
   "unknown-vuln-dagger": [],

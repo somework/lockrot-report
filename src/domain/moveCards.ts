@@ -358,7 +358,7 @@ export interface PhpAnswer {
 }
 
 export interface MovePhp {
-  /** G100: "{to_branch} needs php {requires}". */
+  /** G100: "{to_branch} needs php {requires}", the newest tag in place of a branch that the move lacks. */
   readonly head: Rich | null;
   readonly lines: readonly PhpAnswer[];
 }
@@ -384,7 +384,10 @@ function movePhp(finding: Finding, move: AnyMove, run: Run, then: boolean): Move
   if (installed !== null) lines.push({ answer: "no", text: installed });
   return {
     head: php?.requires
-      ? [`${move.to_branch ?? ""} needs php `, { code: phpConstraintWord(php.requires) }]
+      ? [
+          `${move.to_branch ?? move.latest?.version ?? ""} needs php `,
+          { code: phpConstraintWord(php.requires) },
+        ]
       : null,
     lines,
   };

@@ -13,6 +13,7 @@ const UNMEASURED_ORDER: readonly string[] = [
   "not_found",
   "branch_snapshot",
   "shared_commit",
+  "parent_split",
   "undated",
   "no_stable_release",
   "undated_releases",

@@ -417,6 +417,11 @@ project is overall, and the other tabs lead with their own part.
   worse", not "(95 %)".
 - Blast radius of an empty lock reads "No packages in this lock.", and Blast radius with no flagged
   package reads "Nothing is flagged.". Neither it nor the Overview draws a "flagged, of 0" row.
+- A split package can tag a release on its own commit while the parent dates the newest release.
+  The page then reads "release date not known (a split whose parent dates its newest release)".
+  The Libyears lead counts it under "Not measured", after the tags that share a commit.
+- A move to a package's newest tag, with no release branch to name, names the tag in its php line:
+  "v1.0.0-beta1 needs php >=7.2". Before, the line started with "needs php".
 
 ### Security
 

@@ -890,24 +890,28 @@ describe("layout", () => {
     expect(screen.getByRole("link", { name: /^lockrot/ }).closest("h1, h2, h3, h4, h5, h6")).toBeNull();
   });
 
-  const withParentSplit = (count: number): string => {
+  const withUnmeasured = (key: string, count: number): string => {
     const model = load("composite", (embed) => {
-      embed.report.libyears.unmeasured = { ...embed.report.libyears.unmeasured, parent_split: count };
+      embed.report.libyears.unmeasured = { ...embed.report.libyears.unmeasured, [key]: count };
     });
     history.replaceState(null, "", "/report.html#view=overview");
     render(<App model={model} />);
     return document.querySelector('[data-surface="overview"] .ledger-libyears')?.textContent ?? "";
   };
 
+  test("libyears.unmeasured parent_split reads in the model's words", () => {
+    expect(withUnmeasured("parent_split", 2)).toContain("2, a split whose parent dates its newest release");
+  });
+
   test("a libyears.unmeasured key the page does not know names its count in words", () => {
-    expect(withParentSplit(2)).toContain("2, parent split");
+    expect(withUnmeasured("future_cause", 2)).toContain("2, future cause");
   });
 
   test("a libyears.unmeasured key the page does not know adds nothing at 0", () => {
-    const lead = withParentSplit(0);
+    const lead = withUnmeasured("future_cause", 0);
 
     expect(lead).toContain("Libyears");
-    expect(lead).not.toContain("parent split");
+    expect(lead).not.toContain("future cause");
   });
 
   const radiusOf = (edit: (embed: Report2Embed) => void): HTMLElement => {

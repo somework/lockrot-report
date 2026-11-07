@@ -832,3 +832,16 @@ describe("R6-3: a require step that moves the package out of require-dev", () =>
     expect(plain(moveCards(finding, run)[0]?.action ?? [])).not.toContain("require-dev");
   });
 });
+
+describe("the php head of a move to a tag with no branch", () => {
+  test.each([
+    ["pinned-prerelease-only-dagger", "v1.0.0-beta1 needs php >=7.2"],
+    ["pinned-prerelease-only-blocked-dagger", "v1.0.0-beta1 needs php >=8.5"],
+  ])("%s names the newest tag", (name, head) => {
+    const { finding, run } = modelCase(name);
+
+    const php = moveCards(finding, run)[0]?.php;
+
+    expect(php?.head ? plain(php.head) : null).toBe(head);
+  });
+});
