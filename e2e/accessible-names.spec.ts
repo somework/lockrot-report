@@ -21,20 +21,30 @@ const NO_TRANSFORM = "*, *::before, *::after { text-transform: none !important; 
 
 interface AxNode {
   ignored: boolean;
+  nodeId: string;
+  backendDOMNodeId?: number;
   role?: { value: string };
   name?: { value: string };
   description?: { value: string };
 }
 
-/** "role|name|description" of every node that a reader reaches by name, its text runs left out. */
-async function namedNodes(page: Page): Promise<string[]> {
+/** "role|name|description" of every node that a reader reaches by name, its text runs left out, keyed
+ *  by its DOM node, so that a second read of the same page compares each node with itself. */
+async function namedNodes(page: Page): Promise<Map<string, string>> {
   const cdp = await page.context().newCDPSession(page);
   const { nodes } = (await cdp.send("Accessibility.getFullAXTree")) as { nodes: AxNode[] };
   await cdp.detach();
   return nodes
     .filter((node) => !node.ignored && !["StaticText", "InlineTextBox"].includes(node.role?.value ?? ""))
     .filter((node) => (node.name?.value ?? "") !== "" || (node.description?.value ?? "") !== "")
-    .map((node) => `${node.role?.value ?? ""}|${node.name?.value ?? ""}|${node.description?.value ?? ""}`);
+    .reduce(
+      (named, node) =>
+        named.set(
+          `${String(node.backendDOMNodeId ?? "")}:${node.nodeId}`,
+          `${node.role?.value ?? ""}|${node.name?.value ?? ""}|${node.description?.value ?? ""}`,
+        ),
+      new Map<string, string>(),
+    );
 }
 
 const SURFACES = [
@@ -92,9 +102,9 @@ test.describe("report-2: the names Chromium reads out", () => {
         await open(page);
         const shown = await namedNodes(page);
         await page.addStyleTag({ content: NO_TRANSFORM });
-        const plain = new Set(await namedNodes(page));
+        const plain = await namedNodes(page);
 
-        expect(shown.filter((node) => !plain.has(node))).toEqual([]);
+        expect([...shown].filter(([id, node]) => plain.get(id) !== node).map(([, node]) => node)).toEqual([]);
       });
 
       test(`${surface.case}, ${where}: no package name gains a space where it may break`, async ({
@@ -102,7 +112,9 @@ test.describe("report-2: the names Chromium reads out", () => {
       }) => {
         await open(page);
 
-        expect((await namedNodes(page)).filter((node) => /[\w.-]\/ [\w.-]/.test(node))).toEqual([]);
+        expect([...(await namedNodes(page)).values()].filter((node) => /[\w.-]\/ [\w.-]/.test(node))).toEqual(
+          [],
+        );
       });
     }
   }

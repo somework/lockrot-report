@@ -88,6 +88,12 @@ describe("scripts/release-notes.mjs", () => {
     );
   });
 
+  it("keeps a trailing version link reference that the section itself uses", () => {
+    const linked = `## [0.13.0]\n\n- see [0.12.0].\n\n[0.12.0]: https://example.test/0.12.0\n[0.11.0]: https://example.test/0.11.0\n`;
+
+    expect(notes("v0.13.0", linked)).toBe("- see [0.12.0].\n\n[0.12.0]: https://example.test/0.12.0");
+  });
+
   it("keeps a link reference inside a section that names no version", () => {
     const linked = `## [0.13.0]\n\nsee [SPEC].\n\n[SPEC]: https://example.test/spec\n\n## [0.12.0]\n\nolder.\n`;
 
