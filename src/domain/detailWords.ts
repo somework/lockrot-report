@@ -35,7 +35,6 @@ export const DETAIL_WORDS = {
   accepted: "Accepted",
   gate: "Gate",
   more: "{n} more",
-  showFewer: "show fewer",
   clears: "Clears",
   stays: "Stays",
   notChecked: "Not checked",

@@ -22,6 +22,12 @@ repository, in the working notes of the extraction; what matters from it is rest
 Nothing is minified. What lockrot vendors ends up inside a signed PHAR, and a reviewer should be
 able to read it; the size cost is small next to the payload.
 
+The bundle carries one comment only, the `/*! … */` notice at its start. The notice names each
+third-party package in the bundle, with its version and its own licence file word for word.
+`scripts/licence-notices.ts` writes the notice at build time from the files in `node_modules/`, and
+the build fails for a bundled package with no licence file. MIT requires the notice in every copy,
+so `report.html` and `lockrot-report.js` both carry it.
+
 ### 1.1 The template keeps every coupling a consumer relies on
 
 These are depended on by lockrot, by lockrot.dev's scripts and by users' own scripts (`docs/ci.md`
@@ -48,6 +54,9 @@ writes the e2e pages the same way.
 
 `mount` returns `{ update(bundle), unmount() }`. Autoboot keeps the old embedding contract working
 (write the payload into the slot, then load the script); `mount` is what an embedder should use.
+
+An autobooted page owns its document, so each view sets the title: the open package, the tab and
+the project lead, and the title lockrot wrote follows. `mount` leaves an embedder's title alone.
 
 A payload that is not JSON, or not a lockrot document, renders an explained error in place of the
 report — never a blank page.
@@ -502,6 +511,8 @@ key is the error screen (§2).
   from `flags/cases.json` on the model's own inputs; Repository and Advisory feeds have none and are
   held to SPEC's examples. On lockrot's recording it may differ from the
   model's golden only for a case that `goldens/en/model-differences.json` lists with its reason.
+  The file names each field that differs, as a JSON pointer into the block, and `/` for a whole
+  line. The rest of the block is compared, so a field that the file does not name fails the test.
 - **Page texts** (`copySummary`, `scorePanel` and the page-golden fields of SPEC §7.9.14 in `src/domain/`): pure functions of
   a report-2, held equal to `contract/page-goldens.json` (`tests/unit/words/pageTexts.test.ts`). The
   goldens render the model's documents, which `contract:fetch` gets beside the bundle (the documents
@@ -585,7 +596,9 @@ two from 1100px with the reach under the package, and three below that, the list
 package (662-1040px at 1280-1920) included (PD-ROWS-14). With nothing open, which is how every page
 without `#pkg=` loads (PD-ROWS-9), the list is 754-1530px at 1024-1920 and 960-983px below that,
 where the rail folds above it, so a screen's first sight is one line a row from a 1710px viewport
-up. At every width a cell too narrow for its value wraps it, never an ellipsis.
+up. At every width a cell too narrow for its value wraps it, never an ellipsis. One exception: a
+package name never breaks inside itself, so a name wider than its whole Findings cell ends in an
+ellipsis there. Its accessible name and the sheet hold it whole.
 Opening a package there narrows the list to three lines a row, and closing it widens it again, so every row
 above the one acted on changes height. `ui/rowAnchor.ts` measures that row before a `select` is
 dispatched (a click, Enter, `j`/`k`, Close, Escape) and `App` scrolls the page by however far it

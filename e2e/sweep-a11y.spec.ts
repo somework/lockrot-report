@@ -82,7 +82,7 @@ test.describe("report-2: the sweep over every tab", () => {
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(report2Url(CASE) + "#view=findings");
-    const rail = page.getByRole("group", { name: "Filters" });
+    const rail = page.getByRole("group", { name: "Filters", exact: true });
     await expect(rail.getByRole("group", { name: "Grade" }).getByRole("button")).toHaveText([
       /^\s*critical 4$/,
       /^\s*high 2$/,

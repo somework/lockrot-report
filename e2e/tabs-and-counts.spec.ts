@@ -19,6 +19,13 @@ test.describe("report-2: tabs and counts on the composite", () => {
     expect(await report.activeTab()).toBe("findings");
   });
 
+  test("the autobooted page titles the document by the open package and the tab", async ({ page }) => {
+    await report.tab("packages");
+    await expect(page).toHaveTitle(/^All packages · /);
+    await report.openPackage("twig/twig");
+    await expect(page).toHaveTitle(/^twig\/twig · All packages · /);
+  });
+
   test("switching tabs moves the aria-selected tab and closes any open detail", async () => {
     await report.tab("packages");
     expect(await report.activeTab()).toBe("packages");
@@ -70,7 +77,7 @@ test.describe("report-2: tabs and counts on the composite", () => {
     await report.tab("radius");
     // A requirement's packages are folded under it until its toggle opens them.
     expect(await report.rows()).toEqual(["friendsofsymfony/oauth-server-bundle", "guzzlehttp/guzzle"]);
-    await page.getByRole("button", { name: /Show the 1 package listed under guzzlehttp\/guzzle/ }).click();
+    await page.getByRole("button", { name: /^The 1 package listed under guzzlehttp\/guzzle/ }).click();
     expect(await report.rows()).toEqual([
       "friendsofsymfony/oauth-server-bundle",
       "guzzlehttp/guzzle",

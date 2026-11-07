@@ -11,7 +11,7 @@ export const RUN_WORDS = {
   facts: "This run",
   baseline: "Baseline",
   stale: "Entries for packages that left the lock",
-  scoreLink: "How the score works ›",
+  scoreLink: "How the score works",
   rules: (n: number): string => `The ${n} rules`,
   fixes: "Fixes, easiest first",
   lookup: "Advisory lookup",

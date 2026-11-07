@@ -39,7 +39,7 @@ test("with no finding opened, the composite shows its first finding by rank with
 test("the link of a Why block shows that finding's score", async ({ page }) => {
   const sheet = await openDetail2(page, "B", "symfony/monolog-bridge");
 
-  await sheet.getByRole("link", { name: "How the score works ›" }).click();
+  await sheet.getByRole("link", { name: "How the score works", exact: true }).click();
 
   await expect(exampleText(page)).toHaveText(
     "The finding you opened: symfony/monolog-bridge v2.6.13 scores 36, critical.",

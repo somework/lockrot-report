@@ -7,6 +7,7 @@ import { INITIAL_STATE } from "../../../src/state/types";
 import type { Action } from "../../../src/state/types";
 import { ReportContext } from "../../../src/ui/context";
 import { Glossary } from "../../../src/ui/Glossary";
+import { TABS } from "../../../src/ui/Tabs";
 
 afterEach(cleanup);
 
@@ -181,6 +182,17 @@ describe("Glossary sections", () => {
 
     expect(dispatch).toHaveBeenCalledWith({ type: "view", view: "run" });
     expect(onClose).toHaveBeenCalledOnce();
+  });
+});
+
+describe("the glossary's pointer to the score", () => {
+  it("names the tab by the label the tab strip shows", () => {
+    render(glossary({ open: true }));
+    const run = TABS.find(({ view }) => view === "run")?.label ?? "no run tab";
+
+    const pointer = screen.getByRole("link", { name: /How the score works/ }).closest("p");
+
+    expect(pointer?.textContent).toContain(`on the ${run} tab`);
   });
 });
 

@@ -89,6 +89,7 @@ export function MoveCard({ card, run, owner }: { card: Card; run: Run; owner: st
           </Fact>
         )}
       </dl>
+      {card.noCommand !== null && <p className="d3-move-note">{card.noCommand}</p>}
       {card.composer.length > 0 && (
         <div className="d3-notes">
           <p className="d3-notes-label">{DETAIL_WORDS.composer}</p>

@@ -8,7 +8,7 @@ import type { Report2 } from "../model/report";
 import type { Filters, LinkTarget } from "../state/types";
 import { day, decimal, plural, pluralNoun } from "./format";
 import { causeWord } from "./pageVocabulary";
-import { RADIUS_WORDS } from "./radius2";
+import { RADIUS_WORDS, shownExposure } from "./radius2";
 
 /** How many rows the exposure bars and the libyears table show before "more". */
 export const EXPOSURE_SHOWN = 8;
@@ -39,6 +39,8 @@ export interface ExposureBars {
   longest: number;
   /** The count column's head: what the bars run to, `packages_flagged`. */
   scale: string;
+  /** The list's accessible name: what each item reads, and the flagged count the bars scale to. */
+  name: string;
   /** "{n} direct requirement(s) pull(s) in flagged packages": the count of `exposure[]`, with no
    *  threshold; null with fewer than two entries, where the one row says it. */
   count: string | null;
@@ -55,7 +57,7 @@ export interface ExposureBars {
  *  `packages_flagged` is 0, so an inconsistent document draws no "flagged, of 0" track. */
 export function exposureBars(report: Report2): ExposureBars {
   const none = report.packages_flagged === 0;
-  const exposure = none ? [] : report.exposure;
+  const exposure = shownExposure(report);
   const rows = exposure.slice(0, EXPOSURE_SHOWN).map(({ package: name, flagged }) => ({
     package: name,
     flagged,
@@ -75,6 +77,7 @@ export function exposureBars(report: Report2): ExposureBars {
       n < 2 ? null : `${plural(n, "direct requirement", "direct requirements")} pull in flagged packages.`,
     longest,
     scale: `flagged, of ${String(report.packages_flagged)}`,
+    name: `Direct requirements, each with the flagged packages it pulls in, of ${String(report.packages_flagged)} flagged`,
     overlap:
       rows.length < 2
         ? null

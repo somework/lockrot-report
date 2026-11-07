@@ -9,6 +9,7 @@ import type { Model } from "../../../src/model/types";
 import { normalize } from "../../../src/model/normalize";
 import { ReportContext } from "../../../src/ui/context";
 import { SearchBar } from "../../../src/ui/search/SearchBar";
+import { pageGoldens } from "../words/recorded";
 
 /** The page on its Findings tab, with nothing filtered. */
 const FINDINGS: State = { ...INITIAL_STATE, view: "findings" };
@@ -144,6 +145,18 @@ describe("SearchBar", () => {
     renderBar(composite(), { ...FINDINGS, view: "radius" });
 
     expect(countLine()).toBe("2 of 2 direct requirements");
+  });
+
+  it("counts no direct requirement on Blast radius when nothing is flagged, whatever exposure[] holds (R13-12)", () => {
+    const golden = pageGoldens().find(({ id }) => id === "unknown.offline‡");
+    if (golden === undefined) throw new Error("no unknown.offline‡ page golden");
+    const result = normalize(golden.report);
+    if (!result.ok) throw new Error(result.error.message);
+    expect(golden.report.exposure.length).toBeGreaterThan(0);
+
+    renderBar(result.model, { ...FINDINGS, view: "radius" });
+
+    expect(countLine()).toBe("0 of 0 direct requirements");
   });
 
   it("hides the search box and hint, but keeps the count line, on a report with nothing flagged", () => {

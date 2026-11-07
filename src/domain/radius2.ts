@@ -28,6 +28,11 @@ function members(own: Finding | undefined): readonly RadiusMember[] {
   return s7 === undefined ? [] : (s7.data as S7).packages;
 }
 
+/** `exposure[]` as the page shows it: none when `packages_flagged` is 0 (SPEC §7.9.20, R13-12). */
+export function shownExposure(report: Report2): Report2["exposure"] {
+  return report.packages_flagged === 0 ? [] : report.exposure;
+}
+
 /** `visible` is the tab's filtered list, `all` its population. */
 export function radiusLayout2(
   report: Report2,
@@ -37,7 +42,7 @@ export function radiusLayout2(
   const byName = new Map(report.findings.map((f) => [f.package, f]));
   const source = {
     report: {
-      exposure: report.exposure.map((entry) => ({
+      exposure: shownExposure(report).map((entry) => ({
         ...entry,
         members: members(byName.get(entry.package)),
       })),
@@ -144,7 +149,7 @@ export const RADIUS_WORDS = {
   itself: (verdict: string): string => `${verdict} itself`,
   filtered: (n: number): string => `${n} more ${pluralNoun(n, "does", "do")} not match the filter`,
   show: (row: RadiusRow2): string =>
-    `Show the ${plural(row.count, "package", "packages")} listed under ${row.package}`,
+    `The ${plural(row.count, "package", "packages")} listed under ${row.package}`,
   listedUnder: (pkg: string): string => `Listed under ${pkg}`,
   via: (hops: readonly string[]): string => `via ${hops.join(" → ")}`,
   singles: (n: number): string => `${n} more pull in one flagged package each`,

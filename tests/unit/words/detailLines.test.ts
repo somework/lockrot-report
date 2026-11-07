@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { baselineSuffix } from "../../../src/domain/baselineSuffix";
 import { checksLine } from "../../../src/domain/checksLine";
-import { differencesFromModel, listedDifferences } from "./modelDifferences";
+import { differencesFromModel, fieldsOf, listedFields } from "./modelDifferences";
 import type { RecordedCase } from "./recorded";
 import { modelCases, modelOnlyNames, recordedCases } from "./recorded";
 
@@ -39,6 +39,6 @@ describe("on lockrot's hydration a line differs from the model's golden only whe
   test.each(fields)("%s", (field) => {
     const differing = differencesFromModel(field, lines[field]);
 
-    expect(differing.map(({ name }) => name).sort()).toEqual([...listedDifferences(field).keys()].sort());
+    expect(fieldsOf(differing)).toEqual(listedFields(field));
   });
 });

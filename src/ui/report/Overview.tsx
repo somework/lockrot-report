@@ -283,7 +283,7 @@ function VerdictPicture({ report }: { report: Report2 }) {
   const figure = waffleCaption(report);
   const scope = leadScope(report);
   return (
-    <figure className="ov-picture">
+    <figure className="ov-picture" aria-label={OVERVIEW_WORDS.picture}>
       {figure !== null && <p className="ov-figure">{figure}</p>}
       {scope.length > 0 && <p className="lead-scope">{scope.join(" · ")}</p>}
       {chips.length > 0 && (

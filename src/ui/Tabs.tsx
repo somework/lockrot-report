@@ -3,6 +3,7 @@ import type { RefObject } from "preact";
 import { advisoryRows } from "../domain/advisoryRows";
 import { advisoryCheckMark } from "../domain/copySummary";
 import { population2 } from "../domain/list";
+import { shownExposure } from "../domain/radius2";
 import type { Report2 } from "../model/report";
 import type { View } from "../model/types";
 import { useReport } from "./context";
@@ -29,7 +30,7 @@ export function tabCounts(report: Report2): Readonly<Record<View, string>> {
     findings: String(population2(report, "findings").length),
     advisories: String(report.findings.reduce((n, f) => n + advisoryRows(f).length, 0)),
     packages: String(report.findings.length),
-    radius: String(report.exposure.length),
+    radius: String(shownExposure(report).length),
     run: report.notes.length > 0 ? String(report.notes.length) : "",
   };
 }
