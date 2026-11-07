@@ -45,7 +45,9 @@ function Row({
 }) {
   return (
     <div className={wide ? "d2-row d3-row-wide" : "d2-row"} id={id}>
-      <h3 className="d2-row-label">{label}</h3>
+      <h3 className="d2-row-label" aria-label={label}>
+        {label}
+      </h3>
       <div className="d2-row-value">{children}</div>
     </div>
   );
@@ -105,7 +107,7 @@ function Reference({ title, rows }: { title: string; rows: readonly KeyValueRow[
   return (
     <details className="detail-section detail-reference" open={printed ? true : undefined}>
       <summary className="detail-reference-summary">
-        <h3>{title}</h3>
+        <h3 aria-label={title}>{title}</h3>
       </summary>
       <KeyValue rows={rows} />
     </details>
@@ -267,7 +269,7 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
           )}
           {lead.length > 0 && (
             <section className="d2-branches" aria-labelledby={`${branchesId}-head`}>
-              <h3 className="d2-row-label" id={`${branchesId}-head`}>
+              <h3 className="d2-row-label" id={`${branchesId}-head`} aria-label={DETAIL_WORDS.branches}>
                 {DETAIL_WORDS.branches}
               </h3>
               <p className="d2-branches-line d3-branches-lead" id={branchesId}>
@@ -291,7 +293,7 @@ function Sheet({ finding, onClose }: { finding: Finding; onClose: () => void }) 
                     ? []
                     : [
                         <div key={label}>
-                          <dt>{label}</dt>
+                          <dt aria-label={label}>{label}</dt>
                           <dd>{value}</dd>
                         </div>,
                       ],

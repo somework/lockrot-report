@@ -417,6 +417,24 @@
     "php floor raise · held by composer.json",
     "after it: 0, ok, if Composer resolves it"
   ],
+  "S5-parent-split-dagger": [
+    "1 high advisory",
+    "1 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "5.x the move clears 1 of 1 from v5.4.52",
+    "upgrade · held by composer.json",
+    "after it: 0, ok, if Composer resolves it",
+    "6.x clears 1 of 1 from v6.4.40",
+    "php floor raise · held by composer.json",
+    "after it: 0, ok, if Composer resolves it",
+    "7.x clears 1 of 1 from v7.4.12",
+    "php floor raise · held by composer.json",
+    "after it: 0, ok, if Composer resolves it",
+    "8.x clears 1 of 1 from v8.0.12",
+    "php floor raise · held by composer.json",
+    "after it: 0, ok, if Composer resolves it"
+  ],
   "S5-star-dagger": [
     "1 high advisory",
     "1 on record for this name",
@@ -536,6 +554,11 @@
     "1 low advisory",
     "1 on record for this name",
     "fix: not known",
+    "lookup complete"
+  ],
+  "branch-above-undated-dagger": [
+    "no counted advisory",
+    "none on record for this name",
     "lookup complete"
   ],
   "cache-subscriber": [
@@ -1293,6 +1316,26 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "old-promise-higher-own-date-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "old-promise-highest-installed-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "old-promise-installed-undated-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "old-promise-newest-shared-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "op-update": [
     "no counted advisory",
     "none on record for this name",
@@ -1376,6 +1419,31 @@
     "lookup complete"
   ],
   "php-null": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "pinned-alpha-over-shared-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "pinned-highest-shared-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "pinned-newest-shared-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "pinned-prerelease-newest-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "pinned-prerelease-no-row-dagger": [
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
@@ -1769,6 +1837,21 @@
   "ok-offline-dagger": [
     "advisories not known",
     "not checked (offline)"
+  ],
+  "pinned-prerelease-only-blocked-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "pinned-prerelease-only-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "pinned-prerelease-only-undated-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
   ],
   "psr-log": [
     "no counted advisory",

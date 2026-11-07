@@ -577,12 +577,12 @@ describe("a long package name", () => {
     const finding = row("symfony/monolog-bridge");
 
     expect(text(finding, ".fc-vendor")).toBe("symfony/");
-    expect(finding.querySelector(".fc-vendor + wbr")).not.toBeNull();
+    expect(finding.querySelector(".fc-vendor + .wbr")).not.toBeNull();
     expect(text(finding, ".fc-unit")).toBe("monolog-bridge");
 
     fireEvent.click(screen.getByRole("tab", { name: /^All packages/ }));
     const cell = document.querySelector('tr[data-pkg="symfony/monolog-bridge"] .p2-name');
-    expect(cell?.querySelector("wbr")).not.toBeNull();
+    expect(cell?.querySelector(".wbr")).not.toBeNull();
     expect([...(cell?.querySelectorAll(".p2-unit") ?? [])].map((unit) => unit.textContent)).toEqual([
       "symfony/",
       "monolog-bridge",

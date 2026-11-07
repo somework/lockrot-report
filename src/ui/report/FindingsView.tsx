@@ -79,7 +79,7 @@ function ColumnHead({ run, axis, onScreen }: { run: Run; axis: AgeAxis | null; o
   const ref = useMeasuredHeight<HTMLDivElement>(LIST_HEAD_H);
   return (
     <div className="fhead f2-head" role="row" ref={onScreen ? ref : null}>
-      <span className="fhead-col f2-head-score" role="columnheader">
+      <span className="fhead-col f2-head-score" role="columnheader" aria-label={FINDINGS_HEAD.score}>
         <span className="f2-head-label">{FINDINGS_HEAD.score}</span>
         <span className="f2-head-axis" aria-hidden="true">
           <span className="f2-head-tick">0</span>
@@ -90,23 +90,23 @@ function ColumnHead({ run, axis, onScreen }: { run: Run; axis: AgeAxis | null; o
           ))}
         </span>
       </span>
-      <span className="fhead-col f2-head-pkg" role="columnheader">
+      <span className="fhead-col f2-head-pkg" role="columnheader" aria-label={FINDINGS_HEAD.pkg}>
         {FINDINGS_HEAD.pkg}
       </span>
-      <span className="fhead-col f2-head-flags" role="columnheader">
+      <span className="fhead-col f2-head-flags" role="columnheader" aria-label={FINDINGS_HEAD.flags}>
         {FINDINGS_HEAD.flags}
       </span>
       {axis ? (
         <AgeAxisHead axis={axis} caption={FINDINGS_HEAD.age} />
       ) : (
-        <span className="fhead-age" role="columnheader">
+        <span className="fhead-age" role="columnheader" aria-label={FINDINGS_HEAD.age}>
           <span className="vh">{FINDINGS_HEAD.age}</span>
         </span>
       )}
-      <span className="fhead-col f2-head-reach" role="columnheader">
+      <span className="fhead-col f2-head-reach" role="columnheader" aria-label={FINDINGS_HEAD.reach}>
         {FINDINGS_HEAD.reach}
       </span>
-      <span className="fhead-col f2-head-next" role="columnheader">
+      <span className="fhead-col f2-head-next" role="columnheader" aria-label={FINDINGS_HEAD.next}>
         {FINDINGS_HEAD.next}
       </span>
     </div>
@@ -114,10 +114,19 @@ function ColumnHead({ run, axis, onScreen }: { run: Run; axis: AgeAxis | null; o
 }
 
 /** A line across every column of the table: a group head or a run's note. */
-function SpanRow({ className, children }: { className: string; children: ComponentChildren }) {
+function SpanRow({
+  className,
+  label,
+  children,
+}: {
+  className: string;
+  /** The cell's name, where CSS capitals inside it would reach the name from its content. */
+  label?: string;
+  children: ComponentChildren;
+}) {
   return (
     <div className={className} role="row">
-      <span className="f2-span-cell" role="cell" aria-colspan={FINDINGS_COLUMNS}>
+      <span className="f2-span-cell" role="cell" aria-colspan={FINDINGS_COLUMNS} aria-label={label}>
         {children}
       </span>
     </div>
@@ -147,8 +156,13 @@ function Group({ verdict, findings, axis }: { verdict: string; findings: Finding
     // No accessible name: a named <section> is a landmark, and the page's one region is the open
     // package.
     <section className={`fgroup ${toneClass(gradeTone(verdict))}`}>
-      <SpanRow className="fgroup-head">
-        <h2>{verdict}</h2>
+      <SpanRow
+        className="fgroup-head"
+        label={[verdict, packagesCount(findings.length), gateWords, majors]
+          .filter((part) => part !== null)
+          .join(", ")}
+      >
+        <h2 aria-label={verdict}>{verdict}</h2>
         <span className="fgroup-count">{packagesCount(findings.length)}</span>
         {gateWords !== null && <span className="fgroup-gate">{gateWords}</span>}
         {majors !== null && <span className="fgroup-major">{majors}</span>}

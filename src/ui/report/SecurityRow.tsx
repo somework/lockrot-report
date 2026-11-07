@@ -17,6 +17,7 @@ import { toneClass } from "../common/common";
 import { DisclosureButton } from "../common/Disclosure";
 import { usePrinted } from "../print/printContext";
 import { jumpTo, RichText } from "./RichText";
+import { Wbr } from "./PkgName";
 
 const severityTag = (run: Run, severity: string) => (
   <span className={`tag ${toneClass(gradeTone(advisoryBand(run, severity)))}`}>{severity}</span>
@@ -26,7 +27,7 @@ const severityTag = (run: Run, severity: string) => (
 const withBreaks = (parts: readonly string[]) =>
   parts.map((part, i) => (
     <Fragment key={i}>
-      {i > 0 && <wbr />}
+      {i > 0 && <Wbr />}
       {part}
     </Fragment>
   ));

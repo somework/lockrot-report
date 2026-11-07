@@ -1,5 +1,9 @@
 import { Fragment } from "preact";
 
+/** A line-break opportunity. A `<wbr>` puts a space into the accessible name in Chromium; this
+ *  draws a zero-width space with empty alt text instead (base.css). */
+export const Wbr = () => <span className="wbr" />;
+
 /** Text that may break only after a "/", ":" or "=", never at a hyphen: each part stays whole. */
 export function Breakable({ text, className = "nb" }: { text: string; className?: string }) {
   const parts = text.split(/(?<=[/:=])/);
@@ -7,7 +11,7 @@ export function Breakable({ text, className = "nb" }: { text: string; className?
     <>
       {parts.map((part, i) => (
         <Fragment key={i}>
-          {i > 0 && <wbr />}
+          {i > 0 && <Wbr />}
           <span className={className}>{part}</span>
         </Fragment>
       ))}

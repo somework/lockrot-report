@@ -51,20 +51,24 @@ export interface ExposureBars {
   link: LinkTarget;
 }
 
-/** The first rows of `exposure[]` as published, each sized to the longest shown. */
+/** The first rows of `exposure[]` as published, each sized to the longest shown; none when
+ *  `packages_flagged` is 0, so an inconsistent document draws no "flagged, of 0" track. */
 export function exposureBars(report: Report2): ExposureBars {
-  const rows = report.exposure.slice(0, EXPOSURE_SHOWN).map(({ package: name, flagged }) => ({
+  const none = report.packages_flagged === 0;
+  const exposure = none ? [] : report.exposure;
+  const rows = exposure.slice(0, EXPOSURE_SHOWN).map(({ package: name, flagged }) => ({
     package: name,
     flagged,
   }));
-  const rest = report.exposure.length - rows.length;
+  const rest = exposure.length - rows.length;
   const graded: readonly string[] = report.run.graded_verdicts;
   const flagged = new Set(report.findings.filter((f) => graded.includes(f.verdict)).map((f) => f.package));
-  const names = [...new Set(report.unattributed.map(({ package: name }) => name))].filter((name) =>
+  const unattributed = none ? [] : report.unattributed;
+  const names = [...new Set(unattributed.map(({ package: name }) => name))].filter((name) =>
     flagged.has(name),
   );
   const longest = Math.max(1, report.packages_flagged, ...rows.map(({ flagged: n }) => n));
-  const n = report.exposure.length;
+  const n = exposure.length;
   return {
     rows,
     count:

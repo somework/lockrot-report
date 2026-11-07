@@ -41,6 +41,7 @@ import { useReport2 } from "./useReport";
 import "../views/views.css";
 import "../views/advisories.css";
 import "./advisories.css";
+import { Wbr } from "./PkgName";
 
 const pairKey = ({ finding, row }: AdvisoryPair2): string => `${finding.package}:${row.id}`;
 
@@ -114,7 +115,7 @@ function Affects({ range, tabIndex }: { range: string | null; tabIndex: -1 | und
           {affects.parts.map((part, i) => (
             <Fragment key={i}>
               <span className="ac2-r">{part}</span>
-              <wbr />
+              <Wbr />
             </Fragment>
           ))}
         </span>
@@ -160,7 +161,7 @@ function AdvisoryRow2({
   const { state, dispatch, cursor } = useReport();
   const { finding, row } = pair;
   const fix = advisoryFixWords(row.fix, finding);
-  const countedAs = advisoryCountedAs(run, row.severity);
+  const countedAs = advisoryCountedAs(run, row.severity)?.replace(/^, /, "") ?? null;
   const php = advisoryFixPhp(row.fix);
   const held = heldByLine(row.fix.held_by, run, finding.package);
   const inner = innerTabIndex(finding.package, cursor, first);
@@ -174,12 +175,16 @@ function AdvisoryRow2({
       className={`adv ${toneClass(gradeTone(advisoryBand(run, row.severity)))}`}
       {...openInteractions(finding.package, dispatch)}
     >
-      <span className="ac-sev" role="cell">
+      <span
+        className="ac-sev"
+        role="cell"
+        aria-label={countedAs === null ? row.severity : `${row.severity} ${countedAs}`}
+      >
         <span className="ac-lbl ac-sev-lbl" aria-hidden="true">
           {ADVISORY_HEAD.sev}{" "}
         </span>
         {row.severity}
-        {countedAs !== null && <span className="ac-counted">{countedAs.replace(/^, /, "")}</span>}
+        {countedAs !== null && <span className="ac-counted">{countedAs}</span>}
       </span>
       {/* One cell under the Advisory head: the title and the ids keep grid places of their own. */}
       <span className="ac-adv" role="cell">
@@ -298,16 +303,16 @@ function AdvisoryHead() {
   const ref = useMeasuredHeight<HTMLDivElement>(LIST_HEAD_H);
   return (
     <div className="al-head" role="row" ref={ref}>
-      <span className="al-col al-col-sev" role="columnheader">
+      <span className="al-col al-col-sev" role="columnheader" aria-label={ADVISORY_HEAD.sev}>
         {ADVISORY_HEAD.sev}
       </span>
-      <span className="al-col al-col-adv" role="columnheader">
+      <span className="al-col al-col-adv" role="columnheader" aria-label={ADVISORY_HEAD.adv}>
         {ADVISORY_HEAD.adv}
       </span>
-      <span className="al-col al-col-aff" role="columnheader">
+      <span className="al-col al-col-aff" role="columnheader" aria-label={ADVISORY_HEAD.aff}>
         {ADVISORY_HEAD.aff}
       </span>
-      <span className="al-col al-col-fix" role="columnheader">
+      <span className="al-col al-col-fix" role="columnheader" aria-label={ADVISORY_HEAD.fix}>
         {ADVISORY_HEAD.fix}
       </span>
     </div>

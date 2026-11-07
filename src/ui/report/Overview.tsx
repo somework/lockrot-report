@@ -32,7 +32,7 @@ import { lookupWord } from "../../domain/pageVocabulary";
 import type { Tone } from "../../domain/vocab";
 import type { Report2 } from "../../model/report";
 import type { FilterGroup } from "../../state/types";
-import { filterTitle, toneClass } from "../common/common";
+import { filterTitle, headLabel, toneClass } from "../common/common";
 import { useReport } from "../context";
 import { CleanMark } from "../ledger/CleanMark";
 import { Waffle, WaffleKey } from "../ledger/Waffle";
@@ -373,7 +373,10 @@ export function FlagsBlock({ report }: { report: Report2 }) {
 
   return (
     <div className="ledger-block ledger-verdicts">
-      <h3 className="eyebrow ledger-head">
+      <h3
+        className="eyebrow ledger-head"
+        aria-label={headLabel(OVERVIEW_WORDS.flags, bars.length > 0 ? OVERVIEW_WORDS.flagsNote : null)}
+      >
         {OVERVIEW_WORDS.flags}{" "}
         {bars.length > 0 && <span className="ledger-head-note">{OVERVIEW_WORDS.flagsNote}</span>}
       </h3>
@@ -419,7 +422,9 @@ export function SecurityBlock({
   return (
     <div className="ledger-block ledger-advisories">
       {linked ? (
-        <h3 className="eyebrow ledger-head">{OVERVIEW_WORDS.security}</h3>
+        <h3 className="eyebrow ledger-head" aria-label={OVERVIEW_WORDS.security}>
+          {OVERVIEW_WORDS.security}
+        </h3>
       ) : (
         <span className="eyebrow ledger-head">{OVERVIEW_WORDS.security}</span>
       )}
@@ -547,7 +552,9 @@ export function LibyearsBlock({ report, children }: { report: Report2; children?
   return (
     <div className="ledger-block ledger-libyears">
       <div className="ov-part">
-        <h3 className="eyebrow ledger-head">{OVERVIEW_WORDS.libyears}</h3>
+        <h3 className="eyebrow ledger-head" aria-label={OVERVIEW_WORDS.libyears}>
+          {OVERVIEW_WORDS.libyears}
+        </h3>
         {lead.figure !== null && (
           <p className="ledger-fig">
             {lead.bound !== "" && <span className="ledger-fig-unit">{lead.bound}</span>}{" "}

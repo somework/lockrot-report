@@ -285,6 +285,15 @@
     "left-behind alone grades it high, the advisory alone grades it high: together critical",
     "without left-behind: 16, high · without the advisory: 16, high"
   ],
+  "S5-parent-split-dagger": [
+    "32 · critical from 32 · ages as of 2026-10-01",
+    "left-behind 16 leads: the strongest maintenance fact counts in full",
+    "vulnerable 16: high advisory CVE-2026-45077; its own fix (upgrade on 5.x) is reachable, so no × 2",
+    "direct requirement: maintenance not halved for reach",
+    "left-behind alone grades it high, the advisory alone grades it high: together critical",
+    "without left-behind: 16, high · without the advisory: 16, high",
+    "checks missing: PHP promise (S5) not checked (undated releases)"
+  ],
   "S5-star-dagger": [
     "36 · critical from 32 · ages as of 2026-10-01",
     "left-behind 16 leads: the strongest maintenance fact counts in full",
@@ -374,6 +383,12 @@
     "transitive: no maintenance to halve; security is never halved for reach",
     "the advisory alone makes it low",
     "checks not run: its repository activity (allowlisted)"
+  ],
+  "branch-above-undated-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "old-promise 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
   ],
   "cache-subscriber": [
     "36 · critical from 32 · ages as of 2026-10-01",
@@ -1019,6 +1034,34 @@
     "0 · ok · ages as of 2026-10-01",
     "checks missing: release age (S2) not checked (undated releases)"
   ],
+  "old-promise-higher-own-date-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "old-promise 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "old-promise-highest-installed-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "old-promise 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "old-promise-installed-undated-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "old-promise 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "old-promise-newest-shared-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "old-promise 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "checks missing: release age (S2) and release branch (S8) not checked (undated releases)"
+  ],
   "op-update": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
     "old-promise 16 leads: the strongest maintenance fact counts in full",
@@ -1080,6 +1123,39 @@
     "left-behind 16 leads: the strongest maintenance fact counts in full",
     "transitive: maintenance 16 ÷ 2 = 8",
     "maintenance alone makes it medium"
+  ],
+  "pinned-alpha-over-shared-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "pinned-highest-shared-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "pinned-newest-shared-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "checks missing: release age (S2) not checked (undated releases)"
+  ],
+  "pinned-prerelease-newest-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
+  "pinned-prerelease-no-row-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
   ],
   "pinned-unread": [
     "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
@@ -1439,6 +1515,25 @@
   "ok-offline-dagger": [
     "0 · ok · ages as of 2026-10-01",
     "checks missing: advisories (S9) not checked (offline)"
+  ],
+  "pinned-prerelease-only-blocked-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
+  "pinned-prerelease-only-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high"
+  ],
+  "pinned-prerelease-only-undated-dagger": [
+    "16 · high from 16 · 16 points short of critical · ages as of 2026-10-01",
+    "pinned 16 leads: the strongest maintenance fact counts in full",
+    "direct requirement: maintenance not halved for reach",
+    "maintenance alone makes it high",
+    "checks missing: release age (S2) not checked (undated releases)"
   ],
   "psr-log": [
     "0 · finished · ages as of 2026-10-01",

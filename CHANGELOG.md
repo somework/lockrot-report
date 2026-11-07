@@ -406,6 +406,22 @@ project is overall, and the other tabs lead with their own part.
 - A run where Composer cannot load composer.json checks no advisories, and the page says why: "S9
   not checked (Composer cannot load composer.json)" on the Checks line, and "not checked (Composer
   cannot load composer.json)" in the Security block.
+- The page's heading names the project the report covers. The lockrot link beside it is no longer
+  the page's only heading.
+- A package name that may break after its "/" keeps its accessible name whole: a screen reader no
+  longer hears "guzzlehttp/ guzzle".
+- The accessible name or description of a heading, a column head, a cell or a row drawn in capitals
+  holds the words as the page writes them, so a name does not read a grade word as an acronym.
+- An Overview heading with a note reads its two parts apart: "Weighs most, highest score first".
+- The Overview load line rounds its share half up: "172 (96 %) from high or worse", not "(95 %)".
+  A part between 0 and the whole reads 1 to 99 %, so only none reads 0 % and only all reads 100 %.
+- Blast radius of an empty lock reads "No packages in this lock.", and Blast radius with no flagged
+  package reads "Nothing is flagged.". Neither it nor the Overview draws a "flagged, of 0" row.
+- A split package can tag a release on its own commit while the parent dates the newest release.
+  The page then reads "release date not known (a split whose parent dates its newest release)".
+  The Libyears lead counts it under "Not measured", after the tags that share a commit.
+- A move to a package's newest tag, with no release branch to name, names the tag in its php line:
+  "v1.0.0-beta1 needs php >=7.2". Before, the line started with "needs php".
 
 ### Security
 
@@ -1086,3 +1102,9 @@ document, same address format, same keys.
 - The timeline no longer drops its first year, and a label no longer pairs one tag's version with
   another tag's date.
 - Ledger filter buttons expose their pressed state to assistive technology.
+
+[Unreleased]: https://github.com/somework/lockrot-report/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/somework/lockrot-report/compare/v0.13.0...v0.14.0
+[0.13.0]: https://github.com/somework/lockrot-report/compare/v0.12.0...v0.13.0
+[0.12.0]: https://github.com/somework/lockrot-report/compare/v0.11.0...v0.12.0
+[0.11.0]: https://github.com/somework/lockrot-report/releases/tag/v0.11.0

@@ -1389,6 +1389,49 @@
       ]
     }
   ],
+  "S5-parent-split-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^5.4.52",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'symfony/monolog-bridge:^5.4.52'",
+        "composer why-not symfony/monolog-bridge v5.4.52 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "both",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2.5",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
+    }
+  ],
   "S5-star-dagger": [
     {
       "heading": "The move",
@@ -1787,6 +1830,49 @@
       "php": null,
       "after": null,
       "composer": []
+    }
+  ],
+  "branch-above-undated-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require ^5.0.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'tubalmartin/cssmin:^5.0.0'",
+        "composer why-not tubalmartin/cssmin v5.0.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "old-promise",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "5.x needs php >=7.2",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": [
+        {
+          "text": "A new major brings its own requirements, which lockrot does not solve",
+          "items": []
+        }
+      ]
     }
   ],
   "cache-subscriber": [
@@ -5503,6 +5589,78 @@
   ],
   "ok-unchecked": [],
   "ok-unchecked-entry-dagger": [],
+  "old-promise-higher-own-date-dagger": [
+    {
+      "heading": "Next step",
+      "action": "Test it on PHP 8.4",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": null,
+      "composer": []
+    }
+  ],
+  "old-promise-highest-installed-dagger": [
+    {
+      "heading": "Next step",
+      "action": "v4.1.1 is its newest release: test it on PHP 8.4, or replace it",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": null,
+      "composer": []
+    }
+  ],
+  "old-promise-installed-undated-dagger": [
+    {
+      "heading": "Next step",
+      "action": "v4.1.1 is its newest release: test it on PHP 8.4, or replace it",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": null,
+      "composer": []
+    }
+  ],
+  "old-promise-newest-shared-dagger": [
+    {
+      "heading": "Next step",
+      "action": "Test it on PHP 8.4",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": null,
+      "composer": []
+    }
+  ],
   "op-update": [
     {
       "heading": "The move",
@@ -5902,6 +6060,200 @@
           "items": []
         }
       ]
+    }
+  ],
+  "pinned-alpha-over-shared-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, v3.3.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'friendsofsymfony/oauth-server-bundle:^3.3.0'",
+        "composer why-not friendsofsymfony/oauth-server-bundle v3.3.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": null,
+      "not_checked": "old-promise",
+      "adds": [],
+      "php": {
+        "head": "3.x needs php >=7.2",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "at most 16, high",
+        "conditions": [
+          "old-promise not checked",
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "pinned-highest-shared-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, v10.49.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'friendsofsymfony/oauth-server-bundle:^10.49.0'",
+        "composer why-not friendsofsymfony/oauth-server-bundle v10.49.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": null,
+      "not_checked": "old-promise",
+      "adds": [],
+      "php": {
+        "head": "10.x needs php >=7.2",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "at most 16, high",
+        "conditions": [
+          "old-promise not checked",
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "pinned-newest-shared-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, v1.9.3",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'friendsofsymfony/oauth-server-bundle:^1.9.3'",
+        "composer why-not friendsofsymfony/oauth-server-bundle v1.9.3 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": null,
+      "not_checked": "left-behind, old-promise",
+      "adds": [],
+      "php": {
+        "head": "1.x needs php >=7.2",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "at most 20, high",
+        "conditions": [
+          "left-behind not checked",
+          "old-promise not checked",
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "pinned-prerelease-newest-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, v4.0.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'friendsofsymfony/oauth-server-bundle:^4.0.0'",
+        "composer why-not friendsofsymfony/oauth-server-bundle v4.0.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php >=7.2",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "pinned-prerelease-no-row-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, v4.0.0",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'friendsofsymfony/oauth-server-bundle:^4.0.0'",
+        "composer why-not friendsofsymfony/oauth-server-bundle v4.0.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "4.x needs php >=7.2",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
     }
   ],
   "pinned-unread": [
@@ -7413,6 +7765,100 @@
   ],
   "ok-ignored-dagger": [],
   "ok-offline-dagger": [],
+  "pinned-prerelease-only-blocked-dagger": [
+    {
+      "heading": "Next step",
+      "action": "Its newest tag, v1.0.0-beta1, needs php >=8.5, which your target, 8.4, does not run: replace it",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "v1.0.0-beta1 needs php >=8.5",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "no",
+            "text": "your target, 8.4, does not run it"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "pinned-prerelease-only-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, v1.0.0-beta1",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'friendsofsymfony/oauth-server-bundle:^1.0.0-beta1'",
+        "composer why-not friendsofsymfony/oauth-server-bundle v1.0.0-beta1 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "v1.0.0-beta1 needs php >=7.2",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
+  "pinned-prerelease-only-undated-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, v1.0.0-beta1",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'friendsofsymfony/oauth-server-bundle:^1.0.0-beta1'",
+        "composer why-not friendsofsymfony/oauth-server-bundle v1.0.0-beta1 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
   "psr-log": [],
   "scope-registries-dagger": [],
   "unknown-vuln-dagger": [

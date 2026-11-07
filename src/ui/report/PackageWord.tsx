@@ -1,3 +1,5 @@
+import { Wbr } from "./PkgName";
+
 /** A package name that moves to the next line whole, breaks after its vendor's slash only when it
  *  is wider than a line, and never at a hyphen. */
 export function PackageWord({ name, className = "f2-name" }: { name: string; className?: string }) {
@@ -6,7 +8,7 @@ export function PackageWord({ name, className = "f2-name" }: { name: string; cla
   return (
     <span className={`${className} pkg-word`}>
       <span className="f2-unit">{name.slice(0, slash + 1)}</span>
-      <wbr />
+      <Wbr />
       <span className="f2-unit">{name.slice(slash + 1)}</span>
     </span>
   );

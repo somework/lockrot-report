@@ -341,6 +341,20 @@
       "fold": null
     }
   ],
+  "S5-parent-split-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
   "S5-star-dagger": [
     {
       "count": 1,
@@ -407,6 +421,9 @@
     null
   ],
   "affected-range-unknown-dagger": [
+    null
+  ],
+  "branch-above-undated-dagger": [
     null
   ],
   "cache-subscriber": [
@@ -1047,6 +1064,18 @@
   ],
   "ok-unchecked": [],
   "ok-unchecked-entry-dagger": [],
+  "old-promise-higher-own-date-dagger": [
+    null
+  ],
+  "old-promise-highest-installed-dagger": [
+    null
+  ],
+  "old-promise-installed-undated-dagger": [
+    null
+  ],
+  "old-promise-newest-shared-dagger": [
+    null
+  ],
   "op-update": [
     null
   ],
@@ -1106,6 +1135,21 @@
     null
   ],
   "php-null": [
+    null
+  ],
+  "pinned-alpha-over-shared-dagger": [
+    null
+  ],
+  "pinned-highest-shared-dagger": [
+    null
+  ],
+  "pinned-newest-shared-dagger": [
+    null
+  ],
+  "pinned-prerelease-newest-dagger": [
+    null
+  ],
+  "pinned-prerelease-no-row-dagger": [
     null
   ],
   "pinned-unread": [
@@ -1324,6 +1368,15 @@
   ],
   "ok-ignored-dagger": [],
   "ok-offline-dagger": [],
+  "pinned-prerelease-only-blocked-dagger": [
+    null
+  ],
+  "pinned-prerelease-only-dagger": [
+    null
+  ],
+  "pinned-prerelease-only-undated-dagger": [
+    null
+  ],
   "psr-log": [],
   "scope-registries-dagger": [],
   "unknown-vuln-dagger": [

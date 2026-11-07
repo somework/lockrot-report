@@ -104,6 +104,13 @@ export function waffleCaption(report: Report2): string | null {
   return report.packages_checked === 0 ? null : figureParts(report, true).join(" · ");
 }
 
+/** The share half up, held to 1 to 99 when the part lies strictly between 0 and the whole: only none
+ *  reads 0 and only all reads 100 (SPEC §7.9.4, R13-14). */
+function sharePercent(part: number, whole: number): number {
+  const pct = Math.round((100 * part) / whole);
+  return part <= 0 || part >= whole ? pct : Math.min(Math.max(pct, 1), 99);
+}
+
 export function loadLine(report: Report2): string | null {
   if (report.packages_checked === 0) return null;
   const findings = graded(report);
@@ -111,7 +118,7 @@ export function loadLine(report: Report2): string | null {
   const worse = highOrWorse(report);
   const load = sum(findings.map(total));
   const high = sum(findings.filter((f) => worse.includes(f.verdict)).map(total));
-  const share = load === 0 ? "" : ` (${String(Math.floor((100 * high) / load))} %)`;
+  const share = load === 0 ? "" : ` (${String(sharePercent(high, load))} %)`;
   const dev = findings.filter((f) => f.dev);
   return [
     `${plural(load, "point", "points")} on ${plural(report.packages_flagged, "flagged package", "flagged packages")}`,

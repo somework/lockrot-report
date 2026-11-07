@@ -56,7 +56,8 @@ function withoutVersionStep(recorded: Finding, model: Finding): Finding {
     move.check?.result !== "resolves" &&
     move.version !== null &&
     modelMoves[at]?.version === null &&
-    move.commands.at(-1)?.[1] === "why-not"
+    JSON.stringify(move.commands.at(-1)) ===
+      JSON.stringify(["composer", "why-not", recorded.package, move.version, "--locked"])
       ? { ...move, commands: move.commands.slice(0, -1) }
       : move;
   const lead = recorded.next_step;
@@ -84,6 +85,41 @@ describe("a MOVE_VERSION difference is only the why-not step of a move that does
 
   test("the list names such cases", () => {
     expect(listed.length).toBeGreaterThan(0);
+  });
+
+  describe("the step it strips is exactly `composer why-not <package> <version> --locked`", () => {
+    const recorded = recordedCases().find(
+      ({ name, finding }) =>
+        listed.includes(name) &&
+        finding.next_step !== null &&
+        finding.next_step.check?.result !== "resolves" &&
+        finding.next_step.version !== null &&
+        models.get(name)?.finding.next_step?.version === null,
+    );
+    if (recorded === undefined) throw new Error("no recorded MOVE_VERSION case with such a lead move");
+    const model = models.get(recorded.name);
+    const lead = recorded.finding.next_step;
+    if (model === undefined || lead === null) throw new Error(`no model or move for ${recorded.name}`);
+    const withLast = (last: string[]): Finding => ({
+      ...recorded.finding,
+      next_step: { ...lead, commands: [...lead.commands.slice(0, -1), last] },
+    });
+    const lastOf = (finding: Finding): string[] | undefined => finding.next_step?.commands.at(-1);
+    const exact = ["composer", "why-not", recorded.finding.package, String(lead.version), "--locked"];
+
+    test("strips the exact step", () => {
+      const step = withLast(exact);
+
+      expect(withoutVersionStep(step, model.finding).next_step?.commands).toEqual(lead.commands.slice(0, -1));
+    });
+
+    test.each([
+      ["another package", ["composer", "why-not", "other/package", String(lead.version), "--locked"]],
+      ["another version", ["composer", "why-not", recorded.finding.package, "0.0.0-other", "--locked"]],
+      ["no --locked flag", ["composer", "why-not", recorded.finding.package, String(lead.version)]],
+    ])("keeps a why-not step that names %s", (_, last) => {
+      expect(lastOf(withoutVersionStep(withLast(last), model.finding))).toEqual(last);
+    });
   });
 
   test.each(recordedCases().filter(({ name }) => listed.includes(name)))(

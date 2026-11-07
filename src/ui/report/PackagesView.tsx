@@ -26,6 +26,7 @@ import { Version } from "./PackageWord";
 import { useReport2 } from "./useReport";
 import "../views/views.css";
 import "./packages.css";
+import { Wbr } from "./PkgName";
 
 /** A dash or a lower bound says what it stands for, to the eye on hover and to a screen reader. */
 function Measured({ cell }: { cell: Cell }) {
@@ -45,7 +46,7 @@ function PackageName({ name }: { name: string }) {
   return (
     <span className="pkg-word">
       <span className="p2-unit">{name.slice(0, slash + 1)}</span>
-      <wbr />
+      <Wbr />
       <span className="p2-unit">{name.slice(slash + 1)}</span>
     </span>
   );
@@ -101,7 +102,13 @@ function PackageRow({
       <td role="cell" className="p2-age" data-label={label("age")}>
         <Measured cell={installedAge(finding)} />
       </td>
-      <td role="cell" className="p2-verdict" id={`${id}-verdict`} data-label={label("verdict")}>
+      <td
+        role="cell"
+        className="p2-verdict"
+        id={`${id}-verdict`}
+        data-label={label("verdict")}
+        aria-label={finding.verdict}
+      >
         {finding.verdict}
       </td>
       <td role="cell" className="num p2-score" id={`${id}-score`} data-label={label("score")}>
@@ -208,6 +215,7 @@ export function PackagesView2() {
                     role="columnheader"
                     id={column.key === "score" ? scoreHead : undefined}
                     className={`p2-h-${column.key}`}
+                    aria-label={column.label}
                     aria-sort={active ? (state.sortDesc ? "descending" : "ascending") : "none"}
                   >
                     {printed ? (
@@ -219,6 +227,7 @@ export function PackagesView2() {
                       <button
                         type="button"
                         className={active ? "sort-btn active" : "sort-btn"}
+                        aria-label={column.label}
                         onClick={() => {
                           dispatch({ type: "sort", key: column.key });
                         }}

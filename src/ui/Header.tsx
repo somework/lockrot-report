@@ -68,17 +68,19 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
       <div className="topbar-in">
         <div className="brand">
           <span className="dot" aria-hidden="true" />
-          <h1>
-            <a
-              href="https://lockrot.dev/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={newTab("lockrot")}
-            >
-              lockrot
-            </a>
+          <a
+            className="brand-name"
+            href="https://lockrot.dev/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={newTab("lockrot")}
+          >
+            lockrot
+          </a>
+          {/* The label keeps the name out of the eyebrow's CSS capitals, which Chromium reads out. */}
+          <h1 className="eyebrow project" aria-label={project}>
+            {project}
           </h1>
-          <span className="eyebrow project">{project}</span>
         </div>
         <div className="run-meta">
           <span>

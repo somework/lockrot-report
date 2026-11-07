@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { population2 } from "../../../src/domain/list";
+import { population2, radiusEmpty } from "../../../src/domain/list";
 import { pulledTree } from "../../../src/domain/radius";
 import {
   gradeMix,
@@ -242,5 +242,21 @@ describe("radiusRows2 on a recorded case", () => {
     ]);
     const shut = { ...INITIAL_STATE, disclosure: { "fold:singles": false } };
     expect(radiusRows2(layout, shut, false)).toEqual(layout.lead.map((row) => row.package));
+  });
+});
+
+describe("the empty states of Blast radius", () => {
+  it("says the lock holds no package when packages_checked is 0", () => {
+    expect(radiusEmpty({ ...composite, packages_checked: 0, packages_flagged: 0 })).toBe(
+      "No packages in this lock.",
+    );
+  });
+
+  it("says nothing is flagged when packages_flagged is 0, whatever exposure[] holds", () => {
+    expect(radiusEmpty({ ...composite, packages_flagged: 0 })).toBe("Nothing is flagged.");
+  });
+
+  it("has no empty state when a package is flagged", () => {
+    expect(radiusEmpty(composite)).toBeNull();
   });
 });

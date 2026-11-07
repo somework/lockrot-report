@@ -182,6 +182,19 @@ function groupOf(scope: Scope, group: FilterGroup, title: string, rows: readonly
   return shown.length === 0 ? null : { group, title, rows: shown };
 }
 
+/** What a view with no row says, by why it has none (DESIGN.md §5 M20). */
+export const EMPTY_WORDS = {
+  clean: "Nothing is flagged.",
+  emptyLock: "No packages in this lock.",
+} as const;
+
+/** The one line Blast radius shows in place of its rows, when the lock or the flagged set is empty;
+ *  `packages_flagged` decides, whatever `exposure[]` holds. */
+export function radiusEmpty(report: Report2): string | null {
+  if (report.packages_checked === 0) return EMPTY_WORDS.emptyLock;
+  return report.packages_flagged === 0 ? EMPTY_WORDS.clean : null;
+}
+
 /** The one key of the accepted group: a view toggle that hides the accepted pills (SPEC §7.9.7). */
 export const HIDE_ACCEPTED = "hide";
 

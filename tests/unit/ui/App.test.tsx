@@ -881,6 +881,80 @@ describe("layout", () => {
     expect(document.querySelector(".topbar")?.textContent).toContain("matomo/matomo");
   });
 
+  test("the one level-1 heading names the project, and the lockrot link sits in no heading", () => {
+    render(<App model={load("B")} />);
+
+    expect(screen.getAllByRole("heading", { level: 1 })).toEqual([
+      screen.getByRole("heading", { level: 1, name: "matomo/matomo" }),
+    ]);
+    expect(screen.getByRole("link", { name: /^lockrot/ }).closest("h1, h2, h3, h4, h5, h6")).toBeNull();
+  });
+
+  const withUnmeasured = (key: string, count: number): string => {
+    const model = load("composite", (embed) => {
+      embed.report.libyears.unmeasured = { ...embed.report.libyears.unmeasured, [key]: count };
+    });
+    history.replaceState(null, "", "/report.html#view=overview");
+    render(<App model={model} />);
+    return document.querySelector('[data-surface="overview"] .ledger-libyears')?.textContent ?? "";
+  };
+
+  test("libyears.unmeasured parent_split reads in the model's words", () => {
+    expect(withUnmeasured("parent_split", 2)).toContain("2, a split whose parent dates its newest release");
+  });
+
+  test("a libyears.unmeasured key the page does not know names its count in words", () => {
+    expect(withUnmeasured("future_cause", 2)).toContain("2, future cause");
+  });
+
+  test("a libyears.unmeasured key the page does not know adds nothing at 0", () => {
+    const lead = withUnmeasured("future_cause", 0);
+
+    expect(lead).toContain("Libyears");
+    expect(lead).not.toContain("future cause");
+  });
+
+  const radiusOf = (edit: (embed: Report2Embed) => void): HTMLElement => {
+    history.replaceState(null, "", "/report.html#view=radius");
+    render(<App model={load("composite", edit)} />);
+    const surface = document.querySelector<HTMLElement>('[data-surface="radius"]');
+    if (surface === null) throw new Error("no Blast radius surface");
+    return surface;
+  };
+
+  test("Blast radius of a lock with no package says so and draws no row", () => {
+    const surface = radiusOf((embed) => {
+      embed.report.packages_checked = 0;
+      embed.report.packages_flagged = 0;
+    });
+
+    expect(surface.textContent).toBe("No packages in this lock.");
+  });
+
+  test("Blast radius with packages_flagged 0 says nothing is flagged and draws no row", () => {
+    const surface = radiusOf((embed) => {
+      embed.report.packages_flagged = 0;
+    });
+
+    expect(surface.textContent).toBe("Nothing is flagged.");
+  });
+
+  test("the Overview draws no exposure row when packages_flagged is 0", () => {
+    const model = load("composite", (embed) => {
+      embed.report.packages_flagged = 0;
+    });
+    history.replaceState(null, "", "/report.html#view=overview");
+    render(<App model={model} />);
+
+    expect(document.querySelector('[data-surface="overview"]')?.textContent).not.toContain("flagged, of 0");
+  });
+
+  test("the level-1 heading falls back to the lock's name when the run names no project", () => {
+    render(<App model={load()} />);
+
+    expect(screen.getByRole("heading", { level: 1, name: "composer.lock" })).toBeTruthy();
+  });
+
   test("a document with a newer schema says so", () => {
     render(<App model={{ ...load(), schema: 3, newerSchema: true }} />);
 

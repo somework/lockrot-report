@@ -66,6 +66,18 @@ describe("the exposure bars", () => {
     expect(linkHref(bars.link)).toBe("#view=radius");
   });
 
+  test("draw no row when packages_flagged is 0, whatever exposure[] holds", () => {
+    const report = { ...composite(), packages_flagged: 0 };
+
+    expect(exposureBars(report)).toMatchObject({
+      rows: [],
+      count: null,
+      overlap: null,
+      more: null,
+      shared: null,
+    });
+  });
+
   test("cut at eight rows and count the rest", () => {
     const report = composite();
     report.exposure = Array.from({ length: 11 }, (_, i) => ({ package: `vendor/p${i}`, flagged: 11 - i }));

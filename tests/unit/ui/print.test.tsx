@@ -147,8 +147,8 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
     for (const count of counts) {
       const range = count.nextElementSibling;
       expect(range?.classList.contains("ac2-flow")).toBe(true);
-      expect(range?.querySelectorAll("wbr").length).toBeGreaterThan(1);
-      expect(range?.querySelectorAll(".ac2-r").length).toBe(range?.querySelectorAll("wbr").length);
+      expect(range?.querySelectorAll(".wbr").length).toBeGreaterThan(1);
+      expect(range?.querySelectorAll(".ac2-r").length).toBe(range?.querySelectorAll(".wbr").length);
       expect(range?.textContent).toMatch(/\|/);
     }
   });
@@ -224,7 +224,7 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
       "9 of 9 packages flagged · 0 ok · 0 finished",
     );
     expect(doc.querySelector(".pd-summary .wm-load")?.textContent).toBe(
-      "180 points on 9 flagged packages · 172 (95 %) from high or worse · score model 1",
+      "180 points on 9 flagged packages · 172 (96 %) from high or worse · score model 1",
     );
     expect(
       [...doc.querySelectorAll(".pd-summary .wm-list .wm-terms")].map((text) => text.textContent),

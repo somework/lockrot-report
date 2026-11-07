@@ -48,7 +48,7 @@ export function GlossaryBody2({ onClose, keysOpen = false, shortcutsOn, onShortc
   return (
     <div className="glossary-body">
       <section className="glossary-sect">
-        <h3>{verdictsHeading(run)}</h3>
+        <h3 aria-label={verdictsHeading(run)}>{verdictsHeading(run)}</h3>
         <Entries entries={verdicts.filter(({ id }) => graded.includes(id))} toned />
         <Entries entries={verdicts.filter(({ id }) => !graded.includes(id))} toned={false} />
         <p className="small-note">
@@ -57,7 +57,7 @@ export function GlossaryBody2({ onClose, keysOpen = false, shortcutsOn, onShortc
       </section>
       <details className="glossary-sect" open>
         <summary>
-          <h3>{flagsHeading(run)}</h3>
+          <h3 aria-label={flagsHeading(run)}>{flagsHeading(run)}</h3>
         </summary>
         <Entries entries={flagEntries(report)} toned={false} />
         <p className="prose">
@@ -69,7 +69,7 @@ export function GlossaryBody2({ onClose, keysOpen = false, shortcutsOn, onShortc
       </details>
       <details className="glossary-sect">
         <summary>
-          <h3>The signals</h3>
+          <h3 aria-label="The signals">The signals</h3>
         </summary>
         <dl className="deflist">
           {signalEntries(run).map(({ id, name, text }) => {
@@ -90,13 +90,13 @@ export function GlossaryBody2({ onClose, keysOpen = false, shortcutsOn, onShortc
       </details>
       <details className="glossary-sect">
         <summary>
-          <h3>One number for the lock: libyears</h3>
+          <h3 aria-label="One number for the lock: libyears">One number for the lock: libyears</h3>
         </summary>
         <p className="prose">{GLOSSARY2_WORDS.libyears}</p>
       </details>
       <details className="glossary-sect glossary-keys" open={keysOpen}>
         <summary>
-          <h3>Keys and search</h3>
+          <h3 aria-label="Keys and search">Keys and search</h3>
         </summary>
         <label className="prose">
           <input
@@ -124,7 +124,9 @@ export function GlossaryBody2({ onClose, keysOpen = false, shortcutsOn, onShortc
       </details>
       <details className="glossary-sect">
         <summary>
-          <h3>For the lock's maintainers: accepting a package</h3>
+          <h3 aria-label="For the lock's maintainers: accepting a package">
+            For the lock's maintainers: accepting a package
+          </h3>
         </summary>
         <p className="prose glossary-note">{GLOSSARY2_WORDS.accept}</p>
       </details>

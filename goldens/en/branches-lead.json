@@ -130,6 +130,10 @@
     "Your branch, 2.x, had its last release, v2.6.13, 5.1 years ago.",
     "The move's branch, 5.x, released v5.4.52 0.4 years ago."
   ],
+  "S5-parent-split-dagger": [
+    "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
+    "The move's branch, 5.x, released v5.4.52 0.4 years ago."
+  ],
   "S5-star-dagger": [
     "Your branch, 2.x, had its last release, v2.8.52, 6.9 years ago.",
     "The move's branch, 5.x, released v5.4.52 0.4 years ago."
@@ -175,6 +179,9 @@
   "affected-range-unknown-dagger": [
     "Your branch, 1.x, had its last release, v1.43.0, less than three weeks ago.",
     "It has no higher branch."
+  ],
+  "branch-above-undated-dagger": [
+    "Your branch, 4.x, has no dated release."
   ],
   "cache-subscriber": [
     "Your branch, 0.2.x, had its last release, 0.2.0, 7.0 years ago.",
@@ -538,6 +545,20 @@
     "Your branch, 8.x, has no dated release.",
     "It has no higher branch."
   ],
+  "old-promise-higher-own-date-dagger": [
+    "Your branch, 4.x, had its last release, v4.1.1, 8.7 years ago."
+  ],
+  "old-promise-highest-installed-dagger": [
+    "Your branch, 4.x, had its last release, v4.1.1, 8.7 years ago.",
+    "It has no higher branch."
+  ],
+  "old-promise-installed-undated-dagger": [
+    "Your branch, 4.x, has no dated release.",
+    "It has no higher branch."
+  ],
+  "old-promise-newest-shared-dagger": [
+    "Your branch, 4.x, has no dated release."
+  ],
   "op-update": [
     "Your branch, 2.x, had its last release, 2.0.3, 0.5 years ago.",
     "It has no higher branch."
@@ -571,6 +592,21 @@
   "php-null": [
     "Your branch, 10.x, had its last release, 10.0.1, 3.5 years ago.",
     "The move's branch, 12.x, released 12.0.0 1.6 years ago."
+  ],
+  "pinned-alpha-over-shared-dagger": [
+    "A branch snapshot, dev-master, is installed."
+  ],
+  "pinned-highest-shared-dagger": [
+    "A branch snapshot, dev-master, is installed."
+  ],
+  "pinned-newest-shared-dagger": [
+    "A branch snapshot, dev-master, is installed."
+  ],
+  "pinned-prerelease-newest-dagger": [
+    "A branch snapshot, dev-master, is installed."
+  ],
+  "pinned-prerelease-no-row-dagger": [
+    "A branch snapshot, dev-master, is installed."
   ],
   "pinned-unread": [],
   "platform-step-dagger": [
@@ -731,6 +767,9 @@
   "no-tag-dagger": [],
   "ok-ignored-dagger": [],
   "ok-offline-dagger": [],
+  "pinned-prerelease-only-blocked-dagger": [],
+  "pinned-prerelease-only-dagger": [],
+  "pinned-prerelease-only-undated-dagger": [],
   "psr-log": [],
   "scope-registries-dagger": [],
   "unknown-vuln-dagger": [],

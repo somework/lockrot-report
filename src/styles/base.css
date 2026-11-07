@@ -89,6 +89,10 @@ code {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+.wbr::before {
+  content: "\200B";
+  content: "\200B" / "";
+}
 .eyebrow {
   font-family: var(--cond);
   font-weight: 600;
