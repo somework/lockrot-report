@@ -196,6 +196,14 @@ describe("nextStepWords", () => {
     expect(words("affected-range-unknown-dagger").text).toBe("no move");
   });
 
+  it("words a snapshot with no tag at all as no tag, not as the move's text", () => {
+    const doc = readContractJson("model-only", "no-tag-dagger.json") as Report2;
+    const snapshot = finding(doc, "matomo/referrer-spam-list");
+    expect(snapshot.next_step?.kind).toBe("no-tag");
+
+    expect(nextStepWords(snapshot, doc.run).text).toBe("no tag");
+  });
+
   it("words a blocked move that is not a snapshot's by its branch and the php it needs", () => {
     expect(words("A-blocked-dagger").text).toMatch(
       /^\S+ (needs php \S+; target \S+ runs no (fixing|newer) release|does not run on \S+)$/,
