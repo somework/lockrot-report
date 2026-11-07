@@ -208,6 +208,43 @@ describe("R14-5: a move whose release name holds |, < or >", () => {
     expect(card?.noCommand).toBe(NO_COMMAND);
   });
 
+  test("says why on the Then card the note names, and not on the lead", () => {
+    const { finding, run, version } = unsafeUpdate();
+    const lead = finding.next_step;
+    const then = { ...lead, version: "2.0.0|x", commands: [] };
+    const withThen = {
+      ...finding,
+      next_step: { ...lead, commands: [["composer", "update", "a/b"]], also: [then] },
+    };
+
+    const cards = moveCards(withThen, run, [{ package: finding.package, version: "2.0.0|x" }]);
+
+    expect(version).not.toBe("2.0.0|x");
+    expect(cards.map((c) => [c.heading, c.noCommand])).toEqual([
+      ["The move", null],
+      ["Then", NO_COMMAND],
+    ]);
+  });
+
+  test("says nothing for a tag move with no newest tag", () => {
+    const { finding, run } = modelCase("G-tag-dagger");
+    const move = finding.next_step;
+    if (move === null) throw new Error("G-tag‡ moves to a tag");
+    const untagged = { ...finding, next_step: { ...move, commands: [], latest: null } };
+
+    const [card] = moveCards(untagged, run, [{ package: finding.package, version: move.version ?? "" }]);
+
+    expect(card?.noCommand).toBeNull();
+  });
+
+  test.each([
+    ["data that is not an object", "v1|x"],
+    ["data that is null", null],
+    ["moves that is not a list", { moves: { package: "c/d", version: "v2|x" } }],
+  ])("reads no move from a command_argument_unsafe note with %s", (_shape, data) => {
+    expect(unsafeMoves([{ code: "command_argument_unsafe", data }])).toEqual([]);
+  });
+
   test("reads the moves of the command_argument_unsafe note, and nothing from another note", () => {
     const notes = [
       { code: "offline", data: { moves: [{ package: "a/b", version: "1|2" }] } },
