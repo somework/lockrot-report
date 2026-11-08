@@ -13,6 +13,8 @@ import "./search.css";
 
 // Fits the field at 320px, the narrowest width the page supports (DESIGN.md §6); `?` lists every key.
 const PLACEHOLDER = "flag:stale score:>=16";
+// A flag or score example can match no advisory row, and an empty list reads as a broken filter.
+const ADVISORIES_PLACEHOLDER = "a package name";
 
 /**
  * "N of M …", read off the same domain functions each tab uses to decide what it lists, so this line
@@ -85,7 +87,7 @@ export function SearchBar({ inputRef }: { inputRef: Ref<HTMLInputElement> }) {
             type="search"
             className="search-input"
             aria-label="Filter packages"
-            placeholder={PLACEHOLDER}
+            placeholder={state.view === "advisories" ? ADVISORIES_PLACEHOLDER : PLACEHOLDER}
             value={state.q}
             onInput={(event) => {
               dispatch({ type: "query", q: event.currentTarget.value });
