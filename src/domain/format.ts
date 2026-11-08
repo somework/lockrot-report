@@ -156,7 +156,7 @@ export function decimal(value: number, digits: number): string {
   }
   const text = units.toString().padStart(digits + 1, "0");
   const shown = digits === 0 ? text : `${text.slice(0, -digits)}.${text.slice(-digits)}`;
-  return value < 0 ? `-${shown}` : shown;
+  return value < 0 && units > 0n ? `-${shown}` : shown;
 }
 
 /** `"N of M {noun}"`, the noun agreeing with M: "1 of 1 flagged package", "1 of 113 flagged packages". */

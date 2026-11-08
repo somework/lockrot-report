@@ -247,6 +247,11 @@ describe("decimal: the published value rounded half up, as PHP's number_format p
     expect(decimal(1e21, 1)).toBe("1000000000000000000000.0");
   });
 
+  test("drops the sign of a value that rounds to zero, as number_format does", () => {
+    expect(decimal(-0.04, 1)).toBe("0.0");
+    expect(decimal(-0.05, 1)).toBe("-0.1");
+  });
+
   test("prints a value that is not finite as JavaScript writes it", () => {
     expect(decimal(Number.POSITIVE_INFINITY, 1)).toBe("Infinity");
   });

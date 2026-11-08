@@ -3920,7 +3920,7 @@
       "after": {
         "result": "0, ok",
         "conditions": [
-          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run tab names the cause)"
+          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run data tab names the cause)"
         ]
       },
       "composer": []
@@ -5343,7 +5343,7 @@
       "after": {
         "result": "0, ok",
         "conditions": [
-          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run tab names the cause)"
+          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run data tab names the cause)"
         ]
       },
       "composer": []
@@ -6433,7 +6433,7 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.0, then require ^6.13",
-      "platform_step": "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29. Composer still refuses the lock itself: the Run tab names the cause.",
+      "platform_step": "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29. Composer still refuses the lock itself: the Run data tab names the cause.",
       "command_note": null,
       "moves_with": null,
       "commands": [
@@ -6465,7 +6465,7 @@
         "result": "8, medium",
         "conditions": [
           "adds capped",
-          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run tab names the cause)"
+          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run data tab names the cause)"
         ]
       },
       "composer": [

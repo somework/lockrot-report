@@ -979,7 +979,8 @@ describe("layout", () => {
       embed.report.packages_flagged = 0;
     });
 
-    expect(surface.textContent).toBe("No packages in this lock.");
+    expect(surface.querySelector(":scope > :not(h2)")?.textContent).toBe("No packages in this lock.");
+    expect(surface.children).toHaveLength(2);
   });
 
   test("Blast radius with packages_flagged 0 says nothing is flagged and draws no row", () => {
@@ -987,7 +988,8 @@ describe("layout", () => {
       embed.report.packages_flagged = 0;
     });
 
-    expect(surface.textContent).toBe("Nothing is flagged.");
+    expect(surface.querySelector(":scope > :not(h2)")?.textContent).toBe("Nothing is flagged.");
+    expect(surface.children).toHaveLength(2);
   });
 
   test("the Overview draws no exposure row when packages_flagged is 0", () => {

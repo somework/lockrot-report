@@ -109,4 +109,10 @@
   .opt[aria-pressed="true"] .c {
     color: HighlightText;
   }
+  .opt[aria-pressed="true"]:focus-visible {
+    outline-color: CanvasText;
+  }
+  .opt[aria-pressed="true"]::before {
+    forced-color-adjust: auto;
+  }
 }

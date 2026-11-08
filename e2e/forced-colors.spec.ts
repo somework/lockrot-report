@@ -328,5 +328,33 @@ test.describe("report-2: a pressed Filters-rail option reads apart from an unpre
       expect(await backplate(pressed)).not.toBe(await backplate(unpressed));
       expect(await labelPixelRatio(page, pressed)).toBeGreaterThan(0.15);
     });
+
+    test(`a pressed option keeps a system focus ring and a forced hairline, ${colorScheme}`, async ({
+      page,
+    }) => {
+      await report.gotoReport2WithHash("composite", "view=findings&verdict=critical");
+      await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
+      const pressed = page
+        .getByRole("group", { name: "Filters", exact: true })
+        .locator('.opt[aria-pressed="true"]')
+        .first();
+      await pressed.focus();
+
+      const paint = await pressed.evaluate((el) => {
+        const probe = document.createElement("span");
+        probe.style.color = "CanvasText";
+        document.body.append(probe);
+        const canvasText = getComputedStyle(probe).color;
+        probe.remove();
+        return {
+          canvasText,
+          outline: getComputedStyle(el).outlineColor,
+          hairline: getComputedStyle(el, "::before").forcedColorAdjust,
+        };
+      });
+
+      expect(paint.outline).toBe(paint.canvasText);
+      expect(paint.hairline).toBe("auto");
+    });
   }
 });
