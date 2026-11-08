@@ -4,7 +4,7 @@
  */
 import { expect, test, type Locator } from "@playwright/test";
 import { sheetUrl } from "./support/pages";
-import { detailSurface, goldenOf, openDetail2 } from "./support/report2/detail";
+import { detailSurface, goldenOf, openDetail2, severityJumps } from "./support/report2/detail";
 
 async function openSheet(page: import("@playwright/test").Page, name: string, pkg: string): Promise<Locator> {
   await page.goto(`${sheetUrl(name)}#pkg=${encodeURIComponent(pkg)}`);
@@ -63,14 +63,12 @@ test.describe("drupal/core, 62 advisories in a recorded drupal-site run", () => 
     page,
   }) => {
     const sheet = await openSheet(page, NAME, CORE);
-    const jumps = await securityRow(sheet)
-      .getByRole("link", { name: /, show the group$/ })
-      .evaluateAll((links) =>
-        links.map((a) => ({
-          shown: a.textContent.replace(/\s+/g, " ").trim(),
-          name: a.getAttribute("aria-label") ?? "",
-        })),
-      );
+    const jumps = await severityJumps(securityRow(sheet)).evaluateAll((links) =>
+      links.map((a) => ({
+        shown: a.textContent.replace(/\s+/g, " ").trim(),
+        name: a.getAttribute("aria-label") ?? "",
+      })),
+    );
 
     expect(jumps.length).toBeGreaterThan(0);
     expect(jumps.filter(({ shown, name }) => !name.startsWith(shown))).toEqual([]);

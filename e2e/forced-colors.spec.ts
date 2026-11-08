@@ -317,8 +317,6 @@ async function backplate(button: Locator): Promise<string> {
 }
 
 test.describe("report-2: a pressed Filters-rail option reads apart from an unpressed one in forced-colors mode", () => {
-  const rail = (page: Page): Locator => page.getByRole("group", { name: "Filters", exact: true });
-
   /** The page's CanvasText, as the forced palette resolves it. */
   const canvasText = (page: Page): Promise<string> =>
     page.evaluate(() => {
@@ -334,8 +332,8 @@ test.describe("report-2: a pressed Filters-rail option reads apart from an unpre
     test(`a pressed grade option takes the system highlight, ${colorScheme}`, async ({ page }) => {
       await report.gotoReport2WithHash("composite", "view=findings&verdict=critical");
       await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
-      const pressed = rail(page).getByRole("button", { name: /^critical/, pressed: true });
-      const unpressed = rail(page).getByRole("button", { name: /^high/, pressed: false }).first();
+      const pressed = report.railButton(/^critical/, true);
+      const unpressed = report.railButton(/^high/, false);
 
       expect(await backplate(pressed)).not.toBe(await backplate(unpressed));
       expect(await labelPixelRatio(page, pressed)).toBeGreaterThan(0.15);
@@ -344,7 +342,7 @@ test.describe("report-2: a pressed Filters-rail option reads apart from an unpre
     test(`a pressed option keeps a system focus ring from the keyboard, ${colorScheme}`, async ({ page }) => {
       await report.gotoReport2WithHash("composite", "view=findings&verdict=critical");
       await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
-      const pressed = rail(page).getByRole("button", { name: /^critical/, pressed: true });
+      const pressed = report.railButton(/^critical/, true);
       await pressed.focus();
       await page.keyboard.press("Shift+Tab");
       await page.keyboard.press("Tab");
@@ -367,7 +365,7 @@ test.describe("report-2: a pressed Filters-rail option reads apart from an unpre
     }) => {
       await report.gotoReport2WithHash(WALLABAG, "view=findings&gate=fails");
       await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
-      const gate = rail(page).getByRole("button", { name: /^Fails this run/, pressed: true });
+      const gate = report.railButton(/^Fails this run/, true);
 
       const hairline = await gate.evaluate((el) => {
         const style = getComputedStyle(el, "::before");

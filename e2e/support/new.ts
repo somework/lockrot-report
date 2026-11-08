@@ -542,6 +542,17 @@ export class NewReportPage implements ReportPage {
     await fold.first().locator("summary").click();
   }
 
+  railButton(name: RegExp, pressed: boolean): Locator {
+    return this.page
+      .getByRole("group", { name: "Filters", exact: true })
+      .getByRole("button", { name, pressed })
+      .first();
+  }
+
+  searchBox(): Locator {
+    return this.page.getByRole("searchbox", { name: "Filter packages" });
+  }
+
   async railOption(group: RailGroup, key: string): Promise<void> {
     await this.openRailFold();
     await this.railLocator(group, key).click();

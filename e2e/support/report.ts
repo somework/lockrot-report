@@ -7,7 +7,7 @@
  * `new.ts` directly and never queries the page with a raw selector. Anything a spec needs to know
  * about the rendered page goes through a method on this interface.
  */
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import type { FixtureName } from "./pages";
 import { NewReportPage } from "./new";
 
@@ -182,6 +182,10 @@ export interface ReportPage {
   gateFactPopoverText(): Promise<string>;
 
   railOption(group: RailGroup, key: string): Promise<void>;
+  /** The first rail button whose name matches `name` and whose pressed state is `pressed`. */
+  railButton(name: RegExp, pressed: boolean): Locator;
+  /** The search box, by its role and name. */
+  searchBox(): Locator;
   railOptionPressed(group: RailGroup, key: string): Promise<boolean | null>;
   /** Every rail button in order, as its label, the count it shows (PD-RAIL-1) and whether it is on. */
   railRows(): Promise<{ group: string; label: string; count: number; pressed: boolean }[]>;

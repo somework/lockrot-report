@@ -5,6 +5,7 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 import { report2Url } from "./support/pages";
+import { createReportPage } from "./support/report";
 
 const CASE = "composite";
 const WIDTHS = [320, 360, 375, 390, 414, 430, 500, 768, 1440];
@@ -91,7 +92,7 @@ for (const view of ["findings", "advisories"] as const) {
   test(`the search placeholder fits its field at 320px on ${view}`, async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 700 });
     await page.goto(`${report2Url(CASE)}#view=${view}`);
-    const input = page.getByRole("searchbox", { name: "Filter packages" });
+    const input = (await createReportPage(page)).searchBox();
     await expect(input).toBeVisible();
 
     const fit = await input.evaluate((el: HTMLInputElement) => {
