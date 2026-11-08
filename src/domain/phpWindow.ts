@@ -114,7 +114,10 @@ export function overrideOutsideTarget(run: Pick<Run, "php_window" | "target_php"
 export function windowFacts({ run }: Pick<Report2, "run">): { key: string; value: string; note?: string }[] {
   const window = run.php_window;
   if (window === null) return [];
-  const solvesApart = run.move_check !== null && overrideOutsideTarget(run) !== null;
+  const solvesApart =
+    overrideOutsideTarget(run) !== null &&
+    run.move_check !== null &&
+    run.move_check.reason !== "lock_disabled";
   return [
     ...(window.with_dev === null
       ? [{ key: "PHP window", value: setCells(window.without_dev) }]

@@ -156,15 +156,15 @@ describe("S1, §7.9.21: the check line of a refused baseline", () => {
     );
   });
 
-  test("points to the Run tab when the target lies inside the window (mautic at 8.2)", () => {
+  test("points to the Run data tab when the target lies inside the window (mautic at 8.2)", () => {
     expect(refused({ php_window: window(true) })).toBe(
-      "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run tab names the cause)",
+      "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run data tab names the cause)",
     );
   });
 
-  test("points to the Run tab when the run has no window", () => {
+  test("points to the Run data tab when the run has no window", () => {
     expect(refused({ php_window: null })).toBe(
-      "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run tab names the cause)",
+      "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run data tab names the cause)",
     );
   });
 });
@@ -530,9 +530,9 @@ describe("W3: the platform line on a run whose baseline Composer refuses", () =>
     );
   });
 
-  test("adds that the Run tab names the cause when the target lies inside the window", () => {
+  test("adds that the Run data tab names the cause when the target lies inside the window", () => {
     expect(line(true, "refused")).toBe(
-      "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29. Composer still refuses the lock itself: the Run tab names the cause.",
+      "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29. Composer still refuses the lock itself: the Run data tab names the cause.",
     );
   });
 

@@ -153,6 +153,7 @@ describe("the Run tab rows", () => {
   test.each([
     ["no move check ran", "8.4", null],
     ["the override lies in the target minor", "7.4", { baseline: "resolves" }],
+    ["config.lock is false", "8.4", { baseline: "not_checked", reason: "lock_disabled" }],
   ])("print no solve row when %s", (_, target, moveCheck) => {
     expect(windowRows(overridden(target, moveCheck)).slice(1)).toEqual([
       "Composer's config.platform.php: 7.4.29",
