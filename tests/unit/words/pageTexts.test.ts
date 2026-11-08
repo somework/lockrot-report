@@ -94,6 +94,17 @@ describe("the copy summary at its edges", () => {
     expect(copySummary(report)[2]).toMatch(/ · 22\.1 libyears behind\.$/);
   });
 
+  test.each([
+    [1.45, "1.5"],
+    [0.15, "0.2"],
+    [2.65, "2.7"],
+  ])("rounds the libyears total %d half up to %s, as lockrot's footer does", (total, shown) => {
+    const report = composite();
+    report.libyears = { ...report.libyears, total, at_least_count: 0 };
+
+    expect(copySummary(report)[2]).toMatch(` · ${shown} libyears behind.`);
+  });
+
   test("says all dev-only packages are dev-only", () => {
     const report = composite();
     report.rot_depth = { ...report.rot_depth, production: 0, development: 7 };
