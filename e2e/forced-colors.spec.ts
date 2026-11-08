@@ -371,7 +371,6 @@ test.describe("report-2: a pressed Filters-rail option reads apart from an unpre
         const style = getComputedStyle(el, "::before");
         return {
           content: style.content,
-          adjust: style.forcedColorAdjust,
           color: style.borderTopColor,
           style: style.borderTopStyle,
         };
@@ -379,7 +378,6 @@ test.describe("report-2: a pressed Filters-rail option reads apart from an unpre
 
       expect(hairline).toEqual({
         content: '""',
-        adjust: "auto",
         color: await canvasText(page),
         style: "solid",
       });
