@@ -145,6 +145,7 @@ export function radiusRowFacts(report: Report2, row: RadiusRow2): RadiusRowFacts
 }
 
 export const RADIUS_WORDS = {
+  tab: "Blast radius",
   list: "Direct requirements, in the order of lockrot's exposure list",
   itself: (verdict: string): string => `${verdict} itself`,
   filtered: (n: number): string => `${n} more ${pluralNoun(n, "does", "do")} not match the filter`,

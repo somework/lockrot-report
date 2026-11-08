@@ -1092,3 +1092,34 @@ describe("the header's gate fact", () => {
     expect(copySummary(model.report)[0]).toMatch(/ · gate: strict network$/);
   });
 });
+
+describe("each list tab opens with its own heading", () => {
+  const panelHeadings = (): { level: string; name: string }[] =>
+    [...(document.querySelector("[role=tabpanel]")?.querySelectorAll("h2, h3") ?? [])].map((h) => ({
+      level: h.tagName,
+      name: (h.getAttribute("aria-label") ?? h.textContent).trim(),
+    }));
+
+  test.each([
+    ["packages", "All packages"],
+    ["radius", "Blast radius"],
+    ["advisories", "Security advisories"],
+  ])("%s starts with the heading %s", (view, heading) => {
+    history.replaceState(null, "", `/report.html#view=${view}`);
+    render(<App model={load()} />);
+
+    expect(panelHeadings()[0]).toEqual({ level: "H2", name: heading });
+  });
+
+  test("each package group on Advisories is a heading under the tab's title", () => {
+    history.replaceState(null, "", "/report.html#view=advisories");
+    render(<App model={load()} />);
+
+    expect(
+      panelHeadings()
+        .slice(1)
+        .every(({ level }) => level === "H3"),
+    ).toBe(true);
+    expect(panelHeadings().length).toBeGreaterThan(1);
+  });
+});
