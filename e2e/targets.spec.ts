@@ -91,7 +91,7 @@ for (const view of ["findings", "advisories"] as const) {
   test(`the search placeholder fits its field at 320px on ${view}`, async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 700 });
     await page.goto(`${report2Url(CASE)}#view=${view}`);
-    const input = page.locator(".search-input");
+    const input = page.getByRole("searchbox", { name: "Filter packages" });
     await expect(input).toBeVisible();
 
     const fit = await input.evaluate((el: HTMLInputElement) => {

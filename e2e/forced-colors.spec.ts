@@ -317,44 +317,74 @@ async function backplate(button: Locator): Promise<string> {
 }
 
 test.describe("report-2: a pressed Filters-rail option reads apart from an unpressed one in forced-colors mode", () => {
+  const rail = (page: Page): Locator => page.getByRole("group", { name: "Filters", exact: true });
+
+  /** The page's CanvasText, as the forced palette resolves it. */
+  const canvasText = (page: Page): Promise<string> =>
+    page.evaluate(() => {
+      const probe = document.createElement("span");
+      probe.style.color = "CanvasText";
+      document.body.append(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      return color;
+    });
+
   for (const colorScheme of ["light", "dark"] as const) {
     test(`a pressed grade option takes the system highlight, ${colorScheme}`, async ({ page }) => {
       await report.gotoReport2WithHash("composite", "view=findings&verdict=critical");
       await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
-      const rail = page.getByRole("group", { name: "Filters", exact: true });
-      const pressed = rail.locator('.opt[aria-pressed="true"]').first();
-      const unpressed = rail.locator('.opt[aria-pressed="false"]').first();
+      const pressed = rail(page).getByRole("button", { name: /^critical/, pressed: true });
+      const unpressed = rail(page).getByRole("button", { name: /^high/, pressed: false }).first();
 
       expect(await backplate(pressed)).not.toBe(await backplate(unpressed));
       expect(await labelPixelRatio(page, pressed)).toBeGreaterThan(0.15);
     });
 
-    test(`a pressed option keeps a system focus ring and a forced hairline, ${colorScheme}`, async ({
-      page,
-    }) => {
+    test(`a pressed option keeps a system focus ring from the keyboard, ${colorScheme}`, async ({ page }) => {
       await report.gotoReport2WithHash("composite", "view=findings&verdict=critical");
       await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
-      const pressed = page
-        .getByRole("group", { name: "Filters", exact: true })
-        .locator('.opt[aria-pressed="true"]')
-        .first();
+      const pressed = rail(page).getByRole("button", { name: /^critical/, pressed: true });
       await pressed.focus();
+      await page.keyboard.press("Shift+Tab");
+      await page.keyboard.press("Tab");
+      await expect(pressed).toBeFocused();
 
-      const paint = await pressed.evaluate((el) => {
-        const probe = document.createElement("span");
-        probe.style.color = "CanvasText";
-        document.body.append(probe);
-        const canvasText = getComputedStyle(probe).color;
-        probe.remove();
+      const ring = await pressed.evaluate((el) => {
+        const style = getComputedStyle(el);
         return {
-          canvasText,
-          outline: getComputedStyle(el).outlineColor,
-          hairline: getComputedStyle(el, "::before").forcedColorAdjust,
+          color: style.outlineColor,
+          style: style.outlineStyle,
+          width: parseFloat(style.outlineWidth),
         };
       });
 
-      expect(paint.outline).toBe(paint.canvasText);
-      expect(paint.hairline).toBe("auto");
+      expect(ring).toEqual({ color: await canvasText(page), style: "solid", width: 2 });
+    });
+
+    test(`a pressed "Fails this run" row keeps a forced hairline above it, ${colorScheme}`, async ({
+      page,
+    }) => {
+      await report.gotoReport2WithHash(WALLABAG, "view=findings&gate=fails");
+      await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
+      const gate = rail(page).getByRole("button", { name: /^Fails this run/, pressed: true });
+
+      const hairline = await gate.evaluate((el) => {
+        const style = getComputedStyle(el, "::before");
+        return {
+          content: style.content,
+          adjust: style.forcedColorAdjust,
+          color: style.borderTopColor,
+          style: style.borderTopStyle,
+        };
+      });
+
+      expect(hairline).toEqual({
+        content: '""',
+        adjust: "auto",
+        color: await canvasText(page),
+        style: "solid",
+      });
     });
   }
 });

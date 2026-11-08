@@ -64,7 +64,7 @@ test.describe("drupal/core, 62 advisories in a recorded drupal-site run", () => 
   }) => {
     const sheet = await openSheet(page, NAME, CORE);
     const jumps = await securityRow(sheet)
-      .locator("a.d3-sev-jump")
+      .getByRole("link", { name: /, show the group$/ })
       .evaluateAll((links) =>
         links.map((a) => ({
           shown: a.textContent.replace(/\s+/g, " ").trim(),

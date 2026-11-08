@@ -112,7 +112,8 @@
   .opt[aria-pressed="true"]:focus-visible {
     outline-color: CanvasText;
   }
-  .opt[aria-pressed="true"]::before {
+  .opts > .opt:not(.opt-gate) + .opt-gate[aria-pressed="true"]::before {
     forced-color-adjust: auto;
+    border-top-color: CanvasText;
   }
 }

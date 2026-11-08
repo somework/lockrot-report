@@ -45,13 +45,15 @@ function sectionTitles(doc: HTMLElement): string[] {
 
 describe("the printed report (print/PrintDocument.tsx)", () => {
   it("heads the All packages and Blast radius sections once, by the section's own title", () => {
+    window.location.hash = "#view=packages";
     const { container } = render(<App model={composite()} />);
     window.dispatchEvent(new Event("beforeprint"));
 
     const doc = printDoc(container);
-    const hidden = [...doc.querySelectorAll("h2.vh")].map((h) => h.textContent);
-    expect(hidden.filter((name) => name === "All packages" || name === "Blast radius")).toEqual([]);
-    expect(sectionTitles(doc).some((title) => title.endsWith("Blast radius"))).toBe(true);
+    const headings = [...doc.querySelectorAll("h2")].map((h) => h.textContent);
+    expect(headings.filter((name) => name.endsWith("All packages") || name.endsWith("Blast radius"))).toEqual(
+      ["4Blast radius", "6All packages"],
+    );
     window.dispatchEvent(new Event("afterprint"));
   });
 
