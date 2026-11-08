@@ -308,3 +308,25 @@ test.describe("report-2: forced colours across recorded cases", () => {
     }
   }
 });
+
+/** The colour of one backplate pixel inside the button's padding, away from its border and label. */
+async function backplate(button: Locator): Promise<string> {
+  const png = decodePng(await button.screenshot());
+  const o = (Math.floor(png.height / 2) * png.width + 4) * 4;
+  return [0, 1, 2].map((i) => png.data.readUInt8(o + i)).join(",");
+}
+
+test.describe("report-2: a pressed Filters-rail option reads apart from an unpressed one in forced-colors mode", () => {
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`a pressed grade option takes the system highlight, ${colorScheme}`, async ({ page }) => {
+      await report.gotoReport2WithHash("composite", "view=findings&verdict=critical");
+      await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
+      const rail = page.getByRole("group", { name: "Filters", exact: true });
+      const pressed = rail.locator('.opt[aria-pressed="true"]').first();
+      const unpressed = rail.locator('.opt[aria-pressed="false"]').first();
+
+      expect(await backplate(pressed)).not.toBe(await backplate(unpressed));
+      expect(await labelPixelRatio(page, pressed)).toBeGreaterThan(0.15);
+    });
+  }
+});
