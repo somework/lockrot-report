@@ -106,7 +106,7 @@ for (const width of [375, 600, 768, 1440]) {
       const sheet = detailSurface(page);
       await sheet.waitFor();
       const before = await page.evaluate(() => window.scrollY);
-      const jump = sheet.getByRole("link", { name: "38 unrated, show the group" });
+      const jump = sheet.getByRole("link", { name: "unrated 38, show the group" });
       const target = page.locator(`[id="${(await jump.getAttribute("href"))?.slice(1) ?? ""}"]`);
 
       await jump.click();
