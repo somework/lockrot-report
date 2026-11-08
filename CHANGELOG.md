@@ -18,8 +18,17 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Changed
 
-- The page reads the reports of lockrot 0.14.0-rc.14, with the check reason `lock_disabled` and the
+- The page reads the reports of lockrot 0.14.0-rc.16, with the check reason `lock_disabled` and the
   note `command_argument_unsafe`.
+- A one-decimal figure rounds half up on the value lockrot wrote, as lockrot's text does: 1.45
+  libyears reads 1.5.
+- A move card whose baseline lockrot refused says "the Run data tab names the cause".
+- A target PHP minor that the lock excludes breaks a span of the PHP window. Under a 7.5 target, the
+  window reads "7.4 and 8.0 to 8.5".
+- The Advisories search box suggests "a package name".
+- A severity jump link is named by its visible words first: "critical 1, show the group".
+- The All packages and Blast radius tabs open with a heading for screen readers. The Advisories
+  title is a heading, and each package group under it is a subheading.
 - An autobooted page titles the document by the open package, the tab and the project, and the
   title lockrot wrote follows. An embedder's `mount()` leaves its own title alone.
 
@@ -30,6 +39,10 @@ tag or the address format, says so under **Breaking** in its entry.
   resolves it (not checked: config.lock is false, so Composer ignores composer.lock)". The Run
   data tab names the same reason.
 - A package or requirement name wider than its Package or Reach cell ends in an ellipsis.
+- Under `config.lock` false, the PHP window no longer says that the move check solves at the target
+  PHP.
+- In forced colours, a pressed Filters option takes the system highlight, and the line above a
+  pressed "Fails this run" option stays visible.
 - Below 480 px the Overview flag bars fit a 320 px screen with WCAG 1.4.12 text spacing.
 - The chevron of "How the score works ›" is hidden from screen readers. The Findings strip names
   its group "Grade, the same filter as under Filters", and the Blast radius toggle reads "The {n}

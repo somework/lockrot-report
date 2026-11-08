@@ -51,6 +51,7 @@ const PAGE_GOLDEN_DOCUMENTS = [
   "tests/fixtures/schema/documents/cases/ok-offline-dagger.json",
   "tests/fixtures/schema/documents/cases/ok-unchecked.json",
   "tests/fixtures/schema/documents/cases/pagerfanta.json",
+  "tests/fixtures/schema/documents/cases/platform-minor-excluded-dagger.json",
   "tests/fixtures/schema/documents/cases/policy-off-dagger.json",
   "tests/fixtures/schema/documents/cases/rounded-dev-dagger.json",
   "tests/fixtures/schema/documents/cases/unreached.json",
