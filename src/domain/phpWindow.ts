@@ -29,14 +29,29 @@ const minorRank = (minor: string): number => {
   return major * 1000 + next;
 };
 
-function follows(previous: string, minor: string, known: readonly string[]): boolean {
-  const between = (k: string): boolean =>
-    minorRank(previous) < minorRank(k) && minorRank(k) < minorRank(minor);
-  if (known.some(between)) return false;
+function followsGa(previous: string, minor: string): boolean {
   if (NEXT_MAJOR[previous] === minor) return true;
   const [pMajor, pMinor] = previous.split(".").map(Number);
   const [major, next] = minor.split(".").map(Number);
   return pMajor === major && (pMinor ?? 0) + 1 === next;
+}
+
+const majorOf = (minor: string): number => Math.floor(minorRank(minor) / 1000);
+
+const minorBelow = (minor: string): string => {
+  const [major = 0, next = 0] = minor.split(".").map(Number);
+  return `${major}.${next - 1}`;
+};
+
+/** An inserted minor sits between the GA minor below it and the GA minor above it (ruling R15-3b). */
+function follows(previous: string, minor: string, known: readonly string[]): boolean {
+  const between = (k: string): boolean =>
+    minorRank(previous) < minorRank(k) && minorRank(k) < minorRank(minor);
+  if (known.some(between)) return false;
+  if (known.includes(previous) && followsGa(minorBelow(previous), minor)) return true;
+  // shortcut: the newest GA minor is not known here, so an inserted X.0 joins any (X-1).y below it.
+  if (known.includes(minor) && minor.endsWith(".0") && majorOf(previous) + 1 === majorOf(minor)) return true;
+  return followsGa(previous, minor);
 }
 
 /** "7.4", "8.3 to 8.4", or "7.1 and 8.1 to 8.5" across a gap. `known` holds the known minors that

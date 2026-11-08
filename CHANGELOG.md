@@ -22,7 +22,9 @@ tag or the address format, says so under **Breaking** in its entry.
   note `command_argument_unsafe`.
 - A one-decimal figure rounds half up on the value lockrot wrote, as lockrot's text does: 1.45
   libyears reads 1.5.
-- A move card whose baseline lockrot refused says "the Run data tab names the cause".
+- A move card whose baseline lockrot refused says "the Run data tab names the cause" when the target
+  PHP lies inside the window or the run has no window. A target outside the window still points to the
+  PHP line in the Overview.
 - A target PHP minor that the lock excludes breaks a span of the PHP window. Under a 7.5 target, the
   window reads "7.4 and 8.0 to 8.5".
 - The Advisories search box suggests "a package name".
