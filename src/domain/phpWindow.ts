@@ -24,20 +24,30 @@ function analysedSet(run: Run, window: PhpWindow): PhpWindowSet {
 // here; a new major adds its pair.
 const NEXT_MAJOR: Readonly<Record<string, string>> = { "5.6": "7.0", "7.4": "8.0" };
 
-function follows(previous: string, minor: string): boolean {
+const minorRank = (minor: string): number => {
+  const [major = 0, next = 0] = minor.split(".").map(Number);
+  return major * 1000 + next;
+};
+
+function follows(previous: string, minor: string, known: readonly string[]): boolean {
+  const between = (k: string): boolean =>
+    minorRank(previous) < minorRank(k) && minorRank(k) < minorRank(minor);
+  if (known.some(between)) return false;
   if (NEXT_MAJOR[previous] === minor) return true;
   const [pMajor, pMinor] = previous.split(".").map(Number);
   const [major, next] = minor.split(".").map(Number);
   return pMajor === major && (pMinor ?? 0) + 1 === next;
 }
 
-/** "7.4", "8.3 to 8.4", or "7.1 and 8.1 to 8.5" across a gap. */
-export function minorsWords(minors: readonly string[], gaps: boolean): string {
+/** "7.4", "8.3 to 8.4", or "7.1 and 8.1 to 8.5" across a gap. `known` holds the known minors that
+ *  are not GA minors, such as an inserted target minor (ruling R15-3b). */
+export function minorsWords(minors: readonly string[], gaps: boolean, known: readonly string[] = []): string {
   const runs: string[][] = [];
   for (const minor of minors) {
     const last = runs.at(-1);
     const previous = last?.at(-1);
-    if (last !== undefined && previous !== undefined && (!gaps || follows(previous, minor))) last.push(minor);
+    if (last !== undefined && previous !== undefined && (!gaps || follows(previous, minor, known)))
+      last.push(minor);
     else runs.push([minor]);
   }
   return joinAnd(
@@ -69,17 +79,21 @@ export function reqWords(req: PhpWindowReq, withVersion = false): string {
 const reqList = (reqs: readonly PhpWindowReq[], withVersion = false): string =>
   joinAndCapped([...new Set(reqs.map((req) => reqWords(req, withVersion)))]);
 
-function closestWords({ minors, set_by: setBy }: NonNullable<PhpWindowSet["closest"]>): string {
-  return `${minorsWords(minors, true)} ${pluralNoun(minors.length, "is", "are")} excluded only by ${reqList(setBy, true)}`;
+function closestWords(
+  { minors, set_by: setBy }: NonNullable<PhpWindowSet["closest"]>,
+  known: readonly string[],
+): string {
+  return `${minorsWords(minors, true, known)} ${pluralNoun(minors.length, "is", "are")} excluded only by ${reqList(setBy, true)}`;
 }
 
 /** One Run tab row's cells (SPEC §7.9.16): the minors, the lowest edge and the excluded minor. */
-function setCells(set: PhpWindowSet): string {
-  if (set.minors.length === 0) return `none${set.closest === null ? "" : ` · ${closestWords(set.closest)}`}`;
+function setCells(set: PhpWindowSet, known: readonly string[]): string {
+  if (set.minors.length === 0)
+    return `none${set.closest === null ? "" : ` · ${closestWords(set.closest, known)}`}`;
   const lower = set.lower_edge;
   const upper = set.upper_edge;
   return [
-    minorsWords(set.minors, set.gaps),
+    minorsWords(set.minors, set.gaps, known),
     ...(lower === null
       ? []
       : [`lowest ${lower.php}${lower.set_by.length > 0 ? `, set by ${reqList(lower.set_by)}` : ""}`]),
@@ -92,6 +106,9 @@ const minorOf = (version: string): string => {
   const [major = "", minor = "0"] = version.split(".");
   return `${major}.${minor}`;
 };
+
+/** lockrot inserts the target's minor into the known minors when the GA data does not list it. */
+const targetMinor = (window: PhpWindow): readonly string[] => [minorOf(window.target.php)];
 
 // Composer's VersionParser reads these modifiers as stable, and any other as a pre-release or a dev build.
 const STABLE =
@@ -114,16 +131,17 @@ export function overrideOutsideTarget(run: Pick<Run, "php_window" | "target_php"
 export function windowFacts({ run }: Pick<Report2, "run">): { key: string; value: string; note?: string }[] {
   const window = run.php_window;
   if (window === null) return [];
+  const known = targetMinor(window);
   const solvesApart =
     overrideOutsideTarget(run) !== null &&
     run.move_check !== null &&
     run.move_check.reason !== "lock_disabled";
   return [
     ...(window.with_dev === null
-      ? [{ key: "PHP window", value: setCells(window.without_dev) }]
+      ? [{ key: "PHP window", value: setCells(window.without_dev, known) }]
       : [
-          { key: "PHP window, with require-dev", value: setCells(window.with_dev) },
-          { key: "PHP window, without require-dev", value: setCells(window.without_dev) },
+          { key: "PHP window, with require-dev", value: setCells(window.with_dev, known) },
+          { key: "PHP window, without require-dev", value: setCells(window.without_dev, known) },
         ]),
     ...(window.platform_override === null
       ? []
@@ -154,16 +172,17 @@ export const windowRows = (report: Pick<Report2, "run">): string[] =>
 const sameMinors = (a: PhpWindowSet, b: PhpWindowSet): boolean =>
   a.minors.length === b.minors.length && a.minors.every((minor, i) => minor === b.minors[i]);
 
-function setWords(set: PhpWindowSet): string {
-  if (set.minors.length > 0) return `on PHP ${minorsWords(set.minors, set.gaps)}`;
-  return `on no PHP${set.closest === null ? "" : ` (${closestWords(set.closest)})`}`;
+function setWords(set: PhpWindowSet, known: readonly string[]): string {
+  if (set.minors.length > 0) return `on PHP ${minorsWords(set.minors, set.gaps, known)}`;
+  return `on no PHP${set.closest === null ? "" : ` (${closestWords(set.closest, known)})`}`;
 }
 
 function windowClause(window: PhpWindow): string {
   const { with_dev: withDev, without_dev: withoutDev } = window;
+  const known = targetMinor(window);
   if (withDev === null || sameMinors(withDev, withoutDev))
-    return `this lock installs ${setWords(withoutDev)}`;
-  return `without require-dev this lock installs ${setWords(withoutDev)}, and with require-dev ${setWords(withDev)}`;
+    return `this lock installs ${setWords(withoutDev, known)}`;
+  return `without require-dev this lock installs ${setWords(withoutDev, known)}, and with require-dev ${setWords(withDev, known)}`;
 }
 
 const ROOT_LINKS: readonly string[] = ["require", "require-dev", "conflict"];
