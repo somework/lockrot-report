@@ -226,9 +226,9 @@ function Group({ group, run, first }: { group: AdvisoryGroup2; run: Run; first: 
     <section className={`advgroup ${toneClass(gradeTone(finding.verdict))}`}>
       <div className="al-group-head" role="row">
         <span className="al-span-cell" role="cell" aria-colspan={ADVISORY_COLUMNS}>
-          <h2>
+          <h3>
             {finding.package} <Version version={finding.version} className="ac-ver" />
-          </h2>
+          </h3>
           <span className="al-group-count">{plural(group.pairs.length, "advisory", "advisories")}</span>
           <span className="al-group-reach">
             {reach.lead}

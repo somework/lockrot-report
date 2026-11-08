@@ -254,14 +254,16 @@ export function RadiusView2() {
 
   if (empty !== null) {
     return (
-      <section className="radius2" data-surface="radius" aria-label="Blast radius">
+      <section className="radius2" data-surface="radius" aria-label={RADIUS_WORDS.tab}>
+        {!printed && <h2 className="vh">{RADIUS_WORDS.tab}</h2>}
         <p className="empty">{empty}</p>
       </section>
     );
   }
 
   return (
-    <section className="radius2" data-surface="radius" aria-label="Blast radius">
+    <section className="radius2" data-surface="radius" aria-label={RADIUS_WORDS.tab}>
+      {!printed && <h2 className="vh">{RADIUS_WORDS.tab}</h2>}
       {depth !== null && <p className="r2-depth">{depth}</p>}
       {answer.length > 0 && <p className="r2-answer">{answer.join(" ")}</p>}
       {(layout.lead.length > 0 || layout.singles.length > 0) && <RowHint id={hintId} />}

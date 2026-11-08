@@ -8,6 +8,7 @@ import {
   installedAge,
   libyearsCell,
   PACKAGES_COLUMNS,
+  PACKAGES_TAB,
   reachedWord,
   showsDataColumn,
   signalKey,
@@ -180,12 +181,14 @@ export function PackagesView2() {
   if (rows.length === 0) {
     return (
       <section className="p2" data-surface="packages">
+        {!printed && <h2 className="vh">{PACKAGES_TAB}</h2>}
         <EmptyState reason={population2(report, "packages").length === 0 ? "emptyLock" : "filtered"} />
       </section>
     );
   }
   return (
     <section className="p2" data-surface="packages">
+      {!printed && <h2 className="vh">{PACKAGES_TAB}</h2>}
       {caption !== null && <p className="p2-caption">{caption}</p>}
       <RowHint id={hintId} />
       <p className="p2-sortby" aria-hidden="true">

@@ -308,3 +308,79 @@ test.describe("report-2: forced colours across recorded cases", () => {
     }
   }
 });
+
+/** The colour of one backplate pixel inside the button's padding, away from its border and label. */
+async function backplate(button: Locator): Promise<string> {
+  const png = decodePng(await button.screenshot());
+  const o = (Math.floor(png.height / 2) * png.width + 4) * 4;
+  return [0, 1, 2].map((i) => png.data.readUInt8(o + i)).join(",");
+}
+
+test.describe("report-2: a pressed Filters-rail option reads apart from an unpressed one in forced-colors mode", () => {
+  /** The page's CanvasText, as the forced palette resolves it. */
+  const canvasText = (page: Page): Promise<string> =>
+    page.evaluate(() => {
+      const probe = document.createElement("span");
+      probe.style.color = "CanvasText";
+      document.body.append(probe);
+      const color = getComputedStyle(probe).color;
+      probe.remove();
+      return color;
+    });
+
+  for (const colorScheme of ["light", "dark"] as const) {
+    test(`a pressed grade option takes the system highlight, ${colorScheme}`, async ({ page }) => {
+      await report.gotoReport2WithHash("composite", "view=findings&verdict=critical");
+      await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
+      const pressed = report.railButton(/^critical/, true);
+      const unpressed = report.railButton(/^high/, false);
+
+      expect(await backplate(pressed)).not.toBe(await backplate(unpressed));
+      expect(await labelPixelRatio(page, pressed)).toBeGreaterThan(0.15);
+    });
+
+    test(`a pressed option keeps a system focus ring from the keyboard, ${colorScheme}`, async ({ page }) => {
+      await report.gotoReport2WithHash("composite", "view=findings&verdict=critical");
+      await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
+      const pressed = report.railButton(/^critical/, true);
+      await pressed.focus();
+      await page.keyboard.press("Shift+Tab");
+      await page.keyboard.press("Tab");
+      await expect(pressed).toBeFocused();
+
+      const ring = await pressed.evaluate((el) => {
+        const style = getComputedStyle(el);
+        return {
+          color: style.outlineColor,
+          style: style.outlineStyle,
+          width: parseFloat(style.outlineWidth),
+        };
+      });
+
+      expect(ring).toEqual({ color: await canvasText(page), style: "solid", width: 2 });
+    });
+
+    test(`a pressed "Fails this run" row keeps a forced hairline above it, ${colorScheme}`, async ({
+      page,
+    }) => {
+      await report.gotoReport2WithHash(WALLABAG, "view=findings&gate=fails");
+      await page.emulateMedia({ colorScheme, forcedColors: "active", reducedMotion: "reduce" });
+      const gate = report.railButton(/^Fails this run/, true);
+
+      const hairline = await gate.evaluate((el) => {
+        const style = getComputedStyle(el, "::before");
+        return {
+          content: style.content,
+          color: style.borderTopColor,
+          style: style.borderTopStyle,
+        };
+      });
+
+      expect(hairline).toEqual({
+        content: '""',
+        color: await canvasText(page),
+        style: "solid",
+      });
+    });
+  }
+});

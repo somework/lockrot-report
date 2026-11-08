@@ -404,10 +404,10 @@ export interface MoveAfter {
 const COMPOSER_KINDS: readonly string[] = ["update", "require", "raise-php", "tag"];
 const RESOLVES_CAVEAT = "if Composer resolves it";
 /** The card names where the cause is, so it does not take the short words of the reason table: the
- *  PHP line when the target lies outside the window, else the Run tab. */
+ *  PHP line when the target lies outside the window, else the Run data tab. */
 const BASELINE_REFUSED_CARD_WORDS = {
   outside: "Composer's solver refuses the lock itself at the target PHP; see the PHP line in the Overview",
-  other: "Composer's solver refuses the lock itself; the Run tab names the cause",
+  other: "Composer's solver refuses the lock itself; the Run data tab names the cause",
 } as const;
 
 /** The check line of SPEC §7.9.21 "The move", one After condition; null for a kind that runs no
@@ -657,7 +657,7 @@ function stillRefused(run: Run): string {
   if (run.move_check?.baseline !== "refused") return "";
   return run.php_window?.target.inside === false
     ? " Composer still refuses the lock itself: the PHP line in the Overview names the packages."
-    : " Composer still refuses the lock itself: the Run tab names the cause.";
+    : " Composer still refuses the lock itself: the Run data tab names the cause.";
 }
 
 /** A config.platform.php in Composer's merged config that is not a stable release of the target's

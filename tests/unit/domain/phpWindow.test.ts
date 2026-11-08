@@ -94,6 +94,56 @@ describe("the minors of a window", () => {
   test("names a lone minor alone", () => {
     expect(minorsWords(["7.4"], false)).toBe("7.4");
   });
+
+  const across = ["7.4", "8.0", "8.1", "8.2", "8.3", "8.4", "8.5"];
+
+  test("breaks the run at a known minor between two admitted ones (ruling R15-3b)", () => {
+    expect(minorsWords(across, true, ["7.5"])).toBe("7.4 and 8.0 to 8.5");
+  });
+
+  test("keeps the major step where no known minor lies between", () => {
+    expect(minorsWords(across, true, ["8.6"])).toBe("7.4 to 8.5");
+  });
+
+  test("joins an inserted minor to the known minor above it, but not across an excluded minor below it", () => {
+    expect(minorsWords(["7.3", "7.5", "8.0", "8.1"], true, ["7.5"])).toBe("7.3 and 7.5 to 8.1");
+  });
+
+  test("joins an inserted minor to the major step above it", () => {
+    expect(minorsWords(["7.5", "8.0"], true, ["7.5"])).toBe("7.5 to 8.0");
+  });
+
+  test("joins an inserted minor above the newest known one to the minor below it (ruling R12-4)", () => {
+    expect(minorsWords(["8.5", "9.0"], true, ["9.0"])).toBe("8.5 to 9.0");
+  });
+});
+
+describe("a window around an inserted target minor (ruling R15-3b)", () => {
+  test("reads the target minor as a known minor in the Run tab row and the PHP state line", () => {
+    const minors = ["7.4", "8.0", "8.1", "8.2", "8.3", "8.4", "8.5"];
+    const r = report({
+      without_dev: set({ minors, gaps: true, lower_edge: { php: "7.4.0", set_by: [] }, upper_edge: null }),
+      target: { php: "7.5.0", inside: false },
+    });
+
+    expect(windowRows(r)[0]).toBe("PHP window: 7.4 and 8.0 to 8.5 · lowest 7.4.0");
+    expect(phpStateClauses(r)?.[0]).toMatch(/^this lock installs on PHP 7\.4 and 8\.0 to 8\.5/);
+  });
+
+  test("joins the inserted minor to the next major among the closest minors", () => {
+    const r = report({
+      without_dev: set({
+        minors: [],
+        gaps: false,
+        lower_edge: null,
+        upper_edge: null,
+        closest: { minors: ["7.5", "8.0"], set_by: [req({ constraint: "^8.1" })] },
+      }),
+      target: { php: "7.5.0", inside: false },
+    });
+
+    expect(windowRows(r)[0]).toMatch(/^PHP window: none · 7\.5 to 8\.0 are excluded only by /);
+  });
 });
 
 describe("a link of a setter list", () => {
@@ -153,6 +203,7 @@ describe("the Run tab rows", () => {
   test.each([
     ["no move check ran", "8.4", null],
     ["the override lies in the target minor", "7.4", { baseline: "resolves" }],
+    ["config.lock is false", "8.4", { baseline: "not_checked", reason: "lock_disabled" }],
   ])("print no solve row when %s", (_, target, moveCheck) => {
     expect(windowRows(overridden(target, moveCheck)).slice(1)).toEqual([
       "Composer's config.platform.php: 7.4.29",

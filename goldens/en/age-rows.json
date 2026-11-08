@@ -563,6 +563,20 @@
       "value": "most recent not read (undated releases)"
     }
   ],
+  "S2-parent-shared-lower-dagger": [
+    {
+      "label": "installed",
+      "value": "2.1.1 · 2023-06-02 · 3.3 years ago · the newest on 2.x"
+    },
+    {
+      "label": "most recent",
+      "value": "1.0.2 · 2026-09-01 · 0.1 years ago, dated by akaunting/monorepo"
+    },
+    {
+      "label": "last push",
+      "value": "2023-06-02 · 3.3 years ago"
+    }
+  ],
   "S2-shared-newest-dagger": [
     {
       "label": "installed",
@@ -575,6 +589,20 @@
     {
       "label": null,
       "value": "2.x not read (undated releases)"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
+  "S2-shared-unresolved-dagger": [
+    {
+      "label": "installed",
+      "value": "2.1.1 · 2023-06-02 · 3.3 years ago · the newest on 2.x"
+    },
+    {
+      "label": "last push",
+      "value": "2023-06-02 · 3.3 years ago"
     },
     {
       "label": null,
@@ -606,7 +634,7 @@
     },
     {
       "label": "most recent",
-      "value": "v8.1.6 · 2026-08-30 · 0.1 years ago, dated by symfony/symfony"
+      "value": "v6.4.45 · 2026-08-30 · 0.1 years ago"
     },
     {
       "label": "last push",
@@ -657,6 +685,16 @@
       "value": "installed not read (dated only by a commit its tags share)"
     }
   ],
+  "S6-snapshot-backport-newer-dagger": [
+    {
+      "label": "most recent",
+      "value": "v12.70.0 · 2026-03-12 · 0.6 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2024-01-12 · 2.7 years ago"
+    }
+  ],
   "S8-higher-shared-alive-dagger": [
     {
       "label": "installed",
@@ -686,6 +724,20 @@
     }
   ],
   "S8-higher-undated-stale-dagger": [
+    {
+      "label": "installed",
+      "value": "v3.8.0 · 2023-04-15 · 3.5 years ago · the newest on 3.x"
+    },
+    {
+      "label": "last push",
+      "value": "2026-09-08 · 0.1 years ago"
+    },
+    {
+      "label": null,
+      "value": "most recent not read (undated releases)"
+    }
+  ],
+  "S8-installed-lower-dated-dagger": [
     {
       "label": "installed",
       "value": "v3.8.0 · 2023-04-15 · 3.5 years ago · the newest on 3.x"
@@ -2581,6 +2633,48 @@
     {
       "label": null,
       "value": "last push not read (not from a Composer repository)"
+    }
+  ],
+  "platform-minor-below-known-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.13.2 · 2022-04-16 · 4.5 years ago · the newest on 5.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.6.1 · 2026-07-10 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-10 · 0.2 years ago"
+    }
+  ],
+  "platform-minor-excluded-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.13.2 · 2022-04-16 · 4.5 years ago · the newest on 5.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.6.1 · 2026-07-10 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-10 · 0.2 years ago"
+    }
+  ],
+  "platform-minor-unlisted-dagger": [
+    {
+      "label": "installed",
+      "value": "v5.13.2 · 2022-04-16 · 4.5 years ago · the newest on 5.x"
+    },
+    {
+      "label": "most recent",
+      "value": "v8.6.1 · 2026-07-10 · 0.2 years ago"
+    },
+    {
+      "label": "last push",
+      "value": "2026-07-10 · 0.2 years ago"
     }
   ],
   "platform-step-dagger": [

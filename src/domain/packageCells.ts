@@ -67,6 +67,8 @@ export function signalKey(rows: readonly Finding[]): readonly { id: string; name
     .map((id) => ({ id, name: signalName(id) }));
 }
 
+export const PACKAGES_TAB = "All packages";
+
 /** The All packages columns in display order, each with the sort key its head sets. */
 export const PACKAGES_COLUMNS = [
   { key: "package", label: "Package" },

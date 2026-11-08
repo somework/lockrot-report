@@ -426,7 +426,9 @@ export function SecurityBlock({
           {OVERVIEW_WORDS.security}
         </h3>
       ) : (
-        <span className="eyebrow ledger-head">{OVERVIEW_WORDS.security}</span>
+        <h2 className="eyebrow ledger-head" aria-label={OVERVIEW_WORDS.security}>
+          {OVERVIEW_WORDS.security}
+        </h2>
       )}
       {answer ?? (
         <>

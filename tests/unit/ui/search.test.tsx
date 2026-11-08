@@ -72,6 +72,13 @@ describe("SearchBar", () => {
     expect(placeholder).toContain("score:");
   });
 
+  it("gives the Advisories tab a neutral placeholder, because a flag or score example can match none of its rows", () => {
+    renderBar(composite(), { ...INITIAL_STATE, view: "advisories" });
+
+    const placeholder = screen.getByRole("searchbox").getAttribute("placeholder") ?? "";
+    expect(placeholder).toBe("a package name");
+  });
+
   it("dispatches a query action as the reader types", () => {
     const dispatch = vi.fn();
     renderBar(composite(), FINDINGS, dispatch);

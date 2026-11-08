@@ -1320,6 +1320,24 @@
     }
   ],
   "S10-tag-undated-dagger": [],
+  "S2-parent-shared-lower-dagger": [
+    {
+      "heading": "Next step",
+      "action": "It has no recent release to move to",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": null,
+      "after": null,
+      "composer": []
+    }
+  ],
   "S2-shared-newest-dagger": [
     {
       "heading": "Next step",
@@ -1342,6 +1360,24 @@
           }
         ]
       },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "S2-shared-unresolved-dagger": [
+    {
+      "heading": "Next step",
+      "action": "It has no recent release to move to",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": null,
       "after": null,
       "composer": []
     }
@@ -1518,6 +1554,44 @@
       ]
     }
   ],
+  "S6-snapshot-backport-newer-dagger": [
+    {
+      "heading": "The move",
+      "action": "Require its newest tag, v13.0.0; that tag is older than your snapshot: review it first, or replace the package",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [
+        "composer require 'friendsofsymfony/oauth-server-bundle:^13.0.0'",
+        "composer why-not friendsofsymfony/oauth-server-bundle v13.0.0 --locked"
+      ],
+      "commands_label": "Commands, in order",
+      "clears": "pinned",
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "13.x needs php >=7.2",
+        "lines": [
+          {
+            "answer": "yes",
+            "text": "your require.php allows it"
+          },
+          {
+            "answer": "yes",
+            "text": "your target, 8.4, runs it"
+          }
+        ]
+      },
+      "after": {
+        "result": "0, ok",
+        "conditions": [
+          "if Composer resolves it (not checked: the run checked no move)"
+        ]
+      },
+      "composer": []
+    }
+  ],
   "S8-higher-shared-alive-dagger": [
     {
       "heading": "The move",
@@ -1564,6 +1638,7 @@
   ],
   "S8-higher-shared-untrusted-dagger": [],
   "S8-higher-undated-stale-dagger": [],
+  "S8-installed-lower-dated-dagger": [],
   "S8-prerelease-installed-dagger": [
     {
       "heading": "The move",
@@ -3920,7 +3995,7 @@
       "after": {
         "result": "0, ok",
         "conditions": [
-          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run tab names the cause)"
+          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run data tab names the cause)"
         ]
       },
       "composer": []
@@ -5343,7 +5418,7 @@
       "after": {
         "result": "0, ok",
         "conditions": [
-          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run tab names the cause)"
+          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run data tab names the cause)"
         ]
       },
       "composer": []
@@ -6251,21 +6326,21 @@
   "pinned-newest-shared-dagger": [
     {
       "heading": "The move",
-      "action": "Require its newest tag, v1.9.3",
+      "action": "Require its newest tag, v2.0.0",
       "platform_step": null,
       "command_note": null,
       "moves_with": null,
       "commands": [
-        "composer require 'friendsofsymfony/oauth-server-bundle:^1.9.3'",
-        "composer why-not friendsofsymfony/oauth-server-bundle v1.9.3 --locked"
+        "composer require 'friendsofsymfony/oauth-server-bundle:^2.0.0'",
+        "composer why-not friendsofsymfony/oauth-server-bundle v2.0.0 --locked"
       ],
       "commands_label": "Commands, in order",
       "clears": "pinned",
       "stays": null,
-      "not_checked": "left-behind, old-promise",
+      "not_checked": null,
       "adds": [],
       "php": {
-        "head": "1.x needs php >=7.2",
+        "head": "2.x needs php >=7.2",
         "lines": [
           {
             "answer": "yes",
@@ -6278,10 +6353,8 @@
         ]
       },
       "after": {
-        "result": "at most 20, high",
+        "result": "0, ok",
         "conditions": [
-          "left-behind not checked",
-          "old-promise not checked",
           "if Composer resolves it (not checked: the run checked no move)"
         ]
       },
@@ -6382,6 +6455,100 @@
       "composer": []
     }
   ],
+  "platform-minor-below-known-dagger": [
+    {
+      "heading": "Next step",
+      "action": "6.x fixes it but needs php ~8.0.0 … ~8.4.0 (5 alternatives), which your target, 5.2, does not run",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "6.x needs php ~8.0.0 … ~8.4.0 (5 alternatives)",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 5.2 (a major raise)"
+          },
+          {
+            "answer": "no",
+            "text": "your target, 5.2, does not run it"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "platform-minor-excluded-dagger": [
+    {
+      "heading": "Next step",
+      "action": "6.x fixes it but needs php ~8.0.0 … ~8.4.0 (5 alternatives), which your target, 7.5, does not run",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "6.x needs php ~8.0.0 … ~8.4.0 (5 alternatives)",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "no",
+            "text": "your target, 7.5, does not run it"
+          },
+          {
+            "answer": "no",
+            "text": "its installed release, v5.13.2, needs php ~7.4.0 || ^8.0, which your target, 7.5, does not run: Composer will not install it there"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
+  "platform-minor-unlisted-dagger": [
+    {
+      "heading": "Next step",
+      "action": "6.x fixes it but needs php ~8.0.0 … ~8.4.0 (5 alternatives), which your target, 7.5, does not run",
+      "platform_step": null,
+      "command_note": null,
+      "moves_with": null,
+      "commands": [],
+      "commands_label": null,
+      "clears": null,
+      "stays": null,
+      "not_checked": null,
+      "adds": [],
+      "php": {
+        "head": "6.x needs php ~8.0.0 … ~8.4.0 (5 alternatives)",
+        "lines": [
+          {
+            "answer": "no",
+            "text": "your require.php still allows 7.4 (a major raise)"
+          },
+          {
+            "answer": "no",
+            "text": "your target, 7.5, does not run it"
+          }
+        ]
+      },
+      "after": null,
+      "composer": []
+    }
+  ],
   "platform-step-dagger": [
     {
       "heading": "The move",
@@ -6433,7 +6600,7 @@
     {
       "heading": "The move",
       "action": "Raise require.php to >=8.0, then require ^6.13",
-      "platform_step": "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29. Composer still refuses the lock itself: the Run tab names the cause.",
+      "platform_step": "First set config.platform.php to your PHP 8.4 release: Composer's config sets 7.4.29. Composer still refuses the lock itself: the Run data tab names the cause.",
       "command_note": null,
       "moves_with": null,
       "commands": [
@@ -6465,7 +6632,7 @@
         "result": "8, medium",
         "conditions": [
           "adds capped",
-          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run tab names the cause)"
+          "if Composer resolves it (not checked: Composer's solver refuses the lock itself; the Run data tab names the cause)"
         ]
       },
       "composer": [

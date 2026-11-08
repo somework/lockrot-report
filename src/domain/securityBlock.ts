@@ -357,4 +357,4 @@ export const advisoriesName = (n: number): string => `${n} ${pluralNoun(n, "advi
 
 /** G123: a summary count that opens its group. */
 export const showGroupName = (count: number, severity: string): string =>
-  `${count} ${severity}, show the group`;
+  `${severity} ${count}, show the group`;

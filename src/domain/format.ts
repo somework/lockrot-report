@@ -136,37 +136,27 @@ export function fixed(value: unknown, digits: number): string | null {
   return typeof value === "number" && Number.isFinite(value) ? decimal(value, digits) : null;
 }
 
-/** The exact value of a finite double as `mantissa × 2^exponent`. */
-function exactParts(value: number): { mantissa: bigint; exponent: number } {
-  const view = new DataView(new ArrayBuffer(8));
-  view.setFloat64(0, Math.abs(value));
-  const bits = view.getBigUint64(0);
-  const biased = Number(bits >> 52n);
-  const fraction = bits & ((1n << 52n) - 1n);
-  return biased === 0
-    ? { mantissa: fraction, exponent: -1074 }
-    : { mantissa: fraction | (1n << 52n), exponent: biased - 1075 };
-}
-
 /**
- * `value` to `digits` decimals: the correctly rounded decimal of the double, and on an exact tie
- * the even neighbour, as the model's Python prints it. `toFixed` breaks a tie upwards (2.25 → 2.3).
+ * `value` to `digits` decimals, rounded half up from its shortest decimal (the number the JSON
+ * holds), as lockrot's `number_format` prints it: 1.45 gives 1.5. A value that is not finite
+ * prints as JavaScript writes it.
  */
 export function decimal(value: number, digits: number): string {
-  const { mantissa, exponent } = exactParts(value);
-  const scaled = mantissa * 10n ** BigInt(digits);
+  const match = /^(\d+)(?:\.(\d+))?(?:e([+-]\d+))?$/.exec(String(Math.abs(value)));
+  if (match === null) return String(value);
+  const [, whole = "", fraction = "", exponent = "0"] = match;
+  const written = BigInt(whole + fraction);
+  const shift = Number(exponent) + digits - fraction.length;
   let units: bigint;
-  if (exponent >= 0) {
-    units = scaled << BigInt(exponent);
+  if (shift >= 0) {
+    units = written * 10n ** BigInt(shift);
   } else {
-    const divisor = 1n << BigInt(-exponent);
-    const twiceRest = 2n * (scaled % divisor);
-    units = scaled / divisor;
-    if (twiceRest > divisor || (twiceRest === divisor && units % 2n === 1n)) units += 1n;
+    const divisor = 10n ** BigInt(-shift);
+    units = written / divisor + (2n * (written % divisor) >= divisor ? 1n : 0n);
   }
   const text = units.toString().padStart(digits + 1, "0");
-  const whole = digits === 0 ? text : `${text.slice(0, -digits)}.${text.slice(-digits)}`;
-  return value < 0 ? `-${whole}` : whole;
+  const shown = digits === 0 ? text : `${text.slice(0, -digits)}.${text.slice(-digits)}`;
+  return value < 0 && units > 0n ? `-${shown}` : shown;
 }
 
 /** `"N of M {noun}"`, the noun agreeing with M: "1 of 1 flagged package", "1 of 113 flagged packages". */

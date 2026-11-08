@@ -129,7 +129,7 @@ describe("the libyears table", () => {
     ]);
   });
 
-  test("marks a lower bound, rounds a tie to the even digit, and orders a tie by name", () => {
+  test("marks a lower bound, rounds a tie half up, and orders a tie by name", () => {
     let report = withFinding(composite(), "twig/twig", (f) => {
       f.libyears = 2.25;
       f.libyears_at_least = true;
@@ -141,8 +141,30 @@ describe("the libyears table", () => {
     const rows = libyearsTop(report);
 
     expect(rows.slice(3, 5).map(({ package: name, libyears }) => [name, libyears])).toEqual([
-      ["symfony/debug", "2.2"],
-      ["twig/twig", "≥ 2.2"],
+      ["symfony/debug", "2.3"],
+      ["twig/twig", "≥ 2.3"],
+    ]);
+  });
+
+  test("rounds each published libyears half up, as lockrot's text line does", () => {
+    let report = withFinding(composite(), "guzzlehttp/guzzle", (f) => {
+      f.libyears = 2.65;
+    });
+    report = withFinding(report, "symfony/yaml", (f) => {
+      f.libyears = 1.45;
+    });
+    report = withFinding(report, "twig/twig", (f) => {
+      f.libyears = 0.15;
+    });
+
+    const shown = Object.fromEntries(
+      libyearsTop(report).map(({ package: name, libyears }) => [name, libyears]),
+    );
+
+    expect([shown["guzzlehttp/guzzle"], shown["symfony/yaml"], shown["twig/twig"]]).toEqual([
+      "2.7",
+      "1.5",
+      "0.2",
     ]);
   });
 

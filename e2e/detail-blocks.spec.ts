@@ -4,7 +4,7 @@
  */
 import { expect, test, type Locator } from "@playwright/test";
 import { sheetUrl } from "./support/pages";
-import { detailSurface, goldenOf, openDetail2 } from "./support/report2/detail";
+import { detailSurface, goldenOf, openDetail2, severityJumps } from "./support/report2/detail";
 
 async function openSheet(page: import("@playwright/test").Page, name: string, pkg: string): Promise<Locator> {
   await page.goto(`${sheetUrl(name)}#pkg=${encodeURIComponent(pkg)}`);
@@ -59,10 +59,25 @@ test.describe("drupal/core, 62 advisories in a recorded drupal-site run", () => 
     await expect(list).toBeVisible();
   });
 
+  test("each summary count's accessible name starts with its visible words (WCAG 2.5.3)", async ({
+    page,
+  }) => {
+    const sheet = await openSheet(page, NAME, CORE);
+    const jumps = await severityJumps(securityRow(sheet)).evaluateAll((links) =>
+      links.map((a) => ({
+        shown: a.textContent.replace(/\s+/g, " ").trim(),
+        name: a.getAttribute("aria-label") ?? "",
+      })),
+    );
+
+    expect(jumps.length).toBeGreaterThan(0);
+    expect(jumps.filter(({ shown, name }) => !name.startsWith(shown))).toEqual([]);
+  });
+
   test("a summary count opens its group and lands on it", async ({ page }) => {
     const sheet = await openSheet(page, NAME, CORE);
     const row = securityRow(sheet);
-    const jump = row.getByRole("link", { name: "38 unrated, show the group" });
+    const jump = row.getByRole("link", { name: "unrated 38, show the group" });
     const target = (await jump.getAttribute("href"))?.slice(1) ?? "";
     const url = page.url();
 

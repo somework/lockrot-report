@@ -18,5 +18,5 @@ export async function advisoryRowPackages(page: Page): Promise<string[]> {
 
 /** The package groups' headings, top to bottom: a package and its version. */
 export function advisoryGroupHeads(page: Page): Locator {
-  return advisoriesSurface(page).locator(".al-group-head h2");
+  return advisoriesSurface(page).locator(".al-group-head h3");
 }

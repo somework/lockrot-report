@@ -96,11 +96,24 @@
     display: none;
   }
 }
-/* A forced palette drops the pressed row's fill; its weight and a border in the system's
-   highlight still say it is on. */
+/* A forced palette drops the pressed row's fill and boxes every row alike, so a pressed row takes
+   the system highlight. A native button repaints its own system colours unless it opts out. */
 @media (forced-colors: active) {
-  .opt-gate[aria-pressed="true"] {
+  .opt[aria-pressed="true"] {
+    forced-color-adjust: none;
+    background: Highlight;
     border-color: Highlight;
+    color: HighlightText;
     font-weight: 700;
+  }
+  .opt[aria-pressed="true"] .c {
+    color: HighlightText;
+  }
+  .opt[aria-pressed="true"]:focus-visible {
+    outline-color: CanvasText;
+  }
+  .opts > .opt:not(.opt-gate) + .opt-gate[aria-pressed="true"]::before {
+    forced-color-adjust: auto;
+    border-top-color: CanvasText;
   }
 }

@@ -17,6 +17,11 @@ export async function openDetail2(page: Page, caseName: string, pkg: string, has
 }
 
 /** One case's value of a class under `goldens/en/`, such as a block golden. */
+/** The Security row's summary counts that link to their group, found by the list, not by their names. */
+export function severityJumps(row: Locator): Locator {
+  return row.locator(".d3-sev-counts").getByRole("link");
+}
+
 export function goldenOf(stringClass: string, caseName: string): unknown {
   const all = JSON.parse(
     readFileSync(join(REPO_ROOT, "goldens", "en", `${stringClass}.json`), "utf8"),

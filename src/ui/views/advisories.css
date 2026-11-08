@@ -123,7 +123,7 @@
   column-gap: 14px;
   row-gap: 2px;
 }
-.al-group-head h2 {
+.al-group-head h3 {
   margin: 0;
   font-size: var(--text-base);
   font-weight: 650;
@@ -131,7 +131,7 @@
   color: var(--ink);
   overflow-wrap: anywhere;
 }
-.al-group-head h2 .ac-ver {
+.al-group-head h3 .ac-ver {
   font-weight: 400;
 }
 .al-group-count {
