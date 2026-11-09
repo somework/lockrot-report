@@ -29,6 +29,8 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Fixed
 
+- A stale reading that lockrot decided without the release dates reads "(read from pushes only)".
+  Before, it read "(read from releases only)", the qualifier of a reading without the pushes.
 - Blast radius, its tab badge and the printed lede count no exposure when nothing is flagged.
 - The check line of a run whose `config.lock` is false gives the reason. It reads "if Composer
   resolves it (not checked: config.lock is false, so Composer ignores composer.lock)". The Run

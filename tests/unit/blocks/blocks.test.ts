@@ -8,7 +8,10 @@ import { BLOCK_KEYS, blockGolden, type BlockKey } from "./blockGoldens";
 describe("each block equals the model's golden from the model's own inputs (SPEC §7.9.14)", () => {
   // The pinned model's block text lags its own inputs in these blocks.
   // List a block until the model renders it, then empty the list at the repin.
-  const MODEL_LAGS: Readonly<Record<string, readonly BlockKey[]>> = {};
+  const MODEL_LAGS: Readonly<Record<string, readonly BlockKey[]>> = {
+    // R16-17: the model still writes "read from releases only" on a blocked S2.
+    "S2-shared-unresolved-dagger": ["verdict_line"],
+  };
   const compared = (name: string): readonly BlockKey[] =>
     BLOCK_KEYS.filter((key) => !(MODEL_LAGS[name] ?? []).includes(key));
 
