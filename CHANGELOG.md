@@ -364,7 +364,8 @@ project is overall, and the other tabs lead with their own part.
 - The empty Advisories tab draws one clean mark on screen, in the Security block.
 - A "Keyboard shortcuts" checkbox in the glossary's "Keys and search" section turns off `?`, `/`,
   `j` and `k`. Escape, Enter, Space and the arrow keys still act. The page keeps the choice for the
-  next visit.
+  next visit. While the keys are off, the search hint "Press ? for keys and search syntax." does not
+  show.
 - A filter focused by Tab stays in view when the footer comes into view and the filter column
   shortens.
 - Each Copy and shell button names its package, and the step on a "Then" card. The folded range

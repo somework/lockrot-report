@@ -476,8 +476,11 @@ test.describe("WCAG 2.1.4: the Keyboard shortcuts switch", () => {
     await expect(box).toBeChecked();
     await box.uncheck();
     await page.keyboard.press("Escape");
+    await expect(page.locator(".hint")).toHaveCount(0);
 
     await page.reload();
+    await expect(page.locator(".search-input")).toBeVisible();
+    await expect(page.locator(".hint")).toHaveCount(0);
     await page.keyboard.press("j");
     await page.getByRole("button", { name: "What these words mean" }).click();
     await page.getByRole("dialog").getByText("Keys and search").click();

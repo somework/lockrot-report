@@ -55,7 +55,7 @@ function renderIn(
 }
 
 function renderBar(model: Model, state: State, dispatch?: (action: Action) => void) {
-  return renderIn(<SearchBar inputRef={createRef<HTMLInputElement>()} />, model, state, dispatch);
+  return renderIn(<SearchBar inputRef={createRef<HTMLInputElement>()} shortcutsOn />, model, state, dispatch);
 }
 
 function countLine(): string {
