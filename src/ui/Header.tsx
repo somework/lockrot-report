@@ -53,25 +53,25 @@ export interface HeaderProps {
  * The top band: what was checked, against which PHP, as of when, by which lockrot, and the two
  * page-wide controls (legacy report.html:26-42).
  */
-/** SPEC §7.9.11, R16-9b: one fact for both dates, so the sticky header keeps one row. */
+/** SPEC §7.9.11, R16-9b, R16-9c: one fact for both dates, no wider than the rc.16 "data as of". */
 function HeaderDates({ dataDate, generatedAt }: { dataDate: string | null; generatedAt: string }) {
   const ages = <b className="mono">{day(generatedAt)}</b>;
   if (dataDate === null)
     return (
-      <>
+      <span>
         {AGES_AS_OF} {ages}
-      </>
+      </span>
     );
   if (dataDay(dataDate) === day(generatedAt))
     return (
-      <>
-        {DATA_AND_AGES_AS_OF} {ages}
-      </>
+      <span title={`${DATA_AND_AGES_AS_OF} ${day(generatedAt)}`}>
+        <span className="vh">data and ages </span>as of {ages}
+      </span>
     );
   return (
-    <>
+    <span>
       data <b className="mono">{dataDay(dataDate)}</b> · ages {ages}
-    </>
+    </span>
   );
 }
 
@@ -110,9 +110,7 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
           <span>
             target PHP <b className="mono">{run.target_php}</b>
           </span>
-          <span>
-            <HeaderDates dataDate={data_date} generatedAt={generated_at} />
-          </span>
+          <HeaderDates dataDate={data_date} generatedAt={generated_at} />
           <span>
             lockrot <b className="mono">{lockrot.version}</b>
           </span>

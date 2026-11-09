@@ -936,9 +936,12 @@ describe("layout", () => {
       />,
     );
 
-    const facts = [...document.querySelectorAll(".topbar .run-meta > span")].map((s) => s.textContent);
-    expect(facts).toContain("data and ages as of 2026-10-01");
-    expect(facts.filter((f) => f.includes("as of"))).toHaveLength(1);
+    const facts = [...document.querySelectorAll(".topbar .run-meta > span")];
+    const dates = facts.filter((f) => f.textContent.includes("as of"));
+    expect(dates).toHaveLength(1);
+    expect(dates[0]?.textContent).toBe("data and ages as of 2026-10-01");
+    expect(dates[0]?.getAttribute("title")).toBe("data and ages as of 2026-10-01");
+    expect(dates[0]?.querySelector(".vh")?.textContent).toBe("data and ages ");
   });
 
   test("the header names only the ages date when no finding read repository data (R16-9b)", () => {

@@ -314,8 +314,8 @@ project is overall, and the other tabs lead with their own part.
   floor. Each flag names the signals that raise it and this run's thresholds.
 - The header, the footer and paper read the lockrot version, the date and the target PHP of the
   report. The header's gate fact reads lockrot's gate. The header also gives the day that every age
-  counts from: "data and ages as of {date}" when the data date is that day, else "data {date} · ages
-  {date}", or "ages as of {date}" with no data date. The line at the top of each printed page reads
+  counts from: "as of {date}" when the data date is that day, read out as "data and ages as of
+  {date}", else "data {date} · ages {date}", or "ages as of {date}" with no data date. The line at the top of each printed page reads
   "data as of {date} · ages as of {date}".
 - A link from the 0.13 page opens on the new terms: `#prio=` as `#verdict=`, and a flag in
   `#verdict=` as `#flag=`. A link with a search, a package or a filter and no `view` still opens

@@ -27,7 +27,7 @@ test("Overview Security and the Advisories tab say the lookup did not run", asyn
   await expect(page.getByRole("tab", { name: "Advisories 0, check not run" })).toBeVisible();
 });
 
-// R16-9b: the sticky header stays one row from 1440 px, where the rc.16 header was one row in CI's fonts.
+// R16-9b, R16-9c: the sticky header stays one row from 1440 px, where the rc.16 header was one row in CI's fonts.
 test.describe("the header's dates at 1440 px", () => {
   test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -47,5 +47,34 @@ test.describe("the header's dates at 1440 px", () => {
       expect(brand).not.toBeNull();
       expect(tops.filter((top) => top >= brandBottom)).toEqual([]);
     });
+  }
+});
+
+// R16-9c: the dates never make the header taller than the rc.16 header, one "data as of" fact with an
+// 18 px gap, rebuilt in place on the same page and fonts.
+test.describe("the header's dates against the rc.16 header", () => {
+  const heightOf = (page: Page): Promise<number> =>
+    page.locator(".topbar").evaluate((bar) => bar.getBoundingClientRect().height);
+
+  for (const width of [1366, 1440, 1600]) {
+    for (const [name, url] of [
+      ["composite", report2Url("composite")],
+      ["older data", pageUrl(FIXTURES.olderDataReport2)],
+      ["baselined-wallabag-2.6", report2Url("baselined-wallabag-2.6")],
+    ] as const) {
+      test(`${name} at ${String(width)} px is no taller than the rc.16 header`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(url);
+        const now = await heightOf(page);
+        await runMeta(page).evaluate((meta) => {
+          const dates = [...meta.children].find((fact) => fact.textContent.includes("ages"));
+          if (!(dates instanceof HTMLElement)) throw new Error("no date fact");
+          dates.textContent = "data as of 2026-10-01";
+          (meta as HTMLElement).style.columnGap = "18px";
+        });
+
+        expect(now).toBeLessThanOrEqual(await heightOf(page));
+      });
+    }
   }
 });
