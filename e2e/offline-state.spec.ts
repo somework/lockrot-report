@@ -7,11 +7,11 @@ import { FIXTURES, pageUrl, report2Url } from "./support/pages";
 
 const runMeta = (page: Page) => page.locator(".topbar .run-meta");
 
-test("the header shows the data date as absent when no finding read repository data", async ({ page }) => {
+test("the header names only the ages date when no finding read repository data", async ({ page }) => {
   // `unknown`: root data_date is null, generated_at is a real day.
   await page.goto(report2Url("unknown"));
-  await expect(runMeta(page)).toContainText("data — · ages 2026-10-01");
-  await expect(runMeta(page)).not.toContainText(/data \d{4}-\d{2}-\d{2}/);
+  await expect(runMeta(page)).toContainText("ages as of 2026-10-01");
+  await expect(runMeta(page)).not.toContainText(/data (and ages as of|\d|—)/);
 });
 
 test("the header shows the day of root data_date", async ({ page }) => {

@@ -315,7 +315,8 @@ project is overall, and the other tabs lead with their own part.
 - The header, the footer and paper read the lockrot version, the date and the target PHP of the
   report. The header's gate fact reads lockrot's gate. The header also gives the day that every age
   counts from: "data and ages as of {date}" when the data date is that day, else "data {date} · ages
-  {date}". The line at the top of each printed page reads "data as of {date} · ages as of {date}".
+  {date}", or "ages as of {date}" with no data date. The line at the top of each printed page reads
+  "data as of {date} · ages as of {date}".
 - A link from the 0.13 page opens on the new terms: `#prio=` as `#verdict=`, and a flag in
   `#verdict=` as `#flag=`. A link with a search, a package or a filter and no `view` still opens
   Findings. An empty link opens Overview.
@@ -342,8 +343,8 @@ project is overall, and the other tabs lead with their own part.
 
 ### Fixed
 
-- The header's "data as of" reads the report's data date. A run that read no repository data, such
-  as an offline run without a cache, shows "—" there and no date.
+- The header's data date reads the report's data date. A run that read no repository data, such as
+  an offline run without a cache, names only the ages date: "ages as of {date}".
 - An advisory's source id links to the advisory's own page as lockrot records it. The page no longer
   builds a link to the NVD. A CVE id beside it, and an id with no recorded link, are text.
 - A long branch version wraps in Findings and in All packages. No tab scrolls sideways at 320 px,

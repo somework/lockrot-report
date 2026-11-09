@@ -3,7 +3,7 @@ import { useId, useLayoutEffect } from "preact/hooks";
 import { gateFact, gateHeadline } from "../domain/gate";
 import { projectName } from "../domain/pageTitle";
 import { day } from "../domain/format";
-import { DATA_AND_AGES_AS_OF, dataDay } from "../domain/share";
+import { AGES_AS_OF, DATA_AND_AGES_AS_OF, dataDay } from "../domain/share";
 import { newTab } from "../domain/rich";
 import { GateHeadlineText } from "./common/GateWords";
 import { useReport } from "./context";
@@ -53,6 +53,28 @@ export interface HeaderProps {
  * The top band: what was checked, against which PHP, as of when, by which lockrot, and the two
  * page-wide controls (legacy report.html:26-42).
  */
+/** SPEC §7.9.11, R16-9b: one fact for both dates, so the sticky header keeps one row. */
+function HeaderDates({ dataDate, generatedAt }: { dataDate: string | null; generatedAt: string }) {
+  const ages = <b className="mono">{day(generatedAt)}</b>;
+  if (dataDate === null)
+    return (
+      <>
+        {AGES_AS_OF} {ages}
+      </>
+    );
+  if (dataDay(dataDate) === day(generatedAt))
+    return (
+      <>
+        {DATA_AND_AGES_AS_OF} {ages}
+      </>
+    );
+  return (
+    <>
+      data <b className="mono">{dataDay(dataDate)}</b> · ages {ages}
+    </>
+  );
+}
+
 export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert = false }: HeaderProps) {
   const { model } = useReport();
   const { run, lockrot, data_date, generated_at } = model.report;
@@ -88,16 +110,9 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
           <span>
             target PHP <b className="mono">{run.target_php}</b>
           </span>
-          {dataDay(data_date) === day(generated_at) ? (
-            <span>
-              {DATA_AND_AGES_AS_OF} <b className="mono">{day(generated_at)}</b>
-            </span>
-          ) : (
-            <span>
-              data <b className="mono">{dataDay(data_date)}</b> · ages{" "}
-              <b className="mono">{day(generated_at)}</b>
-            </span>
-          )}
+          <span>
+            <HeaderDates dataDate={data_date} generatedAt={generated_at} />
+          </span>
           <span>
             lockrot <b className="mono">{lockrot.version}</b>
           </span>
