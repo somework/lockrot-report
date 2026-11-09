@@ -498,9 +498,10 @@ key is the error screen (§2).
   embeds (`baselined/*/check/report.bundle.json`) get a page each, used as recorded. The corpus
   slice (`isCorpusSlice`) is `composite`, the offline cases and the two baselined embeds.
   `scripts/pages.mjs` writes them as `report2-<case>.html` and `report2-baselined-<scenario>.html`,
-  and plants three pages under `planted/`, which the page sweeps do not list: a report-2 document
-  without a root key, the composite with a package named in CSS-selector metacharacters, and
-  `fixtures/bundles/mini.json` for the report-1 screen.
+  and plants pages under `planted/`, which the page sweeps do not list: a report-2 document
+  without a root key, the composite with a package named in CSS-selector metacharacters, one with a
+  long version, one with an older data date, and `fixtures/bundles/mini.json` for the report-1
+  screen. `FIXTURES` in `e2e/support/pages.ts` names each one.
   `e2e/support/pages.ts` opens them with `report2Url(<case>)`, and `tests/unit/` imports the same
   module. `e2e/report2-pages.spec.ts` checks that each loads without a console error or an uncaught
   exception.
