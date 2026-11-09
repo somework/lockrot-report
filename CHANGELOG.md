@@ -29,8 +29,6 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Fixed
 
-- A stale reading that lockrot decided without the release dates reads "(read from pushes only)".
-  Before, it read "(read from releases only)", the qualifier of a reading without the pushes.
 - Blast radius, its tab badge and the printed lede count no exposure when nothing is flagged.
 - The check line of a run whose `config.lock` is false gives the reason. It reads "if Composer
   resolves it (not checked: config.lock is false, so Composer ignores composer.lock)". The Run
@@ -160,6 +158,8 @@ project is overall, and the other tabs lead with their own part.
   largest type: "Critical: two serious risks at once, its maintenance (left-behind and
   old-promise) and its advisory (vulnerable)." One reading per other counted flag follows, then
   the rows Reach, Origin, Not judged, Unchecked, Not run, PHP, Accepted and Gate.
+- A stale reading that lockrot decided without the releases ends "(read from pushes only)". One
+  that lockrot decided without the pushes ends "(read from releases only)".
 - The move card says what to run and what it clears: the action, the command, Clears, Stays, Not
   checked, Adds, the PHP check with a mark per answer, the grade after the move and Composer's
   notes. The grade after the move says what Composer's solver found: "checked with Composer",

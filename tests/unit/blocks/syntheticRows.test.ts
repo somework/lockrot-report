@@ -534,6 +534,14 @@ describe("the flag readings of an open set that no model case reaches", () => {
     );
   });
 
+  test("G24, R16-17: a stale flag whose S2 check was skipped reads from pushes only", () => {
+    const { finding, run } = modelCase("S2-shared-unresolved-dagger");
+    finding.checks_skipped = finding.checks_missing.map((c) => ({ ...c, reason: "unavailable" }));
+    finding.checks_missing = [];
+
+    expect(readingOf(finding, run, "stale")).toMatch(/\(read from pushes only\)\.$/);
+  });
+
   test("G24, R16-17: a stale flag whose S4 is blocked reads from releases only", () => {
     const { finding, run } = modelCase("ignored-marking-unchecked-dagger");
 

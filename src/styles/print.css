@@ -21,7 +21,7 @@
  * whatever class names the list components use.
  */
 
-/* Every page after the first repeats the project, the data date and the lockrot version at its
+/* Every page after the first repeats the project, the data date, the ages date and the lockrot version at its
  * top (the first has the masthead), and every page is numbered at its foot. `--lr-running-head` is
  * a CSS string usePrintDocument sets on <html>; margin boxes inherit it from the root. An engine
  * without page-margin boxes (Firefox, Safari) ignores both and still has each section's own line. */

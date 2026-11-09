@@ -11,6 +11,7 @@ import type {
 } from "../model/report";
 import { isScoreGraded, isSecurityVulnerable, isTermSecurity } from "../model/report";
 import { day, pluralNoun } from "./format";
+import { AGES_AS_OF } from "./share";
 import { vocabTable } from "./vocab";
 import { advisoryRows } from "./advisoryRows";
 import {
@@ -72,7 +73,7 @@ function abandonedMarkingLines(finding: Finding): string[] {
 }
 
 function header(finding: Finding, score: ScoreGraded | null, report: WhyReport): string {
-  const asOf = ` · ages as of ${day(report.generated_at)}`;
+  const asOf = ` · ${AGES_AS_OF} ${day(report.generated_at)}`;
   if (!score) return `0 · ${finding.verdict}${asOf}`;
   const { floor, next, to_next: toNext } = score.band;
   const short =

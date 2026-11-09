@@ -110,7 +110,7 @@ export function SearchBar({ inputRef, shortcutsOn }: SearchBarProps) {
           </button>
         </div>
       )}
-      {/* PD-GLOSSARY-1: the rest of the help lives in the glossary. Off, ? opens nothing. */}
+      {/* PD-GLOSSARY-1: the rest of the help lives in the glossary. With the shortcuts off, ? opens nothing. */}
       {filterable && shortcutsOn && (
         <p className="hint">
           Press <kbd>?</kbd> for keys and search syntax.

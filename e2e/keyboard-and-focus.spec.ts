@@ -474,6 +474,7 @@ test.describe("WCAG 2.1.4: the Keyboard shortcuts switch", () => {
     await glossary.getByText("Keys and search").click();
     const box = glossary.getByRole("checkbox", { name: "Keyboard shortcuts" });
     await expect(box).toBeChecked();
+    await expect(page.locator(".hint")).toHaveCount(1);
     await box.uncheck();
     await page.keyboard.press("Escape");
     await expect(page.locator(".hint")).toHaveCount(0);
