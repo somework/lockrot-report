@@ -6,6 +6,7 @@ import { day } from "./format";
 
 export const DATA_AS_OF = "data as of";
 export const AGES_AS_OF = "ages as of";
+export const DATA_AND_AGES_AS_OF = "data and ages as of";
 
 /** Root `data_date` as a day; null means no finding read repository data, so no date is shown. */
 export const dataDay = (dataDate: string | null): string => (dataDate === null ? "—" : day(dataDate));

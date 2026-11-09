@@ -3,7 +3,7 @@ import { useId, useLayoutEffect } from "preact/hooks";
 import { gateFact, gateHeadline } from "../domain/gate";
 import { projectName } from "../domain/pageTitle";
 import { day } from "../domain/format";
-import { AGES_AS_OF, DATA_AS_OF, dataDay } from "../domain/share";
+import { DATA_AND_AGES_AS_OF, dataDay } from "../domain/share";
 import { newTab } from "../domain/rich";
 import { GateHeadlineText } from "./common/GateWords";
 import { useReport } from "./context";
@@ -88,12 +88,16 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
           <span>
             target PHP <b className="mono">{run.target_php}</b>
           </span>
-          <span>
-            {DATA_AS_OF} <b className="mono">{dataDay(data_date)}</b>
-          </span>
-          <span>
-            {AGES_AS_OF} <b className="mono">{day(generated_at)}</b>
-          </span>
+          {dataDay(data_date) === day(generated_at) ? (
+            <span>
+              {DATA_AND_AGES_AS_OF} <b className="mono">{day(generated_at)}</b>
+            </span>
+          ) : (
+            <span>
+              data <b className="mono">{dataDay(data_date)}</b> · ages{" "}
+              <b className="mono">{day(generated_at)}</b>
+            </span>
+          )}
           <span>
             lockrot <b className="mono">{lockrot.version}</b>
           </span>

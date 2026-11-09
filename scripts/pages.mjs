@@ -2,7 +2,8 @@
 // of lockrot's fetched bundle (`scripts/report2-embed.ts`; needs `npm run contract:fetch`), using
 // the string escaping of `HtmlFormatter::payload()` (`scripts/payload.mjs`).
 // Also plants pages under `planted/`, which the page sweeps do not list: a malformed report-2, a
-// report-1 document, the composite with a hostile package name and one with a long version. Writes `build/pages/`, which is
+// report-1 document, the composite with a hostile package name, one with a long version and one
+// with an older data date. Writes `build/pages/`, which is
 // what the e2e suite runs against.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -65,13 +66,21 @@ function main() {
     .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
     .replaceAll("{{DATA}}", () => payload(long));
   writeFileSync(join(OUT, "planted", "report2-long-version.html"), longPage);
+  // The composite read from cached repository data, so its data date is older than its run.
+  const older = assembleEmbed("composite");
+  older.report.data_date = "2026-09-24T08:00:00+00:00";
+  const olderPage = template
+    .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
+    .replaceAll("{{DATA}}", () => payload(older));
+  writeFileSync(join(OUT, "planted", "report2-older-data.html"), olderPage);
   // The one report-1 bundle the page keeps, for the report-1 screen.
   const report1 = template
     .replaceAll("{{TITLE}}", () => text(REPORT2_TITLE))
     .replaceAll("{{DESCRIPTION}}", () => text(REPORT2_TITLE))
     .replaceAll("{{DATA}}", () => payload(JSON.parse(read(REPORT1))));
   writeFileSync(join(OUT, "planted", "report1.html"), report1);
-  console.log(`${report2.length + 4} page(s) written to ${OUT}`);
+  console.log(`${report2.length + 5} page(s) written to ${OUT}`);
 }
 
 main();

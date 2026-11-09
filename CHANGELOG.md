@@ -313,9 +313,9 @@ project is overall, and the other tabs lead with their own part.
 - The glossary lists the grades and the flags of the run. Each grade reads "A score from" its
   floor. Each flag names the signals that raise it and this run's thresholds.
 - The header, the footer and paper read the lockrot version, the date and the target PHP of the
-  report. The header's gate fact reads lockrot's gate. Beside "data as of", the header and the line
-  at the top of each printed page read "ages as of {date}": the day of the report, from which every
-  age counts.
+  report. The header's gate fact reads lockrot's gate. The header also gives the day that every age
+  counts from: "data and ages as of {date}" when the data date is that day, else "data {date} · ages
+  {date}". The line at the top of each printed page reads "data as of {date} · ages as of {date}".
 - A link from the 0.13 page opens on the new terms: `#prio=` as `#verdict=`, and a flag in
   `#verdict=` as `#flag=`. A link with a search, a package or a filter and no `view` still opens
   Findings. An empty link opens Overview.
