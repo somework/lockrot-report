@@ -18,13 +18,6 @@ tag or the address format, says so under **Breaking** in its entry.
 
 ### Changed
 
-- The page reads the reports of lockrot 0.14.0-rc.16, with the check reason `lock_disabled` and the
-  note `command_argument_unsafe`.
-- A one-decimal figure rounds half up on the value lockrot wrote, as lockrot's text does: 1.45
-  libyears reads 1.5.
-- A move card whose baseline lockrot refused says "the Run data tab names the cause" when the target
-  PHP lies inside the window or the run has no window. A target outside the window still points to the
-  PHP line in the Overview.
 - A target PHP minor that the lock excludes breaks a span of the PHP window. Under a 7.5 target, the
   window reads "7.4 and 8.0 to 8.5".
 - The Advisories search box suggests "a package name".
@@ -189,7 +182,7 @@ project is overall, and the other tabs lead with their own part.
   "the move", each with its latest release's age and why its PHP is out of reach. Past four
   branches above yours, the runs between the newest and yours fold, on each side of the move's
   branch.
-- "How the score works" opens the Run tab, from the run's score model. It shows the ruler with the
+- "How the score works" opens the Run data tab, from the run's score model. It shows the ruler with the
   grade words, each in full on a phone too, the weights, the advisory table and the fix kinds. "The N rules" lists each rule
   with a link to its lockrot.dev page, muted where no package used it.
 - A live example under "How the score works" gives a package's score in words and with its bar.
@@ -209,12 +202,14 @@ project is overall, and the other tabs lead with their own part.
   sets the PHP that Composer solves at, or when a package carries `capped`, a "PHP" state line follows the gate line:
   "PHP: this lock installs on PHP 7.4, so your target, 8.4, is excluded · 3 packages exclude 8.4:
   … · Composer's solver at PHP 8.4 refuses their update: composer.json requires
-  php-http/guzzle5-adapter ^2.0. The PHP window ›". When the window keeps the target's minor but
+  bdunogier/guzzle-site-authenticator ^1.1.0, composer.json requires guzzlehttp/guzzle ^5.3.4,
+  composer.json requires php-http/guzzle5-adapter ^2.0 and bdunogier/guzzle-site-authenticator 1.1.0
+  requires guzzlehttp/guzzle ^5.3.1. The PHP window ›". When the window keeps the target's minor but
   not the patch that `config.platform.php` pins, the line names the patch: "this lock installs on
   PHP 8.2 to 8.5, but not on your target, 8.4.5". "The PHP window ›" links to
-  `#view=run&section=php-window`, which opens the Run tab at its PHP window section with focus on its
+  `#view=run&section=php-window`, which opens the Run data tab at its PHP window section with focus on its
   heading, from a click and from a pasted address alike. It names the update that admits the target
-  and Composer's answer, or the root link that alone excludes it. The Run tab lists both windows
+  and Composer's answer, or the root link that alone excludes it. The Run data tab lists both windows
   in full: the minors, the lowest PHP and what sets it, and the minor that the lock excludes.
 - The flag `capped` and its signal S11, "PHP cap". The open package reads "It requires php
   ~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0: it stops at 8.4, so the newest PHP, 8.5, is excluded", and
@@ -226,14 +221,14 @@ project is overall, and the other tabs lead with their own part.
 - On a run whose lock Composer's solver refuses at the target PHP, a move card's check reads "if
   Composer resolves it (not checked: Composer's solver refuses the lock itself at the target PHP;
   see the PHP line in the Overview)". When the target lies inside the PHP window, or the run has no
-  window, it reads "Composer's solver refuses the lock itself; the Run tab names the cause".
+  window, it reads "Composer's solver refuses the lock itself; the Run data tab names the cause".
 - Composer's config can set `config.platform.php` to a PHP that is not a stable release of the
   target's minor, such as 7.4.29 or 8.4.0RC1 at target 8.4. Then each move card,
   Ready to run and the Findings tab first print one line. It reads "First set config.platform.php
   to your PHP 8.4 release: Composer's config sets 7.4.29." The commands do not change. When Composer
   also refuses the lock itself, the line goes on: "Composer still refuses the lock itself: the PHP
   line in the Overview names the packages."
-  When a move check ran, the Run tab says under the override which PHP each step reads:
+  When a move check ran, the Run data tab says under the override which PHP each step reads:
   "composer update solves at 7.4.29, and the move check solves at the target PHP 8.4.99."
 - Holders keep one order on every surface: the root, then the package's own releases, then the
   packages that require the package, then the rest. A group goes by grade, then by name.
@@ -338,7 +333,8 @@ project is overall, and the other tabs lead with their own part.
 - In forced colours each score segment keeps a border that says its role, and each flag of
   "Weighs most" keeps a pattern of its own. A wide segment prints its number. The ticks and the
   overflow mark stay visible.
-- Numbers round a tie to the even digit, as lockrot does (2.25 reads 2.2).
+- A one-decimal figure rounds half up on the value lockrot wrote, as lockrot's text does: 1.45
+  libyears reads 1.5.
 
 ### Fixed
 
@@ -396,12 +392,12 @@ project is overall, and the other tabs lead with their own part.
   every listed stable release".
 - The PHP line says that Composer solves at the `config.platform.php` of Composer's config: "Composer
   solves at 7.4.29, the PHP that config.platform.php sets in Composer's config, not the PHP of the
-  machine". The Run tab row reads "Composer's config.platform.php: 7.4.29".
+  machine". The Run data tab row reads "Composer's config.platform.php: 7.4.29".
 - Enter on the Findings strip's Overview link moves focus to the Overview panel, not to the page
   body.
 - Each rail filter shows its whole focus ring in the wide layout.
-- A Run tab score-model table is a Tab stop and a named region only while it scrolls sideways.
-- The Run tab's Advisories score table names its second Band column 'Band with no reachable fix' for
+- A Run data tab score-model table is a Tab stop and a named region only while it scrolls sideways.
+- The Run data tab's Advisories score table names its second Band column 'Band with no reachable fix' for
   assistive technology.
 - A touch-only device hides the 'Press ? for keys and search syntax' hint. A tablet with a keyboard
   and no trackpad hides it too.

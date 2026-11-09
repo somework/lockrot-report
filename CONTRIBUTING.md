@@ -82,7 +82,9 @@ the report-1 screen.
 
 ## Releasing
 
-1. Move the `Unreleased` section of CHANGELOG.md under the new version. Set `version` in
+1. Move the `Unreleased` section of CHANGELOG.md under the new version. When a version heading
+   already exists, reconcile the two. A bullet that changes behaviour the entry already describes
+   replaces that line, and is not added beside it. No line names a pre-release. Set `version` in
    `package.json` and both `version` fields of `package-lock.json` (the root and `packages[""]`)
    to the same number. `npm version <version> --no-git-tag-version` sets all three.
 2. Pick the pin. A pre-release pins the lockrot commit that changes the contract bundle. A final
