@@ -12,6 +12,7 @@ test("the header shows the data date as absent when no finding read repository d
   await page.goto(report2Url("unknown"));
   await expect(runMeta(page)).toContainText("data as of —");
   await expect(runMeta(page)).not.toContainText(/data as of \d{4}-\d{2}-\d{2}/);
+  await expect(runMeta(page)).toContainText("ages as of 2026-10-01");
 });
 
 test("the header shows the day of root data_date", async ({ page }) => {

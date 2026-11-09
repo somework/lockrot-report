@@ -283,7 +283,24 @@ describe("the printed report (print/PrintDocument.tsx)", () => {
 
     // B: project matomo/matomo, generated 2026-10-01, lockrot 0.14.0.
     expect(document.documentElement.style.getPropertyValue("--lr-running-head")).toBe(
-      '"matomo/matomo  ·  data as of 2026-10-01  ·  lockrot 0.14.0"',
+      '"matomo/matomo  ·  data as of 2026-10-01  ·  ages as of 2026-10-01  ·  lockrot 0.14.0"',
+    );
+  });
+
+  it("dates the ages in the running line by generated_at when the data date is older", () => {
+    render(
+      <App
+        model={load("B", (embed) => {
+          embed.report.data_date = "2026-09-24T08:00:00+00:00";
+          embed.report.generated_at = "2026-10-01T17:39:31+00:00";
+        })}
+      />,
+    );
+
+    window.dispatchEvent(new Event("beforeprint"));
+
+    expect(document.documentElement.style.getPropertyValue("--lr-running-head")).toBe(
+      '"matomo/matomo  ·  data as of 2026-09-24  ·  ages as of 2026-10-01  ·  lockrot 0.14.0"',
     );
   });
 

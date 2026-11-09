@@ -2,7 +2,8 @@ import type { ComponentChildren, RefObject } from "preact";
 import { useId, useLayoutEffect } from "preact/hooks";
 import { gateFact, gateHeadline } from "../domain/gate";
 import { projectName } from "../domain/pageTitle";
-import { DATA_AS_OF, dataDay } from "../domain/share";
+import { day } from "../domain/format";
+import { AGES_AS_OF, DATA_AS_OF, dataDay } from "../domain/share";
 import { newTab } from "../domain/rich";
 import { GateHeadlineText } from "./common/GateWords";
 import { useReport } from "./context";
@@ -54,7 +55,7 @@ export interface HeaderProps {
  */
 export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert = false }: HeaderProps) {
   const { model } = useReport();
-  const { run, lockrot, data_date } = model.report;
+  const { run, lockrot, data_date, generated_at } = model.report;
   const ref = useMeasuredHeight<HTMLElement>("--topbar-h");
   useGateFactFit(ref);
   // The project names itself; the lock is called composer.lock everywhere, so it is the fallback.
@@ -89,6 +90,9 @@ export function Header({ theme, onToggleTheme, onOpenGlossary, children, inert =
           </span>
           <span>
             {DATA_AS_OF} <b className="mono">{dataDay(data_date)}</b>
+          </span>
+          <span>
+            {AGES_AS_OF} <b className="mono">{day(generated_at)}</b>
           </span>
           <span>
             lockrot <b className="mono">{lockrot.version}</b>
