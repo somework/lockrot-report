@@ -938,7 +938,7 @@ describe("layout", () => {
 
     const facts = [...document.querySelectorAll(".topbar .run-meta > span")].map((s) => s.textContent);
     expect(facts).toContain("data and ages as of 2026-10-01");
-    expect(facts.filter((f) => f?.includes("as of"))).toHaveLength(1);
+    expect(facts.filter((f) => f.includes("as of"))).toHaveLength(1);
   });
 
   test("the header names only the ages date when no finding read repository data (R16-9b)", () => {
@@ -953,7 +953,7 @@ describe("layout", () => {
 
     const facts = [...document.querySelectorAll(".topbar .run-meta > span")].map((s) => s.textContent);
     expect(facts).toContain("ages as of 2026-10-01");
-    expect(facts.filter((f) => f?.includes("data"))).toEqual([]);
+    expect(facts.filter((f) => f.includes("data"))).toEqual([]);
   });
 
   test("the header dates the ages by generated_at beside an older data date (R16-9b)", () => {
