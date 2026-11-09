@@ -27,9 +27,9 @@ test("Overview Security and the Advisories tab say the lookup did not run", asyn
   await expect(page.getByRole("tab", { name: "Advisories 0, check not run" })).toBeVisible();
 });
 
-// R16-9b: the sticky header stays one row at a common laptop width.
-test.describe("the header's dates at 1366 px", () => {
-  test.use({ viewport: { width: 1366, height: 900 } });
+// R16-9b: the sticky header stays one row from 1440 px, where the rc.16 header was one row in CI's fonts.
+test.describe("the header's dates at 1440 px", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
 
   for (const [name, url, dates] of [
     ["one day", report2Url("composite"), "data and ages as of 2026-10-01"],
