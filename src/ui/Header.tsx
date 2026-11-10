@@ -49,7 +49,6 @@ export interface HeaderProps {
   inert?: boolean;
 }
 
-/** One fact for both dates, so that the sticky header keeps one row (SPEC §7.9.11). */
 function HeaderDates({ dataDate, generatedAt }: { dataDate: string | null; generatedAt: string }) {
   const ages = <b className="mono">{day(generatedAt)}</b>;
   if (dataDate === null)

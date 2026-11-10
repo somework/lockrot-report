@@ -247,10 +247,10 @@ export function FindingsStrip() {
   );
 }
 
-/** The Findings tab of a report-2 document (SPEC §7.9.5): graded findings by grade, in `rank`
- *  order. */
 const FINDINGS_TAB = "Findings";
 
+/** The Findings tab of a report-2 document (SPEC §7.9.5): graded findings by grade, in `rank`
+ *  order. */
 export function FindingsView2() {
   const { state } = useReport();
   const { report } = useReport2();

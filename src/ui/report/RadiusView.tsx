@@ -57,7 +57,6 @@ function ChildRow2({ finding, depth, note, report, first }: ChildProps) {
   const id = useId();
   return (
     <li
-      role="treeitem"
       className={`r2-kid ${toneClass(gradeTone(finding.verdict))}`}
       style={{ "--depth": String(depth) }}
       data-pkg={finding.package}
@@ -118,7 +117,6 @@ function ParentRow2({
   };
   return (
     <li
-      role="treeitem"
       className={open ? "r2-row is-open" : "r2-row"}
       data-pkg={row.package}
       aria-label={row.package}
@@ -172,13 +170,7 @@ function ParentRow2({
         )}
       </div>
       {canOpen && (
-        <ul
-          role="group"
-          className="r2-kids"
-          id={kidsId}
-          hidden={!open}
-          aria-label={RADIUS_WORDS.listedUnder(row.package)}
-        >
+        <ul className="r2-kids" id={kidsId} hidden={!open} aria-label={RADIUS_WORDS.listedUnder(row.package)}>
           {open &&
             pulledTree(row).map((node) => (
               <ChildRow2
@@ -276,7 +268,7 @@ export function RadiusView2() {
       {answer.length > 0 && <p className="r2-answer">{answer.join(" ")}</p>}
       {(layout.lead.length > 0 || layout.singles.length > 0) && <RowHint id={hintId} />}
       {layout.lead.length > 0 && (
-        <ul className="r2-list" role="tree" aria-label={RADIUS_WORDS.list}>
+        <ul className="r2-list" aria-label={RADIUS_WORDS.list}>
           <RowHintContext.Provider value={hintId}>{rows(layout.lead, 1)}</RowHintContext.Provider>
         </ul>
       )}
@@ -286,7 +278,7 @@ export function RadiusView2() {
           open={printed || isSinglesOpen(layout, input)}
           head={RADIUS_WORDS.singles(layout.singles.length)}
         >
-          <ul className="r2-list" role="tree" aria-label={RADIUS_WORDS.singles(layout.singles.length)}>
+          <ul className="r2-list">
             <RowHintContext.Provider value={hintId}>
               {rows(layout.singles, layout.lead.length + 1)}
             </RowHintContext.Provider>

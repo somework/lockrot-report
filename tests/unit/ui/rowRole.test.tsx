@@ -1,5 +1,5 @@
-// Finding 29 of readiness round 16: a row that takes focus says, by its own role and description,
-// that it is a control and that Enter opens its package.
+// A row that takes focus says, by its own role and description, that Enter opens its package
+// (PD-ROWS-20).
 import { cleanup, render } from "@testing-library/preact";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { assembleEmbed } from "../../../scripts/report2-embed";
@@ -36,22 +36,21 @@ function focusableRows(view: string): HTMLElement[] {
   return [...document.querySelectorAll<HTMLElement>("[data-pkg][tabindex]")];
 }
 
-describe.each([
-  ["findings", "grid", "row"],
-  ["advisories", "grid", "row"],
-  ["packages", "grid", "row"],
-  ["radius", "tree", "treeitem"],
-])("a focusable row on %s", (view, container, role) => {
-  test(`is a ${role} of a ${container}`, () => {
+describe.each([["findings"], ["advisories"], ["packages"]])("a focusable row on %s", (view) => {
+  test("is a row of a grid", () => {
     const rows = focusableRows(view);
 
     expect(rows.length).toBeGreaterThan(0);
-    expect(rows.filter((row) => row.getAttribute("role") !== role).map((row) => row.dataset.pkg)).toEqual([]);
-    expect(
-      rows.filter((row) => row.closest(`[role="${container}"]`) === null).map((row) => row.dataset.pkg),
-    ).toEqual([]);
+    expect(rows.filter((row) => row.getAttribute("role") !== "row").map((row) => row.dataset.pkg)).toEqual(
+      [],
+    );
+    expect(rows.filter((row) => row.closest('[role="grid"]') === null).map((row) => row.dataset.pkg)).toEqual(
+      [],
+    );
   });
+});
 
+describe.each([["findings"], ["advisories"], ["packages"], ["radius"]])("a focusable row on %s", (view) => {
   test("says in its own description that Enter opens its package", () => {
     const rows = focusableRows(view);
 
