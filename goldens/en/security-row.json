@@ -394,7 +394,22 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "S2-parent-shared-installed-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "S2-parent-shared-lower-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "S2-prerelease-shared-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
+  "S2-prerelease-shared-older-dagger": [
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
@@ -486,6 +501,11 @@
     "none on record for this name",
     "lookup complete"
   ],
+  "S8-higher-parent-dated-dagger": [
+    "no counted advisory",
+    "none on record for this name",
+    "lookup complete"
+  ],
   "S8-higher-shared-alive-dagger": [
     "no counted advisory",
     "none on record for this name",
@@ -505,6 +525,24 @@
     "no counted advisory",
     "none on record for this name",
     "lookup complete"
+  ],
+  "S8-parent-shared-installed-dagger": [
+    "1 high advisory",
+    "1 on record for this name",
+    "fix: upgrade",
+    "lookup complete",
+    "5.x the move clears 1 of 1 from v5.4.52",
+    "upgrade · held by composer.json",
+    "after it: 0, ok, if Composer resolves it",
+    "6.x clears 1 of 1 from v6.4.40",
+    "php floor raise · held by composer.json",
+    "after it: at most 16, high, if Composer resolves it",
+    "7.x clears 1 of 1 from v7.4.12",
+    "php floor raise · held by composer.json",
+    "after it: at most 16, high, if Composer resolves it",
+    "8.x clears 1 of 1 from v8.0.12",
+    "php floor raise · held by composer.json",
+    "after it: at most 16, high, if Composer resolves it"
   ],
   "S8-prerelease-installed-dagger": [
     "1 high advisory",

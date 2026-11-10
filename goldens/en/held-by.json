@@ -324,7 +324,16 @@
     }
   ],
   "S10-tag-undated-dagger": [],
+  "S2-parent-shared-installed-dagger": [
+    null
+  ],
   "S2-parent-shared-lower-dagger": [
+    null
+  ],
+  "S2-prerelease-shared-dagger": [
+    null
+  ],
+  "S2-prerelease-shared-older-dagger": [
     null
   ],
   "S2-shared-newest-dagger": [
@@ -392,12 +401,29 @@
   "S6-snapshot-backport-newer-dagger": [
     null
   ],
+  "S8-higher-parent-dated-dagger": [
+    null
+  ],
   "S8-higher-shared-alive-dagger": [
     null
   ],
   "S8-higher-shared-untrusted-dagger": [],
   "S8-higher-undated-stale-dagger": [],
   "S8-installed-lower-dated-dagger": [],
+  "S8-parent-shared-installed-dagger": [
+    {
+      "count": 1,
+      "shown": [
+        {
+          "name": "your composer.json",
+          "grade": null,
+          "meta": "requires ^2.6",
+          "step": null
+        }
+      ],
+      "fold": null
+    }
+  ],
   "S8-prerelease-installed-dagger": [
     {
       "count": 1,

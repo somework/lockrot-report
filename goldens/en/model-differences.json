@@ -44,11 +44,6 @@
       "tie-dagger": [
         "/"
       ]
-    },
-    "the pinned model lags R16-17: it writes \"read from releases only\" on a stale whose S2 is blocked, and the page writes \"read from pushes only\"": {
-      "S2-shared-unresolved-dagger": [
-        "/"
-      ]
     }
   },
   "readings": {
