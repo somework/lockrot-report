@@ -48,7 +48,7 @@ export function waffleRuns({ findings, run }: Report2): WaffleRun[] {
 export function sharePhrase(part: number, total: number): string {
   if (total <= 0 || part <= 0) return "0%";
   if (part >= total) return "100%";
-  const pct = Math.round((part / total) * 100);
+  const pct = Math.round((100 * part) / total);
   if (pct === 0) return "under 1%";
   if (pct === 100) return "over 99%";
 
