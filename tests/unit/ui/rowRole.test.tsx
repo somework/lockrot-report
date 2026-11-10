@@ -33,7 +33,7 @@ const description = (row: Element): string =>
 function focusableRows(view: string): HTMLElement[] {
   history.replaceState(null, "", `/report.html#view=${view}`);
   render(<App model={composite()} />);
-  return [...document.querySelectorAll<HTMLElement>("[data-pkg][tabindex]")];
+  return [...document.querySelectorAll<HTMLElement>('[role="tabpanel"] [data-pkg]')];
 }
 
 describe.each([["findings"], ["advisories"], ["packages"]])("a focusable row on %s", (view) => {
@@ -41,6 +41,11 @@ describe.each([["findings"], ["advisories"], ["packages"]])("a focusable row on 
     const rows = focusableRows(view);
 
     expect(rows.length).toBeGreaterThan(0);
+    expect(
+      rows
+        .filter((row) => !["0", "-1"].includes(row.getAttribute("tabindex") ?? ""))
+        .map((row) => row.dataset.pkg),
+    ).toEqual([]);
     expect(rows.filter((row) => row.getAttribute("role") !== "row").map((row) => row.dataset.pkg)).toEqual(
       [],
     );

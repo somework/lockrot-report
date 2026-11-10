@@ -55,13 +55,14 @@ interface ChildProps {
 function ChildRow2({ finding, depth, note, report, first }: ChildProps) {
   const { state, dispatch, cursor } = useReport();
   const id = useId();
+  const described = useRowDescription(`${id}-said`);
   return (
     <li
       className={`r2-kid ${toneClass(gradeTone(finding.verdict))}`}
       style={{ "--depth": String(depth) }}
       data-pkg={finding.package}
       aria-label={finding.package}
-      aria-describedby={useRowDescription(`${id}-said`)}
+      aria-describedby={described}
       aria-current={state.pkg === finding.package ? "true" : undefined}
       tabIndex={rowTabIndex(finding.package, cursor, first)}
       {...openInteractions(finding.package, dispatch)}
@@ -106,11 +107,12 @@ function ParentRow2({
   const id = useId();
   const kidsId = `${id}-kids`;
   const facts = radiusRowFacts(report, row);
-  const described = [
+  const own = [
     ...(row.self === null ? [] : [`${id}-self`]),
     ...(facts.count === null ? [] : [`${id}-count`]),
     ...(facts.mix === null && facts.note === null ? [] : [`${id}-mix`]),
   ];
+  const described = useRowDescription(...own);
   const toggle = (event: Event) => {
     event.stopPropagation();
     dispatch({ type: "disclose", key: rowKey(row.package), open: !open });
@@ -120,7 +122,7 @@ function ParentRow2({
       className={open ? "r2-row is-open" : "r2-row"}
       data-pkg={row.package}
       aria-label={row.package}
-      aria-describedby={useRowDescription(...described)}
+      aria-describedby={described}
       aria-current={state.pkg === row.package ? "true" : undefined}
       tabIndex={rowTabIndex(row.package, cursor, first.has(parentKey2(row.package)))}
       {...openInteractions(row.package, dispatch)}

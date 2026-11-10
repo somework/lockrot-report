@@ -80,13 +80,14 @@ function PackageRow({
   const run: Run = report.run;
   const id = useId();
   const graded = run.graded_verdicts.some((verdict) => verdict === finding.verdict);
+  const described = useRowDescription(scoreHead, `${id}-score`, `${id}-verdict`);
   return (
     <tr
       role="row"
       className={graded ? `p2-row ${toneClass(gradeTone(finding.verdict))}` : "p2-row is-ungraded"}
       data-pkg={finding.package}
       aria-label={finding.package}
-      aria-describedby={useRowDescription(scoreHead, `${id}-score`, `${id}-verdict`)}
+      aria-describedby={described}
       aria-current={state.pkg === finding.package ? "true" : undefined}
       tabIndex={rowTabIndex(finding.package, cursor)}
       {...openInteractions(finding.package, dispatch)}

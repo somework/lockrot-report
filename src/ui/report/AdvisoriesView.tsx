@@ -165,13 +165,14 @@ function AdvisoryRow2({
   const php = advisoryFixPhp(row.fix);
   const held = heldByLine(row.fix.held_by, run, finding.package);
   const inner = innerTabIndex(finding.package, cursor, first);
+  const described = useRowDescription();
   return (
     <div
       role="row"
       tabIndex={rowTabIndex(finding.package, cursor, first)}
       aria-current={state.pkg === finding.package ? "true" : undefined}
       aria-label={advisoryRowLabel2(pair)}
-      aria-describedby={useRowDescription()}
+      aria-describedby={described}
       data-pkg={finding.package}
       className={`adv ${toneClass(gradeTone(advisoryBand(run, row.severity)))}`}
       {...openInteractions(finding.package, dispatch)}
