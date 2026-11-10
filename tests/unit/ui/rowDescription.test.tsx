@@ -43,7 +43,7 @@ describe("the description of a focused row", () => {
       expect(
         screen.getByRole("row", {
           name: finding.package,
-          description: `Score ${String(finding.score.total)} ${finding.verdict}`,
+          description: `Score ${String(finding.score.total)} ${finding.verdict} Press Enter on a row to open its package.`,
         }),
       ).toBe(row);
     }
@@ -62,13 +62,13 @@ describe("the description of a focused row", () => {
     for (const row of graded) {
       const finding = findingOf(model, row.getAttribute("data-pkg"));
       expect(
-        screen.getByRole("listitem", {
+        screen.getByRole("treeitem", {
           name: finding.package,
           description: (text) => text.startsWith(`${finding.verdict} itself `),
         }),
       ).toBe(row);
     }
-    expect(screen.getAllByRole("listitem", { description: /\d+ flagged/ })).toEqual(rows);
+    expect(screen.getAllByRole("treeitem", { description: /\d+ flagged/ })).toEqual(rows);
   });
 
   test("a package listed under a Blast radius row reads its score and its verdict", () => {
@@ -83,9 +83,9 @@ describe("the description of a focused row", () => {
     for (const kid of kids) {
       const finding = findingOf(model, kid.getAttribute("data-pkg"));
       expect(
-        screen.getByRole("listitem", {
+        screen.getByRole("treeitem", {
           name: finding.package,
-          description: `score ${String(finding.score.total)} ${finding.verdict}`,
+          description: `score ${String(finding.score.total)} ${finding.verdict} Press Enter on a row to open its package.`,
         }),
       ).toBe(kid);
     }

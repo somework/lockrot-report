@@ -65,7 +65,9 @@ for (const width of [320, 390, 480] as const) {
     test("a focused row describes its score and its grade, as a Findings row does", async ({ page }) => {
       await report.gotoReport2WithHash("composite", "view=packages");
 
-      await expect(packagesRow(page, "twig/twig")).toHaveAccessibleDescription("Score 32 critical");
+      await expect(packagesRow(page, "twig/twig")).toHaveAccessibleDescription(
+        "Score 32 critical Press Enter on a row to open its package.",
+      );
     });
   });
 }

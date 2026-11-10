@@ -24,7 +24,7 @@ import { verdictTone } from "../../domain/findingRow";
 import type { ComponentChildren } from "preact";
 import { useId } from "preact/hooks";
 import { useReport } from "../context";
-import { LegendButton, RowHint, toneClass } from "../common/common";
+import { LegendButton, RowHint, RowHintContext, toneClass } from "../common/common";
 import { EmptyState } from "../views/EmptyState";
 import { AgeAxis as AgeAxisHead } from "../views/AgeScale";
 import { FindingRow2 } from "./FindingRow";
@@ -268,11 +268,13 @@ export function FindingsView2() {
       ) : (
         <>
           {platform !== null && <p className="f2-platform">{platform}</p>}
-          <div className="fledger f2-ledger" role="table" aria-label={FINDINGS_TAB} aria-describedby={hintId}>
+          <div className="fledger f2-ledger" role="grid" aria-readonly="true" aria-label={FINDINGS_TAB}>
             {!printed && <ColumnHead run={report.run} axis={axis} onScreen />}
-            {byGrade(rows).map((group) => (
-              <Group key={group.verdict} verdict={group.verdict} findings={group.findings} axis={axis} />
-            ))}
+            <RowHintContext.Provider value={hintId}>
+              {byGrade(rows).map((group) => (
+                <Group key={group.verdict} verdict={group.verdict} findings={group.findings} axis={axis} />
+              ))}
+            </RowHintContext.Provider>
           </div>
           <RowHint id={hintId} />
         </>
