@@ -24,6 +24,11 @@ import { HEADER_NAMES_SHOWN, HOLDERS_SHOWN, HOLDERS_SHOWN_MAX } from "./sheetThr
 
 type AnyMove = Move | AlsoMove;
 
+/** The release that the php words of a move name (ruling W17-X3); null when the move names none. */
+export const phpSubject = (
+  move: Pick<AnyMove, "to_branch" | "latest" | "version" | "constraint">,
+): string | null => move.to_branch ?? move.latest?.version ?? move.version ?? move.constraint;
+
 const RESOLVED_KINDS: readonly string[] = ["require", "raise-php", "tag"];
 const RELEASE_KINDS: readonly string[] = ["update", "require", "raise-php", "tag"];
 
@@ -193,8 +198,8 @@ function moveAction(finding: Finding, move: AnyMove, run: Run): Rich {
       }
       return [
         requires
-          ? `${move.to_branch ?? ""} fixes it but needs php ${phpConstraintWord(requires)}, which your target, ${run.target_php}, does not run`
-          : `${move.to_branch ?? ""} fixes it, but your target, ${run.target_php}, does not run it`,
+          ? `${phpSubject(move) ?? "A fixing release"} fixes it but needs php ${phpConstraintWord(requires)}, which your target, ${run.target_php}, does not run`
+          : `${phpSubject(move) ?? "A fixing release"} fixes it, but your target, ${run.target_php}, does not run it`,
       ];
     }
     case "test":
@@ -358,7 +363,7 @@ export interface PhpAnswer {
 }
 
 export interface MovePhp {
-  /** G100: "{to_branch} needs php {requires}", the newest tag in place of a branch that the move lacks. */
+  /** G100: "{subject} needs php {requires}" (`phpSubject`); null when the move names no release. */
   readonly head: Rich | null;
   readonly lines: readonly PhpAnswer[];
 }
@@ -382,13 +387,12 @@ function movePhp(finding: Finding, move: AnyMove, run: Run, then: boolean): Move
       lines.push({ answer: "no", text: `your target, ${run.target_php}, does not run it` });
   }
   if (installed !== null) lines.push({ answer: "no", text: installed });
+  const subject = phpSubject(move);
   return {
-    head: php?.requires
-      ? [
-          `${move.to_branch ?? move.latest?.version ?? ""} needs php `,
-          { code: phpConstraintWord(php.requires) },
-        ]
-      : null,
+    head:
+      php?.requires && subject !== null
+        ? [`${subject} needs php `, { code: phpConstraintWord(php.requires) }]
+        : null,
     lines,
   };
 }

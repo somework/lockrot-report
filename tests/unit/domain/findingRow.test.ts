@@ -210,6 +210,39 @@ describe("nextStepWords", () => {
     );
   });
 
+  it.each([
+    [">=8.1.0", "a fixing release needs php >=8.1.0; target 8.0 runs no fixing release"],
+    [null, "a fixing release does not run on 8.0"],
+  ])(
+    "calls a blocked move that names no release a fixing release, php %s (ruling R17-X3c)",
+    (requires, text) => {
+      const doc = report("A-blocked-dagger");
+      const blocked = finding(doc);
+      const move = blocked.next_step;
+      if (move?.php_check == null) throw new Error("the case has a blocked move with a php check");
+      const step = {
+        ...move,
+        to_branch: null,
+        latest: null,
+        version: null,
+        constraint: null,
+        php_check: { ...move.php_check, requires },
+      };
+
+      expect(nextStepWords({ ...blocked, next_step: step }, doc.run).text).toBe(text);
+    },
+  );
+
+  it("names the release by its version when the blocked move has no branch (ruling W17-X3)", () => {
+    const doc = report("A-blocked-dagger");
+    const blocked = finding(doc);
+    const move = blocked.next_step;
+    if (move === null) throw new Error("the case has a move");
+    const step = { ...move, to_branch: null, latest: null, version: "v3.4.1" };
+
+    expect(nextStepWords({ ...blocked, next_step: step }, doc.run).text).toMatch(/^v3\.4\.1 needs php /);
+  });
+
   it("shows the move's own text for a kind it does not know", () => {
     const twig = finding(composite, "twig/twig");
     const odd = { ...twig, next_step: twig.next_step && { ...twig.next_step, kind: "rewrite" } };
