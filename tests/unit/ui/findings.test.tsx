@@ -79,11 +79,29 @@ describe("the Findings and Advisories tables", () => {
 });
 
 describe("the report-2 Findings tab", () => {
+  test("names the tab in a heading of its own, the grades one level under it", () => {
+    render(<App model={model("composite")} />);
+    const panel = document.querySelector('[data-surface="findings"]');
+
+    const headings = [...(panel?.querySelectorAll("h2, h3") ?? [])].map(
+      (h) => `${h.tagName} ${h.textContent}`,
+    );
+
+    expect(headings.slice(0, 2)).toEqual(["H2 Findings", "H3 critical"]);
+  });
+
+  test("names the tab when no finding is shown", () => {
+    history.replaceState(null, "", "/report.html#view=findings&q=no-such-package-anywhere");
+    render(<App model={model("composite")} />);
+
+    expect(screen.getByRole("heading", { level: 2, name: "Findings" })).toBeTruthy();
+  });
+
   test("groups the rows by grade, the grade as the head's word and the count beside it", () => {
     render(<App model={model("composite")} />);
 
     const heads = [...document.querySelectorAll(".fgroup-head")].map((head) => [
-      text(head, "h2"),
+      text(head, "h3"),
       text(head, ".fgroup-count"),
     ]);
     expect(heads).toEqual([

@@ -163,7 +163,7 @@ function Group({ verdict, findings, axis }: { verdict: string; findings: Finding
           .filter((part) => part !== null)
           .join(", ")}
       >
-        <h2 aria-label={verdict}>{verdict}</h2>
+        <h3 aria-label={verdict}>{verdict}</h3>
         <span className="fgroup-count">{packagesCount(findings.length)}</span>
         {gateWords !== null && <span className="fgroup-gate">{gateWords}</span>}
         {majors !== null && <span className="fgroup-major">{majors}</span>}
@@ -249,6 +249,8 @@ export function FindingsStrip() {
 
 /** The Findings tab of a report-2 document (SPEC §7.9.5): graded findings by grade, in `rank`
  *  order. */
+const FINDINGS_TAB = "Findings";
+
 export function FindingsView2() {
   const { state } = useReport();
   const { report } = useReport2();
@@ -259,13 +261,14 @@ export function FindingsView2() {
   const hintId = `${useId()}-hint`;
   return (
     <section className="f2" data-surface="findings">
+      {!printed && <h2 className="vh">{FINDINGS_TAB}</h2>}
       <Notes report={report} />
       {rows.length === 0 ? (
         <EmptyState reason={population2(report, "findings").length === 0 ? "clean" : "filtered"} />
       ) : (
         <>
           {platform !== null && <p className="f2-platform">{platform}</p>}
-          <div className="fledger f2-ledger" role="table" aria-label="Findings" aria-describedby={hintId}>
+          <div className="fledger f2-ledger" role="table" aria-label={FINDINGS_TAB} aria-describedby={hintId}>
             {!printed && <ColumnHead run={report.run} axis={axis} onScreen />}
             {byGrade(rows).map((group) => (
               <Group key={group.verdict} verdict={group.verdict} findings={group.findings} axis={axis} />

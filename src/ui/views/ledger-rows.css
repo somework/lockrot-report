@@ -127,7 +127,7 @@
   padding: 0 var(--fl-pad-r) 9px var(--fl-pad-l);
   border-bottom: 1px solid var(--border-strong);
 }
-.fgroup-head h2 {
+.fgroup-head h3 {
   margin: 0;
   font-family: var(--cond);
   font-size: var(--text-s);
