@@ -244,6 +244,36 @@ describe("the link to How the score works", () => {
 
     expect(view).toBe("run");
   });
+
+  test("links to Run data at the score section, so a copied or new-tab link opens there", () => {
+    render(
+      <ReportContext.Provider value={{ dispatch: () => undefined } as never}>
+        <ScoreModelLink />
+      </ReportContext.Provider>,
+    );
+
+    expect(screen.getByRole("link", { name: "How the score works" }).getAttribute("href")).toBe(
+      "#view=run&section=how-the-score-works",
+    );
+  });
+
+  test.each([
+    ["Ctrl", { ctrlKey: true }],
+    ["Cmd", { metaKey: true }],
+    ["Shift", { shiftKey: true }],
+    ["middle button", { button: 1 }],
+  ])("leaves a %s click to the browser", (_name, modifier) => {
+    let dispatched = false;
+    render(
+      <ReportContext.Provider value={{ dispatch: () => (dispatched = true) } as never}>
+        <ScoreModelLink />
+      </ReportContext.Provider>,
+    );
+
+    const notPrevented = fireEvent.click(screen.getByRole("link", { name: "How the score works" }), modifier);
+
+    expect({ notPrevented, dispatched }).toEqual({ notPrevented: true, dispatched: false });
+  });
 });
 
 describe("the live example of How the score works", () => {

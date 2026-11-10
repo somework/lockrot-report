@@ -35,6 +35,7 @@ import "../views/ledger-rows.css";
 import "./findings.css";
 import { platformStep } from "../../domain/moveCards";
 import { LIST_HEAD_H, useMeasuredHeight } from "../useMeasuredHeight";
+import { isPlainClick } from "../plainClick";
 
 /** `applyFilters2` keeps `rank` order, which runs grade by grade, so a boundary is enough. */
 function byGrade(findings: readonly Finding[]): { verdict: string; findings: Finding[] }[] {
@@ -235,7 +236,7 @@ export function FindingsStrip() {
         className="ov-link f2-strip-back"
         href="#"
         onClick={(event) => {
-          if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          if (!isPlainClick(event)) return;
           event.preventDefault();
           dispatch({ type: "view", view: "overview" });
         }}
